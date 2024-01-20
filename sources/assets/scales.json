@@ -1,0 +1,82 @@
+{
+    "pentatonic":
+    {
+        "scaleSteps": [0, 3, 7, 11]
+    },
+    "chromatic":
+    {
+        "scaleSteps": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    },
+    "major":
+    {
+        "scaleSteps": [0, 2, 5, 7, 9, 11]
+    },
+    "naturel minor":
+    {
+        "scaleSteps": [0, 2, 3, 5, 7, 8, 10]
+    },
+    "harmonic minor":
+    {
+        "scaleSteps": [0, 2, 3, 5, 7, 8, 11]
+    },
+    "melodic minor":
+    {
+        "scaleSteps": [0, 2, 3, 5, 7, 9, 11]
+    },
+    "dorian":
+    {
+        "scaleSteps": [0, 2, 3, 5, 7, 9, 10]
+    },
+    "phrygian":
+    {
+        "scaleSteps": [0, 1, 3, 5, 7, 8, 10]
+    },
+    "lydian":
+    {
+        "scaleSteps": [0, 2, 4, 6, 7, 9, 11]
+    },
+    "mixolydian":
+    {
+        "scaleSteps": [0, 2, 4, 5, 7, 9, 10]
+    },
+    "eolian":
+    {
+        "scaleSteps": [0, 2, 3, 5, 7, 8, 10]
+    },
+    "locrian":
+    {
+        "scaleSteps": [0, 1, 3, 5, 6, 8, 10]
+    },
+    "super locrian":
+    {
+        "scaleSteps": [0, 1, 3, 4, 6, 8, 10]
+    },
+    "blues scale":
+    {
+        "scaleSteps": [0, 3, 5, 6, 7, 10]
+    },
+    "major pentatonic":
+    {
+        "scaleSteps": [0, 2, 4, 7, 9]
+    },
+    "minor pentatonic":
+    {
+        "scaleSteps": [0, 3, 5, 7, 10]
+    },
+    "diminished":
+    {
+        "scaleSteps": [0, 2, 3, 5, 6, 8, 9, 11]
+    },
+    "diminished half":
+    {
+        "scaleSteps": [0, 1, 3, 4, 6, 7, 9, 10]
+    },
+    "diminished seventh":
+    {
+        "scaleSteps": [0, 3, 6, 9]
+    },
+    "whole tone":
+    {
+        "scaleSteps": [0, 2, 4, 6, 8, 10]
+    }
+}

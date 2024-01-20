@@ -1,0 +1,49 @@
+ {
+     "real":
+     {
+         "name": "real",
+         "infos": "@9mattyeux kit",
+         "desc": "recorded by mweb in the studio",
+         "instruments": [
+         {
+             "display_name": "kick.wav",
+             "key": "KICK",
+             "url": "real/kick.wav"
+         },
+         {
+             "display_name": "snare.wav",
+             "key": "SNARE",
+             "url": "real/snare.wav"
+         },
+         {
+             "display_name": "tom.wav",
+             "key": "TOM",
+             "url": "real/tom.wav"
+         },
+         {
+             "display_name": "rimshot.wav",
+             "key": "CLAP",
+             "url": "real/rim.wav"
+         },
+         {
+             "display_name": "cow.wav",
+             "key": "COW",
+             "url": "real/cow.wav"
+         },
+         {
+             "display_name": "chh.wav",
+             "key": "CHH",
+             "url": "real/chh.wav"
+         },
+         {
+             "display_name": "ohh.wav",
+             "key": "OHH",
+             "url": "real/ohh.wav"
+         },
+         {
+             "display_name": "crash.wav",
+             "key": "CRASH",
+             "url": "real/crash.wav"
+         }]
+     }
+ }

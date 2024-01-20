@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "online orDrumbox",
+  "short_name": "onlineordrumbox",
+  "start_url": "https://www.ordrumbox.com/jsdrumbox",
+  "display": "fullscreen",
+  "background_color": "#FFF",
+  "orientation": "landscape",
+  "theme_color": "green",
+  "lang": "en-US",
+  "description": "OrDrumbox : Online Drum Machine",
+  "icons": [ {
+    "src": "assets/images/jsDrumboxLogo512.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }]
+}
+

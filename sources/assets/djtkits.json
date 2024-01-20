@@ -1,0 +1,376 @@
+{
+    "matt":
+    {
+        "name": "matt",
+         "infos": "@9mattyeux kit",
+         "desc": "recorded by mweb using 70' Soundcraft table and NEVE 1073",
+        "instruments": [
+        {
+            "kit_name": "matt",
+            "display_name": "CHH",
+            "key": "CHH",
+            "url": "matt/CHH.wav"
+        },
+        {
+            "kit_name": "matt",
+            "display_name": "SNAREH",
+            "key": "CLAP",
+            "url": "matt/SNARE_CL.wav"
+        },
+        {
+            "kit_name": "matt",
+            "display_name": "LOWTOM",
+            "key": "CRASH",
+            "url": "matt/LOW_TOM.wav"
+        },
+        {
+            "kit_name": "matt",
+            "display_name": "KICK",
+            "key": "KICK",
+            "url": "matt/KICK.wav"
+        },
+        {
+            "kit_name": "matt",
+            "display_name": "OHH",
+            "key": "OHH",
+            "url": "matt/OHH.wav"
+        },
+        {
+            "kit_name": "matt",
+            "display_name": "RIMSHOT",
+            "key": "RIMSHOT",
+            "url": "matt/RIMSHOT.wav"
+        },
+        {
+            "kit_name": "matt",
+            "display_name": "RIDE",
+            "key": "SIDE",
+            "url": "matt/RIDE.wav"
+        },
+        {
+            "kit_name": "matt",
+            "display_name": "SNARE",
+            "key": "SNARE",
+            "url": "matt/SNARE.wav"
+        },
+        {
+            "kit_name": "matt",
+            "display_name": "TOM",
+            "key": "TOM",
+            "url": "matt/TOM.wav"
+        }]
+    },
+
+    "open":
+    {
+        "name": "open",
+        "infos": "layered kit",
+        "desc": "This kit was generated using various layered accoustic drums",
+        "instruments": [
+        {
+            "kit_name": "open",
+            "display_name": "CHH",
+            "key": "CHH",
+            "url": "open/CHH.wav"
+        },
+        {
+            "kit_name": "open",
+            "display_name": "CLAP",
+            "key": "CLAP",
+            "url": "open/CLAP.wav"
+        },
+        {
+            "kit_name": "open",
+            "display_name": "CRASH",
+            "key": "CRASH",
+            "url": "open/CRASH.wav"
+        },
+        {
+            "kit_name": "open",
+            "display_name": "KICK",
+            "key": "KICK",
+            "url": "open/KICK.wav"
+        },
+        {
+            "kit_name": "open",
+            "display_name": "OHH",
+            "key": "OHH",
+            "url": "open/OHH.wav"
+        },
+        {
+            "kit_name": "open",
+            "display_name": "RIMSHOT",
+            "key": "RIMSHOT",
+            "url": "open/RIMSHOT.wav"
+        },
+        {
+            "kit_name": "open",
+            "display_name": "SIDE",
+            "key": "SIDE",
+            "url": "open/SIDE.wav"
+        },
+        {
+            "kit_name": "open",
+            "display_name": "SNARE",
+            "key": "SNARE",
+            "url": "open/SNARE.wav"
+        },
+        {
+            "kit_name": "open",
+            "display_name": "TOM",
+            "key": "TOM",
+            "url": "open/TOM.wav"
+        }]
+    },
+
+    "ropen":
+    {
+        "name": "ropen",
+        "infos": "layered kit",
+        "desc": "This kit was generated using various layered accoustic drums",
+        "instruments": [
+        {
+            "kit_name": "ropen",
+            "display_name": "CHH",
+            "key": "CHH",
+            "url": "ropen/CHH.wav"
+        },
+        {
+            "kit_name": "ropen",
+            "display_name": "COWBELL",
+            "key": "COWBELL",
+            "url": "ropen/COWBELL.wav"
+        },
+        {
+            "kit_name": "ropen",
+            "display_name": "CRASH",
+            "key": "CRASH",
+            "url": "ropen/CRASH.wav"
+        },
+        {
+            "kit_name": "ropen",
+            "display_name": "KICK",
+            "key": "KICK",
+            "url": "ropen/KICK.wav"
+        },
+        {
+            "kit_name": "ropen",
+            "display_name": "OHH",
+            "key": "OHH",
+            "url": "ropen/OHH.wav"
+        },
+        {
+            "kit_name": "ropen",
+            "display_name": "RIDE",
+            "key": "RIDE",
+            "url": "ropen/RIDE.wav"
+        },
+        {
+            "kit_name": "ropen",
+            "display_name": "SNARE",
+            "key": "SNARE",
+            "url": "ropen/SNARE.wav"
+        },
+        {
+            "kit_name": "ropen",
+            "display_name": "TOM",
+            "key": "TOM",
+            "url": "ropen/TOM.wav"
+        }]
+    },
+
+    "generated":
+    {
+        "name": "generated",
+        "infos": "ordrumbox kit",
+        "desc": " this kit was generated a long time ago by the soft synth from the ordrumbox java application  ",
+        "instruments": [
+        {
+            "display_name": "kick.wav",
+            "key": "KICK",
+            "url": "generated/kick.wav"
+        },
+        {
+            "display_name": "snare.wav",
+            "key": "SNARE",
+            "url": "generated/snare.wav"
+        },
+        {
+            "kit_name": "generated",
+            "display_name": "tom.wav",
+            "key": "TOM",
+            "url": "generated/tom.wav"
+        },
+        {
+            "display_name": "clap.wav",
+            "key": "CLAP",
+            "url": "generated/clap.wav"
+        },
+        {
+            "display_name": "cow.wav",
+            "key": "COW",
+            "url": "generated/cow.wav"
+        },
+        {
+            "display_name": "chh.wav",
+            "key": "CHH",
+            "url": "generated/chh.wav"
+        },
+        {
+            "display_name": "ohh.wav",
+            "key": "OHH",
+            "url": "generated/ohh.wav"
+        },
+        {
+            "display_name": "crash.wav",
+            "key": "CRASH",
+            "url": "generated/crash.wav"
+        }]
+    },
+    "human":
+    {
+        "name": "human",
+        "infos": "ordrumbox kit",
+        "desc": " this is a human beat box, sampled by ordrumbox  ",
+        "instruments": [
+        {
+            "display_name": "bd.wav",
+            "key": "KICK",
+            "url": "human/bd.wav"
+        },
+        {
+            "display_name": "Snare.wav",
+            "key": "SNARE",
+            "url": "human/Snare.wav"
+        },
+        {
+            "display_name": "MidTom.wav",
+            "key": "TOM",
+            "url": "human/MidTom.wav"
+        },
+        {
+            "display_name": "HiTom.wav",
+            "key": "CLAP",
+            "url": "human/HiTom.wav"
+        },
+        {
+            "display_name": "LowTom.wav",
+            "key": "COW",
+            "url": "human/LowTom.wav"
+        },
+        {
+            "display_name": "chh.wav",
+            "key": "CHH",
+            "url": "human/chh.wav"
+        },
+        {
+            "display_name": "OHH.wav",
+            "key": "OHH",
+            "url": "human/OHH.wav"
+        },
+        {
+            "display_name": "Crash.wav",
+            "key": "CRASH",
+            "url": "human/Crash.wav"
+        }]
+    },
+    "8bits":
+    {
+        "name": "8bits",
+        "infos": "ordrumbox kit",
+        "desc": "Just for fun, generated with 8-bits tools",
+        "instruments": [
+        {
+            "display_name": "kick.wav",
+            "key": "KICK",
+            "url": "8bits/kick.wav"
+        },
+        {
+            "display_name": "snare.wav",
+            "key": "SNARE",
+            "url": "8bits/snare.wav"
+        },
+        {
+            "display_name": "tom.wav",
+            "key": "TOM",
+            "url": "8bits/tom.wav"
+        },
+        {
+            "display_name": "clap.wav",
+            "key": "CLAP",
+            "url": "8bits/clap.wav"
+        },
+        {
+            "display_name": "cow.wav",
+            "key": "COW",
+            "url": "8bits/cow.wav"
+        },
+        {
+            "display_name": "chh.wav",
+            "key": "CHH",
+            "url": "8bits/chh.wav"
+        },
+        {
+            "display_name": "ohh.wav",
+            "key": "OHH",
+            "url": "8bits/ohh.wav"
+        },
+        {
+            "display_name": "crash.wav",
+            "key": "CRASH",
+            "url": "8bits/crash.wav"
+        }]
+    },
+    "delagrange":
+    {
+        "name": "delagrange",
+        "infos": "ordrumbox kit ",
+        "desc": "Accoustic strange experimental percussions sampled by ordrumbox",
+        "instruments": [
+        {
+            "display_name": "kick.wav",
+            "key": "KICK",
+            "url": "delagrange/kick.wav"
+        },
+        {
+            "display_name": "snare.wav",
+            "key": "SNARE",
+            "url": "delagrange/snare.wav"
+        },
+        {
+            "display_name": "tom.wav",
+            "key": "TOM",
+            "url": "delagrange/tom.wav"
+        },
+        {
+            "display_name": "clap.wav",
+            "key": "CLAP",
+            "url": "delagrange/clap.wav"
+        },
+        {
+            "display_name": "cow.wav",
+            "key": "COW",
+            "url": "delagrange/cow.wav"
+        },
+        {
+            "display_name": "chh.wav",
+            "key": "CHH",
+            "url": "delagrange/chh.wav"
+        },
+        {
+            "display_name": "ohh.wav",
+            "key": "OHH",
+            "url": "delagrange/ohh.wav"
+        },
+        {
+            "display_name": "crash.wav",
+            "key": "CRASH",
+            "url": "delagrange/crash.wav"
+        },
+        {
+            "display_name": "hit.wav",
+            "key": "HIT",
+            "url": "delagrange/hit.wav"
+        }]
+    }
+}

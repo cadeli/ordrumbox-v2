@@ -1,0 +1,5 @@
+**/out
+**/temp
+**/target
+**/node_modules
+**/*.reapeaks

@@ -1,0 +1,8154 @@
+[
+
+    {
+        "name": "rock",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 8,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 8,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.97,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 3,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 8,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.31,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 2,
+            "bars": 8,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.6,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CRASH",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 8,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.12,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "basic",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.97,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.31,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 2,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "PowerRock",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 2,
+            "bars": 8,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 8,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.88,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.88,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 8,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Rock2",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 2,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CRASH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 3,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 2,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Ragga",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.53,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.44,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 1,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.86,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "ragga brk",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.65,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.96,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.59,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.78,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 1,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.84,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.59,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Disco",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.43,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Diskos",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.93,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.44,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.43,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Disco break",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.88,
+                "pano": 0.50,
+                "pitch": -4
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.80,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.42,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.92,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.58,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.73,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.57,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.67,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HIT",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.49,
+                "pano": 0.50,
+                "pitch": 4
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.48,
+                "pano": 0.50,
+                "pitch": 2
+            }]
+
+        }]
+    },
+    {
+        "name": "disco 2",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "CLAP",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 13,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": -3,
+            "velo": 0.58,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 5,
+            "velo": 0.9,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "MELO",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.13,
+            "solo": false,
+            "mute": false,
+            "notes": []
+
+        }]
+    },
+    {
+        "name": "mambo",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.59,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SHAKER",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "mambofast",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SHAKER",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HCONGAS",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Shuffle",
+        "bpm": "120",
+        "nbBars": "6",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 12,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.95,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 1,
+                "velo": 0.33,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.33,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 12,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 3,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.56,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.67,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 6,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.40,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CRASH",
+            "autoSound": true,
+            "loopPoint": 24,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.62,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "LCONGAS",
+            "autoSound": true,
+            "loopPoint": 24,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": []
+
+        }]
+    },
+    {
+        "name": "Shuffle break",
+        "bpm": "120",
+        "nbBars": "6",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 24,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 1,
+                "velo": 0.51,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.61,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.75,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.42,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 3,
+                "velo": 0.65,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 6,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.66,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 6,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.42,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.44,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 24,
+            "bars": 6,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.55,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.35,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.31,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.33,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 0,
+                "velo": 0.42,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 1,
+                "velo": 0.58,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 2,
+                "velo": 0.86,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "salsa",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.69,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "RIMSHOT",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HCONGAS",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "LCONGAS",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.59,
+                "pano": 0.50,
+                "pitch": -4
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.59,
+                "pano": 0.50,
+                "pitch": -4
+            }]
+
+        },
+        {
+            "name": "LTOM",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "computerfunk",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 2,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "merengue",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HCONGAS",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "LCONGAS",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "bossa",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.87,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.87,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.78,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "RIMSHOT",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.88,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.88,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 2,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.66,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.40,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "BASS",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.73,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.59,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.66,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.62,
+                "pano": 0.50,
+                "pitch": -5
+            }]
+
+        },
+        {
+            "name": "PIANO",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": -3
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": -2
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "basicJungle",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "LCONGAS",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HCONGAS",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "down",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 1,
+                "velo": 0.56,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 6,
+                "velo": 0.55,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": -4,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.99,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 4,
+                "velo": 0.99,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 4,
+                "velo": 0.99,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.99,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 1,
+                "velo": 0.62,
+                "pano": 0.80,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "BONGOS",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.65,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.48,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.58,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 6,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 7,
+                "velo": 0.53,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.57,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 4,
+                "velo": 0.62,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 6,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 7,
+                "velo": 0.57,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.49,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 4,
+                "velo": 0.59,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 6,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 7,
+                "velo": 0.47,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.50,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.53,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 6,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 7,
+                "velo": 0.44,
+                "pano": 0.70,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "RIDE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.48,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.42,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 5,
+                "velo": 0.99,
+                "pano": 0.10,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.10,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 5,
+                "velo": 0.99,
+                "pano": 0.10,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.10,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 5,
+                "velo": 0.99,
+                "pano": 0.10,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "rapfunk",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": -12,
+            "velo": 0.78,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "RIMSHOT",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.59,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 7,
+            "velo": 0.37,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.49,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.82,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 7,
+            "velo": 0.20,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.75,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.89,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 1,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.17,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.52,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.42,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.8,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.72,
+                "pano": 0.50,
+                "pitch": 6
+            }]
+
+        }]
+    },
+    {
+        "name": "Hard rock",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": -2,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.9,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.46,
+                "pano": 0.50,
+                "pitch": 8
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 14
+            }]
+
+        }]
+    },
+    {
+        "name": "metal",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.13,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "16Beats",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.75,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.81,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.85,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.59,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 1,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "tango",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": -12,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HCONGAS",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.9,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.42,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "LCONGAS",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.11,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "pop",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "BASS",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": -12,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.85,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.82,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.80,
+                "pano": 0.50,
+                "pitch": 12
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.88,
+                "pano": 0.50,
+                "pitch": 12
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 10
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.78,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 5,
+                "step": 3,
+                "velo": 0.81,
+                "pano": 0.50,
+                "pitch": 5
+            },
+            {
+                "bar": 6,
+                "step": 3,
+                "velo": 0.88,
+                "pano": 0.50,
+                "pitch": 5
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 6,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.75,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.72,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 4,
+                "velo": 0.86,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.72,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 0,
+                "velo": 0.84,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 3,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.31,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.93,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.57,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.97,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 6,
+                "step": 4,
+                "velo": 0.48,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "PIANO",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 4
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 9
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 4
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 9
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 4
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 9
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 9
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 4
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "pop2",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "BASS",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.92,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.88,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.95,
+                "pano": 0.50,
+                "pitch": 12
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 12
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.88,
+                "pano": 0.50,
+                "pitch": 10
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.91,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 5,
+                "step": 0,
+                "velo": 0.85,
+                "pano": 0.50,
+                "pitch": 10
+            },
+            {
+                "bar": 5,
+                "step": 3,
+                "velo": 0.91,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.92,
+                "pano": 0.50,
+                "pitch": 10
+            },
+            {
+                "bar": 6,
+                "step": 3,
+                "velo": 0.87,
+                "pano": 0.50,
+                "pitch": 11
+            },
+            {
+                "bar": 7,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 12
+            },
+            {
+                "bar": 7,
+                "step": 3,
+                "velo": 0.94,
+                "pano": 0.50,
+                "pitch": -12
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 6,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.75,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.72,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.72,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 3,
+                "velo": 0.84,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 3,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.93,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.31,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.57,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 3,
+                "velo": 0.97,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 6,
+                "step": 4,
+                "velo": 0.48,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "PIANO",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 4
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 9
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": -2
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 2
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.90,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 4,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 2
+            },
+            {
+                "bar": 4,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": -2
+            },
+            {
+                "bar": 4,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 2
+            },
+            {
+                "bar": 4,
+                "step": 3,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": -2
+            }]
+
+        },
+        {
+            "name": "MTOM",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 7,
+                "step": 1,
+                "velo": 0.92,
+                "pano": 0.50,
+                "pitch": 8
+            },
+            {
+                "bar": 7,
+                "step": 0,
+                "velo": 0.91,
+                "pano": 0.50,
+                "pitch": 9
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.93,
+                "pano": 0.50,
+                "pitch": 12
+            },
+            {
+                "bar": 6,
+                "step": 1,
+                "velo": 0.94,
+                "pano": 0.50,
+                "pitch": 11
+            },
+            {
+                "bar": 6,
+                "step": 3,
+                "velo": 0.93,
+                "pano": 0.50,
+                "pitch": 10
+            },
+            {
+                "bar": 7,
+                "step": 3,
+                "velo": 0.94,
+                "pano": 0.50,
+                "pitch": 7
+            }]
+
+        }]
+    },
+    {
+        "name": "jazz beat",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 30,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 18,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 6,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "BASS",
+            "autoSound": true,
+            "loopPoint": 48,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 4
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.32,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 7
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 6
+            },
+            {
+                "bar": 4,
+                "step": 0,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 5
+            },
+            {
+                "bar": 5,
+                "step": 0,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 9
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 10
+            },
+            {
+                "bar": 7,
+                "step": 3,
+                "velo": 0.37,
+                "pano": 0.50,
+                "pitch": 12
+            },
+            {
+                "bar": 7,
+                "step": 0,
+                "velo": 0.39,
+                "pano": 0.50,
+                "pitch": 11
+            }]
+
+        },
+        {
+            "name": "RIMSHOT",
+            "autoSound": true,
+            "loopPoint": 18,
+            "bars": 8,
+            "nbStepPerBar": 6,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.79,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "African",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 5,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 36,
+            "bars": 4,
+            "nbStepPerBar": 9,
+            "pitch": 0,
+            "velo": 0.15,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 5,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 5,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 5,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 5,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.83,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "BASS",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.21,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": -3
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 2
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 4
+            }]
+
+        },
+        {
+            "name": "MELO",
+            "autoSound": true,
+            "loopPoint": 12,
+            "bars": 4,
+            "nbStepPerBar": 3,
+            "pitch": 0,
+            "velo": 0.24,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": -3
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 2
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": -3
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": -5
+            },
+            {
+                "bar": 4,
+                "step": 1,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 5
+            },
+            {
+                "bar": 8,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 3
+            },
+            {
+                "bar": 10,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 3
+            },
+            {
+                "bar": 5,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 1,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 8,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 2
+            },
+            {
+                "bar": 9,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 2
+            }]
+
+        }]
+    },
+    {
+        "name": "polyrythm",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 12,
+            "bars": 4,
+            "nbStepPerBar": 3,
+            "pitch": 0,
+            "velo": 0.38,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 12,
+            "bars": 4,
+            "nbStepPerBar": 3,
+            "pitch": 0,
+            "velo": 0.17,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 12,
+            "bars": 4,
+            "nbStepPerBar": 3,
+            "pitch": 0,
+            "velo": 0.30,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "PolyR-3:2",
+        "bpm": "120",
+        "nbBars": "2",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 2,
+            "nbStepPerBar": 2,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 6,
+            "bars": 2,
+            "nbStepPerBar": 3,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "PolyR-4:3",
+        "bpm": "120",
+        "nbBars": "3",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 9,
+            "bars": 3,
+            "nbStepPerBar": 3,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 36,
+            "bars": 3,
+            "nbStepPerBar": 12,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 9,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 6,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "afro blue",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "BASS",
+            "autoSound": true,
+            "loopPoint": 12,
+            "bars": 4,
+            "nbStepPerBar": 3,
+            "pitch": 0,
+            "velo": 0.9,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": -10
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": -3
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 2
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": -10
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": -3
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 2
+            }]
+
+        },
+        {
+            "name": "SHAKER",
+            "autoSound": true,
+            "loopPoint": 36,
+            "bars": 4,
+            "nbStepPerBar": 9,
+            "pitch": 0,
+            "velo": 0.16,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 5,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 5,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 5,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "LoopPoints",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 6,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 3,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 5,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 7,
+                "velo": 0.30,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HIT",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 10,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HCONGAS",
+            "autoSound": true,
+            "loopPoint": 12,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": []
+
+        },
+        {
+            "name": "LCONGAS",
+            "autoSound": true,
+            "loopPoint": 14,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": []
+
+        }]
+    },
+    {
+        "name": "funk2",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 1,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.5,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 1,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 1,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "peach",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.5,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "lev",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 1,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 2,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.5,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "swest",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "RIDE",
+            "autoSound": true,
+            "loopPoint": 2,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.5,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "funk",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 3,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.5,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "togra",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.5,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": -2,
+            "velo": 0.10,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 3,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 1,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 3,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 4,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 1,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 1,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Prock",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 4,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 4,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": -1,
+            "velo": 0.11,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CLAP",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 6,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 4,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 6,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 4,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 6,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 6,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Cybo",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 4,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 4,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 6,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 4,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 4,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": -1,
+            "velo": 0.11,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CLAP",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "addon",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": -1,
+            "velo": 0.11,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 7,
+                "step": 4,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 4,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "MARACAS",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.77,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 7,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 4,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.13,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 8,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "RIMSHOT",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.29,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 6,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 6,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 0,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 4,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 2,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 6,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 2,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 6,
+                "velo": 0.38,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Guy",
+        "bpm": "120",
+        "nbBars": "8",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": -1,
+            "velo": 0.11,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.71,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "LCONGAS",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 7,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "MARACAS",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HCONGAS",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "COW",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 64,
+            "bars": 8,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.60,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 4,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 7,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 6,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 5,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 6,
+                "velo": 0.5,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "Autovar beat",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 0,
+                "step": 6,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 4,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            },
+            {
+                "bar": 1,
+                "step": 6,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 2,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 4,
+                "velo": 0.60,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 2,
+                "step": 6,
+                "velo": 0.60,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 2,
+                "velo": 0.60,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.60,
+                "pano": 0.80,
+                "pitch": 0
+            },
+            {
+                "bar": 3,
+                "step": 6,
+                "velo": 0.60,
+                "pano": 0.80,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CHH",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.60,
+                "pano": 0.70,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "SNARE",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.60,
+                "pano": 0.80,
+                "pitch": 0
+            }]
+
+        }]
+    },
+    {
+        "name": "house",
+        "bpm": "120",
+        "nbBars": "4",
+        "tracks": [
+        {
+            "name": "KICK",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "OHH",
+            "autoSound": true,
+            "loopPoint": 8,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 0,
+                "step": 4,
+                "velo": 0.99,
+                "pano": 0.10,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "HIT",
+            "autoSound": true,
+            "loopPoint": 32,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.12,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 3,
+                "step": 4,
+                "velo": 0.99,
+                "pano": 0.50,
+                "pitch": 0
+            }]
+
+        },
+        {
+            "name": "CLAP",
+            "autoSound": true,
+            "loopPoint": 16,
+            "bars": 4,
+            "nbStepPerBar": 8,
+            "pitch": 0,
+            "velo": 0.99,
+            "solo": false,
+            "mute": false,
+            "notes": [
+            {
+                "bar": 1,
+                "step": 0,
+                "velo": 0.99,
+                "pano": 0.70,
+                "pitch": 0
+            }]
+
+        }]
+    }
+]
