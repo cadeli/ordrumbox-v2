@@ -1,6 +1,6 @@
 # ordrumbox-v2
 
-** software drum machine **
+**software drum machine**
 
 ## Presets
 A large variety of demo patterns and drum kits : accoustic, vintage and also many others sounds.
