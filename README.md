@@ -2,6 +2,8 @@
 
 **software drum machine**
 
+written in html/js with zero library
+
 ## Features
 
 ### Presets
