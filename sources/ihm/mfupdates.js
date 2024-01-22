@@ -3,7 +3,6 @@ import MfCmd from '../ctrl/mfcmd.js'
 import MfComponents from './mfcomponents.js'
 import MfCreateIhm from './mfcreateihm.js'
 import MfSampleIhm from './mfsampleihm.js'
-import AlienImport from '../todo/alienimport.js'
 
 export default class MfUpdates {
     static TAG = "MFUPDATES"

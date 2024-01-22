@@ -1,7 +1,7 @@
 {
-  "name": "ordrumboxjs",
+  "name": "ordrumbox",
   "version": "2.0.0",
-  "description": "ordrumbox",
+  "description": "software drum machine",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,8 +9,9 @@
     "package": "electron-forge package",
     "make": "electron-forge make"
   },
-  "author": "joe",
+  "author": "ordrumbox team",
   "license": "ISC",
+  
   "devDependencies": {
     "@electron-forge/cli": "^7.2.0",
     "@electron-forge/maker-deb": "^7.2.0",
