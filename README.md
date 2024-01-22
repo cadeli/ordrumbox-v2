@@ -5,16 +5,21 @@
 ## Features
 
 ### Presets
-some demo patterns and drum kits 
+ 35 demo patterns, 8 drum kits, 5 presets for synth sounds
                 
-### Classic controls
- pitch, volume and panoramic per note or per tracks.
-###  Interface
-pattern  editor, counter triggers, repeat controls , LFO modulators.
+###  Step Sequencer
+Classic controls: pitch, volume and panoramic per note or per tracks.
+pattern editor, counter triggers, repeat controls , LFO modulators.
+
 ### Bass line Generator
 automatic bass line on a separate track.
+
 ### Sound Synth
- two VCO and filters.
+ two VCO, one LFO ,one filter.
+
+### Import/Export
+save and load patterns as local files 
+export sessions as wave file
 
 ## user manual
 https://www.ordrumbox.com/jsdrumbox/user-guide.html
