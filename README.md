@@ -2,7 +2,7 @@
 
 **software drum machine**
 
-written in html/js with zero library
+written in Vanilla JavaScript , no framework, no librairies
 
 ## Features
 
