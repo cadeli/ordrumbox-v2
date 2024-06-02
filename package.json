@@ -11,7 +11,6 @@
   },
   "author": "ordrumbox team",
   "license": "ISC",
-  
   "devDependencies": {
     "@electron-forge/cli": "^7.2.0",
     "@electron-forge/maker-deb": "^7.2.0",
@@ -19,7 +18,8 @@
     "@electron-forge/maker-squirrel": "^7.2.0",
     "@electron-forge/maker-zip": "^7.2.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.2.0",
-    "electron": "^28.1.4"
+    "electron": "^28.1.4",
+    "grunt": "^1.6.1"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0"

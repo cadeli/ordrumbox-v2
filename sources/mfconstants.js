@@ -3,6 +3,7 @@ let MfGlobals = {
     scales: {},
     generatedSounds :{},
     patterns:[],
+    trackLib:[],
     drumkits:{},
     leds:{},
     blob:null,

@@ -455,4 +455,92 @@ export default class MfCmd { //should be global or static
             }
         }
     }
+    compacteTrack = (track) => { //assume 4bars
+        let sig = ""
+        let sig0 = ""
+        let sig1 = ""
+        let sig2 = ""
+        let sig3 = ""
+
+        // console.log("track len="+track.notes.length)
+        for (let i in track.notes) {
+            let note = track.notes[i]
+            if (note.bar === 0) {
+                sig0 += note.step + "_"
+            }
+            if (note.bar === 1) {
+                sig1 += note.step + "_"
+            }
+            if (note.bar === 2) {
+                sig2 += note.step + "_"
+            }
+            if (note.bar === 3) {
+                sig3 += note.step + "_"
+            }
+            sig += (note.step) + (note.bar) * track.nbStepPerBar
+            sig += "_"
+        }
+        // console.log("track len="+track.notes.length)
+        if ((sig0 === sig2) && (sig1 === sig3)) {
+            if (sig0 === sig1) {
+                if (sig0 === "0_1_2_3_") {
+                    this.setLoopAndDelete(track, 16, sig)
+                    //console.log("compacte 16 =" + sig + " => " + "0_")
+                } else if (sig0 === "0_2_") {
+                    this.setLoopAndDelete(track, 8, sig)
+                    //console.log("compacte 8 =" + sig + " => " + "0__")
+                } else if (sig0 === "1_3_") {
+                    this.setLoopAndDelete(track, 8, sig)
+                    // console.log("compacte 8 =" + sig + " => " + "1__")
+                } else {
+                    this.setLoopAndDelete(track, 4, sig)
+                    //console.log("compacte 4 =" + sig + " => " + sig0)
+                }
+            } else if ((sig0 + sig1) === (sig2 + sig3)) {
+                this.setLoopAndDelete(track, 2, sig)
+                //console.log("compacte 2 =" + sig + " => " + sig0 + sig1)
+            }
+        }
+        //  console.log("track len="+track.notes.length+" sig="+sig)
+    }
+
+    setLoopAndDelete = (track, nb, sig) => {
+        if (nb === 2) {
+            track.loopPoint = 2 * track.nbStepPerBar
+        } else if (nb === 4) {
+            track.loopPoint = 1 * track.nbStepPerBar
+        } else if (nb === 8) {
+            track.loopPoint = 2
+        } else if (nb === 16) {
+            track.loopPoint = 1
+        } else {
+            console.error("error setLoopAndDelete nb=" + nb)
+        }
+        for (let i = 0; i < 4; i++) { //delete in list (argh)
+            for (let ii in track.notes) {
+                let note = track.notes[ii]
+                let th = eval(note.bar * track.nbStepPerBar + note.step)
+                //  console.log("test to delete >"+sig+"< nb="+nb+ " from"+ th+ " on "+ track.loopPoint + " nbnotes="+track.notes.length)
+                if (th >= eval(track.loopPoint)) {
+                    MfGlobals.mfUpdates.mfCmd.deleteNote(track, note)
+                }
+            }
+        }
+    }
+
+    compareTrack = (track, refTrack) => {
+        if (track.name === refTrack.name) {
+            if (track.notes.length != refTrack.notes.length) {
+                return false
+            }
+            for (let i in track.notes) { //ignore velo, pano and effects
+                if (track.notes[i].name != refTrack.notes[i].name) {
+                    return false
+                }
+            }
+            console.log("compareTrack track equal " + track.name + "=" + refTrack.name)
+            return true
+        }
+        return false
+    }
 }

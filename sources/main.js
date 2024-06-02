@@ -1,5 +1,6 @@
 import MfSeq from './mfseq.js'
 import MfSerialize from './ctrl/mfserialize.js'
+import MfAutoGenerate from './ctrl/mfAutoGenerate.js'
 import Utils from './utils.js'
 import MfUpdates from './ihm/mfupdates.js'
 import MfMixer from './snd/mfmixer.js'
@@ -9,6 +10,7 @@ import WaveVisu from './ihm/wavevisu.js'
 
 MfGlobals.audioCtx = null
 MfGlobals.mfSeq = new MfSeq()
+MfGlobals.mfAutoGenerate = new MfAutoGenerate()
 MfGlobals.mfUpdates = new MfUpdates()
 MfGlobals.mfPatterns = new MfPatterns()
 MfGlobals.mfLoader = new MfLoader(onAllResourceLoad, onPatternsLoaded)
@@ -162,6 +164,9 @@ function keyPressed(name, code) {
         } else {
             MfGlobals.autoMode = false
         }
+    }
+    if (code == 'KeyB') {
+        MfGlobals.mfAutoGenerate.go()
     }
     if (code == 'KeyS') {
         console.log(JSON.stringify(MfGlobals.patterns))

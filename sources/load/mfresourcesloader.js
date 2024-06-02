@@ -51,49 +51,17 @@ export default class MfResourcesLoader {
             })
     }
 
-    loadSerializedPatterns(file, complete) {
+    loadTrackLib(file, complete) {
         fetch(file)
             .then((response) => response.json())
-            .then((song) => {
-                for (const [key, value] of Object.entries(song)) {
-                    let pattern = MfGlobals.mfUpdates.mfCmd.addPattern()
-                    pattern.name = key
-                    let cols = value.split(",")
-                    cols.forEach((col, indexCol) => {
-                        //console.log ("col="+indexCol+":"+col)
-                        let notes = col.split("_")
-                        notes.forEach((note, indexNote) => {
-                            // console.log ("col="+indexCol+":"+indexNote+":"+note)
-                            if (note.length > 1) {
-                                let inst = note.split("-")
-                                let bar = Math.floor(indexCol / 4)
-                                let step = indexCol % 4
-                                let track = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, inst[0])
-                                if (track == null) {
-                                    console.log("::loadSerializedPatterns track not found :" + inst[0] + " bar=" + bar + " step=" + step)
-                                    track = pattern.tracks[5] //TODO
-                                }
-                                if (inst[1].startsWith('R')) {
-                                    let note = MfGlobals.mfUpdates.mfCmd.addNote(track, bar, step)
-                                    note.triggFreq = inst[1].charAt(1)
-                                } else {
-                                    track.loopPoint = step + track.nbStepPerBar * bar
-                                    track.loopPointBar = bar
-                                    track.loopPointStep = step
-                                }
-
-                            }
-                        })
-                    })
-                }
-                console.log("mfressourceloader::loadSerializedPatterns:")
+            .then((trackLib) => {
+                Object.assign(MfGlobals.trackLib, trackLib)
                 complete()
             })
             .catch((error) => {
-                console.error('mfressourceloader::loadSerializedPatterns: ' + file, error);
+                console.error('mfressourceloader::loadTrackLib: ' + file, error);
             })
     }
-
 
     loadSamples(file, complete, progress) {
         if (MfGlobals.audioCtx == null) {
