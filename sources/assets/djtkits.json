@@ -60,7 +60,61 @@
             "url": "matt/TOM.wav"
         }]
     },
-
+    "electro":
+    {
+        "name": "electro",
+         "infos": "electro kit",
+         "desc": " by mweb layered classic electro drums ",
+        "instruments": [
+        {
+            "kit_name": "electro",
+            "display_name": "CHH",
+            "key": "CHH",
+            "url": "electro/chh.wav"
+        },
+        {
+            "kit_name": "electro",
+            "display_name": "CLAP",
+            "key": "CLAP",
+            "url": "electro/clap.wav"
+        },
+        {
+            "kit_name": "electro",
+            "display_name": "RIDE",
+            "key": "CRASH",
+            "url": "electro/ride.wav"
+        },
+        {
+            "kit_name": "electro",
+            "display_name": "KICK",
+            "key": "KICK",
+            "url": "electro/kick.wav"
+        },
+        {
+            "kit_name": "electro",
+            "display_name": "OHH",
+            "key": "OHH",
+            "url": "electro/ohh.wav"
+        },
+        {
+            "kit_name": "electro",
+            "display_name": "COW",
+            "key": "COW",
+            "url": "electro/cow.wav"
+        },
+        {
+            "kit_name": "electro",
+            "display_name": "SNARE",
+            "key": "SNARE",
+            "url": "electro/snare.wav"
+        },
+        {
+            "kit_name": "electro",
+            "display_name": "TOM",
+            "key": "TOM",
+            "url": "electro/tom.wav"
+        }]
+    },
     "open":
     {
         "name": "open",
