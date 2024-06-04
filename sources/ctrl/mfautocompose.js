@@ -1,56 +1,73 @@
 export default class MfAutoCompose {
     static TAG = "MFPATTERNS"
-
-    constructor() {}
+    constructor() { }
 
     change = (loop, pattern) => {
-
-        Object.values(pattern.tracks).forEach((track, indexTrack) => {
-            if (track.name === 'CHH' || track.name === 'OHH') {
-                if (loop % 4 > 1) {
-                    track.mute = false
-                } else {
-                    track.mute = true
-                }
-            }
-        })
-
-        let bassTrack = null
-        bassTrack = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, "BASS")
+        let LOOP_LGR = 16
+        let bassTrack = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, "BASS")
         if (!bassTrack) {
             bassTrack = MfGlobals.mfUpdates.mfCmd.addTrack(pattern, "BASS")
             MfGlobals.mfMixer.addStrip("BASS") //TODO ATT
             bassTrack.generated = true
-            bassTrack.velo = 0.2
-            this.generateNewBass(bassTrack)
+            bassTrack.velo = 0.1
         }
+        if (bassTrack.notes.length===0 ) {
+            if ((Math.random()) > 0.5) {
+                this.generateNewBass(bassTrack)
+            } else {
+                this.generateNewBass2(bassTrack)
+            }
+        }
+
+        Object.values(pattern.tracks).forEach((track, indexTrack) => {
+            if (track.name === 'CHH' || track.name === 'OHH') {
+                if (loop % LOOP_LGR < LOOP_LGR / 4 + 1) {
+                    track.mute = true
+                } else {
+                    track.mute = false
+                }
+            }
+            if (track.name === 'TOM' || track.name === 'COW'|| track.name === 'CLAP') {
+                if (loop % LOOP_LGR === (LOOP_LGR *3/ 4) ) {
+                    track.mute = true
+                } 
+                if (loop % LOOP_LGR === (LOOP_LGR *3/ 4 + 2)) {
+                    track.mute = false
+                }
+            }
+        })
         let snareTrack = null
         snareTrack = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, "SNARE_B")
         if (!snareTrack) {
             snareTrack = MfGlobals.mfUpdates.mfCmd.addTrack(pattern, "SNARE_B")
             MfGlobals.mfMixer.addStrip("SNARE_B") //TODO ATT
-            //snareTrack.generated = true
-             snareTrack.velo = 1
-            this.generateNewSnare(snareTrack)
+            snareTrack.velo = 1
+            this.generateClearTrack(snareTrack)
         }
-        if (loop % 16 === 0) {
-            this.generateNewBass2(bassTrack)
-            this.generateNewSnare2(snareTrack)
+        if (loop % LOOP_LGR === 0 ){
+            MfGlobals.mfAutoGenerate.go()
+            if ((Math.random()) > 0.5) {
+                this.generateNewBass(bassTrack)
+            } else {
+                this.generateNewBass2(bassTrack)
+            }
         }
-        if (loop % 16 === 3 || loop % 16 === 15) {
-            this.generateNewSnare(snareTrack)
+        if (loop % LOOP_LGR === LOOP_LGR / 2) {
+            let cymTrack = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, "CRASH")
+            this.generateNewCymBrk(cymTrack)
         }
-
-        if (loop % 16 === 4) {
-            this.generateNewBass(bassTrack)
-            this.generateNewSnare2(snareTrack)
+        if (loop % LOOP_LGR === (LOOP_LGR / 2 + 1)) {
+            let cymTrack = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, "CRASH")
+            this.generateClearTrack(cymTrack)
+        }
+        if (loop % LOOP_LGR === LOOP_LGR - 1) {
+            this.generateNewSnareBrk(snareTrack)
         }
         MfGlobals.mfPatterns.getFlatNotesFromPattern(pattern)
         MfGlobals.mfUpdates.updatePatternView(pattern, 1) //TODO
     }
 
-
-    generateNewSnare = (track) => {
+    generateNewCymBrk = (track) => {
         track.notes = []
         for (let i = 0; i < 4; i++) {
             if (Math.floor(Math.random() * 10) > 2) {
@@ -62,9 +79,20 @@ export default class MfAutoCompose {
         }
     }
 
-    generateNewSnare2 = (track) => {
+    generateNewSnareBrk = (track) => {
         track.notes = []
+        for (let i = 0; i < 4; i++) {
+            if (Math.floor(Math.random() * 10) > 2) {
+                MfGlobals.mfUpdates.mfCmd.addNote(track, 2, i, 0)
+            }
+        }
+        for (let i = 0; i < 4; i++) {
+            MfGlobals.mfUpdates.mfCmd.addNote(track, 3, i, 0)
+        }
+    }
 
+    generateClearTrack = (track) => {
+        track.notes = []
     }
 
     generateNewBass2 = (bassTrack) => {
@@ -88,6 +116,7 @@ export default class MfAutoCompose {
         bassTrack.loopPointBar = 1
         bassTrack.loopPointStep = 0
         bassTrack.loopPoint = 4
+        this.displayDebugNotes(bassTrack)
     }
 
 

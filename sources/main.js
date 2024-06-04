@@ -1,6 +1,6 @@
 import MfSeq from './mfseq.js'
 import MfSerialize from './ctrl/mfserialize.js'
-import MfAutoGenerate from './ctrl/mfAutoGenerate.js'
+import MfAutoGenerate from './ctrl/mfautogenerate.js'
 import Utils from './utils.js'
 import MfUpdates from './ihm/mfupdates.js'
 import MfMixer from './snd/mfmixer.js'
@@ -308,6 +308,7 @@ document.getElementById("patternAutoMode").onclick = function() {
         document.getElementById('patternAutoMode').style = "background: #555;"
     } else {
         document.getElementById('patternAutoMode').style = "background: #ADD8E6;"
+        MfGlobals.mfAutoGenerate.go()
         MfGlobals.autoMode = true
     }
 }

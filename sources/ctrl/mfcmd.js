@@ -27,6 +27,7 @@ export default class MfCmd { //should be global or static
         Object.values(track.notes).forEach((note) => {
             if (note.step === selNote.step && note.bar === selNote.bar) {
                 track.notes.splice(i, 1)
+                //console.log("deleteNote deleted  ="+eval(selNote.bar*track.nbStepPerBar+ selNote.step))
             }
             i++
         })
@@ -166,8 +167,7 @@ export default class MfCmd { //should be global or static
         return pano
     }
 
-
-    getTrackFromType = (pattern, type) => {
+     getTrackFromType = (pattern, type) => {
         let ret = null
         Object.values(pattern.tracks).forEach((track) => {
             if (track.name === type) {
@@ -201,125 +201,129 @@ export default class MfCmd { //should be global or static
     }
 
     autoAssignSounds = (pattern) => {
-        if (MfGlobals.audioCtx!=null) {
+        if (MfGlobals.audioCtx != null) {
             Object.values(pattern.tracks).forEach((track, indexTrack) => {
                 this.autoAssignTrackSounds(track, indexTrack)
             })
         }
     }
 
-    autoAssignTrackSounds=(track)=>{
-          if (track.autoSound === true) {
-                let soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, track.name)
-                if (soundNum === -1) {
-                    let debugtxt = ""
-                    for (let i = 0; i < MfGlobals.sounds.length; i++) {
-                        let sound = MfGlobals.sounds[i]
-                        if (sound) {
-                            if (sound.kit_name === MfGlobals.selectedDrumkit) {
-                                debugtxt += sound.key + ","
-                            }
+    autoAssignTrackSounds = (track) => {
+        if (track.autoSound === true) {
+            let soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, track.name)
+            if (soundNum === -1) {
+                let debugtxt = ""
+                for (let i = 0; i < MfGlobals.sounds.length; i++) {
+                    let sound = MfGlobals.sounds[i]
+                    if (sound) {
+                        if (sound.kit_name === MfGlobals.selectedDrumkit) {
+                            debugtxt += sound.key + ","
                         }
                     }
-                    console.log("mfCmd::autoAssignSounds " + track.name + " not found <" + MfGlobals.selectedDrumkit + " : " + debugtxt + "> ")
                 }
-                //
-                if (soundNum === -1) {
-                    let newSoundKey = ""
-                    //TODO sound equivalence
-                    if (soundNum === -1 && track.name === "TOM") {
-                        newSoundKey = "MTOM"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "TOM") {
-                        newSoundKey = "LTOM"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "TOM") {
-                        newSoundKey = "HTOM"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "TOM") {
-                        newSoundKey = "BASS"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "TOM") {
-                        newSoundKey = "MELO"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "CRASH") {
-                        newSoundKey = "RIDE"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "CRASH") {
-                        newSoundKey = "CONGAS"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "COW") {
-                        newSoundKey = "COWBELL"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "COW") {
-                        newSoundKey = "RIMSHOT"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "COW") {
-                        newSoundKey = "RIDE"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "COW") {
-                        newSoundKey = "TIMBAL"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-
-                    if (soundNum === -1 && track.name === "COW") {
-                        newSoundKey = "LTOM"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "CLAP") {
-                        newSoundKey = "LWOODBLOCK"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "CLAP") {
-                        newSoundKey = "MELO"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "CLAP") {
-                        newSoundKey = "RIMSHOT"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "CLAP") {
-                        newSoundKey = "HIT"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "CLAP") {
-                        newSoundKey = "HTOM"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "CHH") {
-                        newSoundKey = "MELO"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "OHH") {
-                        newSoundKey = "TAMBOURINE"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    if (soundNum === -1 && track.name === "OHH") {
-                        newSoundKey = "SGUIRO"
-                        soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
-                    }
-                    console.log("mfCmd::autoAssignSounds " + track.name + " <=" + newSoundKey)
+                console.log("mfCmd::autoAssignSounds " + track.name + " not found <" + MfGlobals.selectedDrumkit + " : " + debugtxt + "> ")
+            }
+            //
+            if (soundNum === -1) {
+                let newSoundKey = ""
+                //TODO sound equivalence
+                if (soundNum === -1 && track.name === "TOM") {
+                    newSoundKey = "MTOM"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "TOM") {
+                    newSoundKey = "LTOM"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "TOM") {
+                    newSoundKey = "HTOM"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "TOM") {
+                    newSoundKey = "BASS"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "TOM") {
+                    newSoundKey = "MELO"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "CRASH") {
+                    newSoundKey = "RIDE"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "CRASH") {
+                    newSoundKey = "CONGAS"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "COW") {
+                    newSoundKey = "COWBELL"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "COW") {
+                    newSoundKey = "RIMSHOT"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "COW") {
+                    newSoundKey = "RIDE"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "COW") {
+                    newSoundKey = "TIMBAL"
                     soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
                 }
 
-                // end sound equivalence
-                if (soundNum === -1) {
-                    let start = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, "KICK")
-                    soundNum = start +Math.floor(Math.random*8) //TODO get from track index num
-                    console.error("----------------------mfCmd::autoAssignSounds cannot autoassign " + MfGlobals.selectedDrumkit + ":" + track.name)
+                if (soundNum === -1 && track.name === "COW") {
+                    newSoundKey = "LTOM"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
                 }
-                track.soundNum = soundNum
+                if (soundNum === -1 && track.name === "CLAP") {
+                    newSoundKey = "LWOODBLOCK"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "CLAP") {
+                    newSoundKey = "MELO"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "CLAP") {
+                    newSoundKey = "RIMSHOT"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "CLAP") {
+                    newSoundKey = "HIT"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "CLAP") {
+                    newSoundKey = "HTOM"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "CHH") {
+                    newSoundKey = "MELO"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "OHH") {
+                    newSoundKey = "TAMBOURINE"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "OHH") {
+                    newSoundKey = "SGUIRO"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                if (soundNum === -1 && track.name === "BASS") {
+                    newSoundKey = "TOM"
+                    soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
+                }
+                console.log("mfCmd::autoAssignSounds " + track.name + " <=" + newSoundKey)
+                soundNum = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, newSoundKey)
             }
+
+            // end sound equivalence
+            if (soundNum === -1) {
+                let start = this.getSoundNumFromKitAndTrackname(MfGlobals.selectedDrumkit, "KICK")
+                soundNum = start + Math.floor(Math.random * 8) //TODO get from track index num
+                console.error("----------------------mfCmd::autoAssignSounds cannot autoassign " + MfGlobals.selectedDrumkit + ":" + track.name)
+            }
+            track.soundNum = soundNum
+        }
     }
 
     getSoundNumFromKitAndTrackname = (drumkit, trackName) => {
@@ -455,6 +459,7 @@ export default class MfCmd { //should be global or static
             }
         }
     }
+
     compacteTrack = (track) => { //assume 4bars
         let sig = ""
         let sig0 = ""
@@ -543,4 +548,5 @@ export default class MfCmd { //should be global or static
         }
         return false
     }
+
 }
