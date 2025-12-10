@@ -9,7 +9,7 @@ export default class MfUpdates {
 
     constructor() {
         this.mfCmd = new MfCmd()
-        this.mfSampleIhm=new MfSampleIhm()
+        this.mfSampleIhm = new MfSampleIhm()
         this.mfComponents = new MfComponents()
         this.preSelectedDrumkit = null
     }
@@ -36,21 +36,21 @@ export default class MfUpdates {
 
             document.getElementById('trackName_' + indexTrack).innerText = track.name
 
-            document.getElementById('trackBtn_' + indexTrack).onclick = function() {
+            document.getElementById('trackBtn_' + indexTrack).onclick = function () {
                 document.getElementById('showTrackCtrl').style.display = "flex"
                 _this.selectTrack(indexTrack - 1)
                 _this.updateTrackBtns(pattern)
             }
 
             document.getElementById('trackNbBars_' + indexTrack).innerText = track.nbStepPerBar
-            document.getElementById('trackNbBars_' + indexTrack).onclick = function() {
+            document.getElementById('trackNbBars_' + indexTrack).onclick = function () {
                 _this.mfCmd.incrNbStepPerBar(track)
                 _this.updatePatternView(pattern, MfGlobals.displayBars)
                 MfGlobals.mfPatterns.getFlatNotesFromPattern(pattern)
             }
 
             document.getElementById('trackLoopPoint_' + indexTrack).innerText = track.loopPoint
-            document.getElementById('trackLoopPoint_' + indexTrack).onclick = function() {
+            document.getElementById('trackLoopPoint_' + indexTrack).onclick = function () {
                 _this.mfCmd.incrLoopPoint(track)
                 _this.updatePatternView(pattern, MfGlobals.displayBars)
                 MfGlobals.mfPatterns.getFlatNotesFromPattern(pattern)
@@ -63,7 +63,7 @@ export default class MfUpdates {
                 tmDiv.className = 'trackMuteBtnOff'
             }
             tmDiv.innerHTML = ''
-            tmDiv.onclick = function() {
+            tmDiv.onclick = function () {
                 _this.trackToggleMute(track)
             }
 
@@ -101,7 +101,7 @@ export default class MfUpdates {
             nsDiv.classList.add('noteDisplSel')
         }
         let _this = this
-        nsDiv.onclick = function(event) {
+        nsDiv.onclick = function (event) {
             console.log("click on note bar=" + bar + " step=" + step)
 
             event.stopPropagation()
@@ -136,7 +136,7 @@ export default class MfUpdates {
                 }
             }
             let that = this
-            ndDiv.onclick = function() {
+            ndDiv.onclick = function () {
                 //console.log("click on note bar=" + bar + " step=" + step)
                 event.stopPropagation()
                 if ((indexTrack === MfGlobals.selectedTrackNum) && (bar === MfGlobals.selectedNoteBar) && (step === MfGlobals.selectedNoteStep)) {
@@ -424,25 +424,29 @@ export default class MfUpdates {
         lineDiv.style.display = "flex"
         propertiesList.appendChild(lineDiv)
 
-        let containerDiv1 = document.createElement('div')
-        containerDiv1.className = "sliders-block"
-        lineDiv.appendChild(containerDiv1)
+        let containerDivName = document.createElement('div')
+        containerDivName.className = "sliders-block"
+        lineDiv.appendChild(containerDivName)
 
-        let containerDiv2 = document.createElement('div')
-        containerDiv2.className = "sliders-block"
-        lineDiv.appendChild(containerDiv2)
+        let containerDivVCO1 = document.createElement('div')
+        containerDivVCO1.className = "sliders-block"
+        lineDiv.appendChild(containerDivVCO1)
 
-        let containerDiv3 = document.createElement('div')
-        containerDiv3.className = "sliders-block"
-        lineDiv.appendChild(containerDiv3)
+        let containerDivVCO2 = document.createElement('div')
+        containerDivVCO2.className = "sliders-block"
+        lineDiv.appendChild(containerDivVCO2)
 
-        let containerDiv4 = document.createElement('div')
-        containerDiv4.className = "sliders-block"
-        lineDiv.appendChild(containerDiv4)
+        let containerDivVCO3 = document.createElement('div')
+        containerDivVCO3.className = "sliders-block"
+        lineDiv.appendChild(containerDivVCO3)
 
-        let containerDiv5 = document.createElement('div')
-        containerDiv5.className = "sliders-block"
-        lineDiv.appendChild(containerDiv5)
+        let containerDivLfo = document.createElement('div')
+        containerDivLfo.className = "sliders-block"
+        lineDiv.appendChild(containerDivLfo)
+
+        let containerDivFilter = document.createElement('div')
+        containerDivFilter.className = "sliders-block"
+        lineDiv.appendChild(containerDivFilter)
 
 
         if (MfGlobals.generatedSounds) {
@@ -459,50 +463,60 @@ export default class MfUpdates {
                 generatedSoundsList.push(name)
             }
             let inputBoxSounds = this.mfComponents.addListInputBox("Preset", "id", generatedSoundsList, synth, this.changeSoundName, true)
-            containerDiv1.appendChild(inputBoxSounds)
 
-            let lgr = this.mfComponents.addNormInputBox("trackCtrlLgr", "length", generatedSound.enveloppe.lgr, function(value) { generatedSound.enveloppe.lgr = value })
-            containerDiv1.appendChild(lgr)
-            let vol = this.mfComponents.addNormInputBox("softSynthVol", "volume", generatedSound.enveloppe.vol, function(value) { generatedSound.enveloppe.vol = value })
-            containerDiv1.appendChild(vol)
+            let lgr = this.mfComponents.addNormInputBox("trackCtrlLgr", "length", generatedSound.enveloppe.lgr, function (value) { generatedSound.enveloppe.lgr = value })
+            let vol = this.mfComponents.addNormInputBox("softSynthVol", "volume", generatedSound.enveloppe.vol, function (value) { generatedSound.enveloppe.vol = value })
+            containerDivName.appendChild(inputBoxSounds)
+            containerDivName.appendChild(lgr)
+            containerDivName.appendChild(vol)
             //
             let waveFormTypeList = ["sqr", "saw", "tri", "sin"]
             let filterTypeList = ["lp", "hp", "bp", "no", "all"]
-            let waveVco1 = this.mfComponents.addListInputBox("VCO1", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.vco1.wave), function(value) { generatedSound.vco1.wave = Utils.getWaveNameFromValue(value) })
-            let gainVco1 = this.mfComponents.addNormInputBox("vco1Gain", "Gain", generatedSound.vco1.gain, function(value) { generatedSound.vco1.gain = value })
-            let octVco1 = this.mfComponents.addSliderBox("vco1Oct", "Octave", generatedSound.vco1.octave, function(value) { generatedSound.vco1.octave = value }, null, 0, 1, 0.05)
-            let detuneVco1 = this.mfComponents.addNormInputBox("vco1Detune", "Detune", generatedSound.vco1.detune, function(value) { generatedSound.vco1.detune = value })
-            containerDiv2.appendChild(waveVco1)
-            containerDiv2.appendChild(gainVco1)
-            containerDiv2.appendChild(octVco1)
-            containerDiv2.appendChild(detuneVco1)
+            let waveVco1 = this.mfComponents.addListInputBox("VCO1", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.vco1.wave), function (value) { generatedSound.vco1.wave = Utils.getWaveNameFromValue(value) })
+            let gainVco1 = this.mfComponents.addNormInputBox("vco1Gain", "Gain", generatedSound.vco1.gain, function (value) { generatedSound.vco1.gain = value })
+            let octVco1 = this.mfComponents.addSliderBox("vco1Oct", "Octave", generatedSound.vco1.octave, function (value) { generatedSound.vco1.octave = value }, null, 0, 1, 0.05)
+            let detuneVco1 = this.mfComponents.addNormInputBox("vco1Detune", "Detune", generatedSound.vco1.detune, function (value) { generatedSound.vco1.detune = value })
+            containerDivVCO1.appendChild(waveVco1)
+            containerDivVCO1.appendChild(gainVco1)
+            containerDivVCO1.appendChild(octVco1)
+            containerDivVCO1.appendChild(detuneVco1)
 
-            let waveVco2 = this.mfComponents.addListInputBox("VCO2", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.vco2.wave), function(value) { generatedSound.vco2.wave = Utils.getWaveNameFromValue(value) })
-            let gainVco2 = this.mfComponents.addNormInputBox("vco2Gain", "Gain", generatedSound.vco2.gain, function(value) { generatedSound.vco2.gain = value })
-            let octVco2 = this.mfComponents.addSliderBox("vco2Oct", "Octave", generatedSound.vco2.octave, function(value) { generatedSound.vco2.octave = value }, null, 0, 1, 0.05)
-            let detuneVco2 = this.mfComponents.addNormInputBox("vco2Detune", "Detune", generatedSound.vco2.detune, function(value) { generatedSound.vco2.detune = value })
-            containerDiv3.appendChild(waveVco2)
-            containerDiv3.appendChild(gainVco2)
-            containerDiv3.appendChild(octVco2)
-            containerDiv3.appendChild(detuneVco2)
+            let waveVco2 = this.mfComponents.addListInputBox("VCO2", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.vco2.wave), function (value) { generatedSound.vco2.wave = Utils.getWaveNameFromValue(value) })
+            let gainVco2 = this.mfComponents.addNormInputBox("vco2Gain", "Gain", generatedSound.vco2.gain, function (value) { generatedSound.vco2.gain = value })
+            let octVco2 = this.mfComponents.addSliderBox("vco2Oct", "Octave", generatedSound.vco2.octave, function (value) { generatedSound.vco2.octave = value }, null, 0, 1, 0.05)
+            let detuneVco2 = this.mfComponents.addNormInputBox("vco2Detune", "Detune", generatedSound.vco2.detune, function (value) { generatedSound.vco2.detune = value })
+            containerDivVCO2.appendChild(waveVco2)
+            containerDivVCO2.appendChild(gainVco2)
+            containerDivVCO2.appendChild(octVco2)
+            containerDivVCO2.appendChild(detuneVco2)
 
-            let lfoTargetList = ["vco1", "vco2", "flt", "not"]
-            let lfoWave = this.mfComponents.addListInputBox("LFO", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.lfo.wave), function(value) { generatedSound.lfo.wave = Utils.getWaveNameFromValue(value) })
-            let lfoTarget = this.mfComponents.addListInputBox("Target", "id", lfoTargetList, generatedSound.lfo.target, function(value) { generatedSound.lfo.target = value })
-            let lfoDepth = this.mfComponents.addNormInputBox("lfoDepth", "Depth", generatedSound.lfo.depth, function(value) { generatedSound.lfo.depth = value })
-            let lfoFreq = this.mfComponents.addNormInputBox("glfoFreq", "Freq", generatedSound.lfo.freq, function(value) { generatedSound.lfo.freq = value })
-            containerDiv4.appendChild(lfoWave)
-            containerDiv4.appendChild(lfoTarget)
-            containerDiv4.appendChild(lfoDepth)
-            containerDiv4.appendChild(lfoFreq)
+            if (generatedSound.vco3) {
+                let waveVco3 = this.mfComponents.addListInputBox("VCO3", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.vco3.wave), function (value) { generatedSound.vco3.wave = Utils.getWaveNameFromValue(value) })
+                let gainVco3 = this.mfComponents.addNormInputBox("vco3Gain", "Gain", generatedSound.vco3.gain, function (value) { generatedSound.vco3.gain = value })
+                let octVco3 = this.mfComponents.addSliderBox("vco3Oct", "Octave", generatedSound.vco3.octave, function (value) { generatedSound.vco3.octave = value }, null, 0, 1, 0.05)
+                let detuneVco3 = this.mfComponents.addNormInputBox("vco3Detune", "Detune", generatedSound.vco3.detune, function (value) { generatedSound.vco3.detune = value })
+                containerDivVCO3.appendChild(waveVco3)
+                containerDivVCO3.appendChild(gainVco3)
+                containerDivVCO3.appendChild(octVco3)
+                containerDivVCO3.appendChild(detuneVco3)
+            }
 
-            let filterType = this.mfComponents.addListInputBox("Filter", "id", filterTypeList, Utils.getValueFromFilterName(generatedSound.filter.type), function(value) { generatedSound.filter.type = Utils.getFilterNameFromValue(value) })
-            let filterFreq = this.mfComponents.addNormInputBox("filterFreq", "Freq", generatedSound.filter.freq, function(value) { generatedSound.filter.freq = value })
-            let filterQ = this.mfComponents.addNormInputBox("filterQ", "Q", generatedSound.filter.Q, function(value) { generatedSound.filter.Q = value })
+            let lfoTargetList = ["vco1", "vco2","vco3", "flt", "not"]
+            let lfoWave = this.mfComponents.addListInputBox("LFO", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.lfo.wave), function (value) { generatedSound.lfo.wave = Utils.getWaveNameFromValue(value) })
+            let lfoTarget = this.mfComponents.addListInputBox("Target", "id", lfoTargetList, generatedSound.lfo.target, function (value) { generatedSound.lfo.target = value })
+            let lfoDepth = this.mfComponents.addNormInputBox("lfoDepth", "Depth", generatedSound.lfo.depth, function (value) { generatedSound.lfo.depth = value })
+            let lfoFreq = this.mfComponents.addNormInputBox("glfoFreq", "Freq", generatedSound.lfo.freq, function (value) { generatedSound.lfo.freq = value })
+            containerDivLfo.appendChild(lfoWave)
+            containerDivLfo.appendChild(lfoTarget)
+            containerDivLfo.appendChild(lfoDepth)
+            containerDivLfo.appendChild(lfoFreq)
 
-            containerDiv5.appendChild(filterType)
-            containerDiv5.appendChild(filterFreq)
-            containerDiv5.appendChild(filterQ)
+            let filterType = this.mfComponents.addListInputBox("Filter", "id", filterTypeList, Utils.getValueFromFilterName(generatedSound.filter.type), function (value) { generatedSound.filter.type = Utils.getFilterNameFromValue(value) })
+            let filterFreq = this.mfComponents.addNormInputBox("filterFreq", "Freq", generatedSound.filter.freq, function (value) { generatedSound.filter.freq = value })
+            let filterQ = this.mfComponents.addNormInputBox("filterQ", "Q", generatedSound.filter.Q, function (value) { generatedSound.filter.Q = value })
+            containerDivFilter.appendChild(filterType)
+            containerDivFilter.appendChild(filterFreq)
+            containerDivFilter.appendChild(filterQ)
         }
     }
 
@@ -529,7 +543,7 @@ export default class MfUpdates {
             }
             opt.innerHTML = (i + 1)
             let that = this
-            opt.onclick = function() {
+            opt.onclick = function () {
                 let pattern = MfGlobals.patterns[MfGlobals.selectedPatternNum]
                 MfGlobals.mfUpdates.mfCmd.setNbBar(pattern, (i + 1))
                 MfGlobals.mfPatterns.getFlatNotesFromPattern(pattern)
@@ -565,7 +579,7 @@ export default class MfUpdates {
         let okBtn = document.createElement('div')
         okBtn.innerHTML = "OK"
         okBtn.className = "small-button"
-        okBtn.onclick = function() {
+        okBtn.onclick = function () {
             if (!self.preSelectedDrumkit) { return }
             MfGlobals.selectedDrumkit = self.preSelectedDrumkit
             self.onDrumkitChange()
@@ -585,7 +599,7 @@ export default class MfUpdates {
             }
 
             let that = this
-            opt.onclick = function() {
+            opt.onclick = function () {
                 self.preSelectedDrumkit = kitName
                 self.displayKitInfos(kitName)
             }
@@ -603,7 +617,7 @@ export default class MfUpdates {
         }
     }
 
-   
+
     displayModalDialogPattern = () => {
         document.getElementById("warn-modal").style.display = "block"
         document.getElementById("modal-title-text").innerText = "Patterns"
@@ -618,7 +632,7 @@ export default class MfUpdates {
                 opt.classList.add("selected-button")
             }
             let _this = this
-            opt.onclick = function() {
+            opt.onclick = function () {
                 MfGlobals.mfUpdates.mfCmd.setSelectedPatternNum(indexPattern)
                 _this.onPatternChange()
             }
@@ -679,7 +693,7 @@ export default class MfUpdates {
         labelImportJson.className = "free-button"
         labelImportJson.innerHTML = "Import your pattern"
         box2.appendChild(labelImportJson)
-        labelImportJson.onclick = function(ev) {
+        labelImportJson.onclick = function (ev) {
             inputImportJson.click(ev)
         }
         box2.appendChild(inputImportJson)
@@ -739,7 +753,7 @@ export default class MfUpdates {
         var fr = new FileReader();
         fr.readAsText(ev.target.files[0])
         console.log("onImportPatternSelected: file pick=" + ev.target.files[0].name)
-        fr.onload = function(e) {
+        fr.onload = function (e) {
             let jsonTxt = JSON.parse(e.target.result)
             if (jsonTxt.application === "online-ordrumbox") {
                 MfGlobals.mfUpdates.mfCmd.cleanPattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])

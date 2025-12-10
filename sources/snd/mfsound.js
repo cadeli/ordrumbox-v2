@@ -52,9 +52,11 @@ export default class MfSound {
         let gainMain = MfGlobals.audioCtx.createGain()
         let gainVco1 = MfGlobals.audioCtx.createGain()
         let gainVco2 = MfGlobals.audioCtx.createGain()
+        let gainVco3 = MfGlobals.audioCtx.createGain()
         let panNode = MfGlobals.audioCtx.createStereoPanner()
         let vco1 = MfGlobals.audioCtx.createOscillator()
         let vco2 = MfGlobals.audioCtx.createOscillator()
+        let vco3 = MfGlobals.audioCtx.createOscillator()
         let filter = MfGlobals.audioCtx.createBiquadFilter()
 
         let lfoGain = MfGlobals.audioCtx.createGain();
@@ -68,6 +70,9 @@ export default class MfSound {
         }
         if (generatedSound.lfo.target === 'vco2') {
             lfoGain.connect(vco2.detune)
+        }
+        if (generatedSound.lfo.target === 'vco3') {
+            lfoGain.connect(vco3.detune)
         }
         if (generatedSound.lfo.target === 'flt') {
             lfoGain.connect(filter.frequency)
@@ -90,11 +95,18 @@ export default class MfSound {
             vco2.frequency.value = (oct) * 440.0 * flatNote.fpitch / 4
             vco2.detune.value = 1000 * parseFloat(generatedSound.vco2.detune - 0.5)
             vco2.type = generatedSound.vco2.wave
+
+            oct = Math.pow(2, Math.floor((parseFloat(generatedSound.vco3.octave * 10)) - 5))
+            vco3.frequency.value = (oct) * 440.0 * flatNote.fpitch / 4
+            vco3.detune.value = 1000 * parseFloat(generatedSound.vco3.detune - 0.5)
+            vco3.type = generatedSound.vco3.wave
         }
         gainVco1.gain.setTargetAtTime(flatNote.track.velo * generatedSound.vco1.gain, time, 0.01);
         gainVco1.gain.setTargetAtTime(0, time + lengthInSec, 0.01);
         gainVco2.gain.setTargetAtTime(flatNote.track.velo * generatedSound.vco2.gain, time, 0.01);
         gainVco2.gain.setTargetAtTime(0, time + lengthInSec, 0.01);
+        gainVco3.gain.setTargetAtTime(flatNote.track.velo * generatedSound.vco3.gain, time, 0.01);
+        gainVco3.gain.setTargetAtTime(0, time + lengthInSec, 0.01);
         gainMain.gain.setTargetAtTime(generatedSound.enveloppe.vol/3+0.01, time, 0.1);
         gainMain.gain.setTargetAtTime(generatedSound.enveloppe.vol/6, time + lengthInSec/2, 0.01);
         gainMain.gain.setTargetAtTime(0, time + lengthInSec, 0.1);
@@ -104,8 +116,10 @@ export default class MfSound {
 
         vco1.connect(gainVco1)
         vco2.connect(gainVco2)
+        vco3.connect(gainVco3)
         gainVco1.connect(panNode)
         gainVco2.connect(panNode)
+        gainVco3.connect(panNode)
         panNode.connect(filter)
         filter.connect(gainMain)
         gainMain.connect(MfGlobals.mfMixer.compressor)
@@ -114,6 +128,8 @@ export default class MfSound {
         vco1.stop(time + lengthInSec)
         vco2.start(time)
         vco2.stop(time + lengthInSec)
+        vco3.start(time)
+        vco3.stop(time + lengthInSec)
 
         let mFreq = 2000 * (generatedSound.filter.freq) + 50
         let mQ = 20 * generatedSound.filter.Q + 1
