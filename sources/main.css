@@ -686,7 +686,7 @@ input[type="range"] {
 
 .full-line {
     align-content: center;
-    flex-direction: :column;
+    flex-direction: column;
     display: flex;
     flex-wrap: wrap;
     margin: 12px;
