@@ -138,7 +138,7 @@
             "depth": 0.1
         },
         "enveloppe": {
-            "lgr": 0.8,
+            "lgr": 0.4,
             "vol": 0.8
         }
     },
@@ -282,7 +282,7 @@
             "depth": 0.1
         },
         "enveloppe": {
-            "lgr": 0.8,
+            "lgr": 0.1,
             "vol": 0.8
         }
     }

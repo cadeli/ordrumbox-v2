@@ -18,7 +18,7 @@ body {
 
 * {
     text-align: center;
-   -webkit-user-select: none;
+    user-select: none;
 }
 
 h1 {
@@ -80,10 +80,6 @@ a:hover {
 #toolbar {
     margin-top: 9px;
 }
-
-#selectedDrumkitDisp {}
-
-#selectedPatternDisp {}
 
 #showPattern {
     display: block;
@@ -479,7 +475,6 @@ a:hover {
     background-color: black;
 }
 
-.small-button {}
 
 .middle-button {
     width: 140px;
@@ -568,11 +563,9 @@ a:hover {
 
 .btn-line{
     display:flex;
-
 }
 
 
-#vuMetterBorder {}
 
 .vuMetterDisp {
     background: #000;
@@ -610,8 +603,6 @@ a:hover {
     display: inline-flex;
 }
 
-.inputBox {}
-
 .inputBox:hover {
     color: #0F0
 }
@@ -628,7 +619,6 @@ input[type="range"] {
 }
 
 
-.bpmInputBox {}
 
 .twostates {
     background: #555;

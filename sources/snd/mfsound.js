@@ -27,7 +27,7 @@ export default class MfSound {
             snd.playbackRate.value = flatNote.fpitch
             strip.updateFilter(flatNote.track.filterType, flatNote.track.filterFreq, flatNote.track.filterQ)
             strip.gain.gain.value = flatNote.track.velo
-            gain.gain.value = flatNote.note.velo
+            gain.gain.value = flatNote.note.velo 
             if (!flatNote.track.sampleLength)  {flatNote.track.sampleLength=500}
             gain.gain.setTargetAtTime(0, time + flatNote.track.sampleLength, 0.02)
             panNode.pan.value = flatNote.pano
@@ -50,6 +50,7 @@ export default class MfSound {
         let generatedSound = MfGlobals.generatedSounds[flatNote.track.synthSoundKey]
 
         let gainMain = MfGlobals.audioCtx.createGain()
+        let gainAjust = MfGlobals.audioCtx.createGain()
         let gainVco1 = MfGlobals.audioCtx.createGain()
         let gainVco2 = MfGlobals.audioCtx.createGain()
         let gainVco3 = MfGlobals.audioCtx.createGain()
@@ -101,15 +102,18 @@ export default class MfSound {
             vco3.detune.value = 1000 * parseFloat(generatedSound.vco3.detune - 0.5)
             vco3.type = generatedSound.vco3.wave
         }
-        gainVco1.gain.setTargetAtTime(flatNote.track.velo * generatedSound.vco1.gain, time, 0.01);
+        let finalVol = generatedSound.enveloppe.vol; 
+        gainVco1.gain.setTargetAtTime(finalVol*generatedSound.vco1.gain, time, 0.01);
         gainVco1.gain.setTargetAtTime(0, time + lengthInSec, 0.01);
-        gainVco2.gain.setTargetAtTime(flatNote.track.velo * generatedSound.vco2.gain, time, 0.01);
+        gainVco2.gain.setTargetAtTime(finalVol*generatedSound.vco2.gain, time, 0.01);
         gainVco2.gain.setTargetAtTime(0, time + lengthInSec, 0.01);
-        gainVco3.gain.setTargetAtTime(flatNote.track.velo * generatedSound.vco3.gain, time, 0.01);
+        gainVco3.gain.setTargetAtTime(finalVol*generatedSound.vco3.gain, time, 0.01);
         gainVco3.gain.setTargetAtTime(0, time + lengthInSec, 0.01);
-        gainMain.gain.setTargetAtTime(generatedSound.enveloppe.vol/3+0.01, time, 0.1);
-        gainMain.gain.setTargetAtTime(generatedSound.enveloppe.vol/6, time + lengthInSec/2, 0.01);
-        gainMain.gain.setTargetAtTime(0, time + lengthInSec, 0.1);
+
+        gainMain.gain.setTargetAtTime(finalVol, time, 0.01);
+        gainMain.gain.setTargetAtTime(flatNote.track.velo*generatedSound.enveloppe.vol/6, time + lengthInSec/2, 0.01);
+        gainMain.gain.setTargetAtTime(0, time + lengthInSec, 0.01);
+
         if (flatNote.pano) {
             panNode.pan.value = flatNote.pano
         }
@@ -122,7 +126,9 @@ export default class MfSound {
         gainVco3.connect(panNode)
         panNode.connect(filter)
         filter.connect(gainMain)
-        gainMain.connect(MfGlobals.mfMixer.compressor)
+        gainAjust.gain.value =  flatNote.track.velo/4. //TODO
+        gainMain.connect(gainAjust)
+        gainAjust.connect(MfGlobals.mfMixer.compressor)
 
         vco1.start(time)
         vco1.stop(time + lengthInSec)
