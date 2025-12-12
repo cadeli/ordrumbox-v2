@@ -129,7 +129,7 @@ export default class MfSound {
         gainVco3.connect(panNode)
         panNode.connect(filter)
         filter.connect(gainMain)
-        gainAjust.gain.value =  flatNote.track.velo/4. //TODO
+        gainAjust.gain.value =  flatNote.track.velo //TODO
         gainMain.connect(gainAjust)
         gainAjust.connect(MfGlobals.mfMixer.compressor)
 
