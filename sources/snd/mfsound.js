@@ -21,22 +21,25 @@ export default class MfSound {
             if (!strip.bfilter) { console.error("mfsound::playSample no bfilter " + flatNote.track.name) }
             MfGlobals.leds[flatNote.track.name] = 20
 
-            let gain = MfGlobals.audioCtx.createGain();
+            let gainEnveloppe = MfGlobals.audioCtx.createGain();
+            let gainVolume = MfGlobals.audioCtx.createGain();
             let panNode = MfGlobals.audioCtx.createStereoPanner();
             let snd = MfGlobals.audioCtx.createBufferSource()
             snd.playbackRate.value = flatNote.fpitch
             strip.updateFilter(flatNote.track.filterType, flatNote.track.filterFreq, flatNote.track.filterQ)
-            strip.gain.gain.value = flatNote.track.velo
-            gain.gain.value = flatNote.note.velo 
+           // strip.gain.gain.value = flatNote.track.velo
+            gainEnveloppe.gain.value =1
+            gainVolume.gain.value= flatNote.note.velo 
             if (!flatNote.track.sampleLength)  {flatNote.track.sampleLength=500}
-            gain.gain.setTargetAtTime(0, time + flatNote.track.sampleLength, 0.02)
+            gainEnveloppe.gain.setTargetAtTime(0, time + flatNote.track.sampleLength, 0.02)
             panNode.pan.value = flatNote.pano
             if (!flatNote.soundNum) {flatNote.soundNum=0}//TODO
             snd.buffer = MfGlobals.sounds[flatNote.soundNum].buffer
 
-            snd.connect(gain)
-            gain.connect(panNode)
+            snd.connect(gainEnveloppe)
+            gainEnveloppe.connect(panNode)
             panNode.connect(strip.bfilter)
+            gainVolume.connect(panNode)
 
             snd.start(time)
         } catch (e) {

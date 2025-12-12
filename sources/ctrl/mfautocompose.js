@@ -9,7 +9,7 @@ export default class MfAutoCompose {
             bassTrack = MfGlobals.mfUpdates.mfCmd.addTrack(pattern, "BASS")
             MfGlobals.mfMixer.addStrip("BASS") //TODO ATT
             bassTrack.generated = true
-            bassTrack.velo = 0.1
+            bassTrack.velo = 0.3
         }
         if (bassTrack.notes.length===0 ) {
             if ((Math.random()) > 0.5) {
