@@ -17,17 +17,17 @@ pattern editor, counter triggers, repeat controls , LFO modulators.
 automatic bass line on a separate track.
 
 ### Sound Synth
- two VCO, one LFO ,one filter.
+ three VCO, one LFO ,one filter.
 
 ### Import/Export
 save and load patterns as local files 
 export sessions as wave file
 
 ## user manual
-<https://www.ordrumbox.com/jsdrumbox/user-guide.html>
+<https://www.ordrumbox.com/userguide-ordrumbox-v2.html>
 
 ## online demo /web site
-<https://www.ordrumbox.com/>
+<https://www.ordrumbox.com>
 
 If you come across any issues or encounter any bugs in this online drum machine, please do not hesitate to let us know at <contact@ordrumbox.com> . We welcome any suggestions for new features that you would like to see in our application.
                 
