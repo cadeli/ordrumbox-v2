@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/web-manifest-combined.json",
   "name": "online orDrumbox",
   "short_name": "onlineordrumbox",
-  "start_url": "https://www.ordrumbox.com/jsdrumbox",
+  "start_url": "https://www.ordrumbox.com/",
   "display": "fullscreen",
   "background_color": "#FFF",
   "orientation": "landscape",

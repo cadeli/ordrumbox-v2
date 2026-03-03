@@ -2,20 +2,31 @@ export default class MfAutoCompose {
     static TAG = "MFPATTERNS"
     constructor() { }
 
-    change = (loop, pattern) => {
+
+    changeTrack = (loop, pattern, track) => {
+        console.log("MfAutoCompose::changeTrack")
+        if (loop % 4 === 0) {
+            MfGlobals.mfAutoGenerate.generateTrack(pattern.tags.style, track)
+        }
+    }
+
+    changePattern = (loop, pattern) => {
         let LOOP_LGR = 16
         let bassTrack = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, "BASS")
         if (!bassTrack) {
             bassTrack = MfGlobals.mfUpdates.mfCmd.addTrack(pattern, "BASS")
             MfGlobals.mfMixer.addStrip("BASS") //TODO ATT
             bassTrack.generated = true
-            bassTrack.velo = 0.3
+            bassTrack.velo = 0.1
         }
-        if (bassTrack.notes.length===0 ) {
-            if ((Math.random()) > 0.5) {
+        if (bassTrack.notes.length === 0) {
+            let rnd = Math.random()
+            if (rnd < 0.3) {
                 this.generateNewBass(bassTrack)
-            } else {
+            } else if (rnd > 0.6) {
                 this.generateNewBass2(bassTrack)
+            } else {
+                this.generateNewBass3(pattern, bassTrack)
             }
         }
 
@@ -27,11 +38,11 @@ export default class MfAutoCompose {
                     track.mute = false
                 }
             }
-            if (track.name === 'TOM' || track.name === 'COW'|| track.name === 'CLAP') {
-                if (loop % LOOP_LGR === (LOOP_LGR *3/ 4) ) {
+            if (track.name === 'TOM' || track.name === 'COW' || track.name === 'CLAP') {
+                if (loop % LOOP_LGR === (LOOP_LGR * 3 / 4)) {
                     track.mute = true
-                } 
-                if (loop % LOOP_LGR === (LOOP_LGR *3/ 4 + 2)) {
+                }
+                if (loop % LOOP_LGR === (LOOP_LGR * 3 / 4 + 2)) {
                     track.mute = false
                 }
             }
@@ -44,56 +55,99 @@ export default class MfAutoCompose {
             snareTrack.velo = 1
             this.generateClearTrack(snareTrack)
         }
-        if (loop % LOOP_LGR === 0 ){
-            MfGlobals.mfAutoGenerate.go()
-            if ((Math.random()) > 0.5) {
+        if (loop % LOOP_LGR === 0) {
+            MfGlobals.mfAutoGenerate.generatePattern()
+            let rnd = Math.random()
+            if (rnd < 0.3) {
                 this.generateNewBass(bassTrack)
-            } else {
+            } else if (rnd > 0.6) {
                 this.generateNewBass2(bassTrack)
+            } else {
+                this.generateNewBass3(pattern, bassTrack)
             }
         }
         if (loop % LOOP_LGR === LOOP_LGR / 2) {
             let cymTrack = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, "CRASH")
-            this.generateNewCymBrk(cymTrack)
+            this.generateNewCymBrk(pattern, cymTrack)
         }
         if (loop % LOOP_LGR === (LOOP_LGR / 2 + 1)) {
             let cymTrack = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, "CRASH")
-            this.generateClearTrack(cymTrack)
+            this.generateClearTrack(pattern, cymTrack)
         }
         if (loop % LOOP_LGR === LOOP_LGR - 1) {
-            this.generateNewSnareBrk(snareTrack)
+            this.generateNewSnareBrk(pattern, snareTrack)
         }
-        MfGlobals.mfPatterns.getFlatNotesFromPattern(pattern)
+        MfGlobals.mfPatterns.computeFlatNotesFromPattern(pattern)
         MfGlobals.mfUpdates.updatePatternView(pattern, 1) //TODO
     }
 
-    generateNewCymBrk = (track) => {
+    generateNewCymBrk = (pattern, track) => {
         track.notes = []
+        let lastBar = pattern.nbBars - 1
         for (let i = 0; i < 4; i++) {
             if (Math.floor(Math.random() * 10) > 2) {
-                MfGlobals.mfUpdates.mfCmd.addNote(track, 2, i, 0)
+                MfGlobals.mfUpdates.mfCmd.addNote(track, lastBar - 1, i, 0)
             }
         }
         for (let i = 0; i < 4; i++) {
-            MfGlobals.mfUpdates.mfCmd.addNote(track, 3, i, 0)
+            MfGlobals.mfUpdates.mfCmd.addNote(track, lastBar, i, 0)
         }
     }
 
-    generateNewSnareBrk = (track) => {
+    generateNewSnareBrk = (pattern, track) => {
         track.notes = []
+        let lastBar = pattern.nbBars - 1
         for (let i = 0; i < 4; i++) {
             if (Math.floor(Math.random() * 10) > 2) {
-                MfGlobals.mfUpdates.mfCmd.addNote(track, 2, i, 0)
+                MfGlobals.mfUpdates.mfCmd.addNote(track, lastBar - 1, i, 0)
             }
         }
         for (let i = 0; i < 4; i++) {
-            MfGlobals.mfUpdates.mfCmd.addNote(track, 3, i, 0)
+            MfGlobals.mfUpdates.mfCmd.addNote(track, lastBar, i, 0)
         }
     }
 
     generateClearTrack = (track) => {
         track.notes = []
     }
+
+    generateNewBass3 = (pattern, bassTrack) => {
+        console.log("mfAutoCompose::generateNewBass3")
+        // TODO json
+        let rootPattern = [0, 5, 7,]
+        let density = 0.6
+        let variation = 0.15
+        let scale = MfGlobals.scales["blues scale"].scaleSteps
+        //
+        bassTrack.notes = []
+        for (let bar = 0; bar < pattern.nbBars; bar++) {
+            const rootPitch = rootPattern[bar % rootPattern.length];
+            let lastStepNote = rootPitch;
+            const barData = [];
+            for (let step = 0; step < bassTrack.nbStepPerBar; step++) {
+                const strongBeat = step % 4 === 0;
+                const playNote = strongBeat || Math.random() < density;
+                if (playNote) {
+                    let note;
+                    if (strongBeat || Math.random() > variation) {
+                        const interval = Math.random() < 0.75 ? 0 : 7;
+                        note = rootPitch + interval;
+                    } else {
+                        const degree = scale[Math.floor(Math.random() * scale.length)];
+                        note = rootPitch + degree;
+                        if (Math.abs(note - lastStepNote) > 7) {
+                            note = rootPitch;
+                        }
+                    }
+                    lastStepNote = note;
+                    MfGlobals.mfUpdates.mfCmd.addNote(bassTrack, bar, step, note)
+                }
+            }
+        }
+        this.displayDebugNotes(bassTrack)
+    }
+
+
 
     generateNewBass2 = (bassTrack) => {
         bassTrack.notes = []

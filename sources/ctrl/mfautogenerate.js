@@ -5,12 +5,66 @@ export default class MfAutoGenerate {
 
     constructor() { }
 
-    go = () => {
-        console.log("MFAUTOGENERATE::go")
+
+    loadTrackLib = () => {
+        console.log("MfAutoGenerate::loadTrackLib")
+        MfGlobals.mfResourcesLoader.loadTrackLib("./assets/tracklib.json", this.loadScales)
+
+    }
+
+    loadScales = () => {
+        console.log("MfAutoGenerate::loadScales")
+        console.log("trackLib")
+        console.log(MfGlobals.trackLib)
+        //
+        MfGlobals.trackLib.forEach(track => {
+            console.log("MfAutoGenerate::loadScales track :", track.tags.style)
+        });
+        //
+        MfGlobals.mfResourcesLoader.loadScales("./assets/scales.json", this.checkResources)
+    }
+
+    checkResources = () => {
+        console.log("MfAutoGenerate::checkResources")
+        console.log("scales")
+        console.log(MfGlobals.scales)
+    }
+
+    generateTrack = (style, track) => {
+        console.log("MFAUTOGENERATE::generateTrack")
+        if (MfGlobals.trackLib.length <= 0) {
+            this.loadTrackLib()
+        }
+        let pattern = MfGlobals.patterns[MfGlobals.selectedPatternNum]
+        let newTrack = this.getRndTrackNoStyle(track.name, "default") //ATT no styles
+        if (!newTrack) {
+            newTrack = MfGlobals.mfUpdates.mfCmd.createTrack(pattern.nbBars, track.name)
+            this.generateNewBass3(pattern, newTrack)
+        }
+        track.notes = []
+        Object.values(newTrack.notes).forEach((note) => {
+            track.notes.push(note)
+        })
+        track.loopPoint = newTrack.loopPoint
+        this.replaceTrack(pattern, track)
+        track.loopPointBar = Math.floor(track.loopPoint / track.nbStepPerBar)
+        track.loopPointStep = track.loopPoint % track.nbStepPerBar
+        MfGlobals.mfUpdates.updatePatternView(pattern, 1)
+        MfGlobals.mfPatterns.computeFlatNotesFromPattern(pattern)
+
+    }
+
+    //TODO style as parameter
+    generatePattern = () => {
+        console.log("MFAUTOGENERATE::generatePattern")
+        if (MfGlobals.trackLib.length <= 0) {
+            this.loadTrackLib()
+        }
+
         let pattern = MfGlobals.patterns[MfGlobals.selectedPatternNum]
         MfGlobals.mfUpdates.mfCmd.cleanPattern(pattern)
 
-        let styles = ["funk", "afro", "blues", "boogie", "bossa", "chacha", "disco",
+        let styles = ["funk", "trib", "blues", "boogie", "bossa", "chacha", "disco", "electro",
             "jazz", "march", "tango", "paso", "Charleston", "pop", "reggae", "rock", "rnb",
             "samba", "shuffle", "ska", "slow", "swing", "twist", "waltz"]
         let style = styles[Math.floor(Math.random() * styles.length)]
@@ -52,10 +106,9 @@ export default class MfAutoGenerate {
 
         MfGlobals.patterns[MfGlobals.selectedPatternNum] = pattern
         MfGlobals.mfUpdates.mfCmd.autoAssignSounds(MfGlobals.patterns[MfGlobals.selectedPatternNum])
-        let flatnotes = MfGlobals.mfPatterns.getFlatNotesFromPattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])
+        MfGlobals.mfPatterns.computeFlatNotesFromPattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])
         MfGlobals.mfUpdates.updatePatternView(MfGlobals.patterns[MfGlobals.selectedPatternNum], 1)
     }
-
 
     optimizeHH = (pattern) => {
         let trackCHH = MfGlobals.mfUpdates.mfCmd.getTrackFromType(pattern, "CHH")
@@ -71,7 +124,7 @@ export default class MfAutoGenerate {
     }
 
     replaceTrack = (mfPattern, newTrack) => {
-        if (newTrack == null) { retrun }
+        if (newTrack == null) { return }
         Object.values(mfPattern.tracks).forEach((track) => {
             if (track.name === newTrack.name) {
                 let newTrackCopy = JSON.parse(JSON.stringify(newTrack))
@@ -122,5 +175,43 @@ export default class MfAutoGenerate {
         console.error("mfAutogenerate::getRndTrackNoStyle no track any type =" + type + " inst=" + inst + " in trackLib")
         return null
     }
+
+    generateNewBass3 = (pattern, bassTrack) => { // ATT 
+        console.log("mfAutoCompose::generateNewBass3")
+        // TODO json
+        let rootPattern = [0, 5, 7,]
+        let density = 0.6
+        let variation = 0.15
+        let scale = MfGlobals.scales["blues scale"].scaleSteps
+        //
+        bassTrack.notes = []
+        for (let bar = 0; bar < pattern.nbBars; bar++) {
+            const rootPitch = rootPattern[bar % rootPattern.length];
+            let lastStepNote = rootPitch;
+            const barData = [];
+            for (let step = 0; step < bassTrack.nbStepPerBar; step++) {
+                const strongBeat = step % 4 === 0;
+                const playNote = strongBeat || Math.random() < density;
+                if (playNote) {
+                    let note;
+                    if (strongBeat || Math.random() > variation) {
+                        const interval = Math.random() < 0.75 ? 0 : 7;
+                        note = rootPitch + interval;
+                    } else {
+                        const degree = scale[Math.floor(Math.random() * scale.length)];
+                        note = rootPitch + degree;
+                        if (Math.abs(note - lastStepNote) > 7) {
+                            note = rootPitch;
+                        }
+                    }
+                    lastStepNote = note;
+                    MfGlobals.mfUpdates.mfCmd.addNote(bassTrack, bar, step, note)
+                }
+            }
+        }
+        // this.displayDebugNotes(bassTrack)
+    }
+
+
 }
 

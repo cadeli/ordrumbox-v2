@@ -1,5 +1,5 @@
 {
-    "bass1": {
+    "BASS1": {
         "vco1": {
             "gain": 0.5,
             "octave": 0.4,
@@ -7,15 +7,15 @@
             "wave": "square"
         },
         "vco2": {
-            "gain": 0.6,
+            "gain": 0.35,
             "octave": 0.5,
-            "detune": 0.5,
-            "wave": "sawtooth"
+            "detune": 0.35,
+            "wave": "sine"
         },
         "vco3": {
-            "gain": 0.6,
-            "octave": 0.5,
-            "detune": 0.5,
+            "gain": 0.15,
+            "octave": 0.3,
+            "detune": 0.45,
             "wave": "sawtooth"
         },
         "filter": {
@@ -26,32 +26,33 @@
         "lfo": {
             "target": "flt",
             "wave": "sine",
-            "freq": 1,
-            "depth": 1
+            "freq": 0.35,
+            "depth": 0.8
         },
         "enveloppe": {
-            "lgr": 0.8,
-            "vol": 0.8
+            "attack": 0.1,
+            "decay": 0.2,
+            "sustain": 1,
+            "release": 0.15
         }
     },
-    "bass2": {
+    "BASS2": {
         "vco1": {
             "gain": 0.8,
-            "octave": 0.3,
+            "octave": 0.5,
             "detune": 0.5,
-            "wave": "square"
+            "wave": "sine"
         },
         "vco2": {
             "gain": 0.7,
             "octave": 0.3,
             "detune": 0.4,
-            "wave": "square"
+            "wave": "triangle"
         },
-         "vco3":
-        {
+        "vco3": {
             "gain": 0.6,
             "octave": 0.5,
-            "detune": 0.5,
+            "detune": 0.2,
             "wave": "sawtooth"
         },
         "filter": {
@@ -66,11 +67,13 @@
             "depth": 0.1
         },
         "enveloppe": {
-            "lgr": 0.8,
-            "vol": 0.8
+            "attack": 0.1,
+            "decay": 0.2,
+            "sustain": 0.7,
+            "release": 0.15
         }
     },
-    "bass3": {
+    "BASS3": {
         "vco1": {
             "gain": "0",
             "octave": 0.4,
@@ -83,8 +86,7 @@
             "detune": 0.5,
             "wave": "triangle"
         },
-        "vco3":
-        {
+        "vco3": {
             "gain": 0.6,
             "octave": 0.5,
             "detune": 0.5,
@@ -102,11 +104,13 @@
             "depth": 0.8
         },
         "enveloppe": {
-            "lgr": 0.8,
-            "vol": 0.8
+            "attack": 0.1,
+            "decay": 0.2,
+            "sustain": 0.7,
+            "release": 0.15
         }
     },
-    "bass4": {
+    "BASS4": {
         "vco1": {
             "gain": 0.5,
             "octave": 0.5,
@@ -119,8 +123,7 @@
             "detune": 0.4,
             "wave": "saw"
         },
-        "vco3":
-        {
+        "vco3": {
             "gain": 0.6,
             "octave": 0.5,
             "detune": 0.5,
@@ -138,11 +141,13 @@
             "depth": 0.1
         },
         "enveloppe": {
-            "lgr": 0.4,
-            "vol": 0.8
+            "attack": 0.1,
+            "decay": 0.2,
+            "sustain": 0.7,
+            "release": 0.15
         }
     },
-    "synth1": {
+    "SYNTH1": {
         "vco1": {
             "gain": 0.5,
             "octave": 0.6,
@@ -155,8 +160,7 @@
             "detune": 0.4,
             "wave": "square"
         },
-        "vco3":
-        {
+        "vco3": {
             "gain": 0.6,
             "octave": 0.5,
             "detune": 0.5,
@@ -174,11 +178,13 @@
             "depth": 0.1
         },
         "enveloppe": {
-            "lgr": 0.8,
-            "vol": 0.8
+            "attack": 0.1,
+            "decay": 0.2,
+            "sustain": 0.7,
+            "release": 0.8
         }
     },
-    "synth2": {
+    "SYNTH2": {
         "vco1": {
             "gain": 0.7,
             "octave": 0.6,
@@ -191,8 +197,7 @@
             "detune": 0.3,
             "wave": "sine"
         },
-        "vco3":
-        {
+        "vco3": {
             "gain": 0.6,
             "octave": 0.5,
             "detune": 0.5,
@@ -210,11 +215,13 @@
             "depth": 0.1
         },
         "enveloppe": {
-            "lgr": 0.8,
-            "vol": 0.8
+            "attack": 0.1,
+            "decay": 0.2,
+            "sustain": 0.7,
+            "release": 0.8
         }
     },
-    "synth3": {
+    "SYNTH3": {
         "vco1": {
             "gain": 0.5,
             "octave": 0.6,
@@ -227,8 +234,7 @@
             "detune": 0.4,
             "wave": "sine"
         },
-        "vco3":
-        {
+        "vco3": {
             "gain": 0.6,
             "octave": 0.5,
             "detune": 0.5,
@@ -246,11 +252,13 @@
             "depth": 0
         },
         "enveloppe": {
-            "lgr": 0.8,
-            "vol": 0.8
+            "attack": 0.1,
+            "decay": 0.2,
+            "sustain": 0.7,
+            "release": 0.8
         }
     },
-    "sn": {
+    "SN": {
         "vco1": {
             "gain": 0.5,
             "octave": "0.7",
@@ -263,8 +271,7 @@
             "detune": "0.75",
             "wave": "sawtooth"
         },
-        "vco3":
-        {
+        "vco3": {
             "gain": 0.6,
             "octave": 0.5,
             "detune": 0.5,
@@ -282,8 +289,10 @@
             "depth": 0.1
         },
         "enveloppe": {
-            "lgr": 0.1,
-            "vol": 0.8
+            "attack": 0.1,
+            "decay": 0.2,
+            "sustain": 0.7,
+            "release": 0.1
         }
     }
 }

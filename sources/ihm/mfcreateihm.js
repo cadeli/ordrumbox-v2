@@ -5,89 +5,79 @@ export default class MfCreateIhm {
     static TAG = "MFCREATEIHM"
 
     constructor() {
-        this.mfComponents = new MfComponents()
+
     }
 
     createMixerCtrl = (mixerCtrlDiv) => {
         Utils.clearInnerDom(mixerCtrlDiv)
         const paramDiv = document.createElement('div')
-        paramDiv.className = "box-h"
+        paramDiv.className = "box-grid"
         this.createMixerCtrlParam(paramDiv)
         mixerCtrlDiv.appendChild(paramDiv)
     }
 
     createMixerCtrlParam = (paramDiv) => {
+        const mfBtnGain = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnThrereshold = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfbtnRatio = Utils.createMfElement("div", null, "mf-button", paramDiv)
         let gainValue = (MfGlobals.mfMixer.gain.gain.value - 0.5) / (4)
         gainValue = Math.floor(gainValue * 100) / 100
-        const btnGain = this.mfComponents.addSliderBox(
+        const btnGain = MfGlobals.mfSliderBox.addSliderBox2(
             "mixerCtrlGain", "Gain",
             gainValue,
-            function(value) {
+            function (value) {
                 if (!MfGlobals.mfMixer) return
                 if (!MfGlobals.mfMixer.gain) return
                 MfGlobals.mfMixer.gain.gain.value = eval(event.target.value) * 4 + 0.5
             },
             null,
-            0, 1, 0.1
+            0, 1, 0.1,
+            mfBtnGain
         )
-        paramDiv.appendChild(btnGain)
 
         let theresholdValue = MfGlobals.mfMixer.compressor.threshold.value / (-50)
         theresholdValue = Math.floor(theresholdValue * 100) / 100
-        const btnThrereshold = this.mfComponents.addSliderBox(
+        const btnThrereshold = MfGlobals.mfSliderBox.addSliderBox2(
             "mixerCtrlThereshold", "Thereshold",
             theresholdValue,
-            function(value) {
+            function (value) {
                 if (!MfGlobals.compressor) return
                 if (!MfGlobals.compressor.threshold) return
                 MfGlobals.mfMixer.compressor.threshold.value = eval(event.target.value) * (-50)
             },
             null,
-            0, 1, 0.1
+            0, 1, 0.1, mfBtnThrereshold
         )
-        paramDiv.appendChild(btnThrereshold)
 
         let ratioValue = (MfGlobals.mfMixer.compressor.ratio.value - 1) / (19)
         ratioValue = Math.floor(ratioValue * 100) / 100
-        const btnRatio = this.mfComponents.addSliderBox(
+        const btnRatio = MfGlobals.mfSliderBox.addSliderBox2(
             "mixerCtrlRatio", "Ratio",
             ratioValue,
-            function(value) {
+            function (value) {
                 if (!MfGlobals.compressor) return
                 if (!MfGlobals.compressor.ratio) return
                 MfGlobals.mfMixer.compressor.ratio.value = eval(event.target.value) * (19) + 1
             },
             null,
-            0, 1, 0.1
+            0, 1, 0.1, mfbtnRatio
         )
-        paramDiv.appendChild(btnRatio)
-
     }
 
 
     createLfoCtrl = (lfoCtrlDiv) => {
         Utils.clearInnerDom(lfoCtrlDiv)
-
-        const mainDiv = document.createElement('div')
-        mainDiv.className = "box-h"
+        const mainDiv = Utils.createMfElement("div", null, "box-h", lfoCtrlDiv)
         this.createLfoCtrlMain(mainDiv)
 
-        const paramDiv = document.createElement('div')
-        paramDiv.className = "box-h"
+        const lfoCtrlDiv2 = Utils.createMfElement("div", null, "box-v", lfoCtrlDiv)
+        lfoCtrlDiv2.className = 'box-v'
+
+        const paramDiv = Utils.createMfElement("div", null, "box-h", lfoCtrlDiv2)
         this.createLfoCtrlParam(paramDiv)
 
-        const freqDiv = document.createElement('div')
-        freqDiv.className = "box-h"
+        const freqDiv = Utils.createMfElement("div", null, "box-h", lfoCtrlDiv2)
         this.createLfoCtrlFreq(freqDiv)
-
-
-        const lfoCtrlDiv2 = document.createElement('div')
-        lfoCtrlDiv2.className = 'box-v'
-        lfoCtrlDiv2.appendChild(paramDiv)
-        lfoCtrlDiv2.appendChild(freqDiv)
-
-        lfoCtrlDiv.appendChild(mainDiv)
-        lfoCtrlDiv.appendChild(lfoCtrlDiv2)
     }
 
     createLfoCtrlMain = (mainDiv) => {
@@ -98,7 +88,7 @@ export default class MfCreateIhm {
             selLfo = { "name": 'noname' }
         }
 
-        const onclickCb = function(event) {
+        const onclickCb = function (event) {
             if (event.target.checked) {
                 const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
                 const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
@@ -127,10 +117,15 @@ export default class MfCreateIhm {
         if (!selLfo) {
             selLfo = { "min": 0, "max": 1, "phase": 0 }
         }
-        const btnMin = this.mfComponents.addSliderBox(
+
+        const mfBtnMin = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnMax = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnPhase = Utils.createMfElement("div", null, "mf-button", paramDiv)
+
+        const btnMin = MfGlobals.mfSliderBox.addSliderBox2(
             "lfoMin", "Min",
             selLfo.min,
-            function(value) {
+            function (value) {
                 const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
                 const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
                 const selLfo = selTrack[MfGlobals.selectedLfo]
@@ -139,14 +134,13 @@ export default class MfCreateIhm {
                 }
             },
             null,
-            0, 1, 0.1
+            0, 1, 0.1, mfBtnMin
         )
-        paramDiv.appendChild(btnMin)
 
-        const btnMax = this.mfComponents.addSliderBox(
+        const btnMax = MfGlobals.mfSliderBox.addSliderBox2(
             "lfoMax", "Max",
             selLfo.max,
-            function(value) {
+            function (value) {
                 const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
                 const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
                 const selLfo = selTrack[MfGlobals.selectedLfo]
@@ -155,14 +149,13 @@ export default class MfCreateIhm {
                 }
             },
             null,
-            0, 1, 0.1
+            0, 1, 0.1, mfBtnMax
         )
-        paramDiv.appendChild(btnMax)
 
-        const btnPhase = this.mfComponents.addSliderBox(
+        const btnPhase = MfGlobals.mfSliderBox.addSliderBox2(
             "lfoPhase", "Phase",
             selLfo.phase,
-            function(value) {
+            function (value) {
                 const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
                 const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
                 const selLfo = selTrack[MfGlobals.selectedLfo]
@@ -171,22 +164,25 @@ export default class MfCreateIhm {
                 }
             },
             null,
-            0, 1, 0.1
+            0, 1, 0.1, mfBtnPhase
         )
-        paramDiv.appendChild(btnPhase)
     }
 
-    createLfoCtrlFreq = (freqDiv) => {
+    createLfoCtrlFreq = (paramDiv) => {
         const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
         const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
         let selLfo = selTrack[MfGlobals.selectedLfo]
         if (!selLfo) {
             selLfo = { "freq": 1, "freqMulpt": 1 }
         }
-        const btnLfoFreq = this.mfComponents.addSliderBox(
+
+        const mfBtnFreq = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnFreqM = Utils.createMfElement("div", null, "mf-button", paramDiv)
+
+        const btnLfoFreq = MfGlobals.mfSliderBox.addSliderBox2(
             "lfoFreq", "Freq",
             selLfo.freq,
-            function(value) {
+            function (value) {
                 const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
                 const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
                 const selLfo = selTrack[MfGlobals.selectedLfo]
@@ -195,14 +191,13 @@ export default class MfCreateIhm {
                 }
             },
             null,
-            1, 16, 1
+            1, 16, 1, mfBtnFreq
         )
-        freqDiv.appendChild(btnLfoFreq)
 
-        const btnLfoFreqMulpt = this.mfComponents.addSliderBox(
+        const btnLfoFreqMulpt = MfGlobals.mfSliderBox.addSliderBox2(
             "lfoFreqMulpt", "Freq Mulpt",
             selLfo.freqMulpt,
-            function(value) {
+            function (value) {
                 const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
                 const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
                 const selLfo = selTrack[MfGlobals.selectedLfo]
@@ -211,15 +206,14 @@ export default class MfCreateIhm {
                 }
             },
             null,
-            1, 16, 1
+            1, 16, 1, mfBtnFreqM
         )
-        freqDiv.appendChild(btnLfoFreqMulpt)
     }
 
     createNoteCtrl = (noteCtrlDiv) => {
         Utils.clearInnerDom(noteCtrlDiv)
 
-        const onclickCb = function() { //TODO create in mfUdate / refact 
+        const onclickCb = function () { //TODO create in mfUdate / refact 
             const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
             const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
             const selNote = MfGlobals.mfUpdates.mfCmd.isNoteAt(selTrack, MfGlobals.selectedNoteBar, MfGlobals.selectedNoteStep)[0]
@@ -229,7 +223,7 @@ export default class MfCreateIhm {
                 MfGlobals.mfUpdates.mfCmd.addNote(selTrack, MfGlobals.selectedNoteBar, MfGlobals.selectedNoteStep)
             }
             MfGlobals.mfUpdates.updatePatternView(selPat, MfGlobals.displayBars)
-            MfGlobals.mfPatterns.getFlatNotesFromPattern(selPat)
+            MfGlobals.mfPatterns.computeFlatNotesFromPattern(selPat)
         }
 
         const mainDiv = document.createElement('div')
@@ -261,41 +255,47 @@ export default class MfCreateIhm {
 
     }
 
-    createNoteCtrlTrigger = (triggerDiv) => {
+    createNoteCtrlTrigger = (paramDiv) => {
+        const mfBtnTrigFreq = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnRTrigPhase = Utils.createMfElement("div", null, "mf-button", paramDiv)
+
         let selNote = MfGlobals.mfUpdates.getSelectedNote()
         if (!selNote) {
             selNote = { "triggFreq": 0, "triggPhase": 0 }
         }
-        const btnTriggFreq = this.mfComponents.addSliderBox(
+        const btnTriggFreq = MfGlobals.mfSliderBox.addSliderBox2(
             "noteCtrlTriggFreq", "Trigg Freq",
             selNote.triggFreq,
-            function(value) {
+            function (value) {
                 const selNote = MfGlobals.mfUpdates.getSelectedNote()
                 if (selNote) {
                     selNote.triggFreq = eval(value)
                 }
             },
             null,
-            1, 16, 1
+            1, 16, 1, mfBtnTrigFreq
         )
-        triggerDiv.appendChild(btnTriggFreq)
 
-        const btnTriggPhase = this.mfComponents.addSliderBox(
+        const btnTriggPhase = MfGlobals.mfSliderBox.addSliderBox2(
             "noteCtrlTriggPhase", "Trigg Phas",
             selNote.triggPhase,
-            function(value) {
+            function (value) {
                 const selNote = MfGlobals.mfUpdates.getSelectedNote()
                 if (selNote) {
                     selNote.triggPhase = eval(value)
                 }
             },
             null,
-            0, 15, 1
+            0, 15, 1, mfBtnRTrigPhase
         )
-        triggerDiv.appendChild(btnTriggPhase)
     }
 
-    createNoteCtrlRepeat = (repeatDiv) => {
+    createNoteCtrlRepeat = (paramDiv) => {
+        const mfBtnRepNum = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnRepStep = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnRepMlp = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnEuclFill = Utils.createMfElement("div", null, "mf-button", paramDiv)
+
         let selNote = MfGlobals.mfUpdates.getSelectedNote()
         if (!selNote) {
             selNote = {
@@ -305,116 +305,113 @@ export default class MfCreateIhm {
                 'euclidianFill': 0
             }
         }
-        const btnRetriggNum = this.mfComponents.addSliderBox(
+        const btnRetriggNum = MfGlobals.mfSliderBox.addSliderBox2(
             "noteCtrlRetriggNum", "Repeat Num",
             selNote.retriggNum,
-            function(value) {
+            function (value) {
                 const selNote = MfGlobals.mfUpdates.getSelectedNote()
                 if (selNote) {
                     selNote.retriggNum = eval(value)
                 }
             },
             null,
-            0, 8, 1
+            0, 8, 1, mfBtnRepNum
         )
-        repeatDiv.appendChild(btnRetriggNum)
 
-        const btnRetriggStep = this.mfComponents.addSliderBox(
+        const btnRetriggStep = MfGlobals.mfSliderBox.addSliderBox2(
             "noteCtrlRetriggStep", "Rep Step",
             selNote.retriggStep,
-            function(value) {
+            function (value) {
                 const selNote = MfGlobals.mfUpdates.getSelectedNote()
                 if (selNote) {
                     selNote.retriggStep = eval(value)
                 }
             },
             null,
-            1, 8, 1
+            1, 8, 1, mfBtnRepStep
         )
-        repeatDiv.appendChild(btnRetriggStep)
 
-        const btnRetriggStepMulpt = this.mfComponents.addSliderBox(
+        const btnRetriggStepMulpt = MfGlobals.mfSliderBox.addSliderBox2(
             "noteCtrlRetriggStepMulpt", "Repeat Mpl",
             selNote.retriggStepMulpt,
-            function(value) {
+            function (value) {
                 const selNote = MfGlobals.mfUpdates.getSelectedNote()
                 if (selNote) {
                     selNote.retriggStepMulpt = eval(value)
                 }
             },
             null,
-            1, 8, 1
+            1, 8, 1, mfBtnRepMlp
         )
-        repeatDiv.appendChild(btnRetriggStepMulpt)
 
-        const btnRetriggEuclidianFill = this.mfComponents.addSliderBox(
+        const btnRetriggEuclidianFill = MfGlobals.mfSliderBox.addSliderBox2(
             "noteCtrlEuclidianFill", "Eucl Fill",
             selNote.retriggStepMulpt,
-            function(value) {
+            function (value) {
                 const selNote = MfGlobals.mfUpdates.getSelectedNote()
                 if (selNote) {
                     selNote.euclidianFill = eval(value)
                 }
             },
             null,
-            0, 8, 1
+            0, 8, 1, mfBtnEuclFill
         )
-        repeatDiv.appendChild(btnRetriggEuclidianFill)
     }
 
     createNoteCtrlParam = (paramDiv) => {
+        const mfBtnPitch = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnVelo = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnPano = Utils.createMfElement("div", null, "mf-button", paramDiv)
+
         let selNote = MfGlobals.mfUpdates.getSelectedNote()
         if (!selNote) {
             selNote = { "pitch": 0, "velo": 1, "pano": 0 }
         }
-        const btnPitch = this.mfComponents.addSliderBox(
+        const btnPitch = MfGlobals.mfSliderBox.addSliderBox2(
             "noteCtrlPitch", "Pitch",
             selNote.pitch,
-            function(value) {
+            function (value) {
                 const selNote = MfGlobals.mfUpdates.getSelectedNote()
                 if (selNote) {
                     selNote.pitch = eval(value)
                 }
             },
             null,
-            -12, 12, 1
+            -12, 12, 1, mfBtnPitch
         )
-        paramDiv.appendChild(btnPitch)
 
-        const btnVelo = this.mfComponents.addSliderBox(
+        const btnVelo = MfGlobals.mfSliderBox.addSliderBox2(
             "noteCtrlVelo", "Velo",
             selNote.velo,
-            function(value) {
+            function (value) {
                 const selNote = MfGlobals.mfUpdates.getSelectedNote()
                 if (selNote) {
                     selNote.velo = eval(value)
                 }
             },
             null,
-            0, 1, 0.05
+            0, 1, 0.05, mfBtnVelo
         )
-        paramDiv.appendChild(btnVelo)
 
-        const btnPano = this.mfComponents.addSliderBox(
+        const btnPano = MfGlobals.mfSliderBox.addSliderBox2(
             "noteCtrlPano", "Pano",
             selNote.pano,
-            function(value) {
+            function (value) {
                 const selNote = MfGlobals.mfUpdates.getSelectedNote()
                 if (selNote) {
                     selNote.pano = eval(value)
                 }
             },
             null,
-            -1, 1, 0.1
+            -1, 1, 0.1, mfBtnPano
         )
-        paramDiv.appendChild(btnPano)
     }
 
 
     createTrackCtrl = (trackCtrlDiv) => {
         console.log('mfCreateIhm::createTrackCtrl')
         Utils.clearInnerDom(trackCtrlDiv)
-        const onCheckBox = function() {
+        const onCheckBox = function () {
             const track = MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum]
             MfGlobals.mfUpdates.trackToggleMute(track)
             MfGlobals.mfUpdates.updateSelectedPattern()
@@ -441,38 +438,38 @@ export default class MfCreateIhm {
         trackCtrlDiv.appendChild(bDiv)
     }
 
-    createTrackCtrlSoundPanel = (soundDiv) => {
+    createTrackCtrlSoundPanel = (paramDiv) => {
+        const mfBtnLength = Utils.createMfElement("div", null, "mf-button", paramDiv)
 
-        const btnLength = this.mfComponents.addSliderBox(
+        const btnLength = MfGlobals.mfSliderBox.addSliderBox2(
             "trackCtrlSampleLength", "Length",
             MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].sampleLength,
-            function(value) {
+            function (value) {
                 MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].sampleLength = eval(value)
             },
             null,
-            0, 1, 0.05
+            0, 1, 0.05, mfBtnLength
         )
-        soundDiv.appendChild(btnLength)
 
-        const btnAuto = this.mfComponents.addTwostatesBtn("trackCtrlAutoSound", "auto")
-        btnAuto.onclick = function(event) {
+        const btnAuto = MfGlobals.mfComponents.addTwostatesBtnTb('trackCtrlAutoSound', 'auto')
+        btnAuto.onclick = function (event) {
             const track = MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum]
             track.autoSound = true
             track.generated = false
             MfGlobals.mfUpdates.mfCmd.autoAssignTrackSounds(track, MfGlobals.selectedTrackNum)
             MfGlobals.mfUpdates.updateTrackCtrl(MfGlobals.selectedTrackNum)
-            MfGlobals.mfPatterns.getFlatNotesFromPattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])
+           MfGlobals.mfPatterns.computeFlatNotesFromPattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])
         }
-        const btnGen = this.mfComponents.addTwostatesBtn("trackCtrlGenSound", "synth")
-        btnGen.onclick = function(event) {
+        const btnGen = MfGlobals.mfComponents.addTwostatesBtnTb("trackCtrlGenSound", "synth")
+        btnGen.onclick = function (event) {
             const track = MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum]
             track.generated = true
             track.autoSound = false
             MfGlobals.mfUpdates.updateTrackCtrl(MfGlobals.selectedTrackNum)
-            MfGlobals.mfUpdates.displayModalDialogGenSound()
+            MfGlobals.mfUpdates.mfSoftSynthIhm.displayModalDialogGenSound()
         }
-        const btnPick = this.mfComponents.addTwostatesBtn("trackCtrlPickSound", "pick")
-        btnPick.onclick = function(event) {
+        const btnPick = MfGlobals.mfComponents.addTwostatesBtn("trackCtrlPickSound", "pick")
+        btnPick.onclick = function (event) {
             const track = MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum]
             track.generated = false
             MfGlobals.mfUpdates.mfSampleIhm.displayModalDialogPickSound()
@@ -483,107 +480,101 @@ export default class MfCreateIhm {
         aDiv.appendChild(btnAuto)
         aDiv.appendChild(btnGen)
 
-        soundDiv.appendChild(aDiv)
-        soundDiv.appendChild(btnPick)
+        paramDiv.appendChild(aDiv)
+        paramDiv.appendChild(btnPick)
 
     }
 
     createTrackCtrlParamPanel = (paramDiv) => {
-        const btnPitch = this.mfComponents.addSliderBox(
+        const mfBtnPitch = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnVelo = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnPano = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnSwing = Utils.createMfElement("div", null, "mf-button", paramDiv)
+
+        const btnPitch = MfGlobals.mfSliderBox.addSliderBox2(
             "trackCtrlPitch", "Pitch",
             MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].pitch,
-            function(value) {
+            function (value) {
                 MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].pitch = eval(value)
             },
             'pitchLfo',
-            -12, 12, 1
+            -12, 12, 1, mfBtnPitch
         )
-        paramDiv.appendChild(btnPitch)
 
-        const btnVelo = this.mfComponents.addSliderBox(
+        const btnVelo = MfGlobals.mfSliderBox.addSliderBox2(
             "trackCtrlVelo", "Velo",
             MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].velo,
-            function(value) {
+            function (value) {
                 MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].velo = eval(value)
             },
             'veloLfo',
-            0, 1, 0.05
+            0, 1, 0.05, mfBtnVelo
         )
-        paramDiv.appendChild(btnVelo)
 
-        const btnPano = this.mfComponents.addSliderBox(
+        const btnPano = MfGlobals.mfSliderBox.addSliderBox2(
             "trackCtrlPano", "Pano",
             MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].pano,
-            function(value) {
+            function (value) {
                 MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].pano = eval(value)
             },
             'panoLfo',
-            -1, 1, 0.1
+            -1, 1, 0.1, mfBtnPano
         )
-        paramDiv.appendChild(btnPano)
 
-        const btnSwing = this.mfComponents.addSliderBox(
+        const btnSwing = MfGlobals.mfSliderBox.addSliderBox2(
             "trackCtrlSwing", "Swing",
             MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].swingDepth,
-            function(value) {
+            function (value) {
                 MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].swingDepth = eval(value)
             },
             null,
-            0, 1, 0.1
+            0, 1, 0.1, mfBtnSwing
         )
-        paramDiv.appendChild(btnSwing)
     }
 
-    createTrackCtrlFilterPanel = (filterDiv) => {
-        const filterTypeList = ["lp", "hp", "bp", "no", "all"]
-        let inputBoxFilterType = this.mfComponents.addListInputBox("FilterType", "trackCtrlFilterType", filterTypeList, MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].filterType, function(value) {
+    createTrackCtrlFilterPanel = (paramDiv) => {
+        const mfBtnFltFreq = Utils.createMfElement("div", null, "mf-button", paramDiv)
+        const mfBtnFltQ = Utils.createMfElement("div", null, "mf-button", paramDiv)
+
+
+        const filterTypeList = ["LP", "HP", "BP", "NO", "ALL"]
+        let inputBoxFilterType = MfGlobals.mfComponents.addListInputBox("Fltr Type", "trackCtrlFilterType", filterTypeList, MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].filterType, function (value) {
             const track = MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum]
             track.filterType = Utils.getFilterNameFromValue(value)
             MfGlobals.mfMixer.updateFilter(track.name, track.filterType, track.filterFreq, track.filterQ)
         })
-        filterDiv.appendChild(inputBoxFilterType)
+        paramDiv.appendChild(inputBoxFilterType)
 
-        const btnFilterFreq = this.mfComponents.addSliderBox(
-            "trackCtrlFilterFreq", "Fltr Freq",
+        const btnFilterFreq = MfGlobals.mfSliderBox.addSliderBox2(
+            "trackCtrlFilterFreq", "FLTR FREQ",
             MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].filterFreq,
-            function(value) {
+            function (value) {
                 MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].filterFreq = eval(value)
             },
             'filterFreqLfo',
-            0, 1, 0.05
+            0, 1, 0.05, mfBtnFltFreq
         )
-        filterDiv.appendChild(btnFilterFreq)
 
-        const btnFilterQ = this.mfComponents.addSliderBox(
-            "trackCtrlFilterQ", "Filter Q",
+        const btnFilterQ = MfGlobals.mfSliderBox.addSliderBox2(
+            "trackCtrlFilterQ", "FLTR Q",
             MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].filterQ,
-            function(value) {
+            function (value) {
                 MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum].filterQ = eval(value)
             },
             'filterQLfo',
-            0, 1, 0.05
+            0, 1, 0.05, mfBtnFltQ
         )
-        filterDiv.appendChild(btnFilterQ)
     }
 
 
     addTitleBox = (panel, idCheckBox, idLabel, chkBoxClick, labelClick) => {
-        const aDiv = document.createElement('div')
-        aDiv.className = "box-v"
-        const lblDiv = document.createElement('span')
-        lblDiv.className = "labelLong"
+        const aDiv = Utils.createMfElement("div", null, "mf-title-box", panel)
+        const lblDiv = Utils.createMfElement("div", idLabel, "labelLong", aDiv)
         lblDiv.innerText = ""
-        lblDiv.id = idLabel
         lblDiv.onclick = labelClick
-        const inputDiv = document.createElement('input')
+        const inputDiv = Utils.createMfElement("input", idCheckBox, null, aDiv)
         inputDiv.type = "checkbox"
-        inputDiv.id = idCheckBox
         inputDiv.onclick = chkBoxClick
-
-        aDiv.appendChild(inputDiv)
-        aDiv.appendChild(lblDiv)
-        panel.appendChild(aDiv)
     }
-
 
 }

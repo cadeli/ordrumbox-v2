@@ -4,34 +4,33 @@ export default class MfResourcesLoader {
     loadDrumkitList(file, complete) {
         fetch(file)
             .then(response => response.json())
-            .then(jsonKitList => {
-                Object.assign(MfGlobals.drumkits, jsonKitList)
+            .then(jsonDrumkits => {
+                Object.assign(MfGlobals.drumkitList, jsonDrumkits)
                 complete()
             })
     }
 
-
-    loadScales(file, complete) {
+    loadScales(file, callback) {
         fetch(file)
             .then((response) => response.json())
             .then((scales) => {
                 Object.assign(MfGlobals.scales, scales)
-                complete()
+                callback()
             })
             .catch((error) => {
                 console.error('mfressourceloader::loadScales: ' + file, error);
             })
     }
 
-    loadGeneratedSounds(file, complete) {
+    loadGeneratedSounds(file, callback) {
         fetch(file)
             .then((response) => response.json())
             .then((generatedSounds) => {
                 Object.assign(MfGlobals.generatedSounds, generatedSounds)
-                complete()
+                callback()
             })
             .catch((error) => {
-                console.error('mfressourceloader::loadGeneratedSounds: ' + file, error);
+                console.error('MfResourcesLoader::loadGeneratedSounds: ' + file, error);
             })
     }
 
@@ -42,7 +41,7 @@ export default class MfResourcesLoader {
             .then((patterns) => {
                 MfGlobals.patterns = patterns
                 Object.assign(MfGlobals.patterns, patterns)
-                console.log("mfressourceloader::loadPatterns: " + file + "=" + patterns.length)
+                console.log("mfressourceloader::loadPatterns: " + file + "  =" + patterns.length)
                 this.fix(patterns)
                 complete()
             })
@@ -63,56 +62,55 @@ export default class MfResourcesLoader {
             })
     }
 
-    loadSamples(file, complete, progress) {
+    onSoundsProgress = (progress) => { //TODO
+        document.getElementById("resourcesProgressBar").value = progress
+    }
+
+    loadSamplesFromDrumkit = (drumkit, callback) => {
         if (MfGlobals.audioCtx == null) {
             MfGlobals.audioCtx = new AudioContext()
         }
         this.nbLoad = 0
         this.nbToLoad = 0
         let self = this
-        fetch(file)
-            .then(response => response.json())
-            .then(jsonKitList => { //just to count nbToLoad
-                Object.assign(MfGlobals.drumkits , jsonKitList)
-                for (const [kitKey, kit] of Object.entries(jsonKitList)) {
-                    kit.instruments.forEach(sound => {
-                        self.nbToLoad++
-                    })
+
+        this.nbToLoad = drumkit.instruments.length-1
+        drumkit.instruments.forEach(sample => {
+            for (let i = 0; i < MfGlobals.sounds.length; i++) { // TODO 
+                if (sample.url == MfGlobals.sounds[i].url) {
+                    console.warn("sample already load ", sample)
+                    return
                 }
-                console.log("mfresourceloader::loadsamples nb sample to load =" + self.nbToLoad)
-                for (const [kitKey, kit] of Object.entries(jsonKitList)) {
-                    //console.log("read kit :" + kit.name)
-                    kit.instruments.forEach(sound => {
-                        //console.log(">"+self.nbLoad+" read instrument :" + sound.url)
-                        this.loadSample(sound, kit.name, complete,progress)
-                    })
-                }
-            })
+            }
+            this.loadSample(sample, drumkit.name, callback, this.onSoundsProgress)
+        });
     }
 
-    loadSample = (sample, kit_name, complete,progress) => {
+    loadSample = (sample, kit_name, callback, progress) => {
         let self = this;
         let req = new XMLHttpRequest();
         req.open("GET", "assets/kits/" + sample.url, true);
         req.responseType = "arraybuffer";
         req.onerror = (event) => {
-            console.error("akoader error " + sample.url + " " + event.message)
+            console.error("MfResourcesLoader::loadSample error " + sample.url + " " + event.message)
         }
         req.ontimeout = (event) => {
-            console.error("akoader error " + sample.url + " " + event.message)
+            console.error("MfResourcesLoader::loadSample error " + sample.url + " " + event.message)
         }
-        req.onreadystatechange = function(event) {
+        req.onreadystatechange = function (event) {
             if (req.readyState === 4) {
                 if (req.status === 200) {
-                    // console.log("akoader ok " + sample.url)
+                     console.log("MfResourcesLoader::loadSample ok " + sample.url)
                 } else {
-                    console.error("akoader error " + sample.url + " " + event.message)
+                    console.error("MfResourcesLoader::loadSample error " + sample.url + " " + event.message)
+                   
                 }
             }
         }
-        req.onload = function() {
+        req.onload = function () {
             if (req.response) {
-                MfGlobals.audioCtx.decodeAudioData(req.response, function(buffer) {
+                MfGlobals.audioCtx.decodeAudioData(req.response, function (buffer) {
+                    self.nbLoad++
                     let sound = {
                         kit_name: kit_name,
                         url: sample.url,
@@ -124,21 +122,22 @@ export default class MfResourcesLoader {
                         isLoad: true,
                         playStatus: false
                     }
-                    console.log("mfRessourceLoader::loadSample" + (kit_name + "_" + sample.key) +
+                    console.log("mfRessourceLoader::loadSample: " + (kit_name + "_" + sample.key) +
                         " load ok  duration:" + (buffer.duration).toFixed(2) +
                         " nb : " + self.nbLoad + "/" + self.nbToLoad + "  url=" + sound.url)
 
                     MfGlobals.sounds[MfGlobals.sounds.length] = sound
-                    self.nbLoad++
                     progress(Math.floor(self.nbLoad * 100 / self.nbToLoad)) //TODO nbTotalToLoad
-                    if (self.nbLoad >= self.nbToLoad) {
+                    if (self.nbLoad >= (self.nbToLoad)) {
                         MfGlobals.sounds = MfGlobals.sounds.sort((a, b) => (a.key > b.key) ? 1 : ((b.key > a.key) ? -1 : 0))
                         Object.values(MfGlobals.sounds).forEach((sound, soundIndex) => { sound.index = soundIndex }) //TODO better way
-                        complete()
+                        if (callback) {
+                            callback()
+                        }
                     }
                 });
             } else {
-                console.error((kit_name + "_" + sample.key) + " load ok :" + self.nbLoad + "/" + nbToLoad + "  =" + sound.url)
+                console.log((kit_name + "_" + sample.key) + " load ok :" + self.nbLoad + "/" + nbToLoad + "  =" + sound.url)
             }
         }
         req.send();

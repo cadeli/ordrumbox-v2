@@ -3,20 +3,31 @@ export default class MfComponents {
 
     constructor() {}
 
-    addTwostatesBtn = (id, label) => {
+    addTwostatesBtn = (id, label) => { //TODO param tb/normal
         let twoStatesBtn = document.createElement('div')
         twoStatesBtn.classList.add('twostates')
-        twoStatesBtn.classList.add('small-button')
+        twoStatesBtn.classList.add('mf-button')
         twoStatesBtn.innerText = label
         twoStatesBtn.id = id
         return twoStatesBtn
     }
 
-    addListInputBox = (label, id, list, value, callback, isBig) => {
+   addTwostatesBtnTb = (id, label) => { //TODO param tb/normal
+        let twoStatesBtn = document.createElement('div')
+        twoStatesBtn.classList.add('twostates')
+        twoStatesBtn.classList.add('mf-tb-button')
+        twoStatesBtn.innerText = label
+        twoStatesBtn.id = id
+        return twoStatesBtn
+    }
 
+   
+
+    //ATT uppercase for list and value because of css
+    addListInputBox = (label, id, list, value, callback, isBig) => {
         const _this = this
         const inputBox = document.createElement('label')
-        inputBox.classList.add('small-button')
+        inputBox.classList.add('mf-button')
         inputBox.classList.add('tooltip')
         inputBox.id = id + "Box"
 
@@ -51,80 +62,7 @@ export default class MfComponents {
         return inputBox
     }
 
-
-
-    addNormInputBox = (id, label, value, callback) => {
-        return this.addSliderBox(id, label, value, callback, null, 0, 1, 0.05)
-    }
-
-
-
-    addSliderBox = (id, label, value, callback, lfo, min, max, step) => {
-        const _this = this
-        const inputBox = document.createElement('label')
-        inputBox.classList.add('small-button')
-        inputBox.classList.add('tooltip')
-        inputBox.id = id + "Box"
-
-
-        const lblDiv = document.createElement('span')
-        lblDiv.className = "ctrlLabel"
-        lblDiv.innerText = label
-        lblDiv.onclick = function(event) {
-            if (lfo) {
-                const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
-                const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
-                document.getElementById("showLfoCtrl").style.display = "flex"
-                MfGlobals.selectedLfo = _this.getLfoNameFromLabel(label)
-                MfGlobals.mfUpdates.updateLfoPanel(" LFO " + label)
-            }
-            event.stopPropagation()
-            event.preventDefault()
-            _this.toggleVisu(id + 'Tooltip')
-        }
-        inputBox.appendChild(lblDiv)
-
-        const valDiv = document.createElement('span')
-        valDiv.classList.add("inputValue")
-        valDiv.classList.add("ctrlValueLfoOff")
-        valDiv.id = id
-        valDiv.innerText = value
-        if (lfo) {
-            valDiv.onclick = function(event) {
-                const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
-                const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
-                document.getElementById("showLfoCtrl").style.display = "flex"
-                MfGlobals.selectedLfo = _this.getLfoNameFromLabel(label)
-                MfGlobals.mfUpdates.updateLfoPanel(" LFO " + label)
-            }
-        }
-        inputBox.appendChild(valDiv)
-
-        const tooltipDiv = document.createElement('div')
-        tooltipDiv.className = "tooltiptext"
-        tooltipDiv.id = id + "Tooltip"
-        tooltipDiv.onclick = function(event) {
-            event.stopPropagation()
-            event.preventDefault()
-        }
-        inputBox.appendChild(tooltipDiv)
-
-        const inputDiv = document.createElement('input')
-        inputDiv.className = ""
-        inputDiv.id = id + "Input"
-        inputDiv.type = "range"
-        inputDiv.min = min
-        inputDiv.max = max
-        inputDiv.step = step
-        inputDiv.value = value
-        inputDiv.oninput = function(event) {
-            valDiv.innerText = event.target.value
-            callback(event.target.value)
-        }
-        tooltipDiv.appendChild(inputDiv)
-        return inputBox
-    }
-
+//TODO useless
     toggleVisu = (aDiv) => {
         let divbpmi = document.getElementById(aDiv)
         if (divbpmi.style.display != 'block') {
@@ -135,15 +73,16 @@ export default class MfComponents {
     }
 
     getLfoNameFromLabel = (label) => {
-        if (label.includes("Pitch")) {
+        label =label.toUpperCase()
+        if (label.includes("PITCH")) {
             return "pitchLfo"
-        } else if (label.includes("Velo")) {
+        } else if (label.includes("VELO")) {
             return "veloLfo"
-        } else if (label.includes("Pano")) {
+        } else if (label.includes("PANO")) {
             return "panoLfo"
-        } else if (label.includes("Filter Q")) {
+        } else if (label.includes("FLTR Q")) {
             return "filterQLfo"
-        } else if (label.includes("Freq")) {
+        } else if (label.includes("FREQ")) {
             return "filterFreqLfo"
         } else {
             console.error("MfComponents::getLfoNameFromLabel no lfo for " + label)

@@ -122,7 +122,6 @@ export default class WaveVisu {
                 this.anims[track.name] = anim
             } else {
                 const anim = this.anims[track.name]
-
                 anim.setAttribute('height', barHeight)
                 anim.setAttribute('y', (svgHeight - barHeight))
                 anim.setAttribute('stroke', "#FFF");

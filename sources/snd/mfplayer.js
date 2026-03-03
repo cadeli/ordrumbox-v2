@@ -22,8 +22,13 @@ export default class MfPlayer {
             if (loopStep === 0) {
                 this.loop++
                 if (MfGlobals.autoMode === true) {
-                    this.mfAutoCompose.change(this.loop, selPat)
+                    this.mfAutoCompose.changePattern(this.loop, selPat)
                 }
+                Object.values(selPat.tracks).forEach((track, indexTrack) => {
+                    if (track.auto === true) {
+                        this.mfAutoCompose.changeTrack(this.loop, selPat, track)
+                    }
+                })
             }
             let flatNotes = MfGlobals.flatNotes
             flatNotes.forEach((flatNote, indexFlatNote) => {
@@ -42,9 +47,9 @@ export default class MfPlayer {
                         if (this.isTrigged(flatNote.note.triggPhase, flatNote.note.triggFreq, this.loop)) {
                             let swingTime = this.computeSwingTime(flatNote.note, MfGlobals.secondsPerBeat, flatNote.track.swingRez, flatNote.track.swingDepth)
                             let pano = (eval(flatNote.note.pano) + eval(flatNote.track.pano)) / 2
-                            flatNote.pano =  Math.floor(pano*100)/100
+                            flatNote.pano = Math.floor(pano * 100) / 100
                             let fpitch = ((eval(flatNote.track.pitch) + eval(flatNote.note.pitch)) / 12 + 1)
-                            flatNote.fpitch = Math.floor(fpitch*100)/100
+                            flatNote.fpitch = Math.floor(fpitch * 100) / 100
                             this.computeLfos(flatNote, tick)
                             this.mfSound.play(flatNote, atTime + swingTime)
                             this.computeRepeat(flatNote, atTime, swingTime)
@@ -67,7 +72,6 @@ export default class MfPlayer {
         } catch (e) {
             console.error(e)
         }
-
     }
 
     computeNextPatternStepNote = (note, track) => {
@@ -121,29 +125,29 @@ export default class MfPlayer {
             flatNote.fpitch = this.getLfoVal(flatNote.track.pitchLfo, tick, flatNote.fpitch, 0.5, 2)
             if (selTrack.name === flatNote.track.name) {
                 document.getElementById("trackCtrlPitch").innerText = flatNote.fpitch
-               // document.getElementById("trackCtrlPitchInput").value = flatNote.fpitch
+                // document.getElementById("trackCtrlPitchInput").value = flatNote.fpitch
             }
         }
         if (flatNote.track.veloLfo) {
             flatNote.track.velo = this.getLfoVal(flatNote.track.veloLfo, tick, flatNote.track.velo, 0, 1)
             if (selTrack.name === flatNote.track.name) {
                 document.getElementById("trackCtrlVelo").innerText = flatNote.track.velo
-                 document.getElementById("trackCtrlVeloInput").value = flatNote.track.velo
+                document.getElementById("trackCtrlVeloInput").value = flatNote.track.velo
             }
         }
         if (flatNote.track.panoLfo) {
             flatNote.pano = this.getLfoVal(flatNote.track.panoLfo, tick, flatNote.pano, -1, 1)
             if (selTrack.name === flatNote.track.name) {
                 document.getElementById("trackCtrlPano").innerText = flatNote.pano
-                 document.getElementById("trackCtrlPanoInput").value = flatNote.pano
+                document.getElementById("trackCtrlPanoInput").value = flatNote.pano
             }
         }
         if (flatNote.track.filterFreqLfo) {
             flatNote.track.filterFreq = this.getLfoVal(flatNote.track.filterFreqLfo, tick, flatNote.track.filterFreq, 0, 1)
             if (selTrack.name === flatNote.track.name && document.getElementById("trackCtrlFilterFreq")) {
                 document.getElementById("trackCtrlFilterFreq").innerText = flatNote.track.filterFreq
-                  document.getElementById("trackCtrlFilterFreqInput").value = flatNote.track.filterFreq
-           }
+                document.getElementById("trackCtrlFilterFreqInput").value = flatNote.track.filterFreq
+            }
         }
         if (flatNote.track.filterQLfo) {
             flatNote.track.filterQ = this.getLfoVal(flatNote.track.filterQLfo, tick, flatNote.track.filterQ, 0, 1)
@@ -166,7 +170,7 @@ export default class MfPlayer {
         // Utils.displayStatusBar("tick: " + tick +"sin="+parseInt(ret_0*100)+ " ret=" + parseInt(ret_1*100)+ " ret=" + parseInt(ret*100))
         // console.log("djtCmd::getLfoVal "+lfo.name+"("+initialValueMin+","+initialValue+","+initialValueMax+")"+" tick= "+ tick + "=>" +ret)
         //console.log("eeee ret="+ret+ " ="+lfo.name)
-        ret=(Math.floor(100*ret))/100
+        ret = (Math.floor(100 * ret)) / 100
         return eval(ret)
     }
 
@@ -190,20 +194,21 @@ export default class MfPlayer {
     }
 
     simpleBeep = (indexTrack) => {
-         if (MfGlobals.audioCtx != null) {
+        if (MfGlobals.audioCtx != null) {
             let pat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
             let track = pat.tracks[indexTrack]
-            let note = { "velo": 1, "pano": 0, "pitch": 0 }
-            let flatNote = new MfFlatNote(0, track.soundNum, track, note)
-           
-                if (MfGlobals.mfMixer.strips.length === 0) {
-                    MfGlobals.mfMixer.start()
+            if (track.soundNum <= MfGlobals.sounds.length) {
+                let note = { "velo": 1, "pano": 0, "pitch": 0 }
+                let flatNote = new MfFlatNote(0, track.soundNum, track, note)
+
+                if (MfGlobals.mfMixer) {
+                    if (MfGlobals.mfMixer.strips.length === 0) {
+                        MfGlobals.mfMixer.start()
+                    }
                 }
                 this.mfSound.playSample(flatNote, 0)
                 console.log("Play :" + track.name + "=" + MfGlobals.sounds[track.soundNum].url)
             }
+        }
     }
-
-
-
 }

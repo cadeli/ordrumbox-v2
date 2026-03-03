@@ -16,7 +16,18 @@ module.exports = function(grunt) {
                     }
                 },
                 src: [
-                    "sources/mfconstants.js",
+                    "sources/mfglobals.js",
+                    "sources/mfcss.js",
+
+                    "sources/ihm/mfdropbox.js",
+                    "sources/ihm/mfsliderbox.js",
+                    "sources/ihm/mfcomponents.js",
+                    "sources/ihm/mfsoftsynthihm.js",
+                    "sources/ihm/mfskelhtml.js",
+                    "sources/ihm/mfsampleihm.js",
+                    "sources/ihm/mfupdates.js",
+                    "sources/ihm/mfcreateihm.js",
+                    "sources/ihm/wavevisu.js",
 
                     "sources/snd/mfstrip.js",
                     "sources/snd/mfmixer.js",
@@ -31,15 +42,8 @@ module.exports = function(grunt) {
                     "sources/ctrl/mfautocompose.js",
                     "sources/ctrl/mfautogenerate.js",
 
-                    "sources/ihm/mfcomponents.js",
-                    "sources/ihm/mfsampleihm.js",
-                    "sources/ihm/mfupdates.js",
-                    "sources/ihm/mfcreateihm.js",
-                    "sources/ihm/wavevisu.js",
-
                     "sources/load/mfresourcesloader.js",
-                    "sources/load/mfloader.js",
-
+       
                     "sources/mfseq.js",
                     "sources/utils.js",
                     "sources/main.js",
@@ -92,7 +96,7 @@ module.exports = function(grunt) {
                             replacement: 'main.min.css'
                         },  
                         {
-                            pattern: /(.*)mfconstants.js(.*)/,
+                            pattern: /(.*)mfglobals.js(.*)/,
                             replacement: ''
                         }, 
                         {
@@ -101,7 +105,7 @@ module.exports = function(grunt) {
                         }, 
                         {
                             pattern: /<\/head>/,
-                            replacement: '<script type="module" src="./app.min.js"></script>\n</head>'
+                            replacement: '<script type="module" src="./ordrumbox-v2-app.min.js"></script>\n</head>'
                         }
                     ]
                 }
@@ -133,7 +137,7 @@ module.exports = function(grunt) {
             build: {
                 files: [{
                         src: 'temp/app.1.js',
-                        dest: 'target/app.min.js',
+                        dest: 'target/ordrumbox-v2-app.min.js',
                     },
                     {
                         src: 'sources/timerworker.js',

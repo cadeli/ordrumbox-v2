@@ -3,6 +3,7 @@ import MfCmd from '../ctrl/mfcmd.js'
 import MfComponents from './mfcomponents.js'
 import MfCreateIhm from './mfcreateihm.js'
 import MfSampleIhm from './mfsampleihm.js'
+import MfSoftSynthIhm from './mfsoftsynthihm.js'
 
 export default class MfUpdates {
     static TAG = "MFUPDATES"
@@ -10,21 +11,22 @@ export default class MfUpdates {
     constructor() {
         this.mfCmd = new MfCmd()
         this.mfSampleIhm = new MfSampleIhm()
-        this.mfComponents = new MfComponents()
+        this.mfSoftSynthIhm = new MfSoftSynthIhm()
         this.preSelectedDrumkit = null
     }
 
     updateSelectedPattern = () => {
-        document.getElementById('selectedPatternDisp').innerText = MfGlobals.patterns[MfGlobals.selectedPatternNum].name
+        document.getElementById("bpmCtrl").innerText = (MfGlobals.patterns[MfGlobals.selectedPatternNum].bpm)
+        // MfGlobals.patternsDropBox.setTitle(MfGlobals.patterns[MfGlobals.selectedPatternNum].name)
+        MfGlobals.patternsDropBox.setSelectedItemNum(MfGlobals.selectedPatternNum, "Ptn")
         this.updatePatternView(MfGlobals.patterns[MfGlobals.selectedPatternNum], MfGlobals.displayBars)
     }
 
-
     updatePatternView = (pattern, displayBars) => {
+        if (!document.getElementById('trackDispl_9')) { return }
         document.getElementById('patternLength').innerText = displayBars + "/" + (pattern.nbBars / 4)
         const _this = this
-
-        document.getElementById('trackDispl_8').className = "trackDisplNone" //TODO
+        document.getElementById('trackDispl_8').className = "trackDisplNone" //toolbarDiv
         document.getElementById('trackDispl_9').className = "trackDisplNone"
         Object.values(pattern.tracks).forEach((track, indexTrack) => {
             if (indexTrack === 8) {
@@ -37,7 +39,7 @@ export default class MfUpdates {
             document.getElementById('trackName_' + indexTrack).innerText = track.name
 
             document.getElementById('trackBtn_' + indexTrack).onclick = function () {
-                document.getElementById('showTrackCtrl').style.display = "flex"
+                //document.getElementById('showTrackCtrl').style.display = "flex"
                 _this.selectTrack(indexTrack - 1)
                 _this.updateTrackBtns(pattern)
             }
@@ -46,14 +48,14 @@ export default class MfUpdates {
             document.getElementById('trackNbBars_' + indexTrack).onclick = function () {
                 _this.mfCmd.incrNbStepPerBar(track)
                 _this.updatePatternView(pattern, MfGlobals.displayBars)
-                MfGlobals.mfPatterns.getFlatNotesFromPattern(pattern)
+                MfGlobals.mfPatterns.computeFlatNotesFromPattern(pattern)
             }
 
             document.getElementById('trackLoopPoint_' + indexTrack).innerText = track.loopPoint
             document.getElementById('trackLoopPoint_' + indexTrack).onclick = function () {
                 _this.mfCmd.incrLoopPoint(track)
                 _this.updatePatternView(pattern, MfGlobals.displayBars)
-                MfGlobals.mfPatterns.getFlatNotesFromPattern(pattern)
+                MfGlobals.mfPatterns.computeFlatNotesFromPattern(pattern)
             }
 
             let tmDiv = document.getElementById('trackMuteBtnOff_' + indexTrack)
@@ -65,6 +67,17 @@ export default class MfUpdates {
             tmDiv.innerHTML = ''
             tmDiv.onclick = function () {
                 _this.trackToggleMute(track)
+            }
+
+           let taDiv = document.getElementById('trackAutoBtnOff_' + indexTrack)
+            if (track.auto === true) {
+                taDiv.className = 'trackAutoBtnOn'
+            } else {
+                taDiv.className = 'trackAutoBtnOff'
+            }
+            taDiv.innerHTML = ''
+            taDiv.onclick = function () {
+                _this.trackToggleAuto(track)
             }
 
             let nlDiv = document.getElementById('noteList_' + indexTrack)
@@ -186,7 +199,7 @@ export default class MfUpdates {
             this.mfCmd.deleteNote(selTrack, selNote)
         }
         this.updatePatternView(selPat, MfGlobals.displayBars)
-        MfGlobals.mfPatterns.getFlatNotesFromPattern(selPat)
+        MfGlobals.mfPatterns.computeFlatNotesFromPattern(selPat)
     }
 
     clickOnEmptyNote = (indexTrack, bar, step) => {
@@ -197,7 +210,7 @@ export default class MfUpdates {
         this.updatePatternView(selPat, MfGlobals.displayBars)
         this.selectNote(indexTrack, bar, step)
         this.updateNoteCtrl(note, bar, step)
-        MfGlobals.mfPatterns.getFlatNotesFromPattern(selPat)
+        MfGlobals.mfPatterns.computeFlatNotesFromPattern(selPat)
     }
 
     updateNoteCtrl = (selNote, bar, step) => {
@@ -320,13 +333,22 @@ export default class MfUpdates {
         } else {
             document.getElementById('trackCtrlGenSound').style = "background: #808080;"
         }
+        if (!selTrack.soundNum) {
+            selTrack.soundNum = 0
+        }
         if (selTrack.soundNum < 0) {
             selTrack.soundNum = (MfGlobals.sounds.length - 1)
         }
         selTrack.soundNum %= MfGlobals.sounds.length
         if (selTrack.soundNum >= 0) { //TODO
             const soundName = MfGlobals.sounds[selTrack.soundNum].kit_name + ":" + MfGlobals.sounds[selTrack.soundNum].key
-            document.getElementById('trackCtrlPickSound').innerText = soundName
+            if (selTrack.generated === true) {
+                document.getElementById('trackCtrlPickSound').innerText = "synth:"+ selTrack.synthSoundKey
+            } else {
+                document.getElementById('trackCtrlPickSound').innerText = soundName
+            }
+        } else {
+            document.getElementById('trackCtrlPickSound').innerText = "NO SOUND"
         }
     }
 
@@ -397,6 +419,7 @@ export default class MfUpdates {
     }
 
     trackToggleMute = (track) => {
+       console.log("MfUpdates::trackToggleMute. click ")
         if (!track) { return }
         if (track.mute === true) {
             track.mute = false
@@ -407,125 +430,58 @@ export default class MfUpdates {
         this.updateTrackCtrl(MfGlobals.selectedTrackNum)
     }
 
+  trackToggleAuto= (track) => {
+        console.log("MfUpdates::trackToggleAuto. click ")
+        if (!track) { return }
+        if (track.auto === true) {
+            track.auto = false
+        } else {
+            track.auto = true
+        }
+        this.updatePatternView(MfGlobals.patterns[MfGlobals.selectedPatternNum], MfGlobals.displayBars)
+        this.updateTrackCtrl(MfGlobals.selectedTrackNum)
+    }
+
+    togglePatternAutoMode = () => {
+       console.log("MfUpdates::togglePatternAutoMode. click ")
+        if (MfGlobals.autoMode === true) {
+            MfGlobals.autoMode = false
+            document.getElementById('patternAutoMode').style = "background: #555;"
+        } else {
+            document.getElementById('patternAutoMode').style = "background: #ADD8E6;"
+            MfGlobals.mfAutoGenerate.generatePattern()
+            MfGlobals.autoMode = true
+        }
+    }
+
+    toggleMixerControls = () => {
+        const doc = document.getElementById('showMixerCtrl')
+        if (doc.style.display === "flex") {
+            doc.style.display = "none"
+        } else {
+            doc.style.display = "flex"
+            MfGlobals.mfUpdates.updateMixerPanel()
+        }
+    }
+
+    clearPattern = () => {
+        MfGlobals.mfUpdates.mfCmd.cleanPattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])
+        MfGlobals.mfUpdates.updatePatternView(MfGlobals.patterns[MfGlobals.selectedPatternNum], 1)
+        let selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
+        MfGlobals.mfPatterns.computeFlatNotesFromPattern(selPat)
+    }
+
+    incrDisplayBarIhm = () => {
+        let pattern = MfGlobals.patterns[MfGlobals.selectedPatternNum]
+        MfGlobals.mfUpdates.mfCmd.incrDisplayBar(pattern)
+        MfGlobals.mfUpdates.updatePatternView(pattern, MfGlobals.displayBars)
+    }
+
+
     getSelectedNote = () => {
         let selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
         let selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
         return this.mfCmd.isNoteAt(selTrack, MfGlobals.selectedNoteBar, MfGlobals.selectedNoteStep)[0]
-    }
-
-    displayModalDialogGenSound = () => {
-        document.getElementById("warn-modal").style.display = "block"
-        document.getElementById("modal-title-text").innerText = "Soft Synth"
-        let propertiesList = document.getElementById('modal-message')
-        Utils.clearInnerDom(propertiesList)
-
-        let lineDiv = document.createElement('div')
-        lineDiv.className = "line-controls"
-        lineDiv.style.display = "flex"
-        propertiesList.appendChild(lineDiv)
-
-        let containerDivName = document.createElement('div')
-        containerDivName.className = "sliders-block"
-        lineDiv.appendChild(containerDivName)
-
-        let containerDivVCO1 = document.createElement('div')
-        containerDivVCO1.className = "sliders-block"
-        lineDiv.appendChild(containerDivVCO1)
-
-        let containerDivVCO2 = document.createElement('div')
-        containerDivVCO2.className = "sliders-block"
-        lineDiv.appendChild(containerDivVCO2)
-
-        let containerDivVCO3 = document.createElement('div')
-        containerDivVCO3.className = "sliders-block"
-        lineDiv.appendChild(containerDivVCO3)
-
-        let containerDivLfo = document.createElement('div')
-        containerDivLfo.className = "sliders-block"
-        lineDiv.appendChild(containerDivLfo)
-
-        let containerDivFilter = document.createElement('div')
-        containerDivFilter.className = "sliders-block"
-        lineDiv.appendChild(containerDivFilter)
-
-
-        if (MfGlobals.generatedSounds) {
-            const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
-            const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
-            if (!selTrack.synthSoundKey) { selTrack.synthSoundKey = "bass1" }
-
-            const synth = selTrack.synthSoundKey
-
-            let generatedSound = MfGlobals.generatedSounds[synth]
-
-            let generatedSoundsList = []
-            for (const [name, generatedSound] of Object.entries(MfGlobals.generatedSounds)) {
-                generatedSoundsList.push(name)
-            }
-            let inputBoxSounds = this.mfComponents.addListInputBox("Preset", "id", generatedSoundsList, synth, this.changeSoundName, true)
-
-            let lgr = this.mfComponents.addNormInputBox("trackCtrlLgr", "length", generatedSound.enveloppe.lgr, function (value) { generatedSound.enveloppe.lgr = value })
-            let vol = this.mfComponents.addNormInputBox("softSynthVol", "volume", generatedSound.enveloppe.vol, function (value) { generatedSound.enveloppe.vol = value })
-            containerDivName.appendChild(inputBoxSounds)
-            containerDivName.appendChild(lgr)
-            containerDivName.appendChild(vol)
-            //
-            let waveFormTypeList = ["sqr", "saw", "tri", "sin"]
-            let filterTypeList = ["lp", "hp", "bp", "no", "all"]
-            let waveVco1 = this.mfComponents.addListInputBox("VCO1", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.vco1.wave), function (value) { generatedSound.vco1.wave = Utils.getWaveNameFromValue(value) })
-            let gainVco1 = this.mfComponents.addNormInputBox("vco1Gain", "Gain", generatedSound.vco1.gain, function (value) { generatedSound.vco1.gain = value })
-            let octVco1 = this.mfComponents.addSliderBox("vco1Oct", "Octave", generatedSound.vco1.octave, function (value) { generatedSound.vco1.octave = value }, null, 0, 1, 0.05)
-            let detuneVco1 = this.mfComponents.addNormInputBox("vco1Detune", "Detune", generatedSound.vco1.detune, function (value) { generatedSound.vco1.detune = value })
-            containerDivVCO1.appendChild(waveVco1)
-            containerDivVCO1.appendChild(gainVco1)
-            containerDivVCO1.appendChild(octVco1)
-            containerDivVCO1.appendChild(detuneVco1)
-
-            let waveVco2 = this.mfComponents.addListInputBox("VCO2", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.vco2.wave), function (value) { generatedSound.vco2.wave = Utils.getWaveNameFromValue(value) })
-            let gainVco2 = this.mfComponents.addNormInputBox("vco2Gain", "Gain", generatedSound.vco2.gain, function (value) { generatedSound.vco2.gain = value })
-            let octVco2 = this.mfComponents.addSliderBox("vco2Oct", "Octave", generatedSound.vco2.octave, function (value) { generatedSound.vco2.octave = value }, null, 0, 1, 0.05)
-            let detuneVco2 = this.mfComponents.addNormInputBox("vco2Detune", "Detune", generatedSound.vco2.detune, function (value) { generatedSound.vco2.detune = value })
-            containerDivVCO2.appendChild(waveVco2)
-            containerDivVCO2.appendChild(gainVco2)
-            containerDivVCO2.appendChild(octVco2)
-            containerDivVCO2.appendChild(detuneVco2)
-
-            if (generatedSound.vco3) {
-                let waveVco3 = this.mfComponents.addListInputBox("VCO3", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.vco3.wave), function (value) { generatedSound.vco3.wave = Utils.getWaveNameFromValue(value) })
-                let gainVco3 = this.mfComponents.addNormInputBox("vco3Gain", "Gain", generatedSound.vco3.gain, function (value) { generatedSound.vco3.gain = value })
-                let octVco3 = this.mfComponents.addSliderBox("vco3Oct", "Octave", generatedSound.vco3.octave, function (value) { generatedSound.vco3.octave = value }, null, 0, 1, 0.05)
-                let detuneVco3 = this.mfComponents.addNormInputBox("vco3Detune", "Detune", generatedSound.vco3.detune, function (value) { generatedSound.vco3.detune = value })
-                containerDivVCO3.appendChild(waveVco3)
-                containerDivVCO3.appendChild(gainVco3)
-                containerDivVCO3.appendChild(octVco3)
-                containerDivVCO3.appendChild(detuneVco3)
-            }
-
-            let lfoTargetList = ["vco1", "vco2","vco3", "flt", "not"]
-            let lfoWave = this.mfComponents.addListInputBox("LFO", "id", waveFormTypeList, Utils.getValueFromWaveName(generatedSound.lfo.wave), function (value) { generatedSound.lfo.wave = Utils.getWaveNameFromValue(value) })
-            let lfoTarget = this.mfComponents.addListInputBox("Target", "id", lfoTargetList, generatedSound.lfo.target, function (value) { generatedSound.lfo.target = value })
-            let lfoDepth = this.mfComponents.addNormInputBox("lfoDepth", "Depth", generatedSound.lfo.depth, function (value) { generatedSound.lfo.depth = value })
-            let lfoFreq = this.mfComponents.addNormInputBox("glfoFreq", "Freq", generatedSound.lfo.freq, function (value) { generatedSound.lfo.freq = value })
-            containerDivLfo.appendChild(lfoWave)
-            containerDivLfo.appendChild(lfoTarget)
-            containerDivLfo.appendChild(lfoDepth)
-            containerDivLfo.appendChild(lfoFreq)
-
-            let filterType = this.mfComponents.addListInputBox("Filter", "id", filterTypeList, Utils.getValueFromFilterName(generatedSound.filter.type), function (value) { generatedSound.filter.type = Utils.getFilterNameFromValue(value) })
-            let filterFreq = this.mfComponents.addNormInputBox("filterFreq", "Freq", generatedSound.filter.freq, function (value) { generatedSound.filter.freq = value })
-            let filterQ = this.mfComponents.addNormInputBox("filterQ", "Q", generatedSound.filter.Q, function (value) { generatedSound.filter.Q = value })
-            containerDivFilter.appendChild(filterType)
-            containerDivFilter.appendChild(filterFreq)
-            containerDivFilter.appendChild(filterQ)
-        }
-    }
-
-    changeSoundName = (value) => {
-        let selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
-        let selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
-        selTrack.synthSoundKey = value
-        //MfGlobals.bassSound = value
-        this.displayModalDialogGenSound()
     }
 
     displayModalDialogNbBar = () => {
@@ -536,7 +492,7 @@ export default class MfUpdates {
         Utils.clearInnerDom(propertiesList)
         for (let i = 0; i < 4; i++) {
             let opt = document.createElement('div');
-            opt.className = "middle-button"
+            opt.className = "mf-button"
             let pattern = MfGlobals.patterns[MfGlobals.selectedPatternNum]
             if (pattern.nbBars === (i + 1) * 4) {
                 opt.classList.add("selected-button")
@@ -546,7 +502,7 @@ export default class MfUpdates {
             opt.onclick = function () {
                 let pattern = MfGlobals.patterns[MfGlobals.selectedPatternNum]
                 MfGlobals.mfUpdates.mfCmd.setNbBar(pattern, (i + 1))
-                MfGlobals.mfPatterns.getFlatNotesFromPattern(pattern)
+                MfGlobals.mfPatterns.computeFlatNotesFromPattern(pattern)
                 MfGlobals.mfUpdates.mfCmd.incrDisplayBar(pattern)
                 MfGlobals.mfUpdates.updatePatternView(pattern, MfGlobals.displayBars)
                 document.getElementById("warn-modal").style.display = "none"
@@ -555,90 +511,6 @@ export default class MfUpdates {
         }
     }
 
-    displayModalDialogKit = () => {
-        if (MfGlobals.mfLoader.extendedSoundsLoaded === false) {
-            document.getElementById("resourcesProgress").style.display = 'block'
-            MfGlobals.mfLoader.loadExtendedDrumkits(this.displayModalDialogKit)
-        }
-        let self = this
-        document.getElementById("warn-modal").style.display = "block"
-        document.getElementById("modal-title-text").innerText = "Drumkits"
-        let drumkitPanel = document.getElementById('modal-message')
-        Utils.clearInnerDom(drumkitPanel)
-        let drumkitList = document.createElement('div')
-        drumkitList.className = "sound-type-list"
-        drumkitPanel.appendChild(drumkitList)
-        let drumKitInfos = document.createElement('div')
-        drumKitInfos.className = "kit-infos"
-        let drumKitInfosTxt = document.createElement('div')
-        drumKitInfosTxt.id = "drumKitInfosTxtId"
-        drumKitInfos.appendChild(drumKitInfosTxt)
-        drumkitPanel.appendChild(drumKitInfos)
-
-
-        let okBtn = document.createElement('div')
-        okBtn.innerHTML = "OK"
-        okBtn.className = "small-button"
-        okBtn.onclick = function () {
-            if (!self.preSelectedDrumkit) { return }
-            MfGlobals.selectedDrumkit = self.preSelectedDrumkit
-            self.onDrumkitChange()
-            document.getElementById("warn-modal").style.display = "none";
-            //console.log("init drumkit selected " + MfGlobals.selectedDrumkit)
-        }
-        drumKitInfos.appendChild(okBtn)
-
-        for (const [kitName, samplesDesc] of Object.entries(MfGlobals.drumkits)) {
-            let opt = document.createElement('div');
-            opt.className = 'middle-button'
-            opt.innerHTML = kitName
-            const nbSamples = samplesDesc.instruments.length
-            if (kitName === MfGlobals.selectedDrumkit) {
-                opt.classList.add("selected-button")
-                self.displayKitInfos(kitName)
-            }
-
-            let that = this
-            opt.onclick = function () {
-                self.preSelectedDrumkit = kitName
-                self.displayKitInfos(kitName)
-            }
-            drumkitList.appendChild(opt)
-        }
-        document.getElementById("selectedDrumkitDisp").innerHTML = MfGlobals.selectedDrumkit
-    }
-
-    displayKitInfos = (kitName) => {
-        let drumKitInfosTxt = document.getElementById('drumKitInfosTxtId')
-        if (MfGlobals.drumkits[kitName]) {
-            drumKitInfosTxt.innerHTML = "<h1 align='center'>" + kitName + " (" + MfGlobals.drumkits[kitName].instruments.length + ")" + "</h1>" +
-                "<p align='center'>" + MfGlobals.drumkits[kitName].infos + "</p>" +
-                "<p align='center'>" + MfGlobals.drumkits[kitName].desc + "</p>"
-        }
-    }
-
-
-    displayModalDialogPattern = () => {
-        document.getElementById("warn-modal").style.display = "block"
-        document.getElementById("modal-title-text").innerText = "Patterns"
-        let patternList = document.getElementById('modal-message')
-        patternList.className = "buttons-list"
-        Utils.clearInnerDom(patternList)
-        Object.values(MfGlobals.patterns).forEach((pattern, indexPattern) => {
-            let opt = document.createElement('div');
-            opt.className = "middle-button"
-            opt.innerHTML = pattern.name
-            if (pattern === MfGlobals.patterns[MfGlobals.selectedPatternNum]) {
-                opt.classList.add("selected-button")
-            }
-            let _this = this
-            opt.onclick = function () {
-                MfGlobals.mfUpdates.mfCmd.setSelectedPatternNum(indexPattern)
-                _this.onPatternChange()
-            }
-            patternList.appendChild(opt)
-        })
-    }
 
     createRecordPanel = () => {
         console.log("mfupdate::createRecordPanel")
@@ -663,7 +535,7 @@ export default class MfUpdates {
             box1.appendChild(framediv)
 
             let anchorDownloadWav = document.createElement('a')
-            anchorDownloadWav.className = "middle-button"
+            anchorDownloadWav.className = "mf-button"
             let url = window.URL.createObjectURL(MfGlobals.blob)
             anchorDownloadWav.href = url
             let dlName = 'ordrumbox-online-' +
@@ -690,7 +562,7 @@ export default class MfUpdates {
         inputImportJson.id = "importJson"
         let labelImportJson = document.createElement('label')
         labelImportJson.for = "importJson"
-        labelImportJson.className = "free-button"
+        labelImportJson.className = "mf-button"
         labelImportJson.innerHTML = "Import your pattern"
         box2.appendChild(labelImportJson)
         labelImportJson.onclick = function (ev) {
@@ -737,7 +609,7 @@ export default class MfUpdates {
         var blobExportJson = new Blob([txt], { type: "text/plain;charset=utf-8" })
         let anchorExportJson = document.createElement('a')
         anchorExportJson.id = "exportBtn"
-        anchorExportJson.className = "free-button"
+        anchorExportJson.className = "mf-button"
         anchorExportJson.href = window.URL.createObjectURL(blobExportJson)
         anchorExportJson.title = 'ordrumbox-online-' + MfGlobals.patterns[MfGlobals.selectedPatternNum].name + "-" + (new Date()).getTime() + '.json'
         anchorExportJson.download = anchorExportJson.title
@@ -773,18 +645,18 @@ export default class MfUpdates {
         }
     }
 
-
-    onDrumkitChange = () => {
-        this.mfCmd.autoAssignSounds(MfGlobals.patterns[MfGlobals.selectedPatternNum])
-        MfGlobals.mfPatterns.getFlatNotesFromPattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])
-        document.getElementById("selectedDrumkitDisp").innerHTML = MfGlobals.selectedDrumkit
-        this.updateTrackCtrl(MfGlobals.selectedTrackNum)
+    onDrumkitChange = (newitemNum) => {
+        MfGlobals.selectedDrumkitNum = newitemNum
+        const selectedDrumkit = MfGlobals.drumkitList[MfGlobals.selectedDrumkitNum]
+        MfGlobals.drumkitsDropBox.fillDropBox(MfGlobals.drumkitList, selectedDrumkit, "Kit")
     }
 
-    onPatternChange = () => {
+    onPatternChange = (newItemNum) => {
+        const selectedPattern = MfGlobals.patterns[MfGlobals.selectedPatternNum]
+        MfGlobals.patternsDropBox.fillDropBox(MfGlobals.patterns, selectedPattern, "Ptn:")
         //should ajust strips to fit with pattern
-        this.mfCmd.autoAssignSounds(MfGlobals.patterns[MfGlobals.selectedPatternNum])
-        MfGlobals.mfPatterns.getFlatNotesFromPattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])
+        this.mfCmd.autoAssignSounds(selectedPattern)
+        MfGlobals.mfPatterns.computeFlatNotesFromPattern(selectedPattern)
         this.updateSelectedPattern()
         document.getElementById("warn-modal").style.display = "none";
     }

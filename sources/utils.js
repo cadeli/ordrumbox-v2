@@ -1,7 +1,48 @@
 export default class Utils {
     static TAG = "UTILS"
 
-    constructor() {}
+    constructor() { }
+
+    //we use stop propagation
+    static collapseDropBoxs() {
+        const dropboxElements = document.getElementsByClassName("mf-dropbox-list");
+        const bDivs = Array.prototype.filter.call(dropboxElements, (dropboxElement) => {
+            dropboxElement.style.display = 'none'
+        }
+        )
+    }
+
+    //we use stop propagation
+    static collapseSliders() {
+        const slidersElements = document.getElementsByClassName("tooltiptext");
+        const aDivs = Array.prototype.filter.call(slidersElements, (slidersElement) =>
+            slidersElement.style.display = 'none')
+
+    }
+
+    static toggleDisplayDiv(adiv) {
+        const display = getComputedStyle(adiv).display;
+        if (display == "none") {
+            adiv.style.display = "block";
+        } else {
+            adiv.style.display = "none";
+        }
+    }
+
+    //helper to create namespaced elements
+    static createMfElement = (type, id, className, parent) => {
+        //    if (className !== null)
+        //         console.log("MfSkelHtml::createMfElement: " + type + " id:" + id + " class:" + className)
+        let elem = document.createElement(type)
+        if (id) {
+            elem.id = id
+        }
+        if (className) {
+            elem.className = className
+        }
+        parent.appendChild(elem)
+        return elem
+    }
 
     static displayModalMessage = (message) => {
         document.getElementById("warn-modal").style.display = "block"
@@ -30,7 +71,7 @@ export default class Utils {
     }
 
     static sortObj = (obj) => {
-        return Object.keys(obj).sort().reduce(function(result, key) {
+        return Object.keys(obj).sort().reduce(function (result, key) {
             result[key] = obj[key];
             return result;
         }, {});
@@ -47,83 +88,87 @@ export default class Utils {
 
     static getFilterNameFromValue = (txt) => {
         switch (txt) {
-            case "lp":
+            case "LP":
                 return "lowpass"
                 break;
-            case "hp":
+            case "HP":
                 return "highpass"
                 break;
-            case "bp":
+            case "BP":
                 return "bandpass"
                 break;
-            case "nt":
+            case "NT":
                 return "notch"
                 break;
-            case "all":
+            case "ALL":
                 return "allpass"
                 break;
             default:
+                console.warn("Utils::getFilterNameFromValue value not found :", txt)
                 return "allpass"
         }
     }
 
-       static getValueFromFilterName = (txt) => {
+    static getValueFromFilterName = (txt) => {
         switch (txt) {
             case "lowpass":
-                return "lp"
+                return "LP"
                 break;
             case "highpass":
-                return "hp"
+                return "HP"
                 break;
             case "bandpass":
-                return "bp"
+                return "BP"
                 break;
             case "notch":
-                return "nt"
+                return "NT"
                 break;
             case "allpass":
-                return "all"
+                return "ALL"
                 break;
             default:
-                return "all"
+                console.warn("Utils::getValueFromFilterName value not found :", txt)
+                return "ALL"
         }
     }
 
-       static getWaveNameFromValue = (txt) => {
+    static getWaveNameFromValue = (txt) => {
         switch (txt) {
-            case "sqr":
+            case "SQR":
                 return "square"
                 break;
-            case "saw":
+            case "SAW":
                 return "sawtooth"
                 break;
-            case "tri":
+            case "TRI":
                 return "triangle"
                 break;
-            case "sin":
+            case "SIN":
                 return "sine"
                 break;
             default:
+                console.warn("Utils::getWaveNameFromValue value not found :", txt)
                 return "sine"
         }
     }
 
-       static getValueFromWaveName = (txt) => {
+    static getValueFromWaveName = (txt) => {
         switch (txt) {
             case "square":
-                return "sqr"
+                return "SQR"
                 break;
             case "sawtooth":
-                return "saw"
+                return "SAW"
                 break;
             case "triangle":
-                return "tri"
+                return "TRI"
                 break;
             case "sine":
-                return "sin"
+                return "SIN"
                 break;
             default:
-                return "sin"
+                console.warn("Utils::getValueFromWaveName value not found :", txt)
+                return "SIN"
         }
     }
 }

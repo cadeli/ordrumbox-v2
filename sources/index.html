@@ -3,227 +3,244 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta http-equiv="Content-Language" content="en">
+    <meta name="viewport"
+        content="minimal-ui, width=device-width, initial-scale=1, maximum-scale=10, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Online Drum Machine, web app: orDrumbox </title>
     <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
-    <link rel="stylesheet" href="main.css">
-    <script type="text/javascript" src="./mfconstants.js"></script>
+    <link rel="canonical" href="https://www.ordrumbox.com/">
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        :root {
+            --primary: #ff5e00;
+            --secondary: #111;
+            --bg-light: #f8f8f8;
+            --text-light: #fff;
+            --text-dark: #111;
+            --radius: 10px;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(120deg, #111, #333);
+            color: var(--text-light);
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        header img {
+            max-width: 120px;
+            margin-top: 1rem;
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.2));
+        }
+
+        .hero {
+            background: url("https://www.ordrumbox.com/jsdrumbox/assets/images/ordrumbox free software drum machine.png?auto=format&fit=crop&w=2000&q=80") no-repeat center/cover;
+            color: white;
+            text-align: center;
+            padding: 6rem 1rem;
+            position: relative;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .buttons a {
+            background: var(--primary);
+            color: white;
+            padding: 0.9rem 1.8rem;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .buttons a:hover {
+            background: #ff7f32;
+            transform: translateY(-3px);
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 3rem auto;
+            padding: 0 1rem;
+        }
+
+        section {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        section h2 {
+            color: var(--primary);
+            border-left: 5px solid var(--primary);
+            padding-left: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .features {
+            columns: 2;
+            column-gap: 2rem;
+        }
+
+        .features li {
+            margin-bottom: 0.5rem;
+        }
+
+        .features-explanation {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+        }
+
+        .feature-card ul {
+            padding-left: 1.2rem;
+            margin-top: 0.5rem;
+        }
+
+        iframe {
+            width: 100%;
+            height: 315px;
+            border: none;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+        }
+
+        footer {
+            background: var(--secondary);
+            color: var(--text-light);
+            text-align: center;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        footer img {
+            width: 60px;
+            height: auto;
+            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.2));
+        }
+
+        footer a {
+            color: #ffb86c;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        footer a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .features {
+                columns: 1;
+            }
+        }
+    </style>
+
+
+    <script type="text/javascript" src="./mfglobals.js"></script>
     <script defer type="module" src="./main.js"></script>
 </head>
 
-<body id="container">
-    <div id="main">
-        <div id="toolbar" class="line-controls">
-            <div class="small-button " id="playstop">play</div>
-            <div id="vuMetterBorder" class=" small-button2">
-                <svg id="vuMetterBorderSvg" height="18px" width="64px"></svg>
-            </div>
-            <span id="currentMark" class="small-button">00:0</span>
-            <div id="patternLength" class=" small-button">1/1</div>
-            <label id="bpmBox" class="small-button tooltip">
-                <div> bpm: <span id="showTempo">120</span>
-                    <div class="tooltiptext" id="bpmTooltip">
-                        <input id="bpmInput" type="range" min="30.0" max="300.0" step="1" value="120">
-                    </div>
-                </div>
-            </label>
-            <div class="small-button" id="selectDrumkit"><span class="label">Kit:</span><span
-                    id="selectedDrumkitDisp">real</span></div>
-            <div id="selectedPatternDisp" class="small-button">disco</div>
-            <div id="patternAutoMode" class="twostates small-button">auto</div>
-            <div class="small-button" id="cleanPattern">clear</div>
-            <div class="small-button" id="tools">tools</div>
-        </div>
-        <div id="showPattern" class="line-controls">
-            <div class="sliders-block">
-                <div id="stepProgression">
-                    <div id="stepProgressionPad"></div>
-                    <div id="stepProgressionRule">
-                        <div id="stepProgressionMark"></div>
-                    </div>
-                </div>
-                <div class="trackDispl" id="trackDispl_0">
-                    <div class="trackBtn" id="trackBtn_0" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_0" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_0">KICK</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_0">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_0">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_0"></div>
-                    <div class="notesList" id="noteList_0">
-                    </div>
-                </div>
-                <div class="trackDispl" id="trackDispl_1">
-                    <div class="trackBtn" id="trackBtn_1" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_1" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_1">SNARE</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_1">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_1">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_1"></div>
-                    <div class="notesList" id="noteList_1">
-                    </div>
-                </div>
-                <div class="trackDispl" id="trackDispl_2">
-                    <div class="trackBtn" id="trackBtn_2" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_2" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_2">TOM</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_2">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_2">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_2"></div>
-                    <div class="notesList" id="noteList_2">
-                    </div>
-                </div>
-                <div class="trackDispl" id="trackDispl_3">
-                    <div class="trackBtn" id="trackBtn_3" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_3" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_3">CLAP</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_3">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_3">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_3"></div>
-                    <div class="notesList" id="noteList_3">
-                    </div>
-                </div>
-                <div class="trackDispl" id="trackDispl_4">
-                    <div class="trackBtn" id="trackBtn_4" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_4" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_4">COW</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_4">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_4">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_4"></div>
-                    <div class="notesList" id="noteList_4">
-                    </div>
-                </div>
-                <div class="trackDispl" id="trackDispl_5">
-                    <div class="trackBtn" id="trackBtn_5" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_5" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_5">CHH</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_5">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_5">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_5"></div>
-                    <div class="notesList" id="noteList_5">
-                    </div>
-                </div>
-                <div class="trackDispl" id="trackDispl_6">
-                    <div class="trackBtn" id="trackBtn_6" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_6" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_6">OHH</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_6">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_6">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_6"></div>
-                    <div class="notesList" id="noteList_6">
-                    </div>
-                </div>
-                <div class="trackDispl" id="trackDispl_7">
-                    <div class="trackBtn" id="trackBtn_7" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_7" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_7">CRASH</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_7">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_7">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_7"></div>
-                    <div class="notesList" id="noteList_7">
-                    </div>
-                </div>
-                <div class="trackDisplNone" id="trackDispl_8">
-                    <div class="trackBtn" id="trackBtn_8" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_8" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_8">KICK</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_8">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_8">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_8"></div>
-                    <div class="notesList" id="noteList_8">
-                    </div>
-                </div>
-                <div class="trackDisplNone" id="trackDispl_9">
-                    <div class="trackBtn" id="trackBtn_9" style="background-color:#555;">
-                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            width="4px" height="14px" padding="0px" viewBox="0 0 100 100">
-                            <circle id="trackLed_9" cx="50" cy="200" r="1" fill="lightblue"></circle>
-                        </svg>
-                        <div id="trackName_9">KICK</div>
-                    </div>
-                    <div class="trackNbBars" id="trackNbBars_9">4</div>
-                    <div class="trackLoopPoint" id="trackLoopPoint_9">4</div>
-                    <div class="trackMuteBtnOff" id="trackMuteBtnOff_9"></div>
-                    <div class="notesList" id="noteList_9">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="showMixerCtrl" class="line-controls-d">
-            <svg id="waveformSvg" style="background-color:#000;border-radius: 6px;width:100%"></svg>
-            <div id="mixerCtrl"></div>
-        </div>
-        <div class="line-controls">
-            <div id="showTrackCtrl" class="box-h sliders-block-e"></div>
-            <div id="showLfoCtrl" class="box-h sliders-block-e"></div>
-            <div id="showNoteCtrl" class="box-h sliders-block-e"></div>
-        </div>
-        <div id="download" class="line-controls"></div>
-        <div class="loading-box">
-            <div id="resourcesProgress" class="ordbBtnBig"> LOADING<br />
-                <progress id="resourcesProgressBar" max="100" value="0"> 0% </progress>
-            </div>
-        </div>
-    </div>
-    <div class="mftext">
-        <div class="full-line">
-            <h1 class="mftextp">OrDrumbox : Free online drum machine</h1>
-            <a href="https://www.ordrumbox.com" target="_blank" class="mftextp">https://www.ordrumbox.com</a>
-            <h1 class="mftextp">orDrumbox is an open-source project (GPL V3) available on GitHub:</h1>
-            <a href="https://github.com/cadeli/ordrumbox-v2" target="_blank" class="mftextp">github.com/cadeli/ordrumbox-v2</a>
-        </div>
-    </div>
+<body>
+    <div id="insert-ordrumbox-v2-here"></div>
+    <header>
+        <h1>OrDrumbox: Free Online Drum Machine</h1>
+        <img src="assets/images/ordrumbox-logo-prop3.png" alt="OrDrumbox Logo">
+    </header>
 
-    <footer class="footer">
+  
+    <main>
+        <section>
+         
+        </section>
 
+    </main>
+
+    <footer>
+        <a href="https://www.ordrumbox.com/video-tutorial-ordrumbox.html">
+            <img src="assets/images/logo.png" alt="OrDrumbox Logo">
+        </a>
+        <p>orDrumbox is an open-source project (GPL V3) on <a href="https://github.com/cadeli/ordrumbox-v2">GitHub</a>
+        </p>
+        <p>© 2026 OrDrumbox Team</p>
     </footer>
-    </div>
-    <div id="visu-modal">
-        <svg id="visuformSvg" style="background-color:#000" width="100%"></svg>
-    </div>
-    <div id="warn-modal">
-        <div class="modal-content">
-            <div id="modal-title">
-                <div id="modal-title-text"> WARNING </div>
-                <div id="modal-close">&times;</div>
-            </div>
-            <div id="modal-message">no message</div>
-        </div>
-    </div>
 </body>
 
 </html>
