@@ -7,21 +7,21 @@ written in Vanilla JavaScript , no framework, no librairies
 
 ### Features
 #### Controls:
-    Adjust pitch, volume, and panning per note or track
+Adjust pitch, volume, and panning per note or track
 #### Step Sequencer
-     Add/delete notes, loop per track, time signature per track, allow complex polyrythmie, swing per track
+Add/delete notes, loop per track, time signature per track, allow complex polyrythmie, swing per track
 #### Triggers
-    Counter triggers, repeat controls, and LFO modulators
+Counter triggers, repeat controls, and LFO modulators
 #### Bass Line Generator
-    Create an automatic bass line on a separate track
+Create an automatic bass line on a separate track
 #### Auto composition 
-    semi-random add notes per track 
+semi-random add notes per track 
 #### Sound Synth
-    Customize sounds with ADSR, three VCOs, one LFO, and one filter
+Customize sounds with ADSR, three VCOs, one LFO, and one filter
 #### Import/Export
-    Save and load patterns as local files; export sessions as WAV files
+Save and load patterns as local files; export sessions as WAV files
 #### Presets
- 35 demo patterns, 10 drum kits, 10 presets for synth sounds
+35 demo patterns, 10 drum kits, 10 presets for synth sounds
                 
 
 ## user manual
