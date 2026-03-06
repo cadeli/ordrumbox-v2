@@ -7,7 +7,7 @@ written in Vanilla JavaScript , no framework, no librairies
 ## Features
 
 ### Presets
- 35 demo patterns, 8 drum kits, 5 presets for synth sounds
+ 35 demo patterns, 10 drum kits, 10 presets for synth sounds
                 
 ###  Step Sequencer
 Classic controls: pitch, volume and panoramic per note or per tracks.
@@ -17,7 +17,10 @@ pattern editor, counter triggers, repeat controls , LFO modulators.
 automatic bass line on a separate track.
 
 ### Sound Synth
- three VCO, one LFO ,one filter.
+ADSR,  three VCO, one LFO ,one filter.
+
+### Auto composition
+semi-random add notes per track 
 
 ### Import/Export
 save and load patterns as local files 
@@ -25,6 +28,10 @@ export sessions as wave file
 
 ## user manual
 <https://www.ordrumbox.com/userguide-ordrumbox-v2.html>
+
+
+## mini tutorial video 
+<https://www.ordrumbox.com/video-tutorial-ordrumbox.html>
 
 ## online demo /web site
 <https://www.ordrumbox.com>

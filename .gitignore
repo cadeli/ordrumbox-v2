@@ -4,3 +4,6 @@
 **/node_modules
 **/*.reapeaks
 **/*DS_Store
+Gruntfile.*
+package*
+**.old
