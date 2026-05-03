@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>orDrumbox | Free Online Drum Machine & Step Sequencer</title>
+  <meta name="description" content="Create beats with orDrumbox, a free online drum machine. Features step sequencer, soft synth, LFO modulators, and WAV export.">
+  
+  <meta property="og:title" content="orDrumbox - Free Online Drum Machine">
+  <meta property="og:description" content="Create, customize, and export drum patterns directly in your browser.">
+  <meta property="og:image" content="https://www.ordrumbox.com/jsdrumbox/assets/images/ordrumbox-online-screenshot.png">
+  <meta property="og:url" content="https://www.ordrumbox.com">
+  <meta property="og:type" content="website">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="orDrumbox | Online Beat Maker">
+  <meta name="twitter:image" content="https://www.ordrumbox.com/jsdrumbox/assets/images/ordrumbox-online-screenshot.png">
+  <link rel="canonical" href="https://www.ordrumbox.com">
+  <link rel="manifest" href="manifest.json">
+ <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "online orDrumbox",
+        "description": "Create you own patterns with powerfull custom controls using various styles drumkits ",
+        "url": "https://www.ordrumbox.com/index.html",
+        "applicationCategory": "Music",
+        "operatingSystem": "Web",
+        "screenshot": "https://www.ordrumbox.com/jsdrumbox/assets/images/jsdrumbox-screenshot.png",
+        "inLanguage": "en-US",
+        "author": {
+            "@type": "Organization",
+            "name": "orDrumbox Team",
+            "url": "https://www.ordrumbox.com"
+        },
+        "applicationSubCategory": "Music Composition",
+        "applicationFeature": [
+            "Music Sequencing",
+            "Drum Kits",
+            "Demo Patterns",
+            "Filters",
+            "Triggers",
+            "Midi",
+            "LFO Modulators",
+            "Virtual Drum Machine",
+            "Virtual Synth"
+        ]
+    }
+    </script>
+ 
+  
+
+  <style>
+    :root {
+      --color-canvas-default: #ffffff;
+      --color-border-default: #d0d7de;
+      --color-fg-default: #1f2328;
+      --color-fg-muted: #57606a; 
+      --color-accent-fg: #0969da;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;    }
+
+    body {
+      font-family: var(--font-family);
+      line-height: 1.5;
+      color: var(--color-fg-default);
+      background-color: #f6f8fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Full width app container */
+    #insert-ordrumbox-v2-here {
+      width: 100%;
+      min-height: 600px;
+      background-color: #000;
+    }
+
+    /* Main landmark container */
+    main {
+      max-width: 900px;
+      width: 90%;
+      background: var(--color-canvas-default);
+      border: 1px solid var(--color-border-default);
+      border-radius: 6px;
+      padding: 45px;
+      margin: 2rem 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    h1, h2, h3 {
+      border-bottom: 1px solid var(--color-border-default);
+      padding-bottom: 0.3em;
+      margin-top: 24px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; margin-top: 32px; }
+    h3 { font-size: 1.25em; border-bottom: none; margin-bottom: 8px; }
+
+    p { margin-bottom: 16px; }
+    ul { padding-left: 2em; margin-bottom: 16px; }
+    
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 2em;
+      margin-right: 4px;
+      color: white;
+      background-color: #805e00;
+    }
+
+    .tip-box {
+      padding: 16px;
+      background-color: #ddf4ff;
+      border: 1px solid #54aeff66;
+      border-radius: 6px;
+      margin: 24px 0;
+    }
+
+    hr { height: 0.25em; background-color: var(--color-border-default); border: 0; margin: 24px 0; }
+    a { color: var(--color-accent-fg); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .header-img {
+      max-width: 128px;
+      float: right;
+    }
+
+    footer {
+      padding-bottom: 40px;
+      text-align: center;
+      width: 100%;
+    }
+  </style>
+ 
+</head>
+<body>
+
+<div id="insert-ordrumbox-v2-here" role="application" aria-label="orDrumbox Beat Maker Interface"></div>
+
+<main>
+    <img src="logo.png" width="128px" height="128px" alt="orDrumbox drum machine logo" class="header-img">
+    
+    <h1>🥁 orDrumbox: Free Online Drum Machine</h1>
+
+    <div class="badge-container">
+        <span class="badge">v2.0</span>
+        <span class="badge" style="background-color: #0969da;">GPL V3</span>
+        <span class="badge" style="background-color: #1a7f37;">Web-Based</span>
+    </div>
+
+
+    <p><strong>orDrumbox</strong> is a browser-based beat maker and sequencer. It provides a creative environment to build drum patterns using acoustic, vintage, and 8-bit kits without any software installation.</p>
+
+    <h2>🚀 Core Features</h2>
+    
+    <h3>🎹 Advanced Step Sequencer</h3>
+    <ul>
+        <li>Programmable grid for note entry and track looping.</li>
+        <li>Support for complex <strong>polyrythmie</strong> and per-track swing settings.</li>
+        <li>Precision controls for pitch, volume, and panning per note.</li>
+    </ul>
+
+    <h3>🔊 Synthesis & Automation</h3>
+    <ul>
+        <li>Integrated <strong>Soft Synth</strong> with 3 VCOs, ADSR envelope, and filters.</li>
+        <li>LFO modulators for dynamic pitch and volume effects.</li>
+        <li><strong>AI Generation:</strong> Includes an automatic Bass Line and Pattern Generator.</li>
+    </ul>
+
+    <hr>
+
+    <h2>🛠 Getting Started</h2>
+    
+    <h3>Direct Controls</h3>
+    <p>Use your computer keyboard as a drum pad. Every key is mapped to a specific sound in the selected drumkit for live finger-drumming.</p>
+<p>For more professional setups, orDrumbox is compatible with <strong>external MIDI controllers</strong>. You can use any MIDI hardware following the <strong>General MIDI (GM)</strong> standard to trigger sounds and perform live.</p>
+    <h3>Data Management</h3>
+    <ul>
+        <li>Import and export patterns as local project files.</li>
+        <li>High-quality <strong>WAV export</strong> for use in other DAWs.</li>
+    </ul>
+
+    <div class="tip-box">
+        <strong>💡 Resources:</strong> Explore the <a href="userguide-ordrumbox-v2.html" title="Comprehensive orDrumbox User Manual">Detailed User Guide</a> or watch the <a href="video-tutorial-ordrumbox.html" title="Step-by-step video tutorial for orDrumbox">Video Tutorial</a>.
+    </div>
+
+    <hr>
+
+    <h2>🏗 Open Source Project</h2>
+    <p>orDrumbox is maintained by the community under the <strong>GPL V3 License</strong>.</p>
+    <ul>
+        <li><strong>GitHub Repository:</strong> <a href="https://github.com/cadeli/ordrumbox-v2">github.com/cadeli/ordrumbox-v2</a></li>
+        <li><strong>Official Website:</strong> <a href="https://www.ordrumbox.com">www.ordrumbox.com</a></li>
+    </ul>
+</main>
+
+<footer role="contentinfo">
+    <p style="font-size: 12px; color: var(--color-fg-muted);">
+        © 2026 <strong>OrDrumbox Team</strong> - <em>Crafting the future of web-based music production.</em>
+    </p>
+</footer>
+
+<script type="module" crossorigin src="./src/waitingScreen.js"></script>
+
+</body>
+</html>
