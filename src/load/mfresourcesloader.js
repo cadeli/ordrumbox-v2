@@ -52,21 +52,17 @@ export default class MfResourcesLoader {
     }
 
     async loadPatterns(file, complete) {
+        console.log("mfresourcesloader::loadPatterns called with file:", file)
         this.isPatternsComplete = false
         return this.loadJsonResource(file, (patterns) => {
             console.log("mfressourceloader::loadPatterns: " + file + "  =" + patterns.length)
             const fixedPatterns = this.fix(JSON.parse(JSON.stringify(patterns)))
             MfGlobals.patterns.length = 0
             fixedPatterns.forEach((pattern) => {
-                // Migration: reset soundId of all tracks to NOT_DEFINED to reflect migration to soundId-only usage
-                // Only reset tracks that have autoSound enabled (default behavior)
-                // Keep original soundId for tracks with autoSound: false
                 if (pattern?.tracks) {
                     Object.values(pattern.tracks).forEach((trk) => {
                         if (trk?.soundId && trk.soundId !== "NOT_DEFINED") {
-                            // Only reset if autoSound is true or undefined
-                            // Keep original soundId if autoSound is explicitly false
-                            if (trk.autoSound !== false) {
+                            if (trk.useAutoAssignSound !== false) {
                                 trk.soundId = "NOT_DEFINED"
                             }
                         }
@@ -200,35 +196,32 @@ export default class MfResourcesLoader {
             if (!pattern.url) { pattern.url = "https://www.ordrumbox.com" }
             Object.values(pattern.tracks).forEach((track, indexTrack) => {
                 this.trackPanningFix(track, indexTrack)
-                if (track.generated) { track.autoSound = false } //JIC
-                track.loopPointBar = Math.floor(track.loopPoint / track.nbStepPerBar)
-                track.loopPointStep = track.loopPoint % track.nbStepPerBar
+                if (track.useSoftSynth) { track.useAutoAssignSound = false } //JIC
+                track.loopPointBar = Math.floor(track.loopAtStep / track.stepsPerBar)
+                track.loopPointStep = track.loopAtStep % track.stepsPerBar
+                if (!track.useAutoAssignSound) { track.useAutoAssignSound = true;track.soundId="NOT_DEFINED" }
 
-                if (!track.swingRez) { track.swingRez = 1 }
-                if (!track.swingDepth) { track.swingDepth = 0 }
-                if (!track.veloLfo) { track.veloLfo = null }
-                if (!track.pitchLfo) { track.pitchLfo = null }
-                if (!track.panoLfo) { track.panoLfo = null }
-                if (!track.filterFreqLfo) { track.filterFreqLfo = null }
-                if (!track.filterQLfo) { track.filterQLfo = null }
-                this.fixPitchLfo(track.pitchLfo)
-                if (!track.filterType) { track.filterType = "allpass" }
+                if (!track.swingResolution) { track.swingResolution = Utils.TRACK_DEFAULTS.swingResolution }
+                if (!track.swingAmount) { track.swingAmount = Utils.TRACK_DEFAULTS.swingAmount }
+                if (!track.velocityLfo) { track.velocityLfo = Utils.TRACK_DEFAULTS.velocityLfo }
+                if (!track.pitchLfo) { track.pitchLfo = Utils.TRACK_DEFAULTS.pitchLfo }
+                if (!track.panLfo) { track.panLfo = Utils.TRACK_DEFAULTS.panLfo }
+                if (!track.filterFreqLfo) { track.filterFreqLfo = Utils.TRACK_DEFAULTS.filterFreqLfo }
+                if (!track.filterQLfo) { track.filterQLfo = Utils.TRACK_DEFAULTS.filterQLfo }
+                if (!track.filterType) { track.filterType = Utils.TRACK_DEFAULTS.filterType }
                 if (track.filterType === 'all') { track.filterType = 'allpass' }
-                if (track.filterFreq == null) { track.filterFreq = 20 }
-                if (track.filterQ == null) { track.filterQ = 0.707 }
-                track.filterFreq = Utils.normalizeTrackFilterFreqValue(track.filterFreq)
-                track.filterQ = Utils.normalizeTrackFilterQValue(track.filterQ)
-                this.fixFilterLfo(track.filterFreqLfo, 'freq')
-                this.fixFilterLfo(track.filterQLfo, 'q')
+                if (track.filterFreq == null) { track.filterFreq = Utils.TRACK_DEFAULTS.filterFreq }
+                if (track.filterQ == null) { track.filterQ = Utils.TRACK_DEFAULTS.filterQ }
                 if (!track.filterLfoFreq) { track.filterLfoFreq = 0 }
                 if (!track.sampleLength) { track.sampleLength = 1 }
+                if (!track.notes) { track.notes = [] }
                 Object.values(track.notes).forEach((note) => {
                     this.stepBarFix(track, note) //TODO due to inconsistant json 
-                    if (!note.retriggNum) { note.retriggNum = 1 }
-                    if (!note.retriggStep) { note.retriggStep = 1 }
-                    if (!note.triggFreq) { note.triggFreq = 1 }
-                    if (!note.triggPhase) { note.triggPhase = 0 }
-                    if (!note.euclidianFill) { note.euclidianFill = 0 }
+                    if (!note.retriggerNum) { note.retriggerNum = Utils.NOTE_DEFAULTS.retriggerNum }
+                    if (!note.retriggStep) { note.retriggStep = Utils.NOTE_DEFAULTS.retriggStep }
+                    if (!note.triggerFreq) { note.triggerFreq = Utils.NOTE_DEFAULTS.triggerFreq }
+                    if (!note.triggerPhase) { note.triggerPhase = Utils.NOTE_DEFAULTS.triggerPhase }
+                    if (!note.euclidianFill) { note.euclidianFill = Utils.NOTE_DEFAULTS.euclidianFill }
                 })
             })
         })
@@ -238,26 +231,21 @@ export default class MfResourcesLoader {
     fixTrackLib = (trackLib) => {
         Object.values(trackLib).forEach((track, indexTrack) => {
             this.trackPanningFix(track, indexTrack)
-            track.generated = false
-            track.loopPointBar = Math.floor(track.loopPoint / track.nbStepPerBar)
-            track.loopPointStep = track.loopPoint % track.nbStepPerBar
+            track.useSoftSynth = false
+            track.loopPointBar = Math.floor(track.loopAtStep / track.stepsPerBar)
+            track.loopPointStep = track.loopAtStep % track.stepsPerBar
 
-            if (!track.swingRez) { track.swingRez = 1 }
-            if (!track.swingDepth) { track.swingDepth = 0 }
-            if (!track.veloLfo) { track.veloLfo = null }
-            if (!track.pitchLfo) { track.pitchLfo = null }
-            if (!track.panoLfo) { track.panoLfo = null }
-            if (!track.filterFreqLfo) { track.filterFreqLfo = null }
-            if (!track.filterQLfo) { track.filterQLfo = null }
-            this.fixPitchLfo(track.pitchLfo)
-            if (!track.filterType) { track.filterType = "allpass" }
+            if (!track.swingResolution) { track.swingResolution = Utils.TRACK_DEFAULTS.swingResolution }
+            if (!track.swingAmount) { track.swingAmount = Utils.TRACK_DEFAULTS.swingAmount }
+            if (!track.velocityLfo) { track.velocityLfo = Utils.TRACK_DEFAULTS.velocityLfo }
+            if (!track.pitchLfo) { track.pitchLfo = Utils.TRACK_DEFAULTS.pitchLfo }
+            if (!track.panLfo) { track.panLfo = Utils.TRACK_DEFAULTS.panLfo }
+            if (!track.filterFreqLfo) { track.filterFreqLfo = Utils.TRACK_DEFAULTS.filterFreqLfo }
+            if (!track.filterQLfo) { track.filterQLfo = Utils.TRACK_DEFAULTS.filterQLfo }
+            if (!track.filterType) { track.filterType = Utils.TRACK_DEFAULTS.filterType }
             if (track.filterType === 'all') { track.filterType = 'allpass' }
-            if (track.filterFreq == null) { track.filterFreq = 20 }
-            if (track.filterQ == null) { track.filterQ = 0.707 }
-            track.filterFreq = Utils.normalizeTrackFilterFreqValue(track.filterFreq)
-            track.filterQ = Utils.normalizeTrackFilterQValue(track.filterQ)
-            this.fixFilterLfo(track.filterFreqLfo, 'freq')
-            this.fixFilterLfo(track.filterQLfo, 'q')
+            if (track.filterFreq == null) { track.filterFreq = Utils.TRACK_DEFAULTS.filterFreq }
+            if (track.filterQ == null) { track.filterQ = Utils.TRACK_DEFAULTS.filterQ }
             if (!track.filterLfoFreq) { track.filterLfoFreq = 0 }
             if (!track.sampleLength) { track.sampleLength = 1 }
             if (!track.reverbType) { track.reverbType = "none" }
@@ -267,10 +255,10 @@ export default class MfResourcesLoader {
 
             Object.values(track.notes ?? []).forEach((note) => {
                 this.stepBarFix(track, note)
-                if (!note.retriggNum) { note.retriggNum = 1 }
+                if (!note.retriggerNum) { note.retriggerNum = 1 }
                 if (!note.retriggStep) { note.retriggStep = 1 }
-                if (!note.triggFreq) { note.triggFreq = 1 }
-                if (!note.triggPhase) { note.triggPhase = 0 }
+                if (!note.triggerFreq) { note.triggerFreq = 1 }
+                if (!note.triggerPhase) { note.triggerPhase = 0 }
                 if (!note.euclidianFill) { note.euclidianFill = 0 }
             })
         })
@@ -290,85 +278,85 @@ export default class MfResourcesLoader {
         return generatedSounds
     }
 
-    fixFilterLfo = (lfo, kind) => {
-        if (!lfo) {
-            return
-        }
-        if (kind === 'freq') {
-            lfo.min = Utils.normalizeTrackFilterFreqValue(lfo.min ?? 20)
-            lfo.max = Utils.normalizeTrackFilterFreqValue(lfo.max ?? 20000)
-            return
-        }
-        lfo.min = Utils.normalizeTrackFilterQValue(lfo.min ?? 0.707)
-        lfo.max = Utils.normalizeTrackFilterQValue(lfo.max ?? 18.707)
-    }
+    // fixFilterLfo = (lfo, kind) => {
+    //     if (!lfo) {
+    //         return
+    //     }
+    //     if (kind === 'freq') {
+    //         lfo.min = Utils.normalizeTrackFilterFreqValue(lfo.min ?? 20)
+    //         lfo.max = Utils.normalizeTrackFilterFreqValue(lfo.max ?? 20000)
+    //         return
+    //     }
+    //     lfo.min = Utils.normalizeTrackFilterQValue(lfo.min ?? 0.707)
+    //     lfo.max = Utils.normalizeTrackFilterQValue(lfo.max ?? 18.707)
+    // }
 
-    fixPitchLfo = (lfo) => {
-        if (!lfo) {
-            return
-        }
+    // fixPitchLfo = (lfo) => {
+    //     if (!lfo) {
+    //         return
+    //     }
 
-        const min = Number(lfo.min)
-        const max = Number(lfo.max)
+    //     const min = Number(lfo.min)
+    //     const max = Number(lfo.max)
 
-        if (Number.isFinite(min) && Number.isFinite(max) && Math.abs(min) <= 1 && Math.abs(max) <= 1) {
-            lfo.min = -12
-            lfo.max = 12
-        } else {
-            lfo.min = Number.isFinite(min) ? min : -12
-            lfo.max = Number.isFinite(max) ? max : 12
-        }
+    //     if (Number.isFinite(min) && Number.isFinite(max) && Math.abs(min) <= 1 && Math.abs(max) <= 1) {
+    //         lfo.min = -12
+    //         lfo.max = 12
+    //     } else {
+    //         lfo.min = Number.isFinite(min) ? min : -12
+    //         lfo.max = Number.isFinite(max) ? max : 12
+    //     }
 
-        if (lfo.min > lfo.max) {
-            const tmp = lfo.min
-            lfo.min = lfo.max
-            lfo.max = tmp
-        }
+    //     if (lfo.min > lfo.max) {
+    //         const tmp = lfo.min
+    //         lfo.min = lfo.max
+    //         lfo.max = tmp
+    //     }
 
-        if (!Number.isFinite(Number(lfo.phase))) { lfo.phase = 0 }
-        if (!Number.isFinite(Number(lfo.freq))) { lfo.freq = 1 }
-        if (!lfo.wave) { lfo.wave = "SIN" }
-    }
+    //     if (!Number.isFinite(Number(lfo.phase))) { lfo.phase = 0 }
+    //     if (!Number.isFinite(Number(lfo.freq))) { lfo.freq = 1 }
+    //     if (!lfo.wave) { lfo.wave = "SIN" }
+    // }
 
     stepBarFix = (track, note) => { // json is not consistant TODO fix json
         note.stepInBar ??= note.step ?? 0
         delete note.step
-        if (note.stepInBar >= track.nbStepPerBar) {
+        if (note.stepInBar >= track.stepsPerBar) {
             let pStep = note.stepInBar
-            note.stepInBar %= track.nbStepPerBar
-            note.bar = Math.floor(pStep / track.nbStepPerBar)
+            note.stepInBar %= track.stepsPerBar
+            note.bar = Math.floor(pStep / track.stepsPerBar)
         }
-        note.steppc = Math.round((note.stepInBar * 100) / track.nbStepPerBar)
+        note.steppc = Math.round((note.stepInBar * 100) / track.stepsPerBar)
     }
 
     trackPanningFix = (track, indexTrack) => {
         switch (indexTrack) {
             case 0:
-                track.pano = 0
+                track.pan = 0
                 break;
             case 1:
-                track.pano = 0.3
+                track.pan = 0.3
                 break;
             case 2:
-                track.pano = 0.5
+                track.pan = 0.5
                 break;
             case 3:
-                track.pano = -0.4
+                track.pan = -0.4
                 break;
             case 4:
-                track.pano = 0.4
+                track.pan = 0.4
                 break;
             case 5:
-                track.pano = -0.3
+                track.pan = -0.3
                 break;
             case 6:
-                track.pano = -0.2
+                track.pan = -0.2
                 break;
             case 7:
-                track.pano = 1
+                track.pan = 1
                 break;
             default:
-                track.pano = 0
+                track.pan = 0
                 break;
         }
     }

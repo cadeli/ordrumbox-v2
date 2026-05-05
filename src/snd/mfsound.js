@@ -80,7 +80,7 @@ export default class MfSound {
     play = (flatNote, time) => {
         if (!flatNote) return;
         if (MfGlobals.mfMixer.analyser) { //TODO 
-            if (flatNote.track.generated === true) {
+            if (flatNote.track.useSoftSynth === true) {
                 this.playGenerated(flatNote, time)
             } else {
                 this.playSample(flatNote, time)
@@ -103,10 +103,14 @@ export default class MfSound {
             const panNode = ctx.createStereoPanner();
             let stopped = false;
 
-            const soundBuffer = MfGlobals.sounds[flatNote.soundId]?.buffer;
+            let soundBuffer = MfGlobals.sounds[flatNote.soundId]?.buffer;
             if (!soundBuffer) {
-                console.warn(`mfsound::playSample - No soundBuffer for: ${track.name}`)
-                return;
+                soundBuffer = MfGlobals.sounds[flatNote.track.soundId]?.buffer //fallback TODO
+                if (!soundBuffer) {
+                    console.warn(`mfsound::playSample - No soundBuffer for: ${track.name}  soundId:  ${flatNote.soundId} soundId track :  ${flatNote.track.soundId}`)
+                    console.warn(flatNote.track)
+                    return;
+                }
             }
             snd.buffer = soundBuffer;
 
@@ -114,7 +118,7 @@ export default class MfSound {
 
 
             snd.playbackRate.setTargetAtTime(flatNote.fpitch || 1, time, 0.001);
-            panNode.pan.setValueAtTime(flatNote.pano ?? 0, time);
+            panNode.pan.setValueAtTime(flatNote.pan ?? 0, time);
 
             this.applyStripSettings(strip, {
                 filterType: track.filterType,
@@ -124,13 +128,13 @@ export default class MfSound {
                 saturationAmount: track.saturationAmount,
                 reverbType: track.reverbType,
                 reverbAmount: track.reverbAmount,
-                trackVelo: (track.velo*16) ?? 16,
+                trackVelo: (track.velocity * 16) ?? 16,
                 time
             })
 
             const duration = (track.sampleLength || .5);
             const releaseTime = 0.05;
-            const noteVelo = flatNote.note?.velo ?? 1;
+            const noteVelo = flatNote.note?.velocity ?? 1;
 
             gainEnveloppe.gain.setValueAtTime(0, time);
             gainEnveloppe.gain.linearRampToValueAtTime(noteVelo, time + 0.005);
@@ -150,12 +154,12 @@ export default class MfSound {
                     const currentGain = Math.max(0.001, gainEnveloppe.gain.value || noteVelo || 1)
                     gainEnveloppe.gain.setValueAtTime(currentGain, stopTime)
                     gainEnveloppe.gain.exponentialRampToValueAtTime(0.001, stopTime + 0.015)
-                } catch (e) { 
+                } catch (e) {
                     console.error(e)
                 }
                 try {
                     snd.stop(stopTime + 0.02)
-                } catch (e) { 
+                } catch (e) {
                     console.error(e)
                 }
             }
@@ -216,7 +220,7 @@ export default class MfSound {
             return Number.isFinite(num) ? num : fallback;
         };
         const noteRatio = Math.max(0.0001, toFiniteNumber(flatNote.fpitch, 1));
-        const noteVelo = flatNote.note?.velo ?? 1;
+        const noteVelo = flatNote.note?.velocity ?? 1;
         const env = generatedSound.enveloppe ?? { attack: 0, decay: 0, sustain: 1, release: 0 };
 
         /* ---------------- NODES ---------------- */
@@ -272,25 +276,25 @@ export default class MfSound {
 
         /* ---------------- SLIDE (Portamento) ---------------- */
         const slideTime = toFiniteNumber(generatedSound.slide, 0);
-        
+
         const v1Oct = v1 ? clamp(toFiniteNumber(generatedSound.vco1?.octave, 0), -4, 4) : 0;
         const v2Oct = v2 ? clamp(toFiniteNumber(generatedSound.vco2?.octave, 0), -4, 4) : 0;
         const v3Oct = v3 ? clamp(toFiniteNumber(generatedSound.vco3?.octave, 0), -4, 4) : 0;
         const v1Det = v1 ? clamp(toFiniteNumber(generatedSound.vco1?.detune, 0), -100, 100) : 0;
         const v2Det = v2 ? clamp(toFiniteNumber(generatedSound.vco2?.detune, 0), -100, 100) : 0;
         const v3Det = v3 ? clamp(toFiniteNumber(generatedSound.vco3?.detune, 0), -100, 100) : 0;
-        
+
         const currentPitch = noteRatio * C3_FREQ;
         const currentPitchV1 = noteRatio * C3_FREQ * Math.pow(2, v1Oct + (v1Det / 100));
         const currentPitchV2 = noteRatio * C3_FREQ * Math.pow(2, v2Oct + (v2Det / 100));
         const currentPitchV3 = noteRatio * C3_FREQ * Math.pow(2, v3Oct + (v3Det / 100));
-        
+
         if (slideTime > 0 && MfSound.lastPitchV1 !== undefined) {
             const lastPitchV1 = MfSound.lastPitchV1;
             const lastPitchV2 = MfSound.lastPitchV2;
             const lastPitchV3 = MfSound.lastPitchV3;
             const glideTime = slideTime / 1000;
-            
+
             if (v1) {
                 v1.osc.frequency.setValueAtTime(lastPitchV1, time);
                 v1.osc.frequency.linearRampToValueAtTime(currentPitchV1, time + glideTime);
@@ -359,8 +363,8 @@ export default class MfSound {
 
         /* ---------------- PAN ---------------- */
 
-        if (flatNote.pano !== undefined) {
-            panNode.pan.value = flatNote.pano;
+        if (flatNote.pan !== undefined) {
+            panNode.pan.value = flatNote.pan;
         }
 
         /* ---------------- FILTER 24dB ---------------- */
@@ -371,7 +375,7 @@ export default class MfSound {
         const peakFreq = Utils.normalizeSynthFilterFreqValue(
             mFreq + ((20000 - mFreq) * filterEnvelopeAmount)
         );
-        const trackVelo = track.velo/2 ?? 0.5;
+        const trackVelo = track.velocity / 2 ?? 0.5;
 
         this.applyStripSettings(strip, {
             filterType: generatedSound.filter?.type,
@@ -399,7 +403,7 @@ export default class MfSound {
         /* ---------------- NOISE (always enabled, mix with oscillators) ---------------- */
         const noiseConfig = generatedSound.noise ?? {};
         const noiseMix = toFiniteNumber(noiseConfig.mix, 0);
-        
+
         let noiseNode = null;
         let noiseGain = null;
         let noiseFilter = null;
@@ -451,7 +455,7 @@ export default class MfSound {
                 break;
         }
 
-/* ---------------- ENVELOPE ADSR ---------------- */
+        /* ---------------- ENVELOPE ADSR ---------------- */
 
         const masterVolume = toFiniteNumber(generatedSound.masterVolume, 0.8);
         const peakGain = noteVelo * masterVolume * accentMultiplier;

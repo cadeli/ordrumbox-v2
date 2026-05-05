@@ -77,9 +77,9 @@ export default class MfComponents {
         if (label.includes("PITCH")) {
             return "pitchLfo"
         } else if (label.includes("VELO")) {
-            return "veloLfo"
+            return "velocityLfo"
         } else if (label.includes("PANO")) {
-            return "panoLfo"
+            return "panLfo"
         } else if (label.includes("FLTR Q")) {
             return "filterQLfo"
         } else if (label.includes("FREQ")) {

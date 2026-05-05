@@ -32,13 +32,22 @@ export default class MfCss {
 #ordrumbox-v2 .mf-button {
   margin: 10px;
   background: brown;
-  display: grid;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
   user-select: none;
   border-radius: 4px;
-  padding: 4px;
-  font-size: 12px; 
+  padding: 10px 20px;
+  font-size: 12px;
+  min-width: 80px;
+  max-width: 140px;
+  max-height: 20px;
+  text-align: center;
+}
+
+#ordrumbox-v2 .mf-button:hover {
+  background: #a52a2a;
 }
 
 
@@ -497,7 +506,9 @@ export default class MfCss {
   display:grid;
   background: #161515;
   padding-top: 8px;
+  padding-bottom: 8px;
   margin: 8px;
+  text-align: center;
 }
 
 #ordrumbox-v2 .sliders-block-d {
@@ -686,8 +697,13 @@ export default class MfCss {
 }
 
 #ordrumbox-v2 .inputText {
-    margin: 20px;
+    margin: 10px;
     background: #ADD8E6;
+    padding: 10px 20px;
+    font-size: 12px;
+    min-width: 80px;
+    max-width: 140px;
+    max-height: 20px;
 }
 
 #ordrumbox-v2 .audioFrame {

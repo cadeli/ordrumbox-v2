@@ -4,6 +4,64 @@ export default class Utils {
     static filterTypeList = ['lowpass','highpass','bandpass','peaking','lowshelf','highshelf','notch','allpass']
     static waveList = ["square", "sawtooth", "triangle", "sine"]
 
+    static TRACK_DEFAULTS = {
+        "name": "",
+        "useAutoAssignSound": true,
+        "soundId": "NOT_DEFINED",
+        "bars": 4,
+        "stepsPerBar": 4,
+        "loopAtStep": null,
+        "swingResolution": 1,
+        "swingAmount": 0,
+        "velocity": 1,
+        "velocityLfo": null,
+        "pitch": 0,
+        "pitchLfo": null,
+        "pan": 0,
+        "panLfo": null,
+        "solo": false,
+        "mute": false,
+        "auto": false,
+        "useSoftSynth": false,
+        "mono": false,
+        "filterType": "allpass",
+        "filterFreqLfo": null,
+        "filterFreq": 20,
+        "filterQLfo": null,
+        "filterQ": 0.707,
+        "reverbType": "none",
+        "reverbAmount": 0,
+        "saturationType": "soft",
+        "saturationAmount": 0,
+        "notes": []
+    };
+
+    static TRACK_RECALCULATED = ["loopPointBar", "loopPointStep"];
+
+    static PATTERN_DEFAULTS = {
+        "nbBars": 4,
+        "bpm": 120,
+        "description": "",
+        "tags": [],
+        "tracks": []
+    };
+
+    static NOTE_DEFAULTS = { 
+        bar: 0, 
+        stepInBar: 0, 
+        pitch: 0, 
+        velocity: 0.8,
+        pan: 0,
+        arp: null,
+        triggerFreq: 1,
+        triggerPhase: 0,
+        retriggerNum: 1,
+        retriggStep: 1,
+        euclidianFill: 0
+    };
+
+    static NOTE_RECALCULATED = ["steppc", "stepPercent"];
+
 
     constructor() { }
 
@@ -75,14 +133,23 @@ export default class Utils {
         }, {});
     }
 
-    static mysanitize = (txt) => {
-        let ret = txt
-        ret = ret.replace(/\s+/g, '')
-        ret = ret.replace(/[^a-z0-9áéíóúñü \.,_-]/gim, "");
-        ret = ret.trim();
-        ret = ret.slice(0, 10)
-        return ret
-    }
+    // static mysanitize = (txt) => {
+    //     let ret = txt
+    //     ret = ret.replace(/\s+/g, '')
+    //     ret = ret.replace(/[^a-z0-9áéíóúñü \.,_-]/gim, "");
+    //     ret = ret.trim();
+    //     ret = ret.slice(0, 10)
+    //     return ret
+    // }
+
+    static sanitizePatternFileName(patternName) {
+  return String(patternName)
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-zA-Z0-9_-]/g, '')
+    .replace(/-+/g, '-')
+    .slice(0, 64) || 'new-pattern';
+}
 
 
     static pitchToSemiTone = (fpitch) => (fpitch - 1) * 12;

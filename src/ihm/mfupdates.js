@@ -3,6 +3,7 @@ import { MfGlobals } from '../mfglobals.js'
 import Utils from '../utils.js'
 import MfComponents from './mfcomponents.js'
 import MfCreateIhm from './mfcreateihm.js'
+import { PatternExporter } from '../ctrl/patternExporter.js'
 //import AlienImportDbia from '../todo/alienimportdbia.js'
 
 export default class MfUpdates {
@@ -33,7 +34,9 @@ export default class MfUpdates {
     updateSelectedPattern = () => {
         document.getElementById("bpmCtrl").innerText = (MfGlobals.patterns[MfGlobals.selectedPatternNum].bpm)
         this.updatePatternView(MfGlobals.patterns[MfGlobals.selectedPatternNum], MfGlobals.displayBars)
-        MfGlobals.patternsDropBox.setSelectedItemNum(MfGlobals.selectedPatternNum)
+        if (MfGlobals.patternsDropBox) {
+            MfGlobals.patternsDropBox.setSelectedItemNum(MfGlobals.selectedPatternNum)
+        }
     }
 
     updatePatternView = (pattern, displayBars) => {
@@ -59,14 +62,14 @@ export default class MfUpdates {
                 _this.updateTrackBtns(pattern)
             }
 
-            document.getElementById('trackNbBars_' + indexTrack).innerText = track.nbStepPerBar
+            document.getElementById('trackNbBars_' + indexTrack).innerText = track.stepsPerBar
             document.getElementById('trackNbBars_' + indexTrack).onclick = function () {
                 MfGlobals.mfCmd.incrNbStepPerBar(track)
                 _this.updatePatternView(pattern, MfGlobals.displayBars)
                 MfGlobals.mfPatterns.computeFlatNotesFromPattern(pattern)
             }
 
-            document.getElementById('trackLoopPoint_' + indexTrack).innerText = track.loopPoint
+            document.getElementById('trackLoopPoint_' + indexTrack).innerText = track.loopAtStep
             document.getElementById('trackLoopPoint_' + indexTrack).onclick = function () {
                 MfGlobals.mfCmd.incrLoopPoint(track)
                 _this.updatePatternView(pattern, MfGlobals.displayBars)
@@ -111,7 +114,7 @@ export default class MfUpdates {
             barDiv.className = "orbar"
             barDiv.setAttribute("barNum", bar)
             nlDiv.appendChild(barDiv)
-            for (let step = 0; step < (track.nbStepPerBar); step++) {
+            for (let step = 0; step < (track.stepsPerBar); step++) {
                 this.updateStepBar(track, bar, step, indexTrack, barDiv)
             }
         }
@@ -120,7 +123,7 @@ export default class MfUpdates {
     updateStepBar = (track, bar, step, indexTrack, barDiv) => {
         const nsDiv = document.createElement('div')
         nsDiv.setAttribute("stepNum", step)
-        const stepBar = bar * track.nbStepPerBar + step
+        const stepBar = bar * track.stepsPerBar + step
         const notes = MfGlobals.mfCmd.isNoteAt(track, bar, step)
 
         nsDiv.className = 'noteDispl'
@@ -148,8 +151,8 @@ export default class MfUpdates {
     updateNotes = (track, bar, step, indexTrack, nsDiv) => {
         // console.log("updateNotes: "+track.name + " at " +bar+":"+step)
         let notes = MfGlobals.mfCmd.isNoteAt(track, bar, step)
-        let stepBar = bar * track.nbStepPerBar + step
-        if (stepBar === track.loopPoint) {
+        let stepBar = bar * track.stepsPerBar + step
+        if (stepBar === track.loopAtStep) {
             let ndDiv = document.createElement('div')
             ndDiv.setAttribute("i", "loop_" + "_b" + bar + "_s" + step)
             ndDiv.className = 'noteDisplLoop'
@@ -159,9 +162,9 @@ export default class MfUpdates {
             let ndDiv = document.createElement('div')
             ndDiv.setAttribute("i", indexNote + "_b" + bar + "_s" + step)
             ndDiv.className = 'noteDisplNote'
-            if (note.triggFreq) {
-                if (note.triggFreq > 1 && window.screen.availWidth > 1000) {
-                    ndDiv.innerText = note.triggFreq
+            if (note.triggerFreq) {
+                if (note.triggerFreq > 1 && window.screen.availWidth > 1000) {
+                    ndDiv.innerText = note.triggerFreq
                 }
             }
             let that = this
@@ -284,17 +287,17 @@ export default class MfUpdates {
 
 
        if (selTrack.soundId != "NOT_DEFINED") { //TODO
-            if (selTrack.generated === true) {
+            const soundName = MfGlobals.sounds[selTrack.soundId].kit_name + ":" + MfGlobals.sounds[selTrack.soundId].key
+            document.getElementById('trackCtrlShowSound').innerText = soundName
+        } else {
+            if (selTrack.useSoftSynth === true) {
                 document.getElementById('trackCtrlShowSound').innerText = "synth:" + selTrack.synthSoundKey
             } else {
-               const soundName = MfGlobals.sounds[selTrack.soundId].kit_name + ":" + MfGlobals.sounds[selTrack.soundId].key
-                document.getElementById('trackCtrlShowSound').innerText = soundName
+                document.getElementById('trackCtrlShowSound').innerText = "NO SOUND"
             }
-        } else {
-            document.getElementById('trackCtrlShowSound').innerText = "NO SOUND"
         }
 
-        if (selTrack.autoSound) {
+        if (selTrack.useAutoAssignSound) {
             document.getElementById('trackCtrlAutoSound').classList.add("twostatesOn")
             document.getElementById('trackCtrlAutoSound').classList.remove("twostatesOff")
 
@@ -307,7 +310,7 @@ export default class MfUpdates {
             document.getElementById('trackCtrlAutoSound').classList.add("twostatesOff")
             document.getElementById('trackCtrlAutoSound').classList.remove("twostatesOn")
 
-            if (selTrack.generated) {
+            if (selTrack.useSoftSynth) {
                 document.getElementById('trackCtrlPickSound').classList.add("twostatesOff")
                 document.getElementById('trackCtrlPickSound').classList.remove("twostatesOn")
 
@@ -349,16 +352,23 @@ export default class MfUpdates {
     }
 
     updateLfoPanel = (name) => {
-        if (!document.getElementById("lfoname")) {
-            if (!MfGlobals.mfCreateIhm) {
-                MfGlobals.mfCreateIhm = new MfCreateIhm()
-            }
-            MfGlobals.mfCreateIhm.createLfoCtrl(document.getElementById('showLfoCtrl'))
+        if (!MfGlobals.mfCreateIhm) {
+            MfGlobals.mfCreateIhm = new MfCreateIhm()
         }
+        
+        const lfoCtrlDiv = document.getElementById('showLfoCtrl')
+        
+        if (!document.getElementById("lfoname") || this._lastLfoName !== name || this._lastTrackNum !== MfGlobals.selectedTrackNum) {
+            MfGlobals.mfCreateIhm.createLfoCtrl(lfoCtrlDiv)
+            this._lastLfoName = name
+            this._lastTrackNum = MfGlobals.selectedTrackNum
+        }
+        
         document.getElementById("lfoname").innerText = name
         const selPat = MfGlobals.patterns[MfGlobals.selectedPatternNum]
         const selTrack = selPat.tracks[MfGlobals.selectedTrackNum]
         const selLfo = selTrack[MfGlobals.selectedLfo]
+        
         if (!selLfo) {
             document.getElementById('lfoOnOff').checked = false
         } else {
@@ -674,7 +684,7 @@ export default class MfUpdates {
 
     onChangePatternName = (event) => {
         MfGlobals.textInput = false
-        let name = Utils.mysanitize(event.target.value)
+        let name = Utils.sanitizePatternFileName(event.target.value)
         if (name.length <= 1) { name = "noname" }
         MfGlobals.patterns[MfGlobals.selectedPatternNum].name = name
         MfGlobals.mfCmd.setSelectedPatternNum(MfGlobals.selectedPatternNum)
@@ -687,15 +697,17 @@ export default class MfUpdates {
         if (document.getElementById("exportBtn")) {
             document.getElementById("exportBtn").remove()
         }
-        let txt = JSON.stringify(MfGlobals.patterns[MfGlobals.selectedPatternNum])
+        const pattern = MfGlobals.patterns[MfGlobals.selectedPatternNum];
+        const exportedPattern = PatternExporter.export(pattern);
+        let txt = JSON.stringify(exportedPattern)
         let blobExportJson = new Blob([txt], { type: "text/plain;charset=utf-8" })
         let anchorExportJson = document.createElement('a')
         anchorExportJson.id = "exportBtn"
         anchorExportJson.className = "mf-button"
         anchorExportJson.href = window.URL.createObjectURL(blobExportJson)
-        anchorExportJson.title = 'ordrumbox-online-' + MfGlobals.patterns[MfGlobals.selectedPatternNum].name + "-" + (new Date()).getTime() + '.json'
+        anchorExportJson.title = 'ordrumbox-online-' + pattern.name + "-" + (new Date()).getTime() + '.json'
         anchorExportJson.download = anchorExportJson.title
-        let anchorExportJsonLinkText = document.createTextNode("Export pattern: " + MfGlobals.patterns[MfGlobals.selectedPatternNum].name)
+        let anchorExportJsonLinkText = document.createTextNode("Export pattern: " + pattern.name)
         anchorExportJson.appendChild(anchorExportJsonLinkText)
         box2.appendChild(anchorExportJson)
     }
@@ -712,16 +724,11 @@ export default class MfUpdates {
                 const newPattern = MfGlobals.mfCmd.importPatternFromJson(jsonTxt)
                 const importedPatternNum = MfGlobals.patterns.indexOf(newPattern)
 
-                alert('Pattern : ' + jsonTxt.name + ' imported with success as ptn #' + importedPatternNum)
+              //  alert('Pattern : ' + jsonTxt.name + ' imported with success as ptn #' + importedPatternNum)
                 MfGlobals.mfCmd.setSelectedPatternNum(importedPatternNum)
                 MfGlobals.mfUpdates.onPatternChange()
             } else {
                 alert('file is not a ordrumbox file')
-                // let alienImport = new AlienImportDbia()
-                // let pattern = alienImport.setAlien(jsonTxt)
-                // MfGlobals.mfCmd.cleanPattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])
-                // MfGlobals.patterns[MfGlobals.selectedPatternNum] = pattern
-
             }
 
             MfGlobals.mfCmd.setSelectedPatternNum(MfGlobals.selectedPatternNum)
@@ -738,7 +745,9 @@ export default class MfUpdates {
 
     onPatternChange = async (newItemNum) => {
         const selectedPattern = MfGlobals.patterns[MfGlobals.selectedPatternNum]
-        MfGlobals.patternsDropBox.fillDropBox(MfGlobals.patterns, selectedPattern, "Ptn:")
+        if (MfGlobals.patternsDropBox) {
+            MfGlobals.patternsDropBox.fillDropBox(MfGlobals.patterns, selectedPattern, "Ptn:")
+        }
         //should ajust strips to fit with pattern
         const mfAutoAssign = await MfGlobals.getAutoAssign()
         mfAutoAssign.autoAssignSounds(selectedPattern)

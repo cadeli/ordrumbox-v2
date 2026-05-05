@@ -50,11 +50,11 @@ Each column represents a beat step, and each row corresponds to a specific track
 ### Modifying Settings with Sliders and Controls
 Each track has adjustable parameters accessible through the track control panel. Use these controls to customize your sound:
 
-- **Volume (VELO)**: Adjust the overall loudness of the track (0 to 1).
+- **Volume (velocity)**: Adjust the overall loudness of the track (0 to 1).
 - **Pan (PANO)**: Move the sound left or right in the stereo field (-1 to 1).
 - **Pitch**: Change the pitch of the sound in semitones.
 - **Swing**: Add swing timing to give the groove a more laid-back feel.
-- **Loop Point**: Define where the track loops back in the pattern.
+- **Loop Step**: Define where the track loops back in the pattern.
 
 The toolbar also includes:
 - **BPM**: Set the tempo of the pattern (20 to 250 beats per minute).
@@ -145,7 +145,7 @@ Steps:
 ctx.createBufferSource() - creates the source
 snd.buffer = soundBuffer - assigns the sample
 playbackRate.setTargetAtTime(fpitch, time) - pitch shift
-panNode.pan.setValueAtTime(pano) - stereo panning
+panNode.pan.setValueAtTime(pan) - stereo panning
 Envelope: attack 5ms → hold → release 50ms
 ### PER-TRACK PROCESSING (mfstrip.js)
 

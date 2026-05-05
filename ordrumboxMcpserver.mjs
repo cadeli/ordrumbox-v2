@@ -5,6 +5,9 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { PatternExporter } from "./src/ctrl/patternExporter.js";
+import Utils from './src/utils.js'
+
 // Configuration du logger vers stderr pour préserver le flux JSON-RPC sur stdout
 const mcpLogger = new console.Console({
   stdout: process.stderr,
@@ -27,17 +30,10 @@ const KITS_DIR = resolve(__dirname, 'public/assets/kits');
 
 // --- Fonctions utilitaires ---
 
-function sanitizePatternFileName(patternName) {
-  return String(patternName)
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-zA-Z0-9_-]/g, '')
-    .replace(/-+/g, '-')
-    .slice(0, 64) || 'new-pattern';
-}
+
 
 function getPatternFilePath(patternName) {
-  const fileName = `${sanitizePatternFileName(patternName)}.json`;
+  const fileName = `${Utils.sanitizePatternFileName(patternName)}.json`;
   return resolve(PATTERNS_OUTPUT_DIR, fileName);
 }
 
@@ -48,7 +44,6 @@ function resolveKitSamplePath(samplePath) {
   if (!absolutePath.startsWith(KITS_DIR)) {
     throw new Error(`Invalid sample path: ${samplePath}`);
   }
-
   return {
     absolutePath,
     relativePath: relative(KITS_DIR, absolutePath).replaceAll('\\', '/')
@@ -81,11 +76,7 @@ async function listSampleFiles(dirPath, baseDir = dirPath) {
 }
 
 async function savePatternToDisk(pattern) {
-  const exportedPattern = {
-    application: "online-ordrumbox",
-    url: "https://www.ordrumbox.com",
-    ...pattern
-  };
+  const exportedPattern = PatternExporter.export(pattern);
   const filePath = getPatternFilePath(pattern.name);
   await mkdir(PATTERNS_OUTPUT_DIR, { recursive: true });
   await writeFile(filePath, `${JSON.stringify(exportedPattern, null, 2)}\n`, "utf8");
@@ -98,11 +89,11 @@ function findPatternByName(patternName) {
   );
 }
 
-function ensureTrack(mfCmd, pattern, trackName) {
+function ensureTrack(mfCmd, pattern, trackName, stepsPerBar = 4) {
   const normalizedTrackName = String(trackName).trim().toUpperCase();
   let track = mfCmd.getTrackFromType(pattern, normalizedTrackName);
   if (!track) {
-    track = mfCmd.addTrack(pattern, normalizedTrackName);
+    track = mfCmd.addTrack(pattern, normalizedTrackName, stepsPerBar);
   }
   return track;
 }
@@ -128,16 +119,15 @@ function upsertNoteOnTrack(mfCmd, track, noteInput) {
   const note = existingNote ?? mfCmd.addNote(track, bar, stepInBar, Number(noteInput.pitch ?? 0));
 
   note.name = noteInput.name ?? note.name;
-  note.velo = Number(noteInput.velo ?? note.velo ?? 0.8);
-  note.pano = Number(noteInput.pano ?? note.pano ?? 0);
+  note.velocity = Number(noteInput.velocity ?? note.velocity ?? 0.8);
+  note.pan = Number(noteInput.pan ?? note.pan ?? 0);
   note.pitch = Number(noteInput.pitch ?? note.pitch ?? 0);
   note.arp = noteInput.arp ?? note.arp ?? null;
-  note.triggFreq = Number(noteInput.triggFreq ?? note.triggFreq ?? 1);
-  note.triggPhase = Number(noteInput.triggPhase ?? note.triggPhase ?? 0);
-  note.retriggNum = Number(noteInput.retriggNum ?? note.retriggNum ?? 1);
+  note.triggerFreq = Number(noteInput.triggerFreq ?? note.triggerFreq ?? 1);
+  note.triggerPhase = Number(noteInput.triggerPhase ?? note.triggerPhase ?? 0);
+  note.retriggerNum = Number(noteInput.retriggerNum ?? note.retriggerNum ?? 1);
   note.retriggStep = Number(noteInput.retriggStep ?? note.retriggStep ?? 1);
   note.euclidianFill = Number(noteInput.euclidianFill ?? note.euclidianFill ?? 0);
-  note.steppc = Math.round((stepInBar * 100) / track.nbStepPerBar);
 
   return existingNote ? 'updated' : 'created';
 }
@@ -192,6 +182,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         type: "object",
         properties: {
           patternName: { type: "string" },
+          stepsPerBar: { 
+            type: "integer", 
+            minimum: 1, 
+            maximum: 16, 
+            description: "Steps per bar for new tracks. Default: 4" 
+          },
           notes: {
             type: "array",
             items: {
@@ -201,7 +197,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
                 bar: { type: "integer", minimum: 0 },
                 stepInBar: { type: "integer", minimum: 0 },
                 pitch: { type: "number" },
-                velo: { type: "number" }
+                velocity: { type: "number", minimum: 0, maximum: 1 },
+                pan: { type: "number", minimum: -1, maximum: 1 },
+                arp: { type: "string" },
+                triggerFreq: { type: "integer", minimum: 1, maximum: 16 },
+                triggerPhase: { type: "integer", minimum: 0, maximum: 15 },
+                retriggerNum: { type: "integer", minimum: 1, maximum: 16 },
+                retriggStep: { type: "integer", minimum: 1, maximum: 16 },
+                euclidianFill: { type: "integer", minimum: 0, maximum: 100 }
               },
               required: ["trackName", "bar", "stepInBar"]
             }
@@ -218,7 +221,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           patternName: { type: "string" },
           trackName: { type: "string" },
-          updates: { type: "object" }
+          updates: { 
+            type: "object",
+            description: "Track-level properties (velocity, pan, pitch, mute, solo, filter, reverb, etc.)"
+          },
+          noteUpdates: {
+            type: "object",
+            description: "Note-level properties to apply to all notes in the track",
+            properties: {
+              triggerFreq: { type: "number", minimum: 1, maximum: 16 },
+              triggerPhase: { type: "number", minimum: 0, maximum: 15 },
+              retriggerNum: { type: "number", minimum: 1, maximum: 16 },
+              retriggStep: { type: "number", minimum: 1, maximum: 16 },
+              arp: { type: "string" },
+              euclidianFill: { type: "number", minimum: 0, maximum: 100 },
+              velocity: { type: "number", minimum: 0, maximum: 1 },
+              pan: { type: "number", minimum: -1, maximum: 1 },
+              pitch: { type: "number" }
+            }
+          }
         },
         required: ["patternName", "trackName", "updates"]
       }
@@ -232,9 +253,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["patternName"]
       }
     },
+   
     {
-        name: "listAllTrackNames",
-        description: "Returns the list of available instrument IDs",
+        name: "listAllInstrumentsNames",
+        description: "Returns the list of all instrument IDs from InstrumentsManager (valid track names for MCP)",
         inputSchema: { type: "object", properties: {} }
     },
     {
@@ -267,6 +289,54 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           samples: { type: "array", items: { type: "string" } }
         },
         required: ["samples"]
+      }
+    },
+    {
+      name: "setPatternBpm",
+      description: "Sets the BPM (tempo) of a pattern",
+      inputSchema: {
+        type: "object",
+        properties: {
+          patternName: { type: "string" },
+          bpm: { type: "number", minimum: 20, maximum: 300 }
+        },
+        required: ["patternName", "bpm"]
+      }
+    },
+    {
+      name: "setPatternTags",
+      description: "Sets tags (categories/genre) for a pattern",
+      inputSchema: {
+        type: "object",
+        properties: {
+          patternName: { type: "string" },
+          tags: { type: "array", items: { type: "string" } }
+        },
+        required: ["patternName", "tags"]
+      }
+    },
+    {
+      name: "setPatternNbBars",
+      description: "Sets the number of bars for a pattern",
+      inputSchema: {
+        type: "object",
+        properties: {
+          patternName: { type: "string" },
+          nbBars: { type: "integer", minimum: 1, maximum: 64 }
+        },
+        required: ["patternName", "nbBars"]
+      }
+    },
+    {
+      name: "setPatternDescription",
+      description: "Sets the description text for a pattern",
+      inputSchema: {
+        type: "object",
+        properties: {
+          patternName: { type: "string" },
+          description: { type: "string" }
+        },
+        required: ["patternName", "description"]
       }
     }
   ],
@@ -314,7 +384,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     if (toolName === "updateTrack") {
-      const { patternName, trackName, updates } = args;
+      const { patternName, trackName, updates, noteUpdates } = args;
       const pattern = findPatternByName(patternName);
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
@@ -335,10 +405,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       if (!track) throw new Error(`Could not create track: ${normalizedTrackName}`);
 
       mfCmd.setTrackProps(track, updates);
+      
+      let notesUpdated = 0;
+      if (noteUpdates) {
+        const noteProps = ['triggerFreq', 'triggerPhase', 'retriggerNum', 'retriggStep', 'arp', 'euclidianFill', 'velocity', 'pan', 'pitch'];
+        const hasNoteProps = noteProps.some(prop => noteUpdates[prop] !== undefined);
+        
+        if (hasNoteProps && track.notes) {
+          for (const note of track.notes) {
+            if (noteUpdates.triggerFreq !== undefined) note.triggerFreq = Number(noteUpdates.triggerFreq);
+            if (noteUpdates.triggerPhase !== undefined) note.triggerPhase = Number(noteUpdates.triggerPhase);
+            if (noteUpdates.retriggerNum !== undefined) note.retriggerNum = Number(noteUpdates.retriggerNum);
+            if (noteUpdates.retriggStep !== undefined) note.retriggStep = Number(noteUpdates.retriggStep);
+            if (noteUpdates.arp !== undefined) note.arp = noteUpdates.arp;
+            if (noteUpdates.euclidianFill !== undefined) note.euclidianFill = Number(noteUpdates.euclidianFill);
+            if (noteUpdates.velocity !== undefined) note.velocity = Number(noteUpdates.velocity);
+            if (noteUpdates.pan !== undefined) note.pan = Number(noteUpdates.pan);
+            if (noteUpdates.pitch !== undefined) note.pitch = Number(noteUpdates.pitch);
+            notesUpdated++;
+          }
+        }
+      }
+      
       const filePath = await savePatternToDisk(pattern);
 
       return {
-        content: [{ type: "text", text: JSON.stringify({ message: `Track ${action} successfully`, action, trackName: track.name, filePath }) }]
+        content: [{ type: "text", text: JSON.stringify({ message: `Track ${action} successfully`, action, trackName: track.name, notesUpdated, filePath }) }]
       };
     }
 
@@ -352,9 +444,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-if (toolName === "listAllTrackNames") {
-        const ids = (InstrumentsManager.DATA?.instruments ?? []).map(i => i.id).sort();
-        return { content: [{ type: "text", text: JSON.stringify({ trackNames: ids, count: ids.length }) }] };
+
+    if (toolName === "listAllInstrumentsNames") {
+        const instruments = InstrumentsManager.DATA?.instruments ?? [];
+        const ids = instruments.map(i => i.id).sort();
+        const instrumentsList = instruments.map(i => ({
+            id: i.id,
+            name: i.name?.syn ? i.name.syn[0] : i.id,
+            drum: i.drum,
+            pan: i.pan
+        }));
+        return { content: [{ type: "text", text: JSON.stringify({ 
+            instrumentNames: ids, 
+            count: ids.length,
+            instruments: instrumentsList
+        })}] };
     }
 
     if (toolName === "listPatterns") {
@@ -381,23 +485,24 @@ if (toolName === "listAllTrackNames") {
             }
             return { content: [{ type: "text", text: JSON.stringify({ 
                 name: pattern.name,
+                description: pattern.description ?? "",
                 tags: pattern.tags,
                 bpm: pattern.bpm,
                 nbBars: pattern.nbBars,
                 tracks: pattern.tracks?.map(t => ({
                     name: t.name,
                     soundId: t.soundId,
-                    autoSound: t.autoSound,
+                    useAutoAssignSound: t.useAutoAssignSound,
                     bars: t.bars,
-                    nbStepPerBar: t.nbStepPerBar,
-                    loopPoint: t.loopPoint,
-                    velo: t.velo,
+                    stepsPerBar: t.stepsPerBar,
+                    loopAtStep: t.loopAtStep,
+                    velocity: t.velocity,
                     pitch: t.pitch,
-                    pano: t.pano,
+                    pan: t.pan,
                     mute: t.mute,
                     solo: t.solo,
                     auto: t.auto,
-                    generated: t.generated,
+                    useSoftSynth: t.useSoftSynth,
                     filterType: t.filterType,
                     filterFreq: t.filterFreq,
                     filterQ: t.filterQ,
@@ -409,14 +514,13 @@ if (toolName === "listAllTrackNames") {
                         name: n.name,
                         bar: n.bar,
                         stepInBar: n.stepInBar,
-                        steppc: n.steppc,
-                        velo: n.velo,
-                        pano: n.pano,
+                        velocity: n.velocity,
+                        pan: n.pan,
                         pitch: n.pitch,
                         arp: n.arp,
-                        triggFreq: n.triggFreq,
-                        triggPhase: n.triggPhase,
-                        retriggNum: n.retriggNum,
+                        triggerFreq: n.triggerFreq,
+                        triggerPhase: n.triggerPhase,
+                        retriggerNum: n.retriggerNum,
                         retriggStep: n.retriggStep,
                         euclidianFill: n.euclidianFill
                     })) ?? []
@@ -444,6 +548,72 @@ if (toolName === "listAllTrackNames") {
         } catch (e) { results.push({ samplePath: s, error: e.message }); }
       }
       return { content: [{ type: "text", text: JSON.stringify({ results }) }] };
+    }
+
+    if (toolName === "setPatternBpm") {
+      const { patternName, bpm } = args;
+      const pattern = findPatternByName(patternName);
+      if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
+
+      const mfCmd = new MfCmd();
+      mfCmd.setPatternBpm(pattern, Number(bpm));
+      const filePath = await savePatternToDisk(pattern);
+
+      return { content: [{ type: "text", text: JSON.stringify({ 
+        message: "BPM updated", 
+        patternName: pattern.name, 
+        bpm: pattern.bpm,
+        filePath 
+      })}] };
+    }
+
+    if (toolName === "setPatternTags") {
+      const { patternName, tags } = args;
+      const pattern = findPatternByName(patternName);
+      if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
+
+      pattern.tags = Array.isArray(tags) ? tags : [];
+      const filePath = await savePatternToDisk(pattern);
+
+      return { content: [{ type: "text", text: JSON.stringify({ 
+        message: "Tags updated", 
+        patternName: pattern.name, 
+        tags: pattern.tags,
+        filePath 
+      })}] };
+    }
+
+    if (toolName === "setPatternNbBars") {
+      const { patternName, nbBars } = args;
+      const pattern = findPatternByName(patternName);
+      if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
+
+      const mfCmd = new MfCmd();
+      mfCmd.setPatternBars(pattern, Number(nbBars));
+      const filePath = await savePatternToDisk(pattern);
+
+      return { content: [{ type: "text", text: JSON.stringify({ 
+        message: "Number of bars updated", 
+        patternName: pattern.name, 
+        nbBars: pattern.nbBars,
+        filePath 
+      })}] };
+    }
+
+    if (toolName === "setPatternDescription") {
+      const { patternName, description } = args;
+      const pattern = findPatternByName(patternName);
+      if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
+
+      pattern.description = String(description ?? '');
+      const filePath = await savePatternToDisk(pattern);
+
+      return { content: [{ type: "text", text: JSON.stringify({ 
+        message: "Description updated", 
+        patternName: pattern.name, 
+        description: pattern.description,
+        filePath 
+      })}] };
     }
 
     throw new Error(`Unknown tool: ${toolName}`);

@@ -222,8 +222,8 @@ export default class MfSliderBtn {
         wrapper.getLfoNameFromLabel = (label) => {
             const l = label.toUpperCase();
             if (l.includes("PITCH")) return "pitchLfo";
-            if (l.includes("VELO")) return "veloLfo";
-            if (l.includes("PANO")) return "panoLfo";
+            if (l.includes("VELO")) return "velocityLfo";
+            if (l.includes("PAN")) return "panLfo";
             if (l.includes("FLTR_Q")) return "filterQLfo";
             if (l.includes("FLTR_F")) return "filterFreqLfo";
             return "unknownLfo";

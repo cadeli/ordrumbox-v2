@@ -137,10 +137,10 @@ export default class MfAutoGenerate {
             this.generateNewBass(pattern, newTrack)
         }
         track.notes = Array.isArray(newTrack.notes) ? [...newTrack.notes] : []
-        track.loopPoint = Number(newTrack.loopPoint ?? track.loopPoint ?? 0)
+        track.loopAtStep = Number(newTrack.loopAtStep ?? track.loopAtStep ?? 0)
         this.replaceTrack(pattern, track)
-        track.loopPointBar = Math.floor(track.loopPoint / track.nbStepPerBar)
-        track.loopPointStep = track.loopPoint % track.nbStepPerBar
+        track.loopPointBar = Math.floor(track.loopAtStep / track.stepsPerBar)
+        track.loopPointStep = track.loopAtStep % track.stepsPerBar
         await this.refreshPatternState(pattern, 1)
 
     }
@@ -167,7 +167,7 @@ export default class MfAutoGenerate {
 
         let track = this.getRndTrack(style, "CRASH", "default")
         if (track != null) {
-            if (track.notes.length < 3 && track.loopPoint == 16) {
+            if (track.notes.length < 3 && track.loopAtStep == 16) {
                 this.replaceTrack(pattern, track)
             } else {
                 track.name = "OHH"

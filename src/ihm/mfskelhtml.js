@@ -163,6 +163,7 @@ export default class MfSkelHtml {
     }
 
     loadPatternList = (complete = null) => {
+        console.log("mfskelhtml::loadPatternList called")
         this.selectedPatternDb.onclick = function () { }
         this.selectedPatternDb.innerHTML = ""
         MfGlobals.mfResourcesLoader.loadPatterns(MfGlobals.urlpatterns, () => {

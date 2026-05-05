@@ -51,7 +51,7 @@ export default class MfMixer {
 
         if (!this.masterGain) {
             this.masterGain = ctx.createGain();
-            this.masterGain.gain.setValueAtTime(4.0, ctx.currentTime);
+            this.masterGain.gain.setValueAtTime(1.0, ctx.currentTime);
         }
 
         if (!this.analyser) {

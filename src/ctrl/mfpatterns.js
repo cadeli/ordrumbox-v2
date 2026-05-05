@@ -12,13 +12,13 @@ export default class MfPatterns {
             let flatNotes = []
             Object.values(djtPattern.tracks).forEach((track) => {
                 let lastTick = -1
-                //console.log("mfPattern::compoteFlatNotesFromPattern " + track.name +":"+track.nbStepPerBar)
+                //console.log("mfPattern::compoteFlatNotesFromPattern " + track.name +":"+track.stepsPerBar)
                 Object.values(track.notes).forEach((note) => {
-                    let tick = note.bar * MfGlobals.TICK + Math.round((note.stepInBar * MfGlobals.TICK) / track.nbStepPerBar)
-                    // console.log("mfPattern::computeFlatNotesFromPattern " + track.name +":"+track.nbStepPerBar+ " bar:" + note.bar + " step:" + note.stepInBar + " -> " + tick)
+                    let tick = note.bar * MfGlobals.TICK + Math.round((note.stepInBar * MfGlobals.TICK) / track.stepsPerBar)
+                    // console.log("mfPattern::computeFlatNotesFromPattern " + track.name +":"+track.stepsPerBar+ " bar:" + note.bar + " step:" + note.stepInBar + " -> " + tick)
                     if (tick != lastTick) { //only one note per tick (avoid tick precision problems and mono) 
                         lastTick = tick
-                        let flatNote = new MfFlatNote(tick, track.soundId, track, note) 
+                        let flatNote = new MfFlatNote(tick, track, note) 
                         flatNotes.push(flatNote)
                     }
                 })

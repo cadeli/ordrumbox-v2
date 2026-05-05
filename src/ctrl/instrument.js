@@ -5,7 +5,7 @@ export default class Instrument {
         this.id = data.id || Instrument.NOT_FOUND;
         // Gestion flexible du type (booléen ou string "true"/"false")
         this.drum = data.drum === true || data.drum === "true";
-        this.pano = data.pano || "0";
+        this.pan = data.pan || "0";
         this.name = data.name || { syn: [] };
         this.subst = data.subst || {};
         this.midi = Array.isArray(data.midi) 
@@ -16,7 +16,7 @@ export default class Instrument {
     toString() {
         let ret = ` key : ${this.id}`;
         ret += this.drum ? ",type: Drum" : ",type: Melo";
-        ret += `, pano: ${this.pano}`;
+        ret += `, pan: ${this.pan}`;
         if (this.name && this.name.syn && this.name.syn.length > 0) {
             ret += `, syn: [${this.name.syn.join('|')}]`;
         }

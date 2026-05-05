@@ -13,23 +13,23 @@ export default class MfSerialize { //should be global or static
             let cols = []
             Object.values(pattern.tracks).forEach((track, indexTrack) => {
                 for (let bar = 0; bar < track.bars; bar++) {
-                    for (let step = 0; step < track.nbStepPerBar; step++) {
-                        let patternStep = step + bar * track.nbStepPerBar
+                    for (let step = 0; step < track.stepsPerBar; step++) {
+                        let patternStep = step + bar * track.stepsPerBar
                         if (!cols[patternStep]) { cols[patternStep] = "" }
-                        if (track.nbStepPerBar != 4) { cols[patternStep] = "-stop-" }
+                        if (track.stepsPerBar != 4) { cols[patternStep] = "-stop-" }
                         // if (track.bars!=4)  {cols[patternStep] = "stop"}
-                        if (patternStep === track.loopPoint)
+                        if (patternStep === track.loopAtStep)
                             cols[patternStep] += "_" + track.name + "-L0-"
                         let txt = ""
                         let notes = MfGlobals.mfCmd.isNoteAt(track, bar, step)
                         let note = notes[0]
                         if (note) {
                             txt = "_" + track.name + "-" +
-                                "R" + note.triggFreq + "-" +
-                                "H" + note.triggPhase + "-" +
-                                "V" + note.velo + "-" +
+                                "R" + note.triggerFreq + "-" +
+                                "H" + note.triggerPhase + "-" +
+                                "V" + note.velocity + "-" +
                                 "P" + note.pitch + "-" +
-                                "S" + note.pano + "-"
+                                "S" + note.pan + "-"
                         }
                         cols[patternStep] += txt
                     }

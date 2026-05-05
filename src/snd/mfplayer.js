@@ -34,7 +34,7 @@ export default class MfPlayer {
             }
             let flatNotes = MfGlobals.flatNotes
             flatNotes.forEach((flatNote, indexFlatNote) => {
-                let loopPointStepPc = flatNote.track.loopPointStep / flatNote.track.nbStepPerBar
+                let loopPointStepPc = flatNote.track.loopPointStep / flatNote.track.stepsPerBar
                 let nbTickForLoop = Math.floor((loopPointStepPc + flatNote.track.loopPointBar) * MfGlobals.TICK)
                 let ii = 0
                 while (nbTickForPattern % nbTickForLoop != 0 && ii < 20) {
@@ -43,14 +43,14 @@ export default class MfPlayer {
                     ii++
                 }
                 if (flatNote.tick === tick % nbTickForLoop || flatNote.tick === tick % nbTickForPattern) {
-                    let stepBar = flatNote.note.bar * flatNote.track.nbStepPerBar + flatNote.note.stepInBar
+                    let stepBar = flatNote.note.bar * flatNote.track.stepsPerBar + flatNote.note.stepInBar
                     //console.log("tick:" + tick +"  tickPattern:"+nbTickForPattern+"  tickloopL:"+nbTickForLoop + " play " + flatNote.track.name + " steppc:" + flatNote.note.steppc + " bar:" + flatNote.note.bar + " step:" + flatNote.note.stepInBar + " stepbar=" + stepBar +  " index=" + indexFlatNote + " ii="+ii)
                     if (flatNote.track.mute === false) {
-                        if (this.isTrigged(flatNote.note.triggPhase, flatNote.note.triggFreq, this.loop)) {
-                            let swingTime = this.computeSwingTime(flatNote.note, MfGlobals.secondsPerBeat, flatNote.track.swingRez, flatNote.track.swingDepth)
-                            let pano = (parseFloat(flatNote.note.pano) + parseFloat(flatNote.track.pano)) / 2
-                            flatNote.pano = Math.floor(pano * 100) / 100
-                            let fpitch = Utils.semiToneToPitch(flatNote.note.pitch + flatNote.track.pitch)
+                        if (this.isTrigged(flatNote.note.triggerPhase, flatNote.note.triggerFreq, this.loop)) {
+                            let swingTime = this.computeSwingTime(flatNote.note, MfGlobals.secondsPerBeat, flatNote.track.swingResolution, flatNote.track.swingAmount)
+                            let pan = (parseFloat(flatNote.note.pan ?? 0) + parseFloat(flatNote.track.pan ?? 0)) / 2
+                            flatNote.pan = Math.floor(pan * 100) / 100
+                            let fpitch = Utils.semiToneToPitch((flatNote.note.pitch ?? 0) + (flatNote.track.pitch ?? 0))
                             flatNote.fpitch = Math.floor(fpitch * 100) / 100
                             flatNote.baseFpitch = flatNote.fpitch
                             this.computeLfos(flatNote, tick)
@@ -82,10 +82,10 @@ export default class MfPlayer {
     }
 
     computeNextPatternStepNote = (note, track) => {
-        let last = track.nbStepPerBar * track.bars
-        let first = note.bar * track.nbStepPerBar + note.stepInBar
+        let last = track.stepsPerBar * track.bars
+        let first = note.bar * track.stepsPerBar + note.stepInBar
         for (let i = first + 1; i < last; i++) {
-            let sb = MfGlobals.mfCmd.convertPatternStepToBarStep(i, track.nbStepPerBar)
+            let sb = MfGlobals.mfCmd.convertPatternStepToBarStep(i, track.stepsPerBar)
             if (MfGlobals.mfCmd.isNoteAt(track, sb.bar, sb.step).length > 0) {
                 return i
             }
@@ -96,7 +96,7 @@ export default class MfPlayer {
     computeEclidianFill = (flatNote, atTime, swingTime) => {
         // euclidian fill rules
         if (flatNote.note.euclidianFill && flatNote.note.euclidianFill > 0) {
-            let startStep = MfGlobals.mfCmd.convertBarStepToPatternStep(flatNote.note.bar, flatNote.note.stepInBar, flatNote.track.nbStepPerBar)
+            let startStep = MfGlobals.mfCmd.convertBarStepToPatternStep(flatNote.note.bar, flatNote.note.stepInBar, flatNote.track.stepsPerBar)
             let endStep = this.computeNextPatternStepNote(flatNote.note, flatNote.track)
             let internalStep = ((endStep - startStep) / (flatNote.note.euclidianFill + 1))
 
@@ -109,20 +109,23 @@ export default class MfPlayer {
 
     computeRepeat = (flatNote, atTime, swingTime) => {
         //repeat rules
-        let firstVelo = flatNote.track.velo
+        let firstVelo = flatNote.track.velocity
         const stepDuration = this.getTrackStepDuration(flatNote.track)
-        //const stepSpacing = this.getRetriggStepSpacing(flatNote.note)
-        const stepSpacing = Utils.getStepSpacing(flatNote.note?.retriggStep)
-        for (let i = 1; i < flatNote.note.retriggNum; i++) {
-            if (stepSpacing) {
-                let at = i * stepDuration * stepSpacing
-                //flatNote.track.velo -= 0.1
-                if (flatNote.track.velo > 0) {
-                    this.mfSound.play(flatNote, at + atTime + swingTime)
-                }
+        let stepSpacing = Utils.getStepSpacing(flatNote.note?.retriggStep)
+        
+        // If no retriggStep (no arpeggio), use default spacing of 1 step
+        if (!stepSpacing) {
+            stepSpacing = 1
+        }
+        
+        for (let i = 1; i < flatNote.note.retriggerNum; i++) {
+            let at = i * stepDuration * stepSpacing
+            //flatNote.track.velocity -= 0.1
+            if (flatNote.track.velocity > 0) {
+                this.mfSound.play(flatNote, at + atTime + swingTime)
             }
         }
-        flatNote.track.velo = firstVelo
+        flatNote.track.velocity = firstVelo
     }
 
     computeLfos = (flatNote, tick) => {
@@ -139,16 +142,16 @@ export default class MfPlayer {
                 document.getElementById("trackCtrlPitch").setValue(Utils.pitchToSemiTone(baseFpitch))
             }
         }
-        if (flatNote.track.veloLfo) {
-            flatNote.track.velo = this.getLfoVal(flatNote.track.veloLfo, tick)
+        if (flatNote.track.velocityLfo) {
+            flatNote.track.velocity = this.getLfoVal(flatNote.track.velocityLfo, tick)
             if (selTrack.name === flatNote.track.name) {
-                document.getElementById("trackCtrlVelo").setValue(flatNote.track.velo)
+                document.getElementById("trackCtrlVelo").setValue(flatNote.track.velocity)
             }
         }
-        if (flatNote.track.panoLfo) {
-            flatNote.pano = this.getLfoVal(flatNote.track.panoLfo, tick)
+        if (flatNote.track.panLfo) {
+            flatNote.pan = this.getLfoVal(flatNote.track.panLfo, tick)
             if (selTrack.name === flatNote.track.name) {
-                document.getElementById("trackCtrlPano").setValue(flatNote.pano)
+                document.getElementById("trackCtrlPano").setValue(flatNote.pan)
             }
         }
         if (flatNote.track.filterFreqLfo) {
@@ -189,7 +192,7 @@ export default class MfPlayer {
             return
         }
 
-        const totalNotes = Math.max(1, Math.min(16, parseInt(flatNote.note.retriggNum ?? 1)))
+        const totalNotes = Math.max(1, Math.min(16, parseInt(flatNote.note.retriggerNum ?? 1)))
         const noteSpacing = this.getTrackStepDuration(flatNote.track) * this.getRetriggStepSpacing(flatNote.note)
 
         for (let index = 0; index < totalNotes; index++) {
@@ -239,7 +242,7 @@ export default class MfPlayer {
 
     getTrackStepDuration = (track) => {
         const tickDuration = 0.25 * MfGlobals.secondsPerBeat
-        const ticksPerTrackStep = MfGlobals.TICK / track.nbStepPerBar
+        const ticksPerTrackStep = MfGlobals.TICK / track.stepsPerBar
         return Math.max(tickDuration, ticksPerTrackStep * tickDuration)
     }
 
@@ -288,9 +291,9 @@ export default class MfPlayer {
         return swingTime
     }
 
-    isTrigged = (triggPhase, triggFreq, loop) => {
-        triggPhase %= triggFreq
-        if ((loop + triggPhase) % (triggFreq) == 0) {
+    isTrigged = (triggerPhase, triggerFreq, loop) => {
+        triggerPhase %= triggerFreq
+        if ((loop + triggerPhase) % (triggerFreq) == 0) {
             return true
         }
         return false
@@ -306,13 +309,13 @@ export default class MfPlayer {
                 "stepInBar": 0,
                 "steppc": 0,
                 "bar": 0,
-                "velo": 0.8,
-                "pano": 0,
+                "velocity": 0.8,
+                "pan": 0,
                 "pitch": 0,
                 "arp": null,
-                "triggFreq": 1,
-                "triggPhase": 0,
-                "retriggNum": 1,
+                "triggerFreq": 1,
+                "triggerPhase": 0,
+                "retriggerNum": 1,
                 "retriggStep": 1,
                 "euclidianFill": 0
             }

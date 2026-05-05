@@ -192,6 +192,7 @@ export default class MfCreateIhm {
         select.style.color = "#eee"
         select.style.border = "1px solid #444"
         select.style.borderRadius = "4px"
+        select.style.width = "80%"
 
         const reverbTypes = ["none", "room", "hall", "plate", "spring", "gated"]
         reverbTypes.forEach((reverbType) => {
@@ -233,6 +234,7 @@ export default class MfCreateIhm {
         saturationTypeSelect.style.color = "#eee"
         saturationTypeSelect.style.border = "1px solid #444"
         saturationTypeSelect.style.borderRadius = "4px"
+        saturationTypeSelect.style.width = "80%"
 
         ;["soft", "hard", "tape"].forEach((saturationType) => {
             const option = Utils.createMfElement("option", null, null, saturationTypeSelect)
@@ -394,13 +396,13 @@ export default class MfCreateIhm {
 
     createNoteCtrlParam = (paramDiv) => {
         // Récupération de la note sélectionnée ou objet par défaut
-        let selNote = MfGlobals.mfUpdates.getSelectedNote() || { "pitch": 0, "velo": 1, "pano": 0 };
+        let selNote = MfGlobals.mfUpdates.getSelectedNote() || { "pitch": 0, "velocity": 1, "pan": 0 };
 
         // Configuration des paramètres spécifiques à la note
         const noteParams = [
             { label: "Pitch", prop: "pitch", min: -12, max: 12, step: 1, isNorm: false },
-            { label: "Velo", prop: "velo", min: 0, max: 1, step: 0.05, isNorm: true },
-            { label: "Pano", prop: "pano", min: -1, max: 1, step: 0.1, isNorm: false }
+            { label: "Velo", prop: "velocity", min: 0, max: 1, step: 0.05, isNorm: true },
+            { label: "Pano", prop: "pan", min: -1, max: 1, step: 0.1, isNorm: false }
         ];
 
         noteParams.forEach(param => {
@@ -430,11 +432,11 @@ export default class MfCreateIhm {
     }
 
     createNoteCtrlTrigger = (paramDiv) => {
-        const selNote = MfGlobals.mfUpdates.getSelectedNote() || { triggFreq: 0, triggPhase: 0 };
+        const selNote = MfGlobals.mfUpdates.getSelectedNote() || { triggerFreq: 0, triggerPhase: 0 };
 
         const controls = [
-            { label: "Trigg_Freq", prop: "triggFreq", min: 1, max: 16 },
-            { label: "Trigg_Phas", prop: "triggPhase", min: 0, max: 15 }
+            { label: "Trigg_Freq", prop: "triggerFreq", min: 1, max: 16 },
+            { label: "Trigg_Phas", prop: "triggerPhase", min: 0, max: 15 }
         ];
 
         controls.forEach(ctrl => {
@@ -454,13 +456,13 @@ export default class MfCreateIhm {
 
     createNoteCtrlRepeat = (paramDiv) => {
         const selNote = MfGlobals.mfUpdates.getSelectedNote() || {
-            retriggNum: 1,
+            retriggerNum: 1,
             retriggStep: 1,
             euclidianFill: 0
         };
 
         const controls = [
-            { label: "Rep_Num", prop: "retriggNum", min: 0, max: 16 },
+            { label: "Rep_Num", prop: "retriggerNum", min: 0, max: 16 },
             { label: "Rep_Step", prop: "retriggStep", min: 1, max: 16 },
             { label: "Eucl_Fill", prop: "euclidianFill", min: 0, max: 8 }
         ];
@@ -685,8 +687,8 @@ export default class MfCreateIhm {
         const btnAuto = MfGlobals.mfComponents.addTwostatesBtn('trackCtrlAutoSound', 'auto')
         btnAuto.onclick = async function (event) {
             const track = MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum]
-            track.autoSound = true
-            track.generated = false
+            track.useAutoAssignSound = true
+            track.useSoftSynth = false
             const mfAutoAssign = await MfGlobals.getAutoAssign()
             mfAutoAssign.autoAssignTrackSounds(track, MfGlobals.selectedTrackNum)
             MfGlobals.mfUpdates.updateTrackCtrl(MfGlobals.selectedTrackNum)
@@ -696,7 +698,7 @@ export default class MfCreateIhm {
         const btnPick = MfGlobals.mfComponents.addTwostatesBtn("trackCtrlPickSound", "pick")
         btnPick.onclick = async function (event) {
             const track = MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum]
-            track.generated = false
+            track.useSoftSynth = false
             const mfSampleIhm = await MfGlobals.mfUpdates.getSampleIhm()
             mfSampleIhm.displayModalDialogPickSound()
         }
@@ -704,8 +706,8 @@ export default class MfCreateIhm {
         const btnGen = MfGlobals.mfComponents.addTwostatesBtn("trackCtrlGenSound", "synth")
         btnGen.onclick = async function (event) {
             const track = MfGlobals.patterns[MfGlobals.selectedPatternNum].tracks[MfGlobals.selectedTrackNum]
-            track.generated = true
-            track.autoSound = false
+            track.useSoftSynth = true
+            track.useAutoAssignSound = false
             MfGlobals.mfUpdates.updateTrackCtrl(MfGlobals.selectedTrackNum)
             const mfSoftSynthIhm = await MfGlobals.mfUpdates.getSoftSynthIhm()
             mfSoftSynthIhm.displayModalDialogGenSound()
@@ -737,9 +739,9 @@ export default class MfCreateIhm {
 
         const controls = [
             { label: "Pitch", prop: "pitch", lfo: 'pitchLfo', min: -12, max: 12, step: 1 },
-            { label: "Velo", prop: "velo", lfo: 'veloLfo', min: 0, max: 1, step: 0.05 },
-            { label: "Pano", prop: "pano", lfo: 'panoLfo', min: -1, max: 1, step: 0.1 },
-            { label: "Swing", prop: "swingDepth", lfo: 'swingLfo', min: 0, max: 1, step: 0.1 }
+            { label: "Velo", prop: "velocity", lfo: 'velocityLfo', min: 0, max: 1, step: 0.05 },
+            { label: "Pano", prop: "pan", lfo: 'panLfo', min: -1, max: 1, step: 0.1 },
+            { label: "Swing", prop: "swingAmount", lfo: 'swingLfo', min: 0, max: 1, step: 0.1 }
         ];
 
         controls.forEach(ctrl => {
