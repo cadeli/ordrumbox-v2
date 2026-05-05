@@ -14,7 +14,7 @@ export default class MfSampleIhm {
         this.isLoadingMissingSamplesForPick = false
     }
 
-    displayModalDialogPickSound = async () => {
+    displayModalDialogPickSound = async (afterLoad = false) => {
         if (!MfGlobals.mfResourcesLoader.isDrumkitListLoaded) {
             if (this.isLoadingDrumkitListForPick) {
                 return
@@ -22,7 +22,7 @@ export default class MfSampleIhm {
             this.isLoadingDrumkitListForPick = true
             MfGlobals.mfResourcesLoader.loadDrumkitList(MfGlobals.urldrumkits, () => {
                 this.isLoadingDrumkitListForPick = false
-                this.displayModalDialogPickSound()
+                this.displayModalDialogPickSound(true)
             }).catch(() => {
                 this.isLoadingDrumkitListForPick = false
             })
@@ -30,14 +30,14 @@ export default class MfSampleIhm {
         }
 
         const unloadedSamples = MfGlobals.mfResourcesLoader.getUnloadedSamplesFromDrumkits(MfGlobals.drumkitList)
-        if (unloadedSamples.length > 0) {
+        if (!afterLoad && unloadedSamples.length > 0) {
             if (this.isLoadingMissingSamplesForPick) {
                 return
             }
             this.isLoadingMissingSamplesForPick = true
             MfGlobals.mfResourcesLoader.loadMissingSamplesFromDrumkits(MfGlobals.drumkitList, () => {
                 this.isLoadingMissingSamplesForPick = false
-                this.displayModalDialogPickSound()
+                this.displayModalDialogPickSound(true)
             })
             return
         }

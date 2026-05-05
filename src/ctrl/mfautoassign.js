@@ -24,16 +24,16 @@ export default class MfAutoAssign {
     autoAssignTrackSounds = (track) => {
         const selDrumkitName = MfGlobals.drumkitList[MfGlobals.selectedDrumkitNum].name
          let soundId = this.getSoundIdFromKitAndTrackname(selDrumkitName, track.name)
+         if (soundId == "NOT_FOUND") {
+            console.log("getSoundIdFromKitAndTrackname No match for track:", track.name, " kit:", this.getKitAsText(selDrumkitName))
+            soundId = this.getSoundIdFromTrackname( track.name)
+        }  
         if (soundId == "NOT_FOUND") {
-            console.warn("getSoundIdFromKitAndTrackname Direct No match for track:", track.name, " kit:", this.getKitAsText(selDrumkitName))
+            console.log("getSoundIdFromTrackname Direct No match for track:", track.name, " kit:", this.getKitAsText(selDrumkitName))
             soundId = this.findSoundEquivalence(soundId, selDrumkitName, track)
         }
         if (soundId == "NOT_FOUND") {
-            console.warn("findSoundEquivalence No match for track:", track.name, " kit:", this.getKitAsText(selDrumkitName))
-            soundId = this.getSoundIdFromTrackname( track.name)
-        }       
-        if (soundId == "NOT_FOUND") {
-            console.warn("getSoundIdFromTrackname No match for track:", track.name, " kit:", this.getKitAsText(selDrumkitName))
+            console.log("findSoundEquivalence No match for track:", track.name, " kit:", this.getKitAsText(selDrumkitName))
             soundId = Utils.getRandomKey(MfGlobals.sounds)
             console.warn("mfCmd::autoAssignSounds (choose rnd : " + soundId + " ) cannot find from kit:" + selDrumkitName + " nb instr=" + MfGlobals.drumkitList[MfGlobals.selectedDrumkitNum].instruments.length + ":" + track.name)
         }
@@ -77,7 +77,7 @@ findSoundEquivalence = (soundId, selDrumkitName, track) => {
         let ret = "NOT_FOUND"
         for (const [key, value] of Object.entries(MfGlobals.sounds)) {
             if (value.kit_name === drumkitName) {
-                if (trackName.toUpperCase().includes(value.key)) {
+                if (trackName.toUpperCase().trim() === value.key.toUpperCase().trim()) {
                     //console.log("getSoundIdFromKitAndTrackname match for track:", trackName, " kit:", drumkitName, " key:", sound.key)
                    ret = key
                    return ret
@@ -93,8 +93,8 @@ findSoundEquivalence = (soundId, selDrumkitName, track) => {
     getSoundIdFromTrackname = (trackName) => {
         let ret = "NOT_FOUND"
         for (const [key, sound] of Object.entries(MfGlobals.sounds)) {
-            //console.log("getSoundIdFromAnyKitAndTrackname test for track:", trackName.toUpperCase(), " sound:", sound.key, " url:", sound.url)  
-            if (sound.url.toUpperCase().includes(trackName.toUpperCase())) {
+            console.log("getSoundIdFromAnyKitAndTrackname test for track:", trackName.toUpperCase(), " sound:", sound.key, " url:", sound.url)  
+            if (sound.key.toUpperCase().trim()===trackName.toUpperCase().trim()) {
                 console.log("getSoundIdFromAnyKitAndTrackname match for track:", trackName.toUpperCase(),  " sound:", sound.url)
                 ret = key
                 return ret
