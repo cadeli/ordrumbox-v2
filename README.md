@@ -73,49 +73,7 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 - Import and export patterns as local project files (JSON)
 - Save and load your creations
 
-## Project Structure
 
-```
-minfact/
-├── public/
-│   ├── assets/
-│   │   ├── data/
-│   │   │   ├── drumkits.json      # Drum kit definitions
-│   │   │   ├── patterns.json      # Built-in patterns
-│   │   │   ├── scales.json        # Musical scales
-│   │   │   └── generated_sounds.json
-│   │   └── sounds/                # Audio files
-│   ├── logo.png
-│   └── manifest.json
-├── src/
-│   ├── ctrl/                      # Controller classes
-│   │   ├── mfcmd.js               # Main command handler
-│   │   ├── mfpatterns.js          # Pattern management
-│   │   ├── mfautoassign.js       # Auto sound assignment
-│   │   ├── mfautocompose.js      # Auto composition
-│   │   ├── mfautogenerate.js     # Auto generation
-│   │   └── instrumentsManager.js
-│   ├── ihm/                       # UI Components
-│   │   ├── mfskelhtml.js         # HTML skeleton
-│   │   ├── mfupdates.js          # UI updates
-│   │   ├── mfsampleihm.js        # Sample selector
-│   │   └── mfcomponents.js       # Reusable components
-│   ├── snd/                       # Audio engine
-│   │   ├── mfplayer.js           # Sequencer
-│   │   ├── mfsound.js            # Sound synthesis
-│   │   ├── mfmixer.js            # Audio mixer
-│   │   └── mfstrip.js            # Channel strip
-│   ├── load/
-│   │   └── mfresourcesloader.js  # Data loading
-│   ├── main.js                   # Application entry
-│   ├── mfseq.js                  # Sequencer engine
-│   ├── mfglobals.js             # Global state
-│   └── mfcss.js                  # Styles
-├── index.html
-├── package.json
-├── vite.config.js
-└── README.md
-```
 
 ## Technical Details
 
@@ -124,51 +82,8 @@ minfact/
 - Audio: Web Audio API
 - Storage: LocalStorage for persistence, JSON for import/export
 
-### Sound ID System
-v2 uses a sound identification system with format kit_name/filename (e.g., real/kick.wav). Patterns store soundId references for consistent sound mapping across drumkits.
 
-## sound processing 
-### SAMPLE PLAYBACK (mfsound.js - playSample)
-
-AudioBufferSourceNode (snd)
-        ↓
-   playbackRate (pitch shift)
-        ↓
-   GainNode (ADSR envelope)
-        ↓
-   StereoPanner (pan)
-        ↓
-   [OUTPUT TO STRIP]
-
-Steps:
-ctx.createBufferSource() - creates the source
-snd.buffer = soundBuffer - assigns the sample
-playbackRate.setTargetAtTime(fpitch, time) - pitch shift
-panNode.pan.setValueAtTime(pan) - stereo panning
-Envelope: attack 5ms → hold → release 50ms
-### PER-TRACK PROCESSING (mfstrip.js)
-
-Input (pan) → Filter1 → Filter2 → Saturator → Dry + Reverb → Track Gain
-                                                              ↓
-                                                    output (strip output)
-Filter (24dB/oct):
-
-2x BiquadFilter in series
-Types: lowpass, highpass, bandpass, notch, allpass
-Saturation:
-
-WaveShaper with soft/hard/tape curve
-3 types: soft, hard, tape
-Reverb:
-
-Convolver with impulse response
-6 presets: none, room, hall, plate, spring, gated
-### MIXING (mfmixer.js)
-
-Strip 1 (output) ─┐
-Strip 2 (output) ─┼──→ Compressor → HighPass → LowPass → MasterGain → Destination
-Strip N (output) ─┘
-Global processing:
+Global sound processing:
 
 Compressor: threshold -12dB, ratio 4:1, attack 5ms, release 150ms
 HighPass: 35 Hz (removes unwanted low frequencies)
