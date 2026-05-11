@@ -1,0 +1,159 @@
+{
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "retro_808_hiphop",
+  "tracks": [
+    {
+      "name": "KICK",
+      "bars": 16,
+      "loopAtStep": 64,
+      "notes": [
+        {
+          "velocity": 1
+        },
+        {
+          "barStep": 2,
+          "bar": 1,
+          "velocity": 0.85
+        },
+        {
+          "barStep": 2,
+          "bar": 4,
+          "velocity": 0.9
+        },
+        {
+          "bar": 7
+        },
+        {
+          "bar": 8,
+          "velocity": 1
+        },
+        {
+          "barStep": 2,
+          "bar": 9,
+          "velocity": 0.75
+        },
+        {
+          "barStep": 2,
+          "bar": 12,
+          "velocity": 0.9
+        },
+        {
+          "bar": 15
+        }
+      ]
+    },
+    {
+      "name": "SNARE",
+      "bars": 16,
+      "loopAtStep": 64,
+      "pan": 0.3,
+      "notes": [
+        {
+          "barStep": 2,
+          "bar": 2,
+          "velocity": 0.9
+        },
+        {
+          "barStep": 2,
+          "bar": 6,
+          "velocity": 0.9
+        },
+        {
+          "barStep": 2,
+          "bar": 10,
+          "velocity": 0.85
+        },
+        {
+          "barStep": 2,
+          "bar": 14,
+          "velocity": 0.9
+        }
+      ]
+    },
+    {
+      "name": "CLAP",
+      "bars": 16,
+      "loopAtStep": 64,
+      "pan": -0.4,
+      "notes": [
+        {
+          "barStep": 2,
+          "bar": 3,
+          "velocity": 0.7
+        },
+        {
+          "barStep": 2,
+          "bar": 7,
+          "velocity": 0.7
+        },
+        {
+          "barStep": 2,
+          "bar": 11,
+          "velocity": 0.7
+        },
+        {
+          "barStep": 2,
+          "bar": 15,
+          "velocity": 0.7
+        }
+      ]
+    },
+    {
+      "name": "CHH",
+      "bars": 16,
+      "loopAtStep": 64,
+      "pan": -0.3,
+      "notes": [
+        {
+          "velocity": 0.6
+        },
+        {
+          "bar": 2,
+          "velocity": 0.6
+        },
+        {
+          "bar": 3,
+          "velocity": 0.5
+        },
+        {
+          "bar": 4,
+          "velocity": 0.6
+        },
+        {
+          "bar": 6,
+          "velocity": 0.6
+        },
+        {
+          "bar": 7,
+          "velocity": 0.5
+        },
+        {
+          "bar": 8,
+          "velocity": 0.6
+        },
+        {
+          "bar": 10,
+          "velocity": 0.6
+        },
+        {
+          "bar": 11,
+          "velocity": 0.5
+        },
+        {
+          "bar": 12,
+          "velocity": 0.6
+        },
+        {
+          "bar": 14,
+          "velocity": 0.6
+        },
+        {
+          "bar": 15,
+          "velocity": 0.5
+        }
+      ]
+    }
+  ],
+  "nbBars": 16
+}

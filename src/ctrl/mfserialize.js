@@ -13,10 +13,10 @@ export default class MfSerialize { //should be global or static
             let cols = []
             Object.values(pattern.tracks).forEach((track, indexTrack) => {
                 for (let bar = 0; bar < track.bars; bar++) {
-                    for (let step = 0; step < track.stepsPerBar; step++) {
-                        let patternStep = step + bar * track.stepsPerBar
+                    for (let step = 0; step < track.barQuantize; step++) {
+                        let patternStep = step + bar * track.barQuantize
                         if (!cols[patternStep]) { cols[patternStep] = "" }
-                        if (track.stepsPerBar != 4) { cols[patternStep] = "-stop-" }
+                        if (track.barQuantize != 4) { cols[patternStep] = "-stop-" }
                         // if (track.bars!=4)  {cols[patternStep] = "stop"}
                         if (patternStep === track.loopAtStep)
                             cols[patternStep] += "_" + track.name + "-L0-"

@@ -106,6 +106,7 @@ export default class MfMixer {
             if (strip.output) {
                 strip.output.connect(this.compressor);
             }
+            console.log("MfMixer::addStrip " , name , " total strips = ", Object.keys(this.strips).length)
         }
     }
 

@@ -62,7 +62,7 @@ export default class MfUpdates {
                 _this.updateTrackBtns(pattern)
             }
 
-            document.getElementById('trackNbBars_' + indexTrack).innerText = track.stepsPerBar
+            document.getElementById('trackNbBars_' + indexTrack).innerText = track.barQuantize
             document.getElementById('trackNbBars_' + indexTrack).onclick = function () {
                 MfGlobals.mfCmd.incrNbStepPerBar(track)
                 _this.updatePatternView(pattern, MfGlobals.displayBars)
@@ -114,7 +114,7 @@ export default class MfUpdates {
             barDiv.className = "orbar"
             barDiv.setAttribute("barNum", bar)
             nlDiv.appendChild(barDiv)
-            for (let step = 0; step < (track.stepsPerBar); step++) {
+            for (let step = 0; step < (track.barQuantize); step++) {
                 this.updateStepBar(track, bar, step, indexTrack, barDiv)
             }
         }
@@ -123,7 +123,7 @@ export default class MfUpdates {
     updateStepBar = (track, bar, step, indexTrack, barDiv) => {
         const nsDiv = document.createElement('div')
         nsDiv.setAttribute("stepNum", step)
-        const stepBar = bar * track.stepsPerBar + step
+        const stepBar = bar * track.barQuantize + step
         const notes = MfGlobals.mfCmd.isNoteAt(track, bar, step)
 
         nsDiv.className = 'noteDispl'
@@ -151,7 +151,7 @@ export default class MfUpdates {
     updateNotes = (track, bar, step, indexTrack, nsDiv) => {
         // console.log("updateNotes: "+track.name + " at " +bar+":"+step)
         let notes = MfGlobals.mfCmd.isNoteAt(track, bar, step)
-        let stepBar = bar * track.stepsPerBar + step
+        let stepBar = bar * track.barQuantize + step
         if (stepBar === track.loopAtStep) {
             let ndDiv = document.createElement('div')
             ndDiv.setAttribute("i", "loop_" + "_b" + bar + "_s" + step)
@@ -164,7 +164,13 @@ export default class MfUpdates {
             ndDiv.className = 'noteDisplNote'
             if (note.triggerFreq) {
                 if (note.triggerFreq > 1 && window.screen.availWidth > 1000) {
+                    ndDiv.classList.add('noteDisplTrigger')
                     ndDiv.innerText = note.triggerFreq
+                }
+            }
+            if (note.retriggerNum && note.retriggerNum > 1) {
+                if (window.screen.availWidth > 1000) {
+                    ndDiv.innerText = note.retriggerNum
                 }
             }
             let that = this
@@ -242,7 +248,7 @@ export default class MfUpdates {
             MfGlobals.mfCreateIhm.createNoteCtrl(document.getElementById('showNoteCtrl'))
         }
         if (selNote) {
-            document.getElementById('noteCtrlLblId').innerText = "Note Controls - " + (1 + selNote.bar) + ":" + (1 + selNote.stepInBar)
+            document.getElementById('noteCtrlLblId').innerText = "Note Controls - " + (1 + selNote.bar) + ":" + (1 + selNote.barStep)
             document.getElementById('noteCtrlChkId').checked = true
         } else {
             document.getElementById('noteCtrlChkId').checked = false
@@ -459,20 +465,20 @@ export default class MfUpdates {
         this.updateTrackCtrl(MfGlobals.selectedTrackNum)
     }
 
-    togglePatternAutoMode = async () => {
-        if (MfGlobals.autoMode === true) {
-            MfGlobals.autoMode = false
-            document.getElementById('patternAutoMode').classList.add("twostatesOff")
-            document.getElementById('patternAutoMode').classList.remove("twostatesOn")
-        } else {
-            document.getElementById('patternAutoMode').classList.add("twostatesOn")
-            document.getElementById('patternAutoMode').classList.remove("twostatesOff")
-            const mfAutoGenerate = await MfGlobals.getAutoGenerate()
-            await mfAutoGenerate.generatePattern()
-            MfGlobals.autoMode = true
-        }
-        console.log("MfUpdates::togglePatternAutoMode. automode =  ", MfGlobals.autoMode)
-    }
+    // togglePatternAutoMode = async () => {
+    //     if (MfGlobals.autoMode === true) {
+    //         MfGlobals.autoMode = false
+    //         document.getElementById('patternAutoMode').classList.add("twostatesOff")
+    //         document.getElementById('patternAutoMode').classList.remove("twostatesOn")
+    //     } else {
+    //         document.getElementById('patternAutoMode').classList.add("twostatesOn")
+    //         document.getElementById('patternAutoMode').classList.remove("twostatesOff")
+    //          const mfAutoGenerate = await MfGlobals.getAutoGenerate()
+    //          await mfAutoGenerate.generatePattern(MfGlobals.patterns[MfGlobals.selectedPatternNum])
+    //         MfGlobals.autoMode = true
+    //     }
+    //     console.log("MfUpdates::togglePatternAutoMode. automode =  ", MfGlobals.autoMode)
+    // }
 
     toggleMixerControls = () => {
         const doc = document.getElementById('showMixerCtrl')

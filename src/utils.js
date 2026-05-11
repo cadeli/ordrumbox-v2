@@ -9,7 +9,7 @@ export default class Utils {
         "useAutoAssignSound": true,
         "soundId": "NOT_DEFINED",
         "bars": 4,
-        "stepsPerBar": 4,
+        "barQuantize": 4,
         "loopAtStep": null,
         "swingResolution": 1,
         "swingAmount": 0,
@@ -27,12 +27,14 @@ export default class Utils {
         "filterType": "allpass",
         "filterFreqLfo": null,
         "filterFreq": 20,
+        "filterLfoFreq": 0,
         "filterQLfo": null,
         "filterQ": 0.707,
         "reverbType": "none",
         "reverbAmount": 0,
         "saturationType": "soft",
         "saturationAmount": 0,
+        "sampleLength": 1,
         "notes": []
     };
 
@@ -48,7 +50,7 @@ export default class Utils {
 
     static NOTE_DEFAULTS = { 
         bar: 0, 
-        stepInBar: 0, 
+        barStep: 0, 
         pitch: 0, 
         velocity: 0.8,
         pan: 0,
@@ -56,7 +58,7 @@ export default class Utils {
         triggerFreq: 1,
         triggerPhase: 0,
         retriggerNum: 1,
-        retriggStep: 1,
+        retriggerStep: 1,
         euclidianFill: 0
     };
 
@@ -205,44 +207,43 @@ export default class Utils {
     }
 
     static getStepSpacing = (value) => {
-        let ret = 1
         switch (value) {
             case 0:
-                ret = 0
+                return 0
             case 1:
-                ret = 1 / 4
+                 return  1 / 4
             case 2:
-                ret = 1 / 2
+                 return  1 / 2
             case 3:
-                ret = 1 / 3
+                 return  1 / 3
             case 4:
-                ret = 1
+                 return  1
             case 5:
-                ret = 2 / 3
+                 return  2 / 3
             case 6:
-                ret = 2
+                 return  2
             case 7:
-                ret = 4 / 3
+                 return  4 / 3
             case 8:
-                ret = 4
+                 return  4
             case 9:
-                ret = 5
+                 return  5
             case 10:
-                ret = 6
+                 return  6
             case 11:
-                ret = 7
+                 return  7
             case 12:
-                ret = 8
+                 return  8
             case 13:
-                ret = 10
+                 return  10
             case 14:
-                ret = 12
+                 return  12
+            case 15:
+                return  14
             case 16:
-                ret = 14
-            case 16:
-                ret = 16
+                 return  16
         }
-        return ret
+        return 4
     }
 
  static getRandomKey(obj) {

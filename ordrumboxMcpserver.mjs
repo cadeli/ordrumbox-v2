@@ -28,6 +28,64 @@ const __dirname = dirname(__filename);
 const PATTERNS_OUTPUT_DIR = resolve(__dirname, 'public/assets/data/patterns');
 const KITS_DIR = resolve(__dirname, 'public/assets/kits');
 
+// Format patterns with notes on single line
+function formatPatternsWithNotesOnLine(patterns) {
+  const lines = ['[\n'];
+  
+  patterns.forEach((pattern, pIdx) => {
+    const indent = '  ';
+    lines.push(`${indent}{\n`);
+    const entries = Object.entries(pattern);
+    
+    entries.forEach(([key, value], idx) => {
+      const isLast = idx === entries.length - 1;
+      const comma = isLast ? '' : ',';
+      
+      if (key === 'tracks' && Array.isArray(value)) {
+        lines.push(`${indent}"${key}": [\n`);
+        value.forEach((track, tIdx) => {
+          const tIndent = indent + '    ';
+          const tEntries = Object.entries(track);
+          const isLastTrack = tIdx === value.length - 1;
+          
+          lines.push(`${tIndent}{\n`);
+          tEntries.forEach(([tk, tv], ti) => {
+            const isLastTEntry = ti === tEntries.length - 1;
+            const tComma = isLastTEntry ? '' : ',';
+            
+            if (tk === 'notes' && Array.isArray(tv)) {
+              lines.push(`${tIndent}  "${tk}": [`);
+              tv.forEach((note, nIdx) => {
+                const isLastNote = nIdx === tv.length - 1;
+                const noteStr = JSON.stringify(note);
+                const nComma = isLastNote ? '' : ',';
+                lines.push(` ${noteStr}${nComma}`);
+              });
+              lines.push(`]${tComma}\n`);
+            } else if (typeof tv === 'object' && tv !== null) {
+              lines.push(`${tIndent}  "${tk}": ${JSON.stringify(tv)}${tComma}\n`);
+            } else {
+              lines.push(`${tIndent}  "${tk}": ${JSON.stringify(tv)}${tComma}\n`);
+            }
+          });
+          lines.push(`${tIndent}}${isLastTrack ? '' : ','}\n`);
+        });
+        lines.push(`${indent}]${comma}\n`);
+      } else if (key === 'tags' && typeof value === 'object' && !Array.isArray(value)) {
+        lines.push(`${indent}"${key}": ${JSON.stringify(value)}${comma}\n`);
+      } else if (typeof value === 'object' && value !== null) {
+        lines.push(`${indent}"${key}": ${JSON.stringify(value)}${comma}\n`);
+      } else {
+        lines.push(`${indent}"${key}": ${JSON.stringify(value)}${comma}\n`);
+      }
+    });
+    lines.push(`  }${pIdx < patterns.length - 1 ? ',' : ''}\n`);
+  });
+  
+  lines.push(']\n');
+  return lines.join('');
+}
+
 // --- Fonctions utilitaires ---
 
 
@@ -89,11 +147,15 @@ function findPatternByName(patternName) {
   );
 }
 
-function ensureTrack(mfCmd, pattern, trackName, stepsPerBar = 4) {
+function ensureTrack(mfCmd, pattern, trackName, barQuantize = 4, loopAtStep = null) {
   const normalizedTrackName = String(trackName).trim().toUpperCase();
   let track = mfCmd.getTrackFromType(pattern, normalizedTrackName);
   if (!track) {
-    track = mfCmd.addTrack(pattern, normalizedTrackName, stepsPerBar);
+    track = mfCmd.addTrack(pattern, normalizedTrackName, barQuantize);
+    if (loopAtStep !== null) {
+      track.loopAtStep = loopAtStep;
+    }
+    // Default loopAtStep = nbBars * barQuantize
   }
   return track;
 }
@@ -110,13 +172,13 @@ function ensurePatternHasEnoughBars(mfCmd, pattern, noteBar) {
 
 function upsertNoteOnTrack(mfCmd, track, noteInput) {
   const bar = Number(noteInput.bar);
-  const stepInBar = Number(noteInput.stepInBar ?? noteInput.step);
+  const barStep = Number(noteInput.barStep ?? noteInput.step);
 
   if (!Number.isInteger(bar) || bar < 0) throw new Error(`Invalid bar value: ${noteInput.bar}`);
-  if (!Number.isInteger(stepInBar) || stepInBar < 0) throw new Error(`Invalid step value: ${stepInBar}`);
+  if (!Number.isInteger(barStep) || barStep < 0) throw new Error(`Invalid step value: ${barStep}`);
 
-  const existingNote = mfCmd.isNoteAt(track, bar, stepInBar)[0];
-  const note = existingNote ?? mfCmd.addNote(track, bar, stepInBar, Number(noteInput.pitch ?? 0));
+  const existingNote = mfCmd.isNoteAt(track, bar, barStep)[0];
+  const note = existingNote ?? mfCmd.addNote(track, bar, barStep, Number(noteInput.pitch ?? 0));
 
   note.name = noteInput.name ?? note.name;
   note.velocity = Number(noteInput.velocity ?? note.velocity ?? 0.8);
@@ -126,7 +188,7 @@ function upsertNoteOnTrack(mfCmd, track, noteInput) {
   note.triggerFreq = Number(noteInput.triggerFreq ?? note.triggerFreq ?? 1);
   note.triggerPhase = Number(noteInput.triggerPhase ?? note.triggerPhase ?? 0);
   note.retriggerNum = Number(noteInput.retriggerNum ?? note.retriggerNum ?? 1);
-  note.retriggStep = Number(noteInput.retriggStep ?? note.retriggStep ?? 1);
+  note.retriggerStep = Number(noteInput.retriggerStep ?? note.retriggerStep ?? 1);
   note.euclidianFill = Number(noteInput.euclidianFill ?? note.euclidianFill ?? 0);
 
   return existingNote ? 'updated' : 'created';
@@ -175,38 +237,64 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["patternName"]
       },
     },
+    //{
+    //   name: "addExtendedNotesToPattern",
+    //   description: "Adds notes to a pattern. Creates missing tracks.",
+    //   inputSchema: {
+    //     type: "object",
+    //     properties: {
+    //       patternName: { type: "string" },
+    //       barQuantize: { 
+    //         type: "integer", 
+    //         minimum: 1, 
+    //         maximum: 16, 
+    //         description: "Steps per bar for new tracks. Default: 4" 
+    //       },
+    //       notes: {
+    //         type: "array",
+    //         items: {
+    //           type: "object",
+    //           properties: {
+    //             trackName: { type: "string" },
+    //             bar: { type: "integer", minimum: 0 },
+    //             barStep: { type: "integer", minimum: 0 },
+    //             pitch: { type: "number" },
+    //             velocity: { type: "number", minimum: 0, maximum: 1 },
+    //             pan: { type: "number", minimum: -1, maximum: 1 },
+    //             arp: { type: "string" },
+    //             triggerFreq: { type: "integer", minimum: 1, maximum: 16 },
+    //             triggerPhase: { type: "integer", minimum: 0, maximum: 15 },
+    //             retriggerNum: { type: "integer", minimum: 1, maximum: 16 },
+    //             retriggerStep: { type: "integer", minimum: 1, maximum: 16 },
+    //             euclidianFill: { type: "integer", minimum: 0, maximum: 100 }
+    //           },
+    //           required: ["trackName", "bar", "barStep"]
+    //         }
+    //       }
+    //     },
+    //     required: ["patternName", "notes"]
+    //   },
+    // },
     {
       name: "addNotesToPattern",
-      description: "Adds notes to a pattern. Creates missing tracks.",
+      description: "Adds multiple notes to a pattern using absolute step numbers. Converts step to bar/barStep internally.",
       inputSchema: {
         type: "object",
         properties: {
-          patternName: { type: "string" },
-          stepsPerBar: { 
-            type: "integer", 
-            minimum: 1, 
-            maximum: 16, 
-            description: "Steps per bar for new tracks. Default: 4" 
-          },
+          patternName: { type: "string", description: "Name of the pattern" },
           notes: {
             type: "array",
+            description: "Array of notes to add",
             items: {
               type: "object",
               properties: {
-                trackName: { type: "string" },
-                bar: { type: "integer", minimum: 0 },
-                stepInBar: { type: "integer", minimum: 0 },
-                pitch: { type: "number" },
-                velocity: { type: "number", minimum: 0, maximum: 1 },
-                pan: { type: "number", minimum: -1, maximum: 1 },
-                arp: { type: "string" },
-                triggerFreq: { type: "integer", minimum: 1, maximum: 16 },
-                triggerPhase: { type: "integer", minimum: 0, maximum: 15 },
-                retriggerNum: { type: "integer", minimum: 1, maximum: 16 },
-                retriggStep: { type: "integer", minimum: 1, maximum: 16 },
-                euclidianFill: { type: "integer", minimum: 0, maximum: 100 }
+                trackName: { type: "string", description: "Instrument name (e.g., KICK, SNARE)" },
+                step: { type: "integer", minimum: 0, description: "Absolute step number (0-based)" },
+                velocity: { type: "number", minimum: 0, maximum: 1, default: 0.8 },
+                pan: { type: "number", minimum: -1, maximum: 1, default: 0 },
+                pitch: { type: "number", default: 0 }
               },
-              required: ["trackName", "bar", "stepInBar"]
+              required: ["trackName", "step"]
             }
           }
         },
@@ -232,7 +320,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
               triggerFreq: { type: "number", minimum: 1, maximum: 16 },
               triggerPhase: { type: "number", minimum: 0, maximum: 15 },
               retriggerNum: { type: "number", minimum: 1, maximum: 16 },
-              retriggStep: { type: "number", minimum: 1, maximum: 16 },
+              retriggerStep: { type: "number", minimum: 1, maximum: 16 },
               arp: { type: "string" },
               euclidianFill: { type: "number", minimum: 0, maximum: 100 },
               velocity: { type: "number", minimum: 0, maximum: 1 },
@@ -354,14 +442,33 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const pattern = mfCmd.addPattern(String(patternName).trim());
       const filePath = await savePatternToDisk(pattern);
 
+      const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
+      const data = await readFile(patternsPath, 'utf-8');
+      const patterns = JSON.parse(data);
+      patterns.push(pattern);
+      await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns));
+
       return {
         content: [{ type: "text", text: JSON.stringify({ message: "Pattern created", pattern, filePath }) }]
       };
     }
 
-    if (toolName === "addNotesToPattern") {
-      const { patternName, notes } = args;
-      const pattern = findPatternByName(patternName);
+    if (toolName === "addExtendedNotesToPattern") {
+      const { patternName, notes: notesArg, barQuantize } = args;
+      const notes = typeof notesArg === 'string' ? JSON.parse(notesArg) : notesArg;
+      const bq = Number(barQuantize) || 4;
+      const loopStep = bq;
+      let pattern = findPatternByName(patternName);
+      if (!pattern) {
+        const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
+        const data = await readFile(patternsPath, 'utf-8');
+        const patterns = JSON.parse(data);
+        const sourcePattern = patterns.find(p => p.name === patternName);
+        if (sourcePattern) {
+          const mfCmd = new MfCmd();
+          pattern = mfCmd.importPatternFromJson(sourcePattern);
+        }
+      }
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
       const mfCmd = new MfCmd();
@@ -372,20 +479,84 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         ensurePatternHasEnoughBars(mfCmd, pattern, n.bar);
         const normName = String(n.trackName).trim().toUpperCase();
         if (!existingTrackNames.has(normName)) { existingTrackNames.add(normName); cTracks++; }
-        const track = ensureTrack(mfCmd, pattern, normName);
+        const track = ensureTrack(mfCmd, pattern, normName, bq, loopStep);
         const status = upsertNoteOnTrack(mfCmd, track, n);
         status === 'created' ? cNotes++ : uNotes++;
       }
 
       const filePath = await savePatternToDisk(pattern);
+
+      const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
+      const data = await readFile(patternsPath, 'utf-8');
+      const patterns = JSON.parse(data);
+      const idx = patterns.findIndex(p => p.name === patternName);
+      if (idx >= 0) {
+        patterns[idx] = pattern;
+      }
+      await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns));
+
       return {
         content: [{ type: "text", text: JSON.stringify({ message: "Notes processed", cTracks, cNotes, uNotes, filePath }) }]
       };
     }
 
+    if (toolName === "addNotesToPattern") {
+      const { patternName, notes: notesArg } = args;
+      const notes = typeof notesArg === 'string' ? JSON.parse(notesArg) : notesArg;
+      
+      const pattern = await loadPatternFromJson(patternName);
+      if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
+
+      const mfCmd = new MfCmd();
+      const barQuantize = pattern.barQuantize || 4;
+      
+      let cNotes = 0, uNotes = 0;
+      const existingTrackNames = new Set(pattern.tracks.map(t => t.name));
+
+      for (const n of notes) {
+        const trackName = String(n.trackName).trim().toUpperCase();
+        if (!existingTrackNames.has(trackName)) {
+          existingTrackNames.add(trackName);
+        }
+        
+        const track = ensureTrack(mfCmd, pattern, trackName, barQuantize);
+        const bar = Math.floor(Number(n.step) / barQuantize);
+        const barStep = Number(n.step) % barQuantize;
+
+        ensurePatternHasEnoughBars(mfCmd, pattern, bar);
+
+        const noteInput = {
+          trackName,
+          bar,
+          barStep,
+          velocity: Number(n.velocity ?? 0.8),
+          pan: Number(n.pan ?? 0),
+          pitch: Number(n.pitch ?? 0)
+        };
+
+        const status = upsertNoteOnTrack(mfCmd, track, noteInput);
+        status === 'created' ? cNotes++ : uNotes++;
+      }
+
+      const filePath = await savePatternToDisk(pattern);
+
+      const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
+      const data = await readFile(patternsPath, 'utf-8');
+      const patterns = JSON.parse(data);
+      const idx = patterns.findIndex(p => p.name === patternName);
+      if (idx >= 0) {
+        patterns[idx] = pattern;
+      }
+      await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns));
+
+      return {
+        content: [{ type: "text", text: JSON.stringify({ message: "Notes added", cNotes, uNotes, filePath }) }]
+      };
+    }
+
     if (toolName === "updateTrack") {
       const { patternName, trackName, updates, noteUpdates } = args;
-      const pattern = findPatternByName(patternName);
+      const pattern = await loadPatternFromJson(patternName);
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
       const instrumentsManager = new InstrumentsManager();
@@ -408,7 +579,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       
       let notesUpdated = 0;
       if (noteUpdates) {
-        const noteProps = ['triggerFreq', 'triggerPhase', 'retriggerNum', 'retriggStep', 'arp', 'euclidianFill', 'velocity', 'pan', 'pitch'];
+        const noteProps = ['triggerFreq', 'triggerPhase', 'retriggerNum', 'retriggerStep', 'arp', 'euclidianFill', 'velocity', 'pan', 'pitch'];
         const hasNoteProps = noteProps.some(prop => noteUpdates[prop] !== undefined);
         
         if (hasNoteProps && track.notes) {
@@ -416,7 +587,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             if (noteUpdates.triggerFreq !== undefined) note.triggerFreq = Number(noteUpdates.triggerFreq);
             if (noteUpdates.triggerPhase !== undefined) note.triggerPhase = Number(noteUpdates.triggerPhase);
             if (noteUpdates.retriggerNum !== undefined) note.retriggerNum = Number(noteUpdates.retriggerNum);
-            if (noteUpdates.retriggStep !== undefined) note.retriggStep = Number(noteUpdates.retriggStep);
+            if (noteUpdates.retriggerStep !== undefined) note.retriggerStep = Number(noteUpdates.retriggerStep);
             if (noteUpdates.arp !== undefined) note.arp = noteUpdates.arp;
             if (noteUpdates.euclidianFill !== undefined) note.euclidianFill = Number(noteUpdates.euclidianFill);
             if (noteUpdates.velocity !== undefined) note.velocity = Number(noteUpdates.velocity);
@@ -436,7 +607,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (toolName === "savePatternToJson") {
       const { patternName } = args;
-      const pattern = findPatternByName(patternName);
+      const pattern = await loadPatternFromJson(patternName);
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
       const filePath = await savePatternToDisk(pattern);
       return {
@@ -494,7 +665,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     soundId: t.soundId,
                     useAutoAssignSound: t.useAutoAssignSound,
                     bars: t.bars,
-                    stepsPerBar: t.stepsPerBar,
+                    barQuantize: t.barQuantize,
                     loopAtStep: t.loopAtStep,
                     velocity: t.velocity,
                     pitch: t.pitch,
@@ -513,7 +684,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     notes: t.notes?.map(n => ({
                         name: n.name,
                         bar: n.bar,
-                        stepInBar: n.stepInBar,
+                        barStep: n.barStep,
                         velocity: n.velocity,
                         pan: n.pan,
                         pitch: n.pitch,
@@ -521,7 +692,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         triggerFreq: n.triggerFreq,
                         triggerPhase: n.triggerPhase,
                         retriggerNum: n.retriggerNum,
-                        retriggStep: n.retriggStep,
+                        retriggerStep: n.retriggerStep,
                         euclidianFill: n.euclidianFill
                     })) ?? []
                 })) ?? []
@@ -550,16 +721,43 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return { content: [{ type: "text", text: JSON.stringify({ results }) }] };
     }
 
-    if (toolName === "setPatternBpm") {
-      const { patternName, bpm } = args;
-      const pattern = findPatternByName(patternName);
-      if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
-
+    async function loadPatternFromJson(patternName) {
+  let pattern = findPatternByName(patternName);
+  if (!pattern) {
+    const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
+    const data = await readFile(patternsPath, 'utf-8');
+    const patterns = JSON.parse(data);
+    const sourcePattern = patterns.find(p => p.name === patternName);
+    if (sourcePattern) {
       const mfCmd = new MfCmd();
-      mfCmd.setPatternBpm(pattern, Number(bpm));
-      const filePath = await savePatternToDisk(pattern);
+      pattern = mfCmd.importPatternFromJson(sourcePattern);
+    }
+  }
+  return pattern;
+}
 
-      return { content: [{ type: "text", text: JSON.stringify({ 
+async function updatePatternInIndex(pattern) {
+  const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
+  const data = await readFile(patternsPath, 'utf-8');
+  const patterns = JSON.parse(data);
+  const idx = patterns.findIndex(p => p.name === pattern.name);
+  if (idx >= 0) {
+    patterns[idx] = pattern;
+  }
+  await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns));
+}
+
+if (toolName === "setPatternBpm") {
+  const { patternName, bpm } = args;
+  const pattern = await loadPatternFromJson(patternName);
+  if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
+
+  const mfCmd = new MfCmd();
+  mfCmd.setPatternBpm(pattern, Number(bpm));
+  const filePath = await savePatternToDisk(pattern);
+  await updatePatternInIndex(pattern);
+
+  return { content: [{ type: "text", text: JSON.stringify({ 
         message: "BPM updated", 
         patternName: pattern.name, 
         bpm: pattern.bpm,
@@ -569,11 +767,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (toolName === "setPatternTags") {
       const { patternName, tags } = args;
-      const pattern = findPatternByName(patternName);
+      const pattern = await loadPatternFromJson(patternName);
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
       pattern.tags = Array.isArray(tags) ? tags : [];
       const filePath = await savePatternToDisk(pattern);
+      await updatePatternInIndex(pattern);
 
       return { content: [{ type: "text", text: JSON.stringify({ 
         message: "Tags updated", 
@@ -585,12 +784,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (toolName === "setPatternNbBars") {
       const { patternName, nbBars } = args;
-      const pattern = findPatternByName(patternName);
+      const pattern = await loadPatternFromJson(patternName);
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
       const mfCmd = new MfCmd();
       mfCmd.setPatternBars(pattern, Number(nbBars));
       const filePath = await savePatternToDisk(pattern);
+      await updatePatternInIndex(pattern);
 
       return { content: [{ type: "text", text: JSON.stringify({ 
         message: "Number of bars updated", 
@@ -602,11 +802,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (toolName === "setPatternDescription") {
       const { patternName, description } = args;
-      const pattern = findPatternByName(patternName);
+      const pattern = await loadPatternFromJson(patternName);
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
       pattern.description = String(description ?? '');
       const filePath = await savePatternToDisk(pattern);
+      await updatePatternInIndex(pattern);
 
       return { content: [{ type: "text", text: JSON.stringify({ 
         message: "Description updated", 

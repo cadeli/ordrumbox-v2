@@ -43,7 +43,7 @@ let lastStepDrawn = 0
 
 MfGlobals.getAutoGenerate = async () => {
     if (!MfGlobals.mfAutoGenerate) {
-        const { default: MfAutoGenerate } = await import('./ctrl/mfautogenerate.js')
+        const { default: MfAutoGenerate } = await import('./ctrl/compo/mfautogenerate.js')
         MfGlobals.mfAutoGenerate = new MfAutoGenerate()
     }
     return MfGlobals.mfAutoGenerate
@@ -247,7 +247,7 @@ async function keyPressed(name, code) {
         mfSerialize.serializePatterns()
     }
     if (code == 'KeyA') {
-        MfGlobals.mfUpdates.togglePatternAutoMode()
+       // MfGlobals.mfUpdates.togglePatternAutoMode()
     }
     if (code == 'KeyB') {
         const mfAutoGenerate = await MfGlobals.getAutoGenerate()

@@ -663,6 +663,11 @@ export default class MfCss {
     line-height: 1.3em;
 }
 
+#ordrumbox-v2 .noteDisplNote.noteDisplTrigger {
+    background-color: #4a90b8;
+    color: #fff;
+}
+
 #ordrumbox-v2 .noteDisplLoop {
     border: 2px solid #444;
     width: 4px;

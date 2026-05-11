@@ -3,14 +3,13 @@ import { MfGlobals } from '../mfglobals.js'
 import Utils from '../utils.js'
 import MfSound from './mfsound.js'
 import MfFlatNote from '../ctrl/flatnote.js'
-import MfAutoCompose from '../ctrl/mfautocompose.js'
+import MfAutoGenerate from '../ctrl/compo/mfautogenerate.js'
 
 export default class MfPlayer {
     static TAG = "MFPLAYER"
 
     constructor() {
         this.mfSound = new MfSound()
-        this.mfAutoCompose = new MfAutoCompose()
         this.loop = 0
         this.lastDisplayBars = 0
     }
@@ -23,18 +22,17 @@ export default class MfPlayer {
             let loopStep = tick % nbTickForPattern
             if (loopStep === 0) {
                 this.loop++
-                if (MfGlobals.autoMode === true) {
-                    this.mfAutoCompose.changePattern(this.loop, selPat)
-                }
-                Object.values(selPat.tracks).forEach((track, indexTrack) => {
+                Object.values(selPat.tracks).forEach((track) => {
                     if (track.auto === true) {
-                        this.mfAutoCompose.changeTrack(this.loop, selPat, track)
+                        MfGlobals.getAutoGenerate()
+                            .then((mfAutoGenerate) => mfAutoGenerate.changeTrack(this.loop, selPat, track))
+                            .catch((error) => console.error(error))
                     }
                 })
             }
             let flatNotes = MfGlobals.flatNotes
             flatNotes.forEach((flatNote, indexFlatNote) => {
-                let loopPointStepPc = flatNote.track.loopPointStep / flatNote.track.stepsPerBar
+                let loopPointStepPc = flatNote.track.loopPointStep / flatNote.track.barQuantize
                 let nbTickForLoop = Math.floor((loopPointStepPc + flatNote.track.loopPointBar) * MfGlobals.TICK)
                 let ii = 0
                 while (nbTickForPattern % nbTickForLoop != 0 && ii < 20) {
@@ -43,14 +41,15 @@ export default class MfPlayer {
                     ii++
                 }
                 if (flatNote.tick === tick % nbTickForLoop || flatNote.tick === tick % nbTickForPattern) {
-                    let stepBar = flatNote.note.bar * flatNote.track.stepsPerBar + flatNote.note.stepInBar
-                    //console.log("tick:" + tick +"  tickPattern:"+nbTickForPattern+"  tickloopL:"+nbTickForLoop + " play " + flatNote.track.name + " steppc:" + flatNote.note.steppc + " bar:" + flatNote.note.bar + " step:" + flatNote.note.stepInBar + " stepbar=" + stepBar +  " index=" + indexFlatNote + " ii="+ii)
+                    let stepBar = flatNote.note.bar * flatNote.track.barQuantize + flatNote.note.barStep
+                    //console.log("tick:" + tick +"  tickPattern:"+nbTickForPattern+"  tickloopL:"+nbTickForLoop + " play " + flatNote.track.name + " steppc:" + flatNote.note.steppc + " bar:" + flatNote.note.bar + " step:" + flatNote.note.barStep + " stepbar=" + stepBar +  " index=" + indexFlatNote + " ii="+ii)
                     if (flatNote.track.mute === false) {
                         if (this.isTrigged(flatNote.note.triggerPhase, flatNote.note.triggerFreq, this.loop)) {
                             let swingTime = this.computeSwingTime(flatNote.note, MfGlobals.secondsPerBeat, flatNote.track.swingResolution, flatNote.track.swingAmount)
                             let pan = (parseFloat(flatNote.note.pan ?? 0) + parseFloat(flatNote.track.pan ?? 0)) / 2
                             flatNote.pan = Math.floor(pan * 100) / 100
-                            let fpitch = Utils.semiToneToPitch((flatNote.note.pitch ?? 0) + (flatNote.track.pitch ?? 0))
+                            //TODO extreme values of pitch 
+                            let fpitch = Utils.semiToneToPitch(((flatNote.note.pitch ?? 0) + (flatNote.track.pitch ?? 0)))
                             flatNote.fpitch = Math.floor(fpitch * 100) / 100
                             flatNote.baseFpitch = flatNote.fpitch
                             this.computeLfos(flatNote, tick)
@@ -82,10 +81,10 @@ export default class MfPlayer {
     }
 
     computeNextPatternStepNote = (note, track) => {
-        let last = track.stepsPerBar * track.bars
-        let first = note.bar * track.stepsPerBar + note.stepInBar
+        let last = track.barQuantize * track.bars
+        let first = note.bar * track.barQuantize + note.barStep
         for (let i = first + 1; i < last; i++) {
-            let sb = MfGlobals.mfCmd.convertPatternStepToBarStep(i, track.stepsPerBar)
+            let sb = MfGlobals.mfCmd.convertPatternStepToBarStep(i, track.barQuantize)
             if (MfGlobals.mfCmd.isNoteAt(track, sb.bar, sb.step).length > 0) {
                 return i
             }
@@ -96,7 +95,7 @@ export default class MfPlayer {
     computeEclidianFill = (flatNote, atTime, swingTime) => {
         // euclidian fill rules
         if (flatNote.note.euclidianFill && flatNote.note.euclidianFill > 0) {
-            let startStep = MfGlobals.mfCmd.convertBarStepToPatternStep(flatNote.note.bar, flatNote.note.stepInBar, flatNote.track.stepsPerBar)
+            let startStep = MfGlobals.mfCmd.convertBarStepToPatternStep(flatNote.note.bar, flatNote.note.barStep, flatNote.track.barQuantize)
             let endStep = this.computeNextPatternStepNote(flatNote.note, flatNote.track)
             let internalStep = ((endStep - startStep) / (flatNote.note.euclidianFill + 1))
 
@@ -111,9 +110,9 @@ export default class MfPlayer {
         //repeat rules
         let firstVelo = flatNote.track.velocity
         const stepDuration = this.getTrackStepDuration(flatNote.track)
-        let stepSpacing = Utils.getStepSpacing(flatNote.note?.retriggStep)
+        let stepSpacing = Utils.getStepSpacing(flatNote.note?.retriggerStep)
         
-        // If no retriggStep (no arpeggio), use default spacing of 1 step
+        // If no retriggerStep (no arpeggio), use default spacing of 1 step
         if (!stepSpacing) {
             stepSpacing = 1
         }
@@ -193,7 +192,7 @@ export default class MfPlayer {
         }
 
         const totalNotes = Math.max(1, Math.min(16, parseInt(flatNote.note.retriggerNum ?? 1)))
-        const noteSpacing = this.getTrackStepDuration(flatNote.track) * this.getRetriggStepSpacing(flatNote.note)
+        const noteSpacing = this.getTrackStepDuration(flatNote.track) * this.getretriggerStepSpacing(flatNote.note)
 
         for (let index = 0; index < totalNotes; index++) {
             const semitoneOffset = arpConfig.sequence[index % arpConfig.sequence.length]
@@ -242,12 +241,12 @@ export default class MfPlayer {
 
     getTrackStepDuration = (track) => {
         const tickDuration = 0.25 * MfGlobals.secondsPerBeat
-        const ticksPerTrackStep = MfGlobals.TICK / track.stepsPerBar
+        const ticksPerTrackStep = MfGlobals.TICK / track.barQuantize
         return Math.max(tickDuration, ticksPerTrackStep * tickDuration)
     }
 
-    getRetriggStepSpacing = (note) => {
-        const stepSpacing = parseFloat(note?.retriggStep * (note?.retriggStep / 4)) / 4
+    getretriggerStepSpacing = (note) => {
+        const stepSpacing = parseFloat(note?.retriggerStep * (note?.retriggerStep / 4)) / 4
         return stepSpacing
     }
 
@@ -284,10 +283,10 @@ export default class MfPlayer {
     computeSwingTime = (note, secondsPerBeat, rez, depth) => {
         let swingTime = 0
         rez = 2
-        if (Math.floor(note.stepInBar % rez) === 1) {
+        if (Math.floor(note.barStep % rez) === 1) {
             swingTime = depth * secondsPerBeat
         }
-        //console.log("mfPlayer::computeSwingTime  bar="+ note.bar, " step="+ note.stepInBar+ " rez="+rez + " swing="+swingTime)          
+        //console.log("mfPlayer::computeSwingTime  bar="+ note.bar, " step="+ note.barStep+ " rez="+rez + " swing="+swingTime)          
         return swingTime
     }
 
@@ -306,7 +305,7 @@ export default class MfPlayer {
 
             let note = {
                 "name": "N_" + indexTrack + "_" + 0 + "_" + 0,
-                "stepInBar": 0,
+                "barStep": 0,
                 "steppc": 0,
                 "bar": 0,
                 "velocity": 0.8,
@@ -316,7 +315,7 @@ export default class MfPlayer {
                 "triggerFreq": 1,
                 "triggerPhase": 0,
                 "retriggerNum": 1,
-                "retriggStep": 1,
+                "retriggerStep": 1,
                 "euclidianFill": 0
             }
             let flatNote = new MfFlatNote(0, track.soundId, track, note)
@@ -335,4 +334,3 @@ export default class MfPlayer {
         }
     }
 }
-

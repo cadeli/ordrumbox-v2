@@ -45,9 +45,9 @@
                 "url": "real/crash.wav"
             },
             {
-                "display_name": "bass_c3.wav",
+                "display_name": "bass_c2.wav",
                 "key": "BASS",
-                "url": "real/bass_c3.wav"
+                "url": "real/bass_c2.wav"
             },
             {
                 "display_name": "congas.wav",
@@ -65,9 +65,9 @@
                 "url": "real/organ_c3.wav"
             },
             {
-                "display_name": "piano_c3.wav",
+                "display_name": "piano_c5.wav",
                 "key": "PIANO",
-                "url": "real/piano_c3.wav"
+                "url": "real/piano_c5.wav"
             },
             {
                 "display_name": "tambourine.wav",
@@ -120,7 +120,7 @@
             {
                 "kit_name": "matt",
                 "display_name": "RIDE",
-                "key": "COWBELL",
+                "key": "RIDE",
                 "url": "matt/RIDE.wav"
             },
              {
@@ -163,7 +163,7 @@
             {
                 "kit_name": "electro",
                 "display_name": "RIDE",
-                "key": "CRASH",
+                "key": "RIDE",
                 "url": "electro/ride.wav"
             },
             {
@@ -396,12 +396,12 @@
             },
             {
                 "display_name": "HiTom.wav",
-                "key": "CLAP",
+                "key": "HTOM",
                 "url": "human/HiTom.wav"
             },
             {
                 "display_name": "LowTom.wav",
-                "key": "COWBELL",
+                "key": "LTOM",
                 "url": "human/LowTom.wav"
             },
             {
@@ -467,9 +467,9 @@
                 "url": "8bits/crash.wav"
             },
             {
-                "display_name": "crbassash.wav",
+                "display_name": "bass_c2.wav",
                 "key": "BASS",
-                "url": "8bits/8bit_bass_c3.wav"
+                "url": "8bits/8bit_bass_c2.wav"
             }
         ]
     },
@@ -576,9 +576,9 @@
                 "url": "vintage/bass_c2.wav"
             },
             {
-                "display_name": "piano.wav",
+                "display_name": "piano_c5.wav",
                 "key": "PIANO",
-                "url": "vintage/piano_c3.wav"
+                "url": "vintage/piano_c5.wav"
             }
         ]
     },
@@ -608,9 +608,9 @@
                 "url": "punchy/clap.wav"
             },
             {
-                "display_name": "cow.wav",
-                "key": "COWBELL",
-                "url": "punchy/cow.wav"
+                "display_name": "hit.wav",
+                "key": "HIT",
+                "url": "punchy/hit.wav"
             },
             {
                 "display_name": "chh.wav",

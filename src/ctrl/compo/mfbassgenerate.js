@@ -1,7 +1,6 @@
-import { MfGlobals } from '../mfglobals.js'
+import { MfGlobals } from '../../mfglobals.js'
 
-export default class MfAutoCompose {
-    static TAG = "MFPATTERNS"
+export default class MfBassGenerate {
     static BASS_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
@@ -123,127 +122,35 @@ export default class MfAutoCompose {
         }
     })
 
-    constructor() { }
 
-
-    changeTrack = async (loop, pattern, track) => {
-        console.log("MfAutoCompose::changeTrack")
-        if (loop % 4 === 0) {
-            const mfAutoGenerate = await MfGlobals.getAutoGenerate()
-            await mfAutoGenerate.generateTrack(pattern.tags.style, track)
-        }
+    constructor() {
+        this.isScalesLoading = false
     }
 
-    changePattern = async (loop, pattern) => {
-        const LOOP_LGR = 16
-        let bassTrack = MfGlobals.mfCmd.getTrackFromType(pattern, "BASS")
-        if (!bassTrack) {
-            bassTrack = MfGlobals.mfCmd.addTrack(pattern, "BASS")
-            MfGlobals.mfMixer.addStrip("BASS") //TODO ATT
-            bassTrack.useSoftSynth = true
-            bassTrack.velocity = 0.3
+   loadScales = () => {
+        if (this.isScalesLoading || !MfGlobals.mfResourcesLoader) {
+            return
         }
-        if (bassTrack.notes.length === 0) {
-            this.generateNewBass(pattern, bassTrack)
-        }
+        this.isScalesLoading = true
+        console.log("MfAutoGenerate::loadScales")
+        MfGlobals.mfResourcesLoader.loadScales(MfGlobals.urlscales, this.checkResources)
+        console.log(MfGlobals.scales)
+  }
 
-        Object.values(pattern.tracks).forEach((track, indexTrack) => {
-            if (track.name === 'CHH' || track.name === 'OHH') {
-                if (loop % LOOP_LGR < LOOP_LGR / 4 + 1) {
-                    track.mute = true
-                } else {
-                    track.mute = false
-                }
-            }
-            if (track.name === 'TOM' || track.name === 'COWBELL' || track.name === 'CLAP') {
-                if (loop % LOOP_LGR === (LOOP_LGR * 3 / 4)) {
-                    track.mute = true
-                }
-                if (loop % LOOP_LGR === (LOOP_LGR * 3 / 4 + 2)) {
-                    track.mute = false
-                }
-            }
-        })
-        let snareTrack = MfGlobals.mfCmd.getTrackFromType(pattern, "SNARE_B")
-        if (!snareTrack) {
-            snareTrack = MfGlobals.mfCmd.addTrack(pattern, "SNARE_B")
-            MfGlobals.mfMixer.addStrip("SNARE_B") //TODO ATT
-            snareTrack.velocity = 1
-            this.generateClearTrack(snareTrack)
-        }
-        if (loop % LOOP_LGR === LOOP_LGR - 1) {
-            this.generateNewSnareBrk(pattern, snareTrack)
-        }
-
-        if (loop % LOOP_LGR === 0) {
-            const mfAutoGenerate = await MfGlobals.getAutoGenerate()
-            await mfAutoGenerate.generatePattern()
-            this.generateNewBass(pattern, bassTrack)
-        }
-        const cymTrack = MfGlobals.mfCmd.getTrackFromType(pattern, "CRASH")
-        if (cymTrack) {
-            if (loop % LOOP_LGR === LOOP_LGR / 2) {
-                this.generateNewCymBrk(pattern, cymTrack)
-            }
-            if (loop % LOOP_LGR === (LOOP_LGR / 2 + 1)) {
-                let cymTrack = MfGlobals.mfCmd.getTrackFromType(pattern, "CRASH")
-                this.generateClearTrack(pattern, cymTrack)
-            }
-        }
-         MfGlobals.mfPatterns.computeFlatNotesFromPattern(pattern)
-        MfGlobals.mfUpdates.updatePatternView(pattern, 1) //TODO
+    checkResources = () => {
+        this.isScalesLoading = false
+        console.log("MfAutoGenerate::checkResources")
+        console.log("scales")
+        console.log(MfGlobals.scales)
     }
 
-    generateNewCymBrk = (pattern, track) => {
-        this.assignRandomInstrumentToTrack(track)
-        track.notes = []
-        let lastBar = pattern.nbBars - 1
-        for (let i = 0; i < 4; i++) {
-            if (Math.floor(Math.random() * 10) > 2) {
-                MfGlobals.mfCmd.addNote(track, lastBar - 1, i, 0)
-            }
-        }
-        for (let i = 0; i < 4; i++) {
-            MfGlobals.mfCmd.addNote(track, lastBar, i, 0)
-        }
-    }
+    generateNewBass = (bassTrack, variantName = null, variantSubName=null) => {
+        if (variantName === 'break') return
 
-    generateNewSnareBrk = (pattern, track) => {
-        track.notes = []
-        let lastBar = pattern.nbBars - 1
-        for (let i = 0; i < 4; i++) {
-            if (Math.floor(Math.random() * 10) > 2) {
-                MfGlobals.mfCmd.addNote(track, lastBar - 1, i, 0)
-            }
-        }
-        for (let i = 0; i < 4; i++) {
-            MfGlobals.mfCmd.addNote(track, lastBar, i, 0)
-        }
-    }
-
-    generateClearTrack = (track) => {
-        track.notes = []
-    }
-
-    assignRandomInstrumentToTrack = (track) => {
-        const soundId = this.getRandomAvailableSoundId()
-        track.soundId = soundId
-        const sound = MfGlobals.sounds[soundId]
-        console.log(`TRACK[${track.name}] | randSound=${sound?.key ?? '?'} | idx=${soundId} | url=${sound?.url ?? '?'}`)
-    }
-
-    getRandomAvailableSoundId = () => {
-        const keys = Object.keys(MfGlobals.sounds);
-        if (keys.length === 0) return null;
-        const randomKey = keys[Math.floor(Math.random() * keys.length)];
-        return randomKey;
-    }
-
-    generateNewBass = (pattern, bassTrack, variantName = null) => {
         const resolvedVariantName = this.resolveBassVariantName(variantName)
-        const config = MfAutoCompose.BASS_GENERATION_CONFIGS[resolvedVariantName] ?? MfAutoCompose.BASS_GENERATION_CONFIGS.basic
+        const config = MfBassGenerate.BASS_GENERATION_CONFIGS[resolvedVariantName] ?? MfBassGenerate.BASS_GENERATION_CONFIGS.basic
         const tones = this.getScaleSteps(config.scaleName)
-        this.traceBassGeneration(resolvedVariantName, config, pattern, bassTrack)
+        this.traceBassGeneration(resolvedVariantName, config, bassTrack)
 
         this.clearTrackNotes(bassTrack)
         switch (config.mode) {
@@ -251,27 +158,36 @@ export default class MfAutoCompose {
                 this.generateBassStepGridVariant(bassTrack, tones, config)
                 break
             case 'groove':
-                this.generateBassGrooveVariant(pattern, bassTrack, tones, config)
+                this.generateBassGrooveVariant(bassTrack, tones, config)
                 break
             case 'arpeggio':
-                this.generateBassArpeggioVariant(pattern, bassTrack, tones, config)
+                this.generateBassArpeggioVariant( bassTrack, tones, config)
                 break
             case 'phrases':
             default:
                 this.generateBassPhraseVariant(bassTrack, tones, config)
                 break
         }
-        this.applyBassLoopPoint(bassTrack, config, pattern)
+        this.applyBassLoopPoint(bassTrack, config)
         this.displayDebugNotes(bassTrack)
     }
 
     generateBassPhraseVariant = (bassTrack, tones, config) => {
+        const loopPointBar = config.loopPointBar ?? 2
+        const loopPointStep = config.loopPointStep ?? 0
+        const barQuantize = bassTrack.barQuantize ?? 4
+        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
+        
         const cachedPitches = []
         config.phrases.forEach((phrase) => {
             const pitch = this.resolveBassPitch(phrase, tones, cachedPitches)
             const step = phrase.step === 'random'
-                ? Math.floor(Math.random() * bassTrack.stepsPerBar)
+                ? Math.floor(Math.random() * barQuantize)
                 : phrase.step
+            
+            const absoluteStep = phrase.bar * barQuantize + step
+            if (absoluteStep >= loopPointAbsolute) return
+            
             this.addBassNote(
                 bassTrack,
                 phrase.bar,
@@ -288,6 +204,12 @@ export default class MfAutoCompose {
     }
 
     generateBassStepGridVariant = (bassTrack, tones, config) => {
+        const loopPointBar = config.loopPointBar ?? 2
+        const loopPointStep = config.loopPointStep ?? 0
+        const barQuantize = bassTrack.barQuantize ?? 4
+        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
+        const bar = config.bar ?? 0
+        
         const generatedTones = [
             tones[0],
             this.getRndTone(tones),
@@ -296,15 +218,18 @@ export default class MfAutoCompose {
         ]
 
         config.probabilities.forEach((probability, step) => {
+            const absoluteStep = bar * barQuantize + step
+            if (absoluteStep >= loopPointAbsolute) return
+            
             if (Math.random() < probability) {
                 this.addBassNote(
                     bassTrack,
-                    config.bar,
+                    bar,
                     step,
                     generatedTones[step],
                     this.computeBassVelocity(config.velocity, {
                         step,
-                        bar: config.bar,
+                        bar: bar,
                         accent: config.velocity?.accentPattern?.[step] ?? 0,
                         strongBeat: step % 4 === 0
                     })
@@ -313,13 +238,21 @@ export default class MfAutoCompose {
         })
     }
 
-    generateBassGrooveVariant = (pattern, bassTrack, scale, config) => {
+    generateBassGrooveVariant = ( bassTrack, scale, config) => {
+        const loopPointBar = config.loopPointBar ?? 2
+        const loopPointStep = config.loopPointStep ?? 0
+        const barQuantize = bassTrack.barQuantize ?? 4
+        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
+        
         const rootPattern = config.rootPattern
 
-        for (let bar = 0; bar < pattern.nbBars; bar++) {
+        for (let bar = 0; bar < (bassTrack.bars ?? 1); bar++) {
             const rootPitch = rootPattern[bar % rootPattern.length]
             let lastStepNote = rootPitch
-            for (let step = 0; step < bassTrack.stepsPerBar; step++) {
+            for (let step = 0; step < barQuantize; step++) {
+                const absoluteStep = bar * barQuantize + step
+                if (absoluteStep >= loopPointAbsolute) continue
+                
                 const strongBeat = step === 0
                 const playNote = strongBeat || Math.random() < config.density
                 if (!playNote) {
@@ -360,7 +293,12 @@ export default class MfAutoCompose {
         }
     }
 
-    generateBassArpeggioVariant = (pattern, bassTrack, scale, config) => {
+    generateBassArpeggioVariant = ( bassTrack, scale, config) => {
+        const loopPointBar = config.loopPointBar ?? 2
+        const loopPointStep = config.loopPointStep ?? 0
+        const barQuantize = bassTrack.barQuantize ?? 4
+        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
+        
         const rootPattern = config.rootPattern ?? [0]
         const phraseLength = Math.max(2, config.phraseLength ?? scale.length)
         const contour = config.contour ?? 'updown'
@@ -368,12 +306,15 @@ export default class MfAutoCompose {
         const averageSpacing = Math.max(1, config.noteSpacing ?? 2)
         const spacingJitter = Math.max(0, config.spacingJitter ?? 0)
 
-        for (let bar = 0; bar < pattern.nbBars; bar++) {
+        for (let bar = 0; bar < (bassTrack.bars ?? 1); bar++) {
             const rootPitch = rootPattern[bar % rootPattern.length]
             let step = 0
             let noteIndex = 0
 
-            while (step < bassTrack.stepsPerBar) {
+            while (step < barQuantize) {
+                const absoluteStep = bar * barQuantize + step
+                if (absoluteStep >= loopPointAbsolute) break
+                
                 const degree = contourSequence[noteIndex % contourSequence.length] ?? 0
                 const pitch = rootPitch + degree
                 this.addBassNote(
@@ -409,14 +350,16 @@ export default class MfAutoCompose {
         return MfGlobals.scales[scaleName]?.scaleSteps ?? MfGlobals.scales["major"]?.scaleSteps ?? [0, 2, 4, 5, 7, 9, 11]
     }
 
-    clearTrackNotes = (track) => {
-        track.notes = []
-    }
+  
 
-    addBassNote = (track, bar, stepInBar, pitch, velocity = 0.8) => {
-        const note = MfGlobals.mfCmd.addNote(track, bar, stepInBar, pitch)
+    addBassNote = (track, bar, barStep, pitch, velocity = 0.8) => {
+        const note = MfGlobals.mfCmd.addNote(track, bar, barStep, pitch)
         note.velocity = velocity
         return note
+    }
+
+    clearTrackNotes = (track) => {
+        track.notes = []
     }
 
     computeBassVelocity = (velocityConfig = {}, context = {}) => {
@@ -428,24 +371,24 @@ export default class MfAutoCompose {
         const randomOffset = (Math.random() * 2 - 1) * randomSpread
         const min = velocityConfig.clampMin ?? 0.35
         const max = velocityConfig.clampMax ?? 1
-        return Math.min(max, Math.max(min, base + accentOnBeat + accent + variationBoost + randomOffset))
+        return Math.min(max, Math.max(min, base + accentOnBeat + accent + variationBoost + randomOffset)).toFixed(2)
     }
 
-    applyBassLoopPoint = (bassTrack, config, pattern) => {
-        const loopPointBar = config.loopPointBar ?? pattern?.nbBars ?? bassTrack.bars ?? 1
+    applyBassLoopPoint = (bassTrack, config) => {
+        const loopPointBar = config.loopPointBar  ?? bassTrack.bars ?? 1
         const loopPointStep = config.loopPointStep ?? 0
         bassTrack.loopPointBar = loopPointBar
         bassTrack.loopPointStep = loopPointStep
-        bassTrack.loopAtStep = loopPointBar * bassTrack.stepsPerBar + loopPointStep
+        bassTrack.loopAtStep = loopPointBar * bassTrack.barQuantize + loopPointStep
     }
 
     getRndBassVariantName = () => {
-        const variants = Object.keys(MfAutoCompose.BASS_GENERATION_CONFIGS)
+        const variants = Object.keys(MfBassGenerate.BASS_GENERATION_CONFIGS)
         return variants[Math.floor(Math.random() * variants.length)] ?? 'basic'
     }
 
     resolveBassVariantName = (variantName) => {
-        if (variantName && MfAutoCompose.BASS_GENERATION_CONFIGS[variantName]) {
+        if (variantName && MfBassGenerate.BASS_GENERATION_CONFIGS[variantName]) {
             return variantName
         }
         return this.getRndBassVariantName()
@@ -497,13 +440,13 @@ export default class MfAutoCompose {
         return choices[Math.floor(Math.random() * choices.length)] ?? averageSpacing
     }
 
-    traceBassGeneration = (variantName, config, pattern, bassTrack) => {
+    traceBassGeneration = (variantName, config, bassTrack) => {
         const parts = [
             `BASS[${variantName}]`,
             `mode=${config.mode}`,
             `scale=${config.scaleName}`,
-            `bars=${pattern?.nbBars ?? bassTrack?.bars ?? '?'}`,
-            `steps=${bassTrack?.stepsPerBar ?? '?'}`
+            `bars=${ bassTrack?.bars ?? '?'}`,
+            `steps=${bassTrack?.barQuantize ?? '?'}`
         ]
 
         if (Array.isArray(config.rootPattern)) {
@@ -540,7 +483,7 @@ export default class MfAutoCompose {
         const velocity = config.velocity ?? {}
         parts.push(
             `vel=${this.formatCompactVelocity(velocity)}`,
-            `loop=${config.loopPointBar ?? pattern?.nbBars ?? 1}:${config.loopPointStep ?? 0}`
+            `loop=${config.loopPointBar }:${config.loopPointStep ?? 0}`
         )
 
         console.log(parts.join(" | "))
@@ -576,7 +519,7 @@ export default class MfAutoCompose {
     displayDebugNotes = (track) => {
         let ret = "" + track.name + "="
         Object.values(track.notes).forEach((note, indexTrack) => {
-            ret += "BS: " + note.bar + ":" + note.stepInBar + " P=" + note.pitch + " - "
+            ret += "BS: " + note.bar + ":" + note.barStep + " P=" + note.pitch + " - "
         })
         console.log(ret)
     }

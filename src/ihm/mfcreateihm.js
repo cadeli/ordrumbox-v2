@@ -447,7 +447,12 @@ export default class MfCreateIhm {
                 selNote[ctrl.prop],
                 (value) => {
                     const note = MfGlobals.mfUpdates.getSelectedNote();
-                    if (note) note[ctrl.prop] = parseInt(value);
+                    if (note) {
+                        note[ctrl.prop] = parseInt(value);
+                        const pattern = MfGlobals.patterns[MfGlobals.selectedPatternNum];
+                        MfGlobals.mfUpdates.updatePatternView(pattern, MfGlobals.displayBars);
+                        MfGlobals.mfPatterns.computeFlatNotesFromPattern(pattern);
+                    }
                 },
                 { min: ctrl.min, max: ctrl.max, step: 1, isNormalized: false }
             );
@@ -457,13 +462,13 @@ export default class MfCreateIhm {
     createNoteCtrlRepeat = (paramDiv) => {
         const selNote = MfGlobals.mfUpdates.getSelectedNote() || {
             retriggerNum: 1,
-            retriggStep: 1,
+            retriggerStep: 1,
             euclidianFill: 0
         };
 
         const controls = [
             { label: "Rep_Num", prop: "retriggerNum", min: 0, max: 16 },
-            { label: "Rep_Step", prop: "retriggStep", min: 1, max: 16 },
+            { label: "Rep_Step", prop: "retriggerStep", min: 1, max: 16 },
             { label: "Eucl_Fill", prop: "euclidianFill", min: 0, max: 8 }
         ];
 
@@ -475,7 +480,12 @@ export default class MfCreateIhm {
                 selNote[ctrl.prop],
                 (value) => {
                     const note = MfGlobals.mfUpdates.getSelectedNote();
-                    if (note) note[ctrl.prop] = parseInt(value);
+                    if (note) {
+                        note[ctrl.prop] = parseInt(value);
+                        const pattern = MfGlobals.patterns[MfGlobals.selectedPatternNum];
+                        MfGlobals.mfUpdates.updatePatternView(pattern, MfGlobals.displayBars);
+                        MfGlobals.mfPatterns.computeFlatNotesFromPattern(pattern);
+                    }
                 },
                 { min: ctrl.min, max: ctrl.max, step: 1, isNormalized: false }
             );

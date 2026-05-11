@@ -22,6 +22,10 @@ export default class MfSeq {
         this.scheduleAheadTime = 0.1; // How far ahead to schedule audio (sec) This is calculated from lookahead, and overlaps  with next interval (in case the timer is late)
         this.nextStepTime = 0.0; // when the next note is due.
         this.timerWorker = null;
+        this.isPatternsLoading = false
+        this.patternsLoadFailed = false
+        this.isSamplesLoading = false
+        this.samplesLoadFailed = false
         MfGlobals.mfMixer = new MfMixer()
     }
 
@@ -60,9 +64,31 @@ export default class MfSeq {
         console.log("mfSeq::firstStart::sounds")
         console.log(MfGlobals.sounds)
         if (MfGlobals.patterns.length==0) {
-            MfGlobals.mfResourcesLoader.loadPatterns(MfGlobals.urlpatterns, this.firstStart)
+            if (this.isPatternsLoading || this.patternsLoadFailed) {
+                return
+            }
+
+            this.isPatternsLoading = true
+            MfGlobals.mfResourcesLoader.loadPatterns(MfGlobals.urlpatterns, () => {
+                this.isPatternsLoading = false
+                if (MfGlobals.patterns.length === 0) {
+                    this.patternsLoadFailed = true
+                    console.warn("mfSeq::firstStart loaded no patterns")
+                    return
+                }
+                this.firstStart()
+            }).catch((error) => {
+                this.isPatternsLoading = false
+                this.patternsLoadFailed = true
+                console.error("mfSeq::firstStart failed to load patterns", error)
+            })
+            return
         }
         let selPattern = MfGlobals.patterns[MfGlobals.selectedPatternNum]
+        if (!selPattern) {
+            console.warn("mfSeq::firstStart no selected pattern")
+            return
+        }
         MfGlobals.mfSeq.setBpm(selPattern.bpm)
         const mfAutoAssign = await MfGlobals.getAutoAssign()
         mfAutoAssign.autoAssignSounds(selPattern)
@@ -75,7 +101,31 @@ export default class MfSeq {
     start = () => {
         MfGlobals.mfResourcesLoader.ensureAudioContext()
         if (Object.keys(MfGlobals.sounds).length == 0) {
-            MfGlobals.mfResourcesLoader.loadSamplesFromDrumkit(MfGlobals.drumkitList[0], this.firstStart)
+            if (this.isSamplesLoading || this.samplesLoadFailed) {
+                return
+            }
+
+            const drumkit = MfGlobals.drumkitList[0]
+            if (!drumkit) {
+                this.samplesLoadFailed = true
+                console.warn("mfSeq::start no drumkit available")
+                return
+            }
+
+            this.isSamplesLoading = true
+            MfGlobals.mfResourcesLoader.loadSamplesFromDrumkit(drumkit).then(() => {
+                this.isSamplesLoading = false
+                if (Object.keys(MfGlobals.sounds).length === 0) {
+                    this.samplesLoadFailed = true
+                    console.warn("mfSeq::start loaded no samples")
+                    return
+                }
+                this.firstStart()
+            }).catch((error) => {
+                this.isSamplesLoading = false
+                this.samplesLoadFailed = true
+                console.error("mfSeq::start failed to load samples", error)
+            })
         } else {
             if (!this.unlocked) {
                 this.playSilentBuffer()
@@ -87,20 +137,19 @@ export default class MfSeq {
             this.timerWorker.postMessage("start");
             if (MfGlobals.mfMixer == null) {
                 MfGlobals.mfMixer = new MfMixer()
-            } else {
-                MfGlobals.mfMixer.start()
-                if (this.mfAudioRec == null) {
-                    import('./snd/mfaudiorec.js').then(({ default: MfAudioRec }) => {
-                        if (!this.isRunning || this.mfAudioRec != null) {
-                            return
-                        }
-                        this.mfAudioRec = new MfAudioRec(MfGlobals.mfMixer.analyser)
-                        this.mfAudioRec.startRecording()
-                        this.mfAudioRec.onComplete = function (rec, blob) {
-                            MfGlobals.blob = blob
-                        }
-                    })
-                }
+            }
+            MfGlobals.mfMixer.start()
+            if (this.mfAudioRec == null) {
+                import('./snd/mfaudiorec.js').then(({ default: MfAudioRec }) => {
+                    if (!this.isRunning || this.mfAudioRec != null) {
+                        return
+                    }
+                    this.mfAudioRec = new MfAudioRec(MfGlobals.mfMixer.analyser)
+                    this.mfAudioRec.startRecording()
+                    this.mfAudioRec.onComplete = function (rec, blob) {
+                        MfGlobals.blob = blob
+                    }
+                })
             }
         }
     }

@@ -1,0 +1,245 @@
+{
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "Salsa2",
+  "tracks": [
+    {
+      "name": "LWOODBLOCK",
+      "bars": 8,
+      "loopAtStep": 32,
+      "notes": [
+        {
+          "velocity": 0.95
+        },
+        {
+          "barStep": 3,
+          "velocity": 0.9
+        },
+        {
+          "barStep": 2,
+          "bar": 1,
+          "velocity": 0.95
+        },
+        {
+          "barStep": 2,
+          "bar": 4,
+          "velocity": 0.9
+        },
+        {
+          "barStep": 1,
+          "bar": 5,
+          "velocity": 0.95
+        }
+      ]
+    },
+    {
+      "name": "HCONGAS",
+      "bars": 8,
+      "loopAtStep": 32,
+      "notes": [
+        {
+          "barStep": 2,
+          "velocity": 0.75
+        },
+        {
+          "barStep": 2,
+          "bar": 1,
+          "velocity": 0.85
+        },
+        {
+          "barStep": 3,
+          "bar": 1,
+          "velocity": 0.7
+        },
+        {
+          "barStep": 2,
+          "bar": 2
+        },
+        {
+          "barStep": 2,
+          "bar": 4,
+          "velocity": 0.75
+        },
+        {
+          "barStep": 2,
+          "bar": 5,
+          "velocity": 0.85
+        },
+        {
+          "barStep": 3,
+          "bar": 5,
+          "velocity": 0.7
+        },
+        {
+          "barStep": 2,
+          "bar": 6
+        }
+      ]
+    },
+    {
+      "name": "LCONGAS",
+      "bars": 8,
+      "loopAtStep": 32,
+      "notes": [
+        {},
+        {
+          "bar": 1,
+          "velocity": 0.7
+        },
+        {
+          "bar": 2
+        },
+        {
+          "bar": 3,
+          "velocity": 0.7
+        },
+        {
+          "bar": 4
+        },
+        {
+          "bar": 5,
+          "velocity": 0.7
+        },
+        {
+          "bar": 6
+        },
+        {
+          "bar": 7,
+          "velocity": 0.7
+        }
+      ]
+    },
+    {
+      "name": "HTIMBAL",
+      "bars": 8,
+      "loopAtStep": 32,
+      "notes": [
+        {
+          "velocity": 0.9
+        },
+        {
+          "bar": 2,
+          "velocity": 0.85
+        },
+        {
+          "bar": 4,
+          "velocity": 0.9
+        },
+        {
+          "bar": 6,
+          "velocity": 0.85
+        }
+      ]
+    },
+    {
+      "name": "LTIMBAL",
+      "bars": 8,
+      "loopAtStep": 32,
+      "notes": [
+        {
+          "bar": 1
+        },
+        {
+          "bar": 3,
+          "velocity": 0.75
+        },
+        {
+          "bar": 5
+        },
+        {
+          "bar": 7,
+          "velocity": 0.75
+        }
+      ]
+    },
+    {
+      "name": "MARACAS",
+      "bars": 8,
+      "loopAtStep": 32,
+      "notes": [
+        {
+          "velocity": 0.6
+        },
+        {
+          "barStep": 2,
+          "velocity": 0.5
+        },
+        {
+          "bar": 1,
+          "velocity": 0.6
+        },
+        {
+          "barStep": 2,
+          "bar": 1,
+          "velocity": 0.5
+        },
+        {
+          "bar": 2,
+          "velocity": 0.6
+        },
+        {
+          "barStep": 2,
+          "bar": 2,
+          "velocity": 0.5
+        },
+        {
+          "bar": 3,
+          "velocity": 0.6
+        },
+        {
+          "barStep": 2,
+          "bar": 3,
+          "velocity": 0.5
+        },
+        {
+          "bar": 4,
+          "velocity": 0.6
+        },
+        {
+          "barStep": 2,
+          "bar": 4,
+          "velocity": 0.5
+        },
+        {
+          "bar": 5,
+          "velocity": 0.6
+        },
+        {
+          "barStep": 2,
+          "bar": 5,
+          "velocity": 0.5
+        },
+        {
+          "bar": 6,
+          "velocity": 0.6
+        },
+        {
+          "barStep": 2,
+          "bar": 6,
+          "velocity": 0.5
+        },
+        {
+          "bar": 7,
+          "velocity": 0.6
+        },
+        {
+          "barStep": 2,
+          "bar": 7,
+          "velocity": 0.5
+        }
+      ]
+    },
+    {
+      "name": "KICK",
+      "bars": 8,
+      "loopAtStep": 32,
+      "notes": [
+        {
+          "velocity": 0.9
+        }
+      ]
+    }
+  ],
+  "bpm": 95,
+  "nbBars": 8
+}

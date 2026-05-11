@@ -62,15 +62,14 @@ export default class MfComponents {
         return inputBox
     }
 
-//TODO useless
-    toggleVisu = (aDiv) => {
-        let divbpmi = document.getElementById(aDiv)
-        if (divbpmi.style.display != 'block') {
-            divbpmi.style.display = 'block'
-        } else {
-            divbpmi.style.display = 'none'
-        }
-    }
+    // toggleVisu = (aDiv) => {
+    //     let divbpmi = document.getElementById(aDiv)
+    //     if (divbpmi.style.display != 'block') {
+    //         divbpmi.style.display = 'block'
+    //     } else {
+    //         divbpmi.style.display = 'none'
+    //     }
+    // }
 
     getLfoNameFromLabel = (label) => {
         label =label.toUpperCase()

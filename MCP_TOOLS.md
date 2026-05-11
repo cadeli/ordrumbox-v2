@@ -73,7 +73,7 @@ Saves the current pattern to a JSON file.
 
 ## 2. Notes & Tracks
 
-### addNotesToPattern
+### addExtendedNotesToPattern
 
 Adds notes to a pattern. Creates missing tracks automatically.
 
@@ -82,7 +82,7 @@ Use `listAllInstrumentsNames` to get the list of valid instrument IDs.
 
 **Note properties:**
 - `bar` (integer, default: 0) - Bar index (0-indexed)
-- `stepInBar` (integer, required) - Step within the bar (0-indexed)
+- `barStep` (integer, required) - Step within the bar (0-indexed)
 - `pitch` (number, default: 0) - Pitch offset in semitones
 - `velocity` (number, 0-1, default: 0.8) - Note velocity
 - `pan` (number, -1 to 1, default: 0) - Stereo pan
@@ -90,30 +90,32 @@ Use `listAllInstrumentsNames` to get the list of valid instrument IDs.
 - `triggerFreq` (integer, 1-16, default: 1) - Trigger frequency
 - `triggerPhase` (integer, 0-15, default: 0) - Trigger phase offset
 - `retriggerNum` (integer, 1-16, default: 1) - Number of retriggers
-- `retriggStep` (integer, 1-16, default: 1) - Retrigger step spacing
+- `retriggerStep` (integer, 1-16, default: 1) - Retrigger step spacing
 - `euclidianFill` (integer, 0-100, default: 0) - Euclidean fill percentage
 
 **Input:**
 ```json
 {
   "patternName": "My Pattern",
-  "stepsPerBar": 4,
+  "barQuantize": 4,
   "notes": [
     {
       "trackName": "KICK",
       "bar": 0,
-      "stepInBar": 0,
+      "barStep": 0,
       "velocity": 0.8
     },
     {
       "trackName": "SNARE",
       "bar": 0,
-      "stepInBar": 2,
+      "barStep": 2,
       "velocity": 1.0
     }
   ]
 }
 ```
+
+> **Note:** When `barQuantize` is specified, `loopAtStep` is automatically set to the same value, meaning the track loops after 1 bar. Default is 4.
 
 **Output:**
 ```json
@@ -149,7 +151,7 @@ Updates or creates a track with global properties.
 - `saturationType` - Saturation type: "soft", "hard", "tape"
 - `saturationAmount` - Saturation amount (0-1)
 - `loopAtStep` - Loop point (absolute step index)
-- `stepsPerBar` - Steps per bar (4, 8, or 16)
+- `barQuantize` - Steps per bar (4, 8, or 16)
 - `bars` - Number of bars
 
 **⚠️ Track Name Constraints:**
@@ -348,21 +350,15 @@ Returns the list of all patterns from patterns.json.
 
 ### listKitSamples
 
-Lists all sample files in a drumkit.
+Lists all sample files from all drumkits.
 
-**Input:**
-```json
-{
-  "drumkitName": "punchy"
-}
-```
+**Input:** `{}`
 
 **Output:**
 ```json
 {
-  "kitName": "punchy",
-  "samples": ["kick.wav", "snare.wav", ...],
-  "count": 42
+  "count": 42,
+  "samples": ["8bits/kick.wav", "punchy/snare.wav", ...]
 }
 ```
 
@@ -397,51 +393,42 @@ Analyzes audio samples and returns their characteristics.
 
 All step and bar indices are **0-indexed** (starting from 0).
 
-**Tempo and Steps:**
-- At tempo 120 BPM, the default configuration is **4 measures × 4 steps = 16 steps total** (1 step = 1/16 note)
-- Default `stepsPerBar` is **4** (4 steps per bar, i.e., quarter notes)
-- Common values: 4 stepsPerBar (quarter notes), 8 stepsPerBar (eighth notes), 16 stepsPerBar (sixteenth notes)
+**Tempo and Steps and bars:**
 
-**Step Position Mapping:**
-The same musical position can have different `stepInBar` values depending on `stepsPerBar`:
+**Step Duration Calculation:**
+- orDrumbox always calculates step duration assuming **4 steps per bar**, regardless of the actual `barQuantize` setting
+        MfGlobals.TICK =  32
 
-| Steps Per Bar | Step 0 | Step 1 | Step 2 | Step 3 | Step 4 | Step 5 | Step 6 | Step 7 |
-|---------------|--------|--------|--------|--------|--------|--------|--------|--------|
-| 4             | 1/4    | 2/4    | 3/4    | 4/4    | -      | -      | -      | -      |
-| 8             | 1/8    | 2/8    | 3/8    | 4/8    | 5/8    | 6/8    | 7/8    | 8/8    |
-| 16            | 1/16   | 2/16   | 3/16   | 4/16   | 5/16   | 6/16   | 7/16   | 8/16   |
-
-**Example:**
-- A note at `stepInBar: 4` with `stepsPerBar: 8` is at the **5th eighth note** (halfway through the bar)
-- The same musical position with `stepsPerBar: 4` would be `stepInBar: 2` (the **3rd quarter note**)
-- Formula: `stepInBar_normalized = stepInBar × (stepsPerBar / 4)` (for 4 steps as reference)
+        secondsPerBeat = 60 * 4 / (bpm * MfGlobals.TICK)
+        and
+        bpm = parseInt((60 * 4) / (MfGlobals.TICK * MfGlobals.secondsPerBeat))
 
 **loopAtStep (Loop Point):**
 - `loopAtStep` is an **absolute step index** across the entire pattern, not per bar
-- Formula: `bar = floor(loopAtStep / stepsPerBar)` and `stepInBar = loopAtStep % stepsPerBar`
-- Example: `loopAtStep: 8` with `stepsPerBar: 4` = bar `2`, stepInBar `0` (3rd bar, 1st step)
-- Example: `loopAtStep: 32` with `stepsPerBar: 8` = bar `4`, stepInBar `0` (5th bar, 1st step)
+- Formula: `bar = floor(loopAtStep / barQuantize)` and `barStep = loopAtStep % barQuantize`
+- Example: `loopAtStep: 8` with `barQuantize: 4` = bar `2`, barStep `0` (3rd bar, 1st step)
+- Example: `loopAtStep: 32` with `barQuantize: 8` = bar `4`, barStep `0` (5th bar, 1st step)
 
 **Recommended: Use Loop Points Instead of Repeated Notes**
 - Instead of copying the same note pattern across multiple bars, use `loopAtStep` to create a loop
 - This is more efficient, easier to edit, and ensures consistent timing
-- Example: Instead of placing a kick on step 0 of bar 0, bar 1, bar 2, bar 3 → place it on step 0 of bar 0 and set `loopAtStep` to 4 (for 4 stepsPerBar)
-- The track will automatically repeat every 4 steps (1 bar)
+- Example: Instead of placing a kick on step 0 of bar 0, bar 1, bar 2, bar 3 → place it on step 0 of bar 0 and set `loopAtStep` to 4 (for 4 barQuantize)
+- The track will automatically repeat every 1 bar
 
 **Recommended: Enrich Patterns with Triggers, Retriggers & Arpeggios**
 - **Trigger (triggerFreq):** Defines how many times a note plays within a step (1-16). Creates rhythmic subdivisions.
   - `triggerFreq: 4` → 4 triggers per step (16th notes from an 8th note step)
   - `triggerPhase: 0-15` → Offset for the trigger pattern
 
-- **Retrigger (retriggerNum, retriggStep):** Repeats the sound at regular intervals within a step
+- **Retrigger (retriggerNum, retriggerStep):** Repeats the sound at regular intervals within a step
   - `retriggerNum: 3` → Play 3 times per step
-  - `retriggStep: 1` → Spacing between retriggers (retriggStep:4 means 1 step between each retrigger)
+  - `retriggerStep: 1` → Spacing between retriggers (retriggerStep:4 means 1 step between each retrigger)
 
 - **Arpeggio (arp):** Sequences through multiple pitches within a single step
   - Values: "up", "down", "upDown", "random", or note indices like "0,1,2,3"
   - Example: `arp: "0,1,2"` cycles through 3 pitches
 
-- These properties can be set via `addNotesToPattern` or per-note via `updateTrack` with `noteUpdates`
+- These properties can be set via `addExtendedNotesToPattern` or per-note via `updateTrack` with `noteUpdates`
 
 **Recommended: Use LFOs for Evolving Sounds**
 - Add Low Frequency Oscillators to track parameters for movement and evolution
@@ -461,7 +448,7 @@ Each note has additional properties controlling how it's played:
 | `triggerFreq` | integer | 1-16 | 1 | Trigger frequency - how often the note plays on pattern repeat loop|
 | `triggerPhase` | integer | 0-15 | 0 | Trigger phase - offset for triggering |
 | `retriggerNum` | integer | 1-16 | 1 | Number of repetitions after initial trigger |
-| `retriggStep` | integer | 1-16 | 1 | Step spacing between repetitions 4 => 1 step|
+| `retriggerStep` | integer | 1-16 | 1 | Step spacing between repetitions 4 => 1 step|
 | `arp` | string/null | - | null | Arpeggio pattern (up, down, updown, random, etc.) |
 | `euclidianFill` | integer | 0-100 | 0 | Euclidean rhythm fill percentage |
 
@@ -478,9 +465,9 @@ Repeats the note multiple times after the initial trigger.
 
 **Examples:**
 - `retriggerNum: 1` → 1 note (no repetition)
-- `retriggerNum: 4, retriggStep: 4` → 4 notes, 1 step apart
+- `retriggerNum: 4, retriggerStep: 4` → 4 notes, 1 step apart
 
-**Note:** If  `arp` is defined as 'const', `retriggStep` defaults for basic retriggering.
+**Note:** If  `arp` is defined as 'const', `retriggerStep` defaults for basic retriggering.
 
 #### Arpège (Arpeggio)
 Plays a sequence of pitches on a single step.
@@ -499,5 +486,5 @@ Plays a sequence of pitches on a single step.
 2. **Use loop points** (`loopAtStep`) instead of repeating notes across bars
 3. **Use triggers/retriggers/arp** to create rhythmic variation without extra notes
 4. **Use LFOs** sparingly to add subtle movement to sounds
-5. **Default stepsPerBar is 4** - 4-on-the-floor kick uses steps 0 in each bar
-6. **All indices are 0-indexed** - bar 0, stepInBar 0, etc.
+5. **Default barQuantize is 4** - 4-on-the-floor kick uses steps 0 in each bar
+6. **All indices are 0-indexed** - bar 0, barStep 0, etc.

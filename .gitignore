@@ -1,9 +1,8 @@
-**/out
 **/temp
 **/target
 **/node_modules
 **/*.reapeaks
 **/*DS_Store
-Gruntfile.*
-package*
-**.old
+*node_modules/*
+package*.*
+dist

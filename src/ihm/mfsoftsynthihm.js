@@ -4,7 +4,10 @@ import Utils from '../utils.js'
 export default class MfSoftSynthIhm {
     static TAG = "MFSOFTSYNTHIHM"
 
-    constructor() { }
+    constructor() {
+        this.isGeneratedSoundsLoading = false
+        this.generatedSoundsLoadFailed = false
+    }
 
     formatSynthFilterFreq = (value) => {
         const hz = Math.round(Number(value) || 0)
@@ -248,6 +251,23 @@ export default class MfSoftSynthIhm {
     }
 
     loadGeneratedsounds = () => {
-        MfGlobals.mfResourcesLoader.loadGeneratedSounds(MfGlobals.urlgeneratedsounds, () => this.displayModalDialogGenSound())
+        if (this.isGeneratedSoundsLoading || this.generatedSoundsLoadFailed) {
+            return
+        }
+
+        this.isGeneratedSoundsLoading = true
+        MfGlobals.mfResourcesLoader.loadGeneratedSounds(MfGlobals.urlgeneratedsounds, () => {
+            this.isGeneratedSoundsLoading = false
+            if (!Object.keys(MfGlobals.generatedSounds).length) {
+                this.generatedSoundsLoadFailed = true
+                console.warn("MfSoftSynthIhm::loadGeneratedsounds loaded no generated sounds")
+                return
+            }
+            this.displayModalDialogGenSound()
+        }).catch((error) => {
+            this.isGeneratedSoundsLoading = false
+            this.generatedSoundsLoadFailed = true
+            console.error("MfSoftSynthIhm::loadGeneratedsounds failed", error)
+        })
     }
 }

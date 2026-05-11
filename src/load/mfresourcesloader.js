@@ -45,8 +45,7 @@ export default class MfResourcesLoader {
 
     async loadGeneratedSounds(file, callback) {
         return this.loadJsonResource(file, (generatedSounds) => {
-            const fixedGeneratedSounds = this.fixGeneratedSounds(JSON.parse(JSON.stringify(generatedSounds)))
-            Object.assign(MfGlobals.generatedSounds, fixedGeneratedSounds)
+            Object.assign(MfGlobals.generatedSounds, generatedSounds)
             callback?.()
         })
     }
@@ -74,16 +73,7 @@ export default class MfResourcesLoader {
         })
     }
 
-    async loadTrackLib(file, complete) {
-        return this.loadJsonResource(file, (trackLib) => {
-            const fixedTrackLib = this.fixTrackLib(JSON.parse(JSON.stringify(trackLib)))
-            MfGlobals.trackLib.length = 0
-            fixedTrackLib.forEach((track) => {
-                MfGlobals.trackLib.push(track)
-            })
-            complete?.()
-        })
-    }
+
 
     onSoundsProgress = (progress) => { //TODO
         // if (typeof document === 'undefined') {
@@ -197,8 +187,8 @@ export default class MfResourcesLoader {
             Object.values(pattern.tracks).forEach((track, indexTrack) => {
                 this.trackPanningFix(track, indexTrack)
                 if (track.useSoftSynth) { track.useAutoAssignSound = false } //JIC
-                track.loopPointBar = Math.floor(track.loopAtStep / track.stepsPerBar)
-                track.loopPointStep = track.loopAtStep % track.stepsPerBar
+                track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
+                track.loopPointStep = track.loopAtStep % track.barQuantize
                 if (!track.useAutoAssignSound) { track.useAutoAssignSound = true;track.soundId="NOT_DEFINED" }
 
                 if (!track.swingResolution) { track.swingResolution = Utils.TRACK_DEFAULTS.swingResolution }
@@ -218,7 +208,7 @@ export default class MfResourcesLoader {
                 Object.values(track.notes).forEach((note) => {
                     this.stepBarFix(track, note) //TODO due to inconsistant json 
                     if (!note.retriggerNum) { note.retriggerNum = Utils.NOTE_DEFAULTS.retriggerNum }
-                    if (!note.retriggStep) { note.retriggStep = Utils.NOTE_DEFAULTS.retriggStep }
+                    if (!note.retriggerStep) { note.retriggerStep = Utils.NOTE_DEFAULTS.retriggerStep }
                     if (!note.triggerFreq) { note.triggerFreq = Utils.NOTE_DEFAULTS.triggerFreq }
                     if (!note.triggerPhase) { note.triggerPhase = Utils.NOTE_DEFAULTS.triggerPhase }
                     if (!note.euclidianFill) { note.euclidianFill = Utils.NOTE_DEFAULTS.euclidianFill }
@@ -228,55 +218,19 @@ export default class MfResourcesLoader {
         return patterns
     }
 
-    fixTrackLib = (trackLib) => {
-        Object.values(trackLib).forEach((track, indexTrack) => {
-            this.trackPanningFix(track, indexTrack)
-            track.useSoftSynth = false
-            track.loopPointBar = Math.floor(track.loopAtStep / track.stepsPerBar)
-            track.loopPointStep = track.loopAtStep % track.stepsPerBar
 
-            if (!track.swingResolution) { track.swingResolution = Utils.TRACK_DEFAULTS.swingResolution }
-            if (!track.swingAmount) { track.swingAmount = Utils.TRACK_DEFAULTS.swingAmount }
-            if (!track.velocityLfo) { track.velocityLfo = Utils.TRACK_DEFAULTS.velocityLfo }
-            if (!track.pitchLfo) { track.pitchLfo = Utils.TRACK_DEFAULTS.pitchLfo }
-            if (!track.panLfo) { track.panLfo = Utils.TRACK_DEFAULTS.panLfo }
-            if (!track.filterFreqLfo) { track.filterFreqLfo = Utils.TRACK_DEFAULTS.filterFreqLfo }
-            if (!track.filterQLfo) { track.filterQLfo = Utils.TRACK_DEFAULTS.filterQLfo }
-            if (!track.filterType) { track.filterType = Utils.TRACK_DEFAULTS.filterType }
-            if (track.filterType === 'all') { track.filterType = 'allpass' }
-            if (track.filterFreq == null) { track.filterFreq = Utils.TRACK_DEFAULTS.filterFreq }
-            if (track.filterQ == null) { track.filterQ = Utils.TRACK_DEFAULTS.filterQ }
-            if (!track.filterLfoFreq) { track.filterLfoFreq = 0 }
-            if (!track.sampleLength) { track.sampleLength = 1 }
-            if (!track.reverbType) { track.reverbType = "none" }
-            if (track.reverbAmount == null) { track.reverbAmount = 0 }
-            if (!track.saturationType) { track.saturationType = "soft" }
-            if (track.saturationAmount == null) { track.saturationAmount = 0 }
-
-            Object.values(track.notes ?? []).forEach((note) => {
-                this.stepBarFix(track, note)
-                if (!note.retriggerNum) { note.retriggerNum = 1 }
-                if (!note.retriggStep) { note.retriggStep = 1 }
-                if (!note.triggerFreq) { note.triggerFreq = 1 }
-                if (!note.triggerPhase) { note.triggerPhase = 0 }
-                if (!note.euclidianFill) { note.euclidianFill = 0 }
-            })
-        })
-        return trackLib
-    }
-
-    fixGeneratedSounds = (generatedSounds) => {
-        Object.values(generatedSounds).forEach((generatedSound) => {
-            generatedSound.filter ??= {}
-            if (generatedSound.filter.freq == null) { generatedSound.filter.freq = 50 }
-            if (generatedSound.filter.Q == null) { generatedSound.filter.Q = 1 }
-            if (generatedSound.filter.filterEnvelopeAmount == null) { generatedSound.filter.filterEnvelopeAmount = 0 }
-            generatedSound.filter.freq = Utils.normalizeSynthFilterFreqValue(generatedSound.filter.freq)
-            generatedSound.filter.Q = Utils.normalizeSynthFilterQValue(generatedSound.filter.Q)
-            generatedSound.filter.filterEnvelopeAmount = Math.min(1, Math.max(0, Number(generatedSound.filter.filterEnvelopeAmount) || 0))
-        })
-        return generatedSounds
-    }
+    // fixGeneratedSounds = (generatedSounds) => {
+    //     Object.values(generatedSounds).forEach((generatedSound) => {
+    //         generatedSound.filter ??= {}
+    //         if (generatedSound.filter.freq == null) { generatedSound.filter.freq = 50 }
+    //         if (generatedSound.filter.Q == null) { generatedSound.filter.Q = 1 }
+    //         if (generatedSound.filter.filterEnvelopeAmount == null) { generatedSound.filter.filterEnvelopeAmount = 0 }
+    //         generatedSound.filter.freq = Utils.normalizeSynthFilterFreqValue(generatedSound.filter.freq)
+    //         generatedSound.filter.Q = Utils.normalizeSynthFilterQValue(generatedSound.filter.Q)
+    //         generatedSound.filter.filterEnvelopeAmount = Math.min(1, Math.max(0, Number(generatedSound.filter.filterEnvelopeAmount) || 0))
+    //     })
+    //     return generatedSounds
+    // }
 
     // fixFilterLfo = (lfo, kind) => {
     //     if (!lfo) {
@@ -319,14 +273,14 @@ export default class MfResourcesLoader {
     // }
 
     stepBarFix = (track, note) => { // json is not consistant TODO fix json
-        note.stepInBar ??= note.step ?? 0
+        note.barStep ??= note.step ?? 0
         delete note.step
-        if (note.stepInBar >= track.stepsPerBar) {
-            let pStep = note.stepInBar
-            note.stepInBar %= track.stepsPerBar
-            note.bar = Math.floor(pStep / track.stepsPerBar)
+        if (note.barStep >= track.barQuantize) {
+            let pStep = note.barStep
+            note.barStep %= track.barQuantize
+            note.bar = Math.floor(pStep / track.barQuantize)
         }
-        note.steppc = Math.round((note.stepInBar * 100) / track.stepsPerBar)
+        note.steppc = Math.round((note.barStep * 100) / track.barQuantize)
     }
 
     trackPanningFix = (track, indexTrack) => {

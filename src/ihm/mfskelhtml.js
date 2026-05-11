@@ -125,11 +125,11 @@ export default class MfSkelHtml {
             _this.loadPatternList()
         }
 
-        let patternAutoModeDiv = MfGlobals.mfComponents.addTwostatesBtn("patternAutoMode", "auto")
-        patternAutoModeDiv.onclick = function () {
-            MfGlobals.mfUpdates.togglePatternAutoMode()
-        }
-        toolbarDiv.appendChild(patternAutoModeDiv)
+        // let patternAutoModeDiv = MfGlobals.mfComponents.addTwostatesBtn("patternAutoMode", "auto")
+        // patternAutoModeDiv.onclick = function () {
+        //     MfGlobals.mfUpdates.togglePatternAutoMode()
+        // }
+        // toolbarDiv.appendChild(patternAutoModeDiv)
 
         let cleanPatternBtn = Utils.createMfElement("div", "cleanPattern", "mf-tb-button mf-tb-clear", toolbarDiv)
         cleanPatternBtn.innerText = "clear"

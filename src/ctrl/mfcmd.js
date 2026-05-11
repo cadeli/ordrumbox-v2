@@ -9,13 +9,13 @@ export default class MfCmd {
     // Safe updater for track properties
     // Accepts a track object and a updates object. Only whitelisted keys are applied.
     // Extra or unknown keys are ignored gracefully to avoid runtime errors when callers
-    // pass a larger payload (bars, stepsPerBar, pan, reverbAmount, etc.).
+    // pass a larger payload (bars, barQuantize, pan, reverbAmount, etc.).
     updateTrack = (track, updates) => {
         if (!track || !updates || typeof updates !== 'object') {
             return track
         }
         // Split keys into structural vs extra updates to support multi-step updates
-        const STRUCT_KEYS = new Set(['name', 'soundId', 'bars', 'stepsPerBar', 'loopAtStep', 'useSoftSynth', 'mono', 'mute', 'solo', 'auto'])
+        const STRUCT_KEYS = new Set(['name', 'soundId', 'bars', 'barQuantize', 'loopAtStep', 'useSoftSynth', 'mono', 'mute', 'solo', 'auto'])
         const EXTRA_KEYS = new Set(['pan', 'panLfo', 'velocity', 'velocityLfo', 'pitch', 'pitchLfo', 'reverbType', 'reverbAmount', 'saturationType', 'saturationAmount', 'sampleLength', 'synthSoundKey', 'swingResolution', 'swingAmount', 'trackLength', 'filterType', 'filterFreqLfo', 'filterFreq', 'filterQLfo', 'filterQ'])
         const ignoredKeys = []
 
@@ -39,23 +39,23 @@ export default class MfCmd {
             }
         }
 
-       
+
         // Recompute derived fields if needed
-        if (typeof track.stepsPerBar === 'number' && typeof track.loopAtStep === 'number') {
-            track.loopPointBar = Math.floor(track.loopAtStep / track.stepsPerBar)
-            track.loopPointStep = track.loopAtStep % track.stepsPerBar
+        if (typeof track.barQuantize === 'number' && typeof track.loopAtStep === 'number') {
+            track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
+            track.loopPointStep = track.loopAtStep % track.barQuantize
         }
-        if (typeof track.loopAtStep === 'undefined' && typeof track.loopPointBar === 'number' && typeof track.stepsPerBar === 'number') {
-            track.loopAtStep = track.loopPointBar * track.stepsPerBar + (track.loopPointStep ?? 0)
+        if (typeof track.loopAtStep === 'undefined' && typeof track.loopPointBar === 'number' && typeof track.barQuantize === 'number') {
+            track.loopAtStep = track.loopPointBar * track.barQuantize + (track.loopPointStep ?? 0)
         }
         return track
     }
 
-    isNoteAt = (track, bar, stepInBar) => {
+    isNoteAt = (track, bar, barStep) => {
         let notes = []
         let ret = null
         Object.values(track.notes).forEach((note) => {
-            if (note.stepInBar === stepInBar && note.bar === bar) {
+            if (note.barStep === barStep && note.bar === bar) {
                 notes.push(note)
             }
         })
@@ -65,25 +65,25 @@ export default class MfCmd {
     deleteNote = (track, selNote) => {
         let i = 0
         Object.values(track.notes).forEach((note) => {
-            if (note.stepInBar === selNote.stepInBar && note.bar === selNote.bar) {
+            if (note.barStep === selNote.barStep && note.bar === selNote.bar) {
                 track.notes.splice(i, 1)
-                //console.log("deleteNote deleted  ="+(selNote.bar*track.stepsPerBar+ selNote.stepInBar))
+                //console.log("deleteNote deleted  ="+(selNote.bar*track.barQuantize+ selNote.barStep))
             }
             i++
         })
     }
 
-    addNote = (track, bar, stepInBar, pitch = 0) => {
-        //console.log("mfCmd::add note " +track.name+ " at " + bar + ":" + stepInBar + " p="+pitch)
-        let steppc = Math.round((stepInBar * 100) / track.stepsPerBar)
+    addNote = (track, bar, barStep, pitch = 0) => {
+        //console.log("mfCmd::add note " +track.name+ " at " + bar + ":" + barStep + " p="+pitch)
+        let steppc = Math.round((barStep * 100) / track.barQuantize)
         //
         if (steppc > 100) { //TODO
-            track.stepsPerBar = 8 //max value
-            steppc = Math.round((stepInBar * 100) / track.stepsPerBar)
+            track.barQuantize = 8 //max value
+            steppc = Math.round((barStep * 100) / track.barQuantize)
         }
         //
         let note = {
-            "stepInBar": stepInBar,
+            "barStep": barStep,
             "steppc": steppc,
             "bar": bar,
             "velocity": 0.8,
@@ -93,37 +93,37 @@ export default class MfCmd {
             "triggerFreq": 1,
             "triggerPhase": 0,
             "retriggerNum": 1,
-            "retriggStep": 1,
+            "retriggerStep": 1,
             "euclidianFill": 0
         }
-       // console.log("mfCmd::add note " + track.name + " bar=" + bar + " step=" + stepInBar)
+        // console.log("mfCmd::add note " + track.name + " bar=" + bar + " step=" + barStep)
         track.notes.push(note)
         return note
     }
 
-    addTrack = (pattern, type, stepsPerBar = 4) => {
-       // console.log("mfCmd::addTrack " + pattern.name + " = " + type)
+    addTrack = (pattern, type, barQuantize = 4) => {
+        // console.log("mfCmd::addTrack " + pattern.name + " = " + type)
 
-        let track = this.createTrack(pattern.nbBars, type, stepsPerBar);
+        let track = this.createTrack(pattern.nbBars, type, barQuantize);
         pattern.tracks.push(track)
         return track
     }
 
-    createTrack = (nbBars, type, stepsPerBar = 4) => {
+    createTrack = (nbBars, name, barQuantize = 4) => {
         let newTrack = {
-            "name": type,
+            "name": name,
             "useAutoAssignSound": true,
             "soundId": "NOT_DEFINED",
             "bars": nbBars,
-            "stepsPerBar": stepsPerBar,
-            "loopAtStep": nbBars * stepsPerBar,
+            "barQuantize": barQuantize,
+            "loopAtStep": nbBars * barQuantize,
             "swingResolution": 1,
             "swingAmount": 0,
             "velocity": 1,
             "velocityLfo": null,
             "pitch": 0,
             "pitchLfo": null,
-            "pan": this.getPanoFromTrackName(type),
+            "pan": this.getPanoFromTrackName(name),
             "panLfo": null,
             "solo": false,
             "mute": false,
@@ -141,8 +141,8 @@ export default class MfCmd {
             "saturationAmount": 0,
             "notes": []
         }
-        newTrack.loopPointBar = Math.floor(newTrack.loopAtStep / newTrack.stepsPerBar)
-        newTrack.loopPointStep = newTrack.loopAtStep % newTrack.stepsPerBar
+        newTrack.loopPointBar = Math.floor(newTrack.loopAtStep / newTrack.barQuantize)
+        newTrack.loopPointStep = newTrack.loopAtStep % newTrack.barQuantize
         return newTrack
     }
 
@@ -204,20 +204,20 @@ export default class MfCmd {
 
     setTrackProps = (track, sourceTrack) => {
         const knownProps = [
-            "useAutoAssignSound", "soundId", "bars", "nbBars", "stepsPerBar", "loopAtStep",
+            "useAutoAssignSound", "soundId", "bars", "nbBars", "barQuantize", "loopAtStep",
             "swingResolution", "swingAmount", "velocity", "velocityLfo", "pitch", "pitchLfo",
             "pan", "panLfo", "solo", "mute", "auto", "useSoftSynth", "mono",
             "filterType", "filterFreqLfo", "filterFreq", "filterQLfo", "filterQ", "filterLfoFreq",
             "reverbType", "reverbAmount", "saturationType", "saturationAmount", "sampleLength", "synthSoundKey"
         ];
-        
+
         if ("useAutoAssignSound" in sourceTrack) track.useAutoAssignSound = sourceTrack.useAutoAssignSound
         if ("soundId" in sourceTrack) track.soundId = sourceTrack.soundId
         if ("bars" in sourceTrack) track.bars = sourceTrack.bars
         else if ("nbBars" in sourceTrack) track.bars = sourceTrack.nbBars
-        if ("stepsPerBar" in sourceTrack) track.stepsPerBar = sourceTrack.stepsPerBar
+        if ("barQuantize" in sourceTrack) track.barQuantize = sourceTrack.barQuantize
         if ("loopAtStep" in sourceTrack) track.loopAtStep = sourceTrack.loopAtStep
-        else track.loopAtStep = track.bars * track.stepsPerBar
+        else track.loopAtStep = track.bars * track.barQuantize
         if ("swingResolution" in sourceTrack) track.swingResolution = sourceTrack.swingResolution
         if ("swingAmount" in sourceTrack) track.swingAmount = sourceTrack.swingAmount
         if ("velocity" in sourceTrack) track.velocity = sourceTrack.velocity
@@ -250,16 +250,16 @@ export default class MfCmd {
         if ("sampleLength" in sourceTrack) track.sampleLength = sourceTrack.sampleLength
         if ("synthSoundKey" in sourceTrack) track.synthSoundKey = sourceTrack.synthSoundKey
         else delete track.synthSoundKey
-        track.loopPointBar = Math.floor(track.loopAtStep / track.stepsPerBar)
-        track.loopPointStep = track.loopAtStep % track.stepsPerBar
+        track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
+        track.loopPointStep = track.loopAtStep % track.barQuantize
         return track
     }
 
     getTrackName = (track) => track?.name ?? ''
 
     setNoteProps = (note, sourceNote, track) => {
-        if (sourceNote.stepInBar !== undefined) note.stepInBar = sourceNote.stepInBar
-        else if (sourceNote.step !== undefined) note.stepInBar = sourceNote.step
+        if (sourceNote.barStep !== undefined) note.barStep = sourceNote.barStep
+        else if (sourceNote.step !== undefined) note.barStep = sourceNote.step
         if (sourceNote.bar !== undefined) note.bar = sourceNote.bar
         if (sourceNote.velocity !== undefined) note.velocity = sourceNote.velocity
         if (sourceNote.pan !== undefined) note.pan = sourceNote.pan
@@ -268,10 +268,10 @@ export default class MfCmd {
         if (sourceNote.triggerFreq !== undefined) note.triggerFreq = sourceNote.triggerFreq
         if (sourceNote.triggerPhase !== undefined) note.triggerPhase = sourceNote.triggerPhase
         if (sourceNote.retriggerNum !== undefined) note.retriggerNum = sourceNote.retriggerNum
-        if (sourceNote.retriggStep !== undefined) note.retriggStep = sourceNote.retriggStep
+        if (sourceNote.retriggerStep !== undefined) note.retriggerStep = sourceNote.retriggerStep
         if (sourceNote.euclidianFill !== undefined) note.euclidianFill = sourceNote.euclidianFill
         if (sourceNote.steppc !== undefined) note.steppc = sourceNote.steppc
-        else note.steppc = Math.round((note.stepInBar * 100) / track.stepsPerBar)
+        else note.steppc = Math.round((note.barStep * 100) / track.barQuantize)
         return note
     }
 
@@ -283,7 +283,7 @@ export default class MfCmd {
         this.setPatternBpm(importedPattern, sourcePattern?.bpm ?? this.getPatternBpm(importedPattern))
         this.setPatternBars(importedPattern, sourcePattern?.nbBars ?? this.getPatternBars(importedPattern))
         this.setPatternMetadata(importedPattern, sourcePattern ?? {})
-        
+
         if (!("description" in sourcePattern)) {
             delete importedPattern.description
         } else if (sourcePattern.description !== "") {
@@ -291,7 +291,7 @@ export default class MfCmd {
         } else {
             delete importedPattern.description
         }
-        
+
         this.resetPatternTracks(importedPattern)
 
         Object.values(sourcePattern?.tracks ?? []).forEach((sourceTrack) => {
@@ -302,7 +302,7 @@ export default class MfCmd {
                 const note = this.addNote(
                     track,
                     Number(sourceNote.bar ?? 0),
-                    Number(sourceNote.stepInBar ?? sourceNote.step ?? 0),
+                    Number(sourceNote.barStep ?? sourceNote.step ?? 0),
                     Number(sourceNote.pitch ?? 0)
                 )
                 this.setNoteProps(note, sourceNote, track)
@@ -429,74 +429,80 @@ export default class MfCmd {
     }
 
     setNbBar = (pattern, newBar) => {
-        let oldBar = pattern.nbBars * pattern.tracks[0].stepsPerBar
+        let oldBar = pattern.nbBars * pattern.tracks[0].barQuantize
         pattern.nbBars = newBar * 4
         Object.values(pattern.tracks).forEach((track, indexTrack) => {
             if (track.loopAtStep >= oldBar) {
-                track.loopAtStep = pattern.nbBars * track.stepsPerBar
-                track.loopPointBar = Math.floor(track.loopAtStep / track.stepsPerBar)
-                track.loopPointStep = track.loopAtStep % track.stepsPerBar
+                track.loopAtStep = pattern.nbBars * track.barQuantize
+                track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
+                track.loopPointStep = track.loopAtStep % track.barQuantize
             }
             track.bars = pattern.nbBars
         })
     }
 
     incrNbStepPerBar = (track) => {
-        let loopStepPc = Math.round((track.loopPointStep * 100) / track.stepsPerBar)
-        track.stepsPerBar++
-        if (track.stepsPerBar > 8) {
-            track.stepsPerBar = 1
+        let loopStepPc = Math.round((track.loopPointStep * 100) / track.barQuantize)
+        track.barQuantize++
+        if (track.barQuantize > 8) {
+            track.barQuantize = 1
         }
 
         Object.values(track.notes).forEach((note) => {
-            note.stepInBar = Math.floor((note.steppc / 100) * track.stepsPerBar)
+            note.barStep = Math.floor((note.steppc / 100) * track.barQuantize)
         })
-        track.loopPointStep = Math.floor((loopStepPc / 100) * track.stepsPerBar)
-        track.loopAtStep = track.loopPointBar * track.stepsPerBar + track.loopPointStep
+        track.loopPointStep = Math.floor((loopStepPc / 100) * track.barQuantize)
+        track.loopAtStep = track.loopPointBar * track.barQuantize + track.loopPointStep
     }
 
     incrLoopPoint = (track) => {
         track.loopAtStep--
         if (track.loopAtStep < 1) {
-            track.loopAtStep = track.stepsPerBar * track.bars
+            track.loopAtStep = track.barQuantize * track.bars
         }
-        track.loopPointBar = Math.floor(track.loopAtStep / track.stepsPerBar)
-        track.loopPointStep = track.loopAtStep % track.stepsPerBar
+        track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
+        track.loopPointStep = track.loopAtStep % track.barQuantize
     }
 
-    cleanPattern = (pattern) => { //TODO verify clean
+    cleanPattern = (pattern) => { 
         Object.values(pattern.tracks).forEach((track) => {
-            Object.values(track.notes).forEach((note) => {
-                note.arp = null
-                note = null
-            })
-            track.notes = []
-            track.loopPointStep = 0
-            track.loopPointBar = pattern.nbBars
-            track.loopAtStep = track.loopPointBar * track.stepsPerBar + track.loopPointStep
+            this.cleanTrack(track )
         })
     }
+
+    cleanTrack = (track)=> {
+        Object.values(track.notes).forEach((note) => {
+            note.arp = null
+            note = null
+        })
+        track.notes = []
+        track.loopPointStep = 0
+        track.loopPointBar = track.bars
+        track.loopAtStep = track.loopPointBar * track.barQuantize + track.loopPointStep
+
+    }
+
 
 
     convertAllTo4stepPerBar = () => {
         Object.values(MfGlobals.patterns).forEach((pattern, indexPattern) => {
             Object.values(pattern.tracks).forEach((track, indexTrack) => {
-                while (track.stepsPerBar != 4) { //ATT TODO rewrite
+                while (track.barQuantize != 4) { //ATT TODO rewrite
                     this.incrNbStepPerBar(track)
                 }
             })
         })
     }
 
-  getAllSoundsForType(soundKey) {
-    let retSounds = []
-     for (const soundId in MfGlobals.sounds) {
-        if (MfGlobals.sounds[soundId].key === soundKey) {
-            retSounds.push(MfGlobals.sounds[soundId])
+    getAllSoundsForType(soundKey) {
+        let retSounds = []
+        for (const soundId in MfGlobals.sounds) {
+            if (MfGlobals.sounds[soundId].key === soundKey) {
+                retSounds.push(MfGlobals.sounds[soundId])
+            }
         }
-     }
-     return retSounds
-  }
+        return retSounds
+    }
 
     changeTrackSound = (track, soundId) => {
         track.soundId = soundId
@@ -519,14 +525,14 @@ export default class MfCmd {
         return "NOT_FOUND";
     }
 
-    convertPatternStepToBarStep = (patternStep, stepsPerBar) => {
-        let bar = Math.floor(patternStep / stepsPerBar)
-        let step = patternStep % stepsPerBar
+    convertPatternStepToBarStep = (patternStep, barQuantize) => {
+        let bar = Math.floor(patternStep / barQuantize)
+        let step = patternStep % barQuantize
         return { bar: bar, step: step }
     }
 
-    convertBarStepToPatternStep = (bar, step, stepsPerBar) => {
-        return bar * stepsPerBar + step
+    convertBarStepToPatternStep = (bar, step, barQuantize) => {
+        return bar * barQuantize + step
     }
 
     euclidianFill = (track, startStep, endStep, nb, triggerFreq) => {
@@ -553,18 +559,18 @@ export default class MfCmd {
         for (let i in track.notes) {
             let note = track.notes[i]
             if (note.bar === 0) {
-                sig0 += note.stepInBar + "_"
+                sig0 += note.barStep + "_"
             }
             if (note.bar === 1) {
-                sig1 += note.stepInBar + "_"
+                sig1 += note.barStep + "_"
             }
             if (note.bar === 2) {
-                sig2 += note.stepInBar + "_"
+                sig2 += note.barStep + "_"
             }
             if (note.bar === 3) {
-                sig3 += note.stepInBar + "_"
+                sig3 += note.barStep + "_"
             }
-            sig += (note.stepInBar) + (note.bar) * track.stepsPerBar
+            sig += (note.barStep) + (note.bar) * track.barQuantize
             sig += "_"
         }
         // console.log("track len="+track.notes.length)
@@ -593,9 +599,9 @@ export default class MfCmd {
 
     setLoopAndDelete = (track, nb, sig) => {
         if (nb === 2) {
-            track.loopAtStep = 2 * track.stepsPerBar
+            track.loopAtStep = 2 * track.barQuantize
         } else if (nb === 4) {
-            track.loopAtStep = 1 * track.stepsPerBar
+            track.loopAtStep = 1 * track.barQuantize
         } else if (nb === 8) {
             track.loopAtStep = 2
         } else if (nb === 16) {
@@ -606,7 +612,7 @@ export default class MfCmd {
         for (let i = 0; i < 4; i++) { //delete in list (argh)
             for (let ii in track.notes) {
                 let note = track.notes[ii]
-                let th = parseInt(note.bar) * parseInt(track.stepsPerBar) + parseInt(note.stepInBar)
+                let th = parseInt(note.bar) * parseInt(track.barQuantize) + parseInt(note.barStep)
                 //  console.log("test to delete >"+sig+"< nb="+nb+ " from"+ th+ " on "+ track.loopAtStep + " nbnotes="+track.notes.length)
                 if (th >= parseInt(track.loopAtStep)) {
                     const ret = MfGlobals.mfCmd.deleteNote(track, note)

@@ -82,7 +82,6 @@ minfact/
 │   │   ├── data/
 │   │   │   ├── drumkits.json      # Drum kit definitions
 │   │   │   ├── patterns.json      # Built-in patterns
-│   │   │   ├── tracklib.json      # Track library
 │   │   │   ├── scales.json        # Musical scales
 │   │   │   └── generated_sounds.json
 │   │   └── sounds/                # Audio files

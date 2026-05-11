@@ -6,6 +6,8 @@ export default class MfSound {
 
     constructor() {
         this.activeVoices = new WeakMap()
+        this.generatedSoundsLoading = false
+        this.generatedSoundsLoadFailed = false
     }
 
     init = () => { }
@@ -183,22 +185,31 @@ export default class MfSound {
         }
     }
 
-    loadGeneratedsounds = () => {
-        console.log("MfSounds::loadGeneratedsounds")
-        MfGlobals.mfResourcesLoader.loadGeneratedSounds(MfGlobals.urlgeneratedsounds, this.checkResources)
-    }
+    loadGeneratedsounds = (flatNote, time) => {
+        if (this.generatedSoundsLoading || this.generatedSoundsLoadFailed) {
+            return
+        }
 
-    checkResources = () => {
-        console.log("MfSounds::checkResources")
-        console.log("generatedSounds")
-        console.log(MfGlobals.generatedSounds)
-        this.playGenerated(this.flatNote, this.time)
+        this.generatedSoundsLoading = true
+        MfGlobals.mfResourcesLoader.loadGeneratedSounds(MfGlobals.urlgeneratedsounds, () => {
+            this.generatedSoundsLoading = false
+            if (Object.keys(MfGlobals.generatedSounds).length === 0) {
+                this.generatedSoundsLoadFailed = true
+                console.warn("MfSounds::loadGeneratedsounds loaded no generated sounds")
+                return
+            }
+            this.playGenerated(flatNote, time)
+        }).catch((error) => {
+            this.generatedSoundsLoading = false
+            this.generatedSoundsLoadFailed = true
+            console.error("MfSounds::loadGeneratedsounds failed", error)
+        })
     }
 
 
     playGenerated = (flatNote, time) => {
         if (Object.keys(MfGlobals.generatedSounds).length === 0) {
-            this.loadGeneratedsounds()
+            this.loadGeneratedsounds(flatNote, time)
             return
         }
         if (!flatNote) return
