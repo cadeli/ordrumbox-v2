@@ -20,13 +20,13 @@ class MockOfflineAudioContext {
         }
     }
 
-    createGain() { return { gain: { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
+    createGain() { return { gain: { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
     createDynamicsCompressor() { return { threshold: { value: 0, setValueAtTime: vi.fn() }, knee: { value: 0, setValueAtTime: vi.fn() }, ratio: { value: 0, setValueAtTime: vi.fn() }, attack: { value: 0, setValueAtTime: vi.fn() }, release: { value: 0, setValueAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
     createBiquadFilter() { return { type: 'lowpass', frequency: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, Q: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
     createOscillator() { return { start: vi.fn(), stop: vi.fn(), connect: vi.fn(), disconnect: vi.fn(), frequency: { value: 0, setValueAtTime: vi.fn() } } }
     createAnalyser() { return { fftSize: 1024, connect: vi.fn(), disconnect: vi.fn() } }
     createBuffer(ch, len, sr) { return { numberOfChannels: ch, length: len, sampleRate: sr, getChannelData: () => new Float32Array(len) } }
-    createBufferSource() { return { buffer: null, start: vi.fn(), stop: vi.fn(), connect: vi.fn(), disconnect: vi.fn(), loop: false, playbackRate: { value: 1, setValueAtTime: vi.fn() } } }
+    createBufferSource() { return { buffer: null, start: vi.fn(), stop: vi.fn(), connect: vi.fn(), disconnect: vi.fn(), loop: false, playbackRate: { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() } } }
     createStereoPanner() { return { pan: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
     createWaveShaper() { return { curve: null, oversample: 'none', connect: vi.fn(), disconnect: vi.fn() } }
     createConvolver() { return { buffer: null, connect: vi.fn(), disconnect: vi.fn() } }
