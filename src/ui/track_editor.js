@@ -93,6 +93,7 @@ export default class TrackEditor {
         playbackEvents.onNoteSelect.push((data) => {
             if (data) this.hide()
         })
+        playbackEvents.onOutputToggle.push(() => this.hide())
         playbackEvents.onPlaybackStart.push(() => {
             this._startAnimation()
         })

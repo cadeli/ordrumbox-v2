@@ -92,6 +92,7 @@ export default class NoteEditor {
             if (!data) { this.hide(); return }
             this.show(data)
         })
+        playbackEvents.onOutputToggle.push(() => this.hide())
     }
 
     reposition() {

@@ -100,6 +100,10 @@ export default class Toolbar {
         this.toolsBtn.className = 'tb-tools'
         this.toolsBtn.textContent = '\u2699 Tools'
 
+        this.outputBtn = document.createElement('button')
+        this.outputBtn.className = 'tb-tools'
+        this.outputBtn.textContent = '\uD83D\uDD0A Output'
+
         this.container.appendChild(this.startBtn)
         this.container.appendChild(bpmWrap)
         this.container.appendChild(patLabel)
@@ -109,6 +113,7 @@ export default class Toolbar {
         this.container.appendChild(this.autoGenBtn)
         this.container.appendChild(this.clearBtn)
         this.container.appendChild(this.toolsBtn)
+        this.container.appendChild(this.outputBtn)
 
         document.body.appendChild(this.container)
     }
@@ -120,6 +125,10 @@ export default class Toolbar {
 
         this.toolsBtn.addEventListener('click', () => {
             playbackEvents.onToolsToggle.forEach(fn => fn(true))
+        })
+
+        this.outputBtn.addEventListener('click', () => {
+            playbackEvents.onOutputToggle.forEach(fn => fn(true))
         })
 
         this.patternSelect.addEventListener('change', () => {

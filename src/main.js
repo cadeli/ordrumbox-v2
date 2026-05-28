@@ -7,6 +7,7 @@ import PatternPanel from './ui/pattern_panel.js'
 import NoteEditor from './ui/note_editor.js'
 import TrackEditor from './ui/track_editor.js'
 import ToolsPanel from './ui/tools_panel.js'
+import OutputPanel from './ui/output_panel.js'
 
 import MfResourcesLoader from './loader/resources_loader.js'
 import { FALLBACK_FPS } from './core/constants.js'
@@ -33,7 +34,7 @@ function scheduleAfterFirstPaint(callback) {
 }
 
 
-let _toolbar, _patternPanel, _noteEditor, _trackEditor, _toolsPanel
+let _toolbar, _patternPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel
 
 export function init() {
     if (window.orientation > 1) {
@@ -55,11 +56,13 @@ export function init() {
     _noteEditor = new NoteEditor()
     _trackEditor = new TrackEditor()
     _toolsPanel = new ToolsPanel()
+    _outputPanel = new OutputPanel()
     _toolbar.init()
     _patternPanel.init()
     _noteEditor.init()
     _trackEditor.init()
     _toolsPanel.init()
+    _outputPanel.init()
 
     scheduleAfterFirstPaint(async () => {
         try {

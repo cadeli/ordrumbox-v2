@@ -127,78 +127,80 @@
 }
 
 /* ---- Note Editor & Track Editor Panels ---- */
-#ne-panel, #te-panel, #tools-panel {
+#ne-panel, #te-panel, #tools-panel, #output-panel {
     display: none;
     position: fixed; left: 0; right: 0;
+    width: 100%;
+    box-sizing: border-box;
     background: #1a1a2e; border-bottom: 2px solid #e94560;
     padding: 8px 12px; overflow-x: auto;
     font-family: monospace; font-size: 11px; color: #ccc;
     z-index: 998; min-height: 100px; max-height: 250px;
 }
 .ui-hidden { display: none !important; }
-#ne-panel .ne-header, #te-panel .ne-header, #tools-panel .ne-header {
+#ne-panel .ne-header, #te-panel .ne-header, #tools-panel .ne-header, #output-panel .ne-header {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 8px; font-size: 12px; border-bottom: 1px solid #333;
     padding-bottom: 4px;
 }
-#ne-panel .ne-track, #te-panel .ne-track, #tools-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; }
-#ne-panel .ne-pos, #te-panel .ne-pos, #tools-panel .ne-pos { color: #888; }
-#ne-panel .ne-body, #te-panel .ne-body, #tools-panel .ne-body { 
+#ne-panel .ne-track, #te-panel .ne-track, #tools-panel .ne-track, #output-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; }
+#ne-panel .ne-pos, #te-panel .ne-pos, #tools-panel .ne-pos, #output-panel .ne-pos { color: #888; }
+#ne-panel .ne-body, #te-panel .ne-body, #tools-panel .ne-body, #output-panel .ne-body { 
     display: flex; flex-direction: row; gap: 20px; align-items: flex-start;
     overflow-x: auto; padding-bottom: 8px;
 }
-#ne-panel .ne-group, #te-panel .ne-group, #tools-panel .ne-group {
+#ne-panel .ne-group, #te-panel .ne-group, #tools-panel .ne-group, #output-panel .ne-group {
     border-left: 1px solid #444; padding-left: 12px; flex-shrink: 0;
 }
-#ne-panel .ne-group.lfo-panel, #te-panel .ne-group.lfo-panel, #tools-panel .ne-group.lfo-panel {
+#ne-panel .ne-group.lfo-panel, #te-panel .ne-group.lfo-panel, #tools-panel .ne-group.lfo-panel, #output-panel .ne-group.lfo-panel {
     background: rgba(230, 194, 0, 0.05);
     border: 1px solid rgba(230, 194, 0, 0.2);
     border-radius: 4px;
     padding: 8px;
     margin-left: 10px;
 }
-#ne-panel .ne-group:first-child, #te-panel .ne-group:first-child, #tools-panel .ne-group:first-child { border-left: none; padding-left: 0; }
-#ne-panel .ne-group-label, #te-panel .ne-group-label, #tools-panel .ne-group-label {
+#ne-panel .ne-group:first-child, #te-panel .ne-group:first-child, #tools-panel .ne-group:first-child, #output-panel .ne-group:first-child { border-left: none; padding-left: 0; }
+#ne-panel .ne-group-label, #te-panel .ne-group-label, #tools-panel .ne-group-label, #output-panel .ne-group-label {
     color: #e94560; font-size: 10px; text-transform: uppercase;
     letter-spacing: 1px; margin-bottom: 6px; font-weight: bold;
 }
-#ne-panel .ne-grid, #te-panel .ne-grid, #tools-panel .ne-grid {
+#ne-panel .ne-grid, #te-panel .ne-grid, #tools-panel .ne-grid, #output-panel .ne-grid {
     display: flex; flex-direction: column; gap: 4px;
 }
-#ne-panel .ne-row, #te-panel .ne-row, #tools-panel .ne-row {
+#ne-panel .ne-row, #te-panel .ne-row, #tools-panel .ne-row, #output-panel .ne-row {
     display: flex; align-items: center; gap: 8px; min-height: 20px;
     padding: 2px 4px; border-radius: 4px; cursor: pointer;
 }
-#ne-panel .ne-row:hover, #te-panel .ne-row:hover, #tools-panel .ne-row:hover { background: rgba(255, 255, 255, 0.05); }
-#ne-panel .ne-row.selected, #te-panel .ne-row.selected, #tools-panel .ne-row.selected { background: rgba(233, 69, 96, 0.15); border: 1px solid rgba(233, 69, 96, 0.3); }
-#ne-panel .ne-row.has-lfo label, #te-panel .ne-row.has-lfo label, #tools-panel .ne-row.has-lfo label { color: #e6c200; text-shadow: 0 0 4px rgba(230, 194, 0, 0.5); }
+#ne-panel .ne-row:hover, #te-panel .ne-row:hover, #tools-panel .ne-row:hover, #output-panel .ne-row:hover { background: rgba(255, 255, 255, 0.05); }
+#ne-panel .ne-row.selected, #te-panel .ne-row.selected, #tools-panel .ne-row.selected, #output-panel .ne-row.selected { background: rgba(233, 69, 96, 0.15); border: 1px solid rgba(233, 69, 96, 0.3); }
+#ne-panel .ne-row.has-lfo label, #te-panel .ne-row.has-lfo label, #tools-panel .ne-row.has-lfo label, #output-panel .ne-row.has-lfo label { color: #e6c200; text-shadow: 0 0 4px rgba(230, 194, 0, 0.5); }
 
-#ne-panel .ne-row label, #te-panel .ne-row label, #tools-panel .ne-row label {
+#ne-panel .ne-row label, #te-panel .ne-row label, #tools-panel .ne-row label, #output-panel .ne-row label {
     min-width: 60px; color: #aaa; font-size: 11px;
 }
-#ne-panel .ne-row input[type=range], #te-panel .ne-row input[type=range], #tools-panel .ne-row input[type=range] {
+#ne-panel .ne-row input[type=range], #te-panel .ne-row input[type=range], #tools-panel .ne-row input[type=range], #output-panel .ne-row input[type=range] {
     width: 80px; accent-color: #e94560; cursor: pointer;
 }
-#ne-panel .ne-row select, #te-panel .ne-row select, #tools-panel .ne-row select {
+#ne-panel .ne-row select, #te-panel .ne-row select, #tools-panel .ne-row select, #output-panel .ne-row select {
     width: 80px; font-size: 10px; padding: 2px;
     background: #16213e; color: #eee; border: 1px solid #555;
     border-radius: 3px; cursor: pointer;
 }
-#ne-panel .ne-row .ne-val, #te-panel .ne-row .ne-val, #tools-panel .ne-row .ne-val {
+#ne-panel .ne-row .ne-val, #te-panel .ne-row .ne-val, #tools-panel .ne-row .ne-val, #output-panel .ne-row .ne-val {
     min-width: 30px; text-align: right; color: #eee; font-weight: bold; font-size: 10px;
 }
-#ne-panel .ne-row.no-cursor, #te-panel .ne-row.no-cursor, #tools-panel .ne-row.no-cursor { cursor: default; }
-#ne-panel .ne-row .ne-input, #te-panel .ne-row .ne-input, #tools-panel .ne-row .ne-input {
+#ne-panel .ne-row.no-cursor, #te-panel .ne-row.no-cursor, #tools-panel .ne-row.no-cursor, #output-panel .ne-row.no-cursor { cursor: default; }
+#ne-panel .ne-row .ne-input, #te-panel .ne-row .ne-input, #tools-panel .ne-row .ne-input, #output-panel .ne-row .ne-input {
     width: 100px; font-size: 11px; padding: 2px 4px;
     background: #16213e; color: #eee; border: 1px solid #555;
     border-radius: 3px;
 }
-#ne-panel .ne-close, #te-panel .ne-close, #tools-panel .ne-close {
+#ne-panel .ne-close, #te-panel .ne-close, #tools-panel .ne-close, #output-panel .ne-close {
     margin-left: auto; cursor: pointer; color: #fff;
     font-size: 18px; border: none; background: #e94560;
     padding: 0 8px; border-radius: 4px; line-height: 24px;
 }
-#ne-panel .ne-close:hover, #te-panel .ne-close:hover, #tools-panel .ne-close:hover { background: #ff4d6d; }
+#ne-panel .ne-close:hover, #te-panel .ne-close:hover, #tools-panel .ne-close:hover, #output-panel .ne-close:hover { background: #ff4d6d; }
 
 /* ---- LFO panel ---- */
 .lfo-panel .lfo-header {
@@ -231,6 +233,21 @@
 .ne-btn:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+}
+
+/* ---- Output Panel specific ---- */
+#output-panel .ne-body > .ne-group:last-child {
+    flex: 1;
+    min-width: 200px;
+}
+#op-spectrum {
+    display: block;
+    width: 100%;
+    height: 80px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background: #0d0d1a;
+    box-sizing: border-box;
 }
 
 /* ---- Soft Synth Editor ---- */
@@ -299,10 +316,10 @@
 }
 
 @media (max-width: 480px) {
-    #ne-panel, #te-panel { padding: 6px; max-height: 200px; }
-    #ne-panel .ne-body, #te-panel .ne-body { gap: 12px; }
-    #ne-panel .ne-row label, #te-panel .ne-row label { min-width: 45px; }
-    #ne-panel .ne-row input[type=range], #te-panel .ne-row input[type=range] { width: 60px; }
+    #ne-panel, #te-panel, #output-panel { padding: 6px; max-height: 200px; }
+    #ne-panel .ne-body, #te-panel .ne-body, #output-panel .ne-body { gap: 12px; }
+    #ne-panel .ne-row label, #te-panel .ne-row label, #output-panel .ne-row label { min-width: 45px; }
+    #ne-panel .ne-row input[type=range], #te-panel .ne-row input[type=range], #output-panel .ne-row input[type=range] { width: 60px; }
     #soft-synth-panel { top: 44px; padding: 8px 6px; }
     #soft-synth-panel .ss-body { gap: 10px; }
     #soft-synth-panel .ss-group { min-width: 180px; }
