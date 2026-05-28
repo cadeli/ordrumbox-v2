@@ -217,11 +217,42 @@ export default class TrackEditor {
         // Sound Sub-panel
         html += this._renderSoundPanel()
 
+        // Loop / Pattern Sub-panel
+        html += this._renderLoopPanel()
+
         html += '</div>'
         this.container.innerHTML = html
         this.container.style.display = 'block'
         this.reposition()
         this._bindEvents()
+    }
+
+    _renderLoopPanel() {
+        const bars = this._track.bars ?? 4
+        const barQuantize = this._track.barQuantize ?? 4
+        const loopAtStep = this._track.loopAtStep ?? (bars * barQuantize)
+        const maxSteps = bars * barQuantize
+
+        return `<div class="ne-group" style="border-left:1px solid #444;padding-left:12px">
+            <div class="ne-group-label">Loop / Pattern</div>
+            <div class="ne-grid">
+                <div class="ne-row">
+                    <label>Steps/Bar</label>
+                    <input type="range" min="1" max="8" step="1" value="${barQuantize}" data-loop="barQuantize">
+                    <span class="ne-val">${barQuantize}</span>
+                </div>
+                <div class="ne-row">
+                    <label>Bars</label>
+                    <input type="range" min="1" max="8" step="1" value="${bars}" data-loop="bars">
+                    <span class="ne-val">${bars}</span>
+                </div>
+                <div class="ne-row">
+                    <label>Step Point</label>
+                    <input type="range" min="1" max="${maxSteps}" step="1" value="${loopAtStep}" data-loop="loopAtStep">
+                    <span class="ne-val">${loopAtStep}</span>
+                </div>
+            </div>
+        </div>`
     }
 
     _renderFxGroup() {
@@ -467,6 +498,11 @@ export default class TrackEditor {
             lfoPanel.querySelector('[data-action="toggle-lfo"]')?.addEventListener('click', () => this._toggleLfo())
         }
 
+        // Loop panel events
+        this.container.querySelectorAll('input[data-loop]').forEach(input => {
+            input.addEventListener('input', () => this._onLoopSlider(input))
+        })
+
         // FX toggle LEDs
         this.container.querySelectorAll('[data-fx-toggle]').forEach(btn => {
             btn.addEventListener('click', () => this._toggleFx(btn))
@@ -596,6 +632,43 @@ export default class TrackEditor {
         this._track = null
         this._trackIdx = -1
         this._selectedPropKey = null
+    }
+
+    _onLoopSlider(input) {
+        if (!this._track) return
+        const key = input.dataset.loop
+        const val = parseInt(input.value)
+        const oldBarQuantize = this._track.barQuantize
+
+        this._track[key] = val
+
+        if (key === 'barQuantize') {
+            // Re-quantize notes to maintain relative position
+            if (this._track.notes) {
+                this._track.notes.forEach(note => {
+                    const steppc = note.steppc ?? Math.round((note.barStep * 100) / (oldBarQuantize || 4))
+                    note.barStep = Math.floor((steppc / 100) * val)
+                })
+            }
+        }
+
+        // Ensure loopAtStep is within bounds
+        const maxSteps = (this._track.bars ?? 4) * (this._track.barQuantize ?? 4)
+        if (this._track.loopAtStep > maxSteps) {
+            this._track.loopAtStep = maxSteps
+        }
+
+        // Update derived fields
+        this._track.loopPointBar = Math.floor(this._track.loopAtStep / this._track.barQuantize)
+        this._track.loopPointStep = this._track.loopAtStep % this._track.barQuantize
+
+        if (key === 'barQuantize' || key === 'bars') {
+            this.sync() // Re-render to update Step Point slider max
+        } else {
+            input.nextElementSibling.textContent = val
+        }
+        
+        playbackEvents.onPatternChange.forEach(fn => fn())
     }
 
     _onSlider(input) {

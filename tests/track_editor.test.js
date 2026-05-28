@@ -69,3 +69,27 @@ describe('TrackEditor sound panel', () => {
         expect(instrumentSelect.value).toBe('KICK')
     })
 })
+
+describe('TrackEditor loop panel', () => {
+    it('renders loop properties correctly', () => {
+        const editor = new TrackEditor()
+        editor._track = {
+            bars: 8,
+            barQuantize: 4,
+            loopAtStep: 16
+        }
+
+        const html = editor._renderLoopPanel()
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = html
+
+        const qInput = wrapper.querySelector('input[data-loop="barQuantize"]')
+        const bInput = wrapper.querySelector('input[data-loop="bars"]')
+        const lInput = wrapper.querySelector('input[data-loop="loopAtStep"]')
+
+        expect(qInput.value).toBe('4')
+        expect(bInput.value).toBe('8')
+        expect(lInput.value).toBe('16')
+        expect(lInput.max).toBe('32') // 8 * 4
+    })
+})
