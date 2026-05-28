@@ -57,7 +57,7 @@ export default class Toolbar {
 
         this.startBtn = document.createElement('button')
         this.startBtn.className = 'tb-start'
-        this.startBtn.textContent = '\u25B6 Start'
+        this.startBtn.textContent = 'Start'
 
         const bpmWrap = document.createElement('div')
         bpmWrap.className = 'tb-bpm-wrap'
@@ -90,19 +90,19 @@ export default class Toolbar {
 
         this.autoGenBtn = document.createElement('button')
         this.autoGenBtn.className = 'tb-auto-gen'
-        this.autoGenBtn.textContent = '\u2619 Auto Gen'
+        this.autoGenBtn.textContent = 'Auto Gen'
 
         this.clearBtn = document.createElement('button')
         this.clearBtn.className = 'tb-clear'
-        this.clearBtn.textContent = '\u232B Clear'
+        this.clearBtn.textContent = 'Clear'
 
         this.toolsBtn = document.createElement('button')
         this.toolsBtn.className = 'tb-tools'
-        this.toolsBtn.textContent = '\u2699 Tools'
+        this.toolsBtn.textContent = 'Tools'
 
         this.outputBtn = document.createElement('button')
         this.outputBtn.className = 'tb-tools'
-        this.outputBtn.textContent = '\uD83D\uDD0A Output'
+        this.outputBtn.textContent = 'Output'
 
         this.container.appendChild(this.startBtn)
         this.container.appendChild(bpmWrap)
@@ -188,7 +188,7 @@ export default class Toolbar {
 
     syncPlayButton = () => {
         const running = serviceRegistry.transport?.isRunning ?? false
-        this.startBtn.textContent = running ? '\u23F9 Stop' : '\u25B6 Start'
+        this.startBtn.textContent = running ? 'Stop' : 'Start'
         this.startBtn.classList.toggle('running', running)
     }
 
