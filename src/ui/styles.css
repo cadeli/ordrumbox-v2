@@ -24,6 +24,8 @@
 #tb .tb-auto-gen:hover { background: #2ea043; }
 #tb .tb-clear { background: #444; border-color: #555; color: #fff; }
 #tb .tb-clear:hover { background: #555; border-color: #666; }
+#tb .tb-tools { background: #16213e; border-color: #555; color: #eee; }
+#tb .tb-tools:hover { border-color: #e94560; }
 #tb select { min-width: 120px; flex: 1; max-width: 200px; }
 #tb label { color: #aaa; font-size: 13px; white-space: nowrap; }
 #tb .tb-bpm-toggle { min-width: 44px; font-size: 12px; }
@@ -125,7 +127,7 @@
 }
 
 /* ---- Note Editor & Track Editor Panels ---- */
-#ne-panel, #te-panel {
+#ne-panel, #te-panel, #tools-panel {
     display: none;
     position: fixed; left: 0; right: 0;
     background: #1a1a2e; border-bottom: 2px solid #e94560;
@@ -134,63 +136,63 @@
     z-index: 998; min-height: 100px; max-height: 250px;
 }
 .ui-hidden { display: none !important; }
-#ne-panel .ne-header, #te-panel .ne-header {
+#ne-panel .ne-header, #te-panel .ne-header, #tools-panel .ne-header {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 8px; font-size: 12px; border-bottom: 1px solid #333;
     padding-bottom: 4px;
 }
-#ne-panel .ne-track, #te-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; }
-#ne-panel .ne-pos, #te-panel .ne-pos { color: #888; }
-#ne-panel .ne-body, #te-panel .ne-body { 
+#ne-panel .ne-track, #te-panel .ne-track, #tools-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; }
+#ne-panel .ne-pos, #te-panel .ne-pos, #tools-panel .ne-pos { color: #888; }
+#ne-panel .ne-body, #te-panel .ne-body, #tools-panel .ne-body { 
     display: flex; flex-direction: row; gap: 20px; align-items: flex-start;
     overflow-x: auto; padding-bottom: 8px;
 }
-#ne-panel .ne-group, #te-panel .ne-group {
+#ne-panel .ne-group, #te-panel .ne-group, #tools-panel .ne-group {
     border-left: 1px solid #444; padding-left: 12px; flex-shrink: 0;
 }
-#ne-panel .ne-group.lfo-panel, #te-panel .ne-group.lfo-panel {
+#ne-panel .ne-group.lfo-panel, #te-panel .ne-group.lfo-panel, #tools-panel .ne-group.lfo-panel {
     background: rgba(230, 194, 0, 0.05);
     border: 1px solid rgba(230, 194, 0, 0.2);
     border-radius: 4px;
     padding: 8px;
     margin-left: 10px;
 }
-#ne-panel .ne-group:first-child, #te-panel .ne-group:first-child { border-left: none; padding-left: 0; }
-#ne-panel .ne-group-label, #te-panel .ne-group-label {
+#ne-panel .ne-group:first-child, #te-panel .ne-group:first-child, #tools-panel .ne-group:first-child { border-left: none; padding-left: 0; }
+#ne-panel .ne-group-label, #te-panel .ne-group-label, #tools-panel .ne-group-label {
     color: #e94560; font-size: 10px; text-transform: uppercase;
     letter-spacing: 1px; margin-bottom: 6px; font-weight: bold;
 }
-#ne-panel .ne-grid, #te-panel .ne-grid {
+#ne-panel .ne-grid, #te-panel .ne-grid, #tools-panel .ne-grid {
     display: flex; flex-direction: column; gap: 4px;
 }
-#ne-panel .ne-row, #te-panel .ne-row {
+#ne-panel .ne-row, #te-panel .ne-row, #tools-panel .ne-row {
     display: flex; align-items: center; gap: 8px; min-height: 20px;
     padding: 2px 4px; border-radius: 4px; cursor: pointer;
 }
-#ne-panel .ne-row:hover, #te-panel .ne-row:hover { background: rgba(255, 255, 255, 0.05); }
-#ne-panel .ne-row.selected, #te-panel .ne-row.selected { background: rgba(233, 69, 96, 0.15); border: 1px solid rgba(233, 69, 96, 0.3); }
-#ne-panel .ne-row.has-lfo label, #te-panel .ne-row.has-lfo label { color: #e6c200; text-shadow: 0 0 4px rgba(230, 194, 0, 0.5); }
+#ne-panel .ne-row:hover, #te-panel .ne-row:hover, #tools-panel .ne-row:hover { background: rgba(255, 255, 255, 0.05); }
+#ne-panel .ne-row.selected, #te-panel .ne-row.selected, #tools-panel .ne-row.selected { background: rgba(233, 69, 96, 0.15); border: 1px solid rgba(233, 69, 96, 0.3); }
+#ne-panel .ne-row.has-lfo label, #te-panel .ne-row.has-lfo label, #tools-panel .ne-row.has-lfo label { color: #e6c200; text-shadow: 0 0 4px rgba(230, 194, 0, 0.5); }
 
-#ne-panel .ne-row label, #te-panel .ne-row label {
+#ne-panel .ne-row label, #te-panel .ne-row label, #tools-panel .ne-row label {
     min-width: 60px; color: #aaa; font-size: 11px;
 }
-#ne-panel .ne-row input[type=range], #te-panel .ne-row input[type=range] {
+#ne-panel .ne-row input[type=range], #te-panel .ne-row input[type=range], #tools-panel .ne-row input[type=range] {
     width: 80px; accent-color: #e94560; cursor: pointer;
 }
-#ne-panel .ne-row select, #te-panel .ne-row select {
+#ne-panel .ne-row select, #te-panel .ne-row select, #tools-panel .ne-row select {
     width: 80px; font-size: 10px; padding: 2px;
     background: #16213e; color: #eee; border: 1px solid #555;
     border-radius: 3px; cursor: pointer;
 }
-#ne-panel .ne-row .ne-val, #te-panel .ne-row .ne-val {
+#ne-panel .ne-row .ne-val, #te-panel .ne-row .ne-val, #tools-panel .ne-row .ne-val {
     min-width: 30px; text-align: right; color: #eee; font-weight: bold; font-size: 10px;
 }
-#ne-panel .ne-close, #te-panel .ne-close {
+#ne-panel .ne-close, #te-panel .ne-close, #tools-panel .ne-close {
     margin-left: auto; cursor: pointer; color: #fff;
     font-size: 18px; border: none; background: #e94560;
     padding: 0 8px; border-radius: 4px; line-height: 24px;
 }
-#ne-panel .ne-close:hover, #te-panel .ne-close:hover { background: #ff4d6d; }
+#ne-panel .ne-close:hover, #te-panel .ne-close:hover, #tools-panel .ne-close:hover { background: #ff4d6d; }
 
 /* ---- LFO panel ---- */
 .lfo-panel .lfo-header {

@@ -5,5 +5,6 @@ export const playbackEvents = {
     onDrumkitChange: [],
     onBpmChange: [],
     onNoteSelect: [],
-    onTrackSelect: []
+    onTrackSelect: [],
+    onToolsToggle: []
 }

@@ -96,6 +96,10 @@ export default class Toolbar {
         this.clearBtn.className = 'tb-clear'
         this.clearBtn.textContent = '\u232B Clear'
 
+        this.toolsBtn = document.createElement('button')
+        this.toolsBtn.className = 'tb-tools'
+        this.toolsBtn.textContent = '\u2699 Tools'
+
         this.container.appendChild(this.startBtn)
         this.container.appendChild(bpmWrap)
         this.container.appendChild(patLabel)
@@ -104,6 +108,7 @@ export default class Toolbar {
         this.container.appendChild(this.drumkitSelect)
         this.container.appendChild(this.autoGenBtn)
         this.container.appendChild(this.clearBtn)
+        this.container.appendChild(this.toolsBtn)
 
         document.body.appendChild(this.container)
     }
@@ -111,6 +116,10 @@ export default class Toolbar {
     bindEvents() {
         this.startBtn.addEventListener('click', () => {
             serviceRegistry.mfSeq.toggleStartStop()
+        })
+
+        this.toolsBtn.addEventListener('click', () => {
+            playbackEvents.onToolsToggle.forEach(fn => fn(true))
         })
 
         this.patternSelect.addEventListener('change', () => {
