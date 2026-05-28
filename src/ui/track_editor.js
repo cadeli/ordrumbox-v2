@@ -640,7 +640,24 @@ export default class TrackEditor {
         const val = parseInt(input.value)
         const oldBarQuantize = this._track.barQuantize
 
-        this._track[key] = val
+        if (key === 'bars') {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (pattern) {
+                pattern.nbBars = val
+                pattern.tracks.forEach(t => {
+                    t.bars = val
+                    // Ensure loopAtStep is within new bounds for each track
+                    const maxSteps = val * (t.barQuantize ?? 4)
+                    if (t.loopAtStep > maxSteps) {
+                        t.loopAtStep = maxSteps
+                        t.loopPointBar = Math.floor(t.loopAtStep / t.barQuantize)
+                        t.loopPointStep = t.loopAtStep % t.barQuantize
+                    }
+                })
+            }
+        } else {
+            this._track[key] = val
+        }
 
         if (key === 'barQuantize') {
             // Re-quantize notes to maintain relative position
@@ -652,13 +669,13 @@ export default class TrackEditor {
             }
         }
 
-        // Ensure loopAtStep is within bounds
+        // Ensure current track loopAtStep is within bounds (already handled for bars above, but needed for barQuantize)
         const maxSteps = (this._track.bars ?? 4) * (this._track.barQuantize ?? 4)
         if (this._track.loopAtStep > maxSteps) {
             this._track.loopAtStep = maxSteps
         }
 
-        // Update derived fields
+        // Update derived fields for current track
         this._track.loopPointBar = Math.floor(this._track.loopAtStep / this._track.barQuantize)
         this._track.loopPointStep = this._track.loopAtStep % this._track.barQuantize
 

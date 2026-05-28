@@ -138,8 +138,21 @@ document.addEventListener('keydown', (event) => {
 }, false)
 
 async function handleKeyboardShortcut(event) {
-    // Ignore shortcuts when typing in input fields
+    // Sliders handling (Arrows)
     const target = event.target
+    if (target && target.tagName === 'INPUT' && target.type === 'range') {
+        if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
+            event.preventDefault()
+            const step = parseFloat(target.step) || 1
+            const val = parseFloat(target.value)
+            const newVal = event.code === 'ArrowLeft' ? val - step : val + step
+            target.value = Math.max(parseFloat(target.min), Math.min(parseFloat(target.max), newVal))
+            target.dispatchEvent(new Event('input', { bubbles: true }))
+            return
+        }
+    }
+
+    // Ignore shortcuts when typing in input fields
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
         return
     }

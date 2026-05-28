@@ -71,12 +71,17 @@ export default class Toolbar {
         this.autoGenBtn.className = 'tb-auto-gen'
         this.autoGenBtn.textContent = '\u2619 Auto Gen'
 
+        this.clearBtn = document.createElement('button')
+        this.clearBtn.className = 'tb-clear'
+        this.clearBtn.textContent = '\u232B Clear'
+
         this.container.appendChild(this.startBtn)
         this.container.appendChild(patLabel)
         this.container.appendChild(this.patternSelect)
         this.container.appendChild(kitLabel)
         this.container.appendChild(this.drumkitSelect)
         this.container.appendChild(this.autoGenBtn)
+        this.container.appendChild(this.clearBtn)
 
         const bpmWrap = document.createElement('div')
         bpmWrap.className = 'tb-bpm-wrap'
@@ -129,6 +134,15 @@ export default class Toolbar {
             await mfAutoGenerate.generatePattern()
             this.syncPatterns()
             playbackEvents.onPatternChange.forEach(fn => fn())
+        })
+
+        this.clearBtn.addEventListener('click', () => {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (pattern && confirm('Clear all notes in current pattern?')) {
+                serviceRegistry.mfCmd.cleanPattern(pattern)
+                serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+                playbackEvents.onPatternChange.forEach(fn => fn())
+            }
         })
 
         this.bpmToggle.addEventListener('click', () => {
