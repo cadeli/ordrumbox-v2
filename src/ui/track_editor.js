@@ -232,6 +232,7 @@ export default class TrackEditor {
         const barQuantize = this._track.barQuantize ?? 4
         const loopAtStep = this._track.loopAtStep ?? (bars * barQuantize)
         const maxSteps = bars * barQuantize
+        const swing = this._track.swingAmount ?? 0
 
         return `<div class="ne-group" style="border-left:1px solid #444;padding-left:12px">
             <div class="ne-group-label">Loop / Pattern</div>
@@ -250,6 +251,11 @@ export default class TrackEditor {
                     <label>Loop Point</label>
                     <input type="range" min="1" max="${maxSteps}" step="1" value="${loopAtStep}" data-loop="loopAtStep">
                     <span class="ne-val">${loopAtStep}</span>
+                </div>
+                <div class="ne-row">
+                    <label>Swing</label>
+                    <input type="range" min="0" max="1" step="0.01" value="${swing}" data-loop="swingAmount">
+                    <span class="ne-val">${fmt(swing)}</span>
                 </div>
             </div>
         </div>`
@@ -639,7 +645,7 @@ export default class TrackEditor {
     _onLoopSlider(input) {
         if (!this._track) return
         const key = input.dataset.loop
-        const val = parseInt(input.value)
+        const val = key === 'swingAmount' ? parseFloat(input.value) : parseInt(input.value)
         const oldBarQuantize = this._track.barQuantize
 
         if (key === 'bars') {
@@ -682,7 +688,7 @@ export default class TrackEditor {
         this._track.loopPointStep = this._track.loopAtStep % this._track.barQuantize
 
         // Update local labels and dependent UI without full sync
-        input.nextElementSibling.textContent = val
+        input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
         
         if (key === 'barQuantize' || key === 'bars') {
             const lpSlider = this.container.querySelector('input[data-loop="loopAtStep"]')
