@@ -203,6 +203,8 @@ export default class ToolsPanel {
         if (te) te.style.display = 'none'
         const ne = document.getElementById('ne-panel')
         if (ne) ne.style.display = 'none'
+        const op = document.getElementById('output-panel')
+        if (op) op.style.display = 'none'
         
         this.container.style.display = 'block'
         this._sync()
