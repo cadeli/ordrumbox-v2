@@ -163,8 +163,9 @@ export default class TrackEditor {
     sync() {
         if (!this._track) return
 
+        const soundInfo = this._getSoundInfo()
         let html = `<div class="ne-header">
-            <span class="ne-track">Track: ${this.esc(this._track.name)}</span>
+            <span class="ne-track">Track: ${this.esc(this._track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
             <button class="ne-close">&times;</button>
         </div><div class="ne-body">`
 
@@ -427,6 +428,17 @@ export default class TrackEditor {
     _getCurrentSoundUrl() {
         const soundId = this._track.soundId ?? ''
         return soundRegistry.sounds[soundId]?.url ?? soundId
+    }
+
+    _getSoundInfo() {
+        if (this._track.useSoftSynth === true) {
+            return this._track.synthSoundKey || null
+        }
+        const sound = soundRegistry.sounds[this._track.soundId]
+        if (!sound) return null
+        const kit = sound.kit_name || ''
+        const name = sound.display_name || sound.key || sound.url || ''
+        return kit ? `${kit}/${name}` : name
     }
 
     _getCurrentInstrumentName(instrumentIds, keysWithSamples) {
