@@ -271,13 +271,17 @@ export default class TrackEditor {
 
         let html = `<div class="ne-group"><div class="ne-group-label">Effects</div><div class="ne-grid">`
 
+        html += `<div class="ne-row">`
         fxDefs.forEach(fx => {
             const on = this._isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
-            html += `<div class="ne-row">
-                <button class="${ledClass}" data-fx-toggle="${fx.key}" title="${on ? 'Disable' : 'Enable'}"></button>
-                <label>${fx.label}</label>
-            </div>`
+            html += `<button class="${ledClass}" data-fx-toggle="${fx.key}" title="${on ? 'Disable' : 'Enable'}"></button>
+                <label style="min-width:24px;margin-right:8px">${fx.label}</label>`
+        })
+        html += `</div>`
+
+        fxDefs.forEach(fx => {
+            const on = this._isFxOn(fx)
             if (on) {
                 fx.controls.forEach(ck => {
                     const prop = GROUPS.flatMap(g => g.props).find(p => p.key === ck)
