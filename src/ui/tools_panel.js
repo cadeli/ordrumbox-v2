@@ -54,12 +54,12 @@ export default class ToolsPanel {
                             <button class="ne-btn" id="tp-export-json">Export JSON</button>
                         </div>
                         <div class="ne-row">
+                            <button class="ne-btn" id="tp-export-wav">Export WAV</button>
+                        </div>
+                        <div class="ne-row">
                             <label>Loops</label>
                             <input type="range" min="1" max="32" value="1" id="tp-wav-loops">
                             <span class="ne-val" id="tp-wav-loops-val">1</span>
-                        </div>
-                        <div class="ne-row">
-                            <button class="ne-btn" id="tp-export-wav">Export WAV</button>
                         </div>
                     </div>
                 </div>

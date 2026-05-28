@@ -41,10 +41,13 @@ export default class MfPlayer {
                             .catch((error) => console.error(error))
                     }
                 }
-                this.loop++
+                // We increment this.loop AFTER getting the flat notes for the current loop
             }
 
             const flatNotesMap = this.getFlatNotes(this.loop)
+            if (loopStep === nbTickForPattern - 1) {
+                this.loop++
+            }
             if (!(flatNotesMap instanceof Map)) return
 
             const notesToPlay = flatNotesMap.get(loopStep)

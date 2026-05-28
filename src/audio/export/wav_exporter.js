@@ -10,11 +10,13 @@ export default class MfWavExporter {
     }
 
     exportPatternToWav = async (pattern, loopsCount = 1) => {
-        const originalBpm = pattern.bpm
+        const TICK_TIME = (60 * 4) / (pattern.bpm * TICK) * 0.25 // Match Transport.js timing
+        const duration = pattern.nbBars * TICK * loopsCount * TICK_TIME + 2.0 // Add 2s tail for reverb/delay
+        const sampleRate = 44100
         const offlineCtx = new OfflineAudioContext(
             2,
-            Math.floor(44100 * (60 / pattern.bpm) * pattern.nbBars * loopsCount),
-            44100
+            Math.floor(sampleRate * duration),
+            sampleRate
         )
 
         const exporterAudioEngine = new AudioEngine({
@@ -28,19 +30,17 @@ export default class MfWavExporter {
             getAutoGenerate: getAutoGenerateService,
             uiState: {},
             TICK,
-            secondsPerBeat: (60 * 4) / (pattern.bpm * TICK),
+            secondsPerBeat: TICK_TIME * 4, // Approx seconds per beat for swing
             isOffline: true
         })
 
         exporterAudioEngine.start(pattern)
 
         // Simple offline scheduling
-        let currentTick = 0
         const totalTicks = pattern.nbBars * TICK * loopsCount
-        const secondsPerTick = (60 * 4) / (pattern.bpm * TICK)
 
         for (let t = 0; t < totalTicks; t++) {
-            exporterAudioEngine.playNotes(t, t * secondsPerTick)
+            exporterAudioEngine.playNotes(t, t * TICK_TIME)
         }
 
         const renderedBuffer = await offlineCtx.startRendering()
