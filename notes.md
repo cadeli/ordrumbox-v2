@@ -27,3 +27,7 @@ isTrigged	Nom de méthode unusual	shouldTrigger
 convertPatternStepToBarStep	Trop long	patternStepToBarStep
 convertBarStepToPatternStep	Trop long	barStepToPatternStep
 convertAllTo4stepPerBar	Pas clair	normalizeTo4StepsPerBar
+
+
+Samples (ligne ~143): track.velocity * 16 → à vitesse 1.0 = gain 16
+Synth (ligne ~399): track.velocity / 2 → à vitesse 1.0 = gain 0.5

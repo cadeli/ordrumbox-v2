@@ -1,0 +1,37 @@
+{
+  "name": "minfact",
+  "version": "1.0.0",
+  "description": "MinFact /online ordrumbox v2.0",
+  "main": "vite.config.js",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://framagit.org/phr/minfact.git"
+  },
+  "keywords": [
+    "online drum machine",
+    "js",
+    "vanilla"
+  ],
+  "author": "orDrumbox team",
+  "license": "GPL-3.0-only",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.6",
+    "jsdom": "^29.1.1",
+    "vite": "^7.3.1",
+    "vitest": "^4.1.6"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "terser": "^5.46.0"
+  }
+}

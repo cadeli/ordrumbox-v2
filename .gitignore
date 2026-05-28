@@ -1,8 +1,9 @@
 **/temp
+**/bak
 **/target
+**/coverage
 **/node_modules
 **/*.reapeaks
 **/*DS_Store
 *node_modules/*
-package*.*
 dist

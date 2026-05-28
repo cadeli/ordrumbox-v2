@@ -6,7 +6,7 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 
 ### Step Sequencer
 - Programmable grid for note entry and track looping
-- Support for complex polyrythmie and per-track swing settings
+- Support for complex polyrhythm and per-track swing settings
 - Precision controls for pitch, volume, and panning per note
 - Real-time visual feedback with step-by-step playback
 
@@ -23,6 +23,12 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 ### AI Generation
 - Automatic Bass Line Generator
 - Pattern Generator with style detection
+
+### MCP Server
+- Programmatic control via Model Context Protocol (MCP)
+- Create and modify patterns via JSON-RPC
+- Tools: createNewPattern, addExtendedNotesToPattern, addNotesToPattern, updateTrack, setPatternBpm, setPatternTags, and more
+- Access to instruments, samples, and pattern management
 
 ### MIDI Support
 - Compatible with external MIDI controllers
@@ -47,6 +53,14 @@ The main grid displays the step sequencer where you can create your own beats:
 
 Each column represents a beat step, and each row corresponds to a specific track (e.g., KICK, SNARE, HI-HAT). You can have multiple notes in the same row at different positions.
 
+### Probability Triggers
+Each note can use probability triggers to create subtle random variations while the pattern keeps looping:
+
+- **Trigger Probability** controls the chance that the selected note will play after its normal trigger timing. `1` means always play, `0.5` means about half the time, and `0` means never play.
+- **Arp Probability** controls the chance that each individual arpeggio note will play. This lets an arpeggio keep its shape while some of its internal notes are randomly skipped.
+
+Both probability controls use values from `0` to `1`, where `1` equals 100%.
+
 ### Modifying Settings with Sliders and Controls
 Each track has adjustable parameters accessible through the track control panel. Use these controls to customize your sound:
 
@@ -55,11 +69,12 @@ Each track has adjustable parameters accessible through the track control panel.
 - **Pitch**: Change the pitch of the sound in semitones.
 - **Swing**: Add swing timing to give the groove a more laid-back feel.
 - **Loop Step**: Define where the track loops back in the pattern.
+- **AUTO mode**: Enable automatic track generation.
+
 
 The toolbar also includes:
 - **BPM**: Set the tempo of the pattern (20 to 250 beats per minute).
 - **Pattern Length**: Adjust how many bars the pattern plays before looping.
-- **AUTO mode**: Enable automatic pattern generation.
 
 You can also access additional controls by clicking the TOOLS button, which provides options for exporting audio (WAV), clearing the pattern, and more.
 
@@ -81,6 +96,7 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 - Build Tool: Vite
 - Audio: Web Audio API
 - Storage: LocalStorage for persistence, JSON for import/export
+- MCP Server: Standalone Node.js server for programmatic control
 
 
 Global sound processing:
@@ -90,8 +106,6 @@ HighPass: 35 Hz (removes unwanted low frequencies)
 LowPass: 18500 Hz (anti-aliasing)
 MasterGain: 4.0 (compensation for Web Audio loudness deficit)
 
-### AUDIO OUTPUT
-MasterGain → audioCtx.destination → Speakers / Sound Card
 
 
 ## Resources

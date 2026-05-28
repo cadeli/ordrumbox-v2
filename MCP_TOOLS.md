@@ -89,6 +89,8 @@ Use `listAllInstrumentsNames` to get the list of valid instrument IDs.
 - `arp` (string, optional) - Arpeggio pattern ("up", "down", "upDown", "random", or "0,1,2,3")
 - `triggerFreq` (integer, 1-16, default: 1) - Trigger frequency
 - `triggerPhase` (integer, 0-15, default: 0) - Trigger phase offset
+- `triggerProbability` (number, 0-1, default: 1) - Probability that the note is played
+- `arpTriggerProbability` (number, 0-1, default: 1) - Probability that each arpeggio note is played
 - `retriggerNum` (integer, 1-16, default: 1) - Number of retriggers
 - `retriggerStep` (integer, 1-16, default: 1) - Retrigger step spacing
 - `euclidianFill` (integer, 0-100, default: 0) - Euclidean fill percentage
@@ -190,6 +192,8 @@ You can also update all notes in a track using `noteUpdates`:
   "noteUpdates": {
     "triggerFreq": 4,
     "triggerPhase": 2,
+    "triggerProbability": 0.75,
+    "arpTriggerProbability": 0.5,
     "retriggerNum": 3,
     "velocity": 0.8
   }
@@ -447,6 +451,8 @@ Each note has additional properties controlling how it's played:
 |----------|------|-------|---------|-------------|
 | `triggerFreq` | integer | 1-16 | 1 | Trigger frequency - how often the note plays on pattern repeat loop|
 | `triggerPhase` | integer | 0-15 | 0 | Trigger phase - offset for triggering |
+| `triggerProbability` | number | 0-1 | 1 | Probability that the note is played after the trigger test |
+| `arpTriggerProbability` | number | 0-1 | 1 | Probability that each arpeggio note is played |
 | `retriggerNum` | integer | 1-16 | 1 | Number of repetitions after initial trigger |
 | `retriggerStep` | integer | 1-16 | 1 | Step spacing between repetitions 4 => 1 step|
 | `arp` | string/null | - | null | Arpeggio pattern (up, down, updown, random, etc.) |
@@ -459,6 +465,7 @@ Controls how many times a note triggers per step.
 - `triggerFreq: 1, triggerPhase: 0` → Plays every step (1/1)
 - `triggerFreq: 4, triggerPhase: 0` → Plays 1 out of every 4 steps (1/4)
 - `triggerFreq: 4, triggerPhase: 2` → Plays on steps 2, 6, 10...
+- `triggerProbability: 0.5` → Plays about half of the triggered notes
 
 #### Retrigger Mechanism
 Repeats the note multiple times after the initial trigger.
@@ -474,6 +481,7 @@ Plays a sequence of pitches on a single step.
 
 **Parameters:**
 - `arp`: Arpeggio type ("up", "down", "upDown", "random", or custom "0,1,2,3,4")
+- `arpTriggerProbability`: Randomly skips individual arpeggio notes
 
 **Example:**
 - 4-note sequence: `arp: "0,1,2,3"` cycles through pitches 0→1→2→3→0...

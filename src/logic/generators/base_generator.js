@@ -1,0 +1,167 @@
+import { serviceRegistry } from '../../state/service_registry.js'
+
+export default class BaseGenerator {
+    constructor(instrumentName, configs, addNoteFn) {
+        this.instrumentName = instrumentName
+        this.configs = configs
+        this.addNoteFn = addNoteFn ?? ((track, bar, barStep, pitch) => serviceRegistry.mfCmd.addNote(track, bar, barStep, pitch))
+    }
+
+    addNote = (track, bar, barStep, pitch = 0, velocity = 0.8, isGhost = false) => {
+        const note = this.addNoteFn(track, bar, barStep, pitch)
+        note.velocity = typeof velocity === 'number' ? velocity : Number(velocity)
+        if (isGhost) note.ghost = true
+        return note
+    }
+
+    clearTrackNotes = (track) => {
+        track.notes = []
+    }
+
+    computeVelocity = (velocityConfig = {}, context = {}) => {
+        const base = context.velocityBase ?? velocityConfig.base ?? 0.75
+        const accent = context.accent ? (velocityConfig.accentOnBeat ?? 0) : 0
+        const ghost = context.ghost ? (velocityConfig.ghost ?? 0) : 0
+        const variationBoost = context.isVariation ? (velocityConfig.variationBoost ?? 0) : 0
+        const randomSpread = velocityConfig.randomSpread ?? 0
+        const randomOffset = (Math.random() * 2 - 1) * randomSpread
+        const min = velocityConfig.clampMin ?? 0.25
+        const max = velocityConfig.clampMax ?? 1
+        const result = Math.min(max, Math.max(min, base + accent + ghost + variationBoost + randomOffset))
+        return context.toFixed !== false ? Number(result.toFixed(2)) : result
+    }
+
+    applyLoopPoint = (track, config) => {
+        const loopPointBar = config.loopPointBar ?? track.bars ?? 1
+        const loopPointStep = config.loopPointStep ?? 0
+        track.loopPointBar = loopPointBar
+        track.loopPointStep = loopPointStep
+        track.loopAtStep = loopPointBar * track.barQuantize + loopPointStep
+    }
+
+    formatCompactVelocity = (velocityConfig, defaults = {}) => {
+        const segments = [
+            `b${velocityConfig.base ?? defaults.base ?? 0.75}`
+        ]
+        if (typeof velocityConfig.accentOnBeat === 'number') {
+            segments.push(`a${velocityConfig.accentOnBeat}`)
+        }
+        if (typeof velocityConfig.ghost === 'number') {
+            segments.push(`g${velocityConfig.ghost}`)
+        }
+        if (typeof velocityConfig.variationBoost === 'number') {
+            segments.push(`v${velocityConfig.variationBoost}`)
+        }
+        if (typeof velocityConfig.randomSpread === 'number') {
+            segments.push(`r${velocityConfig.randomSpread}`)
+        }
+        segments.push(`c${velocityConfig.clampMin ?? defaults.clampMin ?? 0.25}-${velocityConfig.clampMax ?? defaults.clampMax ?? 1}`)
+        return segments.join(',')
+    }
+
+    displayDebugNotes = (track, prefix = 'GN') => {
+        let ret = `${track.name}=`
+        for (const note of Object.values(track.notes)) {
+            ret += `${prefix}: ${note.bar}:${note.barStep} V=${note.velocity} - `
+        }
+        console.log(ret)
+    }
+
+    traceGeneration = (variantName, config, track, extraParts = []) => {
+        const parts = [
+            `${this.instrumentName.toUpperCase()}[${variantName}]`,
+            `mode=${config.mode}`,
+            `bars=${track?.bars ?? '?'}`,
+            `steps=${track?.barQuantize ?? '?'}`,
+            `vel=${this.formatCompactVelocity(config.velocity ?? {})}`,
+            `loop=${config.loopPointBar}:${config.loopPointStep ?? 0}`
+        ]
+
+        if (Array.isArray(config.phrases)) {
+            parts.push(`phr=${config.phrases.length}`)
+        }
+        if (Array.isArray(config.probabilities)) {
+            parts.push(`prob=${config.probabilities.join('/')}`)
+        }
+        if (typeof config.density === 'number') {
+            parts.push(`dens=${config.density}`)
+        }
+        if (config.scaleName) {
+            parts.push(`scale=${config.scaleName}`)
+        }
+
+        for (const part of extraParts) {
+            parts.push(part)
+        }
+
+        console.log(parts.join(" | "))
+    }
+
+    resolveVariantName = (variantName) => {
+        if (variantName && this.configs[variantName]) {
+            return variantName
+        }
+        return this.getRndVariantName()
+    }
+
+    getRndVariantName = () => {
+        const variants = Object.keys(this.configs)
+        return variants[Math.floor(Math.random() * variants.length)] ?? 'basic'
+    }
+
+    generateGridVariant = (track, config, getAccentContext, getGhostContext) => {
+        const loopPointBar = config.loopPointBar ?? 1
+        const loopPointStep = config.loopPointStep ?? 0
+        const barQuantize = track.barQuantize ?? 4
+        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
+
+        for (let bar = 0; bar < (track.bars ?? 1); bar++) {
+            for (let step = 0; step < barQuantize; step++) {
+                const absoluteStep = bar * barQuantize + step
+                if (absoluteStep >= loopPointAbsolute) continue
+
+                const probability = config.probabilities?.[step % config.probabilities.length] ?? 0
+                if (Math.random() >= probability) continue
+
+                const accent = getAccentContext?.(bar, step, config) ?? step === 0
+                const ghost = getGhostContext?.(bar, step, config) ?? step !== 0
+
+                this.addNote(
+                    track,
+                    bar,
+                    step,
+                    config.pitch ?? 0,
+                    this.computeVelocity(config.velocity, { step, accent, ghost })
+                )
+            }
+        }
+    }
+
+    generatePhraseVariant = (track, config, getPitch, getAccentContext, getGhostContext) => {
+        const loopPointBar = config.loopPointBar ?? 2
+        const loopPointStep = config.loopPointStep ?? 0
+        const barQuantize = track.barQuantize ?? 4
+        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
+
+        config.phrases.forEach((phrase) => {
+            const step = phrase.step === 'random'
+                ? Math.floor(Math.random() * barQuantize)
+                : phrase.step
+
+            const absoluteStep = phrase.bar * barQuantize + step
+            if (absoluteStep >= loopPointAbsolute) return
+
+            const pitch = getPitch?.(phrase, track) ?? config.pitch ?? 0
+            const accent = getAccentContext?.(phrase, step) ?? phrase.accent === true
+            const ghost = getGhostContext?.(phrase, step) ?? phrase.ghost === true
+
+            this.addNote(
+                track,
+                phrase.bar,
+                step,
+                pitch,
+                this.computeVelocity(config.velocity, { step, accent, ghost })
+            )
+        })
+    }
+}

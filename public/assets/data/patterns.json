@@ -1,9 +1,9 @@
 [
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "rock",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "rock",
+  "tracks": [
       {
         "name": "KICK_01",
         "bars": 8,
@@ -94,15 +94,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "nbBars": 8,
-    "tags": {"style":"rock","type":"default"}
+  ],
+  "nbBars": 8,
+  "tags": {"style":"rock","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "slRock",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "slRock",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -179,15 +179,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 115,
-    "tags": {"style":"rock","type":"default"}
+  ],
+  "bpm": 115,
+  "tags": {"style":"rock","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "SmRock",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "SmRock",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -269,14 +269,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"rock","type":"default"}
+  ],
+  "tags": {"style":"rock","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "RockCow",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "RockCow",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -356,14 +356,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"rock","type":"default"}
+  ],
+  "tags": {"style":"rock","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "BasRock",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "BasRock",
+  "tracks": [
       {
         "name": "KICK",
         "barQuantize": 2,
@@ -445,14 +445,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"rock","type":"default"}
+  ],
+  "tags": {"style":"rock","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "16beats",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "16beats",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -531,14 +531,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "CmpBeat",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "CmpBeat",
+  "tracks": [
       {
         "name": "KICK",
         "bars": 8,
@@ -625,16 +625,16 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 100,
-    "nbBars": 8,
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "bpm": 100,
+  "nbBars": 8,
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "Shuffle",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "Shuffle",
+  "tracks": [
       {
         "name": "KICK",
         "barQuantize": 6,
@@ -725,15 +725,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 80,
-    "tags": {"style":"swing","type":"default"}
+  ],
+  "bpm": 80,
+  "tags": {"style":"swing","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "hard",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "hard",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -809,15 +809,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 130,
-    "tags": {"style":"rock","type":"default"}
+  ],
+  "bpm": 130,
+  "tags": {"style":"rock","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "metal",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "metal",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -896,15 +896,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 130,
-    "tags": {"style":"rock","type":"default"}
+  ],
+  "bpm": 130,
+  "tags": {"style":"rock","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "DiscoFl",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "DiscoFl",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -983,14 +983,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"disco","type":"default"}
+  ],
+  "tags": {"style":"disco","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "DiscoBrk",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "DiscoBrk",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -1073,15 +1073,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 80,
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "bpm": 80,
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "disco",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "disco",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -1169,14 +1169,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 0.55
       }
-    ],
-    "tags": {"style":"disco","type":"default"}
+  ],
+  "tags": {"style":"disco","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "batuc",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "batuc",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -1256,15 +1256,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 100,
-    "tags": {"style":"samba","type":"default"}
+  ],
+  "bpm": 100,
+  "tags": {"style":"samba","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "MamboFst",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "MamboFst",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -1348,14 +1348,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"samba","type":"default"}
+  ],
+  "tags": {"style":"samba","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "mambo",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "mambo",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -1432,15 +1432,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 80,
-    "tags": {"style":"samba","type":"default"}
+  ],
+  "bpm": 80,
+  "tags": {"style":"samba","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "march",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "march",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 8,
@@ -1523,15 +1523,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 90,
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "bpm": 90,
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "merengue",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "merengue",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 3,
@@ -1607,15 +1607,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 60,
-    "tags": {"style":"samba","type":"default"}
+  ],
+  "bpm": 60,
+  "tags": {"style":"samba","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "salsa",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "salsa",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -1695,15 +1695,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 80,
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "bpm": 80,
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "SalsaGroovy",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "SalsaGroovy",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -1792,14 +1792,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 79
+  ],
+  "bpm": 79
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "bossa",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "bossa",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -1878,15 +1878,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 60,
-    "tags": {"style":"samba","type":"default"}
+  ],
+  "bpm": 60,
+  "tags": {"style":"samba","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "tango",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "tango",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -1963,15 +1963,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 70,
-    "tags": {"style":"samba","type":"default"}
+  ],
+  "bpm": 70,
+  "tags": {"style":"samba","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "ragga",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "ragga",
+  "tracks": [
       {
         "name": "KICK",
         "barQuantize": 1,
@@ -2053,15 +2053,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 80,
-    "tags": {"style":"reggae","type":"default"}
+  ],
+  "bpm": 80,
+  "tags": {"style":"reggae","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "rap",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "rap",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -2139,15 +2139,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 100,
-    "tags": {"style":"funk","type":"default"}
+  ],
+  "bpm": 100,
+  "tags": {"style":"funk","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "funk",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "funk",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -2226,15 +2226,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 80,
-    "tags": {"style":"funk","type":"default"}
+  ],
+  "bpm": 80,
+  "tags": {"style":"funk","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "SlFunk",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "SlFunk",
+  "tracks": [
       {
         "name": "KICK",
         "bars": 8,
@@ -2320,16 +2320,16 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 60,
-    "nbBars": 8,
-    "tags": {"style":"funk","type":"default"}
+  ],
+  "bpm": 60,
+  "nbBars": 8,
+  "tags": {"style":"funk","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "FunkFill",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "FunkFill",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -2410,15 +2410,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 100,
-    "tags": {"style":"funk","type":"default"}
+  ],
+  "bpm": 100,
+  "tags": {"style":"funk","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "hip",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "hip",
+  "tracks": [
       {
         "name": "KICK",
         "bars": 8,
@@ -2505,16 +2505,16 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 110,
-    "nbBars": 8,
-    "tags": {"style":"funk","type":"default"}
+  ],
+  "bpm": 110,
+  "nbBars": 8,
+  "tags": {"style":"funk","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "electro",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "electro",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 8,
@@ -2592,14 +2592,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "house",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "house",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -2691,14 +2691,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "house2",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "house2",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -2789,14 +2789,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "DanceIt",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "DanceIt",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
@@ -2880,14 +2880,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "Smurf",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "Smurf",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -2965,14 +2965,14 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "SlowTrap",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "SlowTrap",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -3052,15 +3052,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 100,
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "bpm": 100,
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "sweet",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "sweet",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
@@ -3142,15 +3142,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 90,
-    "tags": {"style":"electro","type":"default"}
+  ],
+  "bpm": 90,
+  "tags": {"style":"electro","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "jazz",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "jazz",
+  "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 8,
@@ -3235,15 +3235,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 60,
-    "tags": {"style":"jazz","type":"default"}
+  ],
+  "bpm": 60,
+  "tags": {"style":"jazz","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "PolyRythm",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "PolyRythm",
+  "tracks": [
       {
         "name": "KICK",
         "barQuantize": 8,
@@ -3323,15 +3323,15 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 60,
-    "tags": {"style":"jazz","type":"default"}
+  ],
+  "bpm": 60,
+  "tags": {"style":"jazz","type":"default"}
   },
   {
-    "application": "online-ordrumbox",
-    "url": "https://www.ordrumbox.com",
-    "name": "ltgroove",
-    "tracks": [
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "ltgroove",
+  "tracks": [
       {
         "name": "KICK",
         "bars": 8,
@@ -3431,9 +3431,143 @@
         "filterLfoFreq": 0,
         "sampleLength": 1
       }
-    ],
-    "bpm": 80,
-    "nbBars": 8,
-    "tags": {"style":"funk","type":"default"}
+  ],
+  "bpm": 80,
+  "nbBars": 8,
+  "tags": {"style":"funk","type":"default"}
+  },
+  {
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "DUB_ROOTS",
+  "description": "Dub roots heavy ",
+  "tracks": [
+      {
+        "name": "KICK",
+        "soundId": "punchy/kick.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "notes": [ {"velocity":0.95}, {"barStep":2,"bar":1,"velocity":0.75}, {"bar":4,"velocity":0.9}, {"barStep":2,"bar":5,"velocity":0.7}, {"bar":8,"velocity":0.95}, {"barStep":2,"bar":9,"velocity":0.75}, {"bar":12,"velocity":0.9}, {"barStep":2,"bar":13,"velocity":0.7}]
+      },
+      {
+        "name": "SNARE",
+        "soundId": "punchy/snare.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "pan": 0.3,
+        "notes": [ {"bar":2,"velocity":0.85}, {"bar":6,"velocity":0.85}, {"bar":10,"velocity":0.85}, {"bar":14,"velocity":0.85}],
+        "reverbType": "plate",
+        "reverbAmount": 0.6000000000000001
+      },
+      {
+        "name": "CHH",
+        "soundId": "punchy/chh.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "pan": 0.5,
+        "notes": [ {"bar":1,"velocity":0.5}, {"bar":3,"velocity":0.5}, {"bar":5,"velocity":0.5}, {"bar":7,"velocity":0.5}, {"bar":9,"velocity":0.5}, {"bar":11,"velocity":0.5}, {"bar":13,"velocity":0.5}, {"bar":15,"velocity":0.5}]
+      },
+      {
+        "name": "OHH",
+        "soundId": "punchy/ohh.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "pan": -0.4,
+        "notes": [ {"barStep":2,"bar":3,"velocity":0.55}, {"barStep":2,"bar":7,"velocity":0.55}, {"barStep":2,"bar":11,"velocity":0.55}, {"barStep":2,"bar":15,"velocity":0.55}]
+      },
+      {
+        "name": "CHH",
+        "useAutoAssignSound": false,
+        "soundId": "real/chh.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "pan": 0.4,
+        "filterType": "lowpass",
+        "filterFreq": 2270,
+        "filterQ": 11.700000000000001,
+        "notes": [ {"velocity":0.95,"pitch":-12}, {"barStep":3,"pitch":-12}, {"barStep":2,"bar":2,"velocity":0.85,"pitch":-12}, {"barStep":2,"bar":3,"velocity":0.7,"pitch":-10}, {"bar":4,"velocity":0.9,"pitch":-12}, {"bar":5,"velocity":0.75,"pitch":-12}, {"barStep":2,"bar":6,"pitch":-10}, {"bar":8,"velocity":0.95,"pitch":-12}, {"barStep":3,"bar":8,"pitch":-12}, {"barStep":2,"bar":10,"velocity":0.85,"pitch":-12}, {"barStep":2,"bar":11,"velocity":0.7,"pitch":-9}, {"bar":12,"velocity":0.9,"pitch":-12}, {"bar":13,"velocity":0.75,"pitch":-12}, {"barStep":2,"bar":14,"pitch":-10}],
+        "mono": true
+      },
+      {
+        "name": "CONGAS",
+        "useAutoAssignSound": false,
+        "soundId": "real/congas.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "pan": -0.3,
+        "notes": [ {"barStep":2,"velocity":0.75,"pitch":2}, {"barStep":2,"bar":2,"velocity":0.65,"pitch":2}, {"barStep":2,"bar":4,"velocity":0.7,"pitch":5}, {"barStep":2,"bar":6,"velocity":0.65,"pitch":3}, {"barStep":2,"bar":8,"velocity":0.75,"pitch":2}, {"barStep":2,"bar":10,"velocity":0.65,"pitch":2}, {"barStep":2,"bar":12,"velocity":0.7}, {"barStep":2,"bar":14,"velocity":0.65,"pitch":3}],
+        "reverbType": "room",
+        "reverbAmount": 0.3,
+        "delayTime": 0.25,
+        "delayAmount": 0.3,
+        "fxSelected": "delay"
+      },
+      {
+        "name": "COWBELL",
+        "useAutoAssignSound": false,
+        "soundId": "vintage/cow.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "pan": -0.2,
+        "notes": [ {"barStep":3,"velocity":0.7,"pitch":5}, {"barStep":3,"bar":2,"velocity":0.6,"pitch":5}, {"barStep":3,"bar":4,"velocity":0.65,"pitch":8}, {"barStep":3,"bar":6,"velocity":0.6,"pitch":7}, {"barStep":3,"bar":8,"velocity":0.7,"pitch":5}, {"barStep":3,"bar":10,"velocity":0.6,"pitch":5}, {"barStep":3,"bar":12,"velocity":0.65,"pitch":3}, {"barStep":3,"bar":14,"velocity":0.6,"pitch":7}],
+        "reverbType": "spring",
+        "reverbAmount": 0.8500000000000001,
+        "delayTime": 0.5,
+        "delayAmount": 0.6000000000000001,
+        "fxSelected": "delay"
+      },
+      {
+        "name": "CLAP",
+        "useAutoAssignSound": false,
+        "soundId": "real/rim.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "pan": 1,
+        "notes": [ {"barStep":1,"bar":1,"velocity":0.6}, {"barStep":1,"bar":3,"velocity":0.55}, {"barStep":1,"bar":5,"velocity":0.6,"pitch":3}, {"barStep":1,"bar":7,"velocity":0.55,"pitch":2}, {"barStep":1,"bar":9,"velocity":0.6}, {"barStep":1,"bar":11,"velocity":0.55}, {"barStep":1,"bar":13,"velocity":0.6,"pitch":-2}, {"barStep":1,"bar":15,"velocity":0.55,"pitch":2}],
+        "delayTime": 0.25,
+        "delayAmount": 0.7000000000000001,
+        "fxSelected": "delay"
+      },
+      {
+        "name": "HIT",
+        "useAutoAssignSound": false,
+        "soundId": "punchy/hit.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "velocity": 0.45,
+        "pitch": -12,
+        "filterType": "lowpass",
+        "filterFreq": 1520,
+        "filterQ": 14,
+        "notes": [ {"barStep":2,"bar":1,"velocity":0.6,"pitch":14}, {"barStep":1,"bar":2,"velocity":0.55,"pitch":12}, {"barStep":2,"bar":5,"velocity":0.6,"pitch":14}, {"barStep":1,"bar":6,"velocity":0.55,"pitch":17}, {"barStep":2,"bar":9,"velocity":0.6,"pitch":14}, {"barStep":1,"bar":10,"velocity":0.55,"pitch":12}, {"barStep":2,"bar":13,"velocity":0.6,"pitch":15}, {"barStep":1,"bar":14,"velocity":0.55,"pitch":14}],
+        "reverbType": "hall",
+        "reverbAmount": 0.7000000000000001,
+        "delayTime": 0.25,
+        "delayAmount": 0.7000000000000001
+      },
+      {
+        "name": "HIT",
+        "useAutoAssignSound": false,
+        "soundId": "delagrange/hit.wav",
+        "bars": 16,
+        "loopAtStep": 8,
+        "useSoftSynth": true,
+        "notes": [ {"arp":{"scaleName":"blues scale","intervals":[0,3,5,6,7,10],"mode":"up"},"triggerFreq":4,"retriggerNum":5,"retriggerStep":4}, {"bar":5}, {"barStep":1,"bar":8}, {"barStep":2,"bar":12}],
+        "reverbType": "gated",
+        "reverbAmount": 0.7000000000000001,
+        "synthSoundKey": "BASS1"
+      },
+      {
+        "name": "RIMSHOT",
+        "useAutoAssignSound": false,
+        "soundId": "matt/RIMSHOT.wav",
+        "bars": 16,
+        "loopAtStep": 64,
+        "notes": [ {"bar":3,"velocity":0.6}, {"barStep":3,"bar":3,"velocity":0.5}, {"bar":7,"velocity":0.6}, {"barStep":3,"bar":7,"velocity":0.5}, {"bar":11,"velocity":0.6}, {"barStep":3,"bar":11,"velocity":0.5}, {"bar":15,"velocity":0.6}, {"barStep":3,"bar":15,"velocity":0.5}]
+      }
+  ],
+  "bpm": 75,
+  "nbBars": 16,
+  "tags": {"0":"dub","1":"roots","2":"reggae","3":"delay","4":"heavy"}
   }
 ]

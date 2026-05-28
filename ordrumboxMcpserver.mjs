@@ -5,8 +5,8 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { PatternExporter } from "./src/ctrl/patternExporter.js";
-import Utils from './src/utils.js'
+import { PatternExporter } from "./src/patterns/exporter.js";
+import Utils from './src/core/utils.js'
 
 // Configuration du logger vers stderr pour préserver le flux JSON-RPC sur stdout
 const mcpLogger = new console.Console({
@@ -18,10 +18,10 @@ console.log = (...args) => mcpLogger.log(...args);
 console.warn = (...args) => mcpLogger.warn(...args);
 console.error = (...args) => mcpLogger.error(...args);
 
-import MfCmd from './src/ctrl/mfcmd.js';
-import { MfGlobals } from './src/mfglobals.js';
-import MfAudioAnalyze from './src/snd/mfaudioanalyze.js';
-import InstrumentsManager from './src/ctrl/instrumentsManager.js';
+import MfCmd from './src/logic/commands/cmd.js';
+import { appState } from './src/state/app_state.js';
+import MfAudioAnalyze from './src/audio/analyze.js';
+import InstrumentsManager from './src/logic/services/instruments_manager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -142,7 +142,7 @@ async function savePatternToDisk(pattern) {
 }
 
 function findPatternByName(patternName) {
-  return MfGlobals.patterns.find(
+  return appState.patterns.find(
     (pattern) => pattern?.name?.toUpperCase() === String(patternName).trim().toUpperCase()
   );
 }
@@ -187,6 +187,8 @@ function upsertNoteOnTrack(mfCmd, track, noteInput) {
   note.arp = noteInput.arp ?? note.arp ?? null;
   note.triggerFreq = Number(noteInput.triggerFreq ?? note.triggerFreq ?? 1);
   note.triggerPhase = Number(noteInput.triggerPhase ?? note.triggerPhase ?? 0);
+  note.triggerProbability = Math.min(Math.max(Number(noteInput.triggerProbability ?? note.triggerProbability ?? 1), 0), 1);
+  note.arpTriggerProbability = Math.min(Math.max(Number(noteInput.arpTriggerProbability ?? note.arpTriggerProbability ?? 1), 0), 1);
   note.retriggerNum = Number(noteInput.retriggerNum ?? note.retriggerNum ?? 1);
   note.retriggerStep = Number(noteInput.retriggerStep ?? note.retriggerStep ?? 1);
   note.euclidianFill = Number(noteInput.euclidianFill ?? note.euclidianFill ?? 0);
@@ -264,6 +266,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     //             arp: { type: "string" },
     //             triggerFreq: { type: "integer", minimum: 1, maximum: 16 },
     //             triggerPhase: { type: "integer", minimum: 0, maximum: 15 },
+    //             triggerProbability: { type: "number", minimum: 0, maximum: 1 },
+    //             arpTriggerProbability: { type: "number", minimum: 0, maximum: 1 },
     //             retriggerNum: { type: "integer", minimum: 1, maximum: 16 },
     //             retriggerStep: { type: "integer", minimum: 1, maximum: 16 },
     //             euclidianFill: { type: "integer", minimum: 0, maximum: 100 }
@@ -292,7 +296,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
                 step: { type: "integer", minimum: 0, description: "Absolute step number (0-based)" },
                 velocity: { type: "number", minimum: 0, maximum: 1, default: 0.8 },
                 pan: { type: "number", minimum: -1, maximum: 1, default: 0 },
-                pitch: { type: "number", default: 0 }
+                pitch: { type: "number", default: 0 },
+                triggerProbability: { type: "number", minimum: 0, maximum: 1, default: 1 },
+                arpTriggerProbability: { type: "number", minimum: 0, maximum: 1, default: 1 }
               },
               required: ["trackName", "step"]
             }
@@ -319,6 +325,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             properties: {
               triggerFreq: { type: "number", minimum: 1, maximum: 16 },
               triggerPhase: { type: "number", minimum: 0, maximum: 15 },
+              triggerProbability: { type: "number", minimum: 0, maximum: 1 },
+              arpTriggerProbability: { type: "number", minimum: 0, maximum: 1 },
               retriggerNum: { type: "number", minimum: 1, maximum: 16 },
               retriggerStep: { type: "number", minimum: 1, maximum: 16 },
               arp: { type: "string" },
@@ -531,7 +539,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           barStep,
           velocity: Number(n.velocity ?? 0.8),
           pan: Number(n.pan ?? 0),
-          pitch: Number(n.pitch ?? 0)
+          pitch: Number(n.pitch ?? 0),
+          triggerProbability: n.triggerProbability,
+          arpTriggerProbability: n.arpTriggerProbability
         };
 
         const status = upsertNoteOnTrack(mfCmd, track, noteInput);
@@ -579,13 +589,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       
       let notesUpdated = 0;
       if (noteUpdates) {
-        const noteProps = ['triggerFreq', 'triggerPhase', 'retriggerNum', 'retriggerStep', 'arp', 'euclidianFill', 'velocity', 'pan', 'pitch'];
+        const noteProps = ['triggerFreq', 'triggerPhase', 'triggerProbability', 'arpTriggerProbability', 'retriggerNum', 'retriggerStep', 'arp', 'euclidianFill', 'velocity', 'pan', 'pitch'];
         const hasNoteProps = noteProps.some(prop => noteUpdates[prop] !== undefined);
         
         if (hasNoteProps && track.notes) {
           for (const note of track.notes) {
             if (noteUpdates.triggerFreq !== undefined) note.triggerFreq = Number(noteUpdates.triggerFreq);
             if (noteUpdates.triggerPhase !== undefined) note.triggerPhase = Number(noteUpdates.triggerPhase);
+            if (noteUpdates.triggerProbability !== undefined) note.triggerProbability = Math.min(Math.max(Number(noteUpdates.triggerProbability), 0), 1);
+            if (noteUpdates.arpTriggerProbability !== undefined) note.arpTriggerProbability = Math.min(Math.max(Number(noteUpdates.arpTriggerProbability), 0), 1);
             if (noteUpdates.retriggerNum !== undefined) note.retriggerNum = Number(noteUpdates.retriggerNum);
             if (noteUpdates.retriggerStep !== undefined) note.retriggerStep = Number(noteUpdates.retriggerStep);
             if (noteUpdates.arp !== undefined) note.arp = noteUpdates.arp;
@@ -691,6 +703,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         arp: n.arp,
                         triggerFreq: n.triggerFreq,
                         triggerPhase: n.triggerPhase,
+                        triggerProbability: n.triggerProbability,
+                        arpTriggerProbability: n.arpTriggerProbability,
                         retriggerNum: n.retriggerNum,
                         retriggerStep: n.retriggerStep,
                         euclidianFill: n.euclidianFill

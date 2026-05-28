@@ -61,7 +61,7 @@
             },
             {
                 "display_name": "organ_c3.wav",
-                "key": "PIANO",
+                "key": "ORGAN",
                 "url": "real/organ_c3.wav"
             },
             {
@@ -206,7 +206,7 @@
                 "kit_name": "electro",
                 "display_name": "PIANO",
                 "key": "PIANO",
-                "url": "electro/acid_piano_c3.wav"
+                "url": "electro/acid_piano_c4.wav"
             }
         ]
     },
