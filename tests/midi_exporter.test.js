@@ -393,7 +393,7 @@ describe('MidiExporter', () => {
         })
         const bytes = Array.from(exporter.export(pattern))
         const chunks = parseChunks(bytes)
-        expect(chunks).toHaveLength(4) // header + tempo + kick + snare + chh
+        expect(chunks).toHaveLength(5) // header + tempo + kick + snare + chh
         for (const ch of chunks) {
             expect(['MThd', 'MTrk']).toContain(ch.tag)
             expect(ch.dataOffset + ch.length).toBeLessThanOrEqual(bytes.length)
