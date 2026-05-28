@@ -1,17 +1,28 @@
+import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
+import { serviceRegistry } from '../state/service_registry.js'
+import { PatternExporter } from '../patterns/exporter.js'
 
 export default class ToolsPanel {
     constructor() {
         this.container = null
+        this.nameInput = null
+        this.wavLoopsSlider = null
+        this.wavLoopsVal = null
+        this.exportWavBtn = null
     }
 
     injectCSS() {
         if (document.getElementById('ui-styles')) return
-        // CSS is usually already injected by other components, 
-        // but we keep the pattern for consistency
+        const link = document.createElement('link')
+        link.id = 'ui-styles'
+        link.rel = 'stylesheet'
+        link.href = new URL('./styles.css', import.meta.url).href
+        document.head.appendChild(link)
     }
 
     init() {
+        this.injectCSS()
         this.createDOM()
         this.subscribe()
     }
@@ -28,10 +39,36 @@ export default class ToolsPanel {
             </div>
             <div class="ne-body">
                 <div class="ne-group">
-                    <div class="ne-group-label">Pattern Tools</div>
+                    <div class="ne-group-label">Pattern Settings</div>
+                    <div class="ne-grid">
+                        <div class="ne-row no-cursor">
+                            <label>Name</label>
+                            <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
+                        </div>
+                    </div>
+                </div>
+                <div class="ne-group">
+                    <div class="ne-group-label">Export</div>
                     <div class="ne-grid">
                         <div class="ne-row">
-                            <button class="ne-btn" data-action="todo">Coming Soon...</button>
+                            <button class="ne-btn" id="tp-export-json">Export JSON</button>
+                        </div>
+                        <div class="ne-row">
+                            <label>Loops</label>
+                            <input type="range" min="1" max="32" value="1" id="tp-wav-loops">
+                            <span class="ne-val" id="tp-wav-loops-val">1</span>
+                        </div>
+                        <div class="ne-row">
+                            <button class="ne-btn" id="tp-export-wav">Export WAV</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="ne-group">
+                    <div class="ne-group-label">Import</div>
+                    <div class="ne-grid">
+                        <div class="ne-row">
+                            <button class="ne-btn" id="tp-import-json">Import JSON</button>
+                            <input type="file" id="tp-import-file" style="display: none" accept=".json">
                         </div>
                     </div>
                 </div>
@@ -40,6 +77,24 @@ export default class ToolsPanel {
         document.body.appendChild(this.container)
         
         this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
+        
+        this.nameInput = this.container.querySelector('#tp-pattern-name')
+        this.nameInput.addEventListener('input', () => this._onNameChange())
+        
+        this.container.querySelector('#tp-export-json').addEventListener('click', () => this._exportJson())
+        
+        this.wavLoopsSlider = this.container.querySelector('#tp-wav-loops')
+        this.wavLoopsVal = this.container.querySelector('#tp-wav-loops-val')
+        this.wavLoopsSlider.addEventListener('input', () => {
+            this.wavLoopsVal.textContent = this.wavLoopsSlider.value
+        })
+        
+        this.exportWavBtn = this.container.querySelector('#tp-export-wav')
+        this.exportWavBtn.addEventListener('click', () => this._exportWav())
+        
+        const importFile = this.container.querySelector('#tp-import-file')
+        this.container.querySelector('#tp-import-json').addEventListener('click', () => importFile.click())
+        importFile.addEventListener('change', (e) => this._onImportFile(e))
     }
 
     subscribe() {
@@ -48,6 +103,12 @@ export default class ToolsPanel {
             else this.hide()
         })
         
+        playbackEvents.onPatternChange.push(() => {
+            if (this.container && this.container.style.display !== 'none') {
+                this._sync()
+            }
+        })
+
         // Hide if other selections happen
         playbackEvents.onTrackSelect.push((data) => {
             if (data) this.hide()
@@ -57,12 +118,94 @@ export default class ToolsPanel {
         })
     }
 
+    _sync() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (pattern && this.nameInput && document.activeElement !== this.nameInput) {
+            this.nameInput.value = pattern.name || ''
+        }
+    }
+
+    _onNameChange() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (pattern) {
+            pattern.name = this.nameInput.value
+            // We only need to trigger pattern change to update other UI components (like Toolbar)
+            playbackEvents.onPatternChange.forEach(fn => fn())
+        }
+    }
+
+    _exportJson() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) return
+        const data = PatternExporter.export(pattern)
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${pattern.name || 'pattern'}.json`
+        a.click()
+        URL.revokeObjectURL(url)
+    }
+
+    async _exportWav() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) return
+        
+        const originalText = this.exportWavBtn.textContent
+        this.exportWavBtn.disabled = true
+        this.exportWavBtn.textContent = 'Exporting...'
+        
+        try {
+            if (!serviceRegistry.mfWavExporter) {
+                const { default: MfWavExporter } = await import('../audio/export/wav_exporter.js')
+                serviceRegistry.mfWavExporter = new MfWavExporter()
+            }
+            
+            const loops = parseInt(this.wavLoopsSlider.value, 10)
+            const blob = await serviceRegistry.mfWavExporter.exportPatternToWav(pattern, loops)
+            serviceRegistry.mfWavExporter.downloadWav(blob, `${pattern.name || 'pattern'}.wav`)
+        } catch (e) {
+            console.error('WAV Export failed', e)
+            alert('WAV Export failed')
+        } finally {
+            this.exportWavBtn.disabled = false
+            this.exportWavBtn.textContent = originalText
+        }
+    }
+
+    _onImportFile(e) {
+        const file = e.target.files[0]
+        if (!file) return
+        
+        const reader = new FileReader()
+        reader.onload = async (event) => {
+            try {
+                const data = JSON.parse(event.target.result)
+                const newPattern = serviceRegistry.mfCmd.importPatternFromJson(data)
+                const newIdx = appState.patterns.indexOf(newPattern)
+                if (newIdx !== -1) {
+                    await serviceRegistry.mfCmd.setSelectedPatternNum(newIdx)
+                    playbackEvents.onPatternChange.forEach(fn => fn())
+                    this.hide()
+                }
+            } catch (err) {
+                console.error('Import failed', err)
+                alert('Import failed: ' + err.message)
+            }
+        }
+        reader.readAsText(file)
+        e.target.value = '' // Reset for next time
+    }
+
     show() {
         // Hide others
-        document.getElementById('te-panel').style.display = 'none'
-        document.getElementById('ne-panel').style.display = 'none'
+        const te = document.getElementById('te-panel')
+        if (te) te.style.display = 'none'
+        const ne = document.getElementById('ne-panel')
+        if (ne) ne.style.display = 'none'
         
         this.container.style.display = 'block'
+        this._sync()
         this.reposition()
     }
 

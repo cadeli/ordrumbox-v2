@@ -1,0 +1,109 @@
+/**
+ * @vitest-environment jsdom
+ */
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import MfWavExporter from '../src/audio/export/wav_exporter.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
+import MfPatterns from '../src/patterns/manager.js'
+
+// Mock OfflineAudioContext
+class MockOfflineAudioContext {
+    constructor(channels, length, sampleRate) {
+        this.channels = channels
+        this.length = length
+        this.sampleRate = sampleRate
+        this.currentTime = 0
+        this.destination = {
+            connect: vi.fn(),
+            disconnect: vi.fn()
+        }
+    }
+
+    createGain() { return { gain: { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
+    createDynamicsCompressor() { return { threshold: { value: 0, setValueAtTime: vi.fn() }, knee: { value: 0, setValueAtTime: vi.fn() }, ratio: { value: 0, setValueAtTime: vi.fn() }, attack: { value: 0, setValueAtTime: vi.fn() }, release: { value: 0, setValueAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
+    createBiquadFilter() { return { type: 'lowpass', frequency: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, Q: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
+    createOscillator() { return { start: vi.fn(), stop: vi.fn(), connect: vi.fn(), disconnect: vi.fn(), frequency: { value: 0, setValueAtTime: vi.fn() } } }
+    createAnalyser() { return { fftSize: 1024, connect: vi.fn(), disconnect: vi.fn() } }
+    createBuffer(ch, len, sr) { return { numberOfChannels: ch, length: len, sampleRate: sr, getChannelData: () => new Float32Array(len) } }
+    createBufferSource() { return { buffer: null, start: vi.fn(), stop: vi.fn(), connect: vi.fn(), disconnect: vi.fn(), loop: false, playbackRate: { value: 1, setValueAtTime: vi.fn() } } }
+    createStereoPanner() { return { pan: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
+    createWaveShaper() { return { curve: null, oversample: 'none', connect: vi.fn(), disconnect: vi.fn() } }
+    createConvolver() { return { buffer: null, connect: vi.fn(), disconnect: vi.fn() } }
+    createDelay() { return { delayTime: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
+
+    startRendering() {
+        return Promise.resolve({
+            numberOfChannels: this.channels,
+            length: this.length,
+            sampleRate: this.sampleRate,
+            getChannelData: (ch) => new Float32Array(this.length)
+        })
+    }
+}
+
+global.OfflineAudioContext = MockOfflineAudioContext
+
+describe('WAV Exporter', () => {
+    beforeEach(() => {
+        soundRegistry.reset()
+        serviceRegistry.reset()
+        serviceRegistry.mfPatterns = new MfPatterns()
+        // Mock sounds
+        soundRegistry.sounds = {
+            'kick.wav': { url: 'kick.wav', buffer: { duration: 1, length: 44100, getChannelData: () => new Float32Array(44100) }, key: 'KICK' }
+        }
+    })
+
+    it('successfully schedules notes in offline context', async () => {
+        const pattern = {
+            name: 'Test Pattern',
+            bpm: 120,
+            nbBars: 1,
+            tracks: [
+                {
+                    name: 'KICK',
+                    soundId: 'kick.wav',
+                    bars: 1,
+                    barQuantize: 4,
+                    mute: false,
+                    notes: [
+                        { bar: 0, barStep: 0, velocity: 1, pitch: 0 }
+                    ]
+                }
+            ]
+        }
+
+        const exporter = new MfWavExporter()
+        
+        // Spy on AudioContext.createBufferSource to see if something is played
+        const createBufferSourceSpy = vi.spyOn(MockOfflineAudioContext.prototype, 'createBufferSource')
+        
+        const blob = await exporter.exportPatternToWav(pattern, 1)
+        
+        expect(blob).toBeDefined()
+        expect(blob.type).toBe('audio/wav')
+        
+        // Verify that playNotes was called and it created a buffer source
+        expect(createBufferSourceSpy).toHaveBeenCalled()
+    })
+
+    it('calculates correct total duration for the offline context', async () => {
+        const pattern = {
+            name: 'Tempo Test',
+            bpm: 120, // 2 beats per second
+            nbBars: 2, // 2 bars * 4 beats/bar = 8 beats
+            tracks: []
+        }
+        
+        const exporter = new MfWavExporter()
+        const offlineCtxSpy = vi.spyOn(global, 'OfflineAudioContext')
+        
+        await exporter.exportPatternToWav(pattern, 1)
+        
+        // 8 beats at 120bpm = 4 seconds
+        // Expected length in samples = 4 * 44100 = 176400
+        const expectedSamples = 4 * 44100
+        expect(offlineCtxSpy).toHaveBeenCalledWith(2, expectedSamples, 44100)
+    })
+})
