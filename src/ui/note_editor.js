@@ -47,14 +47,19 @@ const GROUPS = [
         ]
     },
     {
+        label: 'Retrig',
+        props: [
+            { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
+            { key: 'retriggerStep', label: 'RetS', min: 1, max: 16, step: 1 }
+        ]
+    },
+    {
         label: 'Arpege',
         props: [
             { key: 'arpScale', label: 'Scl', type: 'select', options: [] },
             { key: 'arpType', label: 'Dir', type: 'select', options: ARP_TYPES },
             { key: 'arpRange', label: 'Rng', min: 0, max: 12, step: 1 },
-            { key: 'arpTriggerProbability', label: 'Arp%', min: 0, max: 1, step: 0.01 },
-            { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
-            { key: 'retriggerStep', label: 'RetS', min: 1, max: 16, step: 1 }
+            { key: 'arpTriggerProbability', label: 'Arp%', min: 0, max: 1, step: 0.01 }
         ]
     }
 ]
@@ -134,7 +139,7 @@ export default class NoteEditor {
 
         const scaleKeys = Object.keys(_scalesCache ?? {})
         const arpState = this._getArpState(note)
-        const scaleGroup = GROUPS[2]
+        const scaleGroup = GROUPS[3]
         scaleGroup.props[0].options = scaleKeys
 
         let html = `<div class="ne-header">
