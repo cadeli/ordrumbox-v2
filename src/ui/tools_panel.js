@@ -54,6 +54,9 @@ export default class ToolsPanel {
                             <button class="ne-btn" id="tp-export-json">Export JSON</button>
                         </div>
                         <div class="ne-row">
+                            <button class="ne-btn" id="tp-export-midi">Export MIDI</button>
+                        </div>
+                        <div class="ne-row">
                             <button class="ne-btn" id="tp-export-wav">Export WAV</button>
                         </div>
                         <div class="ne-row">
@@ -91,6 +94,8 @@ export default class ToolsPanel {
         
         this.exportWavBtn = this.container.querySelector('#tp-export-wav')
         this.exportWavBtn.addEventListener('click', () => this._exportWav())
+        
+        this.container.querySelector('#tp-export-midi').addEventListener('click', () => this._exportMidi())
         
         const importFile = this.container.querySelector('#tp-import-file')
         this.container.querySelector('#tp-import-json').addEventListener('click', () => importFile.click())
@@ -145,6 +150,15 @@ export default class ToolsPanel {
         a.download = `ordrumbox-${pattern.name || 'pattern'}.json`
         a.click()
         URL.revokeObjectURL(url)
+    }
+
+    async _exportMidi() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) return
+        const { default: MidiExporter } = await import('../logic/midi/midi_exporter.js')
+        const exporter = new MidiExporter()
+        const loops = parseInt(this.wavLoopsSlider.value, 10)
+        exporter.download(pattern, `ordrumbox-${pattern.name || 'pattern'}.mid`, { loops })
     }
 
     async _exportWav() {
