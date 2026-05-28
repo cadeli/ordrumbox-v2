@@ -11,7 +11,7 @@ export default class MfWavExporter {
 
     exportPatternToWav = async (pattern, loopsCount = 1) => {
         const TICK_TIME = (60 * 4) / (pattern.bpm * TICK) * 0.25 // Match Transport.js timing
-        const duration = pattern.nbBars * TICK * loopsCount * TICK_TIME + 2.0 // Add 2s tail for reverb/delay
+        const duration = pattern.nbBars * TICK * loopsCount * TICK_TIME
         const sampleRate = 44100
         const offlineCtx = new OfflineAudioContext(
             2,
