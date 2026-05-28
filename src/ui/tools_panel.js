@@ -142,7 +142,7 @@ export default class ToolsPanel {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `${pattern.name || 'pattern'}.json`
+        a.download = `ordrumbox-${pattern.name || 'pattern'}.json`
         a.click()
         URL.revokeObjectURL(url)
     }
@@ -163,7 +163,7 @@ export default class ToolsPanel {
             
             const loops = parseInt(this.wavLoopsSlider.value, 10)
             const blob = await serviceRegistry.mfWavExporter.exportPatternToWav(pattern, loops)
-            serviceRegistry.mfWavExporter.downloadWav(blob, `${pattern.name || 'pattern'}.wav`)
+            serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${pattern.name || 'pattern'}.wav`)
         } catch (e) {
             console.error('WAV Export failed', e)
             alert('WAV Export failed')
