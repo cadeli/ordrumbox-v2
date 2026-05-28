@@ -247,7 +247,7 @@ export default class TrackEditor {
                     <span class="ne-val">${bars}</span>
                 </div>
                 <div class="ne-row">
-                    <label>Step Point</label>
+                    <label>Loop Point</label>
                     <input type="range" min="1" max="${maxSteps}" step="1" value="${loopAtStep}" data-loop="loopAtStep">
                     <span class="ne-val">${loopAtStep}</span>
                 </div>
@@ -501,6 +501,8 @@ export default class TrackEditor {
         // Loop panel events
         this.container.querySelectorAll('input[data-loop]').forEach(input => {
             input.addEventListener('input', () => this._onLoopSlider(input))
+            // Re-sync fully on change to ensure structural consistency
+            input.addEventListener('change', () => this.sync())
         })
 
         // FX toggle LEDs
@@ -679,10 +681,16 @@ export default class TrackEditor {
         this._track.loopPointBar = Math.floor(this._track.loopAtStep / this._track.barQuantize)
         this._track.loopPointStep = this._track.loopAtStep % this._track.barQuantize
 
+        // Update local labels and dependent UI without full sync
+        input.nextElementSibling.textContent = val
+        
         if (key === 'barQuantize' || key === 'bars') {
-            this.sync() // Re-render to update Step Point slider max
-        } else {
-            input.nextElementSibling.textContent = val
+            const lpSlider = this.container.querySelector('input[data-loop="loopAtStep"]')
+            if (lpSlider) {
+                lpSlider.max = maxSteps
+                lpSlider.value = this._track.loopAtStep
+                lpSlider.nextElementSibling.textContent = this._track.loopAtStep
+            }
         }
         
         playbackEvents.onPatternChange.forEach(fn => fn())

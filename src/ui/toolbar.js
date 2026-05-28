@@ -59,30 +59,6 @@ export default class Toolbar {
         this.startBtn.className = 'tb-start'
         this.startBtn.textContent = '\u25B6 Start'
 
-        const patLabel = document.createElement('label')
-        patLabel.textContent = 'Pattern:'
-        this.patternSelect = document.createElement('select')
-
-        const kitLabel = document.createElement('label')
-        kitLabel.textContent = 'Kit:'
-        this.drumkitSelect = document.createElement('select')
-
-        this.autoGenBtn = document.createElement('button')
-        this.autoGenBtn.className = 'tb-auto-gen'
-        this.autoGenBtn.textContent = '\u2619 Auto Gen'
-
-        this.clearBtn = document.createElement('button')
-        this.clearBtn.className = 'tb-clear'
-        this.clearBtn.textContent = '\u232B Clear'
-
-        this.container.appendChild(this.startBtn)
-        this.container.appendChild(patLabel)
-        this.container.appendChild(this.patternSelect)
-        this.container.appendChild(kitLabel)
-        this.container.appendChild(this.drumkitSelect)
-        this.container.appendChild(this.autoGenBtn)
-        this.container.appendChild(this.clearBtn)
-
         const bpmWrap = document.createElement('div')
         bpmWrap.className = 'tb-bpm-wrap'
 
@@ -104,7 +80,30 @@ export default class Toolbar {
         this.bpmPanel.appendChild(this.bpmValue)
         bpmWrap.appendChild(this.bpmPanel)
 
+        const patLabel = document.createElement('label')
+        patLabel.textContent = 'Pattern:'
+        this.patternSelect = document.createElement('select')
+
+        const kitLabel = document.createElement('label')
+        kitLabel.textContent = 'Kit:'
+        this.drumkitSelect = document.createElement('select')
+
+        this.autoGenBtn = document.createElement('button')
+        this.autoGenBtn.className = 'tb-auto-gen'
+        this.autoGenBtn.textContent = '\u2619 Auto Gen'
+
+        this.clearBtn = document.createElement('button')
+        this.clearBtn.className = 'tb-clear'
+        this.clearBtn.textContent = '\u232B Clear'
+
+        this.container.appendChild(this.startBtn)
         this.container.appendChild(bpmWrap)
+        this.container.appendChild(patLabel)
+        this.container.appendChild(this.patternSelect)
+        this.container.appendChild(kitLabel)
+        this.container.appendChild(this.drumkitSelect)
+        this.container.appendChild(this.autoGenBtn)
+        this.container.appendChild(this.clearBtn)
 
         document.body.appendChild(this.container)
     }
