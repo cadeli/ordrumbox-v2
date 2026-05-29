@@ -236,20 +236,23 @@ export default class ToolsPanel {
             const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
 
             const pattern = appState.patterns[appState.selectedPatternNum]
-            const track = pattern?.tracks[appState.selectedTrackNum]
+            const tracks = Object.values(pattern?.tracks ?? {})
+            const track = tracks[appState.selectedTrackNum]
             if (!track) {
                 alert('No track selected')
                 return
             }
 
             const im = new InstrumentsManager()
-            const instrument = im.findByName(track.name)
-            const instrumentType = instrument?.id ?? track.name
+            const detectedInstrument = im.findInstrumentFromFileName(file.name)
+            const instrumentType = detectedInstrument?.id && detectedInstrument.id !== 'NOT_FOUND' 
+                ? detectedInstrument.id 
+                : file.name.replace('.wav', '').toUpperCase()
 
             const url = `custom/${file.name}`
             const sound = {
                 url: url,
-                key: file.name.replace('.wav', '').toUpperCase(),
+                key: instrumentType,
                 buffer: audioBuffer,
                 duration: Math.floor(audioBuffer.duration * 1000),
                 kit_name: soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? 'custom',
@@ -274,7 +277,13 @@ export default class ToolsPanel {
             track.soundId = url
             track.useAutoAssignSound = false
             track.useSoftSynth = false
+            track.name = instrumentType
             playbackEvents.onPatternChange.forEach(fn => fn())
+
+            // Play the imported sound immediately
+            if (serviceRegistry.audioEngine) {
+                serviceRegistry.audioEngine.simpleBeep(appState.selectedTrackNum)
+            }
 
             console.log('=== Kits & Instruments ===')
             soundRegistry.drumkitList.forEach(kit => {

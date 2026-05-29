@@ -64,6 +64,12 @@ export function init() {
     _toolsPanel.init()
     _outputPanel.init()
 
+    playbackEvents.onTrackSelect.push((data) => {
+        if (data && data.trackIdx !== undefined) {
+            appState.selectedTrackNum = data.trackIdx
+        }
+    })
+
     scheduleAfterFirstPaint(async () => {
         try {
             await serviceRegistry.mfResourcesLoader.loadPatterns(MfResourcesLoader.PATTERNS_URL)
