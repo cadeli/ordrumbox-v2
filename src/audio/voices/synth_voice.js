@@ -181,14 +181,19 @@ export default class SynthVoice extends BaseVoice {
         }
         this.connectLfoTarget(lfoTarget)
 
-        this.gainEnv.gain.setValueAtTime(0, time)
-        this.gainEnv.gain.linearRampToValueAtTime(peakGain, time + attackTime)
-        this.gainEnv.gain.setValueAtTime(peakGain * sustainLevel, time + attackTime + decayTime)
-        this.gainEnv.gain.linearRampToValueAtTime(peakGain * sustainLevel, time + attackTime + decayTime)
-        this.releaseStart = time + attackTime + decayTime
-        this.gainEnv.gain.linearRampToValueAtTime(0, this.releaseStart + releaseTime)
+        // Envelope timings with anti-click protection
+        const safeAttack = Math.max(attackTime, 0.002) // Min 2ms attack
+        const safeDecay = Math.max(decayTime, 0.002)   // Min 2ms decay
+        const safeRelease = Math.max(releaseTime, 0.005) // Min 5ms release
 
-        this.totalStopTime = this.releaseStart + releaseTime + RELEASE_TIME
+        this.gainEnv.gain.setValueAtTime(0, time)
+        this.gainEnv.gain.linearRampToValueAtTime(peakGain, time + safeAttack)
+        this.gainEnv.gain.linearRampToValueAtTime(peakGain * sustainLevel, time + safeAttack + safeDecay)
+        
+        this.releaseStart = time + safeAttack + safeDecay
+        this.gainEnv.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, this.releaseStart + safeRelease)
+
+        this.totalStopTime = this.releaseStart + safeRelease + RELEASE_TIME
     }
 
     computeLfoDepth(target) {
