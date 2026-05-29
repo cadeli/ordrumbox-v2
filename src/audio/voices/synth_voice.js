@@ -50,7 +50,8 @@ export default class SynthVoice extends BaseVoice {
         const generatedSound = this.generatedSound
         const noteRatio = computeNoteRatio(flatNote.fpitch)
         this.noteRatio = noteRatio
-        this.noteVelo = flatNote.note?.velocity / 16 ?? NOTE_VELO_BALANCE
+        const rawVelo = flatNote.note?.velocity ?? 0.8
+        this.noteVelo = rawVelo /8
         const env = generatedSound.enveloppe ?? { attack: 0, decay: 0, sustain: 1, release: 0 }
 
         this.gainEnv = this.registerNode(ctx.createGain())
