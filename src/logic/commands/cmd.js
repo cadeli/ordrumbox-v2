@@ -20,31 +20,24 @@ export default class MfCmd {
         if (!track || !updates || typeof updates !== 'object') {
             return track
         }
+        
+        let changed = false
         // Split keys into structural vs extra updates to support multi-step updates
         const STRUCT_KEYS = new Set(['name', 'soundId', 'bars', 'barQuantize', 'loopAtStep', 'useSoftSynth', 'mono', 'mute', 'solo', 'auto'])
         const EXTRA_KEYS = new Set(['pan', 'panLfo', 'velocity', 'velocityLfo', 'pitch', 'pitchLfo', 'reverbType', 'reverbAmount', 'delayType', 'delayTime', 'delayAmount', 'fxSelected', 'saturationType', 'saturationAmount', 'sampleLength', 'synthSoundKey', 'swingResolution', 'swingAmount', 'trackLength', 'filterType', 'filterFreqLfo', 'filterFreq', 'filterQLfo', 'filterQ'])
-        const ignoredKeys = []
-
-        // First apply structural keys (phase 1)
+        
         for (const [k, v] of Object.entries(updates)) {
-            if (STRUCT_KEYS.has(k)) {
-                track[k] = v
-            }
-        }
-        // Then apply extra keys (phase 2)
-        for (const [k, v] of Object.entries(updates)) {
-            if (EXTRA_KEYS.has(k)) {
-                // Apply pan even if it's 0; 0 means center and is a valid value when provided explicitly
-                track[k] = v
-            }
-        }
-        // Any key not in either set is ignored
-        for (const k of Object.keys(updates)) {
-            if (!STRUCT_KEYS.has(k) && !EXTRA_KEYS.has(k)) {
-                ignoredKeys.push(k)
+            if (STRUCT_KEYS.has(k) || EXTRA_KEYS.has(k)) {
+                if (track[k] !== v) {
+                    track[k] = v
+                    changed = true
+                }
             }
         }
 
+        if (changed) {
+            this._incrementPatternVersionByTrack(track)
+        }
 
         // Recompute derived fields if needed
         if (typeof track.barQuantize === 'number' && typeof track.loopAtStep === 'number') {
@@ -57,9 +50,18 @@ export default class MfCmd {
         return track
     }
 
+    _incrementPatternVersionByTrack(track) {
+        // Find the pattern containing this track to increment its version
+        for (const pattern of appState.patterns) {
+            if (pattern.tracks && Object.values(pattern.tracks).includes(track)) {
+                pattern._version = (pattern._version || 0) + 1
+                break
+            }
+        }
+    }
+
     isNoteAt = (track, bar, barStep) => {
         let notes = []
-        let ret = null
         Object.values(track.notes).forEach((note) => {
             if (note.barStep === barStep && note.bar === bar) {
                 notes.push(note)
@@ -70,24 +72,25 @@ export default class MfCmd {
 
     deleteNote = (track, selNote) => {
         let i = 0
+        let deleted = false
         Object.values(track.notes).forEach((note) => {
             if (note.barStep === selNote.barStep && note.bar === selNote.bar) {
                 track.notes.splice(i, 1)
-                //console.log("deleteNote deleted  ="+(selNote.bar*track.barQuantize+ selNote.barStep))
+                deleted = true
             }
             i++
         })
+        if (deleted) {
+            this._incrementPatternVersionByTrack(track)
+        }
     }
 
     addNote = (track, bar, barStep, pitch = 0) => {
-        //console.log("mfCmd::add note " +track.name+ " at " + bar + ":" + barStep + " p="+pitch)
         let steppc = Math.round((barStep * 100) / track.barQuantize)
-        //
-        if (steppc > 100) { //TODO
-            track.barQuantize = 8 //max value
+        if (steppc > 100) {
+            track.barQuantize = 8
             steppc = Math.round((barStep * 100) / track.barQuantize)
         }
-        //
         let note = {
             "barStep": barStep,
             "steppc": steppc,
@@ -104,8 +107,8 @@ export default class MfCmd {
             "retriggerStep": 1,
             "euclidianFill": 0
         }
-        // console.log("mfCmd::add note " + track.name + " bar=" + bar + " step=" + barStep)
         track.notes.push(note)
+        this._incrementPatternVersionByTrack(track)
         return note
     }
 

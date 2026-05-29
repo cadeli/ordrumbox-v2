@@ -156,7 +156,7 @@ export default class PatternPanel {
                 // Already selected -> Delete
                 serviceRegistry.mfCmd.deleteNote(track, note)
                 this._clearSelection()
-                this.sync()
+                this.syncCells(trackIdx, pos)
             } else {
                 // Not selected -> Select
                 this._selNote = note
@@ -171,10 +171,62 @@ export default class PatternPanel {
         const newNote = serviceRegistry.mfCmd.addNote(track, bar, barStep)
         this._selNote = newNote
         this._selTrackIdx = trackIdx
-        this.sync() // Re-render to show the new note
-        // _applySelection and event are called after sync because sync might re-create the DOM
+        this.syncCells(trackIdx, pos)
         this._applySelection()
         playbackEvents.onNoteSelect.forEach(fn => fn({ track, trackIdx, note: newNote, pos, bar, barStep }))
+    }
+
+    syncCells(trackIdx, pos) {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) return
+        const tracks = Object.values(pattern.tracks)
+        const track = tracks[trackIdx]
+        if (!track) return
+
+        const barQuantize = track.barQuantize ?? 4
+        const bar = Math.floor(pos / barQuantize)
+        const barStep = pos % barQuantize
+        const note = (track.notes ?? []).find(n => n.bar === bar && n.barStep === barStep)
+        
+        const cell = this.container.querySelector(`.pp-cell[data-track="${trackIdx}"][data-pos="${pos}"]`)
+        if (!cell) return
+
+        // Clear cell classes
+        cell.className = 'pp-cell'
+        if (pos % barQuantize === 0) cell.classList.add('bar-start')
+        const loopAt = track.loopAtStep ?? (track.bars * barQuantize)
+        if (loopAt > 0 && pos === loopAt - 1) cell.classList.add('pp-loop')
+
+        cell.innerHTML = ''
+        delete cell.dataset.trig
+
+        if (note) {
+            const freq = note.triggerFreq ?? 1
+            const prob = note.triggerProbability ?? 1
+            const isRand = prob < 1
+            const isFixed = freq > 1 && !isRand
+
+            cell.classList.add('filled')
+            if (isRand) {
+                cell.classList.add('pp-trig-rand')
+                cell.dataset.trig = String(Math.round(prob * 10))
+            } else if (isFixed) {
+                cell.classList.add('pp-trig-fixed')
+                cell.dataset.trig = String(freq)
+            }
+
+            // Sub-notes (ghosts)
+            const ghostElements = this._getSubPositions(note, track).map(subPos => {
+                const parentStep = Math.floor(subPos)
+                if (parentStep === pos) {
+                    const offset = subPos - parentStep
+                    const style = offset > 0 ? `style="left: ${offset * 100}%"` : ''
+                    return `<div class="pp-ghost" ${style}></div>`
+                }
+                return ''
+            }).join('')
+            cell.innerHTML = ghostElements
+        }
     }
 
     _clearSelection() {
@@ -264,12 +316,19 @@ export default class PatternPanel {
         }
 
         const tracks = Object.values(pattern.tracks)
-        let html = `<div class="pp-header">
+        
+        // Header
+        const headerHtml = `<div class="pp-header">
             <span class="pp-name">${this.esc(pattern.name)}</span>
             <span class="pp-meta">${pattern.bpm ?? 120} BPM</span>
             <span class="pp-meta">${pattern.nbBars ?? 4} bars</span>
             <span class="pp-meta">${tracks.length} trk</span>
-        </div><div class="pp-tracks">`
+        </div>`
+
+        // Optimized track rendering
+        const fragment = document.createDocumentFragment()
+        const tracksContainer = document.createElement('div')
+        tracksContainer.className = 'pp-tracks'
 
         tracks.forEach((track, tIdx) => {
             const barQuantize = track.barQuantize ?? 4
@@ -277,7 +336,6 @@ export default class PatternPanel {
             const steps = bars * barQuantize
             const stepMap = Array.from({ length: steps }, () => ({ cls: [], subs: [] }))
 
-            // Main notes
             ;(track.notes ?? []).forEach(n => {
                 const p = n.bar * barQuantize + n.barStep
                 if (p >= steps) return
@@ -293,18 +351,30 @@ export default class PatternPanel {
                 if (isRand) stepMap[p].trig = String(Math.round(prob * 10))
                 else if (isFixed) stepMap[p].trig = String(freq)
 
-                // Sub-notes (ghosts)
                 this._getSubPositions(n, track).forEach(subPos => {
                     const parentStep = Math.floor(subPos)
                     if (parentStep < steps) {
-                        const offset = subPos - parentStep
-                        stepMap[parentStep].subs.push(offset)
+                        stepMap[parentStep].subs.push(subPos - parentStep)
                     }
                 })
             })
 
             const loopAt = track.loopAtStep ?? steps
-            const cells = []
+            const isSelected = this._selTrackIdx === tIdx && !this._selNote
+            
+            const trackEl = document.createElement('div')
+            trackEl.className = 'pp-track'
+            
+            const nameEl = document.createElement('span')
+            nameEl.className = `pp-track-name ${isSelected ? 'selected' : ''}`
+            nameEl.dataset.track = String(tIdx)
+            nameEl.textContent = track.name
+            
+            const gridEl = document.createElement('div')
+            gridEl.className = 'pp-grid'
+
+            // Create cells in batches for performance
+            let cellsHtml = ''
             for (let i = 0; i < steps; i++) {
                 const cls = ['pp-cell', ...stepMap[i].cls]
                 if (i % barQuantize === 0) cls.push('bar-start')
@@ -318,18 +388,18 @@ export default class PatternPanel {
                     return `<div class="pp-ghost" ${style}></div>`
                 }).join('')
 
-                cells.push(`<div class="${cls.join(' ')}" ${attrs}>${ghostElements}</div>`)
+                cellsHtml += `<div class="${cls.join(' ')}" ${attrs}>${ghostElements}</div>`
             }
-
-            const isSelected = this._selTrackIdx === tIdx && !this._selNote
-            html += `<div class="pp-track">
-                <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(track.name)}</span>
-                <div class="pp-grid">${cells.join('')}</div>
-            </div>`
+            gridEl.innerHTML = cellsHtml
+            
+            trackEl.appendChild(nameEl)
+            trackEl.appendChild(gridEl)
+            tracksContainer.appendChild(trackEl)
         })
 
-        html += '</div>'
-        this.container.innerHTML = html
+        // Final assembly
+        this.container.innerHTML = headerHtml
+        this.container.appendChild(tracksContainer)
         this._createPlayhead()
         this._applySelection()
     }

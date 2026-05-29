@@ -82,7 +82,12 @@ export function init() {
         if (appState.patterns.length > 0) {
             playbackEvents.onPatternChange.forEach(fn => fn())
             playbackEvents.onDrumkitChange.forEach(fn => fn())
+            
+            // Set initial drumkit first to trigger sample loading
+            serviceRegistry.mfCmd.setSelectedDrumkitNum(0)
+            // Then select pattern (which will auto-assign once sounds are loaded)
             serviceRegistry.mfCmd.setSelectedPatternNum(0)
+
             const pattern = appState.patterns[0]
             const trackIdx = pattern.tracks.findIndex(t => t.name === 'SNARE')
             if (trackIdx !== -1) {

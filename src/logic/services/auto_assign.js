@@ -35,45 +35,50 @@ export default class MfAutoAssign {
                 track.name = newName
             } 
         }
-        const selDrumkitName = this._soundRegistry.drumkitList[this._appState.selectedDrumkitNum].name
-        //console.log("autoAssignTrackSounds : look for", track.name)
+        
+        const drumkitList = this._soundRegistry.drumkitList
+        const selectedIdx = this._appState.selectedDrumkitNum
+        if (!drumkitList || drumkitList.length <= selectedIdx) return
+
+        const selDrumkitName = drumkitList[selectedIdx].name
+        
         let soundId = this.getSoundIdFromKitAndTrackname(selDrumkitName, track.name)
         if (soundId == NOT_FOUND) {
-            track.useAutoAssignSound = false
-            console.log("getSoundIdFromKitAndTrackname No match for track:", track.name, " kit:", this.getKitAsText(selDrumkitName))
             soundId = this.getSoundIdFromTrackname(track.name)
         }
         if (soundId == NOT_FOUND) {
-            console.log("getSoundIdFromTrackname Direct No match for track:", track.name, " kit:", this.getKitAsText(selDrumkitName))
             soundId = this.findSoundEquivalence(soundId, selDrumkitName, track)
         }
         if (soundId == NOT_FOUND) {
-            console.log("findSoundEquivalence No match for track:", track.name, " kit:", this.getKitAsText(selDrumkitName))
             soundId = Utils.getRandomKey(this._soundRegistry.sounds)
-            console.warn("mfCmd::autoAssignSounds (choose rnd : " + soundId + " ) cannot find from kit:" + selDrumkitName + " nb instr=" + this._soundRegistry.drumkitList[this._appState.selectedDrumkitNum].instruments.length + ":" + track.name)
         }
-        //console.warn("mfCmd::autoAssignSounds track:" + track.name + "=" + this._soundRegistry.sounds[soundId].url)
-        if (soundId === null || soundId === "") {
-            console.error("autoAssignTrackSounds :: No SoundID")
+        
+        if (soundId === null || soundId === "" || soundId === NOT_FOUND) {
+            console.error(`autoAssignTrackSounds :: No SoundID for track ${track.name}`)
+            track.soundId = "NOT_DEFINED"
+        } else {
+            track.soundId = soundId
         }
-        track.soundId = soundId
     }
 
     findSoundEquivalence = (soundId, selDrumkitName, track) => {
         if (soundId !== NOT_FOUND) return soundId;
 
         const equivalences = {
-            "RIDE": ["OHH"],
-            "COW": ["COWBELL"],
-            "TOM": ["MTOM", "LTOM", "HTOM", "BASS", "MELO"],
-            "CRASH": ["RIDE", "CONGAS"],
-            "COWBELL": ["RIMSHOT", "RIDE", "TIMBAL", "LTOM"],
-            "CLAP": ["LWOODBLOCK", "MELO", "RIMSHOT", "HIT", "HTOM"],
-            "OHH": ["TAMBOURINE", "SGUIRO"],
-            "BASS": ["TOM"],
-            "MELO": ["PIANO"],
-            "SYNTHLEAD": ["ORGAN","PIANO"],
-            "STRINGS":["ORGAN","PIANO"]
+            "RIDE": ["OHH", "CRASH"],
+            "COW": ["COWBELL", "RIMSHOT"],
+            "TOM": ["MTOM", "LTOM", "HTOM", "BASS", "MELO", "PERC"],
+            "CRASH": ["RIDE", "CONGAS", "OHH"],
+            "COWBELL": ["RIMSHOT", "RIDE", "TIMBAL", "LTOM", "COW"],
+            "RIMSHOT": ["CLAP", "SNARE", "HIT", "SD"],
+            "CLAP": ["LWOODBLOCK", "MELO", "RIMSHOT", "HIT", "HTOM", "SNARE"],
+            "OHH": ["TAMBOURINE", "SGUIRO", "CHH", "RIDE"],
+            "BASS": ["TOM", "KICK"],
+            "MELO": ["PIANO", "SYNTH"],
+            "SYNTHLEAD": ["ORGAN","PIANO", "SYNTH"],
+            "STRINGS":["ORGAN","PIANO"],
+            "HIT": ["CLAP", "RIMSHOT", "SNARE"],
+            "PERC": ["TOM", "COWBELL", "CLAP"]
         };
 
         const replacements = equivalences[track.name];

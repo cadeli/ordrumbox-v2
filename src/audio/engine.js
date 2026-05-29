@@ -53,15 +53,25 @@ export default class AudioEngine {
     getFlatNotesForCurrentPattern = (loop = 0) => {
         const pattern = this.patterns[this.getSelectedPatternNum()]
         if (!pattern) return this.flatNotes
-        if (this._cachedPatternRef === pattern && this._cachedLoop === loop) return this.flatNotes
+
+        // Check if we can use the cache
+        const patternVersion = pattern._version || 0
+        if (this._cachedPatternRef === pattern && 
+            this._cachedLoop === loop && 
+            this._cachedVersion === patternVersion) {
+            return this.flatNotes
+        }
+
         this._cachedPatternRef = pattern
         this._cachedLoop = loop
+        this._cachedVersion = patternVersion
         this.flatNotes = computeFlatNotesPure(pattern, loop, this.computeNextStep, this.TICK)
         return this.flatNotes
     }
 
     invalidateCache = () => {
         this._cachedPatternRef = null
+        this._cachedVersion = -1
     }
 
     start = (pattern) => {
