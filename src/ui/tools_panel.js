@@ -1,7 +1,9 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
+import { soundRegistry } from '../state/sound_registry.js'
 import { PatternExporter } from '../patterns/exporter.js'
+import InstrumentsManager from '../logic/services/instruments_manager.js'
 
 export default class ToolsPanel {
     constructor() {
@@ -73,6 +75,10 @@ export default class ToolsPanel {
                             <button class="ne-btn" id="tp-import-json">Import JSON</button>
                             <input type="file" id="tp-import-file" style="display: none" accept=".json">
                         </div>
+                        <div class="ne-row">
+                            <button class="ne-btn" id="tp-import-wav">Import WAV</button>
+                            <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -100,6 +106,10 @@ export default class ToolsPanel {
         const importFile = this.container.querySelector('#tp-import-file')
         this.container.querySelector('#tp-import-json').addEventListener('click', () => importFile.click())
         importFile.addEventListener('change', (e) => this._onImportFile(e))
+
+        const importWavFile = this.container.querySelector('#tp-import-wav-file')
+        this.container.querySelector('#tp-import-wav').addEventListener('click', () => importWavFile.click())
+        importWavFile.addEventListener('change', (e) => this._onImportWavFile(e))
     }
 
     subscribe() {
@@ -209,6 +219,78 @@ export default class ToolsPanel {
         }
         reader.readAsText(file)
         e.target.value = '' // Reset for next time
+    }
+
+    async _onImportWavFile(e) {
+        const file = e.target.files[0]
+        if (!file) return
+
+        try {
+            const audioCtx = serviceRegistry.audioCtx
+            if (!audioCtx) {
+                alert('Audio context not available')
+                return
+            }
+
+            const arrayBuffer = await file.arrayBuffer()
+            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            const track = pattern?.tracks[appState.selectedTrackNum]
+            if (!track) {
+                alert('No track selected')
+                return
+            }
+
+            const im = new InstrumentsManager()
+            const instrument = im.findByName(track.name)
+            const instrumentType = instrument?.id ?? track.name
+
+            const url = `custom/${file.name}`
+            const sound = {
+                url: url,
+                key: file.name.replace('.wav', '').toUpperCase(),
+                buffer: audioBuffer,
+                duration: Math.floor(audioBuffer.duration * 1000),
+                kit_name: soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? 'custom',
+                display_name: file.name.replace('.wav', ''),
+                isLoad: true,
+                playStatus: false,
+                index: Object.keys(soundRegistry.sounds).length + 1
+            }
+
+            soundRegistry.sounds[url] = sound
+
+            const kit = soundRegistry.drumkitList[appState.selectedDrumkitNum]
+            if (kit) {
+                kit.instruments.push({
+                    url: url,
+                    key: sound.key,
+                    display_name: sound.display_name,
+                    instrument: instrumentType
+                })
+            }
+
+            track.soundId = url
+            track.useAutoAssignSound = false
+            track.useSoftSynth = false
+            playbackEvents.onPatternChange.forEach(fn => fn())
+
+            console.log('=== Kits & Instruments ===')
+            soundRegistry.drumkitList.forEach(kit => {
+                console.log(`Kit: ${kit.name}`)
+                kit.instruments.forEach(inst => {
+                    console.log(`  - ${inst.display_name ?? inst.key} | type: ${inst.key ?? 'N/A'} | url: ${inst.url}`)
+                })
+            })
+            console.log('==========================')
+
+            alert(`Sample "${file.name}" imported to kit "${kit?.name ?? 'N/A'}" as ${instrumentType} and assigned to track: ${track.name}`)
+        } catch (err) {
+            console.error('WAV Import failed', err)
+            alert('WAV Import failed: ' + err.message)
+        }
+        e.target.value = ''
     }
 
     show() {
