@@ -279,6 +279,7 @@ export default class ToolsPanel {
             track.useSoftSynth = false
             track.name = instrumentType
             playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.onDrumkitChange.forEach(fn => fn())
 
             // Play the imported sound immediately
             if (serviceRegistry.audioEngine) {

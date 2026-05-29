@@ -103,6 +103,9 @@ export default class TrackEditor {
                 this._rafId = null
             }
         })
+        playbackEvents.onDrumkitChange.push(() => {
+            if (this._track) this.sync()
+        })
     }
 
     _startAnimation() {
