@@ -31,7 +31,7 @@ const SYNTH_SLIDER_META = {
     'vco3.detune': { min: -100, max: 100, step: 1 },
     'filter.freq': { min: 20, max: 20000, step: 1 },
     'filter.Q': { min: 0.1, max: 24, step: 0.1 },
-    'filter.filterEnvelopeAmount': { min: 0, max: 1, step: 0.01 },
+    'filter.filterEnvelopeAmount': { min: 0, max: 1, step: 0.01, label: 'Env' },
     'lfo.freq': { min: 0, max: 20, step: 0.01 },
     'lfo.depth': { min: 0, max: 1, step: 0.01 },
     'noise.mix': { min: 0, max: 1, step: 0.01 },
@@ -141,8 +141,10 @@ export default class SynthEditor {
                 <div class="ss-grid">`
 
             fields.forEach(({ path, key, val }) => {
+                const meta = SYNTH_SLIDER_META[path.join('.')]
+                const label = meta?.label ?? key
                 html += `<div class="ss-row">
-                    <label>${this._esc(key)}</label>
+                    <label>${this._esc(label)}</label>
                     ${this._renderControl(path, key, val)}
                 </div>`
             })
