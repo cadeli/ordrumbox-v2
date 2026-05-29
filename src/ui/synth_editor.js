@@ -124,7 +124,11 @@ export default class SynthEditor {
                 <button class="ne-btn active" data-action="synth-ok">OK</button>
                 <button class="ne-btn" data-action="synth-cancel">Cancel</button>
             </div>
-        </div><div class="ss-body">`
+        </div>
+        <div class="ss-canvas-wrap">
+            <canvas id="ss-waveform" width="600" height="120"></canvas>
+        </div>
+        <div class="ss-body">`
 
         groupNames.forEach(groupName => {
             const value = this._draft[groupName]
@@ -149,6 +153,7 @@ export default class SynthEditor {
         html += '</div>'
         this.panel.innerHTML = html
         this._bindEvents()
+        this._drawWaveform()
     }
 
     _hydrateDraft() {
@@ -228,12 +233,123 @@ export default class SynthEditor {
         this.panel.querySelector('[data-action="synth-cancel"]')?.addEventListener('click', () => this._closeEditor(false))
     }
 
+    _drawWaveform() {
+        const canvas = this.panel.querySelector('#ss-waveform')
+        if (!canvas || !this._draft) return
+        const ctx = canvas.getContext('2d')
+        const w = canvas.width
+        const h = canvas.height
+        const mid = h / 2
+
+        ctx.fillStyle = '#0d0d1a'
+        ctx.fillRect(0, 0, w, h)
+
+        ctx.strokeStyle = '#333'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo(0, mid)
+        ctx.lineTo(w, mid)
+        ctx.stroke()
+
+        const draft = this._draft
+        const vcos = [
+            { wave: draft.vco1?.wave || 'sine', gain: draft.vco1?.gain ?? 1, octave: draft.vco1?.octave ?? 0, detune: draft.vco1?.detune ?? 0 },
+            { wave: draft.vco2?.wave || 'sine', gain: draft.vco2?.gain ?? 0, octave: draft.vco2?.octave ?? 0, detune: draft.vco2?.detune ?? 0 },
+            { wave: draft.vco3?.wave || 'sine', gain: draft.vco3?.gain ?? 0, octave: draft.vco3?.octave ?? 0, detune: draft.vco3?.detune ?? 0 }
+        ]
+
+        const masterVol = draft.masterVolume ?? 1.0
+        const cycles = 4
+        const sampleRate = 1024
+        const samplesPerCycle = Math.floor(sampleRate / cycles)
+
+        const mix = new Float32Array(sampleRate)
+
+        vcos.forEach(vco => {
+            if (vco.gain <= 0) return
+            const freqMult = Math.pow(2, vco.octave) * Math.pow(2, vco.detune / 1200)
+            for (let i = 0; i < sampleRate; i++) {
+                const t = i / sampleRate
+                const phase = (t * cycles * freqMult * samplesPerCycle) % samplesPerCycle
+                let val = 0
+                switch (vco.wave) {
+                    case 'sine': val = Math.sin(2 * Math.PI * phase / samplesPerCycle); break
+                    case 'square': val = Math.sin(2 * Math.PI * phase / samplesPerCycle) >= 0 ? 1 : -1; break
+                    case 'sawtooth': val = 2 * (phase / samplesPerCycle) - 1; break
+                    case 'triangle': val = 4 * Math.abs(phase / samplesPerCycle - 0.5) - 1; break
+                    default: val = Math.sin(2 * Math.PI * phase / samplesPerCycle)
+                }
+                mix[i] += val * vco.gain
+            }
+        })
+
+        let maxVal = 0
+        for (let i = 0; i < sampleRate; i++) {
+            if (Math.abs(mix[i]) > maxVal) maxVal = Math.abs(mix[i])
+        }
+        if (maxVal > 0) {
+            for (let i = 0; i < sampleRate; i++) {
+                mix[i] = (mix[i] / maxVal) * masterVol
+            }
+        }
+
+        ctx.beginPath()
+        ctx.strokeStyle = '#00ff88'
+        ctx.lineWidth = 2
+        for (let i = 0; i < sampleRate; i++) {
+            const x = (i / sampleRate) * w
+            const y = mid - mix[i] * (mid - 4)
+            if (i === 0) ctx.moveTo(x, y)
+            else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        const attack = draft.enveloppe?.attack ?? 0
+        const decay = draft.enveloppe?.decay ?? 0.12
+        const sustain = draft.enveloppe?.sustain ?? 1
+        const release = draft.enveloppe?.release ?? 0.05
+        const totalTime = Math.max(attack + decay + 0.3 + release, 0.5)
+
+        ctx.beginPath()
+        ctx.strokeStyle = '#e94560'
+        ctx.lineWidth = 2
+        ctx.setLineDash([4, 4])
+
+        const adsrPoints = [
+            { t: 0, v: 0 },
+            { t: attack, v: 1 },
+            { t: attack + decay, v: sustain },
+            { t: totalTime - release, v: sustain },
+            { t: totalTime, v: 0 }
+        ]
+
+        const scaleX = (t) => (t / totalTime) * w
+        const scaleY = (v) => mid - v * (mid - 4)
+
+        ctx.moveTo(scaleX(adsrPoints[0].t), scaleY(adsrPoints[0].v))
+        for (let i = 1; i < adsrPoints.length; i++) {
+            ctx.lineTo(scaleX(adsrPoints[i].t), scaleY(adsrPoints[i].v))
+        }
+        ctx.stroke()
+        ctx.setLineDash([])
+
+        ctx.fillStyle = 'rgba(233, 69, 96, 0.15)'
+        ctx.beginPath()
+        ctx.moveTo(scaleX(adsrPoints[0].t), scaleY(adsrPoints[0].v))
+        for (let i = 1; i < adsrPoints.length; i++) {
+            ctx.lineTo(scaleX(adsrPoints[i].t), scaleY(adsrPoints[i].v))
+        }
+        ctx.closePath()
+        ctx.fill()
+    }
+
     _onInput(input) {
         const current = this._getValue(input.dataset.synthPath)
         const value = typeof current === 'number' ? parseFloat(input.value) : input.value
         this._setValue(input.dataset.synthPath, Number.isNaN(value) ? 0 : value)
         const valueEl = input.nextElementSibling
         if (valueEl?.classList.contains('ne-val')) valueEl.textContent = fmt(value)
+        this._drawWaveform()
     }
 
     _getValue(pathString) {
