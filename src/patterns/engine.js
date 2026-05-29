@@ -82,6 +82,9 @@ export function adjustLoopToPattern(nbTickForPattern, nbTickForLoop) {
 }
 
 export function expandLoopOccurrences(baseTick, nbTickForLoop, nbTickForPattern) {
+    if (baseTick >= nbTickForLoop) {
+        return [baseTick]
+    }
     const occurrences = [baseTick]
     if (nbTickForLoop < nbTickForPattern) {
         let currentTick = baseTick + nbTickForLoop

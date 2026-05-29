@@ -223,5 +223,39 @@ describe('Pattern Engine Logic', () => {
             expect(result.has(0)).toBe(true)
             expect(result.has(32)).toBe(true)
         })
+
+        it('plays notes located after the loop point once but does not repeat them', () => {
+            const pattern = {
+                nbBars: 4, // 128 ticks
+                tracks: {
+                    'T1': {
+                        name: 'T1',
+                        bars: 1, // loops every 32 ticks
+                        barQuantize: 4,
+                        notes: {
+                            'N1': { bar: 0, barStep: 0, pitch: 60 }, // tick 0
+                            'N2': { bar: 2, barStep: 0, pitch: 62 }  // tick 64 (after loop point 32)
+                        }
+                    }
+                }
+            }
+            const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+            
+            // Note at 0 should be repeated at 0, 32, 64, 96
+            expect(result.get(0)).toBeDefined()
+            expect(result.get(32)).toBeDefined()
+            expect(result.get(64)).toBeDefined()
+            expect(result.get(96)).toBeDefined()
+            
+            // Note at 64 should be played at 64
+            const notesAt64 = result.get(64)
+            expect(notesAt64.some(fn => fn.note.pitch === 62)).toBe(true)
+            expect(notesAt64.some(fn => fn.note.pitch === 60)).toBe(true)
+
+            // Note at 64 should NOT be repeated at 96 (64 + 32)
+            const notesAt96 = result.get(96)
+            expect(notesAt96.length).toBe(1)
+            expect(notesAt96[0].note.pitch).toBe(60)
+        })
     })
 })
