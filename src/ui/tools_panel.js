@@ -4,6 +4,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { PatternExporter } from '../patterns/exporter.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
+import Utils from '../core/utils.js'
 
 export default class ToolsPanel {
     constructor() {
@@ -47,6 +48,9 @@ export default class ToolsPanel {
                             <label>Name</label>
                             <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
                         </div>
+                        <div class="ne-row">
+                            <button class="ne-btn" id="tp-compact">Compact Tracks</button>
+                        </div>
                     </div>
                 </div>
                 <div class="ne-group">
@@ -89,6 +93,8 @@ export default class ToolsPanel {
         
         this.nameInput = this.container.querySelector('#tp-pattern-name')
         this.nameInput.addEventListener('input', () => this._onNameChange())
+        
+        this.container.querySelector('#tp-compact').addEventListener('click', () => this._compactPattern())
         
         this.container.querySelector('#tp-export-json').addEventListener('click', () => this._exportJson())
         
@@ -146,6 +152,26 @@ export default class ToolsPanel {
             pattern.name = this.nameInput.value
             // We only need to trigger pattern change to update other UI components (like Toolbar)
             playbackEvents.onPatternChange.forEach(fn => fn())
+        }
+    }
+
+    _compactPattern() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern || !pattern.tracks) return
+
+        let totalRemoved = 0
+        Object.values(pattern.tracks).forEach(track => {
+            const result = Utils.compacteTrackWithLoop(track)
+            if (result.changed) {
+                totalRemoved += result.removedNotes
+            }
+        })
+
+        if (totalRemoved > 0 || true) {
+            // Always refresh if button pressed to be sure
+            serviceRegistry.audioEngine?.invalidateCache()
+            playbackEvents.onPatternChange.forEach(fn => fn())
+            console.log(`Compaction finished. Total redundant notes removed: ${totalRemoved}`)
         }
     }
 

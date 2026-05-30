@@ -142,11 +142,11 @@ describe('Functional: MfCmd operations', () => {
 
     describe('Pan from track name', () => {
         it('returns correct pan values', () => {
-            expect(mfCmd.getPanoFromTrackName('KICK')).toBe(0)
-            expect(mfCmd.getPanoFromTrackName('SNARE')).toBe(0.3)
-            expect(mfCmd.getPanoFromTrackName('CHH')).toBe(-0.3)
-            expect(mfCmd.getPanoFromTrackName('CRASH')).toBe(1)
-            expect(mfCmd.getPanoFromTrackName('UNKNOWN')).toBe(0)
+            expect(Utils.getPanoFromTrackName('KICK')).toBe(0)
+            expect(Utils.getPanoFromTrackName('SNARE')).toBe(0.3)
+            expect(Utils.getPanoFromTrackName('CHH')).toBe(-0.3)
+            expect(Utils.getPanoFromTrackName('CRASH')).toBe(1)
+            expect(Utils.getPanoFromTrackName('UNKNOWN')).toBe(0)
         })
     })
 

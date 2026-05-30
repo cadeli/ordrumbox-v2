@@ -1,4 +1,5 @@
 import { NOT_FOUND } from '../../core/constants.js'
+import Utils from '../../core/utils.js'
 import MfDefaults from '../../patterns/defaults.js'
 import { fixPattern } from '../../patterns/fixer.js'
 import { appState } from '../../state/app_state.js'
@@ -134,7 +135,7 @@ export default class MfCmd {
             "velocityLfo": null,
             "pitch": 0,
             "pitchLfo": null,
-            "pan": this.getPanoFromTrackName(name),
+            "pan": Utils.getPanoFromTrackName(name),
             "panLfo": null,
             "solo": false,
             "mute": false,
@@ -392,40 +393,6 @@ export default class MfCmd {
     }
 
 
-    getPanoFromTrackName = (type) => {
-        let pan = 0
-        switch (type) {
-            case "KICK":
-                pan = 0
-                break;
-            case "SNARE":
-                pan = 0.3
-                break;
-            case "TOM":
-                pan = 0.5
-                break;
-            case "CLAP":
-                pan = -0.4
-                break;
-            case "COWBELL":
-                pan = 0.4
-                break;
-            case "CHH":
-                pan = -0.3
-                break;
-            case "OHH":
-                pan = -0.2
-                break;
-            case "CRASH":
-                pan = 1
-                break;
-            default:
-                pan = 0
-                break;
-        }
-        return pan
-    }
-
     getTrackFromType = (pattern, type) => {
         let ret = null
         Object.values(pattern.tracks).forEach((track) => {
@@ -535,112 +502,6 @@ export default class MfCmd {
 
     convertBarStepToPatternStep = (bar, step, barQuantize) => {
         return bar * barQuantize + step
-    }
-
-    // @deprecated - unused, kept for reference
-    euclidianFill = (track, startStep, endStep, nb, triggerFreq) => {
-        let internalStep = Math.floor((endStep - startStep) / nb)
-        if (internalStep > 0) {
-            let pitch = 0
-            let patternStep = startStep + internalStep
-            while (patternStep < endStep) {
-                let barStep = this.convertPatternStepToBarStep(patternStep, track.barQuantize)
-                this.addNote(track, barStep.bar, barStep.step, pitch)
-                patternStep += internalStep
-            }
-        }
-    }
-
-    // @deprecated - replaced by Utils.addLoopToTrackIfPossible
-    compacteTrack = (track) => { //assume 4bars
-        let sig = ""
-        let sig0 = ""
-        let sig1 = ""
-        let sig2 = ""
-        let sig3 = ""
-
-        // console.log("track len="+track.notes.length)
-        for (let i in track.notes) {
-            let note = track.notes[i]
-            if (note.bar === 0) {
-                sig0 += note.barStep + "_"
-            }
-            if (note.bar === 1) {
-                sig1 += note.barStep + "_"
-            }
-            if (note.bar === 2) {
-                sig2 += note.barStep + "_"
-            }
-            if (note.bar === 3) {
-                sig3 += note.barStep + "_"
-            }
-            sig += (note.barStep) + (note.bar) * track.barQuantize
-            sig += "_"
-        }
-        // console.log("track len="+track.notes.length)
-        if ((sig0 === sig2) && (sig1 === sig3)) {
-            if (sig0 === sig1) {
-                if (sig0 === "0_1_2_3_") {
-                    this.setLoopAndDelete(track, 16, sig)
-                    //console.log("compacte 16 =" + sig + " => " + "0_")
-                } else if (sig0 === "0_2_") {
-                    this.setLoopAndDelete(track, 8, sig)
-                    //console.log("compacte 8 =" + sig + " => " + "0__")
-                } else if (sig0 === "1_3_") {
-                    this.setLoopAndDelete(track, 8, sig)
-                    // console.log("compacte 8 =" + sig + " => " + "1__")
-                } else {
-                    this.setLoopAndDelete(track, 4, sig)
-                    //console.log("compacte 4 =" + sig + " => " + sig0)
-                }
-            } else if ((sig0 + sig1) === (sig2 + sig3)) {
-                this.setLoopAndDelete(track, 2, sig)
-                //console.log("compacte 2 =" + sig + " => " + sig0 + sig1)
-            }
-        }
-        //  console.log("track len="+track.notes.length+" sig="+sig)
-    }
-
-    // @deprecated - only called by compacteTrack (also deprecated)
-    setLoopAndDelete = (track, nb, sig) => {
-        if (nb === 2) {
-            track.loopAtStep = 2 * track.barQuantize
-        } else if (nb === 4) {
-            track.loopAtStep = 1 * track.barQuantize
-        } else if (nb === 8) {
-            track.loopAtStep = 2
-        } else if (nb === 16) {
-            track.loopAtStep = 1
-        } else {
-            console.error("error setLoopAndDelete nb=" + nb)
-        }
-        for (let i = 0; i < 4; i++) { //delete in list (argh)
-            for (let ii in track.notes) {
-                let note = track.notes[ii]
-                let th = parseInt(note.bar) * parseInt(track.barQuantize) + parseInt(note.barStep)
-                //  console.log("test to delete >"+sig+"< nb="+nb+ " from"+ th+ " on "+ track.loopAtStep + " nbnotes="+track.notes.length)
-                if (th >= parseInt(track.loopAtStep)) {
-                    this.deleteNote(track, note)
-                }
-            }
-        }
-    }
-
-    // @deprecated - buggy: compares note.name which doesn't exist
-    compareTrack = (track, refTrack) => {
-        if (track.name === refTrack.name) {
-            if (track.notes.length != refTrack.notes.length) {
-                return false
-            }
-            for (let i in track.notes) { //ignore velocity, pan and effects
-                if (track.notes[i].name != refTrack.notes[i].name) {
-                    return false
-                }
-            }
-            console.log("compareTrack track equal " + track.name + "=" + refTrack.name)
-            return true
-        }
-        return false
     }
 
 }

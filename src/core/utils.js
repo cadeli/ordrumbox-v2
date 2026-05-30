@@ -335,11 +335,45 @@ static TAG = "UTILS"
         } 
     }
 
- static getRandomKey(obj) {
+    static getRandomKey(obj) {
         const keys = Object.keys(obj); 
         if (keys.length === 0) return null;
 
         const randomIndex = Math.floor(Math.random() * keys.length);
         return keys[randomIndex];
+    }
+
+    static getPanoFromTrackName = (type) => {
+        let pan = 0
+        switch (type) {
+            case "KICK":
+                pan = 0
+                break;
+            case "SNARE":
+                pan = 0.3
+                break;
+            case "TOM":
+                pan = 0.5
+                break;
+            case "CLAP":
+                pan = -0.4
+                break;
+            case "COWBELL":
+                pan = 0.4
+                break;
+            case "CHH":
+                pan = -0.3
+                break;
+            case "OHH":
+                pan = -0.2
+                break;
+            case "CRASH":
+                pan = 1
+                break;
+            default:
+                pan = 0
+                break;
+        }
+        return pan
     }
 }
