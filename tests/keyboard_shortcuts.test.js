@@ -6,24 +6,29 @@ import MfAutoGenerate from '../src/logic/generators/auto_generate.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-
 const SYNTH_SOUND_MAP = {
     KICK: 'BASS0',
     SNARE: 'SN',
-    HAT: 'SYNTH1',
+    HAT: 'CHH_SYNTH',
+    OHH: 'OHH_SYNTH',
     BASS: 'BASS2',
-    PERC: 'SYNTH2'
+    PERC: 'SYNTH2',
+    PIANO: 'PIANO',
+    TOM: 'TOM'
 }
 
 function detectTrackSynthType(name) {
     const n = name.toUpperCase()
     if (n.includes('KICK') || n.includes('BD')) return 'KICK'
     if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
-    if (n.includes('HAT') || n.includes('CHH') || n.includes('OHH')) return 'HAT'
-    if (n.includes('BASS') || n.includes('SYNTH')) return 'BASS'
+    if (n.includes('OHH')) return 'OHH'
+    if (n.includes('HAT') || n.includes('CHH')) return 'HAT'
+    if (n.includes('TOM')) return 'TOM'
+    if (n.includes('BASS')) return 'BASS'
+    if (n.includes('PIANO')) return 'PIANO'
+    if (n.includes('SYNTH')) return 'BASS'
     return 'PERC'
 }
-
 describe('MfStructureSong', () => {
     let structure
 
@@ -161,8 +166,15 @@ describe('convertToGeneratedSounds', () => {
 
         it('detects HAT', () => {
             expect(detectTrackSynthType('CHH')).toBe('HAT')
-            expect(detectTrackSynthType('OHH')).toBe('HAT')
             expect(detectTrackSynthType('Hat_01')).toBe('HAT')
+        })
+
+        it('detects OHH', () => {
+            expect(detectTrackSynthType('OHH')).toBe('OHH')
+        })
+
+        it('detects TOM', () => {
+            expect(detectTrackSynthType('TOM')).toBe('TOM')
         })
 
         it('detects BASS', () => {
@@ -173,7 +185,6 @@ describe('convertToGeneratedSounds', () => {
         })
 
         it('returns PERC for unknown names', () => {
-            expect(detectTrackSynthType('TOM')).toBe('PERC')
             expect(detectTrackSynthType('Clap')).toBe('PERC')
             expect(detectTrackSynthType('Ride')).toBe('PERC')
             expect(detectTrackSynthType('')).toBe('PERC')
@@ -184,9 +195,11 @@ describe('convertToGeneratedSounds', () => {
         it('maps each type to a synth sound key', () => {
             expect(SYNTH_SOUND_MAP.KICK).toBe('BASS0')
             expect(SYNTH_SOUND_MAP.SNARE).toBe('SN')
-            expect(SYNTH_SOUND_MAP.HAT).toBe('SYNTH1')
+            expect(SYNTH_SOUND_MAP.HAT).toBe('CHH_SYNTH')
+            expect(SYNTH_SOUND_MAP.OHH).toBe('OHH_SYNTH')
             expect(SYNTH_SOUND_MAP.BASS).toBe('BASS2')
             expect(SYNTH_SOUND_MAP.PERC).toBe('SYNTH2')
+            expect(SYNTH_SOUND_MAP.TOM).toBe('TOM')
         })
 
         it('all mapped keys exist', () => {
@@ -225,7 +238,7 @@ describe('convertToGeneratedSounds', () => {
         it('converts CHH track', () => {
             mfCmd.addTrack(pattern, 'CHH')
             convertTracks()
-            expect(pattern.tracks[0].synthSoundKey).toBe('SYNTH1')
+            expect(pattern.tracks[0].synthSoundKey).toBe('CHH_SYNTH')
         })
 
         it('converts BASS track', () => {
@@ -235,9 +248,15 @@ describe('convertToGeneratedSounds', () => {
         })
 
         it('converts unknown track to PERC', () => {
-            mfCmd.addTrack(pattern, 'TOM')
+            mfCmd.addTrack(pattern, 'Clap')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('SYNTH2')
+        })
+
+        it('converts TOM track', () => {
+            mfCmd.addTrack(pattern, 'TOM')
+            convertTracks()
+            expect(pattern.tracks[0].synthSoundKey).toBe('TOM')
         })
 
         it('converts BD to KICK synth', () => {
@@ -252,10 +271,10 @@ describe('convertToGeneratedSounds', () => {
             expect(pattern.tracks[0].synthSoundKey).toBe('SN')
         })
 
-        it('converts OHH to HAT synth', () => {
+        it('converts OHH to OHH synth', () => {
             mfCmd.addTrack(pattern, 'OHH')
             convertTracks()
-            expect(pattern.tracks[0].synthSoundKey).toBe('SYNTH1')
+            expect(pattern.tracks[0].synthSoundKey).toBe('OHH_SYNTH')
         })
 
         it('converts SynthLead to BASS synth', () => {
@@ -275,9 +294,9 @@ describe('convertToGeneratedSounds', () => {
 
             expect(pattern.tracks[0].synthSoundKey).toBe('BASS0')
             expect(pattern.tracks[1].synthSoundKey).toBe('SN')
-            expect(pattern.tracks[2].synthSoundKey).toBe('SYNTH1')
+            expect(pattern.tracks[2].synthSoundKey).toBe('CHH_SYNTH')
             expect(pattern.tracks[3].synthSoundKey).toBe('BASS2')
-            expect(pattern.tracks[4].synthSoundKey).toBe('SYNTH2')
+            expect(pattern.tracks[4].synthSoundKey).toBe('TOM')
         })
 
         it('marks all tracks useSoftSynth = true', () => {

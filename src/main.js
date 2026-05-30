@@ -262,17 +262,24 @@ function toggleStartStop() {
 const SYNTH_SOUND_MAP = {
     KICK: 'BASS0',
     SNARE: 'SN',
-    HAT: 'SYNTH1',
+    HAT: 'CHH_SYNTH',
+    OHH: 'OHH_SYNTH',
     BASS: 'BASS2',
-    PERC: 'SYNTH2'
+    PERC: 'SYNTH2',
+    PIANO: 'PIANO',
+    TOM: 'TOM'
 }
 
 function detectTrackSynthType(name) {
     const n = name.toUpperCase()
     if (n.includes('KICK') || n.includes('BD')) return 'KICK'
     if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
-    if (n.includes('HAT') || n.includes('CHH') || n.includes('OHH')) return 'HAT'
-    if (n.includes('BASS') || n.includes('SYNTH')) return 'BASS'
+    if (n.includes('OHH')) return 'OHH'
+    if (n.includes('HAT') || n.includes('CHH')) return 'HAT'
+    if (n.includes('TOM')) return 'TOM'
+    if (n.includes('BASS')) return 'BASS'
+    if (n.includes('PIANO')) return 'PIANO'
+    if (n.includes('SYNTH')) return 'BASS'
     return 'PERC'
 }
 

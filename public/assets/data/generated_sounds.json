@@ -309,5 +309,54 @@
       "sustain": 0,
       "release": 0.05
     }
+  },
+  "PIANO": {
+    "vco1": {
+      "gain": 0.8,
+      "octave": 0,
+      "detune": 0,
+      "wave": "triangle"
+    },
+    "vco2": {
+      "gain": 0.4,
+      "octave": 1,
+      "detune": 3,
+      "wave": "triangle"
+    },
+    "vco3": {
+      "gain": 0.2,
+      "octave": 2,
+      "detune": -2,
+      "wave": "sine"
+    },
+    "filter": {
+      "type": "lowpass",
+      "freq": 3500,
+      "Q": 1.2,
+      "filterEnvelopeAmount": 0.05
+    },
+    "enveloppe": {
+      "attack": 0.002,
+      "decay": 1.5,
+      "sustain": 0.05,
+      "release": 0.6
+    }
+  },
+  "TOM": {
+    "vco1": { "gain": 1, "octave": -1, "detune": 0, "wave": "triangle" },
+    "vco2": { "gain": 0.3, "octave": 0, "detune": 5, "wave": "sine" },
+    "slide": 150,
+    "filter": { "type": "lowpass", "freq": 800, "Q": 2 },
+    "enveloppe": { "attack": 0.005, "decay": 0.4, "sustain": 0, "release": 0.2 }
+  },
+  "CHH_SYNTH": {
+    "vco1": { "gain": 0.2, "octave": 2, "detune": 0, "wave": "square" },
+    "noise": { "mix": 1, "filterType": "highpass", "filterFreq": 8000, "filterQ": 1 },
+    "enveloppe": { "attack": 0.002, "decay": 0.05, "sustain": 0, "release": 0.05 }
+  },
+  "OHH_SYNTH": {
+    "vco1": { "gain": 0.2, "octave": 2, "detune": 0, "wave": "square" },
+    "noise": { "mix": 1, "filterType": "highpass", "filterFreq": 7000, "filterQ": 1 },
+    "enveloppe": { "attack": 0.005, "decay": 0.3, "sustain": 0.1, "release": 0.2 }
   }
 }
