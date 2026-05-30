@@ -8,7 +8,7 @@ import {
     STOP_BUFFER,
     STOP_EXTRA_BUFFER,
     RELEASE_TIME,
-    NOISE_FILTER_FREQ_DEFAULT
+    NOISE_FILTER_FREQ_DEFAULT,
 } from '../../core/constants.js'
 import {
     clamp,
@@ -17,272 +17,251 @@ import {
     computeNoteRatio,
     computeAccent,
     computePeakFilterFreq,
-    computeAdsrEnvelopeParams
+    computeAdsrEnvelopeParams,
 } from '../math.js'
 
+// Minimum ramp durations — prevents audio discontinuities (clicks / plops)
+const MIN_ATTACK  = 0.003  // 3 ms
+const MIN_RELEASE = 0.008  // 8 ms
+
 export default class SynthVoice extends BaseVoice {
-    static lastPitchV1 = undefined
-    static lastPitchV2 = undefined
-    static lastPitchV3 = undefined
+
+    // ── Glide state: persists across notes ───────────────────────────
+    // Exposed as named getters/setters for backward compatibility with tests
+    static #lastPitches = [undefined, undefined, undefined]
+    static get lastPitchV1() { return SynthVoice.#lastPitches[0] }
+    static set lastPitchV1(v) { SynthVoice.#lastPitches[0] = v }
+    static get lastPitchV2() { return SynthVoice.#lastPitches[1] }
+    static set lastPitchV2(v) { SynthVoice.#lastPitches[1] = v }
+    static get lastPitchV3() { return SynthVoice.#lastPitches[2] }
+    static set lastPitchV3(v) { SynthVoice.#lastPitches[2] = v }
+
+    // ── LFO target map: unifies computeLfoDepth + connectLfoTarget ───
+    // Each entry: { mult: depth → gainValue,  params: voice → AudioParam[] }
+    static #lfoTargetMap() {
+        // Lazily built once and cached on the class
+        if (SynthVoice._lfoMap) return SynthVoice._lfoMap
+        const hz    = d => LFO_GAIN_MULTIPLIER * d
+        const q24   = d => 24 * d
+        const det   = d => 100 * d
+        const oct   = d => 1200 * d
+        const unity = d => d
+        SynthVoice._lfoMap = {
+            'FLT':                         { mult: hz,    params: v => [v.voiceFilter1?.frequency, v.voiceFilter2?.frequency] },
+            'VCO1':                        { mult: hz,    params: v => [v.vcoSlots[0]?.osc.detune] },
+            'VCO2':                        { mult: hz,    params: v => [v.vcoSlots[1]?.osc.detune] },
+            'VCO3':                        { mult: hz,    params: v => [v.vcoSlots[2]?.osc.detune] },
+            'masterVolume':                { mult: unity, params: v => [v.gainEnv?.gain] },
+            'vco1.gain':                   { mult: unity, params: v => [v.vcoSlots[0]?.gain.gain] },
+            'vco1.detune':                 { mult: det,   params: v => [v.vcoSlots[0]?.osc.detune] },
+            'vco1.octave':                 { mult: oct,   params: v => [v.vcoSlots[0]?.osc.detune] },
+            'vco2.gain':                   { mult: unity, params: v => [v.vcoSlots[1]?.gain.gain] },
+            'vco2.detune':                 { mult: det,   params: v => [v.vcoSlots[1]?.osc.detune] },
+            'vco2.octave':                 { mult: oct,   params: v => [v.vcoSlots[1]?.osc.detune] },
+            'vco3.gain':                   { mult: unity, params: v => [v.vcoSlots[2]?.gain.gain] },
+            'vco3.detune':                 { mult: det,   params: v => [v.vcoSlots[2]?.osc.detune] },
+            'vco3.octave':                 { mult: oct,   params: v => [v.vcoSlots[2]?.osc.detune] },
+            'filter.freq':                 { mult: hz,    params: v => [v.voiceFilter1?.frequency, v.voiceFilter2?.frequency] },
+            'filter.filterEnvelopeAmount': { mult: hz,    params: v => [v.voiceFilter1?.frequency, v.voiceFilter2?.frequency] },
+            'filter.Q':                    { mult: q24,   params: v => [v.voiceFilter1?.Q, v.voiceFilter2?.Q] },
+            'noise.mix':                   { mult: unity, params: v => [v.noiseGain?.gain] },
+            'noise.filterFreq':            { mult: hz,    params: v => [v.noiseFilter?.frequency] },
+            'noise.filterQ':               { mult: q24,   params: v => [v.noiseFilter?.Q] },
+        }
+        return SynthVoice._lfoMap
+    }
 
     constructor(audioCtx, strip, generatedSound, masterLfo, soundKey = null) {
         super(audioCtx, strip)
         this.generatedSound = generatedSound
-        this.soundKey = soundKey
-        this.masterLfo = masterLfo
-        this.oscNodes = []
-        this.gainEnv = null
-        this.panNode = null
-        this.noiseNode = null
-        this.voiceFilter1 = null
-        this.voiceFilter2 = null
-        this.noiseGain = null
-        this.noiseFilter = null
-        this.lfoGain = null
-        this.lfoNodes = null
-        this.noteVelo = 0
-        this.noteRatio = 1
-        this.masterVolume = 0.8
+        this.soundKey       = soundKey
+        this.masterLfo      = masterLfo
+        this.oscNodes       = []    // filtered: active VCOs only (for start/stop/update)
+        this.vcoSlots       = []    // unfiltered [v1|null, v2|null, v3|null] (for LFO index)
+        this.gainEnv        = null
+        this.panNode        = null
+        this.noiseNode      = null
+        this.voiceFilter1   = null
+        this.voiceFilter2   = null
+        this.noiseGain      = null
+        this.noiseFilter    = null
+        this.lfoGain        = null
+        this.noteVelo       = 0
+        this.noteRatio      = 1
+        this.masterVolume   = 0.8
+    }
+
+    // ── Private: create one VCO subgraph ─────────────────────────────
+    // Returns { osc, gain, baseGain, freq } or null if cfg is falsy.
+    // freq is stored on the object so the glide logic can reuse it
+    // without recomputing computeOscFrequency a second time.
+    #setupOsc(cfg, noteRatio) {
+        if (!cfg) return null
+        const gainValue = toFiniteNumber(cfg.gain, 1)
+        const osc  = this.registerNode(this.audioCtx.createOscillator())
+        const gain = this.registerNode(this.audioCtx.createGain())
+        const freq = computeOscFrequency(noteRatio, cfg.octave, cfg.detune)
+        osc.frequency.value = freq
+        osc.type            = typeof cfg.wave === 'string' ? cfg.wave : 'sine'
+        gain.gain.value     = gainValue
+        osc.connect(gain)
+        gain.connect(this.panNode)
+        return { osc, gain, baseGain: gainValue, freq }
+    }
+
+    // ── Private: apply filter config to both voice filters ────────────
+    // Used by updateGeneratedSound to avoid duplicating 6 identical lines.
+    #applyFilterParams(filterConfig, time, rampTime) {
+        if (!this.voiceFilter1 || !this.voiceFilter2) return
+        const type = typeof filterConfig?.type === 'string' ? filterConfig.type : 'lowpass'
+        const freq = Utils.normalizeSynthFilterFreqValue(toFiniteNumber(filterConfig?.freq, 50))
+        const q    = Utils.normalizeSynthFilterQValue(toFiniteNumber(filterConfig?.Q, 1))
+        this.voiceFilter1.type = type
+        this.voiceFilter2.type = type
+        this.voiceFilter1.frequency.setTargetAtTime(freq, time, rampTime)
+        this.voiceFilter2.frequency.setTargetAtTime(freq, time, rampTime)
+        this.voiceFilter1.Q.setTargetAtTime(q, time, rampTime)
+        this.voiceFilter2.Q.setTargetAtTime(q, time, rampTime)
     }
 
     setup(flatNote, time) {
-        const ctx = this.audioCtx
-        const generatedSound = this.generatedSound
+        const ctx   = this.audioCtx
+        const gs    = this.generatedSound
         const noteRatio = computeNoteRatio(flatNote.fpitch)
-        this.noteRatio = noteRatio
-        const rawVelo = flatNote.note?.velocity ?? 0.8
-        this.noteVelo = rawVelo /8
-        const env = generatedSound.enveloppe ?? { attack: 0, decay: 0, sustain: 1, release: 0 }
+        this.noteRatio  = noteRatio
+        this.noteVelo   = flatNote.note?.velocity / 16 ?? NOTE_VELO_BALANCE
+        const env       = gs.enveloppe ?? { attack: 0, decay: 0, sustain: 1, release: 0 }
+        const lfoTarget = gs.lfo?.target ?? 'NOT'
 
-        this.gainEnv = this.registerNode(ctx.createGain())
-        this.panNode = this.registerNode(ctx.createStereoPanner())
-        const lfoGain = this.registerNode(ctx.createGain())
-        this.lfoGain = lfoGain
-        const lfoTarget = generatedSound.lfo?.target ?? "NOT"
+        this.gainEnv  = this.registerNode(ctx.createGain())
+        this.panNode  = this.registerNode(ctx.createStereoPanner())
+        this.lfoGain  = this.registerNode(ctx.createGain())
 
         if (this.masterLfo) {
-            this.masterLfo.type = typeof generatedSound.lfo?.wave === "string" ? generatedSound.lfo.wave : "sine"
-            this.masterLfo.frequency.value = toFiniteNumber(generatedSound.lfo?.freq, 0) + LFO_FREQ_OFFSET
-            lfoGain.gain.value = this.computeLfoDepth(lfoTarget)
-            this.masterLfo.connect(lfoGain)
+            this.masterLfo.type            = typeof gs.lfo?.wave === 'string' ? gs.lfo.wave : 'sine'
+            this.masterLfo.frequency.value = toFiniteNumber(gs.lfo?.freq, 0) + LFO_FREQ_OFFSET
+            this.lfoGain.gain.value        = this.computeLfoDepth(lfoTarget)
+            this.masterLfo.connect(this.lfoGain)
         }
 
-        const setupOsc = (cfg) => {
-            if (!cfg) return null
-            const gainValue = toFiniteNumber(cfg.gain, 1)
-            const osc = this.registerNode(ctx.createOscillator())
-            const gain = this.registerNode(ctx.createGain())
-            const freq = computeOscFrequency(noteRatio, cfg.octave, cfg.detune)
-            osc.frequency.value = freq
-            osc.type = typeof cfg.wave === "string" ? cfg.wave : "sine"
-            gain.gain.value = gainValue
-            osc.connect(gain)
-            gain.connect(this.panNode)
-            return { osc, gain, baseGain: gainValue }
-        }
+        // ── VCOs ─────────────────────────────────────────────────────
+        // vcoSlots keeps nulls so LFO connections resolve by index.
+        // oscNodes is the filtered subset used everywhere else.
+        this.vcoSlots = [gs.vco1, gs.vco2, gs.vco3].map(cfg => this.#setupOsc(cfg, noteRatio))
+        this.oscNodes = this.vcoSlots.filter(Boolean)
 
-        const v1 = setupOsc(generatedSound.vco1)
-        const v2 = setupOsc(generatedSound.vco2)
-        const v3 = setupOsc(generatedSound.vco3)
-        this.oscNodes = [v1, v2, v3].filter(Boolean)
+        // Glide: schedule freq ramp from previous pitch if slide > 0
+        const slideTime = toFiniteNumber(gs.slide, 0)
+        const glideTime = slideTime / 1000
+        const hasGlide  = slideTime > 0 && SynthVoice.#lastPitches[0] !== undefined
+        this.vcoSlots.forEach((v, i) => {
+            if (!v) return
+            if (hasGlide) {
+                v.osc.frequency.setValueAtTime(SynthVoice.#lastPitches[i], time)
+                v.osc.frequency.linearRampToValueAtTime(v.freq, time + glideTime)
+            } else {
+                v.osc.frequency.setValueAtTime(v.freq, time)
+            }
+        })
+        SynthVoice.#lastPitches = this.vcoSlots.map(v => v?.freq)
 
-        const slideTime = toFiniteNumber(generatedSound.slide, 0)
-        const currentPitchV1 = computeOscFrequency(noteRatio, generatedSound.vco1?.octave, generatedSound.vco1?.detune)
-        const currentPitchV2 = computeOscFrequency(noteRatio, generatedSound.vco2?.octave, generatedSound.vco2?.detune)
-        const currentPitchV3 = computeOscFrequency(noteRatio, generatedSound.vco3?.octave, generatedSound.vco3?.detune)
-
-        if (slideTime > 0 && SynthVoice.lastPitchV1 !== undefined) {
-            const glideTime = slideTime / 1000
-            if (v1) { v1.osc.frequency.setValueAtTime(SynthVoice.lastPitchV1, time); v1.osc.frequency.linearRampToValueAtTime(currentPitchV1, time + glideTime); }
-            if (v2) { v2.osc.frequency.setValueAtTime(SynthVoice.lastPitchV2, time); v2.osc.frequency.linearRampToValueAtTime(currentPitchV2, time + glideTime); }
-            if (v3) { v3.osc.frequency.setValueAtTime(SynthVoice.lastPitchV3, time); v3.osc.frequency.linearRampToValueAtTime(currentPitchV3, time + glideTime); }
-        } else {
-            if (v1) v1.osc.frequency.setValueAtTime(currentPitchV1, time)
-            if (v2) v2.osc.frequency.setValueAtTime(currentPitchV2, time)
-            if (v3) v3.osc.frequency.setValueAtTime(currentPitchV3, time)
-        }
-        SynthVoice.lastPitchV1 = currentPitchV1
-        SynthVoice.lastPitchV2 = currentPitchV2
-        SynthVoice.lastPitchV3 = currentPitchV3
-
+        // ── Accent ────────────────────────────────────────────────────
         const { accentMultiplier, accentFilterBoost } = computeAccent(this.noteVelo)
-
         if (flatNote.pan !== undefined) this.panNode.pan.value = flatNote.pan
 
-        const voiceFilter1 = this.registerNode(ctx.createBiquadFilter())
-        const voiceFilter2 = this.registerNode(ctx.createBiquadFilter())
-        this.voiceFilter1 = voiceFilter1
-        this.voiceFilter2 = voiceFilter2
-        voiceFilter1.type = typeof generatedSound.filter?.type === "string" ? generatedSound.filter.type : "lowpass"
-        voiceFilter2.type = voiceFilter1.type
+        // ── Dual voice filter ─────────────────────────────────────────
+        this.voiceFilter1 = this.registerNode(ctx.createBiquadFilter())
+        this.voiceFilter2 = this.registerNode(ctx.createBiquadFilter())
+        const filterType  = typeof gs.filter?.type === 'string' ? gs.filter.type : 'lowpass'
+        this.voiceFilter1.type = filterType
+        this.voiceFilter2.type = filterType
 
-        const mFreq = Utils.normalizeSynthFilterFreqValue(toFiniteNumber(generatedSound.filter?.freq, 50) + accentFilterBoost)
-        const mQ = Utils.normalizeSynthFilterQValue(toFiniteNumber(generatedSound.filter?.Q, 1))
-        const filterEnvelopeAmount = Math.min(1, Math.max(0, toFiniteNumber(generatedSound.filter?.filterEnvelopeAmount, 0)))
-        const peakFreq = Utils.normalizeSynthFilterFreqValue(computePeakFilterFreq(mFreq, filterEnvelopeAmount))
+        const mFreq        = Utils.normalizeSynthFilterFreqValue(toFiniteNumber(gs.filter?.freq, 50) + accentFilterBoost)
+        const mQ           = Utils.normalizeSynthFilterQValue(toFiniteNumber(gs.filter?.Q, 1))
+        const filterEnvAmt = clamp(toFiniteNumber(gs.filter?.filterEnvelopeAmount, 0), 0, 1)
+        const peakFreq     = Utils.normalizeSynthFilterFreqValue(computePeakFilterFreq(mFreq, filterEnvAmt))
 
-        voiceFilter1.frequency.setValueAtTime(mFreq, time)
-        voiceFilter1.Q.setValueAtTime(mQ, time)
-        voiceFilter2.frequency.setValueAtTime(mFreq, time)
-        voiceFilter2.Q.setValueAtTime(mQ, time)
-        if (filterEnvelopeAmount > 0) {
-            voiceFilter1.frequency.linearRampToValueAtTime(peakFreq, time + env.attack)
-            voiceFilter1.frequency.linearRampToValueAtTime(mFreq, time + env.attack + env.decay)
-            voiceFilter2.frequency.linearRampToValueAtTime(peakFreq, time + env.attack)
-            voiceFilter2.frequency.linearRampToValueAtTime(mFreq, time + env.attack + env.decay)
+        this.voiceFilter1.frequency.setValueAtTime(mFreq, time)
+        this.voiceFilter1.Q.setValueAtTime(mQ, time)
+        this.voiceFilter2.frequency.setValueAtTime(mFreq, time)
+        this.voiceFilter2.Q.setValueAtTime(mQ, time)
+        if (filterEnvAmt > 0) {
+            this.voiceFilter1.frequency.linearRampToValueAtTime(peakFreq, time + env.attack)
+            this.voiceFilter1.frequency.linearRampToValueAtTime(mFreq,    time + env.attack + env.decay)
+            this.voiceFilter2.frequency.linearRampToValueAtTime(peakFreq, time + env.attack)
+            this.voiceFilter2.frequency.linearRampToValueAtTime(mFreq,    time + env.attack + env.decay)
         }
 
-        this.panNode.connect(voiceFilter1)
-        voiceFilter1.connect(voiceFilter2)
-        voiceFilter2.connect(this.gainEnv)
+        this.panNode.connect(this.voiceFilter1)
+        this.voiceFilter1.connect(this.voiceFilter2)
+        this.voiceFilter2.connect(this.gainEnv)
         this.connectToStripInput(this.gainEnv)
 
-        const noiseConfig = generatedSound.noise ?? {}
-        const noiseMix = toFiniteNumber(noiseConfig.mix, 0)
-        let noiseGain = null
-        let noiseFilter = null
+        // ── Noise (only allocated when actually needed) ───────────────
+        const noiseConfig = gs.noise ?? {}
+        const noiseMix    = toFiniteNumber(noiseConfig.mix, 0)
+        const needsNoise  = noiseMix > 0 || lfoTarget.startsWith('noise')
 
-        const noiseBufferSize = ctx.sampleRate * 2
-        const noiseBuffer = ctx.createBuffer(1, noiseBufferSize, ctx.sampleRate)
-        const noiseData = noiseBuffer.getChannelData(0)
-        for (let i = 0; i < noiseBufferSize; i++) noiseData[i] = Math.random() * 2 - 1
+        if (needsNoise) {
+            const noiseBufferSize = ctx.sampleRate * 2
+            const noiseBuffer     = ctx.createBuffer(1, noiseBufferSize, ctx.sampleRate)
+            const noiseData       = noiseBuffer.getChannelData(0)
+            for (let i = 0; i < noiseBufferSize; i++) noiseData[i] = Math.random() * 2 - 1
 
-        this.noiseNode = this.registerNode(ctx.createBufferSource())
-        this.noiseNode.buffer = noiseBuffer
-        this.noiseNode.loop = true
-        noiseGain = this.registerNode(ctx.createGain())
-        noiseGain.gain.value = noiseMix
-        noiseFilter = this.registerNode(ctx.createBiquadFilter())
-        noiseFilter.type = typeof noiseConfig.filterType === "string" ? noiseConfig.filterType : "highpass"
-        noiseFilter.frequency.value = toFiniteNumber(noiseConfig.filterFreq, NOISE_FILTER_FREQ_DEFAULT)
-        noiseFilter.Q.value = toFiniteNumber(noiseConfig.filterQ, 1)
-        this.noiseNode.connect(noiseFilter)
-        noiseFilter.connect(noiseGain)
-        noiseGain.connect(this.panNode)
-        this.noiseGain = noiseGain
-        this.noiseFilter = noiseFilter
+            this.noiseNode        = this.registerNode(ctx.createBufferSource())
+            this.noiseNode.buffer = noiseBuffer
+            this.noiseNode.loop   = true
+            this.noiseGain        = this.registerNode(ctx.createGain())
+            this.noiseGain.gain.value = noiseMix
+            this.noiseFilter      = this.registerNode(ctx.createBiquadFilter())
+            this.noiseFilter.type = typeof noiseConfig.filterType === 'string' ? noiseConfig.filterType : 'highpass'
+            this.noiseFilter.frequency.value = toFiniteNumber(noiseConfig.filterFreq, NOISE_FILTER_FREQ_DEFAULT)
+            this.noiseFilter.Q.value         = toFiniteNumber(noiseConfig.filterQ, 1)
+            this.noiseNode.connect(this.noiseFilter)
+            this.noiseFilter.connect(this.noiseGain)
+            this.noiseGain.connect(this.panNode)
+        }
 
         const oscMix = 1 - noiseMix
-        this.oscNodes.forEach(v => v.gain.gain.value = v.baseGain * oscMix)
+        this.oscNodes.forEach(v => { v.gain.gain.value = v.baseGain * oscMix })
 
-        const masterVolume = toFiniteNumber(generatedSound.masterVolume, 0.8)
-        this.masterVolume = masterVolume
-        const { attackTime, decayTime, sustainLevel, releaseTime, peakGain } = computeAdsrEnvelopeParams(env, this.noteVelo, masterVolume, accentMultiplier)
+        // ── ADSR envelope ─────────────────────────────────────────────
+        const masterVolume = toFiniteNumber(gs.masterVolume, 0.8)
+        this.masterVolume  = masterVolume
+        const { attackTime, decayTime, sustainLevel, releaseTime, peakGain } =
+            computeAdsrEnvelopeParams(env, this.noteVelo, masterVolume, accentMultiplier)
 
-        this.lfoNodes = {
-            v1,
-            v2,
-            v3,
-            voiceFilter1,
-            voiceFilter2,
-            noiseGain,
-            noiseFilter,
-            gainEnv: this.gainEnv
-        }
+        // Enforce minimums to prevent discontinuities (plops)
+        const safeAttack  = Math.max(MIN_ATTACK,  attackTime)
+        const safeRelease = Math.max(MIN_RELEASE, releaseTime)
+
         this.connectLfoTarget(lfoTarget)
 
-        // Envelope timings with anti-click protection
-        const safeAttack = Math.max(attackTime, 0.002) // Min 2ms attack
-        const safeDecay = Math.max(decayTime, 0.002)   // Min 2ms decay
-        const safeRelease = Math.max(releaseTime, 0.005) // Min 5ms release
-
-        this.gainEnv.gain.setValueAtTime(0, time)
+        // Start from MIN_GAIN_VALUE (not 0) to avoid a hard jump
+        this.gainEnv.gain.setValueAtTime(MIN_GAIN_VALUE, time)
         this.gainEnv.gain.linearRampToValueAtTime(peakGain, time + safeAttack)
-        this.gainEnv.gain.linearRampToValueAtTime(peakGain * sustainLevel, time + safeAttack + safeDecay)
-        
-        this.releaseStart = time + safeAttack + safeDecay
-        this.gainEnv.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, this.releaseStart + safeRelease)
+        // Ramp smoothly through sustain — no redundant setValueAtTime before the ramp
+        this.gainEnv.gain.linearRampToValueAtTime(peakGain * sustainLevel, time + safeAttack + decayTime)
+        this.releaseStart = time + safeAttack + decayTime
+        // Never ramp to absolute 0 — use MIN_GAIN_VALUE to avoid a clic at cutoff
+        this.gainEnv.gain.linearRampToValueAtTime(MIN_GAIN_VALUE, this.releaseStart + safeRelease)
 
         this.totalStopTime = this.releaseStart + safeRelease + RELEASE_TIME
     }
 
+    // computeLfoDepth and connectLfoTarget share the same target → entry lookup
     computeLfoDepth(target) {
         const depth = toFiniteNumber(this.generatedSound.lfo?.depth, 0)
-        switch (target) {
-            case "filter.freq":
-            case "filter.filterEnvelopeAmount":
-            case "noise.filterFreq":
-                return LFO_GAIN_MULTIPLIER * depth
-            case "filter.Q":
-            case "noise.filterQ":
-                return 24 * depth
-            case "vco1.detune":
-            case "vco2.detune":
-            case "vco3.detune":
-                return 100 * depth
-            case "vco1.octave":
-            case "vco2.octave":
-            case "vco3.octave":
-                return 1200 * depth
-            case "masterVolume":
-            case "vco1.gain":
-            case "vco2.gain":
-            case "vco3.gain":
-            case "noise.mix":
-                return depth
-            default:
-                return 0
-        }
+        return SynthVoice.#lfoTargetMap()[target]?.mult(depth) ?? 0
     }
 
     connectLfoTarget(target) {
-        if (!this.masterLfo || !target || target === "NOT") return
-        const lfoGain = this.lfoGain
-        const nodes = this.lfoNodes
-        if (!lfoGain || !nodes) return
-        const connect = (param) => {
-            if (param) lfoGain.connect(param)
-        }
-
-        switch (target) {
-            case "masterVolume":
-                connect(nodes.gainEnv?.gain)
-                break
-            case "vco1.gain":
-                connect(nodes.v1?.gain.gain)
-                break
-            case "vco1.detune":
-                connect(nodes.v1?.osc.detune)
-                break
-            case "vco1.octave":
-                connect(nodes.v1?.osc.detune)
-                break
-            case "vco2.gain":
-                connect(nodes.v2?.gain.gain)
-                break
-            case "vco2.detune":
-                connect(nodes.v2?.osc.detune)
-                break
-            case "vco2.octave":
-                connect(nodes.v2?.osc.detune)
-                break
-            case "vco3.gain":
-                connect(nodes.v3?.gain.gain)
-                break
-            case "vco3.detune":
-                connect(nodes.v3?.osc.detune)
-                break
-            case "vco3.octave":
-                connect(nodes.v3?.osc.detune)
-                break
-            case "filter.freq":
-            case "filter.filterEnvelopeAmount":
-                connect(nodes.voiceFilter1?.frequency)
-                connect(nodes.voiceFilter2?.frequency)
-                break
-            case "filter.Q":
-                connect(nodes.voiceFilter1?.Q)
-                connect(nodes.voiceFilter2?.Q)
-                break
-            case "noise.mix":
-                connect(nodes.noiseGain?.gain)
-                break
-            case "noise.filterFreq":
-                connect(nodes.noiseFilter?.frequency)
-                break
-            case "noise.filterQ":
-                connect(nodes.noiseFilter?.Q)
-                break
+        if (!this.masterLfo || !target || target === 'NOT') return
+        if (!this.lfoGain) return
+        const entry = SynthVoice.#lfoTargetMap()[target]
+        if (!entry) return
+        for (const param of entry.params(this)) {
+            if (param) this.lfoGain.connect(param)
         }
     }
 
@@ -291,56 +270,47 @@ export default class SynthVoice extends BaseVoice {
         const rampTime = 0.01
 
         if (this.masterLfo && this.lfoGain) {
-            this.masterLfo.type = typeof generatedSound.lfo?.wave === "string" ? generatedSound.lfo.wave : "sine"
+            this.masterLfo.type = typeof generatedSound.lfo?.wave === 'string' ? generatedSound.lfo.wave : 'sine'
             this.masterLfo.frequency.setTargetAtTime(toFiniteNumber(generatedSound.lfo?.freq, 0) + LFO_FREQ_OFFSET, time, rampTime)
-            try { this.lfoGain.disconnect() } catch (e) { }
-            const lfoTarget = generatedSound.lfo?.target ?? "NOT"
+            try { this.lfoGain.disconnect() } catch (e) { /* node may already be disconnected */ }
+            const lfoTarget = generatedSound.lfo?.target ?? 'NOT'
             this.lfoGain.gain.setTargetAtTime(this.computeLfoDepth(lfoTarget), time, rampTime)
             this.connectLfoTarget(lfoTarget)
         }
 
         const noiseConfig = generatedSound.noise ?? {}
-        const noiseMix = Math.max(0, Math.min(1, toFiniteNumber(noiseConfig.mix, 0)))
-        if (this.noiseGain) this.noiseGain.gain.setTargetAtTime(noiseMix, time, rampTime)
+        const noiseMix    = clamp(toFiniteNumber(noiseConfig.mix, 0), 0, 1)
+        if (this.noiseGain)   this.noiseGain.gain.setTargetAtTime(noiseMix, time, rampTime)
         if (this.noiseFilter) {
-            this.noiseFilter.type = typeof noiseConfig.filterType === "string" ? noiseConfig.filterType : "highpass"
+            this.noiseFilter.type = typeof noiseConfig.filterType === 'string' ? noiseConfig.filterType : 'highpass'
             this.noiseFilter.frequency.setTargetAtTime(toFiniteNumber(noiseConfig.filterFreq, NOISE_FILTER_FREQ_DEFAULT), time, rampTime)
             this.noiseFilter.Q.setTargetAtTime(toFiniteNumber(noiseConfig.filterQ, 1), time, rampTime)
         }
 
-        const oscMix = 1 - noiseMix
-        const oscConfigs = [generatedSound.vco1, generatedSound.vco2, generatedSound.vco3]
-        oscConfigs.forEach((cfg, index) => {
-            const oscNode = this.oscNodes[index]
-            if (!oscNode) return
-            const gainValue = toFiniteNumber(cfg?.gain, oscNode.baseGain)
-            oscNode.baseGain = gainValue
-            oscNode.gain.gain.setTargetAtTime(gainValue * oscMix, time, rampTime)
-            if (typeof cfg?.wave === "string") oscNode.osc.type = cfg.wave
-            const nextFreq = computeOscFrequency(this.noteRatio, cfg?.octave, cfg?.detune)
-            oscNode.osc.frequency.setTargetAtTime(nextFreq, time, rampTime)
-            oscNode.osc.detune.setTargetAtTime(toFiniteNumber(cfg?.detune, 0), time, rampTime)
+        // Use vcoSlots (not oscNodes) so index i always maps to vco{i+1} config,
+        // even when some VCOs are inactive.
+        const oscMix   = 1 - noiseMix
+        const vcoCfgs  = [generatedSound.vco1, generatedSound.vco2, generatedSound.vco3]
+        this.vcoSlots.forEach((v, i) => {
+            if (!v) return
+            const cfg       = vcoCfgs[i]
+            const gainValue = toFiniteNumber(cfg?.gain, v.baseGain)
+            v.baseGain      = gainValue
+            v.gain.gain.setTargetAtTime(gainValue * oscMix, time, rampTime)
+            if (typeof cfg?.wave === 'string') v.osc.type = cfg.wave
+            v.osc.frequency.setTargetAtTime(computeOscFrequency(this.noteRatio, cfg?.octave, cfg?.detune), time, rampTime)
+            v.osc.detune.setTargetAtTime(toFiniteNumber(cfg?.detune, 0), time, rampTime)
         })
 
         const nextMasterVolume = toFiniteNumber(generatedSound.masterVolume, this.masterVolume)
         if (this.gainEnv && nextMasterVolume !== this.masterVolume) {
-            const ratio = this.masterVolume > 0 ? nextMasterVolume / this.masterVolume : nextMasterVolume
+            const ratio    = this.masterVolume > 0 ? nextMasterVolume / this.masterVolume : nextMasterVolume
             const nextGain = Math.max(MIN_GAIN_VALUE, (this.gainEnv.gain.value || MIN_GAIN_VALUE) * ratio)
             this.gainEnv.gain.setTargetAtTime(nextGain, time, rampTime)
             this.masterVolume = nextMasterVolume
         }
 
-        if (this.voiceFilter1 && this.voiceFilter2) {
-            const filterType = typeof generatedSound.filter?.type === "string" ? generatedSound.filter.type : "lowpass"
-            const mFreq = Utils.normalizeSynthFilterFreqValue(toFiniteNumber(generatedSound.filter?.freq, 50))
-            const mQ = Utils.normalizeSynthFilterQValue(toFiniteNumber(generatedSound.filter?.Q, 1))
-            this.voiceFilter1.type = filterType
-            this.voiceFilter2.type = filterType
-            this.voiceFilter1.frequency.setTargetAtTime(mFreq, time, rampTime)
-            this.voiceFilter2.frequency.setTargetAtTime(mFreq, time, rampTime)
-            this.voiceFilter1.Q.setTargetAtTime(mQ, time, rampTime)
-            this.voiceFilter2.Q.setTargetAtTime(mQ, time, rampTime)
-        }
+        this.#applyFilterParams(generatedSound.filter, time, rampTime)
     }
 
     start(time) {
@@ -361,19 +331,17 @@ export default class SynthVoice extends BaseVoice {
     stop(time) {
         if (this.stopped) return
         super.stop(time)
-
         try {
             this.gainEnv.gain.cancelScheduledValues(time)
             const currentGain = Math.max(MIN_GAIN_VALUE, this.gainEnv.gain.value || this.noteVelo || 1)
             this.gainEnv.gain.setValueAtTime(currentGain, time)
             this.gainEnv.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, time + STOP_BUFFER)
-        } catch (e) { }
-
+        } catch (e) { /* gain node may already be detached */ }
         this.oscNodes.forEach(v => {
-            try { v.osc.stop(time + STOP_EXTRA_BUFFER) } catch (e) { }
+            try { v.osc.stop(time + STOP_EXTRA_BUFFER) } catch (e) { /* already stopped */ }
         })
         if (this.noiseNode) {
-            try { this.noiseNode.stop(time + STOP_EXTRA_BUFFER) } catch (e) { }
+            try { this.noiseNode.stop(time + STOP_EXTRA_BUFFER) } catch (e) { /* already stopped */ }
         }
     }
 }

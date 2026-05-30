@@ -340,12 +340,13 @@ describe('SynthVoice', () => {
         expect(v.oscNodes.length).toBe(3)
     })
 
-    it('setup creates gain, panner, 2 filters, noise nodes', () => {
+    it('setup creates gain, panner, 2 filters nodes', () => {
         voice.setup(makeFlatNote(), 1.0)
         expect(ctx.createGain).toHaveBeenCalled()
         expect(ctx.createStereoPanner).toHaveBeenCalled()
         expect(ctx.createBiquadFilter).toHaveBeenCalled()
-        expect(ctx.createBufferSource).toHaveBeenCalled() // noise
+        // noise buffer is only created when noiseMix > 0
+        expect(voice.noiseNode).toBeNull()
     })
 
     it('setup stores lastPitchV1 as static for glide', () => {
@@ -370,11 +371,13 @@ describe('SynthVoice', () => {
         expect(voice.oscNodes[0].osc.stop).toHaveBeenCalled()
     })
 
-    it('start also starts the noise node', () => {
-        voice.setup(makeFlatNote(), 1.0)
-        voice.start(1.0)
-        expect(voice.noiseNode.start).toHaveBeenCalledWith(1.0)
-        expect(voice.noiseNode.stop).toHaveBeenCalled()
+    it('start also starts the noise node when noiseMix > 0', () => {
+        const noisySound = makeGeneratedSound({ noise: { mix: 0.3, filterType: 'highpass', filterFreq: 1000, filterQ: 1 } })
+        const noisyVoice = new SynthVoice(ctx, strip, noisySound, lfo, 'BASS1')
+        noisyVoice.setup(makeFlatNote(), 1.0)
+        noisyVoice.start(1.0)
+        expect(noisyVoice.noiseNode.start).toHaveBeenCalledWith(1.0)
+        expect(noisyVoice.noiseNode.stop).toHaveBeenCalled()
     })
 
     it('stop when already stopped is a no-op', () => {
@@ -391,17 +394,21 @@ describe('SynthVoice', () => {
         expect(voice.gainEnv.gain.exponentialRampToValueAtTime).toHaveBeenCalled()
     })
 
-    it('stop also stops oscillators and noise node', () => {
-        voice.setup(makeFlatNote(), 1.0)
-        voice.stop(2.0)
-        expect(voice.oscNodes[0].osc.stop).toHaveBeenCalled()
-        expect(voice.noiseNode.stop).toHaveBeenCalled()
+    it('stop also stops oscillators (and noise node when present)', () => {
+        const noisySound = makeGeneratedSound({ noise: { mix: 0.3, filterType: 'highpass', filterFreq: 1000, filterQ: 1 } })
+        const noisyVoice = new SynthVoice(ctx, strip, noisySound, lfo, 'BASS1')
+        noisyVoice.setup(makeFlatNote(), 1.0)
+        noisyVoice.stop(2.0)
+        expect(noisyVoice.oscNodes[0].osc.stop).toHaveBeenCalled()
+        expect(noisyVoice.noiseNode.stop).toHaveBeenCalled()
     })
 
     // ── computeLfoDepth ──────────────────────────────────────────────
 
     describe('computeLfoDepth', () => {
         it.each([
+            ['FLT', 1000],
+            ['VCO1', 1000],
             ['filter.freq', 1000],
             ['filter.filterEnvelopeAmount', 1000],
             ['noise.filterFreq', 1000],
@@ -452,7 +459,7 @@ describe('SynthVoice', () => {
         it('returns early when masterLfo is null', () => {
             const v = new SynthVoice(ctx, strip, generatedSound, null, 'X')
             v.setup(makeFlatNote(), 1.0)
-            expect(() => v.connectLfoTarget('NOT')).not.toThrow()
+            expect(() => v.connectLfoTarget('FLT')).not.toThrow()
         })
 
         it('returns early for target = NOT', () => {
@@ -460,8 +467,8 @@ describe('SynthVoice', () => {
             expect(() => voice.connectLfoTarget('NOT')).not.toThrow()
         })
 
-        it('filter.freq target connects lfoGain to both filter frequencies', () => {
-            generatedSound.lfo.target = 'filter.freq'
+        it('FLT target connects lfoGain to both filter frequencies', () => {
+            generatedSound.lfo.target = 'FLT'
             voice = new SynthVoice(ctx, strip, generatedSound, lfo, 'X')
             voice.setup(makeFlatNote(), 1.0)
             expect(voice.lfoGain.connect).toHaveBeenCalledWith(voice.voiceFilter1.frequency)
@@ -493,11 +500,13 @@ describe('SynthVoice', () => {
     // ── updateGeneratedSound ─────────────────────────────────────────
 
     describe('updateGeneratedSound', () => {
-        it('updates noiseGain when mix changes', () => {
-            voice.setup(makeFlatNote(), 1.0)
+        it('updates noiseGain when mix changes (noise must be active at setup)', () => {
+            const noisySound = makeGeneratedSound({ noise: { mix: 0.2, filterType: 'highpass', filterFreq: 1000, filterQ: 1 } })
+            const noisyVoice = new SynthVoice(ctx, strip, noisySound, lfo, 'BASS1')
+            noisyVoice.setup(makeFlatNote(), 1.0)
             const next = makeGeneratedSound({ noise: { mix: 0.4, filterType: 'highpass', filterFreq: 1000, filterQ: 1 } })
-            voice.updateGeneratedSound(next, 1.5)
-            expect(voice.noiseGain.gain.setTargetAtTime).toHaveBeenCalledWith(0.4, 1.5, expect.any(Number))
+            noisyVoice.updateGeneratedSound(next, 1.5)
+            expect(noisyVoice.noiseGain.gain.setTargetAtTime).toHaveBeenCalledWith(0.4, 1.5, expect.any(Number))
         })
 
         it('updates filter type and frequency', () => {
@@ -525,7 +534,7 @@ describe('SynthVoice', () => {
         it('handles lfoTarget change and reconnects', () => {
             generatedSound.lfo.target = 'NOT'
             voice.setup(makeFlatNote(), 1.0)
-            const next = makeGeneratedSound({ lfo: { wave: 'triangle', freq: 2, depth: 0.3, target: 'filter.freq' } })
+            const next = makeGeneratedSound({ lfo: { wave: 'triangle', freq: 2, depth: 0.3, target: 'FLT' } })
             expect(() => voice.updateGeneratedSound(next, 1.5)).not.toThrow()
         })
     })
