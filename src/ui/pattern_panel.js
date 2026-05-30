@@ -6,12 +6,11 @@ import { TICK } from '../core/constants.js'
 export default class PatternPanel {
     constructor() {
         this.container = null
-        this._selNote = null
-        this._selTrackIdx = -1
+        this._playhead = null
         this._rafId = null
         this._prevLoopTick = -1
-        this._playhead = null
-        this._debugEl = null
+        this._selTrackIdx = -1
+        this._selNote = null
     }
 
     injectCSS() {
@@ -37,19 +36,10 @@ export default class PatternPanel {
         this.container.style.background = '#1a1a2e'
         this.container.addEventListener('click', (e) => this._onClick(e))
         
-        // Debug status
-        this._debugEl = document.createElement('div')
-        this._debugEl.id = 'pp-debug'
-        this._debugEl.style.fontSize = '10px'
-        this._debugEl.style.color = '#555'
-        this._debugEl.style.marginBottom = '4px'
-        this.container.appendChild(this._debugEl)
-        
         document.body.appendChild(this.container)
     }
 
     _log(msg) {
-        if (this._debugEl) this._debugEl.textContent = `Status: ${msg}`
         console.log(`PatternPanel: ${msg}`)
     }
 
@@ -339,23 +329,13 @@ export default class PatternPanel {
     }
 
     sync() {
-        if (!this.container) return
-        this._log('Syncing...')
-
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) {
             this._log('No pattern in appState')
-            this.container.innerHTML = ''
-            if (this._debugEl) this.container.appendChild(this._debugEl)
-            const h = document.createElement('div')
-            h.className = 'pp-header'
-            h.innerHTML = '<span class="pp-name" style="color:#fff">Waiting for patterns to load...</span>'
-            this.container.appendChild(h)
             return
         }
 
         const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
-        this._log(`Found ${tracks.length} tracks`)
         
         const STEPS_PER_PAGE = 16
         const startStep = appState.currentPage * STEPS_PER_PAGE
@@ -371,7 +351,6 @@ export default class PatternPanel {
         if (tracks.length === 0) {
             this._log('Tracks array is empty')
             this.container.innerHTML = headerHtml + '<div class="pp-empty" style="padding:40px; text-align:center; color:#888; background:rgba(255,255,255,0.05); border-radius:8px; margin-top:10px;">Empty Pattern: No tracks found.</div>'
-            if (this._debugEl) this.container.prepend(this._debugEl)
             return
         }
 
@@ -439,7 +418,6 @@ export default class PatternPanel {
         tracksHtml += '</div>'
 
         this.container.innerHTML = headerHtml + tracksHtml
-        if (this._debugEl) this.container.prepend(this._debugEl)
         this._ensurePlayhead()
         this._applySelection()
     }

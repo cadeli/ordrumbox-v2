@@ -73,23 +73,15 @@
 
 /* ---- Pattern Panel ---- */
 #pattern-panel {
-    position: fixed !important; 
-    top: 56px !important; 
-    left: 0 !important; 
-    right: 0 !important;
-    background: #1a1a2e; 
-    border: 2px solid #e94560 !important;
-    padding: 12px; 
-    overflow-x: auto;
-    font-family: monospace; 
-    font-size: 12px; 
-    color: #ccc;
-    z-index: 10000 !important; 
-    min-height: 100px; 
-    max-height: calc(100vh - 300px); 
-    overflow-y: auto;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    display: block !important;
+    position: fixed; top: 40px; left: 0; right: 0;
+    background: #1a1a2e; border-bottom: 1px solid #333;
+    padding: 4px 12px; overflow-x: auto;
+    font-family: monospace; font-size: 12px; color: #ccc;
+    z-index: 999; max-height: calc(100vh - 200px); overflow-y: auto;
+}
+#pattern-panel .pp-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 2px; font-size: 12px; white-space: nowrap;
 }
 #pattern-panel .pp-header {
     display: flex; align-items: center; gap: 14px;
