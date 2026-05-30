@@ -5,26 +5,29 @@
 /* ---- Toolbar ---- */
 #tb {
     position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 12px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 8px;
     background: #1a1a2e; border-bottom: 2px solid #e94560;
     font-family: system-ui, sans-serif; font-size: 14px;
-    box-sizing: border-box; flex-wrap: wrap;
+    box-sizing: border-box; flex-wrap: nowrap;
+    overflow-x: auto; overflow-y: hidden;
 }
 #tb button {
-    font-size: 14px; padding: 6px 12px; border: 1px solid #555;
+    font-size: 12px; padding: 5px 8px; border: 1px solid #555;
     border-radius: 4px; background: #16213e; color: #eee;
     cursor: pointer; box-sizing: border-box;
-    text-transform: uppercase;
+    text-transform: uppercase; white-space: nowrap;
+    flex-shrink: 0;
 }
 #tb select {
-    font-size: 14px; padding: 6px 12px; border: 1px solid #555;
+    font-size: 12px; padding: 5px 6px; border: 1px solid #555;
     border-radius: 4px; background: #16213e; color: #eee;
     cursor: pointer; box-sizing: border-box;
+    flex-shrink: 0;
 }
 #tb button:hover, #tb select:hover { border-color: #e94560; }
 #tb button:active { background: #e94560; color: #fff; }
-#tb .tb-start { min-width: 70px; font-weight: bold; }
+#tb .tb-start { min-width: 60px; font-weight: bold; }
 #tb .tb-start.running { background: #e94560; color: #fff; border-color: #e94560; }
 #tb .tb-auto-gen { background: #1a7f37; border-color: #2ea043; color: #fff; font-weight: bold; }
 #tb .tb-auto-gen:hover { background: #2ea043; }
@@ -32,9 +35,9 @@
 #tb .tb-clear:hover { background: #555; border-color: #666; }
 #tb .tb-tools { background: #16213e; border-color: #555; color: #eee; }
 #tb .tb-tools:hover { border-color: #e94560; }
-#tb select { min-width: 120px; flex: 1; max-width: 200px; }
-#tb label { color: #aaa; font-size: 13px; white-space: nowrap; }
-#tb .tb-bpm-toggle { min-width: 44px; font-size: 12px; }
+#tb select { min-width: 90px; max-width: 140px; }
+#tb label { color: #aaa; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+#tb .tb-bpm-toggle { min-width: 40px; font-size: 11px; padding: 5px 6px; }
 #tb .tb-bpm-panel {
     display: none; align-items: center; gap: 6px;
     position: absolute; top: 100%; left: 0;
@@ -48,64 +51,93 @@
     width: 100px; accent-color: #e94560; cursor: pointer;
 }
 #tb .tb-bpm-panel .tb-bpm-val {
-    color: #eee; font-weight: bold; font-size: 14px; min-width: 32px; text-align: center;
+    color: #eee; font-weight: bold; font-size: 12px; min-width: 28px; text-align: center;
 }
-@media (max-width: 480px) {
-    #tb { justify-content: center; padding: 8px 6px; gap: 3px; }
-    #tb button, #tb select { font-size: 13px; padding: 8px 6px; min-height: 36px; }
-    #tb select { min-width: 80px; max-width: 120px; }
-    #tb label { font-size: 11px; }
-    #tb .tb-bpm-toggle { min-width: 48px; font-size: 12px; }
-    #tb .tb-bpm-panel { left: auto; right: 0; }
-    #tb .tb-bpm-panel input[type=range] { width: 120px; }
+@media (max-width: 600px) {
+    #tb { gap: 4px; padding: 4px 6px; }
+    #tb button { font-size: 10px; padding: 4px 5px; min-height: 28px; }
+    #tb select { font-size: 10px; padding: 4px 4px; min-width: 70px; max-width: 100px; }
+    #tb label { font-size: 9px; }
+    #tb .tb-start { min-width: 48px; }
+    #tb .tb-bpm-toggle { min-width: 36px; font-size: 10px; padding: 4px 4px; }
+    #tb .tb-bpm-panel input[type=range] { width: 80px; }
+}
+@media (max-width: 400px) {
+    #tb { gap: 2px; padding: 3px 4px; }
+    #tb button { font-size: 9px; padding: 3px 4px; min-height: 24px; }
+    #tb select { font-size: 9px; padding: 3px 3px; min-width: 60px; max-width: 80px; }
+    #tb label { font-size: 8px; }
+    #tb .tb-start { min-width: 42px; }
+    #tb .tb-bpm-toggle { min-width: 32px; font-size: 9px; padding: 3px 3px; }
 }
 
 /* ---- Pattern Panel ---- */
 #pattern-panel {
-    position: fixed; top: 52px; left: 0; right: 0;
-    background: #1a1a2e; border-bottom: 1px solid #333;
-    padding: 6px 12px; overflow-x: auto;
-    font-family: monospace; font-size: 12px; color: #ccc;
-    z-index: 999; max-height: calc(100vh - 200px); overflow-y: auto;
+    position: fixed !important; 
+    top: 56px !important; 
+    left: 0 !important; 
+    right: 0 !important;
+    background: #1a1a2e; 
+    border: 2px solid #e94560 !important;
+    padding: 12px; 
+    overflow-x: auto;
+    font-family: monospace; 
+    font-size: 12px; 
+    color: #ccc;
+    z-index: 10000 !important; 
+    min-height: 100px; 
+    max-height: calc(100vh - 300px); 
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    display: block !important;
 }
 #pattern-panel .pp-header {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 4px; font-size: 13px; white-space: nowrap;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 10px; font-size: 14px; white-space: nowrap;
+    border-bottom: 1px solid #444; padding-bottom: 6px;
 }
-#pattern-panel .pp-name { color: #e94560; font-weight: bold; }
-#pattern-panel .pp-meta { color: #888; }
-#pattern-panel .pp-tracks { display: flex; flex-direction: column; gap: 2px; }
+#pattern-panel .pp-name { color: #e94560; font-weight: bold; text-transform: uppercase; }
+#pattern-panel .pp-meta { color: #aaa; font-size: 11px; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px; }
+#pattern-panel .pp-tracks { display: flex; flex-direction: column; gap: 6px; padding: 4px 0; }
 #pattern-panel .pp-track {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 10px;
+    min-height: 28px; background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px; padding-right: 4px;
 }
 #pattern-panel .pp-track-name {
-    min-width: 56px; color: #e94560; font-weight: bold;
+    min-width: 100px; max-width: 100px; color: #e94560; font-weight: bold;
     white-space: nowrap; font-size: 11px;
-    cursor: pointer; padding: 0 2px; border-radius: 2px;
+    cursor: pointer; padding: 5px 8px; border-radius: 4px;
+    overflow: hidden; text-overflow: ellipsis;
+    background: rgba(233, 69, 96, 0.1);
+    border: 1px solid rgba(233, 69, 96, 0.2);
+    transition: all 0.2s;
 }
-#pattern-panel .pp-track-name:hover { background: rgba(233, 69, 96, 0.1); }
-#pattern-panel .pp-track-name.selected { background: #fff; color: #1a1a2e; }
+#pattern-panel .pp-track-name:hover { background: rgba(233, 69, 96, 0.2); border-color: #e94560; }
+#pattern-panel .pp-track-name.selected { background: #fff; color: #1a1a2e; border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.3); }
 #pattern-panel .pp-grid {
-    display: flex; gap: 1px; flex: 1; min-width: 0;
+    display: flex; gap: 3px; flex: 0 0 auto;
+    border: 1px solid rgba(255,255,255,0.05); padding: 2px;
 }
 #pattern-panel .pp-cell {
-    flex: 1; min-width: 6px; height: 14px;
-    background: #16213e; border-radius: 2px;
-    cursor: default;
+    width: 26px; height: 22px;
+    background: #252545; border: 1px solid #3d3d6d; border-radius: 4px;
+    cursor: default; flex-shrink: 0; box-sizing: border-box;
+    transition: background 0.1s;
 }
-#pattern-panel .pp-cell.filled { background: #e94560; cursor: pointer; }
-#pattern-panel .pp-cell.selected { outline: 2px solid #fff; outline-offset: -2px; }
-#pattern-panel .pp-cell.bar-start { border-left: 1px solid #555; }
+#pattern-panel .pp-cell.filled { background: #e94560; border-color: #ff4d6d; cursor: pointer; box-shadow: inset 0 0 8px rgba(255,255,255,0.2); }
+#pattern-panel .pp-cell.selected { outline: 2px solid #fff; outline-offset: 2px; z-index: 5; }
+#pattern-panel .pp-cell.bar-start { border-left: 3px solid #555; }
 #pattern-panel .pp-cell.pp-loop { border-right: 3px solid #fff; }
 #pattern-panel .pp-cell.pp-trig-fixed {
-    background: rgba(233, 69, 96, 0.35); font-size: 7px; color: #fff;
-    text-align: center; line-height: 14px; overflow: hidden;
-    cursor: pointer;
+    background: rgba(233, 69, 96, 0.6); font-size: 10px; color: #fff;
+    text-align: center; line-height: 20px; overflow: hidden;
+    cursor: pointer; font-weight: bold;
 }
 #pattern-panel .pp-cell.pp-trig-rand {
-    background: rgba(255, 170, 70, 0.35); font-size: 7px; color: #fff;
-    text-align: center; line-height: 14px; overflow: hidden;
-    cursor: pointer;
+    background: rgba(255, 170, 70, 0.6); font-size: 10px; color: #fff;
+    text-align: center; line-height: 20px; overflow: hidden;
+    cursor: pointer; font-weight: bold;
 }
 #pattern-panel .pp-cell.pp-trig-fixed::after,
 #pattern-panel .pp-cell.pp-trig-rand::after { content: attr(data-trig); }
@@ -122,7 +154,7 @@
     z-index: 2;
 }
 @media (max-width: 480px) {
-    #pattern-panel { top: 44px; padding: 4px 6px; max-height: calc(100vh - 180px); }
+    #pattern-panel { top: 36px; padding: 4px 6px; max-height: calc(100vh - 180px); }
     #pattern-panel .pp-cell { min-width: 8px; height: 16px; border-radius: 3px; }
     #pattern-panel .pp-cell.filled { background: #e94560; }
     #pattern-panel .pp-cell.pp-trig-fixed { line-height: 16px; font-size: 8px; }
@@ -264,7 +296,7 @@
 /* ---- Soft Synth Editor ---- */
 #soft-synth-panel {
     display: none;
-    position: fixed; top: 52px; left: 0; right: 0;
+    position: fixed; top: 40px; left: 0; right: 0;
     max-height: 70vh;
     background: #1a1a2e; border: 2px solid #e94560;
     padding: 10px 12px; overflow: auto;

@@ -7,6 +7,7 @@ export class AppState {
         this.selectedDrumkit = "real"
         this.selectedLfo = "pitchLfo"
         this.displayBars = 1
+        this.currentPage = 0
         this.autoMode = false
         this.textInput = false
         this.secondsPerBeat = 8
@@ -21,6 +22,7 @@ export class AppState {
         this.selectedDrumkit = "real"
         this.selectedLfo = "pitchLfo"
         this.displayBars = 1
+        this.currentPage = 0
         this.autoMode = false
         this.textInput = false
         this.secondsPerBeat = 8

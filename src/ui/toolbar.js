@@ -13,6 +13,9 @@ export default class Toolbar {
         this.bpmPanel = null
         this.bpmSlider = null
         this.bpmValue = null
+        this.prevPageBtn = null
+        this.nextPageBtn = null
+        this.pageLabel = null
     }
 
     injectCSS() {
@@ -35,7 +38,10 @@ export default class Toolbar {
     subscribeEvents() {
         playbackEvents.onPlaybackStart.push(() => this.syncPlayButton())
         playbackEvents.onPlaybackStop.push(() => this.syncPlayButton())
-        playbackEvents.onPatternChange.push(() => this.syncPatterns())
+        playbackEvents.onPatternChange.push(() => {
+            this.syncPatterns()
+            this.syncPage()
+        })
         playbackEvents.onDrumkitChange.push(() => {
             this.syncDrumkits()
             this.syncPatterns()
@@ -49,6 +55,7 @@ export default class Toolbar {
         this.syncPlayButton()
         this.syncPatterns()
         this.syncDrumkits()
+        this.syncPage()
     }
 
     createDOM() {
@@ -96,13 +103,24 @@ export default class Toolbar {
         this.clearBtn.className = 'tb-clear'
         this.clearBtn.textContent = 'Clear'
 
+        // Pagination buttons
+        this.prevPageBtn = document.createElement('button')
+        this.prevPageBtn.className = 'tb-prev-page'
+        this.prevPageBtn.textContent = '◀'
+        this.prevPageBtn.title = 'Previous Page'
+
+        this.pageLabel = document.createElement('label')
+        this.pageLabel.className = 'tb-page-label'
+        this.pageLabel.textContent = 'P1'
+
+        this.nextPageBtn = document.createElement('button')
+        this.nextPageBtn.className = 'tb-next-page'
+        this.nextPageBtn.textContent = '▶'
+        this.nextPageBtn.title = 'Next Page'
+
         this.toolsBtn = document.createElement('button')
         this.toolsBtn.className = 'tb-tools'
         this.toolsBtn.textContent = 'Tools'
-
-        this.outputBtn = document.createElement('button')
-        this.outputBtn.className = 'tb-tools'
-        this.outputBtn.textContent = 'Output'
 
         this.container.appendChild(this.startBtn)
         this.container.appendChild(bpmWrap)
@@ -112,9 +130,10 @@ export default class Toolbar {
         this.container.appendChild(this.drumkitSelect)
         this.container.appendChild(this.autoGenBtn)
         this.container.appendChild(this.clearBtn)
+        this.container.appendChild(this.prevPageBtn)
+        this.container.appendChild(this.pageLabel)
+        this.container.appendChild(this.nextPageBtn)
         this.container.appendChild(this.toolsBtn)
-        this.container.appendChild(this.outputBtn)
-
         document.body.appendChild(this.container)
     }
 
@@ -127,14 +146,12 @@ export default class Toolbar {
             playbackEvents.onToolsToggle.forEach(fn => fn(true))
         })
 
-        this.outputBtn.addEventListener('click', () => {
-            playbackEvents.onOutputToggle.forEach(fn => fn(true))
-        })
-
         this.patternSelect.addEventListener('change', () => {
             const num = parseInt(this.patternSelect.value, 10)
             if (!isNaN(num)) {
                 serviceRegistry.mfCmd.setSelectedPatternNum(num)
+                appState.currentPage = 0
+                this.syncPage()
             }
         })
 
@@ -162,6 +179,27 @@ export default class Toolbar {
             }
         })
 
+        this.prevPageBtn.addEventListener('click', () => {
+            if (appState.currentPage > 0) {
+                appState.currentPage--
+                this.syncPage()
+                playbackEvents.onPatternChange.forEach(fn => fn())
+            }
+        })
+
+        this.nextPageBtn.addEventListener('click', () => {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern) return
+            const barQuantize = pattern.tracks[0]?.barQuantize ?? 4
+            const totalSteps = (pattern.nbBars ?? 4) * barQuantize
+            const maxPage = Math.ceil(totalSteps / 16) - 1
+            if (appState.currentPage < maxPage) {
+                appState.currentPage++
+                this.syncPage()
+                playbackEvents.onPatternChange.forEach(fn => fn())
+            }
+        })
+
         this.bpmToggle.addEventListener('click', () => {
             this.bpmPanel.classList.toggle('open')
         })
@@ -178,6 +216,22 @@ export default class Toolbar {
         this.syncPlayButton()
         this.syncPatterns()
         this.syncDrumkits()
+        this.syncPage()
+    }
+
+    syncPage() {
+        this.pageLabel.textContent = `P${appState.currentPage + 1}`
+        this.prevPageBtn.disabled = appState.currentPage === 0
+        
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (pattern) {
+            const barQuantize = pattern.tracks[0]?.barQuantize ?? 4
+            const totalSteps = (pattern.nbBars ?? 4) * barQuantize
+            const maxPage = Math.ceil(totalSteps / 16) - 1
+            this.nextPageBtn.disabled = appState.currentPage >= maxPage
+        } else {
+            this.nextPageBtn.disabled = true
+        }
     }
 
     syncBpmSlider = (bpm) => {

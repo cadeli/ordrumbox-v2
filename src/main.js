@@ -89,9 +89,10 @@ export function init() {
             serviceRegistry.mfCmd.setSelectedPatternNum(0)
 
             const pattern = appState.patterns[0]
-            const trackIdx = pattern.tracks.findIndex(t => t.name === 'SNARE')
+            const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
+            const trackIdx = tracks.findIndex(t => t.name === 'SNARE')
             if (trackIdx !== -1) {
-                const track = pattern.tracks[trackIdx]
+                const track = tracks[trackIdx]
                 playbackEvents.onTrackSelect.forEach(fn => fn({ track, trackIdx }))
             }
         }
