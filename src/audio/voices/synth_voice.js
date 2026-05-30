@@ -129,7 +129,7 @@ export default class SynthVoice extends BaseVoice {
         const gs    = this.generatedSound
         const noteRatio = computeNoteRatio(flatNote.fpitch)
         this.noteRatio  = noteRatio
-        this.noteVelo   = flatNote.note?.velocity / 16 ?? NOTE_VELO_BALANCE
+        this.noteVelo   = (flatNote.note?.velocity ?? 0.8) * 0.25 // ATT Balance generated/samples volume
         const env       = gs.enveloppe ?? { attack: 0, decay: 0, sustain: 1, release: 0 }
         const lfoTarget = gs.lfo?.target ?? 'NOT'
 
