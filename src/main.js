@@ -147,6 +147,7 @@ const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyF: selectRandomPattern,
     KeyG: selectRandomDrumkit,
     KeyH: convertToGeneratedSounds,
+    KeyD: exportCurrentTrackSound,
     Space: toggleStartStop
 }
 
@@ -305,4 +306,62 @@ async function convertToGeneratedSounds() {
     serviceRegistry.mfPatterns.computeFlatNotesFromPattern(selPattern, 0)
     serviceRegistry.audioEngine?.invalidateCache()
     console.log('All tracks converted to generated sounds')
+}
+
+async function exportCurrentTrackSound() {
+    const selPattern = getSelectedPattern()
+    if (!selPattern) return
+
+    const trackIdx = appState.selectedTrackNum
+    const track = selPattern.tracks[trackIdx]
+    if (!track) {
+        alert('No track selected')
+        return
+    }
+
+    if (!track.useSoftSynth || !track.synthSoundKey) {
+        alert('Current track does not use a generated sound')
+        return
+    }
+
+    const generatedSound = soundRegistry.generatedSounds[track.synthSoundKey]
+    if (!generatedSound) {
+        alert('Generated sound not found')
+        return
+    }
+
+    try {
+        // const sampleRate = 44100
+        // const duration = 0.5
+        // const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * duration), sampleRate)
+
+        // const { default: SynthVoice } = await import('./audio/voices/synth_voice.js')
+        // const { default: MfMixer } = await import('./audio/mixer.js')
+
+        // const mixer = new MfMixer(offlineCtx)
+        // mixer.start()
+
+        // const strip = mixer.getOrCreateStrip('export')
+        // const voice = new SynthVoice(offlineCtx, strip, generatedSound, null, track.synthSoundKey)
+        // voice.setup({ note: { velocity: 1, pitch: 0, pan: 0 }, track: { pitchLfo: null, velocityLfo: null, panLfo: null, filterFreqLfo: null, filterQLfo: null } }, 0)
+        // voice.start(0)
+        // voice.stop(0.4)
+
+        // const renderedBuffer = await offlineCtx.startRendering()
+
+        // const { bufferToWav } = await import('./audio/export/wav_encoder.js')
+        // const wavBlob = bufferToWav(renderedBuffer)
+
+        // const url = URL.createObjectURL(wavBlob)
+        // const a = document.createElement('a')
+        // a.href = url
+        // a.download = `ordrumbox-${track.synthSoundKey}.wav`
+        // a.click()
+        // URL.revokeObjectURL(url)
+
+        console.log(JSON.stringify(generatedSound, null, 2))
+    } catch (e) {
+        console.error('Export failed', e)
+        alert('Export failed: ' + e.message)
+    }
 }

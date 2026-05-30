@@ -1,12 +1,52 @@
 {
   "BASS0":{
-  "vco1": { "gain": 1, "octave": -1, "detune": 0, "wave": "sawtooth" },
-  "vco2": { "gain": 0, "octave": 0, "detune": 0, "wave": "sine" },
-  "vco3": { "gain": 0, "octave": 0, "detune": 0, "wave": "sine" },
-  "filter": { "type": "lowpass", "freq": 400, "Q": 16 },
-  "enveloppe": { "attack": 0.005, "decay": 0.12, "sustain": 0.0, "release": 0.05 }
+  "vco1": {
+    "gain": 0.64,
+    "octave": -1,
+    "detune": 0,
+    "wave": "sawtooth"
+  },
+  "vco2": {
+    "gain": 0,
+    "octave": 0,
+    "detune": 0,
+    "wave": "sine"
+  },
+  "vco3": {
+    "gain": 0,
+    "octave": 0,
+    "detune": 0,
+    "wave": "sine"
+  },
+  "filter": {
+    "type": "lowpass",
+    "freq": 400,
+    "Q": 16,
+    "filterEnvelopeAmount": 0
+  },
+  "enveloppe": {
+    "attack": 0.005,
+    "decay": 0.12,
+    "sustain": 0,
+    "release": 0.05
+  },
+  "masterVolume": 0.35,
+  "slide": 0,
+  "lfo": {
+    "target": "NOT",
+    "wave": "sine",
+    "freq": 0,
+    "depth": 0
+  },
+  "noise": {
+    "mix": 0,
+    "filterType": "highpass",
+    "filterFreq": 1000,
+    "filterQ": 1
+  }
 },
   "BASS1": {
+     "masterVolume": 0.35,
     "vco1": {
       "gain": 0.8,
       "octave": -1,
@@ -45,6 +85,7 @@
     }
   },
   "BASS2": {
+     "masterVolume": 0.35,
     "vco1": {
       "gain": 0.7,
       "octave": 0,
@@ -311,6 +352,7 @@
     }
   },
   "PIANO": {
+     "masterVolume": 0.35,
     "vco1": {
       "gain": 0.8,
       "octave": 0,
@@ -350,12 +392,12 @@
     "enveloppe": { "attack": 0.005, "decay": 0.4, "sustain": 0, "release": 0.2 }
   },
   "CHH_SYNTH": {
-    "vco1": { "gain": 0.2, "octave": 2, "detune": 0, "wave": "square" },
+    "vco1": { "gain": 0.5, "octave": 2, "detune": 0, "wave": "square" },
     "noise": { "mix": 1, "filterType": "allpass", "filterFreq": 8000, "filterQ": 1 },
     "enveloppe": { "attack": 0.002, "decay": 0.05, "sustain": 0, "release": 0.05 }
   },
   "OHH_SYNTH": {
-    "vco1": { "gain": 0.2, "octave": 2, "detune": 0, "wave": "square" },
+    "vco1": { "gain": 0.6, "octave": 2, "detune": 0, "wave": "square" },
     "noise": { "mix": 1, "filterType": "allpass", "filterFreq": 7000, "filterQ": 1 },
     "enveloppe": { "attack": 0.005, "decay": 0.3, "sustain": 0.1, "release": 0.2 }
   }

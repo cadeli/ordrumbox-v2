@@ -153,21 +153,24 @@ export default class SynthVoice extends BaseVoice {
         // Glide: schedule freq ramp from previous pitch if slide > 0
         const slideTime = toFiniteNumber(gs.slide, 0)
         const glideTime = slideTime / 1000
-        const hasGlide  = slideTime > 0 && SynthVoice.#lastPitches[0] !== undefined
+        const hasGlide  = slideTime > 0
         this.vcoSlots.forEach((v, i) => {
             if (!v) return
-            if (hasGlide) {
-                v.osc.frequency.setValueAtTime(SynthVoice.#lastPitches[i], time)
-                v.osc.frequency.linearRampToValueAtTime(v.freq, time + glideTime)
+            const targetFreq = toFiniteNumber(v.freq, 440)
+            const lastFreq = SynthVoice.#lastPitches[i]
+            
+            if (hasGlide && lastFreq !== undefined && Number.isFinite(lastFreq)) {
+                v.osc.frequency.setValueAtTime(lastFreq, time)
+                v.osc.frequency.linearRampToValueAtTime(targetFreq, time + glideTime)
             } else {
-                v.osc.frequency.setValueAtTime(v.freq, time)
+                v.osc.frequency.setValueAtTime(targetFreq, time)
             }
         })
         SynthVoice.#lastPitches = this.vcoSlots.map(v => v?.freq)
 
         // ── Accent ────────────────────────────────────────────────────
         const { accentMultiplier, accentFilterBoost } = computeAccent(this.noteVelo)
-        if (flatNote.pan !== undefined) this.panNode.pan.value = flatNote.pan
+        if (flatNote.pan !== undefined) this.panNode.pan.value = toFiniteNumber(flatNote.pan, 0)
 
         // ── Dual voice filter ─────────────────────────────────────────
         this.voiceFilter1 = this.registerNode(ctx.createBiquadFilter())
@@ -176,7 +179,8 @@ export default class SynthVoice extends BaseVoice {
         this.voiceFilter1.type = filterType
         this.voiceFilter2.type = filterType
 
-        const mFreq        = Utils.normalizeSynthFilterFreqValue(toFiniteNumber(gs.filter?.freq, 50) + accentFilterBoost)
+        const baseFreq     = toFiniteNumber(gs.filter?.freq, 50)
+        const mFreq        = Utils.normalizeSynthFilterFreqValue(baseFreq + accentFilterBoost)
         const mQ           = Utils.normalizeSynthFilterQValue(toFiniteNumber(gs.filter?.Q, 1))
         const filterEnvAmt = clamp(toFiniteNumber(gs.filter?.filterEnvelopeAmount, 0), 0, 1)
         const peakFreq     = Utils.normalizeSynthFilterFreqValue(computePeakFilterFreq(mFreq, filterEnvAmt))
