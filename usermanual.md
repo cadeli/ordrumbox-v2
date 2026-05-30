@@ -355,7 +355,7 @@ Each oscillator has:
 
 | Parameter | Options/Range | Default | Description |
 |---|---|---|---|
-| **target** | NOT, FLT, VCO1, VCO2, VCO3, etc. | NOT | Modulation target |
+| **target** | NOT, filter.freq, vco1.detune, etc. | NOT | Modulation target |
 | **wave** | square, sawtooth, triangle, sine | sine | LFO waveform |
 | **freq** | 0–20 | 0 | LFO rate |
 | **depth** | 0–1 | 0 | Modulation depth |

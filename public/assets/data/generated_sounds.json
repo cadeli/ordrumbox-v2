@@ -32,7 +32,7 @@
       "filterEnvelopeAmount": 0.25
     },
     "lfo": {
-      "target": "FLT",
+      "target": "filter.freq",
       "wave": "sine",
       "freq": 0.25,
       "depth": 0.12
@@ -70,7 +70,7 @@
       "filterEnvelopeAmount": 0.18
     },
     "lfo": {
-      "target": "VCO1",
+      "target": "vco1.detune",
       "wave": "sawtooth",
       "freq": 0.15,
       "depth": 0.05
@@ -146,7 +146,7 @@
       "filterEnvelopeAmount": 0.22
     },
     "lfo": {
-      "target": "VCO1",
+      "target": "vco1.detune",
       "wave": "sine",
       "freq": 0.6,
       "depth": 0.05
@@ -184,7 +184,7 @@
       "filterEnvelopeAmount": 0.12
     },
     "lfo": {
-      "target": "FLT",
+      "target": "filter.freq",
       "wave": "sine",
       "freq": 0.4,
       "depth": 0.08
@@ -222,7 +222,7 @@
       "filterEnvelopeAmount": 0.1
     },
     "lfo": {
-      "target": "FLT",
+      "target": "filter.freq",
       "wave": "sine",
       "freq": 0.5,
       "depth": 0.06
@@ -260,7 +260,7 @@
       "filterEnvelopeAmount": 0.08
     },
     "lfo": {
-      "target": "FLT",
+      "target": "filter.freq",
       "wave": "sine",
       "freq": 0.25,
       "depth": 0.03
@@ -298,7 +298,7 @@
       "filterEnvelopeAmount": 0.05
     },
     "lfo": {
-      "target": "VCO2",
+      "target": "vco2.detune",
       "wave": "sine",
       "freq": 0.8,
       "depth": 0.02

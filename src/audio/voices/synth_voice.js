@@ -199,10 +199,6 @@ export default class SynthVoice extends BaseVoice {
     computeLfoDepth(target) {
         const depth = toFiniteNumber(this.generatedSound.lfo?.depth, 0)
         switch (target) {
-            case "FLT":
-            case "VCO1":
-            case "VCO2":
-            case "VCO3":
             case "filter.freq":
             case "filter.filterEnvelopeAmount":
             case "noise.filterFreq":
@@ -239,19 +235,6 @@ export default class SynthVoice extends BaseVoice {
         }
 
         switch (target) {
-            case "FLT":
-                connect(nodes.voiceFilter1?.frequency)
-                connect(nodes.voiceFilter2?.frequency)
-                break
-            case "VCO1":
-                connect(nodes.v1?.osc.detune)
-                break
-            case "VCO2":
-                connect(nodes.v2?.osc.detune)
-                break
-            case "VCO3":
-                connect(nodes.v3?.osc.detune)
-                break
             case "masterVolume":
                 connect(nodes.gainEnv?.gain)
                 break

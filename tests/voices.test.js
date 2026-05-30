@@ -402,8 +402,6 @@ describe('SynthVoice', () => {
 
     describe('computeLfoDepth', () => {
         it.each([
-            ['FLT', 1000],
-            ['VCO1', 1000],
             ['filter.freq', 1000],
             ['filter.filterEnvelopeAmount', 1000],
             ['noise.filterFreq', 1000],
@@ -454,7 +452,7 @@ describe('SynthVoice', () => {
         it('returns early when masterLfo is null', () => {
             const v = new SynthVoice(ctx, strip, generatedSound, null, 'X')
             v.setup(makeFlatNote(), 1.0)
-            expect(() => v.connectLfoTarget('FLT')).not.toThrow()
+            expect(() => v.connectLfoTarget('NOT')).not.toThrow()
         })
 
         it('returns early for target = NOT', () => {
@@ -462,8 +460,8 @@ describe('SynthVoice', () => {
             expect(() => voice.connectLfoTarget('NOT')).not.toThrow()
         })
 
-        it('FLT target connects lfoGain to both filter frequencies', () => {
-            generatedSound.lfo.target = 'FLT'
+        it('filter.freq target connects lfoGain to both filter frequencies', () => {
+            generatedSound.lfo.target = 'filter.freq'
             voice = new SynthVoice(ctx, strip, generatedSound, lfo, 'X')
             voice.setup(makeFlatNote(), 1.0)
             expect(voice.lfoGain.connect).toHaveBeenCalledWith(voice.voiceFilter1.frequency)
@@ -527,7 +525,7 @@ describe('SynthVoice', () => {
         it('handles lfoTarget change and reconnects', () => {
             generatedSound.lfo.target = 'NOT'
             voice.setup(makeFlatNote(), 1.0)
-            const next = makeGeneratedSound({ lfo: { wave: 'triangle', freq: 2, depth: 0.3, target: 'FLT' } })
+            const next = makeGeneratedSound({ lfo: { wave: 'triangle', freq: 2, depth: 0.3, target: 'filter.freq' } })
             expect(() => voice.updateGeneratedSound(next, 1.5)).not.toThrow()
         })
     })

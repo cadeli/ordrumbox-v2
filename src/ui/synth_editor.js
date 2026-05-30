@@ -17,9 +17,11 @@ const SYNTH_GROUP_DEFAULTS = {
     enveloppe: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 }
 }
 
+
+
 const SYNTH_SLIDER_META = {
-    masterVolume: { min: 0, max: 1, step: 0.01 },
-    slide: { min: 0, max: 500, step: 1 },
+    'masterVolume': { min: 0, max: 1, step: 0.01 },
+    'slide': { min: 0, max: 500, step: 1 },
     'vco1.gain': { min: 0, max: 1, step: 0.01 },
     'vco1.octave': { min: -4, max: 4, step: 1 },
     'vco1.detune': { min: -100, max: 100, step: 1 },
@@ -43,14 +45,7 @@ const SYNTH_SLIDER_META = {
     'enveloppe.release': { min: 0, max: 3, step: 0.001 }
 }
 
-const SYNTH_LFO_TARGETS = [
-    'NOT',
-    'FLT',
-    'VCO1',
-    'VCO2',
-    'VCO3',
-    ...Object.keys(SYNTH_SLIDER_META)
-]
+const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_SLIDER_META)]
 
 export default class SynthEditor {
     constructor(host) {
