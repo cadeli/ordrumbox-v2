@@ -378,7 +378,7 @@ export default class MfCmd {
 
     setSelectedPatternNum = async (num) => {
         if (appState.patterns.length > 0) {
-            console.log("mfCmd::setSelectedPatternNum " + num + " = " + appState.patterns[num].name)
+            //console.log("mfCmd::setSelectedPatternNum " + num + " = " + appState.patterns[num].name)
             appState.selectedPatternNum = num
             let selPattern = appState.patterns[appState.selectedPatternNum]
             serviceRegistry.mfSeq.setBpm(selPattern.bpm)

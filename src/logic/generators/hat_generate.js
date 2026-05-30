@@ -134,7 +134,7 @@ export default class MfHatGenerate extends BaseGenerator {
         }
 
         this.applyLoopPoint(hatTrack, config)
-        this.displayDebugNotes(hatTrack, 'HH')
+       // this.displayDebugNotes(hatTrack, 'HH')
     }
 
     generateHatTransitionVariant = (hatTrack, config, trackType) => {
@@ -188,6 +188,6 @@ export default class MfHatGenerate extends BaseGenerator {
     }
 
     traceHatGeneration = (variantName, config, hatTrack) => {
-        this.traceGeneration(variantName, config, hatTrack, [`type=${config.trackType}`])
+    //    this.traceGeneration(variantName, config, hatTrack, [`type=${config.trackType}`])
     }
 }

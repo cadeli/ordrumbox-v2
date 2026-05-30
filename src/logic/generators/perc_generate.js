@@ -85,7 +85,7 @@ export default class MfPercGenerate extends BaseGenerator {
         const tones = this.getScaleSteps(config.scaleName)
         const pitchBias = this.getTrackPitchBias(percTrack)
 
-        this.traceGeneration(resolvedVariantName, config, percTrack)
+        //this.traceGeneration(resolvedVariantName, config, percTrack)
         this.clearTrackNotes(percTrack)
 
         switch (config.mode) {
@@ -105,7 +105,7 @@ export default class MfPercGenerate extends BaseGenerator {
         }
 
         this.applyLoopPoint(percTrack, config)
-        this.displayDebugNotes(percTrack, 'PC')
+       // this.displayDebugNotes(percTrack, 'PC')
     }
 
     generatePercPhraseVariant = (percTrack, tones, pitchBias, config) => {

@@ -102,7 +102,7 @@ export default class MfSnareGenerate extends BaseGenerator {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.basic
 
-        this.traceGeneration(resolvedVariantName, config, snareTrack)
+       // this.traceGeneration(resolvedVariantName, config, snareTrack)
         this.clearTrackNotes(snareTrack)
 
         switch (config.mode) {
@@ -126,7 +126,7 @@ export default class MfSnareGenerate extends BaseGenerator {
         }
 
         this.applyLoopPoint(snareTrack, config)
-        this.displayDebugNotes(snareTrack, 'SN')
+       // this.displayDebugNotes(snareTrack, 'SN')
     }
 
     generateSnareGridVariant = (snareTrack, config) => {

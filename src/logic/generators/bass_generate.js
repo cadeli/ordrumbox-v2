@@ -140,10 +140,7 @@ export default class MfBassGenerate extends BaseGenerator {
 
     checkResources = () => {
         this.isScalesLoading = false
-        console.log("MfAutoGenerate::checkResources")
-        console.log("scales")
-        console.log(soundRegistry.scales)
-    }
+     }
 
     generateNewBass = (bassTrack, variantName = null, variantSubName = null) => {
         if (variantName === 'break') return
@@ -172,7 +169,7 @@ export default class MfBassGenerate extends BaseGenerator {
         }
 
         this.applyLoopPoint(bassTrack, config)
-        this.displayDebugNotes(bassTrack, 'BS')
+       // this.displayDebugNotes(bassTrack, 'BS')
     }
 
     generateBassPhraseVariant = (bassTrack, tones, config) => {
@@ -422,6 +419,6 @@ export default class MfBassGenerate extends BaseGenerator {
         if (typeof config.contour === 'string') {
             extraParts.push(`ctr=${config.contour}`)
         }
-        this.traceGeneration(variantName, config, bassTrack, extraParts)
+       // this.traceGeneration(variantName, config, bassTrack, extraParts)
     }
 }
