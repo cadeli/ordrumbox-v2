@@ -110,7 +110,7 @@ export default class PatternPanel {
         const barQuantize = tracksArr[0]?.barQuantize ?? 4
         const currentStep = Math.floor(loopTick / (TICK / barQuantize))
 
-        const STEPS_PER_PAGE = 16
+        const STEPS_PER_PAGE = 32
         const startStep = appState.currentPage * STEPS_PER_PAGE
         const endStep = startStep + STEPS_PER_PAGE
 
@@ -204,7 +204,7 @@ export default class PatternPanel {
         const track = tracks[trackIdx]
         if (!track) return
 
-        const STEPS_PER_PAGE = 16
+        const STEPS_PER_PAGE = 32
         const startStep = appState.currentPage * STEPS_PER_PAGE
         if (pos < startStep || pos >= startStep + STEPS_PER_PAGE) return
 
@@ -337,7 +337,7 @@ export default class PatternPanel {
 
         const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
         
-        const STEPS_PER_PAGE = 16
+        const STEPS_PER_PAGE = 32
         const startStep = appState.currentPage * STEPS_PER_PAGE
         const endStepPage = startStep + STEPS_PER_PAGE
         

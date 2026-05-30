@@ -90,7 +90,7 @@
 }
 #pattern-panel .pp-name { color: #e94560; font-weight: bold; text-transform: uppercase; }
 #pattern-panel .pp-meta { color: #aaa; font-size: 11px; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px; }
-#pattern-panel .pp-tracks { display: flex; flex-direction: column; gap: 6px; padding: 4px 0; }
+#pattern-panel .pp-tracks { display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
 #pattern-panel .pp-track {
     display: flex; align-items: center; gap: 10px;
     min-height: 28px; background: rgba(255, 255, 255, 0.02);
