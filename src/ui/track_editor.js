@@ -624,6 +624,8 @@ export default class TrackEditor {
         this.container.querySelector('[data-action="edit-synth"]')?.addEventListener('click', () => {
             this.synthEditor.openEditor()
         })
+
+        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
     }
 
     _onRowClick(propKey) {

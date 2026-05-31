@@ -14,12 +14,12 @@ export class AppState {
         this.flatNotes = null
         const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 480 || window.innerHeight <= 480)
         this.trackEditorVisibility = {
-            basic: !isMobile,
-            levels: !isMobile,
+            basic: true,
+            levels: true,
             filters: !isMobile,
             effects: !isMobile,
             sound: !isMobile,
-            loop: !isMobile
+            loop: true
         }
         this.noteEditorVisibility = {
             levels: !isMobile,
@@ -44,12 +44,12 @@ export class AppState {
         this.flatNotes = null
         const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 480 || window.innerHeight <= 480)
         this.trackEditorVisibility = {
-            basic: !isMobile,
-            levels: !isMobile,
+            basic: true,
+            levels: true,
             filters: !isMobile,
             effects: !isMobile,
             sound: !isMobile,
-            loop: !isMobile
+            loop: true
         }
         this.noteEditorVisibility = {
             levels: !isMobile,

@@ -20,10 +20,13 @@ describe('Mobile Landscape UI Logic', () => {
         // We need a fresh instance to trigger the constructor logic
         const mobileState = new AppState()
         
-        // Should be false for all panels on mobile
-        expect(mobileState.trackEditorVisibility.basic).toBe(false)
-        expect(mobileState.trackEditorVisibility.levels).toBe(false)
-        expect(mobileState.trackEditorVisibility.loop).toBe(false)
+        // Essential panels should be TRUE by default, others FALSE on mobile
+        expect(mobileState.trackEditorVisibility.basic).toBe(true)
+        expect(mobileState.trackEditorVisibility.levels).toBe(true)
+        expect(mobileState.trackEditorVisibility.loop).toBe(true)
+        
+        expect(mobileState.trackEditorVisibility.filters).toBe(false)
+        expect(mobileState.trackEditorVisibility.effects).toBe(false)
     })
 
     it('identifies desktop mode when both dimensions are large', () => {
@@ -59,14 +62,21 @@ describe('Mobile Landscape UI Logic', () => {
         // but our logic hides basic, levels, filters, effects, sound, loop)
         
         const visibleGroups = document.querySelectorAll('.ne-group')
-        // In our logic, if basic/levels/etc are false, the .ne-group divs are not even created in the HTML
-        expect(visibleGroups.length).toBe(0)
+        // Now basic, levels and loop are TRUE by default
+        expect(visibleGroups.length).toBe(3)
 
-        // 5. Verify the toggle buttons exist in the header and are NOT active
+        // 5. Verify the toggle buttons exist in the header
         const toggles = document.querySelectorAll('.ne-toggle')
         expect(toggles.length).toBe(6)
-        toggles.forEach(btn => {
-            expect(btn.classList.contains('active')).toBe(false)
-        })
+        
+        // basic (0), levels (1) and loop (5) should be active
+        expect(toggles[0].classList.contains('active')).toBe(true)
+        expect(toggles[1].classList.contains('active')).toBe(true)
+        expect(toggles[5].classList.contains('active')).toBe(true)
+        
+        // filters (2), effects (3) and sound (4) should be INACTIVE
+        expect(toggles[2].classList.contains('active')).toBe(false)
+        expect(toggles[3].classList.contains('active')).toBe(false)
+        expect(toggles[4].classList.contains('active')).toBe(false)
     })
 })
