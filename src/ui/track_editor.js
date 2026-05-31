@@ -179,7 +179,6 @@ export default class TrackEditor {
                 <button class="ne-toggle ${vis.sound ? 'active' : ''}" data-toggle="sound">Sound</button>
                 <button class="ne-toggle ${vis.loop ? 'active' : ''}" data-toggle="loop">Loop</button>
             </div>
-            <button class="ne-close">&times;</button>
         </div>`
 
         let bodyHtml = `<div class="ne-body">`
@@ -624,8 +623,6 @@ export default class TrackEditor {
         this.container.querySelector('[data-action="edit-synth"]')?.addEventListener('click', () => {
             this.synthEditor.openEditor()
         })
-
-        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
     }
 
     _onRowClick(propKey) {
