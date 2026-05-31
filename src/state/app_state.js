@@ -12,6 +12,14 @@ export class AppState {
         this.textInput = false
         this.secondsPerBeat = 8
         this.flatNotes = null
+        this.trackEditorVisibility = {
+            basic: true,
+            levels: true,
+            filters: true,
+            effects: true,
+            sound: true,
+            loop: true
+        }
     }
 
     reset() {
@@ -27,6 +35,14 @@ export class AppState {
         this.textInput = false
         this.secondsPerBeat = 8
         this.flatNotes = null
+        this.trackEditorVisibility = {
+            basic: true,
+            levels: true,
+            filters: true,
+            effects: true,
+            sound: true,
+            loop: true
+        }
     }
 }
 

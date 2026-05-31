@@ -166,18 +166,33 @@ export default class TrackEditor {
     sync() {
         if (!this._track) return
 
+        const vis = appState.trackEditorVisibility
         const soundInfo = this._getSoundInfo()
-        let html = `<div class="ne-header">
+        
+        let headerHtml = `<div class="ne-header">
             <span class="ne-track">Track: ${this.esc(this._track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
+            <div class="ne-toggles">
+                <button class="ne-toggle ${vis.basic ? 'active' : ''}" data-toggle="basic">Basic</button>
+                <button class="ne-toggle ${vis.levels ? 'active' : ''}" data-toggle="levels">Levels</button>
+                <button class="ne-toggle ${vis.filters ? 'active' : ''}" data-toggle="filters">Filters</button>
+                <button class="ne-toggle ${vis.effects ? 'active' : ''}" data-toggle="effects">Effects</button>
+                <button class="ne-toggle ${vis.sound ? 'active' : ''}" data-toggle="sound">Sound</button>
+                <button class="ne-toggle ${vis.loop ? 'active' : ''}" data-toggle="loop">Loop</button>
+            </div>
             <button class="ne-close">&times;</button>
-        </div><div class="ne-body">`
+        </div>`
 
-        GROUPS.forEach(g => {
-                if (g.label === 'Effects') {
-                    html += this._renderFxGroup()
-                    return
-                }
-                html += `<div class="ne-group">
+        let bodyHtml = `<div class="ne-body">`
+
+        GROUPS.forEach((g, idx) => {
+            const visKey = ['basic', 'levels', 'filters', 'effects'][idx]
+            if (!vis[visKey]) return
+
+            if (g.label === 'Effects') {
+                bodyHtml += this._renderFxGroup()
+                return
+            }
+            bodyHtml += `<div class="ne-group">
                 <div class="ne-group-label">${g.label}</div>
                 <div class="ne-grid">`
             g.props.forEach(p => {
@@ -185,48 +200,52 @@ export default class TrackEditor {
                 const isSelected = this._selectedPropKey === p.key ? 'selected' : ''
                 const hasLfo = p.lfo && this._track[p.lfo] ? 'has-lfo' : ''
                 
-                html += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">`
+                bodyHtml += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">`
                 
                 if (p.type === 'boolean') {
                     const active = val ? 'active' : ''
-                    html += `<label>${p.label}</label>
+                    bodyHtml += `<label>${p.label}</label>
                              <button class="ne-btn ${active}" data-key="${p.key}">${val ? 'ON' : 'OFF'}</button>`
                 } else if (p.type === 'select') {
-                    html += `<label>${p.label}</label>
+                    bodyHtml += `<label>${p.label}</label>
                              <select data-key="${p.key}">`
                     p.options.forEach((opt, idx) => {
                         const label = p.labels ? p.labels[idx] : opt
                         const sel = String(opt) === String(val) ? ' selected' : ''
-                        html += `<option value="${opt}"${sel}>${label}</option>`
+                        bodyHtml += `<option value="${opt}"${sel}>${label}</option>`
                     })
-                    html += `</select>`
+                    bodyHtml += `</select>`
                 } else {
-                    html += `<label>${p.label}</label>
+                    bodyHtml += `<label>${p.label}</label>
                              <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
                                 value="${val ?? p.min}" data-key="${p.key}">
                              <span class="ne-val" data-key="${p.key}">${fmt(val ?? p.min)}</span>`
                 }
-                html += `</div>`
+                bodyHtml += `</div>`
             })
-            html += `</div></div>`
+            bodyHtml += `</div></div>`
         })
 
-        // LFO Sub-panel
+        // LFO Sub-panel (visible if parent prop is visible)
         if (this._selectedPropKey) {
             const prop = this._findProp(this._selectedPropKey)
             if (prop && prop.lfo) {
-                html += this._renderLfoPanel(prop)
+                const groupIdx = GROUPS.findIndex(g => g.props.includes(prop))
+                const visKey = ['basic', 'levels', 'filters', 'effects'][groupIdx]
+                if (vis[visKey]) {
+                    bodyHtml += this._renderLfoPanel(prop)
+                }
             }
         }
 
         // Sound Sub-panel
-        html += this._renderSoundPanel()
+        if (vis.sound) bodyHtml += this._renderSoundPanel()
 
         // Loop / Pattern Sub-panel
-        html += this._renderLoopPanel()
+        if (vis.loop) bodyHtml += this._renderLoopPanel()
 
-        html += '</div>'
-        this.container.innerHTML = html
+        bodyHtml += '</div>'
+        this.container.innerHTML = headerHtml + bodyHtml
         this.container.style.display = 'block'
         this.reposition()
         this._bindEvents()
@@ -496,6 +515,15 @@ export default class TrackEditor {
     }
 
     _bindEvents() {
+        this.container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const key = btn.dataset.toggle
+                appState.trackEditorVisibility[key] = !appState.trackEditorVisibility[key]
+                this.sync()
+                e.stopPropagation()
+            })
+        })
+
         this.container.querySelectorAll('input[type=range][data-key]').forEach(input => {
             input.addEventListener('input', () => this._onSlider(input))
         })
