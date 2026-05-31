@@ -358,7 +358,7 @@ export default class PatternPanel {
                             return `<div class="pp-ghost" style="left: ${offset * 100}%"></div>`
                         }).join('')
 
-                        cellsHtml += `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" ${trig ? `data-trig="${trig}"` : ''}>${ghosts}</div>`
+                        cellsHtml += `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}>${ghosts}</div>`
                     }
                 }
                 barsHtml += `<div class="pp-bar" data-bar="${b}">${cellsHtml}</div>`

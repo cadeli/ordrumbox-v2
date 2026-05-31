@@ -40,7 +40,6 @@ export default class OutputPanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Output</span>
-                <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
                 <div class="ne-group">
@@ -80,8 +79,6 @@ export default class OutputPanel {
         `
 
         document.body.appendChild(this.container)
-
-        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
 
         this._compGrid = this.container.querySelector('#op-comp-grid')
         COMPRESSOR_PARAMS.forEach(p => {
