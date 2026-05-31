@@ -227,9 +227,16 @@ export default class NoteEditor {
     }
 
     hide() {
+        if (this.container.style.display === 'none') return
         this.container.style.display = 'none'
+        
+        const wasActive = this._note !== null
         this._note = null
         this._track = null
+
+        if (wasActive) {
+            playbackEvents.onNoteSelect.forEach(fn => fn(null))
+        }
     }
 
     _composeArp() {

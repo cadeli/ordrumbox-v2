@@ -680,12 +680,19 @@ export default class TrackEditor {
     }
 
     hide() {
+        if (this.container.style.display === 'none') return
         this.container.style.display = 'none'
         this.synthEditor.reset()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        
+        const wasActive = this._track !== null
         this._track = null
         this._trackIdx = -1
         this._selectedPropKey = null
+
+        if (wasActive) {
+            playbackEvents.onTrackSelect.forEach(fn => fn(null))
+        }
     }
 
     _onLoopSlider(input) {
