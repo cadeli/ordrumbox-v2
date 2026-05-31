@@ -6,11 +6,12 @@ import { TICK } from '../core/constants.js'
 export default class PatternPanel {
     constructor() {
         this.container = null
-        this._playhead = null
+        this._selNote = null
+        this._selTrackIdx = -1
         this._rafId = null
         this._prevLoopTick = -1
-        this._selTrackIdx = -1
-        this._selNote = null
+        this._playhead = null
+        this._debugEl = null
     }
 
     injectCSS() {
@@ -32,14 +33,21 @@ export default class PatternPanel {
     createDOM() {
         this.container = document.createElement('div')
         this.container.id = 'pattern-panel'
-        this.container.style.minHeight = '100px'
-        this.container.style.background = '#1a1a2e'
         this.container.addEventListener('click', (e) => this._onClick(e))
+        
+        // Debug status
+        this._debugEl = document.createElement('div')
+        this._debugEl.id = 'pp-debug'
+        this._debugEl.style.fontSize = '10px'
+        this._debugEl.style.color = '#888'
+        this._debugEl.style.marginBottom = '4px'
+        this.container.appendChild(this._debugEl)
         
         document.body.appendChild(this.container)
     }
 
     _log(msg) {
+        if (this._debugEl) this._debugEl.textContent = `Status: ${msg}`
         console.log(`PatternPanel: ${msg}`)
     }
 
@@ -106,15 +114,21 @@ export default class PatternPanel {
         if (nbTicks <= 0) return
 
         const loopTick = (transport.tick ?? 0) % nbTicks
-        const tracksArr = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
-        const barQuantize = tracksArr[0]?.barQuantize ?? 4
-        const currentStep = Math.floor(loopTick / (TICK / barQuantize))
+        const currentPatternBar = Math.floor(loopTick / TICK)
+        
+        const BARS_PER_PAGE = 4
+        const startBar = appState.currentPage * BARS_PER_PAGE
+        const endBar = startBar + BARS_PER_PAGE
 
-        const STEPS_PER_PAGE = 32
-        const startStep = appState.currentPage * STEPS_PER_PAGE
-        const endStep = startStep + STEPS_PER_PAGE
-
-        if (currentStep < startStep || currentStep >= endStep) {
+        // Auto-follow: Change page if playback moves beyond current visible range
+        if (currentPatternBar < startBar || currentPatternBar >= endBar) {
+            const newPage = Math.floor(currentPatternBar / BARS_PER_PAGE)
+            if (newPage !== appState.currentPage) {
+                appState.currentPage = newPage
+                this.sync()
+                // Notify Toolbar to update page indicator
+                playbackEvents.onPatternChange.forEach(fn => fn())
+            }
             this._playhead.style.display = 'none'
             return
         }
@@ -122,18 +136,21 @@ export default class PatternPanel {
         if (loopTick === this._prevLoopTick && this._playhead.style.display !== 'none') return
         this._prevLoopTick = loopTick
 
-        const targetCell = this.container.querySelector(`.pp-cell[data-pos="${currentStep}"]`)
-        if (!targetCell) {
+        const targetBar = this.container.querySelector(`.pp-bar[data-bar="${currentPatternBar}"]`)
+        if (!targetBar) {
             this._playhead.style.display = 'none'
             return
         }
 
-        const rect = targetCell.getBoundingClientRect()
+        const tickInBar = loopTick % TICK
+        const normInBar = tickInBar / TICK
+
+        const rect = targetBar.getBoundingClientRect()
         const parentRect = this.container.getBoundingClientRect()
 
         this._playhead.style.display = 'block'
-        this._playhead.style.left = `${rect.left - parentRect.left}px`
-        this._playhead.style.width = `${rect.width}px`
+        this._playhead.style.left = `${rect.left - parentRect.left + normInBar * rect.width}px`
+        this._playhead.style.width = `2px`
     }
 
     _onClick(e) {
@@ -141,7 +158,6 @@ export default class PatternPanel {
         if (trackNameEl) {
             const trackIdx = parseInt(trackNameEl.dataset.track, 10)
             if (isNaN(trackIdx)) return
-
             const pattern = appState.patterns[appState.selectedPatternNum]
             const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
             const track = tracks[trackIdx]
@@ -161,8 +177,9 @@ export default class PatternPanel {
         const cell = e.target.closest('.pp-cell')
         if (!cell) return
         const trackIdx = parseInt(cell.dataset.track, 10)
-        const pos = parseInt(cell.dataset.pos, 10)
-        if (isNaN(trackIdx) || isNaN(pos)) return
+        const bar = parseInt(cell.dataset.bar, 10)
+        const barStep = parseInt(cell.dataset.step, 10)
+        if (isNaN(trackIdx) || isNaN(bar) || isNaN(barStep)) return
 
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
@@ -170,20 +187,18 @@ export default class PatternPanel {
         const track = tracks[trackIdx]
         if (!track) return
 
-        const barQuantize = track.barQuantize ?? 4
-        const bar = Math.floor(pos / barQuantize)
-        const barStep = pos % barQuantize
         const note = (track.notes ?? []).find(n => n.bar === bar && n.barStep === barStep)
 
         if (note) {
             if (this._selNote === note && this._selTrackIdx === trackIdx) {
                 serviceRegistry.mfCmd.deleteNote(track, note)
                 this._clearSelection()
-                this.syncCells(trackIdx, pos)
+                this.sync()
             } else {
                 this._selNote = note
                 this._selTrackIdx = trackIdx
                 this._applySelection()
+                const pos = bar * (track.barQuantize ?? 4) + barStep
                 playbackEvents.onNoteSelect.forEach(fn => fn({ track, trackIdx, note, pos, bar, barStep }))
             }
             return
@@ -192,64 +207,15 @@ export default class PatternPanel {
         const newNote = serviceRegistry.mfCmd.addNote(track, bar, barStep)
         this._selNote = newNote
         this._selTrackIdx = trackIdx
-        this.syncCells(trackIdx, pos)
+        this.sync()
         this._applySelection()
+        const pos = bar * (track.barQuantize ?? 4) + barStep
         playbackEvents.onNoteSelect.forEach(fn => fn({ track, trackIdx, note: newNote, pos, bar, barStep }))
     }
 
-    syncCells(trackIdx, pos) {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern) return
-        const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
-        const track = tracks[trackIdx]
-        if (!track) return
-
-        const STEPS_PER_PAGE = 32
-        const startStep = appState.currentPage * STEPS_PER_PAGE
-        if (pos < startStep || pos >= startStep + STEPS_PER_PAGE) return
-
-        const barQuantize = track.barQuantize ?? 4
-        const bar = Math.floor(pos / barQuantize)
-        const barStep = pos % barQuantize
-        const note = (track.notes ?? []).find(n => n.bar === bar && n.barStep === barStep)
-        
-        const cell = this.container.querySelector(`.pp-cell[data-track="${trackIdx}"][data-pos="${pos}"]`)
-        if (!cell) return
-
-        cell.className = 'pp-cell'
-        if (pos % barQuantize === 0) cell.classList.add('bar-start')
-        const loopAt = track.loopAtStep ?? (track.bars * barQuantize)
-        if (loopAt > 0 && pos === loopAt - 1) cell.classList.add('pp-loop')
-
-        cell.innerHTML = ''
-        delete cell.dataset.trig
-
-        if (note) {
-            const freq = note.triggerFreq ?? 1
-            const prob = note.triggerProbability ?? 1
-            const isRand = prob < 1
-            const isFixed = freq > 1 && !isRand
-
-            cell.classList.add('filled')
-            if (isRand) {
-                cell.classList.add('pp-trig-rand')
-                cell.dataset.trig = String(Math.round(prob * 10))
-            } else if (isFixed) {
-                cell.classList.add('pp-trig-fixed')
-                cell.dataset.trig = String(freq)
-            }
-
-            const ghostElements = this._getSubPositions(note, track).map(subPos => {
-                const parentStep = Math.floor(subPos)
-                if (parentStep === pos) {
-                    const offset = subPos - parentStep
-                    const style = offset > 0 ? `style="left: ${offset * 100}%"` : ''
-                    return `<div class="pp-ghost" ${style}></div>`
-                }
-                return ''
-            }).join('')
-            cell.innerHTML = ghostElements
-        }
+    syncCells(trackIdx, bar, barStep) {
+        // Obsolete with full sync but kept for compatibility
+        this.sync()
     }
 
     _clearSelection() {
@@ -268,9 +234,9 @@ export default class PatternPanel {
         if (this._selTrackIdx !== -1) {
             if (this._selNote) {
                 const trackIdx = this._selTrackIdx
-                const barQuantize = this._getBarQuantize(trackIdx)
-                const pos = this._selNote.bar * barQuantize + this._selNote.barStep
-                const sel = this.container.querySelector(`.pp-cell[data-track="${trackIdx}"][data-pos="${pos}"]`)
+                const bar = this._selNote.bar
+                const step = this._selNote.barStep
+                const sel = this.container.querySelector(`.pp-cell[data-track="${trackIdx}"][data-bar="${bar}"][data-step="${step}"]`)
                 if (sel) sel.classList.add('selected')
             } else {
                 const sel = this.container.querySelector(`.pp-track-name[data-track="${this._selTrackIdx}"]`)
@@ -293,7 +259,7 @@ export default class PatternPanel {
         const retriggerStep = note.retriggerStep ?? 1
         const euclidianFill = note.euclidianFill ?? 0
         const hasArp = note.arp && (typeof note.arp === 'string' || (typeof note.arp === 'object' && !Array.isArray(note.arp) && Array.isArray(note.arp.intervals) && note.arp.intervals.length > 0))
-        const totalSteps = track.bars * barQuantize
+        const totalSteps = (track.bars ?? 4) * barQuantize
         
         const positions = []
         const stepSpacing = retriggerStep < 8 ? retriggerStep / 8 : retriggerStep - 7
@@ -329,17 +295,22 @@ export default class PatternPanel {
     }
 
     sync() {
+        if (!this.container) return
+        this._log('Syncing...')
+
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) {
             this._log('No pattern in appState')
+            this.container.innerHTML = '<div class="pp-header" style="color:#fff; padding:10px;">Waiting for patterns...</div>'
+            if (this._debugEl) this.container.appendChild(this._debugEl)
             return
         }
 
         const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
         
-        const STEPS_PER_PAGE = 32
-        const startStep = appState.currentPage * STEPS_PER_PAGE
-        const endStepPage = startStep + STEPS_PER_PAGE
+        const BARS_PER_PAGE = 4
+        const startBar = appState.currentPage * BARS_PER_PAGE
+        const endBarPage = startBar + BARS_PER_PAGE
         
         const headerHtml = `<div class="pp-header">
             <span class="pp-name">${this.esc(pattern.name || 'Unnamed')}</span>
@@ -349,75 +320,83 @@ export default class PatternPanel {
         </div>`
 
         if (tracks.length === 0) {
-            this._log('Tracks array is empty')
-            this.container.innerHTML = headerHtml + '<div class="pp-empty" style="padding:40px; text-align:center; color:#888; background:rgba(255,255,255,0.05); border-radius:8px; margin-top:10px;">Empty Pattern: No tracks found.</div>'
+            this.container.innerHTML = headerHtml + '<div class="pp-empty" style="padding:40px; text-align:center; color:#888;">Empty Pattern</div>'
+            if (this._debugEl) this.container.prepend(this._debugEl)
             return
         }
 
-        let tracksHtml = '<div class="pp-tracks" style="background: rgba(255,255,255,0.02); padding: 5px; border-radius: 4px; min-width: 500px;">'
+        let tracksHtml = '<div class="pp-tracks">'
         tracks.forEach((track, tIdx) => {
             if (!track) return
             const barQuantize = track.barQuantize ?? 4
             const totalSteps = (track.bars ?? 4) * barQuantize
-            const stepMap = Array.from({ length: STEPS_PER_PAGE }, () => ({ cls: [], subs: [] }))
-
-            // Main notes
+            
+            // Build a map of ghost positions for this track that fall on the current page
+            const ghostMap = new Map() // Local step abs -> Array of offsets
             const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes || {})
-            notes.forEach(n => {
-                if (!n) return
-                const p = n.bar * barQuantize + n.barStep
-                if (p < startStep || p >= endStepPage) return
-                const localIdx = p - startStep
-                if (!stepMap[localIdx]) return
-                
-                stepMap[localIdx].cls.push('filled')
-                if ((n.triggerProbability ?? 1) < 1) {
-                    stepMap[localIdx].cls.push('pp-trig-rand')
-                    stepMap[localIdx].trig = String(Math.round(n.triggerProbability * 10))
-                } else if ((n.triggerFreq ?? 1) > 1) {
-                    stepMap[localIdx].cls.push('pp-trig-fixed')
-                    stepMap[localIdx].trig = String(n.triggerFreq)
-                }
-
-                this._getSubPositions(n, track).forEach(subPos => {
-                    const parentStep = Math.floor(subPos)
-                    if (parentStep >= startStep && parentStep < endStepPage) {
-                        const subLocalIdx = parentStep - startStep
-                        if (stepMap[subLocalIdx]) stepMap[subLocalIdx].subs.push(subPos - parentStep)
+            notes.forEach(note => {
+                this._getSubPositions(note, track).forEach(subPos => {
+                    const stepAbs = Math.floor(subPos)
+                    const bar = Math.floor(stepAbs / barQuantize)
+                    if (bar >= startBar && bar < endBarPage) {
+                        if (!ghostMap.has(stepAbs)) ghostMap.set(stepAbs, [])
+                        ghostMap.get(stepAbs).push(subPos - stepAbs)
                     }
                 })
             })
 
-            const loopAt = track.loopAtStep ?? totalSteps
-            const isSelected = this._selTrackIdx === tIdx && !this._selNote
-            
-            let cellsHtml = ''
-            for (let i = 0; i < STEPS_PER_PAGE; i++) {
-                const absPos = startStep + i
-                const cls = ['pp-cell', ...stepMap[i].cls]
-                if (absPos % barQuantize === 0) cls.push('bar-start')
-                if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
-                
-                let attrs = `data-track="${tIdx}" data-pos="${absPos}"`
-                if (stepMap[i].trig) attrs += ` data-trig="${stepMap[i].trig}"`
-                
-                const ghosts = (stepMap[i].subs || []).map(offset => {
-                    const style = offset > 0 ? `style="left: ${offset * 100}%"` : ''
-                    return `<div class="pp-ghost" ${style}></div>`
-                }).join('')
+            let barsHtml = '<div class="pp-bars">'
+            for (let b = startBar; b < endBarPage; b++) {
+                let cellsHtml = ''
+                if (b < (pattern.nbBars ?? 4)) {
+                    const trackBarCount = track.bars ?? 4
+                    for (let s = 0; s < barQuantize; s++) {
+                        const absPos = b * barQuantize + s
+                        const isBeyondTrack = b >= trackBarCount
+                        
+                        const note = notes.find(n => n.bar === b && n.barStep === s)
+                        
+                        const cls = ['pp-cell']
+                        if (isBeyondTrack) cls.push('pp-cell-out')
+                        
+                        let trig = ''
+                        if (note) {
+                            cls.push('filled')
+                            if ((note.triggerProbability ?? 1) < 1) {
+                                cls.push('pp-trig-rand')
+                                trig = String(Math.round(note.triggerProbability * 10))
+                            } else if ((note.triggerFreq ?? 1) > 1) {
+                                cls.push('pp-trig-fixed')
+                                trig = String(note.triggerFreq)
+                            }
+                        }
 
-                cellsHtml += `<div class="${cls.join(' ')}" ${attrs}>${ghosts}</div>`
+                        const loopAt = track.loopAtStep ?? totalSteps
+                        if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
+                        
+                        // Render ghosts from the map
+                        const ghosts = (ghostMap.get(absPos) || []).map(offset => {
+                            return `<div class="pp-ghost" style="left: ${offset * 100}%"></div>`
+                        }).join('')
+
+                        cellsHtml += `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" ${trig ? `data-trig="${trig}"` : ''}>${ghosts}</div>`
+                    }
+                }
+                barsHtml += `<div class="pp-bar" data-bar="${b}">${cellsHtml}</div>`
             }
+            barsHtml += '</div>'
 
+            const isSelected = this._selTrackIdx === tIdx && !this._selNote
             tracksHtml += `
-                <div class="pp-track" style="display:flex; align-items:center; margin-bottom:6px;">
+                <div class="pp-track">
                     <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(track.name || 'Track')}</span>
-                    <div class="pp-grid" style="display:flex; gap:3px; margin-left:12px;">${cellsHtml}</div>
+                    ${barsHtml}
                 </div>`
         })
         tracksHtml += '</div>'
 
         this.container.innerHTML = headerHtml + tracksHtml
+        if (this._debugEl) this.container.prepend(this._debugEl)
         this._ensurePlayhead()
         this._applySelection()
     }

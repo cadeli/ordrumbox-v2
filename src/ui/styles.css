@@ -73,87 +73,89 @@
 
 /* ---- Pattern Panel ---- */
 #pattern-panel {
-    position: fixed; top: 40px; left: 0; right: 0;
-    background: #1a1a2e; border-bottom: 1px solid #333;
-    padding: 4px 12px; overflow-x: auto;
-    font-family: monospace; font-size: 12px; color: #ccc;
-    z-index: 999; max-height: calc(100vh - 200px); overflow-y: auto;
-}
-#pattern-panel .pp-header {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 2px; font-size: 12px; white-space: nowrap;
+    position: fixed !important; 
+    top: 48px !important; 
+    left: 0 !important; 
+    right: 0 !important;
+    background: #1a1a2e; 
+    border-bottom: 2px solid #333;
+    padding: 10px 14px; 
+    overflow-x: auto;
+    font-family: monospace; 
+    font-size: 12px; 
+    color: #ccc;
+    z-index: 999; 
+    min-height: 100px;
+    max-height: calc(100vh - 250px); 
+    overflow-y: auto;
 }
 #pattern-panel .pp-header {
     display: flex; align-items: center; gap: 14px;
-    margin-bottom: 10px; font-size: 14px; white-space: nowrap;
+    margin-bottom: 10px; font-size: 13px; white-space: nowrap;
     border-bottom: 1px solid #444; padding-bottom: 6px;
 }
-#pattern-panel .pp-name { color: #e94560; font-weight: bold; text-transform: uppercase; }
-#pattern-panel .pp-meta { color: #aaa; font-size: 11px; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px; }
-#pattern-panel .pp-tracks { display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
+#pattern-panel .pp-name { color: #e94560; font-weight: bold; }
+#pattern-panel .pp-meta { color: #888; font-size: 11px; }
+
+#pattern-panel .pp-tracks { display: flex; flex-direction: column; gap: 4px; }
 #pattern-panel .pp-track {
-    display: flex; align-items: center; gap: 10px;
-    min-height: 28px; background: rgba(255, 255, 255, 0.02);
-    border-radius: 4px; padding-right: 4px;
+    display: flex; align-items: stretch; gap: 8px;
+    min-height: 26px;
 }
 #pattern-panel .pp-track-name {
-    min-width: 100px; max-width: 100px; color: #e94560; font-weight: bold;
+    min-width: 90px; max-width: 90px; color: #e94560; font-weight: bold;
     white-space: nowrap; font-size: 11px;
-    cursor: pointer; padding: 5px 8px; border-radius: 4px;
+    cursor: pointer; padding: 4px 6px; border-radius: 4px;
     overflow: hidden; text-overflow: ellipsis;
     background: rgba(233, 69, 96, 0.1);
     border: 1px solid rgba(233, 69, 96, 0.2);
-    transition: all 0.2s;
+    display: flex; align-items: center;
 }
-#pattern-panel .pp-track-name:hover { background: rgba(233, 69, 96, 0.2); border-color: #e94560; }
-#pattern-panel .pp-track-name.selected { background: #fff; color: #1a1a2e; border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.3); }
-#pattern-panel .pp-grid {
-    display: flex; gap: 3px; flex: 0 0 auto;
-    border: 1px solid rgba(255,255,255,0.05); padding: 2px;
+#pattern-panel .pp-track-name:hover { background: rgba(233, 69, 96, 0.2); }
+#pattern-panel .pp-track-name.selected { background: #fff; color: #1a1a2e; }
+
+#pattern-panel .pp-bars {
+    display: flex; gap: 4px;
+}
+#pattern-panel .pp-bar {
+    display: flex; gap: 1px; width: 140px; background: rgba(255,255,255,0.02);
+    padding: 2px; border-radius: 4px; border: 1px solid #333;
 }
 #pattern-panel .pp-cell {
-    width: 26px; height: 22px;
-    background: #252545; border: 1px solid #3d3d6d; border-radius: 4px;
-    cursor: default; flex-shrink: 0; box-sizing: border-box;
-    transition: background 0.1s;
+    flex: 1; height: 18px;
+    background: #252545; border-radius: 2px;
+    cursor: default; min-width: 2px; position: relative;
 }
-#pattern-panel .pp-cell.filled { background: #e94560; border-color: #ff4d6d; cursor: pointer; box-shadow: inset 0 0 8px rgba(255,255,255,0.2); }
-#pattern-panel .pp-cell.selected { outline: 2px solid #fff; outline-offset: 2px; z-index: 5; }
-#pattern-panel .pp-cell.bar-start { border-left: 3px solid #555; }
-#pattern-panel .pp-cell.pp-loop { border-right: 3px solid #fff; }
-#pattern-panel .pp-cell.pp-trig-fixed {
-    background: rgba(233, 69, 96, 0.6); font-size: 10px; color: #fff;
-    text-align: center; line-height: 20px; overflow: hidden;
-    cursor: pointer; font-weight: bold;
+#pattern-panel .pp-cell.filled { 
+    background: #ff2a6d; 
+    box-shadow: inset 0 0 10px rgba(255,255,255,0.4), 0 0 5px rgba(255,42,109,0.5);
+    border: 1px solid #fff;
 }
-#pattern-panel .pp-cell.pp-trig-rand {
-    background: rgba(255, 170, 70, 0.6); font-size: 10px; color: #fff;
-    text-align: center; line-height: 20px; overflow: hidden;
-    cursor: pointer; font-weight: bold;
-}
+#pattern-panel .pp-cell.selected { outline: 2px solid #00fff5; outline-offset: 1px; z-index: 10; }
+#pattern-panel .pp-cell.pp-loop { border-right: 2px solid #00fff5; }
+#pattern-panel .pp-cell-out { opacity: 0.15; background: #111; }
+
 #pattern-panel .pp-cell.pp-trig-fixed::after,
-#pattern-panel .pp-cell.pp-trig-rand::after { content: attr(data-trig); }
-#pattern-panel .pp-cell { position: relative; }
-#pattern-panel .pp-ghost {
-    position: absolute; top: 2px; bottom: 2px; width: 1px;
-    background: #e6c200; pointer-events: none;
-    box-shadow: 0 0 2px rgba(230, 194, 0, 0.5);
+#pattern-panel .pp-cell.pp-trig-rand::after {
+    content: attr(data-trig);
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #fff; font-weight: bold;
+    text-shadow: 0 0 2px #000;
 }
-#pattern-panel .pp-cell.selected .pp-ghost { z-index: 10; }
-#pattern-panel .pp-playhead {
-    position: absolute; top: 0; bottom: 0; width: 2px;
-    background: rgba(0, 255, 255, 0.35); pointer-events: none;
+
+#pattern-panel .pp-ghost {
+    position: absolute; top: 1px; bottom: 1px; width: 3px;
+    background: #ffcc00; pointer-events: none;
+    box-shadow: 0 0 4px #ffcc00;
+    border-radius: 1px;
     z-index: 2;
 }
-@media (max-width: 480px) {
-    #pattern-panel { top: 36px; padding: 4px 6px; max-height: calc(100vh - 180px); }
-    #pattern-panel .pp-cell { min-width: 8px; height: 16px; border-radius: 3px; }
-    #pattern-panel .pp-cell.filled { background: #e94560; }
-    #pattern-panel .pp-cell.pp-trig-fixed { line-height: 16px; font-size: 8px; }
-    #pattern-panel .pp-cell.pp-trig-rand { line-height: 16px; font-size: 8px; }
-    #pattern-panel .pp-track-name { min-width: 40px; font-size: 11px; }
-    #pattern-panel .pp-track { gap: 4px; }
-    #pattern-panel .pp-grid { gap: 2px; }
+
+#pattern-panel .pp-playhead {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: #0ff; pointer-events: none;
+    z-index: 2000; box-shadow: 0 0 4px #0ff;
 }
 
 /* ---- Note Editor & Track Editor Panels ---- */
@@ -201,10 +203,6 @@
     display: flex; align-items: center; gap: 8px; min-height: 20px;
     padding: 2px 4px; border-radius: 4px; cursor: pointer;
 }
-#ne-panel .ne-row:hover, #te-panel .ne-row:hover, #tools-panel .ne-row:hover, #output-panel .ne-row:hover { background: rgba(255, 255, 255, 0.05); }
-#ne-panel .ne-row.selected, #te-panel .ne-row.selected, #tools-panel .ne-row.selected, #output-panel .ne-row.selected { background: rgba(233, 69, 96, 0.15); border: 1px solid rgba(233, 69, 96, 0.3); }
-#ne-panel .ne-row.has-lfo label, #te-panel .ne-row.has-lfo label, #tools-panel .ne-row.has-lfo label, #output-panel .ne-row.has-lfo label { color: #e6c200; text-shadow: 0 0 4px rgba(230, 194, 0, 0.5); }
-
 #ne-panel .ne-row label, #te-panel .ne-row label, #tools-panel .ne-row label, #output-panel .ne-row label {
     min-width: 60px; color: #aaa; font-size: 11px;
 }
@@ -230,28 +228,6 @@
     font-size: 18px; border: none; background: #e94560;
     padding: 0 8px; border-radius: 4px; line-height: 24px;
 }
-#ne-panel .ne-close:hover, #te-panel .ne-close:hover, #tools-panel .ne-close:hover, #output-panel .ne-close:hover { background: #ff4d6d; }
-
-/* ---- LFO panel ---- */
-.lfo-panel .lfo-header {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 6px; min-height: 18px;
-}
-.lfo-panel .ne-group-label {
-    margin-bottom: 0; line-height: 1;
-}
-.lfo-led {
-    width: 14px; height: 14px; border-radius: 50%;
-    border: 2px solid #555; cursor: pointer; padding: 0;
-    background: #333; flex-shrink: 0; box-sizing: border-box;
-    transition: background 0.15s, box-shadow 0.15s;
-}
-.lfo-led.on {
-    background: #2ea043; border-color: #2ea043;
-    box-shadow: 0 0 6px rgba(46, 160, 67, 0.6);
-}
-.lfo-led:hover { border-color: #888; }
-.lfo-led.on:hover { border-color: #3fb950; }
 
 /* ---- Track Editor specific ---- */
 .ne-btn {
@@ -265,25 +241,6 @@
     box-sizing: border-box;
 }
 .ne-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
-.ne-btn:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
-/* ---- Output Panel specific ---- */
-#output-panel .ne-body > .ne-group:last-child {
-    flex: 1;
-    min-width: 200px;
-}
-#op-spectrum {
-    display: block;
-    width: 100%;
-    height: 80px;
-    border: 1px solid #444;
-    border-radius: 4px;
-    background: #0d0d1a;
-    box-sizing: border-box;
-}
 
 /* ---- Soft Synth Editor ---- */
 #soft-synth-panel {
@@ -302,12 +259,6 @@
 }
 #soft-synth-panel .ss-title {
     color: #e94560; font-weight: bold; font-size: 14px;
-}
-#soft-synth-panel .ss-actions {
-    margin-left: auto; display: flex; gap: 8px;
-}
-#soft-synth-panel .ss-canvas-wrap {
-    margin-bottom: 10px;
 }
 #soft-synth-panel .ss-canvas-wrap canvas {
     display: block; width: 100%; height: 100px;
@@ -335,9 +286,6 @@
     display: flex; align-items: center; gap: 8px; min-height: 24px;
     padding: 2px 4px; border-radius: 4px;
 }
-#soft-synth-panel .ss-row:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
 #soft-synth-panel .ss-row label {
     min-width: 72px; color: #aaa; font-size: 11px;
 }
@@ -350,63 +298,19 @@
 #soft-synth-panel .ss-row input[type=range] {
     width: 118px; padding: 0; accent-color: #e94560;
 }
-#soft-synth-panel .ss-control {
-    display: flex; align-items: center; gap: 6px;
-}
 #soft-synth-panel .ss-row .ne-val {
     min-width: 38px; text-align: right; color: #eee; font-weight: bold; font-size: 10px;
-    font-variant-numeric: tabular-nums;
 }
-
-@media (max-width: 480px) {
-    #ne-panel, #te-panel, #output-panel { padding: 6px; max-height: 200px; }
-    #ne-panel .ne-body, #te-panel .ne-body, #output-panel .ne-body { gap: 12px; }
-    #ne-panel .ne-row label, #te-panel .ne-row label, #output-panel .ne-row label { min-width: 45px; }
-    #ne-panel .ne-row input[type=range], #te-panel .ne-row input[type=range], #output-panel .ne-row input[type=range] { width: 60px; }
-    #soft-synth-panel { top: 44px; padding: 8px 6px; }
-    #soft-synth-panel .ss-body { gap: 10px; }
-    #soft-synth-panel .ss-group { min-width: 180px; }
-    #soft-synth-panel .ss-row label { min-width: 58px; }
-    #soft-synth-panel .ss-row input,
-    #soft-synth-panel .ss-row select { width: 82px; }
-    #soft-synth-panel .ss-row input[type=range] { width: 92px; }
-}
-
 
 /* ---- Waiting Screen ---- */
 #waiting-screen {
-    width: 100%;
-    height: 100%;
-    min-height: 600px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
     background-color: #121212;
-    font-family: system-ui, sans-serif;
-    box-sizing: border-box;
 }
 #waiting-screen-start-btn {
-    padding: 20px 40px;
-    font-size: 18px;
-    font-weight: bold;
-    border: 3px solid #ffffff;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.5);
-    color: #000000;
-    background-color: #ff9800;
+    padding: 20px 40px; font-size: 18px; font-weight: bold;
+    border: 3px solid #ffffff; border-radius: 8px;
+    cursor: pointer; background-color: #ff9800;
 }
-#waiting-screen-start-btn:hover {
-    background-color: #ffb74d;
-}
-#waiting-screen-start-btn.ready {
-    background-color: #2196F3;
-    color: #ffffff;
-}
-#waiting-screen-start-btn.ready:hover {
-    background-color: #1976D2;
-}
-#waiting-screen-start-btn:active {
-    transform: scale(0.98);
-}
+#waiting-screen-start-btn.ready { background-color: #2196F3; color: #fff; }
