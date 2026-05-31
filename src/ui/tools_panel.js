@@ -38,6 +38,7 @@ export default class ToolsPanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Tools</span>
+                <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
                 <div class="ne-group">
@@ -113,6 +114,8 @@ export default class ToolsPanel {
         const importWavFile = this.container.querySelector('#tp-import-wav-file')
         this.container.querySelector('#tp-import-wav').addEventListener('click', () => importWavFile.click())
         importWavFile.addEventListener('change', (e) => this._onImportWavFile(e))
+
+        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
     }
 
     subscribe() {

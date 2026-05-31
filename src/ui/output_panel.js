@@ -40,6 +40,7 @@ export default class OutputPanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Output</span>
+                <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
                 <div class="ne-group">
@@ -105,6 +106,8 @@ export default class OutputPanel {
 
         const hicutSlider = this.container.querySelector('#op-hicut')
         hicutSlider.addEventListener('input', () => this._onFilterChange())
+
+        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
     }
 
     subscribe() {

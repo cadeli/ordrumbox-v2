@@ -222,15 +222,21 @@
         border: 2px solid #e94560;
         box-shadow: 0 0 50px rgba(0,0,0,0.9);
         z-index: 10001; /* High enough to be on top of everything */
-        padding: 16px;
+        padding: 12px;
         border-radius: 12px;
-        max-width: 95vw;
-        max-height: 70vh;
-        overflow-y: auto;
-        flex-direction: column;
-        gap: 16px;
+        width: 98vw;
+        max-width: 900px;
+        height: auto;
+        max-height: 80vh;
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-direction: row;
+        gap: 12px;
         box-sizing: border-box;
+        align-items: flex-start;
     }
+    #te-panel .ne-group { border-left: 1px solid #444; padding-left: 10px; border-bottom: none; padding-bottom: 0; }
+    #te-panel .ne-group:first-child { border-left: none; padding-left: 0; }
     #te-panel .ne-header, #ne-panel .ne-header, #tools-panel .ne-header, #output-panel .ne-header {
         position: fixed;
         bottom: 0;
