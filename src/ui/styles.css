@@ -206,6 +206,30 @@
     display: flex; flex-direction: row; gap: 20px; align-items: flex-start;
     overflow-x: auto; padding-bottom: 8px;
 }
+
+@media (max-width: 480px), (max-height: 480px) {
+    #te-panel .ne-body, #ne-panel .ne-body, #tools-panel .ne-body, #output-panel .ne-body {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #1a1a2e;
+        border: 2px solid #e94560;
+        box-shadow: 0 0 50px rgba(0,0,0,0.9);
+        z-index: 10001;
+        padding: 16px;
+        border-radius: 12px;
+        max-width: 95vw;
+        max-height: 70vh;
+        overflow-y: auto;
+        flex-direction: column;
+        gap: 16px;
+        box-sizing: border-box;
+    }
+    /* Don't overlap with header if multiple open */
+    #te-panel .ne-group { border-left: none; padding-left: 0; border-bottom: 1px solid #333; padding-bottom: 12px; }
+    #te-panel .ne-group:last-child { border-bottom: none; }
+}
 #ne-panel .ne-group, #te-panel .ne-group, #tools-panel .ne-group, #output-panel .ne-group {
     border-left: 1px solid #444; padding-left: 12px; flex-shrink: 0;
 }

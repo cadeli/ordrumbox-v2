@@ -38,7 +38,6 @@ export default class ToolsPanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Tools</span>
-                <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
                 <div class="ne-group">
@@ -88,8 +87,6 @@ export default class ToolsPanel {
             </div>
         `
         document.body.appendChild(this.container)
-        
-        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
         
         this.nameInput = this.container.querySelector('#tp-pattern-name')
         this.nameInput.addEventListener('input', () => this._onNameChange())

@@ -118,6 +118,10 @@ export default class Toolbar {
         this.nextPageBtn.textContent = '▶'
         this.nextPageBtn.title = 'Next Page'
 
+        this.outputBtn = document.createElement('button')
+        this.outputBtn.className = 'tb-output'
+        this.outputBtn.textContent = 'Output'
+
         this.toolsBtn = document.createElement('button')
         this.toolsBtn.className = 'tb-tools'
         this.toolsBtn.textContent = 'Tools'
@@ -133,6 +137,7 @@ export default class Toolbar {
         this.container.appendChild(this.drumkitSelect)
         this.container.appendChild(this.autoGenBtn)
         this.container.appendChild(this.clearBtn)
+        this.container.appendChild(this.outputBtn)
         this.container.appendChild(this.toolsBtn)
         document.body.appendChild(this.container)
     }
@@ -140,6 +145,10 @@ export default class Toolbar {
     bindEvents() {
         this.startBtn.addEventListener('click', () => {
             serviceRegistry.mfSeq.toggleStartStop()
+        })
+
+        this.outputBtn.addEventListener('click', () => {
+            playbackEvents.onOutputToggle.forEach(fn => fn(true))
         })
 
         this.toolsBtn.addEventListener('click', () => {

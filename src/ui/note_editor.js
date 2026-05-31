@@ -145,7 +145,6 @@ export default class NoteEditor {
         let html = `<div class="ne-header">
             <span class="ne-track">${this.esc(track.name)}</span>
             <span class="ne-pos">bar ${bar} step ${barStep}</span>
-            <button class="ne-close">&times;</button>
         </div><div class="ne-body">`
 
         GROUPS.forEach(g => {
@@ -192,7 +191,6 @@ export default class NoteEditor {
         this.container.querySelectorAll('select').forEach(sel => {
             sel.addEventListener('change', () => this._onSelect(sel))
         })
-        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
     }
 
     hide() {
