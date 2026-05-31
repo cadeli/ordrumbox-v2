@@ -172,13 +172,14 @@ export default class TrackEditor {
         let headerHtml = `<div class="ne-header">
             <span class="ne-track">Track: ${this.esc(this._track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
             <div class="ne-toggles">
-                <button class="ne-toggle ${vis.basic ? 'active' : ''}" data-toggle="basic">Basic</button>
-                <button class="ne-toggle ${vis.levels ? 'active' : ''}" data-toggle="levels">Levels</button>
-                <button class="ne-toggle ${vis.filters ? 'active' : ''}" data-toggle="filters">Filters</button>
-                <button class="ne-toggle ${vis.effects ? 'active' : ''}" data-toggle="effects">Effects</button>
-                <button class="ne-toggle ${vis.sound ? 'active' : ''}" data-toggle="sound">Sound</button>
-                <button class="ne-toggle ${vis.loop ? 'active' : ''}" data-toggle="loop">Loop</button>
+                <button class="ne-toggle ${vis.basic ? 'active' : ''}" data-toggle="basic" title="Basic">Basic</button>
+                <button class="ne-toggle ${vis.levels ? 'active' : ''}" data-toggle="levels" title="Levels">Lvl</button>
+                <button class="ne-toggle ${vis.filters ? 'active' : ''}" data-toggle="filters" title="Filters">Flt</button>
+                <button class="ne-toggle ${vis.effects ? 'active' : ''}" data-toggle="effects" title="Effects">FX</button>
+                <button class="ne-toggle ${vis.sound ? 'active' : ''}" data-toggle="sound" title="Sound">Snd</button>
+                <button class="ne-toggle ${vis.loop ? 'active' : ''}" data-toggle="loop" title="Loop">Lp</button>
             </div>
+            <button class="ne-close">&times;</button>
         </div>`
 
         let bodyHtml = `<div class="ne-body">`
