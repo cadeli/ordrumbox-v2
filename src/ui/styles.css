@@ -79,33 +79,41 @@
     right: 0 !important;
     background: #1a1a2e; 
     border-bottom: 2px solid #333;
-    padding: 10px 14px; 
+    padding: 6px 12px; 
     overflow-x: auto;
     font-family: monospace; 
-    font-size: 12px; 
+    font-size: 11px; 
     color: #ccc;
     z-index: 999; 
-    min-height: 100px;
-    max-height: calc(100vh - 250px); 
-    overflow-y: auto;
+    height: calc(100vh - 300px); 
+    display: flex;
+    flex-direction: column;
 }
 #pattern-panel .pp-header {
-    display: flex; align-items: center; gap: 14px;
-    margin-bottom: 10px; font-size: 13px; white-space: nowrap;
-    border-bottom: 1px solid #444; padding-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px; font-size: 12px; white-space: nowrap;
+    border-bottom: 1px solid #444; padding-bottom: 4px;
+    flex-shrink: 0;
 }
 #pattern-panel .pp-name { color: #e94560; font-weight: bold; }
-#pattern-panel .pp-meta { color: #888; font-size: 11px; }
+#pattern-panel .pp-meta { color: #888; font-size: 10px; }
 
-#pattern-panel .pp-tracks { display: flex; flex-direction: column; gap: 4px; }
+#pattern-panel .pp-tracks { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 3px; 
+    flex: 1;
+    min-height: 0;
+}
 #pattern-panel .pp-track {
-    display: flex; align-items: stretch; gap: 8px;
-    min-height: 26px;
+    display: flex; align-items: stretch; gap: 4px;
+    flex: 1;
+    min-height: 10px;
 }
 #pattern-panel .pp-track-name {
-    min-width: 90px; max-width: 90px; color: #e94560; font-weight: bold;
-    white-space: nowrap; font-size: 11px;
-    cursor: pointer; padding: 4px 6px; border-radius: 4px;
+    min-width: 80px; max-width: 80px; color: #e94560; font-weight: bold;
+    white-space: nowrap; font-size: 10px;
+    cursor: pointer; padding: 0 4px; border-radius: 3px;
     overflow: hidden; text-overflow: ellipsis;
     background: rgba(233, 69, 96, 0.1);
     border: 1px solid rgba(233, 69, 96, 0.2);
@@ -115,47 +123,50 @@
 #pattern-panel .pp-track-name.selected { background: #fff; color: #1a1a2e; }
 
 #pattern-panel .pp-bars {
-    display: flex; gap: 4px;
+    display: flex; gap: 4px; flex: 1;
 }
 #pattern-panel .pp-bar {
-    display: flex; gap: 1px; width: 140px; background: rgba(255,255,255,0.02);
-    padding: 2px; border-radius: 4px; border: 1px solid #333;
+    display: flex; gap: 3px; flex: 1; background: rgba(255,255,255,0.01);
+    padding: 2px; border-radius: 3px; border: 1px solid #555;
 }
 #pattern-panel .pp-cell {
-    flex: 1; height: 18px;
-    background: #252545; border-radius: 2px;
+    flex: 1; height: 100%;
+    background: #1a1a2e; border-radius: 1px;
     cursor: default; min-width: 2px; position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.35); /* High contrast border */
 }
 #pattern-panel .pp-cell.filled { 
     background: #ff2a6d; 
-    box-shadow: inset 0 0 10px rgba(255,255,255,0.4), 0 0 5px rgba(255,42,109,0.5);
+    box-shadow: inset 0 0 8px rgba(255,255,255,0.4);
     border: 1px solid #fff;
 }
-#pattern-panel .pp-cell.selected { outline: 2px solid #00fff5; outline-offset: 1px; z-index: 10; }
-#pattern-panel .pp-cell.pp-loop { border-right: 2px solid #00fff5; }
-#pattern-panel .pp-cell-out { opacity: 0.15; background: #111; }
+#pattern-panel .pp-cell.selected { outline: 1px solid #00fff5; z-index: 10; }
+#pattern-panel .pp-cell.pp-loop { border-right: 1px solid #00fff5; }
+#pattern-panel .pp-cell-out { opacity: 0.1; background: #111; }
 
 #pattern-panel .pp-cell.pp-trig-fixed::after,
 #pattern-panel .pp-cell.pp-trig-rand::after {
     content: attr(data-trig);
     position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 9px; color: #fff; font-weight: bold;
-    text-shadow: 0 0 2px #000;
+    font-size: 7px; color: #fff; font-weight: bold;
 }
 
 #pattern-panel .pp-ghost {
-    position: absolute; top: 1px; bottom: 1px; width: 3px;
+    position: absolute; top: 1px; bottom: 1px; width: 2px;
     background: #ffcc00; pointer-events: none;
-    box-shadow: 0 0 4px #ffcc00;
-    border-radius: 1px;
-    z-index: 2;
+    box-shadow: 0 0 2px #ffcc00;
 }
 
 #pattern-panel .pp-playhead {
-    position: absolute; top: 0; bottom: 0; width: 2px;
+    position: absolute; top: 0; bottom: 0; width: 1px;
     background: #0ff; pointer-events: none;
-    z-index: 2000; box-shadow: 0 0 4px #0ff;
+    z-index: 2000;
+}
+
+@media (max-width: 480px) {
+    #pattern-panel { top: 36px !important; padding: 4px 6px; height: calc(100vh - 250px); }
+    #pattern-panel .pp-track-name { min-width: 45px; max-width: 45px; font-size: 8px; }
 }
 
 /* ---- Note Editor & Track Editor Panels ---- */
