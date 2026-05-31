@@ -4,7 +4,7 @@
 
 /* ---- Toolbar ---- */
 #tb {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 3000;
     display: flex; align-items: center; gap: 6px;
     padding: 6px 8px;
     background: #1a1a2e; border-bottom: 2px solid #e94560;
@@ -43,7 +43,7 @@
     position: absolute; top: 100%; left: 0;
     padding: 8px 12px; background: #1a1a2e; border-radius: 4px;
     border: 1px solid #555; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    white-space: nowrap; z-index: 1001;
+    white-space: nowrap; z-index: 3001;
 }
 #tb .tb-bpm-panel.open { display: flex; }
 #tb .tb-bpm-wrap { position: relative; }
@@ -84,7 +84,7 @@
     font-family: monospace; 
     font-size: 11px; 
     color: #ccc;
-    z-index: 999; 
+    z-index: 500; /* Below editors */
     height: calc(100vh - 300px); 
     display: flex;
     flex-direction: column;
@@ -184,23 +184,28 @@
     background: #1a1a2e; border-bottom: 2px solid #e94560;
     padding: 8px 12px; overflow-x: auto;
     font-family: monospace; font-size: 11px; color: #ccc;
-    z-index: 998; min-height: 100px; max-height: 250px;
+    z-index: 2000; /* Higher than pattern grid */
+    min-height: 100px; max-height: 250px;
 }
 .ui-hidden { display: none !important; }
 #ne-panel .ne-header, #te-panel .ne-header, #tools-panel .ne-header, #output-panel .ne-header {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 8px; font-size: 12px; border-bottom: 1px solid #333;
-    padding-bottom: 4px; flex-wrap: wrap;
+    padding-bottom: 4px; flex-wrap: nowrap;
 }
-.ne-toggles { display: flex; gap: 4px; margin-left: 10px; }
+.ne-toggles { display: flex; gap: 3px; margin-left: auto; margin-right: 8px; }
 .ne-toggle {
-    font-size: 9px; padding: 2px 6px; border: 1px solid #444;
+    font-size: 8px; padding: 1px 4px; border: 1px solid #444;
     border-radius: 3px; background: #111; color: #666;
     cursor: pointer; text-transform: uppercase;
 }
+@media (max-width: 480px) {
+    .ne-toggles { gap: 2px; margin-right: 4px; }
+    .ne-toggle { font-size: 7px; padding: 1px 2px; min-width: 24px; text-align: center; }
+}
 .ne-toggle:hover { border-color: #e94560; color: #aaa; }
 .ne-toggle.active { background: #e94560; color: #fff; border-color: #ff4d6d; }
-#ne-panel .ne-track, #te-panel .ne-track, #tools-panel .ne-track, #output-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; }
+#ne-panel .ne-track, #te-panel .ne-track, #tools-panel .ne-track, #output-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; white-space: nowrap; }
 #ne-panel .ne-pos, #te-panel .ne-pos, #tools-panel .ne-pos, #output-panel .ne-pos { color: #888; }
 #ne-panel .ne-body, #te-panel .ne-body, #tools-panel .ne-body, #output-panel .ne-body { 
     display: flex; flex-direction: row; gap: 20px; align-items: flex-start;
@@ -216,7 +221,7 @@
         background: #1a1a2e;
         border: 2px solid #e94560;
         box-shadow: 0 0 50px rgba(0,0,0,0.9);
-        z-index: 10001;
+        z-index: 10001; /* High enough to be on top of everything */
         padding: 16px;
         border-radius: 12px;
         max-width: 95vw;
@@ -226,9 +231,18 @@
         gap: 16px;
         box-sizing: border-box;
     }
-    /* Don't overlap with header if multiple open */
-    #te-panel .ne-group { border-left: none; padding-left: 0; border-bottom: 1px solid #333; padding-bottom: 12px; }
-    #te-panel .ne-group:last-child { border-bottom: none; }
+    #te-panel .ne-header, #ne-panel .ne-header, #tools-panel .ne-header, #output-panel .ne-header {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1a1a2e;
+        z-index: 2000;
+        margin-bottom: 0;
+        padding: 10px 14px;
+        border-top: 2px solid #e94560;
+        border-bottom: none;
+    }
 }
 #ne-panel .ne-group, #te-panel .ne-group, #tools-panel .ne-group, #output-panel .ne-group {
     border-left: 1px solid #444; padding-left: 12px; flex-shrink: 0;
