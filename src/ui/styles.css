@@ -164,9 +164,15 @@
     z-index: 2000;
 }
 
-@media (max-width: 480px) {
-    #pattern-panel { top: 36px !important; padding: 4px 6px; height: calc(100vh - 250px); }
-    #pattern-panel .pp-track-name { min-width: 45px; max-width: 45px; font-size: 8px; }
+@media (max-width: 480px), (max-height: 480px) {
+    #pattern-panel { 
+        top: 44px !important; 
+        padding: 4px 6px; 
+        height: calc(100vh - 120px); 
+        overflow-y: hidden;
+    }
+    #pattern-panel .pp-track-name { min-width: 50px; max-width: 50px; font-size: 8px; }
+    #pattern-panel .pp-bar { width: 100px; }
 }
 
 /* ---- Note Editor & Track Editor Panels ---- */
