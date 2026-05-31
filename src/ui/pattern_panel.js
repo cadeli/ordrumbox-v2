@@ -11,7 +11,6 @@ export default class PatternPanel {
         this._rafId = null
         this._prevLoopTick = -1
         this._playhead = null
-        this._debugEl = null
     }
 
     injectCSS() {
@@ -34,21 +33,7 @@ export default class PatternPanel {
         this.container = document.createElement('div')
         this.container.id = 'pattern-panel'
         this.container.addEventListener('click', (e) => this._onClick(e))
-        
-        // Debug status
-        this._debugEl = document.createElement('div')
-        this._debugEl.id = 'pp-debug'
-        this._debugEl.style.fontSize = '10px'
-        this._debugEl.style.color = '#888'
-        this._debugEl.style.marginBottom = '4px'
-        this.container.appendChild(this._debugEl)
-        
         document.body.appendChild(this.container)
-    }
-
-    _log(msg) {
-        if (this._debugEl) this._debugEl.textContent = `Status: ${msg}`
-        console.log(`PatternPanel: ${msg}`)
     }
 
     _ensurePlayhead() {
@@ -296,13 +281,10 @@ export default class PatternPanel {
 
     sync() {
         if (!this.container) return
-        this._log('Syncing...')
 
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) {
-            this._log('No pattern in appState')
             this.container.innerHTML = '<div class="pp-header" style="color:#fff; padding:10px;">Waiting for patterns...</div>'
-            if (this._debugEl) this.container.appendChild(this._debugEl)
             return
         }
 
@@ -321,7 +303,6 @@ export default class PatternPanel {
 
         if (tracks.length === 0) {
             this.container.innerHTML = headerHtml + '<div class="pp-empty" style="padding:40px; text-align:center; color:#888;">Empty Pattern</div>'
-            if (this._debugEl) this.container.prepend(this._debugEl)
             return
         }
 
@@ -331,9 +312,8 @@ export default class PatternPanel {
             const barQuantize = track.barQuantize ?? 4
             const totalSteps = (track.bars ?? 4) * barQuantize
             
-            // Build a map of ghost positions for this track that fall on the current page
-            const ghostMap = new Map() // Local step abs -> Array of offsets
             const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes || {})
+            const ghostMap = new Map()
             notes.forEach(note => {
                 this._getSubPositions(note, track).forEach(subPos => {
                     const stepAbs = Math.floor(subPos)
@@ -374,7 +354,6 @@ export default class PatternPanel {
                         const loopAt = track.loopAtStep ?? totalSteps
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
                         
-                        // Render ghosts from the map
                         const ghosts = (ghostMap.get(absPos) || []).map(offset => {
                             return `<div class="pp-ghost" style="left: ${offset * 100}%"></div>`
                         }).join('')
@@ -396,7 +375,6 @@ export default class PatternPanel {
         tracksHtml += '</div>'
 
         this.container.innerHTML = headerHtml + tracksHtml
-        if (this._debugEl) this.container.prepend(this._debugEl)
         this._ensurePlayhead()
         this._applySelection()
     }
