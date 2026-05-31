@@ -213,42 +213,58 @@
 }
 
 @media (max-width: 480px), (max-height: 480px) {
-    #te-panel .ne-body, #ne-panel .ne-body, #tools-panel .ne-body, #output-panel .ne-body {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: #1a1a2e;
-        border: 2px solid #e94560;
-        box-shadow: 0 0 50px rgba(0,0,0,0.9);
-        z-index: 10001; /* High enough to be on top of everything */
-        padding: 12px;
-        border-radius: 12px;
-        width: 98vw;
-        max-width: 900px;
-        height: auto;
-        max-height: 80vh;
-        overflow-x: auto;
-        overflow-y: hidden;
-        flex-direction: row;
-        gap: 12px;
-        box-sizing: border-box;
-        align-items: flex-start;
+    #ne-panel, #te-panel, #tools-panel, #output-panel {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 96vw !important;
+        max-width: 900px !important;
+        height: auto !important;
+        max-height: 85vh !important;
+        background: #1a1a2e !important;
+        border: 2px solid #e94560 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 0 60px rgba(0,0,0,0.95) !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        z-index: 10001 !important;
     }
-    #te-panel .ne-group { border-left: 1px solid #444; padding-left: 10px; border-bottom: none; padding-bottom: 0; }
-    #te-panel .ne-group:first-child { border-left: none; padding-left: 0; }
-    #te-panel .ne-header, #ne-panel .ne-header, #tools-panel .ne-header, #output-panel .ne-header {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #1a1a2e;
-        z-index: 2000;
-        margin-bottom: 0;
-        padding: 10px 14px;
-        border-top: 2px solid #e94560;
-        border-bottom: none;
+    
+    .ne-header {
+        padding: 12px 16px !important;
+        border-bottom: 1px solid #333 !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        flex-shrink: 0 !important;
+        margin-bottom: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        position: static !important;
     }
+
+    .ne-body {
+        padding: 16px !important;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        flex-direction: row !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        gap: 16px !important;
+        position: static !important;
+        transform: none !important;
+    }
+
+    #te-panel .ne-group, #ne-panel .ne-group, #tools-panel .ne-group, #output-panel .ne-group {
+        border-left: 1px solid #444 !important;
+        padding-left: 12px !important;
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+    }
+    #te-panel .ne-group:first-child, #ne-panel .ne-group:first-child, #tools-panel .ne-group:first-child, #output-panel .ne-group:first-child { border-left: none !important; }
 }
 #ne-panel .ne-group, #te-panel .ne-group, #tools-panel .ne-group, #output-panel .ne-group {
     border-left: 1px solid #444; padding-left: 12px; flex-shrink: 0;
