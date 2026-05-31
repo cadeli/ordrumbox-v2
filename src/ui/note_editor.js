@@ -131,45 +131,65 @@ export default class NoteEditor {
         return { scale, type, range }
     }
 
-    async show({ track, trackIdx, note, pos, bar, barStep }) {
-        this._track = track
-        this._note = note
+    async show(data) {
+        this._track = data.track
+        this._note = data.note
+        this._pos = data.pos
+        this._bar = data.bar
+        this._barStep = data.barStep
 
         await loadScales()
+        this.sync()
+    }
 
+    sync() {
+        if (!this._note) return
+
+        const vis = appState.noteEditorVisibility
         const scaleKeys = Object.keys(_scalesCache ?? {})
-        const arpState = this._getArpState(note)
+        const arpState = this._getArpState(this._note)
         const scaleGroup = GROUPS[3]
         scaleGroup.props[0].options = scaleKeys
 
-        let html = `<div class="ne-header">
-            <span class="ne-track">${this.esc(track.name)}</span>
-            <span class="ne-pos">bar ${bar} step ${barStep}</span>
-        </div><div class="ne-body">`
+        let headerHtml = `<div class="ne-header">
+            <span class="ne-track">${this.esc(this._track.name)} [bar ${this._bar} step ${this._barStep}]</span>
+            <div class="ne-toggles">
+                <button class="ne-toggle ${vis.levels ? 'active' : ''}" data-toggle="levels">V/P/P</button>
+                <button class="ne-toggle ${vis.triggers ? 'active' : ''}" data-toggle="triggers">Trig</button>
+                <button class="ne-toggle ${vis.retrig ? 'active' : ''}" data-toggle="retrig">Retr</button>
+                <button class="ne-toggle ${vis.arp ? 'active' : ''}" data-toggle="arp">Arp</button>
+            </div>
+            <button class="ne-close">&times;</button>
+        </div>`
 
-        GROUPS.forEach(g => {
-            html += `<div class="ne-group">
+        let bodyHtml = `<div class="ne-body">`
+
+        GROUPS.forEach((g, idx) => {
+            const visKey = ['levels', 'triggers', 'retrig', 'arp'][idx]
+            if (!vis[visKey]) return
+
+            bodyHtml += `<div class="ne-group">
                 <div class="ne-group-label">${g.label}</div>
                 <div class="ne-grid">`
             g.props.forEach(p => {
                 if (p.type === 'select') {
                     let val = p.key === 'arpScale' ? arpState.scale : arpState.type
-                    if (note['_' + p.key]) val = note['_' + p.key]
-                    html += `<div class="ne-row">
+                    if (this._note['_' + p.key]) val = this._note['_' + p.key]
+                    bodyHtml += `<div class="ne-row">
                         <label>${p.label}</label>
                         <select data-key="${p.key}">`
                     p.options.forEach(opt => {
                         const sel = opt === val ? ' selected' : ''
-                        html += `<option value="${opt}"${sel}>${opt}</option>`
+                        bodyHtml += `<option value="${opt}"${sel}>${opt}</option>`
                     })
-                    html += `</select>
+                    bodyHtml += `</select>
                     </div>`
                 } else {
-                    let val = note[p.key] ?? p.min
+                    let val = this._note[p.key] ?? p.min
                     if (p.key === 'arpRange') {
                         val = arpState.range
                     }
-                    html += `<div class="ne-row">
+                    bodyHtml += `<div class="ne-row">
                         <label>${p.label}</label>
                         <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
                             value="${val}" data-key="${p.key}">
@@ -177,13 +197,25 @@ export default class NoteEditor {
                     </div>`
                 }
             })
-            html += `</div></div>`
+            bodyHtml += `</div></div>`
         })
 
-        html += '</div>'
-        this.container.innerHTML = html
+        bodyHtml += '</div>'
+        this.container.innerHTML = headerHtml + bodyHtml
         this.container.style.display = 'block'
         this.reposition()
+        this._bindEvents()
+    }
+
+    _bindEvents() {
+        this.container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const key = btn.dataset.toggle
+                appState.noteEditorVisibility[key] = !appState.noteEditorVisibility[key]
+                this.sync()
+                e.stopPropagation()
+            })
+        })
 
         this.container.querySelectorAll('input[type=range]').forEach(input => {
             input.addEventListener('input', () => this._onSlider(input))
@@ -191,6 +223,7 @@ export default class NoteEditor {
         this.container.querySelectorAll('select').forEach(sel => {
             sel.addEventListener('change', () => this._onSelect(sel))
         })
+        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
     }
 
     hide() {

@@ -21,6 +21,12 @@ export class AppState {
             sound: !isMobile,
             loop: !isMobile
         }
+        this.noteEditorVisibility = {
+            levels: !isMobile,
+            triggers: !isMobile,
+            retrig: !isMobile,
+            arp: !isMobile
+        }
     }
 
     reset() {
@@ -44,6 +50,12 @@ export class AppState {
             effects: !isMobile,
             sound: !isMobile,
             loop: !isMobile
+        }
+        this.noteEditorVisibility = {
+            levels: !isMobile,
+            triggers: !isMobile,
+            retrig: !isMobile,
+            arp: !isMobile
         }
     }
 }
