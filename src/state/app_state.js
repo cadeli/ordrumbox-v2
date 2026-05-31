@@ -12,13 +12,14 @@ export class AppState {
         this.textInput = false
         this.secondsPerBeat = 8
         this.flatNotes = null
+        const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 480 || window.innerHeight <= 480)
         this.trackEditorVisibility = {
-            basic: true,
-            levels: true,
-            filters: true,
-            effects: true,
-            sound: true,
-            loop: true
+            basic: !isMobile,
+            levels: !isMobile,
+            filters: !isMobile,
+            effects: !isMobile,
+            sound: !isMobile,
+            loop: !isMobile
         }
     }
 
@@ -35,13 +36,14 @@ export class AppState {
         this.textInput = false
         this.secondsPerBeat = 8
         this.flatNotes = null
+        const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 480 || window.innerHeight <= 480)
         this.trackEditorVisibility = {
-            basic: true,
-            levels: true,
-            filters: true,
-            effects: true,
-            sound: true,
-            loop: true
+            basic: !isMobile,
+            levels: !isMobile,
+            filters: !isMobile,
+            effects: !isMobile,
+            sound: !isMobile,
+            loop: !isMobile
         }
     }
 }
