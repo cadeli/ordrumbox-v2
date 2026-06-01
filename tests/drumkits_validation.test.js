@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
-const DRUMKITS_JSON = join(PROJECT_ROOT, 'public/assets/data/drumkits.json')
-const KITS_DIR = join(PROJECT_ROOT, 'public/assets/kits')
+const DRUMKITS_JSON = join(PROJECT_ROOT, 'assets/data/drumkits.json')
+const KITS_DIR = join(PROJECT_ROOT, 'assets/kits')
 
 describe('drumkits.json validation', () => {
     let drumkits

@@ -10,7 +10,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && cp -r assets/data assets/kits assets/images dist/assets/",
     "preview": "vite preview"
   },
   "repository": {

@@ -111,9 +111,9 @@
     min-height: 10px;
 }
 #pattern-panel .pp-track-name {
-    min-width: 80px; max-width: 80px; color: #e94560; font-weight: bold;
-    white-space: nowrap; font-size: 10px;
-    cursor: pointer; padding: 0 4px; border-radius: 3px;
+    min-width: 100px; max-width: 100px; color: #fff; font-weight: bold;
+    white-space: nowrap; font-size: 13px; letter-spacing: 0.3px;
+    cursor: pointer; padding: 0 6px; border-radius: 3px;
     overflow: hidden; text-overflow: ellipsis;
     background: rgba(233, 69, 96, 0.1);
     border: 1px solid rgba(233, 69, 96, 0.2);
@@ -200,7 +200,7 @@
         height: calc(100vh - 120px); 
         overflow-y: hidden;
     }
-    #pattern-panel .pp-track-name { min-width: 50px; max-width: 50px; font-size: 8px; }
+    #pattern-panel .pp-track-name { min-width: 65px; max-width: 65px; font-size: 10px; }
     #pattern-panel .pp-bar { width: 100px; }
 }
 

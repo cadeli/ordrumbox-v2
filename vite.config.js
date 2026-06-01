@@ -4,6 +4,7 @@ import { resolve } from 'path';
 export default defineConfig({
     root: '.',
     base: './',
+    publicDir: false,
     build: {
         outDir: 'dist',
         emptyOutDir: true,
