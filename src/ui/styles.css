@@ -228,7 +228,7 @@
     border-radius: 3px; background: #111; color: #aaa;
     cursor: pointer; text-transform: uppercase;
 }
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .ne-toggles { gap: 2px; margin-right: 4px; }
     .ne-toggle { font-size: 7px; padding: 1px 2px; min-width: 24px; text-align: center; }
 }
@@ -241,7 +241,7 @@
     overflow-x: auto; padding-bottom: 8px;
 }
 
-@media (max-width: 480px), (max-height: 480px) {
+@media (max-width: 768px), (max-height: 480px) {
     #ne-panel, #te-panel, #tools-panel, #output-panel {
         position: fixed !important;
         top: 50% !important;

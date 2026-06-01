@@ -2,7 +2,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
-const SCALES_URL = 'public/assets/data/scales.json'
+const SCALES_URL = 'assets/data/scales.json'
 const fmt = v => parseFloat(Number(v).toFixed(2))
 
 let _scalesCache = null

@@ -12,7 +12,7 @@ export class AppState {
         this.textInput = false
         this.secondsPerBeat = 8
         this.flatNotes = null
-        const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 480 || window.innerHeight <= 480)
+        const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 480)
         this.trackEditorVisibility = {
             basic: true,
             levels: true,
@@ -42,7 +42,7 @@ export class AppState {
         this.textInput = false
         this.secondsPerBeat = 8
         this.flatNotes = null
-        const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 480 || window.innerHeight <= 480)
+        const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 480)
         this.trackEditorVisibility = {
             basic: true,
             levels: true,

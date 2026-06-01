@@ -5,11 +5,11 @@ import { fixPatterns, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.j
 
 export default class MfResourcesLoader {
     static TAG = "MFResourcesLoader"
-    static get KITS_PATH() { return "public/assets/kits/" }
-    static get SCALES_URL() { return "public/assets/data/scales.json" }
-    static get DRUMKITS_URL() { return "public/assets/data/drumkits.json" }
-    static get PATTERNS_URL() { return "public/assets/data/patterns.json" }
-    static get GENERATED_SOUNDS_URL() { return "public/assets/data/generated_sounds.json" }
+    static get KITS_PATH() { return "assets/kits/" }
+    static get SCALES_URL() { return "assets/data/scales.json" }
+    static get DRUMKITS_URL() { return "assets/data/drumkits.json" }
+    static get PATTERNS_URL() { return "assets/data/patterns.json" }
+    static get GENERATED_SOUNDS_URL() { return "assets/data/generated_sounds.json" }
 
     constructor(audioCtx = null) {
         this._audioCtx = audioCtx
@@ -34,10 +34,6 @@ export default class MfResourcesLoader {
     patternsLoadFailed = false
     isSamplesLoading = false
     samplesLoadFailed = false
-
-    getDynamicAssetURL(path) {
-        return new URL(`${path}`, import.meta.url).href;
-    }
 
     async ensureResourcesLoaded() {
 
@@ -84,7 +80,7 @@ export default class MfResourcesLoader {
         try {
             const response = await fetch(file)
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`)
+                throw new Error(`HTTP ${response.status} for ${file}`)
             }
             const json = await response.json()
             onLoad(json)
@@ -96,7 +92,7 @@ export default class MfResourcesLoader {
     }
 
     async loadDrumkitList(file, complete) {
-        console.log("MfResourcesLoader::loadDrumkitList. = ", this.getDynamicAssetURL(file))
+        console.log("MfResourcesLoader::loadDrumkitList = ", file)
         return this.loadJsonResource(file, (jsonDrumkits) => {
             soundRegistry.drumkitList.length = 0
             Object.values(jsonDrumkits).forEach((drumkit) => {
