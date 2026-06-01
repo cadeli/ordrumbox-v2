@@ -6,8 +6,10 @@ export default defineConfig({
     base: './',
     build: {
         outDir: 'dist',
-        emptyOutDir: true,       // Empty dist before rebuild
-        minify: 'terser',        // Use Terser for uglification
+        emptyOutDir: true,
+        manifest: true,
+        minify: 'terser',
+        target: 'esnext',
 
         terserOptions: {
             compress: {
@@ -22,9 +24,12 @@ export default defineConfig({
                 main: resolve(__dirname, 'index.html'), // main entry point
             },
             output: {
-                //  dist/assets/
                 entryFileNames: 'assets/js/[name].[hash].js',
                 chunkFileNames: 'assets/js/[name].[hash].js',
+                manualChunks(id) {
+                    if (id.includes('src/audio/')) return 'audio-engine';
+                    if (id.includes('src/patterns/')) return 'pattern-core';
+                },
                 assetFileNames: ({ name }) => {
                     if (/\.wav$/.test(name ?? '')) {
                         return 'assets/audio/[name].[hash][extname]';

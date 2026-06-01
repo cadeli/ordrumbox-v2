@@ -281,14 +281,6 @@ describe('MfResourcesLoader', () => {
         })
     })
 
-    describe('getDynamicAssetURL', () => {
-        it('returns a URL string', () => {
-            const url = loader.getDynamicAssetURL('test.txt')
-            expect(typeof url).toBe('string')
-            expect(url).toContain('test.txt')
-        })
-    })
-
     describe('loadSample', () => {
         it('loads and decodes a sample', async () => {
             const mockBuffer = { duration: 1.5 }

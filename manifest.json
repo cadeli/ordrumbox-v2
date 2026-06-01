@@ -1,18 +1,28 @@
 {
   "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-  "name": "online orDrumbox",
-  "short_name": "onlineordrumbox",
-  "start_url": "https://www.ordrumbox.com",
+  "name": "OrDrumbox",
+  "short_name": "OrDrumbox",
+  "start_url": ".",
+  "scope": ".",
   "display": "fullscreen",
-  "background_color": "#FFF",
   "orientation": "landscape",
-  "theme_color": "green",
-  "lang": "en-US",
-  "description": "OrDrumbox : Online Drum Machine",
-  "icons": [ {
-    "src": "public/images/jsDrumboxLogo512.png",
-    "sizes": "512x512",
-    "type": "image/png"
-  }]
+  "background_color": "#1a1a2e",
+  "theme_color": "#00ff00",
+  "lang": "en",
+  "description": "Online Drum Machine & Sequencer",
+  "categories": ["music", "entertainment"],
+  "icons": [
+    {
+      "src": "./assets/images/jsDrumboxLogo512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/images/jsDrumboxLogo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
 
