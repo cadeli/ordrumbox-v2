@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import Toolbar from '../src/ui/toolbar.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 
 describe('Toolbar UI Layout', () => {
     let toolbar
@@ -14,6 +15,20 @@ describe('Toolbar UI Layout', () => {
         appState.reset()
         soundRegistry.reset()
         
+        // Mock serviceRegistry dependencies
+        serviceRegistry.mfSeq = {
+            toggleStartStop: vi.fn(),
+            setBpm: vi.fn()
+        }
+        serviceRegistry.mfCmd = {
+            setSelectedPatternNum: vi.fn(),
+            setSelectedDrumkitNum: vi.fn(),
+            cleanPattern: vi.fn()
+        }
+        serviceRegistry.mfPatterns = {
+            computeFlatNotesFromPattern: vi.fn()
+        }
+
         // Clear body
         document.body.innerHTML = ''
 
@@ -32,6 +47,7 @@ describe('Toolbar UI Layout', () => {
         const buttons = Array.from(tb.querySelectorAll('button'))
         const textContents = buttons.map(b => b.textContent)
 
+        expect(textContents.some(t => t.includes('BPM'))).toBe(true)
         expect(textContents).toContain('Start')
         expect(textContents).toContain('Auto Gen')
         expect(textContents).toContain('Clear')
@@ -41,6 +57,33 @@ describe('Toolbar UI Layout', () => {
         // Check pagination arrows
         expect(textContents).toContain('◀')
         expect(textContents).toContain('▶')
+    })
+
+    it('toggles the BPM panel visibility when clicked', () => {
+        const toggle = document.querySelector('.tb-bpm-toggle')
+        const panel = document.querySelector('.tb-bpm-panel')
+        
+        // Initially should not have "open" class
+        expect(panel.classList.contains('open')).toBe(false)
+        
+        toggle.click()
+        expect(panel.classList.contains('open')).toBe(true)
+        
+        toggle.click()
+        expect(panel.classList.contains('open')).toBe(false)
+    })
+
+    it('updates BPM when the slider value changes', () => {
+        const slider = document.querySelector('.tb-bpm-panel input[type="range"]')
+        const valDisplay = document.querySelector('.tb-bpm-val')
+        const toggle = document.querySelector('.tb-bpm-toggle')
+        
+        slider.value = '140'
+        slider.dispatchEvent(new Event('input'))
+        
+        expect(valDisplay.textContent).toBe('140')
+        expect(toggle.textContent).toBe('BPM 140')
+        expect(serviceRegistry.mfSeq.setBpm).toHaveBeenCalledWith(140)
     })
 
     it('contains the pattern and drumkit selectors', () => {

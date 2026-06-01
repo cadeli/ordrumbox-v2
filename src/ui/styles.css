@@ -9,8 +9,8 @@
     padding: 6px 8px;
     background: #1a1a2e; border-bottom: 2px solid #e94560;
     font-family: system-ui, sans-serif; font-size: 14px;
-    box-sizing: border-box; flex-wrap: nowrap;
-    overflow-x: auto; overflow-y: hidden;
+    box-sizing: border-box; flex-wrap: wrap;
+    overflow: visible;
 }
 #tb button {
     font-size: 12px; padding: 5px 8px; border: 1px solid #555;
