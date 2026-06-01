@@ -16,6 +16,8 @@ export default class MfMidi {
     constructor() {
         this.midiAccess = null
         this.inputs = []
+        this.outputs = []
+        this.selectedOutputId = null
         this.inputHandlers = new Map()
         this.instrumentsManager = new InstrumentsManager()
         this.isReady = false
@@ -50,16 +52,16 @@ export default class MfMidi {
             try {
                 this.midiAccess = await navigator.requestMIDIAccess()
                 this.midiAccess.addEventListener('statechange', this.onStateChange)
-                this.refreshInputs()
+                this.refreshPorts()
                 this.isReady = true
-                console.info(`${MfMidi.TAG}: MIDI input ready`)
-                Utils.displayStatusBar("MIDI input ready")
+                console.info(`${MfMidi.TAG}: MIDI ready`)
+                Utils.displayStatusBar("MIDI ready")
                 this.renderIndicators()
                 return true
             } catch (error) {
                 this.isReady = false
                 console.warn(`${MfMidi.TAG}: Unable to initialize MIDI access`, error)
-                Utils.displayStatusBar("Unable to initialize MIDI input")
+                Utils.displayStatusBar("Unable to initialize MIDI")
                 this.renderIndicators()
                 return false
             } finally {
@@ -84,8 +86,8 @@ export default class MfMidi {
         return {
             supported: this.isSupported(),
             ready: this.isReady,
-            connected: this.inputs.length > 0,
             inputCount: this.inputs.length,
+            outputCount: this.outputs.length,
             syncEnabled: this.externalSyncEnabled
         }
     }
@@ -138,15 +140,16 @@ export default class MfMidi {
     }
 
     onStateChange = () => {
-        this.refreshInputs()
+        this.refreshPorts()
     }
 
-    refreshInputs = () => {
+    refreshPorts = () => {
         if (!this.midiAccess) {
             this.renderIndicators()
             return
         }
 
+        // Inputs
         this.inputs.forEach((input) => {
             const handler = this.inputHandlers.get(input.id)
             if (handler) {
@@ -161,13 +164,68 @@ export default class MfMidi {
             input.addEventListener('midimessage', handler)
             this.inputHandlers.set(input.id, handler)
             this.inputs.push(input)
-            console.info(`${MfMidi.TAG}: MIDI input connected -> ${input.name || 'Unknown device'}`)
         }
 
-        if (this.inputs.length === 0) {
-            console.info(`${MfMidi.TAG}: No MIDI input device connected`)
+        // Outputs
+        this.outputs = []
+        for (const output of this.midiAccess.outputs.values()) {
+            this.outputs.push(output)
         }
+
+        if (!this.selectedOutputId && this.outputs.length > 0) {
+            this.selectedOutputId = this.outputs[0].id
+        }
+
         this.renderIndicators()
+    }
+
+    setSelectedOutput = (id) => {
+        this.selectedOutputId = id
+    }
+
+    sendMidiMessage = (data, timestamp) => {
+        if (!this.isReady || !this.selectedOutputId) return
+        const output = this.outputs.find(o => o.id === this.selectedOutputId)
+        if (output) {
+            try {
+                if (timestamp) {
+                    output.send(data, timestamp)
+                } else {
+                    output.send(data)
+                }
+            } catch (e) {
+                console.warn(`${MfMidi.TAG}: Failed to send MIDI message`, e)
+            }
+        }
+    }
+
+    sendNoteOn = (channel, note, velocity, timestamp) => {
+        const status = 0x90 | (Math.max(0, Math.min(15, channel - 1)))
+        this.sendMidiMessage([status, note, velocity], timestamp)
+    }
+
+    sendNoteOff = (channel, note, timestamp) => {
+        const status = 0x80 | (Math.max(0, Math.min(15, channel - 1)))
+        this.sendMidiMessage([status, note, 0], timestamp)
+    }
+
+    sendClock = (timestamp) => {
+        this.sendMidiMessage([0xF8], timestamp)
+    }
+
+    sendStart = (timestamp) => {
+        this.sendMidiMessage([0xFA], timestamp)
+    }
+
+    sendStop = (timestamp) => {
+        this.sendMidiMessage([0xFC], timestamp)
+    }
+
+    sendAllNotesOff = () => {
+        if (!this.selectedOutputId) return
+        for (let ch = 0; ch < 16; ch++) {
+            this.sendMidiMessage([0xB0 | ch, 123, 0])
+        }
     }
 
     onMidiMessage = (event) => {

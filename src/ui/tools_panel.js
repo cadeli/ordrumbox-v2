@@ -5,6 +5,7 @@ import { soundRegistry } from '../state/sound_registry.js'
 import { PatternExporter } from '../patterns/exporter.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
+import { isMidiSupported } from '../logic/midi/parser.js'
 
 export default class ToolsPanel {
     constructor() {
@@ -85,6 +86,46 @@ export default class ToolsPanel {
                         </div>
                     </div>
                 </div>
+                <div class="ne-group">
+                    <div class="ne-group-label">MIDI</div>
+                    <div class="ne-grid">
+                        <div class="ne-row no-cursor">
+                            <button class="lfo-led" id="midiSupportLed"></button>
+                            <label>Support:</label>
+                            <span class="ne-val" id="midiSupportLabel">Checking...</span>
+                        </div>
+                        <div class="ne-row no-cursor">
+                            <button class="lfo-led" id="midiReadyLed"></button>
+                            <label>Ready:</label>
+                            <span class="ne-val" id="midiReadyLabel">Locked</span>
+                        </div>
+                        <div class="ne-row no-cursor">
+                            <button class="lfo-led" id="midiConnectedLed"></button>
+                            <label>Inputs:</label>
+                            <span class="ne-val" id="midiConnectedLabel">None</span>
+                        </div>
+                        <div class="ne-row no-cursor">
+                            <button class="lfo-led" id="midiSyncLed"></button>
+                            <label>Ext Sync:</label>
+                            <span class="ne-val" id="midiSyncLabel">Internal</span>
+                        </div>
+                        <div class="ne-row no-cursor">
+                            <button class="lfo-led" id="midiActivityLed"></button>
+                            <label>Activity:</label>
+                            <span class="ne-val" id="midiActivityLabel">Idle</span>
+                        </div>
+                        <div class="ne-row">
+                            <label>Output:</label>
+                            <select id="tp-midi-output-select"></select>
+                        </div>
+                        <div class="ne-row">
+                            <button class="ne-btn" id="tp-midi-enable">Enable MIDI</button>
+                        </div>
+                        <div class="ne-row">
+                            <button class="ne-btn" id="tp-midi-sync">Toggle Sync</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         `
         document.body.appendChild(this.container)
@@ -115,6 +156,31 @@ export default class ToolsPanel {
         this.container.querySelector('#tp-import-wav').addEventListener('click', () => importWavFile.click())
         importWavFile.addEventListener('change', (e) => this._onImportWavFile(e))
 
+        this.container.querySelector('#tp-midi-enable').addEventListener('click', async () => {
+            if (!serviceRegistry.midiManager) {
+                const { getMidiManagerService } = await import('../state/service_registry.js')
+                await getMidiManagerService()
+            }
+            await serviceRegistry.midiManager.init()
+            this._sync()
+        })
+
+        this.container.querySelector('#tp-midi-sync').addEventListener('click', () => {
+            if (serviceRegistry.midiManager) {
+                serviceRegistry.midiManager.toggleExternalSync()
+                this._sync()
+            } else {
+                alert('Enable MIDI first')
+            }
+        })
+
+        const outputSelect = this.container.querySelector('#tp-midi-output-select')
+        outputSelect.addEventListener('change', () => {
+            if (serviceRegistry.midiManager) {
+                serviceRegistry.midiManager.setSelectedOutput(outputSelect.value)
+            }
+        })
+
         this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
     }
 
@@ -143,6 +209,45 @@ export default class ToolsPanel {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (pattern && this.nameInput && document.activeElement !== this.nameInput) {
             this.nameInput.value = pattern.name || ''
+        }
+
+        const outputSelect = this.container.querySelector('#tp-midi-output-select')
+        if (serviceRegistry.midiManager) {
+            serviceRegistry.midiManager.renderIndicators()
+
+            // Sync output list
+            const outputs = serviceRegistry.midiManager.outputs
+            const currentOutputId = serviceRegistry.midiManager.selectedOutputId
+            
+            // Only update if list changed or empty
+            if (outputSelect.options.length !== outputs.length) {
+                outputSelect.innerHTML = outputs.map(o => 
+                    `<option value="${o.id}" ${o.id === currentOutputId ? 'selected' : ''}>${o.name || 'Unknown'}</option>`
+                ).join('')
+            } else {
+                outputSelect.value = currentOutputId || ''
+            }
+        } else {
+            // Default inactive state
+            const support = isMidiSupported()
+            this._setLedState('midiSupportLed', support, support ? 'Supported' : 'Unavailable')
+            this._setLedState('midiReadyLed', false, 'Locked')
+            this._setLedState('midiConnectedLed', false, 'None')
+            this._setLedState('midiSyncLed', false, 'Internal')
+            this._setLedState('midiActivityLed', false, 'Idle')
+            outputSelect.innerHTML = '<option value="">MIDI Not Enabled</option>'
+        }
+    }
+
+    _setLedState(ledId, isOn, label) {
+        const led = this.container.querySelector(`#${ledId}`)
+        const text = this.container.querySelector(`#${ledId.replace('Led', 'Label')}`)
+        if (led) {
+            led.classList.toggle('midi-indicator-on', !!isOn)
+            led.classList.toggle('midi-indicator-off', !isOn)
+        }
+        if (text) {
+            text.innerText = label
         }
     }
 

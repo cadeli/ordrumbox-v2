@@ -3,6 +3,8 @@ import MfMixer from './mixer.js'
 import MfSound from './sound.js'
 import MfNoteParams from '../patterns/note_params.js'
 import { computeFlatNotesFromPattern as computeFlatNotesPure } from '../patterns/engine.js'
+import { serviceRegistry } from '../state/service_registry.js'
+import InstrumentsManager from '../logic/services/instruments_manager.js'
 
 export default class AudioEngine {
     static TAG = "AUDIOENGINE"
@@ -18,6 +20,7 @@ export default class AudioEngine {
         this.secondsPerBeat = config.secondsPerBeat
         this.loadGeneratedSoundsFn = config.loadGeneratedSoundsFn
         this.computeNextStep = config.computeNextStep
+        this.instrumentsManager = new InstrumentsManager()
 
         this.flatNotes = new Map()
         this._cachedPatternRef = null
@@ -83,14 +86,73 @@ export default class AudioEngine {
     stop = () => {
         this.isRunning = false
         this.mixer.stop()
+        if (serviceRegistry.midiManager) {
+            serviceRegistry.midiManager.sendAllNotesOff()
+        }
     }
 
     playNotes = (tick, atTime) => {
-        if (this.isRunning) this.player.playNotes(tick, atTime)
+        if (this.isRunning) {
+            this.player.playNotes(tick, atTime)
+            this.sendMidiNotes(tick, atTime)
+        }
+    }
+
+    sendMidiNotes = (tick, atTime) => {
+        const midi = serviceRegistry.midiManager
+        if (!midi || !midi.isReady || !midi.selectedOutputId) return
+
+        const selPat = this.patterns[this.getSelectedPatternNum()]
+        if (!selPat) return
+
+        const nbTickForPattern = this.TICK * selPat.nbBars
+        const loopStep = tick % nbTickForPattern
+        const flatNotesMap = this.getFlatNotesForCurrentPattern(this.player.loop)
+        
+        if (!(flatNotesMap instanceof Map)) return
+        const notesToPlay = flatNotesMap.get(loopStep)
+        if (!notesToPlay) return
+
+        const perfNow = performance.now()
+        const audioNow = this.audioCtx.currentTime
+        const midiTime = perfNow + (atTime - audioNow) * 1000
+
+        notesToPlay.forEach(flatNote => {
+            if (flatNote.track.mute === false) {
+                const midiMapping = InstrumentsManager.DATA.instruments.find(i => i.id === flatNote.track.id)?.midi?.[0]
+                if (midiMapping) {
+                    const channel = parseInt(midiMapping.ch) || 10
+                    const note = parseInt(midiMapping.key) || 60
+                    const vel = Math.floor(flatNote.velocity * 127)
+                    const startTime = midiTime + (flatNote.swingTime * 1000)
+                    
+                    midi.sendNoteOn(channel, note, vel, startTime)
+                    
+                    const durationMs = flatNote.duration || 100
+                    midi.sendNoteOff(channel, note, startTime + durationMs)
+                }
+            }
+        })
     }
 
     simpleBeep = (indexTrack) => {
         this.player.simpleBeep(indexTrack)
+        
+        // Trigger MIDI for simpleBeep
+        const midi = serviceRegistry.midiManager
+        if (midi && midi.isReady && midi.selectedOutputId) {
+            const pat = this.patterns[this.getSelectedPatternNum()]
+            const track = pat?.tracks?.[indexTrack]
+            if (track) {
+                const midiMapping = InstrumentsManager.DATA.instruments.find(i => i.id === track.id)?.midi?.[0]
+                if (midiMapping) {
+                    const channel = parseInt(midiMapping.ch) || 10
+                    const note = parseInt(midiMapping.key) || 60
+                    midi.sendNoteOn(channel, note, 100)
+                    setTimeout(() => midi.sendNoteOff(channel, note), 100)
+                }
+            }
+        }
     }
 
     playSilentBuffer = () => {
