@@ -90,18 +90,6 @@ export default class MfSeq {
         this.serviceRegistry.audioEngine.start(selPattern)
         this.serviceRegistry.transport.start()
         this.playbackEvents.onPlaybackStart.forEach(cb => cb())
-
-        if (this.serviceRegistry.audioEngine.mfAudioRec == null) {
-            import('../audio/recorder.js').then(({ default: MfAudioRec }) => {
-                if (!this.isRunning || this.serviceRegistry.audioEngine.mfAudioRec != null) {
-                    return
-                }
-                this.serviceRegistry.audioEngine.startRecording(MfAudioRec)
-                this.serviceRegistry.audioEngine.mfAudioRec.onComplete = (rec, blob) => {
-                    this.serviceRegistry.blob = blob
-                }
-            })
-        }
     }
 
     stop = () => {

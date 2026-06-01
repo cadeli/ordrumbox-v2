@@ -19,7 +19,6 @@ export class ServiceRegistry {
         this.audioCtx = null
         this.audioEngine = null
         this.transport = null
-        this.blob = null
         this.exportLoopsCount = 1
     }
 
@@ -43,7 +42,6 @@ export class ServiceRegistry {
         this.audioCtx = null
         this.audioEngine = null
         this.transport = null
-        this.blob = null
         this.exportLoopsCount = 1
     }
 }

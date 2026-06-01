@@ -40,7 +40,6 @@ export default class AudioEngine {
         this.mfSound = this.player.mfSound
 
         this.isRunning = false
-        this.mfAudioRec = null
         this.unlocked = false
         this.nextStepTime = 0
     }
@@ -84,10 +83,6 @@ export default class AudioEngine {
     stop = () => {
         this.isRunning = false
         this.mixer.stop()
-        if (this.mfAudioRec) {
-            this.mfAudioRec.finishRecording()
-            this.mfAudioRec = null
-        }
     }
 
     playNotes = (tick, atTime) => {
@@ -162,14 +157,6 @@ export default class AudioEngine {
 
     setBpm = (bpm) => {
         this.mixer.setBpm(bpm)
-    }
-
-    startRecording = (MfAudioRecClass) => {
-        if (this.mfAudioRec == null && this.mixer?.analyser) {
-            this.mfAudioRec = new MfAudioRecClass(this.mixer.analyser)
-            this.mfAudioRec.startRecording()
-        }
-        return this.mfAudioRec
     }
 
     updateGeneratedSounds = (generatedSounds) => {

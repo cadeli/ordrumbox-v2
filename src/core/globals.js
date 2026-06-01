@@ -41,9 +41,6 @@ export const MfGlobals = {
     get leds() { return soundRegistry.leds },
     set leds(v) { soundRegistry.leds = v },
 
-    get blob() { return serviceRegistry.blob },
-    set blob(v) { serviceRegistry.blob = v },
-
     get audioCtx() { return serviceRegistry.audioCtx },
     set audioCtx(v) { serviceRegistry.audioCtx = v },
 
