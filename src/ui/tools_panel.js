@@ -157,11 +157,19 @@ export default class ToolsPanel {
         importWavFile.addEventListener('change', (e) => this._onImportWavFile(e))
 
         this.container.querySelector('#tp-midi-enable').addEventListener('click', async () => {
+            const btn = this.container.querySelector('#tp-midi-enable')
             if (!serviceRegistry.midiManager) {
                 const { getMidiManagerService } = await import('../state/service_registry.js')
                 await getMidiManagerService()
             }
-            await serviceRegistry.midiManager.init()
+            
+            if (serviceRegistry.midiManager.isReady) {
+                serviceRegistry.midiManager.disable()
+                btn.textContent = 'Enable MIDI'
+            } else {
+                await serviceRegistry.midiManager.init()
+                btn.textContent = 'Disable MIDI'
+            }
             this._sync()
         })
 
@@ -212,8 +220,11 @@ export default class ToolsPanel {
         }
 
         const outputSelect = this.container.querySelector('#tp-midi-output-select')
+        const enableBtn = this.container.querySelector('#tp-midi-enable')
+
         if (serviceRegistry.midiManager) {
             serviceRegistry.midiManager.renderIndicators()
+            enableBtn.textContent = serviceRegistry.midiManager.isReady ? 'Disable MIDI' : 'Enable MIDI'
 
             // Sync output list
             const outputs = serviceRegistry.midiManager.outputs

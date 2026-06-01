@@ -72,6 +72,25 @@ export default class MfMidi {
         return this.initPromise
     }
 
+    disable = () => {
+        if (this.midiAccess) {
+            this.midiAccess.removeEventListener('statechange', this.onStateChange)
+            this.midiAccess = null
+        }
+        this.inputs.forEach((input) => {
+            const handler = this.inputHandlers.get(input.id)
+            if (handler) {
+                input.removeEventListener('midimessage', handler)
+            }
+        })
+        this.inputs = []
+        this.outputs = []
+        this.inputHandlers.clear()
+        this.isReady = false
+        this.selectedOutputId = null
+        this.renderIndicators()
+    }
+
     getButtonLabel = () => {
         if (this.isInitializing) {
             return "Enabling MIDI..."
