@@ -2,6 +2,7 @@ import { appState } from '../state/app_state.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
+import { injectUiCss } from './panel_helpers.js'
 
 export default class Toolbar {
     constructor() {
@@ -19,12 +20,7 @@ export default class Toolbar {
     }
 
     injectCSS() {
-        if (document.getElementById('ui-styles')) return
-        const link = document.createElement('link')
-        link.id = 'ui-styles'
-        link.rel = 'stylesheet'
-        link.href = new URL('./styles.css', import.meta.url).href
-        document.head.appendChild(link)
+        injectUiCss()
     }
 
     init() {

@@ -6,6 +6,7 @@ import { PatternExporter } from '../patterns/exporter.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { isMidiSupported } from '../logic/midi/parser.js'
+import { bindCloseButton, bindPanelToggles, hidePanelsById, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 
 export default class ToolsPanel {
     constructor() {
@@ -17,12 +18,7 @@ export default class ToolsPanel {
     }
 
     injectCSS() {
-        if (document.getElementById('ui-styles')) return
-        const link = document.createElement('link')
-        link.id = 'ui-styles'
-        link.rel = 'stylesheet'
-        link.href = new URL('./styles.css', import.meta.url).href
-        document.head.appendChild(link)
+        injectUiCss()
     }
 
     init() {
@@ -195,16 +191,12 @@ export default class ToolsPanel {
             }
         })
 
-        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
+        bindCloseButton(this.container, () => this.hide())
 
         const groupMap = { pattern: 0, export: 1, import: 2, midi: 3 }
-        this.container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active')
-                const groups = this.container.querySelectorAll('.ne-body > .ne-group')
-                const group = groups[groupMap[btn.dataset.toggle]]
-                if (group) group.style.display = btn.classList.contains('active') ? '' : 'none'
-            })
+        bindPanelToggles(this.container, (key) => {
+            const groups = this.container.querySelectorAll('.ne-body > .ne-group')
+            return groups[groupMap[key]]
         })
     }
 
@@ -462,13 +454,7 @@ export default class ToolsPanel {
     }
 
     show() {
-        // Hide others
-        const te = document.getElementById('te-panel')
-        if (te) te.style.display = 'none'
-        const ne = document.getElementById('ne-panel')
-        if (ne) ne.style.display = 'none'
-        const op = document.getElementById('output-panel')
-        if (op) op.style.display = 'none'
+        hidePanelsById(['te-panel', 'ne-panel', 'output-panel'])
         
         this.container.style.display = 'block'
         this._sync()
@@ -480,9 +466,6 @@ export default class ToolsPanel {
     }
 
     reposition() {
-        const pp = document.getElementById('pattern-panel')
-        if (pp) {
-            this.container.style.top = (pp.offsetTop + pp.offsetHeight) + 'px'
-        }
+        positionBelowPatternPanel(this.container)
     }
 }

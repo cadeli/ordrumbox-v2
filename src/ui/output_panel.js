@@ -1,5 +1,6 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
+import { bindCloseButton, bindPanelToggles, hidePanelsById, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 
 const COMPRESSOR_PARAMS = [
     { key: 'threshold', label: 'Threshold', min: -40, max: 0, step: 1, default: -12, unit: 'dB' },
@@ -18,12 +19,7 @@ export default class OutputPanel {
     }
 
     injectCSS() {
-        if (document.getElementById('ui-styles')) return
-        const link = document.createElement('link')
-        link.id = 'ui-styles'
-        link.rel = 'stylesheet'
-        link.href = new URL('./styles.css', import.meta.url).href
-        document.head.appendChild(link)
+        injectUiCss()
     }
 
     init() {
@@ -113,16 +109,11 @@ export default class OutputPanel {
         const hicutSlider = this.container.querySelector('#op-hicut')
         hicutSlider.addEventListener('input', () => this._onFilterChange())
 
-        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
+        bindCloseButton(this.container, () => this.hide())
 
-        this.container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active')
-                const key = btn.dataset.toggle
-                const map = { master: '#op-master-vol', filters: '.ne-group:nth-child(2)', compressor: '.ne-group:nth-child(3)', spectrum: '#op-analyzer-group' }
-                const group = this.container.querySelector(map[key])
-                if (group) group.style.display = btn.classList.contains('active') ? '' : 'none'
-            })
+        const targetMap = { master: '#op-master-vol', filters: '.ne-group:nth-child(2)', compressor: '.ne-group:nth-child(3)', spectrum: '#op-analyzer-group' }
+        bindPanelToggles(this.container, (key) => {
+            return this.container.querySelector(targetMap[key])
         })
     }
 
@@ -140,12 +131,7 @@ export default class OutputPanel {
     }
 
     show() {
-        const te = document.getElementById('te-panel')
-        if (te) te.style.display = 'none'
-        const ne = document.getElementById('ne-panel')
-        if (ne) ne.style.display = 'none'
-        const tp = document.getElementById('tools-panel')
-        if (tp) tp.style.display = 'none'
+        hidePanelsById(['te-panel', 'ne-panel', 'tools-panel'])
 
         this.container.style.display = 'block'
         this._visible = true
@@ -161,10 +147,7 @@ export default class OutputPanel {
     }
 
     reposition() {
-        const pp = document.getElementById('pattern-panel')
-        if (pp) {
-            this.container.style.top = (pp.offsetTop + pp.offsetHeight) + 'px'
-        }
+        positionBelowPatternPanel(this.container)
     }
 
     _sync() {

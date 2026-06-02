@@ -8,6 +8,7 @@ import { TICK } from '../core/constants.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
+import { bindCloseButton, bindVisibilityToggles, escapeHtml, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
 
 const GROUPS = [
@@ -62,12 +63,7 @@ export default class TrackEditor {
     }
 
     injectCSS() {
-        if (document.getElementById('ui-styles')) return
-        const link = document.createElement('link')
-        link.id = 'ui-styles'
-        link.rel = 'stylesheet'
-        link.href = new URL('./styles.css', import.meta.url).href
-        document.head.appendChild(link)
+        injectUiCss()
     }
 
     init() {
@@ -147,10 +143,7 @@ export default class TrackEditor {
     }
 
     reposition() {
-        const pp = document.getElementById('pattern-panel')
-        if (pp) {
-            this.container.style.top = (pp.offsetTop + pp.offsetHeight) + 'px'
-        }
+        positionBelowPatternPanel(this.container)
     }
 
     show({ track, trackIdx }) {
@@ -515,14 +508,7 @@ export default class TrackEditor {
     }
 
     _bindEvents() {
-        this.container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const key = btn.dataset.toggle
-                appState.trackEditorVisibility[key] = !appState.trackEditorVisibility[key]
-                this.sync()
-                e.stopPropagation()
-            })
-        })
+        bindVisibilityToggles(this.container, appState.trackEditorVisibility, () => this.sync())
 
         this.container.querySelectorAll('input[type=range][data-key]').forEach(input => {
             input.addEventListener('input', () => this._onSlider(input))
@@ -625,7 +611,7 @@ export default class TrackEditor {
             this.synthEditor.openEditor()
         })
 
-        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
+        bindCloseButton(this.container, () => this.hide())
     }
 
     _onRowClick(propKey) {
@@ -781,8 +767,6 @@ export default class TrackEditor {
     }
 
     esc(str) {
-        const d = document.createElement('div')
-        d.textContent = str
-        return d.innerHTML
+        return escapeHtml(str)
     }
 }

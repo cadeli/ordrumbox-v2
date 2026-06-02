@@ -1,5 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
+import { bindCloseButton, bindVisibilityToggles, escapeHtml, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
 const SCALES_URL = 'assets/data/scales.json'
@@ -72,12 +73,7 @@ export default class NoteEditor {
     }
 
     injectCSS() {
-        if (document.getElementById('ui-styles')) return
-        const link = document.createElement('link')
-        link.id = 'ui-styles'
-        link.rel = 'stylesheet'
-        link.href = new URL('./styles.css', import.meta.url).href
-        document.head.appendChild(link)
+        injectUiCss()
     }
 
     init() {
@@ -101,10 +97,7 @@ export default class NoteEditor {
     }
 
     reposition() {
-        const pp = document.getElementById('pattern-panel')
-        if (pp) {
-            this.container.style.top = (pp.offsetTop + pp.offsetHeight) + 'px'
-        }
+        positionBelowPatternPanel(this.container)
     }
 
     _getArpState(note) {
@@ -208,14 +201,7 @@ export default class NoteEditor {
     }
 
     _bindEvents() {
-        this.container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const key = btn.dataset.toggle
-                appState.noteEditorVisibility[key] = !appState.noteEditorVisibility[key]
-                this.sync()
-                e.stopPropagation()
-            })
-        })
+        bindVisibilityToggles(this.container, appState.noteEditorVisibility, () => this.sync())
 
         this.container.querySelectorAll('input[type=range]').forEach(input => {
             input.addEventListener('input', () => this._onSlider(input))
@@ -223,7 +209,7 @@ export default class NoteEditor {
         this.container.querySelectorAll('select').forEach(sel => {
             sel.addEventListener('change', () => this._onSelect(sel))
         })
-        this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
+        bindCloseButton(this.container, () => this.hide())
     }
 
     hide() {
@@ -277,8 +263,6 @@ export default class NoteEditor {
     }
 
     esc(str) {
-        const d = document.createElement('div')
-        d.textContent = str
-        return d.innerHTML
+        return escapeHtml(str)
     }
 }
