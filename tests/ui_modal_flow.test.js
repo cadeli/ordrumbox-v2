@@ -114,7 +114,7 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
 
     it('opens and closes the Output Panel', () => {
         playbackEvents.onOutputToggle.forEach(fn => fn(true))
-        
+
         const op = document.getElementById('output-panel')
         expect(op.style.display).toBe('block')
 

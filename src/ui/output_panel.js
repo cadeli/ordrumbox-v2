@@ -40,6 +40,12 @@ export default class OutputPanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Output</span>
+                <div class="ne-toggles">
+                    <button class="ne-toggle active" data-toggle="master">Master</button>
+                    <button class="ne-toggle active" data-toggle="filters">Flt</button>
+                    <button class="ne-toggle active" data-toggle="compressor">Comp</button>
+                    <button class="ne-toggle active" data-toggle="spectrum">Spec</button>
+                </div>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
@@ -108,6 +114,16 @@ export default class OutputPanel {
         hicutSlider.addEventListener('input', () => this._onFilterChange())
 
         this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
+
+        this.container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active')
+                const key = btn.dataset.toggle
+                const map = { master: '#op-master-vol', filters: '.ne-group:nth-child(2)', compressor: '.ne-group:nth-child(3)', spectrum: '#op-analyzer-group' }
+                const group = this.container.querySelector(map[key])
+                if (group) group.style.display = btn.classList.contains('active') ? '' : 'none'
+            })
+        })
     }
 
     subscribe() {
