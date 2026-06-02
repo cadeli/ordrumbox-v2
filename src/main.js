@@ -366,3 +366,17 @@ async function exportCurrentTrackSound() {
         alert('Export failed: ' + e.message)
     }
 }
+
+// Service Worker Registration for PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        const swPath = window.location.pathname.includes('/dist/') ? './sw.js' : './sw.js';
+        navigator.serviceWorker.register(swPath)
+            .then(registration => {
+                console.log('orDrumbox SW registered with scope:', registration.scope);
+            })
+            .catch(error => {
+                console.error('orDrumbox SW registration failed:', error);
+            });
+    });
+}
