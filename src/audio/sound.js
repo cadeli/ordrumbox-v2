@@ -20,6 +20,10 @@ export default class MfSound {
         this.voiceFactory = new VoiceFactory(audioCtx, mixer, sounds, this.generatedSounds)
         this.generatedSoundsLoading = false
         this.generatedSoundsLoadFailed = false
+
+        // Track-level strip parameter cache to avoid redundant Web Audio API calls.
+        // Key: track.name, Value: { _version, velocity, pan, filterType, ... }
+        this._stripParamCache = new Map()
     }
 
     init = () => { }
@@ -168,9 +172,42 @@ export default class MfSound {
         }
     }
 
+    /**
+     * Invalidate strip cache for a specific track (call when track settings change via UI).
+     */
+    invalidateStripCache = (trackName) => {
+        if (trackName) {
+            this._stripParamCache.delete(trackName)
+        } else {
+            this._stripParamCache.clear()
+        }
+    }
+
+    /**
+     * Update the Web Audio strip only when track parameters have actually changed.
+     * Uses a version counter (_version) on the track object if available, otherwise
+     * compares a shallow fingerprint of the relevant parameters.
+     */
     updateStripFromTrack = (strip, track, time) => {
         if (!strip || !track) return
 
+        const name = track.name
+        const version = track._version ?? null
+
+        // Fast path: if the track has a version counter and it hasn't changed, skip
+        if (version !== null) {
+            const cached = this._stripParamCache.get(name)
+            if (cached && cached._version === version) return
+            this._stripParamCache.set(name, { _version: version })
+        } else {
+            // Fallback fingerprint for tracks without _version
+            const fp = `${track.filterType}|${track.filterFreq}|${track.filterQ}|${track.saturationType}|${track.saturationAmount}|${track.saturationOn}|${track.reverbType}|${track.reverbAmount}|${track.reverbOn}|${track.delayType}|${track.delayTime}|${track.delayAmount}|${track.delayOn}|${track.velocity}|${track.pan}`
+            const cached = this._stripParamCache.get(name)
+            if (cached && cached.fp === fp) return
+            this._stripParamCache.set(name, { fp })
+        }
+
+        // Apply all strip settings
         if (track.filterType) strip.updateFilter(track.filterType, track.filterFreq, track.filterQ)
         if (track.saturationType !== undefined || track.saturationOn !== undefined) {
             strip.updateSaturation(track.saturationType, track.saturationOn === false ? 0 : track.saturationAmount)
@@ -190,7 +227,7 @@ export default class MfSound {
 
         const trackVelo = track.velocity ?? MfDefaults.getTrackProp(track, 'velocity')
         strip.output.gain.setTargetAtTime(trackVelo, time, 0.01)
-        
+
         const trackPan = track.pan ?? MfDefaults.getTrackProp(track, 'pan')
         strip.pan.pan.setTargetAtTime(trackPan, time, 0.01)
     }

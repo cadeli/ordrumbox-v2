@@ -107,7 +107,8 @@ export default class AudioEngine {
 
         const nbTickForPattern = this.TICK * selPat.nbBars
         const loopStep = tick % nbTickForPattern
-        const flatNotesMap = this.getFlatNotesForCurrentPattern(this.player.loop)
+        // Reuse the flatNotes map already computed by player.playNotes this tick
+        const flatNotesMap = this.player.getCurrentFlatNotesMap() ?? this.getFlatNotesForCurrentPattern(this.player.loop)
         
         if (!(flatNotesMap instanceof Map)) return
         const notesToPlay = flatNotesMap.get(loopStep)
@@ -209,6 +210,8 @@ export default class AudioEngine {
 
     syncTrack = (track) => {
         if (!track) return
+        // Invalidate the per-track strip param cache so next playback applies updated settings
+        this.mfSound?.invalidateStripCache(track.name)
         this.updateStrip(track.name, track)
     }
 

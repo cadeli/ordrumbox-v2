@@ -20,6 +20,10 @@ export default class MfPlayer {
         this.mfSound = new MfSound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds)
         this.loop = 0
         this.lastDisplayBars = 0
+
+        // Cache to avoid recomputing flatNotes every tick when nothing changed
+        this._lastFlatNotesMap = null
+        this._lastFlatNotesLoop = -1
     }
 
     playNotes = (tick, atTime) => {
@@ -30,24 +34,36 @@ export default class MfPlayer {
 
             if (loopStep === 0) {
                 this.computeFlatNotes(selPat, this.loop)
+                // Invalidate local cache on new loop
+                this._lastFlatNotesLoop = -1
 
                 const tracks = selPat.tracks
                 const trackKeys = Object.keys(tracks)
                 for (let i = 0; i < trackKeys.length; i++) {
                     const track = tracks[trackKeys[i]]
                     if (track.auto === true) {
+                        // Fire-and-forget: catch errors without blocking scheduler
                         this.getAutoGenerate()
                             .then((mfAutoGenerate) => mfAutoGenerate.changeTrack(this.loop, selPat, track))
                             .catch((error) => console.error(error))
                     }
                 }
-                // We increment this.loop AFTER getting the flat notes for the current loop
             }
 
-            const flatNotesMap = this.getFlatNotes(this.loop)
+            // Use cached flatNotes map when loop hasn't changed
+            let flatNotesMap
+            if (this._lastFlatNotesLoop === this.loop && this._lastFlatNotesMap !== null) {
+                flatNotesMap = this._lastFlatNotesMap
+            } else {
+                flatNotesMap = this.getFlatNotes(this.loop)
+                this._lastFlatNotesLoop = this.loop
+                this._lastFlatNotesMap = flatNotesMap
+            }
+
             if (loopStep === nbTickForPattern - 1) {
                 this.loop++
             }
+
             if (!(flatNotesMap instanceof Map)) return
 
             const notesToPlay = flatNotesMap.get(loopStep)
@@ -67,6 +83,11 @@ export default class MfPlayer {
             console.error(e)
         }
     }
+
+    /**
+     * Return the current flat notes map (used by engine to avoid double lookup)
+     */
+    getCurrentFlatNotesMap = () => this._lastFlatNotesMap
 
     simpleBeep = (indexTrack) => {
         if (this.audioCtx == null) return

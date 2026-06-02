@@ -93,6 +93,9 @@ export default class Transport {
     nextNote = () => {
         this.nextStepTime += 0.25 * appState.secondsPerBeat
         this.tick++
-        Utils.displayStatusBar("step " + Math.floor(this.tick / 4))
+        // Throttle DOM update: only update the status bar once per beat (every 4 ticks)
+        if (this.tick % 4 === 0) {
+            Utils.displayStatusBar("step " + Math.floor(this.tick / 4))
+        }
     }
 }
