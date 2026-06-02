@@ -12,6 +12,7 @@ export default class PatternPanel {
         this._rafId = null
         this._prevLoopTick = -1
         this._playhead = null
+        this._syncPending = false
     }
 
     injectCSS() {
@@ -45,7 +46,7 @@ export default class PatternPanel {
     subscribe() {
         playbackEvents.onPatternChange.push(() => {
             this._prevLoopTick = -1
-            this.sync()
+            this.requestSync()
         })
         playbackEvents.onPlaybackStop.push(() => {
             this._prevLoopTick = -1
@@ -65,6 +66,15 @@ export default class PatternPanel {
                 this._selNote = null
             }
             this._applySelection()
+        })
+    }
+
+    requestSync() {
+        if (this._syncPending) return
+        this._syncPending = true
+        requestAnimationFrame(() => {
+            this.sync()
+            this._syncPending = false
         })
     }
 
@@ -176,9 +186,15 @@ export default class PatternPanel {
 
         if (note) {
             if (this._selNote === note && this._selTrackIdx === trackIdx) {
+                // PARTIAL UPDATE: Immediate visual feedback
+                cell.classList.remove('filled', 'pp-trig-rand', 'pp-trig-fixed')
+                cell.innerHTML = '' 
+                
                 serviceRegistry.mfCmd.deleteNote(track, note)
                 this._clearSelection()
-                this.sync()
+                
+                // Defer heavy re-render
+                requestAnimationFrame(() => this.sync())
             } else {
                 this._selNote = note
                 this._selTrackIdx = trackIdx
@@ -189,13 +205,19 @@ export default class PatternPanel {
             return
         }
 
+        // PARTIAL UPDATE: Immediate visual feedback
+        cell.classList.add('filled')
+
         const newNote = serviceRegistry.mfCmd.addNote(track, bar, barStep)
         this._selNote = newNote
         this._selTrackIdx = trackIdx
-        this.sync()
         this._applySelection()
+
         const pos = bar * (track.barQuantize ?? 4) + barStep
         playbackEvents.onNoteSelect.forEach(fn => fn({ track, trackIdx, note: newNote, pos, bar, barStep }))
+        
+        // Defer heavy re-render
+        requestAnimationFrame(() => this.sync())
     }
 
     syncCells(trackIdx, bar, barStep) {
@@ -206,15 +228,15 @@ export default class PatternPanel {
     _clearSelection() {
         this._selNote = null
         this._selTrackIdx = -1
-        this.container.querySelectorAll('.pp-cell.selected').forEach(el => el.classList.remove('selected'))
-        this.container.querySelectorAll('.pp-track-name.selected').forEach(el => el.classList.remove('selected'))
+        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected')
+        selected.forEach(el => el.classList.remove('selected'))
         playbackEvents.onNoteSelect.forEach(fn => fn(null))
         playbackEvents.onTrackSelect.forEach(fn => fn(null))
     }
 
     _applySelection() {
-        this.container.querySelectorAll('.pp-cell.selected').forEach(el => el.classList.remove('selected'))
-        this.container.querySelectorAll('.pp-track-name.selected').forEach(el => el.classList.remove('selected'))
+        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected')
+        selected.forEach(el => el.classList.remove('selected'))
         
         if (this._selTrackIdx !== -1) {
             if (this._selNote) {
