@@ -406,9 +406,9 @@ export default class TrackEditor {
             html += `<option value="${this.esc(currentGeneratedSound)}" selected>${this.esc(currentGeneratedSound)}</option>`
         }
         html += `</select></div>
-                <div class="ne-row">
+                <div class="ne-row" data-sound-edit-row style="display:${currentGeneratedSound === 'none' ? 'none' : 'flex'}">
                     <label>Edit</label>
-                    <button class="ne-btn" data-action="edit-synth" ${currentGeneratedSound === 'none' ? 'disabled' : ''}>Edit</button>
+                    <button class="ne-btn" data-action="edit-synth">Edit</button>
                 </div>
             </div>
         </div>`
