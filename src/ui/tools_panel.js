@@ -39,6 +39,12 @@ export default class ToolsPanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Tools</span>
+                <div class="ne-toggles">
+                    <button class="ne-toggle active" data-toggle="pattern">Pattern</button>
+                    <button class="ne-toggle active" data-toggle="export">Export</button>
+                    <button class="ne-toggle active" data-toggle="import">Import</button>
+                    <button class="ne-toggle active" data-toggle="midi">MIDI</button>
+                </div>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
@@ -190,6 +196,16 @@ export default class ToolsPanel {
         })
 
         this.container.querySelector('.ne-close').addEventListener('click', () => this.hide())
+
+        const groupMap = { pattern: 0, export: 1, import: 2, midi: 3 }
+        this.container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active')
+                const groups = this.container.querySelectorAll('.ne-body > .ne-group')
+                const group = groups[groupMap[btn.dataset.toggle]]
+                if (group) group.style.display = btn.classList.contains('active') ? '' : 'none'
+            })
+        })
     }
 
     subscribe() {
