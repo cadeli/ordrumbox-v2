@@ -149,7 +149,11 @@ export default class PatternPanel {
             if (!track) return
 
             if (this._selTrackIdx === trackIdx && !this._selNote) {
-                this._clearSelection()
+                if (window.innerWidth <= 768) {
+                    playbackEvents.onTrackSelect.forEach(fn => fn({ track, trackIdx }))
+                } else {
+                    this._clearSelection()
+                }
             } else {
                 this._selNote = null
                 this._selTrackIdx = trackIdx

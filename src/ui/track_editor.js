@@ -691,10 +691,6 @@ export default class TrackEditor {
         this._track = null
         this._trackIdx = -1
         this._selectedPropKey = null
-
-        if (wasActive) {
-            playbackEvents.onTrackSelect.forEach(fn => fn(null))
-        }
     }
 
     _onLoopSlider(input) {
