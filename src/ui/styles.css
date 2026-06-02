@@ -438,6 +438,7 @@
 #waiting-screen-start-btn {
     padding: 20px 40px; font-size: 18px; font-weight: bold;
     border: 3px solid #ffffff; border-radius: 8px;
-    cursor: pointer; background-color: #ff9800;
+    cursor: pointer; background-color: #e65100; color: #fff;
+    touch-action: manipulation;
 }
-#waiting-screen-start-btn.ready { background-color: #2196F3; color: #fff; }
+#waiting-screen-start-btn.ready { background-color: #1565c0; color: #fff; }
