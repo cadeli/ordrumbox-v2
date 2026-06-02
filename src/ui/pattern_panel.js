@@ -13,6 +13,7 @@ export default class PatternPanel {
         this._prevLoopTick = -1
         this._playhead = null
         this._syncPending = false
+        this._barRectsCache = []
     }
 
     injectCSS() {
@@ -29,7 +30,7 @@ export default class PatternPanel {
     createDOM() {
         this.container = document.createElement('div')
         this.container.id = 'pattern-panel'
-        this.container.addEventListener('click', (e) => this._onClick(e))
+        this.container.addEventListener('click', (e) => this._onClick(e), { passive: false })
         document.body.appendChild(this.container)
     }
 
@@ -39,6 +40,12 @@ export default class PatternPanel {
             this._playhead = document.createElement('div')
             this._playhead.className = 'pp-playhead'
             this._playhead.style.display = 'none'
+            this._playhead.style.position = 'absolute'
+            this._playhead.style.top = '0'
+            this._playhead.style.bottom = '0'
+            this._playhead.style.zIndex = '10'
+            this._playhead.style.pointerEvents = 'none'
+            this._playhead.style.willChange = 'transform'
             this.container.appendChild(this._playhead)
         }
     }
@@ -55,6 +62,7 @@ export default class PatternPanel {
             if (this._playhead) this._playhead.style.display = 'none'
         })
         playbackEvents.onPlaybackStart.push(() => {
+            this._updateBarCache()
             this._startPlayhead()
         })
         playbackEvents.onTrackSelect.push((data) => {
@@ -69,12 +77,27 @@ export default class PatternPanel {
         })
     }
 
+    _updateBarCache() {
+        if (!this.container) return
+        this._barRectsCache = []
+        const parentRect = this.container.getBoundingClientRect()
+        const barEls = this.container.querySelectorAll('.pp-bar')
+        barEls.forEach(el => {
+            const r = el.getBoundingClientRect()
+            this._barRectsCache[parseInt(el.dataset.bar)] = {
+                left: r.left - parentRect.left,
+                width: r.width
+            }
+        })
+    }
+
     requestSync() {
         if (this._syncPending) return
         this._syncPending = true
         requestAnimationFrame(() => {
             this.sync()
             this._syncPending = false
+            this._updateBarCache()
         })
     }
 
@@ -87,8 +110,8 @@ export default class PatternPanel {
                 if (this._playhead) this._playhead.style.display = 'none'
                 return
             }
-            this._rafId = requestAnimationFrame(loop)
             this._updatePlayhead()
+            this._rafId = requestAnimationFrame(loop)
         }
         this._rafId = requestAnimationFrame(loop)
     }
@@ -111,13 +134,11 @@ export default class PatternPanel {
         const startBar = appState.currentPage * BARS_PER_PAGE
         const endBar = startBar + BARS_PER_PAGE
 
-        // Auto-follow: Change page if playback moves beyond current visible range
         if (currentPatternBar < startBar || currentPatternBar >= endBar) {
             const newPage = Math.floor(currentPatternBar / BARS_PER_PAGE)
             if (newPage !== appState.currentPage) {
                 appState.currentPage = newPage
-                this.sync()
-                // Notify Toolbar to update page indicator
+                this.requestSync()
                 playbackEvents.onPatternChange.forEach(fn => fn())
             }
             this._playhead.style.display = 'none'
@@ -127,8 +148,8 @@ export default class PatternPanel {
         if (loopTick === this._prevLoopTick && this._playhead.style.display !== 'none') return
         this._prevLoopTick = loopTick
 
-        const targetBar = this.container.querySelector(`.pp-bar[data-bar="${currentPatternBar}"]`)
-        if (!targetBar) {
+        const barCache = this._barRectsCache[currentPatternBar]
+        if (!barCache) {
             this._playhead.style.display = 'none'
             return
         }
@@ -136,11 +157,9 @@ export default class PatternPanel {
         const tickInBar = loopTick % TICK
         const normInBar = tickInBar / TICK
 
-        const rect = targetBar.getBoundingClientRect()
-        const parentRect = this.container.getBoundingClientRect()
-
         this._playhead.style.display = 'block'
-        this._playhead.style.left = `${rect.left - parentRect.left + normInBar * rect.width}px`
+        const x = barCache.left + normInBar * barCache.width
+        this._playhead.style.transform = `translateX(${x}px)`
         this._playhead.style.width = `2px`
     }
 
