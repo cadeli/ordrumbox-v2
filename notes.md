@@ -31,3 +31,13 @@ convertAllTo4stepPerBar	Pas clair	normalizeTo4StepsPerBar
 
 Samples (ligne ~143): track.velocity * 16 → à vitesse 1.0 = gain 16
 Synth (ligne ~399): track.velocity / 2 → à vitesse 1.0 = gain 0.5
+
+
+npx vitest run tests/profile_heavy_song.test.js → écrit un run
+Faire des optimisations
+Re-run → diff s'affiche
+cat profile_logs/profile_history.jsonl | jq pour historique
+
+
+   * npm run electron:dev : Pour lancer l'application dans une fenêtre logicielle immédiatement.
+   * npm run electron:build : Pour générer l'installeur final (dans le dossier release/).

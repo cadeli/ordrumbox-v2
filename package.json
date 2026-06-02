@@ -2,10 +2,9 @@
   "name": "minfact",
   "version": "1.0.0",
   "description": "MinFact /online ordrumbox v2.0",
-  "main": "vite.config.js",
+  "main": "electron-main.cjs",
   "private": true,
   "type": "module",
-  "main": "electron-main.cjs",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -41,6 +40,8 @@
   "license": "GPL-3.0-only",
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.6",
+    "electron": "^42.3.2",
+    "electron-builder": "^26.8.1",
     "jsdom": "^29.1.1",
     "vite": "^8.0.16",
     "vitest": "^4.1.6"
@@ -48,6 +49,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",
     "eslint": "^10.4.1",
+    "express": "^5.2.1",
     "terser": "^5.46.0"
   }
 }
