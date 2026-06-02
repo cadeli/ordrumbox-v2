@@ -371,10 +371,17 @@
 #soft-synth-panel .ss-header {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 6px; padding-bottom: 6px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #333; flex-wrap: wrap;
 }
 #soft-synth-panel .ss-title {
     color: #e94560; font-weight: bold; font-size: 14px;
+    white-space: nowrap;
+}
+#soft-synth-panel .ss-toggles {
+    margin-left: 0; margin-right: 0; flex-wrap: wrap;
+}
+#soft-synth-panel .ss-actions {
+    display: flex; gap: 6px; margin-left: auto;
 }
 #soft-synth-panel .ss-canvas-wrap canvas {
     display: block; width: 100%; height: 100px;

@@ -239,7 +239,9 @@ export default class TrackEditor {
 
         bodyHtml += '</div>'
         this.container.innerHTML = headerHtml + bodyHtml
-        this.container.style.display = 'block'
+        if (this.synthEditor?.panel?.style?.display !== 'block') {
+            this.container.style.display = 'block'
+        }
         this.reposition()
         this._bindEvents()
     }

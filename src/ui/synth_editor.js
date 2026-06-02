@@ -3,6 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
+import { bindPanelToggles } from './panel_helpers.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
 
 const SYNTH_GROUP_DEFAULTS = {
@@ -46,6 +47,13 @@ const SYNTH_SLIDER_META = {
 }
 
 const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_SLIDER_META)]
+const SYNTH_GROUP_LABELS = {
+    masterVolume: 'Master',
+    slide: 'Slide',
+    filter: 'Flt',
+    enveloppe: 'Env'
+}
+const SYNTH_GROUP_ORDER = Object.keys(SYNTH_GROUP_DEFAULTS)
 
 export default class SynthEditor {
     constructor(host) {
@@ -56,6 +64,7 @@ export default class SynthEditor {
         this._draft = null
         this._loading = false
         this._loadFailed = false
+        this._groupVisibility = {}
     }
 
     createDOM() {
@@ -112,9 +121,15 @@ export default class SynthEditor {
     _renderEditor() {
         if (!this._draft || !this._editKey) return
 
-        const groupNames = Object.keys(this._draft)
+        const groupNames = this._getOrderedGroupNames()
+        this._ensureGroupVisibility(groupNames)
         let html = `<div class="ss-header">
             <span class="ss-title">Soft Synth: ${this._esc(this._editKey)}</span>
+            <div class="ne-toggles ss-toggles">
+                ${groupNames.map(groupName => `
+                    <button class="ne-toggle ${this._groupVisibility[groupName] ? 'active' : ''}" data-toggle="${this._esc(groupName)}">${this._esc(this._getGroupLabel(groupName))}</button>
+                `).join('')}
+            </div>
             <div class="ss-actions">
                 <button class="ne-btn active" data-action="synth-ok">OK</button>
                 <button class="ne-btn" data-action="synth-cancel">Cancel</button>
@@ -127,11 +142,12 @@ export default class SynthEditor {
 
         groupNames.forEach(groupName => {
             const value = this._draft[groupName]
+            const display = this._groupVisibility[groupName] ? '' : ' style="display:none"'
             const fields = value && typeof value === 'object' && !Array.isArray(value)
                 ? Object.entries(value).map(([key, val]) => ({ path: [groupName, key], key, val }))
                 : [{ path: [groupName], key: groupName, val: value }]
 
-            html += `<div class="ss-group">
+            html += `<div class="ss-group" data-synth-group="${this._esc(groupName)}"${display}>
                 <div class="ss-group-label">${this._esc(groupName)}</div>
                 <div class="ss-grid">`
 
@@ -151,6 +167,32 @@ export default class SynthEditor {
         this.panel.innerHTML = html
         this._bindEvents()
         this._drawWaveform()
+    }
+
+    _ensureGroupVisibility(groupNames) {
+        groupNames.forEach(groupName => {
+            if (this._groupVisibility[groupName] === undefined) {
+                this._groupVisibility[groupName] = true
+            }
+        })
+    }
+
+    _getOrderedGroupNames() {
+        const names = Object.keys(this._draft)
+        return names.sort((a, b) => {
+            const aIndex = SYNTH_GROUP_ORDER.indexOf(a)
+            const bIndex = SYNTH_GROUP_ORDER.indexOf(b)
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+            if (aIndex !== -1) return -1
+            if (bIndex !== -1) return 1
+            return a.localeCompare(b)
+        })
+    }
+
+    _getGroupLabel(groupName) {
+        if (SYNTH_GROUP_LABELS[groupName]) return SYNTH_GROUP_LABELS[groupName]
+        if (/^vco\d+$/i.test(groupName)) return groupName.toUpperCase()
+        return groupName
     }
 
     _hydrateDraft() {
@@ -212,6 +254,11 @@ export default class SynthEditor {
     }
 
     _bindEvents() {
+        bindPanelToggles(this.panel, (key) => {
+            this._groupVisibility[key] = !this._groupVisibility[key]
+            return Array.from(this.panel.querySelectorAll('[data-synth-group]'))
+                .find(group => group.dataset.synthGroup === key)
+        })
         this.panel.querySelectorAll('input[data-synth-path]').forEach(input => {
             input.addEventListener('input', () => this._onInput(input))
         })
