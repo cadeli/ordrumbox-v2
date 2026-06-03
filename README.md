@@ -110,10 +110,10 @@ MasterGain: 4.0 (compensation for Web Audio loudness deficit)
 
 ## Resources
 
-- Detailed User Guide: https://www.ordrumbox.com/user-manual.html
+- Detailed User Guide: https://www.ordrumbox.com/userguide-ordrumbox-v2.html
 - Video Tutorial: https://www.ordrumbox.com/video-tutorial-ordrumbox.html
 - GitHub Repository: https://github.com/cadeli/ordrumbox-v2
-- Official Website: https://www.ordrumbox.com/
+- Official Website: https://www.ordrumbox.com
 
 ## License
 
