@@ -10,7 +10,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "dev": "vite",
-    "build": "vite build && cp sw.js dist/ && cp -r assets/data assets/kits assets/images dist/assets/",
+    "build": "vite build && cp sw.js manifest.json dist/ && cp -r assets/data assets/kits assets/images dist/assets/",
     "preview": "vite preview",
     "electron:dev": "electron .",
     "electron:build": "npm run build && electron-builder"
