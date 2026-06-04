@@ -9,6 +9,7 @@ import MfPercGenerate from '../src/logic/generators/perc_generate.js'
 
 describe('Functional: Auto-generate patterns', () => {
     let mfCmd
+    let originalRandom
 
     beforeEach(() => {
         MfGlobals.resetAll()
@@ -16,7 +17,7 @@ describe('Functional: Auto-generate patterns', () => {
         MfGlobals.mfCmd = mfCmd
         // Seed Math.random for deterministic tests
         let seed = 0
-        const originalRandom = Math.random
+        originalRandom = Math.random
         Math.random = () => {
             seed = (seed * 9301 + 49297) % 233280
             return seed / 233280
@@ -25,6 +26,7 @@ describe('Functional: Auto-generate patterns', () => {
 
     afterEach(() => {
         // Restore Math.random
+        Math.random = originalRandom
     })
 
     function createTestTrack(name, bars = 4, barQuantize = 4) {

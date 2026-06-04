@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MfGlobals } from '../src/core/globals.js'
 import MfCmd from '../src/logic/commands/cmd.js'
 import MfAutoAssign from '../src/logic/services/auto_assign.js'
@@ -30,6 +30,7 @@ describe('Functional: Auto-assign sounds', () => {
     })
 
     it('autoAssignTrackSounds renames track when instrument name is found', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const track = mfCmd.createTrack(4, 'kick_01.wav', 4)
         track.useAutoAssignSound = true
 
@@ -37,6 +38,7 @@ describe('Functional: Auto-assign sounds', () => {
 
         expect(track.name).toBe('KICK')
         expect(track.soundId).toBe('snd_kick')
+        warnSpy.mockRestore()
     })
 
     it('skips tracks with useAutoAssignSound=false', () => {

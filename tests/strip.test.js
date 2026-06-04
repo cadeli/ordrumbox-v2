@@ -264,8 +264,11 @@ describe('MfStrip', () => {
     })
 
     it('disconnectNode does not throw when node.disconnect throws', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const badNode = { disconnect: vi.fn(() => { throw new Error('disconnected') }) }
         expect(() => strip.disconnectNode(badNode)).not.toThrow()
+        expect(warnSpy).toHaveBeenCalled()
+        warnSpy.mockRestore()
     })
 
     // ── delete ────────────────────────────────────────────────────────

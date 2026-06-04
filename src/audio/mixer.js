@@ -23,6 +23,8 @@ export default class MfMixer {
             console.error("MfMixer::start - No audioCtx available");
             return;
         }
+
+        const isAlreadyStarted = !!this.compressor;
         this.trackName = "all";
 
         if (!this.lfo) {
@@ -63,11 +65,13 @@ export default class MfMixer {
             this.dataArray = new Uint8Array(this.analyser.fftSize);
         }
 
-        this.compressor.connect(this.lowcutFilter);
-        this.lowcutFilter.connect(this.hicutFilter);
-        this.hicutFilter.connect(this.masterGain);
-        this.masterGain.connect(this.analyser);
-        this.analyser.connect(ctx.destination);
+        if (!isAlreadyStarted) {
+            this.compressor.connect(this.lowcutFilter);
+            this.lowcutFilter.connect(this.hicutFilter);
+            this.hicutFilter.connect(this.masterGain);
+            this.masterGain.connect(this.analyser);
+            this.analyser.connect(ctx.destination);
+        }
     }
 
     stop = () => {

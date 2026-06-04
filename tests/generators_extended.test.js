@@ -8,12 +8,14 @@ import MfHatGenerate from '../src/logic/generators/hat_generate.js'
 describe('Generator extended variants', () => {
     let mfCmd
     let seed
+    let originalRandom
 
     beforeEach(() => {
         MfGlobals.resetAll()
         mfCmd = new MfCmd()
         MfGlobals.mfCmd = mfCmd
         seed = 42
+        originalRandom = Math.random
         Math.random = () => {
             seed = (seed * 9301 + 49297) % 233280
             return seed / 233280
@@ -22,6 +24,7 @@ describe('Generator extended variants', () => {
 
     afterEach(() => {
         // Math.random restored via vitest teardown
+        Math.random = originalRandom
     })
 
     function makeTrack(name, bars = 4, barQuantize = 4) {

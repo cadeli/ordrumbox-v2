@@ -156,7 +156,7 @@ export default class MfSound {
 
         this.generatedSoundsLoading = true
         if (loadFn) {
-            loadFn(() => {
+            const promise = loadFn(() => {
                 this.generatedSoundsLoading = false
                 if (Object.keys(this.generatedSounds).length === 0) {
                     this.generatedSoundsLoadFailed = true
@@ -164,11 +164,15 @@ export default class MfSound {
                     return
                 }
                 this.playGenerated(flatNote, time)
-            }).catch((error) => {
-                this.generatedSoundsLoading = false
-                this.generatedSoundsLoadFailed = true
-                console.error("MfSounds::loadGeneratedsounds failed", error)
             })
+            
+            if (promise && typeof promise.catch === 'function') {
+                promise.catch((error) => {
+                    this.generatedSoundsLoading = false
+                    this.generatedSoundsLoadFailed = true
+                    console.error("MfSounds::loadGeneratedsounds failed", error)
+                })
+            }
         }
     }
 

@@ -590,10 +590,12 @@ describe('VoiceFactory', () => {
     })
 
     it('returns null for SampleVoice when no soundBuffer is found', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const flatNote = makeFlatNote({ soundId: 'missing_sound' })
         flatNote.track.soundId = 'also_missing'
         const voice = factory.createVoice(flatNote)
         expect(voice).toBeNull()
+        warnSpy.mockRestore()
     })
 
     it('falls back to track.soundId when flatNote.soundId has no buffer', () => {
