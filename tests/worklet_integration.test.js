@@ -7,6 +7,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import MfStrip from '../src/audio/strip.js'
+import MfMixer from '../src/audio/mixer.js'
 import WorkletBridge from '../src/audio/worklets/bridge.js'
 
 function makeAudioCtx() {
@@ -27,8 +28,8 @@ function makeAudioCtx() {
         })),
         createBiquadFilter: vi.fn(() => ({
             type: 'allpass',
-            frequency: { value: 1000, setTargetAtTime: vi.fn() },
-            Q: { value: 1, setTargetAtTime: vi.fn() },
+            frequency: { value: 1000, setTargetAtTime: vi.fn(), setValueAtTime: vi.fn() },
+            Q: { value: 1, setTargetAtTime: vi.fn(), setValueAtTime: vi.fn() },
             connect: vi.fn(function () { return this }),
             disconnect: vi.fn()
         })),
@@ -50,6 +51,21 @@ function makeAudioCtx() {
         })),
         createStereoPanner: vi.fn(() => ({
             pan: { value: 0, setTargetAtTime: vi.fn() },
+            connect: vi.fn(function () { return this }),
+            disconnect: vi.fn()
+        })),
+        createDynamicsCompressor: vi.fn(() => ({
+            threshold: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            knee:      { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            ratio:     { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            attack:    { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            release:   { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            connect: vi.fn(function () { return this }),
+            disconnect: vi.fn()
+        })),
+        createAnalyser: vi.fn(() => ({
+            fftSize: 0,
+            frequencyBinCount: 512,
             connect: vi.fn(function () { return this }),
             disconnect: vi.fn()
         })),
@@ -245,5 +261,110 @@ describe('WorkletBridge + MfStrip integration', () => {
         WorkletBridge.setReverb(strip, 'hall', 0.5)
         const roomCall = verbParams.get('roomSize').setTargetAtTime.mock.calls[0]
         expect(roomCall[0]).toBe(0.85) // hall = 0.85
+    })
+})
+
+// ===========================================================
+// Master bus worklet integration
+// ===========================================================
+describe('WorkletBridge + MfMixer integration', () => {
+    let ctx
+
+    beforeEach(() => {
+        ctx = makeAudioCtx()
+    })
+
+    it('MfMixer starts in native mode by default', () => {
+        const mixer = new MfMixer(ctx)
+        mixer.start()
+        expect(mixer._workletActive).toBe(false)
+        expect(mixer.busWorklet).toBeNull()
+    })
+
+    it('native mode: busInput connects to compressor', () => {
+        const mixer = new MfMixer(ctx)
+        mixer.start()
+        expect(mixer.busInput).toBeTruthy()
+        // busInput.connect should have been called with compressor
+        expect(mixer.busInput.connect).toHaveBeenCalledWith(mixer.compressor)
+    })
+
+    it('addStrip connects strip.pan to busInput', () => {
+        const mixer = new MfMixer(ctx)
+        mixer.start()
+        mixer.addStrip('KICK')
+        const strip = mixer.strips['KICK']
+        expect(strip.pan.connect).toHaveBeenCalledWith(mixer.busInput)
+    })
+
+    it('worklet path: busWorklet is wired when _workletActive', () => {
+        const mixer = new MfMixer(ctx)
+        // Pre-configure worklet BEFORE start()
+        const busNode = { connect: vi.fn(), disconnect: vi.fn() }
+        mixer.busWorklet = busNode
+        mixer._workletActive = true
+        mixer.start()
+        // In worklet mode, busInput should be connected to busWorklet
+        expect(mixer.busInput.connect).toHaveBeenCalledWith(busNode)
+    })
+
+    it('worklet path: analyser is fed by busWorklet output', () => {
+        const mixer = new MfMixer(ctx)
+        const busNode = { connect: vi.fn(), disconnect: vi.fn() }
+        mixer.busWorklet = busNode
+        mixer._workletActive = true
+        mixer.start()
+        expect(busNode.connect).toHaveBeenCalledWith(mixer.analyser)
+    })
+
+    it('setMasterBus sets all parameters on the worklet node', () => {
+        const mixer = new MfMixer(ctx)
+        const params = new Map()
+        const paramNames = [
+            'compThreshold', 'compRatio', 'compKnee', 'compAttack',
+            'compRelease', 'compMakeup', 'lowcut', 'hicut', 'master', 'bypass'
+        ]
+        for (const name of paramNames) {
+            params.set(name, { setTargetAtTime: vi.fn() })
+        }
+        mixer.busWorklet = { parameters: params, connect: vi.fn(), disconnect: vi.fn() }
+
+        WorkletBridge.setMasterBus(mixer, {
+            lowcut: 50, hicut: 18000, master: 0.8,
+            threshold: -18, ratio: 6, knee: 20,
+            attack: 0.005, release: 0.2, makeup: 3,
+            bypass: false
+        })
+        for (const name of paramNames) {
+            expect(params.get(name).setTargetAtTime).toHaveBeenCalled()
+        }
+    })
+
+    it('setMasterBus with bypass=true sets bypass to 1', () => {
+        const mixer = new MfMixer(ctx)
+        const params = new Map()
+        params.set('bypass', { setTargetAtTime: vi.fn() })
+        mixer.busWorklet = { parameters: params, connect: vi.fn(), disconnect: vi.fn() }
+
+        WorkletBridge.setMasterBus(mixer, { bypass: true })
+        const call = params.get('bypass').setTargetAtTime.mock.calls[0]
+        expect(call[0]).toBe(1)
+    })
+
+    it('setMasterBus returns false if no busWorklet', () => {
+        const mixer = new MfMixer(ctx)
+        mixer.busWorklet = null
+        expect(WorkletBridge.setMasterBus(mixer, { master: 0.5 })).toBe(false)
+    })
+
+    it('stop() disconnects worklet and clears _workletActive', () => {
+        const mixer = new MfMixer(ctx)
+        mixer.start()
+        const busNode = { connect: vi.fn(), disconnect: vi.fn() }
+        mixer.busWorklet = busNode
+        mixer._workletActive = true
+        mixer.stop()
+        expect(mixer._workletActive).toBe(false)
+        expect(mixer.busWorklet).toBeNull()
     })
 })

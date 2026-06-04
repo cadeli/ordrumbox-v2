@@ -15,6 +15,11 @@ export default class MfMixer {
         this.lowcutFilter = null;
         this.hicutFilter = null;
         this.masterGain = null;
+
+        // Worklet mode (set by WorkletBridge.upgradeMixer)
+        this.busWorklet = null;       // master bus worklet node
+        this.busInput = null;         // GainNode strips connect to (worklet or pass-through)
+        this._workletActive = false;
     }
 
     start = () => {
@@ -65,11 +70,25 @@ export default class MfMixer {
             this.dataArray = new Uint8Array(this.analyser.fftSize);
         }
 
+        // busInput is the merge node strips connect to. In native mode it
+        // routes to the compressor; in worklet mode it routes to the worklet.
+        if (!this.busInput) {
+            this.busInput = ctx.createGain();
+        }
+
         if (!isAlreadyStarted) {
-            this.compressor.connect(this.lowcutFilter);
-            this.lowcutFilter.connect(this.hicutFilter);
-            this.hicutFilter.connect(this.masterGain);
-            this.masterGain.connect(this.analyser);
+            if (this._workletActive && this.busWorklet) {
+                // Worklet path: strips → busInput → worklet → analyser → destination
+                this.busInput.connect(this.busWorklet);
+                this.busWorklet.connect(this.analyser);
+            } else {
+                // Native path: strips → busInput → compressor → EQ → master → analyser
+                this.busInput.connect(this.compressor);
+                this.compressor.connect(this.lowcutFilter);
+                this.lowcutFilter.connect(this.hicutFilter);
+                this.hicutFilter.connect(this.masterGain);
+                this.masterGain.connect(this.analyser);
+            }
             this.analyser.connect(ctx.destination);
         }
     }
@@ -81,7 +100,7 @@ export default class MfMixer {
 
         nodes.forEach(node => {
             if (node) {
-                try { node.disconnect(); } catch (e) { 
+                try { node.disconnect(); } catch (e) {
                     console.error(e)
                 }
             }
@@ -91,12 +110,22 @@ export default class MfMixer {
             try { this.lfo.stop(); } catch (e) { console.error(e)}
         }
 
+        if (this.busWorklet) {
+            try { this.busWorklet.disconnect(); } catch (e) { console.error(e) }
+        }
+        if (this.busInput) {
+            try { this.busInput.disconnect(); } catch (e) { console.error(e) }
+        }
+
         this.lfo = null;
         this.compressor = null;
         this.lowcutFilter = null;
         this.hicutFilter = null;
         this.masterGain = null;
         this.analyser = null;
+        this.busWorklet = null;
+        this.busInput = null;
+        this._workletActive = false;
         this.gFftData = null;
         this.dataArray = null;
     }
@@ -106,8 +135,8 @@ export default class MfMixer {
             const strip = new MfStrip(name, this.audioCtx);
             this.strips[name] = strip;
 
-            if (strip.pan && this.compressor) {
-                strip.pan.connect(this.compressor);
+            if (strip.pan && this.busInput) {
+                strip.pan.connect(this.busInput);
             }
         }
     }

@@ -18,6 +18,7 @@ import FILTER_SOURCE from './processors/filter_source.js'
 import REVERB_SOURCE from './processors/reverb_source.js'
 import DELAY_SOURCE from './processors/delay_source.js'
 import LFO_SOURCE from './processors/lfo_source.js'
+import MASTER_BUS_SOURCE from './processors/master_bus_source.js'
 
 let _registered = false
 
@@ -28,6 +29,7 @@ function registerAll() {
     WorkletLoader.register('reverb', REVERB_SOURCE)
     WorkletLoader.register('delay', DELAY_SOURCE)
     WorkletLoader.register('lfo', LFO_SOURCE)
+    WorkletLoader.register('master-bus', MASTER_BUS_SOURCE)
     _registered = true
 }
 
@@ -202,6 +204,60 @@ export default class WorkletBridge {
         node.parameters.get('feedback').setTargetAtTime(fb, t, ramp)
         node.parameters.get('filter').setTargetAtTime(5000, t, ramp)
         node.parameters.get('saturation').setTargetAtTime(0.1, t, ramp)
+        return true
+    }
+
+    /**
+     * Upgrade an MfMixer's master bus (compressor + EQ + master gain) to
+     * a single AudioWorkletNode. Strips must be re-added or the connection
+     * will be lost; this method assumes the mixer has been freshly started
+     * or that strips will be reconnected externally.
+     */
+    static async upgradeMixer(mixer) {
+        registerAll()
+        const ctx = mixer.audioCtx
+        if (!WorkletLoader.isSupported(ctx)) return false
+
+        try {
+            await WorkletLoader.ensureLoaded(ctx)
+        } catch (err) {
+            console.warn('WorkletBridge: failed to load worklets, staying on native', err)
+            return false
+        }
+
+        if (mixer._workletActive) return true
+
+        try {
+            const bus = WorkletLoader.createNode(ctx, 'master-bus', {
+                numberOfInputs: 1,
+                numberOfOutputs: 1,
+                outputChannelCount: [2]
+            })
+            mixer.busWorklet = bus
+            mixer._workletActive = true
+            return true
+        } catch (e) {
+            console.warn('WorkletBridge: master bus upgrade failed', e)
+            return false
+        }
+    }
+
+    static setMasterBus(mixer, options = {}) {
+        if (!mixer?.busWorklet) return false
+        const node = mixer.busWorklet
+        const time = mixer.audioCtx.currentTime
+        const ramp = 0.02
+        const params = node.parameters
+        if (options.lowcut  !== undefined && params.get('lowcut'))  params.get('lowcut').setTargetAtTime(options.lowcut,  time, ramp)
+        if (options.hicut   !== undefined && params.get('hicut'))   params.get('hicut').setTargetAtTime(options.hicut,   time, ramp)
+        if (options.master  !== undefined && params.get('master'))  params.get('master').setTargetAtTime(options.master,  time, ramp)
+        if (options.threshold !== undefined && params.get('compThreshold')) params.get('compThreshold').setTargetAtTime(options.threshold, time, ramp)
+        if (options.ratio     !== undefined && params.get('compRatio'))     params.get('compRatio').setTargetAtTime(options.ratio,     time, ramp)
+        if (options.knee      !== undefined && params.get('compKnee'))      params.get('compKnee').setTargetAtTime(options.knee,      time, ramp)
+        if (options.attack    !== undefined && params.get('compAttack'))    params.get('compAttack').setTargetAtTime(options.attack,    time, ramp)
+        if (options.release   !== undefined && params.get('compRelease'))   params.get('compRelease').setTargetAtTime(options.release,   time, ramp)
+        if (options.makeup    !== undefined && params.get('compMakeup'))    params.get('compMakeup').setTargetAtTime(options.makeup,    time, ramp)
+        if (options.bypass    !== undefined && params.get('bypass'))        params.get('bypass').setTargetAtTime(options.bypass ? 1 : 0, time, ramp)
         return true
     }
 }
