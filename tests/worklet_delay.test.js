@@ -42,8 +42,8 @@ describe('DelayProcessor source', () => {
         expect(DELAY_SOURCE.length).toBeGreaterThan(100)
     })
 
-    it('contains registerProcessor call for delay-processor', () => {
-        expect(DELAY_SOURCE).toContain("registerProcessor('delay-processor'")
+    it('contains registerProcessor call for delay', () => {
+        expect(DELAY_SOURCE).toContain("registerProcessor('delay'")
     })
 
     it('declares 9 AudioParams: timeL, timeR, feedback, mix, filter, saturation, saturationType, mode, width', () => {
@@ -78,7 +78,7 @@ describe('DelayProcessor source', () => {
     it('instantiates with two delay lines', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', DELAY_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['delay-processor']()
+        const proc = new globalScope.processors['delay']()
         expect(proc.lineL).toBeDefined()
         expect(proc.lineR).toBeDefined()
         expect(proc.lineL.buffer.length).toBeGreaterThan(0)
@@ -88,7 +88,7 @@ describe('DelayProcessor source', () => {
     it('slap mode (time=0.1s) produces a delayed echo', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', DELAY_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['delay-processor']()
+        const proc = new globalScope.processors['delay']()
         // Buffer must be larger than the delay so the echo appears inside the loop
         const FRAMES = 5500
         const inpL = new Float32Array(FRAMES)
@@ -109,7 +109,7 @@ describe('DelayProcessor source', () => {
     it('pingpong mode puts echo on opposite channel', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', DELAY_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['delay-processor']()
+        const proc = new globalScope.processors['delay']()
         const FRAMES = 5500
         const inpL = new Float32Array(FRAMES)
         const inpR = new Float32Array(FRAMES)
@@ -131,7 +131,7 @@ describe('DelayProcessor source', () => {
     it('mix=0 produces dry signal with no delay', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', DELAY_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['delay-processor']()
+        const proc = new globalScope.processors['delay']()
         const FRAMES = 1024
         const inpL = new Float32Array(FRAMES)
         for (let i = 0; i < FRAMES; i++) inpL[i] = Math.sin(2 * Math.PI * 440 * i / 44100)
@@ -147,7 +147,7 @@ describe('DelayProcessor source', () => {
     it('feedback creates multiple echoes (reverb-like)', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', DELAY_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['delay-processor']()
+        const proc = new globalScope.processors['delay']()
         const FRAMES = 8820  // 200ms
         const inpL = new Float32Array(FRAMES)
         const inpR = new Float32Array(FRAMES)
@@ -168,7 +168,7 @@ describe('DelayProcessor source', () => {
     it('saturation limits amplitude in feedback (no runaway)', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', DELAY_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['delay-processor']()
+        const proc = new globalScope.processors['delay']()
         const FRAMES = 8820
         const inpL = new Float32Array(FRAMES)
         const inpR = new Float32Array(FRAMES)

@@ -442,3 +442,30 @@
     touch-action: manipulation;
 }
 #waiting-screen-start-btn.ready { background-color: #1565c0; color: #fff; }
+
+/* Worklet toggle (Output panel "Engine" group) */
+#output-panel .op-worklet-row {
+    align-items: center; gap: 12px;
+}
+#output-panel .op-toggle-label {
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer; user-select: none; flex: 1;
+}
+#output-panel .op-toggle-label input[type=checkbox] {
+    cursor: pointer; margin: 0; width: 16px; height: 16px;
+    accent-color: #00ff00;
+}
+#output-panel .op-worklet-status {
+    font-size: 11px; font-weight: bold; padding: 2px 8px;
+    border-radius: 4px; letter-spacing: 0.5px; min-width: 80px;
+    text-align: center;
+}
+#output-panel .op-status-off {
+    background: #333; color: #888; border: 1px solid #555;
+}
+#output-panel .op-status-active {
+    background: #0a3d0a; color: #00ff00; border: 1px solid #00ff00;
+}
+#output-panel .op-status-unavailable {
+    background: #3d0a0a; color: #ff6060; border: 1px solid #ff6060;
+}

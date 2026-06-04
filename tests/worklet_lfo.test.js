@@ -37,8 +37,8 @@ describe('LFOProcessor source', () => {
         expect(LFO_SOURCE.length).toBeGreaterThan(100)
     })
 
-    it('contains registerProcessor call for lfo-processor', () => {
-        expect(LFO_SOURCE).toContain("registerProcessor('lfo-processor'")
+    it('contains registerProcessor call for lfo', () => {
+        expect(LFO_SOURCE).toContain("registerProcessor('lfo'")
     })
 
     it('declares 4 AudioParams: freq, waveform, phase, bias', () => {
@@ -59,7 +59,7 @@ describe('LFOProcessor source', () => {
     it('sine LFO oscillates between -1 and +1', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', LFO_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['lfo-processor']()
+        const proc = new globalScope.processors['lfo']()
         const FRAMES = 4410  // 100ms
         const out = runProcess(proc, { freq: 10, waveform: 0, phase: 0, bias: 0 }, FRAMES)
         let max = -Infinity, min = Infinity
@@ -74,7 +74,7 @@ describe('LFOProcessor source', () => {
     it('sine LFO at 10Hz completes ~1 cycle in 100ms', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', LFO_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['lfo-processor']()
+        const proc = new globalScope.processors['lfo']()
         const FRAMES = 4410
         const out = runProcess(proc, { freq: 10, waveform: 0, phase: 0, bias: 0 }, FRAMES)
         // Count zero crossings
@@ -92,7 +92,7 @@ describe('LFOProcessor source', () => {
     it('square LFO alternates between +1 and -1', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', LFO_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['lfo-processor']()
+        const proc = new globalScope.processors['lfo']()
         const FRAMES = 4410
         const out = runProcess(proc, { freq: 10, waveform: 3, phase: 0, bias: 0 }, FRAMES)
         for (let i = 10; i < FRAMES; i++) {
@@ -105,7 +105,7 @@ describe('LFOProcessor source', () => {
     it('saw LFO ramps from -1 to +1', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', LFO_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['lfo-processor']()
+        const proc = new globalScope.processors['lfo']()
         // Need buffer long enough for full cycle: 1Hz needs 44100 frames
         const FRAMES = 44100
         const out = runProcess(proc, { freq: 1, waveform: 2, phase: 0, bias: 0 }, FRAMES)
@@ -121,7 +121,7 @@ describe('LFOProcessor source', () => {
     it('bias adds DC offset to the output', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', LFO_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['lfo-processor']()
+        const proc = new globalScope.processors['lfo']()
         // Run for a full second so sine averages to 0
         const FRAMES = 44100
         const out = runProcess(proc, { freq: 1, waveform: 0, phase: 0, bias: 0.5 }, FRAMES)
@@ -136,8 +136,8 @@ describe('LFOProcessor source', () => {
     it('higher frequency produces more cycles', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', LFO_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc1 = new globalScope.processors['lfo-processor']()
-        const proc2 = new globalScope.processors['lfo-processor']()
+        const proc1 = new globalScope.processors['lfo']()
+        const proc2 = new globalScope.processors['lfo']()
         const FRAMES = 4410
         const out1 = runProcess(proc1, { freq: 1, waveform: 0, phase: 0, bias: 0 }, FRAMES)
         const out2 = runProcess(proc2, { freq: 5, waveform: 0, phase: 0, bias: 0 }, FRAMES)
@@ -156,7 +156,7 @@ describe('LFOProcessor source', () => {
     it('sample-and-hold holds random values per cycle', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', LFO_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = new globalScope.processors['lfo-processor']()
+        const proc = new globalScope.processors['lfo']()
         // At 50Hz over 1 second we get 50 cycles, hence 50 new random values
         const FRAMES = 44100
         const out = runProcess(proc, { freq: 50, waveform: 4, phase: 0, bias: 0 }, FRAMES)

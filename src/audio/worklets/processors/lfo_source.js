@@ -98,7 +98,7 @@ class LFOProcessor extends AudioWorkletProcessor {
     }
 }
 
-registerProcessor('lfo-processor', LFOProcessor);
+registerProcessor('lfo', LFOProcessor);
 `
 
 export default LFO_PROCESSOR_SOURCE

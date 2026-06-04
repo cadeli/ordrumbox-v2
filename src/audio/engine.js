@@ -5,6 +5,7 @@ import MfNoteParams from '../patterns/note_params.js'
 import { computeFlatNotesFromPattern as computeFlatNotesPure } from '../patterns/engine.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { appState } from '../state/app_state.js'
+import { playbackEvents } from '../state/playback_events.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import WorkletBridge from './worklets/bridge.js'
 
@@ -92,6 +93,7 @@ export default class AudioEngine {
         const ctx = this.audioCtx
         if (!WorkletBridge.isAvailable(ctx)) {
             appState.workletStatus = 'unavailable'
+            playbackEvents.onWorkletStatusChange.forEach(cb => cb(appState.workletStatus))
             return false
         }
 
@@ -99,6 +101,7 @@ export default class AudioEngine {
         const mixerOk = await WorkletBridge.upgradeMixer(this.mixer)
         if (!mixerOk) {
             appState.workletStatus = 'unavailable'
+            playbackEvents.onWorkletStatusChange.forEach(cb => cb(appState.workletStatus))
             return false
         }
 
@@ -119,10 +122,12 @@ export default class AudioEngine {
 
         // Mark as active BEFORE installing hook so the hook sees the right status
         appState.workletStatus = 'active'
+        appState.useWorklets = 1
 
         // Hook: any new strips added later should also be upgraded
         this._autoUpgradeStrips()
 
+        playbackEvents.onWorkletStatusChange.forEach(cb => cb(appState.workletStatus))
         return true
     }
 

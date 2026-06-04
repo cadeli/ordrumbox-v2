@@ -23,7 +23,7 @@ function registerProcessor(name, cls) { globalScope.processors[name] = cls }
 function makeProc() {
     const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', MASTER_BUS_SOURCE)
     factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-    return new globalScope.processors['master-bus-processor']()
+    return new globalScope.processors['master-bus']()
 }
 
 function runProcess(processor, inputs, paramValues, frames = 128) {
@@ -44,8 +44,8 @@ describe('MasterBusProcessor source', () => {
         expect(MASTER_BUS_SOURCE.length).toBeGreaterThan(100)
     })
 
-    it('contains registerProcessor call for master-bus-processor', () => {
-        expect(MASTER_BUS_SOURCE).toContain("registerProcessor('master-bus-processor'")
+    it('contains registerProcessor call for master-bus', () => {
+        expect(MASTER_BUS_SOURCE).toContain("registerProcessor('master-bus'")
     })
 
     it('declares 10 AudioParams', () => {

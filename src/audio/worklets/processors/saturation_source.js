@@ -67,7 +67,7 @@ class SaturationProcessor extends AudioWorkletProcessor {
     }
 }
 
-registerProcessor('saturation-processor', SaturationProcessor);
+registerProcessor('saturation', SaturationProcessor);
 `
 
 export default SATURATION_PROCESSOR_SOURCE

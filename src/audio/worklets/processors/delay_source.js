@@ -149,7 +149,7 @@ class DelayProcessor extends AudioWorkletProcessor {
     }
 }
 
-registerProcessor('delay-processor', DelayProcessor);
+registerProcessor('delay', DelayProcessor);
 `
 
 export default DELAY_PROCESSOR_SOURCE

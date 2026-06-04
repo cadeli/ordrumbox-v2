@@ -148,7 +148,7 @@ class MasterBusProcessor extends AudioWorkletProcessor {
     }
 }
 
-registerProcessor('master-bus-processor', MasterBusProcessor);
+registerProcessor('master-bus', MasterBusProcessor);
 `
 
 export default MASTER_BUS_PROCESSOR_SOURCE

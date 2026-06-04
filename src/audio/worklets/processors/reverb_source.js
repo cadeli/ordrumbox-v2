@@ -137,7 +137,7 @@ class ReverbProcessor extends AudioWorkletProcessor {
     }
 }
 
-registerProcessor('reverb-processor', ReverbProcessor);
+registerProcessor('reverb', ReverbProcessor);
 `
 
 export default REVERB_PROCESSOR_SOURCE

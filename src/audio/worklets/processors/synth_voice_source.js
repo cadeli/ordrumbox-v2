@@ -304,7 +304,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     }
 }
 
-registerProcessor('synth-voice-processor', SynthVoiceProcessor);
+registerProcessor('synth-voice', SynthVoiceProcessor);
 `
 
 export default SYNTH_VOICE_PROCESSOR_SOURCE

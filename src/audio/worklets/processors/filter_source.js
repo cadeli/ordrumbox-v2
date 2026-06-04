@@ -75,7 +75,7 @@ class FilterProcessor extends AudioWorkletProcessor {
     }
 }
 
-registerProcessor('filter-processor', FilterProcessor);
+registerProcessor('filter', FilterProcessor);
 `
 
 export default FILTER_PROCESSOR_SOURCE

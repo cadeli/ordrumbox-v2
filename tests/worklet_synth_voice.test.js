@@ -25,7 +25,7 @@ function registerProcessor(name, cls) { globalScope.processors[name] = cls }
 function makeProc() {
     const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', SYNTH_VOICE_SOURCE)
     factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-    return new globalScope.processors['synth-voice-processor']()
+    return new globalScope.processors['synth-voice']()
 }
 
 function runProcess(processor, paramValues, frames = 128) {
@@ -46,8 +46,8 @@ describe('SynthVoiceProcessor source', () => {
         expect(SYNTH_VOICE_SOURCE.length).toBeGreaterThan(100)
     })
 
-    it('contains registerProcessor call for synth-voice-processor', () => {
-        expect(SYNTH_VOICE_SOURCE).toContain("registerProcessor('synth-voice-processor'")
+    it('contains registerProcessor call for synth-voice', () => {
+        expect(SYNTH_VOICE_SOURCE).toContain("registerProcessor('synth-voice'")
     })
 
     it('declares 23 AudioParams', () => {

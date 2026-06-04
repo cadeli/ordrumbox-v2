@@ -7,6 +7,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
+import { playbackEvents } from '../src/state/playback_events.js'
 import AudioEngine from '../src/audio/engine.js'
 import WorkletBridge from '../src/audio/worklets/bridge.js'
 
@@ -164,8 +165,48 @@ describe('AudioEngine.upgradeToWorklets', () => {
         WorkletBridge.upgradeMixer.mockResolvedValue(false)
         await engine.upgradeToWorklets()
         WorkletBridge.upgrade.mockClear()
+        // Don't call upgradeToWorklets, just add a strip
         engine.mixer.addStrip('HATS')
         expect(WorkletBridge.upgrade).not.toHaveBeenCalled()
+    })
+
+    it('emits onWorkletStatusChange("active") on successful upgrade', async () => {
+        const cb = vi.fn()
+        playbackEvents.onWorkletStatusChange.push(cb)
+        await engine.upgradeToWorklets()
+        expect(cb).toHaveBeenCalledWith('active')
+        playbackEvents.onWorkletStatusChange = playbackEvents.onWorkletStatusChange.filter(c => c !== cb)
+    })
+
+    it('emits onWorkletStatusChange("unavailable") when worklets not available', async () => {
+        WorkletBridge.isAvailable.mockReturnValue(false)
+        const cb = vi.fn()
+        playbackEvents.onWorkletStatusChange.push(cb)
+        await engine.upgradeToWorklets()
+        expect(cb).toHaveBeenCalledWith('unavailable')
+        playbackEvents.onWorkletStatusChange = playbackEvents.onWorkletStatusChange.filter(c => c !== cb)
+    })
+
+    it('emits onWorkletStatusChange("unavailable") when upgradeMixer fails', async () => {
+        WorkletBridge.upgradeMixer.mockResolvedValue(false)
+        const cb = vi.fn()
+        playbackEvents.onWorkletStatusChange.push(cb)
+        await engine.upgradeToWorklets()
+        expect(cb).toHaveBeenCalledWith('unavailable')
+        playbackEvents.onWorkletStatusChange = playbackEvents.onWorkletStatusChange.filter(c => c !== cb)
+    })
+
+    it('sets appState.useWorklets=1 on successful upgrade', async () => {
+        appState.useWorklets = 0
+        await engine.upgradeToWorklets()
+        expect(appState.useWorklets).toBe(1)
+    })
+
+    it('leaves appState.useWorklets=0 when upgrade fails', async () => {
+        appState.useWorklets = 0
+        WorkletBridge.isAvailable.mockReturnValue(false)
+        await engine.upgradeToWorklets()
+        expect(appState.useWorklets).toBe(0)
     })
 
     it('does NOT auto-upgrade new strips if useWorklets=0', () => {
@@ -243,3 +284,4 @@ describe('appState useWorklets / workletStatus', () => {
         expect(appState.workletStatus).toBe('unknown')
     })
 })
+

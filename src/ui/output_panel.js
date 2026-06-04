@@ -1,4 +1,5 @@
 import { serviceRegistry } from '../state/service_registry.js'
+import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { bindCloseButton, bindPanelToggles, hidePanelsById, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 
@@ -26,6 +27,7 @@ export default class OutputPanel {
         this.injectCSS()
         this.createDOM()
         this.subscribe()
+        this._syncWorklet()
     }
 
     createDOM() {
@@ -45,6 +47,18 @@ export default class OutputPanel {
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
+                <div class="ne-group">
+                    <div class="ne-group-label">Engine</div>
+                    <div class="ne-grid">
+                        <div class="ne-row no-cursor op-worklet-row">
+                            <label class="op-toggle-label">
+                                <input type="checkbox" id="op-use-worklets">
+                                <span>Use Audio Worklets</span>
+                            </label>
+                            <span class="op-worklet-status" id="op-worklet-status">OFF</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="ne-group">
                     <div class="ne-group-label">Master</div>
                     <div class="ne-grid">
@@ -82,7 +96,6 @@ export default class OutputPanel {
         `
 
         document.body.appendChild(this.container)
-
         this._compGrid = this.container.querySelector('#op-comp-grid')
         COMPRESSOR_PARAMS.forEach(p => {
             const row = document.createElement('div')
@@ -109,6 +122,9 @@ export default class OutputPanel {
         const hicutSlider = this.container.querySelector('#op-hicut')
         hicutSlider.addEventListener('input', () => this._onFilterChange())
 
+        const workletCheckbox = this.container.querySelector('#op-use-worklets')
+        workletCheckbox.addEventListener('change', () => this._onWorkletToggle())
+
         bindCloseButton(this.container, () => this.hide())
 
         const targetMap = { master: '#op-master-vol', filters: '.ne-group:nth-child(2)', compressor: '.ne-group:nth-child(3)', spectrum: '#op-analyzer-group' }
@@ -128,6 +144,7 @@ export default class OutputPanel {
         playbackEvents.onNoteSelect.push((data) => {
             if (data) this.hide()
         })
+        playbackEvents.onWorkletStatusChange.push(() => this._syncWorklet())
     }
 
     show() {
@@ -151,6 +168,7 @@ export default class OutputPanel {
     }
 
     _sync() {
+        this._syncWorklet()
         const mixer = serviceRegistry.audioEngine?.mixer
         if (!mixer) return
 
@@ -230,6 +248,53 @@ export default class OutputPanel {
         const mixer = serviceRegistry.audioEngine?.mixer
         if (mixer?.compressor && mixer.compressor[key]) {
             mixer.compressor[key].setValueAtTime(v, mixer.audioCtx.currentTime)
+        }
+    }
+
+    _syncWorklet() {
+        const checkbox = this.container.querySelector('#op-use-worklets')
+        const badge = this.container.querySelector('#op-worklet-status')
+        if (!checkbox || !badge) return
+        const status = appState.workletStatus
+        const enabled = appState.useWorklets === 1 || status === 'active'
+        checkbox.checked = enabled
+        checkbox.disabled = status === 'active'  // can't disable once active
+        badge.classList.remove('op-status-off', 'op-status-active', 'op-status-unavailable')
+        if (status === 'active') {
+            badge.textContent = 'ACTIVE'
+            badge.classList.add('op-status-active')
+        } else if (status === 'unavailable') {
+            badge.textContent = 'UNAVAILABLE'
+            badge.classList.add('op-status-unavailable')
+        } else {
+            badge.textContent = 'OFF'
+            badge.classList.add('op-status-off')
+        }
+    }
+
+    _onWorkletToggle() {
+        const checkbox = this.container.querySelector('#op-use-worklets')
+        const badge = this.container.querySelector('#op-worklet-status')
+        if (!checkbox) return
+        const engine = serviceRegistry.audioEngine
+        if (!engine) {
+            checkbox.checked = false
+            return
+        }
+        if (checkbox.checked) {
+            appState.useWorklets = 1
+            if (badge) {
+                badge.textContent = '...'
+                badge.classList.remove('op-status-off', 'op-status-active', 'op-status-unavailable')
+            }
+            engine.upgradeToWorklets().then((ok) => {
+                if (!ok) {
+                    appState.useWorklets = 0
+                    checkbox.checked = false
+                }
+            })
+        } else {
+            appState.useWorklets = 0
         }
     }
 

@@ -67,8 +67,8 @@ describe('SaturationProcessor source', () => {
         expect(SATURATION_SOURCE.length).toBeGreaterThan(100)
     })
 
-    it('contains registerProcessor call for saturation-processor', () => {
-        expect(SATURATION_SOURCE).toContain("registerProcessor('saturation-processor'")
+    it('contains registerProcessor call for saturation', () => {
+        expect(SATURATION_SOURCE).toContain("registerProcessor('saturation'")
     })
 
     it('declares 4 AudioParams: drive, mix, output, type', () => {
@@ -88,7 +88,7 @@ describe('SaturationProcessor source', () => {
     it('produces output close to input at drive=1, mix=1, output=1 (soft)', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', SATURATION_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('saturation-processor')
+        const proc = instantiate('saturation')
         const input = new Float32Array(128)
         for (let i = 0; i < 128; i++) input[i] = Math.sin(i * 0.05) * 0.5
         const out = runProcess(proc, [input], { drive: 1, mix: 1, output: 1, type: 0 })
@@ -102,7 +102,7 @@ describe('SaturationProcessor source', () => {
     it('soft saturation compresses high amplitudes (no overshoot above 1)', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', SATURATION_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('saturation-processor')
+        const proc = instantiate('saturation')
         const input = new Float32Array(128)
         for (let i = 0; i < 128; i++) input[i] = 5.0  // very hot
         const out = runProcess(proc, [input], { drive: 1, mix: 1, output: 1, type: 0 })
@@ -114,7 +114,7 @@ describe('SaturationProcessor source', () => {
     it('hard saturation clips to ±1', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', SATURATION_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('saturation-processor')
+        const proc = instantiate('saturation')
         const input = new Float32Array(128)
         for (let i = 0; i < 128; i++) input[i] = 2.0
         const out = runProcess(proc, [input], { drive: 1, mix: 1, output: 1, type: 1 })
@@ -126,7 +126,7 @@ describe('SaturationProcessor source', () => {
     it('tape saturation uses atan (softer than hard, harder than soft)', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', SATURATION_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('saturation-processor')
+        const proc = instantiate('saturation')
         const input = new Float32Array(128)
         for (let i = 0; i < 128; i++) input[i] = 0.8
         const out = runProcess(proc, [input], { drive: 1, mix: 1, output: 1, type: 2 })
@@ -137,7 +137,7 @@ describe('SaturationProcessor source', () => {
     it('mix=0 produces dry signal (no saturation applied)', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', SATURATION_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('saturation-processor')
+        const proc = instantiate('saturation')
         const input = new Float32Array(128)
         for (let i = 0; i < 128; i++) input[i] = i / 128
         const out = runProcess(proc, [input], { drive: 7, mix: 0, output: 1, type: 1 })
@@ -156,8 +156,8 @@ describe('FilterProcessor source', () => {
         expect(FILTER_SOURCE.length).toBeGreaterThan(100)
     })
 
-    it('contains registerProcessor call for filter-processor', () => {
-        expect(FILTER_SOURCE).toContain("registerProcessor('filter-processor'")
+    it('contains registerProcessor call for filter', () => {
+        expect(FILTER_SOURCE).toContain("registerProcessor('filter'")
     })
 
     it('declares 3 AudioParams: cutoff, q, mode', () => {
@@ -178,7 +178,7 @@ describe('FilterProcessor source', () => {
     it('LP mode attenuates high frequencies more than low ones', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', FILTER_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('filter-processor')
+        const proc = instantiate('filter')
         // Run several iterations to reach filter steady state
         const FRAMES = 2048
         const outL = new Float32Array(FRAMES)
@@ -205,7 +205,7 @@ describe('FilterProcessor source', () => {
     it('HP mode attenuates low frequencies more than high ones', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', FILTER_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('filter-processor')
+        const proc = instantiate('filter')
         const FRAMES = 2048
         const inputLow = new Float32Array(FRAMES)
         const inputHigh = new Float32Array(FRAMES)
@@ -233,8 +233,8 @@ describe('ReverbProcessor source', () => {
         expect(REVERB_SOURCE.length).toBeGreaterThan(100)
     })
 
-    it('contains registerProcessor call for reverb-processor', () => {
-        expect(REVERB_SOURCE).toContain("registerProcessor('reverb-processor'")
+    it('contains registerProcessor call for reverb', () => {
+        expect(REVERB_SOURCE).toContain("registerProcessor('reverb'")
     })
 
     it('declares 5 AudioParams: roomSize, damping, width, mix, preDelay', () => {
@@ -255,7 +255,7 @@ describe('ReverbProcessor source', () => {
     it('mix=0 produces dry signal with no reverb tail', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', REVERB_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('reverb-processor')
+        const proc = instantiate('reverb')
         const input = new Float32Array(128)
         for (let i = 0; i < 128; i++) input[i] = Math.sin(2 * Math.PI * 440 * i / 44100)
         const out = runProcess(proc, [input, input], { roomSize: 0.85, damping: 0.3, width: 1, mix: 0, preDelay: 0.02 })
@@ -268,7 +268,7 @@ describe('ReverbProcessor source', () => {
     it('mix=1 with impulse produces decaying tail (reverb works)', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', REVERB_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('reverb-processor')
+        const proc = instantiate('reverb')
         const FRAMES = 4096
         const input = new Float32Array(FRAMES)
         input[0] = 1.0
@@ -284,7 +284,7 @@ describe('ReverbProcessor source', () => {
     it('all 8 comb filters + 4 allpass filters are instantiated per channel', () => {
         const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', REVERB_SOURCE)
         factory.call(globalScope, registerProcessor, MockAudioWorkletProcessor, 44100)
-        const proc = instantiate('reverb-processor')
+        const proc = instantiate('reverb')
         expect(proc.combsL.length).toBe(8)
         expect(proc.combsR.length).toBe(8)
         expect(proc.allpassL.length).toBe(4)
