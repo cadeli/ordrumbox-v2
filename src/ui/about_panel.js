@@ -1,5 +1,5 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, injectUiCss } from './panel_helpers.js'
+import { bindCloseButton, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 
 const APP_VERSION = '2.0.0'
 const APP_NAME = 'OrDrumbox'
@@ -166,9 +166,16 @@ export default class AboutPanel {
     show() {
         this.container.style.display = 'block'
         this._detectPwaStatus()
+        this.reposition()
     }
 
     hide() {
         this.container.style.display = 'none'
+    }
+
+    reposition() {
+        if (window.innerWidth > 768 && window.innerHeight > 480) {
+            positionBelowPatternPanel(this.container)
+        }
     }
 }

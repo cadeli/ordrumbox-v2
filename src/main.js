@@ -8,6 +8,7 @@ import NoteEditor from './ui/note_editor.js'
 import TrackEditor from './ui/track_editor.js'
 import ToolsPanel from './ui/tools_panel.js'
 import OutputPanel from './ui/output_panel.js'
+import AboutPanel from './ui/about_panel.js'
 
 import MfResourcesLoader from './loader/resources_loader.js'
 import { FALLBACK_FPS } from './core/constants.js'
@@ -34,7 +35,7 @@ function scheduleAfterFirstPaint(callback) {
 }
 
 
-let _toolbar, _patternPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel
+let _toolbar, _patternPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel
 
 export function init() {
     if (window.orientation > 1) {
@@ -57,17 +58,28 @@ export function init() {
     _trackEditor = new TrackEditor()
     _toolsPanel = new ToolsPanel()
     _outputPanel = new OutputPanel()
+    _aboutPanel = new AboutPanel()
     _toolbar.init()
     _patternPanel.init()
     _noteEditor.init()
     _trackEditor.init()
     _toolsPanel.init()
     _outputPanel.init()
+    _aboutPanel.init()
 
     playbackEvents.onTrackSelect.push((data) => {
         if (data && data.trackIdx !== undefined) {
             appState.selectedTrackNum = data.trackIdx
         }
+    })
+
+    window.addEventListener('resize', () => {
+        const repositionable = [
+            _trackEditor, _noteEditor, _toolsPanel, _outputPanel, _aboutPanel
+        ]
+        repositionable.forEach(p => {
+            if (p?.reposition) p.reposition()
+        })
     })
 
     scheduleAfterFirstPaint(async () => {

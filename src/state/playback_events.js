@@ -7,5 +7,6 @@ export const playbackEvents = {
     onNoteSelect: [],
     onTrackSelect: [],
     onToolsToggle: [],
-    onOutputToggle: []
+    onOutputToggle: [],
+    onAboutToggle: []
 }

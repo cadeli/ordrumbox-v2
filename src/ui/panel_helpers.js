@@ -8,6 +8,7 @@ export function injectUiCss() {
 }
 
 export function positionBelowPatternPanel(container) {
+    if (window.innerWidth <= 768 || window.innerHeight <= 480) return
     const patternPanel = document.getElementById('pattern-panel')
     if (patternPanel) {
         container.style.top = (patternPanel.offsetTop + patternPanel.offsetHeight) + 'px'
