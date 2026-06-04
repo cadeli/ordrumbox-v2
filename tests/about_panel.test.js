@@ -52,6 +52,22 @@ describe('AboutPanel (PWA)', () => {
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 
+    it('hides the other modals (te/ne/tools/output) when it opens', () => {
+        for (const id of ['te-panel', 'ne-panel', 'tools-panel', 'output-panel']) {
+            const el = document.createElement('div')
+            el.id = id
+            el.style.display = 'block'
+            document.body.appendChild(el)
+        }
+
+        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+
+        for (const id of ['te-panel', 'ne-panel', 'tools-panel', 'output-panel']) {
+            expect(document.getElementById(id).style.display).toBe('none')
+        }
+        expect(document.getElementById('about-panel').style.display).toBe('block')
+    })
+
     it('renders app info (name, version, license)', () => {
         playbackEvents.onAboutToggle.forEach(fn => fn(true))
         const html = document.getElementById('about-panel').innerHTML

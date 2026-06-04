@@ -131,7 +131,7 @@ export default class OutputPanel {
     }
 
     show() {
-        hidePanelsById(['te-panel', 'ne-panel', 'tools-panel'])
+        hidePanelsById(['te-panel', 'ne-panel', 'tools-panel', 'about-panel'])
 
         this.container.style.display = 'block'
         this._visible = true

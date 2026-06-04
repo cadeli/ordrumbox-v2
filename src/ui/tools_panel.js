@@ -454,7 +454,7 @@ export default class ToolsPanel {
     }
 
     show() {
-        hidePanelsById(['te-panel', 'ne-panel', 'output-panel'])
+        hidePanelsById(['te-panel', 'ne-panel', 'output-panel', 'about-panel'])
         
         this.container.style.display = 'block'
         this._sync()
