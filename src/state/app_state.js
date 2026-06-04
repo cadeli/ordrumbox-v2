@@ -12,6 +12,9 @@ export class AppState {
         this.textInput = false
         this.secondsPerBeat = 8
         this.flatNotes = null
+        // Audio worklet mode: 0 = off, 1 = on (auto-upgrade at audioCtx init)
+        this.useWorklets = 0
+        this.workletStatus = 'unknown'  // 'unknown' | 'active' | 'unavailable'
         const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 480)
         this.trackEditorVisibility = {
             basic: true,
@@ -42,6 +45,8 @@ export class AppState {
         this.textInput = false
         this.secondsPerBeat = 8
         this.flatNotes = null
+        this.useWorklets = 0
+        this.workletStatus = 'unknown'
         const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 480)
         this.trackEditorVisibility = {
             basic: true,

@@ -4,7 +4,9 @@ import MfSound from './sound.js'
 import MfNoteParams from '../patterns/note_params.js'
 import { computeFlatNotesFromPattern as computeFlatNotesPure } from '../patterns/engine.js'
 import { serviceRegistry } from '../state/service_registry.js'
+import { appState } from '../state/app_state.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
+import WorkletBridge from './worklets/bridge.js'
 
 export default class AudioEngine {
     static TAG = "AUDIOENGINE"
@@ -76,8 +78,84 @@ export default class AudioEngine {
         this._cachedVersion = -1
     }
 
+    /**
+     * Auto-upgrade mixer + all existing strips to use AudioWorkletNodes
+     * for saturation, filter, reverb, delay, and LFOs.
+     *
+     * Idempotent: subsequent calls are no-ops if already upgraded.
+     * Updates `appState.workletStatus` to 'active' or 'unavailable'.
+     */
+    upgradeToWorklets = async () => {
+        if (!this.mixer) return false
+        if (appState.workletStatus === 'active') return true
+
+        const ctx = this.audioCtx
+        if (!WorkletBridge.isAvailable(ctx)) {
+            appState.workletStatus = 'unavailable'
+            return false
+        }
+
+        // Upgrade mixer (master bus)
+        const mixerOk = await WorkletBridge.upgradeMixer(this.mixer)
+        if (!mixerOk) {
+            appState.workletStatus = 'unavailable'
+            return false
+        }
+
+        // The mixer needs to re-start to wire busInput → busWorklet
+        // (preserves native nodes as fallbacks, but in active mode uses worklet)
+        // We don't re-start here to avoid disrupting playback; the worklet
+        // node is created and will be picked up on next start().
+
+        // Upgrade all existing strips
+        const stripNames = Object.keys(this.mixer.strips || {})
+        for (const name of stripNames) {
+            const strip = this.mixer.strips[name]
+            if (strip) {
+                await WorkletBridge.upgrade(strip)
+                await WorkletBridge.upgradeLfos(strip)
+            }
+        }
+
+        // Mark as active BEFORE installing hook so the hook sees the right status
+        appState.workletStatus = 'active'
+
+        // Hook: any new strips added later should also be upgraded
+        this._autoUpgradeStrips()
+
+        return true
+    }
+
+    /**
+     * Monkey-patch mixer.addStrip so that any new strip is automatically
+     * upgraded to worklet mode. Only active if appState.useWorklets is on.
+     */
+    _autoUpgradeStrips = () => {
+        if (!this.mixer || this.mixer._autoUpgradeHooked) return
+        const originalAddStrip = this.mixer.addStrip
+        const mixer = this.mixer
+        this.mixer.addStrip = (name) => {
+            try {
+                originalAddStrip(name)
+            } catch (e) {
+                return null
+            }
+            const strip = mixer.strips[name]
+            if (strip && appState.workletStatus === 'active') {
+                WorkletBridge.upgrade(strip).catch(() => {})
+                WorkletBridge.upgradeLfos(strip).catch(() => {})
+            }
+            return strip
+        }
+        this.mixer._autoUpgradeHooked = true
+    }
+
     start = (pattern) => {
         if (!this.unlocked) this.playSilentBuffer()
+        // Auto-upgrade to worklet mode if enabled
+        if (appState.useWorklets && appState.workletStatus !== 'active') {
+            this.upgradeToWorklets()
+        }
         this.isRunning = true
         this.nextStepTime = this.audioCtx.currentTime
         this.mixer.start()
