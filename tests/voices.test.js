@@ -2,7 +2,23 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import BaseVoice from '../src/audio/voices/base_voice.js'
 import SampleVoice from '../src/audio/voices/sample_voice.js'
 import SynthVoice from '../src/audio/voices/synth_voice.js'
+import WorkletSynthVoice from '../src/audio/voices/worklet_synth_voice.js'
 import VoiceFactory from '../src/audio/voices/voice_factory.js'
+import { appState } from '../src/state/app_state.js'
+import WorkletBridge from '../src/audio/worklets/bridge.js'
+
+vi.mock('../src/audio/worklets/bridge.js', () => ({
+    default: {
+        createSynthVoice: vi.fn(() => ({
+            port: { postMessage: vi.fn() },
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+        })),
+        triggerVoice: vi.fn(),
+        releaseVoice: vi.fn(),
+        updateVoice: vi.fn(),
+    },
+}))
 
 // ─── Mock helpers ────────────────────────────────────────────────────────────
 
@@ -625,5 +641,152 @@ describe('VoiceFactory', () => {
     it('calls mixer.getOrCreateStrip with the track name', () => {
         factory.createVoice(makeFlatNote())
         expect(mixer.getOrCreateStrip).toHaveBeenCalledWith('KICK')
+    })
+
+    // ─── Worklet drop-in ────────────────────────────────────────────────────
+
+    function makeSoftSynthFlatNote() {
+        const flatNote = makeFlatNote()
+        flatNote.track.useSoftSynth = true
+        flatNote.track.synthSoundKey = 'BASS1'
+        return flatNote
+    }
+
+    it('uses native SynthVoice when workletStatus is unknown', () => {
+        appState.workletStatus = 'unknown'
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        expect(voice).toBeInstanceOf(SynthVoice)
+        expect(voice).not.toBeInstanceOf(WorkletSynthVoice)
+    })
+
+    it('uses WorkletSynthVoice when workletStatus is active and config is simple', () => {
+        appState.workletStatus = 'active'
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        expect(voice).toBeInstanceOf(WorkletSynthVoice)
+    })
+
+    it('falls back to native SynthVoice when LFO target is set', () => {
+        appState.workletStatus = 'active'
+        generatedSounds.BASS1.lfo.target = 'VCO1'
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        expect(voice).toBeInstanceOf(SynthVoice)
+    })
+
+    it('falls back to native SynthVoice when LFO target is FLT', () => {
+        appState.workletStatus = 'active'
+        generatedSounds.BASS1.lfo.target = 'FLT'
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        expect(voice).toBeInstanceOf(SynthVoice)
+    })
+
+    it('falls back to native SynthVoice when slide > 0 (no glide support in worklet)', () => {
+        appState.workletStatus = 'active'
+        generatedSounds.BASS1.slide = 50
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        expect(voice).toBeInstanceOf(SynthVoice)
+    })
+
+    it('falls back to native SynthVoice when filter envelope amount > 0', () => {
+        appState.workletStatus = 'active'
+        generatedSounds.BASS1.filter.filterEnvelopeAmount = 0.5
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        expect(voice).toBeInstanceOf(SynthVoice)
+    })
+
+    it('uses native SynthVoice when workletStatus is unavailable', () => {
+        appState.workletStatus = 'unavailable'
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        expect(voice).toBeInstanceOf(SynthVoice)
+    })
+
+    it('WorkletSynthVoice.setup() sends an update via WorkletBridge.updateVoice', () => {
+        appState.workletStatus = 'active'
+        WorkletBridge.updateVoice.mockClear()
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        voice.setup(makeSoftSynthFlatNote(), 0)
+        expect(WorkletBridge.updateVoice).toHaveBeenCalled()
+        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        expect(updateArg.osc1Wave).toBe(0)  // sine
+        expect(updateArg.attack).toBe(0.01)
+        expect(updateArg.decay).toBe(0.1)
+        expect(updateArg.filterType).toBe(0)  // lowpass
+    })
+
+    it('WorkletSynthVoice.start() sends a trigger via WorkletBridge.triggerVoice', () => {
+        appState.workletStatus = 'active'
+        WorkletBridge.triggerVoice.mockClear()
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        voice.setup(makeSoftSynthFlatNote(), 0)
+        voice.start(1.5)
+        expect(WorkletBridge.triggerVoice).toHaveBeenCalledWith(voice.workletNode, 1.5)
+    })
+
+    it('WorkletSynthVoice.stop() sends a release via WorkletBridge.releaseVoice', () => {
+        appState.workletStatus = 'active'
+        WorkletBridge.releaseVoice.mockClear()
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        voice.setup(makeSoftSynthFlatNote(), 0)
+        voice.start(0)
+        voice.stop(2.0)
+        expect(WorkletBridge.releaseVoice).toHaveBeenCalledWith(voice.workletNode, 2.0)
+    })
+
+    it('WorkletSynthVoice.stop() is idempotent', () => {
+        appState.workletStatus = 'active'
+        WorkletBridge.releaseVoice.mockClear()
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        voice.setup(makeSoftSynthFlatNote(), 0)
+        voice.start(0)
+        voice.stop(1.0)
+        voice.stop(1.0)
+        expect(WorkletBridge.releaseVoice).toHaveBeenCalledTimes(1)
+    })
+
+    it('WorkletSynthVoice maps wave names to int waveform ids', () => {
+        appState.workletStatus = 'active'
+        WorkletBridge.updateVoice.mockClear()
+        generatedSounds.BASS1.vco1.wave = 'square'
+        generatedSounds.BASS1.vco2 = { wave: 'triangle', gain: 0.5, detune: 0, octave: 0 }
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        voice.setup(makeSoftSynthFlatNote(), 0)
+        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        expect(updateArg.osc1Wave).toBe(3)   // square
+        expect(updateArg.osc2Wave).toBe(1)   // triangle
+    })
+
+    it('WorkletSynthVoice maps filter type names to int ids', () => {
+        appState.workletStatus = 'active'
+        WorkletBridge.updateVoice.mockClear()
+        generatedSounds.BASS1.filter.type = 'bandpass'
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        voice.setup(makeSoftSynthFlatNote(), 0)
+        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        expect(updateArg.filterType).toBe(2)  // bandpass
+    })
+
+    it('WorkletSynthVoice computes velocity = noteVelo * masterVolume * accentMultiplier', () => {
+        appState.workletStatus = 'active'
+        WorkletBridge.updateVoice.mockClear()
+        generatedSounds.BASS1.masterVolume = 0.5
+        const note = makeSoftSynthFlatNote()
+        note.note.velocity = 0.8
+        const voice = factory.createVoice(note)
+        voice.setup(note, 0)
+        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        // noteVelo = 0.8 * 0.25 = 0.2; masterVolume = 0.5; velocity > 0.5 not accented (0.2)
+        // expected: 0.2 * 0.5 * 1.0 = 0.1
+        expect(updateArg.velocity).toBeCloseTo(0.1, 5)
+    })
+
+    it('WorkletSynthVoice enforces minimum attack/release (prevents audio discontinuities)', () => {
+        appState.workletStatus = 'active'
+        WorkletBridge.updateVoice.mockClear()
+        generatedSounds.BASS1.enveloppe.attack = 0.0001
+        generatedSounds.BASS1.enveloppe.release = 0.0001
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        voice.setup(makeSoftSynthFlatNote(), 0)
+        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        expect(updateArg.attack).toBeGreaterThanOrEqual(0.003)
+        expect(updateArg.release).toBeGreaterThanOrEqual(0.008)
     })
 })

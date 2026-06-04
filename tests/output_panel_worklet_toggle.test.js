@@ -103,7 +103,8 @@ describe('OutputPanel — Worklet toggle', () => {
     it('renders the worklet toggle row with initial OFF state', () => {
         expect(checkbox).toBeTruthy()
         expect(badge).toBeTruthy()
-        expect(checkbox.checked).toBe(false)
+        // Worklets are enabled by default (useWorklets=1), but engine status is 'unknown' until first playback
+        expect(checkbox.checked).toBe(true)
         expect(badge.textContent).toBe('OFF')
         expect(badge.classList.contains('op-status-off')).toBe(true)
     })

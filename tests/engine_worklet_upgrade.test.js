@@ -224,7 +224,7 @@ describe('AudioEngine.start with worklet auto-upgrade', () => {
 
     beforeEach(() => {
         ctx = makeAudioCtx()
-        appState.useWorklets = 0  // default off
+        appState.useWorklets = 0  // explicitly off for these tests
         appState.workletStatus = 'unknown'
         WorkletBridge.upgradeMixer.mockClear().mockResolvedValue(true)
     })
@@ -268,19 +268,20 @@ describe('appState useWorklets / workletStatus', () => {
         appState.workletStatus = 'unknown'
     })
 
-    it('default useWorklets=0', () => {
-        expect(appState.useWorklets).toBe(0)
+    it('default useWorklets=1 (worklets enabled by default)', () => {
+        appState.reset()
+        expect(appState.useWorklets).toBe(1)
     })
 
     it('default workletStatus=unknown', () => {
         expect(appState.workletStatus).toBe('unknown')
     })
 
-    it('reset() clears useWorklets and workletStatus', () => {
-        appState.useWorklets = 1
+    it('reset() restores default useWorklets=1 and clears workletStatus', () => {
+        appState.useWorklets = 0
         appState.workletStatus = 'active'
         appState.reset()
-        expect(appState.useWorklets).toBe(0)
+        expect(appState.useWorklets).toBe(1)
         expect(appState.workletStatus).toBe('unknown')
     })
 })
