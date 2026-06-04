@@ -213,6 +213,17 @@ export default class MfStrip {
         this.currentDelayType = normalizedType;
         this.currentDelayAmount = normalizedAmount;
 
+        // Worklet path
+        if (this._worklet?.nodes?.delay) {
+            if (normalizedType === 'none' || normalizedAmount <= 0) {
+                WorkletBridge.setDelay(this, 'none', 0.001, 0)
+            } else {
+                WorkletBridge.setDelay(this, normalizedType, delaySeconds, normalizedAmount)
+            }
+            this.delayInput.gain.setValueAtTime(1, time)
+            return
+        }
+
         if (this.delayRoutingType !== normalizedType) {
             this.configureDelayRouting(normalizedType, time);
         }

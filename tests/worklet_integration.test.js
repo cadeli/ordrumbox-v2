@@ -15,7 +15,13 @@ function makeAudioCtx() {
         currentTime: 0.1,
         destination: { connect: vi.fn() },
         createGain: vi.fn(() => ({
-            gain: { value: 1, setTargetAtTime: vi.fn() },
+            gain: {
+                value: 1,
+                setTargetAtTime: vi.fn(),
+                setValueAtTime: vi.fn(),
+                linearRampToValueAtTime: vi.fn(),
+                exponentialRampToValueAtTime: vi.fn()
+            },
             connect: vi.fn(function () { return this }),
             disconnect: vi.fn()
         })),
@@ -144,6 +150,46 @@ describe('WorkletBridge + MfStrip integration', () => {
         strip.updateReverb('hall', 0.5)
         expect(verbParams.get('roomSize').setTargetAtTime).toHaveBeenCalled()
         expect(verbParams.get('mix').setTargetAtTime).toHaveBeenCalled()
+    })
+
+    it('worklet path: updateDelay uses worklet when present', () => {
+        const delayParams = new Map()
+        delayParams.set('timeL', { setTargetAtTime: vi.fn() })
+        delayParams.set('timeR', { setTargetAtTime: vi.fn() })
+        delayParams.set('feedback', { setTargetAtTime: vi.fn() })
+        delayParams.set('mix', { setTargetAtTime: vi.fn() })
+        delayParams.set('filter', { setTargetAtTime: vi.fn() })
+        delayParams.set('saturation', { setTargetAtTime: vi.fn() })
+        delayParams.set('saturationType', { setTargetAtTime: vi.fn() })
+        delayParams.set('mode', { setTargetAtTime: vi.fn() })
+        delayParams.set('width', { setTargetAtTime: vi.fn() })
+        const delayNode = { parameters: delayParams, connect: vi.fn(), disconnect: vi.fn() }
+        strip._worklet = { active: true, nodes: { delay: delayNode } }
+
+        strip.updateDelay('pingpong', 0.5, 0.6)
+        expect(delayParams.get('mode').setTargetAtTime).toHaveBeenCalled()
+        expect(delayParams.get('mix').setTargetAtTime).toHaveBeenCalled()
+        expect(delayParams.get('timeL').setTargetAtTime).toHaveBeenCalled()
+    })
+
+    it('worklet path: updateDelay with mode=none uses worklet (zero mix)', () => {
+        const delayParams = new Map()
+        delayParams.set('timeL', { setTargetAtTime: vi.fn() })
+        delayParams.set('timeR', { setTargetAtTime: vi.fn() })
+        delayParams.set('feedback', { setTargetAtTime: vi.fn() })
+        delayParams.set('mix', { setTargetAtTime: vi.fn() })
+        delayParams.set('filter', { setTargetAtTime: vi.fn() })
+        delayParams.set('saturation', { setTargetAtTime: vi.fn() })
+        delayParams.set('saturationType', { setTargetAtTime: vi.fn() })
+        delayParams.set('mode', { setTargetAtTime: vi.fn() })
+        delayParams.set('width', { setTargetAtTime: vi.fn() })
+        const delayNode = { parameters: delayParams, connect: vi.fn(), disconnect: vi.fn() }
+        strip._worklet = { active: true, nodes: { delay: delayNode } }
+
+        strip.updateDelay('none', 0.25, 0)
+        // mix should be 0 (off)
+        const mixCall = delayParams.get('mix').setTargetAtTime.mock.calls[0]
+        expect(mixCall[0]).toBe(0)
     })
 
     it('worklet path is preferred when both worklet and native are present', () => {

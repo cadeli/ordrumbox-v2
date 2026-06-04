@@ -16,6 +16,8 @@ import WorkletLoader from './loader.js'
 import SATURATION_SOURCE from './processors/saturation_source.js'
 import FILTER_SOURCE from './processors/filter_source.js'
 import REVERB_SOURCE from './processors/reverb_source.js'
+import DELAY_SOURCE from './processors/delay_source.js'
+import LFO_SOURCE from './processors/lfo_source.js'
 
 let _registered = false
 
@@ -24,6 +26,8 @@ function registerAll() {
     WorkletLoader.register('saturation', SATURATION_SOURCE)
     WorkletLoader.register('filter', FILTER_SOURCE)
     WorkletLoader.register('reverb', REVERB_SOURCE)
+    WorkletLoader.register('delay', DELAY_SOURCE)
+    WorkletLoader.register('lfo', LFO_SOURCE)
     _registered = true
 }
 
@@ -104,6 +108,21 @@ export default class WorkletBridge {
             console.warn('WorkletBridge: reverb upgrade failed', e)
         }
 
+        // --- DELAY ---
+        try {
+            const delayNode = WorkletLoader.createNode(ctx, 'delay', {
+                numberOfInputs: 1,
+                numberOfOutputs: 1,
+                outputChannelCount: [2]
+            })
+            strip.delayInput.disconnect()
+            strip.delayInput.connect(delayNode)
+            delayNode.connect(strip.delayWetGain)
+            strip._worklet.nodes.delay = delayNode
+        } catch (e) {
+            console.warn('WorkletBridge: delay upgrade failed', e)
+        }
+
         return strip._worklet.active
     }
 
@@ -159,6 +178,30 @@ export default class WorkletBridge {
         node.parameters.get('cutoff').setTargetAtTime(f, time, ramp)
         node.parameters.get('q').setTargetAtTime(qq, time, ramp)
         node.parameters.get('mode').setTargetAtTime(mode, time, ramp)
+        return true
+    }
+
+    static setDelay(strip, type, timeSeconds, amount) {
+        if (!strip._worklet?.nodes.delay) return false
+        const node = strip._worklet.nodes.delay
+        const modes = { none: 0, slap: 0, tape: 1, pingpong: 2 }
+        const mode = modes[type] ?? 0
+        const wet = Math.max(0, Math.min(1, amount))
+        const t = strip.audioCtx.currentTime
+        const ramp = 0.02
+        // Pingpong uses cross-channel time
+        const isPP = mode >= 1.5
+        const tL = isPP ? timeSeconds * 0.667 : timeSeconds
+        const tR = isPP ? timeSeconds * 1.0   : timeSeconds
+        node.parameters.get('timeL').setTargetAtTime(tL, t, ramp)
+        node.parameters.get('timeR').setTargetAtTime(tR, t, ramp)
+        node.parameters.get('mode').setTargetAtTime(mode, t, ramp)
+        node.parameters.get('mix').setTargetAtTime(wet, t, ramp)
+        // Default feedback for non-none modes
+        const fb = type === 'none' ? 0 : 0.4
+        node.parameters.get('feedback').setTargetAtTime(fb, t, ramp)
+        node.parameters.get('filter').setTargetAtTime(5000, t, ramp)
+        node.parameters.get('saturation').setTargetAtTime(0.1, t, ramp)
         return true
     }
 }
