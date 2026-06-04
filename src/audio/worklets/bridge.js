@@ -292,4 +292,66 @@ export default class WorkletBridge {
     static updateVoice(node, params) {
         node.port.postMessage({ type: 'update', ...params })
     }
+
+    /**
+     * Upgrade a strip's 5 native LFO oscillators to LFO worklets.
+     * Each native OscillatorNode is replaced with an AudioWorkletNode that
+     * feeds into the existing GainNode (which controls depth).
+     *
+     * The 5 LFOs are: pitchLfo, velocityLfo, panLfo, filterFreqLfo, filterQLfo.
+     */
+    static async upgradeLfos(strip) {
+        registerAll()
+        const ctx = strip.audioCtx
+        if (!WorkletLoader.isSupported(ctx)) return false
+
+        try {
+            await WorkletLoader.ensureLoaded(ctx)
+        } catch (err) {
+            console.warn('WorkletBridge: failed to load worklets, staying on native', err)
+            return false
+        }
+
+        if (strip._lfoWorklets?.active) return true
+
+        strip._lfoWorklets = { active: true, nodes: {} }
+
+        const lfoKeys = Object.keys(strip.lfos || {})
+        for (const key of lfoKeys) {
+            const lfo = strip.lfos[key]
+            if (!lfo) continue
+            try {
+                const wn = WorkletLoader.createNode(ctx, 'lfo', {
+                    numberOfInputs: 0,
+                    numberOfOutputs: 1,
+                    outputChannelCount: [1]
+                })
+                // Disconnect native osc from its gain, connect worklet instead
+                try { lfo.osc.disconnect() } catch (e) { /* already disconnected */ }
+                try { lfo.osc.stop() } catch (e) { /* already stopped */ }
+                wn.connect(lfo.gain)
+                strip._lfoWorklets.nodes[key] = wn
+            } catch (e) {
+                console.warn(`WorkletBridge: LFO ${key} upgrade failed`, e)
+            }
+        }
+        return strip._lfoWorklets.active
+    }
+
+    /** Set LFO parameters on a worklet node. */
+    static setLfo(strip, key, frequency, depth, waveform = 0) {
+        const wn = strip._lfoWorklets?.nodes?.[key]
+        if (!wn) return false
+        const time = strip.audioCtx.currentTime
+        const ramp = 0.02
+        const params = wn.parameters
+        if (params.get('freq'))     params.get('freq').setTargetAtTime(frequency, time, ramp)
+        if (params.get('waveform')) params.get('waveform').setTargetAtTime(waveform, time, ramp)
+        // The worklet outputs -1..+1; depth controls the gain (still on native gain node)
+        const lfo = strip.lfos?.[key]
+        if (lfo?.gain?.gain) {
+            lfo.gain.gain.setTargetAtTime(depth, time, ramp)
+        }
+        return true
+    }
 }

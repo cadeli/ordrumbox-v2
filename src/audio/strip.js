@@ -129,13 +129,30 @@ export default class MfStrip {
         const time = ctx.currentTime;
 
         if (!config) {
+            // Worklet path: just zero the depth (worklet keeps generating)
+            if (this._lfoWorklets?.nodes?.[key]) {
+                lfo.gain.gain.setTargetAtTime(0, time, RAMP_TIME);
+                return;
+            }
             lfo.gain.gain.setTargetAtTime(0, time, RAMP_TIME);
             return;
         }
 
         const frequency = computeLfoFrequency(config.freq ?? 1, this.bpm);
         const depth = computeLfoDepth(config.min, config.max);
+        const waveform = config.waveform ?? 0;  // 0=sine (default)
 
+        // Worklet path
+        if (this._lfoWorklets?.nodes?.[key]) {
+            const wn = this._lfoWorklets.nodes[key]
+            const params = wn.parameters
+            if (params.get('freq'))     params.get('freq').setTargetAtTime(frequency, time, RAMP_TIME)
+            if (params.get('waveform')) params.get('waveform').setTargetAtTime(waveform, time, RAMP_TIME)
+            lfo.gain.gain.setTargetAtTime(depth, time, RAMP_TIME)
+            return
+        }
+
+        // Native path
         lfo.osc.frequency.setTargetAtTime(frequency, time, RAMP_TIME);
         lfo.gain.gain.setTargetAtTime(depth, time, RAMP_TIME);
     }

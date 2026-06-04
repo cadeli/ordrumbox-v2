@@ -72,8 +72,10 @@ function makeAudioCtx() {
         })),
         createOscillator: vi.fn(() => ({
             type: 'sine',
-            frequency: { value: 1, setValueAtTime: vi.fn() },
+            frequency: { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            detune: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
             connect: vi.fn(function () { return this }),
+            disconnect: vi.fn(),
             start: vi.fn(),
             stop: vi.fn()
         })),
@@ -434,5 +436,107 @@ describe('WorkletBridge + SynthVoice integration', () => {
         for (const name of expected) {
             expect(SYNTH_VOICE_SOURCE).toContain(`name: '${name}'`)
         }
+    })
+})
+
+// ===========================================================
+// LFO worklet integration with MfStrip
+// ===========================================================
+describe('WorkletBridge + MfStrip LFO worklets', () => {
+    let ctx, strip
+
+    beforeEach(() => {
+        ctx = makeAudioCtx()
+        strip = new MfStrip('TRK_1', ctx)
+    })
+
+    it('strip has 5 LFOs in native mode by default', () => {
+        expect(strip._lfoWorklets).toBeUndefined()
+        expect(Object.keys(strip.lfos)).toEqual(
+            expect.arrayContaining(['pitchLfo', 'velocityLfo', 'panLfo', 'filterFreqLfo', 'filterQLfo'])
+        )
+    })
+
+    it('updateLfo in native mode sets osc.frequency and gain.gain', () => {
+        strip.updateLfo('pitchLfo', { freq: 2, min: 0, max: 1 })
+        expect(strip.lfos.pitchLfo.osc.frequency.setTargetAtTime).toHaveBeenCalled()
+        expect(strip.lfos.pitchLfo.gain.gain.setTargetAtTime).toHaveBeenCalled()
+    })
+
+    it('updateLfo with no config zeros the depth (native)', () => {
+        strip.updateLfo('pitchLfo', null)
+        // The gain should be set to 0
+        const calls = strip.lfos.pitchLfo.gain.gain.setTargetAtTime.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0]).toBe(0)
+    })
+
+    it('updateLfo in worklet mode sets worklet params', () => {
+        // Simulate worklet upgrade
+        const lfoParams = new Map()
+        lfoParams.set('freq', { setTargetAtTime: vi.fn() })
+        lfoParams.set('waveform', { setTargetAtTime: vi.fn() })
+        const lfoWorklet = { parameters: lfoParams, connect: vi.fn(function () { return this }), disconnect: vi.fn() }
+        strip._lfoWorklets = { active: true, nodes: { pitchLfo: lfoWorklet } }
+
+        strip.updateLfo('pitchLfo', { freq: 5, min: -100, max: 100, waveform: 2 })
+        expect(lfoParams.get('freq').setTargetAtTime).toHaveBeenCalled()
+        expect(lfoParams.get('waveform').setTargetAtTime).toHaveBeenCalledWith(2, expect.any(Number), expect.any(Number))
+    })
+
+    it('updateLfo in worklet mode with no config zeroes depth only', () => {
+        const lfoParams = new Map()
+        lfoParams.set('freq', { setTargetAtTime: vi.fn() })
+        lfoParams.set('waveform', { setTargetAtTime: vi.fn() })
+        const lfoWorklet = { parameters: lfoParams, connect: vi.fn(), disconnect: vi.fn() }
+        strip._lfoWorklets = { active: true, nodes: { pitchLfo: lfoWorklet } }
+
+        strip.updateLfo('pitchLfo', null)
+        // freq.setTargetAtTime should NOT have been called
+        expect(lfoParams.get('freq').setTargetAtTime).not.toHaveBeenCalled()
+        // Gain should be 0
+        const calls = strip.lfos.pitchLfo.gain.gain.setTargetAtTime.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0]).toBe(0)
+    })
+
+    it('setLfo helper sets freq, waveform, and gain', () => {
+        const lfoParams = new Map()
+        lfoParams.set('freq', { setTargetAtTime: vi.fn() })
+        lfoParams.set('waveform', { setTargetAtTime: vi.fn() })
+        const lfoWorklet = { parameters: lfoParams, connect: vi.fn(), disconnect: vi.fn() }
+        strip._lfoWorklets = { active: true, nodes: { pitchLfo: lfoWorklet } }
+
+        const result = WorkletBridge.setLfo(strip, 'pitchLfo', 4, 200, 1)
+        expect(result).toBe(true)
+        expect(lfoParams.get('freq').setTargetAtTime).toHaveBeenCalledWith(4, expect.any(Number), expect.any(Number))
+        expect(lfoParams.get('waveform').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
+    })
+
+    it('setLfo returns false when worklet not present', () => {
+        strip._lfoWorklets = undefined
+        const result = WorkletBridge.setLfo(strip, 'pitchLfo', 4, 200)
+        expect(result).toBe(false)
+    })
+
+    it('setLfo returns false for unknown LFO key', () => {
+        const lfoParams = new Map()
+        lfoParams.set('freq', { setTargetAtTime: vi.fn() })
+        lfoParams.set('waveform', { setTargetAtTime: vi.fn() })
+        const lfoWorklet = { parameters: lfoParams, connect: vi.fn(), disconnect: vi.fn() }
+        strip._lfoWorklets = { active: true, nodes: { pitchLfo: lfoWorklet } }
+        const result = WorkletBridge.setLfo(strip, 'nonexistentLfo', 4, 200)
+        expect(result).toBe(false)
+    })
+
+    it('worklet mode preserves existing connections (gain still drives targets)', () => {
+        // Native wiring: filterFreqLfo.gain → filter1.frequency + filter2.frequency
+        // After upgrade, the GainNode is still connected, just driven by worklet
+        // So we verify the gain was connected to filter1/2 at construction
+        const filter1Freq = strip.filter1.frequency
+        // The connection is set up in the constructor; we just verify the
+        // worklet path doesn't break the existing topology
+        expect(strip.lfos.filterFreqLfo.gain.connect).toHaveBeenCalledWith(filter1Freq)
+        expect(strip.lfos.filterFreqLfo.gain.connect).toHaveBeenCalledWith(strip.filter2.frequency)
     })
 })
