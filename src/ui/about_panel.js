@@ -68,27 +68,11 @@ export default class AboutPanel {
                             <label>License</label>
                             <span class="ne-val">${APP_LICENSE}</span>
                         </div>
-                        <div class="ne-row no-cursor">
-                            <label>Stack</label>
-                            <span class="ne-val">Vite, Web Audio, Vitest</span>
-                        </div>
                     </div>
                 </div>
                 <div class="ne-group" data-about-section="pwa">
                     <div class="ne-group-label">Progressive Web App</div>
                     <div class="ne-grid">
-                        <div class="ne-row no-cursor">
-                            <label>Status</label>
-                            <span class="ne-val" id="about-pwa-status">Checking...</span>
-                        </div>
-                        <div class="ne-row no-cursor">
-                            <label>Manifest</label>
-                            <span class="ne-val" id="about-pwa-manifest">-</span>
-                        </div>
-                        <div class="ne-row no-cursor">
-                            <label>Display</label>
-                            <span class="ne-val" id="about-pwa-display">-</span>
-                        </div>
                         <div class="ne-row" id="about-pwa-install-row" style="display:none">
                             <label>Install</label>
                             <button class="ne-btn" id="about-pwa-install">Install App</button>
@@ -134,18 +118,7 @@ export default class AboutPanel {
     }
 
     _detectPwaStatus() {
-        const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches
-            || window.navigator.standalone === true
-        const statusEl = this.container.querySelector('#about-pwa-status')
-        const manifestEl = this.container.querySelector('#about-pwa-manifest')
-        const displayEl = this.container.querySelector('#about-pwa-display')
         const installRow = this.container.querySelector('#about-pwa-install-row')
-
-        if (statusEl) statusEl.textContent = isStandalone ? 'Installed' : 'Installable'
-        if (displayEl) displayEl.textContent = isStandalone ? 'Standalone' : 'Browser'
-
-        const link = document.querySelector('link[rel="manifest"]')
-        if (manifestEl) manifestEl.textContent = link ? link.getAttribute('href') : 'Missing'
 
         if (installRow && this._deferredPrompt) {
             installRow.style.display = ''

@@ -52,20 +52,19 @@ describe('AboutPanel (PWA)', () => {
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 
-    it('renders app info (name, version, license, stack)', () => {
+    it('renders app info (name, version, license)', () => {
         playbackEvents.onAboutToggle.forEach(fn => fn(true))
         const html = document.getElementById('about-panel').innerHTML
         expect(html).toContain('OrDrumbox')
         expect(html).toContain('2.0.0')
         expect(html).toContain('GPL-3.0-only')
-        expect(html).toContain('Vite')
+        expect(html).not.toContain('Vite')
     })
 
-    it('renders the PWA section with status and install button (hidden by default)', () => {
+    it('renders the PWA section with install button (hidden by default)', () => {
         playbackEvents.onAboutToggle.forEach(fn => fn(true))
-        const status = document.getElementById('about-panel').querySelector('#about-pwa-status')
         const installRow = document.getElementById('about-panel').querySelector('#about-pwa-install-row')
-        expect(status).not.toBeNull()
+        expect(installRow).not.toBeNull()
         expect(installRow.style.display).toBe('none')
     })
 
