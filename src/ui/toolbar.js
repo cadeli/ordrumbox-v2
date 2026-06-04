@@ -29,6 +29,7 @@ export default class Toolbar {
         this.bindEvents()
         this.syncState()
         this.subscribeEvents()
+        this._setupOverflowObserver()
     }
 
     subscribeEvents() {
@@ -296,5 +297,21 @@ export default class Toolbar {
             const idx = Math.min(appState.selectedDrumkitNum, this.drumkitSelect.options.length - 1)
             this.drumkitSelect.selectedIndex = idx
         }
+    }
+
+    _setupOverflowObserver() {
+        const isMobile = () => window.innerWidth <= 768
+        const check = () => {
+            if (!this.container) return
+            const overflowing = isMobile() && this.container.scrollWidth > this.container.clientWidth + 1
+            this.container.classList.toggle('tb-overflow', overflowing)
+        }
+        if (typeof ResizeObserver !== 'undefined') {
+            this._ro = new ResizeObserver(check)
+            this._ro.observe(this.container)
+        }
+        window.addEventListener('resize', check)
+        this._checkOverflow = check
+        setTimeout(check, 0)
     }
 }
