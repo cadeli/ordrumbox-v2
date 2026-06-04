@@ -789,4 +789,22 @@ describe('VoiceFactory', () => {
         expect(updateArg.attack).toBeGreaterThanOrEqual(0.003)
         expect(updateArg.release).toBeGreaterThanOrEqual(0.008)
     })
+
+    it('WorkletSynthVoice.cleanup() does NOT throw and disconnects the worklet node via parent', () => {
+        appState.workletStatus = 'active'
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        voice.setup(makeSoftSynthFlatNote(), 0)
+        const node = voice.workletNode
+        expect(() => voice.cleanup()).not.toThrow()
+        // The parent BaseVoice.cleanup() iterates this.nodes and calls disconnect()
+        expect(node.disconnect).toHaveBeenCalled()
+        expect(voice.nodes.length).toBe(0)  // parent clears the array
+    })
+
+    it('WorkletSynthVoice registers the worklet node in BaseVoice.nodes (parent cleanup handles it)', () => {
+        appState.workletStatus = 'active'
+        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        voice.setup(makeSoftSynthFlatNote(), 0)
+        expect(voice.nodes).toContain(voice.workletNode)
+    })
 })

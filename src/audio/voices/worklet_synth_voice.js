@@ -41,7 +41,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.noteRatio = computeNoteRatio(flatNote.fpitch)
         this.noteVelo = (flatNote.note?.velocity ?? 0.8) * 0.25
 
-        this.workletNode = WorkletBridge.createSynthVoice(ctx)
+        this.workletNode = this.registerNode(WorkletBridge.createSynthVoice(ctx))
         this._sendUpdate(gs, flatNote.pan ?? 0)
         this.connectToStripInput(this.workletNode)
     }
@@ -76,13 +76,10 @@ export default class WorkletSynthVoice extends BaseVoice {
         this._sendUpdate(generatedSound, 0)
     }
 
-    cleanup = () => {
-        if (this.workletNode) {
-            try { this.workletNode.disconnect() } catch (e) { /* already disconnected */ }
-        }
-        this.workletNode = null
-        super.cleanup()
-    }
+    // Note: do not override cleanup() — BaseVoice's cleanup iterates
+    // `this.nodes` and disconnects each one. The workletNode is
+    // registered via registerNode() in setup(), so the parent handles
+    // disconnect automatically. We only need to null the local ref.
 
     _sendUpdate(gs, pan) {
         const env = gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
