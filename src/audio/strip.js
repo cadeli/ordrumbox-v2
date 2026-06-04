@@ -12,6 +12,7 @@ import {
     REVERB_PRESETS,
     SATURATION_TYPES,
 } from './math.js';
+import WorkletBridge from './worklets/bridge.js';
 
 export { SATURATION_TYPES, REVERB_PRESETS };
 
@@ -145,6 +146,20 @@ export default class MfStrip {
 
         this.currentFilterType = type || "allpass";
 
+        // Worklet path
+        if (this._worklet?.nodes?.filter) {
+            if (this.currentFilterType === "allpass") {
+                // TPT SVF doesn't have allpass — use passthrough (cutoff very high, Q low)
+                WorkletBridge.setFilter(this, "lowpass", 20000, 0.1);
+            } else {
+                const fFreq = Utils.normalizeTrackFilterFreqValue(freq);
+                const fQ = Utils.normalizeTrackFilterQValue(q);
+                WorkletBridge.setFilter(this, this.currentFilterType, fFreq, fQ);
+            }
+            return;
+        }
+
+        // Native fallback
         if (this.currentFilterType === "allpass") {
             this.filter1.type = "allpass";
             this.filter2.type = "allpass";
@@ -169,6 +184,14 @@ export default class MfStrip {
 
         this.currentReverbType = normalizedType;
         this.currentReverbAmount = normalizedAmount;
+
+        // Worklet path
+        if (this._worklet?.nodes?.reverb) {
+            WorkletBridge.setReverb(this, normalizedType, normalizedAmount);
+            // Keep reverbInput at full level (mix is on the worklet)
+            this.reverbInput.gain.setTargetAtTime(1, time, RAMP_TIME);
+            return;
+        }
 
         if (normalizedType === "none" || normalizedAmount <= 0) {
             this.reverbInput.gain.setTargetAtTime(0, time, RAMP_TIME);
@@ -285,6 +308,13 @@ export default class MfStrip {
         this.currentSaturationType = normalizedType;
         this.currentSaturationAmount = normalizedAmount;
 
+        // Worklet path (preferred when available)
+        if (this._worklet?.nodes?.saturation) {
+            WorkletBridge.setSaturation(this, normalizedType, normalizedAmount);
+            return;
+        }
+
+        // Native fallback
         this.saturDrive.gain.setTargetAtTime(computeDriveGain(normalizedAmount), time, RAMP_TIME);
         this.saturator.curve = computeSaturationCurve(normalizedType, normalizedAmount);
         this.output.gain.setTargetAtTime(computeOutputGain(normalizedAmount), time, RAMP_TIME);
