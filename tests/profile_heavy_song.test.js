@@ -299,50 +299,20 @@ describe('Profile heavy song (64 bars, 8 tracks, synths, LFOs, automation)', () 
         const heapDelta = heapAfter.used - heapBefore.used
 
         const noteCount = pattern.tracks.reduce((sum, t) => sum + t.notes.length, 0)
-
-        const report = {
-            'Pattern': {
-                bars: NB_BARS,
-                tracks: NB_TRACKS,
-                stepsPerBar: STEPS_PER_BAR,
-                totalNotes: noteCount,
-                bpm: pattern.bpm
-            },
-            'Load time (ms)': {
-                patternBuild: +measurements.patternBuildMs.toFixed(2),
-                flatNotes: +measurements.flatNotesMs.toFixed(2),
-                patternChange: +measurements.patternChangeMs.toFixed(2),
-                total: +((measurements.patternBuildMs + measurements.flatNotesMs + measurements.patternChangeMs)).toFixed(2)
-            },
-            'Heap (MB)': {
-                before: +heapBefore.used.toFixed(2),
-                afterLoad: +heapAfterLoad.used.toFixed(2),
-                afterAll: +heapAfter.used.toFixed(2),
-                delta: +heapDelta.toFixed(2),
-                limit: +heapAfter.limit.toFixed(2)
-            },
-            'CPU proxy (LFO)': {
-                totalMs: +measurements.lfoTotalMs.toFixed(2),
-                avgMsPerTick: +measurements.lfoAvgMs.toFixed(4),
-                maxMsPerTick: +measurements.lfoMaxMs.toFixed(4),
-                ticks: LFO_UPDATE_TICKS
-            },
-            'Render / FPS': {
-                windowMs: +measurements.renderWindowMs.toFixed(2),
-                iterations: measurements.renderIterations,
-                estimatedFps: +measurements.fpsEstimated.toFixed(2),
-                avgFrameMs: +measurements.avgFrameMs.toFixed(4),
-                maxFrameMs: +measurements.maxFrameMs.toFixed(4)
-            },
-            'GC / allocations': {
-                allocsInTest: measurements.gcProxyAllocs,
-                allocMs: +measurements.gcProxyMs.toFixed(2),
-                estimatedGcPerMin: +measurements.estimatedGcPerMin.toFixed(0)
-            }
-        }
+        const loadTotal = +(measurements.patternBuildMs + measurements.flatNotesMs + measurements.patternChangeMs).toFixed(2)
+        const heapUsed = +heapAfter.used.toFixed(2)
+        const heapDeltaRounded = +heapDelta.toFixed(2)
+        const lfoAvg = +measurements.lfoAvgMs.toFixed(4)
+        const fpsEst = +measurements.fpsEstimated.toFixed(2)
+        const allocMsRounded = +measurements.gcProxyMs.toFixed(2)
 
         console.log('\n========== PROFILE REPORT ==========')
-        console.table(report)
+        console.log(`Pattern       : ${NB_BARS} bars × ${NB_TRACKS} tracks × ${STEPS_PER_BAR} steps (${noteCount} notes, ${pattern.bpm} BPM)`)
+        console.log(`Load total    : ${loadTotal} ms`)
+        console.log(`Heap used     : ${heapUsed} MB (Δ ${heapDeltaRounded >= 0 ? '+' : ''}${heapDeltaRounded} MB)`)
+        console.log(`LFO avg/tick  : ${lfoAvg} ms`)
+        console.log(`FPS estimate  : ${fpsEst}`)
+        console.log(`GC proxy      : ${allocMsRounded} ms`)
         console.log('====================================\n')
 
         const git = getGitInfo()
