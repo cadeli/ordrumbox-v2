@@ -19,6 +19,7 @@ import REVERB_SOURCE from './processors/reverb_source.js'
 import DELAY_SOURCE from './processors/delay_source.js'
 import LFO_SOURCE from './processors/lfo_source.js'
 import MASTER_BUS_SOURCE from './processors/master_bus_source.js'
+import SYNTH_VOICE_SOURCE from './processors/synth_voice_source.js'
 
 let _registered = false
 
@@ -30,6 +31,7 @@ function registerAll() {
     WorkletLoader.register('delay', DELAY_SOURCE)
     WorkletLoader.register('lfo', LFO_SOURCE)
     WorkletLoader.register('master-bus', MASTER_BUS_SOURCE)
+    WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
     _registered = true
 }
 
@@ -259,5 +261,35 @@ export default class WorkletBridge {
         if (options.makeup    !== undefined && params.get('compMakeup'))    params.get('compMakeup').setTargetAtTime(options.makeup,    time, ramp)
         if (options.bypass    !== undefined && params.get('bypass'))        params.get('bypass').setTargetAtTime(options.bypass ? 1 : 0, time, ramp)
         return true
+    }
+
+    /**
+     * Create a synth voice AudioWorkletNode. The host sends trigger/release
+     * messages via `node.port.postMessage({...})`.
+     *
+     * Default port options: stereo output, no input.
+     */
+    static createSynthVoice(audioCtx) {
+        registerAll()
+        return WorkletLoader.createNode(audioCtx, 'synth-voice', {
+            numberOfInputs: 0,
+            numberOfOutputs: 1,
+            outputChannelCount: [2]
+        })
+    }
+
+    /** Send a trigger message to a synth voice worklet. */
+    static triggerVoice(node, startTime) {
+        node.port.postMessage({ type: 'trigger', startTime })
+    }
+
+    /** Send a release message to a synth voice worklet. */
+    static releaseVoice(node, releaseTime) {
+        node.port.postMessage({ type: 'release', releaseTime })
+    }
+
+    /** Apply a batch of param updates to a synth voice. */
+    static updateVoice(node, params) {
+        node.port.postMessage({ type: 'update', ...params })
     }
 }

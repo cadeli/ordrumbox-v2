@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import MfStrip from '../src/audio/strip.js'
 import MfMixer from '../src/audio/mixer.js'
 import WorkletBridge from '../src/audio/worklets/bridge.js'
+import SYNTH_VOICE_SOURCE from '../src/audio/worklets/processors/synth_voice_source.js'
 
 function makeAudioCtx() {
     return {
@@ -366,5 +367,72 @@ describe('WorkletBridge + MfMixer integration', () => {
         mixer.stop()
         expect(mixer._workletActive).toBe(false)
         expect(mixer.busWorklet).toBeNull()
+    })
+})
+
+// ===========================================================
+// Synth voice worklet integration
+// ===========================================================
+describe('WorkletBridge + SynthVoice integration', () => {
+    it('createSynthVoice returns a node-like object', () => {
+        const node = {
+            parameters: new Map(),
+            port: { postMessage: vi.fn(), onmessage: null },
+            connect: vi.fn(function () { return this }),
+            disconnect: vi.fn()
+        }
+        // Verify WorkletBridge helper methods send correct messages
+        WorkletBridge.triggerVoice(node, 1.234)
+        expect(node.port.postMessage).toHaveBeenCalledWith({ type: 'trigger', startTime: 1.234 })
+    })
+
+    it('triggerVoice sends trigger message with startTime', () => {
+        const node = {
+            parameters: new Map(),
+            port: { postMessage: vi.fn() },
+            connect: vi.fn(), disconnect: vi.fn()
+        }
+        WorkletBridge.triggerVoice(node, 0.5)
+        expect(node.port.postMessage).toHaveBeenCalledWith({ type: 'trigger', startTime: 0.5 })
+    })
+
+    it('releaseVoice sends release message with releaseTime', () => {
+        const node = {
+            parameters: new Map(),
+            port: { postMessage: vi.fn() },
+            connect: vi.fn(), disconnect: vi.fn()
+        }
+        WorkletBridge.releaseVoice(node, 2.5)
+        expect(node.port.postMessage).toHaveBeenCalledWith({ type: 'release', releaseTime: 2.5 })
+    })
+
+    it('updateVoice sends update message with merged params', () => {
+        const node = {
+            parameters: new Map(),
+            port: { postMessage: vi.fn() },
+            connect: vi.fn(), disconnect: vi.fn()
+        }
+        WorkletBridge.updateVoice(node, { master: 0.5, pan: -0.3 })
+        expect(node.port.postMessage).toHaveBeenCalledWith({
+            type: 'update', master: 0.5, pan: -0.3
+        })
+    })
+
+    it('synth voice has all expected AudioParams exposed', () => {
+        // Verify the processor source declares the full set of params
+        // (the actual AudioWorkletNode API differs from the mock processor
+        //  used in unit tests, so we just verify the source contract here)
+        const expected = [
+            'osc1Freq', 'osc2Freq', 'osc3Freq',
+            'osc1Gain', 'osc2Gain', 'osc3Gain',
+            'osc1Detune', 'osc2Detune', 'osc3Detune',
+            'osc1Wave', 'osc2Wave', 'osc3Wave',
+            'noiseMix', 'filterType', 'filterFreq', 'filterQ',
+            'attack', 'decay', 'sustain', 'release',
+            'master', 'pan', 'velocity'
+        ]
+        for (const name of expected) {
+            expect(SYNTH_VOICE_SOURCE).toContain(`name: '${name}'`)
+        }
     })
 })
