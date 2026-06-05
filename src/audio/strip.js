@@ -112,16 +112,19 @@ export default class MfStrip {
 
         if (!config) {
             params.get(`${prefix}Depth`)?.setTargetAtTime(0, time, RAMP_TIME);
+            params.get(`${prefix}Bias`)?.setTargetAtTime(0, time, RAMP_TIME);
             return;
         }
 
         const freq  = computeLfoFrequency(config.freq ?? 1, this.bpm);
         const depth = computeLfoDepth(config.min, config.max);
+        const bias  = parseFloat(config.min) || 0;
         const wave  = config.waveform ?? 0;
 
         params.get(`${prefix}Freq`)?.setTargetAtTime(freq, time, RAMP_TIME);
         params.get(`${prefix}Wave`)?.setTargetAtTime(wave, time, RAMP_TIME);
         params.get(`${prefix}Depth`)?.setTargetAtTime(depth, time, RAMP_TIME);
+        params.get(`${prefix}Bias`)?.setTargetAtTime(bias, time, RAMP_TIME);
     }
 
     updateFilter = (type, freq, q) => {

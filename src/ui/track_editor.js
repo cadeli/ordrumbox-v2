@@ -11,7 +11,7 @@ import SynthEditor from './synth_editor.js'
 import { bindCloseButton, bindVisibilityToggles, escapeHtml, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
 const fmtFreq = v => {
-    const hz = Utils.normalizedTrackFilterFreqToHz(v)
+    const hz = Utils.normalizeTrackFilterFreqValue(v)
     return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : Math.round(hz) + 'Hz'
 }
 const fmtVal = (key, v) => key === 'filterFreq' ? fmtFreq(v) : fmt(v)
@@ -157,9 +157,21 @@ export default class TrackEditor {
                     const valEl = this.container.querySelector(`.ne-val[data-key="${p.key}"]`)
                     if (slider && valEl) {
                         const lfoVal = LfoUpdater.computeLfoValue(this._track[p.lfo], tick, nbTicks)
-                        const effective = (this._track[p.key] ?? 0) + lfoVal
-                        slider.value = effective
-                        valEl.textContent = fmtVal(p.key, effective)
+                        let baseVal = this._track[p.key] ?? p.min
+                        
+                        // For display, we want the raw sum (which fmtVal will handle)
+                        const displayEffective = (this._track[p.key] ?? 0) + lfoVal
+                        
+                        // For slider position, we need normalized value [0..1]
+                        if (p.key === 'filterFreq' && baseVal > 1) {
+                            baseVal = Utils.hzToNormalizedTrackFilterFreq(baseVal)
+                        }
+                        if (p.key === 'filterQ' && baseVal > 1) {
+                            baseVal = Utils.valueToNormalizedTrackFilterQ(baseVal)
+                        }
+                        
+                        slider.value = baseVal + lfoVal
+                        valEl.textContent = fmtVal(p.key, displayEffective)
                     }
                 }
             })
@@ -233,10 +245,17 @@ export default class TrackEditor {
                     })
                     bodyHtml += `</select>`
                 } else {
+                    let sliderVal = val ?? p.min
+                    if (p.key === 'filterFreq' && sliderVal > 1) {
+                        sliderVal = Utils.hzToNormalizedTrackFilterFreq(sliderVal)
+                    }
+                    if (p.key === 'filterQ' && sliderVal > 1) {
+                        sliderVal = Utils.valueToNormalizedTrackFilterQ(sliderVal)
+                    }
                     const displayVal = fmtVal(p.key, val ?? p.min)
                     bodyHtml += `<label>${p.label}</label>
                              <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
-                                value="${val ?? p.min}" data-key="${p.key}">
+                                value="${sliderVal}" data-key="${p.key}">
                              <span class="ne-val" data-key="${p.key}">${displayVal}</span>`
                 }
                 bodyHtml += `</div>`
