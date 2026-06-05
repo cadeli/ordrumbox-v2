@@ -9,6 +9,14 @@
  * so all features are faithfully reflected: track loops, triggerFreq/Phase,
  * retrigger, arpeggio, and euclidian fill.
  *
+ * LFO modulation
+ * ──────────────
+ *   For each note, the track's velocityLfo and pitchLfo are evaluated at the
+ *   note's engine tick. Replace semantics are used: when an LFO is set, the
+ *   LFO value replaces the note's base velocity / pitch (matching the worklet
+ *   and the visual). filterFreq/filterQ LFOs have no MIDI equivalent and are
+ *   ignored. panLfo is also ignored (MIDI Note On has no per-note pan).
+ *
  * Timing bridge
  * ─────────────
  *   Engine TICK = 32 steps/bar
@@ -22,6 +30,7 @@ import {
     computeNbTickForPattern,
 } from '../../patterns/engine.js'
 import { TICK } from '../../core/constants.js'
+import { computeLfoValue } from '../../audio/math.js'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -208,9 +217,21 @@ export default class MidiExporter {
                     const name = fn.track.name
                     if (!trackData.has(name)) continue
                     const td = trackData.get(name)
-                    const noteNum  = Math.min(127, Math.max(0, td.midiNote + (fn.note.pitch ?? 0)))
-                    const velocity = Math.round(Math.min(1, Math.max(0, fn.note.velocity ?? 0.8)) * 127)
-                    td.events.push({ absMidiTick, noteNum, velocity })
+
+                    let velocity = fn.note.velocity ?? 0.8
+                    if (fn.track.velocityLfo) {
+                        const lfoVal = computeLfoValue(fn.track.velocityLfo, engineTick, nbTickForPattern)
+                        velocity = Math.min(1, Math.max(0, lfoVal))
+                    }
+
+                    let pitchOffset = fn.note.pitch ?? 0
+                    if (fn.track.pitchLfo) {
+                        pitchOffset = computeLfoValue(fn.track.pitchLfo, engineTick, nbTickForPattern)
+                    }
+
+                    const noteNum  = Math.min(127, Math.max(0, td.midiNote + pitchOffset))
+                    const midiVel  = Math.round(velocity * 127)
+                    td.events.push({ absMidiTick, noteNum, velocity: midiVel })
                 }
             }
         }

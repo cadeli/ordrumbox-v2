@@ -916,4 +916,172 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(readUint16BE(midiBytes, 10)).toBe(1) // only tempo track
         })
     })
+
+    // ── 9. LFO modulation at export time ───────────────────────────────────────
+    //
+    // velocityLfo and pitchLfo are evaluated at the note's engine tick and
+    // REPLACE the note's base value (replace semantics, matching the worklet).
+    // filterFreqLfo / filterQLfo / panLfo have no MIDI equivalent and are ignored.
+
+    describe('Case 9: LFO modulation at export time', () => {
+
+        it('velocityLfo replaces note velocity (LFO at midpoint → velocity ≈ 0.5)', () => {
+            // LFO {freq:1, min:0, max:1, phase:0} at tick 0:
+            //   sin(0)=0 → (0+1)/2=0.5 → 0.5 * 127 ≈ 64
+            const pattern = {
+                name: 'LfoVelo', bpm: 120, nbBars: 1,
+                tracks: [track('KICK', 4, 1, 1, [
+                    note(0, 0, { velocity: 1.0 })
+                ], { velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 } })]
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 36)
+            expect(kicks).toHaveLength(1)
+            expect(kicks[0].velocity).toBe(64)  // round(0.5 * 127) = 64
+        })
+
+        it('velocityLfo at peak (phase=0.25) → velocity 127', () => {
+            // LFO {freq:1, min:0, max:1, phase:0.25} at tick 0:
+            //   sin(PI/2)=1 → (1+1)/2=1 → 1.0 * 127 = 127
+            const pattern = {
+                name: 'LfoVeloPeak', bpm: 120, nbBars: 1,
+                tracks: [track('KICK', 4, 1, 1, [
+                    note(0, 0, { velocity: 0.0 })  // would be 0 without LFO
+                ], { velocityLfo: { freq: 1, min: 0, max: 1, phase: 0.25 } })]
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 36)
+            expect(kicks[0].velocity).toBe(127)
+        })
+
+        it('velocityLfo at trough (phase=0.75) → velocity 0 → note omitted (MIDI velocity 0 = Note Off)', () => {
+            // LFO {freq:1, min:0, max:1, phase:0.75} at tick 0:
+            //   sin(3PI/2)=-1 → (-1+1)/2=0 → 0 * 127 = 0
+            // MIDI Note On with velocity 0 is equivalent to Note Off, so the
+            // helper allNoteOns() correctly filters it out.
+            const pattern = {
+                name: 'LfoVeloTrough', bpm: 120, nbBars: 1,
+                tracks: [track('KICK', 4, 1, 1, [
+                    note(0, 0, { velocity: 1.0 })
+                ], { velocityLfo: { freq: 1, min: 0, max: 1, phase: 0.75 } })]
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 36)
+            expect(kicks).toHaveLength(0)
+        })
+
+        it('pitchLfo shifts MIDI note number (KICK 36 + 6 semitones = 42)', () => {
+            // LFO {freq:1, min:0, max:12, phase:0} at tick 0:
+            //   midpoint = 6 → noteNum = 36 + 6 = 42
+            const pattern = {
+                name: 'LfoPitch', bpm: 120, nbBars: 1,
+                tracks: [track('KICK', 4, 1, 1, [
+                    note(0, 0, { pitch: 0 })
+                ], { pitchLfo: { freq: 1, min: 0, max: 12, phase: 0 } })]
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 42)
+            expect(kicks).toHaveLength(1)
+        })
+
+        it('null velocityLfo leaves note velocity unchanged', () => {
+            const pattern = {
+                name: 'NoVeloLfo', bpm: 120, nbBars: 1,
+                tracks: [track('KICK', 4, 1, 1, [
+                    note(0, 0, { velocity: 0.5 })
+                ], { velocityLfo: null })]
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 36)
+            expect(kicks[0].velocity).toBe(64)  // round(0.5 * 127) = 64
+        })
+
+        it('null pitchLfo leaves note pitch unchanged', () => {
+            const pattern = {
+                name: 'NoPitchLfo', bpm: 120, nbBars: 1,
+                tracks: [track('KICK', 4, 1, 1, [
+                    note(0, 0, { pitch: 5 })
+                ], { pitchLfo: null })]
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 41)  // 36 + 5
+            expect(kicks).toHaveLength(1)
+        })
+
+        it('velocityLfo modulates each note differently across a bar (freq=1/16 → period=1 bar)', () => {
+            // periodInTicks = (1/16) * 16 * TICK = 32 = 1 bar
+            // ticks 0, 8, 16, 24 → phases 0, 0.25, 0.5, 0.75
+            // → sin → 0, 1, 0, -1 → normalized → 0.5, 1, 0.5, 0
+            // → final = 0.25 + norm*0.75 → 0.625, 1, 0.625, 0.25
+            // → Math.round(100*v)/100 rounds 0.625 → 0.63 (half-up)
+            // → MIDI vel (round) → 80, 127, 80, 32
+            const pattern = {
+                name: 'LfoVeloPerStep', bpm: 120, nbBars: 1,
+                tracks: [track('KICK', 4, 1, 1, [
+                    note(0, 0, { velocity: 1.0 }),
+                    note(0, 1, { velocity: 1.0 }),
+                    note(0, 2, { velocity: 1.0 }),
+                    note(0, 3, { velocity: 1.0 }),
+                ], { velocityLfo: { freq: 1/16, min: 0.25, max: 1, phase: 0 } })]
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 36)
+                .sort((a, b) => a.absTick - b.absTick)
+            expect(kicks.map(k => k.velocity)).toEqual([80, 127, 80, 32])
+        })
+
+        it('pitchLfo out-of-range value is clamped to [0, 127]', () => {
+            // KICK=36, pitchLfo min=50, max=200 → midpoint 125 → 36+125=161 → clamp 127
+            // At tick=128 (peak) → 200 → 36+200=236 → clamp 127
+            const pattern = {
+                name: 'LfoPitchClamp', bpm: 120, nbBars: 4,
+                tracks: [track('KICK', 4, 4, 4, [
+                    note(0, 0, { pitch: 0 }),
+                    note(1, 0, { pitch: 0 }),
+                ], { pitchLfo: { freq: 1/64, min: 50, max: 200, phase: 0 } })]
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 127)
+            // Both notes should clamp to 127
+            expect(kicks.length).toBeGreaterThanOrEqual(1)
+            kicks.forEach(k => expect(k.note).toBe(127))
+        })
+
+        it('filterFreqLfo and filterQLfo are ignored (no MIDI equivalent)', () => {
+            const basePattern = {
+                name: 'NoLfo', bpm: 120, nbBars: 1,
+                tracks: [track('KICK', 4, 1, 1, [note(0, 0, { velocity: 0.8 })])]
+            }
+            const withFilterLfos = {
+                ...basePattern,
+                tracks: [{
+                    ...basePattern.tracks[0],
+                    filterFreqLfo: { freq: 1, min: 20, max: 20000, phase: 0 },
+                    filterQLfo:    { freq: 1, min: 0.707, max: 18, phase: 0 },
+                    panLfo:        { freq: 1, min: -1, max: 1, phase: 0 },
+                }]
+            }
+            const im = new InstrumentsManager()
+            const exporter = new MidiExporter(im)
+            const bytesBase  = Array.from(exporter.export(basePattern,     { loops: 1 }))
+            const bytesFilt  = Array.from(exporter.export(withFilterLfos,  { loops: 1 }))
+            expect(bytesFilt).toEqual(bytesBase)
+        })
+    })
 })
