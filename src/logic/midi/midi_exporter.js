@@ -26,7 +26,7 @@ import { TICK } from '../../core/constants.js'
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const PPQN            = 96
-const TICKS_PER_BAR   = PPQN * 4              // 384
+const TICKS_PER_BAR   = PPQN * 1              // 384
 const MIDI_RATIO      = TICKS_PER_BAR / TICK  // 12
 const DRUM_CHANNEL    = 9                      // 0-indexed = MIDI channel 10
 const NOTE_DURATION   = 24                     // ticks (1/16th at PPQN=96)
