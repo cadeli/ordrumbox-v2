@@ -10,6 +10,8 @@ import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { bindCloseButton, bindVisibilityToggles, escapeHtml, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
+const fmtFreq = v => String(Math.round(Utils.normalizedTrackFilterFreqToHz(v))).padStart(5, '0')
+const fmtVal = (key, v) => key === 'filterFreq' ? fmtFreq(v) : fmt(v)
 
 const GROUPS = [
     {
@@ -152,8 +154,9 @@ export default class TrackEditor {
                     const valEl = this.container.querySelector(`.ne-val[data-key="${p.key}"]`)
                     if (slider && valEl) {
                         const lfoVal = LfoUpdater.computeLfoValue(this._track[p.lfo], tick, nbTicks)
-                        slider.value = lfoVal
-                        valEl.textContent = fmt(lfoVal)
+                        const effective = (this._track[p.key] ?? 0) + lfoVal
+                        slider.value = effective
+                        valEl.textContent = fmtVal(p.key, effective)
                     }
                 }
             })
@@ -227,10 +230,11 @@ export default class TrackEditor {
                     })
                     bodyHtml += `</select>`
                 } else {
+                    const displayVal = p.key === 'filterFreq' ? fmtFreq(val ?? p.min) : fmt(val ?? p.min)
                     bodyHtml += `<label>${p.label}</label>
                              <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
                                 value="${val ?? p.min}" data-key="${p.key}">
-                             <span class="ne-val" data-key="${p.key}">${fmt(val ?? p.min)}</span>`
+                             <span class="ne-val" data-key="${p.key}">${displayVal}</span>`
                 }
                 bodyHtml += `</div>`
             })
@@ -798,7 +802,7 @@ export default class TrackEditor {
         const key = input.dataset.key
         const val = parseFloat(input.value)
         this._track[key] = val
-        input.nextElementSibling.textContent = fmt(val)
+        input.nextElementSibling.textContent = fmtVal(key, val)
         playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
     }
 

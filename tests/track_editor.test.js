@@ -1,12 +1,13 @@
 /**
  * @vitest-environment jsdom
  */
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TrackEditor from '../src/ui/track_editor.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
+import LfoUpdater from '../src/patterns/lfo_updater.js'
 
 describe('TrackEditor sound panel', () => {
     beforeEach(() => {
@@ -67,6 +68,80 @@ describe('TrackEditor sound panel', () => {
         const instrumentSelect = wrapper.querySelector('select[data-sound="instrument"]')
 
         expect(instrumentSelect.value).toBe('KICK')
+    })
+})
+
+describe('TrackEditor filterFreq display', () => {
+    let savedVisibility
+
+    function getFreqDisplay(track) {
+        const editor = new TrackEditor()
+        editor.init()
+        editor._track = track
+        appState.trackEditorVisibility = {
+            basic: false, levels: false, filters: true, effects: false, sound: false, loop: false,
+        }
+        editor.sync()
+        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
+        return valEl?.textContent
+    }
+
+    beforeEach(() => {
+        document.body.innerHTML = ''
+        savedVisibility = { ...appState.trackEditorVisibility }
+    })
+
+    afterEach(() => {
+        appState.trackEditorVisibility = savedVisibility
+    })
+
+    it('20 Hz is rendered as "00020"', () => {
+        expect(getFreqDisplay({ name: 'KICK', filterFreq: 0 })).toBe('00020')
+    })
+
+    it('mid frequency (~632 Hz) is rendered with leading zeros', () => {
+        // normalized 0.5 → 632 Hz (per Utils.normalizedTrackFilterFreqToHz)
+        expect(getFreqDisplay({ name: 'KICK', filterFreq: 0.5 })).toBe('00632')
+    })
+
+    it('20 kHz is rendered as "20000"', () => {
+        expect(getFreqDisplay({ name: 'KICK', filterFreq: 1 })).toBe('20000')
+    })
+
+    it('_onSlider formats the display in Hz while dragging', () => {
+        const editor = new TrackEditor()
+        editor.init()
+        editor._track = { name: 'KICK', filterFreq: 0 }
+        editor.sync()
+        const input = editor.container.querySelector('input[data-key="filterFreq"]')
+        input.value = '0.5'
+        editor._onSlider(input)
+        expect(editor._track.filterFreq).toBe(0.5)
+        expect(input.nextElementSibling.textContent).toBe('00632')
+    })
+
+    it('_updateLfoSliders shows the effective (base + lfo) value in Hz', () => {
+        // Stub transport so the LFO animation actually runs
+        serviceRegistry.transport = { isRunning: true, tick: 0 }
+        const editor = new TrackEditor()
+        editor.init()
+        // LFO with fixed output = 0.3 (so effective = 0.5 + 0.3 = 0.8 → ~5012 Hz)
+        editor._track = {
+            name: 'KICK',
+            filterFreq: 0.5,
+            filterFreqLfo: { freq: 0, min: 0.3, max: 0.3, phase: 0 },
+        }
+        editor.sync()
+        const beforeLfoValue = LfoUpdater.computeLfoValue
+        LfoUpdater.computeLfoValue = () => 0.3
+        try {
+            editor._updateLfoSliders()
+        } finally {
+            LfoUpdater.computeLfoValue = beforeLfoValue
+        }
+        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
+        // 0.5 + 0.3 = 0.8 → Utils.normalizedTrackFilterFreqToHz(0.8) = floor(20 * 1000^0.8) = 5023
+        expect(valEl.textContent).toBe('05023')
     })
 })
 

@@ -1782,6 +1782,7 @@
         "loopAtStep": 16,
         "velocity": 0.2,
         "pan": 1,
+        "mono":true,
         "panLfo": {"name":"lfo","freq":1,"min":0,"max":1,"phase":0},
         "filterType": "lowpass",
         "filterFreq": 17659.04,
