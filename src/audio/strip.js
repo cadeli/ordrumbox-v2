@@ -112,6 +112,7 @@ export default class MfStrip {
         if (!config) {
             params.get(`${prefix}Depth`)?.setTargetAtTime(0, time, RAMP_TIME);
             params.get(`${prefix}Bias`)?.setTargetAtTime(0, time, RAMP_TIME);
+            params.get(`${prefix}Mix`)?.setTargetAtTime(0, time, RAMP_TIME);
             return;
         }
 
@@ -137,6 +138,8 @@ export default class MfStrip {
         params.get(`${prefix}Wave`)?.setTargetAtTime(wave, time, RAMP_TIME);
         params.get(`${prefix}Depth`)?.setTargetAtTime(depth, time, RAMP_TIME);
         params.get(`${prefix}Bias`)?.setTargetAtTime(bias, time, RAMP_TIME);
+        // mix=1 means the LFO replaces the base value (replace semantics).
+        params.get(`${prefix}Mix`)?.setTargetAtTime(1, time, RAMP_TIME);
     }
 
     updateFilter = (type, freq, q) => {

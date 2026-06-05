@@ -43,11 +43,12 @@ export const STRIP_PARAM_NAMES = [
     'revRoom', 'revDamp', 'revWidth', 'revMix',
     'dlyTimeL', 'dlyTimeR', 'dlyFb', 'dlyMix', 'dlyMode',
     'volume', 'pan',
-    'lfoPitchFreq', 'lfoPitchWave', 'lfoPitchDepth',
-    'lfoVeloFreq', 'lfoVeloWave', 'lfoVeloDepth',
-    'lfoPanFreq', 'lfoPanWave', 'lfoPanDepth',
-    'lfoCutFreq', 'lfoCutWave', 'lfoCutDepth',
-    'lfoQFreq', 'lfoQWave', 'lfoQDepth',
+    'lfoPitchMix', 'lfoVeloMix', 'lfoPanMix', 'lfoCutMix', 'lfoQMix',
+    'lfoPitchFreq', 'lfoPitchWave', 'lfoPitchDepth', 'lfoPitchBias',
+    'lfoVeloFreq', 'lfoVeloWave', 'lfoVeloDepth', 'lfoVeloBias',
+    'lfoPanFreq', 'lfoPanWave', 'lfoPanDepth', 'lfoPanBias',
+    'lfoCutFreq', 'lfoCutWave', 'lfoCutDepth', 'lfoCutBias',
+    'lfoQFreq', 'lfoQWave', 'lfoQDepth', 'lfoQBias',
 ]
 
 /**

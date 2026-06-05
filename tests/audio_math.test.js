@@ -7,6 +7,7 @@ import {
     computeNoteRatio,
     computeLfoFrequency,
     computeLfoValueFromTick,
+    computeLfoValue,
     computeLfoDepth,
     computeSaturationCurve,
     computeImpulseSampleData,
@@ -130,6 +131,74 @@ describe('audioMath - computeLfoDepth', () => {
     it('returns max - min', () => {
         expect(computeLfoDepth(-12, 12)).toBe(24)
         expect(computeLfoDepth(0, 1)).toBe(1)
+    })
+})
+
+describe('audioMath - computeLfoValue (replace semantics, controlKey normalization)', () => {
+    it('returns 0 when lfo is null/undefined (caller decides replace vs add)', () => {
+        expect(computeLfoValue(null, 100, TICK * 4)).toBe(0)
+        expect(computeLfoValue(undefined, 100, TICK * 4)).toBe(0)
+    })
+
+    it('returns value in [min, max] for velo/pan/pitch (natural units)', () => {
+        const lfo = { freq: 1, min: 0.2, max: 0.8, phase: 0 }
+        for (let tick = 0; tick < 200; tick += 10) {
+            const val = computeLfoValue(lfo, tick, TICK * 4)
+            expect(val).toBeGreaterThanOrEqual(0.2)
+            expect(val).toBeLessThanOrEqual(0.8)
+        }
+    })
+
+    it('returns value in [min, max] for pitch in semitones (no normalization)', () => {
+        const lfo = { freq: 1, min: -12, max: 12, phase: 0 }
+        for (let tick = 0; tick < 200; tick += 10) {
+            const val = computeLfoValue(lfo, tick, TICK * 4, 'pitch')
+            expect(val).toBeGreaterThanOrEqual(-12)
+            expect(val).toBeLessThanOrEqual(12)
+        }
+    })
+
+    it('normalizes filterFreq LFO config from Hz to [0,1] when min/max > 1', () => {
+        // 20000 Hz → normalized = log10(20000/20)/3 = 1.0
+        // 20 Hz    → normalized = log10(20/20)/3    = 0.0
+        // sin(0) = 0 → (0+1)/2 = 0.5 → midpoint between 0 and 1 = 0.5
+        const lfo = { freq: 1, min: 20, max: 20000, phase: 0 }
+        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterFreq')).toBe(0.5)
+    })
+
+    it('keeps filterFreq LFO config in [0,1] when already normalized', () => {
+        const lfo = { freq: 1, min: 0.2, max: 0.8, phase: 0 }
+        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterFreq')).toBe(0.5)
+    })
+
+    it('normalizes filterQ LFO config from Q to [0,1] when min/max > 1', () => {
+        // Q=0.707 → normalized = (0.707-0.707)/18 = 0
+        // Q=18.707 → normalized = (18.707-0.707)/18 = 1
+        // sin(0) = 0 → (0+1)/2 = 0.5 → 0.5
+        const lfo = { freq: 1, min: 0.707, max: 18.707, phase: 0 }
+        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterQ')).toBe(0.5)
+    })
+
+    it('handles string-typed freq and min/max (as stored in JSON)', () => {
+        const lfo = { freq: '1', phase: 0, min: '0', max: '1' }
+        expect(computeLfoValue(lfo, 0, TICK * 4)).toBe(0.5)
+    })
+
+    it('matches the worklet formula (inlined in strip_source.js)', () => {
+        // The worklet uses: bias + ((raw + 1) * 0.5) * depth
+        // where bias = min, depth = max - min, raw = sin(2π * (tick/period + phase))
+        // period = freq * 16 * TICK
+        // The helper must produce the same value.
+        const lfo = { freq: 2, min: -1, max: 1, phase: 0.25 }
+        for (const tick of [0, 16, 32, 48, 64, 96]) {
+            const period = 2 * 16 * TICK
+            const curPhase = (tick / period) + 0.25
+            const raw = Math.sin(2 * Math.PI * curPhase)
+            const expected = -1 + ((raw + 1) * 0.5) * 2  // = raw
+            const expectedRounded = Math.round(100 * expected) / 100
+            const actual = computeLfoValue(lfo, tick, TICK * 4)
+            expect(actual).toBe(expectedRounded)
+        }
     })
 })
 

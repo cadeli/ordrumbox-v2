@@ -120,12 +120,12 @@ describe('TrackEditor filterFreq display', () => {
         expect(input.nextElementSibling.textContent).toBe('632Hz')
     })
 
-    it('_updateLfoSliders shows the effective (base + lfo) value in Hz', () => {
-        // Stub transport so the LFO animation actually runs
+    it('_updateLfoSliders replaces base with the LFO value (Hz)', () => {
+        // Replace semantics: when LFO is on, the LFO value IS the value (not added to base).
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         const editor = new TrackEditor()
         editor.init()
-        // LFO with fixed output = 0.3 (so effective = 0.5 + 0.3 = 0.8 → ~5012 Hz)
+        // LFO with fixed output = 0.3 (replaces base 0.5). Base is ignored.
         editor._track = {
             name: 'KICK',
             filterFreq: 0.5,
@@ -140,8 +140,8 @@ describe('TrackEditor filterFreq display', () => {
             LfoUpdater.computeLfoValue = beforeLfoValue
         }
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
-        // 0.5 + 0.3 = 0.8 → Utils.normalizedTrackFilterFreqToHz(0.8) = floor(20 * 1000^0.8) = 5011.87...
-        expect(valEl.textContent).toBe('5.0k')
+        // 0.3 (normalized) → Utils.normalizedTrackFilterFreqToHz(0.3) = floor(20 * 1000^0.3) = 158
+        expect(valEl.textContent).toBe('158Hz')
     })
 })
 

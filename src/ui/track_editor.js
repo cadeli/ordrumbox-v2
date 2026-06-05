@@ -156,22 +156,12 @@ export default class TrackEditor {
                     const slider = this.container.querySelector(`input[data-key="${p.key}"]`)
                     const valEl = this.container.querySelector(`.ne-val[data-key="${p.key}"]`)
                     if (slider && valEl) {
-                        const lfoVal = LfoUpdater.computeLfoValue(this._track[p.lfo], tick, nbTicks)
-                        let baseVal = this._track[p.key] ?? p.min
-                        
-                        // For display, we want the raw sum (which fmtVal will handle)
-                        const displayEffective = (this._track[p.key] ?? 0) + lfoVal
-                        
-                        // For slider position, we need normalized value [0..1]
-                        if (p.key === 'filterFreq' && baseVal > 1) {
-                            baseVal = Utils.hzToNormalizedTrackFilterFreq(baseVal)
-                        }
-                        if (p.key === 'filterQ' && baseVal > 1) {
-                            baseVal = Utils.valueToNormalizedTrackFilterQ(baseVal)
-                        }
-                        
-                        slider.value = baseVal + lfoVal
-                        valEl.textContent = fmtVal(p.key, displayEffective)
+                        // Replace semantics: when LFO is on, the LFO value IS the value.
+                        // computeLfoValue returns the value in the same unit as the base
+                        // (normalized [0,1] for filterFreq/filterQ, natural units otherwise).
+                        const lfoVal = LfoUpdater.computeLfoValue(this._track[p.lfo], tick, nbTicks, p.key)
+                        slider.value = lfoVal
+                        valEl.textContent = fmtVal(p.key, lfoVal)
                     }
                 }
             })

@@ -5,6 +5,7 @@ import SynthVoice from '../src/audio/voices/synth_voice.js'
 import WorkletSynthVoice from '../src/audio/voices/worklet_synth_voice.js'
 import VoiceFactory from '../src/audio/voices/voice_factory.js'
 import { appState } from '../src/state/app_state.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
 
 const postMessageMock = vi.fn()
@@ -305,23 +306,39 @@ describe('SampleVoice', () => {
         expect(voice.stopped).toBe(true)
     })
 
-    describe('with LFO connections', () => {
-        it('setup connects pitchLfo when track.pitchLfo is set', () => {
-            const flatNote = makeFlatNote()
-            flatNote.track.pitchLfo = { freq: 2, depth: 0.5 }
-            voice.setup(flatNote, 1.0)
-            // A centMult gain node should have been created (extra createGain call)
-            expect(ctx.createGain.mock.calls.length).toBeGreaterThan(1)
+    describe('with LFO connections (replace semantics)', () => {
+        beforeEach(() => {
+            serviceRegistry.transport = { isRunning: true, tick: 0, bpm: 120 }
         })
 
-        it('setup connects panLfo when track.panLfo is set', () => {
+        it('setup replaces fpitch with the pitchLFO value (in semitones, snapshot at note start)', () => {
+            // serviceRegistry.transport.tick = 0, nbBars default 4, freq=1, min=0, max=12
+            // → phase=0, sin(0)=0, (0+1)/2=0.5, 0 + 0.5*12 = 6 semitones
+            // → playbackRate = 2^(6/12) = sqrt(2) ≈ 1.4142
+            const flatNote = makeFlatNote({ fpitch: 1 })
+            flatNote.track.pitchLfo = { freq: 1, min: 0, max: 12, phase: 0 }
+            voice.setup(flatNote, 1.0)
+            // No extra centMult gain should be created (no more LFO → centMult → detune)
+            expect(ctx.createGain.mock.calls.length).toBe(1) // just the gainEnvelope
+            // playbackRate should be 2^(6/12) ≈ 1.4142
+            const expectedRate = Math.pow(2, 6 / 12)
+            expect(voice.snd.playbackRate.setTargetAtTime).toHaveBeenCalledWith(
+                expect.closeTo(expectedRate, 5),
+                1.0,
+                expect.any(Number)
+            )
+        })
+
+        it('setup does not connect panLfo at the voice level (worklet handles it)', () => {
+            // Pan LFO is applied at the strip level (worklet replace semantics),
+            // not via _lfoGains.panLfo.connect() in the voice.
             const flatNote = makeFlatNote()
             flatNote.track.panLfo = { freq: 1, depth: 0.3 }
             voice.setup(flatNote, 1.0)
-            expect(strip._lfoGains.panLfo.connect).toHaveBeenCalled()
+            expect(strip._lfoGains.panLfo.connect).not.toHaveBeenCalled()
         })
 
-        it('setup does not connect pitchLfo if strip._lfoGains.pitchLfo is absent', () => {
+        it('setup does not throw when pitchLfo is set but no LFO infrastructure is available', () => {
             strip._lfoGains.pitchLfo = null
             const flatNote = makeFlatNote()
             flatNote.track.pitchLfo = { freq: 2 }

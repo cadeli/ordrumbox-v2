@@ -86,7 +86,13 @@ class StripProcessor extends AudioWorkletProcessor {
             // Master/Pan
             { name: 'volume', defaultValue: 1, minValue: 0, maxValue: 2 },
             { name: 'pan',    defaultValue: 0, minValue: -1, maxValue: 1 },
-            // LFOs (normalized domain)
+            // LFO mix (0 = base value, 1 = LFO replaces). Formula: final = (1-mix)*base + mix*lfo
+            { name: 'lfoPitchMix', defaultValue: 0, minValue: 0, maxValue: 1 },
+            { name: 'lfoVeloMix',  defaultValue: 0, minValue: 0, maxValue: 1 },
+            { name: 'lfoPanMix',   defaultValue: 0, minValue: 0, maxValue: 1 },
+            { name: 'lfoCutMix',   defaultValue: 0, minValue: 0, maxValue: 1 },
+            { name: 'lfoQMix',     defaultValue: 0, minValue: 0, maxValue: 1 },
+            // LFOs (user-domain: velo/pan in natural units, cut/q normalized, pitch in semitones)
             { name: 'lfoPitchFreq', defaultValue: 1 }, { name: 'lfoPitchWave', defaultValue: 0 }, { name: 'lfoPitchDepth', defaultValue: 0 }, { name: 'lfoPitchBias', defaultValue: 0 },
             { name: 'lfoVeloFreq',  defaultValue: 1 }, { name: 'lfoVeloWave',  defaultValue: 0 }, { name: 'lfoVeloDepth',  defaultValue: 0 }, { name: 'lfoVeloBias',  defaultValue: 0 },
             { name: 'lfoPanFreq',   defaultValue: 1 }, { name: 'lfoPanWave',   defaultValue: 0 }, { name: 'lfoPanDepth',   defaultValue: 0 }, { name: 'lfoPanBias',   defaultValue: 0 },
@@ -135,34 +141,39 @@ class StripProcessor extends AudioWorkletProcessor {
         const pCut = params.cutoff[0], pQ = params.q[0];
         const lCutF = params.lfoCutFreq[0], lCutW = params.lfoCutWave[0], lCutD = params.lfoCutDepth[0], lCutB = params.lfoCutBias[0];
         const lQF = params.lfoQFreq[0], lQW = params.lfoQWave[0], lQD = params.lfoQDepth[0], lQB = params.lfoQBias[0];
+        const pitchMix = params.lfoPitchMix[0], veloMix = params.lfoVeloMix[0], panMix = params.lfoPanMix[0], cutMix = params.lfoCutMix[0], qMix = params.lfoQMix[0];
 
-        // LFO Pitch Output (port 1)
+        // LFO Pitch Output (port 1): outputs the LFO value (semitones) when pitchMix=1, else 0.
+        // The voice reads this and uses it as the pitch (replacing fpitch).
         if (pitchLfoOut && pitchLfoOut[0]) {
             const f = params.lfoPitchFreq[0], w = params.lfoPitchWave[0], d = params.lfoPitchDepth[0], b = params.lfoPitchBias[0];
             for (let i = 0; i < frames; i++) {
                 const raw = this.lfos.pitch.process(f, w, sr);
-                pitchLfoOut[0][i] = b + ((raw + 1) * 0.5) * d;
+                const lfoVal = b + ((raw + 1) * 0.5) * d;
+                pitchLfoOut[0][i] = pitchMix * lfoVal;
             }
         }
 
         for (let i = 0; i < frames; i++) {
             // --- 1. LFO Internal Processing ---
+            // Formula matches computeLfoValue() in audio/math.js (single source of truth).
             const vRaw = this.lfos.velo.process(params.lfoVeloFreq[0], params.lfoVeloWave[0], sr);
             const vLfo = params.lfoVeloBias[0] + ((vRaw + 1) * 0.5) * params.lfoVeloDepth[0];
-            
+
             const pRaw = this.lfos.pan.process(params.lfoPanFreq[0], params.lfoPanWave[0], sr);
             const pLfo = params.lfoPanBias[0] + ((pRaw + 1) * 0.5) * params.lfoPanDepth[0];
-            
-            const cRaw = this.lfos.cut.process(lCutF, lCutW, sr);
-            const cMod = lCutB + ((cRaw + 1) * 0.5) * lCutD;
-            
-            const qRaw = this.lfos.q.process(lQF, lQW, sr);
-            const qMod = lQB + ((qRaw + 1) * 0.5) * lQD;
 
-            // --- 2. Filter (Normalized -> Hz) ---
-            const normCut = Math.max(0, Math.min(1, pCut + cMod));
+            const cRaw = this.lfos.cut.process(lCutF, lCutW, sr);
+            const cLfo = lCutB + ((cRaw + 1) * 0.5) * lCutD;
+
+            const qRaw = this.lfos.q.process(lQF, lQW, sr);
+            const qLfo = lQB + ((qRaw + 1) * 0.5) * lQD;
+
+            // --- 2. Filter (Replace semantics) ---
+            // final = (1 - mix) * base + mix * lfo. The LFO replaces the base value.
+            const normCut = Math.max(0, Math.min(1, (1 - cutMix) * pCut + cutMix * cLfo));
             const fHz = 20 * Math.pow(1000, normCut);
-            const normQ = Math.max(0, Math.min(1, pQ + qMod));
+            const normQ = Math.max(0, Math.min(1, (1 - qMix) * pQ + qMix * qLfo));
             const Q = normQ * 18 + 0.707;
 
             const g = Math.tan(Math.PI * fHz / sr), k = 1 / Q;
@@ -203,8 +214,9 @@ class StripProcessor extends AudioWorkletProcessor {
             const dWetL = dL * dMix, dWetR = dR * dMix;
 
             // --- 6. Final Mix & Pan ---
-            const vol = params.volume[0] * Math.pow(2, vLfo);
-            const p = Math.max(-1, Math.min(1, params.pan[0] + pLfo));
+            // Replace semantics: when LFO is on, the LFO value replaces the base (vol/pan).
+            const vol = (1 - veloMix) * params.volume[0] + veloMix * vLfo;
+            const p = Math.max(-1, Math.min(1, (1 - panMix) * params.pan[0] + panMix * pLfo));
             const panL = Math.cos((p + 1) * Math.PI / 4), panR = Math.sin((p + 1) * Math.PI / 4);
             outL[i] = (satL + rL + dWetL) * vol * panL;
             outR[i] = (satR + rR + dWetR) * vol * panR;

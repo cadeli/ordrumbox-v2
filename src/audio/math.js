@@ -3,6 +3,7 @@ import {
     C3_FREQ,
     LFO_GAIN_MULTIPLIER,
     LFO_FREQ_OFFSET,
+    FILTER_FREQ_MIN,
     FILTER_FREQ_MAX,
     NOTE_VELO_BALANCE,
     MIN_GAIN_VALUE,
@@ -57,20 +58,53 @@ export function computeLfoFrequency(configFreq, bpm) {
 }
 
 export function computeLfoValueFromTick(lfo, tick) {
+    return computeLfoValue(lfo, tick, TICK * 4, null)
+}
+
+/**
+ * Single source of truth for the LFO value calculation.
+ *
+ * Returns the LFO value in the same units as the base value of the control.
+ * For 'filterFreq' and 'filterQ', if the LFO config {min,max} is in Hz/Q
+ * (i.e. > 1), it is converted to normalized [0,1] so the result matches
+ * the worklet's normalized domain.
+ *
+ * The worklet `strip_source.js` inlines the same formula. Both must
+ * produce the same value for the same input (verified by tests).
+ *
+ * @param {Object|null} lfo  LFO config: { freq, min, max, phase }
+ * @param {number} tick      Current tick position
+ * @param {number} nbTicks   Total ticks in the pattern (unused for now)
+ * @param {string|null} controlKey  Optional control key for normalization
+ * @returns {number} LFO value in base units
+ */
+export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null) {
     if (!lfo) return 0
     const freqVal = parseFloat(lfo.freq) || 1
-    const min = parseFloat(lfo.min) || 0
-    const max = parseFloat(lfo.max) || 1
+    let min = parseFloat(lfo.min) || 0
+    let max = parseFloat(lfo.max) || 1
     const phase = parseFloat(lfo.phase) || 0
-    
+
+    if (controlKey === 'filterFreq' && (min > 1 || max > 1)) {
+        const hzMin = Math.max(FILTER_FREQ_MIN, min)
+        const hzMax = Math.max(FILTER_FREQ_MIN, max)
+        min = Math.log10(hzMin / FILTER_FREQ_MIN) / 3
+        max = Math.log10(hzMax / FILTER_FREQ_MIN) / 3
+    } else if (controlKey === 'filterQ' && (min > 1 || max > 1)) {
+        const qMin = Math.max(0.707, min)
+        const qMax = Math.max(0.707, max)
+        min = (qMin - 0.707) / 18
+        max = (qMax - 0.707) / 18
+    }
+
     // Period in ticks: 1 unit = 16 beats = 16 * TICK
     const periodInTicks = freqVal * 16 * TICK
     const currentPhase = (tick / periodInTicks) + phase
-    
+
     let val = Math.sin(2 * Math.PI * currentPhase)
     val = (val + 1) / 2
     val = min + val * (max - min)
-    
+
     return Math.round(100 * val) / 100
 }
 

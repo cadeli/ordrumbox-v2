@@ -79,12 +79,23 @@ describe('MfStrip (Unified Worklet)', () => {
         expect(params.get('dlyTimeL').setTargetAtTime).toHaveBeenCalled()
     })
 
-    it('updateLfo sets worklet LFO parameters', async () => {
+    it('updateLfo sets worklet LFO parameters and mix=1 (replace semantics)', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         strip.updateLfo('pitchLfo', { freq: 2, min: 0, max: 0.5 })
         const params = strip.stripNode.parameters
         expect(params.get('lfoPitchFreq').setTargetAtTime).toHaveBeenCalled()
         expect(params.get('lfoPitchDepth').setTargetAtTime).toHaveBeenCalled()
+        // mix=1 means the LFO replaces the base value (worklet apply the LFO, not add).
+        expect(params.get('lfoPitchMix').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
+    })
+
+    it('updateLfo with null config sets mix=0 (LFO off, use base)', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
+        strip.updateLfo('panLfo', null)
+        const params = strip.stripNode.parameters
+        expect(params.get('lfoPanDepth').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(params.get('lfoPanBias').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(params.get('lfoPanMix').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
     })
 
     it('delete disconnects the stripNode and cleans up', async () => {
