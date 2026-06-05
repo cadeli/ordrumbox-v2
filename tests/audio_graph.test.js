@@ -22,19 +22,24 @@ function makeNode(extra = {}) {
     return { connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), ...extra }
 }
 
-const WORKLET_PARAM_NAMES = {
-    filter:     ['cutoff', 'q', 'mode'],
-    saturation: ['drive', 'mix', 'output', 'type'],
-    reverb:     ['roomSize', 'damping', 'width', 'mix', 'preDelay'],
-    delay:      ['timeL', 'timeR', 'feedback', 'mix', 'filter', 'saturation', 'saturationType', 'mode', 'width'],
-    lfo:        ['freq', 'waveform', 'phase', 'bias'],
-}
+const STRIP_PARAM_NAMES = [
+    'cutoff', 'q', 'filterMode',
+    'satType', 'satDrive', 'satOut', 'satMix',
+    'revRoom', 'revDamp', 'revWidth', 'revMix',
+    'dlyTimeL', 'dlyTimeR', 'dlyFb', 'dlyMix', 'dlyMode',
+    'volume', 'pan',
+    'lfoPitchFreq', 'lfoPitchWave', 'lfoPitchDepth',
+    'lfoVeloFreq', 'lfoVeloWave', 'lfoVeloDepth',
+    'lfoPanFreq', 'lfoPanWave', 'lfoPanDepth',
+    'lfoCutFreq', 'lfoCutWave', 'lfoCutDepth',
+    'lfoQFreq', 'lfoQWave', 'lfoQDepth'
+];
 
 function installWorkletMocks() {
     vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
     vi.spyOn(WorkletLoader, 'ensureLoaded').mockResolvedValue(true)
     vi.spyOn(WorkletLoader, 'createNode').mockImplementation((_ctx, name) => {
-        const paramNames = WORKLET_PARAM_NAMES[name] ?? []
+        const paramNames = name === 'strip' ? STRIP_PARAM_NAMES : []
         const params = new Map()
         for (const n of paramNames) params.set(n, makeParam())
         return { ...makeNode(), parameters: params }
@@ -70,46 +75,42 @@ describe('Audio Graph Validity', () => {
         installWorkletMocks()
     })
 
-    describe('MfStrip Robustness (worklet API)', () => {
+    describe('MfStrip Robustness (unified worklet API)', () => {
         it('updateSaturation handles extreme and invalid amounts without NaN', async () => {
             const strip = await MfStrip.create('TEST', mockCtx)
 
             strip.updateSaturation('soft', 999)
-            expect(strip.saturationNode.parameters.get('drive').setTargetAtTime)
+            expect(strip.stripNode.parameters.get('satDrive').setTargetAtTime)
                 .not.toHaveBeenCalledWith(NaN, expect.any(Number), expect.any(Number))
 
             strip.updateSaturation('soft', -999)
-            expect(strip.saturationNode.parameters.get('drive').setTargetAtTime)
+            expect(strip.stripNode.parameters.get('satDrive').setTargetAtTime)
                 .not.toHaveBeenCalledWith(NaN, expect.any(Number), expect.any(Number))
 
             strip.updateSaturation('invalid', 0.5)
             expect(strip.currentSaturationType).toBe('soft')
         })
 
-        it('updateSaturation clamps internal drive to [1, 7] for any amount', async () => {
+        it('updateSaturation clamps internal drive to finite values for any amount', async () => {
             const strip = await MfStrip.create('TEST', mockCtx)
-            // 999 * 6 + 1 = 5995 (would be outside), check it's not NaN
             strip.updateSaturation('soft', 999)
-            const driveCalls = strip.saturationNode.parameters.get('drive').setTargetAtTime.mock.calls
+            const driveCalls = strip.stripNode.parameters.get('satDrive').setTargetAtTime.mock.calls
             const last = driveCalls[driveCalls.length - 1][0]
             expect(Number.isFinite(last)).toBe(true)
         })
 
         it('updateFilter handles extreme frequency values without producing NaN', async () => {
             const strip = await MfStrip.create('TEST', mockCtx)
-            // The worklet AudioParam descriptor clamps to [20, 20000] at runtime.
-            // Here we verify the strip scheduling layer never produces NaN.
             strip.updateFilter('lowpass', 1_000_000, 1)
-            const cutoff = strip.filterNode.parameters.get('cutoff')
+            const cutoff = strip.stripNode.parameters.get('cutoff')
             const last = cutoff.setTargetAtTime.mock.calls.at(-1)[0]
             expect(Number.isFinite(last)).toBe(true)
         })
 
         it('updateFilter handles NaN frequency without producing NaN', async () => {
             const strip = await MfStrip.create('TEST', mockCtx)
-            // Utils.normalizeTrackFilterFreqValue(NaN) returns FILTER_FREQ_MIN (20)
             expect(() => strip.updateFilter('lowpass', NaN, 0.5)).not.toThrow()
-            const cutoff = strip.filterNode.parameters.get('cutoff')
+            const cutoff = strip.stripNode.parameters.get('cutoff')
             const last = cutoff.setTargetAtTime.mock.calls.at(-1)[0]
             expect(Number.isFinite(last)).toBe(true)
         })
@@ -117,13 +118,14 @@ describe('Audio Graph Validity', () => {
         it('updateLfo handles null or missing config gracefully', async () => {
             const strip = await MfStrip.create('TEST', mockCtx)
             expect(() => strip.updateLfo('pitchLfo', null)).not.toThrow()
-            expect(strip._lfoGains.pitchLfo.gain.setTargetAtTime)
+            expect(strip.stripNode.parameters.get('lfoPitchDepth').setTargetAtTime)
                 .toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
         })
 
         it('updateLfo with finite config does not throw for any LFO channel', async () => {
             const strip = await MfStrip.create('TEST', mockCtx)
-            for (const key of Object.keys(strip._lfoGains)) {
+            const lfos = ['pitchLfo', 'velocityLfo', 'panLfo', 'filterFreqLfo', 'filterQLfo'];
+            for (const key of lfos) {
                 expect(() => strip.updateLfo(key, { freq: 1, min: 0, max: 0.5 })).not.toThrow()
             }
         })
@@ -132,7 +134,7 @@ describe('Audio Graph Validity', () => {
             const strip = await MfStrip.create('TEST', mockCtx)
             for (const type of ['soft', 'hard', 'tape']) {
                 strip.updateSaturation(type, 0.8)
-                const last = strip.saturationNode.parameters.get('drive').setTargetAtTime.mock.calls.at(-1)[0]
+                const last = strip.stripNode.parameters.get('satDrive').setTargetAtTime.mock.calls.at(-1)[0]
                 expect(Number.isFinite(last)).toBe(true)
             }
         })
