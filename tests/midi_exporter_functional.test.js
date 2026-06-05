@@ -12,8 +12,8 @@
  * Timing bridge
  * ─────────────
  *   Engine uses TICK=32 (steps per bar).
- *   MIDI uses PPQN=96, TICKS_PER_BAR=384.
- *   Ratio = 384 / 32 = 12  →  midi_tick = engine_tick * 12
+ *   MIDI uses PPQN=96, TICKS_PER_BAR=96.
+ *   Ratio = 96 / 32 = 3  →  midi_tick = engine_tick * 3
  *
  * The test covers:
  *   - Basic notes (single kicks, snares)
@@ -46,8 +46,8 @@ import { TICK } from '../src/core/constants.js'
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const PPQN = 96
-const TICKS_PER_BAR = PPQN * 4          // 384
-const MIDI_RATIO = TICKS_PER_BAR / TICK  // 12  (midi ticks per engine tick)
+const TICKS_PER_BAR = PPQN * 1          // 96
+const MIDI_RATIO = TICKS_PER_BAR / TICK  // 3  (midi ticks per engine tick)
 
 // ─── MIDI binary parser ───────────────────────────────────────────────────────
 
@@ -255,23 +255,23 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(kicks).toHaveLength(4)
         })
 
-        it('KICK notes are on MIDI ticks 0, 384, 768, 1152', () => {
+        it('KICK notes are on MIDI ticks 0, 96, 192, 288', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
             const noteOns = allNoteOns(midiBytes)
             const kickTicks = noteOns.filter(n => n.note === 36).map(n => n.absTick).sort((a,b)=>a-b)
-            expect(kickTicks).toEqual([0, 384, 768, 1152])
+            expect(kickTicks).toEqual([0, 96, 192, 288])
         })
 
-        it('SNARE notes are at beat 2 of each bar (tick += 2 * PPQN = 192)', () => {
+        it('SNARE notes are at beat 2 of each bar (tick += 2 * PPQN = 48)', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
             const noteOns = allNoteOns(midiBytes)
             const snareTicks = noteOns.filter(n => n.note === 38).map(n => n.absTick).sort((a,b)=>a-b)
-            // bar=0 step=2 → engine_tick=2, midi_tick=24; bar=1→24+384=408; etc.
-            expect(snareTicks).toEqual([192, 576, 960, 1344])
+            // bar=0 step=2 → engine_tick=16, midi_tick=48; bar=1→48+96=144; etc.
+            expect(snareTicks).toEqual([48, 144, 240, 336])
         })
 
         it('2 loops → 8 KICKs and 8 SNAREs', () => {
@@ -329,14 +329,14 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(kicks).toHaveLength(4)
         })
 
-        it('notes appear at ticks 0, 384, 768, 1152 (loop repeated at bar 2)', () => {
+        it('notes appear at ticks 0, 96, 192, 288 (loop repeated at bar 2)', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
             const kicks = allNoteOns(midiBytes).filter(n => n.note === 36)
             const ticks = kicks.map(n => n.absTick).sort((a,b)=>a-b)
-            // bar0→0, bar1→384, loop: bar0+2bars→768, bar1+2bars→1152
-            expect(ticks).toEqual([0, 384, 768, 1152])
+            // bar0→0, bar1→96, loop: bar0+2bars→192, bar1+2bars→288
+            expect(ticks).toEqual([0, 96, 192, 288])
         })
     })
 
@@ -389,14 +389,14 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(kicks).toHaveLength(8)
         })
 
-        it('in loop 0: MIDI ticks are 0 (always) and 768 (phase0)', () => {
+        it('in loop 0: MIDI ticks are 0 (always) and 192 (phase0)', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             // export 1 loop to isolate loop-0 behavior
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
             const kicks = allNoteOns(midiBytes).filter(n => n.note === 36)
             const ticks = kicks.map(n => n.absTick).sort((a,b)=>a-b)
-            expect(ticks).toEqual([0, 768])
+            expect(ticks).toEqual([0, 192])
         })
     })
 
@@ -737,10 +737,10 @@ describe('MidiExporter — functional end-to-end', () => {
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(complexPattern, { loops: 1 }))
             const kicks = allNoteOns(midiBytes).filter(n => n.note === 36).sort((a,b)=>a.absTick-b.absTick)
-            // 2-bar loop: ticks 0, 384 (bar0,bar1) repeated from 768, 1152
+            // 2-bar loop: ticks 0, 96 (bar0,bar1) repeated from 192, 288
             expect(kicks).toHaveLength(4)
             expect(kicks[0].absTick).toBe(0)
-            expect(kicks[2].absTick).toBe(768)  // loop repeat starts at bar2
+            expect(kicks[2].absTick).toBe(192)  // loop repeat starts at bar2
         })
 
         it('CHH: 1-bar loop × 4 bars → 8 CHH notes per pattern loop', () => {
@@ -836,13 +836,13 @@ describe('MidiExporter — functional end-to-end', () => {
             let total = 0
             for (const v of fm.values()) total += v.length
             expect(total).toBe(1)
-            // MIDI tick = (3*32 + 3*8) * 12 = (96+24)*12 = 1440
+            // MIDI tick = (3*32 + 3*8) * 3 = (96+24)*3 = 360
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
             const kicks = allNoteOns(midiBytes).filter(n => n.note === 36)
             expect(kicks).toHaveLength(1)
-            expect(kicks[0].absTick).toBe(1440)
+            expect(kicks[0].absTick).toBe(360)
         })
 
         it('muted track is absent from MIDI', () => {

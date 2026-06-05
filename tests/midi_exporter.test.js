@@ -9,7 +9,7 @@ import InstrumentsManager from '../src/logic/services/instruments_manager.js'
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const PPQN = 96
-const TICKS_PER_BAR = PPQN * 4
+const TICKS_PER_BAR = PPQN * 1
 
 function readUint32BE(bytes, offset) {
     return ((bytes[offset] << 24) | (bytes[offset+1] << 16) | (bytes[offset+2] << 8) | bytes[offset+3]) >>> 0
@@ -243,18 +243,18 @@ describe('buildInstrumentTrack', () => {
         const chunk = buildInstrumentTrack(track, 36, 9)
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const on = events.find(e => e.type === 'midi' && e.status === 0x90)
-        // bar=1, barStep=0 → absoluteTick = 1 * 384 = 384
-        // delta from cursor=0 → delta=384
+        // bar=1, barStep=0 → absoluteTick = 1 * 96 = 96
+        // delta from cursor=0 → delta=96
         expect(on.delta).toBe(TICKS_PER_BAR)
     })
 
-    it('barStep subdivision is correct (barQuantize=16 → 24 ticks/step)', () => {
+    it('barStep subdivision is correct (barQuantize=16 → 6 ticks/step)', () => {
         const track = makeTrack('KICK', [makeNote(0, 1, 1.0)], { barQuantize: 16 })
         const chunk = buildInstrumentTrack(track, 36, 9)
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const on = events.find(e => e.type === 'midi' && e.status === 0x90)
-        // 1 step = 384/16 = 24 ticks
-        expect(on.delta).toBe(24)
+        // 1 step = 96/16 = 6 ticks
+        expect(on.delta).toBe(6)
     })
 
     it('uses channel correctly in status byte', () => {
