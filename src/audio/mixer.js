@@ -61,19 +61,39 @@ export default class MfMixer {
      * already initialised, or triggers a sync-safe reconnect.
      */
     start = () => {
-        // Already initialised via create() — nothing to do.
-        // If the engine created the mixer synchronously (legacy / tests),
-        // the nodes will be null; init synchronously as best-effort.
-        if (!this.busInput) {
-            const ctx = this.audioCtx;
+        // Re-initialise any node that was torn down by stop(). This path is
+        // hit on every start() following a stop() (audio buses and analyser
+        // are nulled on stop) and on legacy cold-start (mixer constructed
+        // synchronously without the async factory).
+        const ctx = this.audioCtx;
+
+        if (!this.analyser) {
             this.analyser = ctx.createAnalyser();
             this.analyser.fftSize = 1024;
             this.gFftData  = new Uint8Array(this.analyser.frequencyBinCount);
             this.dataArray = new Uint8Array(this.analyser.fftSize);
-            this.busInput  = ctx.createGain();
-            // Without worklets loaded synchronously we can't create the worklet node;
-            // strips will have no bus until ensureLoaded resolves. This path is only
-            // hit in tests that don't use the async factory.
+        }
+        if (!this.busInput) {
+            this.busInput = ctx.createGain();
+        }
+        // Recreate the master-bus worklet only if the worklets have already
+        // been loaded onto this context. Cold-start (worklets still loading)
+        // skips this — create() handles that case. The strips are re-added
+        // lazily by getOrCreateStrip() on the next note.
+        if (!this.busWorklet && WorkletLoader.isContextReady(ctx)) {
+            this.busWorklet = WorkletLoader.createNode(ctx, 'master-bus', {
+                numberOfInputs: 1,
+                numberOfOutputs: 1,
+                outputChannelCount: [2],
+            });
+        }
+
+        // Wire the bus only when every link is present. If the master worklet
+        // isn't ready yet, create() will wire it later via _init().
+        if (this.busInput && this.busWorklet && this.analyser) {
+            this.busInput.connect(this.busWorklet);
+            this.busWorklet.connect(this.analyser);
+            this.analyser.connect(ctx.destination);
         }
     }
 
