@@ -1,4 +1,5 @@
 import {
+    TICK,
     C3_FREQ,
     LFO_GAIN_MULTIPLIER,
     LFO_FREQ_OFFSET,
@@ -49,8 +50,28 @@ export function computeNoteRatio(fpitch) {
 }
 
 export function computeLfoFrequency(configFreq, bpm) {
-    const fourBarsDuration = 16 * (60 / bpm)
-    return (configFreq ?? 1) / fourBarsDuration
+    // 1 unit = 16 beats period. So configFreq=2 means 32 beats period.
+    const periodInBeats = (toFiniteNumber(configFreq, 1) || 1) * 16
+    const periodInSeconds = periodInBeats * (60 / bpm)
+    return 1 / periodInSeconds
+}
+
+export function computeLfoValueFromTick(lfo, tick) {
+    if (!lfo) return 0
+    const freqVal = parseFloat(lfo.freq) || 1
+    const min = parseFloat(lfo.min) || 0
+    const max = parseFloat(lfo.max) || 1
+    const phase = parseFloat(lfo.phase) || 0
+    
+    // Period in ticks: 1 unit = 16 beats = 16 * TICK
+    const periodInTicks = freqVal * 16 * TICK
+    const currentPhase = (tick / periodInTicks) + phase
+    
+    let val = Math.sin(2 * Math.PI * currentPhase)
+    val = (val + 1) / 2
+    val = min + val * (max - min)
+    
+    return Math.round(100 * val) / 100
 }
 
 export function computeLfoDepth(min, max) {

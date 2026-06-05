@@ -32,7 +32,7 @@ describe('LfoUpdater', () => {
         it('returns value rounded to 2 decimal places', () => {
             const lfo = { freq: 2, phase: 0.25, min: 0.1, max: 0.9 }
             const val = LfoUpdater.computeLfoValue(lfo, 50, TICK * 4)
-            const rounded = Math.floor(100 * val) / 100
+            const rounded = Math.round(100 * val) / 100
             expect(val).toBe(rounded)
         })
 

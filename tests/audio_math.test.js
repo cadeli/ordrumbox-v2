@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest'
+import { TICK } from '../src/core/constants.js'
 import {
     clamp,
     toFiniteNumber,
     computeOscFrequency,
     computeNoteRatio,
     computeLfoFrequency,
+    computeLfoValueFromTick,
     computeLfoDepth,
     computeSaturationCurve,
     computeImpulseSampleData,
@@ -85,15 +87,42 @@ describe('audioMath - computeNoteRatio', () => {
 })
 
 describe('audioMath - computeLfoFrequency', () => {
-    it('computes frequency at 120 BPM', () => {
+    it('computes frequency at 120 BPM (1 unit = 16 beats = 8s @ 120BPM)', () => {
         const freq = computeLfoFrequency(1, 120)
         expect(freq).toBeCloseTo(1 / 8, 5)
     })
 
-    it('scales with config frequency', () => {
+    it('scales with config frequency (linear period scaling: freq 2 = 32 beats = f1 / 2)', () => {
         const f1 = computeLfoFrequency(1, 120)
         const f2 = computeLfoFrequency(2, 120)
-        expect(f2).toBeCloseTo(f1 * 2, 5)
+        expect(f2).toBeCloseTo(f1 / 2, 5)
+    })
+})
+
+describe('audioMath - computeLfoValueFromTick', () => {
+    it('returns 0.5 at tick 0 phase 0 for range [0, 1]', () => {
+        const lfo = { freq: 1, min: 0, max: 1, phase: 0 }
+        expect(computeLfoValueFromTick(lfo, 0)).toBe(0.5)
+    })
+
+    it('returns max at 1/4 period with phase 0', () => {
+        const lfo = { freq: 1, min: 0, max: 1, phase: 0 }
+        const period = 16 * TICK
+        expect(computeLfoValueFromTick(lfo, period / 4)).toBe(1)
+    })
+
+    it('returns min at 3/4 period with phase 0', () => {
+        const lfo = { freq: 1, min: 0, max: 1, phase: 0 }
+        const period = 16 * TICK
+        expect(computeLfoValueFromTick(lfo, period * 0.75)).toBe(0)
+    })
+
+    it('doubling frequency parameter doubles the period (tick 1/4 freq 1 == tick 1/2 freq 2)', () => {
+        const lfo1 = { freq: 1, min: 0, max: 1, phase: 0 }
+        const lfo2 = { freq: 2, min: 0, max: 1, phase: 0 }
+        const val1 = computeLfoValueFromTick(lfo1, 4 * TICK) // 1/4 of 16
+        const val2 = computeLfoValueFromTick(lfo2, 8 * TICK) // 1/4 of 32
+        expect(val1).toBe(val2)
     })
 })
 
