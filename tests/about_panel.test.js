@@ -52,6 +52,22 @@ describe('AboutPanel (PWA)', () => {
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 
+    it('hides when the track editor is shown (onTrackSelect)', () => {
+        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        expect(document.getElementById('about-panel').style.display).toBe('block')
+
+        playbackEvents.onTrackSelect.forEach(fn => fn({ track: {}, trackIdx: 0 }))
+        expect(document.getElementById('about-panel').style.display).toBe('none')
+    })
+
+    it('hides when the note editor is shown (onNoteSelect)', () => {
+        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        expect(document.getElementById('about-panel').style.display).toBe('block')
+
+        playbackEvents.onNoteSelect.forEach(fn => fn({ note: {}, track: {} }))
+        expect(document.getElementById('about-panel').style.display).toBe('none')
+    })
+
     it('hides the other modals (te/ne/tools/output) when it opens', () => {
         for (const id of ['te-panel', 'ne-panel', 'tools-panel', 'output-panel']) {
             const el = document.createElement('div')

@@ -134,6 +134,8 @@ export default class AboutPanel {
         })
         playbackEvents.onToolsToggle.push(() => this.hide())
         playbackEvents.onOutputToggle.push(() => this.hide())
+        playbackEvents.onTrackSelect.push(() => this.hide())
+        playbackEvents.onNoteSelect.push(() => this.hide())
     }
 
     show() {
