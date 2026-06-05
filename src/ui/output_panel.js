@@ -1,5 +1,4 @@
 import { serviceRegistry } from '../state/service_registry.js'
-import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { bindCloseButton, bindPanelToggles, hidePanelsById, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 
@@ -25,7 +24,6 @@ export default class OutputPanel {
         this.injectCSS()
         this.createDOM()
         this.subscribe()
-        this._syncWorkletBadge()
     }
 
     createDOM() {
@@ -45,15 +43,6 @@ export default class OutputPanel {
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                <div class="ne-group">
-                    <div class="ne-group-label">Engine</div>
-                    <div class="ne-grid">
-                        <div class="ne-row no-cursor op-worklet-row">
-                            <span>Audio Worklets</span>
-                            <span class="op-worklet-status" id="op-worklet-status">...</span>
-                        </div>
-                    </div>
-                </div>
                 <div class="ne-group">
                     <div class="ne-group-label">Master</div>
                     <div class="ne-grid">
@@ -129,7 +118,6 @@ export default class OutputPanel {
         playbackEvents.onOutputToggle.push((show) => { if (show) this.show(); else this.hide() })
         playbackEvents.onTrackSelect.push((data)  => { if (data) this.hide() })
         playbackEvents.onNoteSelect.push((data)   => { if (data) this.hide() })
-        playbackEvents.onWorkletStatusChange.push(() => this._syncWorkletBadge())
     }
 
     show() {
@@ -152,31 +140,11 @@ export default class OutputPanel {
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     _sync() {
-        this._syncWorkletBadge()
         const mixer = serviceRegistry.audioEngine?.mixer
         if (!mixer) return
 
         // Master bus params are now on the worklet — sync via setMasterBus on demand.
         // Sliders read their own stored values on show(); no AudioNode read-back needed.
-    }
-
-    _syncWorkletBadge() {
-        const badge = this.container?.querySelector('#op-worklet-status')
-        if (!badge) return
-
-        const status = appState.workletStatus
-        badge.classList.remove('op-status-off', 'op-status-active', 'op-status-unavailable')
-
-        if (status === 'active') {
-            badge.textContent = 'ACTIVE'
-            badge.classList.add('op-status-active')
-        } else if (status === 'unavailable') {
-            badge.textContent = 'UNAVAILABLE'
-            badge.classList.add('op-status-unavailable')
-        } else {
-            badge.textContent = '...'
-            badge.classList.add('op-status-off')
-        }
     }
 
     _onMasterVolume() {
