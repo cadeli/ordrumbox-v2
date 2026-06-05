@@ -51,8 +51,9 @@ describe('MfStrip (Unified Worklet)', () => {
         expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalled()
         expect(params.get('filterMode').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
 
+        // allpass sets cutoff to 1 (normalized), which maps to 20kHz in the worklet.
         strip.updateFilter('allpass')
-        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(20000, expect.any(Number), expect.any(Number))
+        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
     })
 
     it('updateSaturation sets satMix and satDrive', async () => {
