@@ -283,11 +283,14 @@ static TAG = "UTILS"
         return Math.floor(FILTER_FREQ_MIN * Math.pow(1000, v))
     }
     static hzToNormalizedTrackFilterFreq = (hz) => {
-        const h = Number(hz) || FILTER_FREQ_MIN
+        const h = Math.max(FILTER_FREQ_MIN, Math.min(FILTER_FREQ_MAX, Number(hz) || 0))
         return Math.log10(h / FILTER_FREQ_MIN) / 3
     }
     static normalizedTrackFilterQToValue = (value) => ((Number(value) || 0) * 18) + 0.707
-    static valueToNormalizedTrackFilterQ = (q) => (Number(q) - 0.707) / 18
+    static valueToNormalizedTrackFilterQ = (q) => {
+        const val = Math.max(0.707, Math.min(18.707, Number(q) || 0.707))
+        return (val - 0.707) / 18
+    }
     static normalizedSynthFilterFreqToHz = (value) => Math.floor((2000 * (Number(value) || 0)) + 50)
     static normalizedSynthFilterQToValue = (value) => (20 * (Number(value) || 0)) + 1
 

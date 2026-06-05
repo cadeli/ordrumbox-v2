@@ -99,7 +99,6 @@ export default class MfStrip {
         const time = this.audioCtx.currentTime;
         const params = this.stripNode.parameters;
 
-        // Map UI keys to Worklet param prefixes
         const map = {
             pitchLfo:      'lfoPitch',
             velocityLfo:   'lfoVelo',
@@ -117,8 +116,21 @@ export default class MfStrip {
         }
 
         const freq  = computeLfoFrequency(config.freq ?? 1, this.bpm);
-        const depth = computeLfoDepth(config.min, config.max);
-        const bias  = parseFloat(config.min) || 0;
+        let min = parseFloat(config.min) || 0;
+        let max = parseFloat(config.max) || 0;
+
+        // Ensure we send normalized [0..1] values for depth/bias
+        if (key === 'filterFreqLfo' && (min > 1 || max > 1)) {
+            min = Utils.hzToNormalizedTrackFilterFreq(min);
+            max = Utils.hzToNormalizedTrackFilterFreq(max);
+        }
+        if (key === 'filterQLfo' && (min > 1 || max > 1)) {
+            min = Utils.valueToNormalizedTrackFilterQ(min);
+            max = Utils.valueToNormalizedTrackFilterQ(max);
+        }
+
+        const depth = max - min;
+        const bias  = min;
         const wave  = config.waveform ?? 0;
 
         params.get(`${prefix}Freq`)?.setTargetAtTime(freq, time, RAMP_TIME);
@@ -134,12 +146,16 @@ export default class MfStrip {
         this.currentFilterType = type || 'allpass';
 
         if (this.currentFilterType === 'allpass') {
-            params.get('cutoff')?.setTargetAtTime(20000, time, RAMP_TIME);
+            params.get('cutoff')?.setTargetAtTime(1, time, RAMP_TIME);
             return;
         }
 
-        const fFreq = Utils.normalizeTrackFilterFreqValue(freq);
-        const fQ    = Utils.normalizeTrackFilterQValue(q);
+        let fFreq = Number(freq) || 0;
+        if (fFreq > 1) fFreq = Utils.hzToNormalizedTrackFilterFreq(fFreq);
+        
+        let fQ = Number(q) || 0;
+        if (fQ > 1) fQ = Utils.valueToNormalizedTrackFilterQ(fQ);
+
         const mode  = FILTER_MODES[this.currentFilterType] ?? 0;
 
         params.get('cutoff')?.setTargetAtTime(fFreq, time, RAMP_TIME);
