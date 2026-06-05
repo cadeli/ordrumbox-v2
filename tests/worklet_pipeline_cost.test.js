@@ -17,6 +17,22 @@
  * Use this as a regression baseline: if a future change pushes the total
  * well past 50 ms for the 64-bar / 8-track pattern, the JS bookkeeping of
  * the worklet pipeline is likely doing too much.
+ *
+ * Reference comparison vs. pre-worklet (commit 47aae8a, same pattern, jsdom):
+ *
+ *                        │ pre-worklet │ post-worklet │  delta
+ *   ─────────────────────┼─────────────┼──────────────┼────────
+ *   mixer.start          │   0.32 ms   │   0.08 ms    │  -75%
+ *   strip.create × 8     │   3.40 ms   │   1.09 ms    │  -68%
+ *   syncAllTracks        │  11.40 ms   │   0.24 ms    │  -98%
+ *   TOTAL                │  15.12 ms   │   1.47 ms    │  -90%
+ *
+ * Pre-worklet strips created ~20+ native nodes each (BiquadFilter, Convolver,
+ * Delay, multiple GainNodes, LFOs) — the construction + per-call native node
+ * traversal dominated the cost. Post-worklet the strip is a single
+ * AudioWorkletNode with a param map; the heavy lifting is in the audio
+ * thread (not measured here, but a real OfflineAudioContext benchmark would
+ * show the DSP work is now offloaded).
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import WorkletLoader from '../src/audio/worklets/loader.js'
