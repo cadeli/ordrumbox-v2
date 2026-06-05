@@ -6,6 +6,7 @@ import TrackEditor from '../src/ui/track_editor.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
+import { playbackEvents } from '../src/state/playback_events.js'
 
 describe('TrackEditor sound panel', () => {
     beforeEach(() => {
@@ -93,5 +94,51 @@ describe('TrackEditor loop panel', () => {
         expect(lInput.value).toBe('16')
         expect(lInput.max).toBe('32') // 8 * 4
         expect(sInput).not.toBeNull()
+    })
+})
+
+describe('TrackEditor onPatternChange', () => {
+    it('rebinds to the same-named track in the new pattern and re-syncs', () => {
+        const editor = new TrackEditor()
+        editor.init()
+        const oldTrack = { name: 'KICK', velocity: 0.7 }
+        const newTrack = { name: 'KICK', velocity: 0.3 }
+        editor._track = oldTrack
+        editor._trackIdx = 0
+        appState.patterns = [{ tracks: [newTrack] }]
+        appState.selectedPatternNum = 0
+
+        const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
+
+        playbackEvents.onPatternChange.forEach(fn => fn())
+
+        expect(editor._track).toBe(newTrack)
+        expect(editor._trackIdx).toBe(0)
+        expect(syncSpy).toHaveBeenCalled()
+    })
+
+    it('hides the editor when the track no longer exists in the new pattern', () => {
+        const editor = new TrackEditor()
+        editor.init()
+        editor._track = { name: 'KICK', velocity: 0.7 }
+        editor._trackIdx = 0
+        appState.patterns = [{ tracks: [{ name: 'SNARE' }] }]
+        appState.selectedPatternNum = 0
+
+        const hideSpy = vi.spyOn(editor, 'hide').mockImplementation(() => {})
+
+        playbackEvents.onPatternChange.forEach(fn => fn())
+
+        expect(hideSpy).toHaveBeenCalled()
+    })
+
+    it('does nothing when no track is currently selected', () => {
+        const editor = new TrackEditor()
+        editor.init()
+        const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
+
+        playbackEvents.onPatternChange.forEach(fn => fn())
+
+        expect(syncSpy).not.toHaveBeenCalled()
     })
 })

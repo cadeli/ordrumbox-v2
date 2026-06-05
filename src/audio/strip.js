@@ -111,6 +111,46 @@ export default class MfStrip {
         this.saturationNode = WorkletLoader.createNode(ctx, 'saturation', stereo);
         this.reverbNode     = WorkletLoader.createNode(ctx, 'reverb',     stereo);
         this.delayNode      = WorkletLoader.createNode(ctx, 'delay',      stereo);
+
+        // Worklet processors declare their own AudioParam defaults (e.g.
+        // delay mix=1, reverb mix=1). Snap the strip's "no-effect" state
+        // immediately via setValueAtTime so every freshly created strip
+        // starts silent until updateStripFromTrack pushes the user-configured
+        // values. Using setValueAtTime (snap) rather than setTargetAtTime
+        // (ramp) avoids a brief audible delay/reverb on the first note of
+        // every track whose strip is created on demand.
+        const t = ctx.currentTime;
+        const snap = (node, name, val) => {
+            const p = node.parameters.get(name);
+            if (p) p.setValueAtTime(val, t);
+        };
+
+        // Filter: allpass passthrough
+        snap(this.filterNode,     'cutoff', 20000);
+        snap(this.filterNode,     'q',      0.1);
+        snap(this.filterNode,     'mode',   0);
+
+        // Saturation: drive=1, output=1, mix=1 (passthrough)
+        snap(this.saturationNode, 'type',   0);
+        snap(this.saturationNode, 'drive',  1);
+        snap(this.saturationNode, 'output', 1);
+        snap(this.saturationNode, 'mix',    1);
+
+        // Reverb: mix=0 (silent)
+        snap(this.reverbNode,     'roomSize', 0);
+        snap(this.reverbNode,     'damping',  0.5);
+        snap(this.reverbNode,     'width',    0);
+        snap(this.reverbNode,     'preDelay', 0);
+        snap(this.reverbNode,     'mix',      0);
+
+        // Delay: mix=0 (silent)
+        snap(this.delayNode,      'timeL',      0.25);
+        snap(this.delayNode,      'timeR',      0.25);
+        snap(this.delayNode,      'mode',       1);
+        snap(this.delayNode,      'mix',        0);
+        snap(this.delayNode,      'feedback',   0);
+        snap(this.delayNode,      'filter',     5000);
+        snap(this.delayNode,      'saturation', 0);
     }
 
     _wireGraph() {

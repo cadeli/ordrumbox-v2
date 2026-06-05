@@ -113,6 +113,18 @@ export default class AudioEngine {
         this.isRunning = true
         this.nextStepTime = this.audioCtx.currentTime
         this.mixer.start()
+
+        // Re-apply every track's effect settings to its strip. After a
+        // stop+start cycle the strips are wiped; on a pattern change the
+        // new pattern's tracks may have different reverb/delay/filter
+        // values than the previous one. Without this, the strips keep the
+        // previous pattern's effect state (or the worklet default of
+        // no-effect) until each track's first note triggers
+        // updateStripFromTrack — leaving tracks with stale effects for
+        // the first beat or more.
+        if (pattern?.tracks) {
+            this.syncAllTracks(pattern)
+        }
     }
 
     stop = () => {

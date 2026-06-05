@@ -102,6 +102,22 @@ export default class TrackEditor {
         playbackEvents.onDrumkitChange.push(() => {
             if (this._track) this.sync()
         })
+        playbackEvents.onPatternChange.push(() => {
+            // The current track reference is from the previous pattern. Re-bind
+            // to the corresponding track (same name) in the new pattern, or
+            // hide the editor if the track no longer exists.
+            if (!this._track) return
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern?.tracks) { this.hide(); return }
+            const newIdx = pattern.tracks.findIndex(t => t?.name === this._track.name)
+            if (newIdx === -1) {
+                this.hide()
+                return
+            }
+            this._track = pattern.tracks[newIdx]
+            this._trackIdx = newIdx
+            this.sync()
+        })
     }
 
     _startAnimation() {

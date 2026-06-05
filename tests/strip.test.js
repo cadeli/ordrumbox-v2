@@ -119,6 +119,30 @@ describe('MfStrip', () => {
         )
     })
 
+    it('create() snaps worklet AudioParams to no-effect state (mix=0, allpass, passthrough)', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
+        const t = ctx.currentTime
+
+        // Reverb must start silent
+        expect(strip.reverbNode.parameters.get('mix').setValueAtTime)
+            .toHaveBeenCalledWith(0, t)
+        // Delay must start silent
+        expect(strip.delayNode.parameters.get('mix').setValueAtTime)
+            .toHaveBeenCalledWith(0, t)
+        // Filter must start as allpass (cutoff=20000, q=0.1, mode=0)
+        expect(strip.filterNode.parameters.get('cutoff').setValueAtTime)
+            .toHaveBeenCalledWith(20000, t)
+        expect(strip.filterNode.parameters.get('q').setValueAtTime)
+            .toHaveBeenCalledWith(0.1, t)
+        expect(strip.filterNode.parameters.get('mode').setValueAtTime)
+            .toHaveBeenCalledWith(0, t)
+        // Saturation must start as passthrough (drive=1, output=1, mix=1)
+        expect(strip.saturationNode.parameters.get('drive').setValueAtTime)
+            .toHaveBeenCalledWith(1, t)
+        expect(strip.saturationNode.parameters.get('output').setValueAtTime)
+            .toHaveBeenCalledWith(1, t)
+    })
+
     // ── setBpm ──────────────────────────────────────────────────────
 
     it('setBpm updates the bpm property', async () => {
