@@ -100,17 +100,20 @@
 #pattern-panel .pp-name { color: #e94560; font-weight: bold; }
 #pattern-panel .pp-meta { color: #888; font-size: 10px; }
 
-#pattern-panel .pp-tracks { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 3px; 
+#pattern-panel .pp-tracks {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
     flex: 1;
     min-height: 0;
+    overflow-y: auto;
 }
 #pattern-panel .pp-track {
     display: flex; align-items: stretch; gap: 4px;
-    flex: 1;
-    min-height: 10px;
+    height: 28px;
+    min-height: 28px;
+    max-height: 28px;
+    flex-shrink: 0;
 }
 #pattern-panel .pp-track-name {
     min-width: 100px; max-width: 100px; color: #fff; font-weight: bold;
@@ -198,14 +201,15 @@
 }
 
 @media (max-width: 480px), (max-height: 480px) {
-    #pattern-panel { 
-        top: 44px !important; 
-        padding: 4px 6px; 
-        height: calc(100vh - 120px); 
+    #pattern-panel {
+        top: 44px !important;
+        padding: 4px 6px;
+        height: calc(100vh - 120px);
         overflow-y: hidden;
     }
     #pattern-panel .pp-track-name { min-width: 65px; max-width: 65px; font-size: 10px; }
     #pattern-panel .pp-bar { width: 100px; }
+    #pattern-panel .pp-track { height: 24px; min-height: 24px; max-height: 24px; }
 }
 
 /* ---- Note Editor & Track Editor Panels ---- */
