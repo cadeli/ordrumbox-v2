@@ -50,6 +50,27 @@ class MockOfflineAudioContext {
 
 global.OfflineAudioContext = MockOfflineAudioContext
 
+// Stub AudioWorkletNode globally so WorkletLoader.createNode can instantiate
+// worklet nodes without throwing. The test never inspects the actual audio
+// signal — it just needs the export path to complete the worklet graph
+// construction without errors.
+class MockAudioWorkletNode {
+    constructor(_ctx, _name, _options) {
+        this.parameters = {
+            get: () => ({
+                value: 0,
+                setValueAtTime: () => {},
+                setTargetAtTime: () => {},
+                linearRampToValueAtTime: () => {},
+                cancelScheduledValues: () => {},
+            }),
+        }
+    }
+    connect() { return this }
+    disconnect() {}
+}
+global.AudioWorkletNode = MockAudioWorkletNode
+
 describe('WAV Exporter', () => {
     beforeEach(() => {
         soundRegistry.reset()
