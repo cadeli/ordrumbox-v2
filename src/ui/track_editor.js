@@ -506,21 +506,31 @@ export default class TrackEditor {
             <div class="ne-grid">`
         
         if (lfo) {
-            const params = [
-                { key: 'freq', label: 'Freq', min: 0.1, max: 16, step: 0.1 },
-                { key: 'min', label: 'Min', min: prop.min, max: prop.max, step: prop.step },
-                { key: 'max', label: 'Max', min: prop.min, max: prop.max, step: prop.step },
-                { key: 'phase', label: 'Phas', min: 0, max: 1, step: 0.01 }
-            ]
+            // Freq row
+            lfoHtml += `<div class="ne-row">
+                <label>Freq</label>
+                <input type="range" min="0.1" max="16" step="0.1" value="${lfo.freq}" data-lfo-key="freq">
+                <span class="ne-val">${fmt(lfo.freq)}</span>
+            </div>`
 
-            params.forEach(p => {
-                lfoHtml += `<div class="ne-row">
-                    <label>${p.label}</label>
-                    <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
-                        value="${lfo[p.key]}" data-lfo-key="${p.key}">
-                    <span class="ne-val">${fmt(lfo[p.key])}</span>
-                </div>`
-            })
+            // Dual range for Min/Max
+            lfoHtml += `<div class="ne-row">
+                <label>Range</label>
+                <div class="ne-range-container">
+                    <input type="range" min="${prop.min}" max="${prop.max}" step="${prop.step}" 
+                        value="${lfo.min}" data-lfo-key="min" title="Min">
+                    <input type="range" min="${prop.min}" max="${prop.max}" step="${prop.step}" 
+                        value="${lfo.max}" data-lfo-key="max" title="Max">
+                </div>
+                <span class="ne-val" style="min-width:60px">${fmt(lfo.min)}..${fmt(lfo.max)}</span>
+            </div>`
+
+            // Phase row
+            lfoHtml += `<div class="ne-row">
+                <label>Phas</label>
+                <input type="range" min="0" max="1" step="0.01" value="${lfo.phase}" data-lfo-key="phase">
+                <span class="ne-val">${fmt(lfo.phase)}</span>
+            </div>`
         }
         
         lfoHtml += `</div></div>`
@@ -686,7 +696,14 @@ export default class TrackEditor {
         if (!lfo) return
         const key = input.dataset.lfoKey
         lfo[key] = parseFloat(input.value)
-        input.nextElementSibling.textContent = fmt(input.value)
+        
+        if (key === 'min' || key === 'max') {
+            const row = input.closest('.ne-row')
+            const valEl = row.querySelector('.ne-val')
+            if (valEl) valEl.textContent = `${fmt(lfo.min)}..${fmt(lfo.max)}`
+        } else {
+            input.nextElementSibling.textContent = fmt(input.value)
+        }
         playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
     }
 

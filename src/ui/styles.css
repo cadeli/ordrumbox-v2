@@ -349,6 +349,52 @@
 #ne-panel .ne-row .ne-val, #te-panel .ne-row .ne-val, #tools-panel .ne-row .ne-val, #output-panel .ne-row .ne-val, #about-panel .ne-row .ne-val {
     min-width: 30px; text-align: right; color: #eee; font-weight: bold; font-size: 10px;
 }
+
+/* Dual Range Slider for LFO */
+.ne-range-container {
+    position: relative;
+    width: 80px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+}
+.ne-range-container input[type="range"] {
+    position: absolute !important;
+    width: 100% !important;
+    margin: 0 !important;
+    pointer-events: none;
+    -webkit-appearance: none;
+    background: none !important;
+    z-index: 1;
+}
+.ne-range-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: auto;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e94560;
+    border: 1px solid #fff;
+    cursor: pointer;
+}
+.ne-range-container input[type="range"]::-moz-range-thumb {
+    pointer-events: auto;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e94560;
+    border: 1px solid #fff;
+    cursor: pointer;
+}
+.ne-range-container::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #444;
+    z-index: 0;
+}
+
 #ne-panel .ne-row.no-cursor, #te-panel .ne-row.no-cursor, #tools-panel .ne-row.no-cursor, #output-panel .ne-row.no-cursor, #about-panel .ne-row.no-cursor { cursor: default; }
 #ne-panel .ne-row .ne-input, #te-panel .ne-row .ne-input, #tools-panel .ne-row .ne-input, #output-panel .ne-row .ne-input, #about-panel .ne-row .ne-input {
     width: 100px; font-size: 11px; padding: 2px 4px;
