@@ -131,11 +131,16 @@ export default class MfMixer {
         return strip;
     }
 
-    getOrCreateStrip = async (name) => {
-        if (!this.strips[name]) {
-            await this.addStrip(name);
-        }
-        return this.strips[name];
+    /**
+     * Synchronous retrieval if already exists, otherwise starts async creation
+     * but returns null (caller should pre-create or handle null).
+     */
+    getOrCreateStrip = (name) => {
+        if (this.strips[name]) return this.strips[name];
+        
+        // Start creation in background if it doesn't exist
+        void this.addStrip(name);
+        return null;
     }
 
     deleteStrips = () => {

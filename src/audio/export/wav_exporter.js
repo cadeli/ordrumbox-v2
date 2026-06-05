@@ -34,7 +34,9 @@ export default class MfWavExporter {
             isOffline: true
         })
 
-        exporterAudioEngine.start(pattern)
+        // start() awaits the worklet mixer init internally — must be awaited
+        // before playNotes, otherwise this.player is null and notes are dropped.
+        await exporterAudioEngine.start(pattern)
 
         // Simple offline scheduling
         const totalTicks = pattern.nbBars * TICK * loopsCount
