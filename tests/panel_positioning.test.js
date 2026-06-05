@@ -43,10 +43,10 @@ describe('Panel positioning below pattern panel on desktop', () => {
     })
 
     describe('positionBelowPatternPanel helper', () => {
-        it('sets container top to pattern-panel bottom on desktop', () => {
+        it('sets container top to pattern-panel bottom + 4px gap on desktop', () => {
             const container = document.createElement('div')
             positionBelowPatternPanel(container)
-            expect(container.style.top).toBe('348px')
+            expect(container.style.top).toBe('352px')
         })
 
         it('does nothing on mobile (width <= 768)', () => {
@@ -72,7 +72,7 @@ describe('Panel positioning below pattern panel on desktop', () => {
             te.init()
             const container = te.container
             te.show({ track: { name: 'KICK', notes: [], bars: 1, barQuantize: 4 }, trackIdx: 0 })
-            expect(container.style.top).toBe('348px')
+            expect(container.style.top).toBe('352px')
         })
     })
 
@@ -82,7 +82,7 @@ describe('Panel positioning below pattern panel on desktop', () => {
             ne.init()
             const container = ne.container
             await ne.show({ track: { name: 'SNARE', notes: [{ bar: 0, barStep: 0 }], bars: 1, barQuantize: 4 }, note: { bar: 0, barStep: 0 }, pos: 0, bar: 0, barStep: 0 })
-            expect(container.style.top).toBe('348px')
+            expect(container.style.top).toBe('352px')
         })
     })
 
@@ -92,7 +92,7 @@ describe('Panel positioning below pattern panel on desktop', () => {
             tp.init()
             const container = tp.container
             playbackEvents.onToolsToggle.forEach(fn => fn(true))
-            expect(container.style.top).toBe('348px')
+            expect(container.style.top).toBe('352px')
         })
     })
 
@@ -102,7 +102,7 @@ describe('Panel positioning below pattern panel on desktop', () => {
             op.init()
             const container = op.container
             playbackEvents.onOutputToggle.forEach(fn => fn(true))
-            expect(container.style.top).toBe('348px')
+            expect(container.style.top).toBe('352px')
         })
     })
 
@@ -112,7 +112,7 @@ describe('Panel positioning below pattern panel on desktop', () => {
             ap.init()
             const container = ap.container
             playbackEvents.onAboutToggle.forEach(fn => fn(true))
-            expect(container.style.top).toBe('348px')
+            expect(container.style.top).toBe('352px')
         })
     })
 
@@ -139,7 +139,7 @@ describe('Panel positioning below pattern panel on desktop', () => {
             })
 
             repositionable.forEach(p => p.reposition())
-            const expectedTop = '348px'
+            const expectedTop = '352px'
             expect(te.container.style.top).toBe(expectedTop)
             expect(tp.container.style.top).toBe(expectedTop)
             expect(op.container.style.top).toBe(expectedTop)

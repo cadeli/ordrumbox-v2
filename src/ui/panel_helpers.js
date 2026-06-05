@@ -7,11 +7,13 @@ export function injectUiCss() {
     document.head.appendChild(link)
 }
 
+const PANEL_GAP_PX = 4
+
 export function positionBelowPatternPanel(container) {
     if (window.innerWidth <= 768 || window.innerHeight <= 480) return
     const patternPanel = document.getElementById('pattern-panel')
     if (patternPanel) {
-        container.style.top = (patternPanel.offsetTop + patternPanel.offsetHeight) + 'px'
+        container.style.top = (patternPanel.offsetTop + patternPanel.offsetHeight + PANEL_GAP_PX) + 'px'
     }
 }
 
