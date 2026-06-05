@@ -5,20 +5,29 @@ import SynthVoice from '../src/audio/voices/synth_voice.js'
 import WorkletSynthVoice from '../src/audio/voices/worklet_synth_voice.js'
 import VoiceFactory from '../src/audio/voices/voice_factory.js'
 import { appState } from '../src/state/app_state.js'
-import WorkletBridge from '../src/audio/worklets/bridge.js'
+import WorkletLoader from '../src/audio/worklets/loader.js'
 
-vi.mock('../src/audio/worklets/bridge.js', () => ({
-    default: {
-        createSynthVoice: vi.fn(() => ({
-            port: { postMessage: vi.fn() },
-            connect: vi.fn(),
-            disconnect: vi.fn(),
-        })),
-        triggerVoice: vi.fn(),
-        releaseVoice: vi.fn(),
-        updateVoice: vi.fn(),
-    },
-}))
+const postMessageMock = vi.fn()
+const workletNodeMock = {
+    port: { postMessage: postMessageMock },
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+}
+
+vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
+vi.spyOn(WorkletLoader, 'ensureLoaded').mockResolvedValue(true)
+vi.spyOn(WorkletLoader, 'createNode').mockImplementation(() => workletNodeMock)
+
+beforeEach(() => {
+    postMessageMock.mockClear()
+    workletNodeMock.connect.mockClear()
+    workletNodeMock.disconnect.mockClear()
+})
+
+function lastPostByType(type) {
+    const matches = postMessageMock.mock.calls.map(c => c[0]).filter(m => m?.type === type)
+    return matches.at(-1)
+}
 
 // ─── Mock helpers ────────────────────────────────────────────────────────────
 
@@ -702,80 +711,76 @@ describe('VoiceFactory', () => {
         expect(voice).toBeInstanceOf(SynthVoice)
     })
 
-    it('WorkletSynthVoice.setup() sends an update via WorkletBridge.updateVoice', async () => {
+    it('WorkletSynthVoice.setup() sends an update via port.postMessage', async () => {
         appState.workletStatus = 'active'
-        WorkletBridge.updateVoice.mockClear()
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
-        expect(WorkletBridge.updateVoice).toHaveBeenCalled()
-        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        const updateArg = lastPostByType('update')
+        expect(updateArg).toBeDefined()
         expect(updateArg.osc1Wave).toBe(0)  // sine
         expect(updateArg.attack).toBe(0.01)
         expect(updateArg.decay).toBe(0.1)
         expect(updateArg.filterType).toBe(0)  // lowpass
     })
 
-    it('WorkletSynthVoice.start() sends a trigger via WorkletBridge.triggerVoice', async () => {
+    it('WorkletSynthVoice.start() sends a trigger via port.postMessage', async () => {
         appState.workletStatus = 'active'
-        WorkletBridge.triggerVoice.mockClear()
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         voice.start(1.5)
-        expect(WorkletBridge.triggerVoice).toHaveBeenCalledWith(voice.workletNode, 1.5)
+        const triggerMsg = lastPostByType('trigger')
+        expect(triggerMsg).toEqual({ type: 'trigger', startTime: 1.5 })
     })
 
-    it('WorkletSynthVoice.stop() sends a release via WorkletBridge.releaseVoice', async () => {
+    it('WorkletSynthVoice.stop() sends a release via port.postMessage', async () => {
         appState.workletStatus = 'active'
-        WorkletBridge.releaseVoice.mockClear()
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         voice.start(0)
         voice.stop(2.0)
-        expect(WorkletBridge.releaseVoice).toHaveBeenCalledWith(voice.workletNode, 2.0)
+        const releaseMsg = lastPostByType('release')
+        expect(releaseMsg).toEqual({ type: 'release', releaseTime: 2.0 })
     })
 
     it('WorkletSynthVoice.stop() is idempotent', async () => {
         appState.workletStatus = 'active'
-        WorkletBridge.releaseVoice.mockClear()
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         voice.start(0)
         voice.stop(1.0)
         voice.stop(1.0)
-        expect(WorkletBridge.releaseVoice).toHaveBeenCalledTimes(1)
+        const releases = postMessageMock.mock.calls.filter(c => c[0].type === 'release')
+        expect(releases).toHaveLength(1)
     })
 
     it('WorkletSynthVoice maps wave names to int waveform ids', async () => {
         appState.workletStatus = 'active'
-        WorkletBridge.updateVoice.mockClear()
         generatedSounds.BASS1.vco1.wave = 'square'
         generatedSounds.BASS1.vco2 = { wave: 'triangle', gain: 0.5, detune: 0, octave: 0 }
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
-        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        const updateArg = lastPostByType('update')
         expect(updateArg.osc1Wave).toBe(3)   // square
         expect(updateArg.osc2Wave).toBe(1)   // triangle
     })
 
     it('WorkletSynthVoice maps filter type names to int ids', async () => {
         appState.workletStatus = 'active'
-        WorkletBridge.updateVoice.mockClear()
         generatedSounds.BASS1.filter.type = 'bandpass'
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
-        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        const updateArg = lastPostByType('update')
         expect(updateArg.filterType).toBe(2)  // bandpass
     })
 
     it('WorkletSynthVoice computes velocity = noteVelo * masterVolume * accentMultiplier', async () => {
         appState.workletStatus = 'active'
-        WorkletBridge.updateVoice.mockClear()
         generatedSounds.BASS1.masterVolume = 0.5
         const note = makeSoftSynthFlatNote()
         note.note.velocity = 0.8
         const voice = await factory.createVoice(note)
         voice.setup(note, 0)
-        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        const updateArg = lastPostByType('update')
         // noteVelo = 0.8 * 0.25 = 0.2; masterVolume = 0.5; velocity > 0.5 not accented (0.2)
         // expected: 0.2 * 0.5 * 1.0 = 0.1
         expect(updateArg.velocity).toBeCloseTo(0.1, 5)
@@ -783,12 +788,11 @@ describe('VoiceFactory', () => {
 
     it('WorkletSynthVoice enforces minimum attack/release (prevents audio discontinuities)', async () => {
         appState.workletStatus = 'active'
-        WorkletBridge.updateVoice.mockClear()
         generatedSounds.BASS1.enveloppe.attack = 0.0001
         generatedSounds.BASS1.enveloppe.release = 0.0001
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
-        const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
+        const updateArg = lastPostByType('update')
         expect(updateArg.attack).toBeGreaterThanOrEqual(0.003)
         expect(updateArg.release).toBeGreaterThanOrEqual(0.008)
     })

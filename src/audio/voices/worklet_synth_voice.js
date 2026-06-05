@@ -1,10 +1,41 @@
 import BaseVoice from './base_voice.js'
-import WorkletBridge from '../worklets/bridge.js'
+import WorkletLoader from '../worklets/loader.js'
+import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
 import { computeOscFrequency, computeNoteRatio, computeAccent, toFiniteNumber } from '../math.js'
 import { RELEASE_TIME } from '../../core/constants.js'
 
+let _synthVoiceRegistered = false
+function _register() {
+    if (_synthVoiceRegistered) return
+    WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
+    _synthVoiceRegistered = true
+}
+
 const WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3 }
 const FILTER_TO_INT = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
+
+const SYNTH_VOICE_OPTIONS = Object.freeze({
+    numberOfInputs: 0,
+    numberOfOutputs: 1,
+    outputChannelCount: [2],
+})
+
+function createSynthVoiceNode(audioCtx) {
+    _register()
+    return WorkletLoader.createNode(audioCtx, 'synth-voice', SYNTH_VOICE_OPTIONS)
+}
+
+function postTrigger(node, startTime) {
+    node.port.postMessage({ type: 'trigger', startTime })
+}
+
+function postRelease(node, releaseTime) {
+    node.port.postMessage({ type: 'release', releaseTime })
+}
+
+function postUpdate(node, params) {
+    node.port.postMessage({ type: 'update', ...params })
+}
 
 /**
  * Drop-in replacement for SynthVoice when AudioWorklet mode is active.
@@ -41,14 +72,14 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.noteRatio = computeNoteRatio(flatNote.fpitch)
         this.noteVelo = (flatNote.note?.velocity ?? 0.8) * 0.25
 
-        this.workletNode = this.registerNode(WorkletBridge.createSynthVoice(ctx))
+        this.workletNode = this.registerNode(createSynthVoiceNode(ctx))
         this._sendUpdate(gs, flatNote.pan ?? 0)
         this.connectToStripInput(this.workletNode)
     }
 
     start(time) {
         if (!this.workletNode) return
-        WorkletBridge.triggerVoice(this.workletNode, time)
+        postTrigger(this.workletNode, time)
         const env = this.generatedSound.enveloppe ?? {}
         const totalSec = (env.attack || 0) + (env.decay || 0) + (env.release || 0) + RELEASE_TIME
         this.totalStopTime = time + totalSec
@@ -66,7 +97,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         if (this.stopped) return
         super.stop(time)
         if (this.workletNode) {
-            WorkletBridge.releaseVoice(this.workletNode, time)
+            postRelease(this.workletNode, time)
         }
     }
 
@@ -92,7 +123,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.masterVolume = masterVolume
         const peak = this.noteVelo * masterVolume * accentMultiplier
 
-        WorkletBridge.updateVoice(this.workletNode, {
+        postUpdate(this.workletNode, {
             osc1Freq: gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0,
             osc2Freq: gs.vco2 ? computeOscFrequency(this.noteRatio, gs.vco2.octave, gs.vco2.detune) : 0,
             osc3Freq: gs.vco3 ? computeOscFrequency(this.noteRatio, gs.vco3.octave, gs.vco3.detune) : 0,
