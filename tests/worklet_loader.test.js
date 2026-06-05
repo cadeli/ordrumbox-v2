@@ -146,6 +146,46 @@ describe('WorkletLoader', () => {
         expect(WorkletLoader.isContextReady(fakeCtx)).toBe(true)
     })
 
+    it('ensureLoaded() revokes the Blob URL immediately after addModule()', async () => {
+        const addModule = vi.fn().mockResolvedValue(undefined)
+        const fakeCtx = {
+            sampleRate: 44100,
+            currentTime: 0,
+            audioWorklet: { addModule }
+        }
+        const createObjectURL = vi.fn(() => 'blob:abc')
+        const revokeObjectURL = vi.fn()
+        global.URL = { createObjectURL, revokeObjectURL }
+        global.Blob = class {}
+
+        WorkletLoader.register('proc', 'src')
+        await WorkletLoader.ensureLoaded(fakeCtx)
+
+        expect(createObjectURL).toHaveBeenCalledTimes(1)
+        expect(revokeObjectURL).toHaveBeenCalledTimes(1)
+        expect(revokeObjectURL).toHaveBeenCalledWith('blob:abc')
+    })
+
+    it('ensureLoaded() still revokes the Blob URL when addModule() fails', async () => {
+        const addModule = vi.fn().mockRejectedValue(new Error('parse fail'))
+        const fakeCtx = {
+            sampleRate: 44100,
+            currentTime: 0,
+            audioWorklet: { addModule }
+        }
+        const createObjectURL = vi.fn(() => 'blob:xyz')
+        const revokeObjectURL = vi.fn()
+        global.URL = { createObjectURL, revokeObjectURL }
+        global.Blob = class {}
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+        WorkletLoader.register('proc', 'src')
+        await expect(WorkletLoader.ensureLoaded(fakeCtx)).rejects.toThrow('parse fail')
+
+        expect(revokeObjectURL).toHaveBeenCalledWith('blob:xyz')
+        warnSpy.mockRestore()
+    })
+
     it('createNode() succeeds after ensureLoaded()', () => {
         const fakeNode = { parameters: new Map(), port: {}, connect: vi.fn() }
         const MockWorkletNode = vi.fn(function() { return fakeNode })

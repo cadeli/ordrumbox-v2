@@ -18,7 +18,6 @@
 
 const registry = new Map()
 const loadedContexts = new WeakSet()
-let blobUrls = []
 
 export default class WorkletLoader {
     static isSupported(audioCtx) {
@@ -51,10 +50,6 @@ export default class WorkletLoader {
 
     static reset() {
         registry.clear()
-        for (const url of blobUrls) {
-            try { URL.revokeObjectURL(url) } catch {}
-        }
-        blobUrls = []
     }
 
     static async ensureLoaded(audioCtx) {
@@ -65,12 +60,18 @@ export default class WorkletLoader {
         for (const [name, source] of registry.entries()) {
             const blob = new Blob([source], { type: 'application/javascript' })
             const url = URL.createObjectURL(blob)
-            blobUrls.push(url)
             try {
                 await audioCtx.audioWorklet.addModule(url)
             } catch (err) {
                 console.warn(`WorkletLoader: failed to load '${name}'`, err)
                 throw err
+            } finally {
+                // Revoke the Blob URL as soon as the module is loaded (or has
+                // failed to load) — the browser has already fetched the source
+                // into memory and the URL is no longer needed. Revoking
+                // immediately avoids accumulating URLs across many contexts
+                // (e.g. repeated exports, page reloads).
+                try { URL.revokeObjectURL(url) } catch {}
             }
         }
         loadedContexts.add(audioCtx)
