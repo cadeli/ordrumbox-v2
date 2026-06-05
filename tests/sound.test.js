@@ -132,14 +132,14 @@ describe('MfSound', () => {
 
     // ── getStrip ──────────────────────────────────────────────────────
 
-    it('getStrip returns null when track has no name', () => {
-        expect(sound.getStrip({ name: '' })).toBeNull()
+    it('getStrip returns null when track has no name', async () => {
+        expect(await sound.getStrip({ name: '' })).toBeNull()
     })
-    it('getStrip returns null when track is null', () => {
-        expect(sound.getStrip(null)).toBeNull()
+    it('getStrip returns null when track is null', async () => {
+        expect(await sound.getStrip(null)).toBeNull()
     })
-    it('getStrip calls mixer.getOrCreateStrip with track name', () => {
-        sound.getStrip({ name: 'KICK' })
+    it('getStrip calls mixer.getOrCreateStrip with track name', async () => {
+        await sound.getStrip({ name: 'KICK' })
         expect(mixer.getOrCreateStrip).toHaveBeenCalledWith('KICK')
     })
 
@@ -210,46 +210,46 @@ describe('MfSound', () => {
 
     // ── play ──────────────────────────────────────────────────────────
 
-    it('play returns early when mixer has no analyser', () => {
+    it('play returns early when mixer has no analyser', async () => {
         sound.mixer = { analyser: null, getOrCreateStrip: vi.fn() }
-        expect(() => sound.play(makeFlatNote(), 1.0)).not.toThrow()
+        await sound.play(makeFlatNote(), 1.0)
         expect(sound.voiceFactory.createVoice).not.toHaveBeenCalled()
     })
-    it('play calls playSample for non-synth track', () => {
+    it('play calls playSample for non-synth track', async () => {
         const playSampleSpy = vi.spyOn(sound, 'playSample')
-        sound.play(makeFlatNote(), 1.0)
+        await sound.play(makeFlatNote(), 1.0)
         expect(playSampleSpy).toHaveBeenCalled()
     })
-    it('play calls playGenerated for useSoftSynth=true', () => {
+    it('play calls playGenerated for useSoftSynth=true', async () => {
         const playGeneratedSpy = vi.spyOn(sound, 'playGenerated')
         const fn = makeFlatNote({ track: { name: 'BASS', useSoftSynth: true, mono: false, velocity: 0.8, pan: 0, bars: 4, barQuantize: 4 } })
-        sound.play(fn, 1.0)
+        await sound.play(fn, 1.0)
         expect(playGeneratedSpy).toHaveBeenCalled()
     })
-    it('play returns early when flatNote is null', () => {
-        expect(() => sound.play(null, 1.0)).not.toThrow()
+    it('play returns early when flatNote is null', async () => {
+        await expect(sound.play(null, 1.0)).resolves.not.toThrow()
     })
 
     // ── playSample ────────────────────────────────────────────────────
 
-    it('playSample calls voice.setup and voice.start', () => {
-        sound.playSample(makeFlatNote(), 1.0)
+    it('playSample calls voice.setup and voice.start', async () => {
+        await sound.playSample(makeFlatNote(), 1.0)
         const v = sound.voiceFactory._voice
         expect(v.setup).toHaveBeenCalled()
         expect(v.start).toHaveBeenCalledWith(1.0)
     })
-    it('playSample does nothing when strip is null', () => {
+    it('playSample does nothing when strip is null', async () => {
         mixer.getOrCreateStrip.mockReturnValue(null)
-        expect(() => sound.playSample(makeFlatNote(), 1.0)).not.toThrow()
+        await sound.playSample(makeFlatNote(), 1.0)
         expect(sound.voiceFactory.createVoice).not.toHaveBeenCalled()
     })
-    it('playSample does nothing when createVoice returns null', () => {
+    it('playSample does nothing when createVoice returns null', async () => {
         sound.voiceFactory.createVoice = vi.fn(() => null)
-        expect(() => sound.playSample(makeFlatNote(), 1.0)).not.toThrow()
+        await expect(sound.playSample(makeFlatNote(), 1.0)).resolves.not.toThrow()
     })
-    it('playSample registers voice for mono track', () => {
+    it('playSample registers voice for mono track', async () => {
         const fn = makeFlatNote({ track: { name: 'KICK', useSoftSynth: false, mono: true, velocity: 0.8, pan: 0, bars: 4, barQuantize: 4 } })
-        sound.playSample(fn, 1.0)
+        await sound.playSample(fn, 1.0)
         // voice should have been stored — trigger stop via stopPreviousVoice
         sound.stopPreviousVoice(fn.track, 2.0)
         expect(sound.voiceFactory._voice.stop).toHaveBeenCalledWith(2.0)
@@ -257,21 +257,21 @@ describe('MfSound', () => {
 
     // ── playGenerated ─────────────────────────────────────────────────
 
-    it('playGenerated calls loadGeneratedsounds when generatedSounds is empty', () => {
+    it('playGenerated calls loadGeneratedsounds when generatedSounds is empty', async () => {
         sound.generatedSounds = {}
         const loadFn = vi.fn()
         const loadSpy = vi.spyOn(sound, 'loadGeneratedsounds')
-        sound.playGenerated(makeFlatNote(), 1.0, loadFn)
+        await sound.playGenerated(makeFlatNote(), 1.0, loadFn)
         expect(loadSpy).toHaveBeenCalled()
     })
-    it('playGenerated plays voice when generatedSounds is populated', () => {
+    it('playGenerated plays voice when generatedSounds is populated', async () => {
         const fn = makeFlatNote({ track: { name: 'BASS', useSoftSynth: true, mono: false, velocity: 0.8, pan: 0, bars: 4, barQuantize: 4 } })
-        sound.playGenerated(fn, 1.0)
+        await sound.playGenerated(fn, 1.0)
         expect(sound.voiceFactory._voice.start).toHaveBeenCalledWith(1.0)
     })
-    it('playGenerated returns early when strip is null', () => {
+    it('playGenerated returns early when strip is null', async () => {
         mixer.getOrCreateStrip.mockReturnValue(null)
-        expect(() => sound.playGenerated(makeFlatNote(), 1.0)).not.toThrow()
+        await expect(sound.playGenerated(makeFlatNote(), 1.0)).resolves.not.toThrow()
     })
 
     // ── loadGeneratedsounds ───────────────────────────────────────────

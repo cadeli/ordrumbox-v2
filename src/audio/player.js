@@ -26,7 +26,7 @@ export default class MfPlayer {
         this._lastFlatNotesLoop = -1
     }
 
-    playNotes = (tick, atTime) => {
+    playNotes = async (tick, atTime) => {
         try {
             const selPat = this.patterns[this.getSelectedPatternNum()]
             const nbTickForPattern = this.TICK * selPat.nbBars
@@ -76,7 +76,7 @@ export default class MfPlayer {
                 const flatNote = notesToPlay[i]
                 if (flatNote.track.mute === false) {
                     MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
-                    mfSound.play(flatNote, atTime + flatNote.swingTime)
+                    await mfSound.play(flatNote, atTime + flatNote.swingTime)
                 }
             }
         } catch (e) {
@@ -89,7 +89,7 @@ export default class MfPlayer {
      */
     getCurrentFlatNotesMap = () => this._lastFlatNotesMap
 
-    simpleBeep = (indexTrack) => {
+    simpleBeep = async (indexTrack) => {
         if (this.audioCtx == null) return
         const pat = this.patterns[this.getSelectedPatternNum()]
         const track = pat.tracks[indexTrack]
@@ -115,10 +115,9 @@ export default class MfPlayer {
         }
         const flatNote = new MfFlatNote(0, track, note)
 
-        if (!this.mixer.compressor) {
-            this.mixer.start()
-        }
-        this.mfSound.playSample(flatNote, this.audioCtx.currentTime)
+        // Worklet mixer is always initialised by the engine before play;
+        // legacy `mixer.compressor` check removed.
+        await this.mfSound.playSample(flatNote, this.audioCtx.currentTime)
         console.log("Play :" + track.name + "=" + this.sounds[track.soundId].url)
     }
 

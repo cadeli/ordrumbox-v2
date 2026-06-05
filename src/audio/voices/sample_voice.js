@@ -32,14 +32,14 @@ export default class SampleVoice extends BaseVoice {
         this.panNode.pan.setValueAtTime(flatNote.pan ?? 0, time)
 
         // LFO connections
-        if (track.pitchLfo && this.strip.lfos.pitchLfo) {
+        if (track.pitchLfo && this.strip._lfoGains?.pitchLfo) {
             const centMult = this.registerNode(ctx.createGain())
             centMult.gain.value = 100
-            this.strip.lfos.pitchLfo.gain.connect(centMult)
+            this.strip._lfoGains.pitchLfo.connect(centMult)
             centMult.connect(this.snd.detune)
         }
-        if (track.panLfo && this.strip.lfos.panLfo) {
-            this.strip.lfos.panLfo.gain.connect(this.panNode.pan)
+        if (track.panLfo && this.strip._lfoGains?.panLfo) {
+            this.strip._lfoGains.panLfo.connect(this.panNode.pan)
         }
 
         const duration = track.sampleLength || 0.5

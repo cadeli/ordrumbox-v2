@@ -2,418 +2,317 @@ import Utils from '../core/utils.js';
 import MfDefaults from '../patterns/defaults.js';
 import { RAMP_TIME } from '../core/constants.js';
 import {
-    computeSaturationCurve,
-    computeImpulseSampleData,
     computeLfoFrequency,
     computeLfoDepth,
-    computeDriveGain,
-    computeOutputGain,
-    computeDelaySettings,
     REVERB_PRESETS,
     SATURATION_TYPES,
 } from './math.js';
-import WorkletBridge from './worklets/bridge.js';
+import WorkletLoader from './worklets/loader.js';
+import SATURATION_SOURCE from './worklets/processors/saturation_source.js';
+import FILTER_SOURCE from './worklets/processors/filter_source.js';
+import REVERB_SOURCE from './worklets/processors/reverb_source.js';
+import DELAY_SOURCE from './worklets/processors/delay_source.js';
+import LFO_SOURCE from './worklets/processors/lfo_source.js';
 
 export { SATURATION_TYPES, REVERB_PRESETS };
+
+// Register processors once at module load (idempotent — WorkletLoader guards duplicates)
+WorkletLoader.register('saturation', SATURATION_SOURCE);
+WorkletLoader.register('filter',     FILTER_SOURCE);
+WorkletLoader.register('reverb',     REVERB_SOURCE);
+WorkletLoader.register('delay',      DELAY_SOURCE);
+WorkletLoader.register('lfo',        LFO_SOURCE);
+
+// Maps used by setFilter / setReverb / setDelay
+const SATURATION_TYPES_IDX = { soft: 0, hard: 1, tape: 2 };
+const REVERB_PRESETS_PARAMS = {
+    none:   { room: 0.0,  damp: 0.5, width: 0.0, pre: 0      },
+    room:   { room: 0.5,  damp: 0.5, width: 0.8, pre: 0.008  },
+    hall:   { room: 0.85, damp: 0.3, width: 1.0, pre: 0.02   },
+    plate:  { room: 0.7,  damp: 0.4, width: 0.9, pre: 0.012  },
+    spring: { room: 0.45, damp: 0.6, width: 0.5, pre: 0.01   },
+    gated:  { room: 0.4,  damp: 0.7, width: 0.4, pre: 0      },
+};
+const FILTER_MODES = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 };
+const DELAY_MODES  = { none: 0, slap: 0, tape: 1, pingpong: 2 };
+
+function _param(node, name) {
+    return node.parameters.get(name);
+}
 
 export default class MfStrip {
     static TAG = "MFSTRIP";
     static REVERB_PRESETS = REVERB_PRESETS;
     static SATURATION_TYPES = SATURATION_TYPES;
 
+    /**
+     * MfStrip is always worklet-based. Call the async factory `MfStrip.create()`
+     * instead of `new MfStrip()` so that worklets are loaded before nodes are wired.
+     */
     constructor(name, audioCtx) {
         this.name = name;
         this.audioCtx = audioCtx;
         this.bpm = MfDefaults.getPatternProp({}, 'bpm');
 
-        // 1. CRÉATION DES NODES DE LA TRANCHE
-        this.output = audioCtx.createGain();
-        this.filter1 = audioCtx.createBiquadFilter();
-        this.filter2 = audioCtx.createBiquadFilter();
-        this.saturDrive = audioCtx.createGain();
-        this.saturator = audioCtx.createWaveShaper();
-        this.dryGain = audioCtx.createGain();
-        this.reverbInput = audioCtx.createGain();
-        this.reverb = audioCtx.createConvolver();
-        this.reverbWetGain = audioCtx.createGain();
-        this.delayInput = audioCtx.createGain();
-        this.delay = audioCtx.createDelay(2.0);
-        this.delayFeedback = audioCtx.createGain();
-        this.delayFilter = audioCtx.createBiquadFilter();
-        this.delayWetGain = audioCtx.createGain();
-        this.pan = audioCtx.createStereoPanner();
-        this.panLeft = audioCtx.createStereoPanner();
-        this.panRight = audioCtx.createStereoPanner();
+        // Worklet effect nodes — populated by _initWorkletNodes()
+        this.filterNode      = null;
+        this.saturationNode  = null;
+        this.reverbNode      = null;
+        this.delayNode       = null;
 
-        // 2. NATIVE LFOs
-        this.lfos = {
-            pitchLfo: { osc: audioCtx.createOscillator(), gain: audioCtx.createGain() },
-            velocityLfo: { osc: audioCtx.createOscillator(), gain: audioCtx.createGain() },
-            panLfo: { osc: audioCtx.createOscillator(), gain: audioCtx.createGain() },
-            filterFreqLfo: { osc: audioCtx.createOscillator(), gain: audioCtx.createGain() },
-            filterQLfo: { osc: audioCtx.createOscillator(), gain: audioCtx.createGain() }
+        // LFO worklet nodes keyed by lfo name
+        this.lfoNodes = {};
+
+        // Gain nodes that remain native (lightweight — no DSP, just routing)
+        this.voicesInput    = audioCtx.createGain();  // entry point for voices
+        this.reverbSend     = audioCtx.createGain();  // wet send level to reverb worklet
+        this.delaySend      = audioCtx.createGain();  // wet send level to delay worklet
+        this.reverbReturn   = audioCtx.createGain();  // reverb wet return
+        this.delayReturn    = audioCtx.createGain();  // delay wet return
+        this.output         = audioCtx.createGain();  // final track output
+        this.pan            = audioCtx.createStereoPanner();
+
+        // LFO gain nodes (depth control — stays native, modulates AudioParams)
+        this._lfoGains = {
+            pitchLfo:      audioCtx.createGain(),
+            velocityLfo:   audioCtx.createGain(),
+            panLfo:        audioCtx.createGain(),
+            filterFreqLfo: audioCtx.createGain(),
+            filterQLfo:    audioCtx.createGain(),
         };
+        Object.values(this._lfoGains).forEach(g => { g.gain.value = 0; });
 
-        Object.values(this.lfos).forEach(lfo => {
-            lfo.osc.connect(lfo.gain);
-            lfo.osc.start();
-            lfo.gain.gain.value = 0; // Default off
-        });
+        // Current state (used for re-apply after context restart)
+        this.currentFilterType      = 'allpass';
+        this.currentReverbType      = 'none';
+        this.currentReverbAmount    = 0;
+        this.currentDelayType       = 'tape';
+        this.currentDelayAmount     = 0;
+        this.currentSaturationType  = 'soft';
+        this.currentSaturationAmount = 0;
+    }
 
-        // Connect track-level LFOs
-        this.lfos.velocityLfo.gain.connect(this.output.gain);
-        this.lfos.filterFreqLfo.gain.connect(this.filter1.frequency);
-        this.lfos.filterFreqLfo.gain.connect(this.filter2.frequency);
-        this.lfos.filterQLfo.gain.connect(this.filter1.Q);
-        this.lfos.filterQLfo.gain.connect(this.filter2.Q);
+    /**
+     * Async factory — loads worklets then wires the audio graph.
+     * Use this instead of `new MfStrip()` in production code.
+     */
+    static async create(name, audioCtx) {
+        const strip = new MfStrip(name, audioCtx);
+        await WorkletLoader.ensureLoaded(audioCtx);
+        strip._initWorkletNodes();
+        strip._wireGraph();
+        strip._initLfoNodes();
+        return strip;
+    }
 
-        // Voice-level LFO nodes (Pitch, Pan) will be connected per-note in MfSound
-        
-        this.filter1.type = "allpass";
-        this.filter2.type = "allpass";
-        this.saturDrive.gain.value = 1;
-        this.dryGain.gain.value = 1;
-        this.reverbInput.gain.value = 0;
-        this.reverbWetGain.gain.value = 1;
-        this.delayInput.gain.value = 0;
-        this.delayWetGain.gain.value = 1;
-        this.delay.delayTime.value = 0.25;
-        this.delayFeedback.gain.value = 0.3;
-        this.delayFilter.type = "lowpass";
-        this.delayFilter.frequency.value = 3000;
-        this.panLeft.pan.value = -1;
-        this.panRight.pan.value = 1;
-        this.saturator.curve = this.createSaturationCurve("soft", 0);
-        this.saturator.oversample = "4x";
+    // ─── Internal setup ────────────────────────────────────────────────────────
 
-        // Filtre -> dry/saturation, reverb send et delay send indépendants.
-        this.filter1.connect(this.filter2);
-        this.filter2.connect(this.saturDrive);
-        this.filter2.connect(this.reverbInput);
-        this.filter2.connect(this.delayInput);
-        this.saturDrive.connect(this.saturator);
-        this.saturator.connect(this.dryGain);
-        this.reverbInput.connect(this.reverb);
-        this.reverb.connect(this.reverbWetGain);
-        this.delayInput.connect(this.delay);
-        this.delay.connect(this.delayWetGain);
-        this.dryGain.connect(this.output);
-        this.reverbWetGain.connect(this.output);
-        this.delayWetGain.connect(this.output);
+    _initWorkletNodes() {
+        const ctx = this.audioCtx;
+        const stereo = { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2] };
+
+        this.filterNode     = WorkletLoader.createNode(ctx, 'filter',     stereo);
+        this.saturationNode = WorkletLoader.createNode(ctx, 'saturation', stereo);
+        this.reverbNode     = WorkletLoader.createNode(ctx, 'reverb',     stereo);
+        this.delayNode      = WorkletLoader.createNode(ctx, 'delay',      stereo);
+    }
+
+    _wireGraph() {
+        // voicesInput → filter → saturation → output (dry path)
+        this.voicesInput.connect(this.filterNode);
+        this.filterNode.connect(this.saturationNode);
+        this.saturationNode.connect(this.output);
+
+        // filter → reverb send → reverb worklet → reverb return → output
+        this.filterNode.connect(this.reverbSend);
+        this.reverbSend.connect(this.reverbNode);
+        this.reverbNode.connect(this.reverbReturn);
+        this.reverbReturn.connect(this.output);
+
+        // filter → delay send → delay worklet → delay return → output
+        this.filterNode.connect(this.delaySend);
+        this.delaySend.connect(this.delayNode);
+        this.delayNode.connect(this.delayReturn);
+        this.delayReturn.connect(this.output);
+
+        // output → pan (connects to busInput in mixer)
         this.output.connect(this.pan);
 
-        // Variable pour stocker le type actuel
-        this.currentFilterType = "allpass";
-        this.currentReverbType = "none";
-        this.currentReverbAmount = 0;
-        this.currentDelayType = "tape";
-        this.currentDelayAmount = 0;
-        this.delayRoutingType = null;
-        this.currentSaturationType = "soft";
-        this.currentSaturationAmount = 0;
-        this.impulseCache = new Map();
-        this.updateSaturation("soft", 0);
-        this.updateReverb("none", 0);
-        this.updateDelay("tape", 1, 0);
+        // Default send levels
+        this.reverbSend.gain.value = 0;
+        this.delaySend.gain.value  = 0;
+        this.reverbReturn.gain.value = 1;
+        this.delayReturn.gain.value  = 1;
     }
+
+    _initLfoNodes() {
+        const ctx = this.audioCtx;
+        const mono = { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [1] };
+        const lfoNames = Object.keys(this._lfoGains);
+
+        for (const key of lfoNames) {
+            const wn = WorkletLoader.createNode(ctx, 'lfo', mono);
+            wn.connect(this._lfoGains[key]);
+            this.lfoNodes[key] = wn;
+        }
+
+        // Connect LFO gain outputs to their AudioParam targets
+        this._lfoGains.velocityLfo.connect(this.output.gain);
+        // filterFreqLfo and filterQLfo modulate the filter worklet via AudioParam
+        // (the worklet exposes 'cutoff' and 'q' as AudioParams)
+        const cutoff = _param(this.filterNode, 'cutoff');
+        const q      = _param(this.filterNode, 'q');
+        if (cutoff) this._lfoGains.filterFreqLfo.connect(cutoff);
+        if (q)      this._lfoGains.filterQLfo.connect(q);
+    }
+
+    // ─── Public API ────────────────────────────────────────────────────────────
 
     setBpm = (bpm) => {
         this.bpm = bpm;
     }
 
-    updateLfo = (key, config) => {
-        const lfo = this.lfos[key];
-        if (!lfo) return;
+    /**
+     * Connect a voice node to the strip's entry point.
+     * Voices call this via BaseVoice.connectToStripInput().
+     */
+    connectVoice(node) {
+        node.connect(this.voicesInput);
+    }
 
-        const ctx = this.audioCtx;
-        const time = ctx.currentTime;
+    updateLfo = (key, config) => {
+        const wn   = this.lfoNodes[key];
+        const gain = this._lfoGains[key];
+        if (!wn || !gain) return;
+
+        const time = this.audioCtx.currentTime;
 
         if (!config) {
-            // Worklet path: just zero the depth (worklet keeps generating)
-            if (this._lfoWorklets?.nodes?.[key]) {
-                lfo.gain.gain.setTargetAtTime(0, time, RAMP_TIME);
-                return;
-            }
-            lfo.gain.gain.setTargetAtTime(0, time, RAMP_TIME);
+            gain.gain.setTargetAtTime(0, time, RAMP_TIME);
             return;
         }
 
         const frequency = computeLfoFrequency(config.freq ?? 1, this.bpm);
-        const depth = computeLfoDepth(config.min, config.max);
-        const waveform = config.waveform ?? 0;  // 0=sine (default)
+        const depth     = computeLfoDepth(config.min, config.max);
+        const waveform  = config.waveform ?? 0;
 
-        // Worklet path
-        if (this._lfoWorklets?.nodes?.[key]) {
-            const wn = this._lfoWorklets.nodes[key]
-            const params = wn.parameters
-            if (params.get('freq'))     params.get('freq').setTargetAtTime(frequency, time, RAMP_TIME)
-            if (params.get('waveform')) params.get('waveform').setTargetAtTime(waveform, time, RAMP_TIME)
-            lfo.gain.gain.setTargetAtTime(depth, time, RAMP_TIME)
-            return
-        }
-
-        // Native path
-        lfo.osc.frequency.setTargetAtTime(frequency, time, RAMP_TIME);
-        lfo.gain.gain.setTargetAtTime(depth, time, RAMP_TIME);
+        const params = wn.parameters;
+        if (params.get('freq'))     params.get('freq').setTargetAtTime(frequency, time, RAMP_TIME);
+        if (params.get('waveform')) params.get('waveform').setTargetAtTime(waveform, time, RAMP_TIME);
+        gain.gain.setTargetAtTime(depth, time, RAMP_TIME);
     }
 
     updateFilter = (type, freq, q) => {
-        const ctx = this.audioCtx;
-        const time = ctx.currentTime;
+        const time = this.audioCtx.currentTime;
+        this.currentFilterType = type || 'allpass';
 
-        this.currentFilterType = type || "allpass";
-
-        // Worklet path
-        if (this._worklet?.nodes?.filter) {
-            if (this.currentFilterType === "allpass") {
-                // TPT SVF doesn't have allpass — use passthrough (cutoff very high, Q low)
-                WorkletBridge.setFilter(this, "lowpass", 20000, 0.1);
-            } else {
-                const fFreq = Utils.normalizeTrackFilterFreqValue(freq);
-                const fQ = Utils.normalizeTrackFilterQValue(q);
-                WorkletBridge.setFilter(this, this.currentFilterType, fFreq, fQ);
-            }
-            return;
-        }
-
-        // Native fallback
-        if (this.currentFilterType === "allpass") {
-            this.filter1.type = "allpass";
-            this.filter2.type = "allpass";
+        if (this.currentFilterType === 'allpass') {
+            // Passthrough: open LP at max frequency, very low Q
+            _param(this.filterNode, 'cutoff')?.setTargetAtTime(20000, time, RAMP_TIME);
+            _param(this.filterNode, 'q')?.setTargetAtTime(0.1, time, RAMP_TIME);
+            _param(this.filterNode, 'mode')?.setTargetAtTime(0, time, RAMP_TIME);
             return;
         }
 
         const fFreq = Utils.normalizeTrackFilterFreqValue(freq);
-        const fQ = Utils.normalizeTrackFilterQValue(q);
+        const fQ    = Utils.normalizeTrackFilterQValue(q);
+        const mode  = FILTER_MODES[this.currentFilterType] ?? 0;
 
-        [this.filter1, this.filter2].forEach(f => {
-            f.type = this.currentFilterType;
-            f.frequency.setTargetAtTime(fFreq, time, RAMP_TIME);
-            f.Q.setTargetAtTime(fQ, time, RAMP_TIME);
-        });
+        _param(this.filterNode, 'cutoff')?.setTargetAtTime(fFreq, time, RAMP_TIME);
+        _param(this.filterNode, 'q')?.setTargetAtTime(fQ, time, RAMP_TIME);
+        _param(this.filterNode, 'mode')?.setTargetAtTime(mode, time, RAMP_TIME);
     }
 
-    updateReverb = (type = "none", amount = 0) => {
-        const ctx = this.audioCtx;
-        const time = ctx.currentTime;
-        const normalizedType = MfStrip.REVERB_PRESETS[type] ? type : "none";
+    updateReverb = (type = 'none', amount = 0) => {
+        const time = this.audioCtx.currentTime;
+        const normalizedType   = REVERB_PRESETS[type] ? type : 'none';
         const normalizedAmount = Math.min(1, Math.max(0, Number(amount) || 0));
 
-        this.currentReverbType = normalizedType;
+        this.currentReverbType   = normalizedType;
         this.currentReverbAmount = normalizedAmount;
 
-        // Worklet path
-        if (this._worklet?.nodes?.reverb) {
-            WorkletBridge.setReverb(this, normalizedType, normalizedAmount);
-            // Keep reverbInput at full level (mix is on the worklet)
-            this.reverbInput.gain.setTargetAtTime(1, time, RAMP_TIME);
-            return;
-        }
+        const p   = REVERB_PRESETS_PARAMS[normalizedType] ?? REVERB_PRESETS_PARAMS.none;
+        const wet = normalizedType === 'none' ? 0 : normalizedAmount;
 
-        if (normalizedType === "none" || normalizedAmount <= 0) {
-            this.reverbInput.gain.setTargetAtTime(0, time, RAMP_TIME);
-            this.reverb.buffer = null;
-            return;
-        }
+        _param(this.reverbNode, 'roomSize')?.setTargetAtTime(p.room, time, RAMP_TIME);
+        _param(this.reverbNode, 'damping')?.setTargetAtTime(p.damp, time, RAMP_TIME);
+        _param(this.reverbNode, 'width')?.setTargetAtTime(p.width, time, RAMP_TIME);
+        _param(this.reverbNode, 'preDelay')?.setTargetAtTime(p.pre, time, RAMP_TIME);
+        _param(this.reverbNode, 'mix')?.setTargetAtTime(1, time, RAMP_TIME);
 
-        this.reverb.buffer = this.getImpulseResponse(normalizedType);
-        this.reverbInput.gain.setTargetAtTime(normalizedAmount, time, RAMP_TIME);
+        // Send level controls wet/dry; worklet mix stays at 1 (full wet signal)
+        this.reverbSend.gain.setTargetAtTime(wet, time, RAMP_TIME);
     }
 
-    updateDelay = (type = "tape", timeValue = 1, amount = 0) => {
-        const ctx = this.audioCtx;
-        const time = ctx.currentTime;
+    updateDelay = (type = 'tape', timeValue = 1, amount = 0) => {
+        const time            = this.audioCtx.currentTime;
         const normalizedAmount = Math.min(1, Math.max(0, Number(amount) || 0));
-        const delaySeconds = Utils.getDelayTimeInSeconds(timeValue, this.bpm);
-        const normalizedType = ['none', 'slap', 'tape', 'pingpong'].includes(type) ? type : 'tape';
+        const normalizedType  = DELAY_MODES.hasOwnProperty(type) ? type : 'tape';
+        const delaySeconds    = Utils.getDelayTimeInSeconds(timeValue, this.bpm);
 
-        this.currentDelayType = normalizedType;
+        this.currentDelayType   = normalizedType;
         this.currentDelayAmount = normalizedAmount;
 
-        // Worklet path
-        if (this._worklet?.nodes?.delay) {
-            if (normalizedType === 'none' || normalizedAmount <= 0) {
-                WorkletBridge.setDelay(this, 'none', 0.001, 0)
-            } else {
-                WorkletBridge.setDelay(this, normalizedType, delaySeconds, normalizedAmount)
-            }
-            this.delayInput.gain.setValueAtTime(1, time)
-            return
-        }
-
-        if (this.delayRoutingType !== normalizedType) {
-            this.configureDelayRouting(normalizedType, time);
-        }
-
-        this.delay.delayTime.setTargetAtTime(delaySeconds, time, RAMP_TIME);
-
         if (normalizedType === 'none' || normalizedAmount <= 0) {
-            this.delayInput.gain.setTargetAtTime(0, time, 0.01);
-            this.delayWetGain.gain.setTargetAtTime(0, time, 0.01);
-            this.delayFeedback.gain.setTargetAtTime(0, time, 0.01);
+            _param(this.delayNode, 'mix')?.setTargetAtTime(0, time, RAMP_TIME);
+            this.delaySend.gain.setTargetAtTime(0, time, RAMP_TIME);
             return;
         }
 
-        this.applyDelayTypeSettings(normalizedType, time);
-        this.delayInput.gain.setValueAtTime(normalizedAmount, time);
-        this.delayWetGain.gain.setValueAtTime(1, time);
+        const mode     = DELAY_MODES[normalizedType];
+        const feedback = 0.4;
+        const isPP     = mode >= 1.5;
+        const tL       = isPP ? delaySeconds * 0.667 : delaySeconds;
+        const tR       = isPP ? delaySeconds * 1.0   : delaySeconds;
+
+        _param(this.delayNode, 'timeL')?.setTargetAtTime(tL, time, RAMP_TIME);
+        _param(this.delayNode, 'timeR')?.setTargetAtTime(tR, time, RAMP_TIME);
+        _param(this.delayNode, 'mode')?.setTargetAtTime(mode, time, RAMP_TIME);
+        _param(this.delayNode, 'mix')?.setTargetAtTime(1, time, RAMP_TIME);
+        _param(this.delayNode, 'feedback')?.setTargetAtTime(feedback, time, RAMP_TIME);
+        _param(this.delayNode, 'filter')?.setTargetAtTime(5000, time, RAMP_TIME);
+        _param(this.delayNode, 'saturation')?.setTargetAtTime(0.1, time, RAMP_TIME);
+
+        this.delaySend.gain.setTargetAtTime(normalizedAmount, time, RAMP_TIME);
     }
 
-    configureDelayRouting = (type, time) => {
-        this.disconnectNode(this.delayInput);
-        this.disconnectNode(this.delay);
-        this.disconnectNode(this.delayFeedback);
-        this.disconnectNode(this.delayFilter);
-        this.disconnectNode(this.panLeft);
-        this.disconnectNode(this.panRight);
-
-        this.delayFeedback.gain.setTargetAtTime(0, time, RAMP_TIME);
-
-        if (type === 'none') {
-            this.delayInput.connect(this.delay);
-            this.delay.connect(this.delayWetGain);
-            this.delayRoutingType = type;
-            return;
-        }
-
-        switch (type) {
-            case 'slap':
-                this.applyDelayTypeSettings(type, time);
-                this.delayInput.connect(this.delay);
-                this.delay.connect(this.delayFeedback);
-                this.delayFeedback.connect(this.delayFilter);
-                this.delayFilter.connect(this.delayWetGain);
-                this.delay.connect(this.delayWetGain);
-                break;
-                
-            case 'tape':
-                this.applyDelayTypeSettings(type, time);
-                this.delayInput.connect(this.delay);
-                this.delay.connect(this.delayFeedback);
-                this.delayFeedback.connect(this.delayFilter);
-                this.delayFilter.connect(this.delay);
-                this.delay.connect(this.delayWetGain);
-                break;
-                
-            case 'pingpong':
-                this.applyDelayTypeSettings(type, time);
-                this.delayInput.connect(this.delay);
-                this.delay.connect(this.panLeft);
-                this.delay.connect(this.panRight);
-                this.panLeft.connect(this.delayWetGain);
-                this.panRight.connect(this.delayWetGain);
-                break;
-                
-            default:
-                this.delayInput.connect(this.delay);
-                this.delay.connect(this.delayWetGain);
-        }
-
-        this.delayRoutingType = type;
-    }
-
-    applyDelayTypeSettings = (type, time) => {
-        this.delayFilter.type = "lowpass";
-        const settings = computeDelaySettings(type);
-        this.delayFeedback.gain.setTargetAtTime(settings.feedback, time, RAMP_TIME);
-        this.delayFilter.frequency.setTargetAtTime(settings.filterFreq, time, RAMP_TIME);
-    }
-
-    disconnectNode = (node) => {
-        if (!node) return;
-        try {
-            node.disconnect();
-        } catch (e) {
-            console.warn("MfStrip::disconnectNode failed", e);
-        }
-    }
-
-    updateSaturation = (type = "soft", amount = 0) => {
-        const ctx = this.audioCtx;
-        const time = ctx.currentTime;
-        const normalizedType = SATURATION_TYPES.includes(type) ? type : "soft";
+    updateSaturation = (type = 'soft', amount = 0) => {
+        const time             = this.audioCtx.currentTime;
+        const normalizedType   = SATURATION_TYPES.includes(type) ? type : 'soft';
         const normalizedAmount = Math.min(1, Math.max(0, Number(amount) || 0));
-        this.currentSaturationType = normalizedType;
+
+        this.currentSaturationType   = normalizedType;
         this.currentSaturationAmount = normalizedAmount;
 
-        // Worklet path (preferred when available)
-        if (this._worklet?.nodes?.saturation) {
-            WorkletBridge.setSaturation(this, normalizedType, normalizedAmount);
-            return;
-        }
+        const typeIdx = SATURATION_TYPES_IDX[normalizedType] ?? 0;
+        const drive   = 1 + normalizedAmount * 6;
+        const out     = 1 - normalizedAmount * 0.15;
 
-        // Native fallback
-        this.saturDrive.gain.setTargetAtTime(computeDriveGain(normalizedAmount), time, RAMP_TIME);
-        this.saturator.curve = computeSaturationCurve(normalizedType, normalizedAmount);
-        this.output.gain.setTargetAtTime(computeOutputGain(normalizedAmount), time, RAMP_TIME);
-    }
-
-    createSaturationCurve = (type = "soft", amount = 0) => {
-        return computeSaturationCurve(type, amount)
-    }
-
-    getImpulseResponse = (type) => {
-        if (this.impulseCache.has(type)) {
-            return this.impulseCache.get(type);
-        }
-
-        const preset = REVERB_PRESETS[type] ?? REVERB_PRESETS.none;
-        const ctx = this.audioCtx;
-        const sampleRate = ctx.sampleRate;
-        const length = Math.max(1, Math.floor(sampleRate * preset.duration));
-        const impulse = ctx.createBuffer(2, length, sampleRate);
-
-        for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
-            const data = impulse.getChannelData(channel);
-            const sampleData = computeImpulseSampleData(sampleRate, preset, channel);
-            for (let i = 0; i < length; i++) {
-                data[i] = sampleData[i];
-            }
-        }
-
-        this.impulseCache.set(type, impulse);
-        return impulse;
+        _param(this.saturationNode, 'type')?.setTargetAtTime(typeIdx, time, RAMP_TIME);
+        _param(this.saturationNode, 'drive')?.setTargetAtTime(drive, time, RAMP_TIME);
+        _param(this.saturationNode, 'output')?.setTargetAtTime(out, time, RAMP_TIME);
+        _param(this.saturationNode, 'mix')?.setTargetAtTime(1, time, RAMP_TIME);
     }
 
     delete = () => {
-        // Déconnexion propre de tous les nodes
-        if (this.filter1) this.filter1.disconnect();
-        if (this.filter2) this.filter2.disconnect();
-        if (this.saturDrive) this.saturDrive.disconnect();
-        if (this.saturator) this.saturator.disconnect();
-        if (this.dryGain) this.dryGain.disconnect();
-        if (this.reverbInput) this.reverbInput.disconnect();
-        if (this.reverb) this.reverb.disconnect();
-        if (this.reverbWetGain) this.reverbWetGain.disconnect();
-        if (this.delayInput) this.delayInput.disconnect();
-        if (this.delay) this.delay.disconnect();
-        if (this.delayFeedback) this.delayFeedback.disconnect();
-        if (this.delayFilter) this.delayFilter.disconnect();
-        if (this.delayWetGain) this.delayWetGain.disconnect();
-        if (this.pan) this.pan.disconnect();
-        if (this.panLeft) this.panLeft.disconnect();
-        if (this.panRight) this.panRight.disconnect();
-        if (this.output) this.output.disconnect();
+        const nodes = [
+            this.voicesInput, this.filterNode, this.saturationNode,
+            this.reverbNode, this.reverbSend, this.reverbReturn,
+            this.delayNode, this.delaySend, this.delayReturn,
+            this.output, this.pan,
+            ...Object.values(this._lfoGains),
+            ...Object.values(this.lfoNodes),
+        ];
 
-        // Libération de la mémoire
-        this.filter1 = null;
-        this.filter2 = null;
-        this.saturDrive = null;
-        this.saturator = null;
-        this.dryGain = null;
-        this.reverbInput = null;
-        this.reverb = null;
-        this.reverbWetGain = null;
-        this.delayInput = null;
-        this.delay = null;
-        this.delayFeedback = null;
-        this.delayFilter = null;
-        this.delayWetGain = null;
-        this.pan = null;
-        this.panLeft = null;
-        this.panRight = null;
-        this.output = null;
-        this.impulseCache?.clear();
-        this.impulseCache = null;
+        for (const node of nodes) {
+            if (!node) continue;
+            try { node.disconnect(); } catch (_) {}
+        }
+
+        this.filterNode = this.saturationNode = this.reverbNode = this.delayNode = null;
+        this.voicesInput = this.reverbSend = this.reverbReturn = null;
+        this.delaySend = this.delayReturn = this.output = this.pan = null;
+        this._lfoGains = {};
+        this.lfoNodes  = {};
     }
 }

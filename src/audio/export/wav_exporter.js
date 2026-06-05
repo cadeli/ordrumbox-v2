@@ -40,7 +40,7 @@ export default class MfWavExporter {
         const totalTicks = pattern.nbBars * TICK * loopsCount
 
         for (let t = 0; t < totalTicks; t++) {
-            exporterAudioEngine.playNotes(t, t * TICK_TIME)
+            await exporterAudioEngine.playNotes(t, t * TICK_TIME)
         }
 
         const renderedBuffer = await offlineCtx.startRendering()

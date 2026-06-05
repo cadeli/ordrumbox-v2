@@ -1,5 +1,9 @@
 import MfStrip from './strip.js';
-import { COMPRESSOR_ATTACK } from '../core/constants.js';
+import WorkletLoader from './worklets/loader.js';
+import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js';
+
+// Register master bus processor at module load (idempotent)
+WorkletLoader.register('master-bus', MASTER_BUS_SOURCE);
 
 export default class MfMixer {
     static TAG = "MFMIXER";
@@ -7,160 +11,153 @@ export default class MfMixer {
     constructor(audioCtx) {
         this.audioCtx = audioCtx;
         this.trackName = "all";
-        this.lfo = null;
         this.strips = {};
 
-        this.analyser = null;
-        this.compressor = null;
-        this.lowcutFilter = null;
-        this.hicutFilter = null;
-        this.masterGain = null;
-
-        // Worklet mode (set by WorkletBridge.upgradeMixer)
-        this.busWorklet = null;       // master bus worklet node
-        this.busInput = null;         // GainNode strips connect to (worklet or pass-through)
-        this._workletActive = false;
+        this.analyser  = null;
+        this.busInput  = null;   // GainNode — all strip pans connect here
+        this.busWorklet = null;  // master-bus AudioWorkletNode
     }
 
-    start = () => {
+    /**
+     * Async factory — loads the master-bus worklet then wires the graph.
+     * Use this instead of calling start() on a synchronously constructed mixer.
+     */
+    static async create(audioCtx) {
+        const mixer = new MfMixer(audioCtx);
+        await WorkletLoader.ensureLoaded(audioCtx);
+        await mixer._init();
+        return mixer;
+    }
+
+    // ─── Internal setup ─────────────────────────────────────────────────────────
+
+    _init() {
         const ctx = this.audioCtx;
-        if (!ctx) {
-            console.error("MfMixer::start - No audioCtx available");
-            return;
-        }
 
-        const isAlreadyStarted = !!this.compressor;
-        this.trackName = "all";
+        this.analyser = ctx.createAnalyser();
+        this.analyser.fftSize = 1024;
+        this.gFftData  = new Uint8Array(this.analyser.frequencyBinCount);
+        this.dataArray = new Uint8Array(this.analyser.fftSize);
 
-        if (!this.lfo) {
-            this.lfo = ctx.createOscillator();
-            this.lfo.start(0);
-        }
+        this.busInput = ctx.createGain();
 
-        if (!this.compressor) {
-            this.compressor = ctx.createDynamicsCompressor();
-            this.compressor.threshold.setValueAtTime(-12, ctx.currentTime);
-            this.compressor.knee.setValueAtTime(30, ctx.currentTime);
-            this.compressor.ratio.setValueAtTime(4, ctx.currentTime);
-            this.compressor.attack.setValueAtTime(COMPRESSOR_ATTACK, ctx.currentTime);
-            this.compressor.release.setValueAtTime(0.15, ctx.currentTime);
-        }
+        this.busWorklet = WorkletLoader.createNode(ctx, 'master-bus', {
+            numberOfInputs: 1,
+            numberOfOutputs: 1,
+            outputChannelCount: [2],
+        });
 
-        if (!this.lowcutFilter) {
-            this.lowcutFilter = ctx.createBiquadFilter();
-            this.lowcutFilter.type = "highpass";
-            this.lowcutFilter.frequency.setValueAtTime(35, ctx.currentTime);
-        }
+        // strips → busInput → master-bus worklet → analyser → destination
+        this.busInput.connect(this.busWorklet);
+        this.busWorklet.connect(this.analyser);
+        this.analyser.connect(ctx.destination);
+    }
 
-        if (!this.hicutFilter) {
-            this.hicutFilter = ctx.createBiquadFilter();
-            this.hicutFilter.type = "lowpass";
-            this.hicutFilter.frequency.setValueAtTime(18500, ctx.currentTime);
-        }
+    // ─── Lifecycle ──────────────────────────────────────────────────────────────
 
-        if (!this.masterGain) {
-            this.masterGain = ctx.createGain();
-            this.masterGain.gain.setValueAtTime(1.0, ctx.currentTime);
-        }
-
-        if (!this.analyser) {
+    /**
+     * start() is kept for compatibility with AudioEngine (which calls mixer.start()).
+     * The heavy lifting now happens in the async factory; start() is a no-op if
+     * already initialised, or triggers a sync-safe reconnect.
+     */
+    start = () => {
+        // Already initialised via create() — nothing to do.
+        // If the engine created the mixer synchronously (legacy / tests),
+        // the nodes will be null; init synchronously as best-effort.
+        if (!this.busInput) {
+            const ctx = this.audioCtx;
             this.analyser = ctx.createAnalyser();
             this.analyser.fftSize = 1024;
-            this.gFftData = new Uint8Array(this.analyser.frequencyBinCount);
+            this.gFftData  = new Uint8Array(this.analyser.frequencyBinCount);
             this.dataArray = new Uint8Array(this.analyser.fftSize);
-        }
-
-        // busInput is the merge node strips connect to. In native mode it
-        // routes to the compressor; in worklet mode it routes to the worklet.
-        if (!this.busInput) {
-            this.busInput = ctx.createGain();
-        }
-
-        if (!isAlreadyStarted) {
-            if (this._workletActive && this.busWorklet) {
-                // Worklet path: strips → busInput → worklet → analyser → destination
-                this.busInput.connect(this.busWorklet);
-                this.busWorklet.connect(this.analyser);
-            } else {
-                // Native path: strips → busInput → compressor → EQ → master → analyser
-                this.busInput.connect(this.compressor);
-                this.compressor.connect(this.lowcutFilter);
-                this.lowcutFilter.connect(this.hicutFilter);
-                this.hicutFilter.connect(this.masterGain);
-                this.masterGain.connect(this.analyser);
-            }
-            this.analyser.connect(ctx.destination);
+            this.busInput  = ctx.createGain();
+            // Without worklets loaded synchronously we can't create the worklet node;
+            // strips will have no bus until ensureLoaded resolves. This path is only
+            // hit in tests that don't use the async factory.
         }
     }
 
     stop = () => {
         this.deleteStrips();
 
-        const nodes = [this.lfo, this.compressor, this.lowcutFilter, this.hicutFilter, this.masterGain, this.analyser];
-
-        nodes.forEach(node => {
-            if (node) {
-                try { node.disconnect(); } catch (e) {
-                    console.error(e)
-                }
-            }
-        });
-
-        if (this.lfo) {
-            try { this.lfo.stop(); } catch (e) { console.error(e)}
+        const nodes = [this.busWorklet, this.busInput, this.analyser];
+        for (const node of nodes) {
+            if (!node) continue;
+            try { node.disconnect(); } catch (e) { console.error(e); }
         }
 
-        if (this.busWorklet) {
-            try { this.busWorklet.disconnect(); } catch (e) { console.error(e) }
-        }
-        if (this.busInput) {
-            try { this.busInput.disconnect(); } catch (e) { console.error(e) }
-        }
-
-        this.lfo = null;
-        this.compressor = null;
-        this.lowcutFilter = null;
-        this.hicutFilter = null;
-        this.masterGain = null;
-        this.analyser = null;
         this.busWorklet = null;
-        this.busInput = null;
-        this._workletActive = false;
-        this.gFftData = null;
-        this.dataArray = null;
+        this.busInput   = null;
+        this.analyser   = null;
+        this.gFftData   = null;
+        this.dataArray  = null;
     }
 
-    addStrip = (name) => {
-        if (!this.strips[name]) {
-            const strip = new MfStrip(name, this.audioCtx);
-            this.strips[name] = strip;
+    // ─── Strip management ────────────────────────────────────────────────────────
 
-            if (strip.pan && this.busInput) {
-                strip.pan.connect(this.busInput);
-            }
+    /**
+     * Adds a strip asynchronously. Returns a Promise<MfStrip>.
+     */
+    addStrip = async (name) => {
+        if (this.strips[name]) return this.strips[name];
+
+        const strip = await MfStrip.create(name, this.audioCtx);
+        this.strips[name] = strip;
+
+        if (strip.pan && this.busInput) {
+            strip.pan.connect(this.busInput);
         }
+
+        return strip;
     }
 
-    getOrCreateStrip = (name) => {
+    getOrCreateStrip = async (name) => {
         if (!this.strips[name]) {
-            this.addStrip(name);
+            await this.addStrip(name);
         }
         return this.strips[name];
     }
 
     deleteStrips = () => {
-        Object.keys(this.strips).forEach(name => {
-            if (this.strips[name].delete) {
+        for (const name of Object.keys(this.strips)) {
+            if (this.strips[name]?.delete) {
                 this.strips[name].delete();
             }
             delete this.strips[name];
-        });
+        }
         this.strips = {};
     }
 
     setBpm = (bpm) => {
-        Object.values(this.strips).forEach(strip => {
+        for (const strip of Object.values(this.strips)) {
             strip.setBpm(bpm);
-        });
+        }
+    }
+
+    // ─── Master bus control ──────────────────────────────────────────────────────
+
+    setMasterBus = (options = {}) => {
+        if (!this.busWorklet) return;
+        const time  = this.audioCtx.currentTime;
+        const ramp  = 0.02;
+        const params = this.busWorklet.parameters;
+        const set = (name, val) => {
+            if (val !== undefined && params.get(name)) {
+                params.get(name).setTargetAtTime(val, time, ramp);
+            }
+        };
+
+        set('lowcut',        options.lowcut);
+        set('hicut',         options.hicut);
+        set('master',        options.master);
+        set('compThreshold', options.threshold);
+        set('compRatio',     options.ratio);
+        set('compKnee',      options.knee);
+        set('compAttack',    options.attack);
+        set('compRelease',   options.release);
+        set('compMakeup',    options.makeup);
+        if (options.bypass !== undefined && params.get('bypass')) {
+            params.get('bypass').setTargetAtTime(options.bypass ? 1 : 0, time, ramp);
+        }
     }
 }

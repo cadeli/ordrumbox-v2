@@ -7,7 +7,6 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
-import WorkletBridge from './worklets/bridge.js'
 
 export default class AudioEngine {
     static TAG = "AUDIOENGINE"
@@ -29,26 +28,51 @@ export default class AudioEngine {
         this._cachedPatternRef = null
         this._cachedLoop = 0
         this.mixer = new MfMixer(this.audioCtx)
+        this.player = null
+        this.mfSound = null
 
-        this.player = new MfPlayer({
-            audioCtx: this.audioCtx,
-            mixer: this.mixer,
-            sounds: this.sounds,
-            generatedSounds: this.generatedSounds,
-            patterns: this.patterns,
-            getSelectedPatternNum: this.getSelectedPatternNum,
-            computeFlatNotes: this.computeFlatNotes.bind(this),
-            getAutoGenerate: this.getAutoGenerate,
-            getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
-            TICK: this.TICK,
-            secondsPerBeat: this.secondsPerBeat,
+        // Worklet initialisation happens asynchronously. The player/sound are
+        // constructed AFTER the worklet mixer is ready so they hold the correct
+        // (worklet-based) mixer reference — not the legacy placeholder above.
+        this._workletReady = MfMixer.create(this.audioCtx).then(mixer => {
+            this.mixer = mixer
+
+            this.player = new MfPlayer({
+                audioCtx: this.audioCtx,
+                mixer: this.mixer,
+                sounds: this.sounds,
+                generatedSounds: this.generatedSounds,
+                patterns: this.patterns,
+                getSelectedPatternNum: this.getSelectedPatternNum,
+                computeFlatNotes: this.computeFlatNotes.bind(this),
+                getAutoGenerate: this.getAutoGenerate,
+                getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
+                TICK: this.TICK,
+                secondsPerBeat: this.secondsPerBeat,
+            })
+            this.mfSound = this.player.mfSound
+
+            appState.workletStatus = 'active'
+            playbackEvents.onWorkletStatusChange?.forEach(cb => cb('active'))
+        }).catch(err => {
+            console.warn('AudioEngine: worklet init failed, audio unavailable', err)
+            appState.workletStatus = 'unavailable'
+            playbackEvents.onWorkletStatusChange?.forEach(cb => cb('unavailable'))
         })
-        this.mfSound = this.player.mfSound
 
         this.isRunning = false
         this.unlocked = false
         this.nextStepTime = 0
     }
+
+    /**
+     * Resolves when the worklet mixer is ready to accept strips and play audio.
+     */
+    get ready() {
+        return this._workletReady
+    }
+
+    // ─── Pattern / flat-note helpers ────────────────────────────────────────────
 
     computeFlatNotes = (pattern, loop) => {
         this.flatNotes = computeFlatNotesPure(pattern, loop, this.computeNextStep, this.TICK)
@@ -59,11 +83,12 @@ export default class AudioEngine {
         const pattern = this.patterns[this.getSelectedPatternNum()]
         if (!pattern) return this.flatNotes
 
-        // Check if we can use the cache
         const patternVersion = pattern._version || 0
-        if (this._cachedPatternRef === pattern && 
-            this._cachedLoop === loop && 
-            this._cachedVersion === patternVersion) {
+        if (
+            this._cachedPatternRef === pattern &&
+            this._cachedLoop === loop &&
+            this._cachedVersion === patternVersion
+        ) {
             return this.flatNotes
         }
 
@@ -79,88 +104,12 @@ export default class AudioEngine {
         this._cachedVersion = -1
     }
 
-    /**
-     * Auto-upgrade mixer + all existing strips to use AudioWorkletNodes
-     * for saturation, filter, reverb, delay, and LFOs.
-     *
-     * Idempotent: subsequent calls are no-ops if already upgraded.
-     * Updates `appState.workletStatus` to 'active' or 'unavailable'.
-     */
-    upgradeToWorklets = async () => {
-        if (!this.mixer) return false
-        if (appState.workletStatus === 'active') return true
+    // ─── Playback ───────────────────────────────────────────────────────────────
 
-        const ctx = this.audioCtx
-        if (!WorkletBridge.isAvailable(ctx)) {
-            appState.workletStatus = 'unavailable'
-            playbackEvents.onWorkletStatusChange.forEach(cb => cb(appState.workletStatus))
-            return false
-        }
-
-        // Upgrade mixer (master bus)
-        const mixerOk = await WorkletBridge.upgradeMixer(this.mixer)
-        if (!mixerOk) {
-            appState.workletStatus = 'unavailable'
-            playbackEvents.onWorkletStatusChange.forEach(cb => cb(appState.workletStatus))
-            return false
-        }
-
-        // The mixer needs to re-start to wire busInput → busWorklet
-        // (preserves native nodes as fallbacks, but in active mode uses worklet)
-        // We don't re-start here to avoid disrupting playback; the worklet
-        // node is created and will be picked up on next start().
-
-        // Upgrade all existing strips
-        const stripNames = Object.keys(this.mixer.strips || {})
-        for (const name of stripNames) {
-            const strip = this.mixer.strips[name]
-            if (strip) {
-                await WorkletBridge.upgrade(strip)
-                await WorkletBridge.upgradeLfos(strip)
-            }
-        }
-
-        // Mark as active BEFORE installing hook so the hook sees the right status
-        appState.workletStatus = 'active'
-        appState.useWorklets = 1
-
-        // Hook: any new strips added later should also be upgraded
-        this._autoUpgradeStrips()
-
-        playbackEvents.onWorkletStatusChange.forEach(cb => cb(appState.workletStatus))
-        return true
-    }
-
-    /**
-     * Monkey-patch mixer.addStrip so that any new strip is automatically
-     * upgraded to worklet mode. Only active if appState.useWorklets is on.
-     */
-    _autoUpgradeStrips = () => {
-        if (!this.mixer || this.mixer._autoUpgradeHooked) return
-        const originalAddStrip = this.mixer.addStrip
-        const mixer = this.mixer
-        this.mixer.addStrip = (name) => {
-            try {
-                originalAddStrip(name)
-            } catch (e) {
-                return null
-            }
-            const strip = mixer.strips[name]
-            if (strip && appState.workletStatus === 'active') {
-                WorkletBridge.upgrade(strip).catch(() => {})
-                WorkletBridge.upgradeLfos(strip).catch(() => {})
-            }
-            return strip
-        }
-        this.mixer._autoUpgradeHooked = true
-    }
-
-    start = (pattern) => {
+    start = async (pattern) => {
         if (!this.unlocked) this.playSilentBuffer()
-        // Auto-upgrade to worklet mode if enabled
-        if (appState.useWorklets && appState.workletStatus !== 'active') {
-            this.upgradeToWorklets()
-        }
+        // Wait for worklet mixer to be ready before starting
+        await this._workletReady
         this.isRunning = true
         this.nextStepTime = this.audioCtx.currentTime
         this.mixer.start()
@@ -174,11 +123,12 @@ export default class AudioEngine {
         }
     }
 
-    playNotes = (tick, atTime) => {
-        if (this.isRunning) {
-            this.player.playNotes(tick, atTime)
-            this.sendMidiNotes(tick, atTime)
-        }
+    playNotes = async (tick, atTime) => {
+        if (!this.isRunning) return
+        // Player not built yet (worklet still loading) — drop this tick silently.
+        if (!this.player) return
+        await this.player.playNotes(tick, atTime)
+        this.sendMidiNotes(tick, atTime)
     }
 
     sendMidiNotes = (tick, atTime) => {
@@ -190,14 +140,13 @@ export default class AudioEngine {
 
         const nbTickForPattern = this.TICK * selPat.nbBars
         const loopStep = tick % nbTickForPattern
-        // Reuse the flatNotes map already computed by player.playNotes this tick
         const flatNotesMap = this.player.getCurrentFlatNotesMap() ?? this.getFlatNotesForCurrentPattern(this.player.loop)
-        
+
         if (!(flatNotesMap instanceof Map)) return
         const notesToPlay = flatNotesMap.get(loopStep)
         if (!notesToPlay) return
 
-        const perfNow = performance.now()
+        const perfNow  = performance.now()
         const audioNow = this.audioCtx.currentTime
         const midiTime = perfNow + (atTime - audioNow) * 1000
 
@@ -205,13 +154,12 @@ export default class AudioEngine {
             if (flatNote.track.mute === false) {
                 const midiMapping = InstrumentsManager.DATA.instruments.find(i => i.id === flatNote.track.id)?.midi?.[0]
                 if (midiMapping) {
-                    const channel = parseInt(midiMapping.ch) || 10
-                    const note = parseInt(midiMapping.key) || 60
-                    const vel = Math.floor(flatNote.velocity * 127)
+                    const channel   = parseInt(midiMapping.ch) || 10
+                    const note      = parseInt(midiMapping.key) || 60
+                    const vel       = Math.floor(flatNote.velocity * 127)
                     const startTime = midiTime + (flatNote.swingTime * 1000)
-                    
+
                     midi.sendNoteOn(channel, note, vel, startTime)
-                    
                     const durationMs = flatNote.duration || 100
                     midi.sendNoteOff(channel, note, startTime + durationMs)
                 }
@@ -219,19 +167,22 @@ export default class AudioEngine {
         })
     }
 
-    simpleBeep = (indexTrack) => {
-        this.player.simpleBeep(indexTrack)
-        
-        // Trigger MIDI for simpleBeep
+    simpleBeep = async (indexTrack) => {
+        // Wait for the worklet mixer and player to be ready before triggering.
+        await this._workletReady
+        if (!this.player) return
+
+        await this.player.simpleBeep(indexTrack)
+
         const midi = serviceRegistry.midiManager
         if (midi && midi.isReady && midi.selectedOutputId) {
-            const pat = this.patterns[this.getSelectedPatternNum()]
+            const pat   = this.patterns[this.getSelectedPatternNum()]
             const track = pat?.tracks?.[indexTrack]
             if (track) {
                 const midiMapping = InstrumentsManager.DATA.instruments.find(i => i.id === track.id)?.midi?.[0]
                 if (midiMapping) {
                     const channel = parseInt(midiMapping.ch) || 10
-                    const note = parseInt(midiMapping.key) || 60
+                    const note    = parseInt(midiMapping.key) || 60
                     midi.sendNoteOn(channel, note, 100)
                     setTimeout(() => midi.sendNoteOff(channel, note), 100)
                 }
@@ -241,65 +192,66 @@ export default class AudioEngine {
 
     playSilentBuffer = () => {
         const buffer = this.audioCtx.createBuffer(1, 1, 22050)
-        const node = this.audioCtx.createBufferSource()
-        node.buffer = buffer
+        const node   = this.audioCtx.createBufferSource()
+        node.buffer  = buffer
+        node.connect(this.audioCtx.destination)
         node.start(0)
         this.unlocked = true
     }
+
+    // ─── Strip / track control ──────────────────────────────────────────────────
 
     getAnalyserData = () => {
         if (!this.mixer?.analyser) return null
         return {
             analyser: this.mixer.analyser,
             gFftData: this.mixer.gFftData,
-            dataArray: this.mixer.dataArray
+            dataArray: this.mixer.dataArray,
         }
     }
 
-    updateStrip = (trackName, params) => {
-        const strip = this.mixer?.strips[trackName]
+    updateStrip = async (trackName, params) => {
+        const strip = await this.mixer?.getOrCreateStrip(trackName)
         if (!strip) return
-        
+
         const time = this.audioCtx.currentTime
-        
-        if (params.filterType !== undefined) strip.updateFilter(params.filterType, params.filterFreq, params.filterQ)
-        if (params.reverbType !== undefined || params.reverbAmount !== undefined || params.reverbOn !== undefined) {
+
+        if (params.filterType !== undefined)
+            strip.updateFilter(params.filterType, params.filterFreq, params.filterQ)
+
+        if (params.reverbType !== undefined || params.reverbAmount !== undefined || params.reverbOn !== undefined)
             strip.updateReverb(params.reverbType, params.reverbOn === false ? 0 : params.reverbAmount)
-        }
-        if (params.delayType !== undefined || params.delayTime !== undefined || params.delayAmount !== undefined || params.delayOn !== undefined) {
+
+        if (params.delayType !== undefined || params.delayTime !== undefined || params.delayAmount !== undefined || params.delayOn !== undefined)
             strip.updateDelay(params.delayType, params.delayTime, params.delayOn === false ? 0 : params.delayAmount)
-        }
-        if (params.saturationType !== undefined || params.saturationAmount !== undefined || params.saturationOn !== undefined) {
+
+        if (params.saturationType !== undefined || params.saturationAmount !== undefined || params.saturationOn !== undefined)
             strip.updateSaturation(params.saturationType, params.saturationOn === false ? 0 : params.saturationAmount)
-        }
-        
+
         if (params.velocity !== undefined) strip.output.gain.setTargetAtTime(params.velocity, time, 0.01)
-        if (params.pan !== undefined) strip.pan.pan.setTargetAtTime(params.pan, time, 0.01)
+        if (params.pan !== undefined)      strip.pan.pan.setTargetAtTime(params.pan, time, 0.01)
 
         if (params.mute === true) {
             strip.output.gain.setTargetAtTime(0, time, 0.01)
         } else if (params.mute === false) {
-            const velo = params.velocity ?? 1.0
-            strip.output.gain.setTargetAtTime(velo, time, 0.01)
+            strip.output.gain.setTargetAtTime(params.velocity ?? 1.0, time, 0.01)
         }
 
-        // LFOs
-        if (params.pitchLfo !== undefined) strip.updateLfo('pitchLfo', params.pitchLfo)
-        if (params.velocityLfo !== undefined) strip.updateLfo('velocityLfo', params.velocityLfo)
-        if (params.panLfo !== undefined) strip.updateLfo('panLfo', params.panLfo)
+        if (params.pitchLfo      !== undefined) strip.updateLfo('pitchLfo',      params.pitchLfo)
+        if (params.velocityLfo   !== undefined) strip.updateLfo('velocityLfo',   params.velocityLfo)
+        if (params.panLfo        !== undefined) strip.updateLfo('panLfo',        params.panLfo)
         if (params.filterFreqLfo !== undefined) strip.updateLfo('filterFreqLfo', params.filterFreqLfo)
-        if (params.filterQLfo !== undefined) strip.updateLfo('filterQLfo', params.filterQLfo)
+        if (params.filterQLfo    !== undefined) strip.updateLfo('filterQLfo',    params.filterQLfo)
     }
 
     syncTrack = (track) => {
         if (!track) return
-        // Invalidate the per-track strip param cache so next playback applies updated settings
         this.mfSound?.invalidateStripCache(track.name)
         this.updateStrip(track.name, track)
     }
 
     syncAllTracks = (pattern) => {
-        if (!pattern || !pattern.tracks) return
+        if (!pattern?.tracks) return
         Object.values(pattern.tracks).forEach(track => this.syncTrack(track))
     }
 
@@ -309,28 +261,32 @@ export default class AudioEngine {
 
     updateGeneratedSounds = (generatedSounds) => {
         this.generatedSounds = generatedSounds
+        if (!this.player) return
         this.player.updateGeneratedSounds(generatedSounds)
     }
 
-    exportOffline = async (pattern, numLoops, OfflineAudioContextClass, MfStripClass, bufferToWavFn) => {
-        const bpm = pattern.bpm
-        const nbBars = pattern.nbBars
-        const totalLoops = Math.max(1, numLoops)
-        const secondsPerBeat = 60 / bpm
-        const patternDuration = nbBars * secondsPerBeat
-        const sampleRate = this.audioCtx.sampleRate
+    // ─── Offline export ─────────────────────────────────────────────────────────
+
+    exportOffline = async (pattern, numLoops, OfflineAudioContextClass, _unusedMfStripClass, bufferToWavFn) => {
+        const bpm              = pattern.bpm
+        const nbBars           = pattern.nbBars
+        const totalLoops       = Math.max(1, numLoops)
+        const secondsPerBeat   = 60 / bpm
+        const patternDuration  = nbBars * secondsPerBeat
+        const sampleRate       = this.audioCtx.sampleRate
         const samplesPerPattern = Math.round(patternDuration * sampleRate)
-        const totalSamples = samplesPerPattern * totalLoops
+        const totalSamples     = samplesPerPattern * totalLoops
 
-        const offlineCtx = new OfflineAudioContextClass(2, totalSamples, sampleRate)
-        const offlineMixer = this._createOfflineMixer(offlineCtx)
+        const offlineCtx    = new OfflineAudioContextClass(2, totalSamples, sampleRate)
 
-        Object.values(pattern.tracks).forEach(track => {
-            offlineMixer.strips[track.name] = new MfStripClass(track.name, offlineCtx)
-            offlineMixer.strips[track.name].pan.connect(offlineMixer.compressor)
-        })
+        // Build a full worklet-based mixer for the offline context. AudioWorklet
+        // is supported in OfflineAudioContext, so the same code path works.
+        const offlineMixer  = await MfMixer.create(offlineCtx)
+        for (const track of Object.values(pattern.tracks)) {
+            await offlineMixer.getOrCreateStrip(track.name)
+        }
 
-        const offlineSound = new MfSound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds)
+        const offlineSound        = new MfSound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds)
         const truePatternDuration = samplesPerPattern / sampleRate
 
         for (let loop = 0; loop < totalLoops; loop++) {
@@ -340,8 +296,8 @@ export default class AudioEngine {
             this.flatNotes.forEach((notesAtTick, tick) => {
                 notesAtTick.forEach(flatNote => {
                     const nbTickForPattern = this.TICK * nbBars
-                    const noteTime = MfNoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
-                    const absoluteTime = loopStartTime + noteTime
+                    const noteTime         = MfNoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
+                    const absoluteTime     = loopStartTime + noteTime
                     MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
 
                     if (flatNote.track.mute === false) {
@@ -352,31 +308,7 @@ export default class AudioEngine {
         }
 
         const renderedBuffer = await offlineCtx.startRendering()
-        const blob = bufferToWavFn(renderedBuffer)
-
+        const blob           = bufferToWavFn(renderedBuffer)
         return { blob, fileName: `ordrumbox-${pattern.name.replace(/\s+/g, '_')}-${totalLoops}loops.wav` }
-    }
-
-    _createOfflineMixer = (offlineCtx) => {
-        const offlineMixer = {
-            strips: {},
-            masterGain: offlineCtx.createGain(),
-            compressor: offlineCtx.createDynamicsCompressor(),
-            analyser: offlineCtx.createAnalyser(),
-            lfo: offlineCtx.createOscillator()
-        }
-        offlineMixer.lfo.start()
-        offlineMixer.compressor.connect(offlineMixer.masterGain)
-        offlineMixer.masterGain.connect(offlineCtx.destination)
-
-        if (this.mixer?.compressor) {
-            offlineMixer.compressor.threshold.value = this.mixer.compressor.threshold.value
-            offlineMixer.compressor.ratio.value = this.mixer.compressor.ratio.value
-            offlineMixer.compressor.attack.value = this.mixer.compressor.attack.value
-            offlineMixer.compressor.release.value = this.mixer.compressor.release.value
-            offlineMixer.masterGain.gain.value = this.mixer.masterGain.gain.value
-        }
-
-        return offlineMixer
     }
 }

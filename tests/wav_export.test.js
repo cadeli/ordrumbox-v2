@@ -18,6 +18,12 @@ class MockOfflineAudioContext {
             connect: vi.fn(),
             disconnect: vi.fn()
         }
+        // AudioWorklet is supported in OfflineAudioContext; provide a no-op stub
+        // so WorkletLoader.ensureLoaded() resolves and the test can exercise the
+        // full worklet-based export path.
+        this.audioWorklet = {
+            addModule: vi.fn().mockResolvedValue(undefined)
+        }
     }
 
     createGain() { return { gain: { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }

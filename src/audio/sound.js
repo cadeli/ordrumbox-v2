@@ -28,14 +28,15 @@ export default class MfSound {
 
     init = () => { }
 
-    getStrip = (track) => {
+    getStrip = async (track) => {
         if (!track?.name || !this.mixer) return null
-        return this.mixer.getOrCreateStrip(track.name)
+        return await this.mixer.getOrCreateStrip(track.name)
     }
 
     connectToStripInput = (sourceNode, strip) => {
         if (!sourceNode || !strip) return
-        sourceNode.connect(strip.filter1)
+        const entry = strip.voicesInput ?? strip.filter1
+        sourceNode.connect(entry)
     }
 
     registerVoice = (track, voice) => {
@@ -96,25 +97,25 @@ export default class MfSound {
         }
     }
 
-    play = (flatNote, time) => {
+    play = async (flatNote, time) => {
         if (!flatNote || !this.mixer?.analyser) return
         if (flatNote.track.useSoftSynth === true) {
-            this.playGenerated(flatNote, time)
+            await this.playGenerated(flatNote, time)
         } else {
-            this.playSample(flatNote, time)
+            await this.playSample(flatNote, time)
         }
     }
 
-    playSample = (flatNote, time) => {
+    playSample = async (flatNote, time) => {
         try {
             if (!flatNote) return
-            const strip = this.mixer.getOrCreateStrip(flatNote.track.name)
+            const strip = await this.mixer.getOrCreateStrip(flatNote.track.name)
             if (!strip) return
 
             this.updateStripFromTrack(strip, flatNote.track, time)
             this.stopPreviousVoice(flatNote.track, time)
 
-            const voice = this.voiceFactory.createVoice(flatNote)
+            const voice = await this.voiceFactory.createVoice(flatNote)
             if (voice) {
                 voice.setup(flatNote, time)
                 if (flatNote.track.mono) this.registerVoice(flatNote.track, voice)
@@ -126,21 +127,21 @@ export default class MfSound {
         }
     }
 
-    playGenerated = (flatNote, time, loadFn) => {
+    playGenerated = async (flatNote, time, loadFn) => {
         try {
             if (Object.keys(this.generatedSounds).length === 0) {
                 this.loadGeneratedsounds(flatNote, time, loadFn)
                 return
             }
             if (!flatNote) return
-            const strip = this.mixer.getOrCreateStrip(flatNote.track.name)
+            const strip = await this.mixer.getOrCreateStrip(flatNote.track.name)
             if (!strip) return
 
             this.updateStripFromTrack(strip, flatNote.track, time)
             this.stopPreviousVoice(flatNote.track, time)
 
             this.voiceFactory.generatedSounds = this.generatedSounds
-            const voice = this.voiceFactory.createVoice(flatNote)
+            const voice = await this.voiceFactory.createVoice(flatNote)
             if (voice) {
                 voice.setup(flatNote, time)
                 if (flatNote.track.mono) this.registerVoice(flatNote.track, voice)

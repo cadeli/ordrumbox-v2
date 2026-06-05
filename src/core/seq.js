@@ -150,7 +150,7 @@ export default class MfSeq {
             mfAutoAssign.autoAssignTrackSounds(track)
         }
         if (this.serviceRegistry.audioEngine?.mixer) {
-            this.serviceRegistry.audioEngine.simpleBeep(indexTrack)
+            await this.serviceRegistry.audioEngine.simpleBeep(indexTrack)
         }
     }
 }

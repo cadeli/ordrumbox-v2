@@ -37,6 +37,7 @@ export default class BaseVoice {
 
     connectToStripInput(sourceNode) {
         if (!sourceNode || !this.strip) return
-        sourceNode.connect(this.strip.filter1)
+        const entry = this.strip.voicesInput ?? this.strip.filter1
+        sourceNode.connect(entry)
     }
 }

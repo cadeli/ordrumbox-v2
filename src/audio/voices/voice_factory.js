@@ -10,12 +10,9 @@ import { toFiniteNumber } from '../math.js'
  */
 function isWorkletCompatible(generatedSound) {
     if (!generatedSound) return false
-    const lfoTarget = generatedSound.lfo?.target ?? 'NOT'
-    if (lfoTarget !== 'NOT') return false
-    const slide = toFiniteNumber(generatedSound.slide, 0)
-    if (slide > 0) return false
-    const filterEnvAmt = toFiniteNumber(generatedSound.filter?.filterEnvelopeAmount, 0)
-    if (filterEnvAmt > 0) return false
+    if ((generatedSound.lfo?.target ?? 'NOT') !== 'NOT') return false
+    if (toFiniteNumber(generatedSound.slide, 0) > 0) return false
+    if (toFiniteNumber(generatedSound.filter?.filterEnvelopeAmount, 0) > 0) return false
     return true
 }
 
@@ -27,32 +24,32 @@ export default class VoiceFactory {
         this.generatedSounds = generatedSounds
     }
 
-    createVoice(flatNote) {
+    async createVoice(flatNote) {
         const track = flatNote.track
-        const strip = this.mixer?.getOrCreateStrip(track?.name)
+        const strip = await this.mixer?.getOrCreateStrip(track?.name)
         if (!strip) return null
 
         if (track.useSoftSynth === true) {
-            const soundKey = track?.synthSoundKey || "BASS1"
+            const soundKey      = track?.synthSoundKey || "BASS1"
             const generatedSound = this.generatedSounds?.[soundKey]
             if (!generatedSound) return null
 
-            // Drop-in: use worklet voice when worklets are active and the
-            // generated sound doesn't rely on features the worklet lacks.
+            // Worklet voice for compatible sounds when worklets are active;
+            // native SynthVoice for advanced features (LFO routing, glide,
+            // filter envelope) not yet in the worklet, and as fallback when
+            // worklet init is unknown / unavailable.
             if (appState.workletStatus === 'active' && isWorkletCompatible(generatedSound)) {
                 return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey)
             }
             return new SynthVoice(this.audioCtx, strip, generatedSound, this.mixer?.lfo, soundKey)
-        } else {
-            let soundBuffer = this.sounds[flatNote.soundId]?.buffer
-            if (!soundBuffer) {
-                soundBuffer = this.sounds[track.soundId]?.buffer
-            }
-            if (!soundBuffer) {
-                console.warn(`VoiceFactory: No soundBuffer for track ${track.name}`)
-                return null
-            }
-            return new SampleVoice(this.audioCtx, strip, soundBuffer)
         }
+
+        let soundBuffer = this.sounds[flatNote.soundId]?.buffer
+        if (!soundBuffer) soundBuffer = this.sounds[track.soundId]?.buffer
+        if (!soundBuffer) {
+            console.warn(`VoiceFactory: No soundBuffer for track ${track.name}`)
+            return null
+        }
+        return new SampleVoice(this.audioCtx, strip, soundBuffer)
     }
 }

@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import MfStrip, { SATURATION_TYPES, REVERB_PRESETS } from '../src/audio/strip.js'
+import WorkletLoader from '../src/audio/worklets/loader.js'
 
-// ─── Mock AudioContext ────────────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function makeParam(v = 0) {
     return {
@@ -18,277 +19,335 @@ function makeNode(extra = {}) {
     return { connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), ...extra }
 }
 
+// Build a fake AudioWorkletNode: a regular object whose `parameters` is a Map
+// of mock AudioParams. We pass this as the value returned by WorkletLoader.createNode.
+function makeWorkletNode(paramNames = []) {
+    const params = new Map()
+    for (const name of paramNames) params.set(name, makeParam())
+    return {
+        ...makeNode(),
+        parameters: params,
+    }
+}
+
+// Patch WorkletLoader so it always reports the audioCtx as supported AND
+// returns a fresh mock worklet node for each registered processor name.
+function installWorkletMocks() {
+    const nodes = {}
+    vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
+    vi.spyOn(WorkletLoader, 'ensureLoaded').mockResolvedValue(true)
+    vi.spyOn(WorkletLoader, 'createNode').mockImplementation((_ctx, name) => {
+        if (!nodes[name]) {
+            const paramNames = WORKLET_PARAM_NAMES[name] ?? []
+            nodes[name] = makeWorkletNode(paramNames)
+        }
+        return nodes[name]
+    })
+    return nodes
+}
+
+const WORKLET_PARAM_NAMES = {
+    filter:     ['cutoff', 'q', 'mode'],
+    saturation: ['drive', 'mix', 'output', 'type'],
+    reverb:     ['roomSize', 'damping', 'width', 'mix', 'preDelay'],
+    delay:      ['timeL', 'timeR', 'feedback', 'mix', 'filter', 'saturation', 'saturationType', 'mode', 'width'],
+    lfo:        ['freq', 'waveform', 'phase', 'bias'],
+}
+
 function makeAudioCtx() {
     const sampleRate = 44100
     return {
         currentTime: 1.0,
         sampleRate,
         createGain: vi.fn(() => ({ ...makeNode(), gain: makeParam(1) })),
-        createBiquadFilter: vi.fn(() => ({ ...makeNode(), type: 'lowpass', frequency: makeParam(350), Q: makeParam(1) })),
         createStereoPanner: vi.fn(() => ({ ...makeNode(), pan: makeParam(0) })),
-        createOscillator: vi.fn(() => ({ ...makeNode(), type: 'sine', frequency: makeParam(440), start: vi.fn() })),
-        createBufferSource: vi.fn(() => ({ ...makeNode(), buffer: null })),
-        createBuffer: vi.fn((ch, len, sr) => ({
-            numberOfChannels: ch, length: len, sampleRate: sr,
-            getChannelData: vi.fn(() => new Float32Array(len)),
-        })),
-        createWaveShaper: vi.fn(() => ({ ...makeNode(), curve: null, oversample: '4x' })),
-        createConvolver: vi.fn(() => ({ ...makeNode(), buffer: null })),
-        createDelay: vi.fn(() => ({ ...makeNode(), delayTime: makeParam(0.25) })),
     }
 }
 
-// ─── Tests ────────────────────────────────────────────────────────────────────
+// ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('MfStrip', () => {
-    let ctx, strip
+    let ctx, nodes
 
     beforeEach(() => {
         ctx   = makeAudioCtx()
-        strip = new MfStrip('KICK', ctx)
+        nodes = installWorkletMocks()
     })
 
-    // ── Constructor ───────────────────────────────────────────────────
+    // ── constructor (sync, worklet nodes still null) ───────────────
 
-    it('initialises with all node references set', () => {
-        expect(strip.filter1).toBeDefined()
-        expect(strip.filter2).toBeDefined()
+    it('constructor initialises native routing nodes and zero-gain LFO gains', () => {
+        const strip = new MfStrip('KICK', ctx)
+        expect(strip.name).toBe('KICK')
+        expect(strip.voicesInput).toBeDefined()
+        expect(strip.reverbSend).toBeDefined()
+        expect(strip.delaySend).toBeDefined()
+        expect(strip.reverbReturn).toBeDefined()
+        expect(strip.delayReturn).toBeDefined()
         expect(strip.output).toBeDefined()
         expect(strip.pan).toBeDefined()
-        expect(strip.delay).toBeDefined()
-        expect(strip.reverb).toBeDefined()
+        // Worklet effect nodes are not created until create()
+        expect(strip.filterNode).toBeNull()
+        expect(strip.saturationNode).toBeNull()
+        expect(strip.reverbNode).toBeNull()
+        expect(strip.delayNode).toBeNull()
+        // LFO gain nodes exist as native sources
+        expect(Object.keys(strip._lfoGains)).toEqual(
+            expect.arrayContaining(['pitchLfo', 'velocityLfo', 'panLfo', 'filterFreqLfo', 'filterQLfo'])
+        )
+        // All LFO gain gains start at 0
+        for (const g of Object.values(strip._lfoGains)) {
+            expect(g.gain.value).toBe(0)
+        }
     })
 
-    it('initialises currentFilterType as allpass', () => {
+    it('currentFilterType defaults to allpass', () => {
+        const strip = new MfStrip('KICK', ctx)
         expect(strip.currentFilterType).toBe('allpass')
     })
 
-    it('has an impulseCache Map', () => {
-        expect(strip.impulseCache).toBeInstanceOf(Map)
+    // ── async factory create() ─────────────────────────────────────
+
+    it('create() instantiates all 4 effect worklet nodes', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
+        expect(strip.filterNode).toBeDefined()
+        expect(strip.saturationNode).toBeDefined()
+        expect(strip.reverbNode).toBeDefined()
+        expect(strip.delayNode).toBeDefined()
     })
 
-    it('has all 5 LFO entries', () => {
-        expect(Object.keys(strip.lfos)).toEqual(
+    it('create() instantiates 5 LFO worklet nodes', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
+        expect(Object.keys(strip.lfoNodes)).toEqual(
             expect.arrayContaining(['pitchLfo', 'velocityLfo', 'panLfo', 'filterFreqLfo', 'filterQLfo'])
         )
     })
 
-    // ── setBpm ────────────────────────────────────────────────────────
+    // ── setBpm ──────────────────────────────────────────────────────
 
-    it('setBpm updates the bpm property', () => {
+    it('setBpm updates the bpm property', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.setBpm(140)
         expect(strip.bpm).toBe(140)
     })
 
-    // ── updateFilter ──────────────────────────────────────────────────
+    // ── updateFilter ────────────────────────────────────────────────
 
-    it('updateFilter with allpass sets both filters to allpass', () => {
+    it('updateFilter with allpass sets cutoff to 20000 and mode to 0 (LP)', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateFilter('allpass', 0.5, 0.5)
-        expect(strip.filter1.type).toBe('allpass')
-        expect(strip.filter2.type).toBe('allpass')
+        const cutoff = strip.filterNode.parameters.get('cutoff')
+        const q      = strip.filterNode.parameters.get('q')
+        const mode   = strip.filterNode.parameters.get('mode')
+        expect(cutoff.setTargetAtTime).toHaveBeenCalledWith(20000, expect.any(Number), expect.any(Number))
+        expect(q.setTargetAtTime).toHaveBeenCalledWith(0.1, expect.any(Number), expect.any(Number))
+        expect(mode.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip.currentFilterType).toBe('allpass')
     })
 
-    it('updateFilter with lowpass sets type and schedules freq/Q', () => {
+    it('updateFilter with lowpass sets cutoff, q, and mode=0', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateFilter('lowpass', 0.5, 0.3)
-        expect(strip.filter1.type).toBe('lowpass')
-        expect(strip.filter2.type).toBe('lowpass')
-        expect(strip.filter1.frequency.setTargetAtTime).toHaveBeenCalled()
-        expect(strip.filter1.Q.setTargetAtTime).toHaveBeenCalled()
+        const cutoff = strip.filterNode.parameters.get('cutoff')
+        const q      = strip.filterNode.parameters.get('q')
+        const mode   = strip.filterNode.parameters.get('mode')
+        expect(cutoff.setTargetAtTime).toHaveBeenCalled()
+        expect(q.setTargetAtTime).toHaveBeenCalled()
+        expect(mode.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip.currentFilterType).toBe('lowpass')
     })
 
-    it('updateFilter with null type defaults to allpass', () => {
+    it('updateFilter with highpass sets mode=1', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
+        strip.updateFilter('highpass', 0.5, 0.5)
+        expect(strip.filterNode.parameters.get('mode').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
+    })
+
+    it('updateFilter with bandpass sets mode=2', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
+        strip.updateFilter('bandpass', 0.5, 0.5)
+        expect(strip.filterNode.parameters.get('mode').setTargetAtTime).toHaveBeenCalledWith(2, expect.any(Number), expect.any(Number))
+    })
+
+    it('updateFilter with notch sets mode=3', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
+        strip.updateFilter('notch', 0.5, 0.5)
+        expect(strip.filterNode.parameters.get('mode').setTargetAtTime).toHaveBeenCalledWith(3, expect.any(Number), expect.any(Number))
+    })
+
+    it('updateFilter with null type defaults to allpass', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateFilter(null, 0.5, 0.5)
         expect(strip.currentFilterType).toBe('allpass')
     })
 
-    it('updateFilter applies to both filter1 and filter2', () => {
-        strip.updateFilter('highpass', 0.6, 0.4)
-        expect(strip.filter1.type).toBe('highpass')
-        expect(strip.filter2.type).toBe('highpass')
-        expect(strip.filter2.frequency.setTargetAtTime).toHaveBeenCalled()
-    })
+    // ── updateReverb ────────────────────────────────────────────────
 
-    // ── updateReverb ──────────────────────────────────────────────────
-
-    it('updateReverb with type=none sets reverbInput.gain to 0', () => {
+    it('updateReverb with type=none sets reverbSend.gain to 0 (wet/dry control)', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateReverb('none', 0)
-        expect(strip.reverbInput.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip.reverbSend.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
     })
 
-    it('updateReverb with amount=0 sets reverbInput.gain to 0', () => {
+    it('updateReverb with amount=0 sets reverbSend.gain to 0', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateReverb('room', 0)
-        expect(strip.reverbInput.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip.reverbSend.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
     })
 
-    it('updateReverb with valid type and amount > 0 sets impulse buffer', () => {
-        const validType = Object.keys(REVERB_PRESETS).find(k => k !== 'none')
-        if (!validType) return // no preset available
-        strip.updateReverb(validType, 0.5)
-        expect(strip.reverb.buffer).not.toBeNull()
-        expect(strip.reverbInput.gain.setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
+    it('updateReverb with valid type and amount>0 sets reverbSend.gain to amount', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
+        strip.updateReverb('room', 0.5)
+        expect(strip.reverbSend.gain.setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
+        // All reverb worklet params should be set
+        const p = strip.reverbNode.parameters
+        expect(p.get('roomSize').setTargetAtTime).toHaveBeenCalled()
+        expect(p.get('damping').setTargetAtTime).toHaveBeenCalled()
+        expect(p.get('width').setTargetAtTime).toHaveBeenCalled()
+        expect(p.get('preDelay').setTargetAtTime).toHaveBeenCalled()
     })
 
-    it('updateReverb caches impulse responses (second call reuses cached)', () => {
-        const validType = Object.keys(REVERB_PRESETS).find(k => k !== 'none')
-        if (!validType) return
-        strip.updateReverb(validType, 0.4)
-        strip.updateReverb(validType, 0.6)
-        // createBuffer called only once for the same preset
-        const bufferCallsBefore = ctx.createBuffer.mock.calls.length
-        strip.updateReverb(validType, 0.3)
-        expect(ctx.createBuffer.mock.calls.length).toBe(bufferCallsBefore)
-    })
-
-    it('updateReverb with unknown type falls back to none', () => {
+    it('updateReverb with unknown type falls back to none', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateReverb('NONEXISTENT', 0.5)
         expect(strip.currentReverbType).toBe('none')
     })
 
-    it('updateReverb clamps amount to [0, 1]', () => {
+    it('updateReverb clamps amount to [0, 1]', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateReverb('none', -1)
-        expect(strip.currentReverbAmount).toBe(0) // negative clamped to 0
+        expect(strip.currentReverbAmount).toBe(0)
         strip.updateReverb('none', 5)
-        expect(strip.currentReverbAmount).toBe(1) // 5 clamped to 1
+        expect(strip.currentReverbAmount).toBe(1)
     })
 
-    // ── updateDelay ───────────────────────────────────────────────────
+    it.each(['room', 'hall', 'plate', 'spring', 'gated'])('updateReverb preset %s is accepted', async (type) => {
+        const strip = await MfStrip.create('KICK', ctx)
+        strip.updateReverb(type, 0.4)
+        expect(strip.currentReverbType).toBe(type)
+    })
 
-    it('updateDelay with amount=0 disables delay', () => {
+    // ── updateDelay ─────────────────────────────────────────────────
+
+    it('updateDelay with amount=0 disables delay (send=0)', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateDelay('tape', 1, 0)
-        expect(strip.delayInput.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip.delaySend.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
     })
 
-    it('updateDelay with valid type and amount > 0 sets delayInput.gain', () => {
+    it('updateDelay with valid type and amount>0 sets send=amount and configures worklet', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateDelay('tape', 1, 0.5)
-        expect(strip.delayInput.gain.setValueAtTime).toHaveBeenCalledWith(0.5, expect.any(Number))
+        expect(strip.delaySend.gain.setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
+        const p = strip.delayNode.parameters
+        expect(p.get('timeL').setTargetAtTime).toHaveBeenCalled()
+        expect(p.get('timeR').setTargetAtTime).toHaveBeenCalled()
+        expect(p.get('mode').setTargetAtTime).toHaveBeenCalled()
+        expect(p.get('feedback').setTargetAtTime).toHaveBeenCalled()
     })
 
-    it('updateDelay with unknown type falls back to tape', () => {
+    it('updateDelay with unknown type falls back to tape', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateDelay('unknown_type', 1, 0.3)
         expect(strip.currentDelayType).toBe('tape')
     })
 
-    it('updateDelay clamps amount to [0, 1]', () => {
+    it('updateDelay clamps amount to [0, 1]', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateDelay('tape', 1, 2.0)
         expect(strip.currentDelayAmount).toBe(1)
     })
 
-    it.each(['none', 'slap', 'tape', 'pingpong'])('updateDelay type=%s does not throw', (type) => {
+    it.each(['none', 'slap', 'tape', 'pingpong'])('updateDelay type=%s does not throw', async (type) => {
+        const strip = await MfStrip.create('KICK', ctx)
         expect(() => strip.updateDelay(type, 1, 0.4)).not.toThrow()
         expect(strip.currentDelayType).toBe(type)
     })
 
-    it('updateDelay re-configures routing when type changes', () => {
-        strip.updateDelay('tape', 1, 0.4)
-        const routingBefore = strip.delayRoutingType
-        strip.updateDelay('slap', 1, 0.4)
-        expect(strip.delayRoutingType).not.toBe(routingBefore)
+    // ── updateSaturation ────────────────────────────────────────────
+
+    it('updateSaturation with amount=0 sets drive=1 (passthrough) and output=1', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
+        strip.updateSaturation('soft', 0)
+        const p = strip.saturationNode.parameters
+        expect(p.get('drive').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
+        expect(p.get('output').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
     })
 
-    it('updateDelay does not reconfigure routing when type is unchanged', () => {
-        strip.updateDelay('tape', 1, 0.4)
-        const routingBefore = strip.delayRoutingType
-        strip.updateDelay('tape', 0.5, 0.3) // same type
-        expect(strip.delayRoutingType).toBe(routingBefore)
-    })
-
-    // ── updateSaturation ──────────────────────────────────────────────
-
-    it('updateSaturation with amount=0 does not throw', () => {
-        expect(() => strip.updateSaturation('soft', 0)).not.toThrow()
-    })
-
-    it('updateSaturation with amount > 0 sets saturDrive gain', () => {
+    it('updateSaturation with amount>0 raises drive and lowers output', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateSaturation('soft', 0.5)
-        expect(strip.saturDrive.gain.setTargetAtTime).toHaveBeenCalled()
+        const p = strip.saturationNode.parameters
+        // drive = 1 + 0.5 * 6 = 4
+        expect(p.get('drive').setTargetAtTime).toHaveBeenCalledWith(4, expect.any(Number), expect.any(Number))
+        // output = 1 - 0.5 * 0.15 ≈ 0.925
+        expect(p.get('output').setTargetAtTime).toHaveBeenCalled()
     })
 
-    it.each(SATURATION_TYPES)('updateSaturation type=%s is accepted', (type) => {
-        expect(() => strip.updateSaturation(type, 0.3)).not.toThrow()
+    it.each(SATURATION_TYPES)('updateSaturation type=%s is accepted', async (type) => {
+        const strip = await MfStrip.create('KICK', ctx)
+        strip.updateSaturation(type, 0.3)
         expect(strip.currentSaturationType).toBe(type)
     })
 
-    it('updateSaturation with unknown type falls back to soft', () => {
+    it('updateSaturation with unknown type falls back to soft', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateSaturation('UNKNOWN', 0.3)
         expect(strip.currentSaturationType).toBe('soft')
     })
 
-    it('updateSaturation sets saturator.curve', () => {
-        strip.updateSaturation('soft', 0.5)
-        expect(strip.saturator.curve).not.toBeNull()
-    })
+    // ── updateLfo ───────────────────────────────────────────────────
 
-    // ── updateLfo ─────────────────────────────────────────────────────
-
-    it('updateLfo with null config sets gain to 0', () => {
+    it('updateLfo with null config zeroes the depth gain', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateLfo('pitchLfo', null)
-        expect(strip.lfos.pitchLfo.gain.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip._lfoGains.pitchLfo.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
     })
 
-    it('updateLfo with config sets frequency and depth', () => {
+    it('updateLfo with config sets worklet frequency, waveform, and depth', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.updateLfo('pitchLfo', { freq: 2, min: 0, max: 0.5 })
-        expect(strip.lfos.pitchLfo.osc.frequency.setTargetAtTime).toHaveBeenCalled()
-        expect(strip.lfos.pitchLfo.gain.gain.setTargetAtTime).toHaveBeenCalled()
+        const lfoNode = strip.lfoNodes.pitchLfo
+        expect(lfoNode.parameters.get('freq').setTargetAtTime).toHaveBeenCalled()
+        expect(lfoNode.parameters.get('waveform').setTargetAtTime).toHaveBeenCalled()
+        expect(strip._lfoGains.pitchLfo.gain.setTargetAtTime).toHaveBeenCalled()
     })
 
-    it('updateLfo with unknown key is a no-op', () => {
+    it('updateLfo with unknown key is a no-op', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         expect(() => strip.updateLfo('unknownLfo', { freq: 1, min: 0, max: 1 })).not.toThrow()
     })
 
-    it('updateLfo affects all 5 LFO channels without throwing', () => {
+    it('updateLfo affects all 5 LFO channels without throwing', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         const cfg = { freq: 1, min: 0, max: 0.5 }
-        for (const key of Object.keys(strip.lfos)) {
+        for (const key of Object.keys(strip._lfoGains)) {
             expect(() => strip.updateLfo(key, cfg)).not.toThrow()
         }
     })
 
-    // ── getImpulseResponse ────────────────────────────────────────────
+    // ── delete ──────────────────────────────────────────────────────
 
-    it('getImpulseResponse returns an AudioBuffer-like object', () => {
-        const validType = Object.keys(REVERB_PRESETS).find(k => k !== 'none') ?? 'none'
-        const buf = strip.getImpulseResponse(validType)
-        expect(buf).toBeDefined()
-    })
-
-    it('getImpulseResponse caches result for same type', () => {
-        const validType = Object.keys(REVERB_PRESETS).find(k => k !== 'none') ?? 'none'
-        const b1 = strip.getImpulseResponse(validType)
-        const b2 = strip.getImpulseResponse(validType)
-        expect(b1).toBe(b2)
-    })
-
-    // ── disconnectNode ────────────────────────────────────────────────
-
-    it('disconnectNode does not throw when node is null', () => {
-        expect(() => strip.disconnectNode(null)).not.toThrow()
-    })
-
-    it('disconnectNode does not throw when node.disconnect throws', () => {
-        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-        const badNode = { disconnect: vi.fn(() => { throw new Error('disconnected') }) }
-        expect(() => strip.disconnectNode(badNode)).not.toThrow()
-        expect(warnSpy).toHaveBeenCalled()
-        warnSpy.mockRestore()
-    })
-
-    // ── delete ────────────────────────────────────────────────────────
-
-    it('delete sets all node references to null', () => {
+    it('delete sets all node references to null', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.delete()
-        expect(strip.filter1).toBeNull()
-        expect(strip.filter2).toBeNull()
+        expect(strip.filterNode).toBeNull()
+        expect(strip.saturationNode).toBeNull()
+        expect(strip.reverbNode).toBeNull()
+        expect(strip.delayNode).toBeNull()
+        expect(strip.voicesInput).toBeNull()
+        expect(strip.reverbSend).toBeNull()
+        expect(strip.reverbReturn).toBeNull()
+        expect(strip.delaySend).toBeNull()
+        expect(strip.delayReturn).toBeNull()
         expect(strip.output).toBeNull()
-        expect(strip.reverb).toBeNull()
-        expect(strip.delay).toBeNull()
         expect(strip.pan).toBeNull()
+        expect(strip._lfoGains).toEqual({})
+        expect(strip.lfoNodes).toEqual({})
     })
 
-    it('delete clears the impulseCache', () => {
-        strip.delete()
-        expect(strip.impulseCache).toBeNull()
-    })
-
-    it('delete does not throw even when called twice', () => {
+    it('delete does not throw even when called twice', async () => {
+        const strip = await MfStrip.create('KICK', ctx)
         strip.delete()
         expect(() => strip.delete()).not.toThrow()
     })

@@ -84,10 +84,13 @@ function createMockAudioCtx() {
 
 function createMockStrip() {
     return {
-        filter1: { ...makeNode(), frequency: makeParam(), Q: makeParam() },
-        lfos: {
-            pitchLfo: { gain: { ...makeNode(), gain: makeParam() } },
-            panLfo: { gain: { ...makeNode(), gain: makeParam() } },
+        // Worklet-based strip exposes voicesInput as the entry point and uses
+        // _lfoGains (native gain nodes driven by worklet LFO nodes) for
+        // per-track modulation sources.
+        voicesInput: makeNode(),
+        _lfoGains: {
+            pitchLfo: { ...makeNode(), gain: makeParam() },
+            panLfo:   { ...makeNode(), gain: makeParam() },
         },
     }
 }
@@ -191,10 +194,10 @@ describe('BaseVoice', () => {
         expect(() => voice.cleanup()).not.toThrow()
     })
 
-    it('connectToStripInput connects sourceNode to strip.filter1', () => {
+    it('connectToStripInput connects sourceNode to strip.voicesInput', () => {
         const source = makeNode()
         voice.connectToStripInput(source)
-        expect(source.connect).toHaveBeenCalledWith(strip.filter1)
+        expect(source.connect).toHaveBeenCalledWith(strip.voicesInput)
     })
 
     it('connectToStripInput does nothing when sourceNode is null', () => {
@@ -306,11 +309,11 @@ describe('SampleVoice', () => {
             const flatNote = makeFlatNote()
             flatNote.track.panLfo = { freq: 1, depth: 0.3 }
             voice.setup(flatNote, 1.0)
-            expect(strip.lfos.panLfo.gain.connect).toHaveBeenCalled()
+            expect(strip._lfoGains.panLfo.connect).toHaveBeenCalled()
         })
 
-        it('setup does not connect pitchLfo if strip.lfos.pitchLfo is absent', () => {
-            strip.lfos.pitchLfo = null
+        it('setup does not connect pitchLfo if strip._lfoGains.pitchLfo is absent', () => {
+            strip._lfoGains.pitchLfo = null
             const flatNote = makeFlatNote()
             flatNote.track.pitchLfo = { freq: 2 }
             expect(() => voice.setup(flatNote, 1.0)).not.toThrow()
@@ -585,61 +588,61 @@ describe('VoiceFactory', () => {
         factory = new VoiceFactory(ctx, mixer, sounds, generatedSounds)
     })
 
-    it('returns SampleVoice for a sample track', () => {
+    it('returns SampleVoice for a sample track', async () => {
         const flatNote = makeFlatNote()
-        const voice = factory.createVoice(flatNote)
+        const voice = await factory.createVoice(flatNote)
         expect(voice).toBeInstanceOf(SampleVoice)
     })
 
-    it('returns SynthVoice for a soft synth track', () => {
+    it('returns SynthVoice for a soft synth track', async () => {
         const flatNote = makeFlatNote()
         flatNote.track.useSoftSynth = true
         flatNote.track.synthSoundKey = 'BASS1'
-        const voice = factory.createVoice(flatNote)
+        const voice = await factory.createVoice(flatNote)
         expect(voice).toBeInstanceOf(SynthVoice)
     })
 
-    it('returns null when mixer returns no strip', () => {
+    it('returns null when mixer returns no strip', async () => {
         mixer.getOrCreateStrip.mockReturnValue(null)
-        const voice = factory.createVoice(makeFlatNote())
+        const voice = await factory.createVoice(makeFlatNote())
         expect(voice).toBeNull()
     })
 
-    it('returns null for SampleVoice when no soundBuffer is found', () => {
+    it('returns null for SampleVoice when no soundBuffer is found', async () => {
         const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
         const flatNote = makeFlatNote({ soundId: 'missing_sound' })
         flatNote.track.soundId = 'also_missing'
-        const voice = factory.createVoice(flatNote)
+        const voice = await factory.createVoice(flatNote)
         expect(voice).toBeNull()
         warnSpy.mockRestore()
     })
 
-    it('falls back to track.soundId when flatNote.soundId has no buffer', () => {
+    it('falls back to track.soundId when flatNote.soundId has no buffer', async () => {
         sounds['snd_snare'] = { buffer: ctx.createBuffer(1, 512, 44100) }
         const flatNote = makeFlatNote({ soundId: 'missing_sound' })
         flatNote.track.soundId = 'snd_snare'
-        const voice = factory.createVoice(flatNote)
+        const voice = await factory.createVoice(flatNote)
         expect(voice).toBeInstanceOf(SampleVoice)
     })
 
-    it('returns null for SynthVoice when generatedSound key is missing', () => {
+    it('returns null for SynthVoice when generatedSound key is missing', async () => {
         const flatNote = makeFlatNote()
         flatNote.track.useSoftSynth = true
         flatNote.track.synthSoundKey = 'NONEXISTENT_KEY'
-        const voice = factory.createVoice(flatNote)
+        const voice = await factory.createVoice(flatNote)
         expect(voice).toBeNull()
     })
 
-    it('uses synthSoundKey = BASS1 as default when not specified', () => {
+    it('uses synthSoundKey = BASS1 as default when not specified', async () => {
         const flatNote = makeFlatNote()
         flatNote.track.useSoftSynth = true
         // no synthSoundKey set → defaults to 'BASS1'
-        const voice = factory.createVoice(flatNote)
+        const voice = await factory.createVoice(flatNote)
         expect(voice).toBeInstanceOf(SynthVoice)
     })
 
-    it('calls mixer.getOrCreateStrip with the track name', () => {
-        factory.createVoice(makeFlatNote())
+    it('calls mixer.getOrCreateStrip with the track name', async () => {
+        await factory.createVoice(makeFlatNote())
         expect(mixer.getOrCreateStrip).toHaveBeenCalledWith('KICK')
     })
 
@@ -652,57 +655,57 @@ describe('VoiceFactory', () => {
         return flatNote
     }
 
-    it('uses native SynthVoice when workletStatus is unknown', () => {
+    it('uses native SynthVoice when workletStatus is unknown', async () => {
         appState.workletStatus = 'unknown'
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         expect(voice).toBeInstanceOf(SynthVoice)
         expect(voice).not.toBeInstanceOf(WorkletSynthVoice)
     })
 
-    it('uses WorkletSynthVoice when workletStatus is active and config is simple', () => {
+    it('uses WorkletSynthVoice when workletStatus is active and config is simple', async () => {
         appState.workletStatus = 'active'
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         expect(voice).toBeInstanceOf(WorkletSynthVoice)
     })
 
-    it('falls back to native SynthVoice when LFO target is set', () => {
+    it('falls back to native SynthVoice when LFO target is set', async () => {
         appState.workletStatus = 'active'
         generatedSounds.BASS1.lfo.target = 'VCO1'
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         expect(voice).toBeInstanceOf(SynthVoice)
     })
 
-    it('falls back to native SynthVoice when LFO target is FLT', () => {
+    it('falls back to native SynthVoice when LFO target is FLT', async () => {
         appState.workletStatus = 'active'
         generatedSounds.BASS1.lfo.target = 'FLT'
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         expect(voice).toBeInstanceOf(SynthVoice)
     })
 
-    it('falls back to native SynthVoice when slide > 0 (no glide support in worklet)', () => {
+    it('falls back to native SynthVoice when slide > 0 (no glide support in worklet)', async () => {
         appState.workletStatus = 'active'
         generatedSounds.BASS1.slide = 50
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         expect(voice).toBeInstanceOf(SynthVoice)
     })
 
-    it('falls back to native SynthVoice when filter envelope amount > 0', () => {
+    it('falls back to native SynthVoice when filter envelope amount > 0', async () => {
         appState.workletStatus = 'active'
         generatedSounds.BASS1.filter.filterEnvelopeAmount = 0.5
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         expect(voice).toBeInstanceOf(SynthVoice)
     })
 
-    it('uses native SynthVoice when workletStatus is unavailable', () => {
+    it('uses native SynthVoice when workletStatus is unavailable', async () => {
         appState.workletStatus = 'unavailable'
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         expect(voice).toBeInstanceOf(SynthVoice)
     })
 
-    it('WorkletSynthVoice.setup() sends an update via WorkletBridge.updateVoice', () => {
+    it('WorkletSynthVoice.setup() sends an update via WorkletBridge.updateVoice', async () => {
         appState.workletStatus = 'active'
         WorkletBridge.updateVoice.mockClear()
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         expect(WorkletBridge.updateVoice).toHaveBeenCalled()
         const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
@@ -712,29 +715,29 @@ describe('VoiceFactory', () => {
         expect(updateArg.filterType).toBe(0)  // lowpass
     })
 
-    it('WorkletSynthVoice.start() sends a trigger via WorkletBridge.triggerVoice', () => {
+    it('WorkletSynthVoice.start() sends a trigger via WorkletBridge.triggerVoice', async () => {
         appState.workletStatus = 'active'
         WorkletBridge.triggerVoice.mockClear()
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         voice.start(1.5)
         expect(WorkletBridge.triggerVoice).toHaveBeenCalledWith(voice.workletNode, 1.5)
     })
 
-    it('WorkletSynthVoice.stop() sends a release via WorkletBridge.releaseVoice', () => {
+    it('WorkletSynthVoice.stop() sends a release via WorkletBridge.releaseVoice', async () => {
         appState.workletStatus = 'active'
         WorkletBridge.releaseVoice.mockClear()
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         voice.start(0)
         voice.stop(2.0)
         expect(WorkletBridge.releaseVoice).toHaveBeenCalledWith(voice.workletNode, 2.0)
     })
 
-    it('WorkletSynthVoice.stop() is idempotent', () => {
+    it('WorkletSynthVoice.stop() is idempotent', async () => {
         appState.workletStatus = 'active'
         WorkletBridge.releaseVoice.mockClear()
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         voice.start(0)
         voice.stop(1.0)
@@ -742,35 +745,35 @@ describe('VoiceFactory', () => {
         expect(WorkletBridge.releaseVoice).toHaveBeenCalledTimes(1)
     })
 
-    it('WorkletSynthVoice maps wave names to int waveform ids', () => {
+    it('WorkletSynthVoice maps wave names to int waveform ids', async () => {
         appState.workletStatus = 'active'
         WorkletBridge.updateVoice.mockClear()
         generatedSounds.BASS1.vco1.wave = 'square'
         generatedSounds.BASS1.vco2 = { wave: 'triangle', gain: 0.5, detune: 0, octave: 0 }
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
         expect(updateArg.osc1Wave).toBe(3)   // square
         expect(updateArg.osc2Wave).toBe(1)   // triangle
     })
 
-    it('WorkletSynthVoice maps filter type names to int ids', () => {
+    it('WorkletSynthVoice maps filter type names to int ids', async () => {
         appState.workletStatus = 'active'
         WorkletBridge.updateVoice.mockClear()
         generatedSounds.BASS1.filter.type = 'bandpass'
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
         expect(updateArg.filterType).toBe(2)  // bandpass
     })
 
-    it('WorkletSynthVoice computes velocity = noteVelo * masterVolume * accentMultiplier', () => {
+    it('WorkletSynthVoice computes velocity = noteVelo * masterVolume * accentMultiplier', async () => {
         appState.workletStatus = 'active'
         WorkletBridge.updateVoice.mockClear()
         generatedSounds.BASS1.masterVolume = 0.5
         const note = makeSoftSynthFlatNote()
         note.note.velocity = 0.8
-        const voice = factory.createVoice(note)
+        const voice = await factory.createVoice(note)
         voice.setup(note, 0)
         const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
         // noteVelo = 0.8 * 0.25 = 0.2; masterVolume = 0.5; velocity > 0.5 not accented (0.2)
@@ -778,21 +781,21 @@ describe('VoiceFactory', () => {
         expect(updateArg.velocity).toBeCloseTo(0.1, 5)
     })
 
-    it('WorkletSynthVoice enforces minimum attack/release (prevents audio discontinuities)', () => {
+    it('WorkletSynthVoice enforces minimum attack/release (prevents audio discontinuities)', async () => {
         appState.workletStatus = 'active'
         WorkletBridge.updateVoice.mockClear()
         generatedSounds.BASS1.enveloppe.attack = 0.0001
         generatedSounds.BASS1.enveloppe.release = 0.0001
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         const updateArg = WorkletBridge.updateVoice.mock.calls.at(-1)[1]
         expect(updateArg.attack).toBeGreaterThanOrEqual(0.003)
         expect(updateArg.release).toBeGreaterThanOrEqual(0.008)
     })
 
-    it('WorkletSynthVoice.cleanup() does NOT throw and disconnects the worklet node via parent', () => {
+    it('WorkletSynthVoice.cleanup() does NOT throw and disconnects the worklet node via parent', async () => {
         appState.workletStatus = 'active'
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         const node = voice.workletNode
         expect(() => voice.cleanup()).not.toThrow()
@@ -801,9 +804,9 @@ describe('VoiceFactory', () => {
         expect(voice.nodes.length).toBe(0)  // parent clears the array
     })
 
-    it('WorkletSynthVoice registers the worklet node in BaseVoice.nodes (parent cleanup handles it)', () => {
+    it('WorkletSynthVoice registers the worklet node in BaseVoice.nodes (parent cleanup handles it)', async () => {
         appState.workletStatus = 'active'
-        const voice = factory.createVoice(makeSoftSynthFlatNote())
+        const voice = await factory.createVoice(makeSoftSynthFlatNote())
         voice.setup(makeSoftSynthFlatNote(), 0)
         expect(voice.nodes).toContain(voice.workletNode)
     })
