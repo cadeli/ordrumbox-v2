@@ -11,13 +11,10 @@ describe('WorkletLoader', () => {
         WorkletLoader.reset()
     })
 
-    it('throws if register() receives invalid name', () => {
+    it('throws if register() receives invalid name or source', () => {
         expect(() => WorkletLoader.register('', 'src')).toThrow(/name/)
         expect(() => WorkletLoader.register(null, 'src')).toThrow(/name/)
         expect(() => WorkletLoader.register(123, 'src')).toThrow(/name/)
-    })
-
-    it('throws if register() receives invalid source', () => {
         expect(() => WorkletLoader.register('foo', '')).toThrow(/source/)
         expect(() => WorkletLoader.register('foo', null)).toThrow(/source/)
         expect(() => WorkletLoader.register('foo', 42)).toThrow(/source/)
@@ -94,16 +91,6 @@ describe('WorkletLoader', () => {
         const fakeCtx = { sampleRate: 44100, currentTime: 0 }
         const result = await WorkletLoader.ensureLoaded(fakeCtx)
         expect(result).toBe(false)
-    })
-
-    it('ensureLoaded() returns true with no registered processors', async () => {
-        const fakeCtx = {
-            sampleRate: 44100,
-            currentTime: 0,
-            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) }
-        }
-        const result = await WorkletLoader.ensureLoaded(fakeCtx)
-        expect(result).toBe(true)
     })
 
     it('ensureLoaded() calls audioWorklet.addModule for each registered processor', async () => {

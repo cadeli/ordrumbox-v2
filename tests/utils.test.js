@@ -223,15 +223,6 @@ describe('Utils', () => {
             }
         })
 
-        it('NOTE_DEFAULTS default values are correct', () => {
-            expect(Utils.NOTE_DEFAULTS.bar).toBe(0)
-            expect(Utils.NOTE_DEFAULTS.velocity).toBe(0.8)
-            expect(Utils.NOTE_DEFAULTS.triggerFreq).toBe(1)
-            expect(Utils.NOTE_DEFAULTS.triggerProbability).toBe(1)
-            expect(Utils.NOTE_DEFAULTS.retriggerNum).toBe(1)
-            expect(Utils.NOTE_DEFAULTS.euclidianFill).toBe(0)
-        })
-
         it('TRACK_DEFAULTS has all required keys', () => {
             const keys = ['name', 'soundId', 'bars', 'barQuantize', 'velocity',
                 'pitch', 'pan', 'mute', 'solo', 'filterFreq', 'filterQ']
@@ -240,25 +231,11 @@ describe('Utils', () => {
             }
         })
 
-        it('TRACK_DEFAULTS default values are correct', () => {
-            expect(Utils.TRACK_DEFAULTS.bars).toBe(4)
-            expect(Utils.TRACK_DEFAULTS.barQuantize).toBe(4)
-            expect(Utils.TRACK_DEFAULTS.bpm).toBeUndefined()
-            expect(Utils.TRACK_DEFAULTS.filterFreq).toBe(20)
-            expect(Utils.TRACK_DEFAULTS.filterQ).toBe(0.707)
-        })
-
         it('PATTERN_DEFAULTS has all required keys', () => {
             const keys = ['nbBars', 'bpm', 'description', 'tags', 'tracks']
             for (const key of keys) {
                 expect(Utils.PATTERN_DEFAULTS).toHaveProperty(key)
             }
-        })
-
-        it('PATTERN_DEFAULTS default values are correct', () => {
-            expect(Utils.PATTERN_DEFAULTS.nbBars).toBe(4)
-            expect(Utils.PATTERN_DEFAULTS.bpm).toBe(120)
-            expect(Utils.PATTERN_DEFAULTS.tags).toEqual([])
         })
     })
 

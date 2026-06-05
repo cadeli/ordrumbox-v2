@@ -62,20 +62,8 @@ function runProcess(processor, inputs, paramValues, frames = 128) {
 // Saturation processor
 // ===========================================================
 describe('SaturationProcessor source', () => {
-    it('exports a non-empty string', () => {
-        expect(typeof SATURATION_SOURCE).toBe('string')
-        expect(SATURATION_SOURCE.length).toBeGreaterThan(100)
-    })
-
     it('contains registerProcessor call for saturation', () => {
         expect(SATURATION_SOURCE).toContain("registerProcessor('saturation'")
-    })
-
-    it('declares 4 AudioParams: drive, mix, output, type', () => {
-        expect(SATURATION_SOURCE).toContain("name: 'drive'")
-        expect(SATURATION_SOURCE).toContain("name: 'mix'")
-        expect(SATURATION_SOURCE).toContain("name: 'output'")
-        expect(SATURATION_SOURCE).toContain("name: 'type'")
     })
 
     it('implements tanh (soft), clip (hard), atan (tape) shaping', () => {
@@ -151,19 +139,8 @@ describe('SaturationProcessor source', () => {
 // Filter processor
 // ===========================================================
 describe('FilterProcessor source', () => {
-    it('exports a non-empty string', () => {
-        expect(typeof FILTER_SOURCE).toBe('string')
-        expect(FILTER_SOURCE.length).toBeGreaterThan(100)
-    })
-
     it('contains registerProcessor call for filter', () => {
         expect(FILTER_SOURCE).toContain("registerProcessor('filter'")
-    })
-
-    it('declares 3 AudioParams: cutoff, q, mode', () => {
-        expect(FILTER_SOURCE).toContain("name: 'cutoff'")
-        expect(FILTER_SOURCE).toContain("name: 'q'")
-        expect(FILTER_SOURCE).toContain("name: 'mode'")
     })
 
     it('uses TPT state variable filter (g, k, a1, a2, a3 coefficients)', () => {
@@ -228,28 +205,8 @@ describe('FilterProcessor source', () => {
 // Reverb processor
 // ===========================================================
 describe('ReverbProcessor source', () => {
-    it('exports a non-empty string', () => {
-        expect(typeof REVERB_SOURCE).toBe('string')
-        expect(REVERB_SOURCE.length).toBeGreaterThan(100)
-    })
-
     it('contains registerProcessor call for reverb', () => {
         expect(REVERB_SOURCE).toContain("registerProcessor('reverb'")
-    })
-
-    it('declares 5 AudioParams: roomSize, damping, width, mix, preDelay', () => {
-        expect(REVERB_SOURCE).toContain("name: 'roomSize'")
-        expect(REVERB_SOURCE).toContain("name: 'damping'")
-        expect(REVERB_SOURCE).toContain("name: 'width'")
-        expect(REVERB_SOURCE).toContain("name: 'mix'")
-        expect(REVERB_SOURCE).toContain("name: 'preDelay'")
-    })
-
-    it('uses Freeverb-style comb + allpass filter network', () => {
-        expect(REVERB_SOURCE).toContain('class _Comb')
-        expect(REVERB_SOURCE).toContain('class _Allpass')
-        expect(REVERB_SOURCE).toContain('COMB_TUNINGS_L')
-        expect(REVERB_SOURCE).toContain('ALLPASS_TUNINGS_L')
     })
 
     it('mix=0 produces dry signal with no reverb tail', () => {

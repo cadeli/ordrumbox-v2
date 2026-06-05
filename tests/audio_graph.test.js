@@ -1,50 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import MfStrip from '../src/audio/strip.js'
 import MfSound from '../src/audio/sound.js'
-import WorkletLoader from '../src/audio/worklets/loader.js'
 import { MfGlobals } from '../src/core/globals.js'
 import * as AudioMath from '../src/audio/math.js'
+import { makeParam, makeNode, installWorkletMocks } from './helpers/worklet_mocks.js'
 
-// ─── Worklet + AudioContext mocks ───────────────────────────────────────────
-
-function makeParam(v = 0) {
-    return {
-        value: v,
-        setValueAtTime: vi.fn(),
-        setTargetAtTime: vi.fn(),
-        linearRampToValueAtTime: vi.fn(),
-        cancelScheduledValues: vi.fn(),
-        connect: vi.fn(),
-    }
-}
-
-function makeNode(extra = {}) {
-    return { connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), ...extra }
-}
-
-const STRIP_PARAM_NAMES = [
-    'cutoff', 'q', 'filterMode',
-    'satType', 'satDrive', 'satOut', 'satMix',
-    'revRoom', 'revDamp', 'revWidth', 'revMix',
-    'dlyTimeL', 'dlyTimeR', 'dlyFb', 'dlyMix', 'dlyMode',
-    'volume', 'pan',
-    'lfoPitchFreq', 'lfoPitchWave', 'lfoPitchDepth',
-    'lfoVeloFreq', 'lfoVeloWave', 'lfoVeloDepth',
-    'lfoPanFreq', 'lfoPanWave', 'lfoPanDepth',
-    'lfoCutFreq', 'lfoCutWave', 'lfoCutDepth',
-    'lfoQFreq', 'lfoQWave', 'lfoQDepth'
-];
-
-function installWorkletMocks() {
-    vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
-    vi.spyOn(WorkletLoader, 'ensureLoaded').mockResolvedValue(true)
-    vi.spyOn(WorkletLoader, 'createNode').mockImplementation((_ctx, name) => {
-        const paramNames = name === 'strip' ? STRIP_PARAM_NAMES : []
-        const params = new Map()
-        for (const n of paramNames) params.set(n, makeParam())
-        return { ...makeNode(), parameters: params }
-    })
-}
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function makeAudioCtx() {
     return {

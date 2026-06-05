@@ -1,59 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import MfStrip, { SATURATION_TYPES, REVERB_PRESETS } from '../src/audio/strip.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
+import { makeParam, makeNode, installWorkletMocks } from './helpers/worklet_mocks.js'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
-function makeParam(v = 0) {
-    return {
-        value: v,
-        setValueAtTime: vi.fn(),
-        setTargetAtTime: vi.fn(),
-        linearRampToValueAtTime: vi.fn(),
-        cancelScheduledValues: vi.fn(),
-        connect: vi.fn(),
-    }
-}
-
-function makeNode(extra = {}) {
-    return { connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), ...extra }
-}
-
-function makeWorkletNode(paramNames = []) {
-    const params = new Map()
-    for (const name of paramNames) params.set(name, makeParam())
-    return {
-        ...makeNode(),
-        parameters: params,
-    }
-}
-
-function installWorkletMocks() {
-    const nodes = {}
-    vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
-    vi.spyOn(WorkletLoader, 'ensureLoaded').mockResolvedValue(true)
-    vi.spyOn(WorkletLoader, 'createNode').mockImplementation((_ctx, name) => {
-        if (!nodes[name]) {
-            const paramNames = STRIP_PARAM_NAMES;
-            nodes[name] = makeWorkletNode(paramNames)
-        }
-        return nodes[name]
-    })
-    return nodes
-}
-
-const STRIP_PARAM_NAMES = [
-    'cutoff', 'q', 'filterMode',
-    'satType', 'satDrive', 'satOut', 'satMix',
-    'revRoom', 'revDamp', 'revWidth', 'revMix',
-    'dlyTimeL', 'dlyTimeR', 'dlyFb', 'dlyMix', 'dlyMode',
-    'volume', 'pan',
-    'lfoPitchFreq', 'lfoPitchWave', 'lfoPitchDepth',
-    'lfoVeloFreq', 'lfoVeloWave', 'lfoVeloDepth',
-    'lfoPanFreq', 'lfoPanWave', 'lfoPanDepth',
-    'lfoCutFreq', 'lfoCutWave', 'lfoCutDepth',
-    'lfoQFreq', 'lfoQWave', 'lfoQDepth'
-];
 
 function makeAudioCtx() {
     return {
@@ -94,18 +44,15 @@ describe('MfStrip (Unified Worklet)', () => {
         expect(strip.pan.pan).toBe(strip.stripNode.parameters.get('pan'))
     })
 
-    it('updateFilter sets cutoff and filterMode', async () => {
+    it('updateFilter sets cutoff, filterMode and allpass-high-cutoff', async () => {
         const strip = await MfStrip.create('KICK', ctx)
-        strip.updateFilter('highpass', 0.5, 0.5)
         const params = strip.stripNode.parameters
+        strip.updateFilter('highpass', 0.5, 0.5)
         expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalled()
         expect(params.get('filterMode').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
-    })
 
-    it('updateFilter allpass sets high cutoff', async () => {
-        const strip = await MfStrip.create('KICK', ctx)
         strip.updateFilter('allpass')
-        expect(strip.stripNode.parameters.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(20000, expect.any(Number), expect.any(Number))
+        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(20000, expect.any(Number), expect.any(Number))
     })
 
     it('updateSaturation sets satMix and satDrive', async () => {

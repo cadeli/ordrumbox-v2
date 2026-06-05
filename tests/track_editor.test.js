@@ -31,18 +31,22 @@ describe('TrackEditor sound panel', () => {
         expect(editor._getPreferredSampleForInstrument('KICK').url).toBe('real/kick.wav')
     })
 
-    it('renders selected-kit samples first in the sample dropdown', () => {
+    function renderSoundPanelHtml(track) {
         const editor = new TrackEditor()
-        editor._track = {
+        editor._track = track
+        vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = editor._renderSoundPanel()
+        return wrapper
+    }
+
+    it('renders selected-kit samples first in the sample dropdown', () => {
+        const wrapper = renderSoundPanelHtml({
             name: 'KICK',
             soundId: 'real/kick.wav',
             useAutoAssignSound: false,
             useSoftSynth: false
-        }
-        vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
-
-        const wrapper = document.createElement('div')
-        wrapper.innerHTML = editor._renderSoundPanel()
+        })
         const sampleOptions = [...wrapper.querySelectorAll('select[data-sound="sample"] option')]
 
         expect(sampleOptions.map(option => option.value)).toEqual([
@@ -54,17 +58,12 @@ describe('TrackEditor sound panel', () => {
     })
 
     it('keeps the instrument dropdown aligned with the current sound key', () => {
-        const editor = new TrackEditor()
-        editor._track = {
+        const wrapper = renderSoundPanelHtml({
             name: 'OLDNAME',
             soundId: 'real/kick.wav',
             useAutoAssignSound: false,
             useSoftSynth: false
-        }
-        vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
-
-        const wrapper = document.createElement('div')
-        wrapper.innerHTML = editor._renderSoundPanel()
+        })
         const instrumentSelect = wrapper.querySelector('select[data-sound="instrument"]')
 
         expect(instrumentSelect.value).toBe('KICK')
