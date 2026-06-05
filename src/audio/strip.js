@@ -65,10 +65,6 @@ export default class MfStrip {
 
         // Gain nodes that remain native (lightweight — no DSP, just routing)
         this.voicesInput    = audioCtx.createGain();  // entry point for voices
-        this.reverbSend     = audioCtx.createGain();  // wet send level to reverb worklet
-        this.delaySend      = audioCtx.createGain();  // wet send level to delay worklet
-        this.reverbReturn   = audioCtx.createGain();  // reverb wet return
-        this.delayReturn    = audioCtx.createGain();  // delay wet return
         this.output         = audioCtx.createGain();  // final track output
         this.pan            = audioCtx.createStereoPanner();
 
@@ -123,26 +119,16 @@ export default class MfStrip {
         this.filterNode.connect(this.saturationNode);
         this.saturationNode.connect(this.output);
 
-        // filter → reverb send → reverb worklet → reverb return → output
-        this.filterNode.connect(this.reverbSend);
-        this.reverbSend.connect(this.reverbNode);
-        this.reverbNode.connect(this.reverbReturn);
-        this.reverbReturn.connect(this.output);
+        // filter → reverb worklet → output (worklet handles dry/wet via its 'mix' param)
+        this.filterNode.connect(this.reverbNode);
+        this.reverbNode.connect(this.output);
 
-        // filter → delay send → delay worklet → delay return → output
-        this.filterNode.connect(this.delaySend);
-        this.delaySend.connect(this.delayNode);
-        this.delayNode.connect(this.delayReturn);
-        this.delayReturn.connect(this.output);
+        // filter → delay worklet → output (worklet handles dry/wet via its 'mix' param)
+        this.filterNode.connect(this.delayNode);
+        this.delayNode.connect(this.output);
 
         // output → pan (connects to busInput in mixer)
         this.output.connect(this.pan);
-
-        // Default send levels
-        this.reverbSend.gain.value = 0;
-        this.delaySend.gain.value  = 0;
-        this.reverbReturn.gain.value = 1;
-        this.delayReturn.gain.value  = 1;
     }
 
     _initLfoNodes() {
@@ -238,10 +224,9 @@ export default class MfStrip {
         _param(this.reverbNode, 'damping')?.setTargetAtTime(p.damp, time, RAMP_TIME);
         _param(this.reverbNode, 'width')?.setTargetAtTime(p.width, time, RAMP_TIME);
         _param(this.reverbNode, 'preDelay')?.setTargetAtTime(p.pre, time, RAMP_TIME);
-        _param(this.reverbNode, 'mix')?.setTargetAtTime(1, time, RAMP_TIME);
 
-        // Send level controls wet/dry; worklet mix stays at 1 (full wet signal)
-        this.reverbSend.gain.setTargetAtTime(wet, time, RAMP_TIME);
+        // Worklet's 'mix' AudioParam controls the wet level directly.
+        _param(this.reverbNode, 'mix')?.setTargetAtTime(wet, time, RAMP_TIME);
     }
 
     updateDelay = (type = 'tape', timeValue = 1, amount = 0) => {
@@ -255,7 +240,6 @@ export default class MfStrip {
 
         if (normalizedType === 'none' || normalizedAmount <= 0) {
             _param(this.delayNode, 'mix')?.setTargetAtTime(0, time, RAMP_TIME);
-            this.delaySend.gain.setTargetAtTime(0, time, RAMP_TIME);
             return;
         }
 
@@ -268,12 +252,12 @@ export default class MfStrip {
         _param(this.delayNode, 'timeL')?.setTargetAtTime(tL, time, RAMP_TIME);
         _param(this.delayNode, 'timeR')?.setTargetAtTime(tR, time, RAMP_TIME);
         _param(this.delayNode, 'mode')?.setTargetAtTime(mode, time, RAMP_TIME);
-        _param(this.delayNode, 'mix')?.setTargetAtTime(1, time, RAMP_TIME);
+
+        // Worklet's 'mix' AudioParam controls the wet level directly.
+        _param(this.delayNode, 'mix')?.setTargetAtTime(normalizedAmount, time, RAMP_TIME);
         _param(this.delayNode, 'feedback')?.setTargetAtTime(feedback, time, RAMP_TIME);
         _param(this.delayNode, 'filter')?.setTargetAtTime(5000, time, RAMP_TIME);
         _param(this.delayNode, 'saturation')?.setTargetAtTime(0.1, time, RAMP_TIME);
-
-        this.delaySend.gain.setTargetAtTime(normalizedAmount, time, RAMP_TIME);
     }
 
     updateSaturation = (type = 'soft', amount = 0) => {
@@ -297,8 +281,7 @@ export default class MfStrip {
     delete = () => {
         const nodes = [
             this.voicesInput, this.filterNode, this.saturationNode,
-            this.reverbNode, this.reverbSend, this.reverbReturn,
-            this.delayNode, this.delaySend, this.delayReturn,
+            this.reverbNode, this.delayNode,
             this.output, this.pan,
             ...Object.values(this._lfoGains),
             ...Object.values(this.lfoNodes),
@@ -310,8 +293,7 @@ export default class MfStrip {
         }
 
         this.filterNode = this.saturationNode = this.reverbNode = this.delayNode = null;
-        this.voicesInput = this.reverbSend = this.reverbReturn = null;
-        this.delaySend = this.delayReturn = this.output = this.pan = null;
+        this.voicesInput = this.output = this.pan = null;
         this._lfoGains = {};
         this.lfoNodes  = {};
     }

@@ -80,10 +80,6 @@ describe('MfStrip', () => {
         const strip = new MfStrip('KICK', ctx)
         expect(strip.name).toBe('KICK')
         expect(strip.voicesInput).toBeDefined()
-        expect(strip.reverbSend).toBeDefined()
-        expect(strip.delaySend).toBeDefined()
-        expect(strip.reverbReturn).toBeDefined()
-        expect(strip.delayReturn).toBeDefined()
         expect(strip.output).toBeDefined()
         expect(strip.pan).toBeDefined()
         // Worklet effect nodes are not created until create()
@@ -183,22 +179,22 @@ describe('MfStrip', () => {
 
     // ── updateReverb ────────────────────────────────────────────────
 
-    it('updateReverb with type=none sets reverbSend.gain to 0 (wet/dry control)', async () => {
+    it('updateReverb with type=none sets reverb mix to 0 (worklet handles dry/wet)', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         strip.updateReverb('none', 0)
-        expect(strip.reverbSend.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip.reverbNode.parameters.get('mix').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
     })
 
-    it('updateReverb with amount=0 sets reverbSend.gain to 0', async () => {
+    it('updateReverb with amount=0 sets reverb mix to 0', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         strip.updateReverb('room', 0)
-        expect(strip.reverbSend.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip.reverbNode.parameters.get('mix').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
     })
 
-    it('updateReverb with valid type and amount>0 sets reverbSend.gain to amount', async () => {
+    it('updateReverb with valid type and amount>0 sets reverb mix to amount', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         strip.updateReverb('room', 0.5)
-        expect(strip.reverbSend.gain.setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
+        expect(strip.reverbNode.parameters.get('mix').setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
         // All reverb worklet params should be set
         const p = strip.reverbNode.parameters
         expect(p.get('roomSize').setTargetAtTime).toHaveBeenCalled()
@@ -229,16 +225,16 @@ describe('MfStrip', () => {
 
     // ── updateDelay ─────────────────────────────────────────────────
 
-    it('updateDelay with amount=0 disables delay (send=0)', async () => {
+    it('updateDelay with amount=0 disables delay (mix=0)', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         strip.updateDelay('tape', 1, 0)
-        expect(strip.delaySend.gain.setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip.delayNode.parameters.get('mix').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
     })
 
-    it('updateDelay with valid type and amount>0 sets send=amount and configures worklet', async () => {
+    it('updateDelay with valid type and amount>0 sets mix=amount and configures worklet', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         strip.updateDelay('tape', 1, 0.5)
-        expect(strip.delaySend.gain.setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
+        expect(strip.delayNode.parameters.get('mix').setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
         const p = strip.delayNode.parameters
         expect(p.get('timeL').setTargetAtTime).toHaveBeenCalled()
         expect(p.get('timeR').setTargetAtTime).toHaveBeenCalled()
@@ -336,10 +332,6 @@ describe('MfStrip', () => {
         expect(strip.reverbNode).toBeNull()
         expect(strip.delayNode).toBeNull()
         expect(strip.voicesInput).toBeNull()
-        expect(strip.reverbSend).toBeNull()
-        expect(strip.reverbReturn).toBeNull()
-        expect(strip.delaySend).toBeNull()
-        expect(strip.delayReturn).toBeNull()
         expect(strip.output).toBeNull()
         expect(strip.pan).toBeNull()
         expect(strip._lfoGains).toEqual({})
