@@ -323,6 +323,18 @@
     display: flex; align-items: center; gap: 8px; min-height: 20px;
     padding: 2px 4px; border-radius: 4px; cursor: pointer;
 }
+/* Track editor: highlight the row currently selected for LFO editing, and
+   mark rows that have an LFO attached so the user sees which controls are
+   modulated. */
+#te-panel .ne-row.selected {
+    outline: 1px solid #00fff5;
+    box-shadow: inset 0 0 0 1px rgba(0, 255, 245, 0.4);
+    background: rgba(0, 255, 245, 0.06);
+}
+#te-panel .ne-row.has-lfo {
+    box-shadow: inset 2px 0 0 #00fff5;
+    padding-left: 6px;
+}
 #ne-panel .ne-row label, #te-panel .ne-row label, #tools-panel .ne-row label, #output-panel .ne-row label, #about-panel .ne-row label {
     min-width: 60px; color: #aaa; font-size: 11px;
 }

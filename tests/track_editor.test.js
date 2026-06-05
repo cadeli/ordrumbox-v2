@@ -142,3 +142,35 @@ describe('TrackEditor onPatternChange', () => {
         expect(syncSpy).not.toHaveBeenCalled()
     })
 })
+
+describe('TrackEditor LFO row highlight', () => {
+    it('marks the selected prop row with the "selected" class', () => {
+        const editor = new TrackEditor()
+        editor.init()
+        editor._track = { name: 'KICK', velocity: 0.5, pitchLfo: null }
+        editor._selectedPropKey = 'velocity'
+        editor.sync()
+
+        const selectedRow = editor.container.querySelector('.ne-row.selected')
+        expect(selectedRow).not.toBeNull()
+        expect(selectedRow.dataset.prop).toBe('velocity')
+    })
+
+    it('marks rows whose prop has an LFO configured with the "has-lfo" class', () => {
+        const editor = new TrackEditor()
+        editor.init()
+        editor._track = {
+            name: 'KICK',
+            velocity: 0.5,
+            pitchLfo: { freq: 1, min: 0, max: 0.5 },
+            pan: 0,
+        }
+        editor._selectedPropKey = null
+        editor.sync()
+
+        const lfoRows = editor.container.querySelectorAll('.ne-row.has-lfo')
+        // pitch is in the Levels group with lfo='pitchLfo' — it should be marked
+        const lfoProp = [...lfoRows].find(r => r.dataset.prop === 'pitch')
+        expect(lfoProp).toBeDefined()
+    })
+})
