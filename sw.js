@@ -19,7 +19,13 @@ self.addEventListener('install', (event) => {
       return cache.addAll(PRE_CACHE_ASSETS);
     })
   );
-  self.skipWaiting();
+});
+
+// Listener pour forcer la mise à jour quand l'utilisateur clique sur le bouton
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Activation : Nettoyage des anciens caches

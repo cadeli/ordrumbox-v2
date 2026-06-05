@@ -379,16 +379,111 @@ async function exportCurrentTrackSound() {
     }
 }
 
-// Service Worker Registration for PWA
+// Service Worker Registration for PWA with Update Notification
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         const swPath = window.location.pathname.includes('/dist/') ? './sw.js' : './sw.js';
+        
         navigator.serviceWorker.register(swPath)
             .then(registration => {
                 console.log('orDrumbox SW registered with scope:', registration.scope);
+
+                // Check for updates periodically (every hour)
+                setInterval(() => {
+                    registration.update();
+                }, 1000 * 60 * 60);
+
+                // Handle the case where an update is already waiting
+                if (registration.waiting) {
+                    showUpdateNotification(registration.waiting);
+                }
+
+                // Listen for new updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateNotification(newWorker);
+                        }
+                    });
+                });
             })
             .catch(error => {
                 console.error('orDrumbox SW registration failed:', error);
             });
     });
+
+    // Reload the page when the new Service Worker takes control
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            window.location.reload();
+            refreshing = true;
+        }
+    });
+}
+
+function showUpdateNotification(worker) {
+    // Detect if we are in PWA mode or standalone
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    
+    const div = document.createElement('div');
+    div.id = 'pwa-update-toast';
+    div.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #2c3e50;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        z-index: 10000;
+        font-family: sans-serif;
+        border: 1px solid #34495e;
+        animation: slideIn 0.3s ease-out;
+    `;
+
+    const label = isPWA ? 'Nouvelle version disponible !' : 'Mise à jour disponible !';
+    
+    div.innerHTML = `
+        <span style="font-weight: 500;">${label}</span>
+        <button id="pwa-update-btn" style="
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        ">Installer</button>
+        <button id="pwa-close-btn" style="
+            background: transparent;
+            color: #bdc3c7;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+        ">&times;</button>
+        <style>
+            @keyframes slideIn {
+                from { transform: translateY(100px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            #pwa-update-btn:hover { background: #2980b9; }
+        </style>
+    `;
+
+    document.body.appendChild(div);
+
+    div.querySelector('#pwa-update-btn').onclick = () => {
+        worker.postMessage('SKIP_WAITING');
+    };
+
+    div.querySelector('#pwa-close-btn').onclick = () => {
+        div.remove();
+    };
 }
