@@ -95,17 +95,17 @@ describe('TrackEditor filterFreq display', () => {
         appState.trackEditorVisibility = savedVisibility
     })
 
-    it('20 Hz is rendered as "00020"', () => {
-        expect(getFreqDisplay({ name: 'KICK', filterFreq: 0 })).toBe('00020')
+    it('20 Hz is rendered as "20Hz"', () => {
+        expect(getFreqDisplay({ name: 'KICK', filterFreq: 0 })).toBe('20Hz')
     })
 
-    it('mid frequency (~632 Hz) is rendered with leading zeros', () => {
+    it('mid frequency (~632 Hz) is rendered as "632Hz"', () => {
         // normalized 0.5 → 632 Hz (per Utils.normalizedTrackFilterFreqToHz)
-        expect(getFreqDisplay({ name: 'KICK', filterFreq: 0.5 })).toBe('00632')
+        expect(getFreqDisplay({ name: 'KICK', filterFreq: 0.5 })).toBe('632Hz')
     })
 
-    it('20 kHz is rendered as "20000"', () => {
-        expect(getFreqDisplay({ name: 'KICK', filterFreq: 1 })).toBe('20000')
+    it('20 kHz is rendered as "20.0k"', () => {
+        expect(getFreqDisplay({ name: 'KICK', filterFreq: 1 })).toBe('20.0k')
     })
 
     it('_onSlider formats the display in Hz while dragging', () => {
@@ -117,7 +117,7 @@ describe('TrackEditor filterFreq display', () => {
         input.value = '0.5'
         editor._onSlider(input)
         expect(editor._track.filterFreq).toBe(0.5)
-        expect(input.nextElementSibling.textContent).toBe('00632')
+        expect(input.nextElementSibling.textContent).toBe('632Hz')
     })
 
     it('_updateLfoSliders shows the effective (base + lfo) value in Hz', () => {
@@ -140,8 +140,8 @@ describe('TrackEditor filterFreq display', () => {
             LfoUpdater.computeLfoValue = beforeLfoValue
         }
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
-        // 0.5 + 0.3 = 0.8 → Utils.normalizedTrackFilterFreqToHz(0.8) = floor(20 * 1000^0.8) = 5023
-        expect(valEl.textContent).toBe('05023')
+        // 0.5 + 0.3 = 0.8 → Utils.normalizedTrackFilterFreqToHz(0.8) = floor(20 * 1000^0.8) = 5011.87...
+        expect(valEl.textContent).toBe('5.0k')
     })
 })
 

@@ -278,8 +278,16 @@ static TAG = "UTILS"
     static pitchToSemiTone = (fpitch) => (fpitch - 1) * 12;
     static semiToneToPitch = (semiTone) => (semiTone / 12) + 1;
 
-    static normalizedTrackFilterFreqToHz = (value) => Math.floor(FILTER_FREQ_MIN * Math.pow(1000, Number(value) || 0))
+    static normalizedTrackFilterFreqToHz = (value) => {
+        const v = Number(value) || 0
+        return Math.floor(FILTER_FREQ_MIN * Math.pow(1000, v))
+    }
+    static hzToNormalizedTrackFilterFreq = (hz) => {
+        const h = Number(hz) || FILTER_FREQ_MIN
+        return Math.log10(h / FILTER_FREQ_MIN) / 3
+    }
     static normalizedTrackFilterQToValue = (value) => ((Number(value) || 0) * 18) + 0.707
+    static valueToNormalizedTrackFilterQ = (q) => (Number(q) - 0.707) / 18
     static normalizedSynthFilterFreqToHz = (value) => Math.floor((2000 * (Number(value) || 0)) + 50)
     static normalizedSynthFilterQToValue = (value) => (20 * (Number(value) || 0)) + 1
 

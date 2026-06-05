@@ -10,7 +10,10 @@ import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { bindCloseButton, bindVisibilityToggles, escapeHtml, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
-const fmtFreq = v => String(Math.round(Utils.normalizedTrackFilterFreqToHz(v))).padStart(5, '0')
+const fmtFreq = v => {
+    const hz = Utils.normalizedTrackFilterFreqToHz(v)
+    return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : Math.round(hz) + 'Hz'
+}
 const fmtVal = (key, v) => key === 'filterFreq' ? fmtFreq(v) : fmt(v)
 
 const GROUPS = [
@@ -230,7 +233,7 @@ export default class TrackEditor {
                     })
                     bodyHtml += `</select>`
                 } else {
-                    const displayVal = p.key === 'filterFreq' ? fmtFreq(val ?? p.min) : fmt(val ?? p.min)
+                    const displayVal = fmtVal(p.key, val ?? p.min)
                     bodyHtml += `<label>${p.label}</label>
                              <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
                                 value="${val ?? p.min}" data-key="${p.key}">
@@ -805,6 +808,7 @@ export default class TrackEditor {
         input.nextElementSibling.textContent = fmtVal(key, val)
         playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
     }
+
 
     _onSelect(sel) {
         if (!this._track) return
