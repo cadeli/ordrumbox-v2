@@ -56,6 +56,11 @@ export default class MfSeq {
                 this.serviceRegistry.audioEngine.syncAllTracks(selPattern)
             }
         })
+        this.playbackEvents.onTrackParamChange.push((track) => {
+            if (this.serviceRegistry.audioEngine) {
+                this.serviceRegistry.audioEngine.syncTrack(track)
+            }
+        })
     }
 
     playSilentBuffer = () => {

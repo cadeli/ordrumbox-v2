@@ -6,6 +6,7 @@ export const playbackEvents = {
     onBpmChange: [],
     onNoteSelect: [],
     onTrackSelect: [],
+    onTrackParamChange: [],
     onToolsToggle: [],
     onOutputToggle: [],
     onAboutToggle: [],

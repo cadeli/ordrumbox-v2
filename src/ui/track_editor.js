@@ -59,6 +59,7 @@ export default class TrackEditor {
         this._trackIdx = -1
         this._selectedPropKey = null
         this._rafId = null
+        this._isDragging = false
         this.synthEditor = new SynthEditor(this)
     }
 
@@ -103,6 +104,7 @@ export default class TrackEditor {
             if (this._track) this.sync()
         })
         playbackEvents.onPatternChange.push(() => {
+            if (this._isDragging) return
             // The current track reference is from the previous pattern. Re-bind
             // to the corresponding track (same name) in the new pattern, or
             // hide the editor if the track no longer exists.
@@ -530,6 +532,10 @@ export default class TrackEditor {
 
         this.container.querySelectorAll('input[type=range][data-key]').forEach(input => {
             input.addEventListener('input', () => this._onSlider(input))
+            input.addEventListener('change', () => {
+                this._isDragging = false
+                playbackEvents.onPatternChange.forEach(fn => fn())
+            })
         })
         this.container.querySelectorAll('select[data-key]').forEach(sel => {
             sel.addEventListener('change', () => this._onSelect(sel))
@@ -549,6 +555,10 @@ export default class TrackEditor {
         if (lfoPanel) {
             lfoPanel.querySelectorAll('input[type=range]').forEach(input => {
                 input.addEventListener('input', () => this._onLfoSlider(input))
+                input.addEventListener('change', () => {
+                    this._isDragging = false
+                    playbackEvents.onPatternChange.forEach(fn => fn())
+                })
             })
             lfoPanel.querySelectorAll('select').forEach(sel => {
                 sel.addEventListener('change', () => this._onLfoSelect(sel))
@@ -559,8 +569,10 @@ export default class TrackEditor {
         // Loop panel events
         this.container.querySelectorAll('input[data-loop]').forEach(input => {
             input.addEventListener('input', () => this._onLoopSlider(input))
-            // Re-sync fully on change to ensure structural consistency
-            input.addEventListener('change', () => this.sync())
+            input.addEventListener('change', () => {
+                this._isDragging = false
+                playbackEvents.onPatternChange.forEach(fn => fn())
+            })
         })
 
         // FX toggle LEDs
@@ -668,13 +680,14 @@ export default class TrackEditor {
     }
 
     _onLfoSlider(input) {
+        this._isDragging = true
         const prop = this._findProp(this._selectedPropKey)
         const lfo = this._track[prop.lfo]
         if (!lfo) return
         const key = input.dataset.lfoKey
         lfo[key] = parseFloat(input.value)
         input.nextElementSibling.textContent = fmt(input.value)
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
     }
 
     _onLfoSelect(sel) {
@@ -682,7 +695,7 @@ export default class TrackEditor {
         const lfo = this._track[prop.lfo]
         if (!lfo) return
         lfo.type = sel.value
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
     }
 
     hide() {
@@ -699,6 +712,7 @@ export default class TrackEditor {
 
     _onLoopSlider(input) {
         if (!this._track) return
+        this._isDragging = true
         const key = input.dataset.loop
         const val = key === 'swingAmount' ? parseFloat(input.value) : parseInt(input.value)
         const oldBarQuantize = this._track.barQuantize
@@ -754,16 +768,21 @@ export default class TrackEditor {
             }
         }
         
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        if (key === 'swingAmount') {
+            playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+        } else {
+            playbackEvents.onPatternChange.forEach(fn => fn())
+        }
     }
 
     _onSlider(input) {
         if (!this._track) return
+        this._isDragging = true
         const key = input.dataset.key
         const val = parseFloat(input.value)
         this._track[key] = val
         input.nextElementSibling.textContent = fmt(val)
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
     }
 
     _onSelect(sel) {
@@ -772,7 +791,7 @@ export default class TrackEditor {
         let val = sel.value
         if (key === 'delayTime') val = parseFloat(val)
         this._track[key] = val
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
     }
 
     _onToggle(btn) {
@@ -781,7 +800,7 @@ export default class TrackEditor {
         this._track[key] = !this._track[key]
         btn.textContent = this._track[key] ? 'ON' : 'OFF'
         btn.classList.toggle('active', this._track[key])
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
     }
 
     esc(str) {
