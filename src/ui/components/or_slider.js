@@ -48,6 +48,7 @@ export class OrSlider {
      * @param {boolean}  [cfg.hasLfo]       Ajoute la classe CSS has-lfo
      * @param {boolean}  [cfg.noCursor]     Ajoute la classe CSS no-cursor
      * @param {string}   [cfg.dataAttr]     Nom de l'attribut data-* (défaut: 'data-key')
+     * @param {string}   [cfg.extraClass]   Classe CSS additionnelle ajoutée à la row
      * @param {Function} [cfg.onChange]     (valDenorm, key) => void
      */
     constructor(cfg) {
@@ -63,6 +64,7 @@ export class OrSlider {
         this._hasLfo     = cfg.hasLfo    ?? false
         this._noCursor   = cfg.noCursor  ?? false
         this._dataAttr   = cfg.dataAttr  ?? 'data-key'
+        this._extraClass = cfg.extraClass ?? ''
         this._onChange   = cfg.onChange  ?? null
 
         // Valeur courante dans l'espace dénormalisé
@@ -99,6 +101,7 @@ export class OrSlider {
         const classes = ['ne-row']
         if (this._hasLfo)   classes.push('has-lfo')
         if (this._noCursor) classes.push('no-cursor')
+        if (this._extraClass) classes.push(this._extraClass)
         return classes.join(' ')
     }
 

@@ -4,6 +4,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
 import { bindPanelToggles } from './panel_helpers.js'
+import { OrSlider } from './components/or_slider.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
 
 const SYNTH_GROUP_DEFAULTS = {
@@ -65,6 +66,7 @@ export default class SynthEditor {
         this._loading = false
         this._loadFailed = false
         this._groupVisibility = {}
+        this._sliders = []
     }
 
     createDOM() {
@@ -121,6 +123,11 @@ export default class SynthEditor {
     _renderEditor() {
         if (!this._draft || !this._editKey) return
 
+        // Destroy any previous OrSlider instances (cleans up event listeners)
+        this._sliders.forEach(s => s.destroy())
+        this._sliders = []
+        const sliderConfigs = []
+
         const groupNames = this._getOrderedGroupNames()
         this._ensureGroupVisibility(groupNames)
         let html = `<div class="ss-header">
@@ -154,10 +161,17 @@ export default class SynthEditor {
             fields.forEach(({ path, key, val }) => {
                 const meta = SYNTH_SLIDER_META[path.join('.')]
                 const label = meta?.label ?? key
-                html += `<div class="ss-row">
-                    <label>${this._esc(label)}</label>
-                    ${this._renderControl(path, key, val)}
-                </div>`
+                if (typeof val === 'number') {
+                    // OrSlider renders its own label inside its row — do not
+                    // wrap with an outer .ss-row + <label>.
+                    sliderConfigs.push({ path, val })
+                    html += this._renderControl(path, key, val)
+                } else {
+                    html += `<div class="ss-row">
+                        <label>${this._esc(label)}</label>
+                        ${this._renderControl(path, key, val)}
+                    </div>`
+                }
             })
 
             html += `</div></div>`
@@ -165,7 +179,41 @@ export default class SynthEditor {
 
         html += '</div>'
         this.panel.innerHTML = html
+        this._mountSliders(sliderConfigs)
         this._bindEvents()
+        this._drawWaveform()
+    }
+
+    _mountSliders(configs) {
+        configs.forEach(({ path, val }) => {
+            const pathStr = path.join('.')
+            const placeholder = this.panel.querySelector(`[data-synth-slider="${this._esc(pathStr)}"]`)
+            if (!placeholder) return
+
+            const meta = SYNTH_SLIDER_META[pathStr] ?? {
+                min: 0, max: Math.max(1, Math.ceil(val || 1)),
+                step: Number.isInteger(val) ? 1 : 0.001,
+            }
+
+            const slider = new OrSlider({
+                key:        pathStr,
+                label:      meta.label ?? path[path.length - 1],
+                min:        meta.min,
+                max:        meta.max,
+                step:       meta.step,
+                value:      val,
+                format:     fmt,
+                dataAttr:   'data-synth-path',
+                extraClass: 'ss-row',
+                onChange:   v => this._onSliderChange(pathStr, v),
+            })
+            this._sliders.push(slider)
+            placeholder.replaceWith(slider.createElement())
+        })
+    }
+
+    _onSliderChange(pathStr, value) {
+        this._setValue(pathStr, Number.isNaN(value) ? 0 : value)
         this._drawWaveform()
     }
 
@@ -230,11 +278,8 @@ export default class SynthEditor {
         }
 
         if (typeof val === 'number') {
-            const meta = SYNTH_SLIDER_META[path.join('.')] ?? { min: 0, max: Math.max(1, Math.ceil(val || 1)), step: Number.isInteger(val) ? 1 : 0.001 }
-            return `<div class="ss-control">
-                <input type="range" min="${meta.min}" max="${meta.max}" step="${meta.step}" value="${val}" data-synth-path="${pathAttr}">
-                <span class="ne-val">${fmt(val)}</span>`
-                + `</div>`
+            // Placeholder for OrSlider — replaced after innerHTML is set
+            return `<div class="ss-control" data-synth-slider="${pathAttr}"></div>`
         }
 
         return `<input type="text" value="${this._esc(val ?? '')}" data-synth-path="${pathAttr}">`
@@ -259,7 +304,10 @@ export default class SynthEditor {
             return Array.from(this.panel.querySelectorAll('[data-synth-group]'))
                 .find(group => group.dataset.synthGroup === key)
         })
+        // Range inputs are managed by OrSlider — they fire onChange via the
+        // slider's own listener. Only bind non-range inputs (e.g. text) here.
         this.panel.querySelectorAll('input[data-synth-path]').forEach(input => {
+            if (input.type === 'range') return
             input.addEventListener('input', () => this._onInput(input))
         })
         this.panel.querySelectorAll('select[data-synth-path]').forEach(select => {
