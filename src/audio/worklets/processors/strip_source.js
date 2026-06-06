@@ -49,9 +49,10 @@ class _DelayLine {
 
 // Shared LFO Waveform Math (matches math.js)
 const getLfoWaveformValue = (phase, wave) => {
-    const p = phase - Math.floor(phase);
+    // Shift by -0.25 to start at minimum (-1) when phase=0
+    const p = (phase - 0.25) - Math.floor(phase - 0.25);
     if (wave < 0.5) return Math.sin(2 * Math.PI * p); // Sine
-    if (wave < 1.5) return p < 0.25 ? p * 4 : (p < 0.75 ? 2 - p * 4 : p * 4 - 4); // Tri
+    if (wave < 1.5) return p < 0.25 ? p * 4 - 1 : (p < 0.75 ? 3 - p * 4 : p * 4 - 5); // Tri
     if (wave < 2.5) return p * 2 - 1; // Saw
     if (wave < 3.5) return p < 0.5 ? 1 : -1; // Square
     return 0; // S&H handled statefully
