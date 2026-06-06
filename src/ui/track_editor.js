@@ -121,9 +121,17 @@ export default class TrackEditor {
                 this.hide()
                 return
             }
-            this._track = pattern.tracks[newIdx]
-            this._trackIdx = newIdx
-            this.sync()
+            // Only re-render when the track reference actually changed (pattern
+            // switch). For slider value changes the track is the same object,
+            // the in-memory value is already updated by _onSlider, and the DOM
+            // value/text is already updated by the input/change handlers — a
+            // full sync() here would destroy the focused slider element and
+            // steal keyboard focus from the user.
+            if (pattern.tracks[newIdx] !== this._track) {
+                this._track = pattern.tracks[newIdx]
+                this._trackIdx = newIdx
+                this.sync()
+            }
         })
     }
 

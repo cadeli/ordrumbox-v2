@@ -174,6 +174,18 @@ describe('Slider keyboard navigation (Arrow Left/Right)', () => {
         press(max, 'ArrowLeft')
         expect(parseFloat(max.value)).toBeCloseTo(0.99, 5)
     })
+
+    it('slider keeps focus after an arrow key changes the value', () => {
+        const s = makeSlider({ min: 0, max: 100, step: 1, value: 50 })
+        s.focus()
+        expect(document.activeElement).toBe(s)
+        press(s, 'ArrowRight')
+        expect(document.activeElement).toBe(s)
+        expect(s.value).toBe('51')
+        press(s, 'ArrowRight')
+        expect(document.activeElement).toBe(s)
+        expect(s.value).toBe('52')
+    })
 })
 
 /**
