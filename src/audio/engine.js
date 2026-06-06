@@ -114,21 +114,27 @@ export default class AudioEngine {
         this.nextStepTime = this.audioCtx.currentTime
         this.mixer.start()
 
-        // Re-apply every track's effect settings to its strip. After a
-        // stop+start cycle the strips are wiped; on a pattern change the
-        // new pattern's tracks may have different reverb/delay/filter
-        // values than the previous one. Without this, the strips keep the
-        // previous pattern's effect state (or the worklet default of
-        // no-effect) until each track's first note triggers
-        // updateStripFromTrack — leaving tracks with stale effects for
-        // the first beat or more.
+        // Reset and ramp transport clock
+        if (this.mixer.transportClock) {
+            const time = this.audioCtx.currentTime
+            this.mixer.transportClock.offset.cancelScheduledValues(time)
+            this.mixer.transportClock.offset.setValueAtTime(0, time)
+            // Ramp for 1 hour to keep it linear
+            this.mixer.transportClock.offset.linearRampToValueAtTime(3600, time + 3600)
+        }
+
+        // Re-apply every track's effect settings to its strip.
         if (pattern?.tracks) {
-            this.syncAllTracks(pattern)
+            await this.syncAllTracks(pattern)
         }
     }
 
     stop = () => {
         this.isRunning = false
+        if (this.mixer.transportClock) {
+            this.mixer.transportClock.offset.cancelScheduledValues(this.audioCtx.currentTime)
+            this.mixer.transportClock.offset.setValueAtTime(0, this.audioCtx.currentTime)
+        }
         this.mixer.stop()
         if (serviceRegistry.midiManager) {
             serviceRegistry.midiManager.sendAllNotesOff()
@@ -256,15 +262,17 @@ export default class AudioEngine {
         if (params.filterQLfo    !== undefined) strip.updateLfo('filterQLfo',    params.filterQLfo)
     }
 
-    syncTrack = (track) => {
+    syncTrack = async (track) => {
         if (!track) return
         this.mfSound?.invalidateStripCache(track.name)
-        this.updateStrip(track.name, track)
+        await this.updateStrip(track.name, track)
     }
 
-    syncAllTracks = (pattern) => {
+    syncAllTracks = async (pattern) => {
         if (!pattern?.tracks) return
-        Object.values(pattern.tracks).forEach(track => this.syncTrack(track))
+        for (const track of Object.values(pattern.tracks)) {
+            await this.syncTrack(track)
+        }
     }
 
     setBpm = (bpm) => {
@@ -294,11 +302,22 @@ export default class AudioEngine {
         // Build a full worklet-based mixer for the offline context. AudioWorklet
         // is supported in OfflineAudioContext, so the same code path works.
         const offlineMixer  = await MfMixer.create(offlineCtx)
+        const offlineSound  = new MfSound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds)
+
         for (const track of Object.values(pattern.tracks)) {
-            await offlineMixer.getOrCreateStrip(track.name)
+            const strip = await offlineMixer.getOrCreateStrip(track.name)
+            if (strip) {
+                offlineSound.updateStripFromTrack(strip, track, 0)
+            }
         }
 
-        const offlineSound        = new MfSound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds)
+        // Initialize and ramp transport clock for offline render
+        if (offlineMixer.transportClock) {
+            offlineMixer.transportClock.offset.setValueAtTime(0, 0)
+            offlineMixer.transportClock.offset.linearRampToValueAtTime(patternDuration * totalLoops, patternDuration * totalLoops)
+            offlineMixer.transportClock.start(0)
+        }
+
         const truePatternDuration = samplesPerPattern / sampleRate
 
         for (let loop = 0; loop < totalLoops; loop++) {

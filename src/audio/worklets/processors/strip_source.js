@@ -3,6 +3,9 @@
  * 
  * Combines Filter (TPT SVF), Saturation, Reverb (Freeverb), 
  * Delay (with feedback FX), and 5 internal LFOs into a single DSP block.
+ * 
+ * Synchronisation: uses a central 'transportTime' AudioParam for 
+ * sample-accurate LFO modulation synced with the sequencer.
  */
 
 const STRIP_PROCESSOR_SOURCE = `
@@ -43,19 +46,26 @@ class _DelayLine {
     }
     write(v) { this.buf[this.idx] = v; this.idx = (this.idx + 1) % this.buf.length; }
 }
-class _Lfo {
-    constructor() { this.phase = 0; this.val = 0; }
-    process(f, wave, sr) {
-        this.phase += f / sr;
-        if (this.phase >= 1) {
-            this.phase -= 1;
-            if (wave > 3.5) this.val = Math.random() * 2 - 1; // S&H
+
+// Shared LFO Waveform Math (matches math.js)
+const getLfoWaveformValue = (phase, wave) => {
+    const p = phase - Math.floor(phase);
+    if (wave < 0.5) return Math.sin(2 * Math.PI * p); // Sine
+    if (wave < 1.5) return p < 0.25 ? p * 4 : (p < 0.75 ? 2 - p * 4 : p * 4 - 4); // Tri
+    if (wave < 2.5) return p * 2 - 1; // Saw
+    if (wave < 3.5) return p < 0.5 ? 1 : -1; // Square
+    return 0; // S&H handled statefully
+};
+
+class _SH {
+    constructor() { this.lastCycle = -1; this.val = 0; }
+    process(time, freqMultiplier, bpm) {
+        const period = freqMultiplier * 16 * (60 / bpm);
+        const cycle = Math.floor(time / period);
+        if (cycle !== this.lastCycle) {
+            this.val = Math.random() * 2 - 1;
+            this.lastCycle = cycle;
         }
-        const p = this.phase;
-        if (wave < 0.5) return Math.sin(2 * Math.PI * p); // Sine
-        if (wave < 1.5) return p < 0.25 ? p * 4 : (p < 0.75 ? 2 - p * 4 : p * 4 - 4); // Tri
-        if (wave < 2.5) return p * 2 - 1; // Saw
-        if (wave < 3.5) return p < 0.5 ? 1 : -1; // Square
         return this.val;
     }
 }
@@ -86,13 +96,16 @@ class StripProcessor extends AudioWorkletProcessor {
             // Master/Pan
             { name: 'volume', defaultValue: 1, minValue: 0, maxValue: 2 },
             { name: 'pan',    defaultValue: 0, minValue: -1, maxValue: 1 },
-            // LFO mix (0 = base value, 1 = LFO replaces). Formula: final = (1-mix)*base + mix*lfo
+            // Transport / Tempo
+            { name: 'transportTime', defaultValue: 0 },
+            { name: 'bpm',           defaultValue: 120 },
+            // LFO mix (0 = base value, 1 = LFO replaces)
             { name: 'lfoPitchMix', defaultValue: 0, minValue: 0, maxValue: 1 },
             { name: 'lfoVeloMix',  defaultValue: 0, minValue: 0, maxValue: 1 },
             { name: 'lfoPanMix',   defaultValue: 0, minValue: 0, maxValue: 1 },
             { name: 'lfoCutMix',   defaultValue: 0, minValue: 0, maxValue: 1 },
             { name: 'lfoQMix',     defaultValue: 0, minValue: 0, maxValue: 1 },
-            // LFOs (user-domain: velo/pan in natural units, cut/q normalized, pitch in semitones)
+            // LFOs (user-domain)
             { name: 'lfoPitchFreq', defaultValue: 1 }, { name: 'lfoPitchWave', defaultValue: 0 }, { name: 'lfoPitchDepth', defaultValue: 0 }, { name: 'lfoPitchBias', defaultValue: 0 },
             { name: 'lfoVeloFreq',  defaultValue: 1 }, { name: 'lfoVeloWave',  defaultValue: 0 }, { name: 'lfoVeloDepth',  defaultValue: 0 }, { name: 'lfoVeloBias',  defaultValue: 0 },
             { name: 'lfoPanFreq',   defaultValue: 1 }, { name: 'lfoPanWave',   defaultValue: 0 }, { name: 'lfoPanDepth',   defaultValue: 0 }, { name: 'lfoPanBias',   defaultValue: 0 },
@@ -112,7 +125,7 @@ class StripProcessor extends AudioWorkletProcessor {
         this.dlyL = new _DelayLine(2.1);
         this.dlyR = new _DelayLine(2.1);
         this.dlyFiltL = 0; this.dlyFiltR = 0;
-        this.lfos = { pitch: new _Lfo(), velo: new _Lfo(), pan: new _Lfo(), cut: new _Lfo(), q: new _Lfo() };
+        this.sh = { pitch: new _SH(), velo: new _SH(), pan: new _SH(), cut: new _SH(), q: new _SH() };
     }
 
     _shape(x, drive, type, mix, out) {
@@ -133,47 +146,39 @@ class StripProcessor extends AudioWorkletProcessor {
 
         const sr = sampleRate;
         const frames = input[0].length;
-        const inL = input[0];
-        const inR = input[1] || inL;
-        const outL = output[0];
-        const outR = output[1];
+        const inL = input[0], inR = input[1] || inL;
+        const outL = output[0], outR = output[1];
+        const tTime = params.transportTime;
+        const bpmArr = params.bpm;
 
-        const pCut = params.cutoff[0], pQ = params.q[0];
-        const lCutF = params.lfoCutFreq[0], lCutW = params.lfoCutWave[0], lCutD = params.lfoCutDepth[0], lCutB = params.lfoCutBias[0];
-        const lQF = params.lfoQFreq[0], lQW = params.lfoQWave[0], lQD = params.lfoQDepth[0], lQB = params.lfoQBias[0];
-        const pitchMix = params.lfoPitchMix[0], veloMix = params.lfoVeloMix[0], panMix = params.lfoPanMix[0], cutMix = params.lfoCutMix[0], qMix = params.lfoQMix[0];
-
-        // LFO Pitch Output (port 1): outputs the LFO value (semitones) when pitchMix=1, else 0.
-        // The voice reads this and uses it as the pitch (replacing fpitch).
-        if (pitchLfoOut && pitchLfoOut[0]) {
-            const f = params.lfoPitchFreq[0], w = params.lfoPitchWave[0], d = params.lfoPitchDepth[0], b = params.lfoPitchBias[0];
-            for (let i = 0; i < frames; i++) {
-                const raw = this.lfos.pitch.process(f, w, sr);
-                const lfoVal = b + ((raw + 1) * 0.5) * d;
-                pitchLfoOut[0][i] = pitchMix * lfoVal;
-            }
-        }
+        // Optimization: read constant params once
+        const pCut = params.cutoff[0], pQ = params.q[0], fMode = params.filterMode[0];
+        const lCutF = params.lfoCutFreq[0], lCutW = params.lfoCutWave[0], lCutD = params.lfoCutDepth[0], lCutB = params.lfoCutBias[0], lCutMix = params.lfoCutMix[0];
+        const lQF = params.lfoQFreq[0], lQW = params.lfoQWave[0], lQD = params.lfoQDepth[0], lQB = params.lfoQBias[0], lQMix = params.lfoQMix[0];
+        const lVF = params.lfoVeloFreq[0], lVW = params.lfoVeloWave[0], lVD = params.lfoVeloDepth[0], lVB = params.lfoVeloBias[0], lVMix = params.lfoVeloMix[0];
+        const lPF = params.lfoPanFreq[0], lPW = params.lfoPanWave[0], lPD = params.lfoPanDepth[0], lPB = params.lfoPanBias[0], lPMix = params.lfoPanMix[0];
+        const lPitchF = params.lfoPitchFreq[0], lPitchW = params.lfoPitchWave[0], lPitchD = params.lfoPitchDepth[0], lPitchB = params.lfoPitchBias[0], lPitchMix = params.lfoPitchMix[0];
 
         for (let i = 0; i < frames; i++) {
+            const time = tTime.length > 1 ? tTime[i] : tTime[0];
+            const bpm = bpmArr.length > 1 ? bpmArr[i] : bpmArr[0];
+            
             // --- 1. LFO Internal Processing ---
-            // Formula matches computeLfoValue() in audio/math.js (single source of truth).
-            const vRaw = this.lfos.velo.process(params.lfoVeloFreq[0], params.lfoVeloWave[0], sr);
-            const vLfo = params.lfoVeloBias[0] + ((vRaw + 1) * 0.5) * params.lfoVeloDepth[0];
+            const computeLfo = (f, w, d, b, sh) => {
+                const period = f * 16 * (60 / bpm);
+                const raw = w > 3.5 ? sh.process(time, f, bpm) : getLfoWaveformValue(time / period, w);
+                return b + ((raw + 1) * 0.5) * d;
+            };
 
-            const pRaw = this.lfos.pan.process(params.lfoPanFreq[0], params.lfoPanWave[0], sr);
-            const pLfo = params.lfoPanBias[0] + ((pRaw + 1) * 0.5) * params.lfoPanDepth[0];
+            const vLfo = computeLfo(lVF, lVW, lVD, lVB, this.sh.velo);
+            const pLfo = computeLfo(lPF, lPW, lPD, lPB, this.sh.pan);
+            const cLfo = computeLfo(lCutF, lCutW, lCutD, lCutB, this.sh.cut);
+            const qLfo = computeLfo(lQF, lQW, lQD, lQB, this.sh.q);
 
-            const cRaw = this.lfos.cut.process(lCutF, lCutW, sr);
-            const cLfo = lCutB + ((cRaw + 1) * 0.5) * lCutD;
-
-            const qRaw = this.lfos.q.process(lQF, lQW, sr);
-            const qLfo = lQB + ((qRaw + 1) * 0.5) * lQD;
-
-            // --- 2. Filter (Replace semantics) ---
-            // final = (1 - mix) * base + mix * lfo. The LFO replaces the base value.
-            const normCut = Math.max(0, Math.min(1, (1 - cutMix) * pCut + cutMix * cLfo));
+            // --- 2. Filter (Stereo TPT SVF) ---
+            const normCut = Math.max(0, Math.min(1, (1 - lCutMix) * pCut + lCutMix * cLfo));
             const fHz = 20 * Math.pow(1000, normCut);
-            const normQ = Math.max(0, Math.min(1, (1 - qMix) * pQ + qMix * qLfo));
+            const normQ = Math.max(0, Math.min(1, (1 - lQMix) * pQ + lQMix * qLfo));
             const Q = normQ * 18 + 0.707;
 
             const g = Math.tan(Math.PI * fHz / sr), k = 1 / Q;
@@ -184,11 +189,10 @@ class StripProcessor extends AudioWorkletProcessor {
             const v3R = inR[i] - this.z2R, v1R = a1 * this.z1R + a2 * v3R, v2R = this.z2R + a2 * this.z1R + a3 * v3R;
             this.z1R = 2 * v1R - this.z1R; this.z2R = 2 * v2R - this.z2R;
             
-            const mode = params.filterMode[0];
             let dryL, dryR;
-            if (mode < 0.5)      { dryL = v2L; dryR = v2R; }
-            else if (mode < 1.5) { dryL = v3L - v1L * k; dryR = v3R - v1R * k; }
-            else if (mode < 2.5) { dryL = v1L; dryR = v1R; }
+            if (fMode < 0.5)      { dryL = v2L; dryR = v2R; }
+            else if (fMode < 1.5) { dryL = v3L - v1L * k; dryR = v3R - v1R * k; }
+            else if (fMode < 2.5) { dryL = v1L; dryR = v1R; }
             else                { dryL = v3L - v1L * k + v2L; dryR = v3R - v1R * k + v2R; }
 
             // --- 3. Saturation ---
@@ -214,12 +218,17 @@ class StripProcessor extends AudioWorkletProcessor {
             const dWetL = dL * dMix, dWetR = dR * dMix;
 
             // --- 6. Final Mix & Pan ---
-            // Replace semantics: when LFO is on, the LFO value replaces the base (vol/pan).
-            const vol = (1 - veloMix) * params.volume[0] + veloMix * vLfo;
-            const p = Math.max(-1, Math.min(1, (1 - panMix) * params.pan[0] + panMix * pLfo));
+            const vol = (1 - lVMix) * params.volume[0] + lVMix * vLfo;
+            const p = Math.max(-1, Math.min(1, (1 - lPMix) * params.pan[0] + lPMix * pLfo));
             const panL = Math.cos((p + 1) * Math.PI / 4), panR = Math.sin((p + 1) * Math.PI / 4);
             outL[i] = (satL + rL + dWetL) * vol * panL;
             outR[i] = (satR + rR + dWetR) * vol * panR;
+
+            // LFO Pitch Output (port 1)
+            if (pitchLfoOut && pitchLfoOut[0]) {
+                const pitchVal = computeLfo(lPitchF, lPitchW, lPitchD, lPitchB, this.sh.pitch);
+                pitchLfoOut[0][i] = lPitchMix * pitchVal;
+            }
         }
         return true;
     }

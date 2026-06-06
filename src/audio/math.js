@@ -84,6 +84,7 @@ export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null
     let min = parseFloat(lfo.min) || 0
     let max = parseFloat(lfo.max) || 1
     const phase = parseFloat(lfo.phase) || 0
+    const wave = parseFloat(lfo.waveform) || 0
 
     if (controlKey === 'filterFreq' && (min > 1 || max > 1)) {
         const hzMin = Math.max(FILTER_FREQ_MIN, min)
@@ -101,11 +102,26 @@ export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null
     const periodInTicks = freqVal * 16 * TICK
     const currentPhase = (tick / periodInTicks) + phase
 
-    let val = Math.sin(2 * Math.PI * currentPhase)
+    let val = getLfoWaveformValue(currentPhase, wave)
     val = (val + 1) / 2
     val = min + val * (max - min)
 
     return Math.round(100 * val) / 100
+}
+
+/**
+ * Shared LFO Waveform Math
+ * Returns a value in [-1, 1] range.
+ */
+export function getLfoWaveformValue(phase, wave) {
+    const p = phase - Math.floor(phase)
+    if (wave < 0.5) return Math.sin(2 * Math.PI * p) // Sine
+    if (wave < 1.5) return p < 0.25 ? p * 4 : (p < 0.75 ? 2 - p * 4 : p * 4 - 4) // Tri
+    if (wave < 2.5) return p * 2 - 1 // Saw
+    if (wave < 3.5) return p < 0.5 ? 1 : -1 // Square
+    
+    // S&H: simplified for UI
+    return Math.sin(2 * Math.PI * Math.floor(phase * 8) / 8) 
 }
 
 export function computeLfoDepth(min, max) {

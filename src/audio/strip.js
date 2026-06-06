@@ -30,9 +30,10 @@ const DELAY_MODES  = { none: 0, slap: 0, tape: 1, pingpong: 2 };
 export default class MfStrip {
     static TAG = "MFSTRIP";
 
-    constructor(name, audioCtx) {
+    constructor(name, audioCtx, mixer) {
         this.name = name;
         this.audioCtx = audioCtx;
+        this.mixer = mixer;
         this.bpm = MfDefaults.getPatternProp({}, 'bpm');
 
         this.stripNode = null;
@@ -52,8 +53,8 @@ export default class MfStrip {
         this.currentDelayAmount = 0;
     }
 
-    static async create(name, audioCtx) {
-        const strip = new MfStrip(name, audioCtx);
+    static async create(name, audioCtx, mixer) {
+        const strip = new MfStrip(name, audioCtx, mixer);
         await WorkletLoader.ensureLoaded(audioCtx);
         strip._initNode();
         return strip;
@@ -68,6 +69,14 @@ export default class MfStrip {
         });
 
         this.voicesInput.connect(this.stripNode);
+        
+        // Connect central transport clock to the worklet's transportTime parameter
+        if (this.mixer?.transportClock) {
+            this.mixer.transportClock.connect(this.stripNode.parameters.get('transportTime'));
+        }
+
+        // Set initial BPM
+        this.stripNode.parameters.get('bpm')?.setValueAtTime(this.bpm, ctx.currentTime);
         
         // Connect Pitch LFO output to the gain node used by voices
         this.stripNode.connect(this._lfoGains.pitchLfo, 1);
@@ -92,6 +101,9 @@ export default class MfStrip {
 
     setBpm = (bpm) => {
         this.bpm = bpm;
+        if (this.stripNode) {
+            this.stripNode.parameters.get('bpm')?.setTargetAtTime(bpm, this.audioCtx.currentTime, RAMP_TIME);
+        }
     }
 
     updateLfo = (key, config) => {
@@ -138,7 +150,6 @@ export default class MfStrip {
         params.get(`${prefix}Wave`)?.setTargetAtTime(wave, time, RAMP_TIME);
         params.get(`${prefix}Depth`)?.setTargetAtTime(depth, time, RAMP_TIME);
         params.get(`${prefix}Bias`)?.setTargetAtTime(bias, time, RAMP_TIME);
-        // mix=1 means the LFO replaces the base value (replace semantics).
         params.get(`${prefix}Mix`)?.setTargetAtTime(1, time, RAMP_TIME);
     }
 
@@ -175,7 +186,7 @@ export default class MfStrip {
         this.currentSaturationType = SATURATION_TYPES.includes(type) ? type : 'soft';
         this.currentSaturationAmount = normalizedAmount;
 
-        const typeIdx = SATURATION_TYPES_IDX[this.currentSaturationType] ?? 0;
+        const typeIdx = SATURATION_TYPES_IDX[type] ?? 0;
         const drive   = 1 + normalizedAmount * 6;
         const out     = 1 - normalizedAmount * 0.15;
         const mix     = normalizedAmount > 0 ? 1 : 0;

@@ -8,6 +8,7 @@ import { TICK } from '../core/constants.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
+import { OrSlider } from './components/or_slider.js'
 import { bindCloseButton, bindVisibilityToggles, escapeHtml, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
 const fmtFreq = v => {
@@ -65,6 +66,7 @@ export default class TrackEditor {
         this._selectedPropKey = null
         this._rafId = null
         this._isDragging = false
+        this._sliders = new Map()
         this.synthEditor = new SynthEditor(this)
     }
 
@@ -161,15 +163,10 @@ export default class TrackEditor {
         GROUPS.forEach(g => {
             g.props.forEach(p => {
                 if (p.lfo && this._track[p.lfo]) {
-                    const slider = this.container.querySelector(`input[data-key="${p.key}"]`)
-                    const valEl = this.container.querySelector(`.ne-val[data-key="${p.key}"]`)
-                    if (slider && valEl) {
-                        // Replace semantics: when LFO is on, the LFO value IS the value.
-                        // computeLfoValue returns the value in the same unit as the base
-                        // (normalized [0,1] for filterFreq/filterQ, natural units otherwise).
+                    const s = this._sliders.get(p.key)
+                    if (s) {
                         const lfoVal = LfoUpdater.computeLfoValue(this._track[p.lfo], tick, nbTicks, p.key)
-                        slider.value = lfoVal
-                        valEl.textContent = fmtVal(p.key, lfoVal)
+                        s.setValue(lfoVal)
                     }
                 }
             })
@@ -211,6 +208,9 @@ export default class TrackEditor {
 
         let bodyHtml = `<div class="ne-body">`
 
+        this._sliders.forEach(s => s.destroy())
+        this._sliders.clear()
+
         GROUPS.forEach((g, idx) => {
             const visKey = ['basic', 'levels', 'filters', 'effects'][idx]
             if (!vis[visKey]) return
@@ -227,36 +227,48 @@ export default class TrackEditor {
                 const isSelected = this._selectedPropKey === p.key ? 'selected' : ''
                 const hasLfo = p.lfo && this._track[p.lfo] ? 'has-lfo' : ''
                 
-                bodyHtml += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">`
-                
                 if (p.type === 'boolean') {
                     const active = val ? 'active' : ''
-                    bodyHtml += `<label>${p.label}</label>
-                             <button class="ne-btn ${active}" data-key="${p.key}">${val ? 'ON' : 'OFF'}</button>`
+                    bodyHtml += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
+                             <label>${p.label}</label>
+                             <button class="ne-btn ${active}" data-key="${p.key}">${val ? 'ON' : 'OFF'}</button>
+                             </div>`
                 } else if (p.type === 'select') {
-                    bodyHtml += `<label>${p.label}</label>
+                    bodyHtml += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
+                             <label>${p.label}</label>
                              <select data-key="${p.key}">`
                     p.options.forEach((opt, idx) => {
                         const label = p.labels ? p.labels[idx] : opt
                         const sel = String(opt) === String(val) ? ' selected' : ''
                         bodyHtml += `<option value="${opt}"${sel}>${label}</option>`
                     })
-                    bodyHtml += `</select>`
+                    bodyHtml += `</select></div>`
                 } else {
-                    let sliderVal = val ?? p.min
-                    if (p.key === 'filterFreq' && sliderVal > 1) {
-                        sliderVal = Utils.hzToNormalizedTrackFilterFreq(sliderVal)
-                    }
-                    if (p.key === 'filterQ' && sliderVal > 1) {
-                        sliderVal = Utils.valueToNormalizedTrackFilterQ(sliderVal)
-                    }
-                    const displayVal = fmtVal(p.key, val ?? p.min)
-                    bodyHtml += `<label>${p.label}</label>
-                             <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
-                                value="${sliderVal}" data-key="${p.key}">
-                             <span class="ne-val" data-key="${p.key}">${displayVal}</span>`
+                    const s = new OrSlider({
+                        key: p.key,
+                        label: p.label,
+                        min: p.min,
+                        max: p.max,
+                        step: p.step,
+                        value: val ?? p.min,
+                        hasLfo: !!(p.lfo && this._track[p.lfo]),
+                        extraClass: isSelected,
+                        format: (v) => fmtVal(p.key, v),
+                        normalize: (v) => {
+                            if (p.key === 'filterFreq' && v > 1) return Utils.hzToNormalizedTrackFilterFreq(v)
+                            if (p.key === 'filterQ' && v > 1) return Utils.valueToNormalizedTrackFilterQ(v)
+                            return v
+                        },
+                        denormalize: (v) => v, // We keep the slider in [0..1] range for normalized props
+                        onChange: (v, key) => {
+                            this._isDragging = true
+                            this._track[key] = v
+                            playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+                        }
+                    })
+                    this._sliders.set(p.key, s)
+                    bodyHtml += s.toHTML()
                 }
-                bodyHtml += `</div>`
             })
             bodyHtml += `</div></div>`
         })
@@ -281,6 +293,20 @@ export default class TrackEditor {
 
         bodyHtml += '</div>'
         this.container.innerHTML = headerHtml + bodyHtml
+        
+        // Mount main sliders
+        this._sliders.forEach(s => {
+            const row = this.container.querySelector(`.ne-row[data-or-slider="${s._key}"]`)
+            if (row) {
+                s.mount(row)
+                // Reset dragging on release
+                s._input.addEventListener('change', () => {
+                    this._isDragging = false
+                    playbackEvents.onPatternChange.forEach(fn => fn())
+                })
+            }
+        })
+
         if (this.synthEditor?.panel?.style?.display !== 'block') {
             this.container.style.display = 'block'
         }
@@ -295,31 +321,34 @@ export default class TrackEditor {
         const maxSteps = bars * barQuantize
         const swing = this._track.swingAmount ?? 0
 
-        return `<div class="ne-group" style="border-left:1px solid #444;padding-left:12px">
+        let html = `<div class="ne-group" style="border-left:1px solid #444;padding-left:12px">
             <div class="ne-group-label">Loop / Pattern</div>
-            <div class="ne-grid">
-                <div class="ne-row">
-                    <label>Steps/Bar</label>
-                    <input type="range" min="1" max="8" step="1" value="${barQuantize}" data-loop="barQuantize">
-                    <span class="ne-val">${barQuantize}</span>
-                </div>
-                <div class="ne-row">
-                    <label>Bars</label>
-                    <input type="range" min="1" max="8" step="1" value="${bars}" data-loop="bars">
-                    <span class="ne-val">${bars}</span>
-                </div>
-                <div class="ne-row">
-                    <label>Loop Point</label>
-                    <input type="range" min="1" max="${maxSteps}" step="1" value="${loopAtStep}" data-loop="loopAtStep">
-                    <span class="ne-val">${loopAtStep}</span>
-                </div>
-                <div class="ne-row">
-                    <label>Swing</label>
-                    <input type="range" min="0" max="1" step="0.01" value="${swing}" data-loop="swingAmount">
-                    <span class="ne-val">${fmt(swing)}</span>
-                </div>
-            </div>
-        </div>`
+            <div class="ne-grid">`
+
+        const loopProps = [
+            { key: 'barQuantize', label: 'Steps/Bar', min: 1, max: 8, step: 1, val: barQuantize },
+            { key: 'bars',        label: 'Bars',      min: 1, max: 8, step: 1, val: bars },
+            { key: 'loopAtStep',  label: 'Loop Point',min: 1, max: maxSteps, step: 1, val: loopAtStep },
+            { key: 'swingAmount', label: 'Swing',     min: 0, max: 1, step: 0.01, val: swing }
+        ]
+
+        loopProps.forEach(p => {
+            const s = new OrSlider({
+                key: p.key,
+                label: p.label,
+                min: p.min,
+                max: p.max,
+                step: p.step,
+                value: p.val,
+                dataAttr: 'data-loop',
+                onChange: (v, key) => this._onLoopSlider({ dataset: { loop: key }, value: v })
+            })
+            this._sliders.set(p.key, s)
+            html += s.toHTML()
+        })
+
+        html += `</div></div>`
+        return html
     }
 
     _renderFxGroup() {
@@ -358,12 +387,20 @@ export default class TrackEditor {
                         })
                         html += `</select></div>`
                     } else {
-                        html += `<div class="ne-row" data-prop="${ck}">
-                            <label style="min-width:20px">${prop.label}</label>
-                            <input type="range" min="${prop.min}" max="${prop.max}" step="${prop.step}"
-                                value="${val ?? prop.min}" data-key="${ck}">
-                            <span class="ne-val" data-key="${ck}">${fmt(val ?? prop.min)}</span>
-                        </div>`
+                        const s = new OrSlider({
+                            key: ck,
+                            label: prop.label,
+                            min: prop.min,
+                            max: prop.max,
+                            step: prop.step,
+                            value: val ?? prop.min,
+                            onChange: (v, key) => {
+                                this._track[key] = v
+                                playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+                            }
+                        })
+                        this._sliders.set(ck, s)
+                        html += s.toHTML()
                     }
                 })
             }
@@ -564,13 +601,6 @@ export default class TrackEditor {
     _bindEvents() {
         bindVisibilityToggles(this.container, appState.trackEditorVisibility, () => this.sync())
 
-        this.container.querySelectorAll('input[type=range][data-key]').forEach(input => {
-            input.addEventListener('input', () => this._onSlider(input))
-            input.addEventListener('change', () => {
-                this._isDragging = false
-                playbackEvents.onPatternChange.forEach(fn => fn())
-            })
-        })
         this.container.querySelectorAll('select[data-key]').forEach(sel => {
             sel.addEventListener('change', () => this._onSelect(sel))
         })
@@ -599,15 +629,6 @@ export default class TrackEditor {
             })
             lfoPanel.querySelector('[data-action="toggle-lfo"]')?.addEventListener('click', () => this._toggleLfo())
         }
-
-        // Loop panel events
-        this.container.querySelectorAll('input[data-loop]').forEach(input => {
-            input.addEventListener('input', () => this._onLoopSlider(input))
-            input.addEventListener('change', () => {
-                this._isDragging = false
-                playbackEvents.onPatternChange.forEach(fn => fn())
-            })
-        })
 
         // FX toggle LEDs
         this.container.querySelectorAll('[data-fx-toggle]').forEach(btn => {
@@ -815,17 +836,6 @@ export default class TrackEditor {
             playbackEvents.onPatternChange.forEach(fn => fn())
         }
     }
-
-    _onSlider(input) {
-        if (!this._track) return
-        this._isDragging = true
-        const key = input.dataset.key
-        const val = parseFloat(input.value)
-        this._track[key] = val
-        input.nextElementSibling.textContent = fmtVal(key, val)
-        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
-    }
-
 
     _onSelect(sel) {
         if (!this._track) return

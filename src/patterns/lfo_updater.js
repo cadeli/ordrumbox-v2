@@ -3,15 +3,13 @@ import { computeLfoValue } from '../audio/math.js'
 export default class LfoUpdater {
     /**
      * Proxies LFO value calculation to the shared helper in math.js.
-     * Called by the visual to display the LFO contribution.
-     * Returns 0 when LFO is null/undefined (caller decides replace vs add).
-     *
-     * @param {Object|null} lfo
-     * @param {number} tick
-     * @param {number} nbTicks
-     * @param {string|null} controlKey  Optional: 'filterFreq' or 'filterQ' for normalization
+     * 
+     * @param {Object} lfo         LFO configuration
+     * @param {number} tick        Current transport tick
+     * @param {number} nbTicks     Pattern duration in ticks
+     * @param {string} controlKey  Optional key to handle specific normalizations (e.g. 'filterFreq')
      */
-    static computeLfoValue(lfo, tick, nbTicks, controlKey) {
+    static computeLfoValue(lfo, tick, nbTicks, controlKey = null) {
         return computeLfoValue(lfo, tick, nbTicks, controlKey)
     }
 }

@@ -41,6 +41,10 @@ export default class MfMixer {
 
         this.busInput = ctx.createGain();
 
+        // Central Transport Clock (provides sample-accurate time to all strips)
+        this.transportClock = ctx.createConstantSource();
+        this.transportClock.offset.value = 0;
+
         this.busWorklet = WorkletLoader.createNode(ctx, 'master-bus', {
             numberOfInputs: 1,
             numberOfOutputs: 1,
@@ -76,6 +80,10 @@ export default class MfMixer {
         if (!this.busInput) {
             this.busInput = ctx.createGain();
         }
+        if (!this.transportClock) {
+            this.transportClock = ctx.createConstantSource();
+            this.transportClock.offset.value = 0;
+        }
         // Recreate the master-bus worklet only if the worklets have already
         // been loaded onto this context. Cold-start (worklets still loading)
         // skips this — create() handles that case. The strips are re-added
@@ -94,21 +102,27 @@ export default class MfMixer {
             this.busInput.connect(this.busWorklet);
             this.busWorklet.connect(this.analyser);
             this.analyser.connect(ctx.destination);
+            
+            try { this.transportClock.start(); } catch (_) {}
         }
     }
 
     stop = () => {
         this.deleteStrips();
 
-        const nodes = [this.busWorklet, this.busInput, this.analyser];
+        const nodes = [this.busWorklet, this.busInput, this.analyser, this.transportClock];
         for (const node of nodes) {
             if (!node) continue;
             try { node.disconnect(); } catch (e) { console.error(e); }
+            if (node === this.transportClock) {
+                try { node.stop(); } catch (_) {}
+            }
         }
 
         this.busWorklet = null;
         this.busInput   = null;
         this.analyser   = null;
+        this.transportClock = null;
         this.gFftData   = null;
         this.dataArray  = null;
     }
@@ -121,7 +135,7 @@ export default class MfMixer {
     addStrip = async (name) => {
         if (this.strips[name]) return this.strips[name];
 
-        const strip = await MfStrip.create(name, this.audioCtx);
+        const strip = await MfStrip.create(name, this.audioCtx, this);
         this.strips[name] = strip;
 
         if (strip.pan && this.busInput) {
@@ -131,16 +145,11 @@ export default class MfMixer {
         return strip;
     }
 
-    /**
-     * Synchronous retrieval if already exists, otherwise starts async creation
-     * but returns null (caller should pre-create or handle null).
-     */
-    getOrCreateStrip = (name) => {
-        if (this.strips[name]) return this.strips[name];
-        
-        // Start creation in background if it doesn't exist
-        void this.addStrip(name);
-        return null;
+    getOrCreateStrip = async (name) => {
+        if (!this.strips[name]) {
+            await this.addStrip(name);
+        }
+        return this.strips[name];
     }
 
     deleteStrips = () => {

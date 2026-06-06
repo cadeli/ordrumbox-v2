@@ -114,7 +114,7 @@ export class OrSlider {
     toHTML() {
         const normVal    = this._toNorm(this._value)
         const displayVal = this._fmt(this._value)
-        return `<div class="${this._rowClasses()}" data-or-slider="${this._key}">
+        return `<div class="${this._rowClasses()}" data-or-slider="${this._key}" data-prop="${this._key}">
             <label>${this._escHtml(this._label)}</label>
             <input type="range"
                    min="${this._min}" max="${this._max}" step="${this._step}"
