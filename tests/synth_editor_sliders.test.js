@@ -177,6 +177,24 @@ describe('SynthEditor — OrSlider integration', () => {
         expect(parseFloat(input.value)).toBeCloseTo(2.1, 5)
     })
 
+    it('a focused slider has a visible selection indicator (CSS rule applied)', async () => {
+        // jsdom does not parse <link rel="stylesheet">, so we read the CSS
+        // file directly to verify the focus rules exist.
+        const fs = await import('fs')
+        const path = await import('path')
+        const cssPath = path.resolve(__dirname, '../src/ui/styles.css')
+        const css = fs.readFileSync(cssPath, 'utf-8')
+
+        // 1. The shared focus outline rule must include #soft-synth-panel
+        const focusOutlineRe = /#soft-synth-panel[^{]*input\[type=range\]:focus\s*\{[^}]*outline:\s*1px\s+solid\s+#00fff5/s
+        expect(css, 'missing :focus rule for soft-synth slider').toMatch(focusOutlineRe)
+
+        // 2. A row-level :focus-within rule gives a clear visual indicator
+        //    (background + left bar) so the user sees which control is active.
+        const focusWithinRe = /#soft-synth-panel\s+\.ne-row:focus-within\s*\{[^}]*#00fff5/s
+        expect(css, 'missing :focus-within rule for soft-synth slider row').toMatch(focusWithinRe)
+    })
+
     it('boolean buttons still work (toggle on click)', () => {
         // Open the editor once to create the draft, then mutate it and re-render
         trackEditor.synthEditor.openEditor()
