@@ -82,6 +82,52 @@ export function init() {
         })
     })
 
+    // Ensure all <input type="range"> sliders respond to Arrow Left/Right
+    // when focused, regardless of native browser quirks or CSS that might
+    // block the default behavior (e.g. the LFO dual-range container uses
+    // pointer-events:none on the track).
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+        const el = e.target
+        if (!(el instanceof HTMLInputElement) || el.type !== 'range') return
+        if (el.disabled || el.readOnly) return
+
+        const min = parseFloat(el.min) || 0
+        const max = parseFloat(el.max) || 100
+        const step = parseFloat(el.step) || 1
+        const cur = parseFloat(el.value)
+        const dir = e.key === 'ArrowRight' ? 1 : -1
+        let next = cur + dir * step
+        // Snap to step grid
+        next = Math.round((next - min) / step) * step + min
+        next = Math.min(max, Math.max(min, next))
+
+        if (next === cur) {
+            e.preventDefault()
+            return
+        }
+        el.value = String(next)
+        el.dispatchEvent(new Event('input',  { bubbles: true }))
+        el.dispatchEvent(new Event('change', { bubbles: true }))
+        e.preventDefault()
+    })
+
+    // When the user clicks on a slider's <label> (title) or <span.ne-val>
+    // (value display), focus the associated range input. The LFO dual-range
+    // container uses pointer-events:none on the track, so clicking on the
+    // label/value is the natural way to focus that slider.
+    document.addEventListener('click', (e) => {
+        const t = e.target
+        if (!(t instanceof HTMLElement)) return
+        const isLabel = t.tagName === 'LABEL'
+        const isValue = t instanceof HTMLSpanElement && t.classList.contains('ne-val')
+        if (!isLabel && !isValue) return
+        const row = t.closest('.ne-row')
+        if (!row) return
+        const slider = row.querySelector('input[type="range"]')
+        if (slider && !slider.disabled) slider.focus()
+    })
+
     scheduleAfterFirstPaint(async () => {
         try {
             await serviceRegistry.mfResourcesLoader.loadPatterns(MfResourcesLoader.PATTERNS_URL)

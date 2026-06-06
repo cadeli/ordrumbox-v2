@@ -350,6 +350,10 @@
 #ne-panel .ne-row input[type=range], #te-panel .ne-row input[type=range], #tools-panel .ne-row input[type=range], #output-panel .ne-row input[type=range], #about-panel .ne-row input[type=range] {
     width: 80px; accent-color: #e94560; cursor: pointer;
 }
+#ne-panel .ne-row input[type=range]:focus, #te-panel .ne-row input[type=range]:focus, #tools-panel .ne-row input[type=range]:focus, #output-panel .ne-row input[type=range]:focus, #about-panel .ne-row input[type=range]:focus {
+    outline: 1px solid #00fff5;
+    outline-offset: 2px;
+}
 #ne-panel .ne-row select, #te-panel .ne-row select, #tools-panel .ne-row select, #output-panel .ne-row select, #about-panel .ne-row select {
     width: 80px; font-size: 10px; padding: 2px;
     background: #16213e; color: #eee; border: 1px solid #555;
