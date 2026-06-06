@@ -22,7 +22,7 @@
     "type": "lowpass",
     "freq": 400,
     "Q": 16,
-    "filterEnvelopeAmount": 0
+    "filterEnvelopeAmount": 0.2
   },
   "enveloppe": {
     "attack": 0.005,
