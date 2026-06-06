@@ -128,7 +128,7 @@ export default class MfStrip {
             return;
         }
 
-        const freq  = computeLfoFrequency(config.freq ?? 1, this.bpm);
+        const freq  = config.freq ?? 1; // Send raw multiplier directly
         let min = parseFloat(config.min) || 0;
         let max = parseFloat(config.max) || 0;
 
@@ -145,11 +145,13 @@ export default class MfStrip {
         const depth = max - min;
         const bias  = min;
         const wave  = config.waveform ?? 0;
+        const phase = config.phase ?? 0;
 
         params.get(`${prefix}Freq`)?.setTargetAtTime(freq, time, RAMP_TIME);
         params.get(`${prefix}Wave`)?.setTargetAtTime(wave, time, RAMP_TIME);
         params.get(`${prefix}Depth`)?.setTargetAtTime(depth, time, RAMP_TIME);
         params.get(`${prefix}Bias`)?.setTargetAtTime(bias, time, RAMP_TIME);
+        params.get(`${prefix}Phase`)?.setTargetAtTime(phase, time, RAMP_TIME);
         params.get(`${prefix}Mix`)?.setTargetAtTime(1, time, RAMP_TIME);
     }
 

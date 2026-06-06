@@ -4,8 +4,12 @@
  * Combines Filter (TPT SVF), Saturation, Reverb (Freeverb), 
  * Delay (with feedback FX), and 5 internal LFOs into a single DSP block.
  * 
- * Synchronisation: uses a central 'transportTime' AudioParam for 
- * sample-accurate LFO modulation synced with the sequencer.
+ * Synchronisation: uses 'transportTime' (seconds) and 'bpm' to calculate 
+ * musical LFO cycles internally. 
+ * 
+ * Parameters like lfoCutFreq are PERIOD MULTIPLIERS:
+ *   - 1.0 = 16 beats (4 bars)
+ *   - 2.0 = 32 beats (8 bars)
  */
 
 const STRIP_PROCESSOR_SOURCE = `
@@ -106,12 +110,12 @@ class StripProcessor extends AudioWorkletProcessor {
             { name: 'lfoPanMix',   defaultValue: 0, minValue: 0, maxValue: 1 },
             { name: 'lfoCutMix',   defaultValue: 0, minValue: 0, maxValue: 1 },
             { name: 'lfoQMix',     defaultValue: 0, minValue: 0, maxValue: 1 },
-            // LFOs (user-domain)
-            { name: 'lfoPitchFreq', defaultValue: 1 }, { name: 'lfoPitchWave', defaultValue: 0 }, { name: 'lfoPitchDepth', defaultValue: 0 }, { name: 'lfoPitchBias', defaultValue: 0 },
-            { name: 'lfoVeloFreq',  defaultValue: 1 }, { name: 'lfoVeloWave',  defaultValue: 0 }, { name: 'lfoVeloDepth',  defaultValue: 0 }, { name: 'lfoVeloBias',  defaultValue: 0 },
-            { name: 'lfoPanFreq',   defaultValue: 1 }, { name: 'lfoPanWave',   defaultValue: 0 }, { name: 'lfoPanDepth',   defaultValue: 0 }, { name: 'lfoPanBias',   defaultValue: 0 },
-            { name: 'lfoCutFreq',   defaultValue: 1 }, { name: 'lfoCutWave',   defaultValue: 0 }, { name: 'lfoCutDepth',   defaultValue: 0 }, { name: 'lfoCutBias',   defaultValue: 0 },
-            { name: 'lfoQFreq',     defaultValue: 1 }, { name: 'lfoQWave',     defaultValue: 0 }, { name: 'lfoQDepth',     defaultValue: 0 }, { name: 'lfoQBias',     defaultValue: 0 }
+            // LFOs (Frequency = PERIOD MULTIPLIER, other params in user domain)
+            { name: 'lfoPitchFreq', defaultValue: 1 }, { name: 'lfoPitchWave', defaultValue: 0 }, { name: 'lfoPitchDepth', defaultValue: 0 }, { name: 'lfoPitchBias', defaultValue: 0 }, { name: 'lfoPitchPhase', defaultValue: 0 },
+            { name: 'lfoVeloFreq',  defaultValue: 1 }, { name: 'lfoVeloWave',  defaultValue: 0 }, { name: 'lfoVeloDepth',  defaultValue: 0 }, { name: 'lfoVeloBias',  defaultValue: 0 }, { name: 'lfoVeloPhase',  defaultValue: 0 },
+            { name: 'lfoPanFreq',   defaultValue: 1 }, { name: 'lfoPanWave',   defaultValue: 0 }, { name: 'lfoPanDepth',   defaultValue: 0 }, { name: 'lfoPanBias',   defaultValue: 0 }, { name: 'lfoPanPhase',   defaultValue: 0 },
+            { name: 'lfoCutFreq',   defaultValue: 1 }, { name: 'lfoCutWave',   defaultValue: 0 }, { name: 'lfoCutDepth',   defaultValue: 0 }, { name: 'lfoCutBias',   defaultValue: 0 }, { name: 'lfoCutPhase',   defaultValue: 0 },
+            { name: 'lfoQFreq',     defaultValue: 1 }, { name: 'lfoQWave',     defaultValue: 0 }, { name: 'lfoQDepth',     defaultValue: 0 }, { name: 'lfoQBias',     defaultValue: 0 }, { name: 'lfoQPhase',     defaultValue: 0 }
         ];
     }
 
@@ -154,27 +158,27 @@ class StripProcessor extends AudioWorkletProcessor {
 
         // Optimization: read constant params once
         const pCut = params.cutoff[0], pQ = params.q[0], fMode = params.filterMode[0];
-        const lCutF = params.lfoCutFreq[0], lCutW = params.lfoCutWave[0], lCutD = params.lfoCutDepth[0], lCutB = params.lfoCutBias[0], lCutMix = params.lfoCutMix[0];
-        const lQF = params.lfoQFreq[0], lQW = params.lfoQWave[0], lQD = params.lfoQDepth[0], lQB = params.lfoQBias[0], lQMix = params.lfoQMix[0];
-        const lVF = params.lfoVeloFreq[0], lVW = params.lfoVeloWave[0], lVD = params.lfoVeloDepth[0], lVB = params.lfoVeloBias[0], lVMix = params.lfoVeloMix[0];
-        const lPF = params.lfoPanFreq[0], lPW = params.lfoPanWave[0], lPD = params.lfoPanDepth[0], lPB = params.lfoPanBias[0], lPMix = params.lfoPanMix[0];
-        const lPitchF = params.lfoPitchFreq[0], lPitchW = params.lfoPitchWave[0], lPitchD = params.lfoPitchDepth[0], lPitchB = params.lfoPitchBias[0], lPitchMix = params.lfoPitchMix[0];
+        const lCutF = params.lfoCutFreq[0], lCutW = params.lfoCutWave[0], lCutD = params.lfoCutDepth[0], lCutB = params.lfoCutBias[0], lCutP = params.lfoCutPhase[0], lCutMix = params.lfoCutMix[0];
+        const lQF = params.lfoQFreq[0], lQW = params.lfoQWave[0], lQD = params.lfoQDepth[0], lQB = params.lfoQBias[0], lQP = params.lfoQPhase[0], lQMix = params.lfoQMix[0];
+        const lVF = params.lfoVeloFreq[0], lVW = params.lfoVeloWave[0], lVD = params.lfoVeloDepth[0], lVB = params.lfoVeloBias[0], lVP = params.lfoVeloPhase[0], lVMix = params.lfoVeloMix[0];
+        const lPF = params.lfoPanFreq[0], lPW = params.lfoPanWave[0], lPD = params.lfoPanDepth[0], lPB = params.lfoPanBias[0], lPP = params.lfoPanPhase[0], lPMix = params.lfoPanMix[0];
+        const lPitchF = params.lfoPitchFreq[0], lPitchW = params.lfoPitchWave[0], lPitchD = params.lfoPitchDepth[0], lPitchB = params.lfoPitchBias[0], lPitchP = params.lfoPitchPhase[0], lPitchMix = params.lfoPitchMix[0];
 
         for (let i = 0; i < frames; i++) {
             const time = tTime.length > 1 ? tTime[i] : tTime[0];
             const bpm = bpmArr.length > 1 ? bpmArr[i] : bpmArr[0];
             
             // --- 1. LFO Internal Processing ---
-            const computeLfo = (f, w, d, b, sh) => {
-                const period = f * 16 * (60 / bpm);
-                const raw = w > 3.5 ? sh.process(time, f, bpm) : getLfoWaveformValue(time / period, w);
+            const computeLfo = (fMult, w, d, b, phase, sh) => {
+                const period = fMult * 16 * (60 / bpm);
+                const raw = w > 3.5 ? sh.process(time, fMult, bpm) : getLfoWaveformValue(time / period + phase, w);
                 return b + ((raw + 1) * 0.5) * d;
             };
 
-            const vLfo = computeLfo(lVF, lVW, lVD, lVB, this.sh.velo);
-            const pLfo = computeLfo(lPF, lPW, lPD, lPB, this.sh.pan);
-            const cLfo = computeLfo(lCutF, lCutW, lCutD, lCutB, this.sh.cut);
-            const qLfo = computeLfo(lQF, lQW, lQD, lQB, this.sh.q);
+            const vLfo = computeLfo(lVF, lVW, lVD, lVB, lVP, this.sh.velo);
+            const pLfo = computeLfo(lPF, lPW, lPD, lPB, lPP, this.sh.pan);
+            const cLfo = computeLfo(lCutF, lCutW, lCutD, lCutB, lCutP, this.sh.cut);
+            const qLfo = computeLfo(lQF, lQW, lQD, lQB, lQP, this.sh.q);
 
             // --- 2. Filter (Stereo TPT SVF) ---
             const normCut = Math.max(0, Math.min(1, (1 - lCutMix) * pCut + lCutMix * cLfo));
@@ -227,7 +231,7 @@ class StripProcessor extends AudioWorkletProcessor {
 
             // LFO Pitch Output (port 1)
             if (pitchLfoOut && pitchLfoOut[0]) {
-                const pitchVal = computeLfo(lPitchF, lPitchW, lPitchD, lPitchB, this.sh.pitch);
+                const pitchVal = computeLfo(lPitchF, lPitchW, lPitchD, lPitchB, lPitchP, this.sh.pitch);
                 pitchLfoOut[0][i] = lPitchMix * pitchVal;
             }
         }
