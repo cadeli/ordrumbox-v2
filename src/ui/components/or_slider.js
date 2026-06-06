@@ -199,6 +199,9 @@ export class OrSlider {
         if (!isUp && !isDown) return
 
         e.preventDefault()
+        // Stop propagation so the delegated fallback handler in main.js does
+        // not also handle the key (which would cause a double increment).
+        e.stopPropagation()
 
         let multiplier = 1
         if (e.shiftKey) multiplier = 10

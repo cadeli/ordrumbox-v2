@@ -189,6 +189,68 @@ describe('Slider keyboard navigation (Arrow Left/Right)', () => {
 })
 
 /**
+ * Reproduces the production scenario: an OrSlider-managed slider is mounted
+ * while the delegated fallback handler from src/main.js is also installed
+ * (this is what happens in the running app, where main.js always runs).
+ *
+ * The OrSlider's own _onKeydown must stop propagation so the fallback handler
+ * does not also handle the same key — otherwise the slider would move by
+ * TWO steps per arrow press and onChange would fire twice.
+ */
+describe('OrSlider does not double-fire with the main.js fallback handler', () => {
+    let OrSlider
+
+    beforeAll(async () => {
+        // Handlers must be installed BEFORE the OrSlider is created so that
+        // we exercise the same listener order as in production.
+        installSliderKeyHandler(document)
+        OrSlider = (await import('../src/ui/components/or_slider.js')).OrSlider
+    })
+
+    beforeEach(() => {
+        document.body.innerHTML = ''
+    })
+
+    function mountOrSlider({ value = 0.5, onChange = vi.fn() } = {}) {
+        const s = new OrSlider({
+            key:    'test',
+            label:  'T',
+            min:    0,
+            max:    1,
+            step:   0.01,
+            value,
+            onChange,
+        })
+        document.body.appendChild(s.createElement())
+        return { slider: s, input: s._input }
+    }
+
+    it('ArrowRight on an OrSlider moves by exactly ONE step (not two)', () => {
+        const { input, slider } = mountOrSlider({ value: 0.5 })
+        input.focus()
+        input.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'ArrowRight', bubbles: true, cancelable: true,
+        }))
+        expect(parseFloat(input.value)).toBeCloseTo(0.51, 5)
+        expect(slider.getValue()).toBeCloseTo(0.51, 5)
+    })
+
+    it('onChange fires exactly once per arrow press', () => {
+        const counted = vi.fn()
+        const s = new OrSlider({
+            key: 'test', label: 'T', min: 0, max: 1, step: 0.01, value: 0.5,
+            onChange: counted,
+        })
+        document.body.appendChild(s.createElement())
+        s._input.focus()
+        s._input.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'ArrowRight', bubbles: true, cancelable: true,
+        }))
+        expect(counted).toHaveBeenCalledTimes(1)
+    })
+})
+
+/**
  * Reproduces the delegated click handler from src/main.js that focuses the
  * slider when the user clicks on its <label> (title) or <span.ne-val> (value).
  */

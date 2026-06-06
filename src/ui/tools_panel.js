@@ -7,13 +7,13 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { isMidiSupported } from '../logic/midi/parser.js'
 import { bindCloseButton, bindPanelToggles, hidePanelsById, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
+import { OrSlider } from './components/or_slider.js'
 
 export default class ToolsPanel {
     constructor() {
         this.container = null
         this.nameInput = null
-        this.wavLoopsSlider = null
-        this.wavLoopsVal = null
+        this._wavLoops = null
         this.exportWavBtn = null
     }
 
@@ -68,11 +68,7 @@ export default class ToolsPanel {
                         <div class="ne-row">
                             <button class="ne-btn" id="tp-export-wav">Export WAV</button>
                         </div>
-                        <div class="ne-row">
-                            <label>Loops</label>
-                            <input type="range" min="1" max="32" value="1" id="tp-wav-loops">
-                            <span class="ne-val" id="tp-wav-loops-val">1</span>
-                        </div>
+                        <div id="tp-wav-loops-slot"></div>
                     </div>
                 </div>
                 <div class="ne-group">
@@ -139,11 +135,16 @@ export default class ToolsPanel {
         
         this.container.querySelector('#tp-export-json').addEventListener('click', () => this._exportJson())
         
-        this.wavLoopsSlider = this.container.querySelector('#tp-wav-loops')
-        this.wavLoopsVal = this.container.querySelector('#tp-wav-loops-val')
-        this.wavLoopsSlider.addEventListener('input', () => {
-            this.wavLoopsVal.textContent = this.wavLoopsSlider.value
+        this._wavLoops = new OrSlider({
+            key:    'tp-wav-loops',
+            label:  'Loops',
+            min:    1,
+            max:    32,
+            step:   1,
+            value:  1,
+            format: v => String(Math.round(v)),
         })
+        this.container.querySelector('#tp-wav-loops-slot').replaceWith(this._wavLoops.createElement())
         
         this.exportWavBtn = this.container.querySelector('#tp-export-wav')
         this.exportWavBtn.addEventListener('click', () => this._exportWav())
@@ -317,7 +318,7 @@ export default class ToolsPanel {
         if (!pattern) return
         const { default: MidiExporter } = await import('../logic/midi/midi_exporter.js')
         const exporter = new MidiExporter()
-        const loops = parseInt(this.wavLoopsSlider.value, 10)
+        const loops = Math.round(this._wavLoops.getValue())
         exporter.download(pattern, `ordrumbox-${pattern.name || 'pattern'}.mid`, { loops })
     }
 
@@ -335,7 +336,7 @@ export default class ToolsPanel {
                 serviceRegistry.mfWavExporter = new MfWavExporter()
             }
             
-            const loops = parseInt(this.wavLoopsSlider.value, 10)
+            const loops = Math.round(this._wavLoops.getValue())
             const blob = await serviceRegistry.mfWavExporter.exportPatternToWav(pattern, loops)
             serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${pattern.name || 'pattern'}.wav`)
         } catch (e) {

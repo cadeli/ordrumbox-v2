@@ -1,6 +1,7 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { bindCloseButton, bindVisibilityToggles, escapeHtml, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
+import { OrSlider } from './components/or_slider.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
 const SCALES_URL = 'assets/data/scales.json'
@@ -138,6 +139,11 @@ export default class NoteEditor {
     sync() {
         if (!this._note) return
 
+        // Destroy previous OrSlider instances so their listeners are cleaned up
+        // before we wipe the container's innerHTML.
+        if (this._sliders) this._sliders.forEach(s => s.destroy())
+        this._sliders = []
+
         const vis = appState.noteEditorVisibility
         const scaleKeys = Object.keys(_scalesCache ?? {})
         const arpState = this._getArpState(this._note)
@@ -178,16 +184,8 @@ export default class NoteEditor {
                     bodyHtml += `</select>
                     </div>`
                 } else {
-                    let val = this._note[p.key] ?? p.min
-                    if (p.key === 'arpRange') {
-                        val = arpState.range
-                    }
-                    bodyHtml += `<div class="ne-row">
-                        <label>${p.label}</label>
-                        <input type="range" min="${p.min}" max="${p.max}" step="${p.step}"
-                            value="${val}" data-key="${p.key}">
-                        <span class="ne-val">${fmt(val)}</span>
-                    </div>`
+                    // Placeholder for OrSlider (replaced after innerHTML is set)
+                    bodyHtml += `<div data-ne-slider="${p.key}"></div>`
                 }
             })
             bodyHtml += `</div></div>`
@@ -197,15 +195,40 @@ export default class NoteEditor {
         this.container.innerHTML = headerHtml + bodyHtml
         this.container.style.display = 'block'
         this.reposition()
+
+        // Build OrSlider instances for each placeholder
+        GROUPS.forEach((g) => {
+            g.props.forEach(p => {
+                if (p.type === 'select') return
+                const placeholder = this.container.querySelector(`[data-ne-slider="${p.key}"]`)
+                if (!placeholder) return
+
+                let val = this._note[p.key] ?? p.min
+                if (p.key === 'arpRange') {
+                    val = arpState.range
+                }
+
+                const slider = new OrSlider({
+                    key:    p.key,
+                    label:  p.label,
+                    min:    p.min,
+                    max:    p.max,
+                    step:   p.step,
+                    value:  val,
+                    format: fmt,
+                    onChange: v => this._onSlider(p.key, v),
+                })
+                this._sliders.push(slider)
+                placeholder.replaceWith(slider.createElement())
+            })
+        })
+
         this._bindEvents()
     }
 
     _bindEvents() {
         bindVisibilityToggles(this.container, appState.noteEditorVisibility, () => this.sync())
 
-        this.container.querySelectorAll('input[type=range]').forEach(input => {
-            input.addEventListener('input', () => this._onSlider(input))
-        })
         this.container.querySelectorAll('select').forEach(sel => {
             sel.addEventListener('change', () => this._onSelect(sel))
         })
@@ -238,17 +261,11 @@ export default class NoteEditor {
         }
     }
 
-    _onSlider(input) {
+    _onSlider(key, val) {
         if (!this._note || !this._track) return
-        const key = input.dataset.key
-        const val = parseFloat(input.value)
         this._note[key] = val
-        input.nextElementSibling.textContent = fmt(val)
 
         if (key === 'arpRange') this._composeArp()
-
-        const el = this.container.querySelector('.ne-pos')
-        if (el) el.textContent = `bar ${this._note.bar} step ${this._note.barStep}`
 
         playbackEvents.onPatternChange.forEach(fn => fn())
     }
