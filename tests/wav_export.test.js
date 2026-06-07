@@ -37,6 +37,7 @@ class MockOfflineAudioContext {
     createWaveShaper() { return { curve: null, oversample: 'none', connect: vi.fn(), disconnect: vi.fn() } }
     createConvolver() { return { buffer: null, connect: vi.fn(), disconnect: vi.fn() } }
     createDelay() { return { delayTime: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() } }
+    createConstantSource() { return { offset: { value: 0, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), cancelScheduledValues: vi.fn() }, connect: vi.fn(), start: vi.fn(), stop: vi.fn(), disconnect: vi.fn() } }
 
     startRendering() {
         return Promise.resolve({

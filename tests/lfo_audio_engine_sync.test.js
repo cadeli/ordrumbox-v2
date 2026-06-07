@@ -104,9 +104,9 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
             expect(STRIP_SOURCE).toContain('b + ((raw + 1) * 0.5) * d')
         })
 
-        it('worklet computes localPhase as (transportPhase / fMult) + phaseOffset', () => {
-            // (transportPhase / fMult) + phaseOffset
-            expect(STRIP_SOURCE).toMatch(/transportPhase\s*\/\s*fMult\s*\)\s*\+\s*phaseOffset/)
+        it('worklet computes localPhase as (transportPhase / fMult) + phase', () => {
+            // (transportPhase / fMult) + phase
+            expect(STRIP_SOURCE).toMatch(/transportPhase\s*\/\s*fMult\s*\)\s*\+\s*phase/)
         })
 
         it('worklet reads the waveform via getLfoWaveformValue (not S&H branch)', () => {
@@ -142,7 +142,7 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
         })
     })
 
-    describe('Frequency 2 (period = 8 beats = 64 ticks, 2 cycles in 128 ticks)', () => {
+    describe('Frequency 2 (period = 16 beats = 256 ticks, 0.5 cycle in 128 ticks)', () => {
         const lfo = { freq: 2, phase: 0, min: 0, max: 1, waveform: 0 }
 
         it.each(SAMPLE_TICKS)('tick %d: audio engine matches track editor visualization', (tick) => {
@@ -152,14 +152,13 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
             expect(audio).toBeCloseTo(vizu, 2)
         })
 
-        it('completes exactly 2 full cycles across 128 ticks', () => {
-            // At tick 0, 64, 128 the waveform crosses 0 (going up / down / up).
-            // At tick 32, 96 the waveform hits the peaks (1, 1).
+        it('at tick 0 is min, tick 64 is midpoint, tick 128 is max (half a period)', () => {
+            // Period = freq * 4 * TICK = 2 * 128 = 256 ticks.
+            // Across 128 ticks, the LFO covers exactly half a cycle:
+            // tick 0 = trough, tick 64 = midpoint (rising), tick 128 = peak.
             expect(visualizationVelocity(lfo, 0)).toBeCloseTo(0, 2)
-            expect(visualizationVelocity(lfo, 32)).toBeCloseTo(1, 2)
-            expect(visualizationVelocity(lfo, 64)).toBeCloseTo(0, 2)
-            expect(visualizationVelocity(lfo, 96)).toBeCloseTo(1, 2)
-            expect(visualizationVelocity(lfo, 128)).toBeCloseTo(0, 2)
+            expect(visualizationVelocity(lfo, 64)).toBeCloseTo(0.5, 2)
+            expect(visualizationVelocity(lfo, 128)).toBeCloseTo(1, 2)
         })
 
         it('audio engine and visualization diverge by less than 0.005 across all sample ticks', () => {
@@ -196,9 +195,63 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
             const audio = audioEngineVelocity(lfo, tick)
             const vizu  = visualizationVelocity(lfo, tick)
 
+            // Allow a tiny epsilon for the floating-point ceiling of the
+            // un-rounded audio value, which can land marginally above 0.9.
             expect(audio).toBeGreaterThanOrEqual(0.3)
-            expect(audio).toBeLessThanOrEqual(0.9)
+            expect(audio).toBeLessThanOrEqual(0.9 + 1e-9)
             expect(audio).toBeCloseTo(vizu, 2)
+        })
+    })
+
+    // ── LFO sync contract: 1 bar = 1 cycle at freq=1 ──────────────────────────
+    //
+    // This contract locks the relationship between THREE independent code
+    // paths that must stay in lockstep:
+    //   1. Transport tick rate          (transport.js: schedule interval)
+    //   2. Visualization LFO period     (audio/math.js: periodInTicks = freqVal * 4 * TICK)
+    //   3. Worklet LFO period           (strip_source.js: fMult * 4 * (60/bpm))
+    //
+    // If any of them drifts (e.g. someone re-introduces a `* 0.25` factor in
+    // the transport, or changes the worklet's LFO period constant from `4` to
+    // `16`), the three layers will no longer agree and the user hears an LFO
+    // out of sync with the BPM grid — the original "4x trop lent" bug.
+    //
+    // At 120 BPM, 1 bar = 128 ticks = 2 s. freq=1 must therefore complete
+    // exactly ONE full cycle across those 128 ticks.
+
+    describe('LFO sync contract: freq=1 = 1 bar (128 ticks) at 120 BPM', () => {
+        const lfo = { freq: 1, phase: 0, min: 0, max: 1, waveform: 0 }
+
+        // One full cycle, sampled at the 4 cardinal points plus the wrap.
+        const CYCLE_KEYPOINTS = [
+            { tick: 0,   value: 0   },  // trough (cycle start)
+            { tick: 32,  value: 0.5 },  // midpoint rising
+            { tick: 64,  value: 1   },  // peak
+            { tick: 96,  value: 0.5 },  // midpoint falling
+            { tick: 128, value: 0   },  // trough (one full cycle done)
+        ]
+
+        it.each(CYCLE_KEYPOINTS)(
+            'tick $tick: both pipelines agree on the value $value (one cycle = one bar)',
+            ({ tick, value }) => {
+                const audio = audioEngineVelocity(lfo, tick)
+                const vizu  = visualizationVelocity(lfo, tick)
+
+                expect(audio).toBeCloseTo(value, 2)
+                expect(vizu).toBeCloseTo(value, 2)
+                // The two pipelines must agree at the cardinal points too.
+                expect(audio).toBeCloseTo(vizu, 2)
+            }
+        )
+
+        it('worklet and helper disagree by < 0.005 across ALL 128 ticks', () => {
+            // Catches any sub-tick drift between the worklet's inlined formula
+            // and the helper, even at non-cardinal points.
+            for (let tick = 0; tick <= 128; tick += 1) {
+                const audio = audioEngineVelocity(lfo, tick)
+                const vizu  = visualizationVelocity(lfo, tick)
+                expect(Math.abs(audio - vizu)).toBeLessThan(0.005)
+            }
         })
     })
 })

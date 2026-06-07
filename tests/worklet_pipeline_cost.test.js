@@ -105,6 +105,7 @@ function makeAudioCtx() {
             fftSize: 1024,
             frequencyBinCount: 512,
         })),
+        createConstantSource: vi.fn(() => ({ ...makeNode(), offset: makeParam(0) })),
     }
 }
 

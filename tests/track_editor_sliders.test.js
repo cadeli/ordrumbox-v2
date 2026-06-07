@@ -251,7 +251,9 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
         fireInput(minInput, 0.25)
         expect(editor._track.velocityLfo.min).toBe(0.25)
 
-        const display = editor.container.querySelector('[data-lfo-display="range"]')
+        // The dual-range is followed by a "min..max" display span in the same row.
+        const rangeRow = minInput.closest('.ne-row')
+        const display = rangeRow.querySelector('.ne-val')
         expect(display).not.toBeNull()
         expect(display.textContent).toBe('0.25..0.9')
     })

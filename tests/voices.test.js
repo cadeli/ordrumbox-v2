@@ -312,11 +312,12 @@ describe('SampleVoice', () => {
         })
 
         it('setup replaces fpitch with the pitchLFO value (in semitones, snapshot at note start)', () => {
-            // serviceRegistry.transport.tick = 0, nbBars default 4, freq=1, min=0, max=12
-            // → phase=0, sin(0)=0, (0+1)/2=0.5, 0 + 0.5*12 = 6 semitones
+            // serviceRegistry.transport.tick = 0, freq=1, min=0, max=12, phase=0.25
+            // → phase 0.25 maps to p=0 in getLfoWaveformValue, sin(0)=0
+            // → (0+1)/2=0.5, 0 + 0.5*12 = 6 semitones
             // → playbackRate = 2^(6/12) = sqrt(2) ≈ 1.4142
             const flatNote = makeFlatNote({ fpitch: 1 })
-            flatNote.track.pitchLfo = { freq: 1, min: 0, max: 12, phase: 0 }
+            flatNote.track.pitchLfo = { freq: 1, min: 0, max: 12, phase: 0.25 }
             voice.setup(flatNote, 1.0)
             // No extra centMult gain should be created (no more LFO → centMult → detune)
             expect(ctx.createGain.mock.calls.length).toBe(1) // just the gainEnvelope

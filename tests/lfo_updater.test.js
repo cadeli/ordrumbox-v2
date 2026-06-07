@@ -44,11 +44,12 @@ describe('LfoUpdater', () => {
             expect(valA).not.toBe(valB)
         })
 
-        it('at tick 0 with phase 0, returns midpoint (sin(0) = 0 => (0+1)/2 = 0.5 mapped to range)', () => {
+        it('at tick 0 with phase 0, returns minimum (phase 0 = trough of sine)', () => {
             const lfo = { freq: 1, phase: 0, min: 0, max: 1 }
-            // sin(0) = 0 => (0+1)/2 = 0.5 => 0.5 * (1-0) + 0 = 0.5
+            // phase 0 in getLfoWaveformValue maps to -0.25 in sine, which is the trough
+            // (sin(2*pi*(-0.25)) = -1), giving min after mapping.
             const val = LfoUpdater.computeLfoValue(lfo, 0, TICK * 4)
-            expect(val).toBe(0.5)
+            expect(val).toBe(0)
         })
 
         it('min=max returns min value throughout', () => {

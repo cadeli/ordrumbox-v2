@@ -9,6 +9,7 @@ import {
     computeLfoValueFromTick,
     computeLfoValue,
     computeLfoDepth,
+    getLfoWaveformValue,
     computeSaturationCurve,
     computeImpulseSampleData,
     computeDriveGain,
@@ -101,28 +102,29 @@ describe('audioMath - computeLfoFrequency', () => {
 })
 
 describe('audioMath - computeLfoValueFromTick', () => {
-    it('returns 0.5 at tick 0 phase 0 for range [0, 1]', () => {
+    it('returns min at tick 0 phase 0 for range [0, 1] (phase 0 = trough)', () => {
         const lfo = { freq: 1, min: 0, max: 1, phase: 0 }
-        expect(computeLfoValueFromTick(lfo, 0)).toBe(0.5)
+        // phase 0 maps to -0.25 in getLfoWaveformValue, sin(2π*-0.25) = -1 → min
+        expect(computeLfoValueFromTick(lfo, 0)).toBe(0)
     })
 
-    it('returns max at 1/4 period with phase 0', () => {
+    it('returns max at 1/2 period with phase 0 (phase 0.5 = peak)', () => {
         const lfo = { freq: 1, min: 0, max: 1, phase: 0 }
-        const period = 16 * TICK
-        expect(computeLfoValueFromTick(lfo, period / 4)).toBe(1)
+        const period = 4 * TICK
+        expect(computeLfoValueFromTick(lfo, period / 2)).toBe(1)
     })
 
-    it('returns min at 3/4 period with phase 0', () => {
+    it('returns min at full period with phase 0 (phase 1.0 = trough again)', () => {
         const lfo = { freq: 1, min: 0, max: 1, phase: 0 }
-        const period = 16 * TICK
-        expect(computeLfoValueFromTick(lfo, period * 0.75)).toBe(0)
+        const period = 4 * TICK
+        expect(computeLfoValueFromTick(lfo, period)).toBe(0)
     })
 
-    it('doubling frequency parameter doubles the period (tick 1/4 freq 1 == tick 1/2 freq 2)', () => {
+    it('doubling frequency parameter doubles the period (tick 1/2 freq 1 == tick 1 freq 2)', () => {
         const lfo1 = { freq: 1, min: 0, max: 1, phase: 0 }
         const lfo2 = { freq: 2, min: 0, max: 1, phase: 0 }
-        const val1 = computeLfoValueFromTick(lfo1, 4 * TICK) // 1/4 of 16
-        const val2 = computeLfoValueFromTick(lfo2, 8 * TICK) // 1/4 of 32
+        const val1 = computeLfoValueFromTick(lfo1, 2 * TICK) // 1/2 of 4*TICK
+        const val2 = computeLfoValueFromTick(lfo2, 4 * TICK) // 1/2 of 8*TICK
         expect(val1).toBe(val2)
     })
 })
@@ -161,40 +163,42 @@ describe('audioMath - computeLfoValue (replace semantics, controlKey normalizati
     it('normalizes filterFreq LFO config from Hz to [0,1] when min/max > 1', () => {
         // 20000 Hz → normalized = log10(20000/20)/3 = 1.0
         // 20 Hz    → normalized = log10(20/20)/3    = 0.0
-        // sin(0) = 0 → (0+1)/2 = 0.5 → midpoint between 0 and 1 = 0.5
+        // phase 0 maps to -0.25 in getLfoWaveformValue, sin(2π*-0.25) = -1 → min
         const lfo = { freq: 1, min: 20, max: 20000, phase: 0 }
-        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterFreq')).toBe(0.5)
+        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterFreq')).toBe(0)
     })
 
     it('keeps filterFreq LFO config in [0,1] when already normalized', () => {
         const lfo = { freq: 1, min: 0.2, max: 0.8, phase: 0 }
-        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterFreq')).toBe(0.5)
+        // phase 0 = trough → min of normalized range = 0.2
+        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterFreq')).toBe(0.2)
     })
 
     it('normalizes filterQ LFO config from Q to [0,1] when min/max > 1', () => {
         // Q=0.707 → normalized = (0.707-0.707)/18 = 0
         // Q=18.707 → normalized = (18.707-0.707)/18 = 1
-        // sin(0) = 0 → (0+1)/2 = 0.5 → 0.5
+        // phase 0 = trough → min of normalized range = 0
         const lfo = { freq: 1, min: 0.707, max: 18.707, phase: 0 }
-        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterQ')).toBe(0.5)
+        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterQ')).toBe(0)
     })
 
     it('handles string-typed freq and min/max (as stored in JSON)', () => {
         const lfo = { freq: '1', phase: 0, min: '0', max: '1' }
-        expect(computeLfoValue(lfo, 0, TICK * 4)).toBe(0.5)
+        // phase 0 = trough → min = 0
+        expect(computeLfoValue(lfo, 0, TICK * 4)).toBe(0)
     })
 
     it('matches the worklet formula (inlined in strip_source.js)', () => {
         // The worklet uses: bias + ((raw + 1) * 0.5) * depth
-        // where bias = min, depth = max - min, raw = sin(2π * (tick/period + phase))
-        // period = freq * 16 * TICK
-        // The helper must produce the same value.
+        // where bias = min, depth = max - min, raw = getLfoWaveformValue(phase, wave)
+        // period = freq * 4 * TICK
+        // The helper must produce the same value as getLfoWaveformValue.
         const lfo = { freq: 2, min: -1, max: 1, phase: 0.25 }
         for (const tick of [0, 16, 32, 48, 64, 96]) {
-            const period = 2 * 16 * TICK
+            const period = 2 * 4 * TICK
             const curPhase = (tick / period) + 0.25
-            const raw = Math.sin(2 * Math.PI * curPhase)
-            const expected = -1 + ((raw + 1) * 0.5) * 2  // = raw
+            const raw = getLfoWaveformValue(curPhase, 0) // wave 0 = sine
+            const expected = -1 + ((raw + 1) * 0.5) * 2
             const expectedRounded = Math.round(100 * expected) / 100
             const actual = computeLfoValue(lfo, tick, TICK * 4)
             expect(actual).toBe(expectedRounded)
