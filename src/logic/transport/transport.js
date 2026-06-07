@@ -91,11 +91,11 @@ export default class Transport {
     }
 
     nextNote = () => {
-        this.nextStepTime += appState.secondsPerBeat
+        this.nextStepTime += 0.25 * appState.secondsPerBeat
         this.tick++
-        // Throttle DOM update: only update the status bar once per beat (every 8 ticks if TICK=32)
-        if (this.tick % 8 === 0) {
-            Utils.displayStatusBar("beat " + Math.floor(this.tick / 8))
+        // Throttle DOM update: every 2 ticks (~ 1/32 note at the display BPM)
+        if (this.tick % 2 === 0) {
+            Utils.displayStatusBar("step " + Math.floor(this.tick / 2))
         }
     }
 }
