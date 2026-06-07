@@ -8,8 +8,8 @@
  * musical LFO cycles internally. 
  * 
  * Parameters like lfoCutFreq are PERIOD MULTIPLIERS:
- *   - 1.0 = 16 beats (4 bars)
- *   - 2.0 = 32 beats (8 bars)
+ *   - 1.0 = 4 beats (1 bar)
+ *   - 2.0 = 8 beats (2 bars)
  */
 
 const STRIP_PROCESSOR_SOURCE = `
@@ -65,7 +65,7 @@ const getLfoWaveformValue = (phase, wave) => {
 class _SH {
     constructor() { this.lastCycle = -1; this.val = 0; }
     process(time, freqMultiplier, bpm) {
-        const period = freqMultiplier * 16 * (60 / bpm);
+        const period = freqMultiplier * 4 * (60 / bpm);
         const cycle = Math.floor(time / period);
         if (cycle !== this.lastCycle) {
             this.val = Math.random() * 2 - 1;
@@ -170,8 +170,9 @@ class StripProcessor extends AudioWorkletProcessor {
             
             // --- 1. LFO Internal Processing ---
             const computeLfo = (fMult, w, d, b, phase, sh) => {
-                const period = fMult * 16 * (60 / bpm);
-                const raw = w > 3.5 ? sh.process(time, fMult, bpm) : getLfoWaveformValue(time / period + phase, w);
+                const transportPhase = time / (4 * (60 / bpm));
+                const localPhase = (transportPhase / fMult) + phase;
+                const raw = w > 3.5 ? sh.process(time, fMult, bpm) : getLfoWaveformValue(localPhase, w);
                 return b + ((raw + 1) * 0.5) * d;
             };
 
