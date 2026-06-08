@@ -10,6 +10,7 @@ export default class PatternPanel {
         this._selNote = null
         this._selTrackIdx = -1
         this._rafId = null
+        this._syncRafId = null
         this._prevLoopTick = -1
         this._playhead = null
         this._syncPending = false
@@ -99,9 +100,25 @@ export default class PatternPanel {
     requestSync() {
         if (this._syncPending) return
         this._syncPending = true
-        requestAnimationFrame(() => {
+        this._syncRafId = requestAnimationFrame(() => {
             this.sync()
             this._syncPending = false
+            this._syncRafId = null
+            this._updateBarCache()
+        })
+    }
+
+    /**
+     * Force un re-render immédiat (annule le debounce précédent).
+     * Utilisé pour le loop point pendant le drag où chaque frame compte.
+     */
+    forceSync() {
+        if (this._syncRafId) cancelAnimationFrame(this._syncRafId)
+        this._syncPending = false
+        this._syncRafId = requestAnimationFrame(() => {
+            this.sync()
+            this._syncPending = false
+            this._syncRafId = null
             this._updateBarCache()
         })
     }
@@ -433,9 +450,7 @@ export default class PatternPanel {
      * @param {number} loopAtStep  Nouveau loop point (1-indexé, step absolu)
      */
     updateLoopPoint(trackIdx, loopAtStep) {
-        // Le loop point peut être sur une barre hors de la page courante.
-        // Un re-render complet (requestSync) régénère la bonne page si besoin.
-        this.requestSync()
+        this.forceSync()
     }
 
     esc(str) {

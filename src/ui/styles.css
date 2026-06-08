@@ -149,7 +149,10 @@
     z-index: 2;
 }
 #pattern-panel .pp-cell.selected { outline: 1px solid #00fff5; z-index: 10; }
-#pattern-panel .pp-cell.pp-loop { border-right: 2px solid #00fff5; }
+#pattern-panel .pp-cell.pp-loop {
+    border-right: 4px solid #00fff5;
+    box-shadow: inset -8px 0 0 rgba(0, 255, 245, 0.15);
+}
 #pattern-panel .pp-cell-out { opacity: 0.1; background: #111; }
 
 /* ---- LED Indicators ---- */

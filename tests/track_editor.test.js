@@ -218,6 +218,46 @@ describe('TrackEditor onPatternChange', () => {
     })
 })
 
+describe('TrackEditor loop slider events', () => {
+    it('should fire onLoopPointChange when loopAtStep changes without throwing', () => {
+        const track = {
+            name: 'Test Track',
+            bars: 4,
+            barQuantize: 16,
+            loopAtStep: 16,
+            notes: []
+        }
+        const pattern = {
+            name: 'Test Pattern',
+            tracks: [track],
+            nbBars: 4
+        }
+        appState.patterns = [pattern]
+        appState.selectedPatternNum = 0
+
+        const editor = new TrackEditor()
+        editor.init()
+        editor.show({ track, trackIdx: 0 })
+
+        const onLoopPointChangeSpy = vi.fn()
+        playbackEvents.onLoopPointChange.push(onLoopPointChangeSpy)
+
+        // Simulate the onChange call that happens during drag/input
+        // This is what _renderLoopPanel does: 
+        // onChange: (v, key) => this._onLoopSlider({ dataset: { loop: key }, value: v })
+        
+        expect(() => {
+            editor._onLoopSlider({ dataset: { loop: 'loopAtStep' }, value: 32 })
+        }).not.toThrow()
+
+        expect(track.loopAtStep).toBe(32)
+        expect(onLoopPointChangeSpy).toHaveBeenCalledWith(expect.objectContaining({
+            loopAtStep: 32,
+            trackIdx: 0
+        }))
+    })
+})
+
 describe('TrackEditor LFO row highlight', () => {
     it('marks the selected prop row with the "selected" class', () => {
         const editor = new TrackEditor()
@@ -225,6 +265,7 @@ describe('TrackEditor LFO row highlight', () => {
         editor._track = { name: 'KICK', velocity: 0.5, pitchLfo: null }
         editor._selectedPropKey = 'velocity'
         editor.sync()
+        console.log('DEBUG HTML:', editor.container.innerHTML)
 
         const selectedRow = editor.container.querySelector('.ne-row.selected')
         expect(selectedRow).not.toBeNull()

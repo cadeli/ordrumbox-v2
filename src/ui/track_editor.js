@@ -751,11 +751,13 @@ export default class TrackEditor {
         lfo[key] = parseFloat(input.value)
         
         if (key === 'min' || key === 'max') {
-            const row = input.closest('.ne-row')
-            const valEl = row.querySelector('.ne-val')
+            const row = input.closest?.('.ne-row')
+            const valEl = row?.querySelector('.ne-val')
             if (valEl) valEl.textContent = `${fmt(lfo.min)}..${fmt(lfo.max)}`
         } else {
-            input.nextElementSibling.textContent = fmt(input.value)
+            if (input.nextElementSibling) {
+                input.nextElementSibling.textContent = fmt(input.value)
+            }
         }
         playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
     }
@@ -827,13 +829,19 @@ export default class TrackEditor {
         this._track.loopPointStep = this._track.loopAtStep % this._track.barQuantize
 
         // Update local labels and dependent UI without full sync
-        input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
+        if (input.nextElementSibling) {
+            input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
+        }
         
         // Use OrSlider's setValue to keep formatted display in sync
         const loopSlider = this._sliders.get('loopAtStep')
         if (loopSlider) {
             loopSlider.setMax?.(maxSteps)
-            loopSlider.setValue(this._track.loopAtStep)
+            // If it's the actual loop slider being changed, OrSlider already updated its value and display.
+            // But if it's another slider (like bars) that affected maxSteps, we need to update the loop slider.
+            if (key !== 'loopAtStep') {
+                loopSlider.setValue(this._track.loopAtStep)
+            }
         }
         
         // Fire lightweight loop point update for immediate visual feedback on pattern grid
