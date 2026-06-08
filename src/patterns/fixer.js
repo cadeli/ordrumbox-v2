@@ -61,7 +61,7 @@ export function fixPattern(pattern) {
     pattern.application ??= "online-ordrumbox"
     pattern.url ??= "https://www.ordrumbox.com"
     if (pattern.tracks) {
-        Object.values(pattern.tracks).forEach((track, indexTrack) => {
+        Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
             fixTrackDefaults(track, indexTrack)
         })
     }

@@ -12,6 +12,7 @@ import AboutPanel from './ui/about_panel.js'
 
 import MfResourcesLoader from './loader/resources_loader.js'
 import { FALLBACK_FPS } from './core/constants.js'
+import Utils from './core/utils.js'
 import { appState } from './state/app_state.js'
 import { serviceRegistry } from './state/service_registry.js'
 import { soundRegistry } from './state/sound_registry.js'
@@ -147,7 +148,7 @@ export function init() {
             serviceRegistry.mfCmd.setSelectedPatternNum(0)
 
             const pattern = appState.patterns[0]
-            const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
+            const tracks = Utils.getTracksArray(pattern)
             const trackIdx = tracks.findIndex(t => t.name === 'SNARE')
             if (trackIdx !== -1) {
                 const track = tracks[trackIdx]

@@ -2,6 +2,7 @@ import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { fixPatterns, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
+import Utils from '../core/utils.js'
 
 export default class MfResourcesLoader {
     static TAG = "MFResourcesLoader"
@@ -126,7 +127,7 @@ export default class MfResourcesLoader {
             appState.patterns.length = 0
             fixedPatterns.forEach((pattern) => {
                 if (pattern?.tracks) {
-                    Object.values(pattern.tracks).forEach((trk) => {
+                    Utils.getTracksArray(pattern).forEach((trk) => {
                         if (trk?.soundId && trk.soundId !== "NOT_DEFINED") {
                             if (trk.useAutoAssignSound !== false) {
                                 trk.soundId = "NOT_DEFINED"

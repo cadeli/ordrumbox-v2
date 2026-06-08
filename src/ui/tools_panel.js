@@ -273,7 +273,7 @@ export default class ToolsPanel extends BasePanel {
         if (!pattern || !pattern.tracks) return
 
         let totalRemoved = 0
-        Object.values(pattern.tracks).forEach(track => {
+        Utils.getTracksArray(pattern).forEach(track => {
             const result = Utils.compacteTrackWithLoop(track)
             if (result.changed) {
                 totalRemoved += result.removedNotes

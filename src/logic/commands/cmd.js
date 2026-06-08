@@ -54,7 +54,7 @@ export default class MfCmd {
     _incrementPatternVersionByTrack(track) {
         // Find the pattern containing this track to increment its version
         for (const pattern of appState.patterns) {
-            if (pattern.tracks && Object.values(pattern.tracks).includes(track)) {
+            if (Utils.getTracksArray(pattern).includes(track)) {
                 pattern._version = (pattern._version || 0) + 1
                 break
             }
@@ -358,7 +358,7 @@ export default class MfCmd {
 
     getTrackFromType = (pattern, type) => {
         let ret = null
-        Object.values(pattern.tracks).forEach((track) => {
+        Utils.getTracksArray(pattern).forEach((track) => {
             if (track.name === type) {
                 ret = track
             }
@@ -373,9 +373,9 @@ export default class MfCmd {
     }
 
     setNbBar = (pattern, newBar) => {
-        let oldBar = pattern.nbBars * (pattern.tracks[0]?.barQuantize ?? 4)
+        let oldBar = pattern.nbBars * (Utils.getTracksArray(pattern)[0]?.barQuantize ?? 4)
         pattern.nbBars = newBar * 4
-        Object.values(pattern.tracks).forEach((track, indexTrack) => {
+        Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
             if (track.loopAtStep >= oldBar) {
                 track.loopAtStep = pattern.nbBars * track.barQuantize
                 recalcLoopDerived(track)
@@ -407,7 +407,7 @@ export default class MfCmd {
     }
 
     cleanPattern = (pattern) => { 
-        Object.values(pattern.tracks).forEach((track) => {
+        Utils.getTracksArray(pattern).forEach((track) => {
             this.cleanTrack(track )
         })
     }

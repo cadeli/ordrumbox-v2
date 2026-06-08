@@ -14,7 +14,7 @@ export default class MfAutoAssign {
 
     autoAssignSounds = (pattern) => {
         if (Object.keys(this._soundRegistry.sounds).length > 0) {
-            Object.values(pattern.tracks).forEach((track, indexTrack) => {
+            Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
                 if (track.useAutoAssignSound === true && track.useSoftSynth === false) {
                     this.autoAssignTrackSounds(track, indexTrack)
                 }

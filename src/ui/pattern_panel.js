@@ -2,6 +2,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { TICK } from '../core/constants.js'
+import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 
 export default class PatternPanel extends BasePanel {
@@ -175,7 +176,7 @@ export default class PatternPanel extends BasePanel {
             const trackIdx = parseInt(trackNameEl.dataset.track, 10)
             if (isNaN(trackIdx)) return
             const pattern = appState.patterns[appState.selectedPatternNum]
-            const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
+            const tracks = Utils.getTracksArray(pattern)
             const track = tracks[trackIdx]
             if (!track) return
 
@@ -203,7 +204,7 @@ export default class PatternPanel extends BasePanel {
 
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
-        const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
+        const tracks = Utils.getTracksArray(pattern)
         const track = tracks[trackIdx]
         if (!track) return
 
@@ -319,7 +320,7 @@ export default class PatternPanel extends BasePanel {
             return
         }
 
-        const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
+        const tracks = Utils.getTracksArray(pattern)
         
         const BARS_PER_PAGE = 4
         const startBar = appState.currentPage * BARS_PER_PAGE

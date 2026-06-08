@@ -69,7 +69,7 @@ export class PatternExporter {
     
     Object.values(patterns).forEach((pattern) => {
       const columns = [];
-      Object.values(pattern.tracks).forEach((track) => {
+      Utils.getTracksArray(pattern).forEach((track) => {
         for (let bar = 0; bar < track.bars; bar++) {
           for (let step = 0; step < track.barQuantize; step++) {
             const patternStep = step + bar * track.barQuantize;
