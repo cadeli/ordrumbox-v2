@@ -76,50 +76,41 @@ export default class MfSound {
         }
     }
 
-    playSample = async (flatNote, time) => {
+    _playVoice = async (flatNote, time, opts = {}) => {
         try {
-            if (!flatNote) return
             const strip = await this.mixer.getOrCreateStrip(flatNote.track.name)
-            if (!strip) return
-
+            if (!strip) return null
             this.updateStripFromTrack(strip, flatNote.track, time)
             this.stopPreviousVoice(flatNote.track, time)
-
+            if (opts.syncGeneratedSounds) {
+                this.voiceFactory.generatedSounds = this.generatedSounds
+            }
             const voice = await this.voiceFactory.createVoice(flatNote)
             if (voice) {
                 voice.setup(flatNote, time)
                 if (flatNote.track.mono) this.registerVoice(flatNote.track, voice)
-                this.registerSynthVoice(voice)
                 voice.start(time)
             }
+            return voice
         } catch (e) {
-            console.error("Error in playSample:", e)
+            console.error("Error in _playVoice:", e)
+            return null
         }
     }
 
+    playSample = async (flatNote, time) => {
+        if (!flatNote) return
+        const voice = await this._playVoice(flatNote, time)
+        if (voice) this.registerSynthVoice(voice)
+    }
+
     playGenerated = async (flatNote, time, loadFn) => {
-        try {
-            if (Object.keys(this.generatedSounds).length === 0) {
-                this.loadGeneratedsounds(flatNote, time, loadFn)
-                return
-            }
-            if (!flatNote) return
-            const strip = await this.mixer.getOrCreateStrip(flatNote.track.name)
-            if (!strip) return
-
-            this.updateStripFromTrack(strip, flatNote.track, time)
-            this.stopPreviousVoice(flatNote.track, time)
-
-            this.voiceFactory.generatedSounds = this.generatedSounds
-            const voice = await this.voiceFactory.createVoice(flatNote)
-            if (voice) {
-                voice.setup(flatNote, time)
-                if (flatNote.track.mono) this.registerVoice(flatNote.track, voice)
-                voice.start(time)
-            }
-        } catch (e) {
-            console.error("Error in playGenerated:", e)
+        if (Object.keys(this.generatedSounds).length === 0) {
+            this.loadGeneratedsounds(flatNote, time, loadFn)
+            return
         }
+        if (!flatNote) return
+        await this._playVoice(flatNote, time, { syncGeneratedSounds: true })
     }
 
     loadGeneratedsounds = (flatNote, time, loadFn) => {
