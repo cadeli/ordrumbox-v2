@@ -9,7 +9,9 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
-import { bindCloseButton, bindVisibilityToggles, escapeHtml, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles, positionBelowPatternPanel } from './panel_helpers.js'
+import BasePanel from './base_panel.js'
+
 const fmt = v => parseFloat(Number(v).toFixed(2))
 const fmtFreq = v => {
     const hz = Utils.normalizeTrackFilterFreqValue(v)
@@ -58,9 +60,9 @@ const GROUPS = [
     }
 ]
 
-export default class TrackEditor {
+export default class TrackEditor extends BasePanel {
     constructor() {
-        this.container = null
+        super('te-panel')
         this._track = null
         this._trackIdx = -1
         this._selectedPropKey = null
@@ -70,21 +72,8 @@ export default class TrackEditor {
         this.synthEditor = new SynthEditor(this)
     }
 
-    injectCSS() {
-        injectUiCss()
-    }
-
-    init() {
-        this.injectCSS()
-        this.createDOM()
-        this.subscribe()
-    }
-
     createDOM() {
-        this.container = document.createElement('div')
-        this.container.id = 'te-panel'
-        this.container.style.display = 'none'
-        document.body.appendChild(this.container)
+        super.createDOM()
         this.synthEditor.createDOM()
     }
 
@@ -112,9 +101,6 @@ export default class TrackEditor {
         })
         playbackEvents.onPatternChange.push(() => {
             if (this._isDragging) return
-            // The current track reference is from the previous pattern. Re-bind
-            // to the corresponding track (same name) in the new pattern, or
-            // hide the editor if the track no longer exists.
             if (!this._track) return
             const pattern = appState.patterns[appState.selectedPatternNum]
             if (!pattern?.tracks) { this.hide(); return }
@@ -123,12 +109,6 @@ export default class TrackEditor {
                 this.hide()
                 return
             }
-            // Only re-render when the track reference actually changed (pattern
-            // switch). For slider value changes the track is the same object,
-            // the in-memory value is already updated by _onSlider, and the DOM
-            // value/text is already updated by the input/change handlers — a
-            // full sync() here would destroy the focused slider element and
-            // steal keyboard focus from the user.
             if (pattern.tracks[newIdx] !== this._track) {
                 this._track = pattern.tracks[newIdx]
                 this._trackIdx = newIdx
@@ -152,7 +132,7 @@ export default class TrackEditor {
     }
 
     _updateLfoSliders() {
-        if (!this._track || this.container.style.display === 'none') return
+        if (!this._track || !this.isVisible) return
         const transport = serviceRegistry.transport
         if (!transport?.isRunning) return
 
@@ -173,14 +153,10 @@ export default class TrackEditor {
         })
     }
 
-    reposition() {
-        positionBelowPatternPanel(this.container)
-    }
-
     show({ track, trackIdx }) {
         this._track = track
         this._trackIdx = trackIdx
-        this.sync()
+        super.show(['ne-panel', 'tools-panel', 'output-panel', 'about-panel'])
         void this.synthEditor.ensureGeneratedSoundsLoaded()
         if (serviceRegistry.transport?.isRunning) {
             this._startAnimation()
@@ -321,7 +297,6 @@ export default class TrackEditor {
         const maxSteps = bars * barQuantize
         const swing = this._track.swingAmount ?? 0
 
-        // Format loop point as "bar.step" (1-indexed), e.g. "3.2" = bar 3, step 2
         const fmtLoopPoint = (step) => {
             const b = Math.floor((step - 1) / barQuantize) + 1
             const s = ((step - 1) % barQuantize) + 1
@@ -433,7 +408,6 @@ export default class TrackEditor {
             ? (this._track.synthSoundKey || 'BASS1')
             : 'none'
 
-        // only instrument IDs that have at least one sample across all kits
         const keysWithSamples = new Set(
             soundRegistry.drumkitList.flatMap(kit => kit.instruments.map(s => s.key))
         )
@@ -575,14 +549,11 @@ export default class TrackEditor {
             <div class="ne-grid">`
         
         if (lfo) {
-            // Freq row
             lfoHtml += `<div class="ne-row">
                 <label>Freq</label>
                 <input type="range" min="0.1" max="16" step="0.1" value="${lfo.freq}" data-lfo-key="freq">
                 <span class="ne-val">${fmt(lfo.freq)}</span>
             </div>`
-
-            // Dual range for Min/Max
             lfoHtml += `<div class="ne-row">
                 <label>Range</label>
                 <div class="ne-range-container">
@@ -593,8 +564,6 @@ export default class TrackEditor {
                 </div>
                 <span class="ne-val" style="min-width:60px">${fmt(lfo.min)}..${fmt(lfo.max)}</span>
             </div>`
-
-            // Phase row
             lfoHtml += `<div class="ne-row">
                 <label>Phas</label>
                 <input type="range" min="0" max="1" step="0.01" value="${lfo.phase}" data-lfo-key="phase">
@@ -622,7 +591,6 @@ export default class TrackEditor {
             })
         })
         
-        // LFO Events
         const lfoPanel = this.container.querySelector('.lfo-panel')
         if (lfoPanel) {
             lfoPanel.querySelectorAll('input[type=range]').forEach(input => {
@@ -638,12 +606,10 @@ export default class TrackEditor {
             lfoPanel.querySelector('[data-action="toggle-lfo"]')?.addEventListener('click', () => this._toggleLfo())
         }
 
-        // FX toggle LEDs
         this.container.querySelectorAll('[data-fx-toggle]').forEach(btn => {
             btn.addEventListener('click', () => this._toggleFx(btn))
         })
 
-        // Sound panel events
         this.container.querySelector('[data-action="toggle-auto"]')?.addEventListener('click', () => {
             this._track.useAutoAssignSound = this._track.useAutoAssignSound === false
             if (this._track.useAutoAssignSound) {
@@ -658,7 +624,6 @@ export default class TrackEditor {
         this.container.querySelector('[data-sound="instrument"]')?.addEventListener('change', async (e) => {
             const newName = e.target.value
             serviceRegistry.mfCmd.changeTrackName(this._track, newName)
-            // auto-select first sample for this instrument
             const firstSample = this._getPreferredSampleForInstrument(newName)
             if (firstSample) {
                 if (!soundRegistry.sounds[firstSample.url]?.buffer) {
@@ -672,7 +637,6 @@ export default class TrackEditor {
         this.container.querySelector('[data-sound="sample"]')?.addEventListener('change', async (e) => {
             const url = e.target.value
             if (!soundRegistry.sounds[url]?.buffer) {
-                // find kit + sample info from drumkitList
                 let foundKit, foundSample
                 for (const kit of soundRegistry.drumkitList) {
                     const s = kit.instruments.find(i => i.url === url)
@@ -771,12 +735,11 @@ export default class TrackEditor {
     }
 
     hide() {
-        if (this.container.style.display === 'none') return
-        this.container.style.display = 'none'
+        if (!this.isVisible) return
+        super.hide()
         this.synthEditor.reset()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
         
-        const wasActive = this._track !== null
         this._track = null
         this._trackIdx = -1
         this._selectedPropKey = null
@@ -795,7 +758,6 @@ export default class TrackEditor {
                 pattern.nbBars = val
                 pattern.tracks.forEach(t => {
                     t.bars = val
-                    // Ensure loopAtStep is within new bounds for each track
                     const maxSteps = val * (t.barQuantize ?? 4)
                     if (t.loopAtStep > maxSteps) {
                         t.loopAtStep = maxSteps
@@ -809,7 +771,6 @@ export default class TrackEditor {
         }
 
         if (key === 'barQuantize') {
-            // Re-quantize notes to maintain relative position
             if (this._track.notes) {
                 this._track.notes.forEach(note => {
                     const steppc = note.steppc ?? Math.round((note.barStep * 100) / (oldBarQuantize || 4))
@@ -818,33 +779,26 @@ export default class TrackEditor {
             }
         }
 
-        // Ensure current track loopAtStep is within bounds (already handled for bars above, but needed for barQuantize)
         const maxSteps = (this._track.bars ?? 4) * (this._track.barQuantize ?? 4)
         if (this._track.loopAtStep > maxSteps) {
             this._track.loopAtStep = maxSteps
         }
 
-        // Update derived fields for current track
         this._track.loopPointBar = Math.floor(this._track.loopAtStep / this._track.barQuantize)
         this._track.loopPointStep = this._track.loopAtStep % this._track.barQuantize
 
-        // Update local labels and dependent UI without full sync
         if (input.nextElementSibling) {
             input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
         }
         
-        // Use OrSlider's setValue to keep formatted display in sync
         const loopSlider = this._sliders.get('loopAtStep')
         if (loopSlider) {
             loopSlider.setMax?.(maxSteps)
-            // If it's the actual loop slider being changed, OrSlider already updated its value and display.
-            // But if it's another slider (like bars) that affected maxSteps, we need to update the loop slider.
             if (key !== 'loopAtStep') {
                 loopSlider.setValue(this._track.loopAtStep)
             }
         }
         
-        // Fire lightweight loop point update for immediate visual feedback on pattern grid
         if (key === 'loopAtStep') {
             playbackEvents.dispatchLoopPointChange({
                 trackIdx: this._trackIdx,
@@ -875,9 +829,5 @@ export default class TrackEditor {
         btn.textContent = this._track[key] ? 'ON' : 'OFF'
         btn.classList.toggle('active', this._track[key])
         playbackEvents.dispatchTrackParamChange(this._track)
-    }
-
-    esc(str) {
-        return escapeHtml(str)
     }
 }

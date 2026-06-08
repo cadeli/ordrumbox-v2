@@ -2,11 +2,11 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { TICK } from '../core/constants.js'
-import { injectUiCss } from './panel_helpers.js'
+import BasePanel from './base_panel.js'
 
-export default class PatternPanel {
+export default class PatternPanel extends BasePanel {
     constructor() {
-        this.container = null
+        super('pattern-panel')
         this._selNote = null
         this._selTrackIdx = -1
         this._rafId = null
@@ -17,22 +17,10 @@ export default class PatternPanel {
         this._barRectsCache = []
     }
 
-    injectCSS() {
-        injectUiCss()
-    }
-
-    init() {
-        this.injectCSS()
-        this.createDOM()
-        this.sync()
-        this.subscribe()
-    }
-
     createDOM() {
-        this.container = document.createElement('div')
-        this.container.id = 'pattern-panel'
+        super.createDOM()
+        this.container.style.display = 'block' // Always visible
         this.container.addEventListener('click', (e) => this._onClick(e), { passive: false })
-        document.body.appendChild(this.container)
     }
 
     _ensurePlayhead() {
@@ -108,10 +96,6 @@ export default class PatternPanel {
         })
     }
 
-    /**
-     * Force un re-render immédiat (annule le debounce précédent).
-     * Utilisé pour le loop point pendant le drag où chaque frame compte.
-     */
     forceSync() {
         if (this._syncRafId) cancelAnimationFrame(this._syncRafId)
         this._syncPending = false
@@ -227,14 +211,12 @@ export default class PatternPanel {
 
         if (note) {
             if (this._selNote === note && this._selTrackIdx === trackIdx) {
-                // PARTIAL UPDATE: Immediate visual feedback
                 cell.classList.remove('filled', 'pp-trig-rand', 'pp-trig-fixed')
                 cell.innerHTML = '' 
                 
                 serviceRegistry.mfCmd.deleteNote(track, note)
                 this._clearSelection()
                 
-                // Defer heavy re-render
                 requestAnimationFrame(() => this.sync())
             } else {
                 this._selNote = note
@@ -246,7 +228,6 @@ export default class PatternPanel {
             return
         }
 
-        // PARTIAL UPDATE: Immediate visual feedback
         cell.classList.add('filled')
 
         const newNote = serviceRegistry.mfCmd.addNote(track, bar, barStep)
@@ -257,13 +238,7 @@ export default class PatternPanel {
         const pos = bar * (track.barQuantize ?? 4) + barStep
         playbackEvents.dispatchNoteSelect({ track, trackIdx, note: newNote, pos, bar, barStep })
         
-        // Defer heavy re-render
         requestAnimationFrame(() => this.sync())
-    }
-
-    syncCells(trackIdx, bar, barStep) {
-        // Obsolete with full sync but kept for compatibility
-        this.sync()
     }
 
     _clearSelection() {
@@ -291,13 +266,6 @@ export default class PatternPanel {
                 if (sel) sel.classList.add('selected')
             }
         }
-    }
-
-    _getBarQuantize(trackIdx) {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern) return 4
-        const tracks = pattern.tracks ? (Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)) : []
-        return (tracks[trackIdx]?.barQuantize ?? 4)
     }
 
     _getSubPositions(note, track) {
@@ -442,21 +410,7 @@ export default class PatternPanel {
         this._applySelection()
     }
 
-    /**
-     * Mise à jour du loop point.
-     * Force un re-render complet (via requestSync) pour gérer la pagination
-     * et garantir que l'indicateur est visible même si le loop point change de page.
-     * @param {number} trackIdx  Index du track dans le pattern
-     * @param {number} loopAtStep  Nouveau loop point (1-indexé, step absolu)
-     */
     updateLoopPoint(trackIdx, loopAtStep) {
         this.forceSync()
-    }
-
-    esc(str) {
-        if (!str) return ''
-        const d = document.createElement('div')
-        d.textContent = String(str)
-        return d.innerHTML
     }
 }

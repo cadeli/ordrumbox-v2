@@ -1,7 +1,8 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindPanelToggles, hidePanelsById, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
+import { bindCloseButton, bindPanelToggles } from './panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
+import BasePanel from './base_panel.js'
 
 const COMPRESSOR_PARAMS = [
     { key: 'threshold', label: 'Threshold', min: -40, max: 0,     step: 1,     default: -12,   unit: 'dB' },
@@ -11,9 +12,9 @@ const COMPRESSOR_PARAMS = [
     { key: 'knee',      label: 'Knee',      min: 0,   max: 40,    step: 1,     default: 30,    unit: 'dB' },
 ]
 
-export default class OutputPanel {
+export default class OutputPanel extends BasePanel {
     constructor() {
-        this.container = null
+        super('output-panel')
         this.canvas    = null
         this._animId   = null
         this._visible  = false
@@ -24,19 +25,8 @@ export default class OutputPanel {
         this._hicutVal  = 18500
     }
 
-    injectCSS() { injectUiCss() }
-
-    init() {
-        this.injectCSS()
-        this.createDOM()
-        this.subscribe()
-    }
-
     createDOM() {
-        this.container = document.createElement('div')
-        this.container.id = 'output-panel'
-        this.container.style.display = 'none'
-
+        super.createDOM()
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Output</span>
@@ -67,8 +57,6 @@ export default class OutputPanel {
                 </div>
             </div>
         `
-
-        document.body.appendChild(this.container)
 
         this._buildMasterSlider()
         this._buildFilterSliders()
@@ -180,25 +168,20 @@ export default class OutputPanel {
     }
 
     show() {
-        hidePanelsById(['te-panel', 'ne-panel', 'tools-panel', 'about-panel'])
-        this.container.style.display = 'block'
+        super.show(['te-panel', 'ne-panel', 'tools-panel', 'about-panel'])
         this._visible = true
-        this._sync()
-        this.reposition()
         this._startAnimation()
     }
 
     hide() {
-        this.container.style.display = 'none'
+        super.hide()
         this._visible = false
         this._stopAnimation()
     }
 
-    reposition() { positionBelowPatternPanel(this.container) }
-
     // ─── Internal ─────────────────────────────────────────────────────────────
 
-    _sync() {
+    sync() {
         const mixer = serviceRegistry.audioEngine?.mixer
         if (!mixer) return
 

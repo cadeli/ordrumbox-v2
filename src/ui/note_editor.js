@@ -1,7 +1,8 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindVisibilityToggles, escapeHtml, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles } from './panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
+import BasePanel from './base_panel.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
 const SCALES_URL = 'assets/data/scales.json'
@@ -66,27 +67,11 @@ const GROUPS = [
     }
 ]
 
-export default class NoteEditor {
+export default class NoteEditor extends BasePanel {
     constructor() {
-        this.container = null
+        super('ne-panel')
         this._note = null
         this._track = null
-    }
-
-    injectCSS() {
-        injectUiCss()
-    }
-
-    init() {
-        this.injectCSS()
-        this.createDOM()
-        this.subscribe()
-    }
-
-    createDOM() {
-        this.container = document.createElement('div')
-        this.container.id = 'ne-panel'
-        document.body.appendChild(this.container)
     }
 
     subscribe() {
@@ -95,10 +80,6 @@ export default class NoteEditor {
             this.show(data)
         })
         playbackEvents.onOutputToggle.push(() => this.hide())
-    }
-
-    reposition() {
-        positionBelowPatternPanel(this.container)
     }
 
     _getArpState(note) {
@@ -133,7 +114,7 @@ export default class NoteEditor {
         this._barStep = data.barStep
 
         await loadScales()
-        this.sync()
+        super.show()
     }
 
     sync() {
@@ -193,9 +174,7 @@ export default class NoteEditor {
 
         bodyHtml += '</div>'
         this.container.innerHTML = headerHtml + bodyHtml
-        this.container.style.display = 'block'
-        this.reposition()
-
+        
         // Build OrSlider instances for each placeholder
         GROUPS.forEach((g) => {
             g.props.forEach(p => {
@@ -236,8 +215,8 @@ export default class NoteEditor {
     }
 
     hide() {
-        if (this.container.style.display === 'none') return
-        this.container.style.display = 'none'
+        if (!this.isVisible) return
+        super.hide()
         
         const wasActive = this._note !== null
         this._note = null
@@ -277,9 +256,5 @@ export default class NoteEditor {
         this._note['_' + key] = val
         this._composeArp()
         playbackEvents.dispatchPatternChange()
-    }
-
-    esc(str) {
-        return escapeHtml(str)
     }
 }

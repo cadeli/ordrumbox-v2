@@ -1,5 +1,6 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, hidePanelsById, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
+import { bindCloseButton } from './panel_helpers.js'
+import BasePanel from './base_panel.js'
 
 const APP_VERSION = '2.0.0'
 const APP_NAME = 'OrDrumbox'
@@ -8,17 +9,15 @@ const APP_LICENSE = 'GPL-3.0-only'
 const APP_REPO = 'https://github.com/cadeli/ordrumbox-v2'
 const APP_WEBSITE = 'https://www.ordrumbox.com'
 
-export default class AboutPanel {
+export default class AboutPanel extends BasePanel {
     constructor() {
-        this.container = null
+        super('about-panel')
         this._deferredPrompt = null
         this._installBtn = null
     }
 
     init() {
-        injectUiCss()
-        this.createDOM()
-        this.subscribe()
+        super.init()
         this._registerInstallPrompt()
     }
 
@@ -39,10 +38,7 @@ export default class AboutPanel {
     }
 
     createDOM() {
-        this.container = document.createElement('div')
-        this.container.id = 'about-panel'
-        this.container.style.display = 'none'
-
+        super.createDOM()
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">About</span>
@@ -89,8 +85,6 @@ export default class AboutPanel {
                 </div>
             </div>
         `
-
-        document.body.appendChild(this.container)
 
         bindCloseButton(this.container, () => this.hide())
 
@@ -139,20 +133,13 @@ export default class AboutPanel {
     }
 
     show() {
-        hidePanelsById(['te-panel', 'ne-panel', 'tools-panel', 'output-panel'])
-
-        this.container.style.display = 'block'
+        super.show(['te-panel', 'ne-panel', 'tools-panel', 'output-panel'])
         this._detectPwaStatus()
-        this.reposition()
-    }
-
-    hide() {
-        this.container.style.display = 'none'
     }
 
     reposition() {
         if (window.innerWidth > 768 && window.innerHeight > 480) {
-            positionBelowPatternPanel(this.container)
+            super.reposition()
         }
     }
 }

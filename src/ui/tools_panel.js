@@ -6,31 +6,20 @@ import { PatternExporter } from '../patterns/exporter.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { isMidiSupported } from '../logic/midi/parser.js'
-import { bindCloseButton, bindPanelToggles, hidePanelsById, injectUiCss, positionBelowPatternPanel } from './panel_helpers.js'
+import { bindCloseButton, bindPanelToggles, hidePanelsById } from './panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
+import BasePanel from './base_panel.js'
 
-export default class ToolsPanel {
+export default class ToolsPanel extends BasePanel {
     constructor() {
-        this.container = null
+        super('tools-panel')
         this.nameInput = null
         this._wavLoops = null
         this.exportWavBtn = null
     }
 
-    injectCSS() {
-        injectUiCss()
-    }
-
-    init() {
-        this.injectCSS()
-        this.createDOM()
-        this.subscribe()
-    }
-
     createDOM() {
-        this.container = document.createElement('div')
-        this.container.id = 'tools-panel'
-        this.container.style.display = 'none'
+        super.createDOM()
         
         this.container.innerHTML = `
             <div class="ne-header">
@@ -126,7 +115,6 @@ export default class ToolsPanel {
                 </div>
             </div>
         `
-        document.body.appendChild(this.container)
         
         this.nameInput = this.container.querySelector('#tp-pattern-name')
         this.nameInput.addEventListener('input', () => this._onNameChange())
@@ -173,13 +161,13 @@ export default class ToolsPanel {
                 await serviceRegistry.midiManager.init()
                 btn.textContent = 'Disable MIDI'
             }
-            this._sync()
+            this.sync()
         })
 
         this.container.querySelector('#tp-midi-sync').addEventListener('click', () => {
             if (serviceRegistry.midiManager) {
                 serviceRegistry.midiManager.toggleExternalSync()
-                this._sync()
+                this.sync()
             } else {
                 alert('Enable MIDI first')
             }
@@ -208,8 +196,8 @@ export default class ToolsPanel {
         })
         
         playbackEvents.onPatternChange.push(() => {
-            if (this.container && this.container.style.display !== 'none') {
-                this._sync()
+            if (this.isVisible) {
+                this.sync()
             }
         })
 
@@ -222,7 +210,7 @@ export default class ToolsPanel {
         })
     }
 
-    _sync() {
+    sync() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (pattern && this.nameInput && document.activeElement !== this.nameInput) {
             this.nameInput.value = pattern.name || ''
@@ -255,7 +243,7 @@ export default class ToolsPanel {
             this._setLedState('midiConnectedLed', false, 'None')
             this._setLedState('midiSyncLed', false, 'Internal')
             this._setLedState('midiActivityLed', false, 'Idle')
-            outputSelect.innerHTML = '<option value="">MIDI Not Enabled</option>'
+            if (outputSelect) outputSelect.innerHTML = '<option value="">MIDI Not Enabled</option>'
         }
     }
 
@@ -437,15 +425,6 @@ export default class ToolsPanel {
                 serviceRegistry.audioEngine.simpleBeep(appState.selectedTrackNum)
             }
 
-            console.log('=== Kits & Instruments ===')
-            soundRegistry.drumkitList.forEach(kit => {
-                console.log(`Kit: ${kit.name}`)
-                kit.instruments.forEach(inst => {
-                    console.log(`  - ${inst.display_name ?? inst.key} | type: ${inst.key ?? 'N/A'} | url: ${inst.url}`)
-                })
-            })
-            console.log('==========================')
-
             alert(`Sample "${file.name}" imported to kit "${kit?.name ?? 'N/A'}" as ${instrumentType} and assigned to track: ${track.name}`)
         } catch (err) {
             console.error('WAV Import failed', err)
@@ -455,18 +434,6 @@ export default class ToolsPanel {
     }
 
     show() {
-        hidePanelsById(['te-panel', 'ne-panel', 'output-panel', 'about-panel'])
-        
-        this.container.style.display = 'block'
-        this._sync()
-        this.reposition()
-    }
-
-    hide() {
-        this.container.style.display = 'none'
-    }
-
-    reposition() {
-        positionBelowPatternPanel(this.container)
+        super.show(['te-panel', 'ne-panel', 'output-panel', 'about-panel'])
     }
 }
