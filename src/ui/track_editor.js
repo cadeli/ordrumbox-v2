@@ -91,7 +91,7 @@ export default class TrackEditor {
     subscribe() {
         playbackEvents.onTrackSelect.push((data) => {
             if (!data) { this.hide(); return }
-            playbackEvents.onNoteSelect.forEach(fn => fn(null))
+            playbackEvents.dispatchNoteSelect(null)
             this.show(data)
         })
         playbackEvents.onNoteSelect.push((data) => {
@@ -263,7 +263,7 @@ export default class TrackEditor {
                         onChange: (v, key) => {
                             this._isDragging = true
                             this._track[key] = v
-                            playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+                            playbackEvents.dispatchTrackParamChange(this._track)
                         }
                     })
                     this._sliders.set(p.key, s)
@@ -302,7 +302,7 @@ export default class TrackEditor {
                 // Reset dragging on release
                 s._input.addEventListener('change', () => {
                     this._isDragging = false
-                    playbackEvents.onPatternChange.forEach(fn => fn())
+                    playbackEvents.dispatchPatternChange()
                 })
             }
         })
@@ -404,7 +404,7 @@ export default class TrackEditor {
                             value: val ?? prop.min,
                             onChange: (v, key) => {
                                 this._track[key] = v
-                                playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+                                playbackEvents.dispatchTrackParamChange(this._track)
                             }
                         })
                         this._sliders.set(ck, s)
@@ -629,7 +629,7 @@ export default class TrackEditor {
                 input.addEventListener('input', () => this._onLfoSlider(input))
                 input.addEventListener('change', () => {
                     this._isDragging = false
-                    playbackEvents.onPatternChange.forEach(fn => fn())
+                    playbackEvents.dispatchPatternChange()
                 })
             })
             lfoPanel.querySelectorAll('select').forEach(sel => {
@@ -653,7 +653,7 @@ export default class TrackEditor {
                 aa.autoAssignTrackSounds(this._track)
             }
             this.sync()
-            playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
         })
         this.container.querySelector('[data-sound="instrument"]')?.addEventListener('change', async (e) => {
             const newName = e.target.value
@@ -667,7 +667,7 @@ export default class TrackEditor {
                 serviceRegistry.mfCmd.changeTrackSound(this._track, firstSample.url)
             }
             this.sync()
-            playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
         })
         this.container.querySelector('[data-sound="sample"]')?.addEventListener('change', async (e) => {
             const url = e.target.value
@@ -683,7 +683,7 @@ export default class TrackEditor {
                 }
             }
             serviceRegistry.mfCmd.changeTrackSound(this._track, url)
-            playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
         })
         this.container.querySelector('[data-sound="generated"]')?.addEventListener('change', async (e) => {
             const key = e.target.value
@@ -698,7 +698,7 @@ export default class TrackEditor {
                 this._track.synthSoundKey = key
             }
             this.sync()
-            playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
         })
         this.container.querySelector('[data-action="edit-synth"]')?.addEventListener('click', () => {
             this.synthEditor.openEditor()
@@ -721,7 +721,7 @@ export default class TrackEditor {
         ].find(def => def.key === key)
         this._track[key] = fx ? !this._isFxOn(fx) : !this._track[key]
         this.sync()
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.dispatchPatternChange()
     }
 
     _toggleLfo() {
@@ -739,7 +739,7 @@ export default class TrackEditor {
             }
         }
         this.sync()
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.dispatchPatternChange()
     }
 
     _onLfoSlider(input) {
@@ -759,7 +759,7 @@ export default class TrackEditor {
                 input.nextElementSibling.textContent = fmt(input.value)
             }
         }
-        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+        playbackEvents.dispatchTrackParamChange(this._track)
     }
 
     _onLfoSelect(sel) {
@@ -767,7 +767,7 @@ export default class TrackEditor {
         const lfo = this._track[prop.lfo]
         if (!lfo) return
         lfo.type = sel.value
-        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+        playbackEvents.dispatchTrackParamChange(this._track)
     }
 
     hide() {
@@ -846,16 +846,16 @@ export default class TrackEditor {
         
         // Fire lightweight loop point update for immediate visual feedback on pattern grid
         if (key === 'loopAtStep') {
-            playbackEvents.onLoopPointChange.forEach(fn => fn({
+            playbackEvents.dispatchLoopPointChange({
                 trackIdx: this._trackIdx,
                 loopAtStep: this._track.loopAtStep
-            }))
+            })
         }
         
         if (key === 'swingAmount') {
-            playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+            playbackEvents.dispatchTrackParamChange(this._track)
         } else {
-            playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
         }
     }
 
@@ -865,7 +865,7 @@ export default class TrackEditor {
         let val = sel.value
         if (key === 'delayTime') val = parseFloat(val)
         this._track[key] = val
-        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+        playbackEvents.dispatchTrackParamChange(this._track)
     }
 
     _onToggle(btn) {
@@ -874,7 +874,7 @@ export default class TrackEditor {
         this._track[key] = !this._track[key]
         btn.textContent = this._track[key] ? 'ON' : 'OFF'
         btn.classList.toggle('active', this._track[key])
-        playbackEvents.onTrackParamChange.forEach(fn => fn(this._track))
+        playbackEvents.dispatchTrackParamChange(this._track)
     }
 
     esc(str) {

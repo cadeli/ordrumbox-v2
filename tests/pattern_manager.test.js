@@ -12,7 +12,10 @@ vi.mock('../src/state/app_state.js', () => {
 vi.mock('../src/state/playback_events.js', () => {
     const callbacks = []
     return {
-        playbackEvents: { onPatternChange: callbacks },
+        playbackEvents: { 
+            onPatternChange: callbacks,
+            dispatchPatternChange: () => callbacks.forEach(fn => fn())
+        },
         __esModule: true
     }
 })

@@ -70,7 +70,7 @@ export default class MfSeq {
     start = async () => {
         try {
             await this.serviceRegistry.mfResourcesLoader.ensureResourcesLoaded()
-            this.playbackEvents.onDrumkitChange.forEach(cb => cb())
+            this.playbackEvents.dispatchDrumkitChange()
         } catch (error) {
             console.error("MfSeq::start: Failed to load resources", error)
             return
@@ -94,12 +94,12 @@ export default class MfSeq {
         this.ensureAudioEngine()
         this.serviceRegistry.audioEngine.start(selPattern)
         this.serviceRegistry.transport.start()
-        this.playbackEvents.onPlaybackStart.forEach(cb => cb())
+        this.playbackEvents.dispatchPlaybackStart()
     }
 
     stop = () => {
         this.serviceRegistry.transport?.stop()
-        this.playbackEvents.onPlaybackStop.forEach(cb => cb())
+        this.playbackEvents.dispatchPlaybackStop()
         if (this.serviceRegistry.audioEngine) {
             this.serviceRegistry.audioEngine.stop()
         }

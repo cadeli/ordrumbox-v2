@@ -276,7 +276,7 @@ export default class ToolsPanel {
         if (pattern) {
             pattern.name = this.nameInput.value
             // We only need to trigger pattern change to update other UI components (like Toolbar)
-            playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
         }
     }
 
@@ -295,7 +295,7 @@ export default class ToolsPanel {
         if (totalRemoved > 0 || true) {
             // Always refresh if button pressed to be sure
             serviceRegistry.audioEngine?.invalidateCache()
-            playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
             console.log(`Compaction finished. Total redundant notes removed: ${totalRemoved}`)
         }
     }
@@ -360,7 +360,7 @@ export default class ToolsPanel {
                 const newIdx = appState.patterns.indexOf(newPattern)
                 if (newIdx !== -1) {
                     await serviceRegistry.mfCmd.setSelectedPatternNum(newIdx)
-                    playbackEvents.onPatternChange.forEach(fn => fn())
+                    playbackEvents.dispatchPatternChange()
                     this.hide()
                 }
             } catch (err) {
@@ -429,8 +429,8 @@ export default class ToolsPanel {
             track.useAutoAssignSound = false
             track.useSoftSynth = false
             track.name = instrumentType
-            playbackEvents.onPatternChange.forEach(fn => fn())
-            playbackEvents.onDrumkitChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
+            playbackEvents.dispatchDrumkitChange()
 
             // Play the imported sound immediately
             if (serviceRegistry.audioEngine) {

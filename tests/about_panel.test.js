@@ -26,45 +26,45 @@ describe('AboutPanel (PWA)', () => {
     })
 
     it('opens when onAboutToggle(true) is fired', () => {
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
         const panel = document.getElementById('about-panel')
         expect(panel.style.display).toBe('block')
     })
 
     it('closes when onAboutToggle(false) is fired', () => {
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
-        playbackEvents.onAboutToggle.forEach(fn => fn(false))
+        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.dispatchAboutToggle(false)
         const panel = document.getElementById('about-panel')
         expect(panel.style.display).toBe('none')
     })
 
     it('hides when another modal (Tools/Output) is shown', () => {
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.onToolsToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchToolsToggle(true)
         expect(document.getElementById('about-panel').style.display).toBe('none')
 
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.onOutputToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchOutputToggle(true)
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 
     it('hides when the track editor is shown (onTrackSelect)', () => {
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.onTrackSelect.forEach(fn => fn({ track: {}, trackIdx: 0 }))
+        playbackEvents.dispatchTrackSelect({ track: {}, trackIdx: 0 })
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 
     it('hides when the note editor is shown (onNoteSelect)', () => {
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.onNoteSelect.forEach(fn => fn({ note: {}, track: {} }))
+        playbackEvents.dispatchNoteSelect({ note: {}, track: {} })
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 
@@ -76,7 +76,7 @@ describe('AboutPanel (PWA)', () => {
             document.body.appendChild(el)
         }
 
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
 
         for (const id of ['te-panel', 'ne-panel', 'tools-panel', 'output-panel']) {
             expect(document.getElementById(id).style.display).toBe('none')
@@ -85,7 +85,7 @@ describe('AboutPanel (PWA)', () => {
     })
 
     it('renders app info (name, version, license)', () => {
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
         const html = document.getElementById('about-panel').innerHTML
         expect(html).toContain('OrDrumbox')
         expect(html).toContain('2.0.0')
@@ -94,14 +94,14 @@ describe('AboutPanel (PWA)', () => {
     })
 
     it('renders the PWA section with install button (hidden by default)', () => {
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
         const installRow = document.getElementById('about-panel').querySelector('#about-pwa-install-row')
         expect(installRow).not.toBeNull()
         expect(installRow.style.display).toBe('none')
     })
 
     it('renders external links to website and source', () => {
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
         const html = document.getElementById('about-panel').innerHTML
         expect(html).toContain('https://www.ordrumbox.com')
         expect(html).toContain('github.com/cadeli/ordrumbox-v2')
@@ -114,7 +114,7 @@ describe('AboutPanel (PWA)', () => {
     })
 
     it('closes the panel when the close button is clicked', () => {
-        playbackEvents.onAboutToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchAboutToggle(true)
         const panel = document.getElementById('about-panel')
         panel.querySelector('.ne-close').click()
         expect(panel.style.display).toBe('none')

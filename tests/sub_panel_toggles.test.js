@@ -59,7 +59,7 @@ describe('Sub-panel toggle toolbars', () => {
     describe('Track Editor', () => {
         it('renders all 6 toggle buttons (Basic, Lvl, Flt, FX, Snd, Lp)', () => {
             const mockTrack = { name: 'KICK', notes: [], bars: 1, barQuantize: 4 }
-            playbackEvents.onTrackSelect.forEach(fn => fn({ track: mockTrack, trackIdx: 0 }))
+            playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
 
             const toggles = document.getElementById('te-panel').querySelectorAll('.ne-toggle[data-toggle]')
             const keys = Array.from(toggles).map(b => b.dataset.toggle)
@@ -68,7 +68,7 @@ describe('Sub-panel toggle toolbars', () => {
 
         it('toggles panel visibility when a button is clicked', () => {
             const mockTrack = { name: 'KICK', notes: [], bars: 1, barQuantize: 4 }
-            playbackEvents.onTrackSelect.forEach(fn => fn({ track: mockTrack, trackIdx: 0 }))
+            playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
 
             expect(appState.trackEditorVisibility.basic).toBe(true)
             document.querySelector('#te-panel .ne-toggle[data-toggle="basic"]').click()
@@ -79,7 +79,7 @@ describe('Sub-panel toggle toolbars', () => {
 
         it('closes the panel when the close button is clicked', () => {
             const mockTrack = { name: 'KICK', notes: [], bars: 1, barQuantize: 4 }
-            playbackEvents.onTrackSelect.forEach(fn => fn({ track: mockTrack, trackIdx: 0 }))
+            playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
 
             const te = document.getElementById('te-panel')
             expect(te.style.display).toBe('block')
@@ -123,7 +123,7 @@ describe('Sub-panel toggle toolbars', () => {
 
     describe('Tools Panel', () => {
         it('renders all 4 toggle buttons (Pattern, Export, Import, MIDI)', () => {
-            playbackEvents.onToolsToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchToolsToggle(true)
 
             const toggles = document.getElementById('tools-panel').querySelectorAll('.ne-toggle[data-toggle]')
             const keys = Array.from(toggles).map(b => b.dataset.toggle)
@@ -131,7 +131,7 @@ describe('Sub-panel toggle toolbars', () => {
         })
 
         it('hides the corresponding group when a toggle is clicked', () => {
-            playbackEvents.onToolsToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchToolsToggle(true)
 
             const tp = document.getElementById('tools-panel')
             const groupsBefore = tp.querySelectorAll('.ne-body > .ne-group')
@@ -147,7 +147,7 @@ describe('Sub-panel toggle toolbars', () => {
         })
 
         it('closes the panel when the close button is clicked', () => {
-            playbackEvents.onToolsToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchToolsToggle(true)
 
             const tp = document.getElementById('tools-panel')
             expect(tp.style.display).toBe('block')
@@ -158,7 +158,7 @@ describe('Sub-panel toggle toolbars', () => {
 
     describe('Output Panel', () => {
         it('renders all 4 toggle buttons (Master, Flt, Comp, Spec)', () => {
-            playbackEvents.onOutputToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchOutputToggle(true)
 
             const toggles = document.getElementById('output-panel').querySelectorAll('.ne-toggle[data-toggle]')
             const keys = Array.from(toggles).map(b => b.dataset.toggle)
@@ -166,7 +166,7 @@ describe('Sub-panel toggle toolbars', () => {
         })
 
         it('hides the corresponding element when a toggle is clicked', () => {
-            playbackEvents.onOutputToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchOutputToggle(true)
 
             const op = document.getElementById('output-panel')
             const master = op.querySelector('#op-master-vol')
@@ -180,7 +180,7 @@ describe('Sub-panel toggle toolbars', () => {
         })
 
         it('closes the panel when the close button is clicked', () => {
-            playbackEvents.onOutputToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchOutputToggle(true)
 
             const op = document.getElementById('output-panel')
             expect(op.style.display).toBe('block')

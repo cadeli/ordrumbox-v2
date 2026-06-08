@@ -363,7 +363,7 @@ export default class MfCmd {
         } else {
             this.autoAssignsoundsForNewDrumkit()
         }
-        playbackEvents.onDrumkitChange.forEach(cb => cb())
+        playbackEvents.dispatchDrumkitChange()
     }
 
     autoAssignsoundsForNewDrumkit = async () => {

@@ -161,7 +161,7 @@ export default class PatternPanel {
             if (newPage !== appState.currentPage) {
                 appState.currentPage = newPage
                 this.requestSync()
-                playbackEvents.onPatternChange.forEach(fn => fn())
+                playbackEvents.dispatchPatternChange()
             }
             this._playhead.style.display = 'none'
             return
@@ -197,7 +197,7 @@ export default class PatternPanel {
 
             if (this._selTrackIdx === trackIdx && !this._selNote) {
                 if (window.innerWidth <= 768) {
-                    playbackEvents.onTrackSelect.forEach(fn => fn({ track, trackIdx }))
+                    playbackEvents.dispatchTrackSelect({ track, trackIdx })
                 } else {
                     this._clearSelection()
                 }
@@ -205,7 +205,7 @@ export default class PatternPanel {
                 this._selNote = null
                 this._selTrackIdx = trackIdx
                 this._applySelection()
-                playbackEvents.onTrackSelect.forEach(fn => fn({ track, trackIdx }))
+                playbackEvents.dispatchTrackSelect({ track, trackIdx })
             }
             return
         }
@@ -241,7 +241,7 @@ export default class PatternPanel {
                 this._selTrackIdx = trackIdx
                 this._applySelection()
                 const pos = bar * (track.barQuantize ?? 4) + barStep
-                playbackEvents.onNoteSelect.forEach(fn => fn({ track, trackIdx, note, pos, bar, barStep }))
+                playbackEvents.dispatchNoteSelect({ track, trackIdx, note, pos, bar, barStep })
             }
             return
         }
@@ -255,7 +255,7 @@ export default class PatternPanel {
         this._applySelection()
 
         const pos = bar * (track.barQuantize ?? 4) + barStep
-        playbackEvents.onNoteSelect.forEach(fn => fn({ track, trackIdx, note: newNote, pos, bar, barStep }))
+        playbackEvents.dispatchNoteSelect({ track, trackIdx, note: newNote, pos, bar, barStep })
         
         // Defer heavy re-render
         requestAnimationFrame(() => this.sync())
@@ -271,8 +271,8 @@ export default class PatternPanel {
         this._selTrackIdx = -1
         const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected')
         selected.forEach(el => el.classList.remove('selected'))
-        playbackEvents.onNoteSelect.forEach(fn => fn(null))
-        playbackEvents.onTrackSelect.forEach(fn => fn(null))
+        playbackEvents.dispatchNoteSelect(null)
+        playbackEvents.dispatchTrackSelect(null)
     }
 
     _applySelection() {

@@ -24,7 +24,7 @@ export default class MfPatterns {
             return this.computeNextPatternStepNote(note, track)
         }, TICK)
         appState.flatNotes = flatNotes
-        playbackEvents.onPatternChange.forEach(cb => cb())
+        playbackEvents.dispatchPatternChange()
         return flatNotes
     }
 

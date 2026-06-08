@@ -470,7 +470,7 @@ export default class SynthEditor {
             soundRegistry.generatedSounds[this._editKey] = this._clone(this._draft)
             serviceRegistry.audioEngine?.updateGeneratedSounds(soundRegistry.generatedSounds)
             serviceRegistry.audioEngine?.invalidateCache?.()
-            playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
         } else if (!shouldSave && this._editKey && this._original) {
             soundRegistry.generatedSounds[this._editKey] = this._clone(this._original)
             serviceRegistry.audioEngine?.updateGeneratedSounds(soundRegistry.generatedSounds)

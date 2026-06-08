@@ -244,7 +244,7 @@ export default class NoteEditor {
         this._track = null
 
         if (wasActive) {
-            playbackEvents.onNoteSelect.forEach(fn => fn(null))
+            playbackEvents.dispatchNoteSelect(null)
         }
     }
 
@@ -267,7 +267,7 @@ export default class NoteEditor {
 
         if (key === 'arpRange') this._composeArp()
 
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.dispatchPatternChange()
     }
 
     _onSelect(sel) {
@@ -276,7 +276,7 @@ export default class NoteEditor {
         const val = sel.value
         this._note['_' + key] = val
         this._composeArp()
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.dispatchPatternChange()
     }
 
     esc(str) {

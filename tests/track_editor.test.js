@@ -185,7 +185,7 @@ describe('TrackEditor onPatternChange', () => {
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.dispatchPatternChange()
 
         expect(editor._track).toBe(newTrack)
         expect(editor._trackIdx).toBe(0)
@@ -202,7 +202,7 @@ describe('TrackEditor onPatternChange', () => {
 
         const hideSpy = vi.spyOn(editor, 'hide').mockImplementation(() => {})
 
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.dispatchPatternChange()
 
         expect(hideSpy).toHaveBeenCalled()
     })
@@ -212,7 +212,7 @@ describe('TrackEditor onPatternChange', () => {
         editor.init()
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.dispatchPatternChange()
 
         expect(syncSpy).not.toHaveBeenCalled()
     })

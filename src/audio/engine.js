@@ -53,11 +53,11 @@ export default class AudioEngine {
             this.mfSound = this.player.mfSound
 
             appState.workletStatus = 'active'
-            playbackEvents.onWorkletStatusChange?.forEach(cb => cb('active'))
+            playbackEvents.dispatchWorkletStatusChange('active')
         }).catch(err => {
             console.warn('AudioEngine: worklet init failed, audio unavailable', err)
             appState.workletStatus = 'unavailable'
-            playbackEvents.onWorkletStatusChange?.forEach(cb => cb('unavailable'))
+            playbackEvents.dispatchWorkletStatusChange('unavailable')
         })
 
         this.isRunning = false

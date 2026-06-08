@@ -11,5 +11,19 @@ export const playbackEvents = {
     onOutputToggle: [],
     onAboutToggle: [],
     onWorkletStatusChange: [],
-    onLoopPointChange: []
+    onLoopPointChange: [],
+
+    dispatchPlaybackStart() { this.onPlaybackStart.forEach(fn => fn()) },
+    dispatchPlaybackStop() { this.onPlaybackStop.forEach(fn => fn()) },
+    dispatchPatternChange() { this.onPatternChange.forEach(fn => fn()) },
+    dispatchDrumkitChange() { this.onDrumkitChange.forEach(fn => fn()) },
+    dispatchBpmChange(bpm) { this.onBpmChange.forEach(fn => fn(bpm)) },
+    dispatchNoteSelect(data) { this.onNoteSelect.forEach(fn => fn(data)) },
+    dispatchTrackSelect(data) { this.onTrackSelect.forEach(fn => fn(data)) },
+    dispatchTrackParamChange(track) { this.onTrackParamChange.forEach(fn => fn(track)) },
+    dispatchToolsToggle(show) { this.onToolsToggle.forEach(fn => fn(show)) },
+    dispatchOutputToggle(show) { this.onOutputToggle.forEach(fn => fn(show)) },
+    dispatchAboutToggle(show) { this.onAboutToggle.forEach(fn => fn(show)) },
+    dispatchWorkletStatusChange(status) { this.onWorkletStatusChange.forEach(fn => fn(status)) },
+    dispatchLoopPointChange(data) { this.onLoopPointChange.forEach(fn => fn(data)) }
 }

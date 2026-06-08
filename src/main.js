@@ -138,8 +138,8 @@ export function init() {
             console.error('Failed to load startup resources', e)
         }
         if (appState.patterns.length > 0) {
-            playbackEvents.onPatternChange.forEach(fn => fn())
-            playbackEvents.onDrumkitChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
+            playbackEvents.dispatchDrumkitChange()
             
             // Set initial drumkit first to trigger sample loading
             serviceRegistry.mfCmd.setSelectedDrumkitNum(0)
@@ -151,7 +151,7 @@ export function init() {
             const trackIdx = tracks.findIndex(t => t.name === 'SNARE')
             if (trackIdx !== -1) {
                 const track = tracks[trackIdx]
-                playbackEvents.onTrackSelect.forEach(fn => fn({ track, trackIdx }))
+                playbackEvents.dispatchTrackSelect({ track, trackIdx })
             }
         }
     })

@@ -73,7 +73,7 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
     it('opens and closes the Track Editor', () => {
         const mockTrack = { name: 'KICK', notes: [], bars: 1, barQuantize: 4 }
         
-        playbackEvents.onTrackSelect.forEach(fn => fn({ track: mockTrack, trackIdx: 0 }))
+        playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
         
         const te = document.getElementById('te-panel')
         expect(te.style.display).toBe('block')
@@ -101,7 +101,7 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
     })
 
     it('opens and closes the Tools Panel', () => {
-        playbackEvents.onToolsToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchToolsToggle(true)
         
         const tp = document.getElementById('tools-panel')
         expect(tp.style.display).toBe('block')
@@ -113,7 +113,7 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
     })
 
     it('opens and closes the Output Panel', () => {
-        playbackEvents.onOutputToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchOutputToggle(true)
 
         const op = document.getElementById('output-panel')
         expect(op.style.display).toBe('block')
@@ -125,15 +125,15 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
     })
 
     it('ensures only one modal is visible at a time', () => {
-        playbackEvents.onToolsToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchToolsToggle(true)
         expect(document.getElementById('tools-panel').style.display).toBe('block')
 
-        playbackEvents.onOutputToggle.forEach(fn => fn(true))
+        playbackEvents.dispatchOutputToggle(true)
         expect(document.getElementById('output-panel').style.display).toBe('block')
         expect(document.getElementById('tools-panel').style.display).toBe('none')
 
         const mockTrack = { name: 'KICK', notes: [], bars: 1, barQuantize: 4 }
-        playbackEvents.onTrackSelect.forEach(fn => fn({ track: mockTrack, trackIdx: 0 }))
+        playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
         expect(document.getElementById('te-panel').style.display).toBe('block')
         expect(document.getElementById('output-panel').style.display).toBe('none')
     })

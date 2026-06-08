@@ -150,15 +150,15 @@ export default class Toolbar {
         })
 
         this.outputBtn.addEventListener('click', () => {
-            playbackEvents.onOutputToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchOutputToggle(true)
         })
 
         this.toolsBtn.addEventListener('click', () => {
-            playbackEvents.onToolsToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchToolsToggle(true)
         })
 
         this.aboutBtn.addEventListener('click', () => {
-            playbackEvents.onAboutToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchAboutToggle(true)
         })
 
         this.patternSelect.addEventListener('change', () => {
@@ -182,7 +182,7 @@ export default class Toolbar {
             const mfAutoGenerate = await getAutoGenerateService()
             await mfAutoGenerate.generatePattern()
             this.syncPatterns()
-            playbackEvents.onPatternChange.forEach(fn => fn())
+            playbackEvents.dispatchPatternChange()
         })
 
         this.clearBtn.addEventListener('click', () => {
@@ -190,7 +190,7 @@ export default class Toolbar {
             if (pattern && confirm('Clear all notes in current pattern?')) {
                 serviceRegistry.mfCmd.cleanPattern(pattern)
                 serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
-                playbackEvents.onPatternChange.forEach(fn => fn())
+                playbackEvents.dispatchPatternChange()
             }
         })
 
@@ -198,7 +198,7 @@ export default class Toolbar {
             if (appState.currentPage > 0) {
                 appState.currentPage--
                 this.syncPage()
-                playbackEvents.onPatternChange.forEach(fn => fn())
+                playbackEvents.dispatchPatternChange()
             }
         })
 
@@ -211,7 +211,7 @@ export default class Toolbar {
             if (appState.currentPage < maxPage) {
                 appState.currentPage++
                 this.syncPage()
-                playbackEvents.onPatternChange.forEach(fn => fn())
+                playbackEvents.dispatchPatternChange()
             }
         })
 
@@ -223,7 +223,7 @@ export default class Toolbar {
             const bpm = parseInt(this.bpmSlider.value, 10)
             this.bpmValue.textContent = bpm
             serviceRegistry.mfSeq?.setBpm(bpm)
-            playbackEvents.onBpmChange.forEach(fn => fn(bpm))
+            playbackEvents.dispatchBpmChange(bpm)
         })
     }
 

@@ -166,7 +166,7 @@ describe('Soft Synth Editor display', () => {
         const panel = document.getElementById('soft-synth-panel')
         expect(panel.style.display).toBe('block')
 
-        playbackEvents.onPatternChange.forEach(fn => fn())
+        playbackEvents.dispatchPatternChange()
 
         expect(panel.style.display).toBe('block')
         expect(trackEditor.container.style.display).toBe('none')

@@ -91,7 +91,7 @@ describe('Panel positioning below pattern panel on desktop', () => {
             const tp = new ToolsPanel()
             tp.init()
             const container = tp.container
-            playbackEvents.onToolsToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchToolsToggle(true)
             expect(container.style.top).toBe('352px')
         })
     })
@@ -101,7 +101,7 @@ describe('Panel positioning below pattern panel on desktop', () => {
             const op = new OutputPanel()
             op.init()
             const container = op.container
-            playbackEvents.onOutputToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchOutputToggle(true)
             expect(container.style.top).toBe('352px')
         })
     })
@@ -111,7 +111,7 @@ describe('Panel positioning below pattern panel on desktop', () => {
             const ap = new AboutPanel()
             ap.init()
             const container = ap.container
-            playbackEvents.onAboutToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchAboutToggle(true)
             expect(container.style.top).toBe('352px')
         })
     })
@@ -128,9 +128,9 @@ describe('Panel positioning below pattern panel on desktop', () => {
             ap.init()
 
             te.show({ track: { name: 'KICK', notes: [], bars: 1, barQuantize: 4 }, trackIdx: 0 })
-            playbackEvents.onToolsToggle.forEach(fn => fn(true))
-            playbackEvents.onOutputToggle.forEach(fn => fn(true))
-            playbackEvents.onAboutToggle.forEach(fn => fn(true))
+            playbackEvents.dispatchToolsToggle(true)
+            playbackEvents.dispatchOutputToggle(true)
+            playbackEvents.dispatchAboutToggle(true)
 
             const repositionable = [te, tp, op, ap]
             repositionable.forEach(p => {
