@@ -426,25 +426,16 @@ export default class PatternPanel {
     }
 
     /**
-     * Mise à jour légère de l'indicateur de loop point pour un track.
-     * Appelé à chaque 'input' du slider (60fps), évite un re-rendu complet.
+     * Mise à jour du loop point.
+     * Force un re-render complet (via requestSync) pour gérer la pagination
+     * et garantir que l'indicateur est visible même si le loop point change de page.
      * @param {number} trackIdx  Index du track dans le pattern
      * @param {number} loopAtStep  Nouveau loop point (1-indexé, step absolu)
      */
     updateLoopPoint(trackIdx, loopAtStep) {
-        if (!this.container) return
-        const trackEl = this.container.querySelector(`.pp-track:nth-child(${trackIdx + 1})`)
-        if (!trackEl) return
-        
-        // Retirer l'ancien pp-loop
-        const oldLoop = trackEl.querySelector('.pp-loop')
-        if (oldLoop) oldLoop.classList.remove('pp-loop')
-        
-        // Ajouter le nouveau pp-loop
-        if (loopAtStep > 0) {
-            const newLoop = trackEl.querySelector(`.pp-cell[data-pos="${loopAtStep - 1}"]`)
-            if (newLoop) newLoop.classList.add('pp-loop')
-        }
+        // Le loop point peut être sur une barre hors de la page courante.
+        // Un re-render complet (requestSync) régénère la bonne page si besoin.
+        this.requestSync()
     }
 
     esc(str) {
