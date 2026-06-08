@@ -1,4 +1,5 @@
 import { FILTER_FREQ_MIN, FILTER_FREQ_MAX } from './constants.js'
+import { TRACK_DEFAULTS, TRACK_RECALCULATED } from '../model/track_schema.js'
 
 export default class Utils {
 static TAG = "UTILS"
@@ -18,45 +19,9 @@ static TAG = "UTILS"
         return (60 / bpm) * multiplier;
     }
 
-    static TRACK_DEFAULTS = {
-        "name": "",
-        "useAutoAssignSound": true,
-        "soundId": "NOT_DEFINED",
-        "bars": 4,
-        "barQuantize": 4,
-        "loopAtStep": null,
-        "swingResolution": 1,
-        "swingAmount": 0,
-        "velocity": 1,
-        "velocityLfo": null,
-        "pitch": 0,
-        "pitchLfo": null,
-        "pan": 0,
-        "panLfo": null,
-        "solo": false,
-        "mute": false,
-        "auto": false,
-        "useSoftSynth": false,
-        "mono": false,
-        "filterType": "allpass",
-        "filterFreqLfo": null,
-        "filterFreq": 20,
-        "filterLfoFreq": 0,
-        "filterQLfo": null,
-        "filterQ": 0.707,
-        "reverbType": "none",
-        "reverbAmount": 0,
-        "delayType": "tape",
-        "delayTime": 1,
-        "delayAmount": 0,
-        "fxSelected": "reverb",
-        "saturationType": "soft",
-        "saturationAmount": 0,
-        "sampleLength": 1,
-        "notes": []
-    };
+    static TRACK_DEFAULTS = TRACK_DEFAULTS;
 
-    static TRACK_RECALCULATED = ["loopPointBar", "loopPointStep"];
+    static TRACK_RECALCULATED = TRACK_RECALCULATED;
 
     static PATTERN_DEFAULTS = {
         "nbBars": 4,

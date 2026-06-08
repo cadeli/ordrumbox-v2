@@ -21,6 +21,8 @@ export function fixNoteStepBar(track, note) {
 
 export function fixNoteDefaults(note, track) {
     fixNoteStepBar(track, note)
+    note.velocity ??= Utils.NOTE_DEFAULTS.velocity
+    note.pan ??= Utils.NOTE_DEFAULTS.pan
     note.retriggerNum ??= Utils.NOTE_DEFAULTS.retriggerNum
     note.retriggerStep ??= Utils.NOTE_DEFAULTS.retriggerStep
     note.triggerFreq ??= Utils.NOTE_DEFAULTS.triggerFreq

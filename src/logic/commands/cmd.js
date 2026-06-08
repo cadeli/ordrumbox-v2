@@ -6,6 +6,7 @@ import { appState } from '../../state/app_state.js'
 import { getAutoAssignService, serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
+import { normalizeTrack, TRACK_DEFAULTS } from '../../model/track_schema.js'
 
 export default class MfCmd {
     static TAG = "MFCMD"
@@ -23,12 +24,12 @@ export default class MfCmd {
         }
         
         let changed = false
-        // Split keys into structural vs extra updates to support multi-step updates
-        const STRUCT_KEYS = new Set(['name', 'soundId', 'bars', 'barQuantize', 'loopAtStep', 'useSoftSynth', 'mono', 'mute', 'solo', 'auto'])
-        const EXTRA_KEYS = new Set(['pan', 'panLfo', 'velocity', 'velocityLfo', 'pitch', 'pitchLfo', 'reverbType', 'reverbAmount', 'delayType', 'delayTime', 'delayAmount', 'fxSelected', 'saturationType', 'saturationAmount', 'sampleLength', 'synthSoundKey', 'swingResolution', 'swingAmount', 'trackLength', 'filterType', 'filterFreqLfo', 'filterFreq', 'filterQLfo', 'filterQ'])
+        // Derived properties are handled separately
+        const derivedKeys = new Set(['loopPointBar', 'loopPointStep'])
+        const allTrackKeys = new Set(Object.keys(TRACK_DEFAULTS))
         
         for (const [k, v] of Object.entries(updates)) {
-            if (STRUCT_KEYS.has(k) || EXTRA_KEYS.has(k)) {
+            if (allTrackKeys.has(k) && !derivedKeys.has(k)) {
                 if (track[k] !== v) {
                     track[k] = v
                     changed = true
@@ -122,41 +123,13 @@ export default class MfCmd {
     }
 
     createTrack = (nbBars, name, barQuantize = 4) => {
-        let newTrack = {
-            "name": name,
-            "useAutoAssignSound": true,
-            "soundId": "NOT_DEFINED",
-            "bars": nbBars,
-            "barQuantize": barQuantize,
-            "loopAtStep": nbBars * barQuantize,
-            "swingResolution": 1,
-            "swingAmount": 0,
-            "velocity": 1,
-            "velocityLfo": null,
-            "pitch": 0,
-            "pitchLfo": null,
-            "pan": Utils.getPanoFromTrackName(name),
-            "panLfo": null,
-            "solo": false,
-            "mute": false,
-            "auto": false,
-            "useSoftSynth": false,
-            "mono": false,
-            "filterType": "allpass",
-            "filterFreqLfo": null,
-            "filterFreq": 20,
-            "filterQLfo": null,
-            "filterQ": 0.707,
-            "reverbType": "none",
-            "reverbAmount": 0,
-            "delayType": "tape",
-            "delayTime": 1,
-            "delayAmount": 0,
-            "fxSelected": "reverb",
-            "saturationType": "soft",
-            "saturationAmount": 0,
-            "notes": []
-        }
+        const newTrack = normalizeTrack({
+            name,
+            bars: nbBars,
+            barQuantize,
+            loopAtStep: nbBars * barQuantize,
+            pan: Utils.getPanoFromTrackName(name),
+        })
         newTrack.loopPointBar = Math.floor(newTrack.loopAtStep / newTrack.barQuantize)
         newTrack.loopPointStep = newTrack.loopAtStep % newTrack.barQuantize
         return newTrack
@@ -219,34 +192,27 @@ export default class MfCmd {
     }
 
     setTrackProps = (track, sourceTrack) => {
-        const props = [
-            "useAutoAssignSound", "soundId", "barQuantize", "loopAtStep",
-            "swingResolution", "swingAmount", "velocity", "velocityLfo", "pitch", "pitchLfo",
-            "pan", "panLfo", "solo", "mute", "auto", "useSoftSynth",
-            "filterType", "filterFreqLfo", "filterFreq", "filterQLfo", "filterQ",
-            "sampleLength"
-        ];
+        // Derived properties (recalculated, not copied)
+        const derivedKeys = new Set(['loopPointBar', 'loopPointStep', 'notes'])
 
-        props.forEach(prop => {
+        // Copy all track properties from source
+        for (const prop of Object.keys(TRACK_DEFAULTS)) {
+            if (derivedKeys.has(prop)) continue
             if (prop in sourceTrack) {
                 track[prop] = sourceTrack[prop];
             }
-        });
+        }
 
-        // Properties that are deleted if not in source
-        const deletableProps = [
-            "mono", "filterLfoFreq", "reverbType", "reverbAmount", 
-            "delayType", "delayTime", "delayAmount", "fxSelected", 
-            "saturationType", "saturationAmount", "synthSoundKey"
-        ];
+        // Optional FX/synth properties: delete from target if source doesn't have them.
+        // These props have no meaningful "default" — their absence means the effect is off.
+        const optionalProps = ['mono', 'filterLfoFreq', 'reverbType', 'reverbAmount',
+            'delayType', 'delayTime', 'delayAmount', 'fxSelected',
+            'saturationType', 'saturationAmount', 'synthSoundKey',
+            'reverbOn', 'delayOn', 'saturationOn']
 
-        deletableProps.forEach(prop => {
-            if (prop in sourceTrack) {
-                track[prop] = sourceTrack[prop];
-            } else {
-                delete track[prop];
-            }
-        });
+        for (const prop of optionalProps) {
+            if (!(prop in sourceTrack)) delete track[prop]
+        }
 
         // Special case for bars/nbBars which are aliases
         if ("bars" in sourceTrack) track.bars = sourceTrack.bars;

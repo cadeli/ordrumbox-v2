@@ -1,4 +1,5 @@
 import Utils from '../core/utils.js'
+import { normalizeTrack } from '../model/track_schema.js'
 
 export default class MfDefaults {
     static TAG = "MFDEFAULTS"
@@ -37,46 +38,7 @@ export default class MfDefaults {
     }
 
     static normalizeTrack(track) {
-        if (!track) return { ...Utils.TRACK_DEFAULTS, notes: [] }
-        const d = Utils.TRACK_DEFAULTS
-        return {
-            name: track.name ?? d.name,
-            useAutoAssignSound: track.useAutoAssignSound ?? d.useAutoAssignSound,
-            soundId: track.soundId ?? d.soundId,
-            bars: track.bars ?? d.bars,
-            barQuantize: track.barQuantize ?? d.barQuantize,
-            loopAtStep: track.loopAtStep ?? d.loopAtStep,
-            swingResolution: track.swingResolution ?? d.swingResolution,
-            swingAmount: track.swingAmount ?? d.swingAmount,
-            velocity: track.velocity ?? d.velocity,
-            velocityLfo: track.velocityLfo ?? d.velocityLfo,
-            pitch: track.pitch ?? d.pitch,
-            pitchLfo: track.pitchLfo ?? d.pitchLfo,
-            pan: track.pan ?? d.pan,
-            panLfo: track.panLfo ?? d.panLfo,
-            solo: track.solo ?? d.solo,
-            mute: track.mute ?? d.mute,
-            auto: track.auto ?? d.auto,
-            useSoftSynth: track.useSoftSynth ?? d.useSoftSynth,
-            mono: track.mono ?? d.mono,
-            filterType: track.filterType ?? d.filterType,
-            filterFreqLfo: track.filterFreqLfo ?? d.filterFreqLfo,
-            filterFreq: track.filterFreq ?? d.filterFreq,
-            filterLfoFreq: track.filterLfoFreq ?? d.filterLfoFreq,
-            filterQLfo: track.filterQLfo ?? d.filterQLfo,
-            filterQ: track.filterQ ?? d.filterQ,
-            reverbType: track.reverbType ?? d.reverbType,
-            reverbAmount: track.reverbAmount ?? d.reverbAmount,
-            delayType: track.delayType ?? d.delayType,
-            delayTime: track.delayTime ?? d.delayTime,
-            delayAmount: track.delayAmount ?? d.delayAmount,
-            fxSelected: track.fxSelected ?? d.fxSelected,
-            saturationType: track.saturationType ?? d.saturationType,
-            saturationAmount: track.saturationAmount ?? d.saturationAmount,
-            sampleLength: track.sampleLength ?? d.sampleLength,
-            notes: track.notes ?? d.notes,
-            ...track,
-        }
+        return normalizeTrack(track)
     }
 
     static normalizePattern(pattern) {
