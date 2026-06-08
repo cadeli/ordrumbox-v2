@@ -60,3 +60,11 @@ export function normalizeTrack(track = {}) {
  * Propriétés qui sont recalculées à la volée (dérivées).
  */
 export const TRACK_RECALCULATED = ["loopPointBar", "loopPointStep"];
+
+/**
+ * Recalcule loopPointBar et loopPointStep à partir de loopAtStep et barQuantize.
+ */
+export function recalcLoopDerived(track) {
+    track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
+    track.loopPointStep = track.loopAtStep % track.barQuantize
+}

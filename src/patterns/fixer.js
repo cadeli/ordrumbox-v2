@@ -1,4 +1,5 @@
 import Utils from '../core/utils.js'
+import { recalcLoopDerived } from '../model/track_schema.js'
 
 const PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
 
@@ -36,8 +37,7 @@ export function fixNoteDefaults(note, track) {
 export function fixTrackDefaults(track, indexTrack) {
     fixTrackPanning(track, indexTrack)
     if (track.useSoftSynth) track.useAutoAssignSound = false
-    track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
-    track.loopPointStep = track.loopAtStep % track.barQuantize
+    recalcLoopDerived(track)
     if (track.useAutoAssignSound === undefined) track.useAutoAssignSound = true
     track.swingResolution ??= Utils.TRACK_DEFAULTS.swingResolution
     track.swingAmount ??= Utils.TRACK_DEFAULTS.swingAmount

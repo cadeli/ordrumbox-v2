@@ -6,7 +6,7 @@ import { appState } from '../../state/app_state.js'
 import { getAutoAssignService, serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
-import { normalizeTrack, TRACK_DEFAULTS } from '../../model/track_schema.js'
+import { normalizeTrack, TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
 
 export default class MfCmd {
     static TAG = "MFCMD"
@@ -43,8 +43,7 @@ export default class MfCmd {
 
         // Recompute derived fields if needed
         if (typeof track.barQuantize === 'number' && typeof track.loopAtStep === 'number') {
-            track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
-            track.loopPointStep = track.loopAtStep % track.barQuantize
+            recalcLoopDerived(track)
         }
         if (typeof track.loopAtStep === 'undefined' && typeof track.loopPointBar === 'number' && typeof track.barQuantize === 'number') {
             track.loopAtStep = track.loopPointBar * track.barQuantize + (track.loopPointStep ?? 0)
@@ -130,8 +129,7 @@ export default class MfCmd {
             loopAtStep: nbBars * barQuantize,
             pan: Utils.getPanoFromTrackName(name),
         })
-        newTrack.loopPointBar = Math.floor(newTrack.loopAtStep / newTrack.barQuantize)
-        newTrack.loopPointStep = newTrack.loopAtStep % newTrack.barQuantize
+        recalcLoopDerived(newTrack)
         return newTrack
     }
 
@@ -224,8 +222,7 @@ export default class MfCmd {
         }
 
         // Always recompute derived fields
-        track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize);
-        track.loopPointStep = track.loopAtStep % track.barQuantize;
+        recalcLoopDerived(track)
 
         return track;
     }
@@ -381,8 +378,7 @@ export default class MfCmd {
         Object.values(pattern.tracks).forEach((track, indexTrack) => {
             if (track.loopAtStep >= oldBar) {
                 track.loopAtStep = pattern.nbBars * track.barQuantize
-                track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
-                track.loopPointStep = track.loopAtStep % track.barQuantize
+                recalcLoopDerived(track)
             }
             track.bars = pattern.nbBars
         })
@@ -407,8 +403,7 @@ export default class MfCmd {
         if (track.loopAtStep < 1) {
             track.loopAtStep = track.barQuantize * track.bars
         }
-        track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)
-        track.loopPointStep = track.loopAtStep % track.barQuantize
+        recalcLoopDerived(track)
     }
 
     cleanPattern = (pattern) => { 

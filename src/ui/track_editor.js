@@ -10,6 +10,7 @@ import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
 import { bindCloseButton, bindVisibilityToggles, positionBelowPatternPanel } from './panel_helpers.js'
+import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 
 const fmt = v => parseFloat(Number(v).toFixed(2))
@@ -761,8 +762,7 @@ export default class TrackEditor extends BasePanel {
                     const maxSteps = val * (t.barQuantize ?? 4)
                     if (t.loopAtStep > maxSteps) {
                         t.loopAtStep = maxSteps
-                        t.loopPointBar = Math.floor(t.loopAtStep / t.barQuantize)
-                        t.loopPointStep = t.loopAtStep % t.barQuantize
+                        recalcLoopDerived(t)
                     }
                 })
             }
@@ -784,8 +784,7 @@ export default class TrackEditor extends BasePanel {
             this._track.loopAtStep = maxSteps
         }
 
-        this._track.loopPointBar = Math.floor(this._track.loopAtStep / this._track.barQuantize)
-        this._track.loopPointStep = this._track.loopAtStep % this._track.barQuantize
+        recalcLoopDerived(this._track)
 
         if (input.nextElementSibling) {
             input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
