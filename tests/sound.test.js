@@ -345,39 +345,6 @@ describe('MfSound', () => {
         expect(strip.updateSaturation).toHaveBeenCalledWith('soft', 0)
     })
 
-    // ── applyStripSettings ────────────────────────────────────────────
-
-    it('applyStripSettings calls updateFilter when filterType is set', () => {
-        const strip = makeStrip()
-        sound.applyStripSettings(strip, { filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.5 })
-        expect(strip.updateFilter).toHaveBeenCalledWith('lowpass', 0.5, 0.5)
-    })
-    it('applyStripSettings updates output gain when trackVelo and time are provided', () => {
-        const strip = makeStrip()
-        sound.applyStripSettings(strip, { trackVelo: 0.7, time: 2.0 })
-        expect(strip.output.gain.setTargetAtTime).toHaveBeenCalledWith(0.7, 2.0, expect.any(Number))
-    })
-    it('applyStripSettings does nothing when strip is null', () => {
-        expect(() => sound.applyStripSettings(null, { filterType: 'lowpass' })).not.toThrow()
-    })
-    it('applyStripSettings calls updateReverb with 0 when reverbOn=false', () => {
-        const strip = makeStrip()
-        sound.applyStripSettings(strip, { reverbType: 'room', reverbAmount: 0.5, reverbOn: false })
-        expect(strip.updateReverb).toHaveBeenCalledWith('room', 0)
-    })
-    it('applyStripSettings calls updateDelay with 0 when delayOn=false', () => {
-        const strip = makeStrip()
-        sound.applyStripSettings(strip, { delayType: 'tape', delayTime: 1, delayAmount: 0.3, delayOn: false })
-        expect(strip.updateDelay).toHaveBeenCalledWith('tape', 1, 0)
-    })
-    it('applyStripSettings calls updateStripFromTrack when track is provided', () => {
-        const strip = makeStrip()
-        const spy = vi.spyOn(sound, 'updateStripFromTrack')
-        const track = { name: 'KICK' }
-        sound.applyStripSettings(strip, { track })
-        expect(spy).toHaveBeenCalledWith(strip, track, undefined)
-    })
-
     // ── updateGeneratedSounds ─────────────────────────────────────────
 
     it('updateGeneratedSounds merges new sounds into generatedSounds', () => {

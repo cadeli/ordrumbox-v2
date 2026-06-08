@@ -7,6 +7,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
+import { applyTrackToStrip, applyParamsToStrip } from './strip_sync.js'
 
 export default class AudioEngine {
     static TAG = "AUDIOENGINE"
@@ -231,35 +232,7 @@ export default class AudioEngine {
     updateStrip = async (trackName, params) => {
         const strip = await this.mixer?.getOrCreateStrip(trackName)
         if (!strip) return
-
-        const time = this.audioCtx.currentTime
-
-        if (params.filterType !== undefined)
-            strip.updateFilter(params.filterType, params.filterFreq, params.filterQ)
-
-        if (params.reverbType !== undefined || params.reverbAmount !== undefined || params.reverbOn !== undefined)
-            strip.updateReverb(params.reverbType, params.reverbOn === false ? 0 : params.reverbAmount)
-
-        if (params.delayType !== undefined || params.delayTime !== undefined || params.delayAmount !== undefined || params.delayOn !== undefined)
-            strip.updateDelay(params.delayType, params.delayTime, params.delayOn === false ? 0 : params.delayAmount)
-
-        if (params.saturationType !== undefined || params.saturationAmount !== undefined || params.saturationOn !== undefined)
-            strip.updateSaturation(params.saturationType, params.saturationOn === false ? 0 : params.saturationAmount)
-
-        if (params.velocity !== undefined) strip.output.gain.setTargetAtTime(params.velocity, time, 0.01)
-        if (params.pan !== undefined)      strip.pan.pan.setTargetAtTime(params.pan, time, 0.01)
-
-        if (params.mute === true) {
-            strip.output.gain.setTargetAtTime(0, time, 0.01)
-        } else if (params.mute === false) {
-            strip.output.gain.setTargetAtTime(params.velocity ?? 1.0, time, 0.01)
-        }
-
-        if (params.pitchLfo      !== undefined) strip.updateLfo('pitchLfo',      params.pitchLfo)
-        if (params.velocityLfo   !== undefined) strip.updateLfo('velocityLfo',   params.velocityLfo)
-        if (params.panLfo        !== undefined) strip.updateLfo('panLfo',        params.panLfo)
-        if (params.filterFreqLfo !== undefined) strip.updateLfo('filterFreqLfo', params.filterFreqLfo)
-        if (params.filterQLfo    !== undefined) strip.updateLfo('filterQLfo',    params.filterQLfo)
+        applyParamsToStrip(strip, params, this.audioCtx.currentTime)
     }
 
     syncTrack = async (track) => {

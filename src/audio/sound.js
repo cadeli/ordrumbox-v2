@@ -1,6 +1,7 @@
 import MfDefaults from '../patterns/defaults.js'
 import VoiceFactory from './voices/voice_factory.js'
 import SynthVoice from './voices/synth_voice.js'
+import { applyTrackToStrip } from './strip_sync.js'
 
 export default class MfSound {
     static get lastPitchV1() { return SynthVoice.lastPitchV1 }
@@ -63,37 +64,6 @@ export default class MfSound {
         if (previousVoice) {
             this.stopVoice(previousVoice, time)
             this.activeVoices.delete(track)
-        }
-    }
-
-    applyStripSettings = (strip, params) => {
-        if (!strip) return
-
-        const {
-            filterType, filterFreq, filterQ,
-            saturationType, saturationAmount, saturationOn,
-            reverbType, reverbAmount, reverbOn,
-            delayType, delayTime, delayAmount, delayOn,
-            trackVelo, time, track
-        } = params
-
-        if (filterType !== undefined) strip.updateFilter(filterType, filterFreq, filterQ)
-        if (saturationType !== undefined || saturationAmount !== undefined || saturationOn !== undefined) {
-            strip.updateSaturation(saturationType, saturationOn === false ? 0 : saturationAmount)
-        }
-        if (reverbType !== undefined || reverbAmount !== undefined || reverbOn !== undefined) {
-            strip.updateReverb(reverbType, reverbOn === false ? 0 : reverbAmount)
-        }
-        if (delayType !== undefined || delayTime !== undefined || delayAmount !== undefined || delayOn !== undefined) {
-            strip.updateDelay(delayType, delayTime, delayOn === false ? 0 : delayAmount)
-        }
-
-        if (trackVelo !== undefined && time !== undefined) {
-            strip.output.gain.setTargetAtTime(trackVelo, time, 0.01)
-        }
-
-        if (track) {
-            this.updateStripFromTrack(strip, track, time)
         }
     }
 
@@ -212,29 +182,7 @@ export default class MfSound {
             this._stripParamCache.set(name, { fp })
         }
 
-        // Apply all strip settings
-        if (track.filterType) strip.updateFilter(track.filterType, track.filterFreq, track.filterQ)
-        if (track.saturationType !== undefined || track.saturationOn !== undefined) {
-            strip.updateSaturation(track.saturationType, track.saturationOn === false ? 0 : track.saturationAmount)
-        }
-        if (track.reverbType !== undefined || track.reverbOn !== undefined) {
-            strip.updateReverb(track.reverbType, track.reverbOn === false ? 0 : track.reverbAmount)
-        }
-        if (track.delayType !== undefined || track.delayOn !== undefined) {
-            strip.updateDelay(track.delayType, track.delayTime, track.delayOn === false ? 0 : track.delayAmount)
-        }
-
-        if (track.pitchLfo) strip.updateLfo('pitchLfo', track.pitchLfo)
-        if (track.velocityLfo) strip.updateLfo('velocityLfo', track.velocityLfo)
-        if (track.panLfo) strip.updateLfo('panLfo', track.panLfo)
-        if (track.filterFreqLfo) strip.updateLfo('filterFreqLfo', track.filterFreqLfo)
-        if (track.filterQLfo) strip.updateLfo('filterQLfo', track.filterQLfo)
-
-        const trackVelo = track.velocity ?? MfDefaults.getTrackProp(track, 'velocity')
-        strip.output.gain.setTargetAtTime(trackVelo, time, 0.01)
-
-        const trackPan = track.pan ?? MfDefaults.getTrackProp(track, 'pan')
-        strip.pan.pan.setTargetAtTime(trackPan, time, 0.01)
+        applyTrackToStrip(strip, track, time)
     }
 
     updateGeneratedSounds = (generatedSounds) => {
