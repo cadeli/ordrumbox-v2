@@ -321,6 +321,13 @@ export default class TrackEditor {
         const maxSteps = bars * barQuantize
         const swing = this._track.swingAmount ?? 0
 
+        // Format loop point as "bar.step" (1-indexed), e.g. "3.2" = bar 3, step 2
+        const fmtLoopPoint = (step) => {
+            const b = Math.floor((step - 1) / barQuantize) + 1
+            const s = ((step - 1) % barQuantize) + 1
+            return `${b}.${s}`
+        }
+
         let html = `<div class="ne-group" style="border-left:1px solid #444;padding-left:12px">
             <div class="ne-group-label">Loop / Pattern</div>
             <div class="ne-grid">`
@@ -328,7 +335,7 @@ export default class TrackEditor {
         const loopProps = [
             { key: 'barQuantize', label: 'Steps/Bar', min: 1, max: 8, step: 1, val: barQuantize },
             { key: 'bars',        label: 'Bars',      min: 1, max: 8, step: 1, val: bars },
-            { key: 'loopAtStep',  label: 'Loop Point',min: 1, max: maxSteps, step: 1, val: loopAtStep },
+            { key: 'loopAtStep',  label: 'Loop Point', min: 1, max: maxSteps, step: 1, val: loopAtStep, format: fmtLoopPoint },
             { key: 'swingAmount', label: 'Swing',     min: 0, max: 1, step: 0.01, val: swing }
         ]
 
@@ -340,6 +347,7 @@ export default class TrackEditor {
                 max: p.max,
                 step: p.step,
                 value: p.val,
+                format: p.format,
                 dataAttr: 'data-loop',
                 onChange: (v, key) => this._onLoopSlider({ dataset: { loop: key }, value: v })
             })
@@ -821,13 +829,19 @@ export default class TrackEditor {
         // Update local labels and dependent UI without full sync
         input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
         
-        if (key === 'barQuantize' || key === 'bars') {
-            const lpSlider = this.container.querySelector('input[data-loop="loopAtStep"]')
-            if (lpSlider) {
-                lpSlider.max = maxSteps
-                lpSlider.value = this._track.loopAtStep
-                lpSlider.nextElementSibling.textContent = this._track.loopAtStep
-            }
+        // Use OrSlider's setValue to keep formatted display in sync
+        const loopSlider = this._sliders.get('loopAtStep')
+        if (loopSlider) {
+            loopSlider.setMax?.(maxSteps)
+            loopSlider.setValue(this._track.loopAtStep)
+        }
+        
+        // Fire lightweight loop point update for immediate visual feedback on pattern grid
+        if (key === 'loopAtStep') {
+            playbackEvents.onLoopPointChange.forEach(fn => fn({
+                trackIdx: this._trackIdx,
+                loopAtStep: this._track.loopAtStep
+            }))
         }
         
         if (key === 'swingAmount') {

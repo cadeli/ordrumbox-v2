@@ -255,6 +255,15 @@ export class OrSlider {
         if (this._input) this._input.disabled = bool
     }
 
+    /**
+     * Met à jour la valeur maximale du slider.
+     * @param {number} max  Nouvelle valeur max
+     */
+    setMax(max) {
+        this._max = max
+        if (this._input) this._input.max = max
+    }
+
     /** Retire les event listeners. Appeler avant de supprimer l'élément du DOM. */
     destroy() {
         this._input?.removeEventListener('input',   this._boundOnInput)

@@ -10,5 +10,6 @@ export const playbackEvents = {
     onToolsToggle: [],
     onOutputToggle: [],
     onAboutToggle: [],
-    onWorkletStatusChange: []
+    onWorkletStatusChange: [],
+    onLoopPointChange: []
 }

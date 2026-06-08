@@ -55,6 +55,11 @@ export default class PatternPanel {
             this._prevLoopTick = -1
             this.requestSync()
         })
+        playbackEvents.onLoopPointChange.push((data) => {
+            if (data && typeof data.trackIdx === 'number' && typeof data.loopAtStep === 'number') {
+                this.updateLoopPoint(data.trackIdx, data.loopAtStep)
+            }
+        })
         playbackEvents.onPlaybackStop.push(() => {
             this._prevLoopTick = -1
             if (this._rafId) cancelAnimationFrame(this._rafId)
@@ -418,6 +423,28 @@ export default class PatternPanel {
         this.container.innerHTML = headerHtml + tracksHtml
         this._ensurePlayhead()
         this._applySelection()
+    }
+
+    /**
+     * Mise à jour légère de l'indicateur de loop point pour un track.
+     * Appelé à chaque 'input' du slider (60fps), évite un re-rendu complet.
+     * @param {number} trackIdx  Index du track dans le pattern
+     * @param {number} loopAtStep  Nouveau loop point (1-indexé, step absolu)
+     */
+    updateLoopPoint(trackIdx, loopAtStep) {
+        if (!this.container) return
+        const trackEl = this.container.querySelector(`.pp-track:nth-child(${trackIdx + 1})`)
+        if (!trackEl) return
+        
+        // Retirer l'ancien pp-loop
+        const oldLoop = trackEl.querySelector('.pp-loop')
+        if (oldLoop) oldLoop.classList.remove('pp-loop')
+        
+        // Ajouter le nouveau pp-loop
+        if (loopAtStep > 0) {
+            const newLoop = trackEl.querySelector(`.pp-cell[data-pos="${loopAtStep - 1}"]`)
+            if (newLoop) newLoop.classList.add('pp-loop')
+        }
     }
 
     esc(str) {
