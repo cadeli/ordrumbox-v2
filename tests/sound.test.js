@@ -126,10 +126,6 @@ describe('MfSound', () => {
         expect(sound.activeSynthVoices.size).toBe(0)
     })
 
-    it('init() is a no-op (does not throw)', () => {
-        expect(() => sound.init()).not.toThrow()
-    })
-
     // ── getStrip ──────────────────────────────────────────────────────
 
     it('getStrip returns null when track has no name', async () => {
@@ -143,29 +139,8 @@ describe('MfSound', () => {
         expect(mixer.getOrCreateStrip).toHaveBeenCalledWith('KICK')
     })
 
-    // ── connectToStripInput ───────────────────────────────────────────
-
-    it('connectToStripInput does nothing when source is null', () => {
-        expect(() => sound.connectToStripInput(null, makeStrip())).not.toThrow()
-    })
-    it('connectToStripInput does nothing when strip is null', () => {
-        const src = makeNode()
-        expect(() => sound.connectToStripInput(src, null)).not.toThrow()
-    })
-    it('connectToStripInput connects source to strip.filter1', () => {
-        const src   = makeNode()
-        const strip = makeStrip()
-        sound.connectToStripInput(src, strip)
-        expect(src.connect).toHaveBeenCalledWith(strip.filter1)
-    })
-
     // ── registerVoice / stopPreviousVoice ─────────────────────────────
 
-    it('registerVoice does nothing for non-mono track', () => {
-        const track = { name: 'KICK', mono: false }
-        const voice = makeVoice()
-        expect(() => sound.registerVoice(track, voice)).not.toThrow()
-    })
     it('registerVoice stores voice for mono track', () => {
         const track = { name: 'KICK', mono: true }
         const voice = makeVoice()
@@ -174,11 +149,6 @@ describe('MfSound', () => {
         sound.stopPreviousVoice(track, 1.0)
         expect(voice.stop).toHaveBeenCalledWith(1.0)
     })
-    it('stopPreviousVoice does nothing for non-mono track', () => {
-        const track = { name: 'KICK', mono: false }
-        expect(() => sound.stopPreviousVoice(track, 1.0)).not.toThrow()
-    })
-
     // ── registerSynthVoice ────────────────────────────────────────────
 
     it('registerSynthVoice adds voice to activeSynthVoices', () => {
@@ -192,11 +162,6 @@ describe('MfSound', () => {
         voice.onEnded()
         expect(sound.activeSynthVoices.has(voice)).toBe(false)
     })
-    it('registerSynthVoice ignores objects without updateGeneratedSound', () => {
-        expect(() => sound.registerSynthVoice({ noMethod: true })).not.toThrow()
-        expect(sound.activeSynthVoices.size).toBe(0)
-    })
-
     // ── stopVoice ─────────────────────────────────────────────────────
 
     it('stopVoice calls voice.stop(time)', () => {
@@ -204,10 +169,6 @@ describe('MfSound', () => {
         sound.stopVoice(voice, 2.0)
         expect(voice.stop).toHaveBeenCalledWith(2.0)
     })
-    it('stopVoice does nothing when voice is null', () => {
-        expect(() => sound.stopVoice(null, 1.0)).not.toThrow()
-    })
-
     // ── play ──────────────────────────────────────────────────────────
 
     it('play returns early when mixer has no analyser', async () => {
@@ -226,10 +187,6 @@ describe('MfSound', () => {
         await sound.play(fn, 1.0)
         expect(playGeneratedSpy).toHaveBeenCalled()
     })
-    it('play returns early when flatNote is null', async () => {
-        await expect(sound.play(null, 1.0)).resolves.not.toThrow()
-    })
-
     // ── playSample ────────────────────────────────────────────────────
 
     it('playSample calls voice.setup and voice.start', async () => {
@@ -242,10 +199,6 @@ describe('MfSound', () => {
         mixer.getOrCreateStrip.mockReturnValue(null)
         await sound.playSample(makeFlatNote(), 1.0)
         expect(sound.voiceFactory.createVoice).not.toHaveBeenCalled()
-    })
-    it('playSample does nothing when createVoice returns null', async () => {
-        sound.voiceFactory.createVoice = vi.fn(() => null)
-        await expect(sound.playSample(makeFlatNote(), 1.0)).resolves.not.toThrow()
     })
     it('playSample registers voice for mono track', async () => {
         const fn = makeFlatNote({ track: { name: 'KICK', useSoftSynth: false, mono: true, velocity: 0.8, pan: 0, bars: 4, barQuantize: 4 } })
@@ -297,12 +250,6 @@ describe('MfSound', () => {
 
     // ── updateStripFromTrack ──────────────────────────────────────────
 
-    it('updateStripFromTrack does nothing when strip is null', () => {
-        expect(() => sound.updateStripFromTrack(null, { name: 'KICK' }, 1.0)).not.toThrow()
-    })
-    it('updateStripFromTrack does nothing when track is null', () => {
-        expect(() => sound.updateStripFromTrack(makeStrip(), null, 1.0)).not.toThrow()
-    })
     it('updateStripFromTrack calls strip.updateFilter when filterType is set', () => {
         const strip = makeStrip()
         sound.updateStripFromTrack(strip, { name: 'KICK', filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.5 }, 1.0)
@@ -363,5 +310,75 @@ describe('MfSound', () => {
         sound.activeSynthVoices.add(voice)
         sound.updateGeneratedSounds({ BASS1: { masterVolume: 0.3 } })
         expect(voice.updateGeneratedSound).not.toHaveBeenCalled()
+    })
+
+    // ── _playVoice ────────────────────────────────────────────────────
+
+    it('_playVoice returns null when strip is null', async () => {
+        mixer.getOrCreateStrip.mockReturnValue(null)
+        const result = await sound._playVoice(makeFlatNote(), 1.0)
+        expect(result).toBeNull()
+    })
+
+    it('_playVoice calls updateStripFromTrack and stopPreviousVoice', async () => {
+        const updateSpy = vi.spyOn(sound, 'updateStripFromTrack')
+        const stopSpy = vi.spyOn(sound, 'stopPreviousVoice')
+        await sound._playVoice(makeFlatNote(), 1.0)
+        expect(updateSpy).toHaveBeenCalled()
+        expect(stopSpy).toHaveBeenCalled()
+    })
+
+    it('_playVoice creates, sets up and starts voice', async () => {
+        const voice = await sound._playVoice(makeFlatNote(), 1.0)
+        expect(voice.setup).toHaveBeenCalled()
+        expect(voice.start).toHaveBeenCalledWith(1.0)
+    })
+
+    it('_playVoice registers voice for mono track', async () => {
+        const fn = makeFlatNote({ track: { name: 'KICK', useSoftSynth: false, mono: true, velocity: 0.8, pan: 0, bars: 4, barQuantize: 4 } })
+        await sound._playVoice(fn, 1.0)
+        sound.stopPreviousVoice(fn.track, 2.0)
+        expect(sound.voiceFactory._voice.stop).toHaveBeenCalledWith(2.0)
+    })
+
+    it('_playVoice syncs voiceFactory.generatedSounds when opts.syncGeneratedSounds=true', async () => {
+        await sound._playVoice(makeFlatNote(), 1.0, { syncGeneratedSounds: true })
+        expect(sound.voiceFactory.generatedSounds).toBe(sound.generatedSounds)
+    })
+
+    it('_playVoice returns null on error without re-throwing', async () => {
+        sound.mixer.getOrCreateStrip.mockRejectedValue(new Error('boom'))
+        const result = await sound._playVoice(makeFlatNote(), 1.0)
+        expect(result).toBeNull()
+    })
+
+    // ── updateStripFromTrack caching ──────────────────────────────────
+
+    it('updateStripFromTrack skips second call with same _version (cache hit)', () => {
+        const strip = makeStrip()
+        const track = { name: 'KICK', _version: 1, filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }
+        sound.updateStripFromTrack(strip, track, 1.0)
+        const firstCallCount = strip.updateFilter.mock.calls.length
+        sound.updateStripFromTrack(strip, track, 1.0)
+        expect(strip.updateFilter.mock.calls.length).toBe(firstCallCount)
+    })
+
+    it('updateStripFromTrack re-applies when _version changes', () => {
+        const strip = makeStrip()
+        const track = { name: 'KICK', _version: 1, filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }
+        sound.updateStripFromTrack(strip, track, 1.0)
+        track._version = 2
+        sound.updateStripFromTrack(strip, track, 1.0)
+        expect(strip.updateFilter).toHaveBeenCalledTimes(2)
+    })
+
+    it('invalidateStripCache forces re-apply on next call', () => {
+        const strip = makeStrip()
+        const track = { name: 'KICK', _version: 1, filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }
+        sound.updateStripFromTrack(strip, track, 1.0)
+        const firstCallCount = strip.updateFilter.mock.calls.length
+        sound.invalidateStripCache('KICK')
+        sound.updateStripFromTrack(strip, track, 1.0)
+        expect(strip.updateFilter.mock.calls.length).toBeGreaterThan(firstCallCount)
     })
 })

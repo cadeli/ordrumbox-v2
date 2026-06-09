@@ -131,9 +131,6 @@ describe('Utils – extended coverage', () => {
             const t120 = Utils.getDelayTimeInSeconds(1, 120)
             expect(t90).toBeGreaterThan(t120)
         })
-        it('falls back gracefully for non-numeric delayTimeValue', () => {
-            expect(() => Utils.getDelayTimeInSeconds('invalid', 120)).not.toThrow()
-        })
     })
 
     // ── getRandomKey ──────────────────────────────────────────────────

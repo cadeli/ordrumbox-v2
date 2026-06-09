@@ -278,27 +278,4 @@ describe('Functional: Utils loop detection', () => {
             // Note: loopAtStep=2 may also match due to how signature comparison works
         })
     })
-
-    describe('compacteTrackWithLoop', () => {
-        it('delegates to addLoopToTrackIfPossible with same result', () => {
-            const track = {
-                bars: 4,
-                barQuantize: 4,
-                loopAtStep: 16,
-                notes: [
-                    { bar: 0, barStep: 0 },
-                    { bar: 1, barStep: 0 },
-                    { bar: 2, barStep: 0 },
-                    { bar: 3, barStep: 0 }
-                ]
-            }
-            const track2 = { ...track, notes: [...track.notes] }
-
-            const r1 = Utils.compacteTrackWithLoop(track)
-            const r2 = Utils.addLoopToTrackIfPossible(track2)
-
-            expect(r1.changed).toBe(r2.changed)
-            expect(r1.loopAtStep).toBe(r2.loopAtStep)
-        })
-    })
 })

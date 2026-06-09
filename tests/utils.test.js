@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import Utils from '../src/core/utils.js'
+import { recalcLoopDerived } from '../src/model/track_schema.js'
 
 describe('Utils', () => {
     describe('TWO_PI', () => {
@@ -422,5 +423,79 @@ describe('Utils', () => {
             expect(Utils.normalizeSignatureValue('test')).toBe('test')
             expect(Utils.normalizeSignatureValue(null)).toBeNull()
         })
+    })
+
+    describe('getTracksArray', () => {
+        it('returns array as-is when tracks is already an array', () => {
+            const tracks = [{ name: 'KICK' }, { name: 'SNARE' }]
+            expect(Utils.getTracksArray({ tracks })).toBe(tracks)
+        })
+
+        it('returns Object.values when tracks is an object', () => {
+            const tracks = { 0: { name: 'KICK' }, 1: { name: 'SNARE' } }
+            const result = Utils.getTracksArray({ tracks })
+            expect(result).toEqual([{ name: 'KICK' }, { name: 'SNARE' }])
+        })
+
+        it('returns empty array when tracks is null', () => {
+            expect(Utils.getTracksArray({ tracks: null })).toEqual([])
+        })
+
+        it('returns empty array when tracks is undefined', () => {
+            expect(Utils.getTracksArray({})).toEqual([])
+        })
+
+        it('returns empty array when pattern is null', () => {
+            expect(Utils.getTracksArray(null)).toEqual([])
+        })
+
+        it('returns empty array when pattern is undefined', () => {
+            expect(Utils.getTracksArray(undefined)).toEqual([])
+        })
+
+        it('returns empty array for empty array', () => {
+            expect(Utils.getTracksArray({ tracks: [] })).toEqual([])
+        })
+
+        it('returns empty array for empty object', () => {
+            expect(Utils.getTracksArray({ tracks: {} })).toEqual([])
+        })
+    })
+})
+
+describe('recalcLoopDerived', () => {
+    it('computes loopPointBar=4, loopPointStep=0 for loopAtStep=16, barQuantize=4', () => {
+        const track = { loopAtStep: 16, barQuantize: 4 }
+        recalcLoopDerived(track)
+        expect(track.loopPointBar).toBe(4)
+        expect(track.loopPointStep).toBe(0)
+    })
+
+    it('computes loopPointBar=2, loopPointStep=2 for loopAtStep=10, barQuantize=4', () => {
+        const track = { loopAtStep: 10, barQuantize: 4 }
+        recalcLoopDerived(track)
+        expect(track.loopPointBar).toBe(2)
+        expect(track.loopPointStep).toBe(2)
+    })
+
+    it('computes loopPointBar=0, loopPointStep=0 for loopAtStep=0', () => {
+        const track = { loopAtStep: 0, barQuantize: 4 }
+        recalcLoopDerived(track)
+        expect(track.loopPointBar).toBe(0)
+        expect(track.loopPointStep).toBe(0)
+    })
+
+    it('computes loopPointBar=0, loopPointStep=1 for loopAtStep=1, barQuantize=8', () => {
+        const track = { loopAtStep: 1, barQuantize: 8 }
+        recalcLoopDerived(track)
+        expect(track.loopPointBar).toBe(0)
+        expect(track.loopPointStep).toBe(1)
+    })
+
+    it('mutates the track object in place', () => {
+        const track = { loopAtStep: 12, barQuantize: 4 }
+        const result = recalcLoopDerived(track)
+        expect(track).toHaveProperty('loopPointBar', 3)
+        expect(track).toHaveProperty('loopPointStep', 0)
     })
 })

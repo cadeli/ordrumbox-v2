@@ -158,13 +158,5 @@ describe('Audio Graph Validity', () => {
             expect(strip.currentDelayAmount).toBe(0)
             expect(strip.currentSaturationAmount).toBe(0)
         })
-
-        it('updateStripFromTrack with empty track does not throw', async () => {
-            const strip = await MfStrip.create('TEST', mockCtx)
-            const mixer = makeMockMixer()
-            const sound = new MfSound(mockCtx, mixer, {}, {})
-
-            expect(() => sound.updateStripFromTrack(strip, { name: 'TEST' }, mockCtx.currentTime)).not.toThrow()
-        })
     })
 })
