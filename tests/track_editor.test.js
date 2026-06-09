@@ -265,7 +265,6 @@ describe('TrackEditor LFO row highlight', () => {
         editor._track = { name: 'KICK', velocity: 0.5, pitchLfo: null }
         editor._selectedPropKey = 'velocity'
         editor.sync()
-        console.log('DEBUG HTML:', editor.container.innerHTML)
 
         const selectedRow = editor.container.querySelector('.ne-row.selected')
         expect(selectedRow).not.toBeNull()
