@@ -28,23 +28,25 @@ export default class NodePool {
         if (!node) return
         try { node.disconnect() } catch (_) {}
 
-        switch (type) {
-            case 'GainNode':
-                node.gain.cancelScheduledValues(0)
-                node.gain.value = 1
-                break
-            case 'BiquadFilterNode':
-                node.frequency.cancelScheduledValues(0)
-                node.Q.cancelScheduledValues(0)
-                node.frequency.value = 350
-                node.Q.value = 1
-                node.type = 'lowpass'
-                break
-            case 'StereoPannerNode':
-                node.pan.cancelScheduledValues(0)
-                node.pan.value = 0
-                break
-        }
+        try {
+            switch (type) {
+                case 'GainNode':
+                    if (node.gain?.cancelScheduledValues) node.gain.cancelScheduledValues(0)
+                    if (node.gain) node.gain.value = 1
+                    break
+                case 'BiquadFilterNode':
+                    if (node.frequency?.cancelScheduledValues) node.frequency.cancelScheduledValues(0)
+                    if (node.Q?.cancelScheduledValues) node.Q.cancelScheduledValues(0)
+                    if (node.frequency) node.frequency.value = 350
+                    if (node.Q) node.Q.value = 1
+                    node.type = 'lowpass'
+                    break
+                case 'StereoPannerNode':
+                    if (node.pan?.cancelScheduledValues) node.pan.cancelScheduledValues(0)
+                    if (node.pan) node.pan.value = 0
+                    break
+            }
+        } catch (_) {}
     }
 
     get stats() {
