@@ -66,7 +66,7 @@ export function normalizeArp(arp) {
 }
 
 export function getArpNoteCount(note) {
-    const totalNotes = parseInt(MfDefaults.getNoteProp(note, 'retriggerNum'))
+    const totalNotes = parseInt(note.retriggerNum ?? 1)
     return Number.isFinite(totalNotes) ? Math.max(1, Math.min(16, totalNotes)) : 1
 }
 
@@ -116,7 +116,7 @@ export function computeTickSpacing(track, retriggerStep, tick = TICK) {
 export function createArpFlatNote(tick, track, note, semitoneOffset) {
     const arpNote = {
         ...note,
-        pitch: MfDefaults.getNoteProp(note, 'pitch') + semitoneOffset
+        pitch: (note.pitch ?? 0) + semitoneOffset
     }
     return new MfFlatNote(tick, track, arpNote)
 }
@@ -134,10 +134,10 @@ function addFlatNote(flatNotes, tick, flatNote) {
 
 export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPattern, tick = TICK) {
     const arpConfig = normalizeArp(note.arp)
-    const retriggerStep = MfDefaults.getNoteProp(note, 'retriggerStep')
-    const arpTriggerProb = MfDefaults.getNoteProp(note, 'arpTriggerProbability')
-    const retriggerNum = MfDefaults.getNoteProp(note, 'retriggerNum')
-    const euclidianFill = MfDefaults.getNoteProp(note, 'euclidianFill')
+    const retriggerStep = note.retriggerStep ?? 1
+    const arpTriggerProb = note.arpTriggerProbability ?? 1
+    const retriggerNum = note.retriggerNum ?? 1
+    const euclidianFill = note.euclidianFill ?? 0
 
     if (arpConfig && arpConfig.sequence.length > 0) {
         const totalNotes = getArpNoteCount(note)
@@ -175,11 +175,11 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
 export function generateSubNotesWithEuclidean(flatNotes, baseTick, track, note, nbTickForPattern, computeNextStep, tick = TICK) {
     generateSubNotes(flatNotes, baseTick, track, note, nbTickForPattern, tick)
 
-    const euclidianFill = MfDefaults.getNoteProp(note, 'euclidianFill')
+    const euclidianFill = note.euclidianFill ?? 0
     if (euclidianFill <= 0) return
 
     const arpConfig = normalizeArp(note.arp)
-    const arpTriggerProb = MfDefaults.getNoteProp(note, 'arpTriggerProbability')
+    const arpTriggerProb = note.arpTriggerProbability ?? 1
 
     const startStep = note.bar * track.barQuantize + note.barStep
     const endStep = computeNextStep(note, track)
@@ -226,11 +226,10 @@ export function computeFlatNotesFromPattern(djtPattern, loop = 0, computeNextSte
         nbTickForLoop = adjustLoopToPattern(nbTickForPattern, nbTickForLoop)
 
         for (const note of Object.values(track.notes)) {
-            if (!isTrigged(
-                MfDefaults.getNoteProp(note, 'triggerPhase'),
-                MfDefaults.getNoteProp(note, 'triggerFreq'),
-                loop
-            ) || !isProbabilityTrigged(MfDefaults.getNoteProp(note, 'triggerProbability'))) {
+            const triggerPhase = note.triggerPhase ?? 0
+            const triggerFreq = note.triggerFreq ?? 1
+            if (!isTrigged(triggerPhase, triggerFreq, loop)
+                || !isProbabilityTrigged(note.triggerProbability ?? 1)) {
                 continue
             }
 
