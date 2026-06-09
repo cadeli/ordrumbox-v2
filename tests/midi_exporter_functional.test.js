@@ -42,6 +42,7 @@ import MidiExporter, { resolveTrackMidi } from '../src/logic/midi/midi_exporter.
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
 import Utils from '../src/core/utils.js'
 import { TICK } from '../src/core/constants.js'
+import { parseMidi, findAllNotes, readUint16BE } from './helpers/midi_reader.js'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -49,65 +50,11 @@ const PPQN = 96
 const TICKS_PER_BAR = PPQN * 1          // 96
 const MIDI_RATIO = TICKS_PER_BAR / TICK  // 3  (midi ticks per engine tick)
 
-// ─── MIDI binary parser ───────────────────────────────────────────────────────
+// ─── MIDI helpers ─────────────────────────────────────────────────────────────
 
-function readUint32BE(bytes, offset) {
-    return ((bytes[offset] << 24) | (bytes[offset+1] << 16) | (bytes[offset+2] << 8) | bytes[offset+3]) >>> 0
-}
-function readUint16BE(bytes, offset) {
-    return ((bytes[offset] << 8) | bytes[offset+1]) >>> 0
-}
-function decodeVLQ(bytes, offset) {
-    let value = 0, bytesRead = 0, b
-    do { b = bytes[offset + bytesRead]; value = (value << 7) | (b & 0x7F); bytesRead++ } while (b & 0x80)
-    return { value, bytesRead }
-}
-function parseMTrkEvents(bytes, dataOffset, length) {
-    const events = []
-    let pos = dataOffset, cursor = 0
-    const end = dataOffset + length
-    while (pos < end) {
-        const vlq = decodeVLQ(bytes, pos); pos += vlq.bytesRead
-        cursor += vlq.value
-        const b0 = bytes[pos]
-        if (b0 === 0xFF) {
-            const type = bytes[pos+1]
-            const lv = decodeVLQ(bytes, pos+2)
-            events.push({ absTick: cursor, type: 'meta', metaType: type,
-                data: Array.from(bytes.slice(pos+2+lv.bytesRead, pos+2+lv.bytesRead+lv.value)) })
-            pos += 2 + lv.bytesRead + lv.value
-        } else {
-            events.push({ absTick: cursor, type: 'midi',
-                status: b0 & 0xF0, channel: b0 & 0x0F,
-                note: bytes[pos+1], velocity: bytes[pos+2] })
-            pos += 3
-        }
-    }
-    return events
-}
-function parseAllMTrkEvents(bytes) {
-    const tracks = []
-    let i = 0
-    while (i + 8 <= bytes.length) {
-        const tag = String.fromCharCode(bytes[i],bytes[i+1],bytes[i+2],bytes[i+3])
-        const length = readUint32BE(bytes, i+4)
-        if (tag === 'MTrk') tracks.push(parseMTrkEvents(bytes, i+8, length))
-        i += 8 + length
-    }
-    return tracks
-}
 /** Collect all Note On events from all instrument tracks (track index ≥ 1) */
 function allNoteOns(bytes) {
-    const tracks = parseAllMTrkEvents(bytes)
-    const noteOns = []
-    for (let ti = 1; ti < tracks.length; ti++) {
-        for (const ev of tracks[ti]) {
-            if (ev.type === 'midi' && ev.status === 0x90 && ev.velocity > 0) {
-                noteOns.push({ absTick: ev.absTick, channel: ev.channel, note: ev.note, velocity: ev.velocity })
-            }
-        }
-    }
-    return noteOns
+    return findAllNotes(parseMidi(bytes))
 }
 
 // ─── Engine helpers ───────────────────────────────────────────────────────────

@@ -347,9 +347,11 @@ describe('MfSound', () => {
     })
 
     it('_playVoice returns null on error without re-throwing', async () => {
+        const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
         sound.mixer.getOrCreateStrip.mockRejectedValue(new Error('boom'))
         const result = await sound._playVoice(makeFlatNote(), 1.0)
         expect(result).toBeNull()
+        spy.mockRestore()
     })
 
     // ── updateStripFromTrack caching ──────────────────────────────────

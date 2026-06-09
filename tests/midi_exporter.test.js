@@ -5,18 +5,12 @@ import MidiExporter, {
     buildInstrumentTrack,
 } from '../src/logic/midi/midi_exporter.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
+import { readUint32BE, readUint16BE, decodeVLQ } from './helpers/midi_reader.js'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const PPQN = 96
 const TICKS_PER_BAR = PPQN * 1
-
-function readUint32BE(bytes, offset) {
-    return ((bytes[offset] << 24) | (bytes[offset+1] << 16) | (bytes[offset+2] << 8) | bytes[offset+3]) >>> 0
-}
-function readUint16BE(bytes, offset) {
-    return ((bytes[offset] << 8) | bytes[offset+1]) >>> 0
-}
 
 /** Decode all chunk types and their positions from a raw SMF Uint8Array */
 function parseChunks(bytes) {
@@ -31,19 +25,7 @@ function parseChunks(bytes) {
     return chunks
 }
 
-/** Decode a VLQ at bytes[offset], returns { value, bytesRead } */
-function decodeVLQ(bytes, offset) {
-    let value = 0, bytesRead = 0
-    let b
-    do {
-        b = bytes[offset + bytesRead]
-        value = (value << 7) | (b & 0x7F)
-        bytesRead++
-    } while (b & 0x80)
-    return { value, bytesRead }
-}
-
-/** Parse raw MIDI events from an MTrk data slice, returns array of { delta, type, data[] } */
+/** Parse raw MIDI events from an MTrk data slice (delta times, not absolute) */
 function parseMTrkEvents(bytes, dataOffset, length) {
     const events = []
     let pos = dataOffset
