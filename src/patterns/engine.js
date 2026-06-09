@@ -208,22 +208,11 @@ export function computeFlatNotesFromPattern(djtPattern, loop = 0, computeNextSte
     const flatNotes = new Map()
     const nbTickForPattern = computeNbTickForPattern(djtPattern.nbBars, tick)
 
-    const defaultComputeNextStep = (note, track) => {
-        const last = track.barQuantize * track.bars
-        const first = note.bar * track.barQuantize + note.barStep
-        for (let i = first + 1; i < last; i++) {
-            const sb = { bar: Math.floor(i / track.barQuantize), step: i % track.barQuantize }
-            if (track.notes?.some(n => n.bar === sb.bar && n.barStep === sb.step)) {
-                return i
-            }
-        }
-        return track.loopAtStep ?? last
-    }
-    const resolver = computeNextStep ?? defaultComputeNextStep
-
     for (const track of Object.values(djtPattern.tracks)) {
         let nbTickForLoop = computeNbTickForLoop(track, tick)
         nbTickForLoop = adjustLoopToPattern(nbTickForPattern, nbTickForLoop)
+
+        const resolver = computeNextStep ?? buildDefaultResolver(track)
 
         for (const note of Object.values(track.notes)) {
             const triggerPhase = note.triggerPhase ?? 0
@@ -246,4 +235,29 @@ export function computeFlatNotesFromPattern(djtPattern, loop = 0, computeNextSte
     }
 
     return flatNotes
+}
+
+function buildOccupiedSet(track) {
+    const set = new Set()
+    const notes = track.notes
+    if (!notes) return set
+    const q = track.barQuantize
+    const values = Array.isArray(notes) ? notes : Object.values(notes)
+    for (let i = 0; i < values.length; i++) {
+        const n = values[i]
+        set.add(n.bar * q + n.barStep)
+    }
+    return set
+}
+
+function buildDefaultResolver(track) {
+    const last = track.barQuantize * (track.bars ?? track.nbBars ?? 4)
+    const occupied = buildOccupiedSet(track)
+    return (note) => {
+        const first = note.bar * track.barQuantize + note.barStep
+        for (let i = first + 1; i < last; i++) {
+            if (occupied.has(i)) return i
+        }
+        return track.loopAtStep ?? last
+    }
 }

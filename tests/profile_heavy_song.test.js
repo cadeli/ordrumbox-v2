@@ -54,7 +54,8 @@ function buildHeavyTrack(name, idx) {
                     retriggerNum: 1 + (idx % 2),
                     retriggerStep: 1 + (step % 3),
                     arp: step % 2 === 0 ? 'up' : 'off',
-                    arpTriggerProbability: 0.7
+                    arpTriggerProbability: 0.7,
+                    euclidianFill: (step + idx) % 8 === 0 ? 3 : 0
                 })
             }
         }

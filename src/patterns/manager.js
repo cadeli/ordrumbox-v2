@@ -20,27 +20,30 @@ export default class MfPatterns {
     constructor() { }
 
     computeFlatNotesFromPattern = (djtPattern, loop = 0) => {
-        const flatNotes = computeFlatNotesFromPattern(djtPattern, loop, (note, track) => {
-            return this.computeNextPatternStepNote(note, track)
-        }, TICK)
+        const flatNotes = computeFlatNotesFromPattern(djtPattern, loop, null, TICK)
         appState.flatNotes = flatNotes
         playbackEvents.dispatchPatternChange()
         return flatNotes
     }
 
     computeNextPatternStepNote = (note, track) => {
-        let last = track.barQuantize * (track.bars ?? track.nbBars ?? 4)
-        let first = note.bar * track.barQuantize + note.barStep
-        
-        // Find next note manually to avoid dependency on MfCmd
-        for (let i = first + 1; i < last; i++) {
-            let bar = Math.floor(i / track.barQuantize)
-            let step = i % track.barQuantize
-            
-            const hasNote = track.notes?.some(n => n.bar === bar && n.barStep === step)
-            if (hasNote) {
-                return i
+        const last = track.barQuantize * (track.bars ?? track.nbBars ?? 4)
+        const first = note.bar * track.barQuantize + note.barStep
+
+        if (!track._occupiedSet) {
+            const set = new Set()
+            const notes = track.notes
+            const q = track.barQuantize
+            if (notes) {
+                for (let i = 0; i < notes.length; i++) {
+                    set.add(notes[i].bar * q + notes[i].barStep)
+                }
             }
+            track._occupiedSet = set
+        }
+
+        for (let i = first + 1; i < last; i++) {
+            if (track._occupiedSet.has(i)) return i
         }
         return track.loopAtStep ?? last
     }

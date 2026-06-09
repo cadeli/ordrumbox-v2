@@ -199,6 +199,119 @@ describe('Pattern Engine Logic', () => {
         })
     })
 
+    describe('Euclidean Fill integration (computeFlatNotesFromPattern with real resolver)', () => {
+        it('places euclidian fill notes between current and next note', () => {
+            const pattern = {
+                nbBars: 4,
+                tracks: {
+                    'T1': {
+                        name: 'T1',
+                        barQuantize: 4,
+                        notes: {
+                            'N1': { bar: 0, barStep: 0, euclidianFill: 1, triggerFreq: 1, triggerProbability: 1 },
+                            'N2': { bar: 0, barStep: 2, triggerFreq: 1, triggerProbability: 1 }
+                        }
+                    }
+                }
+            }
+            const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+
+            // N1 at barStep 0 -> tick 0, N2 at barStep 2 -> tick 16
+            // Occupied positions: {0, 2}. Resolver finds next at step 2.
+            // startStep=0, endStep=2, span=2
+            // fill tickOffset = (1 * 2 * (32/4)) / (1+1) = (2*8)/2 = 8
+            // fill note at tick 8
+            expect(result.has(0)).toBe(true)
+            expect(result.has(8)).toBe(true)
+            expect(result.has(16)).toBe(true)
+            expect(result.get(0).length).toBe(1)
+            expect(result.get(8).length).toBe(1)
+            expect(result.get(16).length).toBe(1)
+        })
+
+        it('distributes multiple euclidian fills evenly', () => {
+            const pattern = {
+                nbBars: 4,
+                tracks: {
+                    'T1': {
+                        name: 'T1',
+                        barQuantize: 4,
+                        notes: {
+                            'N1': { bar: 0, barStep: 0, euclidianFill: 3, triggerFreq: 1, triggerProbability: 1 },
+                            'N2': { bar: 1, barStep: 0, triggerFreq: 1, triggerProbability: 1 }
+                        }
+                    }
+                }
+            }
+            const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+
+            // N1 at barStep 0 -> tick 0, N2 at bar 1 barStep 0 -> tick 32
+            // Occupied: {0, 4}. Resolver finds next at step 4.
+            // startStep=0, endStep=4, span=4
+            // tickOffset(i) = Math.round((i * 4 * (32/4)) / 4) = Math.round(i * 8)
+            // i=1: 8, i=2: 16, i=3: 24
+            expect(result.has(0)).toBe(true)
+            expect(result.has(8)).toBe(true)
+            expect(result.has(16)).toBe(true)
+            expect(result.has(24)).toBe(true)
+            expect(result.has(32)).toBe(true)
+            expect(result.size).toBe(5)
+        })
+
+        it('does not place fill notes beyond pattern length', () => {
+            const pattern = {
+                nbBars: 1,
+                tracks: {
+                    'T1': {
+                        name: 'T1',
+                        barQuantize: 4,
+                        notes: {
+                            'N1': { bar: 0, barStep: 0, euclidianFill: 5, triggerFreq: 1, triggerProbability: 1 }
+                        }
+                    }
+                }
+            }
+            const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+
+            // nbTickForPattern = 32
+            // No next note -> last = 4*4=16 (bars defaults to 4)
+            // startStep=0, endStep=16, span=16
+            // tickOffset(i) = Math.round((i * 16 * 8) / 6) = Math.round(i * 128/6)
+            // i=1: 21, i=2: 43 (>=32 skip), i=3+: skip
+            expect(result.has(0)).toBe(true)
+            expect(result.has(21)).toBe(true)
+            const ticks = [...result.keys()].sort((a, b) => a - b)
+            expect(ticks).toEqual([0, 21])
+        })
+
+        it('euclidian fill with arp applies pitch offsets', () => {
+            const pattern = {
+                nbBars: 4,
+                tracks: {
+                    'T1': {
+                        name: 'T1',
+                        barQuantize: 4,
+                        notes: {
+                            'N1': { bar: 0, barStep: 0, euclidianFill: 1, arp: { intervals: [0, 7], mode: 'up' }, retriggerNum: 1, triggerFreq: 1, triggerProbability: 1 },
+                            'N2': { bar: 1, barStep: 0, triggerFreq: 1, triggerProbability: 1 }
+                        }
+                    }
+                }
+            }
+            const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+
+            // Occupied: {0, 4}. Resolver finds next at step 4.
+            // startStep=0, endStep=4, span=4
+            // fill tickOffset = (1 * 4 * 8) / 2 = 16
+            // sequence: [0, 7]
+            // base: arpIndex=0 -> pitch+0, fill: arpIndex=1 -> pitch+7
+            expect(result.has(0)).toBe(true)
+            expect(result.has(16)).toBe(true)
+            expect(result.get(0)[0].note.pitch).toBe(0)
+            expect(result.get(16)[0].note.pitch).toBe(7)
+        })
+    })
+
     describe('Full Pattern to FlatNotes (computeFlatNotesFromPattern)', () => {
         it('respects track loops and pattern boundaries', () => {
             const pattern = {
