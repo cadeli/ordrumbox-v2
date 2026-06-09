@@ -14,8 +14,8 @@ import {
 } from '../../core/constants.js'
 
 export default class SampleVoice extends BaseVoice {
-    constructor(audioCtx, strip, buffer) {
-        super(audioCtx, strip)
+    constructor(audioCtx, strip, buffer, nodePool = null) {
+        super(audioCtx, strip, nodePool)
         this.buffer = buffer
         this.snd = null
         this.gainEnvelope = null
@@ -24,20 +24,14 @@ export default class SampleVoice extends BaseVoice {
     }
 
     setup(flatNote, time) {
-        const ctx = this.audioCtx
         const track = flatNote.track
 
-        this.snd = this.registerNode(ctx.createBufferSource())
-        this.gainEnvelope = this.registerNode(ctx.createGain())
-        this.panNode = this.registerNode(ctx.createStereoPanner())
+        this.snd = this.registerNode(this.audioCtx.createBufferSource())
+        this.gainEnvelope = this.acquireNode('GainNode')
+        this.panNode = this.acquireNode('StereoPannerNode')
 
         this.snd.buffer = this.buffer
 
-        // Pitch: LFO replaces fpitch (replace semantics).
-        // When LFO is on, sample the LFO at note start (snapshot in semitones)
-        // and convert to a playbackRate ratio. The base fpitch is ignored.
-        // When LFO is off, use the base fpitch as before.
-        // Uses the same computeLfoValue helper as the visual (audio/math.js).
         let playbackRate = flatNote.fpitch || 1
         if (track.pitchLfo) {
             const tick = serviceRegistry.transport?.tick ?? 0
@@ -48,10 +42,6 @@ export default class SampleVoice extends BaseVoice {
         }
         this.snd.playbackRate.setTargetAtTime(playbackRate, time, PITCH_RAMP_TIME)
         this.panNode.pan.setValueAtTime(flatNote.pan ?? 0, time)
-
-        // Pan LFO: applied at the strip level (worklet replace semantics).
-        // The voice's panNode uses the note's flat pan only. The strip's worklet
-        // applies the LFO to the per-track pan, which is mixed with the voice output.
 
         const duration = track.sampleLength || 0.5
         this.noteVelo = flatNote.note?.velocity ?? MfDefaults.getNoteProp(flatNote.note, 'velocity')

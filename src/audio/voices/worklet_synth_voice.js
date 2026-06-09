@@ -56,8 +56,8 @@ function postUpdate(node, params) {
  * SynthVoice based on generatedSound content.
  */
 export default class WorkletSynthVoice extends BaseVoice {
-    constructor(audioCtx, strip, generatedSound, soundKey = null) {
-        super(audioCtx, strip)
+    constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null) {
+        super(audioCtx, strip, nodePool)
         this.generatedSound = generatedSound
         this.soundKey = soundKey
         this.workletNode = null

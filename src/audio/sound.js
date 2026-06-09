@@ -1,6 +1,7 @@
 import MfDefaults from '../patterns/defaults.js'
 import VoiceFactory from './voices/voice_factory.js'
 import SynthVoice from './voices/synth_voice.js'
+import NodePool from './node_pool.js'
 import { applyTrackToStrip } from './strip_sync.js'
 
 export default class MfSound {
@@ -18,7 +19,8 @@ export default class MfSound {
         this.generatedSounds = generatedSounds || {}
         this.activeVoices = new WeakMap()
         this.activeSynthVoices = new Set()
-        this.voiceFactory = new VoiceFactory(audioCtx, mixer, sounds, this.generatedSounds)
+        this.nodePool = new NodePool(audioCtx)
+        this.voiceFactory = new VoiceFactory(audioCtx, mixer, sounds, this.generatedSounds, this.nodePool)
         this.generatedSoundsLoading = false
         this.generatedSoundsLoadFailed = false
 

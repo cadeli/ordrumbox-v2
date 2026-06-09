@@ -10,6 +10,7 @@ export default class NodePool {
         let pool = this._pools[type]
         if (!pool) pool = this._pools[type] = []
         const node = pool.pop() ?? this._create(type)
+        this.resetNode(node, type)
         return node
     }
 
@@ -21,6 +22,37 @@ export default class NodePool {
         let pool = this._pools[type]
         if (!pool) pool = this._pools[type] = []
         pool.push(node)
+    }
+
+    resetNode(node, type) {
+        if (!node) return
+        try { node.disconnect() } catch (_) {}
+
+        switch (type) {
+            case 'GainNode':
+                node.gain.cancelScheduledValues(0)
+                node.gain.value = 1
+                break
+            case 'BiquadFilterNode':
+                node.frequency.cancelScheduledValues(0)
+                node.Q.cancelScheduledValues(0)
+                node.frequency.value = 350
+                node.Q.value = 1
+                node.type = 'lowpass'
+                break
+            case 'StereoPannerNode':
+                node.pan.cancelScheduledValues(0)
+                node.pan.value = 0
+                break
+        }
+    }
+
+    get stats() {
+        const result = {}
+        for (const [type, pool] of Object.entries(this._pools)) {
+            result[type] = pool.length
+        }
+        return result
     }
 
     _create(type) {

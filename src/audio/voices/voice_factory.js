@@ -17,11 +17,12 @@ function isWorkletCompatible(generatedSound) {
 }
 
 export default class VoiceFactory {
-    constructor(audioCtx, mixer, sounds, generatedSounds) {
+    constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null) {
         this.audioCtx = audioCtx
         this.mixer = mixer
         this.sounds = sounds
         this.generatedSounds = generatedSounds
+        this.nodePool = nodePool
     }
 
     async createVoice(flatNote) {
@@ -39,9 +40,9 @@ export default class VoiceFactory {
             // filter envelope) not yet in the worklet, and as fallback when
             // worklet init is unknown / unavailable.
             if (appState.workletStatus === 'active' && isWorkletCompatible(generatedSound)) {
-                return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey)
+                return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool)
             }
-            return new SynthVoice(this.audioCtx, strip, generatedSound, this.mixer?.lfo, soundKey)
+            return new SynthVoice(this.audioCtx, strip, generatedSound, this.mixer?.lfo, soundKey, this.nodePool)
         }
 
         let soundBuffer = this.sounds[flatNote.soundId]?.buffer
@@ -50,6 +51,6 @@ export default class VoiceFactory {
             console.warn(`VoiceFactory: No soundBuffer for track ${track.name}`)
             return null
         }
-        return new SampleVoice(this.audioCtx, strip, soundBuffer)
+        return new SampleVoice(this.audioCtx, strip, soundBuffer, this.nodePool)
     }
 }

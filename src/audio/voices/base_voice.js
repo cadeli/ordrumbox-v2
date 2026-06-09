@@ -1,12 +1,13 @@
 export default class BaseVoice {
-    constructor(audioCtx, strip) {
+    constructor(audioCtx, strip, nodePool = null) {
         this.audioCtx = audioCtx
         this.strip = strip
+        this.nodePool = nodePool
         this.stopped = false
-        this.nodes = [] // Track nodes for cleanup
+        this.nodes = []
+        this._pooledNodes = []
     }
 
-    // To be implemented by subclasses
     setup(flatNote, time) {
         throw new Error("setup() must be implemented by subclass")
     }
@@ -21,18 +22,39 @@ export default class BaseVoice {
 
     cleanup = () => {
         this.nodes.forEach(node => {
-            try {
-                node.disconnect()
-            } catch (e) {
-                // Ignore disconnect errors
-            }
+            try { node.disconnect() } catch (e) {}
         })
+        if (this.nodePool) {
+            for (const node of this._pooledNodes) {
+                this.nodePool.release(node)
+            }
+        }
+        this._pooledNodes = []
         this.nodes = []
     }
 
     registerNode(node) {
         this.nodes.push(node)
         return node
+    }
+
+    acquireNode(type) {
+        if (this.nodePool) {
+            const node = this.nodePool.acquire(type)
+            this._pooledNodes.push(node)
+            this.nodes.push(node)
+            return node
+        }
+        return this.registerNode(this._createNode(type))
+    }
+
+    _createNode(type) {
+        switch (type) {
+            case 'GainNode':          return this.audioCtx.createGain()
+            case 'BiquadFilterNode':  return this.audioCtx.createBiquadFilter()
+            case 'StereoPannerNode':  return this.audioCtx.createStereoPanner()
+            default: throw new Error(`BaseVoice: unsupported node type "${type}"`)
+        }
     }
 
     connectToStripInput(sourceNode) {
