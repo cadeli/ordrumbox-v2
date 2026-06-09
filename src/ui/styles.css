@@ -197,9 +197,17 @@
 }
 
 #pattern-panel .pp-ghost {
-    position: absolute; top: 1px; bottom: 1px; width: 2px;
-    background: #ffcc00; pointer-events: none;
-    box-shadow: 0 0 2px #ffcc00;
+    position: absolute; top: 25%; bottom: 25%; width: 70%;
+    transform: translateX(-50%);
+    border-radius: 2px; pointer-events: none;
+}
+#pattern-panel .pp-ghost-retrigger {
+    background: rgba(0, 180, 255, 0.5);
+    box-shadow: 0 0 4px rgba(0, 180, 255, 0.4);
+}
+#pattern-panel .pp-ghost-euclidian {
+    background: rgba(255, 200, 0, 0.45);
+    box-shadow: 0 0 4px rgba(255, 200, 0, 0.35);
 }
 
 #pattern-panel .pp-playhead {

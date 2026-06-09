@@ -284,7 +284,7 @@ export default class PatternPanel extends BasePanel {
 
         for (let i = 1; i < count; i++) {
             const pos = basePos + i * stepSpacing
-            if (pos < totalSteps) positions.push(pos)
+            if (pos < totalSteps) positions.push({ pos, type: 'retrigger' })
         }
 
         if (euclidianFill > 0) {
@@ -305,7 +305,7 @@ export default class PatternPanel extends BasePanel {
             const stepsSpan = endStep - basePos
             for (let i = 1; i <= euclidianFill; i++) {
                 const pos = basePos + (i * stepsSpan) / (euclidianFill + 1)
-                if (pos < totalSteps) positions.push(pos)
+                if (pos < totalSteps) positions.push({ pos, type: 'euclidian' })
             }
         }
         return positions
@@ -347,12 +347,12 @@ export default class PatternPanel extends BasePanel {
             const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes || {})
             const ghostMap = new Map()
             notes.forEach(note => {
-                this._getSubPositions(note, track).forEach(subPos => {
-                    const stepAbs = Math.floor(subPos)
+                this._getSubPositions(note, track).forEach(({ pos, type }) => {
+                    const stepAbs = Math.floor(pos)
                     const bar = Math.floor(stepAbs / barQuantize)
                     if (bar >= startBar && bar < endBarPage) {
                         if (!ghostMap.has(stepAbs)) ghostMap.set(stepAbs, [])
-                        ghostMap.get(stepAbs).push(subPos - stepAbs)
+                        ghostMap.get(stepAbs).push({ offset: pos - stepAbs, type })
                     }
                 })
             })
@@ -386,8 +386,9 @@ export default class PatternPanel extends BasePanel {
                         const loopAt = track.loopAtStep ?? totalSteps
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
                         
-                        const ghosts = (ghostMap.get(absPos) || []).map(offset => {
-                            return `<div class="pp-ghost" style="left: ${offset * 100}%"></div>`
+                        const ghosts = (ghostMap.get(absPos) || []).map(({ offset, type }) => {
+                            const cls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
+                            return `<div class="${cls}" style="left: ${offset * 100}%"></div>`
                         }).join('')
 
                         cellsHtml += `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}>${ghosts}</div>`
