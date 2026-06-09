@@ -8,10 +8,12 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 - Programmable grid for note entry and track looping
 - Support for complex polyrhythm and per-track swing settings
 - Precision controls for pitch, volume, and panning per note
+- Retrigger and Euclidean Fill with visual ghost notes (blue for retrigger, yellow for euclidian)
 - Real-time visual feedback with step-by-step playback
 
 ### Synthesis & Automation
 - Integrated Soft Synth with 3 VCOs, ADSR envelope, and filters
+- AudioWorklet mode for low-latency synthesis when supported
 - LFO modulators for dynamic pitch and volume effects
 - Per-track effects: Reverb and Saturation
 
@@ -94,9 +96,11 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 
 - Framework: Vanilla JavaScript with ES6 modules
 - Build Tool: Vite
-- Audio: Web Audio API
+- Audio: Web Audio API with AudioWorklet support
+- Node Pool: Recycling of GainNode, BiquadFilterNode, and StereoPannerNode for reduced GC pressure
 - Storage: LocalStorage for persistence, JSON for import/export
 - MCP Server: Standalone Node.js server for programmatic control
+
 
 
 Global sound processing:

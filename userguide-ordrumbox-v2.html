@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://www.ordrumbox.com/userguide-ordrumbox-v2.html">
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <meta name="description" content="Complete user guide for ordrumbox, the online drum machine">
+    <meta property="og:title" content="User guide for ordrumbox ">
+    <meta property="og:site_name" content="ordrumbox">
+    <meta property="og:description" content="Complete user guide for ordrumbox, online drum machine">
+    <meta property="og:url" content="https://www.ordrumbox.com/userguide-ordrumbox-v2.html">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://www.ordrumbox.com/assets/images/ordrumbox-online-screenshot.png">
+    <title>orDrumbox v2 User Manual</title>
+    <style>
+        :root {
+            --color-canvas-default: #ffffff;
+            --color-border-default: #d0d7de;
+            --color-fg-default: #1f2328;
+            --color-fg-muted: #57606a; 
+            --color-accent-fg: #0969da;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--color-fg-default);
+            background-color: #f6f8fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        main {
+            max-width: 900px;
+            width: 90%;
+            background: var(--color-canvas-default);
+            border: 1px solid var(--color-border-default);
+            border-radius: 6px;
+            padding: 45px;
+            margin: 2rem 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        h1, h2, h3 {
+            border-bottom: 1px solid var(--color-border-default);
+            padding-bottom: 0.3em;
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.5em; margin-top: 32px; }
+        h3 { font-size: 1.25em; border-bottom: none; margin-bottom: 8px; }
+
+        p { margin-bottom: 16px; }
+        ul, ol { padding-left: 2em; margin-bottom: 16px; }
+        li { margin-bottom: 4px; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid var(--color-border-default);
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f6f8fa;
+        }
+        
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(175, 184, 193, 0.2);
+            border-radius: 6px;
+            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        }
+
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        hr { height: 0.25em; background-color: var(--color-border-default); border: 0; margin: 24px 0; }
+        a { color: var(--color-accent-fg); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header-img {
+            max-width: 128px;
+            float: right;
+        }
+
+        footer {
+            padding: 24px;
+            text-align: center;
+            width: 100%;
+            color: var(--color-fg-muted);
+            font-size: 12px;
+        }
+
+        .toc {
+            background-color: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            border: 1px solid var(--color-border-default);
+        }
+    </style>
+</head>
+<body>
+
+<main>
+     <a href="https://www.ordrumbox.com">
+    <img src="assets/images/logo.png" width="128px" height="128px" alt="orDrumbox drum machine logo" class="header-img">
+    </a>
+    <h1>OrDrumbox v2 User Manual</h1>
+
+    <div class="toc">
+        <h2>Table of Contents</h2>
+        <ol>
+            <li><a href="#1-getting-started">Getting Started</a></li>
+            <li><a href="#2-toolbar">Toolbar</a></li>
+            <li><a href="#3-pattern-panel">Pattern Panel</a></li>
+            <li><a href="#4-track-editor">Track Editor</a></li>
+            <li><a href="#5-note-editor">Note Editor</a></li>
+            <li><a href="#6-tools-panel">Tools Panel</a></li>
+            <li><a href="#7-output-panel">Output Panel</a></li>
+            <li><a href="#8-synth-editor">Synth Editor</a></li>
+            <li><a href="#9-keyboard-shortcuts">Keyboard Shortcuts</a></li>
+            <li><a href="#10-audio-signal-flow">Audio Signal Flow</a></li>
+            <li><a href="#11-installation--offline-use">Installation & Offline Use</a></li>
+        </ol>
+    </div>
+
+    <hr>
+
+    <h2 id="1-getting-started">1. Getting Started</h2>
+    <p>OrDrumbox v2 is a browser-based drum machine and pattern sequencer. When you open the application, you see:</p>
+    <ul>
+        <li><strong>Toolbar</strong> at the top — main controls</li>
+        <li><strong>Pattern Panel</strong> — the step sequencer grid</li>
+    </ul>
+
+    <h3>Basic Workflow</h3>
+    <ol>
+        <li>Select a <strong>Pattern</strong> from the Pattern dropdown</li>
+        <li>Click <strong>Start</strong> to begin playback</li>
+        <li>Click on the grid to add/remove notes</li>
+        <li>Click a <strong>track name</strong> to open the Track Editor</li>
+        <li>Click a <strong>note cell</strong> to open the Note Editor</li>
+        <li>Use <strong>Auto Gen</strong> to generate a random pattern</li>
+    </ol>
+
+    <hr>
+
+    <h2 id="2-toolbar">2. Toolbar</h2>
+    <p>The toolbar is the fixed control bar at the top of the screen.</p>
+    <h3>Controls</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Button / Control</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Start / Stop</strong></td><td>Toggles playback. Red background when running.</td></tr>
+            <tr><td><strong>BPM</strong></td><td>Click to open the tempo slider (range: 20–250 BPM).</td></tr>
+            <tr><td><strong>Pattern</strong></td><td>Dropdown to switch between patterns.</td></tr>
+            <tr><td><strong>Kit</strong></td><td>Dropdown to switch drumkits (samples load on first use).</td></tr>
+            <tr><td><strong>Auto Gen</strong></td><td>Generates a complete random pattern with genre-appropriate tracks.</td></tr>
+            <tr><td><strong>Clear</strong></td><td>Removes all notes from the current pattern (asks for confirmation).</td></tr>
+            <tr><td><strong>Tools</strong></td><td>Opens the Tools panel (export/import, pattern name).</td></tr>
+            <tr><td><strong>Output</strong></td><td>Opens the Output panel (master mixer, spectrum analyzer).</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 id="3-pattern-panel">3. Pattern Panel</h2>
+    <p>The Pattern Panel displays all tracks as horizontal step grids below the toolbar.</p>
+    <h3>Display</h3>
+    <ul>
+        <li><strong>Pattern name</strong> (red), <strong>BPM</strong>, <strong>bar count</strong>, and <strong>track count</strong> are shown in the header.</li>
+        <li>Each track row shows: <strong>track name</strong> + <strong>step grid</strong>.</li>
+    </ul>
+
+    <h3>Cell Colors</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Appearance</th>
+                <th>Meaning</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Dark cell</td><td>Empty step</td></tr>
+            <tr><td>Red cell</td><td>Note present</td></tr>
+            <tr><td>White outline</td><td>Selected note or track</td></tr>
+            <tr><td>Left border</td><td>Start of a bar</td></tr>
+            <tr><td>Right white border</td><td>Loop point</td></tr>
+            <tr><td>Semi-transparent red (with number)</td><td>Note with trigger frequency > 1</td></tr>
+            <tr><td>Orange (with number)</td><td>Note with probability < 1</td></tr>
+            <tr><td>Blue rectangle (half-height, semi-transparent)</td><td>Retrigger sub-hit</td></tr>
+            <tr><td>Yellow rectangle (half-height, semi-transparent)</td><td>Euclidean fill sub-hit</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Interactions</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Click empty cell</td><td>Creates a note and opens Note Editor</td></tr>
+            <tr><td>Click a note</td><td>Selects it and opens Note Editor</td></tr>
+            <tr><td>Click a selected note</td><td>Deletes it</td></tr>
+            <tr><td>Click track name</td><td>Opens Track Editor for that track</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 id="4-track-editor">4. Track Editor</h2>
+    <p>The Track Editor opens when you click a track name. It contains all track-level parameters organized in groups.</p>
+    
+    <h3>Basic / Transport</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Mute</strong></td><td>Mutes the entire track</td></tr>
+            <tr><td><strong>Mono</strong></td><td>Forces monophonic playback</td></tr>
+            <tr><td><strong>Auto</strong></td><td>Enables auto mode</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Levels / Pitch</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Velo</strong></td><td>0–1</td><td>1.0</td><td>Track volume multiplier</td></tr>
+            <tr><td><strong>Pan</strong></td><td>-1 to 1</td><td>0</td><td>Stereo panning (left/right)</td></tr>
+            <tr><td><strong>Pitch</strong></td><td>-24 to 24</td><td>0</td><td>Pitch offset in semitones</td></tr>
+            <tr><td><strong>Len</strong></td><td>0–1</td><td>1.0</td><td>Sample playback length</td></tr>
+        </tbody>
+    </table>
+    <p>All four parameters support LFO modulation (click the row to open LFO settings).</p>
+
+    <h3>Filters</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Type</strong></td><td>lowpass, highpass, bandpass, peaking, lowshelf, highshelf, notch, allpass</td><td>allpass</td><td>Biquad filter type</td></tr>
+            <tr><td><strong>Freq</strong></td><td>0–1</td><td>20</td><td>Cutoff frequency (normalized, maps to 20Hz–20kHz)</td></tr>
+            <tr><td><strong>Q</strong></td><td>0–1</td><td>0.707</td><td>Filter resonance</td></tr>
+        </tbody>
+    </table>
+    <p>The <strong>Freq</strong> and <strong>Q</strong> parameters support LFO modulation.</p>
+
+    <h3>Effects</h3>
+    <p>Each effect has an <strong>LED toggle</strong> (green = active).</p>
+
+    <h4>Reverb</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Options</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>LED</strong></td><td>on/off</td><td>off</td><td>Enable/disable reverb</td></tr>
+            <tr><td><strong>RevT</strong></td><td>none, room, hall, plate, spring, gated</td><td>none</td><td>Reverb preset</td></tr>
+            <tr><td><strong>RevV</strong></td><td>0–1</td><td>0</td><td>Wet/dry mix</td></tr>
+        </tbody>
+    </table>
+    <p><strong>Reverb Presets:</strong></p>
+    <ul>
+        <li><strong>room</strong> — Small room (0.8s decay)</li>
+        <li><strong>hall</strong> — Large hall (2.4s decay)</li>
+        <li><strong>plate</strong> — Plate reverb (1.6s decay)</li>
+        <li><strong>spring</strong> — Spring with ripple (1.2s decay)</li>
+        <li><strong>gated</strong> — Gated reverb (0.7s, cuts off at 65%)</li>
+    </ul>
+
+    <h4>Delay</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Options/Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>LED</strong></td><td>on/off</td><td>off</td><td>Enable/disable delay</td></tr>
+            <tr><td><strong>DelTy</strong></td><td>none, slap, tape, pingpong</td><td>tape</td><td>Delay algorithm</td></tr>
+            <tr><td><strong>DelT</strong></td><td>0.0625, 0.125, 0.25, 0.5, 1, 2, 4</td><td>1</td><td>Delay time (beat multiplier)</td></tr>
+            <tr><td><strong>DelV</strong></td><td>0–1</td><td>0</td><td>Wet mix</td></tr>
+        </tbody>
+    </table>
+    <p><strong>Delay Types:</strong></p>
+    <ul>
+        <li><strong>slap</strong> — Single echo, short feedback</li>
+        <li><strong>tape</strong> — Tape delay with filter, warm feedback</li>
+        <li><strong>pingpong</strong> — Stereo ping-pong between left and right</li>
+    </ul>
+
+    <h4>Saturation</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Options/Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>LED</strong></td><td>on/off</td><td>off</td><td>Enable/disable saturation</td></tr>
+            <tr><td><strong>SatT</strong></td><td>soft, hard, tape</td><td>soft</td><td>Saturation algorithm</td></tr>
+            <tr><td><strong>SatV</strong></td><td>0–1</td><td>0</td><td>Drive amount</td></tr>
+        </tbody>
+    </table>
+    <p><strong>Saturation Types:</strong></p>
+    <ul>
+        <li><strong>soft</strong> — Smooth tanh-based clipping</li>
+        <li><strong>hard</strong> — Hard clipping</li>
+        <li><strong>tape</strong> — Analog tape warmth</li>
+    </ul>
+
+    <h3>LFO Sub-Panel</h3>
+    <p>Click any LFO-capable row (Velo, Pan, Pitch, Freq, Q) to open the LFO editor.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>LED</strong></td><td>on/off</td><td>off</td><td>Enable/disable LFO</td></tr>
+            <tr><td><strong>Freq</strong></td><td>0.1–16</td><td>1</td><td>LFO rate (cycles per 4 bars)</td></tr>
+            <tr><td><strong>Min</strong></td><td>varies</td><td>parent min</td><td>LFO sweep minimum</td></tr>
+            <tr><td><strong>Max</strong></td><td>varies</td><td>parent max</td><td>LFO sweep maximum</td></tr>
+            <tr><td><strong>Phas</strong></td><td>0–1</td><td>0</td><td>Phase offset</td></tr>
+        </tbody>
+    </table>
+    <p>The LFO waveform is always sine.</p>
+
+    <h3>Sound Sub-Panel</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Auto LED</strong></td><td>When green, automatically assigns the best sample from the drumkit based on track name</td></tr>
+            <tr><td><strong>Instr</strong></td><td>Instrument type (shown when auto-assign is off)</td></tr>
+            <tr><td><strong>Sample</strong></td><td>Specific sample file (shown when auto-assign is off)</td></tr>
+            <tr><td><strong>Gen</strong></td><td>Soft-synth generated sound selection</td></tr>
+            <tr><td><strong>Edit</strong></td><td>Opens the Synth Editor for the selected generated sound</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Loop / Pattern Sub-Panel</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Steps/Bar</strong></td><td>1–8</td><td>4</td><td>Number of steps per bar</td></tr>
+            <tr><td><strong>Bars</strong></td><td>1–8</td><td>4</td><td>Number of bars in the pattern</td></tr>
+            <tr><td><strong>Loop Point</strong></td><td>1–(bars×steps/bar)</td><td>end</td><td>Step where the track loops back</td></tr>
+            <tr><td><strong>Swing</strong></td><td>0–1</td><td>0</td><td>Shuffle amount for odd-numbered steps</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 id="5-note-editor">5. Note Editor</h2>
+    <p>The Note Editor opens when you click a note in the Pattern Panel. It shows per-note parameters.</p>
+    <h3>Header</h3>
+    <ul>
+        <li>Track name, position (bar X step Y), and close button.</li>
+    </ul>
+
+    <h3>Vel / Pitch / Pan</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Vel</strong></td><td>0–1</td><td>0.8</td><td>Note velocity (volume)</td></tr>
+            <tr><td><strong>Pitch</strong></td><td>-24 to 24</td><td>0</td><td>Semitone offset from C3</td></tr>
+            <tr><td><strong>Pan</strong></td><td>-1 to 1</td><td>0</td><td>Per-note panning</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Triggers</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>TrigF</strong></td><td>1–16</td><td>1</td><td>Play every N-th loop (1 = every loop)</td></tr>
+            <tr><td><strong>TrigP</strong></td><td>0–15</td><td>0</td><td>Phase offset for trigger frequency</td></tr>
+            <tr><td><strong>Trig%</strong></td><td>0–1</td><td>1</td><td>Probability of triggering (1 = 100%)</td></tr>
+            <tr><td><strong>Euc</strong></td><td>0–16</td><td>0</td><td>Euclidean fill: adds N evenly-spaced sub-hits</td></tr>
+        </tbody>
+    </table>
+    <p><strong>How triggers work:</strong></p>
+    <p>A note triggers when: <code>(currentLoop + triggerPhase) % triggerFreq === 0</code></p>
+    <p><strong>Euclidean fill:</strong></p>
+    <p>Adds N evenly-spaced notes between this note and the next note in the track, creating complex rhythmic patterns.</p>
+
+    <h3>Arpeggiator</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Options/Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Scl</strong></td><td>major, minor, pentatonic, etc.</td><td>major</td><td>Musical scale for arp intervals</td></tr>
+            <tr><td><strong>Dir</strong></td><td>up, down, updown</td><td>up</td><td>Arpeggio direction</td></tr>
+            <tr><td><strong>Rng</strong></td><td>0–12</td><td>0</td><td>Number of arp notes (0 = disabled)</td></tr>
+            <tr><td><strong>Arp%</strong></td><td>0–1</td><td>1</td><td>Probability each arp note triggers</td></tr>
+            <tr><td><strong>Retrig</strong></td><td>1–16</td><td>1</td><td>Number of retrigger sub-hits</td></tr>
+            <tr><td><strong>RetS</strong></td><td>1–16</td><td>1</td><td>Spacing between retrigger hits</td></tr>
+        </tbody>
+    </table>
+    <p><strong>How arpeggiator works:</strong></p>
+    <ul>
+        <li>When <code>Rng > 0</code>, generates pitch offsets from the selected scale</li>
+        <li>Each arp note gets a random probability check</li>
+        <li>If both arp and retrigger are active, arp provides pitch offsets and retrigger provides the count</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="6-tools-panel">6. Tools Panel</h2>
+    <p>The Tools Panel opens when clicking the "Tools" button in the toolbar.</p>
+    
+    <h3>Pattern Settings</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Name</strong></td><td>Text input to rename the current pattern</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Export</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Button</th>
+                <th>Format</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Export JSON</strong></td><td><code>.json</code></td><td>Exports pattern data (strips defaults, keeps only changed values)</td></tr>
+            <tr><td><strong>Export MIDI</strong></td><td><code>.mid</code></td><td>Exports as Standard MIDI File (SMF Type 1, multi-track)</td></tr>
+            <tr><td><strong>Export WAV</strong></td><td><code>.wav</code></td><td>Renders audio using OfflineAudioContext</td></tr>
+        </tbody>
+    </table>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Loops</strong></td><td>1–32</td><td>1</td><td>Number of times pattern loops in WAV/MIDI export</td></tr>
+        </tbody>
+    </table>
+
+    <p><strong>Export filenames:</strong> <code>ordrumbox-{patternName}.{ext}</code></p>
+    <p><strong>MIDI Export details:</strong></p>
+    <ul>
+        <li>Track 0: Tempo + time signature</li>
+        <li>Track 1+: One MIDI track per instrument</li>
+        <li>Drum tracks &rarr; MIDI channel 10</li>
+        <li>Muted tracks are excluded</li>
+    </ul>
+
+    <h3>Import</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Button</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Import JSON</strong></td><td>Opens file picker for <code>.json</code> files, imports as a new pattern</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 id="7-output-panel">7. Output Panel</h2>
+    <p>The Output Panel opens when clicking the "Output" button in the toolbar. It provides master mixing controls and a real-time spectrum analyzer.</p>
+    
+    <h3>Master</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Volume</strong></td><td>0–2</td><td>1.0</td><td>Master output volume</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Filters (Master)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Low Cut</strong></td><td>10–500 Hz</td><td>35 Hz</td><td>High-pass filter (removes low frequencies)</td></tr>
+            <tr><td><strong>High Cut</strong></td><td>1000–20000 Hz</td><td>18500 Hz</td><td>Low-pass filter (removes high frequencies)</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Compressor</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Unit</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Threshold</strong></td><td>-40–0</td><td>-12</td><td>dB</td><td>Compression threshold</td></tr>
+            <tr><td><strong>Ratio</strong></td><td>1–20</td><td>4</td><td>—</td><td>Compression ratio</td></tr>
+            <tr><td><strong>Attack</strong></td><td>0–1</td><td>0.005</td><td>s</td><td>Response speed</td></tr>
+            <tr><td><strong>Release</strong></td><td>0–1</td><td>0.15</td><td>s</td><td>Recovery speed</td></tr>
+            <tr><td><strong>Knee</strong></td><td>0–40</td><td>30</td><td>dB</td><td>Curve softness</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Spectrum Analyzer</h3>
+    <p>A real-time frequency spectrum display updated via <code>requestAnimationFrame</code>. Bars are colored from dark (low amplitude) to red (high amplitude).</p>
+
+    <hr>
+
+    <h2 id="8-synth-editor">8. Synth Editor</h2>
+    <p>The Synth Editor is a full-screen overlay for editing soft synthesizer parameters. It opens from the Track Editor's "Edit" button when a generated sound is selected.</p>
+    <p><strong>Header:</strong> OK (saves changes) / Cancel (reverts) buttons.</p>
+
+    <h3>Master Volume</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>masterVolume</strong></td><td>0–1</td><td>0.8</td><td>Synth output volume</td></tr>
+            <tr><td><strong>slide</strong></td><td>0–500</td><td>0</td><td>Portamento/glide time</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Oscillators (VCO1, VCO2, VCO3)</h3>
+    <p>Each oscillator has:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>gain</strong></td><td>0–1</td><td>vco1:1, others:0</td><td>Oscillator volume</td></tr>
+            <tr><td><strong>octave</strong></td><td>-4 to 4</td><td>0</td><td>Octave offset</td></tr>
+            <tr><td><strong>detune</strong></td><td>-100 to 100</td><td>0</td><td>Fine detuning in cents</td></tr>
+            <tr><td><strong>wave</strong></td><td>square, sawtooth, triangle, sine</td><td>sine</td><td>Waveform</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Filter</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>type</strong></td><td>lowpass, highpass, bandpass, etc.</td><td>lowpass</td><td>Filter type</td></tr>
+            <tr><td><strong>freq</strong></td><td>20–20000</td><td>400 Hz</td><td>Cutoff frequency</td></tr>
+            <tr><td><strong>Q</strong></td><td>0.1–24</td><td>1</td><td>Resonance</td></tr>
+            <tr><td><strong>envAmount</strong></td><td>0–1</td><td>0</td><td>Envelope modulation depth</td></tr>
+        </tbody>
+    </table>
+
+    <h3>LFO</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Options/Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>target</strong></td><td>NOT, filter.freq, vco1.detune, etc.</td><td>NOT</td><td>Modulation target</td></tr>
+            <tr><td><strong>wave</strong></td><td>square, sawtooth, triangle, sine</td><td>sine</td><td>LFO waveform</td></tr>
+            <tr><td><strong>freq</strong></td><td>0–20</td><td>0</td><td>LFO rate</td></tr>
+            <tr><td><strong>depth</strong></td><td>0–1</td><td>0</td><td>Modulation depth</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Noise</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>mix</strong></td><td>0–1</td><td>0</td><td>White noise level</td></tr>
+            <tr><td><strong>filterType</strong></td><td>filter types</td><td>highpass</td><td>Noise filter type</td></tr>
+            <tr><td><strong>filterFreq</strong></td><td>20–20000</td><td>1000 Hz</td><td>Noise filter cutoff</td></tr>
+            <tr><td><strong>filterQ</strong></td><td>0.1–24</td><td>1</td><td>Noise filter resonance</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Envelope (ADSR)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>attack</strong></td><td>0–2 s</td><td>0</td><td>Attack time</td></tr>
+            <tr><td><strong>decay</strong></td><td>0–2 s</td><td>0.12</td><td>Decay time</td></tr>
+            <tr><td><strong>sustain</strong></td><td>0–1</td><td>1</td><td>Sustain level</td></tr>
+            <tr><td><strong>release</strong></td><td>0–3 s</td><td>0.05</td><td>Release time</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 id="9-keyboard-shortcuts">9. Keyboard Shortcuts</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Space</strong></td><td>Start/Stop playback</td></tr>
+            <tr><td><strong>P</strong></td><td>Log patterns (legacy CSV format)</td></tr>
+            <tr><td><strong>B</strong></td><td>Auto-generate a new pattern</td></tr>
+            <tr><td><strong>S</strong></td><td>Log patterns as JSON to console</td></tr>
+            <tr><td><strong>F</strong></td><td>Switch to a random pattern</td></tr>
+            <tr><td><strong>G</strong></td><td>Switch to a random drumkit</td></tr>
+            <tr><td><strong>H</strong></td><td>Convert all tracks to soft-synth sounds</td></tr>
+            <tr><td><strong>1–9</strong></td><td>Toggle mute for tracks 1–9</td></tr>
+            <tr><td><strong>Q, W, E, R, T, Y, U, I</strong></td><td>Preview (audition) tracks 0–7</td></tr>
+            <tr><td><strong>Left/Right arrows</strong></td><td>Adjust focused slider by one step</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 id="10-audio-signal-flow">10. Audio Signal Flow</h2>
+    <h3>Per-Track Signal Chain</h3>
+    <pre>
+Sample/Synth &rarr; Filter &rarr; Saturation &rarr; Dry Gain &rarr; Reverb &rarr; Delay &rarr; Output
+                                                                      &darr;
+                                                              Stereo Panner
+                                                                      &darr;
+                                                            Mixer Compressor
+                                                                      &darr;
+                                                          Master Low-cut Filter
+                                                                      &darr;
+                                                          Master High-cut Filter
+                                                                      &darr;
+                                                            Master Gain &rarr; Analyser &rarr; Speakers
+    </pre>
+
+    <h3>Global Signal Chain</h3>
+    <p>All tracks feed into a shared compressor, then through master filters and gain before reaching the output.</p>
+
+    <hr>
+
+    <h2 id="11-installation--offline-use">11. Installation & Offline Use</h2>
+    <p>orDrumbox v2 can be used in three different ways:</p>
+    
+    <h3>1. Web Application</h3>
+    <p>Simply visit the website in any modern browser. Note that an internet connection is required for the initial load.</p>
+
+    <h3>2. Progressive Web App (PWA)</h3>
+    <p>You can install orDrumbox directly from your browser:</p>
+    <ul>
+        <li><strong>Desktop (Chrome/Edge):</strong> Click the "Install" icon in the address bar.</li>
+        <li><strong>Mobile (iOS/Android):</strong> Use "Add to Home Screen" from the browser menu.</li>
+    </ul>
+    <p>Once installed, the application will have its own icon and window, and can function <strong>offline</strong> thanks to the integrated Service Worker.</p>
+
+    
+</main>
+
+<footer>
+    <p>© 2026 <strong>OrDrumbox Team</strong> - <em>.</em></p>
+</footer>
+
+</body>
+</html>
