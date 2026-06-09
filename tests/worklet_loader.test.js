@@ -173,6 +173,49 @@ describe('WorkletLoader', () => {
         warnSpy.mockRestore()
     })
 
+    it('ensureLoaded() supports incremental loading', async () => {
+        const addModule = vi.fn().mockResolvedValue(undefined)
+        const fakeCtx = {
+            sampleRate: 44100,
+            currentTime: 0,
+            audioWorklet: { addModule }
+        }
+        global.URL = { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }
+        global.Blob = class {}
+
+        // 1. Register and load 'a'
+        WorkletLoader.register('a', 'src-a')
+        await WorkletLoader.ensureLoaded(fakeCtx)
+        expect(addModule).toHaveBeenCalledTimes(1)
+
+        // 2. Register 'b' and load again
+        WorkletLoader.register('b', 'src-b')
+        await WorkletLoader.ensureLoaded(fakeCtx)
+        expect(addModule).toHaveBeenCalledTimes(2) // Should have called addModule for 'b' too
+        
+        expect(WorkletLoader.isContextReady(fakeCtx)).toBe(true)
+    })
+
+    it('isContextReady() correctly reports based on current registry', async () => {
+        const fakeCtx = {
+            sampleRate: 44100,
+            currentTime: 0,
+            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) }
+        }
+        global.URL = { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }
+        global.Blob = class {}
+
+        WorkletLoader.register('a', 'src-a')
+        await WorkletLoader.ensureLoaded(fakeCtx)
+        expect(WorkletLoader.isContextReady(fakeCtx)).toBe(true)
+
+        WorkletLoader.register('b', 'src-b')
+        expect(WorkletLoader.isContextReady(fakeCtx)).toBe(false) // 'b' is registered but not loaded
+
+        await WorkletLoader.ensureLoaded(fakeCtx)
+        expect(WorkletLoader.isContextReady(fakeCtx)).toBe(true)
+    })
+
     it('createNode() succeeds after ensureLoaded()', () => {
         const fakeNode = { parameters: new Map(), port: {}, connect: vi.fn() }
         const MockWorkletNode = vi.fn(function() { return fakeNode })

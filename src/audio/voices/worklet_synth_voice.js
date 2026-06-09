@@ -4,12 +4,8 @@ import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
 import { computeOscFrequency, computeNoteRatio, computeAccent, toFiniteNumber } from '../math.js'
 import { RELEASE_TIME } from '../../core/constants.js'
 
-let _synthVoiceRegistered = false
-function _register() {
-    if (_synthVoiceRegistered) return
-    WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
-    _synthVoiceRegistered = true
-}
+// Register the synth-voice processor (idempotent)
+WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
 
 const WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3 }
 const FILTER_TO_INT = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
@@ -21,7 +17,6 @@ const SYNTH_VOICE_OPTIONS = Object.freeze({
 })
 
 function createSynthVoiceNode(audioCtx) {
-    _register()
     return WorkletLoader.createNode(audioCtx, 'synth-voice', SYNTH_VOICE_OPTIONS)
 }
 

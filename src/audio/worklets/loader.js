@@ -17,7 +17,7 @@
  */
 
 const registry = new Map()
-const loadedContexts = new WeakSet()
+const loadedProcessors = new WeakMap() // audioCtx -> Set of loaded processor names
 
 export default class WorkletLoader {
     static isSupported(audioCtx) {
@@ -54,27 +54,30 @@ export default class WorkletLoader {
 
     static async ensureLoaded(audioCtx) {
         if (!this.isSupported(audioCtx)) return false
-        if (loadedContexts.has(audioCtx)) return true
+        
+        let contextLoadedSet = loadedProcessors.get(audioCtx)
+        if (!contextLoadedSet) {
+            contextLoadedSet = new Set()
+            loadedProcessors.set(audioCtx, contextLoadedSet)
+        }
+
         if (registry.size === 0) return true
 
         for (const [name, source] of registry.entries()) {
+            if (contextLoadedSet.has(name)) continue
+
             const blob = new Blob([source], { type: 'application/javascript' })
             const url = URL.createObjectURL(blob)
             try {
                 await audioCtx.audioWorklet.addModule(url)
+                contextLoadedSet.add(name)
             } catch (err) {
                 console.warn(`WorkletLoader: failed to load '${name}'`, err)
                 throw err
             } finally {
-                // Revoke the Blob URL as soon as the module is loaded (or has
-                // failed to load) — the browser has already fetched the source
-                // into memory and the URL is no longer needed. Revoking
-                // immediately avoids accumulating URLs across many contexts
-                // (e.g. repeated exports, page reloads).
                 try { URL.revokeObjectURL(url) } catch {}
             }
         }
-        loadedContexts.add(audioCtx)
         return true
     }
 
@@ -85,13 +88,21 @@ export default class WorkletLoader {
         if (!registry.has(name)) {
             throw new Error(`WorkletLoader.createNode: processor '${name}' not registered`)
         }
-        if (!loadedContexts.has(audioCtx)) {
-            throw new Error(`WorkletLoader.createNode: call ensureLoaded(audioCtx) first`)
+        
+        const contextLoadedSet = loadedProcessors.get(audioCtx)
+        if (!contextLoadedSet || !contextLoadedSet.has(name)) {
+            throw new Error(`WorkletLoader.createNode: processor '${name}' not loaded into this context. Call ensureLoaded(audioCtx) first.`)
         }
         return new AudioWorkletNode(audioCtx, name, options)
     }
 
     static isContextReady(audioCtx) {
-        return loadedContexts.has(audioCtx)
+        const contextLoadedSet = loadedProcessors.get(audioCtx)
+        if (!contextLoadedSet) return false
+        // Check if everything currently in registry is loaded
+        for (const name of registry.keys()) {
+            if (!contextLoadedSet.has(name)) return false
+        }
+        return true
     }
 }
