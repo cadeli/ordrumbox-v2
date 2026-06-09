@@ -22,31 +22,44 @@ export function hasArp(arp) {
 }
 
 export function normalizeArp(arp) {
-    let intervals = []
+    let intervals
     let mode = 'up'
 
     if (Array.isArray(arp)) {
         intervals = arp
     } else if (typeof arp === 'string') {
-        intervals = arp.split(',').map((value) => Number(value.trim())).filter((value) => Number.isFinite(value))
+        if (!/\d/.test(arp)) return null
+        const parts = arp.split(',')
+        const result = []
+        for (let i = 0; i < parts.length; i++) {
+            const v = Number(parts[i].trim())
+            if (Number.isFinite(v)) result.push(v)
+        }
+        intervals = result
     } else if (typeof arp === 'object' && arp !== null) {
         intervals = Array.isArray(arp.intervals) ? arp.intervals : []
         mode = String(arp.mode ?? mode).toLowerCase()
+    } else {
+        return null
     }
 
-    intervals = intervals.map((value) => Number(value)).filter((value) => Number.isFinite(value))
-    if (intervals.length === 0) return null
-    if (!intervals.includes(0)) intervals.unshift(0)
+    const filtered = []
+    for (let i = 0; i < intervals.length; i++) {
+        const v = Number(intervals[i])
+        if (Number.isFinite(v)) filtered.push(v)
+    }
+    if (filtered.length === 0) return null
+    if (!filtered.includes(0)) filtered.unshift(0)
 
-    let sequence = intervals
+    let sequence
     if (mode === 'down') {
-        sequence = [...intervals].sort((a, b) => b - a)
+        sequence = [...filtered].sort((a, b) => b - a)
     } else if (mode === 'updown') {
-        const ascending = [...intervals].sort((a, b) => a - b)
+        const ascending = [...filtered].sort((a, b) => a - b)
         const descending = ascending.slice(1, -1).reverse()
         sequence = ascending.concat(descending)
     } else {
-        sequence = [...intervals].sort((a, b) => a - b)
+        sequence = [...filtered].sort((a, b) => a - b)
     }
 
     return { sequence }
