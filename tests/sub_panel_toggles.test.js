@@ -86,6 +86,21 @@ describe('Sub-panel toggle toolbars', () => {
             te.querySelector('.ne-close').click()
             expect(te.style.display).toBe('none')
         })
+
+        it('preserves ne-group class when collapsed for CSS visibility rules', () => {
+            const mockTrack = { name: 'KICK', notes: [], bars: 1, barQuantize: 4 }
+            playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
+
+            const basicGroup = document.querySelector('#te-panel [data-group="basic"]')
+            expect(basicGroup.classList.contains('ne-group')).toBe(true)
+            
+            // Toggle to collapsed
+            document.querySelector('#te-panel .ne-toggle[data-toggle="basic"]').click()
+            
+            const basicGroupCollapsed = document.querySelector('#te-panel [data-group="basic"]')
+            expect(basicGroupCollapsed.classList.contains('ne-group')).toBe(true)
+            expect(basicGroupCollapsed.classList.contains('collapsed')).toBe(true)
+        })
     })
 
     describe('Note Editor', () => {
@@ -118,6 +133,22 @@ describe('Sub-panel toggle toolbars', () => {
             expect(ne.style.display).toBe('block')
             ne.querySelector('.ne-close').click()
             expect(ne.style.display).toBe('none')
+        })
+
+        it('preserves ne-group class when collapsed for CSS visibility rules', async () => {
+            const mockNote = { bar: 0, barStep: 0, velocity: 1 }
+            const mockTrack = { name: 'SNARE', notes: [mockNote], bars: 1, barQuantize: 4 }
+            await noteEditor.show({ track: mockTrack, note: mockNote, pos: 0, bar: 0, barStep: 0 })
+
+            const levelsGroup = document.querySelector('#ne-panel [data-group="levels"]')
+            expect(levelsGroup.classList.contains('ne-group')).toBe(true)
+            
+            // Toggle to collapsed
+            document.querySelector('#ne-panel .ne-toggle[data-toggle="levels"]').click()
+            
+            const levelsGroupCollapsed = document.querySelector('#ne-panel [data-group="levels"]')
+            expect(levelsGroupCollapsed.classList.contains('ne-group')).toBe(true)
+            expect(levelsGroupCollapsed.classList.contains('collapsed')).toBe(true)
         })
     })
 

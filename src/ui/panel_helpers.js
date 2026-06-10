@@ -51,19 +51,12 @@ export function bindAccordionToggles(container, getTarget, onChange) {
             btn.classList.toggle('active')
             const isExpanded = btn.classList.contains('active')
             
-            let group = btn.closest('.ne-group, .ne-group-collapsed, .ss-group, .ss-group-collapsed')
+            let group = btn.closest('.ne-group, .ss-group')
             if (!group) {
                 group = container.querySelector(`[data-group="${key}"], [data-synth-group="${key}"]`)
             }
             
             if (group) {
-                if (group.classList.contains('ss-group') || group.classList.contains('ss-group-collapsed')) {
-                    group.classList.toggle('ss-group', isExpanded)
-                    group.classList.toggle('ss-group-collapsed', !isExpanded)
-                } else {
-                    group.classList.toggle('ne-group', isExpanded)
-                    group.classList.toggle('ne-group-collapsed', !isExpanded)
-                }
                 group.classList.toggle('expanded', isExpanded)
                 group.classList.toggle('collapsed', !isExpanded)
                 const icon = group.querySelector('.ne-group-accordion-icon')

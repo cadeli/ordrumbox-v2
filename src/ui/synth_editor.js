@@ -153,7 +153,6 @@ export default class SynthEditor {
         groupNames.forEach(groupName => {
             const merged = SYNTH_GROUP_MERGE[groupName]
             const isExpanded = this._groupVisibility[groupName]
-            const display = isExpanded ? '' : ' style="display:none"'
             const fields = merged
                 ? merged.map(key => ({ path: [key], key, val: this._draft[key] }))
                 : (this._draft[groupName] && typeof this._draft[groupName] === 'object' && !Array.isArray(this._draft[groupName])
@@ -162,7 +161,7 @@ export default class SynthEditor {
 
             const label = this._getGroupLabel(groupName)
 
-            html += `<div class="${isExpanded ? 'ss-group expanded' : 'ss-group-collapsed collapsed'}" data-synth-group="${this._esc(groupName)}"${display}>
+            html += `<div class="ss-group ${isExpanded ? 'expanded' : 'collapsed'}" data-synth-group="${this._esc(groupName)}">
                 <button class="ne-group-accordion-toggle ${isExpanded ? 'active' : ''}" data-toggle="${this._esc(groupName)}" title="${this._esc(groupName)}">
                     <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
                     <span class="ne-group-accordion-label">${this._esc(label)}</span>

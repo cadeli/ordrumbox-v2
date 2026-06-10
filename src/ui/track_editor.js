@@ -195,7 +195,7 @@ export default class TrackEditor extends BasePanel {
                 bodyHtml += this._renderFxGroup(isExpanded)
                 return
             }
-            bodyHtml += `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="${visKey}">
+            bodyHtml += `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="${visKey}">
                 <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="${visKey}" title="${g.label}">
                     <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
                     <span class="ne-group-accordion-label">${shortLabels[visKey]}</span>
@@ -308,7 +308,7 @@ export default class TrackEditor extends BasePanel {
             return `${b}.${s}`
         }
 
-        let html = `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="loop">
+        let html = `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="loop">
             <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="loop" title="Loop">
                 <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
                 <span class="ne-group-accordion-label">Lp</span>
@@ -351,7 +351,7 @@ export default class TrackEditor extends BasePanel {
             { key: 'saturationOn', label: 'Sat', controls: ['saturationAmount', 'saturationType'] }
         ]
 
-        let html = `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="effects">
+        let html = `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="effects">
             <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="effects" title="Effects">
                 <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
                 <span class="ne-group-accordion-label">FX</span>
@@ -438,7 +438,7 @@ export default class TrackEditor extends BasePanel {
 
         const hideInstrSample = auto || this._track.useSoftSynth === true
 
-        let html = `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="sound">
+        let html = `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="sound">
             <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="sound" title="Sound">
                 <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
                 <span class="ne-group-accordion-label">Snd</span>

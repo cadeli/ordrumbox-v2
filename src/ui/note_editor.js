@@ -149,7 +149,7 @@ export default class NoteEditor extends BasePanel {
             }
             const shortLabel = shortLabels[visKey]
 
-            bodyHtml += `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="${visKey}">
+            bodyHtml += `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="${visKey}">
                 <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="${visKey}" title="${g.label}">
                     <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
                     <span class="ne-group-accordion-label">${shortLabel}</span>
