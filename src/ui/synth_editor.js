@@ -48,13 +48,16 @@ const SYNTH_SLIDER_META = {
 }
 
 const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_SLIDER_META).filter(k => !k.startsWith('lfo.'))]
+// Visual group merging: mapped group → array of _draft keys to display together
+const SYNTH_GROUP_MERGE = {
+    master: ['masterVolume', 'slide']
+}
 const SYNTH_GROUP_LABELS = {
-    masterVolume: 'Master',
-    slide: 'Slide',
+    master: 'Master',
     filter: 'Flt',
     enveloppe: 'Env'
 }
-const SYNTH_GROUP_ORDER = Object.keys(SYNTH_GROUP_DEFAULTS)
+const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'lfo', 'noise', 'enveloppe']
 
 export default class SynthEditor {
     constructor(host) {
@@ -148,11 +151,13 @@ export default class SynthEditor {
         <div class="ss-body">`
 
         groupNames.forEach(groupName => {
-            const value = this._draft[groupName]
+            const merged = SYNTH_GROUP_MERGE[groupName]
             const display = this._groupVisibility[groupName] ? '' : ' style="display:none"'
-            const fields = value && typeof value === 'object' && !Array.isArray(value)
-                ? Object.entries(value).map(([key, val]) => ({ path: [groupName, key], key, val }))
-                : [{ path: [groupName], key: groupName, val: value }]
+            const fields = merged
+                ? merged.map(key => ({ path: [key], key, val: this._draft[key] }))
+                : (this._draft[groupName] && typeof this._draft[groupName] === 'object' && !Array.isArray(this._draft[groupName])
+                    ? Object.entries(this._draft[groupName]).map(([key, val]) => ({ path: [groupName, key], key, val }))
+                    : [{ path: [groupName], key: groupName, val: this._draft[groupName] }])
 
             html += `<div class="ss-group" data-synth-group="${this._esc(groupName)}"${display}>
                 <div class="ss-group-label">${this._esc(groupName)}</div>
@@ -227,7 +232,26 @@ export default class SynthEditor {
 
     _getOrderedGroupNames() {
         const names = Object.keys(this._draft)
-        return names.sort((a, b) => {
+        const mergedNames = []
+        const seen = new Set()
+        for (const name of names) {
+            let parent = null
+            for (const [groupName, keys] of Object.entries(SYNTH_GROUP_MERGE)) {
+                if (keys.includes(name)) {
+                    parent = groupName
+                    break
+                }
+            }
+            if (parent) {
+                if (!seen.has(parent)) {
+                    mergedNames.push(parent)
+                    seen.add(parent)
+                }
+            } else {
+                mergedNames.push(name)
+            }
+        }
+        return mergedNames.sort((a, b) => {
             const aIndex = SYNTH_GROUP_ORDER.indexOf(a)
             const bIndex = SYNTH_GROUP_ORDER.indexOf(b)
             if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
