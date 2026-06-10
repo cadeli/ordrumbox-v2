@@ -89,7 +89,7 @@ export default class MfSound {
             }
             const voice = await this.voiceFactory.createVoice(flatNote)
             if (voice) {
-                voice.setup(flatNote, time)
+                await voice.setup(flatNote, time)
                 if (flatNote.track.mono) this.registerVoice(flatNote.track, voice)
                 voice.start(time)
             }

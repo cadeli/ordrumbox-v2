@@ -16,7 +16,8 @@ const SYNTH_VOICE_OPTIONS = Object.freeze({
     outputChannelCount: [2],
 })
 
-function createSynthVoiceNode(audioCtx) {
+async function createSynthVoiceNode(audioCtx) {
+    await WorkletLoader.ensureLoaded(audioCtx)
     return WorkletLoader.createNode(audioCtx, 'synth-voice', SYNTH_VOICE_OPTIONS)
 }
 
@@ -61,13 +62,13 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.masterVolume = 0.8
     }
 
-    setup(flatNote, time) {
+    async setup(flatNote, time) {
         const ctx = this.audioCtx
         const gs = this.generatedSound
         this.noteRatio = computeNoteRatio(flatNote.fpitch)
         this.noteVelo = (flatNote.note?.velocity ?? 0.8) * 0.25
 
-        this.workletNode = this.registerNode(createSynthVoiceNode(ctx))
+        this.workletNode = this.registerNode(await createSynthVoiceNode(ctx))
         this._sendUpdate(gs, flatNote.pan ?? 0)
         this.connectToStripInput(this.workletNode)
     }

@@ -361,13 +361,13 @@ describe('SynthVoice', () => {
         SynthVoice.lastPitchV1 = undefined
         SynthVoice.lastPitchV2 = undefined
         SynthVoice.lastPitchV3 = undefined
-        voice = new SynthVoice(ctx, strip, generatedSound, lfo, 'BASS1')
+        voice = new SynthVoice(ctx, strip, generatedSound, 'BASS1')
     })
 
     it('constructor initializes fields correctly', () => {
         expect(voice.generatedSound).toBe(generatedSound)
         expect(voice.soundKey).toBe('BASS1')
-        expect(voice.masterLfo).toBe(lfo)
+        expect(voice.masterLfo).toBeNull()
         expect(voice.oscNodes).toEqual([])
     })
 
@@ -381,7 +381,7 @@ describe('SynthVoice', () => {
     it('setup with 3 VCOs creates 3 oscillators', () => {
         generatedSound.vco2 = { wave: 'square', octave: 1, detune: 5, gain: 0.5 }
         generatedSound.vco3 = { wave: 'sawtooth', octave: -1, detune: -5, gain: 0.3 }
-        const v = new SynthVoice(ctx, strip, generatedSound, lfo, 'BASS1')
+        const v = new SynthVoice(ctx, strip, generatedSound, 'BASS1')
         v.setup(makeFlatNote(), 1.0)
         expect(v.oscNodes.length).toBe(3)
     })
@@ -419,7 +419,7 @@ describe('SynthVoice', () => {
 
     it('start also starts the noise node when noiseMix > 0', () => {
         const noisySound = makeGeneratedSound({ noise: { mix: 0.3, filterType: 'highpass', filterFreq: 1000, filterQ: 1 } })
-        const noisyVoice = new SynthVoice(ctx, strip, noisySound, lfo, 'BASS1')
+        const noisyVoice = new SynthVoice(ctx, strip, noisySound, 'BASS1')
         noisyVoice.setup(makeFlatNote(), 1.0)
         noisyVoice.start(1.0)
         expect(noisyVoice.noiseNode.start).toHaveBeenCalledWith(1.0)
@@ -442,7 +442,7 @@ describe('SynthVoice', () => {
 
     it('stop also stops oscillators (and noise node when present)', () => {
         const noisySound = makeGeneratedSound({ noise: { mix: 0.3, filterType: 'highpass', filterFreq: 1000, filterQ: 1 } })
-        const noisyVoice = new SynthVoice(ctx, strip, noisySound, lfo, 'BASS1')
+        const noisyVoice = new SynthVoice(ctx, strip, noisySound, 'BASS1')
         noisyVoice.setup(makeFlatNote(), 1.0)
         noisyVoice.stop(2.0)
         expect(noisyVoice.oscNodes[0].osc.stop).toHaveBeenCalled()
@@ -478,7 +478,7 @@ describe('SynthVoice', () => {
             ['UNKNOWN_TARGET', 1, 0],
         ])('target=%s depth=%s returns %s', (target, depth, expected) => {
             generatedSound.lfo.depth = depth
-            voice = new SynthVoice(ctx, strip, generatedSound, lfo, 'X')
+            voice = new SynthVoice(ctx, strip, generatedSound, 'X')
             expect(voice.computeLfoDepth(target)).toBe(expected)
         })
     })
@@ -487,7 +487,7 @@ describe('SynthVoice', () => {
 
     describe('connectLfoTarget', () => {
         it('returns early when masterLfo is null', () => {
-            const v = new SynthVoice(ctx, strip, generatedSound, null, 'X')
+            const v = new SynthVoice(ctx, strip, generatedSound, 'X')
             v.setup(makeFlatNote(), 1.0)
             expect(() => v.connectLfoTarget('FLT')).not.toThrow()
         })
@@ -505,7 +505,7 @@ describe('SynthVoice', () => {
             ['noise.filterFreq', (v) => v.noiseFilter.frequency, null],
         ])('target=%s routes lfoGain to the expected AudioParam', (target, primary, secondary) => {
             generatedSound.lfo.target = target
-            voice = new SynthVoice(ctx, strip, generatedSound, lfo, 'X')
+            voice = new SynthVoice(ctx, strip, generatedSound, 'X')
             voice.setup(makeFlatNote(), 1.0)
             expect(voice.lfoGain.connect).toHaveBeenCalledWith(primary(voice))
             if (secondary) {
@@ -519,7 +519,7 @@ describe('SynthVoice', () => {
     describe('updateGeneratedSound', () => {
         it('updates noiseGain when mix changes (noise must be active at setup)', () => {
             const noisySound = makeGeneratedSound({ noise: { mix: 0.2, filterType: 'highpass', filterFreq: 1000, filterQ: 1 } })
-            const noisyVoice = new SynthVoice(ctx, strip, noisySound, lfo, 'BASS1')
+            const noisyVoice = new SynthVoice(ctx, strip, noisySound, 'BASS1')
             noisyVoice.setup(makeFlatNote(), 1.0)
             const next = makeGeneratedSound({ noise: { mix: 0.4, filterType: 'highpass', filterFreq: 1000, filterQ: 1 } })
             noisyVoice.updateGeneratedSound(next, 1.5)
@@ -707,7 +707,7 @@ describe('VoiceFactory', () => {
 
         it('setup() sends an update with the synth config', async () => {
             const voice = await factory.createVoice(makeSoftSynthFlatNote())
-            voice.setup(makeSoftSynthFlatNote(), 0)
+            await voice.setup(makeSoftSynthFlatNote(), 0)
             const updateArg = lastPostByType('update')
             expect(updateArg).toBeDefined()
             expect(updateArg.osc1Wave).toBe(0)  // sine
@@ -718,14 +718,14 @@ describe('VoiceFactory', () => {
 
         it('start() sends a trigger', async () => {
             const voice = await factory.createVoice(makeSoftSynthFlatNote())
-            voice.setup(makeSoftSynthFlatNote(), 0)
+            await voice.setup(makeSoftSynthFlatNote(), 0)
             voice.start(1.5)
             expect(lastPostByType('trigger')).toEqual({ type: 'trigger', startTime: 1.5 })
         })
 
         it('stop() sends a release', async () => {
             const voice = await factory.createVoice(makeSoftSynthFlatNote())
-            voice.setup(makeSoftSynthFlatNote(), 0)
+            await voice.setup(makeSoftSynthFlatNote(), 0)
             voice.start(0)
             voice.stop(2.0)
             expect(lastPostByType('release')).toEqual({ type: 'release', releaseTime: 2.0 })
@@ -733,7 +733,7 @@ describe('VoiceFactory', () => {
 
         it('stop() is idempotent', async () => {
             const voice = await factory.createVoice(makeSoftSynthFlatNote())
-            voice.setup(makeSoftSynthFlatNote(), 0)
+            await voice.setup(makeSoftSynthFlatNote(), 0)
             voice.start(0)
             voice.stop(1.0)
             voice.stop(1.0)
@@ -745,7 +745,7 @@ describe('VoiceFactory', () => {
             generatedSounds.BASS1.vco1.wave = 'square'
             generatedSounds.BASS1.vco2 = { wave: 'triangle', gain: 0.5, detune: 0, octave: 0 }
             const voice = await factory.createVoice(makeSoftSynthFlatNote())
-            voice.setup(makeSoftSynthFlatNote(), 0)
+            await voice.setup(makeSoftSynthFlatNote(), 0)
             const updateArg = lastPostByType('update')
             expect(updateArg.osc1Wave).toBe(3)   // square
             expect(updateArg.osc2Wave).toBe(1)   // triangle
@@ -754,7 +754,7 @@ describe('VoiceFactory', () => {
         it('maps filter type names to int ids', async () => {
             generatedSounds.BASS1.filter.type = 'bandpass'
             const voice = await factory.createVoice(makeSoftSynthFlatNote())
-            voice.setup(makeSoftSynthFlatNote(), 0)
+            await voice.setup(makeSoftSynthFlatNote(), 0)
             const updateArg = lastPostByType('update')
             expect(updateArg.filterType).toBe(2)  // bandpass
         })
@@ -764,7 +764,7 @@ describe('VoiceFactory', () => {
             const note = makeSoftSynthFlatNote()
             note.note.velocity = 0.8
             const voice = await factory.createVoice(note)
-            voice.setup(note, 0)
+            await voice.setup(note, 0)
             const updateArg = lastPostByType('update')
             // noteVelo = 0.8 * 0.25 = 0.2; masterVolume = 0.5; velocity > 0.5 not accented (0.2)
             // expected: 0.2 * 0.5 * 1.0 = 0.1
@@ -775,7 +775,7 @@ describe('VoiceFactory', () => {
             generatedSounds.BASS1.enveloppe.attack = 0.0001
             generatedSounds.BASS1.enveloppe.release = 0.0001
             const voice = await factory.createVoice(makeSoftSynthFlatNote())
-            voice.setup(makeSoftSynthFlatNote(), 0)
+            await voice.setup(makeSoftSynthFlatNote(), 0)
             const updateArg = lastPostByType('update')
             expect(updateArg.attack).toBeGreaterThanOrEqual(0.003)
             expect(updateArg.release).toBeGreaterThanOrEqual(0.008)
@@ -783,7 +783,7 @@ describe('VoiceFactory', () => {
 
         it('cleanup() does NOT throw and disconnects the worklet node via parent', async () => {
             const voice = await factory.createVoice(makeSoftSynthFlatNote())
-            voice.setup(makeSoftSynthFlatNote(), 0)
+            await voice.setup(makeSoftSynthFlatNote(), 0)
             const node = voice.workletNode
             expect(() => voice.cleanup()).not.toThrow()
             // The parent BaseVoice.cleanup() iterates this.nodes and calls disconnect()
@@ -793,7 +793,7 @@ describe('VoiceFactory', () => {
 
         it('registers the worklet node in BaseVoice.nodes (parent cleanup handles it)', async () => {
             const voice = await factory.createVoice(makeSoftSynthFlatNote())
-            voice.setup(makeSoftSynthFlatNote(), 0)
+            await voice.setup(makeSoftSynthFlatNote(), 0)
             expect(voice.nodes).toContain(voice.workletNode)
         })
     })

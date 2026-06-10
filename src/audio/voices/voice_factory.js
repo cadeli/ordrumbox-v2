@@ -42,7 +42,7 @@ export default class VoiceFactory {
             if (appState.workletStatus === 'active' && isWorkletCompatible(generatedSound)) {
                 return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool)
             }
-            return new SynthVoice(this.audioCtx, strip, generatedSound, this.mixer?.lfo, soundKey, this.nodePool)
+            return new SynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool)
         }
 
         let soundBuffer = this.sounds[flatNote.soundId]?.buffer
