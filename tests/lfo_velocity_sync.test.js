@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { TICK } from '../src/core/constants.js'
 import { computeLfoValue } from '../src/audio/math.js'
-import LfoUpdater from '../src/patterns/lfo_updater.js'
+
 import TrackEditor from '../src/ui/track_editor.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -30,7 +30,7 @@ describe('LFO Velocity Sync Verification', () => {
                 expect(computeLfoValue(lfoConfig, tick)).toBeCloseTo(expected, 2)
             })
             it(`Step ${step}: UI should be ${expected}`, () => {
-                expect(LfoUpdater.computeLfoValue(lfoConfig, tick, period)).toBeCloseTo(expected, 2)
+                expect(computeLfoValue(lfoConfig, tick, period)).toBeCloseTo(expected, 2)
             })
         })
     })
@@ -56,7 +56,7 @@ describe('LFO Velocity Sync Verification', () => {
                 expect(computeLfoValue(lfoConfig, tick)).toBeCloseTo(expected, 2)
             })
             it(`Step ${step}: UI should be ${expected}`, () => {
-                expect(LfoUpdater.computeLfoValue(lfoConfig, tick, period)).toBeCloseTo(expected, 2)
+                expect(computeLfoValue(lfoConfig, tick, period)).toBeCloseTo(expected, 2)
             })
         })
     })

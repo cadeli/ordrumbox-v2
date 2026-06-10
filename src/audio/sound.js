@@ -1,4 +1,3 @@
-import MfDefaults from '../patterns/defaults.js'
 import VoiceFactory from './voices/voice_factory.js'
 import SynthVoice from './voices/synth_voice.js'
 import NodePool from './node_pool.js'

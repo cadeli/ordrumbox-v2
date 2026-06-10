@@ -1,20 +1,21 @@
 import Utils from '../core/utils.js';
 import MfDefaults from '../patterns/defaults.js';
 import { RAMP_TIME } from '../core/constants.js';
-import {
-    computeLfoFrequency,
-    computeLfoDepth,
-    REVERB_PRESETS,
-    SATURATION_TYPES,
-} from './math.js';
 import WorkletLoader from './worklets/loader.js';
 import STRIP_SOURCE from './worklets/processors/strip_source.js';
-
-export { SATURATION_TYPES, REVERB_PRESETS };
 
 // Register the unified strip processor (idempotent)
 WorkletLoader.register('strip', STRIP_SOURCE);
 
+const SATURATION_TYPES = Object.freeze(["soft", "hard", "tape"]);
+const REVERB_PRESETS = Object.freeze({
+    none: { duration: 0, decay: 0, preDelay: 0, tone: 1 },
+    room: { duration: 0.8, decay: 2.2, preDelay: 0.008, tone: 0.85 },
+    hall: { duration: 2.4, decay: 3.8, preDelay: 0.02, tone: 0.75 },
+    plate: { duration: 1.6, decay: 2.8, preDelay: 0.012, tone: 0.9 },
+    spring: { duration: 1.2, decay: 2.4, preDelay: 0.01, tone: 0.65 },
+    gated: { duration: 0.7, decay: 1.4, preDelay: 0.004, tone: 0.8, gated: true }
+});
 const SATURATION_TYPES_IDX = { soft: 0, hard: 1, tape: 2 };
 const REVERB_PRESETS_PARAMS = {
     none:   { room: 0.0,  damp: 0.5, width: 0.0, pre: 0      },

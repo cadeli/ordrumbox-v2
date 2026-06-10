@@ -3,7 +3,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import Utils from '../core/utils.js'
-import LfoUpdater from '../patterns/lfo_updater.js'
+import { computeLfoValue } from '../audio/math.js'
 import { TICK } from '../core/constants.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
@@ -146,7 +146,7 @@ export default class TrackEditor extends BasePanel {
                 if (p.lfo && this._track[p.lfo]) {
                     const s = this._sliders.get(p.key)
                     if (s) {
-                        const lfoVal = LfoUpdater.computeLfoValue(this._track[p.lfo], tick, nbTicks, p.key)
+                        const lfoVal = computeLfoValue(this._track[p.lfo], tick, nbTicks, p.key)
                         s.setValue(lfoVal)
                     }
                 }

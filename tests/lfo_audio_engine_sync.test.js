@@ -32,7 +32,6 @@ import {
     computeLfoValue,
     getLfoWaveformValue,
 } from '../src/audio/math.js'
-import LfoUpdater from '../src/patterns/lfo_updater.js'
 import STRIP_SOURCE from '../src/audio/worklets/processors/strip_source.js'
 
 /**
@@ -174,15 +173,13 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
         })
     })
 
-    describe('LfoUpdater proxy agrees with audio engine', () => {
-        // LfoUpdater is what the track editor actually imports; this block
-        // ensures the proxy is not silently diverging from the helper.
+    describe('computeLfoValue agrees with audio engine', () => {
         const lfo = { freq: 1, phase: 0, min: 0, max: 1, waveform: 0 }
 
-        it.each(SAMPLE_TICKS)('LfoUpdater.computeLfoValue matches audio engine at tick %d', (tick) => {
-            const viaProxy  = LfoUpdater.computeLfoValue(lfo, tick, 128)
+        it.each(SAMPLE_TICKS)('computeLfoValue matches audio engine at tick %d', (tick) => {
+            const viaHelper = computeLfoValue(lfo, tick, 128)
             const audio     = audioEngineVelocity(lfo, tick)
-            expect(viaProxy).toBeCloseTo(audio, 2)
+            expect(viaHelper).toBeCloseTo(audio, 2)
         })
     })
 

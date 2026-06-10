@@ -21,8 +21,6 @@ export const GAIN_ATTACK_RAMP = 0.005
 export const RELEASE_TIME = 0.05
 export const STOP_BUFFER = 0.015
 export const STOP_EXTRA_BUFFER = 0.02
-export const COMPRESSOR_ATTACK = 0.005
-
 // ── Delay presets ──────────────────────────────────────────────────
 export const DELAY_FILTER_FREQ = Object.freeze({
     tape: 8000,
@@ -37,13 +35,7 @@ export const DELAY_FEEDBACK = Object.freeze({
 })
 
 // ── UI / Display ───────────────────────────────────────────────────
-export const SCREEN_WIDTH_THRESHOLD = 1000
-export const MODAL_TIMEOUT_MS = 1000
 export const FALLBACK_FPS = 60
-export const LED_MAX_VALUE = 20
-export const LED_DECAY_RATE = 1.4
-export const LED_DIVISOR = 20
-export const SLIDER_STEP_DEFAULT = 0.05
 
 // ── Loop / Pattern ─────────────────────────────────────────────────
 export const MAX_LOOP_RETRY = 20

@@ -7,7 +7,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
-import { applyTrackToStrip, applyParamsToStrip } from './strip_sync.js'
+import { applyParamsToStrip } from './strip_sync.js'
 
 export default class AudioEngine {
     static TAG = "AUDIOENGINE"

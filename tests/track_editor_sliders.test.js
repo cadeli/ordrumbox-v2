@@ -5,7 +5,7 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
-import LfoUpdater from '../src/patterns/lfo_updater.js'
+
 
 function fireInput(el, value) {
     el.value = String(value)
@@ -276,13 +276,7 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
         })
         editor.sync()
 
-        const beforeLfoValue = LfoUpdater.computeLfoValue
-        LfoUpdater.computeLfoValue = () => 0.3
-        try {
-            editor._updateLfoSliders()
-        } finally {
-            LfoUpdater.computeLfoValue = beforeLfoValue
-        }
+        editor._updateLfoSliders()
 
         const input = editor.container.querySelector('input[data-key="filterFreq"]')
         const valEl = input.nextElementSibling
@@ -302,13 +296,7 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
         })
         editor.sync()
 
-        const beforeLfoValue = LfoUpdater.computeLfoValue
-        LfoUpdater.computeLfoValue = () => 0.8
-        try {
-            editor._updateLfoSliders()
-        } finally {
-            LfoUpdater.computeLfoValue = beforeLfoValue
-        }
+        editor._updateLfoSliders()
 
         const input = editor.container.querySelector('input[data-key="velocity"]')
         expect(parseFloat(input.value)).toBeCloseTo(0.8, 5)

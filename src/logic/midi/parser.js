@@ -44,7 +44,4 @@ export function isMidiSupported() {
     return typeof navigator !== 'undefined' && typeof navigator.requestMIDIAccess === 'function'
 }
 
-export function findTrackIndexFromMidiNote(pattern, channel, noteNumber, instrumentsManager) {
-    if (!pattern) return -1
-    return instrumentsManager.findTrackIndexFromMidi(pattern, channel, noteNumber)
-}
+

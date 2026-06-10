@@ -392,33 +392,6 @@ async function exportCurrentTrackSound() {
 
     try {
         // const sampleRate = 44100
-        // const duration = 0.5
-        // const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * duration), sampleRate)
-
-        // const { default: SynthVoice } = await import('./audio/voices/synth_voice.js')
-        // const { default: MfMixer } = await import('./audio/mixer.js')
-
-        // const mixer = new MfMixer(offlineCtx)
-        // mixer.start()
-
-        // const strip = mixer.getOrCreateStrip('export')
-        // const voice = new SynthVoice(offlineCtx, strip, generatedSound, null, track.synthSoundKey)
-        // voice.setup({ note: { velocity: 1, pitch: 0, pan: 0 }, track: { pitchLfo: null, velocityLfo: null, panLfo: null, filterFreqLfo: null, filterQLfo: null } }, 0)
-        // voice.start(0)
-        // voice.stop(0.4)
-
-        // const renderedBuffer = await offlineCtx.startRendering()
-
-        // const { bufferToWav } = await import('./audio/export/wav_encoder.js')
-        // const wavBlob = bufferToWav(renderedBuffer)
-
-        // const url = URL.createObjectURL(wavBlob)
-        // const a = document.createElement('a')
-        // a.href = url
-        // a.download = `ordrumbox-${track.synthSoundKey}.wav`
-        // a.click()
-        // URL.revokeObjectURL(url)
-
         console.log(JSON.stringify(generatedSound, null, 2))
     } catch (e) {
         console.error('Export failed', e)

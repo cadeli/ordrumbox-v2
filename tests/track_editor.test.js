@@ -7,7 +7,6 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
-import LfoUpdater from '../src/patterns/lfo_updater.js'
 
 describe('TrackEditor sound panel', () => {
     beforeEach(() => {
@@ -133,13 +132,7 @@ describe('TrackEditor filterFreq display', () => {
             filterFreqLfo: { freq: 0, min: 0.3, max: 0.3, phase: 0 },
         }
         editor.sync()
-        const beforeLfoValue = LfoUpdater.computeLfoValue
-        LfoUpdater.computeLfoValue = () => 0.3
-        try {
-            editor._updateLfoSliders()
-        } finally {
-            LfoUpdater.computeLfoValue = beforeLfoValue
-        }
+        editor._updateLfoSliders()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         // 0.3 (normalized) → Utils.normalizedTrackFilterFreqToHz(0.3) = floor(20 * 1000^0.3) = 158
         expect(valEl.textContent).toBe('158Hz')

@@ -3,12 +3,6 @@ import Utils from '../src/core/utils.js'
 import { recalcLoopDerived } from '../src/model/track_schema.js'
 
 describe('Utils', () => {
-    describe('TWO_PI', () => {
-        it('equals 2 * Math.PI', () => {
-            expect(Utils.TWO_PI).toBe(2 * Math.PI)
-        })
-    })
-
     describe('getDelayTimeInSeconds', () => {
         it('1 @ 120bpm = 0.5s', () => {
             expect(Utils.getDelayTimeInSeconds(1, 120)).toBe(0.5)
@@ -152,53 +146,6 @@ describe('Utils', () => {
             it('invalid value → 0.707', () => {
                 expect(Utils.normalizeTrackFilterQValue('abc')).toBe(0.707)
             })
-        })
-    })
-
-    describe('sanitizePatternFileName', () => {
-        it('spaces → dashes', () => {
-            expect(Utils.sanitizePatternFileName('my pattern')).toBe('my-pattern')
-        })
-
-        it('special chars removed', () => {
-            expect(Utils.sanitizePatternFileName('test@#$name!')).toBe('testname')
-        })
-
-        it('multiple dashes collapsed', () => {
-            expect(Utils.sanitizePatternFileName('a--b---c')).toBe('a-b-c')
-        })
-
-        it('empty → "new-pattern"', () => {
-            expect(Utils.sanitizePatternFileName('   ')).toBe('new-pattern')
-            expect(Utils.sanitizePatternFileName('')).toBe('new-pattern')
-        })
-
-        it('truncated to 64 chars', () => {
-            const long = 'a'.repeat(100)
-            expect(Utils.sanitizePatternFileName(long)).toBe('a'.repeat(64))
-        })
-
-        it('underscores preserved', () => {
-            expect(Utils.sanitizePatternFileName('my_pattern')).toBe('my_pattern')
-        })
-
-        it('non-string input handled', () => {
-            expect(Utils.sanitizePatternFileName(123)).toBe('123')
-        })
-    })
-
-    describe('sortObj', () => {
-        it('sorts object keys', () => {
-            const obj = { c: 3, a: 1, b: 2 }
-            expect(Object.keys(Utils.sortObj(obj))).toEqual(['a', 'b', 'c'])
-        })
-
-        it('preserves values', () => {
-            const obj = { c: 3, a: 1, b: 2 }
-            const sorted = Utils.sortObj(obj)
-            expect(sorted.a).toBe(1)
-            expect(sorted.b).toBe(2)
-            expect(sorted.c).toBe(3)
         })
     })
 

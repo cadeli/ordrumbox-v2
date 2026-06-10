@@ -4,8 +4,6 @@ import { TRACK_DEFAULTS, TRACK_RECALCULATED } from '../model/track_schema.js'
 export default class Utils {
 static TAG = "UTILS"
 
-    static TWO_PI = 2 * Math.PI
-
     static filterTypeList = ['lowpass','highpass','bandpass','peaking','lowshelf','highshelf','notch','allpass']
 
     static waveList = ["square", "sawtooth", "triangle", "sine"]
@@ -231,23 +229,6 @@ static TAG = "UTILS"
         // No-op or console log since UI is gone
         // console.log("Status:", message)
     }
-
-    static sortObj = (obj) => {
-        return Object.keys(obj).sort().reduce(function (result, key) {
-            result[key] = obj[key];
-            return result;
-        }, {});
-    }
-
-    static sanitizePatternFileName(patternName) {
-  return String(patternName)
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-zA-Z0-9_-]/g, '')
-    .replace(/-+/g, '-')
-    .slice(0, 64) || 'new-pattern';
-}
-
 
     static pitchToSemiTone = (fpitch) => (fpitch - 1) * 12;
     static semiToneToPitch = (semiTone) => (semiTone / 12) + 1;
