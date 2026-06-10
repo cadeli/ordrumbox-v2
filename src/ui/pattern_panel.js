@@ -127,7 +127,7 @@ export default class PatternPanel extends BasePanel {
                 const level = strip?.getLevel ? strip.getLevel() : 0
                 const fill = vuEl.querySelector('.pp-vu-fill')
                 if (fill) {
-                    const pct = Math.min(level * 3, 1) * 100
+                    const pct = Math.min(level * 10, 1) * 100
                     fill.style.height = pct + '%'
                 }
             }
@@ -436,7 +436,7 @@ export default class PatternPanel extends BasePanel {
             const isSelected = this._selTrackIdx === tIdx && !this._selNote
             tracksHtml += `
                 <div class="pp-track">
-                    <div class="pp-vu" data-track="${tIdx}"><div class="pp-vu-fill"></div></div>
+                    <div class="pp-vu ${isSelected ? 'selected' : ''}" data-track="${tIdx}"><div class="pp-vu-fill"></div></div>
                     <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(track.name || 'Track')}</span>
                     ${barsHtml}
                 </div>`
