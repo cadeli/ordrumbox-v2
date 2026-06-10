@@ -35,7 +35,7 @@ export default class MfMixer {
         const ctx = this.audioCtx;
 
         this.analyser = ctx.createAnalyser();
-        this.analyser.fftSize = 1024;
+            this.analyser.fftSize = 4096;
         this.gFftData  = new Uint8Array(this.analyser.frequencyBinCount);
         this.dataArray = new Uint8Array(this.analyser.fftSize);
 
@@ -73,7 +73,7 @@ export default class MfMixer {
 
         if (!this.analyser) {
             this.analyser = ctx.createAnalyser();
-            this.analyser.fftSize = 1024;
+        this.analyser.fftSize = 4096;
             this.gFftData  = new Uint8Array(this.analyser.frequencyBinCount);
             this.dataArray = new Uint8Array(this.analyser.fftSize);
         }

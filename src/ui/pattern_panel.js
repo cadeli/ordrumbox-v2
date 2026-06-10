@@ -131,9 +131,46 @@ export default class PatternPanel extends BasePanel {
                     fill.style.height = pct + '%'
                 }
             }
+            this._drawWaveform(mixer)
             this._vuRafId = requestAnimationFrame(loop)
         }
         this._vuRafId = requestAnimationFrame(loop)
+    }
+
+    _drawWaveform(mixer) {
+        const canvas = this.container?.querySelector('.pp-waveform')
+        if (!canvas) return
+        const ctx = canvas.getContext('2d')
+        const rect = canvas.getBoundingClientRect()
+        const dpr = window.devicePixelRatio || 1
+        const w = Math.round(rect.width * dpr)
+        const h = Math.round(rect.height * dpr)
+        if (canvas.width !== w || canvas.height !== h) {
+            canvas.width = w
+            canvas.height = h
+        }
+        if (w === 0 || h === 0) return
+        const data = serviceRegistry.audioEngine?.getAnalyserData?.()
+        if (!data) {
+            ctx.fillStyle = '#000'
+            ctx.fillRect(0, 0, w, h)
+            return
+        }
+        data.analyser.getByteTimeDomainData(data.dataArray)
+        ctx.fillStyle = '#000'
+        ctx.fillRect(0, 0, w, h)
+        ctx.strokeStyle = '#4ade80'
+        ctx.lineWidth = 3
+        ctx.beginPath()
+        const sliceW = w / data.dataArray.length
+        const mid = h * 0.5
+        for (let i = 0; i < data.dataArray.length; i++) {
+            const v = (data.dataArray[i] - 128) / 128
+            const x = i * sliceW
+            const y = v * h * 0.5 * 6 + mid
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+        }
+        ctx.stroke()
     }
 
     _stopVuLoop() {
@@ -366,6 +403,7 @@ export default class PatternPanel extends BasePanel {
             <span class="pp-meta">${pattern.bpm ?? 120} BPM</span>
             <span class="pp-meta">${pattern.nbBars ?? 4} bars</span>
             <span class="pp-meta">Page ${appState.currentPage + 1}</span>
+            <canvas class="pp-waveform"></canvas>
         </div>`
 
         if (tracks.length === 0) {

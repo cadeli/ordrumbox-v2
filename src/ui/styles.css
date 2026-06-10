@@ -99,6 +99,9 @@
 }
 #pattern-panel .pp-name { color: #e94560; font-weight: bold; }
 #pattern-panel .pp-meta { color: #888; font-size: 10px; }
+#pattern-panel .pp-waveform {
+    flex: 1; height: 24px; min-width: 60px; background: #000; border-radius: 3px;
+}
 
 #pattern-panel .pp-tracks {
     display: flex;
