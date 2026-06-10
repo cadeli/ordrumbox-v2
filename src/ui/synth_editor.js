@@ -47,7 +47,7 @@ const SYNTH_SLIDER_META = {
     'enveloppe.release': { min: 0, max: 3, step: 0.001 }
 }
 
-const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_SLIDER_META)]
+const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_SLIDER_META).filter(k => !k.startsWith('lfo.'))]
 const SYNTH_GROUP_LABELS = {
     masterVolume: 'Master',
     slide: 'Slide',
