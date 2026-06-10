@@ -17,12 +17,21 @@ export default class PatternPanel extends BasePanel {
         this._syncPending = false
         this._barRectsCache = []
         this._vuRafId = null
+        this._cursorTrackIdx = -1
+        this._cursorBar = 0
+        this._cursorBarStep = 0
     }
 
     createDOM() {
         super.createDOM()
-        this.container.style.display = 'block' // Always visible
-        this.container.addEventListener('click', (e) => this._onClick(e), { passive: false })
+        this.container.style.display = 'block'
+        this.container.setAttribute('tabindex', '0')
+        this.container.addEventListener('focus', () => this._onFocus())
+        this.container.addEventListener('click', (e) => {
+            this.container.focus()
+            this._onClick(e)
+        }, { passive: false })
+        this.container.addEventListener('keydown', (e) => this._onKeyDown(e))
     }
 
     _ensurePlayhead() {
@@ -242,11 +251,128 @@ export default class PatternPanel extends BasePanel {
         this._playhead.style.width = `2px`
     }
 
+    _onFocus() {
+        if (this._cursorTrackIdx === -1) {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern) return
+            const tracks = Utils.getTracksArray(pattern)
+            if (tracks.length === 0) return
+            this._cursorTrackIdx = 0
+            this._cursorBar = 0
+            this._cursorBarStep = 0
+            const track = tracks[0]
+            this._selTrackIdx = 0
+            playbackEvents.dispatchTrackSelect({ track, trackIdx: 0 })
+            this._applySelection()
+        }
+    }
+
+    _onKeyDown(e) {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) return
+        const tracks = Utils.getTracksArray(pattern)
+        if (tracks.length === 0) return
+
+        if (this._cursorTrackIdx === -1) {
+            this._cursorTrackIdx = 0
+            this._cursorBar = 0
+            this._cursorBarStep = 0
+        }
+
+        const barQuantize = tracks[this._cursorTrackIdx]?.barQuantize ?? 4
+        const nbBars = pattern.nbBars ?? 4
+
+        switch (e.key) {
+            case 'ArrowRight':
+                e.preventDefault()
+                this._cursorBarStep++
+                if (this._cursorBarStep >= barQuantize) {
+                    this._cursorBarStep = 0
+                    this._cursorBar++
+                    if (this._cursorBar >= nbBars) {
+                        this._cursorBar = 0
+                    }
+                }
+                break
+            case 'ArrowLeft':
+                e.preventDefault()
+                this._cursorBarStep--
+                if (this._cursorBarStep < 0) {
+                    this._cursorBarStep = barQuantize - 1
+                    this._cursorBar--
+                    if (this._cursorBar < 0) {
+                        this._cursorBar = nbBars - 1
+                    }
+                }
+                break
+            case 'ArrowUp':
+                e.preventDefault()
+                if (this._cursorTrackIdx > 0) this._cursorTrackIdx--
+                break
+            case 'ArrowDown':
+                e.preventDefault()
+                if (this._cursorTrackIdx < tracks.length - 1) this._cursorTrackIdx++
+                break
+            case 'Enter':
+                e.preventDefault()
+                const track = tracks[this._cursorTrackIdx]
+                if (!track) return
+
+                const cell = this.container.querySelector(`.pp-cell[data-track="${this._cursorTrackIdx}"][data-bar="${this._cursorBar}"][data-step="${this._cursorBarStep}"]`)
+                if (cell) {
+                    if (cell.classList.contains('filled')) {
+                        cell.classList.remove('filled', 'pp-trig-rand', 'pp-trig-fixed')
+                        cell.innerHTML = ''
+
+                        const note = (track.notes ?? []).find(n => n.bar === this._cursorBar && n.barStep === this._cursorBarStep)
+                        if (note) {
+                            serviceRegistry.mfCmd.deleteNote(track, note)
+                        }
+                        this._clearSelection()
+                    } else {
+                        cell.classList.add('filled')
+
+                        const newNote = serviceRegistry.mfCmd.addNote(track, this._cursorBar, this._cursorBarStep)
+                        this._selNote = newNote
+                        this._selTrackIdx = this._cursorTrackIdx
+                        this._applySelection()
+
+                        const pos = this._cursorBar * (track.barQuantize ?? 4) + this._cursorBarStep
+                        playbackEvents.dispatchNoteSelect({ track, trackIdx: this._cursorTrackIdx, note: newNote, pos, bar: this._cursorBar, barStep: this._cursorBarStep })
+                    }
+                    this.sync()
+                }
+                break
+            default:
+                return
+        }
+
+        const track = tracks[this._cursorTrackIdx]
+        if (!track) return
+
+        const BARS_PER_PAGE = 4
+        const startBar = appState.currentPage * BARS_PER_PAGE
+        if (this._cursorBar < startBar || this._cursorBar >= startBar + BARS_PER_PAGE) {
+            appState.currentPage = Math.floor(this._cursorBar / BARS_PER_PAGE)
+        }
+
+        const note = (track.notes ?? []).find(n => n.bar === this._cursorBar && n.barStep === this._cursorBarStep)
+        this._selNote = note || null
+        this._selTrackIdx = this._cursorTrackIdx
+        this.sync()
+        if (note) {
+            playbackEvents.dispatchNoteSelect({ track, trackIdx: this._cursorTrackIdx, note, pos: this._cursorBar * barQuantize + this._cursorBarStep, bar: this._cursorBar, barStep: this._cursorBarStep })
+        } else {
+            playbackEvents.dispatchTrackSelect({ track, trackIdx: this._cursorTrackIdx })
+        }
+    }
+
     _onClick(e) {
         const trackNameEl = e.target.closest('.pp-track-name')
         if (trackNameEl) {
             const trackIdx = parseInt(trackNameEl.dataset.track, 10)
             if (isNaN(trackIdx)) return
+            this._cursorTrackIdx = trackIdx
             const pattern = appState.patterns[appState.selectedPatternNum]
             const tracks = Utils.getTracksArray(pattern)
             const track = tracks[trackIdx]
@@ -273,6 +399,10 @@ export default class PatternPanel extends BasePanel {
         const bar = parseInt(cell.dataset.bar, 10)
         const barStep = parseInt(cell.dataset.step, 10)
         if (isNaN(trackIdx) || isNaN(bar) || isNaN(barStep)) return
+
+        this._cursorTrackIdx = trackIdx
+        this._cursorBar = bar
+        this._cursorBarStep = barStep
 
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
@@ -324,8 +454,8 @@ export default class PatternPanel extends BasePanel {
     }
 
     _applySelection() {
-        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected')
-        selected.forEach(el => el.classList.remove('selected'))
+        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected, .pp-cell.cursor')
+        selected.forEach(el => el.classList.remove('selected', 'cursor'))
         
         if (this._selTrackIdx !== -1) {
             if (this._selNote) {
@@ -334,6 +464,11 @@ export default class PatternPanel extends BasePanel {
                 const step = this._selNote.barStep
                 const sel = this.container.querySelector(`.pp-cell[data-track="${trackIdx}"][data-bar="${bar}"][data-step="${step}"]`)
                 if (sel) sel.classList.add('selected')
+            } else if (this._cursorTrackIdx !== -1) {
+                const sel = this.container.querySelector(`.pp-cell[data-track="${this._cursorTrackIdx}"][data-bar="${this._cursorBar}"][data-step="${this._cursorBarStep}"]`)
+                if (sel) sel.classList.add('cursor')
+                const trackSel = this.container.querySelector(`.pp-track-name[data-track="${this._cursorTrackIdx}"]`)
+                if (trackSel) trackSel.classList.add('selected')
             } else {
                 const sel = this.container.querySelector(`.pp-track-name[data-track="${this._selTrackIdx}"]`)
                 if (sel) sel.classList.add('selected')
