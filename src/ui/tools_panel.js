@@ -6,7 +6,7 @@ import { PatternExporter } from '../patterns/exporter.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { isMidiSupported } from '../logic/midi/parser.js'
-import { bindCloseButton, bindPanelToggles, hidePanelsById } from './panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles, hidePanelsById } from './panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -24,92 +24,110 @@ export default class ToolsPanel extends BasePanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Tools</span>
-                <div class="ne-toggles">
-                    <button class="ne-toggle active" data-toggle="pattern">Pattern</button>
-                    <button class="ne-toggle active" data-toggle="export">Export</button>
-                    <button class="ne-toggle active" data-toggle="import">Import</button>
-                    <button class="ne-toggle active" data-toggle="midi">MIDI</button>
-                </div>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                <div class="ne-group">
-                    <div class="ne-group-label">Pattern Settings</div>
-                    <div class="ne-grid">
-                        <div class="ne-row no-cursor">
-                            <label>Name</label>
-                            <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
-                        </div>
-                        <div class="ne-row">
-                            <button class="ne-btn" id="tp-compact">Compact Tracks</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="ne-group">
-                    <div class="ne-group-label">Export</div>
-                    <div class="ne-grid">
-                        <div class="ne-row">
-                            <button class="ne-btn" id="tp-export-json">Export JSON</button>
-                        </div>
-                        <div class="ne-row">
-                            <button class="ne-btn" id="tp-export-midi">Export MIDI</button>
-                        </div>
-                        <div class="ne-row">
-                            <button class="ne-btn" id="tp-export-wav">Export WAV</button>
-                        </div>
-                        <div id="tp-wav-loops-slot"></div>
-                    </div>
-                </div>
-                <div class="ne-group">
-                    <div class="ne-group-label">Import</div>
-                    <div class="ne-grid">
-                        <div class="ne-row">
-                            <button class="ne-btn" id="tp-import-json">Import JSON</button>
-                            <input type="file" id="tp-import-file" style="display: none" accept=".json">
-                        </div>
-                        <div class="ne-row">
-                            <button class="ne-btn" id="tp-import-wav">Import WAV</button>
-                            <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav">
+                <div class="ne-group expanded" data-group="pattern">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="pattern" title="Pattern Settings">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">Pattern</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">Pattern Settings</div>
+                        <div class="ne-grid">
+                            <div class="ne-row no-cursor">
+                                <label>Name</label>
+                                <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
+                            </div>
+                            <div class="ne-row">
+                                <button class="ne-btn" id="tp-compact">Compact Tracks</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="ne-group">
-                    <div class="ne-group-label">MIDI</div>
-                    <div class="ne-grid">
-                        <div class="ne-row no-cursor">
-                            <button class="lfo-led" id="midiSupportLed"></button>
-                            <label>Support:</label>
-                            <span class="ne-val" id="midiSupportLabel">Checking...</span>
+                <div class="ne-group expanded" data-group="export">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="export" title="Export">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">Export</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">Export</div>
+                        <div class="ne-grid">
+                            <div class="ne-row">
+                                <button class="ne-btn" id="tp-export-json">Export JSON</button>
+                            </div>
+                            <div class="ne-row">
+                                <button class="ne-btn" id="tp-export-midi">Export MIDI</button>
+                            </div>
+                            <div class="ne-row">
+                                <button class="ne-btn" id="tp-export-wav">Export WAV</button>
+                            </div>
+                            <div id="tp-wav-loops-slot"></div>
                         </div>
-                        <div class="ne-row no-cursor">
-                            <button class="lfo-led" id="midiReadyLed"></button>
-                            <label>Ready:</label>
-                            <span class="ne-val" id="midiReadyLabel">Locked</span>
+                    </div>
+                </div>
+                <div class="ne-group expanded" data-group="import">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="import" title="Import">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">Import</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">Import</div>
+                        <div class="ne-grid">
+                            <div class="ne-row">
+                                <button class="ne-btn" id="tp-import-json">Import JSON</button>
+                                <input type="file" id="tp-import-file" style="display: none" accept=".json">
+                            </div>
+                            <div class="ne-row">
+                                <button class="ne-btn" id="tp-import-wav">Import WAV</button>
+                                <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav">
+                            </div>
                         </div>
-                        <div class="ne-row no-cursor">
-                            <button class="lfo-led" id="midiConnectedLed"></button>
-                            <label>Inputs:</label>
-                            <span class="ne-val" id="midiConnectedLabel">None</span>
-                        </div>
-                        <div class="ne-row no-cursor">
-                            <button class="lfo-led" id="midiSyncLed"></button>
-                            <label>Ext Sync:</label>
-                            <span class="ne-val" id="midiSyncLabel">Internal</span>
-                        </div>
-                        <div class="ne-row no-cursor">
-                            <button class="lfo-led" id="midiActivityLed"></button>
-                            <label>Activity:</label>
-                            <span class="ne-val" id="midiActivityLabel">Idle</span>
-                        </div>
-                        <div class="ne-row">
-                            <label>Output:</label>
-                            <select id="tp-midi-output-select"></select>
-                        </div>
-                        <div class="ne-row">
-                            <button class="ne-btn" id="tp-midi-enable">Enable MIDI</button>
-                        </div>
-                        <div class="ne-row">
-                            <button class="ne-btn" id="tp-midi-sync">Toggle Sync</button>
+                    </div>
+                </div>
+                <div class="ne-group expanded" data-group="midi">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="midi" title="MIDI">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">MIDI</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">MIDI</div>
+                        <div class="ne-grid">
+                            <div class="ne-row no-cursor">
+                                <button class="lfo-led" id="midiSupportLed"></button>
+                                <label>Support:</label>
+                                <span class="ne-val" id="midiSupportLabel">Checking...</span>
+                            </div>
+                            <div class="ne-row no-cursor">
+                                <button class="lfo-led" id="midiReadyLed"></button>
+                                <label>Ready:</label>
+                                <span class="ne-val" id="midiReadyLabel">Locked</span>
+                            </div>
+                            <div class="ne-row no-cursor">
+                                <button class="lfo-led" id="midiConnectedLed"></button>
+                                <label>Inputs:</label>
+                                <span class="ne-val" id="midiConnectedLabel">None</span>
+                            </div>
+                            <div class="ne-row no-cursor">
+                                <button class="lfo-led" id="midiSyncLed"></button>
+                                <label>Ext Sync:</label>
+                                <span class="ne-val" id="midiSyncLabel">Internal</span>
+                            </div>
+                            <div class="ne-row no-cursor">
+                                <button class="lfo-led" id="midiActivityLed"></button>
+                                <label>Activity:</label>
+                                <span class="ne-val" id="midiActivityLabel">Idle</span>
+                            </div>
+                            <div class="ne-row">
+                                <label>Output:</label>
+                                <select id="tp-midi-output-select"></select>
+                            </div>
+                            <div class="ne-row">
+                                <button class="ne-btn" id="tp-midi-enable">Enable MIDI</button>
+                            </div>
+                            <div class="ne-row">
+                                <button class="ne-btn" id="tp-midi-sync">Toggle Sync</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -183,7 +201,7 @@ export default class ToolsPanel extends BasePanel {
         bindCloseButton(this.container, () => this.hide())
 
         const groupMap = { pattern: 0, export: 1, import: 2, midi: 3 }
-        bindPanelToggles(this.container, (key) => {
+        bindAccordionToggles(this.container, (key) => {
             const groups = this.container.querySelectorAll('.ne-body > .ne-group')
             return groups[groupMap[key]]
         })

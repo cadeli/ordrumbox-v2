@@ -44,6 +44,45 @@ export function bindPanelToggles(container, getTarget) {
     })
 }
 
+export function bindAccordionToggles(container, getTarget, onChange) {
+    container.querySelectorAll('.ne-toggle[data-toggle], .ne-toggle[data-about-toggle], .ne-group-accordion-toggle[data-toggle]').forEach(btn => {
+        btn.addEventListener('click', (event) => {
+            const key = btn.dataset.toggle || btn.dataset.aboutToggle
+            btn.classList.toggle('active')
+            const isExpanded = btn.classList.contains('active')
+            
+            let group = btn.closest('.ne-group, .ne-group-collapsed, .ss-group, .ss-group-collapsed')
+            if (!group) {
+                group = container.querySelector(`[data-group="${key}"], [data-synth-group="${key}"]`)
+            }
+            
+            if (group) {
+                if (group.classList.contains('ss-group') || group.classList.contains('ss-group-collapsed')) {
+                    group.classList.toggle('ss-group', isExpanded)
+                    group.classList.toggle('ss-group-collapsed', !isExpanded)
+                } else {
+                    group.classList.toggle('ne-group', isExpanded)
+                    group.classList.toggle('ne-group-collapsed', !isExpanded)
+                }
+                group.classList.toggle('expanded', isExpanded)
+                group.classList.toggle('collapsed', !isExpanded)
+                const icon = group.querySelector('.ne-group-accordion-icon')
+                if (icon) icon.innerHTML = isExpanded ? '&minus;' : '+'
+            }
+            
+            if (getTarget) {
+                const target = getTarget(key)
+                if (target) {
+                    target.style.display = isExpanded ? '' : 'none'
+                }
+            }
+            
+            onChange?.(key, isExpanded)
+            event.stopPropagation()
+        })
+    })
+}
+
 export function hidePanelsById(ids) {
     ids.forEach(id => {
         const panel = document.getElementById(id)

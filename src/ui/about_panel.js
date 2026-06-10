@@ -1,5 +1,5 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton } from './panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles } from './panel_helpers.js'
 import BasePanel from './base_panel.js'
 
 const APP_VERSION = '2.0.0'
@@ -42,44 +42,52 @@ export default class AboutPanel extends BasePanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">About</span>
-                <div class="ne-toggles">
-                    <button class="ne-toggle active" data-about-toggle="info">Info</button>
-                    <button class="ne-toggle active" data-about-toggle="pwa">PWA</button>
-                </div>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                <div class="ne-group" data-about-section="info">
-                    <div class="ne-group-label">Application</div>
-                    <div class="ne-grid">
-                        <div class="ne-row no-cursor">
-                            <label>Name</label>
-                            <span class="ne-val">${APP_NAME}</span>
-                        </div>
-                        <div class="ne-row no-cursor">
-                            <label>Version</label>
-                            <span class="ne-val">${APP_VERSION}</span>
-                        </div>
-                        <div class="ne-row no-cursor">
-                            <label>License</label>
-                            <span class="ne-val">${APP_LICENSE}</span>
+                <div class="ne-group expanded" data-group="info" data-about-section="info">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-about-toggle="info" title="Application">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">Info</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">Application</div>
+                        <div class="ne-grid">
+                            <div class="ne-row no-cursor">
+                                <label>Name</label>
+                                <span class="ne-val">${APP_NAME}</span>
+                            </div>
+                            <div class="ne-row no-cursor">
+                                <label>Version</label>
+                                <span class="ne-val">${APP_VERSION}</span>
+                            </div>
+                            <div class="ne-row no-cursor">
+                                <label>License</label>
+                                <span class="ne-val">${APP_LICENSE}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="ne-group" data-about-section="pwa">
-                    <div class="ne-group-label">Progressive Web App</div>
-                    <div class="ne-grid">
-                        <div class="ne-row" id="about-pwa-install-row" style="display:none">
-                            <label>Install</label>
-                            <button class="ne-btn" id="about-pwa-install">Install App</button>
-                        </div>
-                        <div class="ne-row no-cursor">
-                            <label>Website</label>
-                            <a href="${APP_WEBSITE}" target="_blank" rel="noopener" class="ne-val">${APP_WEBSITE}</a>
-                        </div>
-                        <div class="ne-row no-cursor">
-                            <label>Source</label>
-                            <a href="${APP_REPO}" target="_blank" rel="noopener" class="ne-val">${APP_REPO}</a>
+                <div class="ne-group expanded" data-group="pwa" data-about-section="pwa">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-about-toggle="pwa" title="Progressive Web App">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">PWA</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">Progressive Web App</div>
+                        <div class="ne-grid">
+                            <div class="ne-row" id="about-pwa-install-row" style="display:none">
+                                <label>Install</label>
+                                <button class="ne-btn" id="about-pwa-install">Install App</button>
+                            </div>
+                            <div class="ne-row no-cursor">
+                                <label>Website</label>
+                                <a href="${APP_WEBSITE}" target="_blank" rel="noopener" class="ne-val">${APP_WEBSITE}</a>
+                            </div>
+                            <div class="ne-row no-cursor">
+                                <label>Source</label>
+                                <a href="${APP_REPO}" target="_blank" rel="noopener" class="ne-val">${APP_REPO}</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -92,13 +100,9 @@ export default class AboutPanel extends BasePanel {
         this._installBtn?.addEventListener('click', () => this._installPwa())
 
         const groupMap = { info: 0, pwa: 1 }
-        this.container.querySelectorAll('.ne-toggle[data-about-toggle]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active')
-                const groups = this.container.querySelectorAll('.ne-body > .ne-group')
-                const group = groups[groupMap[btn.dataset.aboutToggle]]
-                if (group) group.style.display = btn.classList.contains('active') ? '' : 'none'
-            })
+        bindAccordionToggles(this.container, (key) => {
+            const groups = this.container.querySelectorAll('.ne-body > .ne-group')
+            return groups[groupMap[key]]
         })
     }
 

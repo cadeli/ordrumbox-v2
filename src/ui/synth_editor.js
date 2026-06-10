@@ -3,7 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
-import { bindPanelToggles } from './panel_helpers.js'
+import { bindAccordionToggles } from './panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
 
@@ -135,7 +135,7 @@ export default class SynthEditor {
         this._ensureGroupVisibility(groupNames)
         let html = `<div class="ss-header">
             <span class="ss-title">Soft Synth: ${this._esc(this._editKey)}</span>
-            <div class="ne-toggles ss-toggles">
+            <div class="ss-toggles" style="display: none">
                 ${groupNames.map(groupName => `
                     <button class="ne-toggle ${this._groupVisibility[groupName] ? 'active' : ''}" data-toggle="${this._esc(groupName)}">${this._esc(this._getGroupLabel(groupName))}</button>
                 `).join('')}
@@ -152,16 +152,24 @@ export default class SynthEditor {
 
         groupNames.forEach(groupName => {
             const merged = SYNTH_GROUP_MERGE[groupName]
-            const display = this._groupVisibility[groupName] ? '' : ' style="display:none"'
+            const isExpanded = this._groupVisibility[groupName]
+            const display = isExpanded ? '' : ' style="display:none"'
             const fields = merged
                 ? merged.map(key => ({ path: [key], key, val: this._draft[key] }))
                 : (this._draft[groupName] && typeof this._draft[groupName] === 'object' && !Array.isArray(this._draft[groupName])
                     ? Object.entries(this._draft[groupName]).map(([key, val]) => ({ path: [groupName, key], key, val }))
                     : [{ path: [groupName], key: groupName, val: this._draft[groupName] }])
 
-            html += `<div class="ss-group" data-synth-group="${this._esc(groupName)}"${display}>
-                <div class="ss-group-label">${this._esc(groupName)}</div>
-                <div class="ss-grid">`
+            const label = this._getGroupLabel(groupName)
+
+            html += `<div class="${isExpanded ? 'ss-group expanded' : 'ss-group-collapsed collapsed'}" data-synth-group="${this._esc(groupName)}"${display}>
+                <button class="ne-group-accordion-toggle ${isExpanded ? 'active' : ''}" data-toggle="${this._esc(groupName)}" title="${this._esc(groupName)}">
+                    <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
+                    <span class="ne-group-accordion-label">${this._esc(label)}</span>
+                </button>
+                <div class="ne-group-content">
+                    <div class="ss-group-label">${this._esc(groupName)}</div>
+                    <div class="ss-grid">`
 
             fields.forEach(({ path, key, val }) => {
                 const meta = SYNTH_SLIDER_META[path.join('.')]
@@ -179,7 +187,7 @@ export default class SynthEditor {
                 }
             })
 
-            html += `</div></div>`
+            html += `</div></div></div>`
         })
 
         html += '</div>'
@@ -323,7 +331,7 @@ export default class SynthEditor {
     }
 
     _bindEvents() {
-        bindPanelToggles(this.panel, (key) => {
+        bindAccordionToggles(this.panel, (key) => {
             this._groupVisibility[key] = !this._groupVisibility[key]
             return Array.from(this.panel.querySelectorAll('[data-synth-group]'))
                 .find(group => group.dataset.synthGroup === key)

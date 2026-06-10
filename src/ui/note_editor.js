@@ -133,12 +133,6 @@ export default class NoteEditor extends BasePanel {
 
         let headerHtml = `<div class="ne-header">
             <span class="ne-track">${this.esc(this._track.name)} [bar ${this._bar} step ${this._barStep}]</span>
-            <div class="ne-toggles">
-                <button class="ne-toggle ${vis.levels ? 'active' : ''}" data-toggle="levels">V/P/P</button>
-                <button class="ne-toggle ${vis.triggers ? 'active' : ''}" data-toggle="triggers">Trig</button>
-                <button class="ne-toggle ${vis.retrig ? 'active' : ''}" data-toggle="retrig">Retr</button>
-                <button class="ne-toggle ${vis.arp ? 'active' : ''}" data-toggle="arp">Arp</button>
-            </div>
             <button class="ne-close">&times;</button>
         </div>`
 
@@ -146,11 +140,23 @@ export default class NoteEditor extends BasePanel {
 
         GROUPS.forEach((g, idx) => {
             const visKey = ['levels', 'triggers', 'retrig', 'arp'][idx]
-            if (!vis[visKey]) return
+            const isExpanded = vis[visKey]
+            const shortLabels = {
+                levels: 'V/P/P',
+                triggers: 'Trig',
+                retrig: 'Retr',
+                arp: 'Arp'
+            }
+            const shortLabel = shortLabels[visKey]
 
-            bodyHtml += `<div class="ne-group">
-                <div class="ne-group-label">${g.label}</div>
-                <div class="ne-grid">`
+            bodyHtml += `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="${visKey}">
+                <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="${visKey}" title="${g.label}">
+                    <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
+                    <span class="ne-group-accordion-label">${shortLabel}</span>
+                </button>
+                <div class="ne-group-content">
+                    <div class="ne-group-label">${g.label}</div>
+                    <div class="ne-grid">`
             g.props.forEach(p => {
                 if (p.type === 'select') {
                     let val = p.key === 'arpScale' ? arpState.scale : arpState.type
@@ -169,7 +175,7 @@ export default class NoteEditor extends BasePanel {
                     bodyHtml += `<div data-ne-slider="${p.key}"></div>`
                 }
             })
-            bodyHtml += `</div></div>`
+            bodyHtml += `</div></div></div>`
         })
 
         bodyHtml += '</div>'

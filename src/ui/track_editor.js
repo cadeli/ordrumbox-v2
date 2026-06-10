@@ -172,14 +172,6 @@ export default class TrackEditor extends BasePanel {
         
         let headerHtml = `<div class="ne-header">
             <span class="ne-track">Track: ${this.esc(this._track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
-            <div class="ne-toggles">
-                <button class="ne-toggle ${vis.basic ? 'active' : ''}" data-toggle="basic" title="Basic">Basic</button>
-                <button class="ne-toggle ${vis.levels ? 'active' : ''}" data-toggle="levels" title="Levels">Lvl</button>
-                <button class="ne-toggle ${vis.filters ? 'active' : ''}" data-toggle="filters" title="Filters">Flt</button>
-                <button class="ne-toggle ${vis.effects ? 'active' : ''}" data-toggle="effects" title="Effects">FX</button>
-                <button class="ne-toggle ${vis.sound ? 'active' : ''}" data-toggle="sound" title="Sound">Snd</button>
-                <button class="ne-toggle ${vis.loop ? 'active' : ''}" data-toggle="loop" title="Loop">Lp</button>
-            </div>
             <button class="ne-close">&times;</button>
         </div>`
 
@@ -188,17 +180,29 @@ export default class TrackEditor extends BasePanel {
         this._sliders.forEach(s => s.destroy())
         this._sliders.clear()
 
+        const shortLabels = {
+            basic: 'Basic',
+            levels: 'Lvl',
+            filters: 'Flt',
+            effects: 'FX'
+        }
+
         GROUPS.forEach((g, idx) => {
             const visKey = ['basic', 'levels', 'filters', 'effects'][idx]
-            if (!vis[visKey]) return
+            const isExpanded = vis[visKey]
 
             if (g.label === 'Effects') {
-                bodyHtml += this._renderFxGroup()
+                bodyHtml += this._renderFxGroup(isExpanded)
                 return
             }
-            bodyHtml += `<div class="ne-group">
-                <div class="ne-group-label">${g.label}</div>
-                <div class="ne-grid">`
+            bodyHtml += `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="${visKey}">
+                <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="${visKey}" title="${g.label}">
+                    <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
+                    <span class="ne-group-accordion-label">${shortLabels[visKey]}</span>
+                </button>
+                <div class="ne-group-content">
+                    <div class="ne-group-label">${g.label}</div>
+                    <div class="ne-grid">`
             g.props.forEach(p => {
                 const val = this._track[p.key]
                 const isSelected = this._selectedPropKey === p.key ? 'selected' : ''
@@ -247,7 +251,7 @@ export default class TrackEditor extends BasePanel {
                     bodyHtml += s.toHTML()
                 }
             })
-            bodyHtml += `</div></div>`
+            bodyHtml += `</div></div></div>`
         })
 
         // LFO Sub-panel (visible if parent prop is visible)
@@ -263,10 +267,10 @@ export default class TrackEditor extends BasePanel {
         }
 
         // Sound Sub-panel
-        if (vis.sound) bodyHtml += this._renderSoundPanel()
+        bodyHtml += this._renderSoundPanel(vis.sound)
 
         // Loop / Pattern Sub-panel
-        if (vis.loop) bodyHtml += this._renderLoopPanel()
+        bodyHtml += this._renderLoopPanel(vis.loop)
 
         bodyHtml += '</div>'
         this.container.innerHTML = headerHtml + bodyHtml
@@ -291,7 +295,7 @@ export default class TrackEditor extends BasePanel {
         this._bindEvents()
     }
 
-    _renderLoopPanel() {
+    _renderLoopPanel(isExpanded) {
         const bars = this._track.bars ?? 4
         const barQuantize = this._track.barQuantize ?? 4
         const loopAtStep = this._track.loopAtStep ?? (bars * barQuantize)
@@ -304,9 +308,14 @@ export default class TrackEditor extends BasePanel {
             return `${b}.${s}`
         }
 
-        let html = `<div class="ne-group" style="border-left:1px solid #444;padding-left:12px">
-            <div class="ne-group-label">Loop / Pattern</div>
-            <div class="ne-grid">`
+        let html = `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="loop">
+            <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="loop" title="Loop">
+                <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
+                <span class="ne-group-accordion-label">Lp</span>
+            </button>
+            <div class="ne-group-content">
+                <div class="ne-group-label">Loop / Pattern</div>
+                <div class="ne-grid">`
 
         const loopProps = [
             { key: 'barQuantize', label: 'Steps/Bar', min: 1, max: 8, step: 1, val: barQuantize },
@@ -331,18 +340,25 @@ export default class TrackEditor extends BasePanel {
             html += s.toHTML()
         })
 
-        html += `</div></div>`
+        html += `</div></div></div>`
         return html
     }
 
-    _renderFxGroup() {
+    _renderFxGroup(isExpanded) {
         const fxDefs = [
             { key: 'reverbOn', label: 'Rev', controls: ['reverbAmount', 'reverbType'] },
             { key: 'delayOn', label: 'Del', controls: ['delayAmount', 'delayTime', 'delayType'] },
             { key: 'saturationOn', label: 'Sat', controls: ['saturationAmount', 'saturationType'] }
         ]
 
-        let html = `<div class="ne-group"><div class="ne-group-label">Effects</div><div class="ne-grid">`
+        let html = `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="effects">
+            <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="effects" title="Effects">
+                <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
+                <span class="ne-group-accordion-label">FX</span>
+            </button>
+            <div class="ne-group-content">
+                <div class="ne-group-label">Effects</div>
+                <div class="ne-grid">`
 
         html += `<div class="ne-row">`
         fxDefs.forEach(fx => {
@@ -390,7 +406,7 @@ export default class TrackEditor extends BasePanel {
             }
         })
 
-        html += `</div></div>`
+        html += `</div></div></div>`
         return html
     }
 
@@ -400,7 +416,7 @@ export default class TrackEditor extends BasePanel {
         return Number.isFinite(amount) && amount > 0
     }
 
-    _renderSoundPanel() {
+    _renderSoundPanel(isExpanded) {
         const auto = this._track.useAutoAssignSound !== false
         const ledClass = auto ? 'lfo-led on' : 'lfo-led'
         const visibility = auto ? 'display:none' : ''
@@ -422,15 +438,20 @@ export default class TrackEditor extends BasePanel {
 
         const hideInstrSample = auto || this._track.useSoftSynth === true
 
-        let html = `<div class="ne-group" style="border-left:1px solid #444;padding-left:12px">
-            <div class="ne-group-label">
-                <button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button>
-                Sound
-            </div>
-            <div class="ne-grid" style="${hideInstrSample ? 'display:none' : ''}">
-                <div class="ne-row">
-                    <label>Instr</label>
-                    <select data-sound="instrument">`
+        let html = `<div class="${isExpanded ? 'ne-group expanded' : 'ne-group-collapsed collapsed'}" data-group="sound">
+            <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="sound" title="Sound">
+                <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
+                <span class="ne-group-accordion-label">Snd</span>
+            </button>
+            <div class="ne-group-content">
+                <div class="ne-group-label">
+                    <button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button>
+                    Sound
+                </div>
+                <div class="ne-grid" style="${hideInstrSample ? 'display:none' : ''}">
+                    <div class="ne-row">
+                        <label>Instr</label>
+                        <select data-sound="instrument">`
         instrumentIds.forEach(id => {
             const sel = id === currentName ? ' selected' : ''
             html += `<option value="${id}"${sel}>${id}</option>`
@@ -468,7 +489,7 @@ export default class TrackEditor extends BasePanel {
                     <button class="ne-btn" data-action="edit-synth">Edit</button>
                 </div>
             </div>
-        </div>`
+        </div></div>`
         return html
     }
 

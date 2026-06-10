@@ -1,6 +1,6 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindPanelToggles } from './panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles } from './panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -30,30 +30,48 @@ export default class OutputPanel extends BasePanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Output</span>
-                <div class="ne-toggles">
-                    <button class="ne-toggle active" data-toggle="master">Master</button>
-                    <button class="ne-toggle active" data-toggle="filters">Flt</button>
-                    <button class="ne-toggle active" data-toggle="compressor">Comp</button>
-                    <button class="ne-toggle active" data-toggle="spectrum">Spec</button>
-                </div>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                <div class="ne-group">
-                    <div class="ne-group-label">Master</div>
-                    <div class="ne-grid" id="op-master-grid"></div>
+                <div class="ne-group expanded" data-group="master">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="master" title="Master">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">Master</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">Master</div>
+                        <div class="ne-grid" id="op-master-grid"></div>
+                    </div>
                 </div>
-                <div class="ne-group">
-                    <div class="ne-group-label">Filters</div>
-                    <div class="ne-grid" id="op-filters-grid"></div>
+                <div class="ne-group expanded" data-group="filters">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="filters" title="Filters">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">Flt</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">Filters</div>
+                        <div class="ne-grid" id="op-filters-grid"></div>
+                    </div>
                 </div>
-                <div class="ne-group">
-                    <div class="ne-group-label">Compressor</div>
-                    <div class="ne-grid" id="op-comp-grid"></div>
+                <div class="ne-group expanded" data-group="compressor">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="compressor" title="Compressor">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">Comp</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">Compressor</div>
+                        <div class="ne-grid" id="op-comp-grid"></div>
+                    </div>
                 </div>
-                <div class="ne-group" id="op-analyzer-group">
-                    <div class="ne-group-label">Spectrum</div>
-                    <canvas id="op-spectrum"></canvas>
+                <div class="ne-group expanded" data-group="spectrum" id="op-analyzer-group">
+                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="spectrum" title="Spectrum">
+                        <span class="ne-group-accordion-icon">&minus;</span>
+                        <span class="ne-group-accordion-label">Spec</span>
+                    </button>
+                    <div class="ne-group-content">
+                        <div class="ne-group-label">Spectrum</div>
+                        <canvas id="op-spectrum"></canvas>
+                    </div>
                 </div>
             </div>
         `
@@ -70,11 +88,11 @@ export default class OutputPanel extends BasePanel {
 
         const targetMap = {
             master:     '#op-master-vol',
-            filters:    '.ne-group:nth-child(2)',
-            compressor: '.ne-group:nth-child(3)',
-            spectrum:   '#op-analyzer-group',
+            filters:    '.ne-group:nth-child(2) .ne-group-content',
+            compressor: '.ne-group:nth-child(3) .ne-group-content',
+            spectrum:   '#op-analyzer-group .ne-group-content',
         }
-        bindPanelToggles(this.container, (key) => this.container.querySelector(targetMap[key]))
+        bindAccordionToggles(this.container, (key) => this.container.querySelector(targetMap[key]))
     }
 
     _buildMasterSlider() {
