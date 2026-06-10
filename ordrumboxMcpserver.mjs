@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { PatternExporter } from "./src/patterns/exporter.js";
 import Utils from './src/core/utils.js'
 
-// Configuration du logger vers stderr pour préserver le flux JSON-RPC sur stdout
+// Log to stderr to preserve JSON-RPC stream on stdout
 const mcpLogger = new console.Console({
   stdout: process.stderr,
   stderr: process.stderr
@@ -86,9 +86,7 @@ function formatPatternsWithNotesOnLine(patterns) {
   return lines.join('');
 }
 
-// --- Fonctions utilitaires ---
-
-
+// --- Utility functions ---
 
 function getPatternFilePath(patternName) {
   const fileName = `${Utils.sanitizePatternFileName(patternName)}.json`;
@@ -196,28 +194,7 @@ function upsertNoteOnTrack(mfCmd, track, noteInput) {
   return existingNote ? 'updated' : 'created';
 }
 
-function buildLfoSchema(targetDescription, rangeConfig = {}) {
-  const {
-    minMinimum = 0, minMaximum = 1,
-    maxMinimum = 0, maxMaximum = 1,
-    minDescription = "Minimum LFO value (0 to 1).",
-    maxDescription = "Maximum LFO value (0 to 1)."
-  } = rangeConfig;
-  return {
-    type: ["object", "null"],
-    description: `LFO applied ${targetDescription}.`,
-    properties: {
-      name: { type: "string" },
-      wave: { type: "string", enum: ["SIN", "TRI", "SAW", "SQR"] },
-      freq: { type: "number", minimum: 1, maximum: 16 },
-      min: { type: "number", minimum: minMinimum, maximum: minMaximum, description: minDescription },
-      max: { type: "number", minimum: maxMinimum, maximum: maxMaximum, description: maxDescription },
-      phase: { type: "number", minimum: 0, maximum: 1 }
-    }
-  };
-}
-
-// --- Initialisation Serveur ---
+// --- Server initialisation ---
 
 const server = new Server({
   name: "ordrumbox-mcp-server",
@@ -241,16 +218,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     //{
     //   name: "addExtendedNotesToPattern",
-    //   description: "Adds notes to a pattern. Creates missing tracks.",
+    //   description: "Adds notes to a pattern using bar/barStep coordinates. Creates missing tracks automatically. (Experimental)",
     //   inputSchema: {
     //     type: "object",
     //     properties: {
     //       patternName: { type: "string" },
-    //       barQuantize: { 
-    //         type: "integer", 
-    //         minimum: 1, 
-    //         maximum: 16, 
-    //         description: "Steps per bar for new tracks. Default: 4" 
+    //       barQuantize: {
+    //         type: "integer",
+    //         minimum: 1,
+    //         maximum: 16,
+    //         description: "Steps per bar for new tracks. Default: 4"
     //       },
     //       notes: {
     //         type: "array",
@@ -297,8 +274,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
                 velocity: { type: "number", minimum: 0, maximum: 1, default: 0.8 },
                 pan: { type: "number", minimum: -1, maximum: 1, default: 0 },
                 pitch: { type: "number", default: 0 },
+                triggerFreq: { type: "integer", minimum: 1, maximum: 16, description: "Trigger frequency - how often the note plays (1-16)" },
+                triggerPhase: { type: "integer", minimum: 0, maximum: 15, description: "Trigger phase offset (0-15)" },
                 triggerProbability: { type: "number", minimum: 0, maximum: 1, default: 1 },
-                arpTriggerProbability: { type: "number", minimum: 0, maximum: 1, default: 1 }
+                arpTriggerProbability: { type: "number", minimum: 0, maximum: 1, default: 1 },
+                retriggerNum: { type: "integer", minimum: 1, maximum: 16, description: "Number of retriggers (1-16)" },
+                retriggerStep: { type: "integer", minimum: 1, maximum: 16, description: "Retrigger step spacing (1-16)" },
+                arp: { type: "string", description: "Arpeggio pattern (up, down, upDown, random, or custom indices)" },
+                euclidianFill: { type: "integer", minimum: 0, maximum: 100, description: "Euclidean fill percentage (0-100)" }
               },
               required: ["trackName", "step"]
             }
@@ -309,15 +292,38 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "updateTrack",
-      description: "Updates or creates a track with global properties",
+      description: "Updates or creates a track with global properties and per-note overrides",
       inputSchema: {
         type: "object",
         properties: {
           patternName: { type: "string" },
           trackName: { type: "string" },
-          updates: { 
+          updates: {
             type: "object",
-            description: "Track-level properties (velocity, pan, pitch, mute, solo, filter, reverb, etc.)"
+            description: "Track-level properties to set. See MCP_TOOLS.md for the full list of valid fields.",
+            properties: {
+              velocity: { type: "number", minimum: 0, maximum: 1, description: "Global track velocity" },
+              pan: { type: "number", minimum: -1, maximum: 1, description: "Stereo pan" },
+              pitch: { type: "number", description: "Pitch offset in semitones" },
+              mute: { type: "boolean", description: "Mute the track" },
+              solo: { type: "boolean", description: "Solo the track" },
+              auto: { type: "boolean", description: "Auto mode" },
+              useSoftSynth: { type: "boolean", description: "Use software synthesis instead of samples" },
+              mono: { type: "boolean", description: "Mono mode (cut previous note on same track)" },
+              filterType: { type: "string", enum: ["lowpass", "highpass", "bandpass", "notch", "peaking", "lowshelf", "highshelf", "allpass"], description: "Filter type" },
+              filterFreq: { type: "number", minimum: 20, maximum: 20000, description: "Filter cutoff frequency in Hz" },
+              filterQ: { type: "number", minimum: 0.707, maximum: 21, description: "Filter resonance / Q factor" },
+              reverbType: { type: "string", enum: ["none", "room", "hall", "plate", "spring", "gated"], description: "Reverb preset" },
+              reverbAmount: { type: "number", minimum: 0, maximum: 1, description: "Reverb wet/dry mix" },
+              saturationType: { type: "string", enum: ["soft", "hard", "tape"], description: "Saturation / distortion type" },
+              saturationAmount: { type: "number", minimum: 0, maximum: 1, description: "Saturation amount" },
+              delayType: { type: "string", enum: ["tape", "analog", "digital"], description: "Delay type" },
+              delayTime: { type: "number", description: "Delay time in beats" },
+              delayAmount: { type: "number", minimum: 0, maximum: 1, description: "Delay feedback amount" },
+              loopAtStep: { type: "integer", minimum: 0, description: "Loop point (absolute step index)" },
+              barQuantize: { type: "integer", enum: [4, 8, 16], description: "Steps per bar" },
+              bars: { type: "integer", minimum: 1, description: "Number of bars for this track" },
+            }
           },
           noteUpdates: {
             type: "object",
@@ -540,8 +546,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           velocity: Number(n.velocity ?? 0.8),
           pan: Number(n.pan ?? 0),
           pitch: Number(n.pitch ?? 0),
+          triggerFreq: n.triggerFreq,
+          triggerPhase: n.triggerPhase,
           triggerProbability: n.triggerProbability,
-          arpTriggerProbability: n.arpTriggerProbability
+          arpTriggerProbability: n.arpTriggerProbability,
+          retriggerNum: n.retriggerNum,
+          retriggerStep: n.retriggerStep,
+          arp: n.arp,
+          euclidianFill: n.euclidianFill
         };
 
         const status = upsertNoteOnTrack(mfCmd, track, noteInput);
@@ -834,7 +846,7 @@ if (toolName === "setPatternBpm") {
     throw new Error(`Unknown tool: ${toolName}`);
 
   } catch (error) {
-    // Gestion d'erreur critique avec Stack Trace pour le debug
+    // Critical error handling with stack trace for debugging
     console.error(`ERROR in ${request.params.name}:`, error.stack);
 
     return {
