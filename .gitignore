@@ -1,5 +1,6 @@
 **/temp
 **/bak
+**/release
 **/target
 **/coverage
 **/node_modules
