@@ -14,6 +14,13 @@ function makeAudioCtx() {
         destination: {},
         createGain: vi.fn(() => ({ ...makeNode(), gain: makeParam(1) })),
         createStereoPanner: vi.fn(() => ({ ...makeNode(), pan: makeParam(0) })),
+        createAnalyser: vi.fn(() => ({
+            fftSize: 256,
+            frequencyBinCount: 128,
+            connect: vi.fn(() => {}),
+            disconnect: vi.fn(() => {}),
+            getByteTimeDomainData: vi.fn(() => {}),
+        })),
     }
 }
 

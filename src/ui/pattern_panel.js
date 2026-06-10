@@ -16,6 +16,7 @@ export default class PatternPanel extends BasePanel {
         this._playhead = null
         this._syncPending = false
         this._barRectsCache = []
+        this._vuRafId = null
     }
 
     createDOM() {
@@ -106,6 +107,40 @@ export default class PatternPanel extends BasePanel {
             this._syncRafId = null
             this._updateBarCache()
         })
+    }
+
+    _startVuLoop() {
+        if (this._vuRafId) return
+        const loop = () => {
+            const mixer = serviceRegistry.audioEngine?.mixer
+            if (!mixer || !this.container) {
+                this._vuRafId = requestAnimationFrame(loop)
+                return
+            }
+            const strips = mixer.strips
+            const vuEls = this.container.querySelectorAll('.pp-vu')
+            for (const vuEl of vuEls) {
+                const tIdx = parseInt(vuEl.dataset.track, 10)
+                const tracks = Utils.getTracksArray(appState.patterns[appState.selectedPatternNum])
+                const track = tracks?.[tIdx]
+                const strip = track?.name ? strips[track.name] : null
+                const level = strip?.getLevel ? strip.getLevel() : 0
+                const fill = vuEl.querySelector('.pp-vu-fill')
+                if (fill) {
+                    const pct = Math.min(level * 3, 1) * 100
+                    fill.style.height = pct + '%'
+                }
+            }
+            this._vuRafId = requestAnimationFrame(loop)
+        }
+        this._vuRafId = requestAnimationFrame(loop)
+    }
+
+    _stopVuLoop() {
+        if (this._vuRafId) {
+            cancelAnimationFrame(this._vuRafId)
+            this._vuRafId = null
+        }
     }
 
     _startPlayhead() {
@@ -401,6 +436,7 @@ export default class PatternPanel extends BasePanel {
             const isSelected = this._selTrackIdx === tIdx && !this._selNote
             tracksHtml += `
                 <div class="pp-track">
+                    <div class="pp-vu" data-track="${tIdx}"><div class="pp-vu-fill"></div></div>
                     <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(track.name || 'Track')}</span>
                     ${barsHtml}
                 </div>`
@@ -410,6 +446,7 @@ export default class PatternPanel extends BasePanel {
         this.container.innerHTML = headerHtml + tracksHtml
         this._ensurePlayhead()
         this._applySelection()
+        this._startVuLoop()
     }
 
     updateLoopPoint(trackIdx, loopAtStep) {

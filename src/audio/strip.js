@@ -39,7 +39,11 @@ export default class MfStrip {
 
         this.stripNode = null;
         this.voicesInput = audioCtx.createGain(); // Entry for voices
-        
+
+        this.levelAnalyser = audioCtx.createAnalyser();
+        this.levelAnalyser.fftSize = 256;
+        this.levelData = new Uint8Array(this.levelAnalyser.frequencyBinCount);
+
         // Pitch LFO gain (still needed to multiply the 0..1 signal from worklet for voice detune)
         this._lfoGains = { pitchLfo: audioCtx.createGain() };
         this._lfoGains.pitchLfo.gain.value = 1.0; 
@@ -81,23 +85,37 @@ export default class MfStrip {
         
         // Connect Pitch LFO output to the gain node used by voices
         this.stripNode.connect(this._lfoGains.pitchLfo, 1);
-        
-        // Final output is the stripNode's first output
+
+        // Route audio through the level analyser
+        this.stripNode.connect(this.levelAnalyser, 0);
+
+        // Final output is the stripNode's first output (routed through levelAnalyser)
         this.output = { 
             gain: this.stripNode.parameters.get('volume'),
-            connect: (dest) => this.stripNode.connect(dest, 0),
-            disconnect: () => this.stripNode.disconnect(0)
+            connect: (dest) => this.levelAnalyser.connect(dest),
+            disconnect: () => this.levelAnalyser.disconnect()
         };
         // For compatibility with MfMixer wiring: strip.pan.connect(mixer.busInput)
         this.pan = {
             pan: this.stripNode.parameters.get('pan'),
-            connect: (dest) => this.stripNode.connect(dest, 0),
-            disconnect: () => this.stripNode.disconnect(0)
+            connect: (dest) => this.levelAnalyser.connect(dest),
+            disconnect: () => this.levelAnalyser.disconnect()
         };
     }
 
     connectVoice(node) {
         node.connect(this.voicesInput);
+    }
+
+    getLevel = () => {
+        if (!this.levelAnalyser) return 0
+        this.levelAnalyser.getByteTimeDomainData(this.levelData)
+        let sum = 0
+        for (let i = 0; i < this.levelData.length; i++) {
+            const v = (this.levelData[i] - 128) / 128
+            sum += v * v
+        }
+        return Math.sqrt(sum / this.levelData.length)
     }
 
     setBpm = (bpm) => {
@@ -254,5 +272,9 @@ export default class MfStrip {
         this.voicesInput.disconnect();
         this._lfoGains.pitchLfo.disconnect();
         this._lfoGains = {};
+        if (this.levelAnalyser) {
+            this.levelAnalyser.disconnect();
+            this.levelAnalyser = null;
+        }
     }
 }
