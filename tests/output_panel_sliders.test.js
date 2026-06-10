@@ -71,7 +71,7 @@ describe('OutputPanel — OrSlider integration', () => {
             { key: 'ratio',     label: 'Ratio',     unit: '',   display: '4' },
             { key: 'attack',    label: 'Attack',    unit: 's',  display: '0.005 s' },
             { key: 'release',   label: 'Release',   unit: 's',  display: '0.15 s' },
-            { key: 'knee',      label: 'Knee',      unit: 'dB', display: '30 dB' },
+            { key: 'knee',      label: 'Knee',      unit: 'dB', display: '6 dB' },
         ]
         for (const e of expected) {
             const input = panel.container.querySelector(`input[data-key="${e.key}"]`)

@@ -9,7 +9,7 @@ const COMPRESSOR_PARAMS = [
     { key: 'ratio',     label: 'Ratio',     min: 1,   max: 20,    step: 0.5,   default: 4             },
     { key: 'attack',    label: 'Attack',    min: 0,   max: 1,     step: 0.001, default: 0.005, unit: 's' },
     { key: 'release',   label: 'Release',   min: 0,   max: 1,     step: 0.001, default: 0.15,  unit: 's' },
-    { key: 'knee',      label: 'Knee',      min: 0,   max: 40,    step: 1,     default: 30,    unit: 'dB' },
+    { key: 'knee',      label: 'Knee',      min: 0,   max: 40,    step: 1,     default: 6,     unit: 'dB' },
 ]
 
 export default class OutputPanel extends BasePanel {
