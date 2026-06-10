@@ -58,8 +58,7 @@ describe('SynthEditor sub-panel toolbar', () => {
 
         const toggles = Array.from(document.querySelectorAll('#soft-synth-panel .ne-toggle[data-toggle]'))
         expect(toggles.map(toggle => toggle.dataset.toggle)).toEqual([
-            'masterVolume',
-            'slide',
+            'master',
             'vco1',
             'vco2',
             'vco3',
@@ -69,7 +68,7 @@ describe('SynthEditor sub-panel toolbar', () => {
             'enveloppe'
         ])
 
-        const masterGroup = document.querySelector('#soft-synth-panel [data-synth-group="masterVolume"]')
+        const masterGroup = document.querySelector('#soft-synth-panel [data-synth-group="master"]')
         expect(masterGroup.style.display).toBe('')
 
         toggles[0].click()

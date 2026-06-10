@@ -118,7 +118,6 @@ describe('Soft Synth Editor display', () => {
 
         const labels = Array.from(toggles).map(t => t.textContent.trim())
         expect(labels).toContain('Master')
-        expect(labels).toContain('Slide')
         expect(labels).toContain('Flt')
         expect(labels).toContain('Env')
     })

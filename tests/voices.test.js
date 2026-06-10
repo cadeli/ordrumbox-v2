@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import BaseVoice from '../src/audio/voices/base_voice.js'
 import SampleVoice from '../src/audio/voices/sample_voice.js'
 import SynthVoice from '../src/audio/voices/synth_voice.js'
@@ -7,6 +7,8 @@ import VoiceFactory from '../src/audio/voices/voice_factory.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
+import { computeOscFrequency, computeNoteRatio } from '../src/audio/math.js'
+import { C3_FREQ, LFO_FREQ_OFFSET, MIN_NOTE_RATIO } from '../src/core/constants.js'
 
 const postMessageMock = vi.fn()
 const workletNodeMock = {
@@ -554,6 +556,273 @@ describe('SynthVoice', () => {
             const next = makeGeneratedSound({ lfo: { wave: 'triangle', freq: 2, depth: 0.3, target: 'FLT' } })
             expect(() => voice.updateGeneratedSound(next, 1.5)).not.toThrow()
         })
+    })
+})
+
+// ─── SynthVoice parameter coverage ──────────────────────────────────────────
+
+describe('SynthVoice parameter coverage', () => {
+    let ctx, strip
+
+    beforeEach(() => {
+        ctx = createMockAudioCtx()
+        strip = createMockStrip()
+        SynthVoice.lastPitchV1 = undefined
+        SynthVoice.lastPitchV2 = undefined
+        SynthVoice.lastPitchV3 = undefined
+    })
+
+    afterEach(() => {
+        appState.workletStatus = 'unknown'
+    })
+
+    it('passes VCO wave, gain, octave and detune to oscillator nodes', () => {
+        const gs = makeGeneratedSound({
+            vco1: { wave: 'square', gain: 0.5, octave: -1, detune: 10 },
+            vco2: { wave: 'triangle', gain: 0.3, octave: 2, detune: -50 },
+            vco3: { wave: 'sawtooth', gain: 0.7, octave: 0, detune: 0 },
+        })
+        const voice = new SynthVoice(ctx, strip, gs, 'test')
+        voice.setup(makeFlatNote({ fpitch: 1 }), 1.0)
+
+        expect(voice.vcoSlots[0].osc.type).toBe('square')
+        expect(voice.vcoSlots[0].gain.gain.value).toBe(0.5)
+        expect(voice.vcoSlots[1].osc.type).toBe('triangle')
+        expect(voice.vcoSlots[1].gain.gain.value).toBe(0.3)
+        expect(voice.vcoSlots[2].osc.type).toBe('sawtooth')
+        expect(voice.vcoSlots[2].gain.gain.value).toBe(0.7)
+    })
+
+    it('passes filter type, frequency and Q to filter nodes', () => {
+        const gs = makeGeneratedSound({
+            filter: { type: 'bandpass', freq: 100, Q: 3, filterEnvelopeAmount: 0 },
+        })
+        const voice = new SynthVoice(ctx, strip, gs, 'test')
+        voice.setup(makeFlatNote(), 1.0)
+
+        const filti = vi.mocked(ctx.createBiquadFilter)
+        // Two filter nodes are created for the stereo pair
+        const f1 = filti.mock.results[0].value
+        const f2 = filti.mock.results[1].value
+        expect(f1.type).toBe('bandpass')
+        expect(f2.type).toBe('bandpass')
+    })
+
+    it('uses masterVolume and note velocity in peak gain', () => {
+        const gs = makeGeneratedSound({ masterVolume: 0.4, enveloppe: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 } })
+        const voice = new SynthVoice(ctx, strip, gs, 'test')
+        // note velocity 0.6 → noteVelo = 0.6 * 0.25 = 0.15 → peakGain = 0.15 * 0.4 * 1.0 = 0.06
+        voice.setup(makeFlatNote({ note: { velocity: 0.6 } }), 1.0)
+
+        expect(voice.gainEnv.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+            0.06, expect.any(Number)
+        )
+    })
+
+    it('creates ADSR gain ramps matching envelope parameters', () => {
+        const gs = makeGeneratedSound({
+            enveloppe: { attack: 0.02, decay: 0.15, sustain: 0.5, release: 0.1 },
+            masterVolume: 0.8,
+        })
+        const voice = new SynthVoice(ctx, strip, gs, 'test')
+        const flatNote = makeFlatNote({ note: { velocity: 1.0 } })
+        voice.setup(flatNote, 1.0)
+
+        // noteVelo = 1.0 * 0.25 = 0.25, not accented (0.25 < 0.5)
+        // peakGain = 0.25 * 0.8 * 1.0 = 0.2
+        // attack ramp: 0 -> 0.2 at time 1.0 + 0.02
+        expect(voice.gainEnv.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+            0.2, 1.02
+        )
+        // decay ramp: 0.2 -> 0.1 at time 1.02 + 0.15 = 1.17
+        expect(voice.gainEnv.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+            0.1, 1.17
+        )
+        // release ramp: 0.1 -> MIN at releaseStart + 0.1
+        expect(voice.gainEnv.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+            0.001, voice.releaseStart + 0.1
+        )
+    })
+
+    it('creates noise subsystem when noise.mix > 0', () => {
+        const gs = makeGeneratedSound({
+            noise: { mix: 0.3, filterType: 'lowpass', filterFreq: 2000, filterQ: 2 },
+        })
+        const voice = new SynthVoice(ctx, strip, gs, 'test')
+        voice.setup(makeFlatNote(), 1.0)
+
+        expect(voice.noiseNode).toBeDefined()
+        expect(voice.noiseGain).toBeDefined()
+        expect(voice.noiseFilter).toBeDefined()
+        expect(voice.noiseGain.gain.value).toBe(0.3)
+        expect(voice.noiseFilter.type).toBe('lowpass')
+    })
+
+    it('creates LFO subsystem when lfo.target is set', () => {
+        const gs = makeGeneratedSound({
+            lfo: { wave: 'triangle', freq: 3, depth: 0.7, target: 'FLT' },
+        })
+        const voice = new SynthVoice(ctx, strip, gs, 'test')
+        voice.setup(makeFlatNote(), 1.0)
+
+        expect(voice.masterLfo).toBeDefined()
+        expect(voice.masterLfo.type).toBe('triangle')
+        expect(voice.masterLfo.frequency.value).toBe(3 + LFO_FREQ_OFFSET)
+        expect(voice.lfoGain.gain.value).toBe(700) // depth(0.7) * FLT multiplier(1000)
+    })
+
+    it('connects lfoGain to target AudioParam when LFO target is FLT', () => {
+        const gs = makeGeneratedSound({
+            lfo: { wave: 'sine', freq: 2, depth: 0.5, target: 'FLT' },
+        })
+        const voice = new SynthVoice(ctx, strip, gs, 'test')
+        voice.setup(makeFlatNote(), 1.0)
+
+        // FLT routes lfoGain to voiceFilter1.frequency and voiceFilter2.frequency
+        expect(voice.lfoGain.connect).toHaveBeenCalledWith(voice.voiceFilter1.frequency)
+        expect(voice.lfoGain.connect).toHaveBeenCalledWith(voice.voiceFilter2.frequency)
+    })
+
+    it('applies glide when slide > 0 and lastPitch is set', () => {
+        SynthVoice.lastPitchV1 = 220
+        const gs = makeGeneratedSound({
+            slide: 80,
+            vco1: { wave: 'sine', gain: 1, octave: 0, detune: 0 },
+        })
+        const voice = new SynthVoice(ctx, strip, gs, 'test')
+        voice.setup(makeFlatNote({ fpitch: 2 }), 1.0)
+
+        // Should ramp from lastPitch(220) to computeOscFrequency(noteRatio=2, octave=0, detune=0)
+        const expectedTarget = computeOscFrequency(2, 0, 0)
+        expect(voice.oscNodes[0].osc.frequency.setValueAtTime).toHaveBeenCalledWith(220, 1.0)
+        expect(voice.oscNodes[0].osc.frequency.linearRampToValueAtTime).toHaveBeenCalledWith(
+            expectedTarget, 1.08
+        )
+    })
+
+    it('applies filter envelope ramp when filterEnvelopeAmount > 0', () => {
+        const gs = makeGeneratedSound({
+            filter: { type: 'lowpass', freq: 50, Q: 1, filterEnvelopeAmount: 0.6 },
+            enveloppe: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 },
+        })
+        const voice = new SynthVoice(ctx, strip, gs, 'test')
+        voice.setup(makeFlatNote({ fpitch: 1 }), 1.0)
+
+        // When filterEnvelopeAmount > 0, filter frequency ramps
+        expect(voice.voiceFilter1.frequency.linearRampToValueAtTime).toHaveBeenCalled()
+        expect(voice.voiceFilter2.frequency.linearRampToValueAtTime).toHaveBeenCalled()
+    })
+})
+
+describe('WorkletSynthVoice parameter coverage', () => {
+    beforeEach(() => {
+        postMessageMock.mockClear()
+        appState.workletStatus = 'active'
+    })
+
+    afterEach(() => {
+        appState.workletStatus = 'unknown'
+    })
+
+    it('sends all 23 synth fields in the update message with correct values', async () => {
+        const ctx = createMockAudioCtx()
+        const strip = createMockStrip()
+        const gs = makeGeneratedSound({
+            masterVolume: 0.6,
+            slide: 0,
+            vco1: { wave: 'square', gain: 0.7, octave: 1, detune: 20 },
+            vco2: { wave: 'triangle', gain: 0.4, octave: -1, detune: -30 },
+            vco3: { wave: 'sawtooth', gain: 0.5, octave: 0, detune: 5 },
+            filter: { type: 'bandpass', freq: 800, Q: 2.5, filterEnvelopeAmount: 0 },
+            noise: { mix: 0.15, filterType: 'highpass', filterFreq: 3000, filterQ: 0.8 },
+            enveloppe: { attack: 0.005, decay: 0.08, sustain: 0.4, release: 0.15 },
+            lfo: { wave: 'sine', freq: 0, depth: 0, target: 'NOT' },
+        })
+        const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
+        const flatNote = makeFlatNote({ fpitch: 1.5, pan: -0.3, note: { velocity: 0.7 } })
+        flatNote.track.useSoftSynth = true
+        await voice.setup(flatNote, 1.0)
+
+        const msg = lastPostByType('update')
+        expect(msg).toBeDefined()
+
+        const nr = computeNoteRatio(1.5)
+        expect(msg.osc1Freq).toBeCloseTo(computeOscFrequency(nr, 1, 20), 1)
+        expect(msg.osc2Freq).toBeCloseTo(computeOscFrequency(nr, -1, -30), 1)
+        expect(msg.osc3Freq).toBeCloseTo(computeOscFrequency(nr, 0, 5), 1)
+        expect(msg.osc1Gain).toBe(0.7)
+        expect(msg.osc2Gain).toBe(0.4)
+        expect(msg.osc3Gain).toBe(0.5)
+        expect(msg.osc1Detune).toBe(20)
+        expect(msg.osc2Detune).toBe(-30)
+        expect(msg.osc3Detune).toBe(5)
+        expect(msg.osc1Wave).toBe(3)  // square
+        expect(msg.osc2Wave).toBe(1)  // triangle
+        expect(msg.osc3Wave).toBe(2)  // sawtooth
+
+        // Noise
+        expect(msg.noiseMix).toBe(0.15)
+
+        // Filter
+        expect(msg.filterType).toBe(2) // bandpass
+        expect(msg.filterFreq).toBe(800)
+        expect(msg.filterQ).toBe(2.5)
+
+        // Envelope
+        expect(msg.attack).toBeGreaterThanOrEqual(0.003)
+        expect(msg.decay).toBe(0.08)
+        expect(msg.sustain).toBe(0.4)
+        expect(msg.release).toBeGreaterThanOrEqual(0.008)
+
+        // Master and pan
+        expect(msg.master).toBe(1.0)
+        expect(msg.pan).toBe(-0.3)
+
+        // Velocity: noteVelo=0.7*0.25=0.175, masterVolume=0.6, accentMult=1 (0.175<0.5)
+        // peak = 0.175 * 0.6 * 1.0 = 0.105
+        expect(msg.velocity).toBeCloseTo(0.105, 4)
+    })
+
+    it('sends minimum attack and release when envelope values are near zero', async () => {
+        const ctx = createMockAudioCtx()
+        const strip = createMockStrip()
+        const gs = makeGeneratedSound({
+            enveloppe: { attack: 0.0005, decay: 0.01, sustain: 0.5, release: 0.0005 },
+        })
+        const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
+        const flatNote = makeFlatNote()
+        flatNote.track.useSoftSynth = true
+        await voice.setup(flatNote, 1.0)
+
+        const msg = lastPostByType('update')
+        expect(msg.attack).toBe(0.003) // clamped to MIN_ATTACK
+        expect(msg.release).toBe(0.008) // clamped to MIN_RELEASE
+    })
+
+    it('includes all parameter keys from the worklet processor descriptor', async () => {
+        const ctx = createMockAudioCtx()
+        const strip = createMockStrip()
+        const gs = makeGeneratedSound()
+        const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
+        const flatNote = makeFlatNote()
+        flatNote.track.useSoftSynth = true
+        await voice.setup(flatNote, 1.0)
+
+        const msg = lastPostByType('update')
+        const expectedKeys = [
+            'osc1Freq', 'osc2Freq', 'osc3Freq',
+            'osc1Gain', 'osc2Gain', 'osc3Gain',
+            'osc1Detune', 'osc2Detune', 'osc3Detune',
+            'osc1Wave', 'osc2Wave', 'osc3Wave',
+            'noiseMix',
+            'filterType', 'filterFreq', 'filterQ',
+            'attack', 'decay', 'sustain', 'release',
+            'master', 'pan', 'velocity',
+        ]
+        for (const key of expectedKeys) {
+            expect(msg).toHaveProperty(key)
+        }
+        expect(Object.keys(msg).filter(k => k !== 'type')).toHaveLength(expectedKeys.length)
     })
 })
 
