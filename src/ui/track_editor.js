@@ -380,39 +380,37 @@ export default class TrackEditor extends BasePanel {
                         <label style="min-width:24px;margin-right:8px">${fx.label}</label>
                     </div>`
 
-            if (on) {
-                fx.controls.forEach(ck => {
-                    const prop = GROUPS.flatMap(g => g.props).find(p => p.key === ck)
-                    if (!prop) return
-                    const val = this._track[ck]
-                    if (prop.type === 'select') {
-                        html += `<div class="ne-row" data-prop="${ck}">
-                            <label style="min-width:20px">${prop.label}</label>
-                            <select data-key="${ck}">`
-                        prop.options.forEach((opt, idx2) => {
-                            const label = prop.labels ? prop.labels[idx2] : opt
-                            const sel = String(opt) === String(val) ? ' selected' : ''
-                            html += `<option value="${opt}"${sel}>${label}</option>`
-                        })
-                        html += `</select></div>`
-                    } else {
-                        const s = new OrSlider({
-                            key: ck,
-                            label: prop.label,
-                            min: prop.min,
-                            max: prop.max,
-                            step: prop.step,
-                            value: val ?? prop.min,
-                            onChange: (v, key) => {
-                                this._track[key] = v
-                                playbackEvents.dispatchTrackParamChange(this._track)
-                            }
-                        })
-                        this._sliders.set(ck, s)
-                        html += s.toHTML()
-                    }
-                })
-            }
+            fx.controls.forEach(ck => {
+                const prop = GROUPS.flatMap(g => g.props).find(p => p.key === ck)
+                if (!prop) return
+                const val = this._track[ck]
+                if (prop.type === 'select') {
+                    html += `<div class="ne-row" data-prop="${ck}">
+                        <label style="min-width:20px">${prop.label}</label>
+                        <select data-key="${ck}">`
+                    prop.options.forEach((opt, idx2) => {
+                        const label = prop.labels ? prop.labels[idx2] : opt
+                        const sel = String(opt) === String(val) ? ' selected' : ''
+                        html += `<option value="${opt}"${sel}>${label}</option>`
+                    })
+                    html += `</select></div>`
+                } else {
+                    const s = new OrSlider({
+                        key: ck,
+                        label: prop.label,
+                        min: prop.min,
+                        max: prop.max,
+                        step: prop.step,
+                        value: val ?? prop.min,
+                        onChange: (v, key) => {
+                            this._track[key] = v
+                            playbackEvents.dispatchTrackParamChange(this._track)
+                        }
+                    })
+                    this._sliders.set(ck, s)
+                    html += s.toHTML()
+                }
+            })
 
             html += `</div></div>`
         })
