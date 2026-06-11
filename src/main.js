@@ -275,7 +275,6 @@ function getSelectedPattern() {
 function toggleTrackMute(trackIndex) {
     const track = getSelectedPattern()?.tracks?.[trackIndex]
     if (track) {
-        // serviceRegistry.mfUpdates.trackToggleMute(track)
         track.mute = !track.mute;
     }
 }

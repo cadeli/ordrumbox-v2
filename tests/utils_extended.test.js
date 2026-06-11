@@ -26,22 +26,6 @@ describe('Utils – extended coverage', () => {
         })
     })
 
-    // ── normalizeTrackFilterQValue ────────────────────────────────────
-
-    describe('normalizeTrackFilterQValue', () => {
-        it('returns 0.707 for non-finite input', () => {
-            expect(Utils.normalizeTrackFilterQValue(NaN)).toBe(0.707)
-            expect(Utils.normalizeTrackFilterQValue(undefined)).toBe(0.707)
-        })
-        it('converts normalised Q (<=1) via normalizedTrackFilterQToValue', () => {
-            const v = Utils.normalizeTrackFilterQValue(0.5)
-            expect(v).toBe(Utils.normalizedTrackFilterQToValue(0.5))
-        })
-        it('returns raw value when > 1', () => {
-            expect(Utils.normalizeTrackFilterQValue(5)).toBe(5)
-        })
-    })
-
     // ── normalizeSynthFilterFreqValue ─────────────────────────────────
 
     describe('normalizeSynthFilterFreqValue', () => {

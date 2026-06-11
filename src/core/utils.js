@@ -230,7 +230,6 @@ static TAG = "UTILS"
         // console.log("Status:", message)
     }
 
-    static pitchToSemiTone = (fpitch) => (fpitch - 1) * 12;
     static semiToneToPitch = (semiTone) => (semiTone / 12) + 1;
 
     static normalizedTrackFilterFreqToHz = (value) => {
@@ -256,17 +255,6 @@ static TAG = "UTILS"
         }
         if (numericValue <= 1) {
             return Utils.normalizedTrackFilterFreqToHz(numericValue)
-        }
-        return numericValue
-    }
-
-    static normalizeTrackFilterQValue = (value) => {
-        const numericValue = Number(value)
-        if (!Number.isFinite(numericValue)) {
-            return 0.707
-        }
-        if (numericValue <= 1) {
-            return Utils.normalizedTrackFilterQToValue(numericValue)
         }
         return numericValue
     }

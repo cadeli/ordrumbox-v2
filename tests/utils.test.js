@@ -37,25 +37,6 @@ describe('Utils', () => {
         it('semitoneToPitch: -12 → 0', () => {
             expect(Utils.semiToneToPitch(-12)).toBe(0)
         })
-
-        it('pitchToSemiTone: 1 → 0', () => {
-            expect(Utils.pitchToSemiTone(1)).toBe(0)
-        })
-
-        it('pitchToSemiTone: 2 → 12', () => {
-            expect(Utils.pitchToSemiTone(2)).toBe(12)
-        })
-
-        it('pitchToSemiTone: 0.5 → -6', () => {
-            expect(Utils.pitchToSemiTone(0.5)).toBe(-6)
-        })
-
-        it('roundtrip: semitone → pitch → semitone', () => {
-            for (const st of [-12, -6, 0, 6, 12, 24]) {
-                const pitch = Utils.semiToneToPitch(st)
-                expect(Utils.pitchToSemiTone(pitch)).toBeCloseTo(st, 10)
-            }
-        })
     })
 
     describe('getStepSpacing', () => {
@@ -131,20 +112,6 @@ describe('Utils', () => {
             it('invalid value → 20', () => {
                 expect(Utils.normalizeTrackFilterFreqValue('abc')).toBe(20)
                 expect(Utils.normalizeTrackFilterFreqValue(NaN)).toBe(20)
-            })
-        })
-
-        describe('normalizeTrackFilterQValue', () => {
-            it('value <= 1 → converts', () => {
-                expect(Utils.normalizeTrackFilterQValue(0)).toBe(0.707)
-            })
-
-            it('value > 1 → returns as-is', () => {
-                expect(Utils.normalizeTrackFilterQValue(5)).toBe(5)
-            })
-
-            it('invalid value → 0.707', () => {
-                expect(Utils.normalizeTrackFilterQValue('abc')).toBe(0.707)
             })
         })
     })

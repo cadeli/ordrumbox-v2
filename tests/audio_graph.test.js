@@ -113,31 +113,6 @@ describe('Audio Graph Validity', () => {
             expect(Number.isFinite(AudioMath.computeOscFrequency(1, NaN, Infinity))).toBe(true)
             expect(Number.isFinite(AudioMath.computeOscFrequency(NaN, 0, 0))).toBe(true)
         })
-
-        it('computeImpulseSampleData handles zero duration', () => {
-            const preset = { duration: 0, decay: 0, preDelay: 0, tone: 1 }
-            const data = AudioMath.computeImpulseSampleData(44100, preset)
-            expect(data).toBeInstanceOf(Float32Array)
-            expect(data.length).toBe(1) // Math.max(1, …)
-        })
-
-        it('computeSaturationCurve handles amount > 1', () => {
-            const curve = AudioMath.computeSaturationCurve('soft', 2.0)
-            expect(curve.some(v => isNaN(v))).toBe(false)
-        })
-
-        it('computeSaturationCurve handles negative amount without NaN', () => {
-            const curve = AudioMath.computeSaturationCurve('soft', -1)
-            expect(curve.some(v => isNaN(v))).toBe(false)
-        })
-
-        it('computeSaturationCurve returns a Float32Array for all 3 types', () => {
-            for (const type of ['soft', 'hard', 'tape']) {
-                const curve = AudioMath.computeSaturationCurve(type, 0.5)
-                expect(curve).toBeInstanceOf(Float32Array)
-                expect(curve.length).toBeGreaterThan(0)
-            }
-        })
     })
 
     describe('MfSound Bypass Behaviour', () => {

@@ -74,9 +74,6 @@ export const MfGlobals = {
     get mfPatterns() { return serviceRegistry.mfPatterns },
     set mfPatterns(v) { serviceRegistry.mfPatterns = v },
 
-    get mfUpdates() { return serviceRegistry.mfUpdates },
-    set mfUpdates(v) { serviceRegistry.mfUpdates = v },
-
     get midiManager() { return serviceRegistry.midiManager },
     set midiManager(v) { serviceRegistry.midiManager = v },
 

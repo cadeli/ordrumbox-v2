@@ -2,20 +2,12 @@ export class ServiceRegistry {
     constructor() {
         this.mfCmd = null
         this.mfPatterns = null
-        this.mfUpdates = null
         this.midiManager = null
         this.mfResourcesLoader = null
         this.mfSeq = null
-        this.mfSkelHtml = null
-        this.mfComponents = null
-        this.mfSliderBox = null
-        this.mfRotativeBtn = null
-        this.mfSliderBtn = null
         this.mfAutoGenerate = null
         this.mfAutoAssign = null
         this.mfWavExporter = null
-        this.patternsDropBox = null
-        this.drumkitsDropBox = null
         this.audioCtx = null
         this.audioEngine = null
         this.transport = null
@@ -25,20 +17,12 @@ export class ServiceRegistry {
     reset() {
         this.mfCmd = null
         this.mfPatterns = null
-        this.mfUpdates = null
         this.midiManager = null
         this.mfResourcesLoader = null
         this.mfSeq = null
-        this.mfSkelHtml = null
-        this.mfComponents = null
-        this.mfSliderBox = null
-        this.mfRotativeBtn = null
-        this.mfSliderBtn = null
         this.mfAutoGenerate = null
         this.mfAutoAssign = null
         this.mfWavExporter = null
-        this.patternsDropBox = null
-        this.drumkitsDropBox = null
         this.audioCtx = null
         this.audioEngine = null
         this.transport = null
