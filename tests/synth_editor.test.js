@@ -58,7 +58,6 @@ describe('SynthEditor sub-panel toolbar', () => {
 
         const toggles = Array.from(document.querySelectorAll('#soft-synth-panel .ne-group-accordion-toggle[data-toggle]'))
         expect(toggles.map(toggle => toggle.dataset.toggle)).toEqual([
-            'waveform',
             'master',
             'vco1',
             'vco2',

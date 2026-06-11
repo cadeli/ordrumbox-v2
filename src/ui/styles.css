@@ -490,7 +490,7 @@
     border: 1px solid #444; border-radius: 4px; background: #0d0d1a;
 }
 #soft-synth-panel .ss-body {
-    display: flex; flex-direction: row; gap: 14px;
+    display: flex; flex-direction: row; gap: 4px;
     align-items: flex-start; flex-wrap: wrap;
 }
 #soft-synth-panel .ss-group {
@@ -595,6 +595,9 @@
 #about-panel .ne-group.collapsed, 
 #soft-synth-panel .ss-group.collapsed {
     border-color: rgba(255, 255, 255, 0.03);
+    flex: 0 0 auto;
+    min-width: 0;
+    width: auto;
 }
 
 .ne-group-accordion-toggle {
@@ -610,6 +613,7 @@
     border: none !important;
     cursor: pointer !important;
     background: #111 !important;
+    color: #ccc !important;
     outline: none !important;
     box-sizing: border-box !important;
     flex-shrink: 0 !important;

@@ -140,17 +140,8 @@ export default class SynthEditor {
                 <button class="ne-btn" data-action="synth-cancel">Cancel</button>
             </div>
         </div>`
-        const waveformExpanded = this._groupVisibility['waveform'] ?? true
-        html += `<div class="ss-group ${waveformExpanded ? 'expanded' : 'collapsed'}" data-synth-group="waveform">
-                <button class="ne-group-accordion-toggle ${waveformExpanded ? 'active' : ''}" data-toggle="waveform" title="waveform">
-                    <span class="ne-group-accordion-icon">${waveformExpanded ? '&minus;' : '+'}</span>
-                    <span class="ne-group-accordion-label">Wave</span>
-                </button>
-                <div class="ne-group-content">
-                    <div class="ss-canvas-wrap">
-                        <canvas id="ss-waveform" width="600" height="120"></canvas>
-                    </div>
-                </div>
+        html += `<div class="ss-canvas-wrap">
+                <canvas id="ss-waveform" width="600" height="120"></canvas>
             </div>
         <div class="ss-body">`
 
