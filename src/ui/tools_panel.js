@@ -3,6 +3,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { PatternExporter } from '../patterns/exporter.js'
+import { escapeHtml } from './panel_helpers.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { isMidiSupported } from '../logic/midi/parser.js'
@@ -248,7 +249,7 @@ export default class ToolsPanel extends BasePanel {
             // Only update if list changed or empty
             if (outputSelect.options.length !== outputs.length) {
                 outputSelect.innerHTML = outputs.map(o => 
-                    `<option value="${o.id}" ${o.id === currentOutputId ? 'selected' : ''}>${o.name || 'Unknown'}</option>`
+                    `<option value="${escapeHtml(o.id)}" ${o.id === currentOutputId ? 'selected' : ''}>${escapeHtml(o.name || 'Unknown')}</option>`
                 ).join('')
             } else {
                 outputSelect.value = currentOutputId || ''

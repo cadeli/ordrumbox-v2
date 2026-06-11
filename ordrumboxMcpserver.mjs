@@ -458,7 +458,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
       const data = await readFile(patternsPath, 'utf-8');
-      const patterns = JSON.parse(data);
+      let patterns;
+      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
       patterns.push(pattern);
       await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns));
 
@@ -469,14 +470,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (toolName === "addExtendedNotesToPattern") {
       const { patternName, notes: notesArg, barQuantize } = args;
-      const notes = typeof notesArg === 'string' ? JSON.parse(notesArg) : notesArg;
+      let notes;
+      try {
+        notes = typeof notesArg === 'string' ? JSON.parse(notesArg) : notesArg;
+      } catch (e) {
+        throw new Error(`Invalid JSON in 'notes' argument: ${e.message}`);
+      }
       const bq = Number(barQuantize) || 4;
       const loopStep = bq;
       let pattern = findPatternByName(patternName);
       if (!pattern) {
         const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
         const data = await readFile(patternsPath, 'utf-8');
-        const patterns = JSON.parse(data);
+        let patterns;
+        try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
         const sourcePattern = patterns.find(p => p.name === patternName);
         if (sourcePattern) {
           const mfCmd = new MfCmd();
@@ -502,7 +509,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
       const data = await readFile(patternsPath, 'utf-8');
-      const patterns = JSON.parse(data);
+      let patterns;
+      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
       const idx = patterns.findIndex(p => p.name === patternName);
       if (idx >= 0) {
         patterns[idx] = pattern;
@@ -516,7 +524,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (toolName === "addNotesToPattern") {
       const { patternName, notes: notesArg } = args;
-      const notes = typeof notesArg === 'string' ? JSON.parse(notesArg) : notesArg;
+      let notes;
+      try {
+        notes = typeof notesArg === 'string' ? JSON.parse(notesArg) : notesArg;
+      } catch (e) {
+        throw new Error(`Invalid JSON in 'notes' argument: ${e.message}`);
+      }
       
       const pattern = await loadPatternFromJson(patternName);
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
@@ -564,7 +577,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
       const data = await readFile(patternsPath, 'utf-8');
-      const patterns = JSON.parse(data);
+      let patterns;
+      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
       const idx = patterns.findIndex(p => p.name === patternName);
       if (idx >= 0) {
         patterns[idx] = pattern;
@@ -752,7 +766,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   if (!pattern) {
     const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
     const data = await readFile(patternsPath, 'utf-8');
-    const patterns = JSON.parse(data);
+    let patterns;
+    try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
     const sourcePattern = patterns.find(p => p.name === patternName);
     if (sourcePattern) {
       const mfCmd = new MfCmd();
@@ -765,7 +780,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function updatePatternInIndex(pattern) {
   const patternsPath = resolve(__dirname, 'public/assets/data/patterns.json');
   const data = await readFile(patternsPath, 'utf-8');
-  const patterns = JSON.parse(data);
+  let patterns;
+  try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
   const idx = patterns.findIndex(p => p.name === pattern.name);
   if (idx >= 0) {
     patterns[idx] = pattern;
@@ -856,8 +872,7 @@ if (toolName === "setPatternBpm") {
         text: JSON.stringify({
           status: "error",
           tool: request.params.name,
-          message: error.message,
-          stack: error.stack
+          message: error.message
         }, null, 2)
       }]
     };
