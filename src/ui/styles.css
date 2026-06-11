@@ -163,11 +163,16 @@
 #pattern-panel .pp-cell.filled { 
     background: #ff2a6d; 
     box-shadow: 0 0 10px rgba(255, 42, 109, 0.7), inset 0 0 5px rgba(255,255,255,0.5);
-    border: 1px solid #fff;
+    border: 1px solid transparent;
     z-index: 2;
 }
-#pattern-panel .pp-cell.selected { outline: 4px solid #fff; outline-offset: -2px; z-index: 10; background: rgba(0, 255, 245, 0.25); }
-#pattern-panel .pp-cell.selected.filled { outline: 5px solid #fff; }
+#pattern-panel .pp-cell.selected { outline: 4px solid #fff; outline-offset: -2px; z-index: 10; }
+#pattern-panel .pp-cell.selected.filled { outline: 5px solid #fff; border-color: #fff; }
+#pattern-panel .pp-pitch-bar {
+    position: absolute; left: 0; width: 25%; height: 1px;
+    background: rgba(255,255,255,0.35); border-radius: 1px; pointer-events: none;
+    z-index: 3;
+}
 #pattern-panel .pp-cell.pp-loop {
     border-right: 4px solid #00fff5;
     box-shadow: inset -8px 0 0 rgba(0, 255, 245, 0.15);

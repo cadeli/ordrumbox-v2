@@ -604,7 +604,14 @@ export default class PatternPanel extends BasePanel {
                             return `<div class="${cls}" style="left: ${offset * 100}%"></div>`
                         }).join('')
 
-                        cellsHtml += `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}${cellStyle}>${ghosts}</div>`
+                        let pitchIndicator = ''
+                        if (note) {
+                            const pitch = note.pitch ?? 0
+                            const pct = ((pitch + 24) / 48) * 100
+                            pitchIndicator = `<div class="pp-pitch-bar" style="bottom:${pct.toFixed(1)}%"></div>`
+                        }
+
+                        cellsHtml += `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}${cellStyle}>${ghosts}${pitchIndicator}</div>`
                     }
                 }
                 barsHtml += `<div class="pp-bar" data-bar="${b}">${cellsHtml}</div>`
