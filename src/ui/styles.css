@@ -482,9 +482,6 @@
     color: #e94560; font-weight: bold; font-size: 14px;
     white-space: nowrap;
 }
-#soft-synth-panel .ss-toggles {
-    margin-left: 0; margin-right: 0; flex-wrap: wrap;
-}
 #soft-synth-panel .ss-actions {
     display: flex; gap: 6px; margin-left: auto;
 }
@@ -497,11 +494,7 @@
     align-items: flex-start; flex-wrap: wrap;
 }
 #soft-synth-panel .ss-group {
-    border-left: 1px solid #444; padding-left: 12px;
     min-width: 210px; flex: 0 0 auto;
-}
-#soft-synth-panel .ss-group:first-child {
-    border-left: none; padding-left: 0;
 }
 #soft-synth-panel .ss-group-label {
     color: #e94560; font-size: 10px; text-transform: uppercase;

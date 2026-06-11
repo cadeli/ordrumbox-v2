@@ -111,12 +111,12 @@ describe('Soft Synth Editor display', () => {
         expect(title.textContent).toContain('BASS1')
     })
 
-    it('renders the group toggle toolbar (one button per group)', () => {
+    it('renders accordion toggles (one per group)', () => {
         trackEditor.synthEditor.openEditor()
-        const toggles = document.querySelectorAll('#soft-synth-panel .ss-toggles .ne-toggle')
+        const toggles = document.querySelectorAll('#soft-synth-panel .ne-group-accordion-toggle[data-toggle]')
         expect(toggles.length).toBeGreaterThanOrEqual(Object.keys(SAMPLE_DRAFT).length)
 
-        const labels = Array.from(toggles).map(t => t.textContent.trim())
+        const labels = Array.from(toggles).map(t => t.querySelector('.ne-group-accordion-label')?.textContent.trim())
         expect(labels).toContain('Master')
         expect(labels).toContain('Flt')
         expect(labels).toContain('Env')

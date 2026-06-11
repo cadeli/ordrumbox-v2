@@ -53,11 +53,12 @@ describe('SynthEditor sub-panel toolbar', () => {
         editor.createDOM()
     })
 
-    it('renders one toggle per synth group and hides the matching group', () => {
+    it('renders one toggle per synth group and collapses on click', () => {
         editor.openEditor()
 
-        const toggles = Array.from(document.querySelectorAll('#soft-synth-panel .ne-toggle[data-toggle]'))
+        const toggles = Array.from(document.querySelectorAll('#soft-synth-panel .ne-group-accordion-toggle[data-toggle]'))
         expect(toggles.map(toggle => toggle.dataset.toggle)).toEqual([
+            'waveform',
             'master',
             'vco1',
             'vco2',
@@ -69,11 +70,12 @@ describe('SynthEditor sub-panel toolbar', () => {
         ])
 
         const masterGroup = document.querySelector('#soft-synth-panel [data-synth-group="master"]')
-        expect(masterGroup.style.display).toBe('')
+        expect(masterGroup.classList.contains('expanded')).toBe(true)
 
-        toggles[0].click()
-        expect(toggles[0].classList.contains('active')).toBe(false)
-        expect(masterGroup.style.display).toBe('none')
+        const masterToggle = toggles.find(t => t.dataset.toggle === 'master')
+        masterToggle.click()
+        expect(masterToggle.classList.contains('active')).toBe(false)
+        expect(masterGroup.classList.contains('collapsed')).toBe(true)
     })
 
     it('keeps OK and Cancel in the toolbar and preserves save/cancel behavior', () => {

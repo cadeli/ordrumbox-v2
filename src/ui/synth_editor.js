@@ -135,11 +135,6 @@ export default class SynthEditor {
         this._ensureGroupVisibility(groupNames)
         let html = `<div class="ss-header">
             <span class="ss-title">Soft Synth: ${this._esc(this._editKey)}</span>
-            <div class="ss-toggles" style="display: none">
-                ${groupNames.map(groupName => `
-                    <button class="ne-toggle ${this._groupVisibility[groupName] ? 'active' : ''}" data-toggle="${this._esc(groupName)}">${this._esc(this._getGroupLabel(groupName))}</button>
-                `).join('')}
-            </div>
             <div class="ss-actions">
                 <button class="ne-btn active" data-action="synth-ok">OK</button>
                 <button class="ne-btn" data-action="synth-cancel">Cancel</button>
@@ -247,32 +242,21 @@ export default class SynthEditor {
     }
 
     _getOrderedGroupNames() {
-        const names = Object.keys(this._draft)
-        const mergedNames = []
-        const seen = new Set()
-        for (const name of names) {
-            let parent = null
-            for (const [groupName, keys] of Object.entries(SYNTH_GROUP_MERGE)) {
-                if (keys.includes(name)) {
-                    parent = groupName
-                    break
-                }
-            }
-            if (parent) {
-                if (!seen.has(parent)) {
-                    mergedNames.push(parent)
-                    seen.add(parent)
-                }
-            } else {
-                mergedNames.push(name)
-            }
+        const mergedKeys = new Set(Object.values(SYNTH_GROUP_MERGE).flat())
+        const draftKeys = Object.keys(this._draft)
+        const allGroups = new Set(SYNTH_GROUP_ORDER)
+        for (const [group, keys] of Object.entries(SYNTH_GROUP_MERGE)) {
+            if (keys.some(k => draftKeys.includes(k))) allGroups.add(group)
         }
-        return mergedNames.sort((a, b) => {
-            const aIndex = SYNTH_GROUP_ORDER.indexOf(a)
-            const bIndex = SYNTH_GROUP_ORDER.indexOf(b)
-            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
-            if (aIndex !== -1) return -1
-            if (bIndex !== -1) return 1
+        for (const name of draftKeys) {
+            if (!mergedKeys.has(name)) allGroups.add(name)
+        }
+        return [...allGroups].sort((a, b) => {
+            const ai = SYNTH_GROUP_ORDER.indexOf(a)
+            const bi = SYNTH_GROUP_ORDER.indexOf(b)
+            if (ai !== -1 && bi !== -1) return ai - bi
+            if (ai !== -1) return -1
+            if (bi !== -1) return 1
             return a.localeCompare(b)
         })
     }
@@ -375,7 +359,6 @@ export default class SynthEditor {
 
         ctx.fillStyle = '#0d0d1a'
         ctx.fillRect(0, 0, w, h)
-
         ctx.strokeStyle = '#333'
         ctx.lineWidth = 1
         ctx.beginPath()
@@ -383,6 +366,11 @@ export default class SynthEditor {
         ctx.lineTo(w, mid)
         ctx.stroke()
 
+        this._drawOscillators(ctx, w, mid)
+        this._drawAdsrEnvelope(ctx, w, mid)
+    }
+
+    _drawOscillators(ctx, w, mid) {
         const draft = this._draft
         const vcos = [
             { wave: draft.vco1?.wave || 'sine', gain: draft.vco1?.gain ?? 1, octave: draft.vco1?.octave ?? 0, detune: draft.vco1?.detune ?? 0 },
@@ -394,7 +382,6 @@ export default class SynthEditor {
         const cycles = 4
         const sampleRate = 1024
         const samplesPerCycle = Math.floor(sampleRate / cycles)
-
         const mix = new Float32Array(sampleRate)
 
         vcos.forEach(vco => {
@@ -403,13 +390,14 @@ export default class SynthEditor {
             for (let i = 0; i < sampleRate; i++) {
                 const t = i / sampleRate
                 const phase = (t * cycles * freqMult * samplesPerCycle) % samplesPerCycle
+                const p = phase / samplesPerCycle
                 let val = 0
                 switch (vco.wave) {
-                    case 'sine': val = Math.sin(2 * Math.PI * phase / samplesPerCycle); break
-                    case 'square': val = Math.sin(2 * Math.PI * phase / samplesPerCycle) >= 0 ? 1 : -1; break
-                    case 'sawtooth': val = 2 * (phase / samplesPerCycle) - 1; break
-                    case 'triangle': val = 4 * Math.abs(phase / samplesPerCycle - 0.5) - 1; break
-                    default: val = Math.sin(2 * Math.PI * phase / samplesPerCycle)
+                    case 'sine': val = Math.sin(2 * Math.PI * p); break
+                    case 'square': val = Math.sin(2 * Math.PI * p) >= 0 ? 1 : -1; break
+                    case 'sawtooth': val = 2 * p - 1; break
+                    case 'triangle': val = 4 * Math.abs(p - 0.5) - 1; break
+                    default: val = Math.sin(2 * Math.PI * p)
                 }
                 mix[i] += val * vco.gain
             }
@@ -435,19 +423,20 @@ export default class SynthEditor {
             else ctx.lineTo(x, y)
         }
         ctx.stroke()
+    }
 
+    _drawAdsrEnvelope(ctx, w, mid) {
+        const draft = this._draft
         const attack = draft.enveloppe?.attack ?? 0
         const decay = draft.enveloppe?.decay ?? 0.12
         const sustain = draft.enveloppe?.sustain ?? 1
         const release = draft.enveloppe?.release ?? 0.05
         const totalTime = Math.max(attack + decay + 0.3 + release, 0.5)
 
-        ctx.beginPath()
-        ctx.strokeStyle = '#e94560'
-        ctx.lineWidth = 2
-        ctx.setLineDash([4, 4])
+        const scaleX = (t) => (t / totalTime) * w
+        const scaleY = (v) => mid - v * (mid - 4)
 
-        const adsrPoints = [
+        const pts = [
             { t: 0, v: 0 },
             { t: attack, v: 1 },
             { t: attack + decay, v: sustain },
@@ -455,21 +444,22 @@ export default class SynthEditor {
             { t: totalTime, v: 0 }
         ]
 
-        const scaleX = (t) => (t / totalTime) * w
-        const scaleY = (v) => mid - v * (mid - 4)
-
-        ctx.moveTo(scaleX(adsrPoints[0].t), scaleY(adsrPoints[0].v))
-        for (let i = 1; i < adsrPoints.length; i++) {
-            ctx.lineTo(scaleX(adsrPoints[i].t), scaleY(adsrPoints[i].v))
+        ctx.beginPath()
+        ctx.strokeStyle = '#e94560'
+        ctx.lineWidth = 2
+        ctx.setLineDash([4, 4])
+        ctx.moveTo(scaleX(pts[0].t), scaleY(pts[0].v))
+        for (let i = 1; i < pts.length; i++) {
+            ctx.lineTo(scaleX(pts[i].t), scaleY(pts[i].v))
         }
         ctx.stroke()
         ctx.setLineDash([])
 
         ctx.fillStyle = 'rgba(233, 69, 96, 0.15)'
         ctx.beginPath()
-        ctx.moveTo(scaleX(adsrPoints[0].t), scaleY(adsrPoints[0].v))
-        for (let i = 1; i < adsrPoints.length; i++) {
-            ctx.lineTo(scaleX(adsrPoints[i].t), scaleY(adsrPoints[i].v))
+        ctx.moveTo(scaleX(pts[0].t), scaleY(pts[0].v))
+        for (let i = 1; i < pts.length; i++) {
+            ctx.lineTo(scaleX(pts[i].t), scaleY(pts[i].v))
         }
         ctx.closePath()
         ctx.fill()
