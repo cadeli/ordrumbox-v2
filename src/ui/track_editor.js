@@ -69,6 +69,7 @@ export default class TrackEditor extends BasePanel {
         this._selectedPropKey = null
         this._rafId = null
         this._isDragging = false
+        this._activeFxTab = 0
         this._sliders = new Map()
         this.synthEditor = new SynthEditor(this)
     }
@@ -363,7 +364,7 @@ export default class TrackEditor extends BasePanel {
 
         if (isExpanded) {
             fxDefs.forEach((fx, i) => {
-                const activeClass = i === 0 ? ' active' : ''
+                const activeClass = i === this._activeFxTab ? ' active' : ''
                 html += `<button class="fx-tab-btn${activeClass}" data-fx-tab="${i}" title="${fx.label}">${i + 1}</button>`
             })
         }
@@ -373,7 +374,7 @@ export default class TrackEditor extends BasePanel {
         fxDefs.forEach((fx, idx) => {
             const on = this._isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
-            const hiddenStyle = idx > 0 && isExpanded ? ' style="display:none"' : ''
+            const hiddenStyle = idx !== this._activeFxTab && isExpanded ? ' style="display:none"' : ''
 
             html += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">
                 <div class="ne-grid">
@@ -723,11 +724,12 @@ export default class TrackEditor extends BasePanel {
     }
 
     _onFxTab(btn) {
-        const tabIdx = btn.dataset.fxTab
+        const tabIdx = parseInt(btn.dataset.fxTab, 10)
+        this._activeFxTab = tabIdx
         this.container.querySelectorAll('.fx-tab-btn').forEach(b => b.classList.remove('active'))
         btn.classList.add('active')
         this.container.querySelectorAll('.fx-tab-panel').forEach(p => {
-            p.style.display = p.dataset.fxPanel === tabIdx ? '' : 'none'
+            p.style.display = p.dataset.fxPanel === String(tabIdx) ? '' : 'none'
         })
     }
 
