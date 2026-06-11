@@ -349,6 +349,7 @@
     border-radius: 4px;
     padding: 8px;
     margin-left: 10px;
+    flex-direction: column !important;
 }
 #ne-panel .ne-group:first-child, #te-panel .ne-group:first-child, #tools-panel .ne-group:first-child, #output-panel .ne-group:first-child, #about-panel .ne-group:first-child { border-left: none; padding-left: 0; }
 #ne-panel .ne-group-label, #te-panel .ne-group-label, #tools-panel .ne-group-label, #output-panel .ne-group-label, #about-panel .ne-group-label {

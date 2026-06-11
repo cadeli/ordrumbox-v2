@@ -572,37 +572,37 @@ export default class TrackEditor extends BasePanel {
         
         const ledClass = lfo ? 'lfo-led on' : 'lfo-led'
         const ledTitle = lfo ? 'Disable LFO' : 'Enable LFO'
+        const freq = lfo ? lfo.freq : 1
+        const min = lfo ? lfo.min : prop.min
+        const max = lfo ? lfo.max : prop.max
+        const phase = lfo ? lfo.phase : 0
         let lfoHtml = `<div class="ne-group lfo-panel">
             <div class="lfo-header">
                 <button class="${ledClass}" data-action="toggle-lfo" title="${ledTitle}"></button>
                 <div class="ne-group-label">LFO: ${prop.label}</div>
             </div>
-            <div class="ne-grid">`
-        
-        if (lfo) {
-            lfoHtml += `<div class="ne-row">
+            <div class="ne-grid">
+            <div class="ne-row">
                 <label>Freq</label>
-                <input type="range" min="0.1" max="16" step="0.1" value="${lfo.freq}" data-lfo-key="freq">
-                <span class="ne-val">${fmt(lfo.freq)}</span>
-            </div>`
-            lfoHtml += `<div class="ne-row">
+                <input type="range" min="0.1" max="16" step="0.1" value="${freq}" data-lfo-key="freq">
+                <span class="ne-val">${fmt(freq)}</span>
+            </div>
+            <div class="ne-row">
                 <label>Range</label>
                 <div class="ne-range-container">
                     <input type="range" min="${prop.min}" max="${prop.max}" step="${prop.step}" 
-                        value="${lfo.min}" data-lfo-key="min" title="Min">
+                        value="${min}" data-lfo-key="min" title="Min">
                     <input type="range" min="${prop.min}" max="${prop.max}" step="${prop.step}" 
-                        value="${lfo.max}" data-lfo-key="max" title="Max">
+                        value="${max}" data-lfo-key="max" title="Max">
                 </div>
-                <span class="ne-val" style="min-width:60px">${fmt(lfo.min)}..${fmt(lfo.max)}</span>
-            </div>`
-            lfoHtml += `<div class="ne-row">
+                <span class="ne-val" style="min-width:60px">${fmt(min)}..${fmt(max)}</span>
+            </div>
+            <div class="ne-row">
                 <label>Phas</label>
-                <input type="range" min="0" max="1" step="0.01" value="${lfo.phase}" data-lfo-key="phase">
-                <span class="ne-val">${fmt(lfo.phase)}</span>
-            </div>`
-        }
-        
-        lfoHtml += `</div></div>`
+                <input type="range" min="0" max="1" step="0.01" value="${phase}" data-lfo-key="phase">
+                <span class="ne-val">${fmt(phase)}</span>
+            </div>
+            </div></div>`
         return lfoHtml
     }
 
@@ -754,8 +754,11 @@ export default class TrackEditor extends BasePanel {
     _onLfoSlider(input) {
         this._isDragging = true
         const prop = this._findProp(this._selectedPropKey)
-        const lfo = this._track[prop.lfo]
-        if (!lfo) return
+        let lfo = this._track[prop.lfo]
+        if (!lfo) {
+            lfo = this._track[prop.lfo] = { type: 'sine', freq: 1, min: prop.min, max: prop.max, phase: 0 }
+            this.sync()
+        }
         const key = input.dataset.lfoKey
         lfo[key] = parseFloat(input.value)
         
@@ -773,8 +776,11 @@ export default class TrackEditor extends BasePanel {
 
     _onLfoSelect(sel) {
         const prop = this._findProp(this._selectedPropKey)
-        const lfo = this._track[prop.lfo]
-        if (!lfo) return
+        let lfo = this._track[prop.lfo]
+        if (!lfo) {
+            lfo = this._track[prop.lfo] = { type: sel.value, freq: 1, min: prop.min, max: prop.max, phase: 0 }
+            this.sync()
+        }
         lfo.type = sel.value
         playbackEvents.dispatchTrackParamChange(this._track)
     }
