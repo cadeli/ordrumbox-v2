@@ -581,8 +581,12 @@ export default class PatternPanel extends BasePanel {
                         if (isBeyondTrack) cls.push('pp-cell-out')
                         
                         let trig = ''
+                        let cellStyle = ''
                         if (note) {
                             cls.push('filled')
+                            const vel = note.velocity ?? 0.8
+                            const alpha = 0.25 + vel * 0.75
+                            cellStyle = ` style="opacity:${alpha.toFixed(2)}"`
                             if ((note.triggerProbability ?? 1) < 1) {
                                 cls.push('pp-trig-rand')
                                 trig = String(Math.round(note.triggerProbability * 10))
@@ -600,7 +604,7 @@ export default class PatternPanel extends BasePanel {
                             return `<div class="${cls}" style="left: ${offset * 100}%"></div>`
                         }).join('')
 
-                        cellsHtml += `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}>${ghosts}</div>`
+                        cellsHtml += `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}${cellStyle}>${ghosts}</div>`
                     }
                 }
                 barsHtml += `<div class="pp-bar" data-bar="${b}">${cellsHtml}</div>`
