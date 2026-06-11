@@ -62,10 +62,10 @@ describe('Mobile Landscape UI Logic', () => {
         // but our logic hides basic, levels, filters, effects, sound, loop)
         
         const visibleGroups = document.querySelectorAll('.ne-group')
-        // Now basic, levels and loop are TRUE by default
-        expect(visibleGroups.length).toBe(3)
+        // All 6 groups are always rendered: basic, levels, filters, effects, sound, loop
+        expect(visibleGroups.length).toBe(6)
 
-        // 5. Verify the toggle buttons exist in the header
+        // 5. Verify the toggle buttons exist in the header (6: basic, levels, filters, effects, sound, loop)
         const toggles = document.querySelectorAll('.ne-toggle')
         expect(toggles.length).toBe(6)
         
@@ -74,7 +74,7 @@ describe('Mobile Landscape UI Logic', () => {
         expect(toggles[1].classList.contains('active')).toBe(true)
         expect(toggles[5].classList.contains('active')).toBe(true)
         
-        // filters (2), effects (3) and sound (4) should be INACTIVE
+        // filters (2), effects (3), sound (4) should be INACTIVE
         expect(toggles[2].classList.contains('active')).toBe(false)
         expect(toggles[3].classList.contains('active')).toBe(false)
         expect(toggles[4].classList.contains('active')).toBe(false)

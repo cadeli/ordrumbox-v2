@@ -419,7 +419,6 @@ export default class TrackEditor extends BasePanel {
     _renderSoundPanel(isExpanded) {
         const auto = this._track.useAutoAssignSound !== false
         const ledClass = auto ? 'lfo-led on' : 'lfo-led'
-        const visibility = auto ? 'display:none' : ''
         const generatedSoundKeys = this.synthEditor.getGeneratedSoundKeys()
         const currentGeneratedSound = this._track.useSoftSynth === true
             ? (this._track.synthSoundKey || 'BASS1')
@@ -436,8 +435,6 @@ export default class TrackEditor extends BasePanel {
         const currentSoundId = this._getCurrentSoundUrl()
         const matchingSounds = this._getSamplesForInstrument(currentName)
 
-        const hideInstrSample = auto || this._track.useSoftSynth === true
-
         let html = `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="sound">
             <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="sound" title="Sound">
                 <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
@@ -446,9 +443,9 @@ export default class TrackEditor extends BasePanel {
             <div class="ne-group-content">
                 <div class="ne-group-label">
                     <button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button>
-                    Sound
+                    autoassign
                 </div>
-                <div class="ne-grid" style="${hideInstrSample ? 'display:none' : ''}">
+                <div class="ne-grid">
                     <div class="ne-row">
                         <label>Instr</label>
                         <select data-sound="instrument">`
@@ -471,7 +468,7 @@ export default class TrackEditor extends BasePanel {
         }
         html += `</select></div>
             </div>
-            <div class="ne-grid" style="${auto ? 'display:none' : ''}">
+            <div class="ne-grid">
                 <div class="ne-row" style="border-top:1px solid #444;margin-top:6px;padding-top:6px">
                     <label>Gen</label>
                     <select data-sound="generated">
