@@ -357,16 +357,18 @@ export default class TrackEditor extends BasePanel {
                 <span class="ne-group-accordion-label">FX</span>
             </button>
             <div class="ne-group-content">
-                <div class="ne-group-label">Effects</div>`
+                <div class="ne-group-label fx-header">
+                    <span>Effects</span>
+                    <span class="fx-tabs">`
 
         if (isExpanded) {
-            html += `<div class="fx-tabs">`
             fxDefs.forEach((fx, i) => {
                 const activeClass = i === 0 ? ' active' : ''
                 html += `<button class="fx-tab-btn${activeClass}" data-fx-tab="${i}" title="${fx.label}">${i + 1}</button>`
             })
-            html += `</div>`
         }
+
+        html += `</span></div>`
 
         fxDefs.forEach((fx, idx) => {
             const on = this._isFxOn(fx)

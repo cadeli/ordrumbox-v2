@@ -46,7 +46,9 @@ export default class PatternPanel extends BasePanel {
             this._playhead.style.zIndex = '10'
             this._playhead.style.pointerEvents = 'none'
             this._playhead.style.willChange = 'transform'
-            this.container.appendChild(this._playhead)
+            const tracks = this.container.querySelector('.pp-tracks')
+            if (tracks) tracks.appendChild(this._playhead)
+            else this.container.appendChild(this._playhead)
         }
     }
 
@@ -85,7 +87,8 @@ export default class PatternPanel extends BasePanel {
     _updateBarCache() {
         if (!this.container) return
         this._barRectsCache = []
-        const parentRect = this.container.getBoundingClientRect()
+        const tracksEl = this.container.querySelector('.pp-tracks')
+        const parentRect = (tracksEl || this.container).getBoundingClientRect()
         const barEls = this.container.querySelectorAll('.pp-bar')
         barEls.forEach(el => {
             const r = el.getBoundingClientRect()

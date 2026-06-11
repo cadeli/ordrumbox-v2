@@ -110,6 +110,7 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    position: relative;
 }
 #pattern-panel .pp-track {
     display: flex; align-items: stretch; gap: 4px;
@@ -661,7 +662,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .ne-group.collapsed .ne-group-content,
@@ -669,10 +670,15 @@
     display: none;
 }
 
+.fx-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .fx-tabs {
     display: flex;
     gap: 4px;
-    margin-bottom: 6px;
 }
 
 .fx-tab-btn {
