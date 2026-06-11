@@ -137,7 +137,8 @@ export default class AboutPanel extends BasePanel {
     }
 
     show() {
-        super.show(['te-panel', 'ne-panel', 'tools-panel', 'output-panel'])
+        super.show(['te-panel', 'ne-panel', 'tools-panel', 'output-panel', 'soft-synth-panel'])
+        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
         this._detectPwaStatus()
     }
 

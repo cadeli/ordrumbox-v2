@@ -452,6 +452,7 @@ export default class ToolsPanel extends BasePanel {
     }
 
     show() {
-        super.show(['te-panel', 'ne-panel', 'output-panel', 'about-panel'])
+        super.show(['te-panel', 'ne-panel', 'output-panel', 'about-panel', 'soft-synth-panel'])
+        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
     }
 }
