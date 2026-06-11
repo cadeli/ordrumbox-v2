@@ -263,9 +263,7 @@ export default class PatternPanel extends BasePanel {
             this._cursorTrackIdx = 0
             this._cursorBar = 0
             this._cursorBarStep = 0
-            const track = tracks[0]
             this._selTrackIdx = 0
-            playbackEvents.dispatchTrackSelect({ track, trackIdx: 0 })
             this._applySelection()
         }
     }
