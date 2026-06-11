@@ -37,7 +37,7 @@ class MasterBusProcessor extends AudioWorkletProcessor {
             { name: 'compKnee',      defaultValue: 6,   minValue: 0,   maxValue: 40,   automationRate: 'k-rate' },
             { name: 'compAttack',    defaultValue: 0.003, minValue: 0.001, maxValue: 1, automationRate: 'k-rate' },
             { name: 'compRelease',   defaultValue: 0.15,  minValue: 0.01,  maxValue: 1, automationRate: 'k-rate' },
-            { name: 'compMakeup',    defaultValue: 0,    minValue: 0,   maxValue: 24,  automationRate: 'k-rate' },
+            { name: 'compMakeup',    defaultValue: 6,    minValue: 0,   maxValue: 24,  automationRate: 'k-rate' },
             { name: 'lowcut',        defaultValue: 35,   minValue: 10,  maxValue: 500, automationRate: 'a-rate' },
             { name: 'hicut',         defaultValue: 18500, minValue: 1000, maxValue: 22000, automationRate: 'a-rate' },
             { name: 'master',        defaultValue: 1.0,  minValue: 0,   maxValue: 2,   automationRate: 'a-rate' },

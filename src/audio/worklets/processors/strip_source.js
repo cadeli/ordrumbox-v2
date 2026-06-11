@@ -227,8 +227,10 @@ class StripProcessor extends AudioWorkletProcessor {
             const vol = (1 - lVMix) * params.volume[0] + lVMix * vLfo;
             const p = Math.max(-1, Math.min(1, (1 - lPMix) * params.pan[0] + lPMix * pLfo));
             const panL = Math.cos((p + 1) * Math.PI / 4), panR = Math.sin((p + 1) * Math.PI / 4);
-            outL[i] = (satL + rL + dWetL) * vol * panL;
-            outR[i] = (satR + rR + dWetR) * vol * panR;
+            const panMax = Math.max(panL, panR);
+            const panComp = panMax > 0.001 ? 1 / panMax : 1;
+            outL[i] = (satL + rL + dWetL) * vol * panL * panComp;
+            outR[i] = (satR + rR + dWetR) * vol * panR * panComp;
 
             // LFO Pitch Output (port 1)
             if (pitchLfoOut && pitchLfoOut[0]) {
