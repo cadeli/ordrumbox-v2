@@ -668,3 +668,32 @@
 .ss-group.collapsed .ne-group-content {
     display: none;
 }
+
+.fx-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.fx-tab-btn {
+    background: #2a2a3e;
+    color: #888;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    min-width: 24px;
+    text-align: center;
+}
+
+.fx-tab-btn:hover {
+    background: #3a3a4e;
+    color: #ccc;
+}
+
+.fx-tab-btn.active {
+    background: #e94560;
+    color: #fff;
+    border-color: #e94560;
+}

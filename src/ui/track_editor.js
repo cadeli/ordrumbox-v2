@@ -357,20 +357,29 @@ export default class TrackEditor extends BasePanel {
                 <span class="ne-group-accordion-label">FX</span>
             </button>
             <div class="ne-group-content">
-                <div class="ne-group-label">Effects</div>
-                <div class="ne-grid">`
+                <div class="ne-group-label">Effects</div>`
 
-        html += `<div class="ne-row">`
-        fxDefs.forEach(fx => {
+        if (isExpanded) {
+            html += `<div class="fx-tabs">`
+            fxDefs.forEach((fx, i) => {
+                const activeClass = i === 0 ? ' active' : ''
+                html += `<button class="fx-tab-btn${activeClass}" data-fx-tab="${i}" title="${fx.label}">${i + 1}</button>`
+            })
+            html += `</div>`
+        }
+
+        fxDefs.forEach((fx, idx) => {
             const on = this._isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
-            html += `<button class="${ledClass}" data-fx-toggle="${fx.key}" title="${on ? 'Disable' : 'Enable'}"></button>
-                <label style="min-width:24px;margin-right:8px">${fx.label}</label>`
-        })
-        html += `</div>`
+            const hiddenStyle = idx > 0 && isExpanded ? ' style="display:none"' : ''
 
-        fxDefs.forEach(fx => {
-            const on = this._isFxOn(fx)
+            html += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">
+                <div class="ne-grid">
+                    <div class="ne-row">
+                        <button class="${ledClass}" data-fx-toggle="${fx.key}" title="${on ? 'Disable' : 'Enable'} ${fx.label}"></button>
+                        <label style="min-width:24px;margin-right:8px">${fx.label}</label>
+                    </div>`
+
             if (on) {
                 fx.controls.forEach(ck => {
                     const prop = GROUPS.flatMap(g => g.props).find(p => p.key === ck)
@@ -380,8 +389,8 @@ export default class TrackEditor extends BasePanel {
                         html += `<div class="ne-row" data-prop="${ck}">
                             <label style="min-width:20px">${prop.label}</label>
                             <select data-key="${ck}">`
-                        prop.options.forEach((opt, idx) => {
-                            const label = prop.labels ? prop.labels[idx] : opt
+                        prop.options.forEach((opt, idx2) => {
+                            const label = prop.labels ? prop.labels[idx2] : opt
                             const sel = String(opt) === String(val) ? ' selected' : ''
                             html += `<option value="${opt}"${sel}>${label}</option>`
                         })
@@ -404,9 +413,11 @@ export default class TrackEditor extends BasePanel {
                     }
                 })
             }
+
+            html += `</div></div>`
         })
 
-        html += `</div></div></div>`
+        html += `</div></div>`
         return html
     }
 
@@ -629,6 +640,10 @@ export default class TrackEditor extends BasePanel {
             btn.addEventListener('click', () => this._toggleFx(btn))
         })
 
+        this.container.querySelectorAll('[data-fx-tab]').forEach(btn => {
+            btn.addEventListener('click', () => this._onFxTab(btn))
+        })
+
         this.container.querySelector('[data-action="toggle-auto"]')?.addEventListener('click', () => {
             this._track.useAutoAssignSound = this._track.useAutoAssignSound === false
             if (this._track.useAutoAssignSound) {
@@ -705,6 +720,15 @@ export default class TrackEditor extends BasePanel {
         this._track[key] = fx ? !this._isFxOn(fx) : !this._track[key]
         this.sync()
         playbackEvents.dispatchPatternChange()
+    }
+
+    _onFxTab(btn) {
+        const tabIdx = btn.dataset.fxTab
+        this.container.querySelectorAll('.fx-tab-btn').forEach(b => b.classList.remove('active'))
+        btn.classList.add('active')
+        this.container.querySelectorAll('.fx-tab-panel').forEach(p => {
+            p.style.display = p.dataset.fxPanel === tabIdx ? '' : 'none'
+        })
     }
 
     _toggleLfo() {
