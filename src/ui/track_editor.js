@@ -9,7 +9,7 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
-import { bindCloseButton, bindVisibilityToggles, positionBelowPatternPanel, AccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles, positionBelowPatternPanel, buildAccordionGroup } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 
@@ -196,12 +196,7 @@ export default class TrackEditor extends BasePanel {
                 bodyHtml += this._renderFxGroup(isExpanded)
                 return
             }
-            bodyHtml += new AccordionGroup({
-                key: visKey,
-                label: g.label,
-                shortLabel: shortLabels[visKey],
-                expanded: isExpanded,
-            }).open()
+            let groupContent = ''
             g.props.forEach(p => {
                 const val = this._track[p.key]
                 const isSelected = this._selectedPropKey === p.key ? 'selected' : ''
@@ -209,20 +204,20 @@ export default class TrackEditor extends BasePanel {
                 
                 if (p.type === 'boolean') {
                     const active = val ? 'active' : ''
-                    bodyHtml += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
+                    groupContent += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
                              <label>${p.label}</label>
                              <button class="ne-btn ${active}" data-key="${p.key}">${val ? 'ON' : 'OFF'}</button>
                              </div>`
                 } else if (p.type === 'select') {
-                    bodyHtml += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
+                    groupContent += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
                              <label>${p.label}</label>
                              <select data-key="${p.key}">`
                     p.options.forEach((opt, idx) => {
                         const label = p.labels ? p.labels[idx] : opt
                         const sel = String(opt) === String(val) ? ' selected' : ''
-                        bodyHtml += `<option value="${opt}"${sel}>${label}</option>`
+                        groupContent += `<option value="${opt}"${sel}>${label}</option>`
                     })
-                    bodyHtml += `</select></div>`
+                    groupContent += `</select></div>`
                 } else {
                     const s = new OrSlider({
                         key: p.key,
@@ -239,7 +234,7 @@ export default class TrackEditor extends BasePanel {
                             if (p.key === 'filterQ' && v > 1) return Utils.valueToNormalizedTrackFilterQ(v)
                             return v
                         },
-                        denormalize: (v) => v, // We keep the slider in [0..1] range for normalized props
+                        denormalize: (v) => v,
                         onChange: (v, key) => {
                             this._isDragging = true
                             this._track[key] = v
@@ -247,10 +242,10 @@ export default class TrackEditor extends BasePanel {
                         }
                     })
                     this._sliders.set(p.key, s)
-                    bodyHtml += s.toHTML()
+                    groupContent += s.toHTML()
                 }
             })
-            bodyHtml += new AccordionGroup().close()
+            bodyHtml += buildAccordionGroup(visKey, g.label, shortLabels[visKey], isExpanded, groupContent)
 
             // LFO Sub-panel — rendered right after its parent group (Filters or Levels)
             if (this._selectedPropKey && visKey !== 'effects') {
@@ -305,15 +300,7 @@ export default class TrackEditor extends BasePanel {
             return `${b}.${s}`
         }
 
-        let html = `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="loop">
-            <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="loop" title="Loop">
-                <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
-                <span class="ne-group-accordion-label">Lp</span>
-            </button>
-            <div class="ne-group-content">
-                <div class="ne-group-label">Loop / Pattern</div>
-                <div class="ne-grid">`
-
+        let content = ''
         const loopProps = [
             { key: 'barQuantize', label: 'Steps/Bar', min: 1, max: 8, step: 1, val: barQuantize },
             { key: 'bars',        label: 'Bars',      min: 1, max: 8, step: 1, val: bars },
@@ -334,11 +321,10 @@ export default class TrackEditor extends BasePanel {
                 onChange: (v, key) => this._onLoopSlider({ dataset: { loop: key }, value: v })
             })
             this._sliders.set(p.key, s)
-            html += s.toHTML()
+            content += s.toHTML()
         })
 
-        html += `</div></div></div>`
-        return html
+        return buildAccordionGroup('loop', 'Loop / Pattern', 'Lp', isExpanded, content)
     }
 
     _renderFxGroup(isExpanded) {
@@ -443,38 +429,24 @@ export default class TrackEditor extends BasePanel {
         const currentSoundId = this._getCurrentSoundUrl()
         const matchingSounds = this._getSamplesForInstrument(currentName)
 
-        let html = `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="sound">
-            <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="sound" title="Sound">
-                <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
-                <span class="ne-group-accordion-label">Snd</span>
-            </button>
-            <div class="ne-group-content">
-                <div class="ne-group-label">
-                    <button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button>
-                    autoassign
-                </div>
-                <div class="ne-grid">
-                    <div class="ne-row">
-                        <label>Instr</label>
-                        <select data-sound="instrument">`
+        let content = ''
+        content += `<div class="ne-row"><label>Instr</label><select data-sound="instrument">`
         instrumentIds.forEach(id => {
             const sel = id === currentName ? ' selected' : ''
-            html += `<option value="${id}"${sel}>${id}</option>`
+            content += `<option value="${id}"${sel}>${id}</option>`
         })
-        html += `</select></div>
-                <div class="ne-row">
-                    <label>Sample</label>
-                    <select data-sound="sample">`
+        content += `</select></div>
+                <div class="ne-row"><label>Sample</label><select data-sound="sample">`
         if (matchingSounds.length === 0) {
-            html += `<option value="">— no samples —</option>`
+            content += `<option value="">— no samples —</option>`
         } else {
             matchingSounds.forEach(s => {
                 const sel = s.url === currentSoundId ? ' selected' : ''
                 const label = `${s.kitName} / ${s.display_name || s.url}`
-                html += `<option value="${s.url}"${sel}>${label}</option>`
+                content += `<option value="${s.url}"${sel}>${label}</option>`
             })
         }
-        html += `</select></div>
+        content += `</select></div>
             </div>
             <div class="ne-grid">
                 <div class="ne-row" style="border-top:1px solid #444;margin-top:6px;padding-top:6px">
@@ -483,19 +455,22 @@ export default class TrackEditor extends BasePanel {
                         <option value="none"${currentGeneratedSound === 'none' ? ' selected' : ''}>none</option>`
         generatedSoundKeys.forEach(key => {
             const sel = key === currentGeneratedSound ? ' selected' : ''
-            html += `<option value="${this.esc(key)}"${sel}>${this.esc(key)}</option>`
+            content += `<option value="${this.esc(key)}"${sel}>${this.esc(key)}</option>`
         })
         if (this._track.useSoftSynth === true && !generatedSoundKeys.includes(currentGeneratedSound)) {
-            html += `<option value="${this.esc(currentGeneratedSound)}" selected>${this.esc(currentGeneratedSound)}</option>`
+            content += `<option value="${this.esc(currentGeneratedSound)}" selected>${this.esc(currentGeneratedSound)}</option>`
         }
-        html += `</select></div>
+        content += `</select></div>
                 <div class="ne-row" data-sound-edit-row style="display:${currentGeneratedSound === 'none' ? 'none' : 'flex'}">
                     <label>Edit</label>
                     <button class="ne-btn" data-action="edit-synth">Edit</button>
                 </div>
-            </div>
-        </div></div>`
-        return html
+            </div>`
+
+        return buildAccordionGroup('sound', 'Sound', 'Snd', isExpanded, content, {
+            labelClass: 'ne-group-label',
+            labelHtml: `<button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> autoassign`,
+        })
     }
 
     _getSelectedDrumkitName() {

@@ -1,6 +1,6 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindAccordionToggles, AccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles, buildAccordionGroup } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -27,20 +27,16 @@ export default class OutputPanel extends BasePanel {
 
     createDOM() {
         super.createDOM()
-        const masterGrp = new AccordionGroup({ key: 'master', label: 'Master', shortLabel: 'Master', gridId: 'op-master-grid' })
-        const filtersGrp = new AccordionGroup({ key: 'filters', label: 'Filters', shortLabel: 'Flt', gridId: 'op-filters-grid' })
-        const compGrp = new AccordionGroup({ key: 'compressor', label: 'Compressor', shortLabel: 'Comp', gridId: 'op-comp-grid' })
-        const specGrp = new AccordionGroup({ key: 'spectrum', label: 'Spectrum', shortLabel: 'Spec', extraAttrs: 'id="op-analyzer-group"' })
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Output</span>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                ${masterGrp.open()}${masterGrp.close()}
-                ${filtersGrp.open()}${filtersGrp.close()}
-                ${compGrp.open()}${compGrp.close()}
-                ${specGrp.open()}<canvas id="op-spectrum"></canvas>${specGrp.close()}
+                ${buildAccordionGroup('master', 'Master', 'Master', true, '', { gridId: 'op-master-grid' })}
+                ${buildAccordionGroup('filters', 'Filters', 'Flt', true, '', { gridId: 'op-filters-grid' })}
+                ${buildAccordionGroup('compressor', 'Compressor', 'Comp', true, '', { gridId: 'op-comp-grid' })}
+                ${buildAccordionGroup('spectrum', 'Spectrum', 'Spec', true, '<canvas id="op-spectrum"></canvas>', { extraAttrs: 'id="op-analyzer-group"' })}
             </div>
         `
 

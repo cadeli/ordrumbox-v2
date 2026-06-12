@@ -3,7 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
-import { bindAccordionToggles, AccordionGroup } from './components/panel_helpers.js'
+import { bindAccordionToggles, buildAccordionGroup } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
 
@@ -159,32 +159,25 @@ export default class SynthEditor {
 
             const label = this._getGroupLabel(groupName)
 
-            const grp = new AccordionGroup({
-                key: this._esc(groupName),
-                label: this._esc(label),
-                expanded: isExpanded,
-                cssPrefix: 'ss',
-                dataAttr: 'data-synth-group',
-                toggleExtraClass: '',
-                groupClass: '',
-            })
-            html += grp.open()
-
+            let groupContent = ''
             fields.forEach(({ path, key, val }) => {
                 const meta = SYNTH_SLIDER_META[path.join('.')]
                 const label = meta?.label ?? key
                 if (typeof val === 'number') {
                     sliderConfigs.push({ path, val })
-                    html += this._renderControl(path, key, val)
+                    groupContent += this._renderControl(path, key, val)
                 } else {
-                    html += `<div class="ss-row">
+                    groupContent += `<div class="ss-row">
                         <label>${this._esc(label)}</label>
                         ${this._renderControl(path, key, val)}
                     </div>`
                 }
             })
 
-            html += grp.close()
+            html += buildAccordionGroup(this._esc(groupName), this._esc(label), this._esc(label), isExpanded, groupContent, {
+                cssPrefix: 'ss',
+                dataAttr: 'data-synth-group',
+            })
         })
 
         html += '</div>'

@@ -1,5 +1,5 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindAccordionToggles, AccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles, buildAccordionGroup } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 
 const APP_VERSION = '2.0.0'
@@ -39,15 +39,13 @@ export default class AboutPanel extends BasePanel {
 
     createDOM() {
         super.createDOM()
-        const infoGrp = new AccordionGroup({ key: 'info', label: 'Application', shortLabel: 'Info', extraAttrs: 'data-about-section="info"' })
-        const pwaGrp = new AccordionGroup({ key: 'pwa', label: 'Progressive Web App', shortLabel: 'PWA', extraAttrs: 'data-about-section="pwa"' })
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">About</span>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                ${infoGrp.open()}
+                ${buildAccordionGroup('info', 'Application', 'Info', true, `
                     <div class="ne-row no-cursor">
                         <label>Name</label>
                         <span class="ne-val">${APP_NAME}</span>
@@ -60,8 +58,8 @@ export default class AboutPanel extends BasePanel {
                         <label>License</label>
                         <span class="ne-val">${APP_LICENSE}</span>
                     </div>
-                ${infoGrp.close()}
-                ${pwaGrp.open()}
+                `, { extraAttrs: 'data-about-section="info"' })}
+                ${buildAccordionGroup('pwa', 'Progressive Web App', 'PWA', true, `
                     <div class="ne-row" id="about-pwa-install-row" style="display:none">
                         <label>Install</label>
                         <button class="ne-btn" id="about-pwa-install">Install App</button>
@@ -74,7 +72,7 @@ export default class AboutPanel extends BasePanel {
                         <label>Source</label>
                         <a href="${APP_REPO}" target="_blank" rel="noopener" class="ne-val">${APP_REPO}</a>
                     </div>
-                ${pwaGrp.close()}
+                `, { extraAttrs: 'data-about-section="pwa"' })}
             </div>
         `
 

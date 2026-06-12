@@ -1,6 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindVisibilityToggles, AccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles, buildAccordionGroup } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -148,31 +148,24 @@ export default class NoteEditor extends BasePanel {
                 arp: 'Arp'
             }
 
-            bodyHtml += new AccordionGroup({
-                key: visKey,
-                label: g.label,
-                shortLabel: shortLabels[visKey],
-                expanded: isExpanded,
-            }).open()
+            let groupContent = ''
             g.props.forEach(p => {
                 if (p.type === 'select') {
                     let val = p.key === 'arpScale' ? arpState.scale : arpState.type
                     if (this._note['_' + p.key]) val = this._note['_' + p.key]
-                    bodyHtml += `<div class="ne-row">
+                    groupContent += `<div class="ne-row">
                         <label>${p.label}</label>
                         <select data-key="${p.key}">`
                     p.options.forEach(opt => {
                         const sel = opt === val ? ' selected' : ''
-                        bodyHtml += `<option value="${opt}"${sel}>${opt}</option>`
+                        groupContent += `<option value="${opt}"${sel}>${opt}</option>`
                     })
-                    bodyHtml += `</select>
-                    </div>`
+                    groupContent += `</select></div>`
                 } else {
-                    // Placeholder for OrSlider (replaced after innerHTML is set)
-                    bodyHtml += `<div data-ne-slider="${p.key}"></div>`
+                    groupContent += `<div data-ne-slider="${p.key}"></div>`
                 }
             })
-            bodyHtml += new AccordionGroup().close()
+            bodyHtml += buildAccordionGroup(visKey, g.label, shortLabels[visKey], isExpanded, groupContent)
         })
 
         bodyHtml += '</div>'

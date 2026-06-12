@@ -90,69 +90,79 @@ export function escapeHtml(value) {
 }
 
 /**
- * AccordionGroup — reusable accordion section for all panels.
+ * Generate a complete accordion group HTML string.
  *
- * Usage:
- *   const g = new AccordionGroup({ key: 'master', label: 'Master', shortLabel: 'M' })
- *   html += g.open() + '<div>content</div>' + g.close()
- *
- *   // or inline:
- *   html += new AccordionGroup({ ... }).render('<div>content</div>')
+ * @param {string} key        – data-group value
+ * @param {string} label      – full label (shown inside content)
+ * @param {string} shortLabel – abbreviated label on toggle button
+ * @param {boolean} expanded  – initial state
+ * @param {string} content    – inner HTML of the group (grid rows, sliders…)
+ * @param {object} [opts]     – cssPrefix, dataAttr, gridClass, labelClass, groupClass, gridId, extraAttrs
  */
-export class AccordionGroup {
-    constructor({
-        key,
-        label,
-        shortLabel,
-        expanded = true,
-        dataAttr   = 'data-group',
+export function buildAccordionGroup(key, label, shortLabel, expanded, content, opts = {}) {
+    const {
         cssPrefix  = 'ne',
-        gridClass,
-        gridId,
-        labelClass,
+        dataAttr   = 'data-group',
+        gridClass  = `${cssPrefix}-grid`,
+        labelClass = `${cssPrefix}-group-label`,
+        labelHtml,
         groupClass = '',
-        toggleExtraClass = 'ne-toggle',
+        gridId,
         extraAttrs = '',
-    } = {}) {
-        this.key         = key
-        this.label       = label
-        this.shortLabel  = shortLabel || label
-        this.expanded    = expanded
-        this.dataAttr    = dataAttr
-        this.cssPrefix   = cssPrefix
-        this.gridClass   = gridClass || `${cssPrefix}-grid`
-        this.gridId      = gridId
-        this.labelClass  = labelClass || `${cssPrefix}-group-label`
-        this.groupClass  = groupClass
-        this.toggleExtraClass = toggleExtraClass
-        this.extraAttrs  = extraAttrs
-    }
+    } = opts
 
-    open() {
-        const cls = [
-            `${this.cssPrefix}-group`,
-            this.expanded ? 'expanded' : 'collapsed',
-            this.groupClass,
-        ].filter(Boolean).join(' ')
+    const cls = [`${cssPrefix}-group`, expanded ? 'expanded' : 'collapsed', groupClass]
+        .filter(Boolean).join(' ')
+    const active = expanded ? ' active' : ''
+    const icon   = expanded ? '&minus;' : '+'
 
-        const activeCls = this.expanded ? ' active' : ''
-        const icon = this.expanded ? '&minus;' : '+'
+    return `<div class="${cls}" ${dataAttr}="${key}"${extraAttrs ? ' ' + extraAttrs : ''}>` +
+        `<button class="ne-group-accordion-toggle ne-toggle${active}" data-toggle="${key}" title="${label}">` +
+            `<span class="ne-group-accordion-icon">${icon}</span>` +
+            `<span class="ne-group-accordion-label">${shortLabel || label}</span>` +
+        `</button>` +
+        `<div class="ne-group-content">` +
+            `<div class="${labelClass}">${labelHtml || label}</div>` +
+            `<div class="${gridClass}"${gridId ? ` id="${gridId}"` : ''}>` +
+            (content || '') +
+        `</div></div></div>`
+}
 
-        return `<div class="${cls}" ${this.dataAttr}="${this.key}"${this.extraAttrs ? ' ' + this.extraAttrs : ''}>` +
-            `<button class="ne-group-accordion-toggle${this.toggleExtraClass ? ' ' + this.toggleExtraClass : ''}${activeCls}" data-toggle="${this.key}" title="${this.label}">` +
-                `<span class="ne-group-accordion-icon">${icon}</span>` +
-                `<span class="ne-group-accordion-label">${this.shortLabel}</span>` +
-            `</button>` +
-            `<div class="ne-group-content">` +
-            `<div class="${this.labelClass}">${this.label}</div>` +
-            `<div class="${this.gridClass}"${this.gridId ? ` id="${this.gridId}"` : ''}>`
-    }
+/**
+ * Wrap groups HTML in the standard panel shell (header + body).
+ *
+ * @param {string} title      – panel title shown in the header
+ * @param {string} groupsHtml – all accordion groups concatenated
+ */
+export function buildPanelShell(title, groupsHtml) {
+    return `<div class="ne-header">` +
+        `<span class="ne-track">${title}</span>` +
+        `<button class="ne-close">&times;</button>` +
+        `</div><div class="ne-body">${groupsHtml}</div>`
+}
 
-    close() {
-        return '</div></div></div>'
-    }
+/**
+ * Create OrSlider instances and mount them into the container.
+ * Handles the full destroy → create → replace cycle.
+ *
+ * @param {HTMLElement} container
+ * @param {Array} configs          – OrSlider config objects (must include `key`)
+ * @param {object} [opts]
+ * @param {string} [opts.placeholderAttr] – data-attr to find placeholders (default: data-or-slider)
+ * @param {Array}  [opts.existingSliders] – sliders to destroy first
+ * @returns {Array} created slider instances
+ */
+export function mountSliders(container, configs, opts = {}) {
+    const { placeholderAttr = 'data-or-slider', existingSliders = [] } = opts
+    existingSliders.forEach(s => s.destroy?.())
 
-    render(content) {
-        return this.open() + (content || '') + this.close()
-    }
+    // Lazy-import OrSlider to avoid circular deps at module load time
+    return import('./or_slider.js').then(({ OrSlider }) =>
+        configs.map(cfg => {
+            const slider = new OrSlider(cfg)
+            const el = container.querySelector(`[${placeholderAttr}="${cfg.key}"]`)
+            if (el) el.replaceWith(slider.createElement())
+            return slider
+        })
+    )
 }

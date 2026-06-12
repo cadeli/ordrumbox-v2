@@ -7,7 +7,7 @@ import { escapeHtml } from './components/panel_helpers.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { isMidiSupported } from '../logic/midi/parser.js'
-import { bindCloseButton, bindAccordionToggles, hidePanelsById, AccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles, hidePanelsById, buildAccordionGroup } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -22,17 +22,13 @@ export default class ToolsPanel extends BasePanel {
     createDOM() {
         super.createDOM()
         
-        const patternGrp = new AccordionGroup({ key: 'pattern', label: 'Pattern Settings', shortLabel: 'Pattern' })
-        const exportGrp = new AccordionGroup({ key: 'export', label: 'Export', shortLabel: 'Export' })
-        const importGrp = new AccordionGroup({ key: 'import', label: 'Import', shortLabel: 'Import' })
-        const midiGrp = new AccordionGroup({ key: 'midi', label: 'MIDI', shortLabel: 'MIDI' })
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Tools</span>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                ${patternGrp.open()}
+                ${buildAccordionGroup('pattern', 'Pattern Settings', 'Pattern', true, `
                     <div class="ne-row no-cursor">
                         <label>Name</label>
                         <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
@@ -40,8 +36,8 @@ export default class ToolsPanel extends BasePanel {
                     <div class="ne-row">
                         <button class="ne-btn" id="tp-compact">Compact Tracks</button>
                     </div>
-                ${patternGrp.close()}
-                ${exportGrp.open()}
+                `)}
+                ${buildAccordionGroup('export', 'Export', 'Export', true, `
                     <div class="ne-row">
                         <button class="ne-btn" id="tp-export-json">Export JSON</button>
                     </div>
@@ -52,8 +48,8 @@ export default class ToolsPanel extends BasePanel {
                         <button class="ne-btn" id="tp-export-wav">Export WAV</button>
                     </div>
                     <div id="tp-wav-loops-slot"></div>
-                ${exportGrp.close()}
-                ${importGrp.open()}
+                `)}
+                ${buildAccordionGroup('import', 'Import', 'Import', true, `
                     <div class="ne-row">
                         <button class="ne-btn" id="tp-import-json">Import JSON</button>
                         <input type="file" id="tp-import-file" style="display: none" accept=".json">
@@ -62,8 +58,8 @@ export default class ToolsPanel extends BasePanel {
                         <button class="ne-btn" id="tp-import-wav">Import WAV</button>
                         <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav">
                     </div>
-                ${importGrp.close()}
-                ${midiGrp.open()}
+                `)}
+                ${buildAccordionGroup('midi', 'MIDI', 'MIDI', true, `
                     <div class="ne-row no-cursor">
                         <button class="lfo-led" id="midiSupportLed"></button>
                         <label>Support:</label>
@@ -99,7 +95,7 @@ export default class ToolsPanel extends BasePanel {
                     <div class="ne-row">
                         <button class="ne-btn" id="tp-midi-sync">Toggle Sync</button>
                     </div>
-                ${midiGrp.close()}
+                `)}
             </div>
         `
         
