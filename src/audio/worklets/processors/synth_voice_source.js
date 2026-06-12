@@ -9,6 +9,7 @@
  *   - 1 ADSR envelope (attack, decay, sustain, release)
  *   - 1 master gain
  *   - 1 stereo pan
+ *   - 2 LFOs with target routing (FLT, VCO detune, master gain, osc gain)
  *
  * Trigger model:
  *   The host sends messages via `port`:
@@ -75,7 +76,15 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             { name: 'release',    defaultValue: 0.1,  minValue: 0,     maxValue: 5,     automationRate: 'k-rate' },
             { name: 'master',     defaultValue: 0.8,  minValue: 0,     maxValue: 2,     automationRate: 'k-rate' },
             { name: 'pan',        defaultValue: 0,    minValue: -1,    maxValue: 1,     automationRate: 'k-rate' },
-            { name: 'velocity',   defaultValue: 0.8,  minValue: 0,     maxValue: 1,     automationRate: 'k-rate' }
+            { name: 'velocity',   defaultValue: 0.8,  minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
+            { name: 'lfo1Target', defaultValue: 0,    minValue: 0,     maxValue: 8,     automationRate: 'k-rate' },
+            { name: 'lfo1Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
+            { name: 'lfo1Freq',   defaultValue: 1,    minValue: 0,     maxValue: 20,    automationRate: 'k-rate' },
+            { name: 'lfo1Depth',  defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
+            { name: 'lfo2Target', defaultValue: 0,    minValue: 0,     maxValue: 8,     automationRate: 'k-rate' },
+            { name: 'lfo2Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
+            { name: 'lfo2Freq',   defaultValue: 1,    minValue: 0,     maxValue: 20,    automationRate: 'k-rate' },
+            { name: 'lfo2Depth',  defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
         ];
     }
 
@@ -89,6 +98,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this.phase2 = 0;
         this.phase3 = 0;
         this.lastNoise = 0;
+        this.lfoPhase1 = 0;
+        this.lfoPhase2 = 0;
         this.port.onmessage = (e) => this._onMessage(e.data);
     }
 
@@ -121,6 +132,22 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         }
         if (shape < 2.5) return phase * 2 - 1;  // saw
         return phase < 0.5 ? 1 : -1;  // square
+    }
+
+    _lfoValue(target, depth, phase) {
+        const raw = Math.sin(2 * Math.PI * phase);
+        if (target === 0) return { filt: 0, oscDetune: [0, 0, 0], master: 0, oscGain: [0, 0, 0] };
+        // target 1=FLT, 2=VCO1, 3=VCO2, 4=VCO3, 5=master, 6=vco1.gain, 7=vco1.detune, 8=vco1.octave
+        const result = { filt: 0, oscDetune: [0, 0, 0], master: 0, oscGain: [0, 0, 0] };
+        if (target === 1) result.filt = raw * depth * 1000;
+        else if (target === 2) result.oscDetune[0] = raw * depth * 1200;
+        else if (target === 3) result.oscDetune[1] = raw * depth * 1200;
+        else if (target === 4) result.oscDetune[2] = raw * depth * 1200;
+        else if (target === 5) result.master = raw * depth * 0.8;
+        else if (target === 6) result.oscGain[0] = raw * depth;
+        else if (target === 7) result.oscDetune[0] = raw * depth * 1200;
+        else if (target === 8) result.oscDetune[0] = raw * depth * 1200;
+        return result;
     }
 
     _param(name, arr) {
@@ -227,14 +254,14 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const fQ    = this._param('filterQ', parameters.filterQ);
         const master = this._param('master', parameters.master);
         const pan    = this._param('pan', parameters.pan);
-
-        // Apply detune (cents → frequency multiplier)
-        const det1 = Math.pow(2, d1 / 1200);
-        const det2 = Math.pow(2, d2 / 1200);
-        const det3 = Math.pow(2, d3 / 1200);
-        const f1d = f1 * det1;
-        const f2d = f2 * det2;
-        const f3d = f3 * det3;
+        const lfo1Target = Math.round(this._param('lfo1Target', parameters.lfo1Target));
+        const lfo1Wave   = Math.round(this._param('lfo1Wave', parameters.lfo1Wave));
+        const lfo1Freq   = this._param('lfo1Freq', parameters.lfo1Freq);
+        const lfo1Depth  = this._param('lfo1Depth', parameters.lfo1Depth);
+        const lfo2Target = Math.round(this._param('lfo2Target', parameters.lfo2Target));
+        const lfo2Wave   = Math.round(this._param('lfo2Wave', parameters.lfo2Wave));
+        const lfo2Freq   = this._param('lfo2Freq', parameters.lfo2Freq);
+        const lfo2Depth  = this._param('lfo2Depth', parameters.lfo2Depth);
 
         const oscMix = 1 - noiseMix;
 
@@ -263,6 +290,42 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             // t = seconds since the trigger, tracked across process calls
             const t = (this.frameCount + i) / sr - this.startTime;
 
+            // Advance LFO phases
+            const lfo1Inc = lfo1Freq / sr;
+            const lfo2Inc = lfo2Freq / sr;
+            this.lfoPhase1 += lfo1Inc;
+            this.lfoPhase2 += lfo2Inc;
+            if (this.lfoPhase1 >= 1) this.lfoPhase1 -= Math.floor(this.lfoPhase1);
+            if (this.lfoPhase2 >= 1) this.lfoPhase2 -= Math.floor(this.lfoPhase2);
+
+            // Compute LFO modulations
+            const lfo1Mod = this._lfoValue(lfo1Target, lfo1Depth, this.lfoPhase1);
+            const lfo2Mod = this._lfoValue(lfo2Target, lfo2Depth, this.lfoPhase2);
+
+            // Apply LFO to filter frequency
+            const fFreqMod = fFreq + lfo1Mod.filt + lfo2Mod.filt;
+
+            // Apply LFO to oscillator detune
+            const d1Mod = d1 + lfo1Mod.oscDetune[0] + lfo2Mod.oscDetune[0];
+            const d2Mod = d2 + lfo1Mod.oscDetune[1] + lfo2Mod.oscDetune[1];
+            const d3Mod = d3 + lfo1Mod.oscDetune[2] + lfo2Mod.oscDetune[2];
+
+            // Apply LFO to oscillator gain
+            const g1Mod = Math.max(0, Math.min(1, g1 + lfo1Mod.oscGain[0] + lfo2Mod.oscGain[0]));
+            const g2Mod = Math.max(0, Math.min(1, g2 + lfo1Mod.oscGain[1] + lfo2Mod.oscGain[1]));
+            const g3Mod = Math.max(0, Math.min(1, g3 + lfo1Mod.oscGain[2] + lfo2Mod.oscGain[2]));
+
+            // Apply LFO to master volume
+            const masterMod = Math.max(0, master + lfo1Mod.master + lfo2Mod.master);
+
+            // Apply detune (cents → frequency multiplier)
+            const det1 = Math.pow(2, d1Mod / 1200);
+            const det2 = Math.pow(2, d2Mod / 1200);
+            const det3 = Math.pow(2, d3Mod / 1200);
+            const f1d = f1 * det1;
+            const f2d = f2 * det2;
+            const f3d = f3 * det3;
+
             // Advance oscillators
             this.phase1 += f1d / sr;
             this.phase2 += f2d / sr;
@@ -271,9 +334,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             if (this.phase2 >= 1) this.phase2 -= Math.floor(this.phase2);
             if (this.phase3 >= 1) this.phase3 -= Math.floor(this.phase3);
 
-            const o1 = this._v(w1, this.phase1) * g1;
-            const o2 = this._v(w2, this.phase2) * g2;
-            const o3 = this._v(w3, this.phase3) * g3;
+            const o1 = this._v(w1, this.phase1) * g1Mod;
+            const o2 = this._v(w2, this.phase2) * g2Mod;
+            const o3 = this._v(w3, this.phase3) * g3Mod;
             const oscSum = (o1 + o2 + o3) * oscMix;
 
             // Simple white noise (Box-Muller-ish cheap noise)
@@ -282,8 +345,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
 
             const dry = oscSum + noise;
 
-            // Filter
-            const f = this._tptFilt(this.filt, dry, fFreq, fQ, sr);
+            // Filter (use LFO-modulated frequency)
+            const f = this._tptFilt(this.filt, dry, fFreqMod, fQ, sr);
             let y;
             if (filtMode === 0) y = f.lp;
             else if (filtMode === 1) y = f.hp;
@@ -292,7 +355,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
 
             // Envelope
             const env = this._envelope(t);
-            y *= env * master;
+            y *= env * masterMod;
 
             output[0][i] = y * panL;
             if (output.length > 1) {

@@ -50,7 +50,7 @@ describe('SynthVoiceProcessor source', () => {
         expect(SYNTH_VOICE_SOURCE).toContain("registerProcessor('synth-voice'")
     })
 
-    it('declares 23 AudioParams', () => {
+    it('declares 31 AudioParams', () => {
         const expected = [
             'osc1Freq', 'osc2Freq', 'osc3Freq',
             'osc1Gain', 'osc2Gain', 'osc3Gain',
@@ -58,7 +58,9 @@ describe('SynthVoiceProcessor source', () => {
             'osc1Wave', 'osc2Wave', 'osc3Wave',
             'noiseMix', 'filterType', 'filterFreq', 'filterQ',
             'attack', 'decay', 'sustain', 'release',
-            'master', 'pan', 'velocity'
+            'master', 'pan', 'velocity',
+            'lfo1Target', 'lfo1Wave', 'lfo1Freq', 'lfo1Depth',
+            'lfo2Target', 'lfo2Wave', 'lfo2Freq', 'lfo2Depth'
         ]
         for (const name of expected) {
             expect(SYNTH_VOICE_SOURCE).toContain(`name: '${name}'`)

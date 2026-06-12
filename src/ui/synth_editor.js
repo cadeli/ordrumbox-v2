@@ -15,6 +15,7 @@ const SYNTH_GROUP_DEFAULTS = {
     vco3: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     filter: { type: 'lowpass', freq: 400, Q: 1, filterEnvelopeAmount: 0 },
     lfo: { target: 'NOT', wave: 'sine', freq: 0, depth: 0 },
+    lfo2: { target: 'NOT', wave: 'sine', freq: 0, depth: 0 },
     noise: { mix: 0, filterType: 'highpass', filterFreq: 1000, filterQ: 1 },
     enveloppe: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 }
 }
@@ -38,6 +39,8 @@ const SYNTH_SLIDER_META = {
     'filter.filterEnvelopeAmount': { min: 0, max: 1, step: 0.01, label: 'Env' },
     'lfo.freq': { min: 0, max: 20, step: 0.01 },
     'lfo.depth': { min: 0, max: 1, step: 0.01 },
+    'lfo2.freq': { min: 0, max: 20, step: 0.01 },
+    'lfo2.depth': { min: 0, max: 1, step: 0.01 },
     'noise.mix': { min: 0, max: 1, step: 0.01 },
     'noise.filterFreq': { min: 20, max: 20000, step: 1 },
     'noise.filterQ': { min: 0.1, max: 24, step: 0.1 },
@@ -47,7 +50,7 @@ const SYNTH_SLIDER_META = {
     'enveloppe.release': { min: 0, max: 3, step: 0.001 }
 }
 
-const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_SLIDER_META).filter(k => !k.startsWith('lfo.'))]
+const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_SLIDER_META).filter(k => !k.startsWith('lfo.') && !k.startsWith('lfo2.'))]
 // Visual group merging: mapped group → array of _draft keys to display together
 const SYNTH_GROUP_MERGE = {
     master: ['masterVolume', 'slide']
@@ -57,7 +60,7 @@ const SYNTH_GROUP_LABELS = {
     filter: 'Flt',
     enveloppe: 'Env'
 }
-const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'lfo', 'noise', 'enveloppe']
+const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'lfo', 'lfo2', 'noise', 'enveloppe']
 
 export default class SynthEditor {
     constructor(host) {
@@ -304,7 +307,7 @@ export default class SynthEditor {
         if (key === 'wave') return Utils.waveList
         if (path[0] === 'filter' && key === 'type') return Utils.filterTypeList
         if (path[0] === 'noise' && key === 'filterType') return Utils.filterTypeList
-        if (path[0] === 'lfo' && key === 'target') {
+        if ((path[0] === 'lfo' || path[0] === 'lfo2') && key === 'target') {
             return SYNTH_LFO_TARGETS.map(target => ({
                 value: target,
                 label: target === 'NOT' ? 'off' : target

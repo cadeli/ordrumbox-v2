@@ -9,6 +9,7 @@ WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
 
 const WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3 }
 const FILTER_TO_INT = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
+const LFO_TARGET_TO_INT = { NOT: 0, FLT: 1, VCO1: 2, VCO2: 3, VCO3: 4, masterVolume: 5, 'vco1.gain': 6, 'vco1.detune': 7, 'vco1.octave': 8, 'vco2.gain': 9, 'vco2.detune': 10, 'vco2.octave': 11, 'vco3.gain': 12, 'vco3.detune': 13, 'vco3.octave': 14 }
 
 const SYNTH_VOICE_OPTIONS = Object.freeze({
     numberOfInputs: 0,
@@ -140,9 +141,17 @@ export default class WorkletSynthVoice extends BaseVoice {
             decay: toFiniteNumber(env.decay, 0.1),
             sustain: toFiniteNumber(env.sustain, 0.7),
             release: Math.max(0.008, toFiniteNumber(env.release, 0.1)),
-            master: 1.0,  // velocity already absorbs masterVolume for the worklet path
+            master: 1.0,
             pan: toFiniteNumber(pan, 0),
             velocity: peak,
+            lfo1Target: LFO_TARGET_TO_INT[gs.lfo?.target] ?? 0,
+            lfo1Wave: WAVE_TO_INT[gs.lfo?.wave] ?? 0,
+            lfo1Freq: toFiniteNumber(gs.lfo?.freq, 0),
+            lfo1Depth: toFiniteNumber(gs.lfo?.depth, 0),
+            lfo2Target: LFO_TARGET_TO_INT[gs.lfo2?.target] ?? 0,
+            lfo2Wave: WAVE_TO_INT[gs.lfo2?.wave] ?? 0,
+            lfo2Freq: toFiniteNumber(gs.lfo2?.freq, 0),
+            lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
         })
     }
 }

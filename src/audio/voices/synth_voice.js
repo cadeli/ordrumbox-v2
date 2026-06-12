@@ -70,6 +70,7 @@ export default class SynthVoice extends BaseVoice {
         this.generatedSound = generatedSound
         this.soundKey       = soundKey
         this.masterLfo      = null
+        this.masterLfo2     = null
         this.oscNodes       = []
         this.vcoSlots       = []
         this.gainEnv        = null
@@ -80,6 +81,7 @@ export default class SynthVoice extends BaseVoice {
         this.noiseGain      = null
         this.noiseFilter    = null
         this.lfoGain        = null
+        this.lfoGain2       = null
         this.noteVelo       = 0
         this.noteRatio      = 1
         this.masterVolume   = 0.8
@@ -120,10 +122,12 @@ export default class SynthVoice extends BaseVoice {
         this.noteVelo   = (flatNote.note?.velocity ?? 0.8) * 0.25
         const env       = gs.enveloppe ?? { attack: 0, decay: 0, sustain: 1, release: 0 }
         const lfoTarget = gs.lfo?.target ?? 'NOT'
+        const lfoTarget2 = gs.lfo2?.target ?? 'NOT'
 
         this.gainEnv  = this.acquireNode('GainNode')
         this.panNode  = this.acquireNode('StereoPannerNode')
         this.lfoGain  = this.acquireNode('GainNode')
+        this.lfoGain2 = this.acquireNode('GainNode')
 
         if (lfoTarget !== 'NOT') {
             this.masterLfo = this.registerNode(this.audioCtx.createOscillator())
@@ -131,6 +135,14 @@ export default class SynthVoice extends BaseVoice {
             this.masterLfo.frequency.value = toFiniteNumber(gs.lfo?.freq, 0) + LFO_FREQ_OFFSET
             this.lfoGain.gain.value        = this.computeLfoDepth(lfoTarget)
             this.masterLfo.connect(this.lfoGain)
+        }
+
+        if (lfoTarget2 !== 'NOT') {
+            this.masterLfo2 = this.registerNode(this.audioCtx.createOscillator())
+            this.masterLfo2.type            = typeof gs.lfo2?.wave === 'string' ? gs.lfo2.wave : 'sine'
+            this.masterLfo2.frequency.value = toFiniteNumber(gs.lfo2?.freq, 0) + LFO_FREQ_OFFSET
+            this.lfoGain2.gain.value        = this.computeLfoDepth2(lfoTarget2)
+            this.masterLfo2.connect(this.lfoGain2)
         }
 
         this.vcoSlots = [gs.vco1, gs.vco2, gs.vco3].map(cfg => this.#setupOsc(cfg, noteRatio))
@@ -220,6 +232,7 @@ export default class SynthVoice extends BaseVoice {
         const safeRelease = Math.max(MIN_RELEASE, releaseTime)
 
         this.connectLfoTarget(lfoTarget)
+        this.connectLfoTarget2(lfoTarget2)
 
         this.gainEnv.gain.setValueAtTime(MIN_GAIN_VALUE, time)
         this.gainEnv.gain.linearRampToValueAtTime(peakGain, time + safeAttack)
@@ -235,6 +248,11 @@ export default class SynthVoice extends BaseVoice {
         return SynthVoice.#lfoTargetMap()[target]?.mult(depth) ?? 0
     }
 
+    computeLfoDepth2(target) {
+        const depth = toFiniteNumber(this.generatedSound.lfo2?.depth, 0)
+        return SynthVoice.#lfoTargetMap()[target]?.mult(depth) ?? 0
+    }
+
     connectLfoTarget(target) {
         if (!this.masterLfo || !target || target === 'NOT') return
         if (!this.lfoGain) return
@@ -242,6 +260,16 @@ export default class SynthVoice extends BaseVoice {
         if (!entry) return
         for (const param of entry.params(this)) {
             if (param) this.lfoGain.connect(param)
+        }
+    }
+
+    connectLfoTarget2(target) {
+        if (!this.masterLfo2 || !target || target === 'NOT') return
+        if (!this.lfoGain2) return
+        const entry = SynthVoice.#lfoTargetMap()[target]
+        if (!entry) return
+        for (const param of entry.params(this)) {
+            if (param) this.lfoGain2.connect(param)
         }
     }
 
@@ -262,6 +290,21 @@ export default class SynthVoice extends BaseVoice {
         } else if (this.masterLfo) {
             try { this.lfoGain.disconnect() } catch (e) {}
             this.masterLfo = null
+        }
+
+        const newLfoTarget2 = generatedSound.lfo2?.target ?? 'NOT'
+        if (newLfoTarget2 !== 'NOT') {
+            if (!this.masterLfo2) {
+                this.masterLfo2 = this.registerNode(this.audioCtx.createOscillator())
+            }
+            this.masterLfo2.type = typeof generatedSound.lfo2?.wave === 'string' ? generatedSound.lfo2.wave : 'sine'
+            this.masterLfo2.frequency.setTargetAtTime(toFiniteNumber(generatedSound.lfo2?.freq, 0) + LFO_FREQ_OFFSET, time, rampTime)
+            try { this.lfoGain2.disconnect() } catch (e) {}
+            this.lfoGain2.gain.setTargetAtTime(this.computeLfoDepth2(newLfoTarget2), time, rampTime)
+            this.connectLfoTarget2(newLfoTarget2)
+        } else if (this.masterLfo2) {
+            try { this.lfoGain2.disconnect() } catch (e) {}
+            this.masterLfo2 = null
         }
 
         const noiseConfig = generatedSound.noise ?? {}
@@ -314,6 +357,10 @@ export default class SynthVoice extends BaseVoice {
             this.masterLfo.start(time)
             this.masterLfo.stop(this.totalStopTime + 0.1)
         }
+        if (this.masterLfo2) {
+            this.masterLfo2.start(time)
+            this.masterLfo2.stop(this.totalStopTime + 0.1)
+        }
     }
 
     stop(time) {
@@ -333,6 +380,9 @@ export default class SynthVoice extends BaseVoice {
         }
         if (this.masterLfo) {
             try { this.masterLfo.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
+        }
+        if (this.masterLfo2) {
+            try { this.masterLfo2.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
         }
     }
 }
