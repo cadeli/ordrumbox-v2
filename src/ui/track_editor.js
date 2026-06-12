@@ -253,19 +253,17 @@ export default class TrackEditor extends BasePanel {
                 }
             })
             bodyHtml += `</div></div></div>`
-        })
 
-        // LFO Sub-panel (visible if parent prop is visible)
-        if (this._selectedPropKey) {
-            const prop = this._findProp(this._selectedPropKey)
-            if (prop && prop.lfo) {
-                const groupIdx = GROUPS.findIndex(g => g.props.includes(prop))
-                const visKey = ['basic', 'levels', 'filters', 'effects'][groupIdx]
-                if (vis[visKey]) {
+            // LFO Sub-panel — rendered right after its parent group (Filters or Levels)
+            if (this._selectedPropKey && visKey !== 'effects') {
+                const prop = this._findProp(this._selectedPropKey)
+                const propGroupIdx = prop ? GROUPS.findIndex(g => g.props.includes(prop)) : -1
+                const propVisKey = ['basic', 'levels', 'filters', 'effects'][propGroupIdx]
+                if (prop && prop.lfo && propVisKey === visKey && isExpanded) {
                     bodyHtml += this._renderLfoPanel(prop)
                 }
             }
-        }
+        })
 
         // Sound Sub-panel
         bodyHtml += this._renderSoundPanel(vis.sound)
