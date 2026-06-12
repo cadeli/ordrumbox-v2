@@ -58,6 +58,14 @@ const GROUPS = [
             { key: 'saturationAmount', label: 'SatV', min: 0, max: 1, step: 0.01 },
             { key: 'saturationType', label: 'SatT', type: 'select', options: ['soft', 'hard', 'tape'] }
         ]
+    },
+    {
+        label: 'Sound',
+        props: []
+    },
+    {
+        label: 'Loop / Pattern',
+        props: []
     }
 ]
 
@@ -185,15 +193,25 @@ export default class TrackEditor extends BasePanel {
             basic: 'Basic',
             levels: 'Lvl',
             filters: 'Flt',
-            effects: 'FX'
+            effects: 'FX',
+            sound: 'Snd',
+            loop: 'Lp'
         }
 
         GROUPS.forEach((g, idx) => {
-            const visKey = ['basic', 'levels', 'filters', 'effects'][idx]
+            const visKey = ['basic', 'levels', 'filters', 'effects', 'sound', 'loop'][idx]
             const isExpanded = vis[visKey]
 
             if (g.label === 'Effects') {
                 bodyHtml += this._renderFxGroup(isExpanded)
+                return
+            }
+            if (g.label === 'Sound') {
+                bodyHtml += this._renderSoundPanel(isExpanded)
+                return
+            }
+            if (g.label === 'Loop / Pattern') {
+                bodyHtml += this._renderLoopPanel(isExpanded)
                 return
             }
             let groupContent = ''
@@ -257,12 +275,6 @@ export default class TrackEditor extends BasePanel {
                 }
             }
         })
-
-        // Sound Sub-panel
-        bodyHtml += this._renderSoundPanel(vis.sound)
-
-        // Loop / Pattern Sub-panel
-        bodyHtml += this._renderLoopPanel(vis.loop)
 
         bodyHtml += '</div>'
         this.container.innerHTML = headerHtml + bodyHtml

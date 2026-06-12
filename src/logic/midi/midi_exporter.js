@@ -226,7 +226,7 @@ export default class MidiExporter {
 
                     let pitchOffset = fn.note.pitch ?? 0
                     if (fn.track.pitchLfo) {
-                        pitchOffset = computeLfoValue(fn.track.pitchLfo, engineTick, nbTickForPattern)
+                        pitchOffset += computeLfoValue(fn.track.pitchLfo, engineTick, nbTickForPattern)
                     }
 
                     const noteNum  = Math.min(127, Math.max(0, td.midiNote + pitchOffset))
