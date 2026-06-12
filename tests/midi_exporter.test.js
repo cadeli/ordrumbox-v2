@@ -162,6 +162,31 @@ describe('resolveTrackMidi', () => {
         const r = resolveTrackMidi(null, im)
         expect(r.midiNote).toBe(36)
     })
+
+    it('returns midiNote 60 when instrument has MIDI mapping but no key', () => {
+        const mockIm = {
+            findByName: () => ({
+                midi: [{ ch: '3', name: 'Synth' }],
+                drum: false,
+            }),
+        }
+        const r = resolveTrackMidi('SYNTH', mockIm)
+        expect(r.midiNote).toBe(60)
+        expect(r.channel).toBe(2)
+        expect(r.isDrum).toBe(false)
+    })
+
+    it('returns default channel 9 when mapping.ch is missing', () => {
+        const mockIm = {
+            findByName: () => ({
+                midi: [{ key: '60', name: 'Pad' }],
+                drum: false,
+            }),
+        }
+        const r = resolveTrackMidi('PAD', mockIm)
+        expect(r.midiNote).toBe(60)
+        expect(r.channel).toBe(9)
+    })
 })
 
 // ─── buildInstrumentTrack ─────────────────────────────────────────────────────
