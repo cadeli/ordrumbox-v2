@@ -207,11 +207,15 @@ export default class TrackEditor extends BasePanel {
                 return
             }
             if (g.label === 'Sound') {
-                bodyHtml += this._renderSoundPanel(isExpanded)
+                const soundExpanded = vis.sound
+                const loopExpanded = vis.loop
+                bodyHtml += `<div class="ne-group-sound-loop-wrapper">`
+                bodyHtml += this._renderSoundPanel(soundExpanded)
+                bodyHtml += this._renderLoopPanel(loopExpanded)
+                bodyHtml += `</div>`
                 return
             }
             if (g.label === 'Loop / Pattern') {
-                bodyHtml += this._renderLoopPanel(isExpanded)
                 return
             }
             let groupContent = ''

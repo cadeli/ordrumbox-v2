@@ -673,6 +673,29 @@
     display: none;
 }
 
+.ne-group-sound-loop-wrapper {
+    position: relative;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.ne-group-sound-loop-wrapper > .ne-group[data-group="loop"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+.ne-group-sound-loop-wrapper > .ne-group[data-group="loop"].expanded {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 .fx-header {
     display: flex;
     align-items: center;
