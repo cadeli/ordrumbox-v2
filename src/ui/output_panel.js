@@ -1,6 +1,6 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindAccordionToggles } from './panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles, AccordionGroup } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -27,52 +27,20 @@ export default class OutputPanel extends BasePanel {
 
     createDOM() {
         super.createDOM()
+        const masterGrp = new AccordionGroup({ key: 'master', label: 'Master', shortLabel: 'Master', gridId: 'op-master-grid' })
+        const filtersGrp = new AccordionGroup({ key: 'filters', label: 'Filters', shortLabel: 'Flt', gridId: 'op-filters-grid' })
+        const compGrp = new AccordionGroup({ key: 'compressor', label: 'Compressor', shortLabel: 'Comp', gridId: 'op-comp-grid' })
+        const specGrp = new AccordionGroup({ key: 'spectrum', label: 'Spectrum', shortLabel: 'Spec', extraAttrs: 'id="op-analyzer-group"' })
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Output</span>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                <div class="ne-group expanded" data-group="master">
-                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="master" title="Master">
-                        <span class="ne-group-accordion-icon">&minus;</span>
-                        <span class="ne-group-accordion-label">Master</span>
-                    </button>
-                    <div class="ne-group-content">
-                        <div class="ne-group-label">Master</div>
-                        <div class="ne-grid" id="op-master-grid"></div>
-                    </div>
-                </div>
-                <div class="ne-group expanded" data-group="filters">
-                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="filters" title="Filters">
-                        <span class="ne-group-accordion-icon">&minus;</span>
-                        <span class="ne-group-accordion-label">Flt</span>
-                    </button>
-                    <div class="ne-group-content">
-                        <div class="ne-group-label">Filters</div>
-                        <div class="ne-grid" id="op-filters-grid"></div>
-                    </div>
-                </div>
-                <div class="ne-group expanded" data-group="compressor">
-                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="compressor" title="Compressor">
-                        <span class="ne-group-accordion-icon">&minus;</span>
-                        <span class="ne-group-accordion-label">Comp</span>
-                    </button>
-                    <div class="ne-group-content">
-                        <div class="ne-group-label">Compressor</div>
-                        <div class="ne-grid" id="op-comp-grid"></div>
-                    </div>
-                </div>
-                <div class="ne-group expanded" data-group="spectrum" id="op-analyzer-group">
-                    <button class="ne-group-accordion-toggle ne-toggle active" data-toggle="spectrum" title="Spectrum">
-                        <span class="ne-group-accordion-icon">&minus;</span>
-                        <span class="ne-group-accordion-label">Spec</span>
-                    </button>
-                    <div class="ne-group-content">
-                        <div class="ne-group-label">Spectrum</div>
-                        <canvas id="op-spectrum"></canvas>
-                    </div>
-                </div>
+                ${masterGrp.open()}${masterGrp.close()}
+                ${filtersGrp.open()}${filtersGrp.close()}
+                ${compGrp.open()}${compGrp.close()}
+                ${specGrp.open()}<canvas id="op-spectrum"></canvas>${specGrp.close()}
             </div>
         `
 

@@ -88,3 +88,71 @@ export function escapeHtml(value) {
     div.textContent = value
     return div.innerHTML
 }
+
+/**
+ * AccordionGroup — reusable accordion section for all panels.
+ *
+ * Usage:
+ *   const g = new AccordionGroup({ key: 'master', label: 'Master', shortLabel: 'M' })
+ *   html += g.open() + '<div>content</div>' + g.close()
+ *
+ *   // or inline:
+ *   html += new AccordionGroup({ ... }).render('<div>content</div>')
+ */
+export class AccordionGroup {
+    constructor({
+        key,
+        label,
+        shortLabel,
+        expanded = true,
+        dataAttr   = 'data-group',
+        cssPrefix  = 'ne',
+        gridClass,
+        gridId,
+        labelClass,
+        groupClass = '',
+        toggleExtraClass = 'ne-toggle',
+        extraAttrs = '',
+    } = {}) {
+        this.key         = key
+        this.label       = label
+        this.shortLabel  = shortLabel || label
+        this.expanded    = expanded
+        this.dataAttr    = dataAttr
+        this.cssPrefix   = cssPrefix
+        this.gridClass   = gridClass || `${cssPrefix}-grid`
+        this.gridId      = gridId
+        this.labelClass  = labelClass || `${cssPrefix}-group-label`
+        this.groupClass  = groupClass
+        this.toggleExtraClass = toggleExtraClass
+        this.extraAttrs  = extraAttrs
+    }
+
+    open() {
+        const cls = [
+            `${this.cssPrefix}-group`,
+            this.expanded ? 'expanded' : 'collapsed',
+            this.groupClass,
+        ].filter(Boolean).join(' ')
+
+        const activeCls = this.expanded ? ' active' : ''
+        const icon = this.expanded ? '&minus;' : '+'
+
+        return `<div class="${cls}" ${this.dataAttr}="${this.key}"${this.extraAttrs ? ' ' + this.extraAttrs : ''}>` +
+            `<button class="ne-group-accordion-toggle${this.toggleExtraClass ? ' ' + this.toggleExtraClass : ''}${activeCls}" data-toggle="${this.key}" title="${this.label}">` +
+                `<span class="ne-group-accordion-icon">${icon}</span>` +
+                `<span class="ne-group-accordion-label">${this.shortLabel}</span>` +
+            `</button>` +
+            `<div class="ne-group-content">` +
+            `<div class="${this.labelClass}">${this.label}</div>` +
+            `<div class="${this.gridClass}"${this.gridId ? ` id="${this.gridId}"` : ''}>`
+    }
+
+    close() {
+        return '</div></div></div>'
+    }
+
+    render(content) {
+        return this.open() + (content || '') + this.close()
+    }
+}

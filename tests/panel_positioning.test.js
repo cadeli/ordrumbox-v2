@@ -11,7 +11,7 @@ import NoteEditor from '../src/ui/note_editor.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 import OutputPanel from '../src/ui/output_panel.js'
 import AboutPanel from '../src/ui/about_panel.js'
-import { positionBelowPatternPanel } from '../src/ui/panel_helpers.js'
+import { positionBelowPatternPanel } from '../src/ui/components/panel_helpers.js'
 
 describe('Panel positioning below pattern panel on desktop', () => {
     beforeEach(() => {

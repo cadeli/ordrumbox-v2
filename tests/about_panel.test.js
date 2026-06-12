@@ -108,8 +108,8 @@ describe('AboutPanel (PWA)', () => {
     })
 
     it('has Info and PWA sub-panel toggles', () => {
-        const toggles = document.querySelectorAll('#about-panel [data-about-toggle]')
-        const keys = Array.from(toggles).map(b => b.dataset.aboutToggle)
+        const toggles = document.querySelectorAll('#about-panel [data-toggle]')
+        const keys = Array.from(toggles).map(b => b.dataset.toggle)
         expect(keys).toEqual(['info', 'pwa'])
     })
 

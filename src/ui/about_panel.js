@@ -1,5 +1,5 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindAccordionToggles } from './panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles, AccordionGroup } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 
 const APP_VERSION = '2.0.0'
@@ -39,58 +39,42 @@ export default class AboutPanel extends BasePanel {
 
     createDOM() {
         super.createDOM()
+        const infoGrp = new AccordionGroup({ key: 'info', label: 'Application', shortLabel: 'Info', extraAttrs: 'data-about-section="info"' })
+        const pwaGrp = new AccordionGroup({ key: 'pwa', label: 'Progressive Web App', shortLabel: 'PWA', extraAttrs: 'data-about-section="pwa"' })
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">About</span>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                <div class="ne-group expanded" data-group="info" data-about-section="info">
-                    <button class="ne-group-accordion-toggle ne-toggle active" data-about-toggle="info" title="Application">
-                        <span class="ne-group-accordion-icon">&minus;</span>
-                        <span class="ne-group-accordion-label">Info</span>
-                    </button>
-                    <div class="ne-group-content">
-                        <div class="ne-group-label">Application</div>
-                        <div class="ne-grid">
-                            <div class="ne-row no-cursor">
-                                <label>Name</label>
-                                <span class="ne-val">${APP_NAME}</span>
-                            </div>
-                            <div class="ne-row no-cursor">
-                                <label>Version</label>
-                                <span class="ne-val">${APP_VERSION}</span>
-                            </div>
-                            <div class="ne-row no-cursor">
-                                <label>License</label>
-                                <span class="ne-val">${APP_LICENSE}</span>
-                            </div>
-                        </div>
+                ${infoGrp.open()}
+                    <div class="ne-row no-cursor">
+                        <label>Name</label>
+                        <span class="ne-val">${APP_NAME}</span>
                     </div>
-                </div>
-                <div class="ne-group expanded" data-group="pwa" data-about-section="pwa">
-                    <button class="ne-group-accordion-toggle ne-toggle active" data-about-toggle="pwa" title="Progressive Web App">
-                        <span class="ne-group-accordion-icon">&minus;</span>
-                        <span class="ne-group-accordion-label">PWA</span>
-                    </button>
-                    <div class="ne-group-content">
-                        <div class="ne-group-label">Progressive Web App</div>
-                        <div class="ne-grid">
-                            <div class="ne-row" id="about-pwa-install-row" style="display:none">
-                                <label>Install</label>
-                                <button class="ne-btn" id="about-pwa-install">Install App</button>
-                            </div>
-                            <div class="ne-row no-cursor">
-                                <label>Website</label>
-                                <a href="${APP_WEBSITE}" target="_blank" rel="noopener" class="ne-val">${APP_WEBSITE}</a>
-                            </div>
-                            <div class="ne-row no-cursor">
-                                <label>Source</label>
-                                <a href="${APP_REPO}" target="_blank" rel="noopener" class="ne-val">${APP_REPO}</a>
-                            </div>
-                        </div>
+                    <div class="ne-row no-cursor">
+                        <label>Version</label>
+                        <span class="ne-val">${APP_VERSION}</span>
                     </div>
-                </div>
+                    <div class="ne-row no-cursor">
+                        <label>License</label>
+                        <span class="ne-val">${APP_LICENSE}</span>
+                    </div>
+                ${infoGrp.close()}
+                ${pwaGrp.open()}
+                    <div class="ne-row" id="about-pwa-install-row" style="display:none">
+                        <label>Install</label>
+                        <button class="ne-btn" id="about-pwa-install">Install App</button>
+                    </div>
+                    <div class="ne-row no-cursor">
+                        <label>Website</label>
+                        <a href="${APP_WEBSITE}" target="_blank" rel="noopener" class="ne-val">${APP_WEBSITE}</a>
+                    </div>
+                    <div class="ne-row no-cursor">
+                        <label>Source</label>
+                        <a href="${APP_REPO}" target="_blank" rel="noopener" class="ne-val">${APP_REPO}</a>
+                    </div>
+                ${pwaGrp.close()}
             </div>
         `
 

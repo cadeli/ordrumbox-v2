@@ -1,6 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindVisibilityToggles } from './panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles, AccordionGroup } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -147,16 +147,13 @@ export default class NoteEditor extends BasePanel {
                 retrig: 'Retr',
                 arp: 'Arp'
             }
-            const shortLabel = shortLabels[visKey]
 
-            bodyHtml += `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="${visKey}">
-                <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="${visKey}" title="${g.label}">
-                    <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
-                    <span class="ne-group-accordion-label">${shortLabel}</span>
-                </button>
-                <div class="ne-group-content">
-                    <div class="ne-group-label">${g.label}</div>
-                    <div class="ne-grid">`
+            bodyHtml += new AccordionGroup({
+                key: visKey,
+                label: g.label,
+                shortLabel: shortLabels[visKey],
+                expanded: isExpanded,
+            }).open()
             g.props.forEach(p => {
                 if (p.type === 'select') {
                     let val = p.key === 'arpScale' ? arpState.scale : arpState.type
@@ -175,7 +172,7 @@ export default class NoteEditor extends BasePanel {
                     bodyHtml += `<div data-ne-slider="${p.key}"></div>`
                 }
             })
-            bodyHtml += `</div></div></div>`
+            bodyHtml += new AccordionGroup().close()
         })
 
         bodyHtml += '</div>'

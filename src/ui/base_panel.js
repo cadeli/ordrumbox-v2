@@ -1,4 +1,4 @@
-import { injectUiCss, positionBelowPatternPanel, hidePanelsById, escapeHtml } from './panel_helpers.js'
+import { injectUiCss, positionBelowPatternPanel, hidePanelsById, escapeHtml } from './components/panel_helpers.js'
 
 /**
  * BasePanel - Base class for all UI panels.

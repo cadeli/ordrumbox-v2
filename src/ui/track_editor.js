@@ -9,7 +9,7 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
-import { bindCloseButton, bindVisibilityToggles, positionBelowPatternPanel } from './panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles, positionBelowPatternPanel, AccordionGroup } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 
@@ -196,14 +196,12 @@ export default class TrackEditor extends BasePanel {
                 bodyHtml += this._renderFxGroup(isExpanded)
                 return
             }
-            bodyHtml += `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="${visKey}">
-                <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="${visKey}" title="${g.label}">
-                    <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
-                    <span class="ne-group-accordion-label">${shortLabels[visKey]}</span>
-                </button>
-                <div class="ne-group-content">
-                    <div class="ne-group-label">${g.label}</div>
-                    <div class="ne-grid">`
+            bodyHtml += new AccordionGroup({
+                key: visKey,
+                label: g.label,
+                shortLabel: shortLabels[visKey],
+                expanded: isExpanded,
+            }).open()
             g.props.forEach(p => {
                 const val = this._track[p.key]
                 const isSelected = this._selectedPropKey === p.key ? 'selected' : ''
@@ -252,7 +250,7 @@ export default class TrackEditor extends BasePanel {
                     bodyHtml += s.toHTML()
                 }
             })
-            bodyHtml += `</div></div></div>`
+            bodyHtml += new AccordionGroup().close()
 
             // LFO Sub-panel — rendered right after its parent group (Filters or Levels)
             if (this._selectedPropKey && visKey !== 'effects') {

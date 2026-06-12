@@ -3,7 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
-import { bindAccordionToggles } from './panel_helpers.js'
+import { bindAccordionToggles, AccordionGroup } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 const fmt = v => parseFloat(Number(v).toFixed(2))
 
@@ -159,21 +159,21 @@ export default class SynthEditor {
 
             const label = this._getGroupLabel(groupName)
 
-            html += `<div class="ss-group ${isExpanded ? 'expanded' : 'collapsed'}" data-synth-group="${this._esc(groupName)}">
-                <button class="ne-group-accordion-toggle ${isExpanded ? 'active' : ''}" data-toggle="${this._esc(groupName)}" title="${this._esc(groupName)}">
-                    <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
-                    <span class="ne-group-accordion-label">${this._esc(label)}</span>
-                </button>
-                <div class="ne-group-content">
-                    <div class="ss-group-label">${this._esc(groupName)}</div>
-                    <div class="ss-grid">`
+            const grp = new AccordionGroup({
+                key: this._esc(groupName),
+                label: this._esc(label),
+                expanded: isExpanded,
+                cssPrefix: 'ss',
+                dataAttr: 'data-synth-group',
+                toggleExtraClass: '',
+                groupClass: '',
+            })
+            html += grp.open()
 
             fields.forEach(({ path, key, val }) => {
                 const meta = SYNTH_SLIDER_META[path.join('.')]
                 const label = meta?.label ?? key
                 if (typeof val === 'number') {
-                    // OrSlider renders its own label inside its row — do not
-                    // wrap with an outer .ss-row + <label>.
                     sliderConfigs.push({ path, val })
                     html += this._renderControl(path, key, val)
                 } else {
@@ -184,7 +184,7 @@ export default class SynthEditor {
                 }
             })
 
-            html += `</div></div></div>`
+            html += grp.close()
         })
 
         html += '</div>'
