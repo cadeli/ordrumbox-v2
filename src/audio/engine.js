@@ -190,6 +190,9 @@ export default class AudioEngine {
         // Wait for the worklet mixer and player to be ready before triggering.
         await this._workletReady
         if (!this.player) return
+        if (this.audioCtx?.state === 'suspended') {
+            await this.audioCtx.resume()
+        }
 
         await this.player.simpleBeep(indexTrack)
 

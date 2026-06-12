@@ -135,6 +135,9 @@ export default class MfMixer {
     addStrip = async (name) => {
         if (this.strips[name]) return this.strips[name];
 
+        // Re-initialise bus nodes if they were torn down by stop().
+        if (!this.busInput) this.start();
+
         const strip = await MfStrip.create(name, this.audioCtx, this);
         this.strips[name] = strip;
 

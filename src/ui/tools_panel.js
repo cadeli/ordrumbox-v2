@@ -407,6 +407,9 @@ export default class ToolsPanel extends BasePanel {
 
             // Play the imported sound immediately
             if (serviceRegistry.audioEngine) {
+                if (serviceRegistry.audioCtx?.state === 'suspended') {
+                    await serviceRegistry.audioCtx.resume()
+                }
                 serviceRegistry.audioEngine.simpleBeep(appState.selectedTrackNum)
             }
 

@@ -140,6 +140,9 @@ export default class MfSeq {
             this.serviceRegistry.audioCtx = this.serviceRegistry.mfResourcesLoader.audioCtx
         }
         if (!this.serviceRegistry.audioCtx) return
+        if (this.serviceRegistry.audioCtx.state === 'suspended') {
+            await this.serviceRegistry.audioCtx.resume()
+        }
         this.ensureAudioEngine()
         const pat = this.appState.patterns[this.appState.selectedPatternNum]
         const track = pat?.tracks?.[indexTrack]
