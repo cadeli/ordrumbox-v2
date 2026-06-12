@@ -11,6 +11,7 @@ import { toFiniteNumber } from '../math.js'
 function isWorkletCompatible(generatedSound) {
     if (!generatedSound) return false
     if ((generatedSound.lfo?.target ?? 'NOT') !== 'NOT') return false
+    if ((generatedSound.lfo2?.target ?? 'NOT') !== 'NOT') return false
     if (toFiniteNumber(generatedSound.slide, 0) > 0) return false
     if (toFiniteNumber(generatedSound.filter?.filterEnvelopeAmount, 0) > 0) return false
     return true

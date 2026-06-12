@@ -91,15 +91,20 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
         this.filt = new _TptState();
-        this.startTime = -1;   // seconds, -1 = not triggered
-        this.releaseTime = -1; // seconds, -1 = no release scheduled
-        this.frameCount = 0;   // total frames processed
+        this.startTime = -1;
+        this.releaseTime = -1;
+        this.frameCount = 0;
         this.phase1 = 0;
         this.phase2 = 0;
         this.phase3 = 0;
         this.lastNoise = 0;
         this.lfoPhase1 = 0;
         this.lfoPhase2 = 0;
+        this._lfo1Det = [0, 0, 0];
+        this._lfo1Gain = [0, 0, 0];
+        this._lfo2Det = [0, 0, 0];
+        this._lfo2Gain = [0, 0, 0];
+        this._lfoScratch = [0, 0];
         this.port.onmessage = (e) => this._onMessage(e.data);
     }
 
@@ -134,20 +139,20 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         return phase < 0.5 ? 1 : -1;  // square
     }
 
-    _lfoValue(target, depth, phase) {
-        const raw = Math.sin(2 * Math.PI * phase);
-        if (target === 0) return { filt: 0, oscDetune: [0, 0, 0], master: 0, oscGain: [0, 0, 0] };
-        // target 1=FLT, 2=VCO1, 3=VCO2, 4=VCO3, 5=master, 6=vco1.gain, 7=vco1.detune, 8=vco1.octave
-        const result = { filt: 0, oscDetune: [0, 0, 0], master: 0, oscGain: [0, 0, 0] };
-        if (target === 1) result.filt = raw * depth * 1000;
-        else if (target === 2) result.oscDetune[0] = raw * depth * 1200;
-        else if (target === 3) result.oscDetune[1] = raw * depth * 1200;
-        else if (target === 4) result.oscDetune[2] = raw * depth * 1200;
-        else if (target === 5) result.master = raw * depth * 0.8;
-        else if (target === 6) result.oscGain[0] = raw * depth;
-        else if (target === 7) result.oscDetune[0] = raw * depth * 1200;
-        else if (target === 8) result.oscDetune[0] = raw * depth * 1200;
-        return result;
+    _lfoValue(target, depth, phase, det, gain, out) {
+        det[0] = 0; det[1] = 0; det[2] = 0;
+        gain[0] = 0; gain[1] = 0; gain[2] = 0;
+        out[0] = 0; out[1] = 0;
+        if (target === 0) return;
+        const raw = Math.sin(2 * Math.PI * phase) * depth;
+        if (target === 1) { out[0] = raw * 1000; return; }
+        if (target === 2) { det[0] = raw * 1200; return; }
+        if (target === 3) { det[1] = raw * 1200; return; }
+        if (target === 4) { det[2] = raw * 1200; return; }
+        if (target === 5) { out[1] = raw * 0.8; return; }
+        if (target === 6) { gain[0] = raw; return; }
+        if (target === 7) { det[0] = raw * 1200; return; }
+        if (target === 8) { det[0] = raw * 1200; return; }
     }
 
     _param(name, arr) {
@@ -298,25 +303,29 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             if (this.lfoPhase1 >= 1) this.lfoPhase1 -= Math.floor(this.lfoPhase1);
             if (this.lfoPhase2 >= 1) this.lfoPhase2 -= Math.floor(this.lfoPhase2);
 
-            // Compute LFO modulations
-            const lfo1Mod = this._lfoValue(lfo1Target, lfo1Depth, this.lfoPhase1);
-            const lfo2Mod = this._lfoValue(lfo2Target, lfo2Depth, this.lfoPhase2);
+            // Compute LFO modulations (writes det/gain/filt/master into pre-allocated arrays)
+            this._lfoValue(lfo1Target, lfo1Depth, this.lfoPhase1, this._lfo1Det, this._lfo1Gain, this._lfoScratch);
+            const lfo1Filt = this._lfoScratch[0];
+            const lfo1Master = this._lfoScratch[1];
+            this._lfoValue(lfo2Target, lfo2Depth, this.lfoPhase2, this._lfo2Det, this._lfo2Gain, this._lfoScratch);
+            const lfo2Filt = this._lfoScratch[0];
+            const lfo2Master = this._lfoScratch[1];
 
             // Apply LFO to filter frequency
-            const fFreqMod = fFreq + lfo1Mod.filt + lfo2Mod.filt;
+            const fFreqMod = fFreq + lfo1Filt + lfo2Filt;
 
             // Apply LFO to oscillator detune
-            const d1Mod = d1 + lfo1Mod.oscDetune[0] + lfo2Mod.oscDetune[0];
-            const d2Mod = d2 + lfo1Mod.oscDetune[1] + lfo2Mod.oscDetune[1];
-            const d3Mod = d3 + lfo1Mod.oscDetune[2] + lfo2Mod.oscDetune[2];
+            const d1Mod = d1 + this._lfo1Det[0] + this._lfo2Det[0];
+            const d2Mod = d2 + this._lfo1Det[1] + this._lfo2Det[1];
+            const d3Mod = d3 + this._lfo1Det[2] + this._lfo2Det[2];
 
             // Apply LFO to oscillator gain
-            const g1Mod = Math.max(0, Math.min(1, g1 + lfo1Mod.oscGain[0] + lfo2Mod.oscGain[0]));
-            const g2Mod = Math.max(0, Math.min(1, g2 + lfo1Mod.oscGain[1] + lfo2Mod.oscGain[1]));
-            const g3Mod = Math.max(0, Math.min(1, g3 + lfo1Mod.oscGain[2] + lfo2Mod.oscGain[2]));
+            const g1Mod = Math.max(0, Math.min(1, g1 + this._lfo1Gain[0] + this._lfo2Gain[0]));
+            const g2Mod = Math.max(0, Math.min(1, g2 + this._lfo1Gain[1] + this._lfo2Gain[1]));
+            const g3Mod = Math.max(0, Math.min(1, g3 + this._lfo1Gain[2] + this._lfo2Gain[2]));
 
             // Apply LFO to master volume
-            const masterMod = Math.max(0, master + lfo1Mod.master + lfo2Mod.master);
+            const masterMod = Math.max(0, master + lfo1Master + lfo2Master);
 
             // Apply detune (cents → frequency multiplier)
             const det1 = Math.pow(2, d1Mod / 1200);
