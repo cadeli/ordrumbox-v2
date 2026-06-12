@@ -59,7 +59,7 @@ export default class ToolsPanel extends BasePanel {
                         <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav">
                     </div>
                 `)}
-                ${buildAccordionGroup('midi', 'MIDI', 'MIDI', true, `
+                ${buildAccordionGroup('midi-status', 'MIDI Status', 'Status', true, `
                     <div class="ne-row no-cursor">
                         <button class="lfo-led" id="midiSupportLed"></button>
                         <label>Support:</label>
@@ -85,6 +85,8 @@ export default class ToolsPanel extends BasePanel {
                         <label>Activity:</label>
                         <span class="ne-val" id="midiActivityLabel">Idle</span>
                     </div>
+                `)}
+                ${buildAccordionGroup('midi', 'MIDI', 'MIDI', true, `
                     <div class="ne-row">
                         <label>Output:</label>
                         <select id="tp-midi-output-select"></select>
@@ -165,7 +167,7 @@ export default class ToolsPanel extends BasePanel {
 
         bindCloseButton(this.container, () => this.hide())
 
-        const groupMap = { pattern: 0, export: 1, import: 2, midi: 3 }
+        const groupMap = { pattern: 0, export: 1, import: 2, 'midi-status': 3, midi: 4 }
         bindAccordionToggles(this.container, (key) => {
             const groups = this.container.querySelectorAll('.ne-body > .ne-group')
             return groups[groupMap[key]]

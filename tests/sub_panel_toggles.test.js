@@ -158,7 +158,7 @@ describe('Sub-panel toggle toolbars', () => {
 
             const toggles = document.getElementById('tools-panel').querySelectorAll('.ne-toggle[data-toggle]')
             const keys = Array.from(toggles).map(b => b.dataset.toggle)
-            expect(keys).toEqual(['pattern', 'export', 'import', 'midi'])
+            expect(keys).toEqual(['pattern', 'export', 'import', 'midi-status', 'midi'])
         })
 
         it('hides the corresponding group when a toggle is clicked', () => {
