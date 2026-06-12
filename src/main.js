@@ -147,13 +147,6 @@ export function init() {
             // Then select pattern (which will auto-assign once sounds are loaded)
             serviceRegistry.mfCmd.setSelectedPatternNum(0)
 
-            const pattern = appState.patterns[0]
-            const tracks = Utils.getTracksArray(pattern)
-            const trackIdx = tracks.findIndex(t => t.name === 'SNARE')
-            if (trackIdx !== -1) {
-                const track = tracks[trackIdx]
-                playbackEvents.dispatchTrackSelect({ track, trackIdx })
-            }
         }
     })
     requestAnimFrame(draw)
