@@ -98,11 +98,16 @@ export default class MfMixer {
 
         // Wire the bus only when every link is present. If the master worklet
         // isn't ready yet, create() will wire it later via _init().
+        // Always disconnect first — Web Audio connect() accumulates duplicate
+        // connections which double the signal each time.
         if (this.busInput && this.busWorklet && this.analyser) {
+            try { this.busInput.disconnect(); } catch (_) {}
+            try { this.busWorklet.disconnect(); } catch (_) {}
+            try { this.analyser.disconnect(); } catch (_) {}
             this.busInput.connect(this.busWorklet);
             this.busWorklet.connect(this.analyser);
             this.analyser.connect(ctx.destination);
-            
+
             try { this.transportClock.start(); } catch (_) {}
         }
     }

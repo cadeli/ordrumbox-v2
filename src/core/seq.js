@@ -15,6 +15,7 @@ export default class MfSeq {
         this.appState = options.appState ?? appState
         this.soundRegistry = options.soundRegistry ?? soundRegistry
         this.playbackEvents = options.playbackEvents ?? playbackEvents
+        this._starting = false
 
         this.ensureTransport()
     }
@@ -68,6 +69,21 @@ export default class MfSeq {
     }
 
     start = async () => {
+        if (this._starting) {
+            console.warn("MfSeq::start: already starting, skipping")
+            return
+        }
+        this._starting = true
+        try {
+            await this._startInner()
+        } catch (error) {
+            console.error("MfSeq::start: unexpected error", error)
+        } finally {
+            this._starting = false
+        }
+    }
+
+    _startInner = async () => {
         try {
             await this.serviceRegistry.mfResourcesLoader.ensureResourcesLoaded()
             this.playbackEvents.dispatchDrumkitChange()
@@ -89,8 +105,6 @@ export default class MfSeq {
         await mfAutoAssign.autoAssignSounds(selPattern)
         this.serviceRegistry.mfPatterns.computeFlatNotesFromPattern(selPattern, 0)
 
-   
-
         this.ensureAudioEngine()
         await this.serviceRegistry.audioEngine.start(selPattern)
         this.serviceRegistry.transport.start()
@@ -109,7 +123,12 @@ export default class MfSeq {
         // Trigger lazy AudioContext creation synchronously inside the user
         // gesture handler so that resume() is allowed by the browser.
         if (!this.serviceRegistry.audioCtx) {
-            this.serviceRegistry.audioCtx = this.serviceRegistry.mfResourcesLoader.audioCtx
+            try {
+                this.serviceRegistry.audioCtx = this.serviceRegistry.mfResourcesLoader.audioCtx
+            } catch (err) {
+                console.error("MfSeq::toggleStartStop: Failed to create AudioContext", err)
+                return
+            }
         }
 
         // Resume audio context on user interaction (spacebar/click)
