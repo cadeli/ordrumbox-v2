@@ -135,6 +135,9 @@ export function init() {
             if (soundRegistry.drumkitList.length === 0) {
                 await serviceRegistry.mfResourcesLoader.loadDrumkitList(MfResourcesLoader.DRUMKITS_URL)
             }
+            if (Object.keys(soundRegistry.generatedSounds).length === 0) {
+                await serviceRegistry.mfResourcesLoader.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL)
+            }
         } catch (e) {
             console.error('Failed to load startup resources', e)
         }
