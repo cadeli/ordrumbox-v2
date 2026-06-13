@@ -4,7 +4,7 @@
  * Synth Voice processor tests: validate the inline JS string and DSP
  * behavior (3 VCO + noise + filter + ADSR + master + pan).
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import SYNTH_VOICE_SOURCE from '../src/audio/worklets/processors/synth_voice_source.js'
 
 class MockAudioWorkletProcessor {
@@ -17,6 +17,7 @@ class MockAudioWorkletProcessor {
 
 const globalScope = {
     sampleRate: 44100,
+    currentFrame: 0,
     AudioWorkletProcessor: MockAudioWorkletProcessor,
     processors: {}
 }
@@ -36,11 +37,22 @@ function runProcess(processor, paramValues, frames = 128) {
         parameters[desc.name] = new Float32Array(frames).fill(v)
     }
     const outputs = [[new Float32Array(frames), new Float32Array(frames)]]
+    
+    // Set globals for the process call
+    globalThis.sampleRate = globalScope.sampleRate
+    globalThis.currentFrame = globalScope.currentFrame
+    
     processor.process([], outputs, parameters)
+    
+    globalScope.currentFrame += frames
     return outputs[0]  // [chL, chR]
 }
 
 describe('SynthVoiceProcessor source', () => {
+    beforeEach(() => {
+        globalScope.currentFrame = 0
+    })
+
     it('exports a non-empty string', () => {
         expect(typeof SYNTH_VOICE_SOURCE).toBe('string')
         expect(SYNTH_VOICE_SOURCE.length).toBeGreaterThan(100)

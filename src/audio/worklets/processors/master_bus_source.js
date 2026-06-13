@@ -51,7 +51,7 @@ class MasterBusProcessor extends AudioWorkletProcessor {
         this.hpfR = new _OnePoleState();
         this.lpfL = new _OnePoleState();
         this.lpfR = new _OnePoleState();
-        this.envDb = -100;
+        this.envDb = 0;
     }
 
     _onePoleHpf(st, x, f, sr) {
@@ -130,7 +130,7 @@ class MasterBusProcessor extends AudioWorkletProcessor {
 
                 // Envelope follower
                 const targetDb = -gainReductionDb;
-                const coeff = (targetDb > this.envDb) ? attack : release;
+                const coeff = (targetDb < this.envDb) ? attack : release;
                 const a = Math.exp(-1 / (Math.max(0.0001, coeff) * sr));
                 this.envDb = a * this.envDb + (1 - a) * targetDb;
 

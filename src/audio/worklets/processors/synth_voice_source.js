@@ -93,7 +93,6 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this.filt = new _TptState();
         this.startTime = -1;
         this.releaseTime = -1;
-        this.frameCount = 0;
         this.phase1 = 0;
         this.phase2 = 0;
         this.phase3 = 0;
@@ -181,7 +180,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     }
 
     _envelope(t) {
-        // t = time since trigger (seconds)
+        // t = seconds since trigger (startTime)
         const A = this._param('attack',   this._attackParam);
         const D = this._param('decay',    this._decayParam);
         const S = this._param('sustain',  this._sustainParam);
@@ -202,14 +201,15 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             level = peak * S;
         }
 
-        // Apply release ramp if past releaseTime
-        if (this.releaseTime >= 0 && t >= this.releaseTime) {
-            const rt = t - this.releaseTime;
+        // Apply release ramp if absolute time (t + startTime) is past releaseTime
+        if (this.releaseTime >= 0 && (t + this.startTime) >= this.releaseTime) {
+            const absoluteT = t + this.startTime;
+            const rt = absoluteT - this.releaseTime;
             if (rt >= R) {
                 return 0;
             }
-            // Compute level at the moment of release
-            const releaseT = this.releaseTime;
+            // Compute level at the moment of release (relative time of release)
+            const releaseT = this.releaseTime - this.startTime;
             let startLevel;
             if (releaseT < A) {
                 startLevel = peak * (releaseT / Math.max(0.0001, A));
@@ -292,8 +292,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         else filtMode = 3;
 
         for (let i = 0; i < frames; i++) {
-            // t = seconds since the trigger, tracked across process calls
-            const t = (this.frameCount + i) / sr - this.startTime;
+            // t = seconds since the trigger, using absolute currentFrame for accurate sync
+            const currentTime = (currentFrame + i) / sr;
+            const t = currentTime - this.startTime;
 
             // Advance LFO phases
             const lfo1Inc = lfo1Freq / sr;
@@ -371,7 +372,6 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 output[1][i] = y * panR;
             }
         }
-        this.frameCount += frames;
         return true;
     }
 }

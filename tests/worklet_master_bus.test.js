@@ -34,6 +34,9 @@ function runProcess(processor, inputs, paramValues, frames = 128) {
         parameters[desc.name] = new Float32Array(frames).fill(v)
     }
     const outputs = [[new Float32Array(frames), new Float32Array(frames)]]
+    
+    globalThis.sampleRate = globalScope.sampleRate
+    
     processor.process(inputs, outputs, parameters)
     return outputs[0]  // [chL, chR]
 }
