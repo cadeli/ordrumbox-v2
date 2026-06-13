@@ -71,7 +71,9 @@ export function getArpNoteCount(note) {
 }
 
 export function computeTickForNote(note, track, tick = TICK) {
-    return note.bar * tick + Math.round((note.barStep * tick) / track.barQuantize)
+    const bar = note.bar ?? 0
+    const barStep = note.barStep ?? 0
+    return bar * tick + Math.round((barStep * tick) / track.barQuantize)
 }
 
 export function computeNbTickForPattern(nbBars, tick = TICK) {
@@ -79,8 +81,12 @@ export function computeNbTickForPattern(nbBars, tick = TICK) {
 }
 
 export function computeNbTickForLoop(track, tick = TICK) {
+    const barQuantize = track.barQuantize ?? 4
+    if (track.loopPointBar === undefined && track.loopAtStep !== undefined) {
+        return Math.round((track.loopAtStep * tick) / barQuantize)
+    }
     const trackBars = MfDefaults.getTrackProp(track, 'bars')
-    const loopPointStepPc = (track.loopPointStep ?? 0) / track.barQuantize
+    const loopPointStepPc = (track.loopPointStep ?? 0) / barQuantize
     return Math.floor((loopPointStepPc + (track.loopPointBar ?? trackBars)) * tick)
 }
 

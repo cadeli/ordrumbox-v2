@@ -283,7 +283,7 @@ export default class AudioEngine {
         for (const track of Object.values(pattern.tracks)) {
             const strip = await offlineMixer.getOrCreateStrip(track.name)
             if (strip) {
-                offlineSound.updateStripFromTrack(strip, track, 0)
+                await offlineSound.updateStripFromTrack(strip, track, 0)
             }
         }
 
@@ -300,18 +300,18 @@ export default class AudioEngine {
             const loopStartTime = loop * truePatternDuration
             this.computeFlatNotes(pattern, loop)
 
-            this.flatNotes.forEach((notesAtTick, tick) => {
-                notesAtTick.forEach(flatNote => {
+            for (const [tick, notesAtTick] of this.flatNotes.entries()) {
+                for (const flatNote of notesAtTick) {
                     const nbTickForPattern = this.TICK * nbBars
                     const noteTime         = MfNoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
                     const absoluteTime     = loopStartTime + noteTime
                     MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
 
                     if (flatNote.track.mute === false) {
-                        offlineSound.play(flatNote, absoluteTime + flatNote.swingTime)
+                        await offlineSound.play(flatNote, absoluteTime + flatNote.swingTime)
                     }
-                })
-            })
+                }
+            }
         }
 
         const renderedBuffer = await offlineCtx.startRendering()

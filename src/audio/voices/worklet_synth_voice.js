@@ -77,11 +77,21 @@ export default class WorkletSynthVoice extends BaseVoice {
     start(time) {
         if (!this.workletNode) return
         postTrigger(this.workletNode, time)
-        const env = this.generatedSound.enveloppe ?? {}
-        const totalSec = (env.attack || 0) + (env.decay || 0) + (env.release || 0) + RELEASE_TIME
+        
+        const gs = this.generatedSound
+        const env = gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
+        const attack = Math.max(0.003, toFiniteNumber(env.attack, 0.01))
+        const decay = toFiniteNumber(env.decay, 0.1)
+        const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
+
+        // Auto-release after decay to match native SynthVoice behavior
+        const releaseTime = time + attack + decay
+        postRelease(this.workletNode, releaseTime)
+
+        const totalSec = attack + decay + release + RELEASE_TIME
         this.totalStopTime = time + totalSec
-        // Cleanup runs in the audio thread, but we still need to release JS-side refs.
-        // Use a microtask-based timer to avoid blocking the call site.
+        
+        // Cleanup refs after sound has fully finished
         if (typeof setTimeout === 'function') {
             setTimeout(() => {
                 this.cleanup()

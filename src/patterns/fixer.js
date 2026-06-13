@@ -1,5 +1,5 @@
 import Utils from '../core/utils.js'
-import { recalcLoopDerived } from '../model/track_schema.js'
+import { recalcLoopDerived, normalizeTrack } from '../model/track_schema.js'
 import { computeTrackPan } from '../audio/math.js'
 
 export function fixTrackPanning(track, indexTrack) {
@@ -34,23 +34,17 @@ export function fixNoteDefaults(note, track) {
 }
 
 export function fixTrackDefaults(track, indexTrack) {
+    const normalized = normalizeTrack(track)
+    Object.assign(track, normalized)
+
     fixTrackPanning(track, indexTrack)
     if (track.useSoftSynth) track.useAutoAssignSound = false
     recalcLoopDerived(track)
     if (track.useAutoAssignSound === undefined) track.useAutoAssignSound = true
-    track.swingResolution ??= Utils.TRACK_DEFAULTS.swingResolution
-    track.swingAmount ??= Utils.TRACK_DEFAULTS.swingAmount
-    track.velocityLfo ??= Utils.TRACK_DEFAULTS.velocityLfo
-    track.pitchLfo ??= Utils.TRACK_DEFAULTS.pitchLfo
-    track.panLfo ??= Utils.TRACK_DEFAULTS.panLfo
-    track.filterFreqLfo ??= Utils.TRACK_DEFAULTS.filterFreqLfo
-    track.filterQLfo ??= Utils.TRACK_DEFAULTS.filterQLfo
-    track.filterType ??= Utils.TRACK_DEFAULTS.filterType
+    
+    // Explicitly fix filterType
     if (track.filterType === 'all') track.filterType = 'allpass'
-    if (track.filterFreq == null) track.filterFreq = Utils.TRACK_DEFAULTS.filterFreq
-    if (track.filterQ == null) track.filterQ = Utils.TRACK_DEFAULTS.filterQ
-    track.filterLfoFreq ??= 0
-    track.sampleLength ??= 1
+    
     track.notes ??= []
     track.notes.forEach(note => fixNoteDefaults(note, track))
     return track
