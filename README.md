@@ -92,13 +92,26 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 
 
 
+## Development
+
+```bash
+npm install
+npm run dev          # Vite dev server (port 3000)
+npm test             # Run all tests (Vitest)
+npm run build        # Production build
+npm run electron:dev # Desktop app (Electron)
+```
+
 ## Technical Details
 
 - Framework: Vanilla JavaScript with ES6 modules
 - Build Tool: Vite
+- Test Framework: Vitest (64 test files)
 - Audio: Web Audio API with AudioWorklet support
 - Node Pool: Recycling of GainNode, BiquadFilterNode, and StereoPannerNode for reduced GC pressure
 - Storage: LocalStorage for persistence, JSON for import/export
+- Desktop: Electron wrapper
+- PWA: Service Worker for offline support
 - MCP Server: Standalone Node.js server for programmatic control
 
 

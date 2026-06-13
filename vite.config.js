@@ -57,11 +57,5 @@ export default defineConfig({
         open: true, // Open navigator
     },
 
-    // 5. Alias path
-    resolve: {
-        alias: {
-            '@': resolve(__dirname, './src'),
-            '@assets': resolve(__dirname, './src/assets'),
-        },
-    },
+
 });
