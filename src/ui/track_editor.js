@@ -9,11 +9,10 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
-import { bindCloseButton, bindVisibilityToggles, positionBelowPatternPanel, buildAccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles, positionBelowPatternPanel, buildAccordionGroup, fmt } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 
-const fmt = v => parseFloat(Number(v).toFixed(2))
 const fmtFreq = v => {
     const hz = Utils.normalizeTrackFilterFreqValue(v)
     return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : Math.round(hz) + 'Hz'

@@ -7,6 +7,8 @@ export function injectUiCss() {
     document.head.appendChild(link)
 }
 
+export const fmt = v => parseFloat(Number(v).toFixed(2))
+
 const PANEL_GAP_PX = 4
 
 export function positionBelowPatternPanel(container) {

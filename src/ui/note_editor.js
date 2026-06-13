@@ -1,12 +1,11 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindVisibilityToggles, buildAccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles, buildAccordionGroup, fmt } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
 const SCALES_URL = 'assets/data/scales.json'
-const fmt = v => parseFloat(Number(v).toFixed(2))
 
 let _scalesCache = null
 

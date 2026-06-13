@@ -3,9 +3,8 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
-import { bindAccordionToggles, buildAccordionGroup } from './components/panel_helpers.js'
+import { bindAccordionToggles, buildAccordionGroup, fmt } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
-const fmt = v => parseFloat(Number(v).toFixed(2))
 
 const SYNTH_GROUP_DEFAULTS = {
     masterVolume: 0.8,

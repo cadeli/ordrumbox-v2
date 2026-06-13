@@ -297,37 +297,19 @@ static TAG = "UTILS"
         return keys[randomIndex];
     }
 
+    static TRACK_NAME_TO_INDEX = {
+        KICK: 0, SNARE: 1, TOM: 2, CLAP: 3,
+        COWBELL: 4, CHH: 5, OHH: 6, CRASH: 7
+    }
+
+    static PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
+
+    static computeTrackPan(indexTrack) {
+        return Utils.PAN_MAP[indexTrack] ?? 0
+    }
+
     static getPanoFromTrackName = (type) => {
-        let pan = 0
-        switch (type) {
-            case "KICK":
-                pan = 0
-                break;
-            case "SNARE":
-                pan = 0.3
-                break;
-            case "TOM":
-                pan = 0.5
-                break;
-            case "CLAP":
-                pan = -0.4
-                break;
-            case "COWBELL":
-                pan = 0.4
-                break;
-            case "CHH":
-                pan = -0.3
-                break;
-            case "OHH":
-                pan = -0.2
-                break;
-            case "CRASH":
-                pan = 1
-                break;
-            default:
-                pan = 0
-                break;
-        }
-        return pan
+        const idx = Utils.TRACK_NAME_TO_INDEX[type]
+        return idx !== undefined ? Utils.computeTrackPan(idx) : 0
     }
 }

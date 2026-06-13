@@ -92,7 +92,7 @@ export default class MfSeq {
    
 
         this.ensureAudioEngine()
-        this.serviceRegistry.audioEngine.start(selPattern)
+        await this.serviceRegistry.audioEngine.start(selPattern)
         this.serviceRegistry.transport.start()
         this.playbackEvents.dispatchPlaybackStart()
     }
@@ -106,6 +106,12 @@ export default class MfSeq {
     }
 
     toggleStartStop = () => {
+        // Trigger lazy AudioContext creation synchronously inside the user
+        // gesture handler so that resume() is allowed by the browser.
+        if (!this.serviceRegistry.audioCtx) {
+            this.serviceRegistry.audioCtx = this.serviceRegistry.mfResourcesLoader.audioCtx
+        }
+
         // Resume audio context on user interaction (spacebar/click)
         if (this.serviceRegistry.audioCtx && this.serviceRegistry.audioCtx.state === 'suspended') {
             this.serviceRegistry.audioCtx.resume().catch(err => {

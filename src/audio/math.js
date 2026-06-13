@@ -1,17 +1,14 @@
 import {
     TICK,
     C3_FREQ,
-    LFO_GAIN_MULTIPLIER,
-    LFO_FREQ_OFFSET,
-    FILTER_FREQ_MIN,
     FILTER_FREQ_MAX,
-    NOTE_VELO_BALANCE,
-    MIN_GAIN_VALUE,
     MIN_NOTE_RATIO,
     PITCH_RAMP_TIME,
 } from '../core/constants.js'
+import Utils from '../core/utils.js'
 
-const PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
+const computeTrackPan = (indexTrack) => Utils.computeTrackPan(indexTrack)
+export { computeTrackPan }
 
 export function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value))
@@ -59,15 +56,11 @@ export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null
     const wave = parseFloat(lfo.waveform) || 0
 
     if (controlKey === 'filterFreq' && (min > 1 || max > 1)) {
-        const hzMin = Math.max(FILTER_FREQ_MIN, min)
-        const hzMax = Math.max(FILTER_FREQ_MIN, max)
-        min = Math.log10(hzMin / FILTER_FREQ_MIN) / 3
-        max = Math.log10(hzMax / FILTER_FREQ_MIN) / 3
+        min = Utils.hzToNormalizedTrackFilterFreq(min)
+        max = Utils.hzToNormalizedTrackFilterFreq(max)
     } else if (controlKey === 'filterQ' && (min > 1 || max > 1)) {
-        const qMin = Math.max(0.707, min)
-        const qMax = Math.max(0.707, max)
-        min = (qMin - 0.707) / 18
-        max = (qMax - 0.707) / 18
+        min = Utils.valueToNormalizedTrackFilterQ(min)
+        max = Utils.valueToNormalizedTrackFilterQ(max)
     }
 
     // Period in ticks: 1 unit = 16 beats = 4 bars = 4 * TICK
@@ -118,8 +111,4 @@ export function computeAdsrEnvelopeParams(env, noteVelo, masterVolume = 0.8, acc
     const releaseTime = env.release ?? 0
     const peakGain = noteVelo * masterVolume * accentMultiplier
     return { attackTime, decayTime, sustainLevel, releaseTime, peakGain }
-}
-
-export function computeTrackPan(indexTrack) {
-    return PAN_MAP[indexTrack] ?? 0
 }
