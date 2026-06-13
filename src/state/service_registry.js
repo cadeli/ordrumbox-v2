@@ -1,33 +1,14 @@
 export class ServiceRegistry {
-    constructor() {
-        this.mfCmd = null
-        this.mfPatterns = null
-        this.midiManager = null
-        this.mfResourcesLoader = null
-        this.mfSeq = null
-        this.mfAutoGenerate = null
-        this.mfAutoAssign = null
-        this.mfWavExporter = null
-        this.audioCtx = null
-        this.audioEngine = null
-        this.transport = null
-        this.exportLoopsCount = 1
+    static DEFAULTS = {
+        mfCmd: null, mfPatterns: null, midiManager: null,
+        mfResourcesLoader: null, mfSeq: null, mfAutoGenerate: null,
+        mfAutoAssign: null, mfWavExporter: null, audioCtx: null,
+        audioEngine: null, transport: null, exportLoopsCount: 1,
     }
 
-    reset() {
-        this.mfCmd = null
-        this.mfPatterns = null
-        this.midiManager = null
-        this.mfResourcesLoader = null
-        this.mfSeq = null
-        this.mfAutoGenerate = null
-        this.mfAutoAssign = null
-        this.mfWavExporter = null
-        this.audioCtx = null
-        this.audioEngine = null
-        this.transport = null
-        this.exportLoopsCount = 1
-    }
+    constructor() { Object.assign(this, ServiceRegistry.DEFAULTS) }
+
+    reset() { Object.assign(this, ServiceRegistry.DEFAULTS) }
 }
 
 export const serviceRegistry = new ServiceRegistry()

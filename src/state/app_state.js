@@ -1,70 +1,36 @@
+function buildDefaultVisibility() {
+    const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 480)
+    return {
+        trackEditorVisibility: {
+            basic: true, levels: true,
+            filters: !isMobile, effects: !isMobile, sound: !isMobile, loop: true,
+        },
+        noteEditorVisibility: {
+            levels: !isMobile, triggers: !isMobile, retrig: !isMobile, arp: !isMobile,
+        },
+    }
+}
+
 export class AppState {
-    constructor() {
-        this.patterns = []
-        this.selectedPatternNum = 0
-        this.selectedTrackNum = 0
-        this.selectedDrumkitNum = 0
-        this.selectedDrumkit = "real"
-        this.selectedLfo = "pitchLfo"
-        this.displayBars = 1
-        this.currentPage = 0
-        this.autoMode = false
-        this.textInput = false
-        this.secondsPerBeat = 8
-        this.flatNotes = null
-
-        // Worklet status — set by AudioEngine, read by UI.
-        // 'unknown' → 'active' | 'unavailable' (no longer user-toggleable)
-        this.workletStatus = 'unknown'
-
-        const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 480)
-        this.trackEditorVisibility = {
-            basic:   true,
-            levels:  true,
-            filters: !isMobile,
-            effects: !isMobile,
-            sound:   !isMobile,
-            loop:    true,
-        }
-        this.noteEditorVisibility = {
-            levels:   !isMobile,
-            triggers: !isMobile,
-            retrig:   !isMobile,
-            arp:      !isMobile,
-        }
+    static DEFAULTS = {
+        patterns: [],
+        selectedPatternNum: 0,
+        selectedTrackNum: 0,
+        selectedDrumkitNum: 0,
+        selectedDrumkit: "real",
+        selectedLfo: "pitchLfo",
+        displayBars: 1,
+        currentPage: 0,
+        autoMode: false,
+        textInput: false,
+        secondsPerBeat: 8,
+        flatNotes: null,
+        workletStatus: 'unknown',
     }
 
-    reset() {
-        this.patterns = []
-        this.selectedPatternNum = 0
-        this.selectedTrackNum = 0
-        this.selectedDrumkitNum = 0
-        this.selectedDrumkit = "real"
-        this.selectedLfo = "pitchLfo"
-        this.displayBars = 1
-        this.currentPage = 0
-        this.autoMode = false
-        this.textInput = false
-        this.secondsPerBeat = 8
-        this.flatNotes = null
-        this.workletStatus = 'unknown'
+    constructor() { Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility()) }
 
-        const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 480)
-        this.trackEditorVisibility = {
-            basic:   true,
-            levels:  true,
-            filters: !isMobile,
-            effects: !isMobile,
-            sound:   !isMobile,
-            loop:    true,
-        }
-        this.noteEditorVisibility = {
-            levels:   !isMobile,
-            triggers: !isMobile,
-            retrig:   !isMobile,
-            arp:      !isMobile,
-        }
-    }
+    reset() { Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility()) }
 }
 
 export const appState = new AppState()

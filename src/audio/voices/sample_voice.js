@@ -1,7 +1,5 @@
 import BaseVoice from './base_voice.js'
 import MfDefaults from '../../patterns/defaults.js'
-import { appState } from '../../state/app_state.js'
-import { serviceRegistry } from '../../state/service_registry.js'
 import { computeLfoValue } from '../math.js'
 import {
     PITCH_RAMP_TIME,
@@ -23,7 +21,7 @@ export default class SampleVoice extends BaseVoice {
         this.noteVelo = 1
     }
 
-    setup(flatNote, time) {
+    setup(flatNote, time, lfoContext = null) {
         const track = flatNote.track
 
         this.snd = this.registerNode(this.audioCtx.createBufferSource())
@@ -33,10 +31,8 @@ export default class SampleVoice extends BaseVoice {
         this.snd.buffer = this.buffer
 
         let playbackRate = flatNote.fpitch || 1
-        if (track.pitchLfo) {
-            const tick = serviceRegistry.transport?.tick ?? 0
-            const pattern = appState.patterns?.[appState.selectedPatternNum]
-            const nbTicks = TICK * (pattern?.nbBars ?? 4)
+        if (track.pitchLfo && lfoContext) {
+            const { tick, nbTicks } = lfoContext
             const lfoSemi = computeLfoValue(track.pitchLfo, tick, nbTicks, 'pitch')
             playbackRate *= Math.pow(2, lfoSemi / 12)
         }

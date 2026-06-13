@@ -2,6 +2,9 @@ import VoiceFactory from './voices/voice_factory.js'
 import SynthVoice from './voices/synth_voice.js'
 import NodePool from './node_pool.js'
 import { applyTrackToStrip } from './strip_sync.js'
+import { appState } from '../state/app_state.js'
+import { serviceRegistry } from '../state/service_registry.js'
+import { TICK } from '../core/constants.js'
 
 export default class MfSound {
     static get lastPitchV1() { return SynthVoice.lastPitchV1 }
@@ -88,7 +91,14 @@ export default class MfSound {
             }
             const voice = await this.voiceFactory.createVoice(flatNote)
             if (voice) {
-                await voice.setup(flatNote, time)
+                let lfoContext = null
+                if (flatNote.track.pitchLfo) {
+                    const tick = serviceRegistry.transport?.tick ?? 0
+                    const pattern = appState.patterns?.[appState.selectedPatternNum]
+                    const nbTicks = TICK * (pattern?.nbBars ?? 4)
+                    lfoContext = { tick, nbTicks }
+                }
+                await voice.setup(flatNote, time, lfoContext)
                 if (flatNote.track.mono) this.registerVoice(flatNote.track, voice)
                 voice.start(time)
             }

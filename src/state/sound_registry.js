@@ -1,21 +1,12 @@
 export class SoundRegistry {
-    constructor() {
-        this.sounds = {}
-        this.scales = {}
-        this.generatedSounds = {}
-        this.drumkitList = []
-        this.drumkits = {}
-        this.leds = {}
+    static DEFAULTS = {
+        sounds: {}, scales: {}, generatedSounds: {},
+        drumkitList: [], drumkits: {}, leds: {},
     }
 
-    reset() {
-        this.sounds = {}
-        this.scales = {}
-        this.generatedSounds = {}
-        this.drumkitList = []
-        this.drumkits = {}
-        this.leds = {}
-    }
+    constructor() { Object.assign(this, SoundRegistry.DEFAULTS) }
+
+    reset() { Object.assign(this, SoundRegistry.DEFAULTS) }
 }
 
 export const soundRegistry = new SoundRegistry()

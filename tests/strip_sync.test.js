@@ -1,22 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { applyTrackToStrip, applyParamsToStrip } from '../src/audio/strip_sync.js'
+import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 
 // ─── Mock helpers ─────────────────────────────────────────────────────────────
-
-function makeParam(v = 0) {
-    return {
-        value: v,
-        setValueAtTime: vi.fn(),
-        setTargetAtTime: vi.fn(),
-        linearRampToValueAtTime: vi.fn(),
-        cancelScheduledValues: vi.fn(),
-        connect: vi.fn(),
-    }
-}
-
-function makeNode(extra = {}) {
-    return { connect: vi.fn(), disconnect: vi.fn(), ...extra }
-}
 
 function makeStrip() {
     return {

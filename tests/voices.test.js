@@ -9,6 +9,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
 import { computeOscFrequency, computeNoteRatio } from '../src/audio/math.js'
 import { C3_FREQ, LFO_FREQ_OFFSET, MIN_NOTE_RATIO } from '../src/core/constants.js'
+import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 
 const postMessageMock = vi.fn()
 const workletNodeMock = {
@@ -30,31 +31,6 @@ beforeEach(() => {
 function lastPostByType(type) {
     const matches = postMessageMock.mock.calls.map(c => c[0]).filter(m => m?.type === type)
     return matches.at(-1)
-}
-
-// ─── Mock helpers ────────────────────────────────────────────────────────────
-
-function makeParam(initial = 0) {
-    return {
-        value: initial,
-        setValueAtTime: vi.fn(),
-        setTargetAtTime: vi.fn(),
-        linearRampToValueAtTime: vi.fn(),
-        exponentialRampToValueAtTime: vi.fn(),
-        cancelScheduledValues: vi.fn(),
-        connect: vi.fn(),
-    }
-}
-
-function makeNode(extra = {}) {
-    return {
-        connect: vi.fn(),
-        disconnect: vi.fn(),
-        start: vi.fn(),
-        stop: vi.fn(),
-        onended: null,
-        ...extra,
-    }
 }
 
 function createMockAudioCtx() {
@@ -320,7 +296,7 @@ describe('SampleVoice', () => {
             // → playbackRate = 2^(6/12) = sqrt(2) ≈ 1.4142
             const flatNote = makeFlatNote({ fpitch: 1 })
             flatNote.track.pitchLfo = { freq: 1, min: 0, max: 12, phase: 0.25 }
-            voice.setup(flatNote, 1.0)
+            voice.setup(flatNote, 1.0, { tick: 0, nbTicks: 128 })
             // No extra centMult gain should be created (no more LFO → centMult → detune)
             expect(ctx.createGain.mock.calls.length).toBe(1) // just the gainEnvelope
             // playbackRate should be 2^(6/12) ≈ 1.4142

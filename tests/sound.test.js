@@ -1,22 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import MfSound from '../src/audio/sound.js'
+import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 
 // ─── Mock helpers ─────────────────────────────────────────────────────────────
-
-function makeParam(v = 0) {
-    return {
-        value: v,
-        setValueAtTime: vi.fn(),
-        setTargetAtTime: vi.fn(),
-        linearRampToValueAtTime: vi.fn(),
-        cancelScheduledValues: vi.fn(),
-        connect: vi.fn(),
-    }
-}
-
-function makeNode(extra = {}) {
-    return { connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), onended: null, ...extra }
-}
 
 function makeAudioCtx() {
     const sampleRate = 44100

@@ -30,7 +30,7 @@ export function makeParam(v = 0) {
  * strips/voices actually call (`connect`, `disconnect`, `start`, `stop`).
  */
 export function makeNode(extra = {}) {
-    return { connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), ...extra }
+    return { connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), onended: null, ...extra }
 }
 
 /**
