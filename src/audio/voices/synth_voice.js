@@ -344,10 +344,6 @@ export default class SynthVoice extends BaseVoice {
         this.oscNodes.forEach(v => {
             v.osc.start(time)
             v.osc.stop(this.totalStopTime)
-            v.osc.onended = () => {
-                this.cleanup()
-                if (this.onEnded) this.onEnded()
-            }
         })
         if (this.noiseNode) {
             this.noiseNode.start(time)
@@ -360,6 +356,18 @@ export default class SynthVoice extends BaseVoice {
         if (this.masterLfo2) {
             this.masterLfo2.start(time)
             this.masterLfo2.stop(this.totalStopTime + 0.1)
+        }
+        // Single cleanup timer — matches WorkletSynthVoice pattern.
+        // Per-oscillator onended caused a race: the first oscillator to end
+        // called cleanup() which released pooled nodes back to the NodePool,
+        // while oscillators 2 & 3 were still scheduled. A new voice acquiring
+        // those recycled nodes could inherit stale audio graph connections.
+        const totalSec = Math.max(0, this.totalStopTime - time) + 0.1
+        if (typeof setTimeout === 'function') {
+            setTimeout(() => {
+                this.cleanup()
+                if (this.onEnded) this.onEnded()
+            }, totalSec * 1000)
         }
     }
 

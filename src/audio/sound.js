@@ -100,6 +100,7 @@ export default class MfSound {
                 }
                 await voice.setup(flatNote, time, lfoContext)
                 if (flatNote.track.mono) this.registerVoice(flatNote.track, voice)
+                if (opts.registerSynth) this.registerSynthVoice(voice)
                 voice.start(time)
             }
             return voice
@@ -111,8 +112,7 @@ export default class MfSound {
 
     playSample = async (flatNote, time) => {
         if (!flatNote) return
-        const voice = await this._playVoice(flatNote, time)
-        if (voice) this.registerSynthVoice(voice)
+        return await this._playVoice(flatNote, time, { registerSynth: true })
     }
 
     playGenerated = async (flatNote, time, loadFn) => {
