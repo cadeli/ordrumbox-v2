@@ -215,8 +215,7 @@ export function computeFlatNotesFromPattern(djtPattern, loop = 0, computeNextSte
     const nbTickForPattern = computeNbTickForPattern(djtPattern.nbBars, tick)
 
     for (const track of Object.values(djtPattern.tracks)) {
-        let nbTickForLoop = computeNbTickForLoop(track, tick)
-        nbTickForLoop = adjustLoopToPattern(nbTickForPattern, nbTickForLoop)
+        const nbTickForLoop = computeNbTickForLoop(track, tick)
 
         const resolver = computeNextStep ?? buildDefaultResolver(track)
 

@@ -370,5 +370,86 @@ describe('Pattern Engine Logic', () => {
             expect(notesAt96.length).toBe(1)
             expect(notesAt96[0].note.pitch).toBe(60)
         })
+
+        it('tiles note at 1:2 with loopAtStep=3 across 4 bars (1:2, 2:1, 2:4, 3:3, 4:2)', () => {
+            // 4 bars × 4 steps = 16 absolute steps (0-indexed: 0..15)
+            // Note at 1:2 (bar 0, barStep 1) → tick = 0*32 + round(1*32/4) = 8
+            // Loop at 1:3 (loopAtStep=3) → nbTickForLoop = round((3*32)/4) = 24
+            // 128 % 24 ≠ 0, but the loop should NOT be adjusted to 32.
+            // Expected occurrences: tick 8, 32, 56, 80, 104
+            //   tick  8 → bar 0, step 1 → 1:2
+            //   tick 32 → bar 1, step 0 → 2:1
+            //   tick 56 → bar 1, step 3 → 2:4
+            //   tick 80 → bar 2, step 2 → 3:3
+            //   tick 104 → bar 3, step 1 → 4:2
+            const pattern = {
+                nbBars: 4,
+                tracks: {
+                    'T1': {
+                        name: 'T1',
+                        barQuantize: 4,
+                        loopAtStep: 3,
+                        notes: [
+                            { bar: 0, barStep: 1, pitch: 60, triggerProbability: 1, triggerFreq: 1 }
+                        ]
+                    }
+                }
+            }
+            const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+
+            const ticks = [...result.keys()].sort((a, b) => a - b)
+            expect(ticks).toEqual([8, 32, 56, 80, 104])
+
+            // Verify each occurrence has exactly one note
+            for (const tick of ticks) {
+                expect(result.get(tick).length).toBe(1)
+                expect(result.get(tick)[0].note.pitch).toBe(60)
+            }
+        })
+
+        it('tiles note at 2:1 with loopAtStep=6 across 4 bars', () => {
+            // Note at 2:1 (bar 1, barStep 0) → tick = 1*32 + 0 = 32
+            // Loop at 1:3 (loopAtStep=6, meaning 1.3 in 1-based = 6 absolute steps)
+            // nbTickForLoop = round((6*32)/4) = 48
+            // Expected: tick 32, 80 (32+48=80, 80+48=128 ≥ 128 stop)
+            const pattern = {
+                nbBars: 4,
+                tracks: {
+                    'T1': {
+                        name: 'T1',
+                        barQuantize: 4,
+                        loopAtStep: 6,
+                        notes: [
+                            { bar: 1, barStep: 0, pitch: 72, triggerProbability: 1, triggerFreq: 1 }
+                        ]
+                    }
+                }
+            }
+            const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+            const ticks = [...result.keys()].sort((a, b) => a - b)
+            expect(ticks).toEqual([32, 80])
+        })
+
+        it('does not tile notes that fall at or beyond the loop boundary', () => {
+            // loopAtStep=3 → nbTickForLoop=24
+            // Note at bar 0, barStep 3 → tick = 24
+            // tick 24 >= nbTickForLoop 24 → no tiling, plays once
+            const pattern = {
+                nbBars: 4,
+                tracks: {
+                    'T1': {
+                        name: 'T1',
+                        barQuantize: 4,
+                        loopAtStep: 3,
+                        notes: [
+                            { bar: 0, barStep: 3, pitch: 48, triggerProbability: 1, triggerFreq: 1 }
+                        ]
+                    }
+                }
+            }
+            const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+            const ticks = [...result.keys()].sort((a, b) => a - b)
+            expect(ticks).toEqual([24])
+        })
     })
 })
