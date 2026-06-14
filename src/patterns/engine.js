@@ -162,7 +162,7 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
             const tickSpacing = computeTickSpacing(track, retriggerStep, tick)
             for (let i = 1; i < retriggerNum; i++) {
                 const tickPos = baseTick + i * tickSpacing
-                if (tickPos < nbTickForPattern) {
+                if (tickPos < nbTickForPattern && isProbabilityTrigged(arpTriggerProb)) {
                     addFlatNote(flatNotes, tickPos, createFlatNote(tickPos, track, note))
                 }
             }
@@ -201,7 +201,9 @@ export function generateSubNotesWithEuclidean(flatNotes, baseTick, track, note, 
                     addFlatNote(flatNotes, tickPos, createArpFlatNote(tickPos, track, note, semitoneOffset))
                 }
             } else {
-                addFlatNote(flatNotes, tickPos, createFlatNote(tickPos, track, note))
+                if (isProbabilityTrigged(arpTriggerProb)) {
+                    addFlatNote(flatNotes, tickPos, createFlatNote(tickPos, track, note))
+                }
             }
         }
     }

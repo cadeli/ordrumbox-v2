@@ -44,15 +44,16 @@ const GROUPS = [
         props: [
             { key: 'triggerFreq', label: 'TrigF', min: 1, max: 16, step: 1 },
             { key: 'triggerPhase', label: 'TrigP', min: 0, max: 15, step: 1 },
-            { key: 'triggerProbability', label: 'Trig%', min: 0, max: 1, step: 0.01 },
-            { key: 'euclidianFill', label: 'Euc', min: 0, max: 16, step: 1 }
+            { key: 'triggerProbability', label: 'Trig%', min: 0, max: 1, step: 0.01 }
         ]
     },
     {
         label: 'Retrig',
         props: [
             { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
-            { key: 'retriggerStep', label: 'RetS', min: 1, max: 16, step: 1 }
+            { key: 'retriggerStep', label: 'RetS', min: 1, max: 16, step: 1 },
+            { key: 'euclidianFill', label: 'Euc', min: 0, max: 16, step: 1 },
+            { key: 'arpTriggerProbability', label: 'Retrig%', min: 0, max: 1, step: 0.01 }
         ]
     },
     {
@@ -60,8 +61,7 @@ const GROUPS = [
         props: [
             { key: 'arpScale', label: 'Scl', type: 'select', options: [] },
             { key: 'arpType', label: 'Dir', type: 'select', options: ARP_TYPES },
-            { key: 'arpRange', label: 'Rng', min: 0, max: 12, step: 1 },
-            { key: 'arpTriggerProbability', label: 'Arp%', min: 0, max: 1, step: 0.01 }
+            { key: 'arpRange', label: 'Rng', min: 0, max: 12, step: 1 }
         ]
     }
 ]
