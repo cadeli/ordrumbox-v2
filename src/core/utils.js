@@ -297,4 +297,15 @@ static TAG = "UTILS"
         const idx = Utils.TRACK_NAME_TO_INDEX[type]
         return idx !== undefined ? Utils.computeTrackPan(idx) : 0
     }
+
+    static detectTrackType = (name) => {
+        const n = name.toUpperCase()
+        if (n.includes('KICK') || n.includes('BD')) return 'KICK'
+        if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
+        if (n.includes('OHH') || n.includes('HAT') || n.includes('CHH')) return 'HAT'
+        if (n.includes('BASS')) return 'BASS'
+        if (n.includes('PIANO')) return 'PIANO'
+        if (n.includes('SYNTH')) return 'BASS'
+        return 'PERC'
+    }
 }

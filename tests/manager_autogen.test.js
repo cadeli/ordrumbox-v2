@@ -3,6 +3,7 @@ import * as patternsManager from '../src/patterns/manager.js'
 import MfAutoGenerate from '../src/logic/generators/auto_generate.js'
 import MfPercGenerate from '../src/logic/generators/perc_generate.js'
 import { MfGlobals } from '../src/core/globals.js'
+import Utils from '../src/core/utils.js'
 import MfCmd from '../src/logic/commands/cmd.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -190,7 +191,7 @@ describe('MfAutoGenerate', () => {
         ['COWBELL', 'PERC'],
         ['CLAP',    'PERC'],
     ])('detectTrackType("%s") → "%s"', (name, expected) => {
-        expect(autoGen.detectTrackType(name)).toBe(expected)
+        expect(Utils.detectTrackType(name)).toBe(expected)
     })
 
     // ── generateTrack ─────────────────────────────────────────────────
@@ -270,31 +271,30 @@ describe('MfPercGenerate – extra variants', () => {
         }
     })
 
-    it('resolvePercPitch: returns pitch+pitchBias for numeric phrase.pitch', () => {
+    it('resolvePhrasePitch: returns pitch+pitchBias for numeric phrase.pitch', () => {
         const gen = new MfPercGenerate()
-        const result = gen.resolvePercPitch({ pitch: 5 }, [0, 4, 7], {}, 3)
+        const result = gen.resolvePhrasePitch({ pitch: 5 }, [0, 4, 7], {}, 3)
         expect(result).toBe(8)
     })
 
-    it('resolvePercPitch: reuse returns cached pitch', () => {
+    it('resolvePhrasePitch: reuse returns cached pitch', () => {
         const gen = new MfPercGenerate()
         const cached = { 0: 12 }
-        const result = gen.resolvePercPitch({ source: 'reuse', reuseIndex: 0 }, [0, 4, 7], cached, 0)
+        const result = gen.resolvePhrasePitch({ source: 'reuse', reuseIndex: 0 }, [0, 4, 7], cached, 0)
         expect(result).toBe(12)
     })
 
-    it('resolvePercPitch: root returns pitchBias', () => {
+    it('resolvePhrasePitch: root returns pitchBias', () => {
         const gen = new MfPercGenerate()
-        const result = gen.resolvePercPitch({ source: 'root' }, [0, 4, 7], {}, 5)
+        const result = gen.resolvePhrasePitch({ source: 'root' }, [0, 4, 7], {}, 5)
         expect(result).toBe(5)
     })
 
-    it('resolvePercPitch: randomScale picks from tones + pitchBias', () => {
+    it('resolvePhrasePitch: randomScale picks from tones + pitchBias', () => {
         const gen = new MfPercGenerate()
         const tones = [0, 4, 7]
-        const result = gen.resolvePercPitch({ source: 'randomScale' }, tones, {}, 3)
-        // getRndTone subtracts 12 for tones > 6, so 7 → -5; valid results: 3, 7, -2
-        const allPossible = tones.map(t => (t > 6 ? t - 12 : t) + 3) // [3, 7, -2]
+        const result = gen.resolvePhrasePitch({ source: 'randomScale' }, tones, {}, 3)
+        const allPossible = tones.map(t => (t > 6 ? t - 12 : t) + 3)
         expect(allPossible).toContain(result)
     })
 

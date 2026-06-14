@@ -282,7 +282,6 @@ export default class Toolbar {
     }
 
     syncPatterns = () => {
-        const currentVal = this.patternSelect.value
         this.patternSelect.innerHTML = ''
         appState.patterns.forEach((pat, i) => {
             const opt = document.createElement('option')
@@ -305,7 +304,6 @@ export default class Toolbar {
     }
 
     syncDrumkits = () => {
-        const currentVal = this.drumkitSelect.value
         this.drumkitSelect.innerHTML = ''
         soundRegistry.drumkitList.forEach((kit, i) => {
             const opt = document.createElement('option')

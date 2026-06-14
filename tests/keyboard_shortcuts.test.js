@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { MfGlobals } from '../src/core/globals.js'
 import MfCmd from '../src/logic/commands/cmd.js'
 import MfStructureSong from '../src/logic/generators/structure_song.js'
-import MfAutoGenerate from '../src/logic/generators/auto_generate.js'
+import Utils from '../src/core/utils.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -313,43 +313,37 @@ describe('convertToGeneratedSounds', () => {
     })
 })
 
-describe('MfAutoGenerate.detectTrackType', () => {
-    let autoGen
-
-    beforeEach(() => {
-        autoGen = new MfAutoGenerate()
-    })
-
+describe('Utils.detectTrackType', () => {
     it('detects KICK', () => {
-        expect(autoGen.detectTrackType('KICK')).toBe('KICK')
-        expect(autoGen.detectTrackType('Kick_01')).toBe('KICK')
-        expect(autoGen.detectTrackType('BD')).toBe('KICK')
+        expect(Utils.detectTrackType('KICK')).toBe('KICK')
+        expect(Utils.detectTrackType('Kick_01')).toBe('KICK')
+        expect(Utils.detectTrackType('BD')).toBe('KICK')
     })
 
     it('detects SNARE', () => {
-        expect(autoGen.detectTrackType('SNARE')).toBe('SNARE')
-        expect(autoGen.detectTrackType('Snare_01')).toBe('SNARE')
-        expect(autoGen.detectTrackType('SD')).toBe('SNARE')
+        expect(Utils.detectTrackType('SNARE')).toBe('SNARE')
+        expect(Utils.detectTrackType('Snare_01')).toBe('SNARE')
+        expect(Utils.detectTrackType('SD')).toBe('SNARE')
     })
 
     it('detects HAT', () => {
-        expect(autoGen.detectTrackType('CHH')).toBe('HAT')
-        expect(autoGen.detectTrackType('OHH')).toBe('HAT')
-        expect(autoGen.detectTrackType('Hat_01')).toBe('HAT')
+        expect(Utils.detectTrackType('CHH')).toBe('HAT')
+        expect(Utils.detectTrackType('OHH')).toBe('HAT')
+        expect(Utils.detectTrackType('Hat_01')).toBe('HAT')
     })
 
     it('detects BASS', () => {
-        expect(autoGen.detectTrackType('BASS')).toBe('BASS')
-        expect(autoGen.detectTrackType('Bass_01')).toBe('BASS')
-        expect(autoGen.detectTrackType('SYNTH')).toBe('BASS')
-        expect(autoGen.detectTrackType('SynthLead')).toBe('BASS')
+        expect(Utils.detectTrackType('BASS')).toBe('BASS')
+        expect(Utils.detectTrackType('Bass_01')).toBe('BASS')
+        expect(Utils.detectTrackType('SYNTH')).toBe('BASS')
+        expect(Utils.detectTrackType('SynthLead')).toBe('BASS')
     })
 
     it('returns PERC for unknown names', () => {
-        expect(autoGen.detectTrackType('TOM')).toBe('PERC')
-        expect(autoGen.detectTrackType('Clap')).toBe('PERC')
-        expect(autoGen.detectTrackType('Ride')).toBe('PERC')
-        expect(autoGen.detectTrackType('')).toBe('PERC')
+        expect(Utils.detectTrackType('TOM')).toBe('PERC')
+        expect(Utils.detectTrackType('Clap')).toBe('PERC')
+        expect(Utils.detectTrackType('Ride')).toBe('PERC')
+        expect(Utils.detectTrackType('')).toBe('PERC')
     })
 })
 

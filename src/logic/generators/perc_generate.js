@@ -123,7 +123,7 @@ export default class MfPercGenerate extends BaseGenerator {
             const absoluteStep = phrase.bar * barQuantize + step
             if (absoluteStep >= loopPointAbsolute) return
 
-            const pitch = this.resolvePercPitch(phrase, tones, cachedPitches, pitchBias)
+            const pitch = this.resolvePhrasePitch(phrase, tones, cachedPitches, pitchBias)
 
             this.addNote(
                 percTrack,
@@ -244,7 +244,4 @@ export default class MfPercGenerate extends BaseGenerator {
             ?? [0, 2, 3, 5, 7, 10]
     }
 
-    resolvePercPitch = (phrase, tones, cachedPitches, pitchBias) => {
-        return this.resolvePhrasePitch(phrase, tones, cachedPitches, pitchBias)
-    }
 }

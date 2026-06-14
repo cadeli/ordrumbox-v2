@@ -1,6 +1,7 @@
 import MfSound from './sound.js'
 import MfFlatNote from '../model/flatnote.js'
 import MfNoteParams from '../patterns/note_params.js'
+import { getAutoGenerateService } from '../state/service_registry.js'
 
 export default class MfPlayer {
     static TAG = "MFPLAYER"
@@ -41,7 +42,6 @@ export default class MfPlayer {
                 const trackKeys = Object.keys(tracks)
 
                 if (selPat.autoGen) {
-                    const { getAutoGenerateService } = await import('../state/service_registry.js')
                     const mfAutoGenerate = await getAutoGenerateService()
                     const element = mfAutoGenerate.structureGen.getElement(this.loop)
                     const isSectionStart = element.loopInElement === 0
@@ -53,8 +53,7 @@ export default class MfPlayer {
 
                         for (let i = 0; i < trackKeys.length; i++) {
                             const track = tracks[trackKeys[i]]
-                            this.getAutoGenerate()
-                                .then((mfAutoGenerate) => mfAutoGenerate.changeTrack(this.loop, selPat, track))
+                            mfAutoGenerate.changeTrack(this.loop, selPat, track)
                                 .catch((error) => console.error(error))
                         }
                     }

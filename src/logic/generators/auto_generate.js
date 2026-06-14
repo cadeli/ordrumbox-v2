@@ -1,5 +1,6 @@
 import { appState } from '../../state/app_state.js'
 import { getAutoAssignService, serviceRegistry } from '../../state/service_registry.js'
+import Utils from '../../core/utils.js'
 import MfBassGenerate from './bass_generate.js'
 import MfHatGenerate from './hat_generate.js'
 import MfKickGenerate from './kick_generate.js'
@@ -44,24 +45,23 @@ export default class MfAutoGenerate {
             }
         } else {
             for (const track of pattern.tracks) {
-                const type = this.detectTrackType(track.name)
+                const type = Utils.detectTrackType(track.name)
 
                 let config = null
                 for (const [name, cfg] of Object.entries(structure)) {
-                    if (this.detectTrackType(name) === type) {
+                    if (Utils.detectTrackType(name) === type) {
                         config = cfg
                         break
                     }
                 }
 
                 if (config) {
-                    track.notes = []
                     await this.generateTrack(track, config)
                 }
             }
         }
 
-        const hasBassTrack = pattern.tracks.some(t => this.detectTrackType(t.name) === 'BASS')
+        const hasBassTrack = pattern.tracks.some(t => Utils.detectTrackType(t.name) === 'BASS')
         if (!hasBassTrack) {
             const bassTrack = serviceRegistry.mfCmd.addTrack(pattern, 'BASS')
             bassTrack.useSoftSynth = true
@@ -78,7 +78,7 @@ export default class MfAutoGenerate {
     }
 
     generateTrack = async (track, config, density = 1) => {
-        const type = this.detectTrackType(track.name)
+        const type = Utils.detectTrackType(track.name)
         switch (type) {
             case 'KICK':
                 await this.kickGen.generateNewKick(track, config, density)
@@ -90,6 +90,7 @@ export default class MfAutoGenerate {
                 await this.hatGen.generateNewHat(track, config, density)
                 break
             case 'PERC':
+            case 'PIANO':
                 await this.percGen.generateNewPerc(track, config, density)
                 break
             case 'BASS':
@@ -98,37 +99,42 @@ export default class MfAutoGenerate {
         }
     }
 
-    detectTrackType = (name) => {
-        const n = name.toUpperCase()
-        if (n.includes('KICK') || n.includes('BD')) return 'KICK'
-        if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
-        if (n.includes('HAT') || n.includes('CHH') || n.includes('OHH')) return 'HAT'
-        if (n.includes('BASS') || n.includes('SYNTH')) return 'BASS'
-        return 'PERC'
-    }
-
     changeTrack = async (loop, pattern, track) => {
         const genre = pattern._autoGenGenre || this.structureGen.getRandomGenre()
-        const structure = this.structureGen.generateStructure(genre)
         const element = this.structureGen.getElement(loop)
         const isSectionEnd = element.isLastLoopBeforeChange
         const density = isSectionEnd ? 0.2 : (SECTION_DENSITY[element.name] ?? 0.7)
 
-        const type = this.detectTrackType(track.name)
+        const structure = this._cachedGenre === genre
+            ? this._cachedStructure
+            : (this._cachedGenre = genre, this._cachedStructure = this.structureGen.generateStructure(genre))
+
+        const type = Utils.detectTrackType(track.name)
         let config = null
 
         for (const [name, cfg] of Object.entries(structure)) {
-            if (this.detectTrackType(name) === type) {
+            if (Utils.detectTrackType(name) === type) {
                 config = cfg
                 break
             }
         }
 
         if (config) {
-            if (!isSectionEnd) {
+            if (isSectionEnd) {
+                const savedNotes = [...track.notes]
+                await this.generateTrack(track, config, density)
+                const seen = new Set(savedNotes.map(n => `${n.bar}:${n.barStep}`))
+                for (const note of track.notes) {
+                    const key = `${note.bar}:${note.barStep}`
+                    if (!seen.has(key)) {
+                        savedNotes.push(note)
+                    }
+                }
+                track.notes = savedNotes
+            } else {
                 track.notes = []
+                await this.generateTrack(track, config, density)
             }
-            await this.generateTrack(track, config, density)
             serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
         }
     }

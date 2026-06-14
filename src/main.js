@@ -195,19 +195,7 @@ document.addEventListener('keydown', (event) => {
 }, false)
 
 async function handleKeyboardShortcut(event) {
-    // Sliders handling (Arrows)
     const target = event.target
-    if (target && target.tagName === 'INPUT' && target.type === 'range') {
-        if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
-            event.preventDefault()
-            const step = parseFloat(target.step) || 1
-            const val = parseFloat(target.value)
-            const newVal = event.code === 'ArrowLeft' ? val - step : val + step
-            target.value = Math.max(parseFloat(target.min), Math.min(parseFloat(target.max), newVal))
-            target.dispatchEvent(new Event('input', { bubbles: true }))
-            return
-        }
-    }
 
     // Ignore shortcuts when typing in input fields
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
@@ -302,19 +290,6 @@ const SYNTH_SOUND_MAP = {
     TOM: 'TOM'
 }
 
-function detectTrackSynthType(name) {
-    const n = name.toUpperCase()
-    if (n.includes('KICK') || n.includes('BD')) return 'KICK'
-    if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
-    if (n.includes('OHH')) return 'OHH'
-    if (n.includes('HAT') || n.includes('CHH')) return 'HAT'
-    if (n.includes('TOM')) return 'TOM'
-    if (n.includes('BASS')) return 'BASS'
-    if (n.includes('PIANO')) return 'PIANO'
-    if (n.includes('SYNTH')) return 'BASS'
-    return 'PERC'
-}
-
 async function convertToGeneratedSounds() {
     const selPattern = getSelectedPattern()
     if (!selPattern) return
@@ -328,7 +303,7 @@ async function convertToGeneratedSounds() {
     }
 
     Object.values(selPattern.tracks).forEach(track => {
-        const type = detectTrackSynthType(track.name)
+        const type = Utils.detectTrackType(track.name)
         track.useSoftSynth = true
         track.useAutoAssignSound = false
         track.synthSoundKey = SYNTH_SOUND_MAP[type] ?? 'BASS1'
@@ -373,7 +348,7 @@ async function exportCurrentTrackSound() {
 // Service Worker Registration for PWA with Update Notification
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        const swPath = window.location.pathname.includes('/dist/') ? './sw.js' : './sw.js';
+        const swPath = './sw.js';
         
         navigator.serviceWorker.register(swPath)
             .then(registration => {
