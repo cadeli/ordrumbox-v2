@@ -120,7 +120,7 @@ export default class MfResourcesLoader {
     async loadPatterns(file, complete) {
         this.isPatternsComplete = false
         return this.loadJsonResource(file, (patterns) => {
-            const fixedPatterns = this.fix(JSON.parse(JSON.stringify(patterns)))
+            const fixedPatterns = this.fix(patterns)
             appState.patterns.length = 0
             fixedPatterns.forEach((pattern) => {
                 if (pattern?.tracks) {

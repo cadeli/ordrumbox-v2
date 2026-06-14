@@ -67,10 +67,13 @@ export default class PatternPanel extends BasePanel {
             if (this._rafId) cancelAnimationFrame(this._rafId)
             this._rafId = null
             if (this._playhead) this._playhead.style.display = 'none'
+            this._stopVuLoop()
+            this._resetVuAndWaveform()
         })
         playbackEvents.onPlaybackStart.push(() => {
             this._updateBarCache()
             this._startPlayhead()
+            this._startVuLoop()
         })
         playbackEvents.onTrackSelect.push((data) => {
             if (data) {
@@ -124,9 +127,11 @@ export default class PatternPanel extends BasePanel {
     _startVuLoop() {
         if (this._vuRafId) return
         const loop = () => {
+            const transport = serviceRegistry.transport
             const mixer = serviceRegistry.audioEngine?.mixer
-            if (!mixer || !this.container) {
-                this._vuRafId = requestAnimationFrame(loop)
+            if (!transport?.isRunning || !mixer || !this.container) {
+                this._vuRafId = null
+                this._resetVuAndWaveform()
                 return
             }
             const strips = mixer.strips
@@ -162,6 +167,7 @@ export default class PatternPanel extends BasePanel {
             canvas.height = h
         }
         if (w === 0 || h === 0) return
+        if (!ctx) return
         const data = serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {
             ctx.fillStyle = '#000'
@@ -189,6 +195,25 @@ export default class PatternPanel extends BasePanel {
         if (this._vuRafId) {
             cancelAnimationFrame(this._vuRafId)
             this._vuRafId = null
+        }
+    }
+
+    _resetVuAndWaveform() {
+        if (!this.container) return
+        const vuEls = this.container.querySelectorAll('.pp-vu')
+        for (const vuEl of vuEls) {
+            const fill = vuEl.querySelector('.pp-vu-fill')
+            if (fill) {
+                fill.style.height = '0%'
+            }
+        }
+        const canvas = this.container.querySelector('.pp-waveform')
+        if (canvas) {
+            const ctx = canvas.getContext('2d')
+            if (ctx) {
+                ctx.fillStyle = '#000'
+                ctx.fillRect(0, 0, canvas.width, canvas.height)
+            }
         }
     }
 
