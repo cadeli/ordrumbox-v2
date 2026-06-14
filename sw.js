@@ -11,7 +11,7 @@ const PRE_CACHE_ASSETS = [
   './assets/data/generated_sounds.json'
 ];
 
-// Installation : Mise en cache des ressources critiques
+// Installation: Pre-cache critical resources
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -21,14 +21,14 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Listener pour forcer la mise à jour quand l'utilisateur clique sur le bouton
+// Listen for force-update when the user clicks the button
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-// Activation : Nettoyage des anciens caches
+// Activation: Clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -41,9 +41,9 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Stratégie : Cache-first avec fallback réseau (et mise en cache dynamique)
+// Strategy: Cache-first with network fallback (and dynamic caching)
 self.addEventListener('fetch', (event) => {
-  // On ne gère que les requêtes GET
+  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
@@ -53,12 +53,12 @@ self.addEventListener('fetch', (event) => {
       }
 
       return fetch(event.request).then((networkResponse) => {
-        // Ne pas mettre en cache si la réponse n'est pas valide
+        // Do not cache if the response is not valid
         if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && networkResponse.type !== 'cors') {
           return networkResponse;
         }
 
-        // Mise en cache dynamique des sons (.wav) et des scripts bundle
+        // Dynamic caching of sounds (.wav) and bundle scripts
         const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
@@ -66,7 +66,7 @@ self.addEventListener('fetch', (event) => {
 
         return networkResponse;
       }).catch(() => {
-        // Optionnel : Retourner une page d'erreur offline ici
+        // Optional: Return an offline error page here
       });
     })
   );

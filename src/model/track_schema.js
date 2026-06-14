@@ -1,5 +1,5 @@
 /**
- * track_schema.js — Source unique de vérité pour la structure d'un track.
+ * track_schema.js — Single source of truth for the track structure.
  */
 
 export const TRACK_DEFAULTS = {
@@ -45,8 +45,8 @@ export const TRACK_DEFAULTS = {
 };
 
 /**
- * Normalise un objet track en appliquant les valeurs par défaut
- * pour les propriétés manquantes.
+ * Normalizes a track object by applying default values
+ * for missing properties.
  */
 export function normalizeTrack(track = {}) {
     const t = track || {};
@@ -57,12 +57,12 @@ export function normalizeTrack(track = {}) {
 }
 
 /**
- * Propriétés qui sont recalculées à la volée (dérivées).
+ * Properties that are recalculated on the fly (derived).
  */
 export const TRACK_RECALCULATED = ["loopPointBar", "loopPointStep"];
 
 /**
- * Recalcule loopPointBar et loopPointStep à partir de loopAtStep et barQuantize.
+ * Recalculates loopPointBar and loopPointStep from loopAtStep and barQuantize.
  */
 export function recalcLoopDerived(track) {
     track.loopPointBar = Math.floor(track.loopAtStep / track.barQuantize)

@@ -1,33 +1,33 @@
 /**
- * OrSlider — composant slider unifié pour ordrumbox-v2
+ * OrSlider — unified slider component for ordrumbox-v2
  *
- * Regroupe toutes les caractéristiques communes des sliders de l'app :
- *   - label + input[type=range] + affichage de la valeur
- *   - unité et format d'affichage configurable
- *   - normalisation/dénormalisation (ex: filterFreq en Hz)
- *   - indicateur LFO (classe CSS has-lfo)
- *   - contrôle clavier : Arrow ±step, Shift+Arrow ±step×10, Alt+Arrow ±step÷10
- *   - mise à jour programmatique via setValue()
- *   - callback onChange avec la valeur dénormalisée
+ * Aggregates all common slider features of the app:
+ *   - label + input[type=range] + value display
+ *   - configurable unit and display format
+ *   - normalization/denormalization (e.g. filterFreq in Hz)
+ *   - LFO indicator (CSS class has-lfo)
+ *   - keyboard control: Arrow ±step, Shift+Arrow ±step×10, Alt+Arrow ±step÷10
+ *   - programmatic update via setValue()
+ *   - onChange callback with denormalized value
  *
- * Usage — génération HTML (zones template literal) :
+ * Usage — HTML generation (template literal sections):
  *   const s = new OrSlider({ key:'velocity', label:'Velo', min:0, max:1, step:0.01, value:0.8,
  *                             onChange: v => track.velocity = v })
  *   rowDiv.innerHTML = s.toHTML()
- *   s.mount(rowDiv)     // bind les événements sur le DOM injecté
+ *   s.mount(rowDiv)     // bind events on the injected DOM
  *
- * Usage — création DOM impérative :
+ * Usage — imperative DOM creation:
  *   const s = new OrSlider({ ... })
- *   const el = s.createElement()   // retourne le div.ne-row prêt
+ *   const el = s.createElement()   // returns the div.ne-row ready
  *   container.appendChild(el)
  *
- * API publique :
- *   s.setValue(val)       — met à jour le slider et l'affichage (valeur dénormalisée)
- *   s.getValue()          — retourne la valeur courante dénormalisée
- *   s.setHasLfo(bool)     — active/désactive la classe CSS has-lfo
- *   s.setDisabled(bool)   — active/désactive le contrôle
- *   s.destroy()           — retire les event listeners
- *   s.el                  — référence à l'élément DOM (après mount/createElement)
+ * Public API:
+ *   s.setValue(val)       — updates the slider and display (denormalized value)
+ *   s.getValue()          — returns current denormalized value
+ *   s.setHasLfo(bool)     — toggles the CSS class has-lfo
+ *   s.setDisabled(bool)   — toggles the control
+ *   s.destroy()           — removes event listeners
+ *   s.el                  — reference to DOM element (after mount/createElement)
  */
 
 const _defaultFmt = v => parseFloat(Number(v).toFixed(2))
@@ -35,20 +35,20 @@ const _defaultFmt = v => parseFloat(Number(v).toFixed(2))
 export class OrSlider {
     /**
      * @param {Object}   cfg
-     * @param {string}   cfg.key            Identifiant (data-key sur l'input)
-     * @param {string}   cfg.label          Texte du label
-     * @param {number}   cfg.min            Valeur minimale (espace normalisé)
-     * @param {number}   cfg.max            Valeur maximale (espace normalisé)
-     * @param {number}   cfg.step           Pas de base
-     * @param {number}   cfg.value          Valeur initiale (dénormalisée)
-     * @param {string}   [cfg.unit]         Unité affichée après la valeur (ex: 'Hz', 'ms')
-     * @param {Function} [cfg.format]       (valDenorm) => string — format d'affichage
-     * @param {Function} [cfg.normalize]    (valDenorm) => valNorm — pour l'espace de l'input
+     * @param {string}   cfg.key            Identifier (data-key on the input)
+     * @param {string}   cfg.label          Label text
+     * @param {number}   cfg.min            Minimum value (normalized space)
+     * @param {number}   cfg.max            Maximum value (normalized space)
+     * @param {number}   cfg.step           Base step
+     * @param {number}   cfg.value          Initial value (denormalized)
+     * @param {string}   [cfg.unit]         Unit displayed after the value (e.g. 'Hz', 'ms')
+     * @param {Function} [cfg.format]       (valDenorm) => string — display format
+     * @param {Function} [cfg.normalize]    (valDenorm) => valNorm — for the input space
      * @param {Function} [cfg.denormalize]  (valNorm)   => valDenorm — inverse
-     * @param {boolean}  [cfg.hasLfo]       Ajoute la classe CSS has-lfo
-     * @param {boolean}  [cfg.noCursor]     Ajoute la classe CSS no-cursor
-     * @param {string}   [cfg.dataAttr]     Nom de l'attribut data-* (défaut: 'data-key')
-     * @param {string}   [cfg.extraClass]   Classe CSS additionnelle ajoutée à la row
+     * @param {boolean}  [cfg.hasLfo]       Adds CSS class has-lfo
+     * @param {boolean}  [cfg.noCursor]     Adds CSS class no-cursor
+     * @param {string}   [cfg.dataAttr]     Name of the data-* attribute (default: 'data-key')
+     * @param {string}   [cfg.extraClass]   Additional CSS class added to the row
      * @param {Function} [cfg.onChange]     (valDenorm, key) => void
      */
     constructor(cfg) {
@@ -67,10 +67,10 @@ export class OrSlider {
         this._extraClass = cfg.extraClass ?? ''
         this._onChange   = cfg.onChange  ?? null
 
-        // Valeur courante dans l'espace dénormalisé
+        // Current value in denormalized space
         this._value = cfg.value ?? cfg.min
 
-        this.el       = null   // div.ne-row — disponible après mount() / createElement()
+        this.el       = null   // div.ne-row — available after mount() / createElement()
         this._input   = null
         this._valSpan = null
 
@@ -78,25 +78,25 @@ export class OrSlider {
         this._boundOnKeydown = this._onKeydown.bind(this)
     }
 
-    // ─── Helpers internes ────────────────────────────────────────────────────
+    // ─── Internal helpers ───────────────────────────────────────────────────
 
-    /** Convertit une valeur dénormalisée en valeur pour l'input range */
+    /** Converts a denormalized value to an input range value */
     _toNorm(v) {
         return this._normalize ? this._normalize(v) : v
     }
 
-    /** Convertit une valeur de l'input range en valeur applicative */
+    /** Converts an input range value to an application value */
     _toDenorm(v) {
         return this._denormalize ? this._denormalize(v) : v
     }
 
-    /** Formate la valeur dénormalisée pour l'affichage */
+    /** Formats the denormalized value for display */
     _fmt(v) {
         const str = String(this._format(v))
         return this._unit ? `${str} ${this._unit}` : str
     }
 
-    /** Classes CSS de la row */
+    /** Row CSS classes */
     _rowClasses() {
         const classes = ['ne-row']
         if (this._hasLfo)   classes.push('has-lfo')
@@ -105,11 +105,11 @@ export class OrSlider {
         return classes.join(' ')
     }
 
-    // ─── Génération HTML (mode template literal) ─────────────────────────────
+    // ─── HTML generation (template literal mode) ────────────────────────────
 
     /**
-     * Retourne le HTML de la row (label + input + span).
-     * Appeler ensuite mount(rowEl) pour binder les événements.
+     * Returns the row HTML (label + input + span).
+     * Then call mount(rowEl) to bind events.
      */
     toHTML() {
         const normVal    = this._toNorm(this._value)
@@ -125,8 +125,8 @@ export class OrSlider {
     }
 
     /**
-     * Bind les événements sur un div.ne-row déjà injecté dans le DOM.
-     * @param {HTMLElement} rowEl  L'élément retourné par toHTML(), déjà dans le DOM.
+     * Binds events on a div.ne-row already injected into the DOM.
+     * @param {HTMLElement} rowEl  The element returned by toHTML(), already in the DOM.
      */
     mount(rowEl) {
         this.el       = rowEl
@@ -135,11 +135,11 @@ export class OrSlider {
         this._bind()
     }
 
-    // ─── Création DOM impérative ──────────────────────────────────────────────
+    // ─── Imperative DOM creation ────────────────────────────────────────────
 
     /**
-     * Crée et retourne l'élément div.ne-row complet, prêt à être appendé.
-     * Les événements sont déjà bindés.
+     * Creates and returns the complete div.ne-row element, ready to be appended.
+     * Events are already bound.
      */
     createElement() {
         const div = document.createElement('div')
@@ -174,7 +174,7 @@ export class OrSlider {
         return div
     }
 
-    // ─── Event binding ────────────────────────────────────────────────────────
+    // ─── Event binding ──────────────────────────────────────────────────────
 
     _bind() {
         this._input.addEventListener('input',   this._boundOnInput)
@@ -190,11 +190,11 @@ export class OrSlider {
     }
 
     /**
-     * Contrôle clavier enrichi sur l'input range :
+     * Enhanced keyboard control on the input range:
      *   Arrow Up/Right        → +step
      *   Arrow Down/Left       → -step
-     *   Shift + Arrow         → ±step × 10  (grands sauts)
-     *   Alt/Option + Arrow    → ±step ÷ 10  (réglage fin)
+     *   Shift + Arrow         → ±step × 10  (large jumps)
+     *   Alt/Option + Arrow    → ±step ÷ 10  (fine adjustment)
      */
     _onKeydown(e) {
         const isUp   = e.key === 'ArrowUp'   || e.key === 'ArrowRight'
@@ -221,11 +221,11 @@ export class OrSlider {
         this._onChange?.(denorm, this._key)
     }
 
-    // ─── API publique ─────────────────────────────────────────────────────────
+    // ─── Public API ─────────────────────────────────────────────────────────
 
     /**
-     * Met à jour le slider et l'affichage.
-     * @param {number} val  Valeur dénormalisée
+     * Updates the slider and display.
+     * @param {number} val  Denormalized value
      */
     setValue(val) {
         this._value = val
@@ -233,13 +233,13 @@ export class OrSlider {
         if (this._valSpan) this._valSpan.textContent = this._fmt(val)
     }
 
-    /** Retourne la valeur courante dénormalisée */
+    /** Returns the current denormalized value */
     getValue() {
         return this._value
     }
 
     /**
-     * Active ou désactive l'indicateur LFO (classe CSS has-lfo).
+     * Toggles the LFO indicator (CSS class has-lfo).
      * @param {boolean} bool
      */
     setHasLfo(bool) {
@@ -248,7 +248,7 @@ export class OrSlider {
     }
 
     /**
-     * Active ou désactive le contrôle.
+     * Toggles the control.
      * @param {boolean} bool
      */
     setDisabled(bool) {
@@ -256,15 +256,15 @@ export class OrSlider {
     }
 
     /**
-     * Met à jour la valeur maximale du slider.
-     * @param {number} max  Nouvelle valeur max
+     * Updates the maximum value of the slider.
+     * @param {number} max  New max value
      */
     setMax(max) {
         this._max = max
         if (this._input) this._input.max = max
     }
 
-    /** Retire les event listeners. Appeler avant de supprimer l'élément du DOM. */
+    /** Removes event listeners. Call before removing the element from the DOM. */
     destroy() {
         this._input?.removeEventListener('input',   this._boundOnInput)
         this._input?.removeEventListener('keydown', this._boundOnKeydown)
@@ -273,7 +273,7 @@ export class OrSlider {
         this._valSpan = null
     }
 
-    // ─── Utilitaires ─────────────────────────────────────────────────────────
+    // ─── Utilities ──────────────────────────────────────────────────────────
 
     _escHtml(str) {
         const d = document.createElement('div')
