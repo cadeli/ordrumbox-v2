@@ -9,6 +9,7 @@ import {
     STOP_EXTRA_BUFFER,
     RELEASE_TIME,
     NOISE_FILTER_FREQ_DEFAULT,
+    FILTER_FREQ_MAX,
 } from '../../core/constants.js'
 import {
     clamp,
@@ -16,8 +17,6 @@ import {
     computeOscFrequency,
     computeNoteRatio,
     computeAccent,
-    computePeakFilterFreq,
-    computeAdsrEnvelopeParams,
 } from '../math.js'
 
 const MIN_ATTACK  = 0.003
@@ -85,6 +84,7 @@ export default class SynthVoice extends BaseVoice {
         this.noteVelo       = 0
         this.noteRatio      = 1
         this.masterVolume   = 0.8
+        this._cleanupTimer  = null
     }
 
     #setupOsc(cfg, noteRatio) {
@@ -178,7 +178,7 @@ export default class SynthVoice extends BaseVoice {
         const mFreq        = Utils.normalizeSynthFilterFreqValue(baseFreq + accentFilterBoost)
         const mQ           = Utils.normalizeSynthFilterQValue(toFiniteNumber(gs.filter?.Q, 1))
         const filterEnvAmt = clamp(toFiniteNumber(gs.filter?.filterEnvelopeAmount, 0), 0, 1)
-        const peakFreq     = Utils.normalizeSynthFilterFreqValue(computePeakFilterFreq(mFreq, filterEnvAmt))
+        const peakFreq     = Utils.normalizeSynthFilterFreqValue(mFreq + ((FILTER_FREQ_MAX - mFreq) * filterEnvAmt))
 
         this.voiceFilter1.frequency.setValueAtTime(mFreq, time)
         this.voiceFilter1.Q.setValueAtTime(mQ, time)
@@ -225,8 +225,11 @@ export default class SynthVoice extends BaseVoice {
 
         const masterVolume = toFiniteNumber(gs.masterVolume, 0.8)
         this.masterVolume  = masterVolume
-        const { attackTime, decayTime, sustainLevel, releaseTime, peakGain } =
-            computeAdsrEnvelopeParams(env, this.noteVelo, masterVolume, accentMultiplier)
+        const attackTime    = env.attack ?? 0
+        const decayTime     = env.decay ?? 0
+        const sustainLevel  = env.sustain ?? 1
+        const releaseTime   = env.release ?? 0
+        const peakGain      = this.noteVelo * masterVolume * accentMultiplier
 
         const safeAttack  = Math.max(MIN_ATTACK,  attackTime)
         const safeRelease = Math.max(MIN_RELEASE, releaseTime)
@@ -364,9 +367,10 @@ export default class SynthVoice extends BaseVoice {
         // those recycled nodes could inherit stale audio graph connections.
         const totalSec = Math.max(0, this.totalStopTime - time) + 0.1
         if (typeof setTimeout === 'function') {
-            setTimeout(() => {
+            this._cleanupTimer = setTimeout(() => {
                 this.cleanup()
                 if (this.onEnded) this.onEnded()
+                this._cleanupTimer = null
             }, totalSec * 1000)
         }
     }
@@ -374,6 +378,11 @@ export default class SynthVoice extends BaseVoice {
     stop(time) {
         if (this.stopped) return
         super.stop(time)
+        // Cancel the cleanup timer to prevent race with new voices acquiring pooled nodes
+        if (this._cleanupTimer) {
+            clearTimeout(this._cleanupTimer)
+            this._cleanupTimer = null
+        }
         try {
             this.gainEnv.gain.cancelScheduledValues(time)
             const currentGain = Math.max(MIN_GAIN_VALUE, this.gainEnv.gain.value || this.noteVelo || 1)

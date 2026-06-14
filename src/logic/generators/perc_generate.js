@@ -109,10 +109,8 @@ export default class MfPercGenerate extends BaseGenerator {
     }
 
     generatePercPhraseVariant = (percTrack, tones, pitchBias, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const barQuantize = percTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         const cachedPitches = []
         config.phrases.forEach((phrase) => {
@@ -141,10 +139,8 @@ export default class MfPercGenerate extends BaseGenerator {
     }
 
     generatePercGridVariant = (percTrack, tones, pitchBias, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const barQuantize = percTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         for (let bar = 0; bar < (percTrack.bars ?? 1); bar++) {
             for (let step = 0; step < barQuantize; step++) {
@@ -171,10 +167,8 @@ export default class MfPercGenerate extends BaseGenerator {
     }
 
     generatePercCallResponseVariant = (percTrack, tones, pitchBias, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const barQuantize = percTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         for (let bar = 0; bar < (percTrack.bars ?? 1); bar++) {
             const steps = bar % 2 === 0 ? config.callSteps : config.responseSteps
@@ -201,10 +195,8 @@ export default class MfPercGenerate extends BaseGenerator {
     }
 
     generatePercFillVariant = (percTrack, tones, pitchBias, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const barQuantize = percTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         const startBar = Math.max(0, (percTrack.bars ?? 1) - (config.startBarOffset ?? 1))
         config.steps.forEach((step, index) => {
@@ -229,31 +221,6 @@ export default class MfPercGenerate extends BaseGenerator {
         })
     }
 
-    resolvePercPitch = (phrase, tones, cachedPitches, pitchBias) => {
-        if (typeof phrase.pitch === 'number') {
-            return phrase.pitch + pitchBias
-        }
-        if (phrase.source === 'reuse' && typeof phrase.reuseIndex === 'number') {
-            return cachedPitches[phrase.reuseIndex] ?? pitchBias
-        }
-        if (phrase.source === 'root') {
-            return pitchBias
-        }
-        return this.getRndTone(tones) + pitchBias
-    }
-
-    getScaleSteps = (scaleName) => {
-        return soundRegistry.scales[scaleName]?.scaleSteps
-            ?? soundRegistry.scales["pentatonic minor"]?.scaleSteps
-            ?? soundRegistry.scales["major"]?.scaleSteps
-            ?? [0, 2, 3, 5, 7, 10]
-    }
-
-    getRndTone = (tones) => {
-        const tone = tones[Math.floor(Math.random() * tones.length)] ?? 0
-        return tone > 6 ? tone - 12 : tone
-    }
-
     getTrackPitchBias = (track) => {
         const trackName = String(track?.name ?? '').toUpperCase()
         if (trackName.includes('HCONG') || trackName.includes('HTOM') || trackName.includes('HIGH')) {
@@ -266,5 +233,25 @@ export default class MfPercGenerate extends BaseGenerator {
             return 2
         }
         return 0
+    }
+
+    getScaleSteps = (scaleName) => {
+        return soundRegistry.scales[scaleName]?.scaleSteps
+            ?? soundRegistry.scales["pentatonic minor"]?.scaleSteps
+            ?? soundRegistry.scales["major"]?.scaleSteps
+            ?? [0, 2, 3, 5, 7, 10]
+    }
+
+    resolvePercPitch = (phrase, tones, cachedPitches, pitchBias) => {
+        if (typeof phrase.pitch === 'number') {
+            return phrase.pitch + pitchBias
+        }
+        if (phrase.source === 'reuse' && typeof phrase.reuseIndex === 'number') {
+            return cachedPitches[phrase.reuseIndex] ?? pitchBias
+        }
+        if (phrase.source === 'root') {
+            return pitchBias
+        }
+        return this.getRndTone(tones) + pitchBias
     }
 }

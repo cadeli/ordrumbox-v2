@@ -31,8 +31,6 @@ export default class MfSound {
         this._stripParamCache = new Map()
     }
 
-    init = () => { }
-
     getStrip = async (track) => {
         if (!track?.name || !this.mixer) return null
         return await this.mixer.getOrCreateStrip(track.name)
@@ -138,7 +136,7 @@ export default class MfSound {
                 }
                 this.playGenerated(flatNote, time)
             })
-            
+
             if (promise && typeof promise.catch === 'function') {
                 promise.catch((error) => {
                     this.generatedSoundsLoading = false
@@ -148,6 +146,9 @@ export default class MfSound {
             }
         }
     }
+
+    // Backward compatibility alias
+    loadGeneratedSounds = this.loadGeneratedsounds
 
     /**
      * Invalidate strip cache for a specific track (call when track settings change via UI).

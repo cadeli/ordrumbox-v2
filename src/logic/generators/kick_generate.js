@@ -105,10 +105,8 @@ export default class MfKickGenerate extends BaseGenerator {
     }
 
     generateKickBreakVariant = (kickTrack, config) => {
-        const loopPointBar = config.loopPointBar ?? 4
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(kickTrack, config, 4)
         const barQuantize = kickTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         for (let bar = 0; bar < kickTrack.bars; bar++) {
             const absoluteStep = bar * barQuantize + 0

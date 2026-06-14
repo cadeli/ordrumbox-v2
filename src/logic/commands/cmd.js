@@ -1,12 +1,12 @@
 import { NOT_FOUND } from '../../core/constants.js'
 import Utils from '../../core/utils.js'
 import MfDefaults from '../../patterns/defaults.js'
-import { fixPattern } from '../../patterns/fixer.js'
 import { appState } from '../../state/app_state.js'
 import { getAutoAssignService, serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { normalizeTrack, TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
+import { importPatternFromJson } from './pattern_import.js'
 
 export default class MfCmd {
     static TAG = "MFCMD"
@@ -144,154 +144,23 @@ export default class MfCmd {
         return appState.patterns.find((pattern) => pattern?.name?.toUpperCase() === normalizedName) ?? null
     }
 
-    resetPatternTracks = (pattern) => {
-        pattern.tracks = []
-    }
-
-    setPatternName = (pattern, name) => {
-        pattern.name = name
-        return pattern
-    }
-
-    getPatternName = (pattern) => pattern?.name ?? ''
-
     setPatternBpm = (pattern, bpm) => {
         pattern.bpm = Number(bpm) || MfDefaults.getPatternProp({}, 'bpm')
         return pattern
     }
-
-    getPatternBpm = (pattern) => Number(pattern?.bpm ?? MfDefaults.getPatternProp({}, 'bpm'))
-
-    setPatternBars = (pattern, nbBars) => {
-        pattern.nbBars = Number(nbBars) || MfDefaults.getPatternProp({}, 'nbBars')
-        return pattern
-    }
-
-    getPatternBars = (pattern) => Number(pattern?.nbBars ?? 4)
 
     setPatternDescription = (pattern, description) => {
         pattern.description = String(description ?? '')
         return pattern
     }
 
-    getPatternDescription = (pattern) => String(pattern?.description ?? '')
-
-    setPatternMetadata = (pattern, sourcePattern) => {
-        if (sourcePattern.application) {
-            pattern.application = sourcePattern.application
-        }
-        if (sourcePattern.url) {
-            pattern.url = sourcePattern.url
-        }
-        if (sourcePattern.tags) {
-            pattern.tags = { ...sourcePattern.tags }
-        }
-        return pattern
-    }
-
-    setTrackProps = (track, sourceTrack) => {
-        // Derived properties (recalculated, not copied)
-        const derivedKeys = new Set(['loopPointBar', 'loopPointStep', 'notes'])
-
-        // Copy all track properties from source
-        for (const prop of Object.keys(TRACK_DEFAULTS)) {
-            if (derivedKeys.has(prop)) continue
-            if (prop in sourceTrack) {
-                track[prop] = sourceTrack[prop];
-            }
-        }
-
-        // Optional FX/synth properties: delete from target if source doesn't have them.
-        // These props have no meaningful "default" — their absence means the effect is off.
-        const optionalProps = ['mono', 'filterLfoFreq', 'reverbType', 'reverbAmount',
-            'delayType', 'delayTime', 'delayAmount', 'fxSelected',
-            'saturationType', 'saturationAmount', 'synthSoundKey',
-            'reverbOn', 'delayOn', 'saturationOn']
-
-        for (const prop of optionalProps) {
-            if (!(prop in sourceTrack)) delete track[prop]
-        }
-
-        // Special case for bars/nbBars which are aliases
-        if ("bars" in sourceTrack) track.bars = sourceTrack.bars;
-        else if ("nbBars" in sourceTrack) track.bars = sourceTrack.nbBars;
-
-        // Default loopAtStep if not provided
-        if (!("loopAtStep" in sourceTrack)) {
-            track.loopAtStep = track.bars * track.barQuantize;
-        }
-
-        // Always recompute derived fields
-        recalcLoopDerived(track)
-
-        return track;
-    }
-
-    getTrackName = (track) => track?.name ?? ''
-
-    setNoteProps = (note, sourceNote, track) => {
-        const props = [
-            "bar", "velocity", "pan", "pitch", "arp", 
-            "triggerFreq", "triggerPhase", "triggerProbability", 
-            "arpTriggerProbability", "retriggerNum", "retriggerStep", 
-            "euclidianFill", "steppc"
-        ];
-
-        props.forEach(prop => {
-            if (prop in sourceNote) {
-                note[prop] = sourceNote[prop];
-            }
-        });
-
-        // Special cases for step/barStep aliases
-        if (sourceNote.barStep !== undefined) note.barStep = sourceNote.barStep;
-        else if (sourceNote.step !== undefined) note.barStep = sourceNote.step;
-
-        // Ensure steppc is computed if not provided
-        if (sourceNote.steppc === undefined) {
-            note.steppc = Math.round((note.barStep * 100) / track.barQuantize);
-        }
-
-        return note;
-    }
-
     importPatternFromJson = (sourcePattern) => {
-        const patternName = sourcePattern?.name ?? undefined
-        const importedPattern = this.addPattern(patternName)
-
-        this.setPatternName(importedPattern, patternName ?? this.getPatternName(importedPattern))
-        this.setPatternBpm(importedPattern, sourcePattern?.bpm ?? this.getPatternBpm(importedPattern))
-        this.setPatternBars(importedPattern, sourcePattern?.nbBars ?? this.getPatternBars(importedPattern))
-        this.setPatternMetadata(importedPattern, sourcePattern ?? {})
-
-        if (!("description" in sourcePattern)) {
-            delete importedPattern.description
-        } else if (sourcePattern.description !== "") {
-            importedPattern.description = sourcePattern.description
-        } else {
-            delete importedPattern.description
-        }
-
-        this.resetPatternTracks(importedPattern)
-
-        Object.values(sourcePattern?.tracks ?? []).forEach((sourceTrack) => {
-            const track = this.addTrack(importedPattern, sourceTrack.name)
-            this.setTrackProps(track, sourceTrack)
-
-            Object.values(sourceTrack.notes ?? []).forEach((sourceNote) => {
-                const note = this.addNote(
-                    track,
-                    Number(sourceNote.bar ?? 0),
-                    Number(sourceNote.barStep ?? sourceNote.step ?? 0),
-                    Number(sourceNote.pitch ?? 0)
-                )
-                this.setNoteProps(note, sourceNote, track)
-            })
-        })
-
-        fixPattern(importedPattern)
-
-        return importedPattern
+        return importPatternFromJson(
+            sourcePattern,
+            (name) => this.addPattern(name),
+            (pattern, name) => this.addTrack(pattern, name),
+            (track, bar, barStep, pitch) => this.addNote(track, bar, barStep, pitch)
+        )
     }
 
     createPattern = (name) => {
@@ -367,10 +236,6 @@ export default class MfCmd {
     }
 
 
-
-    incrDisplayBar = (pattern) => {
-        // No-op after UI removal
-    }
 
     setNbBar = (pattern, newBar) => {
         let oldBar = pattern.nbBars * (Utils.getTracksArray(pattern)[0]?.barQuantize ?? 4)

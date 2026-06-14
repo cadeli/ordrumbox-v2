@@ -130,10 +130,8 @@ export default class MfSnareGenerate extends BaseGenerator {
     }
 
     generateSnareGridVariant = (snareTrack, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 2)
         const barQuantize = snareTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         for (let bar = 0; bar < (snareTrack.bars ?? 1); bar++) {
             for (let step = 0; step < barQuantize; step++) {
@@ -161,10 +159,8 @@ export default class MfSnareGenerate extends BaseGenerator {
     }
 
     generateSnareRollVariant = (snareTrack, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 1)
         const barQuantize = snareTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         const lastBar = Math.max(0, (snareTrack.bars ?? 1) - 1)
         const lastStep = Math.max(0, barQuantize - 1)
@@ -192,10 +188,8 @@ export default class MfSnareGenerate extends BaseGenerator {
     }
 
     generateSnareFillVariant = (snareTrack, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 2)
         const barQuantize = snareTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         const startBar = Math.max(0, (snareTrack.bars ?? 1) - (config.startBarOffset ?? 1))
         for (let bar = startBar; bar < (snareTrack.bars ?? 1); bar++) {

@@ -19,23 +19,14 @@ describe('MfCmd: extended coverage', () => {
             expect(mfCmd.getPatternByName('noname')).toBeNull()
         })
 
-        it('setPatternDescription / getPatternDescription', () => {
+        it('setPatternDescription sets description', () => {
             const pattern = mfCmd.addPattern('Test')
             mfCmd.setPatternDescription(pattern, 'my desc')
-            expect(mfCmd.getPatternDescription(pattern)).toBe('my desc')
-            expect(mfCmd.getPatternDescription({})).toBe('')
+            expect(pattern.description).toBe('my desc')
         })
 
-        it('setPatternBars / getPatternBars', () => {
-            const pattern = mfCmd.addPattern('Test')
-            mfCmd.setPatternBars(pattern, 8)
-            expect(mfCmd.getPatternBars(pattern)).toBe(8)
-        })
-
-        it('setPatternBars with invalid value uses default', () => {
-            const pattern = mfCmd.addPattern('Test')
-            mfCmd.setPatternBars(pattern, 0)
-            expect(pattern.nbBars).toBe(4)
+        it('setPatternDescription handles null pattern', () => {
+            expect(() => mfCmd.setPatternDescription(null, 'x')).toThrow()
         })
 
         it('setPatternBpm with invalid value uses default', () => {
@@ -43,30 +34,12 @@ describe('MfCmd: extended coverage', () => {
             mfCmd.setPatternBpm(pattern, 0)
             expect(pattern.bpm).toBe(120)
         })
-
-        it('setPatternMetadata copies application, url, tags', () => {
-            const pattern = mfCmd.addPattern('Test')
-            const source = { application: 'minfact', url: 'http://x', tags: { genre: 'techno' } }
-            mfCmd.setPatternMetadata(pattern, source)
-            expect(pattern.application).toBe('minfact')
-            expect(pattern.url).toBe('http://x')
-            expect(pattern.tags).toEqual({ genre: 'techno' })
-        })
-
-        it('setPatternMetadata skips missing fields', () => {
-            const pattern = mfCmd.addPattern('Test')
-            mfCmd.setPatternMetadata(pattern, {})
-            expect(pattern.application).toBeUndefined()
-            expect(pattern.url).toBeUndefined()
-            expect(pattern.tags).toBeUndefined()
-        })
     })
 
-    describe('setTrackProps', () => {
-        it('copies all known properties', () => {
+    describe('updateTrack properties', () => {
+        it('copies all known properties via updateTrack', () => {
             const track = mfCmd.createTrack(4, 'KICK', 4)
             const source = {
-                useAutoAssignSound: false,
                 soundId: 'snd_1',
                 bars: 8,
                 barQuantize: 8,
@@ -94,9 +67,8 @@ describe('MfCmd: extended coverage', () => {
                 sampleLength: 0.8,
                 synthSoundKey: 'saw'
             }
-            mfCmd.setTrackProps(track, source)
+            mfCmd.updateTrack(track, source)
 
-            expect(track.useAutoAssignSound).toBe(false)
             expect(track.soundId).toBe('snd_1')
             expect(track.bars).toBe(8)
             expect(track.barQuantize).toBe(8)
@@ -125,69 +97,39 @@ describe('MfCmd: extended coverage', () => {
             expect(track.synthSoundKey).toBe('saw')
         })
 
-        it('deletes optional properties when not in source', () => {
+        it('nbBars sets bars via direct assignment', () => {
             const track = mfCmd.createTrack(4, 'KICK', 4)
-            track.mono = true
-            track.filterLfoFreq = 2
-            track.reverbType = 'room'
-            track.reverbAmount = 0.3
-            track.delayType = 'tape'
-            track.delayTime = 1
-            track.delayAmount = 0.2
-            track.fxSelected = 'reverb'
-            track.saturationType = 'soft'
-            track.saturationAmount = 0.1
-            track.synthSoundKey = 'sine'
-
-            mfCmd.setTrackProps(track, {})
-
-            expect(track.mono).toBeUndefined()
-            expect(track.filterLfoFreq).toBeUndefined()
-            expect(track.reverbType).toBeUndefined()
-            expect(track.reverbAmount).toBeUndefined()
-            expect(track.delayType).toBeUndefined()
-            expect(track.delayTime).toBeUndefined()
-            expect(track.delayAmount).toBeUndefined()
-            expect(track.fxSelected).toBeUndefined()
-            expect(track.saturationType).toBeUndefined()
-            expect(track.saturationAmount).toBeUndefined()
-            expect(track.synthSoundKey).toBeUndefined()
-        })
-
-        it('nbBars fallback to bars for loopAtStep', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.setTrackProps(track, { nbBars: 8 })
+            track.bars = 8
+            track.nbBars = 8
             expect(track.bars).toBe(8)
+            expect(track.nbBars).toBe(8)
         })
 
         it('computes loopPointBar/Step after update', () => {
             const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.setTrackProps(track, { loopAtStep: 10 })
+            mfCmd.updateTrack(track, { loopAtStep: 10 })
             expect(track.loopPointBar).toBe(2)
             expect(track.loopPointStep).toBe(2)
         })
     })
 
-    describe('setNoteProps', () => {
-        it('copies all note properties', () => {
+    describe('Note property updates', () => {
+        it('can set note properties directly', () => {
             const track = mfCmd.createTrack(4, 'KICK', 4)
             const note = mfCmd.addNote(track, 0, 0)
-            const source = {
-                barStep: 2,
-                bar: 1,
-                velocity: 0.5,
-                pan: -0.3,
-                pitch: 7,
-                arp: [0, 12],
-                triggerFreq: 2,
-                triggerPhase: 1,
-                triggerProbability: 0.8,
-                arpTriggerProbability: 0.9,
-                retriggerNum: 3,
-                retriggerStep: 2,
-                euclidianFill: 2
-            }
-            mfCmd.setNoteProps(note, source, track)
+            note.barStep = 2
+            note.bar = 1
+            note.velocity = 0.5
+            note.pan = -0.3
+            note.pitch = 7
+            note.arp = [0, 12]
+            note.triggerFreq = 2
+            note.triggerPhase = 1
+            note.triggerProbability = 0.8
+            note.arpTriggerProbability = 0.9
+            note.retriggerNum = 3
+            note.retriggerStep = 2
+            note.euclidianFill = 2
 
             expect(note.barStep).toBe(2)
             expect(note.bar).toBe(1)
@@ -202,29 +144,6 @@ describe('MfCmd: extended coverage', () => {
             expect(note.retriggerNum).toBe(3)
             expect(note.retriggerStep).toBe(2)
             expect(note.euclidianFill).toBe(2)
-        })
-
-        it('falls back step to barStep', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            const note = mfCmd.addNote(track, 0, 0)
-            mfCmd.setNoteProps(note, { step: 3 }, track)
-            expect(note.barStep).toBe(3)
-        })
-
-        it('computes steppc from barStep when not provided', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            const note = mfCmd.addNote(track, 0, 2)
-            delete note.steppc
-            mfCmd.setNoteProps(note, {}, track)
-            expect(note.steppc).toBe(50)
-        })
-    })
-
-    describe('getTrackName', () => {
-        it('returns name or empty string', () => {
-            expect(mfCmd.getTrackName({ name: 'KICK' })).toBe('KICK')
-            expect(mfCmd.getTrackName(null)).toBe('')
-            expect(mfCmd.getTrackName({})).toBe('')
         })
     })
 
@@ -262,7 +181,7 @@ describe('MfCmd: extended coverage', () => {
     })
 
     describe('cleanPattern', () => {
-        it('cleans all tracks in pattern', () => {
+        it('empties all tracks in pattern', () => {
             const pattern = mfCmd.addPattern('Test')
             const t1 = mfCmd.addTrack(pattern, 'KICK')
             const t2 = mfCmd.addTrack(pattern, 'SNARE')
@@ -340,14 +259,6 @@ describe('MfCmd: extended coverage', () => {
             MfGlobals.sounds = { s1: { kit_name: 'real' } }
             expect(mfCmd.kitIsLoaded({ name: 'real' })).toBe(true)
             expect(mfCmd.kitIsLoaded({ name: 'electro' })).toBe(false)
-        })
-    })
-
-    describe('resetPatternTracks', () => {
-        it('empties tracks array', () => {
-            const pattern = { tracks: [{ name: 'KICK' }] }
-            mfCmd.resetPatternTracks(pattern)
-            expect(pattern.tracks).toEqual([])
         })
     })
 

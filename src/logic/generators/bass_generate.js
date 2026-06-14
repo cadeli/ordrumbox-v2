@@ -173,14 +173,12 @@ export default class MfBassGenerate extends BaseGenerator {
     }
 
     generateBassPhraseVariant = (bassTrack, tones, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const barQuantize = bassTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         const cachedPitches = []
         config.phrases.forEach((phrase) => {
-            const pitch = this.resolveBassPitch(phrase, tones, cachedPitches)
+            const pitch = this.resolvePhrasePitch(phrase, tones, cachedPitches)
             const step = phrase.step === 'random'
                 ? Math.floor(Math.random() * barQuantize)
                 : phrase.step
@@ -203,10 +201,8 @@ export default class MfBassGenerate extends BaseGenerator {
     }
 
     generateBassStepGridVariant = (bassTrack, tones, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const barQuantize = bassTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
         const bar = config.bar ?? 0
 
         const generatedTones = [
@@ -237,10 +233,8 @@ export default class MfBassGenerate extends BaseGenerator {
     }
 
     generateBassGrooveVariant = (bassTrack, scale, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const barQuantize = bassTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         const rootPattern = config.rootPattern
 
@@ -289,10 +283,8 @@ export default class MfBassGenerate extends BaseGenerator {
     }
 
     generateBassArpeggioVariant = (bassTrack, scale, config) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const barQuantize = bassTrack.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         const rootPattern = config.rootPattern ?? [0]
         const phraseLength = Math.max(2, config.phraseLength ?? scale.length)
@@ -330,24 +322,39 @@ export default class MfBassGenerate extends BaseGenerator {
         }
     }
 
-    resolveBassPitch = (phrase, tones, cachedPitches) => {
-        if (typeof phrase.pitch === 'number') {
-            return phrase.pitch
+    traceBassGeneration = (variantName, config, bassTrack) => {
+        const extraParts = []
+        if (Array.isArray(config.rootPattern)) {
+            extraParts.push(`root=${config.rootPattern.join('/')}`)
         }
-        if (phrase.source === 'reuse' && typeof phrase.reuseIndex === 'number') {
-            return cachedPitches[phrase.reuseIndex] ?? 0
+        if (typeof config.density === 'number') {
+            extraParts.push(`dens=${config.density}`)
         }
-        return this.getRndTone(tones)
-    }
-
-    getScaleSteps = (scaleName) => {
-        return soundRegistry.scales[scaleName]?.scaleSteps ?? soundRegistry.scales["major"]?.scaleSteps ?? [0, 2, 4, 5, 7, 9, 11]
+        if (typeof config.variation === 'number') {
+            extraParts.push(`var=${config.variation}`)
+        }
+        if (typeof config.maxLeap === 'number') {
+            extraParts.push(`leap=${config.maxLeap}`)
+        }
+        if (typeof config.noteSpacing === 'number') {
+            extraParts.push(`spc=${config.noteSpacing}`)
+        }
+        if (typeof config.spacingJitter === 'number') {
+            extraParts.push(`jit=${config.spacingJitter}`)
+        }
+        if (typeof config.phraseLength === 'number') {
+            extraParts.push(`len=${config.phraseLength}`)
+        }
+        if (typeof config.contour === 'string') {
+            extraParts.push(`ctr=${config.contour}`)
+        }
+        // this.traceGeneration(variantName, config, bassTrack, extraParts)
     }
 
     getRndTone = (tones) => {
-        let nb = Math.floor(Math.random() * tones.length)
-        let tone = tones[nb]
-        if (tone > 5) { tone -= 12 }
+        const nb = Math.floor(Math.random() * tones.length)
+        const tone = tones[nb]
+        if (tone > 5) return tone - 12
         return tone
     }
 
@@ -391,34 +398,5 @@ export default class MfBassGenerate extends BaseGenerator {
         }
         choices.push(averageSpacing + spacingJitter)
         return choices[Math.floor(Math.random() * choices.length)] ?? averageSpacing
-    }
-
-    traceBassGeneration = (variantName, config, bassTrack) => {
-        const extraParts = []
-        if (Array.isArray(config.rootPattern)) {
-            extraParts.push(`root=${config.rootPattern.join('/')}`)
-        }
-        if (typeof config.density === 'number') {
-            extraParts.push(`dens=${config.density}`)
-        }
-        if (typeof config.variation === 'number') {
-            extraParts.push(`var=${config.variation}`)
-        }
-        if (typeof config.maxLeap === 'number') {
-            extraParts.push(`leap=${config.maxLeap}`)
-        }
-        if (typeof config.noteSpacing === 'number') {
-            extraParts.push(`spc=${config.noteSpacing}`)
-        }
-        if (typeof config.spacingJitter === 'number') {
-            extraParts.push(`jit=${config.spacingJitter}`)
-        }
-        if (typeof config.phraseLength === 'number') {
-            extraParts.push(`len=${config.phraseLength}`)
-        }
-        if (typeof config.contour === 'string') {
-            extraParts.push(`ctr=${config.contour}`)
-        }
-       // this.traceGeneration(variantName, config, bassTrack, extraParts)
     }
 }

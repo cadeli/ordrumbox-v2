@@ -61,6 +61,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.noteVelo = 0.8
         this.noteRatio = 1
         this.masterVolume = 0.8
+        this._cleanupTimer = null
     }
 
     async setup(flatNote, time) {
@@ -93,9 +94,10 @@ export default class WorkletSynthVoice extends BaseVoice {
         
         // Cleanup refs after sound has fully finished
         if (typeof setTimeout === 'function') {
-            setTimeout(() => {
+            this._cleanupTimer = setTimeout(() => {
                 this.cleanup()
                 if (this.onEnded) this.onEnded()
+                this._cleanupTimer = null
             }, totalSec * 1000)
         }
     }
@@ -103,6 +105,11 @@ export default class WorkletSynthVoice extends BaseVoice {
     stop(time) {
         if (this.stopped) return
         super.stop(time)
+        // Cancel the cleanup timer to prevent race with new voices acquiring pooled nodes
+        if (this._cleanupTimer) {
+            clearTimeout(this._cleanupTimer)
+            this._cleanupTimer = null
+        }
         if (this.workletNode) {
             postRelease(this.workletNode, time)
         }

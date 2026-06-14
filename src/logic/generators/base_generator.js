@@ -1,4 +1,5 @@
 import { serviceRegistry } from '../../state/service_registry.js'
+import { soundRegistry } from '../../state/sound_registry.js'
 
 export default class BaseGenerator {
     constructor(instrumentName, configs, addNoteFn) {
@@ -37,6 +38,54 @@ export default class BaseGenerator {
         track.loopPointBar = loopPointBar
         track.loopPointStep = loopPointStep
         track.loopAtStep = loopPointBar * track.barQuantize + loopPointStep
+    }
+
+    /**
+     * Compute the absolute loop point step from config and track.
+     * @param {object} track  - track with barQuantize
+     * @param {object} config - generator config with loopPointBar/loopPointStep
+     * @param {number} [defaultBar=1] - default loopPointBar if not in config
+     * @returns {number} absolute step index
+     */
+    getLoopPointAbsolute = (track, config, defaultBar = 1) => {
+        const loopPointBar = config.loopPointBar ?? defaultBar
+        const loopPointStep = config.loopPointStep ?? 0
+        const barQuantize = track.barQuantize ?? 4
+        return loopPointBar * barQuantize + loopPointStep
+    }
+
+    /**
+     * Get scale steps for a given scale name.
+     * Subclasses can override with different fallback chains.
+     */
+    getScaleSteps = (scaleName) => {
+        return soundRegistry.scales[scaleName]?.scaleSteps ?? [0, 2, 4, 5, 7, 9, 11]
+    }
+
+    /**
+     * Get a random tone from the available tones.
+     * Subclasses can override the octave threshold.
+     */
+    getRndTone = (tones) => {
+        const tone = tones[Math.floor(Math.random() * tones.length)] ?? 0
+        return tone > 6 ? tone - 12 : tone
+    }
+
+    /**
+     * Resolve pitch from a phrase config.
+     * Subclasses can override for different behavior.
+     */
+    resolvePhrasePitch = (phrase, tones, cachedPitches, pitchBias = 0) => {
+        if (typeof phrase.pitch === 'number') {
+            return phrase.pitch + pitchBias
+        }
+        if (phrase.source === 'reuse' && typeof phrase.reuseIndex === 'number') {
+            return cachedPitches[phrase.reuseIndex] ?? pitchBias
+        }
+        if (phrase.source === 'root') {
+            return pitchBias
+        }
+        return this.getRndTone(tones) + pitchBias
     }
 
     formatCompactVelocity = (velocityConfig, defaults = {}) => {
@@ -110,14 +159,11 @@ export default class BaseGenerator {
     }
 
     generateGridVariant = (track, config, getAccentContext, getGhostContext) => {
-        const loopPointBar = config.loopPointBar ?? 1
-        const loopPointStep = config.loopPointStep ?? 0
-        const barQuantize = track.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
+        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, 1)
 
         for (let bar = 0; bar < (track.bars ?? 1); bar++) {
-            for (let step = 0; step < barQuantize; step++) {
-                const absoluteStep = bar * barQuantize + step
+            for (let step = 0; step < track.barQuantize; step++) {
+                const absoluteStep = bar * track.barQuantize + step
                 if (absoluteStep >= loopPointAbsolute) continue
 
                 const probability = config.probabilities?.[step % config.probabilities.length] ?? 0
@@ -138,10 +184,8 @@ export default class BaseGenerator {
     }
 
     generatePhraseVariant = (track, config, getPitch, getAccentContext, getGhostContext) => {
-        const loopPointBar = config.loopPointBar ?? 2
-        const loopPointStep = config.loopPointStep ?? 0
+        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, 2)
         const barQuantize = track.barQuantize ?? 4
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
 
         config.phrases.forEach((phrase) => {
             const step = phrase.step === 'random'

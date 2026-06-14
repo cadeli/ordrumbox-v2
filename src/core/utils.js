@@ -111,7 +111,10 @@ static TAG = "UTILS"
         }
     }
 
-    static compacteTrackWithLoop = (track, options = {}) => Utils.addLoopToTrackIfPossible(track, options)
+    static compactTrackWithLoop = (track, options = {}) => Utils.addLoopToTrackIfPossible(track, options)
+
+    // Backward compatibility alias
+    static compacteTrackWithLoop = Utils.compactTrackWithLoop
 
     static getTrackStepLength = (track) => {
         const barQuantize = Number(track?.barQuantize)
@@ -308,8 +311,11 @@ static TAG = "UTILS"
         return Utils.PAN_MAP[indexTrack] ?? 0
     }
 
-    static getPanoFromTrackName = (type) => {
+    static getPanFromTrackName = (type) => {
         const idx = Utils.TRACK_NAME_TO_INDEX[type]
         return idx !== undefined ? Utils.computeTrackPan(idx) : 0
     }
+
+    // Backward compatibility alias
+    static getPanoFromTrackName = Utils.getPanFromTrackName
 }

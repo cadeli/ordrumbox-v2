@@ -36,7 +36,6 @@ describe('Functional: MfCmd operations', () => {
             mfCmd.setPatternBpm(pattern, 140)
 
             expect(pattern.bpm).toBe(140)
-            expect(mfCmd.getPatternBpm(pattern)).toBe(140)
         })
     })
 

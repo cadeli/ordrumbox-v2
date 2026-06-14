@@ -34,10 +34,11 @@ export default class MfAutoGenerate {
                 await this.generateTrack(track, config)
             }
         } else {
+            const genre = options.genre || this.structureGen.getRandomGenre()
+            const structure = options.structure || this.structureGen.generateStructure(genre)
+
             for (const track of pattern.tracks) {
                 const type = this.detectTrackType(track.name)
-                const genre = options.genre || this.structureGen.getRandomGenre()
-                const structure = options.structure || this.structureGen.generateStructure(genre)
 
                 let config = null
                 for (const [name, cfg] of Object.entries(structure)) {

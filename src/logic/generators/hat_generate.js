@@ -142,9 +142,7 @@ export default class MfHatGenerate extends BaseGenerator {
         const barQuantize = hatTrack.barQuantize ?? 4
         const interval = trackType === 'OHH' ? 2 : 1
 
-        const loopPointBar = config.loopPointBar ?? 1
-        const loopPointStep = config.loopPointStep ?? 0
-        const loopPointAbsolute = loopPointBar * barQuantize + loopPointStep
+        const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 1)
         const lastBarAbsolute = lastBar * barQuantize
 
         for (let step = 0; step < barQuantize; step += interval) {

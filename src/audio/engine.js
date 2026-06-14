@@ -171,10 +171,10 @@ export default class AudioEngine {
 
         notesToPlay.forEach(flatNote => {
             if (flatNote.track.mute === false) {
-                const midiMapping = InstrumentsManager.DATA.instruments.find(i => i.id === flatNote.track.id)?.midi?.[0]
-                if (midiMapping) {
-                    const channel   = parseInt(midiMapping.ch) || 10
-                    const note      = parseInt(midiMapping.key) || 60
+                const mapping = this._resolveMidiMapping(flatNote.track.id)
+                if (mapping) {
+                    const channel   = parseInt(mapping.ch) || 10
+                    const note      = parseInt(mapping.key) || 60
                     const vel       = Math.floor(flatNote.velocity * 127)
                     const startTime = midiTime + (flatNote.swingTime * 1000)
 
@@ -184,6 +184,10 @@ export default class AudioEngine {
                 }
             }
         })
+    }
+
+    _resolveMidiMapping = (trackId) => {
+        return InstrumentsManager.DATA.instruments.find(i => i.id === trackId)?.midi?.[0]
     }
 
     simpleBeep = async (indexTrack) => {
@@ -201,10 +205,10 @@ export default class AudioEngine {
             const pat   = this.patterns[this.getSelectedPatternNum()]
             const track = pat?.tracks?.[indexTrack]
             if (track) {
-                const midiMapping = InstrumentsManager.DATA.instruments.find(i => i.id === track.id)?.midi?.[0]
-                if (midiMapping) {
-                    const channel = parseInt(midiMapping.ch) || 10
-                    const note    = parseInt(midiMapping.key) || 60
+                const mapping = this._resolveMidiMapping(track.id)
+                if (mapping) {
+                    const channel = parseInt(mapping.ch) || 10
+                    const note    = parseInt(mapping.key) || 60
                     midi.sendNoteOn(channel, note, 100)
                     setTimeout(() => midi.sendNoteOff(channel, note), 100)
                 }

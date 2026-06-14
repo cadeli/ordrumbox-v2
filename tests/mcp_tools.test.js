@@ -13,7 +13,7 @@ function ensureTrack(mfCmd, pattern, trackName, barQuantize) {
 function ensurePatternHasEnoughBars(mfCmd, pattern, requiredBar) {
     if (requiredBar >= pattern.nbBars) {
         const newNbBars = Math.ceil((requiredBar + 1) / 4) * 4
-        mfCmd.setPatternBars(pattern, newNbBars)
+        pattern.nbBars = newNbBars
     }
 }
 

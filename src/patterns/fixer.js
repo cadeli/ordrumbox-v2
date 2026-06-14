@@ -1,9 +1,8 @@
 import Utils from '../core/utils.js'
 import { recalcLoopDerived, normalizeTrack } from '../model/track_schema.js'
-import { computeTrackPan } from '../audio/math.js'
 
 export function fixTrackPanning(track, indexTrack) {
-    track.pan = computeTrackPan(indexTrack)
+    track.pan = Utils.computeTrackPan(indexTrack)
     return track
 }
 

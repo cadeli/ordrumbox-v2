@@ -3,12 +3,8 @@ import {
     C3_FREQ,
     FILTER_FREQ_MAX,
     MIN_NOTE_RATIO,
-    PITCH_RAMP_TIME,
 } from '../core/constants.js'
 import Utils from '../core/utils.js'
-
-const computeTrackPan = (indexTrack) => Utils.computeTrackPan(indexTrack)
-export { computeTrackPan }
 
 export function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value))
@@ -94,16 +90,21 @@ export function getLfoWaveformValue(phase, wave) {
 export function computeAccent(noteVelo, accentAmount = 0.5) {
     const isAccented = noteVelo > 0.5
     const accentMultiplier = isAccented ? 1 + (accentAmount * 0.5) : 1
-    const accentAttack = isAccented ? Math.min(PITCH_RAMP_TIME, 0) : 0
     const accentFilterBoost = isAccented ? accentAmount * 2000 : 0
-    return { isAccented, accentMultiplier, accentAttack, accentFilterBoost }
+    return { isAccented, accentMultiplier, accentFilterBoost }
 }
 
+/**
+ * @deprecated Inlined in synth_voice.js. Kept for backward compat with tests.
+ */
 export function computePeakFilterFreq(baseFreq, filterEnvelopeAmount) {
     const mFreq = baseFreq
     return mFreq + ((FILTER_FREQ_MAX - mFreq) * filterEnvelopeAmount)
 }
 
+/**
+ * @deprecated Inlined in synth_voice.js. Kept for backward compat with tests.
+ */
 export function computeAdsrEnvelopeParams(env, noteVelo, masterVolume = 0.8, accentMultiplier = 1) {
     const attackTime = env.attack ?? 0
     const decayTime = env.decay ?? 0
@@ -111,4 +112,11 @@ export function computeAdsrEnvelopeParams(env, noteVelo, masterVolume = 0.8, acc
     const releaseTime = env.release ?? 0
     const peakGain = noteVelo * masterVolume * accentMultiplier
     return { attackTime, decayTime, sustainLevel, releaseTime, peakGain }
+}
+
+/**
+ * @deprecated Use Utils.computeTrackPan directly. Kept for backward compat with tests.
+ */
+export function computeTrackPan(indexTrack) {
+    return Utils.computeTrackPan(indexTrack)
 }

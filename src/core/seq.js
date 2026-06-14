@@ -98,7 +98,7 @@ export default class MfSeq {
             return
         }
 
-        // Setup for playback
+        // Ensure transport has the current audioCtx (created in toggleStartStop)
         this.ensureTransport()
         this.serviceRegistry.transport.setBpm(selPattern.bpm)
         const mfAutoAssign = await getAutoAssignService()
@@ -153,7 +153,7 @@ export default class MfSeq {
         if (this.serviceRegistry.audioEngine) {
             this.serviceRegistry.audioEngine.setBpm(bpm)
         }
-        console.log("mdSeq::setBpm new bpm is ", bpm)
+        console.log("mfSeq::setBpm new bpm is ", bpm)
     }
 
     displayLagWarning = (interval) => {

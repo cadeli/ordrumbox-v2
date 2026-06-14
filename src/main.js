@@ -1,7 +1,8 @@
 
 import MfSeq from './core/seq.js'
 import MfCmd from './logic/commands/cmd.js'
-import MfPatterns from './patterns/manager.js'
+import * as patternsManager from './patterns/manager.js'
+
 import Toolbar from './ui/toolbar.js'
 import PatternPanel from './ui/pattern_panel.js'
 import NoteEditor from './ui/note_editor.js'
@@ -23,7 +24,7 @@ serviceRegistry.mfCmd = new MfCmd()
 serviceRegistry.mfResourcesLoader = new MfResourcesLoader()
 serviceRegistry.mfSeq = new MfSeq()
 serviceRegistry.mfAutoGenerate = null
-serviceRegistry.mfPatterns = new MfPatterns()
+serviceRegistry.mfPatterns = patternsManager
 serviceRegistry.mfAutoAssign = null
 serviceRegistry.midiManager = null
 
