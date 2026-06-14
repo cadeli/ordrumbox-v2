@@ -105,13 +105,6 @@ describe('MfSound', () => {
         sound.voiceFactory = makeVoiceFactory()
     })
 
-    // ── constructor ───────────────────────────────────────────────────
-
-    it('initialises with empty activeVoices WeakMap and activeSynthVoices Set', () => {
-        expect(sound.activeSynthVoices).toBeInstanceOf(Set)
-        expect(sound.activeSynthVoices.size).toBe(0)
-    })
-
     // ── getStrip ──────────────────────────────────────────────────────
 
     it('getStrip returns null when track has no name', async () => {

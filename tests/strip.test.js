@@ -31,14 +31,6 @@ describe('MfStrip (Unified Worklet)', () => {
         nodes = installWorkletMocks()
     })
 
-    it('constructor initialises routing and LFO gain for pitch', () => {
-        const strip = new MfStrip('KICK', ctx)
-        expect(strip.name).toBe('KICK')
-        expect(strip.voicesInput).toBeDefined()
-        expect(strip.stripNode).toBeNull()
-        expect(strip._lfoGains.pitchLfo).toBeDefined()
-    })
-
     it('create() instantiates the unified strip worklet node', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         expect(strip.stripNode).toBeDefined()

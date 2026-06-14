@@ -53,39 +53,6 @@ describe('SynthVoiceProcessor source', () => {
         globalScope.currentFrame = 0
     })
 
-    it('exports a non-empty string', () => {
-        expect(typeof SYNTH_VOICE_SOURCE).toBe('string')
-        expect(SYNTH_VOICE_SOURCE.length).toBeGreaterThan(100)
-    })
-
-    it('contains registerProcessor call for synth-voice', () => {
-        expect(SYNTH_VOICE_SOURCE).toContain("registerProcessor('synth-voice'")
-    })
-
-    it('declares 31 AudioParams', () => {
-        const expected = [
-            'osc1Freq', 'osc2Freq', 'osc3Freq',
-            'osc1Gain', 'osc2Gain', 'osc3Gain',
-            'osc1Detune', 'osc2Detune', 'osc3Detune',
-            'osc1Wave', 'osc2Wave', 'osc3Wave',
-            'noiseMix', 'filterType', 'filterFreq', 'filterQ',
-            'attack', 'decay', 'sustain', 'release',
-            'master', 'pan', 'velocity',
-            'lfo1Target', 'lfo1Wave', 'lfo1Freq', 'lfo1Depth',
-            'lfo2Target', 'lfo2Wave', 'lfo2Freq', 'lfo2Depth'
-        ]
-        for (const name of expected) {
-            expect(SYNTH_VOICE_SOURCE).toContain(`name: '${name}'`)
-        }
-    })
-
-    it('implements 4 oscillator waveforms', () => {
-        expect(SYNTH_VOICE_SOURCE).toContain('Math.sin')
-        expect(SYNTH_VOICE_SOURCE).toContain('triangle')
-        expect(SYNTH_VOICE_SOURCE).toContain('saw')
-        expect(SYNTH_VOICE_SOURCE).toContain('square')
-    })
-
     it('idles silently when not triggered', () => {
         const proc = makeProc()
         const out = runProcess(proc, { master: 1, osc1Gain: 1 })

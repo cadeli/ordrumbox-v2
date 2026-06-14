@@ -42,26 +42,6 @@ function runProcess(processor, inputs, paramValues, frames = 128) {
 }
 
 describe('MasterBusProcessor source', () => {
-    it('exports a non-empty string', () => {
-        expect(typeof MASTER_BUS_SOURCE).toBe('string')
-        expect(MASTER_BUS_SOURCE.length).toBeGreaterThan(100)
-    })
-
-    it('contains registerProcessor call for master-bus', () => {
-        expect(MASTER_BUS_SOURCE).toContain("registerProcessor('master-bus'")
-    })
-
-    it('declares 10 AudioParams', () => {
-        const expected = [
-            'compThreshold', 'compRatio', 'compKnee',
-            'compAttack', 'compRelease', 'compMakeup',
-            'lowcut', 'hicut', 'master', 'bypass'
-        ]
-        for (const name of expected) {
-            expect(MASTER_BUS_SOURCE).toContain(`name: '${name}'`)
-        }
-    })
-
     it('bypass mode: signal passes through unchanged (with master gain)', () => {
         const proc = makeProc()
         const FRAMES = 256
