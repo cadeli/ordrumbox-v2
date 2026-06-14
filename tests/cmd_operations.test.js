@@ -117,28 +117,6 @@ describe('Functional: MfCmd operations', () => {
         })
     })
 
-    describe('Step conversion', () => {
-        it('convertPatternStepToBarStep is correct', () => {
-            expect(mfCmd.convertPatternStepToBarStep(0, 4)).toEqual({ bar: 0, step: 0 })
-            expect(mfCmd.convertPatternStepToBarStep(6, 4)).toEqual({ bar: 1, step: 2 })
-            expect(mfCmd.convertPatternStepToBarStep(15, 4)).toEqual({ bar: 3, step: 3 })
-        })
-
-        it('convertBarStepToPatternStep is correct', () => {
-            expect(mfCmd.convertBarStepToPatternStep(0, 0, 4)).toBe(0)
-            expect(mfCmd.convertBarStepToPatternStep(1, 2, 4)).toBe(6)
-            expect(mfCmd.convertBarStepToPatternStep(3, 3, 4)).toBe(15)
-        })
-
-        it('round-trip conversion is lossless', () => {
-            for (let step = 0; step < 16; step++) {
-                const bs = mfCmd.convertPatternStepToBarStep(step, 4)
-                const roundTrip = mfCmd.convertBarStepToPatternStep(bs.bar, bs.step, 4)
-                expect(roundTrip).toBe(step)
-            }
-        })
-    })
-
     describe('Pan from track name', () => {
         it('returns correct pan values', () => {
             expect(Utils.getPanFromTrackName('KICK')).toBe(0)
@@ -239,7 +217,6 @@ describe('Functional: Utils loop detection', () => {
             expect(Utils.getNoteAbsoluteStep({ bar: 0, barStep: 0 }, 4)).toBe(0)
             expect(Utils.getNoteAbsoluteStep({ bar: 1, barStep: 2 }, 4)).toBe(6)
             expect(Utils.getNoteAbsoluteStep({ bar: 3, barStep: 3 }, 4)).toBe(15)
-            expect(Utils.getNoteAbsoluteStep({ step: 5 }, 4)).toBe(5)
         })
     })
 

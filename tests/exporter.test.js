@@ -1,8 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { PatternExporter } from '../src/patterns/exporter.js'
 import Utils from '../src/core/utils.js'
-import { MfGlobals } from '../src/core/globals.js'
-import MfCmd from '../src/logic/commands/cmd.js'
 
 describe('PatternExporter', () => {
     // ── isDefaultValue ───────────────────────────────────────────────
@@ -164,77 +162,5 @@ describe('PatternExporter', () => {
         })
     })
 
-    // ── toLegacyFormat ───────────────────────────────────────────────
 
-    describe('toLegacyFormat', () => {
-        let mfCmd
-
-        beforeEach(() => {
-            MfGlobals.resetAll()
-            mfCmd = new MfCmd()
-            MfGlobals.mfCmd = mfCmd
-        })
-
-        it('returns an object with data and string keys', () => {
-            const pattern = mfCmd.addPattern('Rock')
-            const result = PatternExporter.toLegacyFormat({ Rock: pattern }, mfCmd)
-            expect(result).toHaveProperty('data')
-            expect(result).toHaveProperty('string')
-        })
-
-        it('string output starts with { and ends with }', () => {
-            const pattern = mfCmd.addPattern('Rock')
-            const result = PatternExporter.toLegacyFormat({ Rock: pattern }, mfCmd)
-            expect(result.string.trim()).toMatch(/^\{/)
-            expect(result.string.trim()).toMatch(/\}$/)
-        })
-
-        it('includes pattern name in the legacy string', () => {
-            const pattern = mfCmd.addPattern('Funk')
-            const result = PatternExporter.toLegacyFormat({ Funk: pattern }, mfCmd)
-            expect(result.string).toContain('"Funk"')
-        })
-
-        it('encodes notes with velocity, pitch and pan', () => {
-            const pattern = mfCmd.addPattern('Beat')
-            const track = mfCmd.addTrack(pattern, 'KICK', 4)
-            mfCmd.addNote(track, 0, 0, 0)
-            // Manually set velocity on the note to test encoding
-            track.notes[0].velocity = 0.9
-            const result = PatternExporter.toLegacyFormat({ Beat: pattern }, mfCmd)
-            expect(result.string).toContain('_KICK-')
-            expect(result.string).toContain('V0.9')
-        })
-
-        it('marks loop point in legacy string', () => {
-            const pattern = mfCmd.addPattern('Beat')
-            const track = mfCmd.addTrack(pattern, 'KICK', 4)
-            track.loopAtStep = 8
-            const result = PatternExporter.toLegacyFormat({ Beat: pattern }, mfCmd)
-            expect(result.string).toContain('-L0-')
-        })
-
-        it('marks non-4/4 bars with -stop- marker', () => {
-            const pattern = mfCmd.addPattern('Odd')
-            mfCmd.addTrack(pattern, 'KICK', 3) // barQuantize=3 ≠ 4
-            const result = PatternExporter.toLegacyFormat({ Odd: pattern }, mfCmd)
-            expect(result.string).toContain('-stop-')
-        })
-
-        it('handles multiple patterns', () => {
-            const p1 = mfCmd.addPattern('Alpha')
-            const p2 = mfCmd.addPattern('Beta')
-            const result = PatternExporter.toLegacyFormat({ Alpha: p1, Beta: p2 }, mfCmd)
-            expect(result.string).toContain('"Alpha"')
-            expect(result.string).toContain('"Beta"')
-        })
-
-        it('data.patterns contains all pattern names', () => {
-            const p1 = mfCmd.addPattern('One')
-            const p2 = mfCmd.addPattern('Two')
-            const result = PatternExporter.toLegacyFormat({ One: p1, Two: p2 }, mfCmd)
-            expect(result.data.patterns).toHaveProperty('One')
-            expect(result.data.patterns).toHaveProperty('Two')
-        })
-    })
 })

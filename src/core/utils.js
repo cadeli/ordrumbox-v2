@@ -47,7 +47,7 @@ static TAG = "UTILS"
 
     static NOTE_RECALCULATED = ["steppc", "stepPercent"];
 
-    static NOTE_POSITION_KEYS = new Set(["bar", "barStep", "step", "steppc", "stepPercent"]);
+    static NOTE_POSITION_KEYS = new Set(["bar", "barStep", "steppc", "stepPercent"]);
 
     /**
      * Retourne les tracks d'un pattern sous forme de tableau, quelle que soit
@@ -113,12 +113,9 @@ static TAG = "UTILS"
 
     static compactTrackWithLoop = (track, options = {}) => Utils.addLoopToTrackIfPossible(track, options)
 
-    // Backward compatibility alias
-    static compacteTrackWithLoop = Utils.compactTrackWithLoop
-
     static getTrackStepLength = (track) => {
         const barQuantize = Number(track?.barQuantize)
-        const bars = Number(track?.bars ?? track?.nbBars)
+        const bars = Number(track?.bars)
         const declaredSteps = Number.isFinite(bars) && bars > 0 && Number.isFinite(barQuantize) && barQuantize > 0
             ? Math.floor(bars * barQuantize)
             : 0
@@ -198,7 +195,7 @@ static TAG = "UTILS"
 
     static getNoteAbsoluteStep = (note, barQuantize) => {
         const bar = Number(note?.bar ?? 0)
-        const barStep = Number(note?.barStep ?? note?.step ?? 0)
+        const barStep = Number(note?.barStep ?? 0)
         return Math.floor((bar * barQuantize) + barStep)
     }
 

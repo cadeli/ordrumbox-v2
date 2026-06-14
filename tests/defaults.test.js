@@ -35,17 +35,7 @@ describe('MfDefaults', () => {
             expect(result.pan).toBe(0.3)
         })
 
-        it('uses note.step as fallback for barStep', () => {
-            const note = { bar: 0, step: 3 }
-            const result = MfDefaults.normalizeNote(note)
-            expect(result.barStep).toBe(3)
-        })
 
-        it('barStep takes priority over step', () => {
-            const note = { bar: 0, barStep: 2, step: 5 }
-            const result = MfDefaults.normalizeNote(note)
-            expect(result.barStep).toBe(2)
-        })
 
         it('preserves extra custom fields via spread', () => {
             const note = { bar: 0, barStep: 0, customField: 'hello' }

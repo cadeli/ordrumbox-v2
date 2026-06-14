@@ -30,7 +30,7 @@ export function computeFlatNotesFromPattern(djtPattern, loop = 0) {
  * Find the next occupied step after the given note in the same track.
  */
 export function computeNextPatternStepNote(note, track) {
-    const last = track.barQuantize * (track.bars ?? track.nbBars ?? 4)
+    const last = track.barQuantize * (track.bars ?? 4)
     const first = note.bar * track.barQuantize + note.barStep
 
     if (!track._occupiedSet) {

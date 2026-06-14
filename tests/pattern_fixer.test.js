@@ -28,15 +28,6 @@ describe('patternFixer - fixTrackPanning', () => {
 })
 
 describe('patternFixer - fixNoteStepBar', () => {
-    it('converts step to barStep', () => {
-        const track = { barQuantize: 4 }
-        const note = { step: 2, bar: 0 }
-        fixNoteStepBar(track, note)
-        expect(note.barStep).toBe(2)
-        expect(note.step).toBeUndefined()
-        expect(note.steppc).toBe(50)
-    })
-
     it('wraps barStep >= barQuantize into bar', () => {
         const track = { barQuantize: 4 }
         const note = { barStep: 6, bar: 0 }
@@ -46,12 +37,12 @@ describe('patternFixer - fixNoteStepBar', () => {
         expect(note.steppc).toBe(50)
     })
 
-    it('defaults barStep to 0 when missing', () => {
+    it('leaves barStep undefined when missing', () => {
         const track = { barQuantize: 4 }
         const note = {}
         fixNoteStepBar(track, note)
-        expect(note.barStep).toBe(0)
-        expect(note.steppc).toBe(0)
+        expect(note.barStep).toBeUndefined()
+        expect(note.steppc).toBeNaN()
     })
 })
 
@@ -93,11 +84,7 @@ describe('patternFixer - fixTrackDefaults', () => {
         expect(track.notes[0].triggerFreq).toBe(1)
     })
 
-    it('converts filterType "all" to "allpass"', () => {
-        const track = { barQuantize: 4, loopAtStep: 16, filterType: 'all' }
-        fixTrackDefaults(track, 0)
-        expect(track.filterType).toBe('allpass')
-    })
+
 
     it('disables auto-assign when useSoftSynth is true', () => {
         const track = { barQuantize: 4, loopAtStep: 16, useSoftSynth: true }

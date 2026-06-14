@@ -147,9 +147,6 @@ export default class MfSound {
         }
     }
 
-    // Backward compatibility alias
-    loadGeneratedSounds = this.loadGeneratedsounds
-
     /**
      * Invalidate strip cache for a specific track (call when track settings change via UI).
      */

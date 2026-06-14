@@ -389,6 +389,8 @@ describe('Pattern Engine Logic', () => {
                         name: 'T1',
                         barQuantize: 4,
                         loopAtStep: 3,
+                        loopPointBar: 0,
+                        loopPointStep: 3,
                         notes: [
                             { bar: 0, barStep: 1, pitch: 60, triggerProbability: 1, triggerFreq: 1 }
                         ]
@@ -419,6 +421,8 @@ describe('Pattern Engine Logic', () => {
                         name: 'T1',
                         barQuantize: 4,
                         loopAtStep: 6,
+                        loopPointBar: 1,
+                        loopPointStep: 2,
                         notes: [
                             { bar: 1, barStep: 0, pitch: 72, triggerProbability: 1, triggerFreq: 1 }
                         ]
@@ -441,6 +445,8 @@ describe('Pattern Engine Logic', () => {
                         name: 'T1',
                         barQuantize: 4,
                         loopAtStep: 3,
+                        loopPointBar: 0,
+                        loopPointStep: 3,
                         notes: [
                             { bar: 0, barStep: 3, pitch: 48, triggerProbability: 1, triggerFreq: 1 }
                         ]

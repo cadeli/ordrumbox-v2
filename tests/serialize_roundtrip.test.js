@@ -249,26 +249,7 @@ describe('Functional: Pattern serialization round-trip', () => {
         expect(reimported.tracks).toEqual([])
     })
 
-    it('import with alternative field names (step instead of barStep)', () => {
-        const sourcePattern = {
-            name: 'AltFields',
-            bpm: 120,
-            nbBars: 4,
-            tracks: [{
-                name: 'KICK',
-                bars: 4,
-                barQuantize: 4,
-                notes: [
-                    { bar: 1, step: 3 }
-                ]
-            }]
-        }
 
-        const imported = mfCmd.importPatternFromJson(sourcePattern)
-
-        expect(imported.tracks[0].notes[0].barStep).toBe(3)
-        expect(imported.tracks[0].notes[0].steppc).toBe(75)
-    })
 
     it('import with missing optional fields uses defaults', () => {
         const sourcePattern = {

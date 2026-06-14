@@ -9,7 +9,7 @@ export default class MfDefaults {
         const d = Utils.NOTE_DEFAULTS
         return {
             bar: note.bar ?? d.bar,
-            barStep: note.barStep ?? note.step ?? d.barStep,
+            barStep: note.barStep ?? d.barStep,
             pitch: note.pitch ?? d.pitch,
             velocity: note.velocity ?? d.velocity,
             pan: note.pan ?? d.pan,

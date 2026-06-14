@@ -7,8 +7,6 @@ export function fixTrackPanning(track, indexTrack) {
 }
 
 export function fixNoteStepBar(track, note) {
-    note.barStep ??= note.step ?? 0
-    delete note.step
     if (note.barStep >= track.barQuantize) {
         const pStep = note.barStep
         note.barStep %= track.barQuantize
@@ -40,10 +38,6 @@ export function fixTrackDefaults(track, indexTrack) {
     if (track.useSoftSynth) track.useAutoAssignSound = false
     recalcLoopDerived(track)
     if (track.useAutoAssignSound === undefined) track.useAutoAssignSound = true
-    
-    // Explicitly fix filterType
-    if (track.filterType === 'all') track.filterType = 'allpass'
-    
     track.notes ??= []
     track.notes.forEach(note => fixNoteDefaults(note, track))
     return track

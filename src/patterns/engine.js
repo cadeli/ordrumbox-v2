@@ -82,9 +82,6 @@ export function computeNbTickForPattern(nbBars, tick = TICK) {
 
 export function computeNbTickForLoop(track, tick = TICK) {
     const barQuantize = track.barQuantize ?? 4
-    if (track.loopPointBar === undefined && track.loopAtStep !== undefined) {
-        return Math.round((track.loopAtStep * tick) / barQuantize)
-    }
     const trackBars = MfDefaults.getTrackProp(track, 'bars')
     const loopPointStepPc = (track.loopPointStep ?? 0) / barQuantize
     return Math.floor((loopPointStepPc + (track.loopPointBar ?? trackBars)) * tick)
@@ -256,7 +253,7 @@ function buildOccupiedSet(track) {
 }
 
 function buildDefaultResolver(track) {
-    const last = track.barQuantize * (track.bars ?? track.nbBars ?? 4)
+    const last = track.barQuantize * (track.bars ?? 4)
     const occupied = buildOccupiedSet(track)
     return (note) => {
         const first = note.bar * track.barQuantize + note.barStep

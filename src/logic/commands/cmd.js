@@ -41,12 +41,13 @@ export default class MfCmd {
             this._incrementPatternVersionByTrack(track)
         }
 
-        // Recompute derived fields if needed
         if (typeof track.barQuantize === 'number' && typeof track.loopAtStep === 'number') {
             recalcLoopDerived(track)
         }
-        if (typeof track.loopAtStep === 'undefined' && typeof track.loopPointBar === 'number' && typeof track.barQuantize === 'number') {
+
+        if (track.loopAtStep === undefined && typeof track.loopPointBar === 'number' && typeof track.barQuantize === 'number') {
             track.loopAtStep = track.loopPointBar * track.barQuantize + (track.loopPointStep ?? 0)
+            recalcLoopDerived(track)
         }
         return track
     }
@@ -292,16 +293,6 @@ export default class MfCmd {
             }
         }
         return NOT_FOUND;
-    }
-
-    convertPatternStepToBarStep = (patternStep, barQuantize) => {
-        let bar = Math.floor(patternStep / barQuantize)
-        let step = patternStep % barQuantize
-        return { bar: bar, step: step }
-    }
-
-    convertBarStepToPatternStep = (bar, step, barQuantize) => {
-        return bar * barQuantize + step
     }
 
 }

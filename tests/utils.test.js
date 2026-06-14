@@ -158,7 +158,7 @@ describe('Utils', () => {
         it('contains expected keys', () => {
             expect(Utils.NOTE_POSITION_KEYS.has('bar')).toBe(true)
             expect(Utils.NOTE_POSITION_KEYS.has('barStep')).toBe(true)
-            expect(Utils.NOTE_POSITION_KEYS.has('step')).toBe(true)
+
             expect(Utils.NOTE_POSITION_KEYS.has('steppc')).toBe(true)
         })
     })
@@ -184,10 +184,6 @@ describe('Utils', () => {
 
         it('bar 1 step 2 → 6', () => {
             expect(Utils.getNoteAbsoluteStep({ bar: 1, barStep: 2 }, 4)).toBe(6)
-        })
-
-        it('uses "step" as fallback for barStep', () => {
-            expect(Utils.getNoteAbsoluteStep({ bar: 0, step: 3 }, 4)).toBe(3)
         })
 
         it('defaults to 0 for missing values', () => {

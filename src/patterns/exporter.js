@@ -60,46 +60,4 @@ export class PatternExporter {
       ...cleaned
     };
   }
-
-  /**
-   * Legacy CSV-like serialization format used by orDrumbox v1
-   */
-  static toLegacyFormat(patterns, mfCmd) {
-    const result = { patterns: {} };
-    
-    Object.values(patterns).forEach((pattern) => {
-      const columns = [];
-      Utils.getTracksArray(pattern).forEach((track) => {
-        for (let bar = 0; bar < track.bars; bar++) {
-          for (let step = 0; step < track.barQuantize; step++) {
-            const patternStep = step + bar * track.barQuantize;
-            if (!columns[patternStep]) columns[patternStep] = "";
-            
-            // Marker for non-4/4 bars in legacy format
-            if (track.barQuantize !== 4) columns[patternStep] = "-stop-";
-            
-            if (patternStep === track.loopAtStep) {
-              columns[patternStep] += `_${track.name}-L0-`;
-            }
-            
-            const notes = mfCmd.isNoteAt(track, bar, step);
-            if (notes && notes[0]) {
-              const note = notes[0];
-              columns[patternStep] += `_${track.name}-R${note.triggerFreq}-H${note.triggerPhase}-V${note.velocity}-P${note.pitch}-S${note.pan}-`;
-            }
-          }
-        }
-      });
-      result.patterns[pattern.name] = columns;
-    });
-
-    // Generate legacy string format
-    let legacyString = "{";
-    for (const [name, columns] of Object.entries(result.patterns)) {
-      legacyString += `\n"${name}":"${columns.join(',')}",`;
-    }
-    legacyString += "\n}";
-    
-    return { data: result, string: legacyString };
-  }
 }

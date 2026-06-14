@@ -41,9 +41,6 @@ export function copyTrackProps(track, sourceTrack) {
         if (!(prop in sourceTrack)) delete track[prop]
     }
 
-    if ('bars' in sourceTrack) track.bars = sourceTrack.bars
-    else if ('nbBars' in sourceTrack) track.bars = sourceTrack.nbBars
-
     if (!('loopAtStep' in sourceTrack)) {
         track.loopAtStep = track.bars * track.barQuantize
     }
@@ -70,7 +67,6 @@ export function copyNoteProps(note, sourceNote, track) {
     }
 
     if (sourceNote.barStep !== undefined) note.barStep = sourceNote.barStep
-    else if (sourceNote.step !== undefined) note.barStep = sourceNote.step
 
     if (sourceNote.steppc === undefined) {
         note.steppc = Math.round((note.barStep * 100) / track.barQuantize)
@@ -119,7 +115,7 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
             const note = addNote(
                 track,
                 Number(sourceNote.bar ?? 0),
-                Number(sourceNote.barStep ?? sourceNote.step ?? 0),
+                Number(sourceNote.barStep ?? 0),
                 Number(sourceNote.pitch ?? 0)
             )
             copyNoteProps(note, sourceNote, track)

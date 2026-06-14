@@ -181,7 +181,6 @@ const PHYSICAL_TRACK_PREVIEW_KEYS = [
 const PHYSICAL_KEYS_PREVENTING_BROWSER_DEFAULT = new Set(['Space'])
 
 const PHYSICAL_KEYBOARD_SHORTCUTS = {
-    KeyP: serializePatterns,
     KeyB: generatePattern,
     KeyS: logPatterns,
     KeyF: selectRandomPattern,
@@ -261,13 +260,6 @@ function toggleTrackMute(trackIndex) {
 
 function previewTrack(trackIndex) {
     serviceRegistry.mfSeq.simpleBeep(trackIndex)
-}
-
-async function serializePatterns() {
-    const { PatternExporter } = await import('./patterns/exporter.js')
-    const legacy = PatternExporter.toLegacyFormat(appState.patterns, serviceRegistry.mfCmd)
-    console.log(legacy.data)
-    console.log(legacy.string)
 }
 
 async function generatePattern() {
