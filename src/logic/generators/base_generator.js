@@ -128,7 +128,7 @@ export default class BaseGenerator {
         return variants[Math.floor(Math.random() * variants.length)] ?? 'basic'
     }
 
-    generateGridVariant = (track, config, getAccentContext, getGhostContext) => {
+    generateGridVariant = (track, config, getAccentContext, getGhostContext, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(track, config, 1)
 
         for (let bar = 0; bar < (track.bars ?? 1); bar++) {
@@ -137,7 +137,7 @@ export default class BaseGenerator {
                 if (absoluteStep >= loopPointAbsolute) continue
 
                 const probability = config.probabilities?.[step % config.probabilities.length] ?? 0
-                if (Math.random() >= probability) continue
+                if (Math.random() >= probability * density) continue
 
                 const accent = getAccentContext?.(bar, step, config) ?? step === 0
                 const ghost = getGhostContext?.(bar, step, config) ?? step !== 0
@@ -153,11 +153,13 @@ export default class BaseGenerator {
         }
     }
 
-    generatePhraseVariant = (track, config, getPitch, getAccentContext, getGhostContext) => {
+    generatePhraseVariant = (track, config, getPitch, getAccentContext, getGhostContext, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(track, config, 2)
         const barQuantize = track.barQuantize ?? 4
 
         config.phrases.forEach((phrase) => {
+            if (density < 1 && Math.random() >= density) return
+
             const step = phrase.step === 'random'
                 ? Math.floor(Math.random() * barQuantize)
                 : phrase.step

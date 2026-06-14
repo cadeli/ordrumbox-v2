@@ -39,13 +39,34 @@ export default class MfPlayer {
 
                 const tracks = selPat.tracks
                 const trackKeys = Object.keys(tracks)
-                for (let i = 0; i < trackKeys.length; i++) {
-                    const track = tracks[trackKeys[i]]
-                    if (track.auto === true) {
-                        // Fire-and-forget: catch errors without blocking scheduler
-                        this.getAutoGenerate()
-                            .then((mfAutoGenerate) => mfAutoGenerate.changeTrack(this.loop, selPat, track))
-                            .catch((error) => console.error(error))
+
+                if (selPat.autoGen) {
+                    const { getAutoGenerateService } = await import('../state/service_registry.js')
+                    const mfAutoGenerate = await getAutoGenerateService()
+                    const element = mfAutoGenerate.structureGen.getElement(this.loop)
+                    const isSectionStart = element.loopInElement === 0
+                    const isSectionEnd = element.isLastLoopBeforeChange
+
+                    if (isSectionStart || isSectionEnd) {
+                        const tag = isSectionEnd ? 'break' : 'generate'
+                        console.log(`[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`)
+
+                        for (let i = 0; i < trackKeys.length; i++) {
+                            const track = tracks[trackKeys[i]]
+                            this.getAutoGenerate()
+                                .then((mfAutoGenerate) => mfAutoGenerate.changeTrack(this.loop, selPat, track))
+                                .catch((error) => console.error(error))
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < trackKeys.length; i++) {
+                        const track = tracks[trackKeys[i]]
+                        if (track.auto === true) {
+                            // Fire-and-forget: catch errors without blocking scheduler
+                            this.getAutoGenerate()
+                                .then((mfAutoGenerate) => mfAutoGenerate.changeTrack(this.loop, selPat, track))
+                                .catch((error) => console.error(error))
+                        }
                     }
                 }
             }

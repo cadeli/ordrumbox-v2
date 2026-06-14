@@ -77,7 +77,7 @@ export default class MfPercGenerate extends BaseGenerator {
         super('PERC', MfPercGenerate.PERC_GENERATION_CONFIGS)
     }
 
-    generateNewPerc = (percTrack, variantName = null, variantSubName = null) => {
+    generateNewPerc = (percTrack, variantName = null, density = 1) => {
         if (variantName === 'break') return
 
         const resolvedVariantName = this.resolveVariantName(variantName)
@@ -90,17 +90,17 @@ export default class MfPercGenerate extends BaseGenerator {
 
         switch (config.mode) {
             case 'grid':
-                this.generatePercGridVariant(percTrack, tones, pitchBias, config)
+                this.generatePercGridVariant(percTrack, tones, pitchBias, config, density)
                 break
             case 'callResponse':
-                this.generatePercCallResponseVariant(percTrack, tones, pitchBias, config)
+                this.generatePercCallResponseVariant(percTrack, tones, pitchBias, config, density)
                 break
             case 'fill':
                 this.generatePercFillVariant(percTrack, tones, pitchBias, config)
                 break
             case 'phrases':
             default:
-                this.generatePercPhraseVariant(percTrack, tones, pitchBias, config)
+                this.generatePercPhraseVariant(percTrack, tones, pitchBias, config, density)
                 break
         }
 
@@ -108,12 +108,14 @@ export default class MfPercGenerate extends BaseGenerator {
        // this.displayDebugNotes(percTrack, 'PC')
     }
 
-    generatePercPhraseVariant = (percTrack, tones, pitchBias, config) => {
+    generatePercPhraseVariant = (percTrack, tones, pitchBias, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const barQuantize = percTrack.barQuantize ?? 4
 
         const cachedPitches = []
         config.phrases.forEach((phrase) => {
+            if (density < 1 && Math.random() >= density) return
+
             const step = phrase.step === 'random'
                 ? Math.floor(Math.random() * barQuantize)
                 : phrase.step
@@ -138,7 +140,7 @@ export default class MfPercGenerate extends BaseGenerator {
         })
     }
 
-    generatePercGridVariant = (percTrack, tones, pitchBias, config) => {
+    generatePercGridVariant = (percTrack, tones, pitchBias, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const barQuantize = percTrack.barQuantize ?? 4
 
@@ -148,7 +150,7 @@ export default class MfPercGenerate extends BaseGenerator {
                 if (absoluteStep >= loopPointAbsolute) continue
 
                 const probability = config.probabilities?.[step % config.probabilities.length] ?? 0
-                if (Math.random() >= probability) continue
+                if (Math.random() >= probability * density) continue
 
                 const pitch = this.getRndTone(tones) + pitchBias
                 this.addNote(
@@ -166,14 +168,14 @@ export default class MfPercGenerate extends BaseGenerator {
         }
     }
 
-    generatePercCallResponseVariant = (percTrack, tones, pitchBias, config) => {
+    generatePercCallResponseVariant = (percTrack, tones, pitchBias, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const barQuantize = percTrack.barQuantize ?? 4
 
         for (let bar = 0; bar < (percTrack.bars ?? 1); bar++) {
             const steps = bar % 2 === 0 ? config.callSteps : config.responseSteps
             steps.forEach((step) => {
-                if (step >= barQuantize || Math.random() >= config.density) return
+                if (step >= barQuantize || Math.random() >= config.density * density) return
 
                 const absoluteStep = bar * barQuantize + step
                 if (absoluteStep >= loopPointAbsolute) return

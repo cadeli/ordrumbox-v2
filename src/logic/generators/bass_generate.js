@@ -141,7 +141,7 @@ export default class MfBassGenerate extends BaseGenerator {
         this.isScalesLoading = false
      }
 
-    generateNewBass = (bassTrack, variantName = null, variantSubName = null) => {
+    generateNewBass = (bassTrack, variantName = null, density = 1) => {
         if (variantName === 'break') return
 
         const resolvedVariantName = this.resolveVariantName(variantName)
@@ -153,17 +153,17 @@ export default class MfBassGenerate extends BaseGenerator {
 
         switch (config.mode) {
             case 'stepGrid':
-                this.generateBassStepGridVariant(bassTrack, tones, config)
+                this.generateBassStepGridVariant(bassTrack, tones, config, density)
                 break
             case 'groove':
-                this.generateBassGrooveVariant(bassTrack, tones, config)
+                this.generateBassGrooveVariant(bassTrack, tones, config, density)
                 break
             case 'arpeggio':
                 this.generateBassArpeggioVariant(bassTrack, tones, config)
                 break
             case 'phrases':
             default:
-                this.generateBassPhraseVariant(bassTrack, tones, config)
+                this.generateBassPhraseVariant(bassTrack, tones, config, density)
                 break
         }
 
@@ -171,12 +171,14 @@ export default class MfBassGenerate extends BaseGenerator {
        // this.displayDebugNotes(bassTrack, 'BS')
     }
 
-    generateBassPhraseVariant = (bassTrack, tones, config) => {
+    generateBassPhraseVariant = (bassTrack, tones, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const barQuantize = bassTrack.barQuantize ?? 4
 
         const cachedPitches = []
         config.phrases.forEach((phrase) => {
+            if (density < 1 && Math.random() >= density) return
+
             const pitch = this.resolvePhrasePitch(phrase, tones, cachedPitches)
             const step = phrase.step === 'random'
                 ? Math.floor(Math.random() * barQuantize)
@@ -199,7 +201,7 @@ export default class MfBassGenerate extends BaseGenerator {
         })
     }
 
-    generateBassStepGridVariant = (bassTrack, tones, config) => {
+    generateBassStepGridVariant = (bassTrack, tones, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const barQuantize = bassTrack.barQuantize ?? 4
         const bar = config.bar ?? 0
@@ -215,7 +217,7 @@ export default class MfBassGenerate extends BaseGenerator {
             const absoluteStep = bar * barQuantize + step
             if (absoluteStep >= loopPointAbsolute) return
 
-            if (Math.random() < probability) {
+            if (Math.random() < probability * density) {
                 this.addNote(
                     bassTrack,
                     bar,
@@ -231,7 +233,7 @@ export default class MfBassGenerate extends BaseGenerator {
         })
     }
 
-    generateBassGrooveVariant = (bassTrack, scale, config) => {
+    generateBassGrooveVariant = (bassTrack, scale, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
         const barQuantize = bassTrack.barQuantize ?? 4
 
@@ -245,7 +247,7 @@ export default class MfBassGenerate extends BaseGenerator {
                 if (absoluteStep >= loopPointAbsolute) continue
 
                 const strongBeat = step === 0
-                const playNote = strongBeat || Math.random() < config.density
+                const playNote = strongBeat || Math.random() < config.density * density
                 if (!playNote) continue
 
                 let notePitch = rootPitch

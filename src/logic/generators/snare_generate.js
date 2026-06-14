@@ -95,7 +95,7 @@ export default class MfSnareGenerate extends BaseGenerator {
         super('SNARE', MfSnareGenerate.SNARE_GENERATION_CONFIGS)
     }
 
-    generateNewSnare = (snareTrack, variantName = null, variantSubName = null) => {
+    generateNewSnare = (snareTrack, variantName = null, density = 1) => {
         if (variantName === 'intro') return
         if (variantName === 'outro') return
 
@@ -107,10 +107,10 @@ export default class MfSnareGenerate extends BaseGenerator {
 
         switch (config.mode) {
             case 'grid':
-                this.generateSnareGridVariant(snareTrack, config)
+                this.generateSnareGridVariant(snareTrack, config, density)
                 break
             case 'fill':
-                this.generateSnareFillVariant(snareTrack, config)
+                this.generateSnareFillVariant(snareTrack, config, density)
                 break
             case 'roll':
                 this.generateSnareRollVariant(snareTrack, config)
@@ -120,7 +120,8 @@ export default class MfSnareGenerate extends BaseGenerator {
                 this.generatePhraseVariant(snareTrack, config,
                     () => 0,
                     (phrase) => phrase.accent === true,
-                    (phrase) => phrase.ghost === true
+                    (phrase) => phrase.ghost === true,
+                    density
                 )
                 break
         }
@@ -129,7 +130,7 @@ export default class MfSnareGenerate extends BaseGenerator {
        // this.displayDebugNotes(snareTrack, 'SN')
     }
 
-    generateSnareGridVariant = (snareTrack, config) => {
+    generateSnareGridVariant = (snareTrack, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 2)
         const barQuantize = snareTrack.barQuantize ?? 4
 
@@ -141,7 +142,7 @@ export default class MfSnareGenerate extends BaseGenerator {
                 const required = this.isRequiredStep(bar, step, config.requiredSteps)
                 const probability = config.probabilities?.[step % config.probabilities.length] ?? 0
 
-                if (!required && Math.random() >= probability) continue
+                if (!required && Math.random() >= probability * density) continue
 
                 this.addNote(
                     snareTrack,
@@ -187,14 +188,14 @@ export default class MfSnareGenerate extends BaseGenerator {
         }
     }
 
-    generateSnareFillVariant = (snareTrack, config) => {
+    generateSnareFillVariant = (snareTrack, config, density = 1) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 2)
         const barQuantize = snareTrack.barQuantize ?? 4
 
         const startBar = Math.max(0, (snareTrack.bars ?? 1) - (config.startBarOffset ?? 1))
         for (let bar = startBar; bar < (snareTrack.bars ?? 1); bar++) {
             config.steps.forEach((step) => {
-                if (step >= barQuantize || Math.random() >= config.density) return
+                if (step >= barQuantize || Math.random() >= config.density * density) return
 
                 const absoluteStep = bar * barQuantize + step
                 if (absoluteStep >= loopPointAbsolute) return

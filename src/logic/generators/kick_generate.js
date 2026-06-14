@@ -70,7 +70,7 @@ export default class MfKickGenerate extends BaseGenerator {
         super('KICK', MfKickGenerate.KICK_GENERATION_CONFIGS)
     }
 
-    generateNewKick = (kickTrack, variantName = null, variantSubName = null) => {
+    generateNewKick = (kickTrack, variantName = null, density = 1) => {
         if (variantName === 'outro') return
 
         const resolvedVariantName = this.resolveVariantName(variantName)
@@ -83,7 +83,8 @@ export default class MfKickGenerate extends BaseGenerator {
             case 'grid':
                 this.generateGridVariant(kickTrack, config,
                     (bar, step) => step === 0,
-                    (bar, step) => step !== 0
+                    (bar, step) => step !== 0,
+                    density
                 )
                 break
             case 'phrases':
@@ -91,7 +92,8 @@ export default class MfKickGenerate extends BaseGenerator {
                 this.generatePhraseVariant(kickTrack, config,
                     () => 0,
                     (phrase) => phrase.accent === true,
-                    (phrase) => phrase.ghost === true
+                    (phrase) => phrase.ghost === true,
+                    density
                 )
                 break
         }

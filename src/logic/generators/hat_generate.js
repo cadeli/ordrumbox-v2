@@ -101,7 +101,7 @@ export default class MfHatGenerate extends BaseGenerator {
         super('HAT', MfHatGenerate.HAT_GENERATION_CONFIGS)
     }
 
-    generateNewHat = (hatTrack, variantName = null, variantSubName = null) => {
+    generateNewHat = (hatTrack, variantName = null, density = 1) => {
         if (variantName === 'break') return
         if (variantName === 'intro') return
         if (variantName === 'outro') return
@@ -117,7 +117,8 @@ export default class MfHatGenerate extends BaseGenerator {
             case 'grid':
                 this.generateGridVariant(hatTrack, config,
                     (bar, step) => step === 0 || step === Math.floor(hatTrack.barQuantize / 2),
-                    (bar, step) => step % 2 !== 0
+                    (bar, step) => step % 2 !== 0,
+                    density
                 )
                 break
             case 'transition':
@@ -128,7 +129,8 @@ export default class MfHatGenerate extends BaseGenerator {
                 this.generatePhraseVariant(hatTrack, config,
                     () => 0,
                     (phrase) => phrase.accent === true,
-                    (phrase) => phrase.ghost === true
+                    (phrase) => phrase.ghost === true,
+                    density
                 )
                 break
         }

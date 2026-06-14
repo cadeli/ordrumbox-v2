@@ -7,6 +7,15 @@ import MfPercGenerate from './perc_generate.js'
 import MfSnareGenerate from './snare_generate.js'
 import MfStructureSong from './structure_song.js'
 
+const SECTION_DENSITY = Object.freeze({
+    intro: 0.4,
+    verse: 0.7,
+    chorus: 1.0,
+    break: 0.2,
+    bridge: 0.6,
+    outro: 0.3
+})
+
 export default class MfAutoGenerate {
     static TAG = "MFAUTOGENERATE"
 
@@ -59,23 +68,23 @@ export default class MfAutoGenerate {
         return pattern
     }
 
-    generateTrack = async (track, config) => {
+    generateTrack = async (track, config, density = 1) => {
         const type = this.detectTrackType(track.name)
         switch (type) {
             case 'KICK':
-                await this.kickGen.generateNewKick(track, config)
+                await this.kickGen.generateNewKick(track, config, density)
                 break
             case 'SNARE':
-                await this.snareGen.generateNewSnare(track, config)
+                await this.snareGen.generateNewSnare(track, config, density)
                 break
             case 'HAT':
-                await this.hatGen.generateNewHat(track, config)
+                await this.hatGen.generateNewHat(track, config, density)
                 break
             case 'PERC':
-                await this.percGen.generateNewPerc(track, config)
+                await this.percGen.generateNewPerc(track, config, density)
                 break
             case 'BASS':
-                await this.bassGen.generateNewBass(track, config)
+                await this.bassGen.generateNewBass(track, config, density)
                 break
         }
     }
@@ -90,13 +99,15 @@ export default class MfAutoGenerate {
     }
 
     changeTrack = async (loop, pattern, track) => {
-        const genre = this.structureGen.getRandomGenre()
+        const genre = pattern._autoGenGenre || this.structureGen.getRandomGenre()
         const structure = this.structureGen.generateStructure(genre)
-        
-        // Find configuration for this track type in the generated structure
+        const element = this.structureGen.getElement(loop)
+        const isSectionEnd = element.isLastLoopBeforeChange
+        const density = isSectionEnd ? 0.2 : (SECTION_DENSITY[element.name] ?? 0.7)
+
         const type = this.detectTrackType(track.name)
         let config = null
-        
+
         for (const [name, cfg] of Object.entries(structure)) {
             if (this.detectTrackType(name) === type) {
                 config = cfg
@@ -105,8 +116,10 @@ export default class MfAutoGenerate {
         }
 
         if (config) {
-            track.notes = []
-            await this.generateTrack(track, config)
+            if (!isSectionEnd) {
+                track.notes = []
+            }
+            await this.generateTrack(track, config, density)
             serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
         }
     }

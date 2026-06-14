@@ -31,8 +31,10 @@
 #tb button:active { background: #e94560; color: #fff; }
 #tb .tb-start { min-width: 60px; font-weight: bold; }
 #tb .tb-start.running { background: #e94560; color: #fff; border-color: #e94560; }
-#tb .tb-auto-gen { background: #1a7f37; border-color: #2ea043; color: #fff; font-weight: bold; }
-#tb .tb-auto-gen:hover { background: #2ea043; }
+#tb .tb-auto-gen { background: #333; border-color: #555; color: #ccc; font-weight: bold; }
+#tb .tb-auto-gen:hover { background: #444; }
+#tb .tb-auto-gen.active { background: #1a7f37; border-color: #2ea043; color: #fff; }
+#tb .tb-auto-gen.active:hover { background: #2ea043; }
 #tb .tb-clear { background: #444; border-color: #555; color: #fff; }
 #tb .tb-clear:hover { background: #555; border-color: #666; }
 #tb .tb-tools { background: #16213e; border-color: #555; color: #eee; }

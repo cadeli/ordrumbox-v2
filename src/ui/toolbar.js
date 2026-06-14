@@ -38,6 +38,7 @@ export default class Toolbar {
         playbackEvents.onPatternChange.push(() => {
             this.syncPatterns()
             this.syncPage()
+            this.syncAutoGenButton()
         })
         playbackEvents.onDrumkitChange.push(() => {
             this.syncDrumkits()
@@ -178,11 +179,24 @@ export default class Toolbar {
         })
 
         this.autoGenBtn.addEventListener('click', async () => {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern) return
+
             const { getAutoGenerateService } = await import('../state/service_registry.js')
             const mfAutoGenerate = await getAutoGenerateService()
-            await mfAutoGenerate.generatePattern()
-            this.syncPatterns()
-            playbackEvents.dispatchPatternChange()
+
+            if (pattern.autoGen) {
+                pattern.autoGen = false
+                pattern._autoGenGenre = null
+                this.autoGenBtn.classList.remove('active')
+            } else {
+                await mfAutoGenerate.generatePattern()
+                pattern.autoGen = true
+                pattern._autoGenGenre = mfAutoGenerate.structureGen.getRandomGenre()
+                this.autoGenBtn.classList.add('active')
+                this.syncPatterns()
+                playbackEvents.dispatchPatternChange()
+            }
         })
 
         this.clearBtn.addEventListener('click', () => {
@@ -232,6 +246,7 @@ export default class Toolbar {
         this.syncPatterns()
         this.syncDrumkits()
         this.syncPage()
+        this.syncAutoGenButton()
     }
 
     syncPage() {
@@ -259,6 +274,11 @@ export default class Toolbar {
         const running = serviceRegistry.transport?.isRunning ?? false
         this.startBtn.textContent = running ? 'Stop' : 'Start'
         this.startBtn.classList.toggle('running', running)
+    }
+
+    syncAutoGenButton = () => {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        this.autoGenBtn.classList.toggle('active', !!pattern?.autoGen)
     }
 
     syncPatterns = () => {
