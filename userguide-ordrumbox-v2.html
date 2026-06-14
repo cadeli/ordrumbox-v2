@@ -210,10 +210,11 @@
         </thead>
         <tbody>
             <tr><td>Dark cell</td><td>Empty step</td></tr>
-            <tr><td>Red cell</td><td>Note present</td></tr>
+            <tr><td>Red cell (varying opacity)</td><td>Note present — opacity proportional to velocity</td></tr>
             <tr><td>White outline</td><td>Selected note or track</td></tr>
             <tr><td>Left border</td><td>Start of a bar</td></tr>
             <tr><td>Right white border</td><td>Loop point</td></tr>
+            <tr><td>Pitch indicator (small bar inside cell)</td><td>Shows pitch offset direction</td></tr>
             <tr><td>Semi-transparent red (with number)</td><td>Note with trigger frequency > 1</td></tr>
             <tr><td>Orange (with number)</td><td>Note with probability < 1</td></tr>
             <tr><td>Blue rectangle (half-height, semi-transparent)</td><td>Retrigger sub-hit</td></tr>
@@ -295,7 +296,7 @@
     <p>The <strong>Freq</strong> and <strong>Q</strong> parameters support LFO modulation.</p>
 
     <h3>Effects</h3>
-    <p>Each effect has an <strong>LED toggle</strong> (green = active).</p>
+    <p>Each effect has an <strong>LED toggle</strong> (green = active). Tabs 1/2/3 are on the same line as the "Effects" title.</p>
 
     <h4>Reverb</h4>
     <table>
@@ -346,7 +347,7 @@
         <li><strong>pingpong</strong> — Stereo ping-pong between left and right</li>
     </ul>
 
-    <h4>Saturation</h4>
+    <h4>Saturation (Disto)</h4>
     <table>
         <thead>
             <tr>
@@ -399,10 +400,10 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>Auto LED</strong></td><td>When green, automatically assigns the best sample from the drumkit based on track name</td></tr>
-            <tr><td><strong>Instr</strong></td><td>Instrument type (shown when auto-assign is off)</td></tr>
-            <tr><td><strong>Sample</strong></td><td>Specific sample file (shown when auto-assign is off)</td></tr>
-            <tr><td><strong>Gen</strong></td><td>Soft-synth generated sound selection</td></tr>
+            <tr><td><strong>autoassign</strong></td><td>LED toggle (green = active). When on, automatically assigns the best sample from the drumkit based on track name.</td></tr>
+            <tr><td><strong>Instr</strong></td><td>Instrument type selector</td></tr>
+            <tr><td><strong>Sample</strong></td><td>Specific sample file selector</td></tr>
+            <tr><td><strong>Synth</strong></td><td>Soft-synth generated sound selection</td></tr>
             <tr><td><strong>Edit</strong></td><td>Opens the Synth Editor for the selected generated sound</td></tr>
         </tbody>
     </table>
@@ -462,16 +463,33 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>TrigF</strong></td><td>1–16</td><td>1</td><td>Play every N-th loop (1 = every loop)</td></tr>
-            <tr><td><strong>TrigP</strong></td><td>0–15</td><td>0</td><td>Phase offset for trigger frequency</td></tr>
-            <tr><td><strong>Trig%</strong></td><td>0–1</td><td>1</td><td>Probability of triggering (1 = 100%)</td></tr>
-            <tr><td><strong>Euc</strong></td><td>0–16</td><td>0</td><td>Euclidean fill: adds N evenly-spaced sub-hits</td></tr>
+            <tr><td><strong>Freq</strong></td><td>1–16</td><td>1</td><td>Play every N-th loop (1 = every loop)</td></tr>
+            <tr><td><strong>Phase</strong></td><td>0–15</td><td>0</td><td>Phase offset for trigger frequency</td></tr>
+            <tr><td><strong>Proba</strong></td><td>0–1</td><td>1</td><td>Probability of triggering (1 = 100%)</td></tr>
         </tbody>
     </table>
     <p><strong>How triggers work:</strong></p>
     <p>A note triggers when: <code>(currentLoop + triggerPhase) % triggerFreq === 0</code></p>
-    <p><strong>Euclidean fill:</strong></p>
-    <p>Adds N evenly-spaced notes between this note and the next note in the track, creating complex rhythmic patterns.</p>
+
+    <h3>Retrig</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Retrig</strong></td><td>1–16</td><td>1</td><td>Number of retrigger sub-hits</td></tr>
+            <tr><td><strong>Step</strong></td><td>1–16</td><td>1</td><td>Spacing between retrigger hits</td></tr>
+            <tr><td><strong>Eucl</strong></td><td>0–16</td><td>0</td><td>Euclidean fill: adds N evenly-spaced sub-hits between this note and the next</td></tr>
+            <tr><td><strong>Proba</strong></td><td>0–1</td><td>1</td><td>Probability for retrig, euclidian, and arp sub-notes (1 = 100%)</td></tr>
+        </tbody>
+    </table>
+    <p><strong>Euclidean fill:</strong> Adds N evenly-spaced notes between this note and the next note in the track, creating complex rhythmic patterns.</p>
+    <p><strong>Retrig Proba:</strong> This probability controls whether retrig sub-hits, euclidian fill sub-hits, and arp sub-notes are actually played. The base note (first hit) is always played.</p>
 
     <h3>Arpeggiator</h3>
     <table>
@@ -484,19 +502,15 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>Scl</strong></td><td>major, minor, pentatonic, etc.</td><td>major</td><td>Musical scale for arp intervals</td></tr>
+            <tr><td><strong>Scale</strong></td><td>major, minor, pentatonic, etc.</td><td>major</td><td>Musical scale for arp intervals</td></tr>
             <tr><td><strong>Dir</strong></td><td>up, down, updown</td><td>up</td><td>Arpeggio direction</td></tr>
-            <tr><td><strong>Rng</strong></td><td>0–12</td><td>0</td><td>Number of arp notes (0 = disabled)</td></tr>
-            <tr><td><strong>Arp%</strong></td><td>0–1</td><td>1</td><td>Probability each arp note triggers</td></tr>
-            <tr><td><strong>Retrig</strong></td><td>1–16</td><td>1</td><td>Number of retrigger sub-hits</td></tr>
-            <tr><td><strong>RetS</strong></td><td>1–16</td><td>1</td><td>Spacing between retrigger hits</td></tr>
+            <tr><td><strong>Range</strong></td><td>0–12</td><td>0</td><td>Number of arp notes (0 = disabled)</td></tr>
         </tbody>
     </table>
     <p><strong>How arpeggiator works:</strong></p>
     <ul>
-        <li>When <code>Rng > 0</code>, generates pitch offsets from the selected scale</li>
-        <li>Each arp note gets a random probability check</li>
-        <li>If both arp and retrigger are active, arp provides pitch offsets and retrigger provides the count</li>
+        <li>When <code>Range > 0</code>, generates pitch offsets from the selected scale</li>
+        <li>Arp sub-notes use the Retrig Proba probability</li>
     </ul>
 
     <hr>
@@ -621,7 +635,7 @@
             <tr><td><strong>Ratio</strong></td><td>1–20</td><td>4</td><td>—</td><td>Compression ratio</td></tr>
             <tr><td><strong>Attack</strong></td><td>0–1</td><td>0.005</td><td>s</td><td>Response speed</td></tr>
             <tr><td><strong>Release</strong></td><td>0–1</td><td>0.15</td><td>s</td><td>Recovery speed</td></tr>
-            <tr><td><strong>Knee</strong></td><td>0–40</td><td>30</td><td>dB</td><td>Curve softness</td></tr>
+            <tr><td><strong>Knee</strong></td><td>0–40</td><td>6</td><td>dB</td><td>Curve softness</td></tr>
         </tbody>
     </table>
 
@@ -688,6 +702,7 @@
     </table>
 
     <h3>LFO</h3>
+    <p>There are two independent LFOs (LFO and LFO2) with the same parameters:</p>
     <table>
         <thead>
             <tr>
@@ -753,12 +768,12 @@
         </thead>
         <tbody>
             <tr><td><strong>Space</strong></td><td>Start/Stop playback</td></tr>
-            <tr><td><strong>P</strong></td><td>Log patterns (legacy CSV format)</td></tr>
             <tr><td><strong>B</strong></td><td>Auto-generate a new pattern</td></tr>
             <tr><td><strong>S</strong></td><td>Log patterns as JSON to console</td></tr>
             <tr><td><strong>F</strong></td><td>Switch to a random pattern</td></tr>
             <tr><td><strong>G</strong></td><td>Switch to a random drumkit</td></tr>
             <tr><td><strong>H</strong></td><td>Convert all tracks to soft-synth sounds</td></tr>
+            <tr><td><strong>D</strong></td><td>Export current track sound</td></tr>
             <tr><td><strong>1–9</strong></td><td>Toggle mute for tracks 1–9</td></tr>
             <tr><td><strong>Q, W, E, R, T, Y, U, I</strong></td><td>Preview (audition) tracks 0–7</td></tr>
             <tr><td><strong>Left/Right arrows</strong></td><td>Adjust focused slider by one step</td></tr>

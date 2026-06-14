@@ -20,9 +20,9 @@ const fmtFreq = v => {
 const fmtVal = (key, v) => key === 'filterFreq' ? fmtFreq(v) : fmt(v)
 
 const FX_DEFS = [
-    { key: 'reverbOn', label: 'Rev', controls: ['reverbAmount', 'reverbType'] },
-    { key: 'delayOn', label: 'Del', controls: ['delayAmount', 'delayTime', 'delayType'] },
-    { key: 'saturationOn', label: 'Sat', controls: ['saturationAmount', 'saturationType'] }
+    { key: 'reverbOn', label: 'Reverb', controls: ['reverbAmount', 'reverbType'] },
+    { key: 'delayOn', label: 'Delay', controls: ['delayAmount', 'delayTime', 'delayType'] },
+    { key: 'saturationOn', label: 'Disto', controls: ['saturationAmount', 'saturationType'] }
 ]
 
 const FX_TOGGLE_DEFS = [
@@ -44,8 +44,8 @@ const GROUPS = [
     {
         label: 'Levels / Pitch',
         props: [
-            { key: 'velocity', label: 'Velo', min: 0, max: 1, step: 0.01, lfo: 'velocityLfo' },
-            { key: 'pan', label: 'Pan', min: -1, max: 1, step: 0.01, lfo: 'panLfo' },
+            { key: 'velocity', label: 'Vel', min: 0, max: 1, step: 0.01, lfo: 'velocityLfo' },
+            { key: 'pan', label: 'Pano', min: -1, max: 1, step: 0.01, lfo: 'panLfo' },
             { key: 'pitch', label: 'Pitch', min: -24, max: 24, step: 1, lfo: 'pitchLfo' },
             { key: 'sampleLength', label: 'Len', min: 0, max: 1, step: 0.01 }
         ]
@@ -61,13 +61,13 @@ const GROUPS = [
     {
         label: 'Effects',
         props: [
-            { key: 'reverbAmount', label: 'RevV', min: 0, max: 1, step: 0.01 },
-            { key: 'reverbType', label: 'RevT', type: 'select', options: ['none', 'room', 'hall', 'plate', 'spring', 'gated'] },
-            { key: 'delayAmount', label: 'DelV', min: 0, max: 1, step: 0.01 },
-            { key: 'delayTime', label: 'DelT', type: 'select', options: Utils.delayTimeValues, labels: Utils.delayTimeLabels },
-            { key: 'delayType', label: 'DelTy', type: 'select', options: ['none', 'slap', 'tape', 'pingpong'] },
-            { key: 'saturationAmount', label: 'SatV', min: 0, max: 1, step: 0.01 },
-            { key: 'saturationType', label: 'SatT', type: 'select', options: ['soft', 'hard', 'tape'] }
+            { key: 'reverbAmount', label: 'Depth', min: 0, max: 1, step: 0.01 },
+            { key: 'reverbType', label: 'Type', type: 'select', options: ['none', 'room', 'hall', 'plate', 'spring', 'gated'] },
+            { key: 'delayAmount', label: 'Amount', min: 0, max: 1, step: 0.01 },
+            { key: 'delayTime', label: 'Time', type: 'select', options: Utils.delayTimeValues, labels: Utils.delayTimeLabels },
+            { key: 'delayType', label: 'Type', type: 'select', options: ['none', 'slap', 'tape', 'pingpong'] },
+            { key: 'saturationAmount', label: 'Depth', min: 0, max: 1, step: 0.01 },
+            { key: 'saturationType', label: 'Type', type: 'select', options: ['soft', 'hard', 'tape'] }
         ]
     },
     {
@@ -471,7 +471,7 @@ export default class TrackEditor extends BasePanel {
             </div>
             <div class="ne-grid">
                 <div class="ne-row" style="border-top:1px solid #444;margin-top:6px;padding-top:6px">
-                    <label>Gen</label>
+                    <label>Synth</label>
                     <select data-sound="generated">
                         <option value="none"${currentGeneratedSound === 'none' ? ' selected' : ''}>none</option>`
         generatedSoundKeys.forEach(key => {

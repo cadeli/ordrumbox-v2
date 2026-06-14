@@ -42,26 +42,26 @@ const GROUPS = [
     {
         label: 'Triggers',
         props: [
-            { key: 'triggerFreq', label: 'TrigF', min: 1, max: 16, step: 1 },
-            { key: 'triggerPhase', label: 'TrigP', min: 0, max: 15, step: 1 },
-            { key: 'triggerProbability', label: 'Trig%', min: 0, max: 1, step: 0.01 }
+            { key: 'triggerFreq', label: 'Freq', min: 1, max: 16, step: 1 },
+            { key: 'triggerPhase', label: 'Phase', min: 0, max: 15, step: 1 },
+            { key: 'triggerProbability', label: 'Proba', min: 0, max: 1, step: 0.01 }
         ]
     },
     {
         label: 'Retrig',
         props: [
             { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
-            { key: 'retriggerStep', label: 'RetS', min: 1, max: 16, step: 1 },
-            { key: 'euclidianFill', label: 'Euc', min: 0, max: 16, step: 1 },
-            { key: 'arpTriggerProbability', label: 'Retrig%', min: 0, max: 1, step: 0.01 }
+            { key: 'retriggerStep', label: 'Step', min: 1, max: 16, step: 1 },
+            { key: 'euclidianFill', label: 'Eucl', min: 0, max: 16, step: 1 },
+            { key: 'arpTriggerProbability', label: 'Proba', min: 0, max: 1, step: 0.01 }
         ]
     },
     {
         label: 'Arpege',
         props: [
-            { key: 'arpScale', label: 'Scl', type: 'select', options: [] },
+            { key: 'arpScale', label: 'Scale', type: 'select', options: [] },
             { key: 'arpType', label: 'Dir', type: 'select', options: ARP_TYPES },
-            { key: 'arpRange', label: 'Rng', min: 0, max: 12, step: 1 }
+            { key: 'arpRange', label: 'Range', min: 0, max: 12, step: 1 }
         ]
     }
 ]
