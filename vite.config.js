@@ -5,6 +5,10 @@ export default defineConfig({
     root: '.',
     base: './',
     publicDir: false,
+
+    test: {
+        setupFiles: ['./tests/setup.js'],
+    },
     build: {
         outDir: 'dist',
         emptyOutDir: true,
