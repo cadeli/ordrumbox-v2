@@ -92,21 +92,12 @@ export default class MfCmd {
             track.barQuantize = 8
             steppc = Math.round((barStep * 100) / track.barQuantize)
         }
-        let note = {
-            "barStep": barStep,
-            "steppc": steppc,
-            "bar": bar,
-            "velocity": 0.8,
-            "pan": 0,
-            "pitch": pitch,
-            "arp": null,
-            "triggerFreq": 1,
-            "triggerPhase": 0,
-            "triggerProbability": 1,
-            "arpTriggerProbability": 1,
-            "retriggerNum": 1,
-            "retriggerStep": 1,
-            "euclidianFill": 0
+        const note = {
+            ...Utils.NOTE_DEFAULTS,
+            barStep,
+            steppc,
+            bar,
+            pitch
         }
         track.notes.push(note)
         this._incrementPatternVersionByTrack(track)
@@ -278,15 +269,10 @@ export default class MfCmd {
     }
 
     cleanTrack = (track)=> {
-        Object.values(track.notes).forEach((note) => {
-            note.arp = null
-            note = null
-        })
         track.notes = []
         track.loopPointStep = 0
         track.loopPointBar = track.bars
         track.loopAtStep = track.loopPointBar * track.barQuantize + track.loopPointStep
-
     }
 
     getAllSoundsForType(soundKey) {

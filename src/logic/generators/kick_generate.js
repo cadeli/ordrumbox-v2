@@ -51,11 +51,10 @@ export default class MfKickGenerate extends BaseGenerator {
             }
         },
         break: {
-            mode: 'break',
+            mode: 'grid',
             loopPointBar: 4,
             loopPointStep: 0,
-            startBarOffset: 1,
-            steps: [0, 1, 3],
+            probabilities: [1, 0, 0, 0],
             velocity: {
                 base: 0.76,
                 accentOnBeat: 0.2,
@@ -87,9 +86,6 @@ export default class MfKickGenerate extends BaseGenerator {
                     (bar, step) => step !== 0
                 )
                 break
-            case 'break':
-                this.generateKickBreakVariant(kickTrack, config)
-                break
             case 'phrases':
             default:
                 this.generatePhraseVariant(kickTrack, config,
@@ -102,17 +98,6 @@ export default class MfKickGenerate extends BaseGenerator {
 
         this.applyLoopPoint(kickTrack, config)
        // this.displayDebugNotes(kickTrack, 'KD')
-    }
-
-    generateKickBreakVariant = (kickTrack, config) => {
-        const loopPointAbsolute = this.getLoopPointAbsolute(kickTrack, config, 4)
-        const barQuantize = kickTrack.barQuantize ?? 4
-
-        for (let bar = 0; bar < kickTrack.bars; bar++) {
-            const absoluteStep = bar * barQuantize + 0
-            if (absoluteStep >= loopPointAbsolute) continue
-            this.addNote(kickTrack, bar, 0, 0, 1)
-        }
     }
 
     getRndVariantName = () => {

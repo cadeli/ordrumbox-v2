@@ -12,7 +12,6 @@ import OutputPanel from './ui/output_panel.js'
 import AboutPanel from './ui/about_panel.js'
 
 import MfResourcesLoader from './loader/resources_loader.js'
-import { FALLBACK_FPS } from './core/constants.js'
 import Utils from './core/utils.js'
 import { appState } from './state/app_state.js'
 import { serviceRegistry } from './state/service_registry.js'
@@ -153,22 +152,6 @@ export function init() {
 
         }
     })
-    requestAnimFrame(draw)
-}
-
-window.requestAnimFrame = (function () {
-    return window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.oRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
-        function (callback) {
-            window.setTimeout(callback, 1000 / FALLBACK_FPS);
-        };
-})();
-
-function draw() {
-    requestAnimFrame(draw)
 }
 
 

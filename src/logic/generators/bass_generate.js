@@ -127,6 +127,7 @@ export default class MfBassGenerate extends BaseGenerator {
 
     constructor() {
         super('BASS', MfBassGenerate.BASS_GENERATION_CONFIGS)
+        this._toneThreshold = 5
         this.isScalesLoading = false
     }
 
@@ -349,13 +350,6 @@ export default class MfBassGenerate extends BaseGenerator {
             extraParts.push(`ctr=${config.contour}`)
         }
         // this.traceGeneration(variantName, config, bassTrack, extraParts)
-    }
-
-    getRndTone = (tones) => {
-        const nb = Math.floor(Math.random() * tones.length)
-        const tone = tones[nb]
-        if (tone > 5) return tone - 12
-        return tone
     }
 
     buildArpeggioContour = (scale, phraseLength, contour, startDegree) => {

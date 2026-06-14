@@ -243,15 +243,6 @@ export default class MfPercGenerate extends BaseGenerator {
     }
 
     resolvePercPitch = (phrase, tones, cachedPitches, pitchBias) => {
-        if (typeof phrase.pitch === 'number') {
-            return phrase.pitch + pitchBias
-        }
-        if (phrase.source === 'reuse' && typeof phrase.reuseIndex === 'number') {
-            return cachedPitches[phrase.reuseIndex] ?? pitchBias
-        }
-        if (phrase.source === 'root') {
-            return pitchBias
-        }
-        return this.getRndTone(tones) + pitchBias
+        return this.resolvePhrasePitch(phrase, tones, cachedPitches, pitchBias)
     }
 }

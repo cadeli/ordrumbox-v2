@@ -68,7 +68,7 @@ export default class BaseGenerator {
      */
     getRndTone = (tones) => {
         const tone = tones[Math.floor(Math.random() * tones.length)] ?? 0
-        return tone > 6 ? tone - 12 : tone
+        return tone > (this._toneThreshold ?? 6) ? tone - 12 : tone
     }
 
     /**

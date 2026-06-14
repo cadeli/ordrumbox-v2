@@ -265,12 +265,9 @@ export default class ToolsPanel extends BasePanel {
             }
         })
 
-        if (totalRemoved > 0 || true) {
-            // Always refresh if button pressed to be sure
-            serviceRegistry.audioEngine?.invalidateCache()
-            playbackEvents.dispatchPatternChange()
-            console.log(`Compaction finished. Total redundant notes removed: ${totalRemoved}`)
-        }
+        serviceRegistry.audioEngine?.invalidateCache()
+        playbackEvents.dispatchPatternChange()
+        console.log(`Compaction finished. Total redundant notes removed: ${totalRemoved}`)
     }
 
     _exportJson() {
