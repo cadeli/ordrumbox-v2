@@ -127,7 +127,7 @@ export default class MfCmd {
             bars: nbBars,
             barQuantize,
             loopAtStep: nbBars * barQuantize,
-            pan: Utils.getPanoFromTrackName(name),
+            pan: Utils.getPanFromTrackName(name),
         })
         recalcLoopDerived(newTrack)
         return newTrack

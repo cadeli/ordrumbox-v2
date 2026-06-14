@@ -1,7 +1,6 @@
 import {
     TICK,
     C3_FREQ,
-    FILTER_FREQ_MAX,
     MIN_NOTE_RATIO,
 } from '../core/constants.js'
 import Utils from '../core/utils.js'
@@ -92,31 +91,4 @@ export function computeAccent(noteVelo, accentAmount = 0.5) {
     const accentMultiplier = isAccented ? 1 + (accentAmount * 0.5) : 1
     const accentFilterBoost = isAccented ? accentAmount * 2000 : 0
     return { isAccented, accentMultiplier, accentFilterBoost }
-}
-
-/**
- * @deprecated Inlined in synth_voice.js. Kept for backward compat with tests.
- */
-export function computePeakFilterFreq(baseFreq, filterEnvelopeAmount) {
-    const mFreq = baseFreq
-    return mFreq + ((FILTER_FREQ_MAX - mFreq) * filterEnvelopeAmount)
-}
-
-/**
- * @deprecated Inlined in synth_voice.js. Kept for backward compat with tests.
- */
-export function computeAdsrEnvelopeParams(env, noteVelo, masterVolume = 0.8, accentMultiplier = 1) {
-    const attackTime = env.attack ?? 0
-    const decayTime = env.decay ?? 0
-    const sustainLevel = env.sustain ?? 1
-    const releaseTime = env.release ?? 0
-    const peakGain = noteVelo * masterVolume * accentMultiplier
-    return { attackTime, decayTime, sustainLevel, releaseTime, peakGain }
-}
-
-/**
- * @deprecated Use Utils.computeTrackPan directly. Kept for backward compat with tests.
- */
-export function computeTrackPan(indexTrack) {
-    return Utils.computeTrackPan(indexTrack)
 }

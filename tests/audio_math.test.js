@@ -8,9 +8,6 @@ import {
     computeLfoValue,
     getLfoWaveformValue,
     computeAccent,
-    computePeakFilterFreq,
-    computeAdsrEnvelopeParams,
-    computeTrackPan,
 } from '../src/audio/math.js'
 
 describe('audioMath - clamp', () => {
@@ -161,64 +158,5 @@ describe('audioMath - computeAccent', () => {
         expect(accent.isAccented).toBe(true)
         expect(accent.accentMultiplier).toBe(1.25)
         expect(accent.accentFilterBoost).toBe(1000)
-    })
-})
-
-describe('audioMath - computePeakFilterFreq', () => {
-    it('returns base freq when envelope is 0', () => {
-        expect(computePeakFilterFreq(1000, 0)).toBe(1000)
-    })
-
-    it('returns max freq when envelope is 1', () => {
-        expect(computePeakFilterFreq(1000, 1)).toBe(20000)
-    })
-
-    it('interpolates for partial envelope', () => {
-        expect(computePeakFilterFreq(1000, 0.5)).toBe(10500)
-    })
-})
-
-describe('audioMath - computeAdsrEnvelopeParams', () => {
-    it('computes correct params', () => {
-        const env = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 }
-        const params = computeAdsrEnvelopeParams(env, 0.8, 1, 1)
-        expect(params.attackTime).toBe(0.01)
-        expect(params.decayTime).toBe(0.1)
-        expect(params.sustainLevel).toBe(0.7)
-        expect(params.releaseTime).toBe(0.2)
-        expect(params.peakGain).toBeCloseTo(0.8, 5)
-    })
-
-    it('applies accent multiplier to peak gain', () => {
-        const env = { attack: 0, decay: 0, sustain: 1, release: 0 }
-        const params = computeAdsrEnvelopeParams(env, 0.8, 1, 1.25)
-        expect(params.peakGain).toBeCloseTo(1, 5)
-    })
-
-    it('uses defaults for missing env values', () => {
-        const env = {}
-        const params = computeAdsrEnvelopeParams(env, 0.8)
-        expect(params.attackTime).toBe(0)
-        expect(params.decayTime).toBe(0)
-        expect(params.sustainLevel).toBe(1)
-        expect(params.releaseTime).toBe(0)
-    })
-})
-
-describe('audioMath - computeTrackPan', () => {
-    it('returns pan from index map', () => {
-        expect(computeTrackPan(0)).toBe(0)
-        expect(computeTrackPan(1)).toBe(0.3)
-        expect(computeTrackPan(2)).toBe(0.5)
-        expect(computeTrackPan(3)).toBe(-0.4)
-        expect(computeTrackPan(4)).toBe(0.4)
-        expect(computeTrackPan(5)).toBe(-0.3)
-        expect(computeTrackPan(6)).toBe(-0.2)
-        expect(computeTrackPan(7)).toBe(1)
-    })
-
-    it('defaults to 0 for index >= 8', () => {
-        expect(computeTrackPan(8)).toBe(0)
-        expect(computeTrackPan(99)).toBe(0)
     })
 })

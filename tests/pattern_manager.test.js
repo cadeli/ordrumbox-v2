@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import MfPatterns from '../src/patterns/manager.js'
+import * as patternsManager from '../src/patterns/manager.js'
 
 vi.mock('../src/state/app_state.js', () => {
     const state = { flatNotes: null }
@@ -39,7 +39,7 @@ describe('MfPatterns', () => {
     let mgr
 
     beforeEach(() => {
-        mgr = new MfPatterns()
+        mgr = patternsManager
     })
 
     describe('computeNextPatternStepNote', () => {

@@ -280,11 +280,11 @@ describe('real render — orDrumbox pattern', () => {
         const { default: MfWavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const { default: MfPatterns } = await import('../src/patterns/manager.js')
+        const patternsManager = await import('../src/patterns/manager.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = new MfPatterns()
+        serviceRegistry.mfPatterns = patternsManager
 
         // Create a real AudioBuffer via node-web-audio-api
         const bufLength = SAMPLE_RATE / 2

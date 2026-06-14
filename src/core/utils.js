@@ -315,7 +315,4 @@ static TAG = "UTILS"
         const idx = Utils.TRACK_NAME_TO_INDEX[type]
         return idx !== undefined ? Utils.computeTrackPan(idx) : 0
     }
-
-    // Backward compatibility alias
-    static getPanoFromTrackName = Utils.getPanFromTrackName
 }

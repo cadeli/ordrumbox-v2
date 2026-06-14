@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import MfPatterns from '../src/patterns/manager.js'
+import * as patternsManager from '../src/patterns/manager.js'
 import MfAutoGenerate from '../src/logic/generators/auto_generate.js'
 import MfPercGenerate from '../src/logic/generators/perc_generate.js'
 import { MfGlobals } from '../src/core/globals.js'
@@ -48,7 +48,7 @@ describe('MfPatterns', () => {
         MfGlobals.resetAll()
         mfCmd = new MfCmd()
         serviceRegistry.mfCmd = mfCmd
-        mfPatterns = new MfPatterns()
+        mfPatterns = patternsManager
         serviceRegistry.mfPatterns = mfPatterns
         pattern = mfCmd.addPattern('Test')
         pattern.nbBars = 4
@@ -168,7 +168,7 @@ describe('MfAutoGenerate', () => {
         MfGlobals.resetAll()
         const mfCmd = new MfCmd()
         serviceRegistry.mfCmd = mfCmd
-        serviceRegistry.mfPatterns = new MfPatterns()
+        serviceRegistry.mfPatterns = patternsManager
         soundRegistry.scales = { 'pentatonic minor': [0, 3, 5, 7, 10] }
         autoGen = new MfAutoGenerate()
     })

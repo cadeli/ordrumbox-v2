@@ -13,7 +13,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import MfWavExporter from '../src/audio/export/wav_exporter.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import MfPatterns from '../src/patterns/manager.js'
+import * as patternsManager from '../src/patterns/manager.js'
 import { TICK } from '../src/core/constants.js'
 
 // ─── WAV parser ───────────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ describe('WAV Export — functional end-to-end', () => {
     beforeEach(() => {
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = new MfPatterns()
+        serviceRegistry.mfPatterns = patternsManager
         soundRegistry.sounds = {
             'kick.wav': {
                 url: 'kick.wav',

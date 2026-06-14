@@ -96,11 +96,11 @@ describe('simpleBeep — real audio rendering', () => {
         const { default: MfWavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const { default: MfPatterns } = await import('../src/patterns/manager.js')
+        const patternsManager = await import('../src/patterns/manager.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = new MfPatterns()
+        serviceRegistry.mfPatterns = patternsManager
 
         soundRegistry.sounds = {
             'kick.wav': { url: 'kick.wav', buffer: kickBuffer, key: 'KICK' },
@@ -152,11 +152,11 @@ describe('simpleBeep — real audio rendering', () => {
         const { default: MfWavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const { default: MfPatterns } = await import('../src/patterns/manager.js')
+        const patternsManager = await import('../src/patterns/manager.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = new MfPatterns()
+        serviceRegistry.mfPatterns = patternsManager
 
         soundRegistry.sounds = {
             'kick.wav': { url: 'kick.wav', buffer: kickBuffer, key: 'KICK' },
@@ -204,11 +204,11 @@ describe('simpleBeep — mixer graph reconnection', () => {
         const { default: MfStrip } = await import('../src/audio/strip.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const { default: MfPatterns } = await import('../src/patterns/manager.js')
+        const patternsManager = await import('../src/patterns/manager.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = new MfPatterns()
+        serviceRegistry.mfPatterns = patternsManager
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await MfMixer.create(ctx)
@@ -235,11 +235,11 @@ describe('simpleBeep — mixer graph reconnection', () => {
         const { default: MfMixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const { default: MfPatterns } = await import('../src/patterns/manager.js')
+        const patternsManager = await import('../src/patterns/manager.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = new MfPatterns()
+        serviceRegistry.mfPatterns = patternsManager
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await MfMixer.create(ctx)
@@ -281,11 +281,11 @@ describe('simpleBeep — mixer graph reconnection', () => {
         const { default: MfMixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        const { default: MfPatterns } = await import('../src/patterns/manager.js')
+        const patternsManager = await import('../src/patterns/manager.js')
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = new MfPatterns()
+        serviceRegistry.mfPatterns = patternsManager
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await MfMixer.create(ctx)

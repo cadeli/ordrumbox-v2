@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import MfWavExporter from '../src/audio/export/wav_exporter.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import MfPatterns from '../src/patterns/manager.js'
+import * as patternsManager from '../src/patterns/manager.js'
 
 // Mock OfflineAudioContext
 class MockOfflineAudioContext {
@@ -76,7 +76,7 @@ describe('WAV Exporter', () => {
     beforeEach(() => {
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = new MfPatterns()
+        serviceRegistry.mfPatterns = patternsManager
         // Mock sounds
         soundRegistry.sounds = {
             'kick.wav': { url: 'kick.wav', buffer: { duration: 1, length: 44100, getChannelData: () => new Float32Array(44100) }, key: 'KICK' }
