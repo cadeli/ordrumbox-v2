@@ -253,35 +253,20 @@ static TAG = "UTILS"
 
     static normalizeTrackFilterFreqValue = (value) => {
         const numericValue = Number(value)
-        if (!Number.isFinite(numericValue)) {
-            return FILTER_FREQ_MIN
-        }
-        if (numericValue <= 1) {
-            return Utils.normalizedTrackFilterFreqToHz(numericValue)
-        }
-        return numericValue
+        if (!Number.isFinite(numericValue)) return FILTER_FREQ_MIN
+        return numericValue <= 1 ? Utils.normalizedTrackFilterFreqToHz(numericValue) : numericValue
     }
 
     static normalizeSynthFilterFreqValue = (value) => {
         const numericValue = Number(value)
-        if (!Number.isFinite(numericValue)) {
-            return 50
-        }
-        if (numericValue <= 1) {
-            return Utils.normalizedSynthFilterFreqToHz(numericValue)
-        }
-        return numericValue
+        if (!Number.isFinite(numericValue)) return 50
+        return numericValue <= 1 ? Utils.normalizedSynthFilterFreqToHz(numericValue) : numericValue
     }
 
     static normalizeSynthFilterQValue = (value) => {
         const numericValue = Number(value)
-        if (!Number.isFinite(numericValue)) {
-            return 1
-        }
-        if (numericValue <= 1) {
-            return Utils.normalizedSynthFilterQToValue(numericValue)
-        }
-        return numericValue
+        if (!Number.isFinite(numericValue)) return 1
+        return numericValue <= 1 ? Utils.normalizedSynthFilterQToValue(numericValue) : numericValue
     }
 
     static getStepSpacing = (value) => {

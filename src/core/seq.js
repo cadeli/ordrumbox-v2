@@ -143,7 +143,6 @@ export default class MfSeq {
         } else {
              this.stop()
         }
-        console.log("mfSeq::toggleStartStop")
     }
 
     setBpm = (bpm) => {
@@ -153,11 +152,6 @@ export default class MfSeq {
         if (this.serviceRegistry.audioEngine) {
             this.serviceRegistry.audioEngine.setBpm(bpm)
         }
-        console.log("mfSeq::setBpm new bpm is ", bpm)
-    }
-
-    displayLagWarning = (interval) => {
-        console.log("lag de " + parseFloat(interval) + " Ms")
     }
 
     simpleBeep = async (indexTrack) => {

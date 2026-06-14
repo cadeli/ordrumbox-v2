@@ -64,6 +64,9 @@ export default class AudioEngine {
         this.isRunning = false
         this.unlocked = false
         this.nextStepTime = 0
+
+        // Pre-allocate silent buffer for unlock (reused across calls)
+        this._silentBuffer = this.audioCtx.createBuffer(1, 1, 22050)
     }
 
     /**
@@ -217,9 +220,8 @@ export default class AudioEngine {
     }
 
     playSilentBuffer = () => {
-        const buffer = this.audioCtx.createBuffer(1, 1, 22050)
-        const node   = this.audioCtx.createBufferSource()
-        node.buffer  = buffer
+        const node = this.audioCtx.createBufferSource()
+        node.buffer = this._silentBuffer
         node.connect(this.audioCtx.destination)
         node.start(0)
         this.unlocked = true

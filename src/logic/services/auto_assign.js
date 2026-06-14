@@ -19,8 +19,6 @@ export default class MfAutoAssign {
                     this.autoAssignTrackSounds(track, indexTrack)
                 }
             })
-        } else {
-            console.warn("MfAutoAssign::autoAssignSounds no sounds")
         }
     }
 
@@ -31,7 +29,6 @@ export default class MfAutoAssign {
             const foundInstrument = instrumentsManager.findInstrumentFromFileName(track.name)
             const newName = foundInstrument?.id
             if (newName && validInstrumentIds.includes(newName)) {
-                console.warn(`Renaming track '${track.name}' to '${newName}' for auto-assign`)
                 track.name = newName
             } 
         }
@@ -43,18 +40,17 @@ export default class MfAutoAssign {
         const selDrumkitName = drumkitList[selectedIdx].name
         
         let soundId = this.getSoundIdFromKitAndTrackname(selDrumkitName, track.name)
-        if (soundId == NOT_FOUND) {
+        if (soundId === NOT_FOUND) {
             soundId = this.getSoundIdFromTrackname(track.name)
         }
-        if (soundId == NOT_FOUND) {
+        if (soundId === NOT_FOUND) {
             soundId = this.findSoundEquivalence(soundId, selDrumkitName, track)
         }
-        if (soundId == NOT_FOUND) {
+        if (soundId === NOT_FOUND) {
             soundId = Utils.getRandomKey(this._soundRegistry.sounds)
         }
         
         if (soundId === null || soundId === "" || soundId === NOT_FOUND) {
-            console.error(`autoAssignTrackSounds :: No SoundID for track ${track.name}`)
             track.soundId = "NOT_DEFINED"
         } else {
             track.soundId = soundId
@@ -131,18 +127,6 @@ export default class MfAutoAssign {
         // }
         return ret
     }
-
-
-
-    getKitAsText = (drumkitName) => {
-        const debugtxt = Object.values(this._soundRegistry.sounds)
-            .filter(sound => sound && sound.kit_name === drumkitName)
-            .map(sound => `${sound.key}`)
-            .join(",");
-
-        return ` <${drumkitName} : ${debugtxt}> `;
-    }
-
 
 
 }

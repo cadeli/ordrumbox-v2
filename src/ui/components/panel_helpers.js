@@ -86,9 +86,8 @@ export function hidePanelsById(ids) {
 }
 
 export function escapeHtml(value) {
-    const div = document.createElement('div')
-    div.textContent = value
-    return div.innerHTML
+    const str = String(value ?? '')
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 /**

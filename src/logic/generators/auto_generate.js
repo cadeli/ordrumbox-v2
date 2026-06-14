@@ -25,18 +25,15 @@ export default class MfAutoGenerate {
             pattern = serviceRegistry.mfCmd.addPattern("Generated")
         }
 
-        if (!pattern.tracks || pattern.tracks.length === 0) {
-            const genre = options.genre || this.structureGen.getRandomGenre()
-            const structure = options.structure || this.structureGen.generateStructure(genre)
+        const genre = options.genre || this.structureGen.getRandomGenre()
+        const structure = options.structure || this.structureGen.generateStructure(genre)
 
+        if (!pattern.tracks || pattern.tracks.length === 0) {
             for (const [trackName, config] of Object.entries(structure)) {
                 const track = serviceRegistry.mfCmd.addTrack(pattern, trackName)
                 await this.generateTrack(track, config)
             }
         } else {
-            const genre = options.genre || this.structureGen.getRandomGenre()
-            const structure = options.structure || this.structureGen.generateStructure(genre)
-
             for (const track of pattern.tracks) {
                 const type = this.detectTrackType(track.name)
 

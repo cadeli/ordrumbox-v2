@@ -276,39 +276,38 @@ export default class SynthVoice extends BaseVoice {
         }
     }
 
+    #updateLfo(lfoNum, lfoConfig, time, rampTime) {
+        const target = lfoConfig?.target ?? 'NOT'
+        const masterLfo = lfoNum === 1 ? this.masterLfo : this.masterLfo2
+        const lfoGain = lfoNum === 1 ? this.lfoGain : this.lfoGain2
+        const connectFn = lfoNum === 1 ? (t) => this.connectLfoTarget(t) : (t) => this.connectLfoTarget2(t)
+        const depthFn = lfoNum === 1 ? (t) => this.computeLfoDepth(t) : (t) => this.computeLfoDepth2(t)
+
+        if (target !== 'NOT') {
+            if (!masterLfo) {
+                const osc = this.registerNode(this.audioCtx.createOscillator())
+                if (lfoNum === 1) this.masterLfo = osc
+                else this.masterLfo2 = osc
+            }
+            const lfo = lfoNum === 1 ? this.masterLfo : this.masterLfo2
+            lfo.type = typeof lfoConfig?.wave === 'string' ? lfoConfig.wave : 'sine'
+            lfo.frequency.setTargetAtTime(toFiniteNumber(lfoConfig?.freq, 0) + LFO_FREQ_OFFSET, time, rampTime)
+            try { lfoGain.disconnect() } catch (e) {}
+            lfoGain.gain.setTargetAtTime(depthFn(target), time, rampTime)
+            connectFn(target)
+        } else if (masterLfo) {
+            try { lfoGain.disconnect() } catch (e) {}
+            if (lfoNum === 1) this.masterLfo = null
+            else this.masterLfo2 = null
+        }
+    }
+
     updateGeneratedSound(generatedSound, time = this.audioCtx.currentTime) {
         this.generatedSound = generatedSound
         const rampTime = 0.01
 
-        const newLfoTarget = generatedSound.lfo?.target ?? 'NOT'
-        if (newLfoTarget !== 'NOT') {
-            if (!this.masterLfo) {
-                this.masterLfo = this.registerNode(this.audioCtx.createOscillator())
-            }
-            this.masterLfo.type = typeof generatedSound.lfo?.wave === 'string' ? generatedSound.lfo.wave : 'sine'
-            this.masterLfo.frequency.setTargetAtTime(toFiniteNumber(generatedSound.lfo?.freq, 0) + LFO_FREQ_OFFSET, time, rampTime)
-            try { this.lfoGain.disconnect() } catch (e) {}
-            this.lfoGain.gain.setTargetAtTime(this.computeLfoDepth(newLfoTarget), time, rampTime)
-            this.connectLfoTarget(newLfoTarget)
-        } else if (this.masterLfo) {
-            try { this.lfoGain.disconnect() } catch (e) {}
-            this.masterLfo = null
-        }
-
-        const newLfoTarget2 = generatedSound.lfo2?.target ?? 'NOT'
-        if (newLfoTarget2 !== 'NOT') {
-            if (!this.masterLfo2) {
-                this.masterLfo2 = this.registerNode(this.audioCtx.createOscillator())
-            }
-            this.masterLfo2.type = typeof generatedSound.lfo2?.wave === 'string' ? generatedSound.lfo2.wave : 'sine'
-            this.masterLfo2.frequency.setTargetAtTime(toFiniteNumber(generatedSound.lfo2?.freq, 0) + LFO_FREQ_OFFSET, time, rampTime)
-            try { this.lfoGain2.disconnect() } catch (e) {}
-            this.lfoGain2.gain.setTargetAtTime(this.computeLfoDepth2(newLfoTarget2), time, rampTime)
-            this.connectLfoTarget2(newLfoTarget2)
-        } else if (this.masterLfo2) {
-            try { this.lfoGain2.disconnect() } catch (e) {}
-            this.masterLfo2 = null
-        }
+        this.#updateLfo(1, generatedSound.lfo, time, rampTime)
+        this.#updateLfo(2, generatedSound.lfo2, time, rampTime)
 
         const noiseConfig = generatedSound.noise ?? {}
         const noiseMix    = clamp(toFiniteNumber(noiseConfig.mix, 0), 0, 1)
@@ -378,7 +377,6 @@ export default class SynthVoice extends BaseVoice {
     stop(time) {
         if (this.stopped) return
         super.stop(time)
-        // Cancel the cleanup timer to prevent race with new voices acquiring pooled nodes
         if (this._cleanupTimer) {
             clearTimeout(this._cleanupTimer)
             this._cleanupTimer = null
@@ -389,17 +387,14 @@ export default class SynthVoice extends BaseVoice {
             this.gainEnv.gain.setValueAtTime(currentGain, time)
             this.gainEnv.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, time + STOP_BUFFER)
         } catch (e) {}
-        this.oscNodes.forEach(v => {
-            try { v.osc.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
-        })
-        if (this.noiseNode) {
-            try { this.noiseNode.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
-        }
-        if (this.masterLfo) {
-            try { this.masterLfo.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
-        }
-        if (this.masterLfo2) {
-            try { this.masterLfo2.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
+        const stoppableNodes = [
+            ...this.oscNodes.map(v => v.osc),
+            this.noiseNode,
+            this.masterLfo,
+            this.masterLfo2,
+        ].filter(Boolean)
+        for (const node of stoppableNodes) {
+            try { node.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
         }
     }
 }

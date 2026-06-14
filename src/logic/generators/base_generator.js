@@ -109,41 +109,11 @@ export default class BaseGenerator {
     }
 
     displayDebugNotes = (track, prefix = 'GN') => {
-        let ret = `${track.name}=`
-        for (const note of Object.values(track.notes)) {
-            ret += `${prefix}: ${note.bar}:${note.barStep} V=${note.velocity} - `
-        }
-        console.log(ret)
+        // Debug-only method — no-op in production
     }
 
     traceGeneration = (variantName, config, track, extraParts = []) => {
-        const parts = [
-            `${this.instrumentName.toUpperCase()}[${variantName}]`,
-            `mode=${config.mode}`,
-            `bars=${track?.bars ?? '?'}`,
-            `steps=${track?.barQuantize ?? '?'}`,
-            `vel=${this.formatCompactVelocity(config.velocity ?? {})}`,
-            `loop=${config.loopPointBar}:${config.loopPointStep ?? 0}`
-        ]
-
-        if (Array.isArray(config.phrases)) {
-            parts.push(`phr=${config.phrases.length}`)
-        }
-        if (Array.isArray(config.probabilities)) {
-            parts.push(`prob=${config.probabilities.join('/')}`)
-        }
-        if (typeof config.density === 'number') {
-            parts.push(`dens=${config.density}`)
-        }
-        if (config.scaleName) {
-            parts.push(`scale=${config.scaleName}`)
-        }
-
-        for (const part of extraParts) {
-            parts.push(part)
-        }
-
-        console.log(parts.join(" | "))
+        // Debug-only method — no-op in production
     }
 
     resolveVariantName = (variantName) => {

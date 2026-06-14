@@ -177,27 +177,21 @@ export default class MfCmd {
     }
 
     setSelectedDrumkitNum = (num) => {
-        console.log("mfCmd::setSelectedDrumkitNum : " + num + " = " + soundRegistry.drumkitList[num].name)
         appState.selectedDrumkitNum = num
         if (!this.kitIsLoaded(soundRegistry.drumkitList[num])) {
-            console.log("mfCmd::setSelectedDrumkitNum :  must load kit:", soundRegistry.drumkitList[num].name)
-            console.log(soundRegistry.sounds)
-            serviceRegistry.mfResourcesLoader.loadSamplesFromDrumkit(soundRegistry.drumkitList[num], this.autoAssignsoundsForNewDrumkit)
+            serviceRegistry.mfResourcesLoader.loadSamplesFromDrumkit(soundRegistry.drumkitList[num], this.autoAssignSoundsForNewDrumkit)
         } else {
-            this.autoAssignsoundsForNewDrumkit()
+            this.autoAssignSoundsForNewDrumkit()
         }
         playbackEvents.dispatchDrumkitChange()
     }
 
-    autoAssignsoundsForNewDrumkit = async () => {
-        console.log("mfCmd::autoAssignsoundsForNewDrumkit :sounds")
-        console.log(soundRegistry.sounds)
+    autoAssignSoundsForNewDrumkit = async () => {
         let selPattern = appState.patterns[appState.selectedPatternNum]
         serviceRegistry.mfSeq.setBpm(selPattern.bpm)
         const mfAutoAssign = await getAutoAssignService()
         mfAutoAssign.autoAssignSounds(selPattern)
         serviceRegistry.mfPatterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
-        // console.log(appState.flatNotes )
     }
 
     setSelectedPatternNum = async (num) => {
@@ -217,13 +211,7 @@ export default class MfCmd {
 
 
     getTrackFromType = (pattern, type) => {
-        let ret = null
-        Utils.getTracksArray(pattern).forEach((track) => {
-            if (track.name === type) {
-                ret = track
-            }
-        })
-        return ret
+        return Utils.getTracksArray(pattern).find(track => track.name === type) ?? null
     }
 
 

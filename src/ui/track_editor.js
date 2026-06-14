@@ -19,6 +19,18 @@ const fmtFreq = v => {
 }
 const fmtVal = (key, v) => key === 'filterFreq' ? fmtFreq(v) : fmt(v)
 
+const FX_DEFS = [
+    { key: 'reverbOn', label: 'Rev', controls: ['reverbAmount', 'reverbType'] },
+    { key: 'delayOn', label: 'Del', controls: ['delayAmount', 'delayTime', 'delayType'] },
+    { key: 'saturationOn', label: 'Sat', controls: ['saturationAmount', 'saturationType'] }
+]
+
+const FX_TOGGLE_DEFS = [
+    { key: 'reverbOn', controls: ['reverbAmount'] },
+    { key: 'delayOn', controls: ['delayAmount'] },
+    { key: 'saturationOn', controls: ['saturationAmount'] }
+]
+
 const GROUPS = [
     {
         label: 'Basic / Transport',
@@ -343,12 +355,6 @@ export default class TrackEditor extends BasePanel {
     }
 
     _renderFxGroup(isExpanded) {
-        const fxDefs = [
-            { key: 'reverbOn', label: 'Rev', controls: ['reverbAmount', 'reverbType'] },
-            { key: 'delayOn', label: 'Del', controls: ['delayAmount', 'delayTime', 'delayType'] },
-            { key: 'saturationOn', label: 'Sat', controls: ['saturationAmount', 'saturationType'] }
-        ]
-
         let html = `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="effects">
             <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="effects" title="Effects">
                 <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
@@ -360,7 +366,7 @@ export default class TrackEditor extends BasePanel {
                     <span class="fx-tabs">`
 
         if (isExpanded) {
-            fxDefs.forEach((fx, i) => {
+            FX_DEFS.forEach((fx, i) => {
                 const activeClass = i === this._activeFxTab ? ' active' : ''
                 html += `<button class="fx-tab-btn${activeClass}" data-fx-tab="${i}" title="${fx.label}">${i + 1}</button>`
             })
@@ -368,7 +374,7 @@ export default class TrackEditor extends BasePanel {
 
         html += `</span></div>`
 
-        fxDefs.forEach((fx, idx) => {
+        FX_DEFS.forEach((fx, idx) => {
             const on = this._isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
             const hiddenStyle = idx !== this._activeFxTab && isExpanded ? ' style="display:none"' : ''
@@ -699,11 +705,7 @@ export default class TrackEditor extends BasePanel {
 
     _toggleFx(btn) {
         const key = btn.dataset.fxToggle
-        const fx = [
-            { key: 'reverbOn', controls: ['reverbAmount'] },
-            { key: 'delayOn', controls: ['delayAmount'] },
-            { key: 'saturationOn', controls: ['saturationAmount'] }
-        ].find(def => def.key === key)
+        const fx = FX_TOGGLE_DEFS.find(def => def.key === key)
         this._track[key] = fx ? !this._isFxOn(fx) : !this._track[key]
         this.sync()
         playbackEvents.dispatchPatternChange()

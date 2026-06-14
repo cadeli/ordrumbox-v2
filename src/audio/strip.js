@@ -9,22 +9,14 @@ WorkletLoader.register('strip', STRIP_SOURCE);
 
 const SATURATION_TYPES = Object.freeze(["soft", "hard", "tape"]);
 const REVERB_PRESETS = Object.freeze({
-    none: { duration: 0, decay: 0, preDelay: 0, tone: 1 },
-    room: { duration: 0.8, decay: 2.2, preDelay: 0.008, tone: 0.85 },
-    hall: { duration: 2.4, decay: 3.8, preDelay: 0.02, tone: 0.75 },
-    plate: { duration: 1.6, decay: 2.8, preDelay: 0.012, tone: 0.9 },
-    spring: { duration: 1.2, decay: 2.4, preDelay: 0.01, tone: 0.65 },
-    gated: { duration: 0.7, decay: 1.4, preDelay: 0.004, tone: 0.8, gated: true }
+    none:   { duration: 0, decay: 0, preDelay: 0, tone: 1, room: 0.0, damp: 0.5, width: 0.0, pre: 0 },
+    room:   { duration: 0.8, decay: 2.2, preDelay: 0.008, tone: 0.85, room: 0.5, damp: 0.5, width: 0.8, pre: 0.008 },
+    hall:   { duration: 2.4, decay: 3.8, preDelay: 0.02, tone: 0.75, room: 0.85, damp: 0.3, width: 1.0, pre: 0.02 },
+    plate:  { duration: 1.6, decay: 2.8, preDelay: 0.012, tone: 0.9, room: 0.7, damp: 0.4, width: 0.9, pre: 0.012 },
+    spring: { duration: 1.2, decay: 2.4, preDelay: 0.01, tone: 0.65, room: 0.45, damp: 0.6, width: 0.5, pre: 0.01 },
+    gated:  { duration: 0.7, decay: 1.4, preDelay: 0.004, tone: 0.8, gated: true, room: 0.4, damp: 0.7, width: 0.4, pre: 0 }
 });
 const SATURATION_TYPES_IDX = { soft: 0, hard: 1, tape: 2 };
-const REVERB_PRESETS_PARAMS = {
-    none:   { room: 0.0,  damp: 0.5, width: 0.0, pre: 0      },
-    room:   { room: 0.5,  damp: 0.5, width: 0.8, pre: 0.008  },
-    hall:   { room: 0.85, damp: 0.3, width: 1.0, pre: 0.02   },
-    plate:  { room: 0.7,  damp: 0.4, width: 0.9, pre: 0.012  },
-    spring: { room: 0.45, damp: 0.6, width: 0.5, pre: 0.01   },
-    gated:  { room: 0.4,  damp: 0.7, width: 0.4, pre: 0      },
-};
 const FILTER_MODES = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 };
 const DELAY_MODES  = { none: 0, slap: 0, tape: 1, pingpong: 2 };
 
@@ -229,7 +221,7 @@ export default class MfStrip {
         this.currentReverbType = normalizedType;
         this.currentReverbAmount = normalizedAmount;
 
-        const p   = REVERB_PRESETS_PARAMS[normalizedType] ?? REVERB_PRESETS_PARAMS.none;
+        const p   = REVERB_PRESETS[normalizedType] ?? REVERB_PRESETS.none;
         const wet = normalizedType === 'none' ? 0 : normalizedAmount;
 
         params.get('revRoom')?.setTargetAtTime(p.room, time, RAMP_TIME);

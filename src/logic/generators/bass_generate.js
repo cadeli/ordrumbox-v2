@@ -44,7 +44,7 @@ export default class MfBassGenerate extends BaseGenerator {
             mode: 'groove',
             scaleName: 'blues scale',
             rootPattern: [0, 5, 7],
-            density: 0.,
+            density: 0,
             variation: 0.15,
             strongBeatIntervals: [0, 7],
             strongBeatWeight: 0.75,
@@ -134,9 +134,7 @@ export default class MfBassGenerate extends BaseGenerator {
     loadScales = () => {
         if (this.isScalesLoading || !serviceRegistry.mfResourcesLoader) return
         this.isScalesLoading = true
-        console.log("MfAutoGenerate::loadScales")
         serviceRegistry.mfResourcesLoader.loadScales(MfResourcesLoader.SCALES_URL, this.checkResources)
-        console.log(soundRegistry.scales)
     }
 
     checkResources = () => {

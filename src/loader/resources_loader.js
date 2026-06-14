@@ -93,7 +93,6 @@ export default class MfResourcesLoader {
     }
 
     async loadDrumkitList(file, complete) {
-        console.log("MfResourcesLoader::loadDrumkitList = ", file)
         return this.loadJsonResource(file, (jsonDrumkits) => {
             soundRegistry.drumkitList.length = 0
             Object.values(jsonDrumkits).forEach((drumkit) => {
@@ -119,10 +118,8 @@ export default class MfResourcesLoader {
     }
 
     async loadPatterns(file, complete) {
-        console.log("mfresourcesloader::loadPatterns called with file:", file)
         this.isPatternsComplete = false
         return this.loadJsonResource(file, (patterns) => {
-            console.log("mfressourceloader::loadPatterns: " + file + "  =" + patterns.length)
             const fixedPatterns = this.fix(JSON.parse(JSON.stringify(patterns)))
             appState.patterns.length = 0
             fixedPatterns.forEach((pattern) => {
@@ -196,7 +193,6 @@ export default class MfResourcesLoader {
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`)
                 }
-                console.log("MfResourcesLoader::loadSample ok " + sample.url)
                 return response.arrayBuffer()
             })
             .then((arrayBuffer) => {
@@ -214,10 +210,6 @@ export default class MfResourcesLoader {
                     isLoad: true,
                     playStatus: false
                 }
-                console.log("mfRessourceLoader::loadSample: " + (kit_name + ":" + sample.key) +
-                    " load ok  duration:" + (buffer.duration).toFixed(2) +
-                    " url=" + sound.url)
-
                 soundRegistry.sounds[sample.url] = sound
                 return sound
             })
