@@ -61,6 +61,15 @@ export default class MfAutoGenerate {
             }
         }
 
+        const hasBassTrack = pattern.tracks.some(t => this.detectTrackType(t.name) === 'BASS')
+        if (!hasBassTrack) {
+            const bassTrack = serviceRegistry.mfCmd.addTrack(pattern, 'BASS')
+            bassTrack.useSoftSynth = true
+            bassTrack.useAutoAssignSound = false
+            bassTrack.synthSoundKey = 'BASS1'
+            bassTrack.velocity = 0.5
+        }
+
         const mfAutoAssign = await getAutoAssignService()
         await mfAutoAssign.autoAssignSounds(pattern)
         serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
