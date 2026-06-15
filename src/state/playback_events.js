@@ -12,6 +12,7 @@ export const playbackEvents = {
     onAboutToggle: [],
     onWorkletStatusChange: [],
     onLoopPointChange: [],
+    onNoteTrigger: [],
 
     dispatchPlaybackStart() { this.onPlaybackStart.forEach(fn => fn()) },
     dispatchPlaybackStop() { this.onPlaybackStop.forEach(fn => fn()) },
@@ -25,5 +26,6 @@ export const playbackEvents = {
     dispatchOutputToggle(show) { this.onOutputToggle.forEach(fn => fn(show)) },
     dispatchAboutToggle(show) { this.onAboutToggle.forEach(fn => fn(show)) },
     dispatchWorkletStatusChange(status) { this.onWorkletStatusChange.forEach(fn => fn(status)) },
-    dispatchLoopPointChange(data) { this.onLoopPointChange.forEach(fn => fn(data)) }
+    dispatchLoopPointChange(data) { this.onLoopPointChange.forEach(fn => fn(data)) },
+    dispatchNoteTrigger(data) { this.onNoteTrigger.forEach(fn => fn(data)) }
 }

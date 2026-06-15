@@ -2,6 +2,7 @@ import MfSound from './sound.js'
 import MfFlatNote from '../model/flatnote.js'
 import MfNoteParams from '../patterns/note_params.js'
 import { getAutoGenerateService } from '../state/service_registry.js'
+import { playbackEvents } from '../state/playback_events.js'
 
 export default class MfPlayer {
     static TAG = "MFPLAYER"
@@ -58,12 +59,19 @@ export default class MfPlayer {
 
             const secondsPerBeat = this.secondsPerBeat
             const mfSound = this.mfSound
+            const trackKeys = Object.keys(selPat.tracks)
+            const trackIdxMap = new Map(trackKeys.map((k, i) => [selPat.tracks[k], i]))
 
             for (let i = 0; i < notesToPlay.length; i++) {
                 const flatNote = notesToPlay[i]
                 if (flatNote.track.mute === false) {
                     MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
                     await mfSound.play(flatNote, atTime + flatNote.swingTime)
+                    playbackEvents.dispatchNoteTrigger({
+                        trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
+                        bar: flatNote.note.bar,
+                        barStep: flatNote.note.barStep
+                    })
                 }
             }
         } catch (e) {

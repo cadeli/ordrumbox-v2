@@ -79,6 +79,16 @@ export default class PatternPanel extends BasePanel {
             this._startPlayhead()
             this._startVuLoop()
         })
+        playbackEvents.onNoteTrigger.push((data) => {
+            if (!this.container || !data) return
+            const cell = this.container.querySelector(
+                `.pp-cell[data-track="${data.trackIdx}"][data-bar="${data.bar}"][data-step="${data.barStep}"]`
+            )
+            if (!cell) return
+            cell.classList.add('pp-triggered')
+            clearTimeout(cell._triggerTimer)
+            cell._triggerTimer = setTimeout(() => cell.classList.remove('pp-triggered'), 120)
+        })
         playbackEvents.onTrackSelect.push((data) => {
             if (data) {
                 this._selTrackIdx = data.trackIdx

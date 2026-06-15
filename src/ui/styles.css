@@ -171,6 +171,11 @@
     border: 1px solid transparent;
     z-index: 2;
 }
+#pattern-panel .pp-cell.pp-triggered {
+    background: #fff !important;
+    box-shadow: 0 0 16px 4px rgba(255,255,255,0.9), 0 0 30px rgba(255,255,255,0.5) !important;
+    transition: none;
+}
 #pattern-panel .pp-cell.selected { outline: 4px solid #fff; outline-offset: -2px; z-index: 10; }
 #pattern-panel .pp-cell.selected.filled { outline: 5px solid #fff; border-color: #fff; }
 #pattern-panel .pp-pitch-bar {
