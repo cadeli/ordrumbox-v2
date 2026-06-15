@@ -93,7 +93,10 @@ export default class PatternPanel extends BasePanel {
             clearTimeout(cell._triggerTimer)
             cell._triggerTimer = setTimeout(() => cell.classList.remove('pp-triggered'), 120)
         })
-        playbackEvents.onTrackParamChange.push(() => this._syncVusVisibility())
+        playbackEvents.onTrackParamChange.push(() => {
+            this._syncVusVisibility()
+            this._updateBarCache()
+        })
         playbackEvents.onTrackSelect.push((data) => {
             if (data) {
                 this._selTrackIdx = data.trackIdx
@@ -120,19 +123,14 @@ export default class PatternPanel extends BasePanel {
             }
         })
         const firstBar = this.container.querySelector('.pp-bar')
-        const overlay = this.container.querySelector('.pp-waveform-overlay')
-        if (firstBar && overlay && tracksEl) {
-            const barRect = firstBar.getBoundingClientRect()
-            const trackRect = tracksEl.getBoundingClientRect()
-            overlay.style.left = (barRect.left - trackRect.left) + 'px'
-            overlay.style.right = '0'
-        }
-        const header = this.container.querySelector('.pp-header')
-        if (firstBar && header) {
-            const barRect = firstBar.getBoundingClientRect()
-            const headerRect = header.getBoundingClientRect()
-            this._headerBarsLeft = barRect.left - headerRect.left
-            this._headerBarsWidth = barRect.width
+        if (firstBar) {
+            const header = this.container.querySelector('.pp-header')
+            if (header) {
+                const barRect = firstBar.getBoundingClientRect()
+                const headerRect = header.getBoundingClientRect()
+                this._headerBarsLeft = barRect.left - headerRect.left
+                this._headerBarsWidth = barRect.width
+            }
         }
     }
 
@@ -191,35 +189,74 @@ export default class PatternPanel extends BasePanel {
     _drawWaveform(mixer) {
         const canvas = this.container?.querySelector('.pp-waveform-overlay')
         if (!canvas) return
+        const tracksEl = this.container.querySelector('.pp-tracks')
+        if (!tracksEl) return
+
         const ctx = canvas.getContext('2d')
-        const rect = canvas.getBoundingClientRect()
         const dpr = window.devicePixelRatio || 1
-        const w = Math.round(rect.width * dpr)
-        const h = Math.round(rect.height * dpr)
+        
+        // Find visible grid area
+        const firstBar = this.container.querySelector('.pp-bar')
+        const lastBar = Array.from(this.container.querySelectorAll('.pp-bar')).pop()
+        if (!firstBar || !lastBar) return
+
+        const cRect = this.container.getBoundingClientRect()
+        const fRect = firstBar.getBoundingClientRect()
+        const lRect = lastBar.getBoundingClientRect()
+        const tRect = tracksEl.getBoundingClientRect()
+
+        const visibleLeft = Math.max(fRect.left, cRect.left)
+        const visibleRight = Math.min(lRect.right, cRect.right)
+        const vW = Math.max(0, visibleRight - visibleLeft)
+        const vH = tracksEl.clientHeight
+        
+        if (vW <= 0 || vH <= 0) {
+            canvas.style.display = 'none'
+            return
+        }
+        canvas.style.display = 'block'
+
+        // Position canvas to cover the visible grid area
+        canvas.style.left = (visibleLeft - tRect.left) + 'px'
+        canvas.style.width = vW + 'px'
+        canvas.style.height = vH + 'px'
+        canvas.style.top = tracksEl.scrollTop + 'px'
+
+        const w = Math.round(vW * dpr)
+        const h = Math.round(vH * dpr)
+        
         if (canvas.width !== w || canvas.height !== h) {
             canvas.width = w
             canvas.height = h
         }
-        if (w === 0 || h === 0) return
+        
         if (!ctx) return
+        
         const data = serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {
             ctx.fillStyle = '#000'
             ctx.fillRect(0, 0, w, h)
             return
         }
+
         data.analyser.getByteTimeDomainData(data.dataArray)
+        
+        // Clear background
         ctx.fillStyle = '#000'
         ctx.fillRect(0, 0, w, h)
+        
+        // Draw main waveform
         ctx.strokeStyle = '#4ade80'
-        ctx.lineWidth = 3
+        ctx.lineWidth = 2 * dpr
         ctx.beginPath()
+        
         const sliceW = w / data.dataArray.length
         const mid = h * 0.5
+        
         for (let i = 0; i < data.dataArray.length; i++) {
             const v = (data.dataArray[i] - 128) / 128
             const x = i * sliceW
-            const y = v * h * 0.5 * 6 + mid
+            const y = v * h * 0.45 + mid
             i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
         }
         ctx.stroke()

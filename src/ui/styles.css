@@ -111,6 +111,8 @@
     min-height: 0;
     overflow-y: auto;
     position: relative;
+    min-width: 100%;
+    width: fit-content;
 }
 #pattern-panel .pp-track {
     display: flex; align-items: stretch; gap: 4px;
@@ -145,10 +147,9 @@
 
 #pattern-panel .pp-waveform-overlay {
     position: absolute; top: 0; height: 100%;
-    pointer-events: none; z-index: 5; opacity: 0.35; mix-blend-mode: screen;
+    pointer-events: none; z-index: 100; opacity: 0.6; mix-blend-mode: screen;
 }
-#pattern-panel.pp-vus-hidden .pp-vu,
-#pattern-panel.pp-vus-hidden .pp-waveform-overlay { display: none; }
+#pattern-panel.pp-vus-hidden .pp-vu { display: none; }
 
 #pattern-panel .pp-bars {
     display: flex; gap: 4px; flex: 1;
