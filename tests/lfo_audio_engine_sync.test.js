@@ -211,7 +211,7 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
     // If any of them drifts (e.g. someone re-introduces a `* 0.25` factor in
     // the transport, or changes the worklet's LFO period constant from `4` to
     // `16`), the three layers will no longer agree and the user hears an LFO
-    // out of sync with the BPM grid — the original "4x trop lent" bug.
+    // out of sync with the BPM grid — the original "4x too slow" bug.
     //
     // At 120 BPM, 1 bar = 128 ticks = 2 s. freq=1 must therefore complete
     // exactly ONE full cycle across those 128 ticks.

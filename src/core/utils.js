@@ -50,8 +50,8 @@ static TAG = "UTILS"
     static NOTE_POSITION_KEYS = new Set(["bar", "barStep", "steppc", "stepPercent"]);
 
     /**
-     * Retourne les tracks d'un pattern sous forme de tableau, quelle que soit
-     * la forme d'origine (Array ou objet indexé).
+     * Returns the tracks of a pattern as an array, regardless of
+     * the original format (Array or indexed object).
      */
     static getTracksArray(pattern) {
         if (!pattern?.tracks) return []
