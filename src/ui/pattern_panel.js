@@ -210,11 +210,7 @@ export default class PatternPanel extends BasePanel {
         const vW = Math.max(0, visibleRight - visibleLeft)
         const vH = tracksEl.clientHeight
         
-        if (vW <= 0 || vH <= 0) {
-            canvas.style.display = 'none'
-            return
-        }
-        canvas.style.display = 'block'
+        if (vW <= 0 || vH <= 0) return
 
         // Position canvas to cover the visible grid area
         canvas.style.left = (visibleLeft - tRect.left) + 'px'
