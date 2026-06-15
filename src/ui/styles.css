@@ -101,9 +101,7 @@
 }
 #pattern-panel .pp-name { color: #e94560; font-weight: bold; }
 #pattern-panel .pp-meta { color: #888; font-size: 10px; }
-#pattern-panel .pp-waveform {
-    flex: 1; height: 24px; min-width: 60px; background: #000; border-radius: 3px;
-}
+#pattern-panel .pp-tracks { position: relative; }
 
 #pattern-panel .pp-tracks {
     display: flex;
@@ -144,6 +142,11 @@
 #pattern-panel .pp-vu.selected { background: rgba(233, 69, 96, 0.4); }
 #pattern-panel .pp-track-name:hover { background: rgba(233, 69, 96, 0.2); }
 #pattern-panel .pp-track-name.selected { background: #fff; color: #1a1a2e; }
+
+#pattern-panel .pp-waveform-overlay {
+    position: absolute; top: 0; height: 100%;
+    pointer-events: none; z-index: 5; opacity: 0.35; mix-blend-mode: screen;
+}
 
 #pattern-panel .pp-bars {
     display: flex; gap: 4px; flex: 1;

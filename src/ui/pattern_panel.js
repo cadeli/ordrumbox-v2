@@ -32,6 +32,10 @@ export default class PatternPanel extends BasePanel {
             this._onClick(e)
         }, { passive: false })
         this.container.addEventListener('keydown', (e) => this._onKeyDown(e))
+        if (typeof ResizeObserver !== 'undefined') {
+            this._resizeObserver = new ResizeObserver(() => this._updateBarCache())
+            this._resizeObserver.observe(this.container)
+        }
     }
 
     _ensurePlayhead() {
@@ -100,6 +104,14 @@ export default class PatternPanel extends BasePanel {
                 width: r.width
             }
         })
+        const firstBar = this.container.querySelector('.pp-bar')
+        const overlay = this.container.querySelector('.pp-waveform-overlay')
+        if (firstBar && overlay && tracksEl) {
+            const barRect = firstBar.getBoundingClientRect()
+            const trackRect = tracksEl.getBoundingClientRect()
+            overlay.style.left = (barRect.left - trackRect.left) + 'px'
+            overlay.style.right = '0'
+        }
     }
 
     requestSync() {
@@ -155,7 +167,7 @@ export default class PatternPanel extends BasePanel {
     }
 
     _drawWaveform(mixer) {
-        const canvas = this.container?.querySelector('.pp-waveform')
+        const canvas = this.container?.querySelector('.pp-waveform-overlay')
         if (!canvas) return
         const ctx = canvas.getContext('2d')
         const rect = canvas.getBoundingClientRect()
@@ -207,7 +219,7 @@ export default class PatternPanel extends BasePanel {
                 fill.style.height = '0%'
             }
         }
-        const canvas = this.container.querySelector('.pp-waveform')
+        const canvas = this.container.querySelector('.pp-waveform-overlay')
         if (canvas) {
             const ctx = canvas.getContext('2d')
             if (ctx) {
@@ -564,7 +576,6 @@ export default class PatternPanel extends BasePanel {
             <span class="pp-meta">${pattern.bpm ?? 120} BPM</span>
             <span class="pp-meta">${pattern.nbBars ?? 4} bars</span>
             <span class="pp-meta">Page ${appState.currentPage + 1}</span>
-            <canvas class="pp-waveform"></canvas>
         </div>`
 
         if (tracks.length === 0) {
@@ -651,7 +662,7 @@ export default class PatternPanel extends BasePanel {
                     ${barsHtml}
                 </div>`
         })
-        tracksHtml += '</div>'
+        tracksHtml += `<canvas class="pp-waveform-overlay"></canvas></div>`
 
         this.container.innerHTML = headerHtml + tracksHtml
         this._ensurePlayhead()
