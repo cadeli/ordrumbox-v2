@@ -50,9 +50,13 @@ export default class PatternPanel extends BasePanel {
             this._playhead.style.zIndex = '10'
             this._playhead.style.pointerEvents = 'none'
             this._playhead.style.willChange = 'transform'
-            const tracks = this.container.querySelector('.pp-tracks')
-            if (tracks) tracks.appendChild(this._playhead)
-            else this.container.appendChild(this._playhead)
+            const header = this.container.querySelector('.pp-header')
+            if (header) {
+                header.style.position = 'relative'
+                header.appendChild(this._playhead)
+            } else {
+                this.container.appendChild(this._playhead)
+            }
         }
     }
 
@@ -89,6 +93,7 @@ export default class PatternPanel extends BasePanel {
             clearTimeout(cell._triggerTimer)
             cell._triggerTimer = setTimeout(() => cell.classList.remove('pp-triggered'), 120)
         })
+        playbackEvents.onTrackParamChange.push(() => this._syncVusVisibility())
         playbackEvents.onTrackSelect.push((data) => {
             if (data) {
                 this._selTrackIdx = data.trackIdx
@@ -121,6 +126,13 @@ export default class PatternPanel extends BasePanel {
             const trackRect = tracksEl.getBoundingClientRect()
             overlay.style.left = (barRect.left - trackRect.left) + 'px'
             overlay.style.right = '0'
+        }
+        const header = this.container.querySelector('.pp-header')
+        if (firstBar && header) {
+            const barRect = firstBar.getBoundingClientRect()
+            const headerRect = header.getBoundingClientRect()
+            this._headerBarsLeft = barRect.left - headerRect.left
+            this._headerBarsWidth = barRect.width
         }
     }
 
@@ -220,6 +232,12 @@ export default class PatternPanel extends BasePanel {
         }
     }
 
+    _syncVusVisibility() {
+        if (!this.container) return
+        const hidden = appState.showVus === false
+        this.container.classList.toggle('pp-vus-hidden', hidden)
+    }
+
     _resetVuAndWaveform() {
         if (!this.container) return
         const vuEls = this.container.querySelectorAll('.pp-vu')
@@ -296,7 +314,7 @@ export default class PatternPanel extends BasePanel {
         const normInBar = tickInBar / TICK
 
         this._playhead.style.display = 'block'
-        const x = barCache.left + normInBar * barCache.width
+        const x = this._headerBarsLeft + barCache.left + normInBar * barCache.width
         this._playhead.style.transform = `translateX(${x}px)`
         this._playhead.style.width = `2px`
     }
@@ -678,6 +696,7 @@ export default class PatternPanel extends BasePanel {
         this._ensurePlayhead()
         this._applySelection()
         this._startVuLoop()
+        this._syncVusVisibility()
     }
 
     updateLoopPoint(trackIdx, loopAtStep) {

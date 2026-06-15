@@ -187,6 +187,7 @@ const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyG: selectRandomDrumkit,
     KeyH: convertToGeneratedSounds,
     KeyD: exportCurrentTrackSound,
+    KeyV: toggleVus,
     Space: toggleStartStop
 }
 
@@ -254,6 +255,11 @@ async function generatePattern() {
     const { getAutoGenerateService } = await import('./state/service_registry.js')
     const mfAutoGenerate = await getAutoGenerateService()
     await mfAutoGenerate.generatePattern()
+}
+
+function toggleVus() {
+    appState.showVus = !appState.showVus
+    playbackEvents.dispatchTrackParamChange(null)
 }
 
 function logPatterns() {

@@ -26,6 +26,7 @@ export class AppState {
         secondsPerBeat: 8,
         flatNotes: null,
         workletStatus: 'unknown',
+        showVus: true,
     }
 
     constructor() { Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility()) }

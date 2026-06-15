@@ -147,6 +147,8 @@
     position: absolute; top: 0; height: 100%;
     pointer-events: none; z-index: 5; opacity: 0.35; mix-blend-mode: screen;
 }
+#pattern-panel.pp-vus-hidden .pp-vu,
+#pattern-panel.pp-vus-hidden .pp-waveform-overlay { display: none; }
 
 #pattern-panel .pp-bars {
     display: flex; gap: 4px; flex: 1;
