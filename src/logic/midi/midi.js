@@ -1,6 +1,5 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import Utils from '../../core/utils.js'
 import InstrumentsManager from '../services/instruments_manager.js'
 import {
     parseMidiNoteOn,
@@ -43,7 +42,6 @@ export default class MfMidi {
 
         if (!this.isSupported()) {
             console.info(`${MfMidi.TAG}: MIDI is not supported in this browser`)
-            Utils.displayStatusBar("MIDI input is not supported in this browser")
             return false
         }
 
@@ -55,13 +53,11 @@ export default class MfMidi {
                 this.refreshPorts()
                 this.isReady = true
                 console.info(`${MfMidi.TAG}: MIDI ready`)
-                Utils.displayStatusBar("MIDI ready")
                 this.renderIndicators()
                 return true
             } catch (error) {
                 this.isReady = false
                 console.warn(`${MfMidi.TAG}: Unable to initialize MIDI access`, error)
-                Utils.displayStatusBar("Unable to initialize MIDI")
                 this.renderIndicators()
                 return false
             } finally {
@@ -298,7 +294,6 @@ export default class MfMidi {
         this.externalSyncEnabled = !this.externalSyncEnabled
         this.resetExternalClockTracking()
         this.renderIndicators()
-        Utils.displayStatusBar(this.externalSyncEnabled ? "External MIDI sync enabled" : "External MIDI sync disabled")
         return this.externalSyncEnabled
     }
 
@@ -319,14 +314,12 @@ export default class MfMidi {
         if (!serviceRegistry.mfSeq.isRunning) {
             serviceRegistry.mfSeq.toggleStartStop()
         }
-        Utils.displayStatusBar("External MIDI start received")
     }
 
     handleExternalContinue = () => {
         if (!serviceRegistry.mfSeq.isRunning) {
             serviceRegistry.mfSeq.toggleStartStop()
         }
-        Utils.displayStatusBar("External MIDI continue received")
     }
 
     handleExternalStop = () => {
@@ -334,7 +327,6 @@ export default class MfMidi {
             serviceRegistry.mfSeq.toggleStartStop()
         }
         this.resetExternalClockTracking()
-        Utils.displayStatusBar("External MIDI stop received")
     }
 
     handleExternalClock = () => {

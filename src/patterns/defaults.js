@@ -1,5 +1,4 @@
 import Utils from '../core/utils.js'
-import { normalizeTrack } from '../model/track_schema.js'
 
 export default class MfDefaults {
     static TAG = "MFDEFAULTS"
@@ -35,22 +34,5 @@ export default class MfDefaults {
 
     static getPatternProp(pattern, key) {
         return pattern?.[key] ?? Utils.PATTERN_DEFAULTS[key]
-    }
-
-    static normalizeTrack(track) {
-        return normalizeTrack(track)
-    }
-
-    static normalizePattern(pattern) {
-        if (!pattern) return { ...Utils.PATTERN_DEFAULTS, tracks: [] }
-        const d = Utils.PATTERN_DEFAULTS
-        return {
-            nbBars: pattern.nbBars ?? d.nbBars,
-            bpm: pattern.bpm ?? d.bpm,
-            description: pattern.description ?? d.description,
-            tags: pattern.tags ?? d.tags,
-            tracks: pattern.tracks ?? d.tracks,
-            ...pattern,
-        }
     }
 }

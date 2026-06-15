@@ -152,22 +152,21 @@ describe('Generator extended variants', () => {
             expect(track.notes.length).toBe(0)
         })
 
-        it('isRequiredStep returns true when barModulo matches', () => {
+        it('_isRequiredStep returns true when barModulo matches', () => {
             const gen = new MfSnareGenerate()
             const required = [{ barModulo: 2, step: 0 }]
-            // bar=1 means (1 % 2 === 1) → bar 1 matches barModulo-1 = 1
-            expect(gen.isRequiredStep(1, 0, required)).toBe(true)
+            expect(gen._isRequiredStep(1, 0, required)).toBe(true)
         })
 
-        it('isRequiredStep returns false when step does not match', () => {
+        it('_isRequiredStep returns false when step does not match', () => {
             const gen = new MfSnareGenerate()
             const required = [{ barModulo: 2, step: 0 }]
-            expect(gen.isRequiredStep(1, 2, required)).toBe(false)
+            expect(gen._isRequiredStep(1, 2, required)).toBe(false)
         })
 
-        it('isRequiredStep returns false for empty array', () => {
+        it('_isRequiredStep returns false for empty array', () => {
             const gen = new MfSnareGenerate()
-            expect(gen.isRequiredStep(0, 0, [])).toBe(false)
+            expect(gen._isRequiredStep(0, 0, [])).toBe(false)
         })
 
         it('all variants produce velocity in [0, 1]', () => {

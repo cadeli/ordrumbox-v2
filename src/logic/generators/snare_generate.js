@@ -102,12 +102,13 @@ export default class MfSnareGenerate extends BaseGenerator {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.basic
 
-       // this.traceGeneration(resolvedVariantName, config, snareTrack)
         this.clearTrackNotes(snareTrack)
 
         switch (config.mode) {
             case 'grid':
-                this.generateSnareGridVariant(snareTrack, config, density)
+                this.generateGridVariant(snareTrack, config,
+                    null, null, density, { defaultBar: 2 }
+                )
                 break
             case 'fill':
                 this.generateSnareFillVariant(snareTrack, config, density)
@@ -127,36 +128,6 @@ export default class MfSnareGenerate extends BaseGenerator {
         }
 
         this.applyLoopPoint(snareTrack, config)
-       // this.displayDebugNotes(snareTrack, 'SN')
-    }
-
-    generateSnareGridVariant = (snareTrack, config, density = 1) => {
-        const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 2)
-        const barQuantize = snareTrack.barQuantize ?? 4
-
-        for (let bar = 0; bar < (snareTrack.bars ?? 1); bar++) {
-            for (let step = 0; step < barQuantize; step++) {
-                const absoluteStep = bar * barQuantize + step
-                if (absoluteStep >= loopPointAbsolute) continue
-
-                const required = this.isRequiredStep(bar, step, config.requiredSteps)
-                const probability = config.probabilities?.[step % config.probabilities.length] ?? 0
-
-                if (!required && Math.random() >= probability * density) continue
-
-                this.addNote(
-                    snareTrack,
-                    bar,
-                    step,
-                    0,
-                    this.computeVelocity(config.velocity, {
-                        step,
-                        accent: required || step === 0,
-                        ghost: !required && step !== 0
-                    })
-                )
-            }
-        }
     }
 
     generateSnareRollVariant = (snareTrack, config) => {
@@ -213,12 +184,5 @@ export default class MfSnareGenerate extends BaseGenerator {
                 )
             })
         }
-    }
-
-    isRequiredStep = (bar, step, requiredSteps = []) => {
-        return requiredSteps.some((requiredStep) => {
-            const barMatches = requiredStep.barModulo === undefined || bar % requiredStep.barModulo === requiredStep.barModulo - 1
-            return barMatches && requiredStep.step === step
-        })
     }
 }

@@ -148,7 +148,6 @@ export default class MfBassGenerate extends BaseGenerator {
         const config = this.configs[resolvedVariantName] ?? this.configs.basic
         const tones = this.getScaleSteps(config.scaleName)
 
-        this.traceBassGeneration(resolvedVariantName, config, bassTrack)
         this.clearTrackNotes(bassTrack)
 
         switch (config.mode) {
@@ -162,43 +161,20 @@ export default class MfBassGenerate extends BaseGenerator {
                 this.generateBassArpeggioVariant(bassTrack, tones, config)
                 break
             case 'phrases':
-            default:
-                this.generateBassPhraseVariant(bassTrack, tones, config, density)
+            default: {
+                const cachedPitches = []
+                this.generatePhraseVariant(bassTrack, config,
+                    (phrase) => this.resolvePhrasePitch(phrase, tones, cachedPitches),
+                    (phrase, step) => step % 4 === 0,
+                    null,
+                    density,
+                    { cachedPitches }
+                )
                 break
+            }
         }
 
         this.applyLoopPoint(bassTrack, config)
-       // this.displayDebugNotes(bassTrack, 'BS')
-    }
-
-    generateBassPhraseVariant = (bassTrack, tones, config, density = 1) => {
-        const loopPointAbsolute = this.getLoopPointAbsolute(bassTrack, config, 2)
-        const barQuantize = bassTrack.barQuantize ?? 4
-
-        const cachedPitches = []
-        config.phrases.forEach((phrase) => {
-            if (density < 1 && Math.random() >= density) return
-
-            const pitch = this.resolvePhrasePitch(phrase, tones, cachedPitches)
-            const step = phrase.step === 'random'
-                ? Math.floor(Math.random() * barQuantize)
-                : phrase.step
-
-            const absoluteStep = phrase.bar * barQuantize + step
-            if (absoluteStep >= loopPointAbsolute) return
-
-            this.addNote(
-                bassTrack,
-                phrase.bar,
-                step,
-                pitch,
-                this.computeVelocity(config.velocity, {
-                    step,
-                    accent: step % 4 === 0
-                })
-            )
-            cachedPitches.push(pitch)
-        })
     }
 
     generateBassStepGridVariant = (bassTrack, tones, config, density = 1) => {
@@ -321,35 +297,6 @@ export default class MfBassGenerate extends BaseGenerator {
                 step += this.getArpeggioStepAdvance(averageSpacing, spacingJitter)
             }
         }
-    }
-
-    traceBassGeneration = (variantName, config, bassTrack) => {
-        const extraParts = []
-        if (Array.isArray(config.rootPattern)) {
-            extraParts.push(`root=${config.rootPattern.join('/')}`)
-        }
-        if (typeof config.density === 'number') {
-            extraParts.push(`dens=${config.density}`)
-        }
-        if (typeof config.variation === 'number') {
-            extraParts.push(`var=${config.variation}`)
-        }
-        if (typeof config.maxLeap === 'number') {
-            extraParts.push(`leap=${config.maxLeap}`)
-        }
-        if (typeof config.noteSpacing === 'number') {
-            extraParts.push(`spc=${config.noteSpacing}`)
-        }
-        if (typeof config.spacingJitter === 'number') {
-            extraParts.push(`jit=${config.spacingJitter}`)
-        }
-        if (typeof config.phraseLength === 'number') {
-            extraParts.push(`len=${config.phraseLength}`)
-        }
-        if (typeof config.contour === 'string') {
-            extraParts.push(`ctr=${config.contour}`)
-        }
-        // this.traceGeneration(variantName, config, bassTrack, extraParts)
     }
 
     buildArpeggioContour = (scale, phraseLength, contour, startDegree) => {

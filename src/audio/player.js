@@ -34,40 +34,7 @@ export default class MfPlayer {
             const loopStep = tick % nbTickForPattern
 
             if (loopStep === 0) {
-                this.computeFlatNotes(selPat, this.loop)
-                // Invalidate local cache on new loop
-                this._lastFlatNotesLoop = -1
-
-                const tracks = selPat.tracks
-                const trackKeys = Object.keys(tracks)
-
-                if (selPat.autoGen) {
-                    const mfAutoGenerate = await getAutoGenerateService()
-                    const element = mfAutoGenerate.structureGen.getElement(this.loop)
-                    const isSectionStart = element.loopInElement === 0
-                    const isSectionEnd = element.isLastLoopBeforeChange
-
-                    if (isSectionStart || isSectionEnd) {
-                        const tag = isSectionEnd ? 'break' : 'generate'
-                        console.log(`[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`)
-
-                        for (let i = 0; i < trackKeys.length; i++) {
-                            const track = tracks[trackKeys[i]]
-                            mfAutoGenerate.changeTrack(this.loop, selPat, track)
-                                .catch((error) => console.error(error))
-                        }
-                    }
-                } else {
-                    for (let i = 0; i < trackKeys.length; i++) {
-                        const track = tracks[trackKeys[i]]
-                        if (track.auto === true) {
-                            // Fire-and-forget: catch errors without blocking scheduler
-                            this.getAutoGenerate()
-                                .then((mfAutoGenerate) => mfAutoGenerate.changeTrack(this.loop, selPat, track))
-                                .catch((error) => console.error(error))
-                        }
-                    }
-                }
+                this._handleLoopStart(selPat)
             }
 
             // Use cached flatNotes map when loop hasn't changed
@@ -101,6 +68,41 @@ export default class MfPlayer {
             }
         } catch (e) {
             console.error(e)
+        }
+    }
+
+    _handleLoopStart = async (selPat) => {
+        this.computeFlatNotes(selPat, this.loop)
+        this._lastFlatNotesLoop = -1
+
+        const tracks = selPat.tracks
+        const trackKeys = Object.keys(tracks)
+
+        if (selPat.autoGen) {
+            const mfAutoGenerate = await getAutoGenerateService()
+            const element = mfAutoGenerate.structureGen.getElement(this.loop)
+            const isSectionStart = element.loopInElement === 0
+            const isSectionEnd = element.isLastLoopBeforeChange
+
+            if (isSectionStart || isSectionEnd) {
+                const tag = isSectionEnd ? 'break' : 'generate'
+                console.log(`[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`)
+
+                for (let i = 0; i < trackKeys.length; i++) {
+                    const track = tracks[trackKeys[i]]
+                    mfAutoGenerate.changeTrack(this.loop, selPat, track)
+                        .catch((error) => console.error(error))
+                }
+            }
+        } else {
+            for (let i = 0; i < trackKeys.length; i++) {
+                const track = tracks[trackKeys[i]]
+                if (track.auto === true) {
+                    this.getAutoGenerate()
+                        .then((mfAutoGenerate) => mfAutoGenerate.changeTrack(this.loop, selPat, track))
+                        .catch((error) => console.error(error))
+                }
+            }
         }
     }
 

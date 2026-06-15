@@ -76,7 +76,6 @@ export default class MfKickGenerate extends BaseGenerator {
         const resolvedVariantName = this.resolveVariantName(variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.basic
 
-       // this.traceGeneration(resolvedVariantName, config, kickTrack)
         this.clearTrackNotes(kickTrack)
 
         switch (config.mode) {
@@ -99,7 +98,6 @@ export default class MfKickGenerate extends BaseGenerator {
         }
 
         this.applyLoopPoint(kickTrack, config)
-       // this.displayDebugNotes(kickTrack, 'KD')
     }
 
     getRndVariantName = () => {

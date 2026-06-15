@@ -108,14 +108,6 @@ export default class BaseGenerator {
         return segments.join(',')
     }
 
-    displayDebugNotes = (track, prefix = 'GN') => {
-        // Debug-only method — no-op in production
-    }
-
-    traceGeneration = (variantName, config, track, extraParts = []) => {
-        // Debug-only method — no-op in production
-    }
-
     resolveVariantName = (variantName) => {
         if (variantName && this.configs[variantName]) {
             return variantName
@@ -128,34 +120,43 @@ export default class BaseGenerator {
         return variants[Math.floor(Math.random() * variants.length)] ?? 'basic'
     }
 
-    generateGridVariant = (track, config, getAccentContext, getGhostContext, density = 1) => {
-        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, 1)
+    generateGridVariant = (track, config, getAccentContext, getGhostContext, density = 1, opts = {}) => {
+        const defaultBar = opts.defaultBar ?? 1
+        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, defaultBar)
+        const barQuantize = track.barQuantize ?? 4
+        const pitchResolver = opts.pitchResolver ?? null
+        const requiredSteps = config.requiredSteps ?? null
 
         for (let bar = 0; bar < (track.bars ?? 1); bar++) {
-            for (let step = 0; step < track.barQuantize; step++) {
-                const absoluteStep = bar * track.barQuantize + step
+            for (let step = 0; step < barQuantize; step++) {
+                const absoluteStep = bar * barQuantize + step
                 if (absoluteStep >= loopPointAbsolute) continue
 
+                const required = requiredSteps ? this._isRequiredStep(bar, step, requiredSteps) : false
                 const probability = config.probabilities?.[step % config.probabilities.length] ?? 0
-                if (Math.random() >= probability * density) continue
 
-                const accent = getAccentContext?.(bar, step, config) ?? step === 0
-                const ghost = getGhostContext?.(bar, step, config) ?? step !== 0
+                if (!required && Math.random() >= probability * density) continue
+
+                const accent = getAccentContext?.(bar, step, config) ?? (required || step === 0)
+                const ghost = getGhostContext?.(bar, step, config) ?? (!required && step !== 0)
+                const pitch = pitchResolver ? pitchResolver(bar, step) : (config.pitch ?? 0)
 
                 this.addNote(
                     track,
                     bar,
                     step,
-                    config.pitch ?? 0,
+                    pitch,
                     this.computeVelocity(config.velocity, { step, accent, ghost })
                 )
             }
         }
     }
 
-    generatePhraseVariant = (track, config, getPitch, getAccentContext, getGhostContext, density = 1) => {
-        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, 2)
+    generatePhraseVariant = (track, config, getPitch, getAccentContext, getGhostContext, density = 1, opts = {}) => {
+        const defaultBar = opts.defaultBar ?? 2
+        const loopPointAbsolute = this.getLoopPointAbsolute(track, config, defaultBar)
         const barQuantize = track.barQuantize ?? 4
+        const cachedPitches = opts.cachedPitches ?? null
 
         config.phrases.forEach((phrase) => {
             if (density < 1 && Math.random() >= density) return
@@ -178,6 +179,14 @@ export default class BaseGenerator {
                 pitch,
                 this.computeVelocity(config.velocity, { step, accent, ghost })
             )
+            if (cachedPitches) cachedPitches.push(pitch)
+        })
+    }
+
+    _isRequiredStep = (bar, step, requiredSteps = []) => {
+        return requiredSteps.some((requiredStep) => {
+            const barMatches = requiredStep.barModulo === undefined || bar % requiredStep.barModulo === requiredStep.barModulo - 1
+            return barMatches && requiredStep.step === step
         })
     }
 }

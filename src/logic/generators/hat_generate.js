@@ -110,7 +110,6 @@ export default class MfHatGenerate extends BaseGenerator {
         const resolvedVariantName = this.resolveHatVariantName(trackType, variantName)
         const config = this.configs[resolvedVariantName] ?? this.configs.chhBasic
 
-        this.traceHatGeneration(resolvedVariantName, config, hatTrack)
         this.clearTrackNotes(hatTrack)
 
         switch (config.mode) {
@@ -136,7 +135,6 @@ export default class MfHatGenerate extends BaseGenerator {
         }
 
         this.applyLoopPoint(hatTrack, config)
-       // this.displayDebugNotes(hatTrack, 'HH')
     }
 
     generateHatTransitionVariant = (hatTrack, config, trackType) => {
@@ -185,9 +183,5 @@ export default class MfHatGenerate extends BaseGenerator {
             return variantName
         }
         return this.getRndHatVariantName(trackType)
-    }
-
-    traceHatGeneration = (variantName, config, hatTrack) => {
-    //    this.traceGeneration(variantName, config, hatTrack, [`type=${config.trackType}`])
     }
 }

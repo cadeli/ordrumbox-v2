@@ -111,8 +111,6 @@ static TAG = "UTILS"
         }
     }
 
-    static compactTrackWithLoop = (track, options = {}) => Utils.addLoopToTrackIfPossible(track, options)
-
     static getTrackStepLength = (track) => {
         const barQuantize = Number(track?.barQuantize)
         const bars = Number(track?.bars)
@@ -223,11 +221,6 @@ static TAG = "UTILS"
                 }, {})
         }
         return value
-    }
-
-    static displayStatusBar = (message) => {
-        // No-op or console log since UI is gone
-        // console.log("Status:", message)
     }
 
     static semiToneToPitch = (semiTone) => (semiTone / 12) + 1;

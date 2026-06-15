@@ -85,12 +85,14 @@ export default class MfPercGenerate extends BaseGenerator {
         const tones = this.getScaleSteps(config.scaleName)
         const pitchBias = this.getTrackPitchBias(percTrack)
 
-        //this.traceGeneration(resolvedVariantName, config, percTrack)
         this.clearTrackNotes(percTrack)
 
         switch (config.mode) {
             case 'grid':
-                this.generatePercGridVariant(percTrack, tones, pitchBias, config, density)
+                this.generateGridVariant(percTrack, config,
+                    null, null, density,
+                    { defaultBar: 2, pitchResolver: () => this.getRndTone(tones) + pitchBias }
+                )
                 break
             case 'callResponse':
                 this.generatePercCallResponseVariant(percTrack, tones, pitchBias, config, density)
@@ -99,73 +101,20 @@ export default class MfPercGenerate extends BaseGenerator {
                 this.generatePercFillVariant(percTrack, tones, pitchBias, config)
                 break
             case 'phrases':
-            default:
-                this.generatePercPhraseVariant(percTrack, tones, pitchBias, config, density)
+            default: {
+                const cachedPitches = []
+                this.generatePhraseVariant(percTrack, config,
+                    (phrase) => this.resolvePhrasePitch(phrase, tones, cachedPitches, pitchBias),
+                    (phrase, step) => step === 0,
+                    (phrase, step) => phrase.source !== 'root',
+                    density,
+                    { cachedPitches }
+                )
                 break
+            }
         }
 
         this.applyLoopPoint(percTrack, config)
-       // this.displayDebugNotes(percTrack, 'PC')
-    }
-
-    generatePercPhraseVariant = (percTrack, tones, pitchBias, config, density = 1) => {
-        const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
-        const barQuantize = percTrack.barQuantize ?? 4
-
-        const cachedPitches = []
-        config.phrases.forEach((phrase) => {
-            if (density < 1 && Math.random() >= density) return
-
-            const step = phrase.step === 'random'
-                ? Math.floor(Math.random() * barQuantize)
-                : phrase.step
-
-            const absoluteStep = phrase.bar * barQuantize + step
-            if (absoluteStep >= loopPointAbsolute) return
-
-            const pitch = this.resolvePhrasePitch(phrase, tones, cachedPitches, pitchBias)
-
-            this.addNote(
-                percTrack,
-                phrase.bar,
-                step,
-                pitch,
-                this.computeVelocity(config.velocity, {
-                    step,
-                    accent: step === 0,
-                    isVariation: phrase.source !== 'root'
-                })
-            )
-            cachedPitches.push(pitch)
-        })
-    }
-
-    generatePercGridVariant = (percTrack, tones, pitchBias, config, density = 1) => {
-        const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
-        const barQuantize = percTrack.barQuantize ?? 4
-
-        for (let bar = 0; bar < (percTrack.bars ?? 1); bar++) {
-            for (let step = 0; step < barQuantize; step++) {
-                const absoluteStep = bar * barQuantize + step
-                if (absoluteStep >= loopPointAbsolute) continue
-
-                const probability = config.probabilities?.[step % config.probabilities.length] ?? 0
-                if (Math.random() >= probability * density) continue
-
-                const pitch = this.getRndTone(tones) + pitchBias
-                this.addNote(
-                    percTrack,
-                    bar,
-                    step,
-                    pitch,
-                    this.computeVelocity(config.velocity, {
-                        step,
-                        accent: step === 0,
-                        isVariation: pitch !== pitchBias
-                    })
-                )
-            }
-        }
     }
 
     generatePercCallResponseVariant = (percTrack, tones, pitchBias, config, density = 1) => {

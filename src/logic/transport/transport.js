@@ -1,6 +1,5 @@
 import { TICK } from '../../core/constants.js'
 import { appState } from '../../state/app_state.js'
-import Utils from '../../core/utils.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 
 export default class Transport {
@@ -93,9 +92,5 @@ export default class Transport {
     nextNote = () => {
         this.nextStepTime += 0.25 * appState.secondsPerBeat
         this.tick++
-        // Throttle DOM update: every 2 ticks (~ 1/32 note at the display BPM)
-        if (this.tick % 2 === 0) {
-            Utils.displayStatusBar("step " + Math.floor(this.tick / 2))
-        }
     }
 }
