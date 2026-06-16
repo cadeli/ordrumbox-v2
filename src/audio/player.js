@@ -26,6 +26,8 @@ export default class MfPlayer {
         // Cache to avoid recomputing flatNotes every tick when nothing changed
         this._lastFlatNotesMap = null
         this._lastFlatNotesLoop = -1
+        this._trackIdxMap = null
+        this._trackIdxMapRef = null
     }
 
     playNotes = async (tick, atTime) => {
@@ -59,14 +61,22 @@ export default class MfPlayer {
 
             const secondsPerBeat = this.secondsPerBeat
             const mfSound = this.mfSound
-            const trackKeys = Object.keys(selPat.tracks)
-            const trackIdxMap = new Map(trackKeys.map((k, i) => [selPat.tracks[k], i]))
 
+            // Cache trackIdxMap (only rebuild when tracks object changes)
+            if (this._trackIdxMapRef !== selPat.tracks) {
+                const trackKeys = Object.keys(selPat.tracks)
+                this._trackIdxMap = new Map(trackKeys.map((k, i) => [selPat.tracks[k], i]))
+                this._trackIdxMapRef = selPat.tracks
+            }
+            const trackIdxMap = this._trackIdxMap
+
+            // Trigger all notes at the same tick concurrently
+            const promises = []
             for (let i = 0; i < notesToPlay.length; i++) {
                 const flatNote = notesToPlay[i]
                 if (flatNote.track.mute === false) {
                     MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
-                    await mfSound.play(flatNote, atTime + flatNote.swingTime)
+                    promises.push(mfSound.play(flatNote, atTime + flatNote.swingTime))
                     playbackEvents.dispatchNoteTrigger({
                         trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
                         bar: flatNote.note.bar,
@@ -74,6 +84,7 @@ export default class MfPlayer {
                     })
                 }
             }
+            await Promise.all(promises)
         } catch (e) {
             console.error(e)
         }

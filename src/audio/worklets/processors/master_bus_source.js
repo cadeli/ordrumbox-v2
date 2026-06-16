@@ -25,6 +25,8 @@
  */
 
 const MASTER_BUS_PROCESSOR_SOURCE = `
+const LOG10_OVER_20 = 0.11512925464970229; // Math.LN10 / 20
+
 class MasterBusProcessor extends AudioWorkletProcessor {
     static get parameterDescriptors() {
         return [
@@ -45,31 +47,12 @@ class MasterBusProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
         this.envDb = 0;
-        this._hpStateL = { y: 0, xPrev: 0 };
-        this._hpStateR = { y: 0, xPrev: 0 };
-        this._lpStateL = { y: 0 };
-        this._lpStateR = { y: 0 };
-    }
-
-    _highpass(st, x, freq, sr) {
-        if (freq <= 0) return x;
-        const fClamped = Math.max(0.1, Math.min(freq, sr * 0.45));
-        const RC = 1 / (2 * Math.PI * fClamped);
-        const dt = 1 / sr;
-        const a = RC / (RC + dt);
-        st.y = a * (st.y + x - st.xPrev);
-        st.xPrev = x;
-        return st.y;
-    }
-
-    _lowpass(st, x, freq, sr) {
-        if (freq >= sr * 0.49) return x;
-        const fClamped = Math.max(0.1, Math.min(freq, sr * 0.45));
-        const RC = 1 / (2 * Math.PI * fClamped);
-        const dt = 1 / sr;
-        const a = dt / (RC + dt);
-        st.y = a * x + (1 - a) * st.y;
-        return st.y;
+        // HP filter state (flat properties, no object lookups)
+        this._hpYL = 0; this._hpXPrevL = 0;
+        this._hpYR = 0; this._hpXPrevR = 0;
+        // LP filter state
+        this._lpYL = 0;
+        this._lpYR = 0;
     }
 
     _computeGainReduction(inputDb, threshold, ratio, knee) {
@@ -96,12 +79,22 @@ class MasterBusProcessor extends AudioWorkletProcessor {
         const release   = Math.max(0.001, parameters.compRelease[0]);
         const makeup    = parameters.compMakeup[0];
         const bypass    = parameters.bypass[0];
-        const makeUpLin = Math.pow(10, makeup / 20);
-        const preGainLin = Math.pow(10, parameters.preGain[0] / 20);
+        const makeUpLin = Math.exp(makeup * LOG10_OVER_20);
+        const preGainLin = Math.exp(parameters.preGain[0] * LOG10_OVER_20);
 
+        // Hoist filter params (k-rate for practical purposes)
         const lowcut  = parameters.lowcut[0];
         const hicut   = parameters.hicut[0];
         const masterV = parameters.master[0];
+
+        // Pre-compute filter coefficients (hoisted outside loop — filters are k-rate)
+        const lowcutClamped = Math.max(0.1, Math.min(lowcut, sr * 0.45));
+        const hpRC = 1 / (2 * Math.PI * lowcutClamped);
+        const hpA = hpRC / (hpRC + 1 / sr);
+
+        const hicutClamped = Math.max(0.1, Math.min(hicut, sr * 0.45));
+        const lpRC = 1 / (2 * Math.PI * hicutClamped);
+        const lpA = (1 / sr) / (lpRC + 1 / sr);
 
         const inL = input[0];
         const inR = input.length > 1 ? input[1] : inL;
@@ -111,19 +104,21 @@ class MasterBusProcessor extends AudioWorkletProcessor {
 
         const attCoeff = Math.exp(-1 / (attack * sr));
         const relCoeff = Math.exp(-1 / (release * sr));
+        const invRatio = 1 - 1 / ratio;
+        const invKnee = knee > 0 ? 1 / knee : 0;
 
         for (let i = 0; i < frames; i++) {
             let xL = inL[i];
             let xR = inR[i];
 
             if (bypass < 0.5) {
-                // Pre-gain drives the compressor
+                // Pre-gain
                 xL *= preGainLin;
                 xR *= preGainLin;
 
-                // Compressor
-                const peak = Math.max(Math.abs(xL), Math.abs(xR));
-                const peakDb = peak > 1e-10 ? 20 * Math.log10(peak) : -100;
+                // Compressor: use Math.exp instead of Math.pow(10, x/20)
+                const peak = Math.abs(xL) > Math.abs(xR) ? Math.abs(xL) : Math.abs(xR);
+                const peakDb = peak > 1e-10 ? 20 * (Math.log(peak) / Math.LN10) : -100;
 
                 const gainRedDb = this._computeGainReduction(peakDb, threshold, ratio, knee);
                 const targetEnv = -gainRedDb;
@@ -131,17 +126,25 @@ class MasterBusProcessor extends AudioWorkletProcessor {
                 const coeff = (targetEnv < this.envDb) ? attCoeff : relCoeff;
                 this.envDb = coeff * this.envDb + (1 - coeff) * targetEnv;
 
-                const compLin = Math.pow(10, this.envDb / 20);
+                const compLin = Math.exp(this.envDb * LOG10_OVER_20);
                 xL *= compLin * makeUpLin;
                 xR *= compLin * makeUpLin;
 
-                // HPF (lowcut) after compressor
-                xL = this._highpass(this._hpStateL, xL, lowcut, sr);
-                xR = this._highpass(this._hpStateR, xR, lowcut, sr);
+                // HPF (lowcut) — coefficients precomputed
+                this._hpYL = hpA * (this._hpYL + xL - this._hpXPrevL);
+                this._hpXPrevL = xL;
+                xL = this._hpYL;
 
-                // LPF (hicut)
-                xL = this._lowpass(this._lpStateL, xL, hicut, sr);
-                xR = this._lowpass(this._lpStateR, xR, hicut, sr);
+                this._hpYR = hpA * (this._hpYR + xR - this._hpXPrevR);
+                this._hpXPrevR = xR;
+                xR = this._hpYR;
+
+                // LPF (hicut) — coefficients precomputed
+                this._lpYL = lpA * xL + (1 - lpA) * this._lpYL;
+                xL = this._lpYL;
+
+                this._lpYR = lpA * xR + (1 - lpA) * this._lpYR;
+                xR = this._lpYR;
             }
 
             outL[i] = xL * masterV;

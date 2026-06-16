@@ -28,6 +28,7 @@ export default class AudioEngine {
         this.flatNotes = new Map()
         this._cachedPatternRef = null
         this._cachedLoop = 0
+        this._midiMappingCache = new Map()
         this.mixer = new MfMixer(this.audioCtx)
         this.player = null
         this.mfSound = null
@@ -190,7 +191,12 @@ export default class AudioEngine {
     }
 
     _resolveMidiMapping = (trackId) => {
-        return InstrumentsManager.DATA.instruments.find(i => i.id === trackId)?.midi?.[0]
+        if (this._midiMappingCache.has(trackId)) {
+            return this._midiMappingCache.get(trackId)
+        }
+        const mapping = InstrumentsManager.DATA.instruments.find(i => i.id === trackId)?.midi?.[0] ?? null
+        this._midiMappingCache.set(trackId, mapping)
+        return mapping
     }
 
     simpleBeep = async (indexTrack) => {

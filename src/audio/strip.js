@@ -19,6 +19,13 @@ const REVERB_PRESETS = Object.freeze({
 const SATURATION_TYPES_IDX = { soft: 0, hard: 1, tape: 2 };
 const FILTER_MODES = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 };
 const DELAY_MODES  = { none: 0, slap: 0, tape: 1, pingpong: 2 };
+const LFO_PARAM_MAP = Object.freeze({
+    pitchLfo:      'lfoPitch',
+    velocityLfo:   'lfoVelo',
+    panLfo:        'lfoPan',
+    filterFreqLfo: 'lfoCut',
+    filterQLfo:    'lfoQ'
+});
 
 export default class MfStrip {
     static TAG = "MFSTRIP";
@@ -122,14 +129,7 @@ export default class MfStrip {
         const time = this.audioCtx.currentTime;
         const params = this.stripNode.parameters;
 
-        const map = {
-            pitchLfo:      'lfoPitch',
-            velocityLfo:   'lfoVelo',
-            panLfo:        'lfoPan',
-            filterFreqLfo: 'lfoCut',
-            filterQLfo:    'lfoQ'
-        };
-        const prefix = map[key];
+        const prefix = LFO_PARAM_MAP[key];
         if (!prefix) return;
 
         if (!config) {

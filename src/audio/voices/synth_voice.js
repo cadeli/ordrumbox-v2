@@ -22,6 +22,9 @@ import {
 const MIN_ATTACK  = 0.003
 const MIN_RELEASE = 0.008
 
+let _sharedNoiseBuffer = null
+let _sharedNoiseSampleRate = 0
+
 export default class SynthVoice extends BaseVoice {
 
     static #lastPitches = [undefined, undefined, undefined]
@@ -163,7 +166,9 @@ export default class SynthVoice extends BaseVoice {
                 v.osc.frequency.setValueAtTime(targetFreq, time)
             }
         })
-        SynthVoice.#lastPitches = this.vcoSlots.map(v => v?.freq)
+        SynthVoice.#lastPitches[0] = this.vcoSlots[0]?.freq
+        SynthVoice.#lastPitches[1] = this.vcoSlots[1]?.freq
+        SynthVoice.#lastPitches[2] = this.vcoSlots[2]?.freq
 
         const { accentMultiplier, accentFilterBoost } = computeAccent(this.noteVelo)
         if (flatNote.pan !== undefined) this.panNode.pan.value = toFiniteNumber(flatNote.pan, 0)
@@ -201,13 +206,16 @@ export default class SynthVoice extends BaseVoice {
         const needsNoise  = noiseMix > 0 || lfoTarget.startsWith('noise')
 
         if (needsNoise) {
-            const noiseBufferSize = ctx.sampleRate * 2
-            const noiseBuffer     = ctx.createBuffer(1, noiseBufferSize, ctx.sampleRate)
-            const noiseData       = noiseBuffer.getChannelData(0)
-            for (let i = 0; i < noiseBufferSize; i++) noiseData[i] = Math.random() * 2 - 1
+            if (!_sharedNoiseBuffer || _sharedNoiseSampleRate !== ctx.sampleRate) {
+                const noiseBufferSize = ctx.sampleRate * 2
+                _sharedNoiseBuffer = ctx.createBuffer(1, noiseBufferSize, ctx.sampleRate)
+                const noiseData = _sharedNoiseBuffer.getChannelData(0)
+                for (let i = 0; i < noiseBufferSize; i++) noiseData[i] = Math.random() * 2 - 1
+                _sharedNoiseSampleRate = ctx.sampleRate
+            }
 
             this.noiseNode        = this.registerNode(ctx.createBufferSource())
-            this.noiseNode.buffer = noiseBuffer
+            this.noiseNode.buffer = _sharedNoiseBuffer
             this.noiseNode.loop   = true
             this.noiseGain        = this.acquireNode('GainNode')
             this.noiseGain.gain.value = noiseMix
@@ -387,14 +395,11 @@ export default class SynthVoice extends BaseVoice {
             this.gainEnv.gain.setValueAtTime(currentGain, time)
             this.gainEnv.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, time + STOP_BUFFER)
         } catch (e) {}
-        const stoppableNodes = [
-            ...this.oscNodes.map(v => v.osc),
-            this.noiseNode,
-            this.masterLfo,
-            this.masterLfo2,
-        ].filter(Boolean)
-        for (const node of stoppableNodes) {
-            try { node.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
+        for (let i = 0; i < this.oscNodes.length; i++) {
+            try { this.oscNodes[i].osc.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
         }
+        if (this.noiseNode) try { this.noiseNode.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
+        if (this.masterLfo) try { this.masterLfo.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
+        if (this.masterLfo2) try { this.masterLfo2.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
     }
 }

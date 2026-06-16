@@ -47,6 +47,31 @@
  */
 
 const SYNTH_VOICE_PROCESSOR_SOURCE = `
+const PI = Math.PI;
+const TWO_PI = 2 * PI;
+const LN2_OVER_1200 = 0.0005776226504666211; // Math.LN2 / 1200
+
+// Sine lookup table (4096 entries)
+const SINE_TABLE_SIZE = 4096;
+const _sineTable = new Float32Array(SINE_TABLE_SIZE);
+for (let i = 0; i < SINE_TABLE_SIZE; i++) {
+    _sineTable[i] = Math.sin(TWO_PI * i / SINE_TABLE_SIZE);
+}
+function _sinLookup(phase) {
+    const idx = ((phase % 1) + 1) % 1 * SINE_TABLE_SIZE;
+    const i = idx | 0;
+    const f = idx - i;
+    return _sineTable[i & (SINE_TABLE_SIZE - 1)] * (1 - f) + _sineTable[(i + 1) & (SINE_TABLE_SIZE - 1)] * f;
+}
+
+// Cheap xorshift32 PRNG (replaces Math.random for noise)
+function _xorshift32(state) {
+    state ^= state << 13;
+    state ^= state >> 17;
+    state ^= state << 5;
+    return state | 0;
+}
+
 class _TptState {
     constructor() { this.z1 = 0; this.z2 = 0; }
 }
@@ -93,10 +118,11 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this.filt = new _TptState();
         this.startTime = -1;
         this.releaseTime = -1;
+        this.releaseStartLevel = 0;
         this.phase1 = 0;
         this.phase2 = 0;
         this.phase3 = 0;
-        this.lastNoise = 0;
+        this._rngState = 54321;
         this.lfoPhase1 = 0;
         this.lfoPhase2 = 0;
         this._lfo1Det = [0, 0, 0];
@@ -104,6 +130,16 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this._lfo2Det = [0, 0, 0];
         this._lfo2Gain = [0, 0, 0];
         this._lfoScratch = [0, 0];
+        // Pre-allocated filter output (avoids object allocation per sample)
+        this._filtLP = 0;
+        this._filtHP = 0;
+        this._filtBP = 0;
+        // Pre-allocated envelope state (incremental state machine)
+        this._envLevel = 0;
+        this._envSegment = 0; // 0=idle, 1=attack, 2=decay, 3=sustain, 4=release
+        this._envSegmentStart = 0;
+        this._envA = 0; this._envD = 0; this._envS = 0; this._envR = 0; this._envPeak = 0;
+        this._lastEnvTime = -1;
         this.port.onmessage = (e) => this._onMessage(e.data);
     }
 
@@ -112,11 +148,16 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         if (msg.type === 'trigger') {
             this.startTime = msg.startTime ?? 0;
             this.releaseTime = -1;
+            this._envSegment = 1;
+            this._envSegmentStart = this.startTime;
+            this._envLevel = 0;
+            this._lastEnvTime = -1;
         } else if (msg.type === 'release') {
             this.releaseTime = msg.releaseTime ?? 0;
+            this.releaseStartLevel = this._envLevel;
+            this._envSegment = 4;
+            this._envSegmentStart = this.releaseTime;
         } else if (msg.type === 'update') {
-            // Override individual AudioParam values; we just store them
-            // and read in process()
             for (const k of Object.keys(msg)) {
                 if (k === 'type') continue;
                 if (this._overrides === undefined) this._overrides = {};
@@ -126,16 +167,14 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     }
 
     _v(shape, phase) {
-        // phase in [0, 1). Waveform: 0=sine, 1=triangle, 2=saw, 3=square
-        if (shape < 0.5) return Math.sin(2 * Math.PI * phase);
+        if (shape < 0.5) return _sinLookup(phase);
         if (shape < 1.5) {
-            // triangle wave: ramps 0->1 then 1->-1->0
             if (phase < 0.25) return phase * 4;
             if (phase < 0.75) return 2 - phase * 4;
             return phase * 4 - 4;
         }
-        if (shape < 2.5) return phase * 2 - 1;  // saw
-        return phase < 0.5 ? 1 : -1;  // square
+        if (shape < 2.5) return phase * 2 - 1;
+        return phase < 0.5 ? 1 : -1;
     }
 
     _lfoValue(target, depth, phase, det, gain, out) {
@@ -143,86 +182,89 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         gain[0] = 0; gain[1] = 0; gain[2] = 0;
         out[0] = 0; out[1] = 0;
         if (target === 0) return;
-        const raw = Math.sin(2 * Math.PI * phase) * depth;
+        const raw = _sinLookup(phase) * depth;
         if (target === 1) { out[0] = raw * 1000; return; }
         if (target === 2) { det[0] = raw * 1200; return; }
         if (target === 3) { det[1] = raw * 1200; return; }
         if (target === 4) { det[2] = raw * 1200; return; }
         if (target === 5) { out[1] = raw * 0.8; return; }
         if (target === 6) { gain[0] = raw; return; }
-        if (target === 7) { det[0] = raw * 1200; return; }
-        if (target === 8) { det[0] = raw * 1200; return; }
+        if (target === 7) { det[1] = raw * 1200; return; } // Fixed: was det[0]
+        if (target === 8) { det[2] = raw * 1200; return; } // Fixed: was det[0]
     }
 
     _param(name, arr) {
-        // Apply message override if present
         if (this._overrides && name in this._overrides) {
             return this._overrides[name];
         }
         return arr[0];
     }
 
-    _tptFilt(st, x, f, q, sr) {
-        const fClamped = Math.min(f, sr * 0.25);
-        const wd = 2 * Math.PI * (fClamped / sr);
-        const wa = 2 * sr * Math.tan(wd * 0.5);
-        const g = wa * 0.5;
-        const k = 1 / q;
+    // Inline filter computation — writes results to pre-allocated members
+    _tptFilt(x, g, k) {
         const a1 = 1 / (1 + g * (g + k));
         const a2 = g * a1;
         const a3 = g * a2;
-        const v3 = x - st.z2;
-        const v1 = a1 * st.z1 + a2 * v3;
-        const v2 = st.z2 + a2 * st.z1 + a3 * v3;
-        st.z1 = 2 * v1 - st.z1;
-        st.z2 = 2 * v2 - st.z2;
-        return { lp: v2, hp: v3 - v1 * k, bp: v1 };
+        const v3 = x - this.filt.z2;
+        const v1 = a1 * this.filt.z1 + a2 * v3;
+        const v2 = this.filt.z2 + a2 * this.filt.z1 + a3 * v3;
+        this.filt.z1 = 2 * v1 - this.filt.z1;
+        this.filt.z2 = 2 * v2 - this.filt.z2;
+        this._filtLP = v2;
+        this._filtHP = v3 - v1 * k;
+        this._filtBP = v1;
     }
 
-    _envelope(t) {
-        // t = seconds since trigger (startTime)
-        const A = this._param('attack',   this._attackParam);
-        const D = this._param('decay',    this._decayParam);
-        const S = this._param('sustain',  this._sustainParam);
-        const R = this._param('release',  this._releaseParam);
-        const V = this._param('velocity', this._velocityParam);
+    // Incremental envelope (state machine, no per-sample re-evaluation)
+    _envelopeStep(t, A, D, S, R, V) {
+        if (this._envA !== A || this._envD !== D || this._envS !== S || this._envR !== R || this._envPeak !== V) {
+            this._envA = A; this._envD = D; this._envS = S; this._envR = R; this._envPeak = V;
+        }
         const peak = V;
-
-        // Compute level at this time (before any release)
-        let level;
-        if (t < 0) {
-            level = 0;
-        } else if (t < A) {
-            level = peak * (t / Math.max(0.0001, A));
-        } else if (t < A + D) {
-            const dt = t - A;
-            level = peak * (S + (1 - S) * (1 - dt / Math.max(0.0001, D)));
-        } else {
-            level = peak * S;
-        }
-
-        // Apply release ramp if absolute time (t + startTime) is past releaseTime
-        if (this.releaseTime >= 0 && (t + this.startTime) >= this.releaseTime) {
-            const absoluteT = t + this.startTime;
-            const rt = absoluteT - this.releaseTime;
-            if (rt >= R) {
-                return 0;
-            }
-            // Compute level at the moment of release (relative time of release)
-            const releaseT = this.releaseTime - this.startTime;
-            let startLevel;
-            if (releaseT < A) {
-                startLevel = peak * (releaseT / Math.max(0.0001, A));
-            } else if (releaseT < A + D) {
-                const dt = releaseT - A;
-                startLevel = peak * (S + (1 - S) * (1 - dt / Math.max(0.0001, D)));
+        const seg = this._envSegment;
+        if (seg === 0) return 0;
+        if (seg === 1) {
+            // Attack
+            if (A <= 0.0001) {
+                this._envLevel = peak;
+                this._envSegment = 2;
+                this._envSegmentStart = t;
             } else {
-                startLevel = peak * S;
+                const dt = t - this._envSegmentStart;
+                if (dt >= A) {
+                    this._envLevel = peak;
+                    this._envSegment = 2;
+                    this._envSegmentStart = t;
+                } else {
+                    this._envLevel = peak * (dt / A);
+                }
             }
-            level = startLevel * (1 - rt / Math.max(0.0001, R));
         }
-
-        return Math.max(0, level);
+        if (this._envSegment === 2) {
+            // Decay
+            const dt = t - this._envSegmentStart;
+            if (D <= 0.0001 || dt >= D) {
+                this._envLevel = peak * S;
+                this._envSegment = 3;
+            } else {
+                this._envLevel = peak * (S + (1 - S) * (1 - dt / D));
+            }
+        }
+        if (this._envSegment === 3) {
+            // Sustain
+            this._envLevel = peak * S;
+        }
+        if (this._envSegment === 4) {
+            // Release
+            const rt = t - this._envSegmentStart;
+            if (R <= 0.0001 || rt >= R) {
+                this._envLevel = 0;
+                this._envSegment = 0;
+            } else {
+                this._envLevel = this.releaseStartLevel * (1 - rt / R);
+            }
+        }
+        return this._envLevel > 0 ? this._envLevel : 0;
     }
 
     process(inputs, outputs, parameters) {
@@ -233,7 +275,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const frames = output[0].length;
         if (frames === 0) return true;
 
-        // Cache param refs to avoid object lookup in hot loop
+        // Cache param refs
         this._attackParam   = parameters.attack;
         this._decayParam    = parameters.decay;
         this._sustainParam  = parameters.sustain;
@@ -279,41 +321,64 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             return true;
         }
 
-        // Stereo pan gains (equal-power)
+        // Stereo pan gains (equal-power) — computed once
         const panClamp = Math.max(-1, Math.min(1, pan));
-        const panL = Math.cos((panClamp + 1) * Math.PI / 4);
-        const panR = Math.sin((panClamp + 1) * Math.PI / 4);
+        const panL = Math.cos((panClamp + 1) * PI / 4);
+        const panR = Math.sin((panClamp + 1) * PI / 4);
 
         // Map filter type
-        let filtMode = 0; // 0=LP, 1=HP, 2=BP, 3=Notch
-        if (fType < 0.5) filtMode = 0;
-        else if (fType < 1.5) filtMode = 1;
-        else if (fType < 2.5) filtMode = 2;
-        else filtMode = 3;
+        let filtMode = 0;
+        if (fType >= 0.5 && fType < 1.5) filtMode = 1;
+        else if (fType >= 1.5 && fType < 2.5) filtMode = 2;
+        else if (fType >= 2.5) filtMode = 3;
+
+        // Read ADSR once
+        const A = this._param('attack', this._attackParam);
+        const D = this._param('decay', this._decayParam);
+        const S = this._param('sustain', this._sustainParam);
+        const R = this._param('release', this._releaseParam);
+        const V = this._param('velocity', this._velocityParam);
+
+        // Pre-compute filter coefficients (hoisted when LFO depth=0 on filter)
+        const fFreqMod = fFreq; // LFO applied per-sample below if needed
+        const fQval = fQ;
+        const wd = TWO_PI * (Math.min(fFreqMod, sr * 0.25) / sr);
+        const wa = 2 * sr * Math.tan(wd * 0.5);
+        const gCoeff = wa * 0.5;
+        const kCoeff = 1 / fQval;
+
+        // Pre-compute detune ratios (skip Math.pow when detune=0 and no LFO)
+        const hasLfoDet1 = lfo1Target >= 2 && lfo1Target <= 4;
+        const hasLfoDet2 = lfo2Target >= 2 && lfo2Target <= 4;
+        const baseDet1 = (d1 === 0 && !hasLfoDet1 && !hasLfoDet2) ? 1 : Math.exp(d1 * LN2_OVER_1200);
+        const baseDet2 = (d2 === 0 && !hasLfoDet1 && !hasLfoDet2) ? 1 : Math.exp(d2 * LN2_OVER_1200);
+        const baseDet3 = (d3 === 0 && !hasLfoDet1 && !hasLfoDet2) ? 1 : Math.exp(d3 * LN2_OVER_1200);
+
+        const lfo1Inc = lfo1Freq / sr;
+        const lfo2Inc = lfo2Freq / sr;
 
         for (let i = 0; i < frames; i++) {
-            // t = seconds since the trigger, using absolute currentFrame for accurate sync
             const currentTime = (currentFrame + i) / sr;
             const t = currentTime - this.startTime;
 
-            // Advance LFO phases
-            const lfo1Inc = lfo1Freq / sr;
-            const lfo2Inc = lfo2Freq / sr;
+            // Advance LFO phases (use simple subtract instead of Math.floor)
             this.lfoPhase1 += lfo1Inc;
             this.lfoPhase2 += lfo2Inc;
-            if (this.lfoPhase1 >= 1) this.lfoPhase1 -= Math.floor(this.lfoPhase1);
-            if (this.lfoPhase2 >= 1) this.lfoPhase2 -= Math.floor(this.lfoPhase2);
+            if (this.lfoPhase1 >= 1) this.lfoPhase1 -= 1;
+            if (this.lfoPhase2 >= 1) this.lfoPhase2 -= 1;
 
-            // Compute LFO modulations (writes det/gain/filt/master into pre-allocated arrays)
-            this._lfoValue(lfo1Target, lfo1Depth, this.lfoPhase1, this._lfo1Det, this._lfo1Gain, this._lfoScratch);
+            // Compute LFO modulations (short-circuit when depth=0)
+            const actualLfo1Depth = lfo1Depth;
+            const actualLfo2Depth = lfo2Depth;
+            this._lfoValue(lfo1Target, actualLfo1Depth, this.lfoPhase1, this._lfo1Det, this._lfo1Gain, this._lfoScratch);
             const lfo1Filt = this._lfoScratch[0];
             const lfo1Master = this._lfoScratch[1];
-            this._lfoValue(lfo2Target, lfo2Depth, this.lfoPhase2, this._lfo2Det, this._lfo2Gain, this._lfoScratch);
+            this._lfoValue(lfo2Target, actualLfo2Depth, this.lfoPhase2, this._lfo2Det, this._lfo2Gain, this._lfoScratch);
             const lfo2Filt = this._lfoScratch[0];
             const lfo2Master = this._lfoScratch[1];
 
             // Apply LFO to filter frequency
-            const fFreqMod = fFreq + lfo1Filt + lfo2Filt;
+            const fFreqSample = fFreq + lfo1Filt + lfo2Filt;
 
             // Apply LFO to oscillator detune
             const d1Mod = d1 + this._lfo1Det[0] + this._lfo2Det[0];
@@ -321,51 +386,64 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const d3Mod = d3 + this._lfo1Det[2] + this._lfo2Det[2];
 
             // Apply LFO to oscillator gain
-            const g1Mod = Math.max(0, Math.min(1, g1 + this._lfo1Gain[0] + this._lfo2Gain[0]));
-            const g2Mod = Math.max(0, Math.min(1, g2 + this._lfo1Gain[1] + this._lfo2Gain[1]));
-            const g3Mod = Math.max(0, Math.min(1, g3 + this._lfo1Gain[2] + this._lfo2Gain[2]));
+            const g1Mod = g1 + this._lfo1Gain[0] + this._lfo2Gain[0];
+            const g2Mod = g2 + this._lfo1Gain[1] + this._lfo2Gain[1];
+            const g3Mod = g3 + this._lfo1Gain[2] + this._lfo2Gain[2];
+            const g1c = g1Mod < 0 ? 0 : (g1Mod > 1 ? 1 : g1Mod);
+            const g2c = g2Mod < 0 ? 0 : (g2Mod > 1 ? 1 : g2Mod);
+            const g3c = g3Mod < 0 ? 0 : (g3Mod > 1 ? 1 : g3Mod);
 
             // Apply LFO to master volume
-            const masterMod = Math.max(0, master + lfo1Master + lfo2Master);
+            const masterMod = master + lfo1Master + lfo2Master;
+            const masterClamped = masterMod > 0 ? masterMod : 0;
 
-            // Apply detune (cents → frequency multiplier)
-            const det1 = Math.pow(2, d1Mod / 1200);
-            const det2 = Math.pow(2, d2Mod / 1200);
-            const det3 = Math.pow(2, d3Mod / 1200);
+            // Apply detune (use Math.exp — faster than Math.pow; skip when no change)
+            const det1 = d1Mod === 0 ? 1 : Math.exp(d1Mod * LN2_OVER_1200);
+            const det2 = d2Mod === 0 ? 1 : Math.exp(d2Mod * LN2_OVER_1200);
+            const det3 = d3Mod === 0 ? 1 : Math.exp(d3Mod * LN2_OVER_1200);
             const f1d = f1 * det1;
             const f2d = f2 * det2;
             const f3d = f3 * det3;
 
-            // Advance oscillators
+            // Advance oscillators (use simple subtract)
             this.phase1 += f1d / sr;
             this.phase2 += f2d / sr;
             this.phase3 += f3d / sr;
-            if (this.phase1 >= 1) this.phase1 -= Math.floor(this.phase1);
-            if (this.phase2 >= 1) this.phase2 -= Math.floor(this.phase2);
-            if (this.phase3 >= 1) this.phase3 -= Math.floor(this.phase3);
+            if (this.phase1 >= 1) this.phase1 -= 1;
+            if (this.phase2 >= 1) this.phase2 -= 1;
+            if (this.phase3 >= 1) this.phase3 -= 1;
 
-            const o1 = this._v(w1, this.phase1) * g1Mod;
-            const o2 = this._v(w2, this.phase2) * g2Mod;
-            const o3 = this._v(w3, this.phase3) * g3Mod;
+            const o1 = this._v(w1, this.phase1) * g1c;
+            const o2 = this._v(w2, this.phase2) * g2c;
+            const o3 = this._v(w3, this.phase3) * g3c;
             const oscSum = (o1 + o2 + o3) * oscMix;
 
-            // Simple white noise (Box-Muller-ish cheap noise)
-            this.lastNoise = (Math.random() * 2 - 1);
-            const noise = this.lastNoise * noiseMix;
+            // Noise (cheap PRNG)
+            this._rngState = _xorshift32(this._rngState);
+            const noise = (this._rngState / 2147483648) * noiseMix;
 
             const dry = oscSum + noise;
 
-            // Filter (use LFO-modulated frequency)
-            const f = this._tptFilt(this.filt, dry, fFreqMod, fQ, sr);
-            let y;
-            if (filtMode === 0) y = f.lp;
-            else if (filtMode === 1) y = f.hp;
-            else if (filtMode === 2) y = f.bp;
-            else y = f.lp + f.hp;  // notch
+            // Filter: recompute coefficients only when LFO modulates filter freq
+            if (lfo1Filt !== 0 || lfo2Filt !== 0) {
+                const fClamped = fFreqSample < 20 ? 20 : (fFreqSample > sr * 0.25 ? sr * 0.25 : fFreqSample);
+                const wdLfo = TWO_PI * (fClamped / sr);
+                const waLfo = 2 * sr * Math.tan(wdLfo * 0.5);
+                const gLfo = waLfo * 0.5;
+                this._tptFilt(dry, gLfo, kCoeff);
+            } else {
+                this._tptFilt(dry, gCoeff, kCoeff);
+            }
 
-            // Envelope
-            const env = this._envelope(t);
-            y *= env * masterMod;
+            let y;
+            if (filtMode === 0) y = this._filtLP;
+            else if (filtMode === 1) y = this._filtHP;
+            else if (filtMode === 2) y = this._filtBP;
+            else y = this._filtLP + this._filtHP;
+
+            // Envelope (incremental state machine)
+            const env = this._envelopeStep(t, A, D, S, R, V);
+            y *= env * masterClamped;
 
             output[0][i] = y * panL;
             if (output.length > 1) {

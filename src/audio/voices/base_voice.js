@@ -29,8 +29,8 @@ export default class BaseVoice {
                 this.nodePool.release(node)
             }
         }
-        this._pooledNodes = []
-        this.nodes = []
+        this._pooledNodes.length = 0
+        this.nodes.length = 0
     }
 
     registerNode(node) {
