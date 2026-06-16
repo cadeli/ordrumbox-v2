@@ -247,6 +247,10 @@ class StripProcessor extends AudioWorkletProcessor {
             const v3R = inR[i] - this.z2R, v1R = a1 * this.z1R + a2 * v3R, v2R = this.z2R + a2 * this.z1R + a3 * v3R;
             this.z1R = 2 * v1R - this.z1R; this.z2R = 2 * v2R - this.z2R;
             
+            // Flush filter denormals
+            if (Math.abs(this.z1L) < 1e-15) this.z1L = 0; if (Math.abs(this.z2L) < 1e-15) this.z2L = 0;
+            if (Math.abs(this.z1R) < 1e-15) this.z1R = 0; if (Math.abs(this.z2R) < 1e-15) this.z2R = 0;
+
             let dryL, dryR;
             if (fMode < 0.5)      { dryL = v2L; dryR = v2R; }
             else if (fMode < 1.5) { dryL = v3L - v1L * k; dryR = v3R - v1R * k; }
@@ -298,8 +302,15 @@ class StripProcessor extends AudioWorkletProcessor {
                 const panMax = panL > panR ? panL : panR;
                 panComp = panMax > 0.001 ? 1 / panMax : 1;
             }
-            outL[i] = (satL + rL + dWetL) * vol * panL * panComp;
-            outR[i] = (satR + rR + dWetR) * vol * panR * panComp;
+
+            let fOutL = (satL + rL + dWetL) * vol * panL * panComp;
+            let fOutR = (satR + rR + dWetR) * vol * panR * panComp;
+
+            // Final safety clip & denormal flush
+            if (Math.abs(fOutL) < 1e-15) fOutL = 0;
+            if (Math.abs(fOutR) < 1e-15) fOutR = 0;
+            outL[i] = fOutL > 2 ? 2 : (fOutL < -2 ? -2 : fOutL);
+            outR[i] = fOutR > 2 ? 2 : (fOutR < -2 ? -2 : fOutR);
 
             // LFO Pitch Output (port 1)
             if (pitchLfoOut && pitchLfoOut[0]) {
@@ -311,8 +322,9 @@ class StripProcessor extends AudioWorkletProcessor {
     }
 
     _computeLfo(fMult, w, d, b, phase, sh, time, bpm) {
-        const transportPhase = time / (4 * (60 / bpm));
-        const localPhase = (transportPhase / fMult) + phase;
+        const period = Math.max(0.001, fMult) * 4 * (60 / bpm);
+        const transportPhase = time / period;
+        const localPhase = transportPhase + phase;
         const raw = w > 3.5 ? sh.process(time, fMult, bpm) : getLfoWaveformValue(localPhase, w);
         return b + ((raw + 1) * 0.5) * d;
     }

@@ -373,16 +373,18 @@ describe('SynthVoice', () => {
         expect(voice.noiseNode).toBeNull()
     })
 
-    it('setup stores lastPitchV1 as static for glide', () => {
-        voice.setup(makeFlatNote({ fpitch: 1 }), 1.0)
-        expect(SynthVoice.lastPitchV1).toBeDefined()
-        expect(typeof SynthVoice.lastPitchV1).toBe('number')
+    it('setup stores lastPitchV1 as track-level for glide', () => {
+        const fn = makeFlatNote({ fpitch: 1 })
+        voice.setup(fn, 1.0)
+        expect(fn.track._lastPitches[0]).toBeDefined()
+        expect(typeof fn.track._lastPitches[0]).toBe('number')
     })
 
     it('setup applies glide when slideTime > 0 and lastPitch is set', () => {
-        SynthVoice.lastPitchV1 = 220
+        const fn = makeFlatNote({ fpitch: 1.5 })
+        fn.track._lastPitches = [220, undefined, undefined]
         generatedSound.slide = 50 // 50ms
-        voice.setup(makeFlatNote({ fpitch: 1.5 }), 1.0)
+        voice.setup(fn, 1.0)
         // The osc frequency should be ramped, setValueAtTime called with lastPitch
         const oscSetCalls = voice.oscNodes[0].osc.frequency.setValueAtTime.mock.calls
         expect(oscSetCalls.some(([val]) => val === 220)).toBe(true)
@@ -660,13 +662,14 @@ describe('SynthVoice parameter coverage', () => {
     })
 
     it('applies glide when slide > 0 and lastPitch is set', () => {
-        SynthVoice.lastPitchV1 = 220
+        const fn = makeFlatNote({ fpitch: 2 })
+        fn.track._lastPitches = [220, undefined, undefined]
         const gs = makeGeneratedSound({
             slide: 80,
             vco1: { wave: 'sine', gain: 1, octave: 0, detune: 0 },
         })
         const voice = new SynthVoice(ctx, strip, gs, 'test')
-        voice.setup(makeFlatNote({ fpitch: 2 }), 1.0)
+        voice.setup(fn, 1.0)
 
         // Should ramp from lastPitch(220) to computeOscFrequency(noteRatio=2, octave=0, detune=0)
         const expectedTarget = computeOscFrequency(2, 0, 0)

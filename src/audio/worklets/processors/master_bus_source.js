@@ -57,11 +57,10 @@ class MasterBusProcessor extends AudioWorkletProcessor {
 
     _computeGainReduction(inputDb, threshold, ratio, knee) {
         const overDb = inputDb - threshold;
-        if (overDb <= 0) return 0;
-
-        if (knee > 0 && overDb < knee) {
-            const t = overDb / knee;
-            return overDb * (1 - 1 / ratio) * t * t * 0.5;
+        if (overDb <= -knee / 2) return 0;
+        if (knee > 0 && overDb < knee / 2) {
+            const t = (overDb + knee / 2) / knee;
+            return (1 - 1 / ratio) * overDb * t * t * 0.5;
         }
         return overDb * (1 - 1 / ratio);
     }
@@ -74,7 +73,7 @@ class MasterBusProcessor extends AudioWorkletProcessor {
         const sr = sampleRate;
         const threshold = parameters.compThreshold[0];
         const ratio     = Math.max(1, parameters.compRatio[0]);
-        const knee      = parameters.compKnee[0];
+        const knee      = Math.max(0, parameters.compKnee[0]);
         const attack    = Math.max(0.0001, parameters.compAttack[0]);
         const release   = Math.max(0.001, parameters.compRelease[0]);
         const makeup    = parameters.compMakeup[0];
@@ -104,8 +103,6 @@ class MasterBusProcessor extends AudioWorkletProcessor {
 
         const attCoeff = Math.exp(-1 / (attack * sr));
         const relCoeff = Math.exp(-1 / (release * sr));
-        const invRatio = 1 - 1 / ratio;
-        const invKnee = knee > 0 ? 1 / knee : 0;
 
         for (let i = 0; i < frames; i++) {
             let xL = inL[i];
@@ -130,7 +127,7 @@ class MasterBusProcessor extends AudioWorkletProcessor {
                 xL *= compLin * makeUpLin;
                 xR *= compLin * makeUpLin;
 
-                // HPF (lowcut) — coefficients precomputed
+                // HPF (lowcut)
                 this._hpYL = hpA * (this._hpYL + xL - this._hpXPrevL);
                 this._hpXPrevL = xL;
                 xL = this._hpYL;
@@ -139,7 +136,7 @@ class MasterBusProcessor extends AudioWorkletProcessor {
                 this._hpXPrevR = xR;
                 xR = this._hpYR;
 
-                // LPF (hicut) — coefficients precomputed
+                // LPF (hicut)
                 this._lpYL = lpA * xL + (1 - lpA) * this._lpYL;
                 xL = this._lpYL;
 
@@ -147,8 +144,16 @@ class MasterBusProcessor extends AudioWorkletProcessor {
                 xR = this._lpYR;
             }
 
-            outL[i] = xL * masterV;
-            outR[i] = xR * masterV;
+            // Denormal protection & Master gain
+            if (Math.abs(xL) < 1e-15) { xL = 0; this._hpYL = 0; this._lpYL = 0; }
+            if (Math.abs(xR) < 1e-15) { xR = 0; this._hpYR = 0; this._lpYR = 0; }
+
+            let finalL = xL * masterV;
+            let finalR = xR * masterV;
+
+            // Final safety clip
+            outL[i] = finalL > 1 ? 1 : (finalL < -1 ? -1 : finalL);
+            outR[i] = finalR > 1 ? 1 : (finalR < -1 ? -1 : finalR);
         }
         return true;
     }

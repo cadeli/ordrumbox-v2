@@ -7,13 +7,6 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { TICK } from '../core/constants.js'
 
 export default class MfSound {
-    static get lastPitchV1() { return SynthVoice.lastPitchV1 }
-    static set lastPitchV1(v) { SynthVoice.lastPitchV1 = v }
-    static get lastPitchV2() { return SynthVoice.lastPitchV2 }
-    static set lastPitchV2(v) { SynthVoice.lastPitchV2 = v }
-    static get lastPitchV3() { return SynthVoice.lastPitchV3 }
-    static set lastPitchV3(v) { SynthVoice.lastPitchV3 = v }
-
     constructor(audioCtx, mixer, sounds, generatedSounds) {
         this.audioCtx = audioCtx
         this.mixer = mixer

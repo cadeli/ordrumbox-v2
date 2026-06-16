@@ -27,14 +27,6 @@ let _sharedNoiseSampleRate = 0
 
 export default class SynthVoice extends BaseVoice {
 
-    static #lastPitches = [undefined, undefined, undefined]
-    static get lastPitchV1() { return SynthVoice.#lastPitches[0] }
-    static set lastPitchV1(v) { SynthVoice.#lastPitches[0] = v }
-    static get lastPitchV2() { return SynthVoice.#lastPitches[1] }
-    static set lastPitchV2(v) { SynthVoice.#lastPitches[1] = v }
-    static get lastPitchV3() { return SynthVoice.#lastPitches[2] }
-    static set lastPitchV3(v) { SynthVoice.#lastPitches[2] = v }
-
     static #lfoTargetMap() {
         if (SynthVoice._lfoMap) return SynthVoice._lfoMap
         const hz    = d => LFO_GAIN_MULTIPLIER * d
@@ -120,6 +112,7 @@ export default class SynthVoice extends BaseVoice {
     setup(flatNote, time) {
         const ctx   = this.audioCtx
         const gs    = this.generatedSound
+        const track = flatNote.track
         const noteRatio = computeNoteRatio(flatNote.fpitch)
         this.noteRatio  = noteRatio
         this.noteVelo   = (flatNote.note?.velocity ?? 0.8) * 0.25
@@ -154,10 +147,13 @@ export default class SynthVoice extends BaseVoice {
         const slideTime = toFiniteNumber(gs.slide, 0)
         const glideTime = slideTime / 1000
         const hasGlide  = slideTime > 0
+        
+        if (!track._lastPitches) track._lastPitches = [undefined, undefined, undefined]
+        
         this.vcoSlots.forEach((v, i) => {
             if (!v) return
             const targetFreq = toFiniteNumber(v.freq, 440)
-            const lastFreq = SynthVoice.#lastPitches[i]
+            const lastFreq = track._lastPitches[i]
 
             if (hasGlide && lastFreq !== undefined && Number.isFinite(lastFreq)) {
                 v.osc.frequency.setValueAtTime(lastFreq, time)
@@ -166,9 +162,9 @@ export default class SynthVoice extends BaseVoice {
                 v.osc.frequency.setValueAtTime(targetFreq, time)
             }
         })
-        SynthVoice.#lastPitches[0] = this.vcoSlots[0]?.freq
-        SynthVoice.#lastPitches[1] = this.vcoSlots[1]?.freq
-        SynthVoice.#lastPitches[2] = this.vcoSlots[2]?.freq
+        track._lastPitches[0] = this.vcoSlots[0]?.freq
+        track._lastPitches[1] = this.vcoSlots[1]?.freq
+        track._lastPitches[2] = this.vcoSlots[2]?.freq
 
         const { accentMultiplier, accentFilterBoost } = computeAccent(this.noteVelo)
         if (flatNote.pan !== undefined) this.panNode.pan.value = toFiniteNumber(flatNote.pan, 0)
