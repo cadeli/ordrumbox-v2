@@ -33,7 +33,7 @@ export default class OutputPanel extends BasePanel {
             </div>
             <div class="ne-body">
                 ${buildAccordionGroup('master', 'Master', 'Mst', true, '', { gridId: 'op-master-grid' })}
-                ${buildAccordionGroup('compressor', 'Compressor', 'Comp', true, '', { gridId: 'op-comp-grid' })}
+                ${buildAccordionGroup('compressor', 'Compressor', 'Comp', true, '', { gridId: 'op-comp-grid', gridClass: 'ne-grid ne-grid-2col' })}
                 ${buildAccordionGroup('filters', 'Filters', 'Flt', true, '', { gridId: 'op-filters-grid' })}
                 ${buildAccordionGroup('spectrum', 'Spectrum', 'Spec', true, '<canvas id="op-spectrum"></canvas>', { extraAttrs: 'id="op-analyzer-group"' })}
             </div>
@@ -89,7 +89,7 @@ export default class OutputPanel extends BasePanel {
             unit:    'dB',
             onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v }),
         })
-        this.container.querySelector('#op-master-grid').appendChild(this._preGain.createElement())
+        this.container.querySelector('#op-comp-grid').appendChild(this._preGain.createElement())
     }
 
     _buildCompressorSliders() {

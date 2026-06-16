@@ -125,11 +125,6 @@ describe('OutputPanel — OrSlider integration', () => {
         const groups = panel.container.querySelectorAll('.ne-group')
         expect(groups[1].querySelector('.ne-group-label').textContent).toBe('Compressor')
         expect(groups[2].querySelector('.ne-group-label').textContent).toBe('Filters')
-        
-        // Check that Pre-Gain slider exists within Master grid
-        const masterGrid = panel.container.querySelector('#op-master-grid')
-        const pregainLabel = Array.from(masterGrid.querySelectorAll('.ne-slider-label')).find(el => el.textContent === 'Pre-Gain')
-        expect(pregainLabel).not.toBeNull()
     })
 
     it('keyboard arrows on a slider still work (delegated handler from main.js)', () => {

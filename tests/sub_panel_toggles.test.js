@@ -188,12 +188,12 @@ describe('Sub-panel toggle toolbars', () => {
     })
 
     describe('Output Panel', () => {
-        it('renders all 5 toggle buttons (Master, Pre, Comp, Flt, Spec)', () => {
+        it('renders all 4 toggle buttons (Master, Comp, Flt, Spec)', () => {
             playbackEvents.dispatchOutputToggle(true)
 
             const toggles = document.getElementById('output-panel').querySelectorAll('.ne-toggle[data-toggle]')
             const keys = Array.from(toggles).map(b => b.dataset.toggle)
-            expect(keys).toEqual(['master', 'pregain', 'compressor', 'filters', 'spectrum'])
+            expect(keys).toEqual(['master', 'compressor', 'filters', 'spectrum'])
         })
 
         it('hides the corresponding element when a toggle is clicked', () => {

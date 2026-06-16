@@ -378,6 +378,11 @@
 #ne-panel .ne-grid, #te-panel .ne-grid, #tools-panel .ne-grid, #output-panel .ne-grid, #about-panel .ne-grid {
     display: flex; flex-direction: column; gap: 4px;
 }
+#output-panel .ne-grid.ne-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+}
 #ne-panel .ne-row, #te-panel .ne-row, #tools-panel .ne-row, #output-panel .ne-row, #about-panel .ne-row {
     display: flex; align-items: center; gap: 8px; min-height: 20px;
     padding: 2px 4px; border-radius: 4px; cursor: pointer;
