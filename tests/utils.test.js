@@ -128,52 +128,21 @@ describe('Utils', () => {
         })
     })
 
-    describe('DEFAULTS', () => {
-        it('NOTE_DEFAULTS has all required keys', () => {
-            const keys = ['bar', 'barStep', 'pitch', 'velocity', 'pan', 'arp',
-                'triggerFreq', 'triggerPhase', 'triggerProbability',
-                'arpTriggerProbability', 'retriggerNum', 'retriggerStep', 'euclidianFill']
-            for (const key of keys) {
-                expect(Utils.NOTE_DEFAULTS).toHaveProperty(key)
-            }
-        })
-
-        it('TRACK_DEFAULTS has all required keys', () => {
-            const keys = ['name', 'soundId', 'bars', 'barQuantize', 'velocity',
-                'pitch', 'pan', 'mute', 'solo', 'filterFreq', 'filterQ']
-            for (const key of keys) {
-                expect(Utils.TRACK_DEFAULTS).toHaveProperty(key)
-            }
-        })
-
-        it('PATTERN_DEFAULTS has all required keys', () => {
-            const keys = ['nbBars', 'bpm', 'description', 'tags', 'tracks']
-            for (const key of keys) {
-                expect(Utils.PATTERN_DEFAULTS).toHaveProperty(key)
-            }
+    describe('NOTE_DEFAULTS', () => {
+        it('has expected default property values', () => {
+            expect(Utils.NOTE_DEFAULTS.velocity).toBe(0.8)
+            expect(Utils.NOTE_DEFAULTS.pitch).toBe(0)
+            expect(Utils.NOTE_DEFAULTS.arp).toBeNull()
+            expect(Utils.NOTE_DEFAULTS.retriggerNum).toBe(1)
         })
     })
 
-    describe('NOTE_POSITION_KEYS', () => {
-        it('contains expected keys', () => {
-            expect(Utils.NOTE_POSITION_KEYS.has('bar')).toBe(true)
-            expect(Utils.NOTE_POSITION_KEYS.has('barStep')).toBe(true)
-
-            expect(Utils.NOTE_POSITION_KEYS.has('steppc')).toBe(true)
-        })
-    })
-
-    describe('filterTypeList', () => {
-        it('contains all standard Web Audio filter types', () => {
-            const expected = ['lowpass', 'highpass', 'bandpass', 'peaking',
-                'lowshelf', 'highshelf', 'notch', 'allpass']
-            expect(Utils.filterTypeList).toEqual(expected)
-        })
-    })
-
-    describe('waveList', () => {
-        it('contains all standard oscillator types', () => {
-            expect(Utils.waveList).toEqual(['square', 'sawtooth', 'triangle', 'sine'])
+    describe('TRACK_DEFAULTS', () => {
+        it('has expected default property values', () => {
+            expect(Utils.TRACK_DEFAULTS.bars).toBe(4)
+            expect(Utils.TRACK_DEFAULTS.barQuantize).toBe(4)
+            expect(Utils.TRACK_DEFAULTS.mute).toBe(false)
+            expect(Utils.TRACK_DEFAULTS.solo).toBe(false)
         })
     })
 

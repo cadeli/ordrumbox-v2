@@ -153,7 +153,7 @@ describe('Sub-panel toggle toolbars', () => {
     })
 
     describe('Tools Panel', () => {
-        it('renders all 4 toggle buttons (Pattern, Export, Import, MIDI)', () => {
+        it('renders all 5 toggle buttons (Pattern, Export, Import, MIDI Status, MIDI)', () => {
             playbackEvents.dispatchToolsToggle(true)
 
             const toggles = document.getElementById('tools-panel').querySelectorAll('.ne-toggle[data-toggle]')
