@@ -401,5 +401,15 @@ export default class SynthVoice extends BaseVoice {
         if (this.noiseNode) try { this.noiseNode.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
         if (this.masterLfo) try { this.masterLfo.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
         if (this.masterLfo2) try { this.masterLfo2.stop(time + STOP_EXTRA_BUFFER) } catch (e) {}
+
+        // Schedule a final cleanup after the stop ramp completes
+        const stopDelay = Math.max(0, time - this.audioCtx.currentTime) + STOP_EXTRA_BUFFER + 0.05
+        if (typeof setTimeout === 'function') {
+            this._cleanupTimer = setTimeout(() => {
+                this.cleanup()
+                if (this.onEnded) this.onEnded()
+                this._cleanupTimer = null
+            }, stopDelay * 1000)
+        }
     }
 }

@@ -113,6 +113,16 @@ export default class WorkletSynthVoice extends BaseVoice {
         if (this.workletNode) {
             postRelease(this.workletNode, time)
         }
+        
+        // Schedule a final cleanup after the stop ramp completes (approx 100ms for safety)
+        const stopDelay = Math.max(0, time - this.audioCtx.currentTime) + 0.1
+        if (typeof setTimeout === 'function') {
+            this._cleanupTimer = setTimeout(() => {
+                this.cleanup()
+                if (this.onEnded) this.onEnded()
+                this._cleanupTimer = null
+            }, stopDelay * 1000)
+        }
     }
 
     updateGeneratedSound(generatedSound) {

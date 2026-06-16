@@ -276,8 +276,8 @@ class StripProcessor extends AudioWorkletProcessor {
                 const dSL = this._shape(this.dlyFiltL * dlyFb, 1.5, 0, 0.5, 1), dSR = this._shape(this.dlyFiltR * dlyFb, 1.5, 0, 0.5, 1);
                 if (isPP) { this.dlyL.write(satL + dSR); this.dlyR.write(satR + dSL); } 
                 else { this.dlyL.write(satL + dSL); this.dlyR.write(satR + dSR); }
-                dWetL = dL * dMix;
-                dWetR = dR * dMix;
+                dWetL = dL * dlyMix;
+                dWetR = dR * dlyMix;
             } else {
                 // Still write through to keep delay buffer advancing (prevents stale audio when enabled)
                 this.dlyL.write(satL);
