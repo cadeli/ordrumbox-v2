@@ -276,8 +276,6 @@ export class OrSlider {
     // ─── Utilities ──────────────────────────────────────────────────────────
 
     _escHtml(str) {
-        const d = document.createElement('div')
-        d.textContent = str
-        return d.innerHTML
+        return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     }
 }

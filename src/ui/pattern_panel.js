@@ -16,10 +16,11 @@ export default class PatternPanel extends BasePanel {
         this._playhead = null
         this._syncPending = false
         this._barRectsCache = []
-        this._vuRafId = null
         this._cursorTrackIdx = -1
         this._cursorBar = 0
         this._cursorBarStep = 0
+        this._cellMap = new Map()
+        this._vuElCache = null
     }
 
     createDOM() {
@@ -72,22 +73,17 @@ export default class PatternPanel extends BasePanel {
         })
         playbackEvents.onPlaybackStop.push(() => {
             this._prevLoopTick = -1
-            if (this._rafId) cancelAnimationFrame(this._rafId)
-            this._rafId = null
+            this._stopRafLoop()
             if (this._playhead) this._playhead.style.display = 'none'
-            this._stopVuLoop()
             this._resetVuAndWaveform()
         })
         playbackEvents.onPlaybackStart.push(() => {
             this._updateBarCache()
-            this._startPlayhead()
-            this._startVuLoop()
+            this._startRafLoop()
         })
         playbackEvents.onNoteTrigger.push((data) => {
             if (!this.container || !data) return
-            const cell = this.container.querySelector(
-                `.pp-cell[data-track="${data.trackIdx}"][data-bar="${data.bar}"][data-step="${data.barStep}"]`
-            )
+            const cell = this._cellMap.get(`${data.trackIdx}:${data.bar}:${data.barStep}`)
             if (!cell) return
             cell.classList.add('pp-triggered')
             clearTimeout(cell._triggerTimer)
@@ -156,34 +152,50 @@ export default class PatternPanel extends BasePanel {
         })
     }
 
-    _startVuLoop() {
-        if (this._vuRafId) return
+    _startRafLoop() {
+        if (this._rafId) return
         const loop = () => {
             const transport = serviceRegistry.transport
             const mixer = serviceRegistry.audioEngine?.mixer
             if (!transport?.isRunning || !mixer || !this.container) {
-                this._vuRafId = null
+                this._rafId = null
+                if (this._playhead) this._playhead.style.display = 'none'
                 this._resetVuAndWaveform()
                 return
             }
-            const strips = mixer.strips
-            const vuEls = this.container.querySelectorAll('.pp-vu')
-            for (const vuEl of vuEls) {
-                const tIdx = parseInt(vuEl.dataset.track, 10)
-                const tracks = Utils.getTracksArray(appState.patterns[appState.selectedPatternNum])
-                const track = tracks?.[tIdx]
-                const strip = track?.name ? strips[track.name] : null
-                const level = strip?.getLevel ? strip.getLevel() : 0
-                const fill = vuEl.querySelector('.pp-vu-fill')
-                if (fill) {
-                    const pct = Math.min(level * 10, 1) * 100
-                    fill.style.height = pct + '%'
-                }
-            }
+            this._updateVus(mixer)
             this._drawWaveform(mixer)
-            this._vuRafId = requestAnimationFrame(loop)
+            this._updatePlayhead()
+            this._rafId = requestAnimationFrame(loop)
         }
-        this._vuRafId = requestAnimationFrame(loop)
+        this._rafId = requestAnimationFrame(loop)
+    }
+
+    _stopRafLoop() {
+        if (this._rafId) {
+            cancelAnimationFrame(this._rafId)
+            this._rafId = null
+        }
+    }
+
+    _updateVus(mixer) {
+        if (!this._vuElCache) {
+            this._vuElCache = this.container.querySelectorAll('.pp-vu')
+        }
+        const strips = mixer.strips
+        const vuEls = this._vuElCache
+        for (const vuEl of vuEls) {
+            const tIdx = parseInt(vuEl.dataset.track, 10)
+            const tracks = Utils.getTracksArray(appState.patterns[appState.selectedPatternNum])
+            const track = tracks?.[tIdx]
+            const strip = track?.name ? strips[track.name] : null
+            const level = strip?.getLevel ? strip.getLevel() : 0
+            const fill = vuEl.querySelector('.pp-vu-fill')
+            if (fill) {
+                const pct = Math.min(level * 10, 1) * 100
+                fill.style.height = pct + '%'
+            }
+        }
     }
 
     _drawWaveform(mixer) {
@@ -194,8 +206,7 @@ export default class PatternPanel extends BasePanel {
 
         const ctx = canvas.getContext('2d')
         const dpr = window.devicePixelRatio || 1
-        
-        // Find visible grid area
+
         const firstBar = this.container.querySelector('.pp-bar')
         const lastBar = Array.from(this.container.querySelectorAll('.pp-bar')).pop()
         if (!firstBar || !lastBar) return
@@ -209,10 +220,9 @@ export default class PatternPanel extends BasePanel {
         const visibleRight = Math.min(lRect.right, cRect.right)
         const vW = Math.max(0, visibleRight - visibleLeft)
         const vH = tracksEl.clientHeight
-        
+
         if (vW <= 0 || vH <= 0) return
 
-        // Position canvas to cover the visible grid area
         canvas.style.left = (visibleLeft - tRect.left) + 'px'
         canvas.style.width = vW + 'px'
         canvas.style.height = vH + 'px'
@@ -220,14 +230,14 @@ export default class PatternPanel extends BasePanel {
 
         const w = Math.round(vW * dpr)
         const h = Math.round(vH * dpr)
-        
+
         if (canvas.width !== w || canvas.height !== h) {
             canvas.width = w
             canvas.height = h
         }
-        
+
         if (!ctx) return
-        
+
         const data = serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {
             ctx.fillStyle = '#000'
@@ -236,19 +246,17 @@ export default class PatternPanel extends BasePanel {
         }
 
         data.analyser.getByteTimeDomainData(data.dataArray)
-        
-        // Clear background
+
         ctx.fillStyle = '#000'
         ctx.fillRect(0, 0, w, h)
-        
-        // Draw main waveform
+
         ctx.strokeStyle = '#4ade80'
         ctx.lineWidth = 2 * dpr
         ctx.beginPath()
-        
+
         const sliceW = w / data.dataArray.length
         const mid = h * 0.5
-        
+
         for (let i = 0; i < data.dataArray.length; i++) {
             const v = (data.dataArray[i] - 128) / 128
             const x = i * sliceW
@@ -256,13 +264,6 @@ export default class PatternPanel extends BasePanel {
             i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
         }
         ctx.stroke()
-    }
-
-    _stopVuLoop() {
-        if (this._vuRafId) {
-            cancelAnimationFrame(this._vuRafId)
-            this._vuRafId = null
-        }
     }
 
     _syncVusVisibility() {
@@ -273,7 +274,7 @@ export default class PatternPanel extends BasePanel {
 
     _resetVuAndWaveform() {
         if (!this.container) return
-        const vuEls = this.container.querySelectorAll('.pp-vu')
+        const vuEls = this._vuElCache || this.container.querySelectorAll('.pp-vu')
         for (const vuEl of vuEls) {
             const fill = vuEl.querySelector('.pp-vu-fill')
             if (fill) {
@@ -290,21 +291,6 @@ export default class PatternPanel extends BasePanel {
         }
     }
 
-    _startPlayhead() {
-        if (this._rafId) return
-        const loop = () => {
-            const transport = serviceRegistry.transport
-            if (!transport?.isRunning) {
-                this._rafId = null
-                if (this._playhead) this._playhead.style.display = 'none'
-                return
-            }
-            this._updatePlayhead()
-            this._rafId = requestAnimationFrame(loop)
-        }
-        this._rafId = requestAnimationFrame(loop)
-    }
-
     _updatePlayhead() {
         const transport = serviceRegistry.transport
         if (!transport?.isRunning) return
@@ -318,7 +304,7 @@ export default class PatternPanel extends BasePanel {
 
         const loopTick = (transport.tick ?? 0) % nbTicks
         const currentPatternBar = Math.floor(loopTick / TICK)
-        
+
         const BARS_PER_PAGE = 4
         const startBar = appState.currentPage * BARS_PER_PAGE
         const endBar = startBar + BARS_PER_PAGE
@@ -417,7 +403,7 @@ export default class PatternPanel extends BasePanel {
                 const track = tracks[this._cursorTrackIdx]
                 if (!track) return
 
-                const cell = this.container.querySelector(`.pp-cell[data-track="${this._cursorTrackIdx}"][data-bar="${this._cursorBar}"][data-step="${this._cursorBarStep}"]`)
+                const cell = this._cellMap.get(`${this._cursorTrackIdx}:${this._cursorBar}:${this._cursorBarStep}`)
                 if (cell) {
                     if (cell.classList.contains('filled')) {
                         cell.classList.remove('filled', 'pp-trig-rand', 'pp-trig-fixed')
@@ -514,11 +500,11 @@ export default class PatternPanel extends BasePanel {
         if (note) {
             if (this._selNote === note && this._selTrackIdx === trackIdx) {
                 cell.classList.remove('filled', 'pp-trig-rand', 'pp-trig-fixed')
-                cell.innerHTML = '' 
-                
+                cell.innerHTML = ''
+
                 serviceRegistry.mfCmd.deleteNote(track, note)
                 this._clearSelection()
-                
+
                 requestAnimationFrame(() => this.sync())
             } else {
                 this._selNote = note
@@ -539,7 +525,7 @@ export default class PatternPanel extends BasePanel {
 
         const pos = bar * (track.barQuantize ?? 4) + barStep
         playbackEvents.dispatchNoteSelect({ track, trackIdx, note: newNote, pos, bar, barStep })
-        
+
         requestAnimationFrame(() => this.sync())
     }
 
@@ -555,16 +541,16 @@ export default class PatternPanel extends BasePanel {
     _applySelection() {
         const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected, .pp-cell.cursor')
         selected.forEach(el => el.classList.remove('selected', 'cursor'))
-        
+
         if (this._selTrackIdx !== -1) {
             if (this._selNote) {
                 const trackIdx = this._selTrackIdx
                 const bar = this._selNote.bar
                 const step = this._selNote.barStep
-                const sel = this.container.querySelector(`.pp-cell[data-track="${trackIdx}"][data-bar="${bar}"][data-step="${step}"]`)
+                const sel = this._cellMap.get(`${trackIdx}:${bar}:${step}`)
                 if (sel) sel.classList.add('selected')
             } else if (this._cursorTrackIdx !== -1) {
-                const sel = this.container.querySelector(`.pp-cell[data-track="${this._cursorTrackIdx}"][data-bar="${this._cursorBar}"][data-step="${this._cursorBarStep}"]`)
+                const sel = this._cellMap.get(`${this._cursorTrackIdx}:${this._cursorBar}:${this._cursorBarStep}`)
                 if (sel) sel.classList.add('cursor')
                 const trackSel = this.container.querySelector(`.pp-track-name[data-track="${this._cursorTrackIdx}"]`)
                 if (trackSel) trackSel.classList.add('selected')
@@ -583,7 +569,7 @@ export default class PatternPanel extends BasePanel {
         const euclidianFill = note.euclidianFill ?? 0
         const hasArp = note.arp && (typeof note.arp === 'string' || (typeof note.arp === 'object' && !Array.isArray(note.arp) && Array.isArray(note.arp.intervals) && note.arp.intervals.length > 0))
         const totalSteps = (track.bars ?? 4) * barQuantize
-        
+
         const positions = []
         const stepSpacing = retriggerStep < 8 ? retriggerStep / 8 : retriggerStep - 7
         const count = hasArp || retriggerNum > 1 ? retriggerNum : 0
@@ -603,11 +589,11 @@ export default class PatternPanel extends BasePanel {
                         nextNotePos = nPos
                     }
                 }
-                return track.loopAtStep && track.loopAtStep > currentPatternPos && track.loopAtStep < nextNotePos 
-                    ? track.loopAtStep 
+                return track.loopAtStep && track.loopAtStep > currentPatternPos && track.loopAtStep < nextNotePos
+                    ? track.loopAtStep
                     : nextNotePos
             })()
-            
+
             const stepsSpan = endStep - basePos
             for (let i = 1; i <= euclidianFill; i++) {
                 const pos = basePos + (i * stepsSpan) / (euclidianFill + 1)
@@ -627,11 +613,11 @@ export default class PatternPanel extends BasePanel {
         }
 
         const tracks = Utils.getTracksArray(pattern)
-        
+
         const BARS_PER_PAGE = 4
         const startBar = appState.currentPage * BARS_PER_PAGE
         const endBarPage = startBar + BARS_PER_PAGE
-        
+
         const headerHtml = `<div class="pp-header">
             <span class="pp-name">${this.esc(pattern.name || 'Unnamed')}</span>
             <span class="pp-meta">${pattern.bpm ?? 120} BPM</span>
@@ -644,13 +630,21 @@ export default class PatternPanel extends BasePanel {
             return
         }
 
+        this._cellMap.clear()
+
         let tracksHtml = '<div class="pp-tracks">'
         tracks.forEach((track, tIdx) => {
             if (!track) return
             const barQuantize = track.barQuantize ?? 4
             const totalSteps = (track.bars ?? 4) * barQuantize
-            
+
             const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes || {})
+
+            const noteMap = new Map()
+            notes.forEach(n => {
+                noteMap.set(`${n.bar}:${n.barStep}`, n)
+            })
+
             const ghostMap = new Map()
             notes.forEach(note => {
                 this._getSubPositions(note, track).forEach(({ pos, type }) => {
@@ -671,12 +665,12 @@ export default class PatternPanel extends BasePanel {
                     for (let s = 0; s < barQuantize; s++) {
                         const absPos = b * barQuantize + s
                         const isBeyondTrack = b >= trackBarCount
-                        
-                        const note = notes.find(n => n.bar === b && n.barStep === s)
-                        
+
+                        const note = noteMap.get(`${b}:${s}`)
+
                         const cls = ['pp-cell']
                         if (isBeyondTrack) cls.push('pp-cell-out')
-                        
+
                         let trig = ''
                         let cellStyle = ''
                         if (note) {
@@ -695,7 +689,7 @@ export default class PatternPanel extends BasePanel {
 
                         const loopAt = track.loopAtStep ?? totalSteps
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
-                        
+
                         const ghosts = (ghostMap.get(absPos) || []).map(({ offset, type }) => {
                             const cls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
                             return `<div class="${cls}" style="left: ${offset * 100}%"></div>`
@@ -708,7 +702,8 @@ export default class PatternPanel extends BasePanel {
                             pitchIndicator = `<div class="pp-pitch-bar" style="bottom:${pct.toFixed(1)}%"></div>`
                         }
 
-                        cellsHtml += `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}${cellStyle}>${ghosts}${pitchIndicator}</div>`
+                        const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-bar="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}${cellStyle}>${ghosts}${pitchIndicator}</div>`
+                        cellsHtml += cellHtml
                     }
                 }
                 barsHtml += `<div class="pp-bar" data-bar="${b}">${cellsHtml}</div>`
@@ -727,9 +722,19 @@ export default class PatternPanel extends BasePanel {
 
         this.container.innerHTML = headerHtml + tracksHtml
         this._ensurePlayhead()
+        this._buildCellMap()
         this._applySelection()
-        this._startVuLoop()
+        this._vuElCache = null
         this._syncVusVisibility()
+    }
+
+    _buildCellMap() {
+        this._cellMap.clear()
+        const cells = this.container.querySelectorAll('.pp-cell')
+        for (const cell of cells) {
+            const key = `${cell.dataset.track}:${cell.dataset.bar}:${cell.dataset.step}`
+            this._cellMap.set(key, cell)
+        }
     }
 
     updateLoopPoint(trackIdx, loopAtStep) {

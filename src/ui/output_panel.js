@@ -22,6 +22,7 @@ export default class OutputPanel extends BasePanel {
 
         this._lowcutVal = 35
         this._hicutVal  = 18500
+        this._spectrumLut = null
     }
 
     createDOM() {
@@ -218,16 +219,24 @@ export default class OutputPanel extends BasePanel {
         const barCount = Math.min(bins.length, w)
         const barW     = w / barCount
 
+        if (!this._spectrumLut || this._spectrumLut.length < barCount) {
+            this._spectrumLut = new Array(barCount)
+            for (let i = 0; i < barCount; i++) {
+                const val = i / barCount
+                const r = Math.floor(200 + 55 * val)
+                const g = Math.floor(69 * (1 - val * 0.5))
+                const b = Math.floor(96 * (1 - val * 0.7))
+                this._spectrumLut[i] = `rgb(${r},${g},${b})`
+            }
+        }
+
         ctx.fillStyle = '#0d0d1a'
         ctx.fillRect(0, 0, w, h)
 
         for (let i = 0; i < barCount; i++) {
             const val  = bins[i] / 255
             const barH = val * h
-            const r    = Math.floor(200 + 55 * val)
-            const g    = Math.floor(69 * (1 - val * 0.5))
-            const b    = Math.floor(96 * (1 - val * 0.7))
-            ctx.fillStyle = `rgb(${r},${g},${b})`
+            ctx.fillStyle = this._spectrumLut[i]
             ctx.fillRect(i * barW, h - barH, Math.max(1, barW - 0.5), barH)
         }
     }
