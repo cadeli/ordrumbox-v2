@@ -5,11 +5,12 @@ import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
 const COMPRESSOR_PARAMS = [
-    { key: 'threshold', label: 'Threshold', min: -40, max: 0,     step: 1,     default: -12,   unit: 'dB' },
-    { key: 'ratio',     label: 'Ratio',     min: 1,   max: 20,    step: 0.5,   default: 4             },
-    { key: 'attack',    label: 'Attack',    min: 0,   max: 1,     step: 0.001, default: 0.005, unit: 's' },
-    { key: 'release',   label: 'Release',   min: 0,   max: 1,     step: 0.001, default: 0.15,  unit: 's' },
-    { key: 'knee',      label: 'Knee',      min: 0,   max: 40,    step: 1,     default: 6,     unit: 'dB' },
+    { key: 'threshold', label: 'Threshold', min: -40, max: 0,     step: 1,     default: -18,   unit: 'dB' },
+    { key: 'ratio',     label: 'Ratio',     min: 1,   max: 20,    step: 0.5,   default: 8             },
+    { key: 'attack',    label: 'Attack',    min: 0,   max: 1,     step: 0.001, default: 0.002, unit: 's' },
+    { key: 'release',   label: 'Release',   min: 0,   max: 1,     step: 0.001, default: 0.08,  unit: 's' },
+    { key: 'knee',      label: 'Knee',      min: 0,   max: 40,    step: 1,     default: 3,     unit: 'dB' },
+    { key: 'makeup',    label: 'Makeup',    min: 0,   max: 24,    step: 0.5,   default: 8,     unit: 'dB' },
 ]
 
 export default class OutputPanel extends BasePanel {
@@ -19,8 +20,6 @@ export default class OutputPanel extends BasePanel {
         this._animId   = null
         this._visible  = false
 
-        // Stored slider values for filters (lowcut/hicut must be sent together
-        // to setMasterBus).
         this._lowcutVal = 35
         this._hicutVal  = 18500
     }
@@ -33,16 +32,17 @@ export default class OutputPanel extends BasePanel {
                 <button class="ne-close">&times;</button>
             </div>
             <div class="ne-body">
-                ${buildAccordionGroup('master', 'Master', 'Master', true, '', { gridId: 'op-master-grid' })}
-                ${buildAccordionGroup('filters', 'Filters', 'Flt', true, '', { gridId: 'op-filters-grid' })}
+                ${buildAccordionGroup('master', 'Master', 'Mst', true, '', { gridId: 'op-master-grid' })}
                 ${buildAccordionGroup('compressor', 'Compressor', 'Comp', true, '', { gridId: 'op-comp-grid' })}
+                ${buildAccordionGroup('filters', 'Filters', 'Flt', true, '', { gridId: 'op-filters-grid' })}
                 ${buildAccordionGroup('spectrum', 'Spectrum', 'Spec', true, '<canvas id="op-spectrum"></canvas>', { extraAttrs: 'id="op-analyzer-group"' })}
             </div>
         `
 
         this._buildMasterSlider()
-        this._buildFilterSliders()
+        this._buildPreGainSlider()
         this._buildCompressorSliders()
+        this._buildFilterSliders()
 
         this.canvas = this.container.querySelector('#op-spectrum')
         this.canvas.width  = 256
@@ -52,8 +52,8 @@ export default class OutputPanel extends BasePanel {
 
         const targetMap = {
             master:     '#op-master-vol',
-            filters:    '.ne-group:nth-child(2) .ne-group-content',
-            compressor: '.ne-group:nth-child(3) .ne-group-content',
+            compressor: '.ne-group:nth-child(2) .ne-group-content',
+            filters:    '.ne-group:nth-child(3) .ne-group-content',
             spectrum:   '#op-analyzer-group .ne-group-content',
         }
         bindAccordionToggles(this.container, (key) => this.container.querySelector(targetMap[key]))
@@ -72,9 +72,45 @@ export default class OutputPanel extends BasePanel {
             onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: v }),
         })
         const row = this._masterVol.createElement()
-        // Preserve the original id selector used by bindPanelToggles targetMap.
         row.querySelector('input[type=range]').id = 'op-master-vol'
         this.container.querySelector('#op-master-grid').appendChild(row)
+    }
+
+    _buildPreGainSlider() {
+        this._preGain = new OrSlider({
+            key:     'op-pregain',
+            label:   'Pre-Gain',
+            min:     -20,
+            max:     20,
+            step:    0.5,
+            value:   0,
+            noCursor: true,
+            format:  v => (v >= 0 ? '+' : '') + v.toFixed(1),
+            unit:    'dB',
+            onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v }),
+        })
+        this.container.querySelector('#op-master-grid').appendChild(this._preGain.createElement())
+    }
+
+    _buildCompressorSliders() {
+        this._compSliders = {}
+        const grid = this.container.querySelector('#op-comp-grid')
+        COMPRESSOR_PARAMS.forEach(p => {
+            const slider = new OrSlider({
+                key:      p.key,
+                label:    p.label,
+                min:      p.min,
+                max:      p.max,
+                step:     p.step,
+                value:    p.default,
+                noCursor: true,
+                format:   v => p.step < 1 ? parseFloat(v.toFixed(3)) : Math.round(v),
+                unit:     p.unit ?? '',
+                onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v }),
+            })
+            this._compSliders[p.key] = slider
+            grid.appendChild(slider.createElement())
+        })
     }
 
     _buildFilterSliders() {
@@ -115,27 +151,6 @@ export default class OutputPanel extends BasePanel {
         grid.appendChild(this._hicut.createElement())
     }
 
-    _buildCompressorSliders() {
-        this._compSliders = {}
-        const grid = this.container.querySelector('#op-comp-grid')
-        COMPRESSOR_PARAMS.forEach(p => {
-            const slider = new OrSlider({
-                key:      p.key,
-                label:    p.label,
-                min:      p.min,
-                max:      p.max,
-                step:     p.step,
-                value:    p.default,
-                noCursor: true,
-                format:   v => p.step < 1 ? parseFloat(v.toFixed(3)) : Math.round(v),
-                unit:     p.unit ?? '',
-                onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v }),
-            })
-            this._compSliders[p.key] = slider
-            grid.appendChild(slider.createElement())
-        })
-    }
-
     _pushFilters() {
         serviceRegistry.audioEngine?.mixer?.setMasterBus({
             lowcut: this._lowcutVal,
@@ -167,9 +182,6 @@ export default class OutputPanel extends BasePanel {
     sync() {
         const mixer = serviceRegistry.audioEngine?.mixer
         if (!mixer) return
-
-        // Master bus params are now on the worklet — sync via setMasterBus on demand.
-        // Sliders read their own stored values on show(); no AudioNode read-back needed.
     }
 
     _startAnimation() {

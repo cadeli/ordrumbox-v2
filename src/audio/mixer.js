@@ -198,6 +198,7 @@ export default class MfMixer {
         set('compAttack',    options.attack);
         set('compRelease',   options.release);
         set('compMakeup',    options.makeup);
+        set('preGain',       options.preGain);
         if (options.bypass !== undefined && params.get('bypass')) {
             params.get('bypass').setTargetAtTime(options.bypass ? 1 : 0, time, ramp);
         }

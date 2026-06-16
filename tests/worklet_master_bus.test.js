@@ -93,6 +93,7 @@ describe('MasterBusProcessor source', () => {
             inL[i] = Math.sin(2 * Math.PI * 100 * i / 44100)  // 100Hz tone
         }
         const out = runProcess(proc, [[inL, inL]], {
+            compThreshold: 0,  // disable compressor for filter-only test
             lowcut: 20,
             hicut: 20000,  // wide open
             master: 1.0

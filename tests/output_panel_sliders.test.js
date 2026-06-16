@@ -65,13 +65,14 @@ describe('OutputPanel — OrSlider integration', () => {
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ lowcut: 80, hicut: 12000 })
     })
 
-    it('compressor sliders: 5 rows with correct keys, labels, units, and display', () => {
+    it('compressor sliders: 6 rows with correct keys, labels, units, and display', () => {
         const expected = [
-            { key: 'threshold', label: 'Threshold', unit: 'dB', display: '-12 dB' },
-            { key: 'ratio',     label: 'Ratio',     unit: '',   display: '4' },
-            { key: 'attack',    label: 'Attack',    unit: 's',  display: '0.005 s' },
-            { key: 'release',   label: 'Release',   unit: 's',  display: '0.15 s' },
-            { key: 'knee',      label: 'Knee',      unit: 'dB', display: '6 dB' },
+            { key: 'threshold', label: 'Threshold', unit: 'dB', display: '-18 dB' },
+            { key: 'ratio',     label: 'Ratio',     unit: '',   display: '8' },
+            { key: 'attack',    label: 'Attack',    unit: 's',  display: '0.002 s' },
+            { key: 'release',   label: 'Release',   unit: 's',  display: '0.08 s' },
+            { key: 'knee',      label: 'Knee',      unit: 'dB', display: '3 dB' },
+            { key: 'makeup',    label: 'Makeup',    unit: 'dB', display: '8 dB' },
         ]
         for (const e of expected) {
             const input = panel.container.querySelector(`input[data-key="${e.key}"]`)
@@ -104,14 +105,31 @@ describe('OutputPanel — OrSlider integration', () => {
         expect(knee.nextElementSibling.textContent).toBe('13 dB')
     })
 
+    it('pre-gain slider: renders with correct range and calls setMasterBus', () => {
+        const preGain = panel.container.querySelector('input[data-key="op-pregain"]')
+        expect(preGain).not.toBeNull()
+        expect(preGain.min).toBe('-20')
+        expect(preGain.max).toBe('20')
+        expect(preGain.value).toBe('0')
+        expect(preGain.nextElementSibling.textContent).toBe('+0.0 dB')
+        fireInput(preGain, 6)
+        expect(setMasterBusMock).toHaveBeenLastCalledWith({ preGain: 6 })
+        expect(preGain.nextElementSibling.textContent).toBe('+6.0 dB')
+        fireInput(preGain, -3)
+        expect(preGain.nextElementSibling.textContent).toBe('-3.0 dB')
+    })
+
     it('panel toggle selectors still resolve (id and :nth-child)', () => {
-        // master toggle targets the input by id
         const masterTarget = panel.container.querySelector('#op-master-vol')
         expect(masterTarget).not.toBeNull()
-        // filters and compressor toggle target groups by structural position
         const groups = panel.container.querySelectorAll('.ne-group')
-        expect(groups[1].querySelector('.ne-group-label').textContent).toBe('Filters')
-        expect(groups[2].querySelector('.ne-group-label').textContent).toBe('Compressor')
+        expect(groups[1].querySelector('.ne-group-label').textContent).toBe('Compressor')
+        expect(groups[2].querySelector('.ne-group-label').textContent).toBe('Filters')
+        
+        // Check that Pre-Gain slider exists within Master grid
+        const masterGrid = panel.container.querySelector('#op-master-grid')
+        const pregainLabel = Array.from(masterGrid.querySelectorAll('.ne-slider-label')).find(el => el.textContent === 'Pre-Gain')
+        expect(pregainLabel).not.toBeNull()
     })
 
     it('keyboard arrows on a slider still work (delegated handler from main.js)', () => {
