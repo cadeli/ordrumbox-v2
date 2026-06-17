@@ -942,7 +942,7 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(kicks).toHaveLength(1)
         })
 
-        it('pitchLfo adds to note pitch (KICK 36 + pitch 5 + lfo 6 = 47)', () => {
+        it('pitchLfo replaces note pitch (KICK 36 + lfo 6, note.pitch=5 ignored)', () => {
             const pattern = {
                 name: 'LfoPitchAdd', bpm: 120, nbBars: 1,
                 tracks: [track('KICK', 4, 1, 1, [
@@ -952,7 +952,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
-            const kicks = allNoteOns(midiBytes).filter(n => n.note === 47)
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 42)
             expect(kicks).toHaveLength(1)
         })
 
@@ -1068,7 +1068,7 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(kicks[0].velocity).toBe(64)
         })
 
-        it('pitchLfo with negative note pitch (KICK 36 + pitch -3 + lfo 6 = 39)', () => {
+        it('pitchLfo replaces note pitch (KICK 36 + lfo 6, negative note.pitch=-3 ignored)', () => {
             const pattern = {
                 name: 'LfoPitchNeg', bpm: 120, nbBars: 1,
                 tracks: [track('KICK', 4, 1, 1, [
@@ -1078,7 +1078,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
-            const kicks = allNoteOns(midiBytes).filter(n => n.note === 39)
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 42)
             expect(kicks).toHaveLength(1)
         })
 
@@ -1249,7 +1249,7 @@ describe('MidiExporter — functional end-to-end', () => {
     // ── 16. Retrigger + pitchLfo combined ──────────────────────────────────────
 
     describe('Case 16: retrigger + pitchLfo applied per retrigger note', () => {
-        it('each retrigger note gets pitch from base pitch + LFO at its tick', () => {
+        it('each retrigger note gets pitch from LFO at its tick (note.pitch replaced)', () => {
             const pattern = {
                 name: 'RetrigPitchLfo', bpm: 120, nbBars: 1,
                 tracks: [track('KICK', 4, 1, 1, [
@@ -1259,9 +1259,9 @@ describe('MidiExporter — functional end-to-end', () => {
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
-            const kicks = allNoteOns(midiBytes).filter(n => n.note === 38).sort((a,b) => a.absTick - b.absTick)
+            const kicks = allNoteOns(midiBytes).filter(n => n.note === 36).sort((a,b) => a.absTick - b.absTick)
             expect(kicks).toHaveLength(2)
-            kicks.forEach(k => expect(k.note).toBe(38))
+            kicks.forEach(k => expect(k.note).toBe(36))
         })
     })
 

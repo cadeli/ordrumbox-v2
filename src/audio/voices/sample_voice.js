@@ -34,7 +34,7 @@ export default class SampleVoice extends BaseVoice {
         if (track.pitchLfo && lfoContext) {
             const { tick, nbTicks } = lfoContext
             const lfoSemi = computeLfoValue(track.pitchLfo, tick, nbTicks, 'pitch')
-            playbackRate *= Math.pow(2, lfoSemi / 12)
+            playbackRate = Math.pow(2, lfoSemi / 12)
         }
         this.snd.playbackRate.setTargetAtTime(playbackRate, time, PITCH_RAMP_TIME)
         this.panNode.pan.setValueAtTime(flatNote.pan ?? 0, time)

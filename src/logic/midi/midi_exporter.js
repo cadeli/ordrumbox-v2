@@ -224,10 +224,9 @@ export default class MidiExporter {
                         velocity = Math.min(1, Math.max(0, lfoVal))
                     }
 
-                    let pitchOffset = fn.note.pitch ?? 0
-                    if (fn.track.pitchLfo) {
-                        pitchOffset += computeLfoValue(fn.track.pitchLfo, engineTick, nbTickForPattern)
-                    }
+                    let pitchOffset = fn.track.pitchLfo
+                        ? computeLfoValue(fn.track.pitchLfo, engineTick, nbTickForPattern)
+                        : (fn.note.pitch ?? 0)
 
                     const noteNum  = Math.min(127, Math.max(0, td.midiNote + pitchOffset))
                     const midiVel  = Math.round(velocity * 127)

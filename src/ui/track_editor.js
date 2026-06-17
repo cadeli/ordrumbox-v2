@@ -190,7 +190,7 @@ export default class TrackEditor extends BasePanel {
                     const s = this._sliders.get(p.key)
                     if (s) {
                         const renderedVal = lfoValues[p.key] ?? 0
-                        s.setValue(p.key === 'pitch' ? this._track.pitch + renderedVal : renderedVal)
+                        s.setValue(renderedVal)
                     }
                 }
             })
