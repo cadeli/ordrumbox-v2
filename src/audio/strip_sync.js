@@ -30,11 +30,11 @@ export function applyTrackToStrip(strip, track, time, opts) {
         strip.updateDelay(track.delayType, track.delayTime, track.delayOn === false ? 0 : track.delayAmount)
     }
 
-    if (track.pitchLfo !== undefined) strip.updateLfo('pitchLfo', track.pitchLfo)
-    if (track.velocityLfo !== undefined) strip.updateLfo('velocityLfo', track.velocityLfo)
-    if (track.panLfo !== undefined) strip.updateLfo('panLfo', track.panLfo)
-    if (track.filterFreqLfo !== undefined) strip.updateLfo('filterFreqLfo', track.filterFreqLfo)
-    if (track.filterQLfo !== undefined) strip.updateLfo('filterQLfo', track.filterQLfo)
+    strip.updateLfo('pitchLfo', track.pitchLfo)
+    strip.updateLfo('velocityLfo', track.velocityLfo)
+    strip.updateLfo('panLfo', track.panLfo)
+    strip.updateLfo('filterFreqLfo', track.filterFreqLfo)
+    strip.updateLfo('filterQLfo', track.filterQLfo)
 
     if (!skipVP) {
         const trackVelo = readDefaults

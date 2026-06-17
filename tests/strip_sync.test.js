@@ -82,13 +82,17 @@ describe('applyTrackToStrip', () => {
         applyTrackToStrip(strip, { name: 'KICK', pitchLfo, velocityLfo }, 1.0)
         expect(strip.updateLfo).toHaveBeenCalledWith('pitchLfo', pitchLfo)
         expect(strip.updateLfo).toHaveBeenCalledWith('velocityLfo', velocityLfo)
-        expect(strip.updateLfo).toHaveBeenCalledTimes(2)
     })
 
-    it('skips updateLfo when no LFO configs present', () => {
+    it('always calls updateLfo for all LFO keys (clears disabled LFOs)', () => {
         const strip = makeStrip()
         applyTrackToStrip(strip, { name: 'KICK', filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }, 1.0)
-        expect(strip.updateLfo).not.toHaveBeenCalled()
+        expect(strip.updateLfo).toHaveBeenCalledTimes(5)
+        expect(strip.updateLfo).toHaveBeenCalledWith('pitchLfo', undefined)
+        expect(strip.updateLfo).toHaveBeenCalledWith('velocityLfo', undefined)
+        expect(strip.updateLfo).toHaveBeenCalledWith('panLfo', undefined)
+        expect(strip.updateLfo).toHaveBeenCalledWith('filterFreqLfo', undefined)
+        expect(strip.updateLfo).toHaveBeenCalledWith('filterQLfo', undefined)
     })
 
     it('sets velocity on strip.output.gain', () => {
@@ -182,6 +186,5 @@ describe('applyParamsToStrip', () => {
         applyParamsToStrip(strip, { pitchLfo, filterFreqLfo: { freq: 1, min: 0, max: 1 } }, 1.0)
         expect(strip.updateLfo).toHaveBeenCalledWith('pitchLfo', pitchLfo)
         expect(strip.updateLfo).toHaveBeenCalledWith('filterFreqLfo', { freq: 1, min: 0, max: 1 })
-        expect(strip.updateLfo).toHaveBeenCalledTimes(2)
     })
 })
