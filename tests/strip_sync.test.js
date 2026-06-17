@@ -12,7 +12,6 @@ function makeStrip() {
         updateSaturation: vi.fn(),
         updateReverb: vi.fn(),
         updateDelay: vi.fn(),
-        updateLfo: vi.fn(),
     }
 }
 
@@ -73,26 +72,6 @@ describe('applyTrackToStrip', () => {
         const strip = makeStrip()
         applyTrackToStrip(strip, { name: 'KICK', delayType: 'pingpong', delayOn: true, delayTime: 2, delayAmount: 0.3 }, 1.0)
         expect(strip.updateDelay).toHaveBeenCalledWith('pingpong', 2, 0.3)
-    })
-
-    it('calls updateLfo for each LFO key present', () => {
-        const strip = makeStrip()
-        const pitchLfo = { freq: 2, min: 0, max: 0.5 }
-        const velocityLfo = { freq: 1, min: 0.2, max: 0.8 }
-        applyTrackToStrip(strip, { name: 'KICK', pitchLfo, velocityLfo }, 1.0)
-        expect(strip.updateLfo).toHaveBeenCalledWith('pitchLfo', pitchLfo)
-        expect(strip.updateLfo).toHaveBeenCalledWith('velocityLfo', velocityLfo)
-    })
-
-    it('always calls updateLfo for all LFO keys (clears disabled LFOs)', () => {
-        const strip = makeStrip()
-        applyTrackToStrip(strip, { name: 'KICK', filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7 }, 1.0)
-        expect(strip.updateLfo).toHaveBeenCalledTimes(5)
-        expect(strip.updateLfo).toHaveBeenCalledWith('pitchLfo', undefined)
-        expect(strip.updateLfo).toHaveBeenCalledWith('velocityLfo', undefined)
-        expect(strip.updateLfo).toHaveBeenCalledWith('panLfo', undefined)
-        expect(strip.updateLfo).toHaveBeenCalledWith('filterFreqLfo', undefined)
-        expect(strip.updateLfo).toHaveBeenCalledWith('filterQLfo', undefined)
     })
 
     it('sets velocity on strip.output.gain', () => {
@@ -178,13 +157,5 @@ describe('applyParamsToStrip', () => {
         const strip = makeStrip()
         applyParamsToStrip(strip, { mute: false }, 1.0)
         expect(strip.output.gain.setTargetAtTime).toHaveBeenLastCalledWith(1.0, 1.0, expect.any(Number))
-    })
-
-    it('calls updateLfo for each LFO key present', () => {
-        const strip = makeStrip()
-        const pitchLfo = { freq: 2, min: 0, max: 0.5 }
-        applyParamsToStrip(strip, { pitchLfo, filterFreqLfo: { freq: 1, min: 0, max: 1 } }, 1.0)
-        expect(strip.updateLfo).toHaveBeenCalledWith('pitchLfo', pitchLfo)
-        expect(strip.updateLfo).toHaveBeenCalledWith('filterFreqLfo', { freq: 1, min: 0, max: 1 })
     })
 })

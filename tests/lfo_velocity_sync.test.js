@@ -56,7 +56,7 @@ describe('LFO Velocity Sync Verification', () => {
     })
 
     describe('TrackEditor Integration (freq=2)', () => {
-        let editor, track, mockStrip
+        let editor, track
         const lfoConfig = { freq: 2, phase: 0, min: 0, max: 1, waveform: 0 }
 
         beforeEach(() => {
@@ -69,29 +69,24 @@ describe('LFO Velocity Sync Verification', () => {
             appState.selectedPatternNum = 0
             appState.trackEditorVisibility.levels = true
             
-            mockStrip = { getLfoValue: vi.fn(() => 0) }
-            serviceRegistry.audioEngine = { mixer: { getOrCreateStrip: vi.fn().mockResolvedValue(mockStrip) } }
-            
             editor = new TrackEditor()
             editor.init()
             editor._track = track
             editor.sync()
-            
+
             serviceRegistry.transport = { isRunning: true, tick: 0 }
-            serviceRegistry.audioCtx = { currentTime: 0 }
         })
 
-        it('animates to 1.0 (Peak) at 1 bar (2s at 120 BPM)', async () => {
-            // The strip worklet returns the value computed in audio context
-            mockStrip.getLfoValue.mockReturnValue(1.0)
-            await editor._updateLfoSliders()
-            expect(editor._sliders.get('velocity').getValue()).toBe(1)
+        it('animates to 1.0 (Peak) at tick 32 (freq=2, phase=0)', () => {
+            serviceRegistry.transport.tick = 32
+            editor._updateLfoSliders()
+            expect(editor._sliders.get('velocity').getValue()).toBeCloseTo(1, 5)
         })
 
-        it('animates to 0.0 (End Cycle) at 2 bars (4s at 120 BPM)', async () => {
-            mockStrip.getLfoValue.mockReturnValue(0.0)
-            await editor._updateLfoSliders()
-            expect(editor._sliders.get('velocity').getValue()).toBe(0)
+        it('animates to 0.0 (trough) at tick 64 (freq=2, phase=0)', () => {
+            serviceRegistry.transport.tick = 64
+            editor._updateLfoSliders()
+            expect(editor._sliders.get('velocity').getValue()).toBeCloseTo(0, 5)
         })
     })
 
@@ -156,7 +151,7 @@ describe('LFO Velocity Sync Verification', () => {
 describe('LFO Pitch Replacement Semantics', () => {
 
     describe('TrackEditor Integration', () => {
-        let editor, track, mockStrip
+        let editor, track
 
         beforeEach(() => {
             document.body.innerHTML = ''
@@ -171,10 +166,10 @@ describe('LFO Pitch Replacement Semantics', () => {
             appState.trackEditorVisibility = { basic: true, levels: true, filters: true, effects: true, sound: false, loop: false }
         })
 
-        it('pitch slider shows LFO value directly, not track.pitch + LFO', async () => {
+        it('pitch slider shows LFO value directly, not track.pitch + LFO', () => {
             track = {
                 name: 'KICK', velocity: 0.8, pitch: 5, pan: 0,
-                pitchLfo: { freq: 1, min: -6, max: 6, phase: 0, type: 'sine' },
+                pitchLfo: { freq: 1, min: 0, max: 6, phase: 0.25, type: 'sine' },
                 barQuantize: 4, bars: 4, loopAtStep: 16,
                 filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.5,
                 reverbAmount: 0, reverbType: 'none',
@@ -186,9 +181,6 @@ describe('LFO Pitch Replacement Semantics', () => {
             }
             appState.patterns = [{ tracks: [track], nbBars: 4 }]
             appState.selectedPatternNum = 0
-
-            mockStrip = { getLfoValue: vi.fn(() => 0) }
-            serviceRegistry.audioEngine = { mixer: { getOrCreateStrip: vi.fn().mockResolvedValue(mockStrip) } }
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
             editor = new TrackEditor()
@@ -196,16 +188,15 @@ describe('LFO Pitch Replacement Semantics', () => {
             editor._track = track
             editor.sync()
 
-            // Worklet reports LFO output = 3 semitones
-            mockStrip.getLfoValue.mockReturnValue(3)
-            await editor._updateLfoSliders()
+            // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0+0.5*6=3
+            editor._updateLfoSliders()
 
             const slider = editor._sliders.get('pitch')
             // Replacement: slider shows LFO value (3), NOT track.pitch + LFO (5 + 3 = 8)
-            expect(slider.getValue()).toBe(3)
+            expect(slider.getValue()).toBeCloseTo(3, 5)
         })
 
-        it('pitch slider uses LFO value from strip, ignoring track.pitch', async () => {
+        it('pitch slider uses LFO value, ignoring track.pitch', () => {
             track = {
                 name: 'KICK', velocity: 0.8, pitch: -10, pan: 0,
                 pitchLfo: { freq: 1, min: 0, max: 12, phase: 0.25, type: 'sine' },
@@ -220,9 +211,6 @@ describe('LFO Pitch Replacement Semantics', () => {
             }
             appState.patterns = [{ tracks: [track], nbBars: 4 }]
             appState.selectedPatternNum = 0
-
-            mockStrip = { getLfoValue: vi.fn(() => 0) }
-            serviceRegistry.audioEngine = { mixer: { getOrCreateStrip: vi.fn().mockResolvedValue(mockStrip) } }
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
             editor = new TrackEditor()
@@ -230,18 +218,18 @@ describe('LFO Pitch Replacement Semantics', () => {
             editor._track = track
             editor.sync()
 
-            mockStrip.getLfoValue.mockReturnValue(6)
-            await editor._updateLfoSliders()
+            // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0+0.5*12=6
+            editor._updateLfoSliders()
 
             const slider = editor._sliders.get('pitch')
             // Replacement: 6, NOT -10 + 6 = -4
-            expect(slider.getValue()).toBe(6)
+            expect(slider.getValue()).toBeCloseTo(6, 5)
         })
 
-        it('velocity slider uses LFO value directly (baseline for comparison)', async () => {
+        it('velocity slider uses LFO value directly', () => {
             track = {
                 name: 'KICK', velocity: 0.5, pitch: 0, pan: 0,
-                velocityLfo: { freq: 1, min: 0, max: 1, phase: 0.25, type: 'sine' },
+                velocityLfo: { freq: 1, min: 0.6, max: 1, phase: 0.25, type: 'sine' },
                 barQuantize: 4, bars: 4, loopAtStep: 16,
                 filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.5,
                 reverbAmount: 0, reverbType: 'none',
@@ -253,9 +241,6 @@ describe('LFO Pitch Replacement Semantics', () => {
             }
             appState.patterns = [{ tracks: [track], nbBars: 4 }]
             appState.selectedPatternNum = 0
-
-            mockStrip = { getLfoValue: vi.fn(() => 0) }
-            serviceRegistry.audioEngine = { mixer: { getOrCreateStrip: vi.fn().mockResolvedValue(mockStrip) } }
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
             editor = new TrackEditor()
@@ -263,10 +248,10 @@ describe('LFO Pitch Replacement Semantics', () => {
             editor._track = track
             editor.sync()
 
-            mockStrip.getLfoValue.mockReturnValue(0.8)
-            await editor._updateLfoSliders()
+            // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0.6+0.5*0.4=0.8
+            editor._updateLfoSliders()
 
-            expect(editor._sliders.get('velocity').getValue()).toBe(0.8)
+            expect(editor._sliders.get('velocity').getValue()).toBeCloseTo(0.8, 5)
         })
     })
 

@@ -2,14 +2,10 @@
  * Unified Strip AudioWorkletProcessor source.
  * 
  * Combines Filter (TPT SVF), Saturation, Reverb (Freeverb), 
- * Delay (with feedback FX), and 5 internal LFOs into a single DSP block.
+ * and Delay (with feedback FX) into a single DSP block.
  * 
- * Synchronisation: uses 'transportTime' (seconds) and 'bpm' to calculate 
- * musical LFO cycles internally. 
- * 
- * Parameters like lfoCutFreq are PERIOD MULTIPLIERS:
- *   - 1.0 = 4 beats (1 bar)
- *   - 2.0 = 8 beats (2 bars)
+ * LFO values are pre-computed in JS and pushed to the strip's
+ * parameters at each step boundary — no internal LFO computation.
  */
 
 const STRIP_PROCESSOR_SOURCE = `
@@ -19,7 +15,6 @@ const COMB_TUNINGS_R = [1139, 1211, 1300, 1379, 1445, 1514, 1580, 1640];
 const ALLPASS_TUNINGS_L = [556, 441, 341, 225];
 const ALLPASS_TUNINGS_R = [579, 464, 364, 248];
 const PI = Math.PI;
-const TWO_PI = 2 * PI;
 
 class _Comb {
     constructor(len) { this.buf = new Float32Array(len); this.idx = 0; this.len = len; this.store = 0; }
@@ -60,51 +55,6 @@ class _DelayLine {
     write(v) { this.buf[this.idx] = v; this.idx++; if (this.idx >= this.len) this.idx = 0; }
 }
 
-// Sine lookup table (4096 entries)
-const SINE_TABLE_SIZE = 4096;
-const _sineTable = new Float32Array(SINE_TABLE_SIZE);
-for (let i = 0; i < SINE_TABLE_SIZE; i++) {
-    _sineTable[i] = Math.sin(TWO_PI * i / SINE_TABLE_SIZE);
-}
-function _sinLookup(phase) {
-    const idx = phase * SINE_TABLE_SIZE;
-    const i = idx | 0;
-    const f = idx - i;
-    return _sineTable[i & (SINE_TABLE_SIZE - 1)] * (1 - f) + _sineTable[(i + 1) & (SINE_TABLE_SIZE - 1)] * f;
-}
-
-// Cheap xorshift32 PRNG (replaces Math.random for S&H)
-function _xorshift32(state) {
-    state ^= state << 13;
-    state ^= state >> 17;
-    state ^= state << 5;
-    return state | 0;
-}
-
-// Shared LFO Waveform Math (matches math.js)
-const getLfoWaveformValue = (phase, wave) => {
-    const p = (phase - 0.25) - ((phase - 0.25) | 0);
-    if (wave < 0.5) return _sinLookup(p); // Sine (LUT)
-    if (wave < 1.5) return p < 0.25 ? p * 4 - 1 : (p < 0.75 ? 3 - p * 4 : p * 4 - 5); // Tri
-    if (wave < 2.5) return p * 2 - 1; // Saw
-    if (wave < 3.5) return p < 0.5 ? 1 : -1; // Square
-    return 0; // S&H handled statefully
-};
-
-class _SH {
-    constructor() { this.lastCycle = -1; this.val = 0; this._rngState = 12345; }
-    process(time, freqMultiplier, bpm) {
-        const patternDuration = 16 * (60 / bpm);
-        const cycle = (time / patternDuration * freqMultiplier) | 0;
-        if (cycle !== this.lastCycle) {
-            this._rngState = _xorshift32(this._rngState);
-            this.val = (this._rngState / 2147483648);
-            this.lastCycle = cycle;
-        }
-        return this.val;
-    }
-}
-
 class StripProcessor extends AudioWorkletProcessor {
     static get parameterDescriptors() {
         return [
@@ -134,18 +84,6 @@ class StripProcessor extends AudioWorkletProcessor {
             // Transport / Tempo
             { name: 'transportTime', defaultValue: 0 },
             { name: 'bpm',           defaultValue: 120 },
-            // LFO mix (0 = base value, 1 = LFO replaces)
-            { name: 'lfoPitchMix', defaultValue: 0, minValue: 0, maxValue: 1 },
-            { name: 'lfoVeloMix',  defaultValue: 0, minValue: 0, maxValue: 1 },
-            { name: 'lfoPanMix',   defaultValue: 0, minValue: 0, maxValue: 1 },
-            { name: 'lfoCutMix',   defaultValue: 0, minValue: 0, maxValue: 1 },
-            { name: 'lfoQMix',     defaultValue: 0, minValue: 0, maxValue: 1 },
-            // LFOs (Frequency = PERIOD MULTIPLIER, other params in user domain)
-            { name: 'lfoPitchFreq', defaultValue: 1 }, { name: 'lfoPitchWave', defaultValue: 0 }, { name: 'lfoPitchDepth', defaultValue: 0 }, { name: 'lfoPitchBias', defaultValue: 0 }, { name: 'lfoPitchPhase', defaultValue: 0 },
-            { name: 'lfoVeloFreq',  defaultValue: 1 }, { name: 'lfoVeloWave',  defaultValue: 0 }, { name: 'lfoVeloDepth',  defaultValue: 0 }, { name: 'lfoVeloBias',  defaultValue: 0 }, { name: 'lfoVeloPhase',  defaultValue: 0 },
-            { name: 'lfoPanFreq',   defaultValue: 1 }, { name: 'lfoPanWave',   defaultValue: 0 }, { name: 'lfoPanDepth',   defaultValue: 0 }, { name: 'lfoPanBias',   defaultValue: 0 }, { name: 'lfoPanPhase',   defaultValue: 0 },
-            { name: 'lfoCutFreq',   defaultValue: 1 }, { name: 'lfoCutWave',   defaultValue: 0 }, { name: 'lfoCutDepth',   defaultValue: 0 }, { name: 'lfoCutBias',   defaultValue: 0 }, { name: 'lfoCutPhase',   defaultValue: 0 },
-            { name: 'lfoQFreq',     defaultValue: 1 }, { name: 'lfoQWave',     defaultValue: 0 }, { name: 'lfoQDepth',     defaultValue: 0 }, { name: 'lfoQBias',     defaultValue: 0 }, { name: 'lfoQPhase',     defaultValue: 0 }
         ];
     }
 
@@ -160,9 +98,6 @@ class StripProcessor extends AudioWorkletProcessor {
         this.dlyL = new _DelayLine(2.1);
         this.dlyR = new _DelayLine(2.1);
         this.dlyFiltL = 0; this.dlyFiltR = 0;
-        this.sh = { pitch: new _SH(), velo: new _SH(), pan: new _SH(), cut: new _SH(), q: new _SH() };
-        this._lastVeloLfo = 0; this._lastPanLfo = 0;
-        this._lastCutLfo = 0; this._lastQLfo = 0; this._lastPitchLfo = 0;
     }
 
     _shape(x, drive, type, mix, out) {
@@ -170,7 +105,7 @@ class StripProcessor extends AudioWorkletProcessor {
         const d = x * drive;
         let s;
         if (type < 0.5) s = Math.tanh(d);
-        else if (type < 1.5) s = d < -1 ? -1 : (d > 1 ? 1 : d); // clip (no Math.max/min)
+        else if (type < 1.5) s = d < -1 ? -1 : (d > 1 ? 1 : d);
         else s = Math.atan(d);
         return (x * (1 - mix) + s * mix) * out;
     }
@@ -178,17 +113,14 @@ class StripProcessor extends AudioWorkletProcessor {
     process(inputs, outputs, params) {
         const input = inputs[0];
         const output = outputs[0];
-        const pitchLfoOut = outputs[1];
         if (!input || !input[0] || !output || !output[0]) return true;
 
         const sr = sampleRate;
         const frames = input[0].length;
         const inL = input[0], inR = input[1] || inL;
         const outL = output[0], outR = output[1];
-        const tTime = params.transportTime;
-        const bpmArr = params.bpm;
 
-        // === P0: Hoist ALL k-rate params before the loop ===
+        // Hoist all k-rate params
         const pCut = params.cutoff[0], pQ = params.q[0], fMode = params.filterMode[0];
         const satDrive = params.satDrive[0], satType = params.satType[0], satMix = params.satMix[0], satOut = params.satOut[0];
         const revRoom = params.revRoom[0], revDamp = params.revDamp[0], revWidth = params.revWidth[0], revMix = params.revMix[0];
@@ -196,14 +128,7 @@ class StripProcessor extends AudioWorkletProcessor {
         const dlyTimeL = params.dlyTimeL[0], dlyTimeR = params.dlyTimeR[0];
         const volParam = params.volume[0], panParam = params.pan[0];
 
-        // LFO params
-        const lCutF = params.lfoCutFreq[0], lCutW = params.lfoCutWave[0], lCutD = params.lfoCutDepth[0], lCutB = params.lfoCutBias[0], lCutP = params.lfoCutPhase[0], lCutMix = params.lfoCutMix[0];
-        const lQF = params.lfoQFreq[0], lQW = params.lfoQWave[0], lQD = params.lfoQDepth[0], lQB = params.lfoQBias[0], lQP = params.lfoQPhase[0], lQMix = params.lfoQMix[0];
-        const lVF = params.lfoVeloFreq[0], lVW = params.lfoVeloWave[0], lVD = params.lfoVeloDepth[0], lVB = params.lfoVeloBias[0], lVP = params.lfoVeloPhase[0], lVMix = params.lfoVeloMix[0];
-        const lPF = params.lfoPanFreq[0], lPW = params.lfoPanWave[0], lPD = params.lfoPanDepth[0], lPB = params.lfoPanBias[0], lPP = params.lfoPanPhase[0], lPMix = params.lfoPanMix[0];
-        const lPitchF = params.lfoPitchFreq[0], lPitchW = params.lfoPitchWave[0], lPitchD = params.lfoPitchDepth[0], lPitchB = params.lfoPitchBias[0], lPitchP = params.lfoPitchPhase[0], lPitchMix = params.lfoPitchMix[0];
-
-        // Pre-compute reverb constants (outside loop when possible)
+        // Pre-compute reverb constants
         const rm = revRoom * 0.28 + 0.7;
         const damp1 = revDamp * 0.4, damp2 = 1 - damp1;
         const rW1 = revWidth * 0.5 + 0.5, rW2 = (1 - revWidth) * 0.5;
@@ -212,34 +137,19 @@ class StripProcessor extends AudioWorkletProcessor {
         const hasSat = satMix > 0;
         const isPP = dlyMode > 1.5;
 
-        // Pre-compute static pan (when no LFO modulating pan)
-        const panStatic = lPMix === 0;
-        let staticPanL, staticPanR, staticPanComp;
-        if (panStatic) {
-            const p = Math.max(-1, Math.min(1, panParam));
-            staticPanL = Math.cos((p + 1) * PI / 4);
-            staticPanR = Math.sin((p + 1) * PI / 4);
-            const panMax = staticPanL > staticPanR ? staticPanL : staticPanR;
-            staticPanComp = panMax > 0.001 ? 1 / panMax : 1;
-        }
+        // Pre-compute pan constants (no LFO, always static)
+        const p = Math.max(-1, Math.min(1, panParam));
+        const staticPanL = Math.cos((p + 1) * PI / 4);
+        const staticPanR = Math.sin((p + 1) * PI / 4);
+        const panMax = staticPanL > staticPanR ? staticPanL : staticPanR;
+        const staticPanComp = panMax > 0.001 ? 1 / panMax : 1;
 
         for (let i = 0; i < frames; i++) {
-            const time = tTime.length > 1 ? tTime[i] : tTime[0];
-            const bpm = bpmArr.length > 1 ? bpmArr[i] : bpmArr[0];
-
-            // --- 1. LFO Internal Processing (short-circuit when depth=0) ---
-            const vLfo = lVD !== 0 ? this._computeLfo(lVF, lVW, lVD, lVB, lVP, this.sh.velo, time, bpm) : lVB;
-            const pLfo = lPD !== 0 ? this._computeLfo(lPF, lPW, lPD, lPB, lPP, this.sh.pan, time, bpm) : lPB;
-            const cLfo = lCutD !== 0 ? this._computeLfo(lCutF, lCutW, lCutD, lCutB, lCutP, this.sh.cut, time, bpm) : lCutB;
-            const qLfo = lQD !== 0 ? this._computeLfo(lQF, lQW, lQD, lQB, lQP, this.sh.q, time, bpm) : lQB;
-
-            // --- 2. Filter (Stereo TPT SVF) ---
-            const normCut = (1 - lCutMix) * pCut + lCutMix * cLfo;
-            const normCutClamped = normCut < 0 ? 0 : (normCut > 1 ? 1 : normCut);
-            const fHz = 20 * Math.pow(1000, normCutClamped);
-            const normQ = (1 - lQMix) * pQ + lQMix * qLfo;
-            const normQClamped = normQ < 0 ? 0 : (normQ > 1 ? 1 : normQ);
-            const Q = normQClamped * 18 + 0.707;
+            // --- 1. Filter (Stereo TPT SVF) ---
+            const normCut = pCut < 0 ? 0 : (pCut > 1 ? 1 : pCut);
+            const fHz = 20 * Math.pow(1000, normCut);
+            const normQ = pQ < 0 ? 0 : (pQ > 1 ? 1 : pQ);
+            const Q = normQ * 18 + 0.707;
 
             const g = Math.tan(PI * fHz / sr), k = 1 / Q;
             const a1 = 1 / (1 + g * (g + k)), a2 = g * a1, a3 = g * a2;
@@ -249,7 +159,6 @@ class StripProcessor extends AudioWorkletProcessor {
             const v3R = inR[i] - this.z2R, v1R = a1 * this.z1R + a2 * v3R, v2R = this.z2R + a2 * this.z1R + a3 * v3R;
             this.z1R = 2 * v1R - this.z1R; this.z2R = 2 * v2R - this.z2R;
             
-            // Flush filter denormals
             if (Math.abs(this.z1L) < 1e-15) this.z1L = 0; if (Math.abs(this.z2L) < 1e-15) this.z2L = 0;
             if (Math.abs(this.z1R) < 1e-15) this.z1R = 0; if (Math.abs(this.z2R) < 1e-15) this.z2R = 0;
 
@@ -259,11 +168,11 @@ class StripProcessor extends AudioWorkletProcessor {
             else if (fMode < 2.5) { dryL = v1L; dryR = v1R; }
             else                { dryL = v3L - v1L * k + v2L; dryR = v3R - v1R * k + v2R; }
 
-            // --- 3. Saturation (skip when mix=0) ---
+            // --- 2. Saturation (skip when mix=0) ---
             const satL = hasSat ? this._shape(dryL, satDrive, satType, satMix, satOut) : dryL;
             const satR = hasSat ? this._shape(dryR, satDrive, satType, satMix, satOut) : dryR;
 
-            // --- 4. Reverb (skip when mix=0) ---
+            // --- 3. Reverb (skip when mix=0) ---
             let rL = 0, rR = 0;
             if (hasReverb) {
                 const rIn = (satL + satR) * 0.0075;
@@ -274,7 +183,7 @@ class StripProcessor extends AudioWorkletProcessor {
                 rR = (oRC * rW1 + oLC * rW2) * revMix;
             }
 
-            // --- 5. Delay (skip when mix=0) ---
+            // --- 4. Delay (skip when mix=0) ---
             let dWetL = 0, dWetR = 0;
             if (hasDelay) {
                 const dL = this.dlyL.read(dlyTimeL * sr), dR = this.dlyR.read(dlyTimeR * sr);
@@ -285,71 +194,23 @@ class StripProcessor extends AudioWorkletProcessor {
                 dWetL = dL * dlyMix;
                 dWetR = dR * dlyMix;
             } else {
-                // Still write through to keep delay buffer advancing (prevents stale audio when enabled)
                 this.dlyL.write(satL);
                 this.dlyR.write(satR);
             }
 
-            // --- 6. Final Mix & Pan ---
-            const vol = (1 - lVMix) * volParam + lVMix * vLfo;
-            let panL, panR, panComp;
-            if (panStatic) {
-                panL = staticPanL;
-                panR = staticPanR;
-                panComp = staticPanComp;
-            } else {
-                const p = Math.max(-1, Math.min(1, (1 - lPMix) * panParam + lPMix * pLfo));
-                panL = Math.cos((p + 1) * PI / 4);
-                panR = Math.sin((p + 1) * PI / 4);
-                const panMax = panL > panR ? panL : panR;
-                panComp = panMax > 0.001 ? 1 / panMax : 1;
-            }
+            // --- 5. Final Mix & Pan ---
+            const vol = volParam < 0 ? 0 : (volParam > 2 ? 2 : volParam);
 
-            let fOutL = (satL + rL + dWetL) * vol * panL * panComp;
-            let fOutR = (satR + rR + dWetR) * vol * panR * panComp;
+            let fOutL = (satL + rL + dWetL) * vol * staticPanL * staticPanComp;
+            let fOutR = (satR + rR + dWetR) * vol * staticPanR * staticPanComp;
 
-            // Final safety clip & denormal flush
             if (Math.abs(fOutL) < 1e-15) fOutL = 0;
             if (Math.abs(fOutR) < 1e-15) fOutR = 0;
             outL[i] = fOutL > 2 ? 2 : (fOutL < -2 ? -2 : fOutL);
             outR[i] = fOutR > 2 ? 2 : (fOutR < -2 ? -2 : fOutR);
-
-            // LFO Pitch Output (port 1)
-            if (pitchLfoOut && pitchLfoOut[0]) {
-                const pitchVal = lPitchD !== 0 ? this._computeLfo(lPitchF, lPitchW, lPitchD, lPitchB, lPitchP, this.sh.pitch, time, bpm) : lPitchB;
-                pitchLfoOut[0][i] = lPitchMix * pitchVal;
-                this._lastPitchLfo = pitchVal;
-            }
-
-            // Cache last LFO values for main thread readout
-            this._lastVeloLfo = vLfo;
-            this._lastPanLfo = pLfo;
-            this._lastCutLfo = cLfo;
-            this._lastQLfo = qLfo;
-        }
-
-        // Post LFO snapshot to main thread (once per quantum)
-        if (this.port) {
-            this.port.postMessage({
-                type: 'lfoValues',
-                velocity: this._lastVeloLfo,
-                pan: this._lastPanLfo,
-                filterFreq: this._lastCutLfo,
-                filterQ: this._lastQLfo,
-                pitch: this._lastPitchLfo
-            });
         }
 
         return true;
-    }
-
-    _computeLfo(fMult, w, d, b, phase, sh, time, bpm) {
-        const patternDuration = 16 * (60 / bpm); // 4 bars = 16 beats
-        const freqClamped = Math.min(2, fMult);
-        const transportPhase = (time / patternDuration) * freqClamped;
-        const localPhase = transportPhase + phase;
-        const raw = w > 3.5 ? sh.process(time, freqClamped, bpm) : getLfoWaveformValue(localPhase, w);
-        return b + ((raw + 1) * 0.5) * d;
     }
 }
 registerProcessor('strip', StripProcessor);

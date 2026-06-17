@@ -4,7 +4,6 @@ import { RAMP_TIME } from '../core/constants.js';
 import WorkletLoader from './worklets/loader.js';
 import STRIP_SOURCE from './worklets/processors/strip_source.js';
 
-// Register the unified strip processor (idempotent)
 WorkletLoader.register('strip', STRIP_SOURCE);
 
 const SATURATION_TYPES = Object.freeze(["soft", "hard", "tape"]);
@@ -19,13 +18,6 @@ const REVERB_PRESETS = Object.freeze({
 const SATURATION_TYPES_IDX = { soft: 0, hard: 1, tape: 2 };
 const FILTER_MODES = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 };
 const DELAY_MODES  = { none: 0, slap: 0, tape: 1, pingpong: 2 };
-const LFO_PARAM_MAP = Object.freeze({
-    pitchLfo:      'lfoPitch',
-    velocityLfo:   'lfoVelo',
-    panLfo:        'lfoPan',
-    filterFreqLfo: 'lfoCut',
-    filterQLfo:    'lfoQ'
-});
 
 export default class MfStrip {
     static TAG = "MFSTRIP";
@@ -37,17 +29,12 @@ export default class MfStrip {
         this.bpm = MfDefaults.getPatternProp({}, 'bpm');
 
         this.stripNode = null;
-        this.voicesInput = audioCtx.createGain(); // Entry for voices
+        this.voicesInput = audioCtx.createGain();
 
         this.levelAnalyser = audioCtx.createAnalyser();
         this.levelAnalyser.fftSize = 256;
         this.levelData = new Uint8Array(this.levelAnalyser.frequencyBinCount);
 
-        // Pitch LFO gain (still needed to multiply the 0..1 signal from worklet for voice detune)
-        this._lfoGains = { pitchLfo: audioCtx.createGain() };
-        this._lfoGains.pitchLfo.gain.value = 1.0; 
-
-        // State caching for UI and introspection
         this.currentFilterType = 'allpass';
         this.currentSaturationType = 'soft';
         this.currentSaturationAmount = 0;
@@ -55,9 +42,6 @@ export default class MfStrip {
         this.currentReverbAmount = 0;
         this.currentDelayType = 'tape';
         this.currentDelayAmount = 0;
-
-        // LFO values received from worklet (per-quantum snapshot)
-        this._lfoValues = { velocity: 0, pan: 0, filterFreq: 0, filterQ: 0, pitch: 0 };
     }
 
     static async create(name, audioCtx, mixer) {
@@ -71,46 +55,25 @@ export default class MfStrip {
         const ctx = this.audioCtx;
         this.stripNode = WorkletLoader.createNode(ctx, 'strip', {
             numberOfInputs: 1,
-            numberOfOutputs: 2,
-            outputChannelCount: [2, 1] // Output 0: Stereo Audio, Output 1: Mono Pitch LFO
+            numberOfOutputs: 1,
+            outputChannelCount: [2]
         });
 
         this.voicesInput.connect(this.stripNode);
-        
-        // Connect central transport clock to the worklet's transportTime parameter
+
         if (this.mixer?.transportClock) {
             this.mixer.transportClock.connect(this.stripNode.parameters.get('transportTime'));
         }
 
-        // Set initial BPM
         this.stripNode.parameters.get('bpm')?.setValueAtTime(this.bpm, ctx.currentTime);
-        
-        // Connect Pitch LFO output to the gain node used by voices
-        this.stripNode.connect(this._lfoGains.pitchLfo, 1);
 
-        // Listen for LFO values from worklet (posted once per quantum)
-        if (this.stripNode.port) {
-            this.stripNode.port.onmessage = (e) => {
-                if (e.data?.type === 'lfoValues') {
-                    this._lfoValues.velocity = e.data.velocity;
-                    this._lfoValues.pan = e.data.pan;
-                    this._lfoValues.filterFreq = e.data.filterFreq;
-                    this._lfoValues.filterQ = e.data.filterQ;
-                    this._lfoValues.pitch = e.data.pitch;
-                }
-            };
-        }
-
-        // Route audio through the level analyser
         this.stripNode.connect(this.levelAnalyser, 0);
 
-        // Final output is the stripNode's first output (routed through levelAnalyser)
-        this.output = { 
+        this.output = {
             gain: this.stripNode.parameters.get('volume'),
             connect: (dest) => this.levelAnalyser.connect(dest),
             disconnect: () => this.levelAnalyser.disconnect()
         };
-        // For compatibility with MfMixer wiring: strip.pan.connect(mixer.busInput)
         this.pan = {
             pan: this.stripNode.parameters.get('pan'),
             connect: (dest) => this.levelAnalyser.connect(dest),
@@ -133,59 +96,11 @@ export default class MfStrip {
         return Math.sqrt(sum / this.levelData.length)
     }
 
-    getLfoValue = (control) => {
-        return this._lfoValues[control] ?? 0
-    }
-
     setBpm = (bpm) => {
         this.bpm = bpm;
         if (this.stripNode) {
             this.stripNode.parameters.get('bpm')?.setTargetAtTime(bpm, this.audioCtx.currentTime, RAMP_TIME);
         }
-    }
-
-    updateLfo = (key, config) => {
-        if (!this.stripNode) return;
-        const time = this.audioCtx.currentTime;
-        const params = this.stripNode.parameters;
-
-        const prefix = LFO_PARAM_MAP[key];
-        if (!prefix) return;
-
-        if (!config) {
-            params.get(`${prefix}Depth`)?.setTargetAtTime(0, time, RAMP_TIME);
-            params.get(`${prefix}Bias`)?.setTargetAtTime(0, time, RAMP_TIME);
-            params.get(`${prefix}Mix`)?.setTargetAtTime(0, time, RAMP_TIME);
-            return;
-        }
-
-        const freq  = config.freq ?? 1; // Send raw multiplier directly
-        let min = parseFloat(config.min) || 0;
-        let max = parseFloat(config.max) || 0;
-
-        // Ensure we send normalized [0..1] values for depth/bias
-        if (key === 'filterFreqLfo' && (min > 1 || max > 1)) {
-            min = Utils.hzToNormalizedTrackFilterFreq(min);
-            max = Utils.hzToNormalizedTrackFilterFreq(max);
-        }
-        if (key === 'filterQLfo' && (min > 1 || max > 1)) {
-            min = Utils.valueToNormalizedTrackFilterQ(min);
-            max = Utils.valueToNormalizedTrackFilterQ(max);
-        }
-
-        const depth = max - min;
-        const bias  = min;
-        const waveName = config.type || config.waveform || 'sine';
-        const wave = Utils.waveList.indexOf(waveName);
-        const waveClamped = wave === -1 ? 0 : wave;
-        const phase = config.phase ?? 0;
-
-        params.get(`${prefix}Freq`)?.setTargetAtTime(freq, time, RAMP_TIME);
-        params.get(`${prefix}Wave`)?.setTargetAtTime(waveClamped, time, RAMP_TIME);
-        params.get(`${prefix}Depth`)?.setTargetAtTime(depth, time, RAMP_TIME);
-        params.get(`${prefix}Bias`)?.setTargetAtTime(bias, time, RAMP_TIME);
-        params.get(`${prefix}Phase`)?.setTargetAtTime(phase, time, RAMP_TIME);
-        params.get(`${prefix}Mix`)?.setTargetAtTime(1, time, RAMP_TIME);
     }
 
     updateFilter = (type, freq, q) => {
@@ -201,7 +116,7 @@ export default class MfStrip {
 
         let fFreq = Number(freq) || 0;
         if (fFreq > 1) fFreq = Utils.hzToNormalizedTrackFilterFreq(fFreq);
-        
+
         let fQ = Number(q) || 0;
         if (fQ > 1) fQ = Utils.valueToNormalizedTrackFilterQ(fQ);
 
@@ -216,7 +131,7 @@ export default class MfStrip {
         if (!this.stripNode) return;
         const time = this.audioCtx.currentTime;
         const params = this.stripNode.parameters;
-        
+
         const normalizedAmount = Math.min(1, Math.max(0, Number(amount) || 0));
         this.currentSaturationType = SATURATION_TYPES.includes(type) ? type : 'soft';
         this.currentSaturationAmount = normalizedAmount;
@@ -239,7 +154,7 @@ export default class MfStrip {
 
         const normalizedType = REVERB_PRESETS[type] ? type : 'none';
         const normalizedAmount = Math.min(1, Math.max(0, Number(amount) || 0));
-        
+
         this.currentReverbType = normalizedType;
         this.currentReverbAmount = normalizedAmount;
 
@@ -280,13 +195,10 @@ export default class MfStrip {
 
     delete = () => {
         if (this.stripNode) {
-            if (this.stripNode.port) this.stripNode.port.onmessage = null;
             this.stripNode.disconnect();
             this.stripNode = null;
         }
         this.voicesInput.disconnect();
-        this._lfoGains.pitchLfo.disconnect();
-        this._lfoGains = {};
         if (this.levelAnalyser) {
             this.levelAnalyser.disconnect();
             this.levelAnalyser = null;

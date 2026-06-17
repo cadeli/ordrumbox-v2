@@ -4,7 +4,10 @@ import MfDefaults from '../patterns/defaults.js'
  * Apply track/params properties to a Web Audio strip.
  *
  * Single source of truth for mapping track properties to strip method calls
- * (filter, saturation, reverb, delay, LFOs, velocity, pan, mute).
+ * (filter, saturation, reverb, delay, velocity, pan, mute).
+ *
+ * LFO values are pre-computed in JS and pushed to strip parameters
+ * at each step boundary by the engine — not handled here.
  *
  * @param {MfStrip} strip   – target strip node
  * @param {object}  track   – track object with all parameter properties
@@ -29,12 +32,6 @@ export function applyTrackToStrip(strip, track, time, opts) {
     if (track.delayType !== undefined || track.delayOn !== undefined) {
         strip.updateDelay(track.delayType, track.delayTime, track.delayOn === false ? 0 : track.delayAmount)
     }
-
-    strip.updateLfo('pitchLfo', track.pitchLfo)
-    strip.updateLfo('velocityLfo', track.velocityLfo)
-    strip.updateLfo('panLfo', track.panLfo)
-    strip.updateLfo('filterFreqLfo', track.filterFreqLfo)
-    strip.updateLfo('filterQLfo', track.filterQLfo)
 
     if (!skipVP) {
         const trackVelo = readDefaults

@@ -38,7 +38,6 @@ function makeStrip() {
         updateSaturation: vi.fn(),
         updateReverb: vi.fn(),
         updateDelay: vi.fn(),
-        updateLfo: vi.fn(),
     }
 }
 
@@ -248,12 +247,6 @@ describe('MfSound', () => {
         const strip = makeStrip()
         sound.updateStripFromTrack(strip, { name: 'KICK', delayType: 'tape', delayOn: false, delayAmount: 0.3 }, 1.0)
         expect(strip.updateDelay).toHaveBeenCalledWith('tape', undefined, 0)
-    })
-    it('updateStripFromTrack calls strip.updateLfo for pitchLfo', () => {
-        const strip = makeStrip()
-        const pitchLfo = { freq: 2, min: 0, max: 0.5 }
-        sound.updateStripFromTrack(strip, { name: 'KICK', pitchLfo }, 1.0)
-        expect(strip.updateLfo).toHaveBeenCalledWith('pitchLfo', pitchLfo)
     })
     it('updateStripFromTrack applies track velocity to strip.output.gain', () => {
         const strip = makeStrip()

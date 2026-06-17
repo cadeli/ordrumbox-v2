@@ -11,6 +11,8 @@ import { OrSlider } from './components/or_slider.js'
 import { bindVisibilityToggles, buildAccordionGroup, fmt } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
+import { computeLfoValue } from '../audio/math.js'
+import { TICK } from '../core/constants.js'
 
 const fmtFreq = v => {
     const hz = Utils.normalizeTrackFilterFreqValue(v)
@@ -171,25 +173,33 @@ export default class TrackEditor extends BasePanel {
         this._lastTick = -1
     }
 
-    async _getStripLfoValues() {
+    _getLocalLfoValues() {
         if (!this._track) return null
-        const engine = serviceRegistry.audioEngine
-        const mixer = engine?.mixer
-        if (!mixer) return null
-        const strip = await mixer.getOrCreateStrip(this._track.name)
-        if (!strip?.getLfoValue) return null
-        return {
-            velocity: strip.getLfoValue('velocity'),
-            pan: strip.getLfoValue('pan'),
-            pitch: strip.getLfoValue('pitch'),
-            filterFreq: strip.getLfoValue('filterFreq'),
-            filterQ: strip.getLfoValue('filterQ')
+        const transport = serviceRegistry.transport
+        if (!transport) return null
+        const tick = transport.tick ?? 0
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) return null
+        const nbTicks = TICK * pattern.nbBars
+        const bpm = appState.bpm ?? 120
+        const controls = {
+            velocity: 'velocityLfo',
+            pan: 'panLfo',
+            pitch: 'pitchLfo',
+            filterFreq: 'filterFreqLfo',
+            filterQ: 'filterQLfo'
         }
+        const values = {}
+        for (const [key, lfoKey] of Object.entries(controls)) {
+            const lfo = this._track[lfoKey]
+            values[key] = lfo ? computeLfoValue(lfo, tick, nbTicks, key, null, bpm) : 0
+        }
+        return values
     }
 
-    async _updateLfoSliders() {
+    _updateLfoSliders() {
         if (!this._track || !this.isVisible) return
-        const lfoValues = await this._getStripLfoValues()
+        const lfoValues = this._getLocalLfoValues()
         if (!lfoValues) return
 
         GROUPS.forEach(g => {

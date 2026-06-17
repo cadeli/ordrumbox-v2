@@ -8,6 +8,8 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import { applyParamsToStrip } from './strip_sync.js'
+import { computeTrackLfoValues } from '../logic/lfo_engine.js'
+import { TICK } from '../core/constants.js'
 
 export default class AudioEngine {
     static TAG = "AUDIOENGINE"
@@ -148,10 +150,53 @@ export default class AudioEngine {
 
     playNotes = async (tick, atTime) => {
         if (!this.isRunning) return
-        // Player not built yet (worklet still loading) — drop this tick silently.
         if (!this.player) return
+        this._pushStepLfo(tick, atTime)
         await this.player.playNotes(tick, atTime)
         this.sendMidiNotes(tick, atTime)
+    }
+
+    _pushStepLfo = (tick, atTime) => {
+        const pattern = this.patterns[this.getSelectedPatternNum()]
+        if (!pattern?.tracks) return
+        const nbTicks = TICK * pattern.nbBars
+        const bpm = appState.bpm
+        const tracks = pattern.tracks
+        const t = 0.005
+
+        for (const track of Object.values(tracks)) {
+            const hasLfo = track.velocityLfo || track.panLfo || track.pitchLfo || track.filterFreqLfo || track.filterQLfo
+            if (!hasLfo) continue
+
+            const strip = this.mixer.strips[track.name]
+            if (!strip?.stripNode) continue
+
+            const lfoValues = computeTrackLfoValues(track, tick, nbTicks, bpm)
+
+            if (track.velocityLfo) {
+                const baseVelo = track.velocity ?? 1
+                const finalVelo = Math.max(0, Math.min(2, baseVelo + lfoValues.velocity))
+                strip.output.gain.setTargetAtTime(finalVelo, atTime, t)
+            }
+
+            if (track.panLfo) {
+                const basePan = track.pan ?? 0
+                const finalPan = Math.max(-1, Math.min(1, basePan + lfoValues.pan))
+                strip.pan.pan.setTargetAtTime(finalPan, atTime, t)
+            }
+
+            if (track.filterFreqLfo) {
+                const baseFreq = track.filterFreq ?? 1
+                const finalFreq = Math.max(0, Math.min(1, baseFreq + lfoValues.filterFreq))
+                strip.stripNode.parameters.get('cutoff')?.setTargetAtTime(finalFreq, atTime, t)
+            }
+
+            if (track.filterQLfo) {
+                const baseQ = track.filterQ ?? 0
+                const finalQ = Math.max(0, Math.min(1, baseQ + lfoValues.filterQ))
+                strip.stripNode.parameters.get('q')?.setTargetAtTime(finalQ, atTime, t)
+            }
+        }
     }
 
     sendMidiNotes = (tick, atTime) => {

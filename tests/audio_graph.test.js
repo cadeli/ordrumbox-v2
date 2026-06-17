@@ -83,21 +83,6 @@ describe('Audio Graph Validity', () => {
             expect(Number.isFinite(last)).toBe(true)
         })
 
-        it('updateLfo handles null or missing config gracefully', async () => {
-            const strip = await MfStrip.create('TEST', mockCtx)
-            expect(() => strip.updateLfo('pitchLfo', null)).not.toThrow()
-            expect(strip.stripNode.parameters.get('lfoPitchDepth').setTargetAtTime)
-                .toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
-        })
-
-        it('updateLfo with finite config does not throw for any LFO channel', async () => {
-            const strip = await MfStrip.create('TEST', mockCtx)
-            const lfos = ['pitchLfo', 'velocityLfo', 'panLfo', 'filterFreqLfo', 'filterQLfo'];
-            for (const key of lfos) {
-                expect(() => strip.updateLfo(key, { freq: 1, min: 0, max: 0.5 })).not.toThrow()
-            }
-        })
-
         it('every saturation type produces a finite drive value', async () => {
             const strip = await MfStrip.create('TEST', mockCtx)
             for (const type of ['soft', 'hard', 'tape']) {

@@ -268,17 +268,17 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
         editor.init()
     })
 
-    it('LFO live update: replace semantics via setValue (Hz display)', async () => {
+    it('LFO live update: replace semantics via setValue (Hz display)', () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         editor._track = makeTrack({
             filterFreq: 0.5,
             filterFreqLfo: { freq: 0, min: 0.3, max: 0.3, phase: 0 },
         })
-        const mockStrip = { getLfoValue: vi.fn((ctrl) => ctrl === 'filterFreq' ? 0.3 : 0) }
-        serviceRegistry.audioEngine = { mixer: { getOrCreateStrip: vi.fn().mockResolvedValue(mockStrip) } }
+        appState.patterns = [{ tracks: [editor._track], nbBars: 4 }]
+        appState.selectedPatternNum = 0
         editor.sync()
 
-        await editor._updateLfoSliders()
+        editor._updateLfoSliders()
 
         const input = editor.container.querySelector('input[data-key="filterFreq"]')
         const valEl = input.nextElementSibling
@@ -287,20 +287,17 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
         expect(valEl.textContent).toBe('158Hz')
     })
 
-    it('LFO live update: writes the value to the track (displayed), not the base', async () => {
-        // The track's stored value should still be the base — setValue
-        // updates the slider UI but the track field is updated by computeLfoValue's
-        // downstream consumer (the audio engine), not the editor.
+    it('LFO live update: writes the value to the track (displayed), not the base', () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         editor._track = makeTrack({
             velocity: 0.5,
             velocityLfo: { freq: 0, min: 0.8, max: 0.8, phase: 0 },
         })
-        const mockStrip = { getLfoValue: vi.fn((ctrl) => ctrl === 'velocity' ? 0.8 : 0) }
-        serviceRegistry.audioEngine = { mixer: { getOrCreateStrip: vi.fn().mockResolvedValue(mockStrip) } }
+        appState.patterns = [{ tracks: [editor._track], nbBars: 4 }]
+        appState.selectedPatternNum = 0
         editor.sync()
 
-        await editor._updateLfoSliders()
+        editor._updateLfoSliders()
 
         const input = editor.container.querySelector('input[data-key="velocity"]')
         expect(parseFloat(input.value)).toBeCloseTo(0.8, 5)

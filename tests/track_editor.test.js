@@ -120,22 +120,21 @@ describe('TrackEditor filterFreq display', () => {
         expect(input.nextElementSibling.textContent).toBe('632Hz')
     })
 
-    it('_updateLfoSliders replaces base with the LFO value (Hz)', async () => {
+    it('_updateLfoSliders replaces base with the LFO value (Hz)', () => {
         // Replace semantics: when LFO is on, the LFO value IS the value (not added to base).
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         const editor = new TrackEditor()
         editor.init()
-        // LFO with fixed output = 0.3 (replaces base 0.5). Base is ignored.
+        // LFO with freq=0 → fixed output = bias + ((raw+1)/2)*0 = 0.3
         editor._track = {
             name: 'KICK',
             filterFreq: 0.5,
             filterFreqLfo: { freq: 0, min: 0.3, max: 0.3, phase: 0 },
         }
-        // Mock the mixer strip to return the LFO value the worklet would compute
-        const mockStrip = { getLfoValue: vi.fn((ctrl) => ctrl === 'filterFreq' ? 0.3 : 0) }
-        serviceRegistry.audioEngine = { mixer: { getOrCreateStrip: vi.fn().mockResolvedValue(mockStrip) } }
+        appState.patterns = [{ tracks: [editor._track], nbBars: 4 }]
+        appState.selectedPatternNum = 0
         editor.sync()
-        await editor._updateLfoSliders()
+        editor._updateLfoSliders()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         // 0.3 (normalized) → Utils.normalizedTrackFilterFreqToHz(0.3) = floor(20 * 1000^0.3) = 158
         expect(valEl.textContent).toBe('158Hz')
