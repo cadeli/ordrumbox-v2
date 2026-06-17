@@ -155,11 +155,13 @@ export default class MfStrip {
 
         const depth = max - min;
         const bias  = min;
-        const wave  = config.waveform ?? 0;
+        const waveName = config.type || config.waveform || 'sine';
+        const wave = Utils.waveList.indexOf(waveName);
+        const waveClamped = wave === -1 ? 0 : wave;
         const phase = config.phase ?? 0;
 
         params.get(`${prefix}Freq`)?.setTargetAtTime(freq, time, RAMP_TIME);
-        params.get(`${prefix}Wave`)?.setTargetAtTime(wave, time, RAMP_TIME);
+        params.get(`${prefix}Wave`)?.setTargetAtTime(waveClamped, time, RAMP_TIME);
         params.get(`${prefix}Depth`)?.setTargetAtTime(depth, time, RAMP_TIME);
         params.get(`${prefix}Bias`)?.setTargetAtTime(bias, time, RAMP_TIME);
         params.get(`${prefix}Phase`)?.setTargetAtTime(phase, time, RAMP_TIME);

@@ -48,7 +48,9 @@ export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null
     let min = parseFloat(lfo.min) || 0
     let max = parseFloat(lfo.max) || 1
     const phase = parseFloat(lfo.phase) || 0
-    const wave = parseFloat(lfo.waveform) || 0
+    const waveName = lfo.type || lfo.waveform || 'sine'
+    let wave = Utils.waveList.indexOf(waveName)
+    if (wave === -1) wave = parseFloat(waveName) || 0
 
     if (controlKey === 'filterFreq' && (min > 1 || max > 1)) {
         min = Utils.hzToNormalizedTrackFilterFreq(min)

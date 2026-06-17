@@ -575,12 +575,20 @@ export default class TrackEditor extends BasePanel {
         const min = lfo ? lfo.min : prop.min
         const max = lfo ? lfo.max : prop.max
         const phase = lfo ? lfo.phase : 0
+        const type = lfo ? (lfo.type || 'sine') : 'sine'
+
         let lfoHtml = `<div class="ne-group lfo-panel">
             <div class="lfo-header">
                 <button class="${ledClass}" data-action="toggle-lfo" title="${ledTitle}"></button>
                 <div class="ne-group-label">LFO: ${prop.label}</div>
             </div>
             <div class="ne-grid">
+            <div class="ne-row">
+                <label>Type</label>
+                <select data-lfo-type-select>
+                    ${Utils.waveList.map(w => `<option value="${w}" ${w === type ? 'selected' : ''}>${w}</option>`).join('')}
+                </select>
+            </div>
             <div class="ne-row">
                 <label>Freq</label>
                 <input type="range" min="0.1" max="2" step="0.1" value="${freq}" data-lfo-key="freq">

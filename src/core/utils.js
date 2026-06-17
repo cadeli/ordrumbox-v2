@@ -6,7 +6,7 @@ static TAG = "UTILS"
 
     static filterTypeList = ['lowpass','highpass','bandpass','peaking','lowshelf','highshelf','notch','allpass']
 
-    static waveList = ["square", "sawtooth", "triangle", "sine"]
+    static waveList = ["sine", "triangle", "sawtooth", "square", "random"]
 
     static delayTimeValues = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4]
 

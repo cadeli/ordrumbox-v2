@@ -7,7 +7,7 @@ import { RELEASE_TIME } from '../../core/constants.js'
 // Register the synth-voice processor (idempotent)
 WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
 
-const WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3 }
+const WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3, random: 4 }
 const FILTER_TO_INT = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
 const LFO_TARGET_TO_INT = { NOT: 0, FLT: 1, VCO1: 2, VCO2: 3, VCO3: 4, masterVolume: 5, 'vco1.gain': 6, 'vco1.detune': 7, 'vco1.octave': 8, 'vco2.gain': 9, 'vco2.detune': 10, 'vco2.octave': 11, 'vco3.gain': 12, 'vco3.detune': 13, 'vco3.octave': 14 }
 
