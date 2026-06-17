@@ -209,6 +209,7 @@ export default class SynthEditor {
                 extraClass: 'ss-row',
                 onChange:   v => this._onSliderChange(pathStr, v),
             })
+            slider._isDelegated = true
             this._sliders.push(slider)
             placeholder.replaceWith(slider.createElement())
         })
@@ -314,25 +315,50 @@ export default class SynthEditor {
             return Array.from(this.panel.querySelectorAll('[data-synth-group]'))
                 .find(group => group.dataset.synthGroup === key)
         })
-        // Range inputs are managed by OrSlider — they fire onChange via the
-        // slider's own listener. Only bind non-range inputs (e.g. text) here.
-        this.panel.querySelectorAll('input[data-synth-path]').forEach(input => {
-            if (input.type === 'range') return
-            input.addEventListener('input', () => this._onInput(input))
+
+        // Event delegation for all inputs, selects and buttons
+        this.panel.addEventListener('input', (e) => {
+            const target = e.target
+            if (target.dataset.synthPath) {
+                const slider = this._sliders.find(s => s._input === target)
+                if (slider) {
+                    slider.handleInput(e)
+                } else if (target.tagName === 'INPUT') {
+                    this._onInput(target)
+                }
+            }
         })
-        this.panel.querySelectorAll('select[data-synth-path]').forEach(select => {
-            select.addEventListener('change', () => this._setValue(select.dataset.synthPath, select.value))
+
+        this.panel.addEventListener('keydown', (e) => {
+            const target = e.target
+            if (target.dataset.synthPath && target.type === 'range') {
+                const slider = this._sliders.find(s => s._input === target)
+                slider?.handleKeydown(e)
+            }
         })
-        this.panel.querySelectorAll('button[data-synth-type="boolean"]').forEach(btn => {
-            btn.addEventListener('click', () => {
+
+        this.panel.addEventListener('change', (e) => {
+            const target = e.target
+            if (target.tagName === 'SELECT' && target.dataset.synthPath) {
+                this._setValue(target.dataset.synthPath, target.value)
+            }
+        })
+
+        this.panel.addEventListener('click', (e) => {
+            const btn = e.target.closest('button')
+            if (!btn) return
+
+            if (btn.dataset.synthType === 'boolean') {
                 const next = !this._getValue(btn.dataset.synthPath)
                 this._setValue(btn.dataset.synthPath, next)
                 btn.textContent = next ? 'ON' : 'OFF'
                 btn.classList.toggle('active', next)
-            })
+            } else if (btn.dataset.action === 'synth-ok') {
+                this._closeEditor(true)
+            } else if (btn.dataset.action === 'synth-cancel') {
+                this._closeEditor(false)
+            }
         })
-        this.panel.querySelector('[data-action="synth-ok"]')?.addEventListener('click', () => this._closeEditor(true))
-        this.panel.querySelector('[data-action="synth-cancel"]')?.addEventListener('click', () => this._closeEditor(false))
     }
 
     _drawWaveform() {

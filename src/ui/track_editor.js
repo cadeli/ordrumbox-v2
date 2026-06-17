@@ -274,6 +274,7 @@ export default class TrackEditor extends BasePanel {
                             playbackEvents.dispatchTrackParamChange(this._track)
                         }
                     })
+                    s._isDelegated = true
                     this._sliders.set(p.key, s)
                     groupContent += s.toHTML()
                 }
@@ -347,6 +348,7 @@ export default class TrackEditor extends BasePanel {
                 dataAttr: 'data-loop',
                 onChange: (v, key) => this._onLoopSlider({ dataset: { loop: key }, value: v })
             })
+            s._isDelegated = true
             this._sliders.set(p.key, s)
             content += s.toHTML()
         })
@@ -413,6 +415,7 @@ export default class TrackEditor extends BasePanel {
                             playbackEvents.dispatchTrackParamChange(this._track)
                         }
                     })
+                    s._isDelegated = true
                     this._sliders.set(ck, s)
                     html += s.toHTML()
                 }
@@ -601,101 +604,135 @@ export default class TrackEditor extends BasePanel {
     _bindEvents() {
         bindVisibilityToggles(this.container, appState.trackEditorVisibility, () => this.sync())
 
-        this.container.querySelectorAll('select[data-key]').forEach(sel => {
-            sel.addEventListener('change', () => this._onSelect(sel))
+        // Event delegation for all inputs, selects and buttons
+        this.container.addEventListener('input', (e) => {
+            const target = e.target
+            const key = target.dataset.key || target.dataset.lfoKey || target.dataset.loop
+            if (!key) return
+
+            // Check if it's an OrSlider
+            const slider = Array.from(this._sliders.values()).find(s => s._input === target)
+            if (slider) {
+                slider.handleInput(e)
+            } else if (target.dataset.lfoKey) {
+                this._onLfoSlider(target)
+            } else if (target.dataset.loop) {
+                // _onLoopSlider expects an input object with value and dataset
+                this._onLoopSlider(target)
+            }
         })
-        this.container.querySelectorAll('.ne-btn[data-key]').forEach(btn => {
-            btn.addEventListener('click', () => this._onToggle(btn))
+
+        this.container.addEventListener('keydown', (e) => {
+            const target = e.target
+            if (target.type === 'range') {
+                const slider = Array.from(this._sliders.values()).find(s => s._input === target)
+                slider?.handleKeydown(e)
+            }
         })
-        this.container.querySelectorAll('.ne-row[data-prop]').forEach(row => {
-            row.addEventListener('click', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return
-                this._onRowClick(row.dataset.prop)
-            })
+
+        this.container.addEventListener('change', (e) => {
+            const target = e.target
+            if (target.tagName === 'SELECT') {
+                if (target.dataset.key) this._onSelect(target)
+                else if (target.dataset.sound) {
+                    // Logic from original handlers
+                    if (target.dataset.sound === 'instrument') this._onInstrumentChange(target)
+                    else if (target.dataset.sound === 'sample') this._onSampleChange(target)
+                    else if (target.dataset.sound === 'generated') this._onGeneratedChange(target)
+                } else if (target.closest('.lfo-panel')) {
+                    this._onLfoSelect(target)
+                }
+            } else if (target.type === 'range') {
+                this._isDragging = false
+                playbackEvents.dispatchPatternChange()
+            }
         })
-        
-        const lfoPanel = this.container.querySelector('.lfo-panel')
-        if (lfoPanel) {
-            lfoPanel.querySelectorAll('input[type=range]').forEach(input => {
-                input.addEventListener('input', () => this._onLfoSlider(input))
-                input.addEventListener('change', () => {
-                    this._isDragging = false
-                    playbackEvents.dispatchPatternChange()
-                })
-            })
-            lfoPanel.querySelectorAll('select').forEach(sel => {
-                sel.addEventListener('change', () => this._onLfoSelect(sel))
-            })
-            lfoPanel.querySelector('[data-action="toggle-lfo"]')?.addEventListener('click', () => this._toggleLfo())
+
+        this.container.addEventListener('click', (e) => {
+            const target = e.target
+            const btn = target.closest('button')
+            if (!btn) {
+                const row = target.closest('.ne-row[data-prop]')
+                if (row && target.tagName !== 'INPUT' && target.tagName !== 'SELECT') {
+                    this._onRowClick(row.dataset.prop)
+                }
+                return
+            }
+
+            if (btn.classList.contains('ne-close')) {
+                this.hide()
+            } else if (btn.dataset.key) {
+                this._onToggle(btn)
+            } else if (btn.dataset.fxToggle) {
+                this._toggleFx(btn)
+            } else if (btn.dataset.fxTab) {
+                this._onFxTab(btn)
+            } else if (btn.dataset.action === 'toggle-lfo') {
+                this._toggleLfo()
+            } else if (btn.dataset.action === 'toggle-auto') {
+                this._toggleAuto()
+            } else if (btn.dataset.action === 'edit-synth') {
+                this.synthEditor.openEditor()
+            }
+        })
+    }
+
+    _onInstrumentChange = async (target) => {
+        const newName = target.value
+        serviceRegistry.mfCmd.changeTrackName(this._track, newName)
+        const firstSample = this._getPreferredSampleForInstrument(newName)
+        if (firstSample) {
+            if (!soundRegistry.sounds[firstSample.url]?.buffer) {
+                await serviceRegistry.mfResourcesLoader.loadSample(firstSample, firstSample.kitName)
+            }
+            serviceRegistry.mfCmd.changeTrackSound(this._track, firstSample.url)
         }
+        this.sync()
+        playbackEvents.dispatchPatternChange()
+    }
 
-        this.container.querySelectorAll('[data-fx-toggle]').forEach(btn => {
-            btn.addEventListener('click', () => this._toggleFx(btn))
-        })
+    _onSampleChange = async (target) => {
+        const url = target.value
+        if (!soundRegistry.sounds[url]?.buffer) {
+            let foundKit, foundSample
+            for (const kit of soundRegistry.drumkitList) {
+                const s = kit.instruments.find(i => i.url === url)
+                if (s) { foundKit = kit; foundSample = s; break }
+            }
+            if (foundSample && foundKit) {
+                await serviceRegistry.mfResourcesLoader.loadSample(foundSample, foundKit.name)
+            }
+        }
+        serviceRegistry.mfCmd.changeTrackSound(this._track, url)
+        playbackEvents.dispatchPatternChange()
+    }
 
-        this.container.querySelectorAll('[data-fx-tab]').forEach(btn => {
-            btn.addEventListener('click', () => this._onFxTab(btn))
-        })
+    _onGeneratedChange = async (target) => {
+        const key = target.value
+        if (key === 'none') {
+            this._track.useSoftSynth = false
+        } else {
+            if (!soundRegistry.generatedSounds[key]) {
+                await this.synthEditor.ensureGeneratedSoundsLoaded()
+            }
+            this._track.useSoftSynth = true
+            this._track.useAutoAssignSound = false
+            this._track.synthSoundKey = key
+        }
+        this.sync()
+        playbackEvents.dispatchPatternChange()
+    }
 
-        this.container.querySelector('[data-action="toggle-auto"]')?.addEventListener('click', () => {
-            this._track.useAutoAssignSound = this._track.useAutoAssignSound === false
-            if (this._track.useAutoAssignSound) {
-                this._track.useSoftSynth = false
-                this._track.synthSoundKey = null
-                const aa = new MfAutoAssign()
-                aa.autoAssignTrackSounds(this._track)
-            }
-            this.sync()
-            playbackEvents.dispatchPatternChange()
-        })
-        this.container.querySelector('[data-sound="instrument"]')?.addEventListener('change', async (e) => {
-            const newName = e.target.value
-            serviceRegistry.mfCmd.changeTrackName(this._track, newName)
-            const firstSample = this._getPreferredSampleForInstrument(newName)
-            if (firstSample) {
-                if (!soundRegistry.sounds[firstSample.url]?.buffer) {
-                    await serviceRegistry.mfResourcesLoader.loadSample(firstSample, firstSample.kitName)
-                }
-                serviceRegistry.mfCmd.changeTrackSound(this._track, firstSample.url)
-            }
-            this.sync()
-            playbackEvents.dispatchPatternChange()
-        })
-        this.container.querySelector('[data-sound="sample"]')?.addEventListener('change', async (e) => {
-            const url = e.target.value
-            if (!soundRegistry.sounds[url]?.buffer) {
-                let foundKit, foundSample
-                for (const kit of soundRegistry.drumkitList) {
-                    const s = kit.instruments.find(i => i.url === url)
-                    if (s) { foundKit = kit; foundSample = s; break }
-                }
-                if (foundSample && foundKit) {
-                    await serviceRegistry.mfResourcesLoader.loadSample(foundSample, foundKit.name)
-                }
-            }
-            serviceRegistry.mfCmd.changeTrackSound(this._track, url)
-            playbackEvents.dispatchPatternChange()
-        })
-        this.container.querySelector('[data-sound="generated"]')?.addEventListener('change', async (e) => {
-            const key = e.target.value
-            if (key === 'none') {
-                this._track.useSoftSynth = false
-            } else {
-                if (!soundRegistry.generatedSounds[key]) {
-                    await this.synthEditor.ensureGeneratedSoundsLoaded()
-                }
-                this._track.useSoftSynth = true
-                this._track.useAutoAssignSound = false
-                this._track.synthSoundKey = key
-            }
-            this.sync()
-            playbackEvents.dispatchPatternChange()
-        })
-        this.container.querySelector('[data-action="edit-synth"]')?.addEventListener('click', () => {
-            this.synthEditor.openEditor()
-        })
-
-        bindCloseButton(this.container, () => this.hide())
+    _toggleAuto() {
+        this._track.useAutoAssignSound = this._track.useAutoAssignSound === false
+        if (this._track.useAutoAssignSound) {
+            this._track.useSoftSynth = false
+            this._track.synthSoundKey = null
+            const aa = new MfAutoAssign()
+            aa.autoAssignTrackSounds(this._track)
+        }
+        this.sync()
+        playbackEvents.dispatchPatternChange()
     }
 
     _onRowClick(propKey) {

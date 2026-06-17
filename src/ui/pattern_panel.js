@@ -109,15 +109,28 @@ export default class PatternPanel extends BasePanel {
         if (!this.container) return
         this._barRectsCache = []
         const tracksEl = this.container.querySelector('.pp-tracks')
-        const parentRect = (tracksEl || this.container).getBoundingClientRect()
+        if (!tracksEl) return
+
+        const containerRect = this.container.getBoundingClientRect()
+        const tracksRect    = tracksEl.getBoundingClientRect()
+        this._layoutCache = {
+            containerLeft: containerRect.left,
+            containerRight: containerRect.right,
+            tracksLeft: tracksRect.left,
+            tracksHeight: tracksEl.clientHeight
+        }
+
         const barEls = this.container.querySelectorAll('.pp-bar')
         barEls.forEach(el => {
             const r = el.getBoundingClientRect()
             this._barRectsCache[parseInt(el.dataset.bar)] = {
-                left: r.left - parentRect.left,
+                left: r.left - this._layoutCache.tracksLeft,
+                absLeft: r.left,
+                absRight: r.right,
                 width: r.width
             }
         })
+        
         const firstBar = this.container.querySelector('.pp-bar')
         if (firstBar) {
             const header = this.container.querySelector('.pp-header')
@@ -137,7 +150,8 @@ export default class PatternPanel extends BasePanel {
             this.sync()
             this._syncPending = false
             this._syncRafId = null
-            this._updateBarCache()
+            // Wait for DOM to settle
+            requestAnimationFrame(() => this._updateBarCache())
         })
     }
 
@@ -148,12 +162,17 @@ export default class PatternPanel extends BasePanel {
             this.sync()
             this._syncPending = false
             this._syncRafId = null
-            this._updateBarCache()
+            requestAnimationFrame(() => this._updateBarCache())
         })
     }
 
     _startRafLoop() {
         if (this._rafId) return
+        // Cache static element refs for the loop
+        this._waveformCanvas = this.container?.querySelector('.pp-waveform-overlay')
+        this._tracksEl       = this.container?.querySelector('.pp-tracks')
+        this._vuElCache      = this.container?.querySelectorAll('.pp-vu')
+
         const loop = () => {
             const transport = serviceRegistry.transport
             const mixer = serviceRegistry.audioEngine?.mixer
@@ -176,21 +195,29 @@ export default class PatternPanel extends BasePanel {
             cancelAnimationFrame(this._rafId)
             this._rafId = null
         }
+        this._waveformCanvas = null
+        this._tracksEl       = null
+        this._vuElCache      = null
     }
 
     _updateVus(mixer) {
-        if (!this._vuElCache) {
-            this._vuElCache = this.container.querySelectorAll('.pp-vu')
-        }
+        if (!this._vuElCache) return
         const strips = mixer.strips
         const vuEls = this._vuElCache
         for (const vuEl of vuEls) {
-            const tIdx = parseInt(vuEl.dataset.track, 10)
+            // Use cached track index if available
+            let tIdx = vuEl._tIdx
+            if (tIdx === undefined) {
+                tIdx = vuEl._tIdx = parseInt(vuEl.dataset.track, 10)
+            }
             const tracks = Utils.getTracksArray(appState.patterns[appState.selectedPatternNum])
             const track = tracks?.[tIdx]
             const strip = track?.name ? strips[track.name] : null
             const level = strip?.getLevel ? strip.getLevel() : 0
-            const fill = vuEl.querySelector('.pp-vu-fill')
+            
+            let fill = vuEl._fill
+            if (!fill) fill = vuEl._fill = vuEl.querySelector('.pp-vu-fill')
+            
             if (fill) {
                 const pct = Math.min(level * 10, 1) * 100
                 fill.style.height = pct + '%'
@@ -199,45 +226,55 @@ export default class PatternPanel extends BasePanel {
     }
 
     _drawWaveform(mixer) {
-        const canvas = this.container?.querySelector('.pp-waveform-overlay')
-        if (!canvas) return
-        const tracksEl = this.container.querySelector('.pp-tracks')
+        const canvas = this._waveformCanvas
+        if (!canvas || !this._layoutCache) return
+        const tracksEl = this._tracksEl
         if (!tracksEl) return
 
-        const ctx = canvas.getContext('2d')
         const dpr = window.devicePixelRatio || 1
+        
+        // Find visible grid area using cached rects
+        const firstBarCache = this._barRectsCache[appState.currentPage * 4]
+        const lastBarIdx = Math.min(this._barRectsCache.length - 1, (appState.currentPage + 1) * 4 - 1)
+        const lastBarCache = this._barRectsCache[lastBarIdx]
+        
+        if (!firstBarCache || !lastBarCache) return
 
-        const firstBar = this.container.querySelector('.pp-bar')
-        const lastBar = Array.from(this.container.querySelectorAll('.pp-bar')).pop()
-        if (!firstBar || !lastBar) return
+        const { containerLeft, containerRight, tracksLeft, tracksHeight } = this._layoutCache
 
-        const cRect = this.container.getBoundingClientRect()
-        const fRect = firstBar.getBoundingClientRect()
-        const lRect = lastBar.getBoundingClientRect()
-        const tRect = tracksEl.getBoundingClientRect()
-
-        const visibleLeft = Math.max(fRect.left, cRect.left)
-        const visibleRight = Math.min(lRect.right, cRect.right)
+        const visibleLeft = Math.max(firstBarCache.absLeft, containerLeft)
+        const visibleRight = Math.min(lastBarCache.absRight, containerRight)
         const vW = Math.max(0, visibleRight - visibleLeft)
-        const vH = tracksEl.clientHeight
+        const vH = tracksHeight
+        
+        if (vW <= 0 || vH <= 0) {
+            if (canvas.style.display !== 'none') canvas.style.display = 'none'
+            return
+        }
+        if (canvas.style.display !== 'block') canvas.style.display = 'block'
 
-        if (vW <= 0 || vH <= 0) return
+        // Position canvas to cover the visible grid area
+        const canvasLeft = (visibleLeft - tracksLeft) + 'px'
+        const canvasTop  = tracksEl.scrollTop + 'px'
+        const canvasWidth = vW + 'px'
+        const canvasHeight = vH + 'px'
 
-        canvas.style.left = (visibleLeft - tRect.left) + 'px'
-        canvas.style.width = vW + 'px'
-        canvas.style.height = vH + 'px'
-        canvas.style.top = tracksEl.scrollTop + 'px'
+        if (canvas.style.left !== canvasLeft) canvas.style.left = canvasLeft
+        if (canvas.style.top !== canvasTop) canvas.style.top = canvasTop
+        if (canvas.style.width !== canvasWidth) canvas.style.width = canvasWidth
+        if (canvas.style.height !== canvasHeight) canvas.style.height = canvasHeight
 
         const w = Math.round(vW * dpr)
         const h = Math.round(vH * dpr)
-
+        
         if (canvas.width !== w || canvas.height !== h) {
             canvas.width = w
             canvas.height = h
         }
 
+        const ctx = canvas.getContext('2d')
         if (!ctx) return
-
+        
         const data = serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {
             ctx.fillStyle = '#000'
@@ -246,17 +283,19 @@ export default class PatternPanel extends BasePanel {
         }
 
         data.analyser.getByteTimeDomainData(data.dataArray)
-
+        
+        // Clear background
         ctx.fillStyle = '#000'
         ctx.fillRect(0, 0, w, h)
-
+        
+        // Draw main waveform
         ctx.strokeStyle = '#4ade80'
         ctx.lineWidth = 2 * dpr
         ctx.beginPath()
-
+        
         const sliceW = w / data.dataArray.length
         const mid = h * 0.5
-
+        
         for (let i = 0; i < data.dataArray.length; i++) {
             const v = (data.dataArray[i] - 128) / 128
             const x = i * sliceW
@@ -296,15 +335,18 @@ export default class PatternPanel extends BasePanel {
         if (!transport?.isRunning) return
 
         const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern || !this.container) return
+        if (!pattern || !this.container || !this._layoutCache) return
         this._ensurePlayhead()
 
         const nbTicks = TICK * (pattern.nbBars ?? 4)
         if (nbTicks <= 0) return
 
         const loopTick = (transport.tick ?? 0) % nbTicks
-        const currentPatternBar = Math.floor(loopTick / TICK)
+        
+        if (loopTick === this._prevLoopTick && this._playhead.style.display !== 'none') return
+        this._prevLoopTick = loopTick
 
+        const currentPatternBar = Math.floor(loopTick / TICK)
         const BARS_PER_PAGE = 4
         const startBar = appState.currentPage * BARS_PER_PAGE
         const endBar = startBar + BARS_PER_PAGE
@@ -316,26 +358,26 @@ export default class PatternPanel extends BasePanel {
                 this.requestSync()
                 playbackEvents.dispatchPatternChange()
             }
-            this._playhead.style.display = 'none'
+            if (this._playhead.style.display !== 'none') this._playhead.style.display = 'none'
             return
         }
 
-        if (loopTick === this._prevLoopTick && this._playhead.style.display !== 'none') return
-        this._prevLoopTick = loopTick
-
         const barCache = this._barRectsCache[currentPatternBar]
         if (!barCache) {
-            this._playhead.style.display = 'none'
+            if (this._playhead.style.display !== 'none') this._playhead.style.display = 'none'
             return
         }
 
         const tickInBar = loopTick % TICK
         const normInBar = tickInBar / TICK
 
-        this._playhead.style.display = 'block'
+        if (this._playhead.style.display !== 'block') this._playhead.style.display = 'block'
         const x = this._headerBarsLeft + barCache.left + normInBar * barCache.width
+        
+        // Use a small threshold to avoid sub-pixel jitter if needed, 
+        // but translateX handles sub-pixels well.
         this._playhead.style.transform = `translateX(${x}px)`
-        this._playhead.style.width = `2px`
+        if (this._playhead.style.width !== '2px') this._playhead.style.width = `2px`
     }
 
     _onFocus() {

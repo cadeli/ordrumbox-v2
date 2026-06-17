@@ -177,11 +177,17 @@ export class OrSlider {
     // ─── Event binding ──────────────────────────────────────────────────────
 
     _bind() {
-        this._input.addEventListener('input',   this._boundOnInput)
-        this._input.addEventListener('keydown', this._boundOnKeydown)
+        if (this._input && !this._isDelegated) {
+            this._input.addEventListener('input',   this._boundOnInput)
+            this._input.addEventListener('keydown', this._boundOnKeydown)
+        }
     }
 
-    _onInput() {
+    /**
+     * Internal logic for handling 'input' events. 
+     * Can be called by an external delegated handler.
+     */
+    handleInput(e) {
         const norm    = parseFloat(this._input.value)
         const denorm  = this._toDenorm(norm)
         this._value   = denorm
@@ -189,21 +195,20 @@ export class OrSlider {
         this._onChange?.(denorm, this._key)
     }
 
+    _onInput(e) {
+        this.handleInput(e)
+    }
+
     /**
-     * Enhanced keyboard control on the input range:
-     *   Arrow Up/Right        → +step
-     *   Arrow Down/Left       → -step
-     *   Shift + Arrow         → ±step × 10  (large jumps)
-     *   Alt/Option + Arrow    → ±step ÷ 10  (fine adjustment)
+     * Internal logic for handling 'keydown' events.
+     * Can be called by an external delegated handler.
      */
-    _onKeydown(e) {
+    handleKeydown(e) {
         const isUp   = e.key === 'ArrowUp'   || e.key === 'ArrowRight'
         const isDown = e.key === 'ArrowDown' || e.key === 'ArrowLeft'
         if (!isUp && !isDown) return
 
         e.preventDefault()
-        // Stop propagation so the delegated fallback handler in main.js does
-        // not also handle the key (which would cause a double increment).
         e.stopPropagation()
 
         let multiplier = 1
@@ -219,6 +224,11 @@ export class OrSlider {
         this._value               = denorm
         this._valSpan.textContent = this._fmt(denorm)
         this._onChange?.(denorm, this._key)
+        return true
+    }
+
+    _onKeydown(e) {
+        this.handleKeydown(e)
     }
 
     // ─── Public API ─────────────────────────────────────────────────────────
