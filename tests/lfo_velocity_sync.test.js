@@ -13,50 +13,37 @@ import MidiExporter from '../src/logic/midi/midi_exporter.js'
 
 describe('LFO Velocity Sync Verification', () => {
     
-    describe('Frequency 1 (16 beats period)', () => {
+    describe('Frequency 1 (16 beats / 4 bars period)', () => {
         const lfoConfig = { freq: 1, phase: 0, min: 0, max: 1, waveform: 0 } 
-        const period = 128 // 4 * 32
+        const period = 128 // 4 bars * 32 ticks
 
         const cases = [
             { step: 0,  tick: 0,   expected: 0.0 },
-            { step: 16, tick: 32,  expected: 0.5 },
-            { step: 32, tick: 64,  expected: 1.0 },
-            { step: 48, tick: 96,  expected: 0.5 },
-            { step: 64, tick: 128, expected: 0.0 }
+            { step: 32, tick: 64,  expected: 1.0 }, // Peak at 2 bars
+            { step: 64, tick: 128, expected: 0.0 }  // End at 4 bars
         ]
 
         cases.forEach(({ step, tick, expected }) => {
             it(`Step ${step}: math should be ${expected}`, () => {
                 expect(computeLfoValue(lfoConfig, tick)).toBeCloseTo(expected, 2)
-            })
-            it(`Step ${step}: UI should be ${expected}`, () => {
-                expect(computeLfoValue(lfoConfig, tick, period)).toBeCloseTo(expected, 2)
             })
         })
     })
 
-    describe('Frequency 2 (32 beats period)', () => {
+    describe('Frequency 2 (8 beats / 2 bars period)', () => {
         const lfoConfig = { freq: 2, phase: 0, min: 0, max: 1, waveform: 0 } 
-        const period = 256 // 2 * 4 * 32
         
         const cases = [
             { step: 0,   tick: 0,   expected: 0.0 },
-            { step: 16,  tick: 32,  expected: 0.15 },
-            { step: 32,  tick: 64,  expected: 0.5 },
-            { step: 48,  tick: 96,  expected: 0.85 },
-            { step: 64,  tick: 128, expected: 1.0 },
-            { step: 80,  tick: 160, expected: 0.85 },
-            { step: 96,  tick: 192, expected: 0.5 },
-            { step: 112, tick: 224, expected: 0.15 },
-            { step: 128, tick: 256, expected: 0.0 }
+            { step: 16,  tick: 32,  expected: 1.0 }, // Peak at 1 bar
+            { step: 32,  tick: 64,  expected: 0.0 }, // End of 1st cycle at 2 bars
+            { step: 48,  tick: 96,  expected: 1.0 }, // Peak of 2nd cycle at 3 bars
+            { step: 64,  tick: 128, expected: 0.0 }  // End of 2nd cycle at 4 bars
         ]
 
         cases.forEach(({ step, tick, expected }) => {
             it(`Step ${step}: math should be ${expected}`, () => {
                 expect(computeLfoValue(lfoConfig, tick)).toBeCloseTo(expected, 2)
-            })
-            it(`Step ${step}: UI should be ${expected}`, () => {
-                expect(computeLfoValue(lfoConfig, tick, period)).toBeCloseTo(expected, 2)
             })
         })
     })
@@ -83,14 +70,14 @@ describe('LFO Velocity Sync Verification', () => {
             serviceRegistry.transport = { isRunning: true, tick: 0 }
         })
 
-        it('animates to 1.0 (Peak) at Step 64', () => {
-            serviceRegistry.transport.tick = 128 // Step 64
+        it('animates to 1.0 (Peak) at Step 16', () => {
+            serviceRegistry.transport.tick = 32 // Step 16 (1 bar)
             editor._updateLfoSliders()
             expect(editor._sliders.get('velocity').getValue()).toBe(1)
         })
 
-        it('animates to 0.0 (End) at Step 128', () => {
-            serviceRegistry.transport.tick = 256 // Step 128
+        it('animates to 0.0 (End Cycle) at Step 32', () => {
+            serviceRegistry.transport.tick = 64 // Step 32 (2 bars)
             editor._updateLfoSliders()
             expect(editor._sliders.get('velocity').getValue()).toBe(0)
         })

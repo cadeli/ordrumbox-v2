@@ -37,13 +37,8 @@ import STRIP_SOURCE from '../src/audio/worklets/processors/strip_source.js'
 /**
  * Re-implementation of the audio engine's LFO formula.
  *
- * Mirrors `computeLfo` in src/audio/worklets/processors/strip_source.js
- * lines 167-171, which is the per-sample LFO evaluation used by the
- * unified strip worklet for velocity, pan, cutoff, Q, and pitch.
- *
- * The audio engine receives a continuous `transportPhase` (driven by
- * the transportClock), so we feed it `tick / 128` (1 unit = 16 beats,
- * matching the visualization's `transportPhase = tick / 128`).
+ * Mirrors `_computeLfo` in src/audio/worklets/processors/strip_source.js
+ * which uses a 16-beat (4 bar) period base for freq=1.0.
  *
  * @param {number} transportPhase  1 unit = 16 beats (= tick / 128)
  * @param {number} freqVal         LFO frequency multiplier
@@ -54,7 +49,8 @@ import STRIP_SOURCE from '../src/audio/worklets/processors/strip_source.js'
  * @returns {number}               LFO value in [bias, bias + depth]
  */
 function workletComputeLfo(transportPhase, freqVal, wave, depth, bias, phaseOffset) {
-    const localPhase = (transportPhase / freqVal) + phaseOffset
+    const freqClamped = Math.min(2, freqVal)
+    const localPhase = (transportPhase * freqClamped) + phaseOffset
     const raw = getLfoWaveformValue(localPhase, wave)   // returns in [-1, 1]
     return bias + ((raw + 1) * 0.5) * depth             // maps to [bias, bias+depth]
 }
@@ -103,9 +99,8 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
             expect(STRIP_SOURCE).toContain('b + ((raw + 1) * 0.5) * d')
         })
 
-        it('worklet computes localPhase as (transportPhase / fMult) + phase', () => {
-            // (transportPhase / fMult) + phase
-            expect(STRIP_SOURCE).toMatch(/transportPhase\s*\/\s*fMult\s*\)\s*\+\s*phase/)
+        it('worklet computes localPhase using (time / patternDuration) * freqClamped', () => {
+            expect(STRIP_SOURCE).toMatch(/transportPhase\s*=\s*\(\s*time\s*\/\s*patternDuration\s*\)\s*\*\s*freqClamped/)
         })
 
         it('worklet reads the waveform via getLfoWaveformValue (not S&H branch)', () => {
@@ -113,7 +108,7 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
         })
     })
 
-    describe('Frequency 1 (period = 16 beats = 128 ticks)', () => {
+    describe('Frequency 1 (period = 16 beats = 128 ticks = 4 bars)', () => {
         const lfo = { freq: 1, phase: 0, min: 0, max: 1, waveform: 0 }
 
         it.each(SAMPLE_TICKS)('tick %d: audio engine matches track editor visualization', (tick) => {
@@ -141,7 +136,7 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
         })
     })
 
-    describe('Frequency 2 (period = 16 beats = 256 ticks, 0.5 cycle in 128 ticks)', () => {
+    describe('Frequency 2 (2 cycles in 128 ticks = 4 bars)', () => {
         const lfo = { freq: 2, phase: 0, min: 0, max: 1, waveform: 0 }
 
         it.each(SAMPLE_TICKS)('tick %d: audio engine matches track editor visualization', (tick) => {
@@ -151,13 +146,12 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
             expect(audio).toBeCloseTo(vizu, 2)
         })
 
-        it('at tick 0 is min, tick 64 is midpoint, tick 128 is max (half a period)', () => {
-            // Period = freq * 4 * TICK = 2 * 128 = 256 ticks.
-            // Across 128 ticks, the LFO covers exactly half a cycle:
-            // tick 0 = trough, tick 64 = midpoint (rising), tick 128 = peak.
+        it('at tick 0 is min, tick 32 is peak, tick 64 is min (full cycle in 64 ticks)', () => {
+            // Frequency 2 cycles every 64 ticks (2 bars).
+            // tick 0 = trough, tick 32 = peak, tick 64 = trough.
             expect(visualizationVelocity(lfo, 0)).toBeCloseTo(0, 2)
-            expect(visualizationVelocity(lfo, 64)).toBeCloseTo(0.5, 2)
-            expect(visualizationVelocity(lfo, 128)).toBeCloseTo(1, 2)
+            expect(visualizationVelocity(lfo, 32)).toBeCloseTo(1, 2)
+            expect(visualizationVelocity(lfo, 64)).toBeCloseTo(0, 2)
         })
 
         it('audio engine and visualization diverge by less than 0.005 across all sample ticks', () => {
@@ -216,7 +210,7 @@ describe('Audio engine LFO ↔ Track editor visualization (velocity)', () => {
     // At 120 BPM, 1 bar = 128 ticks = 2 s. freq=1 must therefore complete
     // exactly ONE full cycle across those 128 ticks.
 
-    describe('LFO sync contract: freq=1 = 1 bar (128 ticks) at 120 BPM', () => {
+    describe('LFO sync contract: freq=1 = 4 bars (128 ticks) at 120 BPM', () => {
         const lfo = { freq: 1, phase: 0, min: 0, max: 1, waveform: 0 }
 
         // One full cycle, sampled at the 4 cardinal points plus the wrap.
