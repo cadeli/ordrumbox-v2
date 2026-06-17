@@ -90,6 +90,7 @@ export default class TrackEditor extends BasePanel {
         this._isDragging = false
         this._activeFxTab = 0
         this._sliders = new Map()
+        this._delegationBound = false
         this.synthEditor = new SynthEditor(this)
     }
 
@@ -607,6 +608,10 @@ export default class TrackEditor extends BasePanel {
     _bindEvents() {
         bindVisibilityToggles(this.container, appState.trackEditorVisibility, () => this.sync())
 
+        if (this._delegationBound) {
+            return
+        }
+
         // Event delegation for all inputs, selects and buttons
         this.container.addEventListener('input', (e) => {
             const target = e.target
@@ -678,6 +683,8 @@ export default class TrackEditor extends BasePanel {
                 this.synthEditor.openEditor()
             }
         })
+
+        this._delegationBound = true
     }
 
     _onInstrumentChange = async (target) => {

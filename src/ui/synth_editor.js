@@ -72,6 +72,7 @@ export default class SynthEditor {
         this._loadFailed = false
         this._groupVisibility = {}
         this._sliders = []
+        this._delegationBound = false
     }
 
     createDOM() {
@@ -316,6 +317,8 @@ export default class SynthEditor {
                 .find(group => group.dataset.synthGroup === key)
         })
 
+        if (this._delegationBound) return
+
         // Event delegation for all inputs, selects and buttons
         this.panel.addEventListener('input', (e) => {
             const target = e.target
@@ -359,6 +362,8 @@ export default class SynthEditor {
                 this._closeEditor(false)
             }
         })
+
+        this._delegationBound = true
     }
 
     _drawWaveform() {
