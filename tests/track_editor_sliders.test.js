@@ -236,9 +236,9 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
         playbackEvents.onTrackParamChange.push(fn)
 
         const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
-        fireInput(freqInput, 4)
-        expect(editor._track.velocityLfo.freq).toBe(4)
-        expect(freqInput.nextElementSibling.textContent).toBe('4')
+        fireInput(freqInput, 1.5)
+        expect(editor._track.velocityLfo.freq).toBe(1.5)
+        expect(freqInput.nextElementSibling.textContent).toBe('1.5')
         expect(fn).toHaveBeenCalled()
     })
 

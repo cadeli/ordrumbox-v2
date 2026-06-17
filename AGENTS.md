@@ -21,7 +21,7 @@ No lint or typecheck commands are configured (eslint is in devDeps but has no co
 
 ## Test Setup
 
-- 64 test files in `tests/*.test.js`
+- 62 test files in `tests/*.test.js`
 - Vitest uses `vite.config.js` defaults (no separate vitest config)
 - Audio tests use `node-web-audio-api` for `OfflineAudioContext` — must set globals:
   ```js
@@ -36,6 +36,7 @@ No lint or typecheck commands are configured (eslint is in devDeps but has no co
   serviceRegistry.mfPatterns = new MfPatterns()
   ```
 - Mock pattern: create `makeParam()`, `makeNode()`, `makeStrip()`, `makeMixer()` helpers locally in each test file (no shared mock utility)
+- Canvas mock: `tests/setup.js` stubs `document.createElement('canvas')` returning a mock 2D context (used by spectrum analyzer and waveform overlay). Wired into `vite.config.js` as `setupFiles`.
 
 ## Architecture
 
@@ -67,6 +68,9 @@ src/
 - **No ESLint config** despite eslint being a dependency. Code style is enforced manually.
 - **CSP header** in index.html: `script-src 'self' blob:` (needed for AudioWorklet blob URLs)
 - **Pattern data paths**: MCP server writes to `public/assets/data/patterns/`
+- **Worklet DSP performance**: All three worklets (strip, synth-voice, master-bus) use optimized per-sample loops. Key patterns: sine LUT (4096 entries) for LFO, `Math.exp(x * LN2_OVER_1200)` for detune, xorshift32 for noise, incremental ADSR state machine. Avoid introducing `Math.sin`, `Math.pow`, or per-sample object allocation in the audio thread.
+- **Shared noise buffer**: `SynthVoice` uses a static shared noise `Float32Array` — don't allocate per-instance.
+- **Compressor DSP chain**: `preGain → compressor → HPF → LPF → master gain → output`. Pre-gain is k-rate; filters and master gain are a-rate.
 
 ## Adding Tests
 

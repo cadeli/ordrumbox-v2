@@ -115,7 +115,7 @@ describe('TrackEditor filterFreq display', () => {
         const input = editor.container.querySelector('input[data-key="filterFreq"]')
         input.value = '0.5'
         // Simulate input event which OrSlider listens to
-        input.dispatchEvent(new Event('input'))
+        input.dispatchEvent(new Event('input', { bubbles: true }))
         expect(editor._track.filterFreq).toBe(0.5)
         expect(input.nextElementSibling.textContent).toBe('632Hz')
     })

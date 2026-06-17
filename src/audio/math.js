@@ -36,13 +36,19 @@ export function computeNoteRatio(fpitch) {
  * The worklet `strip_source.js` inlines the same formula. Both must
  * produce the same value for the same input (verified by tests).
  *
+ * Two modes:
+ *   - tick-based: computeLfoValue(lfo, tick, nbTicks, controlKey)
+ *   - time-based: computeLfoValue(lfo, null, null, controlKey, audioTime, bpm)
+ *
  * @param {Object|null} lfo  LFO config: { freq, min, max, phase }
- * @param {number} tick      Current tick position
- * @param {number} nbTicks   Total ticks in the pattern (unused for now)
+ * @param {number|null} tick      Current tick position (for tick-based mode)
+ * @param {number|null} nbTicks   Total ticks in the pattern (for tick-based mode)
  * @param {string|null} controlKey  Optional control key for normalization
+ * @param {number|null} audioTime   AudioContext.currentTime (for time-based mode)
+ * @param {number|null} bpm         Current BPM (for time-based mode)
  * @returns {number} LFO value in base units
  */
-export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null) {
+export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null, audioTime = null, bpm = null) {
     if (!lfo) return 0
     const freqVal = parseFloat(lfo.freq) || 1
     let min = parseFloat(lfo.min) || 0
@@ -60,10 +66,19 @@ export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null
         max = Utils.valueToNormalizedTrackFilterQ(max)
     }
 
-    // Frequency in cycles per 4 bars. 1.0 = 1 cycle per 4 bars (TICK * 4 ticks).
+    // Frequency in cycles per 4 bars. 1.0 = 1 cycle per 4 bars.
     // Clamp to [0, 2] as per requirements.
     const freqClamped = Math.min(2, freqVal)
-    const currentPhase = (tick / (TICK * 4)) * freqClamped + phase
+
+    let currentPhase
+    if (audioTime != null && bpm != null) {
+        // Time-based: matches worklet _computeLfo exactly
+        const patternDuration = 16 * (60 / bpm) // 4 bars = 16 beats in seconds
+        currentPhase = (audioTime / patternDuration) * freqClamped + phase
+    } else {
+        // Tick-based: for MIDI export and tests
+        currentPhase = (tick / (TICK * 4)) * freqClamped + phase
+    }
 
     let val = getLfoWaveformValue(currentPhase, wave)
     val = (val + 1) / 2

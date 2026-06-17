@@ -984,15 +984,17 @@ describe('MidiExporter — functional end-to-end', () => {
             expect(kicks).toHaveLength(1)
         })
 
-        it('velocityLfo modulates each note differently across a bar (freq=1/4 → period=1 bar)', () => {
-            // periodInTicks = (1/4) * 4 * TICK = 32 = 1 bar
-            // ticks 0, 8, 16, 24 → curPhases 0, 0.25, 0.5, 0.75
-            // → p in getLfoWaveformValue (curPhase - 0.25 wrapped) = 0.75, 0, 0.25, 0.5
-            // → sin(2πp) → -1, 0, 1, 0
-            // → normalized (val+1)/2 → 0, 0.5, 1, 0.5
-            // → final = 0.25 + norm*0.75 → 0.25, 0.625, 1, 0.625
-            // → after 2-decimal rounding in computeLfoValue → 0.25, 0.63, 1, 0.63
-            // → MIDI vel (round) → 32, 80, 127, 80
+        it('velocityLfo modulates each note differently across a bar (freq=1 → period=4 bars)', () => {
+            // freq=1 completes 1 cycle in 128 ticks (4 bars).
+            // in 1 bar (32 ticks), it completes 1/4 of a cycle.
+            // ticks 0, 8, 16, 24
+            // curPhases: 0/128, 8/128, 16/128, 24/128 → 0, 0.0625, 0.125, 0.1875
+            // getLfoWaveformValue(p) (p=curPhase-0.25 wrapped)
+            // p = -0.25, -0.1875, -0.125, -0.0625
+            // sin(2πp) = -1, -0.9238, -0.7071, -0.3826
+            // norm (val+1)/2 = 0, 0.038, 0.146, 0.308
+            // final = 0.25 + norm*0.75 = 0.25, 0.278, 0.359, 0.481
+            // MIDI vel = 31.75 -> 32, 35.3 -> 35, 45.6 -> 46, 61.1 -> 61
             const pattern = {
                 name: 'LfoVeloPerStep', bpm: 120, nbBars: 1,
                 tracks: [track('KICK', 4, 1, 1, [
@@ -1000,14 +1002,16 @@ describe('MidiExporter — functional end-to-end', () => {
                     note(0, 1, { velocity: 1.0 }),
                     note(0, 2, { velocity: 1.0 }),
                     note(0, 3, { velocity: 1.0 }),
-                ], { velocityLfo: { freq: 1/4, min: 0.25, max: 1, phase: 0 } })]
+                ], { velocityLfo: { freq: 1.0, min: 0.25, max: 1, phase: 0 } })]
             }
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
             const kicks = allNoteOns(midiBytes).filter(n => n.note === 36)
                 .sort((a, b) => a.absTick - b.absTick)
-            expect(kicks.map(k => k.velocity)).toEqual([32, 80, 127, 80])
+            
+            // Expected values based on 1.0 = 4 bars scaling
+            expect(kicks.map(k => k.velocity)).toEqual([32, 36, 46, 61])
         })
 
         it('pitchLfo out-of-range value is clamped to [0, 127]', () => {
@@ -1229,8 +1233,8 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'RetrigLfo', bpm: 120, nbBars: 1,
                 tracks: [track('KICK', 4, 1, 1, [
-                    note(0, 0, { velocity: 0.5, retriggerNum: 3, retriggerStep: 2 }),
-                ], { velocityLfo: { freq: 1/32, min: 0.5, max: 1.0, phase: 0 } })]
+                    note(0, 0, { velocity: 0.5, retriggerNum: 3, retriggerStep: 4 }),
+                ], { velocityLfo: { freq: 2.0, min: 0.3, max: 1.0, phase: 0 } })]
             }
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)

@@ -58,7 +58,7 @@ describe('LFO Velocity Sync Verification', () => {
             vi.spyOn(WorkletLoader, 'ensureLoaded').mockResolvedValue(true)
             
             track = { name: 'KICK', velocity: 0.5, velocityLfo: lfoConfig, barQuantize: 4, bars: 8 }
-            appState.patterns = [{ tracks: [track], nbBars: 8 }]
+            appState.patterns = [{ tracks: [track], nbBars: 8, bpm: 120 }]
             appState.selectedPatternNum = 0
             appState.trackEditorVisibility.levels = true
             
@@ -68,16 +68,22 @@ describe('LFO Velocity Sync Verification', () => {
             editor.sync()
             
             serviceRegistry.transport = { isRunning: true, tick: 0 }
+            serviceRegistry.audioCtx = { currentTime: 0 }
         })
 
-        it('animates to 1.0 (Peak) at Step 16', () => {
-            serviceRegistry.transport.tick = 32 // Step 16 (1 bar)
+        it('animates to 1.0 (Peak) at 1 bar (2s at 120 BPM)', () => {
+            // freq=2, patternDuration = 16*(60/120) = 8s
+            // At 2s: transportPhase = (2/8)*2 = 0.5, localPhase = 0.5
+            // sin(2π*(0.5-0.25)) = sin(π/2) = 1 → val = (1+1)/2 = 1.0
+            serviceRegistry.audioCtx.currentTime = 2
             editor._updateLfoSliders()
             expect(editor._sliders.get('velocity').getValue()).toBe(1)
         })
 
-        it('animates to 0.0 (End Cycle) at Step 32', () => {
-            serviceRegistry.transport.tick = 64 // Step 32 (2 bars)
+        it('animates to 0.0 (End Cycle) at 2 bars (4s at 120 BPM)', () => {
+            // At 4s: transportPhase = (4/8)*2 = 1.0, localPhase = 1.0
+            // p = 0.75, sin(2π*0.75) = -1 → val = (-1+1)/2 = 0.0
+            serviceRegistry.audioCtx.currentTime = 4
             editor._updateLfoSliders()
             expect(editor._sliders.get('velocity').getValue()).toBe(0)
         })

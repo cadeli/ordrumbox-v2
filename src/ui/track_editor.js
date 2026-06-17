@@ -4,7 +4,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import Utils from '../core/utils.js'
 import { computeLfoValue } from '../audio/math.js'
-import { TICK } from '../core/constants.js'
+
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
@@ -159,16 +159,15 @@ export default class TrackEditor extends BasePanel {
         if (!transport?.isRunning) return
 
         const pattern = appState.patterns[appState.selectedPatternNum]
-        const nbTicks = TICK * (pattern?.nbBars ?? 4)
-        const tick = transport.tick ?? 0
+        const bpm = pattern?.bpm ?? 120
 
         GROUPS.forEach(g => {
             g.props.forEach(p => {
                 if (p.lfo && this._track[p.lfo]) {
                     const s = this._sliders.get(p.key)
                     if (s) {
-                        const lfoVal = computeLfoValue(this._track[p.lfo], tick, nbTicks, p.key)
-                        s.setValue(lfoVal)
+                        const lfoVal = computeLfoValue(this._track[p.lfo], null, null, p.key, serviceRegistry.audioCtx?.currentTime ?? 0, bpm)
+                        s.setValue(p.key === 'pitch' ? this._track.pitch + lfoVal : lfoVal)
                     }
                 }
             })

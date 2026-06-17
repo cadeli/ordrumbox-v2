@@ -15,7 +15,7 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 - Integrated Soft Synth with 3 VCOs, ADSR envelope, and filters
 - AudioWorklet mode for low-latency synthesis when supported
 - LFO modulators for dynamic pitch and volume effects
-- Per-track effects: Reverb and Saturation
+- Per-track effects: Reverb, Delay, and Saturation
 
 ### Audio & Export
 - High-quality WAV export for use in other DAWs
@@ -106,7 +106,7 @@ npm run electron:dev # Desktop app (Electron)
 
 - Framework: Vanilla JavaScript with ES6 modules
 - Build Tool: Vite
-- Test Framework: Vitest (64 test files)
+- Test Framework: Vitest (62 test files, 1232 tests)
 - Audio: Web Audio API with AudioWorklet support
 - Node Pool: Recycling of GainNode, BiquadFilterNode, and StereoPannerNode for reduced GC pressure
 - Storage: LocalStorage for persistence, JSON for import/export
@@ -118,10 +118,11 @@ npm run electron:dev # Desktop app (Electron)
 
 Global sound processing:
 
-Compressor: threshold -12dB, ratio 4:1, attack 5ms, release 150ms
+Compressor: threshold -18dB, ratio 8:1, attack 2ms, release 80ms, knee 3dB, makeup 8dB
+Pre-Gain: 0 dB (input gain before compressor)
 HighPass: 35 Hz (removes unwanted low frequencies)
 LowPass: 18500 Hz (anti-aliasing)
-MasterGain: 4.0 (compensation for Web Audio loudness deficit)
+MasterGain: 1.0
 
 
 

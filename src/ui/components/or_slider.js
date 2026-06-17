@@ -191,7 +191,7 @@ export class OrSlider {
         const norm    = parseFloat(this._input.value)
         const denorm  = this._toDenorm(norm)
         this._value   = denorm
-        this._valSpan.textContent = this._fmt(denorm)
+        if (this._valSpan) this._valSpan.textContent = this._fmt(denorm)
         this._onChange?.(denorm, this._key)
     }
 

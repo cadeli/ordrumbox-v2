@@ -163,7 +163,7 @@
         <li>Click on the grid to add/remove notes</li>
         <li>Click a <strong>track name</strong> to open the Track Editor</li>
         <li>Click a <strong>note cell</strong> to open the Note Editor</li>
-        <li>Use <strong>Auto Gen</strong> to generate a random pattern</li>
+        <li>Use <strong>Auto Gen</strong> to enable automatic pattern regeneration (toggle)</li>
     </ol>
 
     <hr>
@@ -183,7 +183,7 @@
             <tr><td><strong>BPM</strong></td><td>Click to open the tempo slider (range: 20–250 BPM).</td></tr>
             <tr><td><strong>Pattern</strong></td><td>Dropdown to switch between patterns.</td></tr>
             <tr><td><strong>Kit</strong></td><td>Dropdown to switch drumkits (samples load on first use).</td></tr>
-            <tr><td><strong>Auto Gen</strong></td><td>Generates a complete random pattern with genre-appropriate tracks.</td></tr>
+            <tr><td><strong>Auto Gen</strong></td><td>Toggle button. When active (green), the pattern is automatically regenerated on section boundaries using genre-based song structure. Click again to disable.</td></tr>
             <tr><td><strong>Clear</strong></td><td>Removes all notes from the current pattern (asks for confirmation).</td></tr>
             <tr><td><strong>Tools</strong></td><td>Opens the Tools panel (export/import, pattern name).</td></tr>
             <tr><td><strong>Output</strong></td><td>Opens the Output panel (master mixer, spectrum analyzer).</td></tr>
@@ -254,7 +254,7 @@
         <tbody>
             <tr><td><strong>Mute</strong></td><td>Mutes the entire track</td></tr>
             <tr><td><strong>Mono</strong></td><td>Forces monophonic playback</td></tr>
-            <tr><td><strong>Auto</strong></td><td>Enables auto mode</td></tr>
+            <tr><td><strong>Auto</strong></td><td>When enabled, this track is automatically regenerated at each loop boundary using the pattern generator</td></tr>
         </tbody>
     </table>
 
@@ -309,7 +309,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>LED</strong></td><td>on/off</td><td>off</td><td>Enable/disable reverb</td></tr>
+            <tr><td><strong>LED</strong></td><td>on/off</td><td>on</td><td>Enable/disable reverb (green = active)</td></tr>
             <tr><td><strong>RevT</strong></td><td>none, room, hall, plate, spring, gated</td><td>none</td><td>Reverb preset</td></tr>
             <tr><td><strong>RevV</strong></td><td>0–1</td><td>0</td><td>Wet/dry mix</td></tr>
         </tbody>
@@ -334,7 +334,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>LED</strong></td><td>on/off</td><td>off</td><td>Enable/disable delay</td></tr>
+            <tr><td><strong>LED</strong></td><td>on/off</td><td>on</td><td>Enable/disable delay (green = active)</td></tr>
             <tr><td><strong>DelTy</strong></td><td>none, slap, tape, pingpong</td><td>tape</td><td>Delay algorithm</td></tr>
             <tr><td><strong>DelT</strong></td><td>0.0625, 0.125, 0.25, 0.5, 1, 2, 4</td><td>1</td><td>Delay time (beat multiplier)</td></tr>
             <tr><td><strong>DelV</strong></td><td>0–1</td><td>0</td><td>Wet mix</td></tr>
@@ -358,7 +358,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>LED</strong></td><td>on/off</td><td>off</td><td>Enable/disable saturation</td></tr>
+            <tr><td><strong>LED</strong></td><td>on/off</td><td>on</td><td>Enable/disable saturation (green = active)</td></tr>
             <tr><td><strong>SatT</strong></td><td>soft, hard, tape</td><td>soft</td><td>Saturation algorithm</td></tr>
             <tr><td><strong>SatV</strong></td><td>0–1</td><td>0</td><td>Drive amount</td></tr>
         </tbody>
@@ -383,13 +383,13 @@
         </thead>
         <tbody>
             <tr><td><strong>LED</strong></td><td>on/off</td><td>off</td><td>Enable/disable LFO</td></tr>
-            <tr><td><strong>Freq</strong></td><td>0.1–16</td><td>1</td><td>LFO rate (cycles per 4 bars)</td></tr>
+            <tr><td><strong>Type</strong></td><td>sine, triangle, sawtooth, square</td><td>sine</td><td>LFO waveform shape</td></tr>
+            <tr><td><strong>Freq</strong></td><td>0.1–2</td><td>1</td><td>LFO rate (cycles per 4 bars)</td></tr>
             <tr><td><strong>Min</strong></td><td>varies</td><td>parent min</td><td>LFO sweep minimum</td></tr>
             <tr><td><strong>Max</strong></td><td>varies</td><td>parent max</td><td>LFO sweep maximum</td></tr>
             <tr><td><strong>Phas</strong></td><td>0–1</td><td>0</td><td>Phase offset</td></tr>
         </tbody>
     </table>
-    <p>The LFO waveform is always sine.</p>
 
     <h3>Sound Sub-Panel</h3>
     <table>
@@ -604,6 +604,7 @@
     </table>
 
     <h3>Filters (Master)</h3>
+    <p>The filters section is part of the master bus signal chain, applied after the compressor.</p>
     <table>
         <thead>
             <tr>
@@ -620,6 +621,7 @@
     </table>
 
     <h3>Compressor</h3>
+    <p>The compressor section uses a 2-column grid layout and includes pre-gain, compression, and makeup gain controls. The signal chain is: <code>Pre-Gain &rarr; Compressor &rarr; Low-cut &rarr; High-cut &rarr; Master Gain</code>.</p>
     <table>
         <thead>
             <tr>
@@ -631,11 +633,13 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>Threshold</strong></td><td>-40–0</td><td>-12</td><td>dB</td><td>Compression threshold</td></tr>
-            <tr><td><strong>Ratio</strong></td><td>1–20</td><td>4</td><td>—</td><td>Compression ratio</td></tr>
-            <tr><td><strong>Attack</strong></td><td>0–1</td><td>0.005</td><td>s</td><td>Response speed</td></tr>
-            <tr><td><strong>Release</strong></td><td>0–1</td><td>0.15</td><td>s</td><td>Recovery speed</td></tr>
-            <tr><td><strong>Knee</strong></td><td>0–40</td><td>6</td><td>dB</td><td>Curve softness</td></tr>
+            <tr><td><strong>Pre-Gain</strong></td><td>-20 to +20</td><td>0</td><td>dB</td><td>Input gain before the compressor</td></tr>
+            <tr><td><strong>Threshold</strong></td><td>-40–0</td><td>-18</td><td>dB</td><td>Compression threshold</td></tr>
+            <tr><td><strong>Ratio</strong></td><td>1–20</td><td>8</td><td>—</td><td>Compression ratio</td></tr>
+            <tr><td><strong>Attack</strong></td><td>0–1</td><td>0.002</td><td>s</td><td>Response speed</td></tr>
+            <tr><td><strong>Release</strong></td><td>0–1</td><td>0.08</td><td>s</td><td>Recovery speed</td></tr>
+            <tr><td><strong>Knee</strong></td><td>0–40</td><td>3</td><td>dB</td><td>Curve softness</td></tr>
+            <tr><td><strong>Makeup</strong></td><td>0–24</td><td>8</td><td>dB</td><td>Output gain to compensate for compression</td></tr>
         </tbody>
     </table>
 
@@ -788,21 +792,14 @@
     <h2 id="10-audio-signal-flow">10. Audio Signal Flow</h2>
     <h3>Per-Track Signal Chain</h3>
     <pre>
-Sample/Synth &rarr; Filter &rarr; Saturation &rarr; Dry Gain &rarr; Reverb &rarr; Delay &rarr; Output
-                                                                      &darr;
-                                                              Stereo Panner
-                                                                      &darr;
-                                                            Mixer Compressor
-                                                                      &darr;
-                                                          Master Low-cut Filter
-                                                                      &darr;
-                                                          Master High-cut Filter
-                                                                      &darr;
-                                                            Master Gain &rarr; Analyser &rarr; Speakers
+Sample/Synth &rarr; Filter &rarr; Saturation &rarr; Dry Gain &rarr; Reverb &rarr; Delay &rarr; Stereo Panner &rarr; Mixer Bus
     </pre>
 
-    <h3>Global Signal Chain</h3>
-    <p>All tracks feed into a shared compressor, then through master filters and gain before reaching the output.</p>
+    <h3>Master Bus Signal Chain</h3>
+    <pre>
+Mixer Bus &rarr; Pre-Gain &rarr; Compressor &rarr; Low-cut Filter (35 Hz) &rarr; High-cut Filter (18.5 kHz) &rarr; Master Gain &rarr; Analyser &rarr; Speakers
+    </pre>
+    <p>All tracks feed into a shared mixer bus. The master bus applies pre-gain, then compression, then filters and final gain before reaching the output.</p>
 
     <hr>
 
@@ -820,11 +817,15 @@ Sample/Synth &rarr; Filter &rarr; Saturation &rarr; Dry Gain &rarr; Reverb &rarr
     </ul>
     <p>Once installed, the application will have its own icon and window, and can function <strong>offline</strong> thanks to the integrated Service Worker.</p>
 
+    <h3>3. Desktop Application </h3>
+    <p>orDrumbox will be available soon</p>
+
+
     
 </main>
 
 <footer>
-    <p>© 2026 <strong>OrDrumbox Team</strong> - <em>.</em></p>
+    <p>&copy; 2026 <strong>OrDrumbox Team</strong></p>
 </footer>
 
 </body>
