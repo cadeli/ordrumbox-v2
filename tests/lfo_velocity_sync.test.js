@@ -49,7 +49,7 @@ describe('LFO Velocity Sync Verification', () => {
     })
 
     describe('TrackEditor Integration (freq=2)', () => {
-        let editor, track
+        let editor, track, mockStrip
         const lfoConfig = { freq: 2, phase: 0, min: 0, max: 1, waveform: 0 }
 
         beforeEach(() => {
@@ -62,6 +62,9 @@ describe('LFO Velocity Sync Verification', () => {
             appState.selectedPatternNum = 0
             appState.trackEditorVisibility.levels = true
             
+            mockStrip = { getLfoValue: vi.fn(() => 0) }
+            serviceRegistry.audioEngine = { mixer: { getOrCreateStrip: vi.fn().mockResolvedValue(mockStrip) } }
+            
             editor = new TrackEditor()
             editor.init()
             editor._track = track
@@ -71,20 +74,16 @@ describe('LFO Velocity Sync Verification', () => {
             serviceRegistry.audioCtx = { currentTime: 0 }
         })
 
-        it('animates to 1.0 (Peak) at 1 bar (2s at 120 BPM)', () => {
-            // freq=2, patternDuration = 16*(60/120) = 8s
-            // At 2s: transportPhase = (2/8)*2 = 0.5, localPhase = 0.5
-            // sin(2π*(0.5-0.25)) = sin(π/2) = 1 → val = (1+1)/2 = 1.0
-            serviceRegistry.audioCtx.currentTime = 2
-            editor._updateLfoSliders()
+        it('animates to 1.0 (Peak) at 1 bar (2s at 120 BPM)', async () => {
+            // The strip worklet returns the value computed in audio context
+            mockStrip.getLfoValue.mockReturnValue(1.0)
+            await editor._updateLfoSliders()
             expect(editor._sliders.get('velocity').getValue()).toBe(1)
         })
 
-        it('animates to 0.0 (End Cycle) at 2 bars (4s at 120 BPM)', () => {
-            // At 4s: transportPhase = (4/8)*2 = 1.0, localPhase = 1.0
-            // p = 0.75, sin(2π*0.75) = -1 → val = (-1+1)/2 = 0.0
-            serviceRegistry.audioCtx.currentTime = 4
-            editor._updateLfoSliders()
+        it('animates to 0.0 (End Cycle) at 2 bars (4s at 120 BPM)', async () => {
+            mockStrip.getLfoValue.mockReturnValue(0.0)
+            await editor._updateLfoSliders()
             expect(editor._sliders.get('velocity').getValue()).toBe(0)
         })
     })

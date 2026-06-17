@@ -55,6 +55,9 @@ export default class MfStrip {
         this.currentReverbAmount = 0;
         this.currentDelayType = 'tape';
         this.currentDelayAmount = 0;
+
+        // LFO values received from worklet (per-quantum snapshot)
+        this._lfoValues = { velocity: 0, pan: 0, filterFreq: 0, filterQ: 0, pitch: 0 };
     }
 
     static async create(name, audioCtx, mixer) {
@@ -84,6 +87,19 @@ export default class MfStrip {
         
         // Connect Pitch LFO output to the gain node used by voices
         this.stripNode.connect(this._lfoGains.pitchLfo, 1);
+
+        // Listen for LFO values from worklet (posted once per quantum)
+        if (this.stripNode.port) {
+            this.stripNode.port.onmessage = (e) => {
+                if (e.data?.type === 'lfoValues') {
+                    this._lfoValues.velocity = e.data.velocity;
+                    this._lfoValues.pan = e.data.pan;
+                    this._lfoValues.filterFreq = e.data.filterFreq;
+                    this._lfoValues.filterQ = e.data.filterQ;
+                    this._lfoValues.pitch = e.data.pitch;
+                }
+            };
+        }
 
         // Route audio through the level analyser
         this.stripNode.connect(this.levelAnalyser, 0);
@@ -115,6 +131,10 @@ export default class MfStrip {
             sum += v * v
         }
         return Math.sqrt(sum / this.levelData.length)
+    }
+
+    getLfoValue = (control) => {
+        return this._lfoValues[control] ?? 0
     }
 
     setBpm = (bpm) => {
@@ -260,6 +280,7 @@ export default class MfStrip {
 
     delete = () => {
         if (this.stripNode) {
+            if (this.stripNode.port) this.stripNode.port.onmessage = null;
             this.stripNode.disconnect();
             this.stripNode = null;
         }

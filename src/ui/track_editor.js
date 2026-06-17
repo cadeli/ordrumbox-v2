@@ -3,7 +3,6 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import Utils from '../core/utils.js'
-import { computeLfoValue } from '../audio/math.js'
 
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
@@ -87,6 +86,7 @@ export default class TrackEditor extends BasePanel {
         this._trackIdx = -1
         this._selectedPropKey = null
         this._rafId = null
+        this._lastTick = -1
         this._isDragging = false
         this._activeFxTab = 0
         this._sliders = new Map()
@@ -110,13 +110,10 @@ export default class TrackEditor extends BasePanel {
         })
         playbackEvents.onOutputToggle.push(() => this.hide())
         playbackEvents.onPlaybackStart.push(() => {
-            this._startAnimation()
+            this._startStepWatch()
         })
         playbackEvents.onPlaybackStop.push(() => {
-            if (this._rafId) {
-                cancelAnimationFrame(this._rafId)
-                this._rafId = null
-            }
+            this._stopStepWatch()
         })
         playbackEvents.onDrumkitChange.push(() => {
             if (this._track) this.sync()
@@ -139,35 +136,61 @@ export default class TrackEditor extends BasePanel {
         })
     }
 
-    _startAnimation() {
+    _startStepWatch() {
         if (this._rafId) return
-        const animate = () => {
+        this._lastTick = -1
+        const tick = () => {
             const transport = serviceRegistry.transport
             if (!transport?.isRunning) {
                 this._rafId = null
                 return
             }
-            this._rafId = requestAnimationFrame(animate)
-            this._updateLfoSliders()
+            this._rafId = requestAnimationFrame(tick)
+            const currentTick = transport.tick
+            if (currentTick !== this._lastTick) {
+                this._lastTick = currentTick
+                this._updateLfoSliders()
+            }
         }
-        this._rafId = requestAnimationFrame(animate)
+        this._rafId = requestAnimationFrame(tick)
     }
 
-    _updateLfoSliders() {
-        if (!this._track || !this.isVisible) return
-        const transport = serviceRegistry.transport
-        if (!transport?.isRunning) return
+    _stopStepWatch() {
+        if (this._rafId) {
+            cancelAnimationFrame(this._rafId)
+            this._rafId = null
+        }
+        this._lastTick = -1
+    }
 
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        const bpm = pattern?.bpm ?? 120
+    async _getStripLfoValues() {
+        if (!this._track) return null
+        const engine = serviceRegistry.audioEngine
+        const mixer = engine?.mixer
+        if (!mixer) return null
+        const strip = await mixer.getOrCreateStrip(this._track.name)
+        if (!strip?.getLfoValue) return null
+        return {
+            velocity: strip.getLfoValue('velocity'),
+            pan: strip.getLfoValue('pan'),
+            pitch: strip.getLfoValue('pitch'),
+            filterFreq: strip.getLfoValue('filterFreq'),
+            filterQ: strip.getLfoValue('filterQ')
+        }
+    }
+
+    async _updateLfoSliders() {
+        if (!this._track || !this.isVisible) return
+        const lfoValues = await this._getStripLfoValues()
+        if (!lfoValues) return
 
         GROUPS.forEach(g => {
             g.props.forEach(p => {
                 if (p.lfo && this._track[p.lfo]) {
                     const s = this._sliders.get(p.key)
                     if (s) {
-                        const lfoVal = computeLfoValue(this._track[p.lfo], null, null, p.key, serviceRegistry.audioCtx?.currentTime ?? 0, bpm)
-                        s.setValue(p.key === 'pitch' ? this._track.pitch + lfoVal : lfoVal)
+                        const renderedVal = lfoValues[p.key] ?? 0
+                        s.setValue(p.key === 'pitch' ? this._track.pitch + renderedVal : renderedVal)
                     }
                 }
             })
@@ -180,7 +203,7 @@ export default class TrackEditor extends BasePanel {
         super.show(['ne-panel', 'tools-panel', 'output-panel', 'about-panel'])
         void this.synthEditor.ensureGeneratedSoundsLoaded()
         if (serviceRegistry.transport?.isRunning) {
-            this._startAnimation()
+            this._startStepWatch()
         }
     }
 
@@ -841,6 +864,7 @@ export default class TrackEditor extends BasePanel {
         this._track = null
         this._trackIdx = -1
         this._selectedPropKey = null
+        this._lastTick = -1
     }
 
     _onLoopSlider(input) {

@@ -161,6 +161,8 @@ class StripProcessor extends AudioWorkletProcessor {
         this.dlyR = new _DelayLine(2.1);
         this.dlyFiltL = 0; this.dlyFiltR = 0;
         this.sh = { pitch: new _SH(), velo: new _SH(), pan: new _SH(), cut: new _SH(), q: new _SH() };
+        this._lastVeloLfo = 0; this._lastPanLfo = 0;
+        this._lastCutLfo = 0; this._lastQLfo = 0; this._lastPitchLfo = 0;
     }
 
     _shape(x, drive, type, mix, out) {
@@ -316,8 +318,28 @@ class StripProcessor extends AudioWorkletProcessor {
             if (pitchLfoOut && pitchLfoOut[0]) {
                 const pitchVal = lPitchD !== 0 ? this._computeLfo(lPitchF, lPitchW, lPitchD, lPitchB, lPitchP, this.sh.pitch, time, bpm) : lPitchB;
                 pitchLfoOut[0][i] = lPitchMix * pitchVal;
+                this._lastPitchLfo = pitchVal;
             }
+
+            // Cache last LFO values for main thread readout
+            this._lastVeloLfo = vLfo;
+            this._lastPanLfo = pLfo;
+            this._lastCutLfo = cLfo;
+            this._lastQLfo = qLfo;
         }
+
+        // Post LFO snapshot to main thread (once per quantum)
+        if (this.port) {
+            this.port.postMessage({
+                type: 'lfoValues',
+                velocity: this._lastVeloLfo,
+                pan: this._lastPanLfo,
+                filterFreq: this._lastCutLfo,
+                filterQ: this._lastQLfo,
+                pitch: this._lastPitchLfo
+            });
+        }
+
         return true;
     }
 
