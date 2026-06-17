@@ -301,10 +301,13 @@ export default class TrackEditor extends BasePanel {
             if (row) {
                 s.mount(row)
                 // Reset dragging on release
-                s._input.addEventListener('change', () => {
-                    this._isDragging = false
-                    playbackEvents.dispatchPatternChange()
-                })
+                const input = row.querySelector('input')
+                if (input) {
+                    input.addEventListener('change', () => {
+                        this._isDragging = false
+                        playbackEvents.dispatchPatternChange()
+                    })
+                }
             }
         })
 
@@ -761,6 +764,7 @@ export default class TrackEditor extends BasePanel {
     _toggleLfo() {
         const prop = this._findProp(this._selectedPropKey)
         if (!prop || !prop.lfo) return
+        
         if (this._track[prop.lfo]) {
             delete this._track[prop.lfo]
         } else {
@@ -772,7 +776,11 @@ export default class TrackEditor extends BasePanel {
                 phase: 0
             }
         }
+        
         this.sync()
+        // Ensure engine is notified immediately
+        playbackEvents.dispatchTrackParamChange(this._track)
+        // Also dispatch pattern change so it gets saved
         playbackEvents.dispatchPatternChange()
     }
 
