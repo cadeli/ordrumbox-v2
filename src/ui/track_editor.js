@@ -16,7 +16,15 @@ const fmtFreq = v => {
     const hz = Utils.normalizeTrackFilterFreqValue(v)
     return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : Math.round(hz) + 'Hz'
 }
-const fmtVal = (key, v) => key === 'filterFreq' ? fmtFreq(v) : fmt(v)
+const fmtPitch = v => {
+    const n = Math.round(v)
+    return (n >= 0 ? '+' : '') + String(Math.abs(n)).padStart(2, '0')
+}
+const fmtVal = (key, v) => {
+    if (key === 'filterFreq') return fmtFreq(v)
+    if (key === 'pitch') return fmtPitch(v)
+    return fmt(v)
+}
 
 const FX_DEFS = [
     { key: 'reverbOn', label: 'Reverb', controls: ['reverbAmount', 'reverbType'] },
