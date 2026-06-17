@@ -13,6 +13,7 @@ import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 import { computeLfoValue } from '../audio/math.js'
 import { TICK } from '../core/constants.js'
+import { LFO_MAP } from '../logic/lfo_engine.js'
 
 const fmtFreq = v => {
     const hz = Utils.normalizeTrackFilterFreqValue(v)
@@ -182,17 +183,10 @@ export default class TrackEditor extends BasePanel {
         if (!pattern) return null
         const nbTicks = TICK * pattern.nbBars
         const bpm = appState.bpm ?? 120
-        const controls = {
-            velocity: 'velocityLfo',
-            pan: 'panLfo',
-            pitch: 'pitchLfo',
-            filterFreq: 'filterFreqLfo',
-            filterQ: 'filterQLfo'
-        }
         const values = {}
-        for (const [key, lfoKey] of Object.entries(controls)) {
+        for (const { lfoKey, resultKey } of LFO_MAP) {
             const lfo = this._track[lfoKey]
-            values[key] = lfo ? computeLfoValue(lfo, tick, nbTicks, key, null, bpm) : 0
+            values[resultKey] = lfo ? computeLfoValue(lfo, tick, nbTicks, resultKey, null, bpm) : 0
         }
         return values
     }

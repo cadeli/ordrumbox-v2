@@ -9,7 +9,6 @@ import { playbackEvents } from '../state/playback_events.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import { applyParamsToStrip } from './strip_sync.js'
 import { computeTrackLfoValues } from '../logic/lfo_engine.js'
-import { TICK } from '../core/constants.js'
 
 export default class AudioEngine {
     static TAG = "AUDIOENGINE"
@@ -159,7 +158,7 @@ export default class AudioEngine {
     _pushStepLfo = (tick, atTime) => {
         const pattern = this.patterns[this.getSelectedPatternNum()]
         if (!pattern?.tracks) return
-        const nbTicks = TICK * pattern.nbBars
+        const nbTicks = this.TICK * pattern.nbBars
         const bpm = appState.bpm
         const tracks = pattern.tracks
         const t = 0.005

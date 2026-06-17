@@ -1,6 +1,6 @@
 import { computeLfoValue } from '../audio/math.js'
 
-const LFO_MAP = [
+export const LFO_MAP = [
     { lfoKey: 'velocityLfo',   resultKey: 'velocity' },
     { lfoKey: 'panLfo',        resultKey: 'pan' },
     { lfoKey: 'pitchLfo',      resultKey: 'pitch' },
