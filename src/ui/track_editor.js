@@ -579,7 +579,7 @@ export default class TrackEditor extends BasePanel {
             <div class="ne-grid">
             <div class="ne-row">
                 <label>Freq</label>
-                <input type="range" min="0.1" max="16" step="0.1" value="${freq}" data-lfo-key="freq">
+                <input type="range" min="0.1" max="2" step="0.1" value="${freq}" data-lfo-key="freq">
                 <span class="ne-val">${fmt(freq)}</span>
             </div>
             <div class="ne-row">

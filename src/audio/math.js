@@ -58,9 +58,10 @@ export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null
         max = Utils.valueToNormalizedTrackFilterQ(max)
     }
 
-    // Period in ticks: 1 unit = 16 beats = 4 bars = 4 * TICK
-    const periodInTicks = freqVal * 4 * TICK
-    const currentPhase = (tick / periodInTicks) + phase
+    // Frequency in cycles per 4 bars. 1.0 = 1 cycle per 4 bars (TICK * 4 ticks).
+    // Clamp to [0, 2] as per requirements.
+    const freqClamped = Math.min(2, freqVal)
+    const currentPhase = (tick / (TICK * 4)) * freqClamped + phase
 
     let val = getLfoWaveformValue(currentPhase, wave)
     val = (val + 1) / 2

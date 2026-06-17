@@ -94,8 +94,8 @@ const getLfoWaveformValue = (phase, wave) => {
 class _SH {
     constructor() { this.lastCycle = -1; this.val = 0; this._rngState = 12345; }
     process(time, freqMultiplier, bpm) {
-        const period = freqMultiplier * 4 * (60 / bpm);
-        const cycle = (time / period) | 0;
+        const patternDuration = 16 * (60 / bpm);
+        const cycle = (time / patternDuration * freqMultiplier) | 0;
         if (cycle !== this.lastCycle) {
             this._rngState = _xorshift32(this._rngState);
             this.val = (this._rngState / 2147483648);
@@ -322,10 +322,11 @@ class StripProcessor extends AudioWorkletProcessor {
     }
 
     _computeLfo(fMult, w, d, b, phase, sh, time, bpm) {
-        const period = Math.max(0.001, fMult) * 4 * (60 / bpm);
-        const transportPhase = time / period;
+        const patternDuration = 16 * (60 / bpm); // 4 bars = 16 beats
+        const freqClamped = Math.min(2, fMult);
+        const transportPhase = (time / patternDuration) * freqClamped;
         const localPhase = transportPhase + phase;
-        const raw = w > 3.5 ? sh.process(time, fMult, bpm) : getLfoWaveformValue(localPhase, w);
+        const raw = w > 3.5 ? sh.process(time, freqClamped, bpm) : getLfoWaveformValue(localPhase, w);
         return b + ((raw + 1) * 0.5) * d;
     }
 }

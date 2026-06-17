@@ -130,12 +130,11 @@ describe('audioMath - computeLfoValue (replace semantics, controlKey normalizati
     it('matches the worklet formula (inlined in strip_source.js)', () => {
         // The worklet uses: bias + ((raw + 1) * 0.5) * depth
         // where bias = min, depth = max - min, raw = getLfoWaveformValue(phase, wave)
-        // period = freq * 4 * TICK
+        // frequency = freq (cycles per 4 bars)
         // The helper must produce the same value as getLfoWaveformValue.
         const lfo = { freq: 2, min: -1, max: 1, phase: 0.25 }
         for (const tick of [0, 16, 32, 48, 64, 96]) {
-            const period = 2 * 4 * TICK
-            const curPhase = (tick / period) + 0.25
+            const curPhase = (tick / (TICK * 4)) * 2 + 0.25
             const raw = getLfoWaveformValue(curPhase, 0) // wave 0 = sine
             const expected = -1 + ((raw + 1) * 0.5) * 2
             const expectedRounded = Math.round(100 * expected) / 100
