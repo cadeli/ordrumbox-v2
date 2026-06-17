@@ -100,8 +100,13 @@ export function getLfoWaveformValue(phase, wave) {
     if (wave < 2.5) return p * 2 - 1 // Saw
     if (wave < 3.5) return p < 0.5 ? 1 : -1 // Square
     
-    // S&H
-    return Math.sin(2 * Math.PI * Math.floor((phase - 0.25) * 8) / 8) 
+    // S&H — deterministic pseudo-random, new value at each LFO cycle boundary
+    const cycle = Math.floor(phase)
+    let rng = ((cycle * 1234567 + 890123) | 0)
+    rng ^= rng << 13
+    rng ^= rng >> 17
+    rng ^= rng << 5
+    return (rng | 0) / 2147483648
 }
 
 export function computeAccent(noteVelo, accentAmount = 0.5) {
