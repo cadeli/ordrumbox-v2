@@ -1,3 +1,4 @@
+import { logger } from "../../core/logger.js"
 export default class MfStructureSong {
     static TAG = "MFSTRUCTURESONG"
 
@@ -73,7 +74,7 @@ export default class MfStructureSong {
     }
 
     getElement = (loop) => {
-        const safeLoop = Math.max(0, Math.floor(((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',loop,0),0))(Number(loop)))))
+        const safeLoop = Math.max(0, Math.floor(((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','num',loop,0),0))(Number(loop)))))
         const loopInSong = this.totalLoops > 0 ? safeLoop % this.totalLoops : 0
         let cursor = 0
         const counters = {}

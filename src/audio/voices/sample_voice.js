@@ -10,6 +10,7 @@ import {
     STOP_EXTRA_BUFFER,
     TICK
 } from '../../core/constants.js'
+import { logger } from "../../core/logger.js"
 
 export default class SampleVoice extends BaseVoice {
     constructor(audioCtx, strip, buffer, nodePool = null) {
@@ -30,7 +31,7 @@ export default class SampleVoice extends BaseVoice {
 
         this.snd.buffer = this.buffer
 
-        let playbackRate = flatNote.fpitch ?? (console.warn('SV', 'fpitch fallback'), 1)
+        let playbackRate = flatNote.fpitch ?? (logger.warn('SV', 'fpitch fallback'), 1)
         if (track.pitchLfo && lfoContext) {
             const { tick, nbTicks } = lfoContext
             const lfoSemi = computeLfoValue(track.pitchLfo, tick, nbTicks, 'pitch')
@@ -39,7 +40,7 @@ export default class SampleVoice extends BaseVoice {
         this.snd.playbackRate.setTargetAtTime(playbackRate, time, PITCH_RAMP_TIME)
         this.panNode.pan.setValueAtTime(flatNote.pan ?? 0, time)
 
-        const duration = track.sampleLength ?? (console.warn('SV', 'sampleLength fallback'), 0.5)
+        const duration = track.sampleLength ?? (logger.warn('SV', 'sampleLength fallback'), 0.5)
         this.noteVelo = flatNote.note?.velocity ?? MfDefaults.getNoteProp(flatNote.note, 'velocity')
 
         this.gainEnvelope.gain.setValueAtTime(0, time)

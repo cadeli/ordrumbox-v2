@@ -1,6 +1,7 @@
 import { fixPattern } from '../../patterns/fixer.js'
 import { normalizeTrack, TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
 import Utils from '../../core/utils.js'
+import { logger } from "../../core/logger.js"
 
 /**
  * Create a new track from a source track's properties.
@@ -90,8 +91,8 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
     const importedPattern = addPattern(patternName)
 
     importedPattern.name = patternName ?? importedPattern.name ?? ''
-    importedPattern.bpm = ((_v=>!Number.isNaN(_v)?_v:(console.warn('PI','bpm NaN',sourcePattern?.bpm),importedPattern.bpm ?? 120))(Number(sourcePattern?.bpm)))
-    importedPattern.nbBars = ((_v=>!Number.isNaN(_v)?_v:(console.warn('PI','nbBars NaN',sourcePattern?.nbBars),importedPattern.nbBars ?? 4))(Number(sourcePattern?.nbBars)))
+    importedPattern.bpm = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('PI','bpm NaN',sourcePattern?.bpm),importedPattern.bpm ?? 120))(Number(sourcePattern?.bpm)))
+    importedPattern.nbBars = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('PI','nbBars NaN',sourcePattern?.nbBars),importedPattern.nbBars ?? 4))(Number(sourcePattern?.nbBars)))
 
     if (sourcePattern?.application) importedPattern.application = sourcePattern.application
     if (sourcePattern?.url) importedPattern.url = sourcePattern.url

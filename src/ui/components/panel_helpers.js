@@ -1,3 +1,4 @@
+import { logger } from "../../core/logger.js"
 export function injectUiCss() {
     if (document.getElementById('ui-styles')) return
     const link = document.createElement('link')
@@ -49,7 +50,7 @@ export function bindPanelToggles(container, getTarget) {
 export function bindAccordionToggles(container, getTarget, onChange) {
     container.querySelectorAll('.ne-toggle[data-toggle], .ne-toggle[data-about-toggle], .ne-group-accordion-toggle[data-toggle]').forEach(btn => {
         btn.addEventListener('click', (event) => {
-            const key = btn.dataset.toggle ?? (console.warn('PH', 'toggle fallback'), btn.dataset.aboutToggle ?? (console.warn('PH', 'aboutToggle fallback'), ''))
+            const key = btn.dataset.toggle ?? (logger.warn('PH', 'toggle fallback'), btn.dataset.aboutToggle ?? (logger.warn('PH', 'aboutToggle fallback'), ''))
             btn.classList.toggle('active')
             const isExpanded = btn.classList.contains('active')
             

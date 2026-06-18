@@ -1,3 +1,4 @@
+import { logger } from "../core/logger.js"
 export default class MfAudioAnalyze {
     static TAG = "MFAUDIOANALYZE"
     static DEFAULTS = Object.freeze({
@@ -373,7 +374,7 @@ export default class MfAudioAnalyze {
         const size = Math.min(frame.length, fftSize)
 
         for (let index = 0; index < size; index++) {
-            const window = 0.5 * (1 - Math.cos((2 * Math.PI * index) / (size > 1 ? size - 1 : (console.warn('AN', 'size<=1', size), 1))))
+            const window = 0.5 * (1 - Math.cos((2 * Math.PI * index) / (size > 1 ? size - 1 : (logger.warn('AN', 'size<=1', size), 1))))
             output[index] = frame[index] * window
         }
 

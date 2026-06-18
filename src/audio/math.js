@@ -4,6 +4,7 @@ import {
     MIN_NOTE_RATIO,
 } from '../core/constants.js'
 import Utils from '../core/utils.js'
+import { logger } from "../core/logger.js"
 
 export function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value))
@@ -50,13 +51,13 @@ export function computeNoteRatio(fpitch) {
  */
 export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null, audioTime = null, bpm = null) {
     if (!lfo) return 0
-    const freqVal = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',lfo.freq,1),1))(parseFloat(lfo.freq)))
-    let min = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',lfo.min,0),0))(parseFloat(lfo.min)))
-    let max = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',lfo.max,1),1))(parseFloat(lfo.max)))
-    const phase = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',lfo.phase,0),0))(parseFloat(lfo.phase)))
+    const freqVal = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pf',lfo.freq,1),1))(parseFloat(lfo.freq)))
+    let min = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pf',lfo.min,0),0))(parseFloat(lfo.min)))
+    let max = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pf',lfo.max,1),1))(parseFloat(lfo.max)))
+    const phase = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pf',lfo.phase,0),0))(parseFloat(lfo.phase)))
     const waveName = lfo.type || lfo.waveform || 'sine'
     let wave = Utils.waveList.indexOf(waveName)
-    if (wave === -1) wave = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',waveName,0),0))(parseFloat(waveName)))
+    if (wave === -1) wave = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pf',waveName,0),0))(parseFloat(waveName)))
 
     if (controlKey === 'filterFreq' && (min > 1 || max > 1)) {
         min = Utils.hzToNormalizedTrackFilterFreq(min)

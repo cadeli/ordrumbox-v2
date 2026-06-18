@@ -7,6 +7,7 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { normalizeTrack, TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
 import { importPatternFromJson } from './pattern_import.js'
+import { logger } from "../../core/logger.js"
 
 export default class MfCmd {
     static TAG = "MFCMD"
@@ -56,7 +57,7 @@ export default class MfCmd {
         // Find the pattern containing this track to increment its version
         for (const pattern of appState.patterns) {
             if (Utils.getTracksArray(pattern).includes(track)) {
-                pattern._version = (pattern._version ?? (console.warn('CMD', '_version fallback'), 0)) + 1
+                pattern._version = (pattern._version ?? (logger.warn('CMD', '_version fallback'), 0)) + 1
                 break
             }
         }
@@ -137,7 +138,7 @@ export default class MfCmd {
     }
 
     setPatternBpm = (pattern, bpm) => {
-        pattern.bpm = ((_v=>!Number.isNaN(_v) && _v !== 0 ? _v : (console.warn('CMD','bpm NaN/0',bpm),MfDefaults.getPatternProp({},'bpm')))(Number(bpm)))
+        pattern.bpm = ((_v=>!Number.isNaN(_v) && _v !== 0 ? _v : (logger.warn('CMD','bpm NaN/0',bpm),MfDefaults.getPatternProp({},'bpm')))(Number(bpm)))
         return pattern
     }
 

@@ -17,6 +17,7 @@ import { appState } from './state/app_state.js'
 import { serviceRegistry } from './state/service_registry.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
+import { logger } from "./core/logger.js"
 
 serviceRegistry.audioCtx = null
 serviceRegistry.mfCmd = new MfCmd()
@@ -93,9 +94,9 @@ export function init() {
         if (!(el instanceof HTMLInputElement) || el.type !== 'range') return
         if (el.disabled || el.readOnly) return
 
-        const min = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',el.min,0),0))(parseFloat(el.min)))
-        const max = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',el.max,100),100))(parseFloat(el.max)))
-        const step = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',el.step,1),1))(parseFloat(el.step)))
+        const min = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pf',el.min,0),0))(parseFloat(el.min)))
+        const max = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pf',el.max,100),100))(parseFloat(el.max)))
+        const step = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pf',el.step,1),1))(parseFloat(el.step)))
         const cur = parseFloat(el.value)
         const dir = e.key === 'ArrowRight' ? 1 : -1
         let next = cur + dir * step

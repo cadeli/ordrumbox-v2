@@ -3,6 +3,7 @@ import MfFlatNote from '../model/flatnote.js'
 import MfNoteParams from '../patterns/note_params.js'
 import { getAutoGenerateService } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
+import { logger } from "../core/logger.js"
 
 export default class MfPlayer {
     static TAG = "MFPLAYER"
@@ -11,7 +12,7 @@ export default class MfPlayer {
         this.audioCtx = config.audioCtx
         this.mixer = config.mixer
         this.sounds = config.sounds
-        this.generatedSounds = config.generatedSounds ?? (console.warn('PLAYER', 'generatedSounds fallback'), {})
+        this.generatedSounds = config.generatedSounds ?? (logger.warn('PLAYER', 'generatedSounds fallback'), {})
         this.patterns = config.patterns
         this.getSelectedPatternNum = config.getSelectedPatternNum ?? (() => config.selectedPatternNum ?? 0)
         this.computeFlatNotes = config.computeFlatNotes

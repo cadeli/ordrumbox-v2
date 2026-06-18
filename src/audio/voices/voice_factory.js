@@ -3,6 +3,7 @@ import SynthVoice from './synth_voice.js'
 import WorkletSynthVoice from './worklet_synth_voice.js'
 import { appState } from '../../state/app_state.js'
 import { toFiniteNumber } from '../math.js'
+import { logger } from "../../core/logger.js"
 
 /**
  * Returns true if the given generatedSound config can run entirely on the
@@ -32,7 +33,7 @@ export default class VoiceFactory {
         if (!strip) return null
 
         if (track.useSoftSynth === true) {
-            const soundKey      = track?.synthSoundKey ?? (console.warn('VF', 'synthSoundKey fallback'), "BASS1")
+            const soundKey      = track?.synthSoundKey ?? (logger.warn('VF', 'synthSoundKey fallback'), "BASS1")
             const generatedSound = this.generatedSounds?.[soundKey]
             if (!generatedSound) return null
 
@@ -49,7 +50,7 @@ export default class VoiceFactory {
         let soundBuffer = this.sounds[flatNote.soundId]?.buffer
         if (!soundBuffer) soundBuffer = this.sounds[track.soundId]?.buffer
         if (!soundBuffer) {
-            console.warn(`VoiceFactory: No soundBuffer for track ${track.name}`)
+            logger.warn(`VoiceFactory: No soundBuffer for track ${track.name}`)
             return null
         }
         return new SampleVoice(this.audioCtx, strip, soundBuffer, this.nodePool)

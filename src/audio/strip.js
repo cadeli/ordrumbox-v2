@@ -3,6 +3,7 @@ import MfDefaults from '../patterns/defaults.js';
 import { RAMP_TIME } from '../core/constants.js';
 import WorkletLoader from './worklets/loader.js';
 import STRIP_SOURCE from './worklets/processors/strip_source.js';
+import { logger } from "../core/logger.js"
 
 WorkletLoader.register('strip', STRIP_SOURCE);
 
@@ -114,10 +115,10 @@ export default class MfStrip {
             return;
         }
 
-        let fFreq = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',freq,0),0))(Number(freq)));
+        let fFreq = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','num',freq,0),0))(Number(freq)));
         if (fFreq > 1) fFreq = Utils.hzToNormalizedTrackFilterFreq(fFreq);
 
-        let fQ = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',q,0),0))(Number(q)));
+        let fQ = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','num',q,0),0))(Number(q)));
         if (fQ > 1) fQ = Utils.valueToNormalizedTrackFilterQ(fQ);
 
         const mode  = FILTER_MODES[this.currentFilterType] ?? 0;
@@ -132,7 +133,7 @@ export default class MfStrip {
         const time = this.audioCtx.currentTime;
         const params = this.stripNode.parameters;
 
-        const normalizedAmount = Math.min(1, Math.max(0, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',amount,0),0))(Number(amount)))));
+        const normalizedAmount = Math.min(1, Math.max(0, ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','num',amount,0),0))(Number(amount)))));
         this.currentSaturationType = SATURATION_TYPES.includes(type) ? type : 'soft';
         this.currentSaturationAmount = normalizedAmount;
 
@@ -153,7 +154,7 @@ export default class MfStrip {
         const params = this.stripNode.parameters;
 
         const normalizedType = REVERB_PRESETS[type] ? type : 'none';
-        const normalizedAmount = Math.min(1, Math.max(0, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',amount,0),0))(Number(amount)))));
+        const normalizedAmount = Math.min(1, Math.max(0, ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','num',amount,0),0))(Number(amount)))));
 
         this.currentReverbType = normalizedType;
         this.currentReverbAmount = normalizedAmount;
@@ -173,7 +174,7 @@ export default class MfStrip {
         const params = this.stripNode.parameters;
 
         const normalizedType = DELAY_MODES.hasOwnProperty(type) ? type : 'tape';
-        const normalizedAmount = Math.min(1, Math.max(0, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',amount,0),0))(Number(amount)))));
+        const normalizedAmount = Math.min(1, Math.max(0, ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','num',amount,0),0))(Number(amount)))));
 
         this.currentDelayType = normalizedType;
         this.currentDelayAmount = normalizedAmount;
