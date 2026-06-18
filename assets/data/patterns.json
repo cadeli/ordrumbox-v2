@@ -1,17 +1,15 @@
 [
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "rock",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "rock",
+    "tracks": [
       {
         "name": "KICK_01",
         "bars": 8,
         "loopAtStep": 32,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":2,"velocity":1}, {"bar":2,"barStep":2,"velocity":1}, {"bar":3,"barStep":2,"velocity":0.5,"triggerFreq":4}, {"bar":4}, {"bar":4,"barStep":2}, {"bar":5,"barStep":2}, {"bar":6,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 2, "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 0.5, "triggerFreq": 4 }, { "bar": 4 }, { "bar": 4, "barStep": 2 }, { "bar": 5, "barStep": 2 }, { "bar": 6, "barStep": 2 } ]
       },
       {
         "name": "SNARE",
@@ -20,9 +18,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":1,"barStep":3,"triggerFreq":4}, {"bar":2,"barStep":1,"velocity":1,"triggerFreq":4}, {"bar":3}, {"bar":5,"velocity":1}, {"bar":7}, {"bar":7,"barStep":1,"velocity":0.3,"triggerFreq":4}, {"bar":7,"barStep":2,"triggerFreq":3}, {"bar":7,"barStep":3,"velocity":0.3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 1, "barStep": 3, "triggerFreq": 4 }, { "bar": 2, "barStep": 1, "velocity": 1, "triggerFreq": 4 }, { "bar": 3 }, { "bar": 5, "velocity": 1 }, { "bar": 7 }, { "bar": 7, "barStep": 1, "velocity": 0.3, "triggerFreq": 4 }, { "bar": 7, "barStep": 2, "triggerFreq": 3 }, { "bar": 7, "barStep": 3, "velocity": 0.3, "triggerFreq": 4 } ]
       },
       {
         "name": "RIM",
@@ -31,9 +27,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":6,"triggerFreq":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 6, "triggerFreq": 6 } ]
       },
       {
         "name": "CLAP",
@@ -41,12 +35,10 @@
         "loopAtStep": 32,
         "swingAmount": 0.3,
         "pan": -0.4,
-        "panLfo": {"name":"panoTrack","wave":1,"freq":1,"min":0,"max":1,"phase":0},
+        "panLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"triggerFreq":16,"triggerPhase":8}, {"bar":3,"barStep":1,"triggerFreq":16,"triggerPhase":8}, {"bar":3,"barStep":2,"triggerFreq":16,"triggerPhase":8}, {"bar":3,"barStep":3,"triggerFreq":16,"triggerPhase":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "triggerFreq": 16, "triggerPhase": 8 }, { "bar": 3, "barStep": 1, "triggerFreq": 16, "triggerPhase": 8 }, { "bar": 3, "barStep": 2, "triggerFreq": 16, "triggerPhase": 8 }, { "bar": 3, "barStep": 3, "triggerFreq": 16, "triggerPhase": 8 } ]
       },
       {
         "name": "COWBELL",
@@ -56,9 +48,7 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"triggerFreq":16,"triggerPhase":6}, {"bar":4,"triggerFreq":3}, {"barStep":2,"triggerFreq":16,"triggerPhase":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "triggerFreq": 16, "triggerPhase": 6 }, { "bar": 4, "triggerFreq": 3 }, { "barStep": 2, "triggerFreq": 16, "triggerPhase": 6 } ]
       },
       {
         "name": "CHH",
@@ -66,11 +56,9 @@
         "loopAtStep": 4,
         "swingAmount": 0.2,
         "velocity": 0.3,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":5,"min":0.1,"max":0.4,"phase":0},
+        "velocityLfo": { "freq": 5, "min": 0.1, "max": 0.4, "phase": 0, "type": "triangle" },
         "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":1,"velocity":0.6}, {"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 1, "velocity": 0.6 }, { "barStep": 3 } ]
       },
       {
         "name": "OHH",
@@ -78,10 +66,8 @@
         "loopAtStep": 4,
         "velocity": 0.9,
         "pan": -0.2,
-        "panLfo": {"name":"panoTrack","wave":1,"freq":1,"min":0.3,"max":0.7,"phase":0},
-        "notes": [ {"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "panLfo": { "freq": 1, "min": 0.3, "max": 0.7, "phase": 0, "type": "triangle" },
+        "notes": [ { "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -90,26 +76,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"velocity":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1, "triggerFreq": 4 } ]
       }
-  ],
-  "nbBars": 8,
-  "tags": {"style":"rock","type":"default"}
+    ],
+    "nbBars": 8,
+    "tags": {
+      "style": "rock",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "slRock",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "slRock",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":2,"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -118,9 +103,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1,"velocity":1}, {"bar":1,"barStep":3,"velocity":0.6}, {"bar":2,"barStep":1}, {"bar":3,"velocity":1}, {"bar":3,"barStep":2,"triggerFreq":4,"triggerPhase":1}, {"bar":3,"barStep":3,"triggerFreq":4,"triggerPhase":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "velocity": 1 }, { "bar": 1, "barStep": 3, "velocity": 0.6 }, { "bar": 2, "barStep": 1 }, { "bar": 3, "velocity": 1 }, { "bar": 3, "barStep": 2, "triggerFreq": 4, "triggerPhase": 1 }, { "bar": 3, "barStep": 3, "triggerFreq": 4, "triggerPhase": 1 } ]
       },
       {
         "name": "TOM",
@@ -128,19 +111,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 16,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"triggerFreq":8,"triggerPhase":7}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 16, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "triggerFreq": 8, "triggerPhase": 7 } ]
       },
       {
         "name": "COWBELL",
@@ -149,52 +120,37 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"barStep":2,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "barStep": 2, "triggerFreq": 8 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 4,
         "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":2,"velocity":0.4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 2, "velocity": 0.4 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CRASH",
-        "loopAtStep": 16,
-        "pan": 1,
-        "reverbType": "hall",
-        "reverbAmount": 0.85,
-        "notes": [ {"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CRASH", "loopAtStep": 16, "pan": 1, "reverbType": "hall", "reverbAmount": 0.85, "notes": [ { "triggerFreq": 4 } ]
       }
-  ],
-  "bpm": 115,
-  "tags": {"style":"rock","type":"default"}
+    ],
+    "bpm": 115,
+    "tags": {
+      "style": "rock",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "SmRock",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "SmRock",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.3,
-        "notes": [ {"velocity":1}, {"bar":1,"barStep":2,"velocity":1,"triggerFreq":2}, {"bar":2,"barStep":2,"velocity":1}, {"bar":2,"triggerFreq":2,"triggerPhase":1}, {"barStep":2,"triggerFreq":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1, "triggerFreq": 2 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 2, "triggerFreq": 2, "triggerPhase": 1 }, { "barStep": 2, "triggerFreq": 2 } ]
       },
       {
         "name": "SNARE",
@@ -203,9 +159,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":3,"velocity":0.1,"triggerFreq":4,"retriggerNum":3,"retriggerStep":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 3, "velocity": 0.1, "triggerFreq": 4, "retriggerNum": 3, "retriggerStep": 4 } ]
       },
       {
         "name": "TOM",
@@ -214,9 +168,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":2,"triggerFreq":4}, {"bar":3,"barStep":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 2, "triggerFreq": 4 }, { "bar": 3, "barStep": 1, "triggerFreq": 4 } ]
       },
       {
         "name": "CLAP",
@@ -224,39 +176,13 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 16,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 2,
-        "velocity": 0.3,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":3,"min":0.1,"max":0.2,"phase":0},
-        "pan": -0.3,
-        "panLfo": {"name":"panoTrack","wave":1,"freq":6,"min":0.3,"max":0.5,"phase":0},
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
+        "notes": [] }, { "name": "COWBELL", "loopAtStep": 16, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "CHH", "loopAtStep": 2, "velocity": 0.3, "velocityLfo": { "freq": 3, "min": 0.1, "max": 0.2, "phase": 0, "type": "triangle" }, "pan": -0.3, "panLfo": { "freq": 6, "min": 0.3, "max": 0.5, "phase": 0, "type": "triangle" }, "notes": [ { "velocity": 1 } ] },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "velocity": 0.6,
         "pan": -0.2,
-        "notes": [ {"bar":3,"barStep":2,"triggerFreq":2,"triggerPhase":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2, "triggerFreq": 2, "triggerPhase": 1 } ]
       },
       {
         "name": "CRASH",
@@ -265,25 +191,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"velocity":0.2,"triggerFreq":4,"retriggerNum":3,"retriggerStep":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 0.2, "triggerFreq": 4, "retriggerNum": 3, "retriggerStep": 6 } ]
       }
-  ],
-  "tags": {"style":"rock","type":"default"}
+    ],
+    "tags": {
+      "style": "rock",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "RockCow",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "RockCow",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.3,
-        "notes": [ {"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"velocity":0.1,"pitch":-5}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "velocity": 0.1, "pitch": -5 } ]
       },
       {
         "name": "SNARE",
@@ -292,9 +217,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":3}, {"bar":3,"barStep":2,"velocity":0.792,"pitch":-5,"triggerFreq":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 3 }, { "bar": 3, "barStep": 2, "velocity": 0.792, "pitch": -5, "triggerFreq": 2 } ]
       },
       {
         "name": "TOM",
@@ -303,9 +226,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":2,"velocity":0.6,"pitch":-2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 2, "velocity": 0.6, "pitch": -2 } ]
       },
       {
         "name": "CLAP",
@@ -313,65 +234,48 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"velocity":1,"triggerFreq":4}, {"bar":3,"velocity":1,"triggerFreq":8}, {"bar":3,"barStep":1,"velocity":1,"triggerFreq":8}, {"bar":3,"barStep":2,"velocity":1,"triggerFreq":8}, {"bar":3,"barStep":3,"velocity":0.6,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "velocity": 1, "triggerFreq": 4 }, { "bar": 3, "velocity": 1, "triggerFreq": 8 }, { "bar": 3, "barStep": 1, "velocity": 1, "triggerFreq": 8 }, { "bar": 3, "barStep": 2, "velocity": 1, "triggerFreq": 8 }, { "bar": 3, "barStep": 3, "velocity": 0.6, "triggerFreq": 8 } ]
       },
       {
         "name": "COWBELL",
         "loopAtStep": 16,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":1,"min":0,"max":1,"phase":0},
+        "velocityLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":3,"triggerFreq":3,"triggerPhase":2,"retriggerNum":8,"retriggerStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 3, "triggerFreq": 3, "triggerPhase": 2, "retriggerNum": 8, "retriggerStep": 3 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 2,
         "velocity": 0.3,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":7,"min":0.1,"max":0.6,"phase":0},
+        "velocityLfo": { "freq": 7, "min": 0.1, "max": 0.6, "phase": 0, "type": "triangle" },
         "pan": -0.3,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CRASH",
-        "loopAtStep": 16,
-        "pan": 1,
-        "reverbType": "hall",
-        "reverbAmount": 0.85,
-        "notes": [ {"velocity":1,"triggerFreq":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CRASH", "loopAtStep": 16, "pan": 1, "reverbType": "hall", "reverbAmount": 0.85, "notes": [ { "velocity": 1, "triggerFreq": 6 } ]
       }
-  ],
-  "tags": {"style":"rock","type":"default"}
+    ],
+    "tags": {
+      "style": "rock",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "BasRock",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "BasRock",
+    "tracks": [
       {
         "name": "KICK",
         "barQuantize": 2,
         "loopAtStep": 8,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":2,"velocity":1}, {"bar":2,"barStep":1,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 2, "velocity": 1 }, { "bar": 2, "barStep": 1, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -380,60 +284,22 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":3}, {"bar":3,"barStep":1,"triggerFreq":4,"triggerPhase":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 3 }, { "bar": 3, "barStep": 1, "triggerFreq": 4, "triggerPhase": 1 } ]
       },
       {
         "name": "TOM",
         "loopAtStep": 16,
-        "pitchLfo": {"name":"pitchTrack","wave":1,"freq":2,"min":0.7,"max":1,"phase":0},
+        "pitchLfo": { "freq": 2, "min": 0.7, "max": 1, "phase": 0, "type": "triangle" },
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 16,
-        "pitchLfo": {"name":"pitchTrack","wave":1,"freq":1,"min":0.3,"max":0.7,"phase":0},
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 16,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "barQuantize": 2,
-        "loopAtStep": 8,
-        "velocity": 0.3,
-        "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":1,"velocity":1}, {"bar":1,"velocity":1}, {"bar":1,"barStep":1,"velocity":1}, {"bar":2,"velocity":1}, {"bar":2,"barStep":1,"velocity":1}, {"bar":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 16, "pitchLfo": { "freq": 1, "min": 0.3, "max": 0.7, "phase": 0, "type": "triangle" }, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "COWBELL", "loopAtStep": 16, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "CHH", "barQuantize": 2, "loopAtStep": 8, "velocity": 0.3, "pan": -0.3, "notes": [ { "velocity": 1 }, { "barStep": 1, "velocity": 1 }, { "bar": 1, "velocity": 1 }, { "bar": 1, "barStep": 1, "velocity": 1 }, { "bar": 2, "velocity": 1 }, { "bar": 2, "barStep": 1, "velocity": 1 }, { "bar": 3, "velocity": 1 } ] },
       {
         "name": "OHH",
         "barQuantize": 2,
         "loopAtStep": 8,
         "pan": -0.2,
-        "notes": [ {"bar":3,"barStep":1,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 1, "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -441,25 +307,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "triggerFreq": 4 } ]
       }
-  ],
-  "tags": {"style":"rock","type":"default"}
+    ],
+    "tags": {
+      "style": "rock",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "16beats",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "16beats",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -469,9 +334,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":2,"barStep":1}, {"bar":3,"retriggerStep":2}, {"bar":3,"barStep":2,"velocity":0.3,"triggerFreq":4}, {"bar":3,"barStep":3,"velocity":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 2, "barStep": 1 }, { "bar": 3, "retriggerStep": 2 }, { "bar": 3, "barStep": 2, "velocity": 0.3, "triggerFreq": 4 }, { "bar": 3, "barStep": 3, "velocity": 1, "triggerFreq": 4 } ]
       },
       {
         "name": "TOM",
@@ -479,47 +342,21 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 16,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 4,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"barStep":2,"triggerFreq":8,"triggerPhase":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 16, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "COWBELL", "loopAtStep": 4, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "barStep": 2, "triggerFreq": 8, "triggerPhase": 6 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 2,
         "velocity": 0.3,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":1,"min":0.5,"max":0.7,"phase":0},
+        "velocityLfo": { "freq": 1, "min": 0.5, "max": 0.7, "phase": 0, "type": "triangle" },
         "pan": -0.3,
-        "notes": [ {"velocity":1,"retriggerStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1, "retriggerStep": 2 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [ {"bar":2,"barStep":3,"velocity":1,"triggerFreq":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 3, "velocity": 1, "triggerFreq": 2 } ]
       },
       {
         "name": "CRASH",
@@ -527,26 +364,23 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      }
-  ],
-  "tags": {"style":"electro","type":"default"}
+        "notes": [] } ],
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "CmpBeat",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "CmpBeat",
+    "tracks": [
       {
         "name": "KICK",
         "bars": 8,
         "loopAtStep": 32,
         "velocity": 0.6,
-        "notes": [ {"velocity":1}, {"barStep":1,"velocity":1}, {"barStep":2,"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":1,"barStep":3,"velocity":1}, {"bar":2,"velocity":1}, {"bar":2,"barStep":1,"velocity":1}, {"bar":2,"barStep":2,"velocity":1}, {"bar":4}, {"bar":4,"barStep":1}, {"bar":4,"barStep":2}, {"bar":5,"barStep":1}, {"bar":5,"barStep":3}, {"bar":6}, {"bar":6,"barStep":2}, {"bar":6,"barStep":3}, {"bar":7}, {"bar":7,"barStep":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 1, "velocity": 1 }, { "barStep": 2, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 1, "barStep": 3, "velocity": 1 }, { "bar": 2, "velocity": 1 }, { "bar": 2, "barStep": 1, "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 4 }, { "bar": 4, "barStep": 1 }, { "bar": 4, "barStep": 2 }, { "bar": 5, "barStep": 1 }, { "bar": 5, "barStep": 3 }, { "bar": 6 }, { "bar": 6, "barStep": 2 }, { "bar": 6, "barStep": 3 }, { "bar": 7 }, { "bar": 7, "barStep": 1 } ]
       },
       {
         "name": "SNARE",
@@ -555,9 +389,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":2,"barStep":1}, {"bar":3}, {"bar":3,"barStep":2}, {"bar":3,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 2, "barStep": 1 }, { "bar": 3 }, { "bar": 3, "barStep": 2 }, { "bar": 3, "barStep": 3 } ]
       },
       {
         "name": "TOM",
@@ -566,9 +398,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 3 } ]
       },
       {
         "name": "CLAP",
@@ -577,31 +407,16 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "bars": 8,
-        "loopAtStep": 32,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "COWBELL", "bars": 8, "loopAtStep": 32, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "bar": 3, "barStep": 1 } ]
       },
       {
         "name": "CHH",
         "bars": 8,
         "loopAtStep": 2,
         "velocity": 0.3,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":4,"min":0.2,"max":0.5,"phase":0},
+        "velocityLfo": { "freq": 4, "min": 0.2, "max": 0.5, "phase": 0, "type": "triangle" },
         "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 1 } ]
       },
       {
         "name": "OHH",
@@ -609,9 +424,7 @@
         "loopAtStep": 32,
         "velocity": 0.4,
         "pan": -0.2,
-        "notes": [ {"bar":2,"barStep":1,"velocity":1,"triggerFreq":2}, {"bar":3,"velocity":1,"triggerFreq":2}, {"bar":5,"barStep":2,"triggerFreq":3}, {"bar":6,"barStep":1,"triggerFreq":3}, {"bar":7,"barStep":2,"triggerFreq":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 1, "velocity": 1, "triggerFreq": 2 }, { "bar": 3, "velocity": 1, "triggerFreq": 2 }, { "bar": 5, "barStep": 2, "triggerFreq": 3 }, { "bar": 6, "barStep": 1, "triggerFreq": 3 }, { "bar": 7, "barStep": 2, "triggerFreq": 3 } ]
       },
       {
         "name": "CRASH",
@@ -621,28 +434,27 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       }
-  ],
-  "bpm": 100,
-  "nbBars": 8,
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "bpm": 100,
+    "nbBars": 8,
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "Shuffle",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "Shuffle",
+    "tracks": [
       {
         "name": "KICK",
         "barQuantize": 6,
         "loopAtStep": 12,
         "velocity": 0.6,
-        "notes": [ {"velocity":0.95,"pan":0.5}, {"barStep":5,"velocity":0.3}, {"bar":1,"barStep":5,"velocity":0.2}, {"bar":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 0.95, "pan": 0.5 }, { "barStep": 5, "velocity": 0.3 }, { "bar": 1, "barStep": 5, "velocity": 0.2 }, { "bar": 1, "triggerFreq": 4 } ]
       },
       {
         "name": "SNARE",
@@ -653,9 +465,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":3,"barStep":5,"triggerFreq":4}, {"bar":3,"barStep":4,"triggerFreq":4}, {"bar":3,"barStep":3,"triggerFreq":4}, {"bar":3,"barStep":2,"triggerFreq":4}, {"bar":3,"barStep":1,"triggerFreq":4}, {"bar":1}, {"bar":1,"barStep":2,"triggerFreq":4}, {"bar":1,"barStep":4,"triggerFreq":4}, {"bar":2,"triggerFreq":4}, {"bar":2,"barStep":2,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 5, "triggerFreq": 4 }, { "bar": 3, "barStep": 4, "triggerFreq": 4 }, { "bar": 3, "barStep": 3, "triggerFreq": 4 }, { "bar": 3, "barStep": 2, "triggerFreq": 4 }, { "bar": 3, "barStep": 1, "triggerFreq": 4 }, { "bar": 1 }, { "bar": 1, "barStep": 2, "triggerFreq": 4 }, { "bar": 1, "barStep": 4, "triggerFreq": 4 }, { "bar": 2, "triggerFreq": 4 }, { "bar": 2, "barStep": 2, "triggerFreq": 4 } ]
       },
       {
         "name": "TOM",
@@ -664,32 +474,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "barQuantize": 6,
-        "loopAtStep": 24,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "barQuantize": 6,
-        "loopAtStep": 24,
-        "pitch": 6,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"bar":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "barQuantize": 6, "loopAtStep": 24, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "COWBELL", "barQuantize": 6, "loopAtStep": 24, "pitch": 6, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "bar": 2 } ]
       },
       {
         "name": "CHH",
@@ -699,9 +484,7 @@
         "velocity": 0.3,
         "pitch": 2,
         "pan": -0.3,
-        "notes": [ {"velocity":1,"pan":0.5}, {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1, "pan": 0.5 }, { "barStep": 2 } ]
       },
       {
         "name": "OHH",
@@ -709,9 +492,7 @@
         "loopAtStep": 6,
         "velocity": 0.9,
         "pan": -0.2,
-        "notes": [ {"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 3 } ]
       },
       {
         "name": "CRASH",
@@ -721,26 +502,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"velocity":0.62,"pan":0.5,"triggerFreq":4,"triggerPhase":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 0.62, "pan": 0.5, "triggerFreq": 4, "triggerPhase": 3 } ]
       }
-  ],
-  "bpm": 80,
-  "tags": {"style":"swing","type":"default"}
+    ],
+    "bpm": 80,
+    "tags": {
+      "style": "swing",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "hard",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "hard",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"barStep":2,"velocity":0.6}, {"bar":2,"velocity":1}, {"bar":2,"barStep":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 2, "velocity": 0.6 }, { "bar": 2, "velocity": 1 }, { "bar": 2, "barStep": 3, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -748,9 +528,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 } ]
       },
       {
         "name": "TOM",
@@ -758,9 +536,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":1,"triggerFreq":4}, {"bar":3,"barStep":3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 1, "triggerFreq": 4 }, { "bar": 3, "barStep": 3, "triggerFreq": 4 } ]
       },
       {
         "name": "CLAP",
@@ -768,36 +544,13 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 16,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 2,
-        "velocity": 0.3,
-        "pan": -0.3,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "COWBELL", "loopAtStep": 16, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "CHH", "loopAtStep": 2, "velocity": 0.3, "pan": -0.3, "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [ {"bar":3,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2 } ]
       },
       {
         "name": "CRASH",
@@ -805,26 +558,23 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      }
-  ],
-  "bpm": 130,
-  "tags": {"style":"rock","type":"default"}
+        "notes": [] } ],
+    "bpm": 130,
+    "tags": {
+      "style": "rock",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "metal",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "metal",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":2,"barStep":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 2, "barStep": 3, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -832,9 +582,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 } ]
       },
       {
         "name": "TOM",
@@ -843,48 +591,23 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":3,"triggerFreq":8}, {"bar":3,"barStep":2,"triggerFreq":8}, {"bar":3,"barStep":1,"triggerFreq":4}, {"bar":3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 3, "triggerFreq": 8 }, { "bar": 3, "barStep": 2, "triggerFreq": 8 }, { "bar": 3, "barStep": 1, "triggerFreq": 4 }, { "bar": 3, "triggerFreq": 4 } ]
       },
       {
         "name": "CLAP",
         "loopAtStep": 16,
         "swingAmount": 0.2,
         "pan": -0.4,
-        "panLfo": {"name":"panoTrack","wave":1,"freq":1,"min":0.3,"max":0.6,"phase":0},
+        "panLfo": { "freq": 1, "min": 0.3, "max": 0.6, "phase": 0, "type": "triangle" },
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 16,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 4,
-        "velocity": 0.3,
-        "pan": -0.3,
-        "notes": [ {"barStep":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "COWBELL", "loopAtStep": 16, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "CHH", "loopAtStep": 4, "velocity": 0.3, "pan": -0.3, "notes": [ { "barStep": 3, "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 3,
         "pan": -0.2,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -892,26 +615,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"triggerFreq":16}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "triggerFreq": 16 } ]
       }
-  ],
-  "bpm": 130,
-  "tags": {"style":"rock","type":"default"}
+    ],
+    "bpm": 130,
+    "tags": {
+      "style": "rock",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "DiscoFl",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "DiscoFl",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":2,"barStep":2,"velocity":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1, "triggerFreq": 4 } ]
       },
       {
         "name": "SNARE",
@@ -919,19 +641,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "TOM",
-        "loopAtStep": 16,
-        "pan": 0.5,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"velocity":1}, {"barStep":2,"velocity":1}, {"bar":1,"barStep":1,"velocity":1}, {"bar":3,"velocity":1,"triggerFreq":4}, {"bar":3,"barStep":1,"triggerFreq":3}, {"bar":3,"barStep":2,"triggerFreq":4}, {"bar":3,"barStep":3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "TOM", "loopAtStep": 16, "pan": 0.5, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "velocity": 1 }, { "barStep": 2, "velocity": 1 }, { "bar": 1, "barStep": 1, "velocity": 1 }, { "bar": 3, "velocity": 1, "triggerFreq": 4 }, { "bar": 3, "barStep": 1, "triggerFreq": 3 }, { "bar": 3, "barStep": 2, "triggerFreq": 4 }, { "bar": 3, "barStep": 3, "triggerFreq": 4 } ]
       },
       {
         "name": "CLAP",
@@ -939,9 +649,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":2,"velocity":1,"triggerFreq":2,"triggerPhase":1}, {"bar":3,"velocity":1,"triggerFreq":2,"triggerPhase":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 2, "velocity": 1, "triggerFreq": 2, "triggerPhase": 1 }, { "bar": 3, "velocity": 1, "triggerFreq": 2, "triggerPhase": 1 } ]
       },
       {
         "name": "COWBELL",
@@ -949,28 +657,14 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 4,
-        "swingAmount": 0.4,
-        "velocity": 0.3,
-        "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":2,"velocity":1}, {"barStep":3,"velocity":1}, {"barStep":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CHH", "loopAtStep": 4, "swingAmount": 0.4, "velocity": 0.3, "pan": -0.3, "notes": [ { "velocity": 1 }, { "barStep": 2, "velocity": 1 }, { "barStep": 3, "velocity": 1 }, { "barStep": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 4,
         "velocity": 0.3,
         "pan": -0.2,
-        "notes": [ {"barStep":1}, {"bar":2,"barStep":1}, {"bar":3,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 1 }, { "bar": 2, "barStep": 1 }, { "bar": 3, "barStep": 3 } ]
       },
       {
         "name": "CRASH",
@@ -979,25 +673,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"barStep":2,"velocity":1,"triggerFreq":8}, {"bar":1,"barStep":1,"triggerFreq":8}, {"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1, "triggerFreq": 8 }, { "bar": 1, "barStep": 1, "triggerFreq": 8 }, { "triggerFreq": 8 } ]
       }
-  ],
-  "tags": {"style":"disco","type":"default"}
+    ],
+    "tags": {
+      "style": "disco",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "DiscoBrk",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "DiscoBrk",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -1006,9 +699,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"barStep":2}, {"bar":1,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 }, { "bar": 1, "barStep": 3 } ]
       },
       {
         "name": "TOM",
@@ -1017,12 +708,10 @@
         "velocity": 0.8,
         "pitch": 8,
         "pan": 0.5,
-        "panLfo": {"name":"panoTrack","wave":1,"freq":2,"min":0,"max":1,"phase":0},
+        "panLfo": { "freq": 2, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"velocity":1,"pitch":2,"triggerFreq":4}, {"bar":2,"barStep":1,"velocity":1,"pitch":2,"triggerFreq":4}, {"bar":2,"barStep":2,"velocity":1,"triggerFreq":4}, {"bar":2,"barStep":3,"velocity":1,"triggerFreq":4}, {"bar":3,"barStep":1,"velocity":1,"pitch":-1,"triggerFreq":4}, {"bar":3,"barStep":2,"velocity":1,"pitch":-2,"triggerFreq":4}, {"bar":3,"barStep":3,"velocity":1,"pitch":-2,"triggerFreq":4}, {"bar":3,"pitch":-1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "velocity": 1, "pitch": 2, "triggerFreq": 4 }, { "bar": 2, "barStep": 1, "velocity": 1, "pitch": 2, "triggerFreq": 4 }, { "bar": 2, "barStep": 2, "velocity": 1, "triggerFreq": 4 }, { "bar": 2, "barStep": 3, "velocity": 1, "triggerFreq": 4 }, { "bar": 3, "barStep": 1, "velocity": 1, "pitch": -1, "triggerFreq": 4 }, { "bar": 3, "barStep": 2, "velocity": 1, "pitch": -2, "triggerFreq": 4 }, { "bar": 3, "barStep": 3, "velocity": 1, "pitch": -2, "triggerFreq": 4 }, { "bar": 3, "pitch": -1, "triggerFreq": 4 } ]
       },
       {
         "name": "CLAP",
@@ -1030,9 +719,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"velocity":1}, {"bar":1,"barStep":3,"triggerFreq":4,"triggerPhase":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "velocity": 1 }, { "bar": 1, "barStep": 3, "triggerFreq": 4, "triggerPhase": 2 } ]
       },
       {
         "name": "COWBELL",
@@ -1040,27 +727,13 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 4,
-        "swingAmount": 0.3,
-        "velocity": 0.3,
-        "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":1,"velocity":1}, {"barStep":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CHH", "loopAtStep": 4, "swingAmount": 0.3, "velocity": 0.3, "pan": -0.3, "notes": [ { "velocity": 1 }, { "barStep": 1, "velocity": 1 }, { "barStep": 3, "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 4,
         "pan": -0.2,
-        "notes": [ {"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -1069,26 +742,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"pitch":5,"triggerFreq":4,"triggerPhase":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "pitch": 5, "triggerFreq": 4, "triggerPhase": 3 } ]
       }
-  ],
-  "bpm": 80,
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "bpm": 80,
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "disco",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "disco",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.7,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -1096,9 +768,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 } ]
       },
       {
         "name": "TOM",
@@ -1109,9 +779,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"barStep":2,"velocity":1,"triggerFreq":4}, {"bar":2,"barStep":2,"velocity":1}, {"bar":3,"barStep":2,"velocity":1,"triggerFreq":8}, {"bar":3,"barStep":3,"velocity":0.6,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 0.15
+        "notes": [ { "barStep": 2, "velocity": 1, "triggerFreq": 4 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 1, "triggerFreq": 8 }, { "bar": 3, "barStep": 3, "velocity": 0.6, "triggerFreq": 8 } ]
       },
       {
         "name": "CLAP",
@@ -1119,9 +787,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"barStep":3,"triggerFreq":8}, {"bar":1,"barStep":2,"triggerFreq":6}, {"bar":1,"barStep":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "barStep": 3, "triggerFreq": 8 }, { "bar": 1, "barStep": 2, "triggerFreq": 6 }, { "bar": 1, "barStep": 1, "triggerFreq": 4 } ]
       },
       {
         "name": "COWBELL",
@@ -1132,31 +798,25 @@
         "reverbAmount": 0.25,
         "filterType": "lowpass",
         "filterFreq": 129,
-        "filterFreqLfo": {"name":"filterFreqTrack","wave":1,"freq":1,"min":39,"max":158,"phase":0},
+        "filterFreqLfo": { "freq": 1, "min": 39, "max": 158, "phase": 0, "type": "triangle" },
         "filterQ": 13.307,
-        "notes": [ {"velocity":1,"triggerFreq":8}, {"bar":1,"velocity":1,"triggerFreq":8}, {"bar":1,"barStep":2,"velocity":1,"triggerFreq":4}, {"bar":2,"velocity":1,"triggerFreq":4}, {"bar":3,"velocity":1,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1, "triggerFreq": 8 }, { "bar": 1, "velocity": 1, "triggerFreq": 8 }, { "bar": 1, "barStep": 2, "velocity": 1, "triggerFreq": 4 }, { "bar": 2, "velocity": 1, "triggerFreq": 4 }, { "bar": 3, "velocity": 1, "triggerFreq": 8 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 4,
         "swingAmount": 0.5,
         "velocity": 0.29,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":1,"min":0.1,"max":0.3,"phase":0},
+        "velocityLfo": { "freq": 1, "min": 0.1, "max": 0.3, "phase": 0, "type": "triangle" },
         "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":1,"velocity":1}, {"barStep":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 1, "velocity": 1 }, { "barStep": 3, "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 4,
         "velocity": 0.3,
         "pan": -0.2,
-        "notes": [ {"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -1165,25 +825,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"triggerFreq":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 0.55
+        "notes": [ { "triggerFreq": 3 } ]
       }
-  ],
-  "tags": {"style":"disco","type":"default"}
+    ],
+    "tags": {
+      "style": "disco",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "batuc",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "batuc",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {}, {"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "barStep": 3 } ]
       },
       {
         "name": "SNARE",
@@ -1191,9 +850,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"barStep":2}, {"bar":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 }, { "bar": 1, "triggerFreq": 4 } ]
       },
       {
         "name": "TOM",
@@ -1201,50 +858,29 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 8,
-        "velocity": 0.4,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":5,"min":0,"max":1,"phase":0},
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"barStep":3}, {"bar":1}, {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 8, "velocity": 0.4, "velocityLfo": { "freq": 5, "min": 0, "max": 1, "phase": 0, "type": "triangle" }, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "bar": 1, "barStep": 3 }, { "bar": 1 }, { "barStep": 2 } ] },
       {
         "name": "COWBELL",
         "loopAtStep": 16,
-        "pitchLfo": {"name":"pitchTrack","wave":1,"freq":1,"min":0,"max":1,"phase":0},
+        "pitchLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":2,"triggerFreq":6}, {"bar":3,"barStep":3,"triggerFreq":8}, {"bar":3,"barStep":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2, "triggerFreq": 6 }, { "bar": 3, "barStep": 3, "triggerFreq": 8 }, { "bar": 3, "barStep": 1, "triggerFreq": 4 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 8,
         "velocity": 0.5,
         "pan": -0.3,
-        "notes": [ {}, {"barStep":1}, {"barStep":2}, {"barStep":3}, {"bar":1,"barStep":1}, {"bar":1,"barStep":2}, {"bar":1,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "barStep": 1 }, { "barStep": 2 }, { "barStep": 3 }, { "bar": 1, "barStep": 1 }, { "bar": 1, "barStep": 2 }, { "bar": 1, "barStep": 3 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 8,
         "pitch": 3,
         "pan": -0.2,
-        "notes": [ {"bar":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 } ]
       },
       {
         "name": "CRASH",
@@ -1252,26 +888,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"bar":3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "triggerFreq": 4 } ]
       }
-  ],
-  "bpm": 100,
-  "tags": {"style":"samba","type":"default"}
+    ],
+    "bpm": 100,
+    "tags": {
+      "style": "samba",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "MamboFst",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "MamboFst",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -1280,9 +915,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":3,"barStep":1}, {"bar":3,"barStep":2}, {"bar":3,"barStep":3}, {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 1 }, { "bar": 3, "barStep": 2 }, { "bar": 3, "barStep": 3 }, { "barStep": 2 } ]
       },
       {
         "name": "TOM",
@@ -1290,20 +923,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 8,
-        "swingAmount": 0.2,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"barStep":2,"velocity":1}, {"barStep":3,"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":3}, {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 8, "swingAmount": 0.2, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "barStep": 2, "velocity": 1 }, { "barStep": 3, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 3 }, {} ]
       },
       {
         "name": "COWBELL",
@@ -1314,27 +934,21 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"barStep":1,"triggerFreq":8,"retriggerNum":4,"retriggerStep":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 1, "triggerFreq": 8, "retriggerNum": 4, "retriggerStep": 8 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 16,
         "velocity": 0.3,
         "pan": -0.3,
-        "notes": [ {"bar":3,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 3 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 4,
         "velocity": 0.6,
         "pan": -0.2,
-        "notes": [ {"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -1344,25 +958,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"velocity":1,"pitch":12,"triggerFreq":4}, {"bar":1,"barStep":2}, {"bar":2,"barStep":2}, {"bar":3,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1, "pitch": 12, "triggerFreq": 4 }, { "bar": 1, "barStep": 2 }, { "bar": 2, "barStep": 2 }, { "bar": 3, "barStep": 2 } ]
       }
-  ],
-  "tags": {"style":"samba","type":"default"}
+    ],
+    "tags": {
+      "style": "samba",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "mambo",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "mambo",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"velocity":1}, {"bar":3,"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -1370,9 +983,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":3,"velocity":0.6}, {"bar":3,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 3, "velocity": 0.6 }, { "bar": 3, "barStep": 2 } ]
       },
       {
         "name": "TOM",
@@ -1380,19 +991,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 16,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 16, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "COWBELL",
@@ -1400,54 +999,28 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 2,
-        "velocity": 0.3,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":3,"min":0,"max":0.7,"phase":0},
-        "pan": -0.3,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
+        "notes": [] }, { "name": "CHH", "loopAtStep": 2, "velocity": 0.3, "velocityLfo": { "freq": 3, "min": 0, "max": 0.7, "phase": 0, "type": "triangle" }, "pan": -0.3, "notes": [ { "velocity": 1 } ] },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CRASH",
-        "loopAtStep": 16,
-        "pan": 1,
-        "reverbType": "hall",
-        "reverbAmount": 0.85,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      }
-  ],
-  "bpm": 80,
-  "tags": {"style":"samba","type":"default"}
+        "notes": [] }, { "name": "CRASH", "loopAtStep": 16, "pan": 1, "reverbType": "hall", "reverbAmount": 0.85, "notes": [] } ],
+    "bpm": 80,
+    "tags": {
+      "style": "samba",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "march",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "march",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 8,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -1455,9 +1028,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":3,"barStep":1,"triggerFreq":2}, {"bar":3,"barStep":2,"velocity":0.6,"triggerFreq":3}, {"bar":3,"barStep":3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 3, "barStep": 1, "triggerFreq": 2 }, { "bar": 3, "barStep": 2, "velocity": 0.6, "triggerFreq": 3 }, { "bar": 3, "barStep": 3, "triggerFreq": 4 } ]
       },
       {
         "name": "TOM",
@@ -1467,9 +1038,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":7,"triggerFreq":4}, {"bar":3,"barStep":3,"triggerFreq":8}, {"bar":3,"triggerFreq":6}, {"bar":3,"barStep":4,"triggerFreq":6}, {"bar":2,"barStep":5,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 7, "triggerFreq": 4 }, { "bar": 3, "barStep": 3, "triggerFreq": 8 }, { "bar": 3, "triggerFreq": 6 }, { "bar": 3, "barStep": 4, "triggerFreq": 6 }, { "bar": 2, "barStep": 5, "triggerFreq": 4 } ]
       },
       {
         "name": "CLAP",
@@ -1477,9 +1046,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 3 } ]
       },
       {
         "name": "COWBELL",
@@ -1487,29 +1054,23 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 2 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 8,
         "velocity": 0.3,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":1,"min":0.1,"max":0.3,"phase":0},
+        "velocityLfo": { "freq": 1, "min": 0.1, "max": 0.3, "phase": 0, "type": "triangle" },
         "pan": -0.3,
-        "panLfo": {"name":"panoTrack","wave":1,"freq":2,"min":0,"max":1,"phase":0},
-        "notes": [ {"barStep":2,"velocity":1}, {"bar":1,"velocity":1}, {"bar":1,"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "panLfo": { "freq": 2, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
+        "notes": [ { "barStep": 2, "velocity": 1 }, { "bar": 1, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 8,
         "velocity": 0.1,
         "pan": -0.2,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -1519,26 +1080,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"bar":2,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "triggerFreq": 8 } ]
       }
-  ],
-  "bpm": 90,
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "bpm": 90,
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "merengue",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "merengue",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 3,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -1546,9 +1106,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 3 } ]
       },
       {
         "name": "TOM",
@@ -1556,9 +1114,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 } ]
       },
       {
         "name": "CLAP",
@@ -1566,9 +1122,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"velocity":1,"triggerFreq":2}, {"bar":3,"barStep":1,"velocity":1,"triggerFreq":2}, {"bar":3,"barStep":2,"velocity":1,"triggerFreq":2}, {"bar":3,"barStep":3,"velocity":1,"triggerFreq":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "velocity": 1, "triggerFreq": 2 }, { "bar": 3, "barStep": 1, "velocity": 1, "triggerFreq": 2 }, { "bar": 3, "barStep": 2, "velocity": 1, "triggerFreq": 2 }, { "bar": 3, "barStep": 3, "velocity": 1, "triggerFreq": 2 } ]
       },
       {
         "name": "COWBELL",
@@ -1576,26 +1130,20 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"barStep":2,"triggerFreq":4}, {"bar":1,"barStep":3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "barStep": 2, "triggerFreq": 4 }, { "bar": 1, "barStep": 3, "triggerFreq": 4 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 16,
         "velocity": 0.4,
         "pan": -0.3,
-        "notes": [ {"barStep":3,"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"velocity":1}, {"bar":2,"barStep":2,"velocity":1}, {"bar":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 3, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 3, "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 4,
         "pan": -0.2,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -1603,26 +1151,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"bar":3,"barStep":2,"triggerFreq":8,"triggerPhase":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2, "triggerFreq": 8, "triggerPhase": 1 } ]
       }
-  ],
-  "bpm": 60,
-  "tags": {"style":"samba","type":"default"}
+    ],
+    "bpm": 60,
+    "tags": {
+      "style": "samba",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "salsa",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "salsa",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -1630,12 +1177,10 @@
         "velocity": 0.6,
         "pitch": 5,
         "pan": 0.3,
-        "panLfo": {"name":"panoTrack","wave":1,"freq":1,"min":0.1,"max":0.4,"phase":0},
+        "panLfo": { "freq": 1, "min": 0.1, "max": 0.4, "phase": 0, "type": "triangle" },
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"barStep":2}, {"barStep":3}, {"bar":2,"barStep":2}, {"bar":2,"barStep":1}, {"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 }, { "barStep": 3 }, { "bar": 2, "barStep": 2 }, { "bar": 2, "barStep": 1 }, { "triggerFreq": 8 } ]
       },
       {
         "name": "TOM",
@@ -1643,9 +1188,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"pitch":5,"triggerFreq":6}, {"bar":3,"barStep":1,"triggerFreq":6}, {"bar":3,"barStep":2,"pitch":-4,"triggerFreq":6}, {"bar":3,"barStep":3,"pitch":-5,"triggerFreq":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "pitch": 5, "triggerFreq": 6 }, { "bar": 3, "barStep": 1, "triggerFreq": 6 }, { "bar": 3, "barStep": 2, "pitch": -4, "triggerFreq": 6 }, { "bar": 3, "barStep": 3, "pitch": -5, "triggerFreq": 6 } ]
       },
       {
         "name": "CLAP",
@@ -1653,9 +1196,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"velocity":1}, {"barStep":3,"velocity":1}, {"bar":1,"barStep":2,"velocity":0.6}, {"bar":2,"barStep":2,"velocity":1}, {"bar":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 3, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 0.6 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 3, "velocity": 1 } ]
       },
       {
         "name": "COWBELL",
@@ -1663,26 +1204,20 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"barStep":2,"velocity":0.6}, {"bar":3,"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "barStep": 2, "velocity": 0.6 }, { "bar": 3, "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 4,
         "velocity": 0.3,
         "pan": -0.3,
-        "notes": [ {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [ {"bar":3,"barStep":3,"triggerFreq":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 3, "triggerFreq": 3 } ]
       },
       {
         "name": "CRASH",
@@ -1691,26 +1226,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"pan":1,"triggerFreq":8,"triggerPhase":7}, {"bar":3,"barStep":2,"pan":-1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "pan": 1, "triggerFreq": 8, "triggerPhase": 7 }, { "bar": 3, "barStep": 2, "pan": -1, "triggerFreq": 4 } ]
       }
-  ],
-  "bpm": 80,
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "bpm": 80,
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "SalsaGroovy",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "SalsaGroovy",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.7,
-        "notes": [ {"velocity":1}, {"bar":1,"barStep":2,"velocity":0.9}, {"bar":2,"velocity":1}, {"bar":3,"barStep":2,"velocity":0.85}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 0.9 }, { "bar": 2, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 0.85 } ]
       },
       {
         "name": "SNARE",
@@ -1719,53 +1253,40 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.2,
-        "notes": [ {"barStep":1,"velocity":0.7}, {"barStep":3}, {"bar":1,"barStep":1,"velocity":0.65,"triggerFreq":4}, {"bar":1,"barStep":3,"velocity":0.75}, {"bar":2,"barStep":1,"velocity":0.7}, {"bar":2,"barStep":2}, {"bar":2,"barStep":3,"triggerFreq":4}, {"bar":3,"barStep":1,"velocity":0.65,"triggerFreq":4}, {"bar":3,"barStep":3,"velocity":0.75,"triggerFreq":4}, {"barStep":2}, {"bar":1,"velocity":0.65,"triggerFreq":3}, {"bar":1,"barStep":2}, {"bar":3,"velocity":0.65}, {"bar":3,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 1, "velocity": 0.7 }, { "barStep": 3 }, { "bar": 1, "barStep": 1, "velocity": 0.65, "triggerFreq": 4 }, { "bar": 1, "barStep": 3, "velocity": 0.75 }, { "bar": 2, "barStep": 1, "velocity": 0.7 }, { "bar": 2, "barStep": 2 }, { "bar": 2, "barStep": 3, "triggerFreq": 4 }, { "bar": 3, "barStep": 1, "velocity": 0.65, "triggerFreq": 4 }, { "bar": 3, "barStep": 3, "velocity": 0.75, "triggerFreq": 4 }, { "barStep": 2 }, { "bar": 1, "velocity": 0.65, "triggerFreq": 3 }, { "bar": 1, "barStep": 2 }, { "bar": 3, "velocity": 0.65 }, { "bar": 3, "barStep": 2 } ]
       },
       {
         "name": "CONGAS",
         "loopAtStep": 16,
         "velocity": 0.8,
         "pan": 0.5,
-        "panLfo": {"name":"lfo","freq":2,"min":0,"max":1,"phase":0},
+        "panLfo": { "freq": 2, "min": 0, "max": 1, "phase": 0, "type": "sine" },
         "reverbType": "room",
         "reverbAmount": 0.2,
-        "notes": [ {"barStep":2,"velocity":0.85}, {"barStep":3,"velocity":0.9}, {"bar":1,"velocity":0.85}, {"bar":1,"barStep":2,"velocity":0.9,"triggerFreq":7}, {"bar":1,"barStep":3,"velocity":0.9,"triggerFreq":5}, {"bar":2}, {"bar":2,"barStep":2,"velocity":0.85}, {"bar":2,"barStep":3,"velocity":0.9}, {"bar":3,"velocity":0.85,"triggerFreq":4}, {"bar":3,"barStep":2,"velocity":0.9,"triggerFreq":8}, {"bar":3,"barStep":3,"velocity":0.9}, {"bar":1,"barStep":1,"velocity":0.75}, {"bar":3,"barStep":1,"velocity":0.75}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 0.85 }, { "barStep": 3, "velocity": 0.9 }, { "bar": 1, "velocity": 0.85 }, { "bar": 1, "barStep": 2, "velocity": 0.9, "triggerFreq": 7 }, { "bar": 1, "barStep": 3, "velocity": 0.9, "triggerFreq": 5 }, { "bar": 2 }, { "bar": 2, "barStep": 2, "velocity": 0.85 }, { "bar": 2, "barStep": 3, "velocity": 0.9 }, { "bar": 3, "velocity": 0.85, "triggerFreq": 4 }, { "bar": 3, "barStep": 2, "velocity": 0.9, "triggerFreq": 8 }, { "bar": 3, "barStep": 3, "velocity": 0.9 }, { "bar": 1, "barStep": 1, "velocity": 0.75 }, { "bar": 3, "barStep": 1, "velocity": 0.75 } ]
       },
       {
         "name": "LCONGAS",
         "loopAtStep": 16,
         "velocity": 0.85,
         "pan": -0.4,
-        "notes": [ {}, {"barStep":3,"velocity":0.85,"triggerFreq":4}, {"bar":1,"barStep":2,"triggerFreq":5}, {"bar":2}, {"bar":2,"barStep":3,"velocity":0.85}, {"bar":3,"velocity":0.75}, {"bar":3,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "barStep": 3, "velocity": 0.85, "triggerFreq": 4 }, { "bar": 1, "barStep": 2, "triggerFreq": 5 }, { "bar": 2 }, { "bar": 2, "barStep": 3, "velocity": 0.85 }, { "bar": 3, "velocity": 0.75 }, { "bar": 3, "barStep": 2 } ]
       },
       {
         "name": "COWBELL",
         "loopAtStep": 16,
         "velocity": 0.9,
-        "velocityLfo": {"name":"lfo","freq":1,"min":0,"max":1,"phase":0.4},
+        "velocityLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0.4, "type": "sine" },
         "pan": 0.4,
-        "notes": [ {"velocity":1}, {"barStep":3,"velocity":0.85,"triggerFreq":3}, {"bar":1,"barStep":2,"velocity":1,"triggerFreq":5}, {"bar":2,"barStep":1,"velocity":0.85}, {"bar":2,"barStep":3,"velocity":1}, {"bar":3,"barStep":2,"velocity":0.85}, {"bar":2,"velocity":0.85}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 3, "velocity": 0.85, "triggerFreq": 3 }, { "bar": 1, "barStep": 2, "velocity": 1, "triggerFreq": 5 }, { "bar": 2, "barStep": 1, "velocity": 0.85 }, { "bar": 2, "barStep": 3, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 0.85 }, { "bar": 2, "velocity": 0.85 } ]
       },
       {
         "name": "TAMBOURINE",
         "loopAtStep": 1,
         "velocity": 0.25,
-        "pitchLfo": {"name":"lfo","freq":1,"min":-5,"max":6,"phase":0},
+        "pitchLfo": { "freq": 1, "min": -5, "max": 6, "phase": 0, "type": "sine" },
         "pan": -0.3,
-        "filterType": "highshelf",
-        "filterFreq": 3441.36,
-        "filterQ": 18.7,
-        "notes": [ {"velocity":0.5}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 0.5 } ]
       },
       {
         "name": "OHH",
@@ -1773,63 +1294,53 @@
         "loopAtStep": 8,
         "velocity": 0.4,
         "pan": -0.2,
-        "notes": [ {"barStep":1,"velocity":0.55}, {"barStep":3,"velocity":0.6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 1, "velocity": 0.55 }, { "barStep": 3, "velocity": 0.6 } ]
       },
       {
         "name": "BASS",
         "loopAtStep": 16,
         "velocity": 0.2,
         "pan": 1,
-        "mono":true,
-        "panLfo": {"name":"lfo","freq":1,"min":0,"max":1,"phase":0},
+        "mono": true,
+        "panLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "sine" },
         "filterType": "lowpass",
         "filterFreq": 17659.04,
-        "filterFreqLfo": {"name":"lfo","freq":0.5,"min":-12,"max":20000,"phase":0},
-        "filterQLfo": {"name":"lfo","freq":0.3,"min":0.707,"max":18.707,"phase":0},
+        "filterFreqLfo": { "freq": 0.5, "min": -12, "max": 20000, "phase": 0, "type": "sine" },
+        "filterQLfo": { "freq": 0.3, "min": 0.707, "max": 18.707, "phase": 0, "type": "sine" },
         "filterQ": 17.64,
-        "notes": [ {"velocity":0.9}, {"barStep":3,"pitch":5}, {"bar":1,"barStep":1,"velocity":0.7,"pitch":7}, {"bar":1,"barStep":2,"velocity":0.9,"pitch":7}, {"bar":2,"velocity":0.9}, {"bar":2,"barStep":3,"pitch":5}, {"bar":3,"barStep":1,"velocity":0.7,"pitch":7}, {"bar":3,"barStep":2,"velocity":0.9,"pitch":7}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 0.9 }, { "barStep": 3, "pitch": 5 }, { "bar": 1, "barStep": 1, "velocity": 0.7, "pitch": 7 }, { "bar": 1, "barStep": 2, "velocity": 0.9, "pitch": 7 }, { "bar": 2, "velocity": 0.9 }, { "bar": 2, "barStep": 3, "pitch": 5 }, { "bar": 3, "barStep": 1, "velocity": 0.7, "pitch": 7 }, { "bar": 3, "barStep": 2, "velocity": 0.9, "pitch": 7 } ]
       }
-  ],
-  "bpm": 79
+    ],
+    "bpm": 79
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "bossa",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "bossa",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.7,
-        "notes": [ {"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
         "loopAtStep": 16,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":1,"min":0.5,"max":1,"phase":0},
+        "velocityLfo": { "freq": 1, "min": 0.5, "max": 1, "phase": 0, "type": "triangle" },
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":2,"barStep":2}, {"bar":3,"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 2, "barStep": 2 }, { "bar": 3, "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "TOM",
         "loopAtStep": 16,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":2,"min":0.5,"max":1,"phase":0},
+        "velocityLfo": { "freq": 2, "min": 0.5, "max": 1, "phase": 0, "type": "triangle" },
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":2,"velocity":1}, {"bar":3,"barStep":2,"velocity":1}, {"triggerFreq":4}, {"barStep":1,"triggerFreq":4}, {"barStep":2,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 1 }, { "triggerFreq": 4 }, { "barStep": 1, "triggerFreq": 4 }, { "barStep": 2, "triggerFreq": 4 } ]
       },
       {
         "name": "CLAP",
@@ -1837,37 +1348,21 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 16,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"velocity":1}, {"bar":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "COWBELL", "loopAtStep": 16, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "velocity": 1 }, { "bar": 3, "velocity": 1 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 2,
         "velocity": 0.3,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":8,"min":0.3,"max":1,"phase":0},
+        "velocityLfo": { "freq": 8, "min": 0.3, "max": 1, "phase": 0, "type": "triangle" },
         "pan": -0.3,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [ {"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -1875,26 +1370,23 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      }
-  ],
-  "bpm": 60,
-  "tags": {"style":"samba","type":"default"}
+        "notes": [] } ],
+    "bpm": 60,
+    "tags": {
+      "style": "samba",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "tango",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "tango",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -1903,9 +1395,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {}, {"bar":3,"barStep":2}, {"bar":3,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "bar": 3, "barStep": 2 }, { "bar": 3, "barStep": 3 } ]
       },
       {
         "name": "TOM",
@@ -1913,19 +1403,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 16,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"velocity":1}, {"bar":3,"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 16, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "bar": 3, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "COWBELL",
@@ -1933,66 +1411,49 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":2,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2, "triggerFreq": 8 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 16,
         "velocity": 0.3,
         "pan": -0.3,
-        "notes": [ {"velocity":1}, {"bar":1,"velocity":1}, {"bar":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 1, "velocity": 1 }, { "bar": 2, "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CRASH",
-        "loopAtStep": 16,
-        "pan": 1,
-        "reverbType": "hall",
-        "reverbAmount": 0.85,
-        "notes": [ {"bar":3,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CRASH", "loopAtStep": 16, "pan": 1, "reverbType": "hall", "reverbAmount": 0.85, "notes": [ { "bar": 3, "triggerFreq": 8 } ]
       }
-  ],
-  "bpm": 70,
-  "tags": {"style":"samba","type":"default"}
+    ],
+    "bpm": 70,
+    "tags": {
+      "style": "samba",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "ragga",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "ragga",
+    "tracks": [
       {
         "name": "KICK",
         "barQuantize": 1,
         "loopAtStep": 1,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "SNARE",
         "loopAtStep": 8,
         "swingAmount": 0.3,
-        "pitchLfo": {"name":"pitchTrack","wave":1,"freq":1,"min":0,"max":1,"phase":0},
+        "pitchLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {}, {"barStep":3}, {"bar":1,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "barStep": 3 }, { "bar": 1, "barStep": 2 } ]
       },
       {
         "name": "TOM",
@@ -2000,49 +1461,15 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 16,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 16,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 4,
-        "swingAmount": 0.3,
-        "velocity": 0.4,
-        "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":1,"velocity":1}, {"barStep":2,"velocity":1}, {"barStep":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 16, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "COWBELL", "loopAtStep": 16, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "CHH", "loopAtStep": 4, "swingAmount": 0.3, "velocity": 0.4, "pan": -0.3, "notes": [ { "velocity": 1 }, { "barStep": 1, "velocity": 1 }, { "barStep": 2, "velocity": 1 }, { "barStep": 3, "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 4,
         "velocity": 0.3,
-        "pitchLfo": {"name":"pitchTrack","wave":1,"freq":1,"min":0,"max":1,"phase":0},
+        "pitchLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "pan": -0.2,
-        "notes": [ {"barStep":2,"velocity":1,"pitch":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1, "pitch": 8 } ]
       },
       {
         "name": "CRASH",
@@ -2050,37 +1477,34 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"bar":3,"barStep":2,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2, "triggerFreq": 4 } ]
       }
-  ],
-  "bpm": 80,
-  "tags": {"style":"reggae","type":"default"}
+    ],
+    "bpm": 80,
+    "tags": {
+      "style": "reggae",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "rap",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "rap",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.4,
-        "notes": [ {"velocity":1}, {"barStep":2,"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"barStep":2,"velocity":1}, {"bar":2,"barStep":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 2, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 2, "barStep": 3, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
         "loopAtStep": 16,
-        "pitchLfo": {"name":"pitchTrack","wave":1,"freq":1,"min":0.7,"max":1,"phase":0.5},
+        "pitchLfo": { "freq": 1, "min": 0.7, "max": 1, "phase": 0.5, "type": "triangle" },
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":1,"barStep":3}, {"bar":2,"barStep":1}, {"bar":3,"barStep":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 1, "barStep": 3 }, { "bar": 2, "barStep": 1 }, { "bar": 3, "barStep": 1 } ]
       },
       {
         "name": "TOM",
@@ -2088,19 +1512,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 16,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"velocity":1,"triggerFreq":2,"retriggerNum":4,"retriggerStep":3}, {"bar":3,"velocity":1,"pitch":6,"triggerFreq":4,"retriggerNum":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 16, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "bar": 1, "velocity": 1, "triggerFreq": 2, "retriggerNum": 4, "retriggerStep": 3 }, { "bar": 3, "velocity": 1, "pitch": 6, "triggerFreq": 4, "retriggerNum": 3 } ]
       },
       {
         "name": "COWBELL",
@@ -2108,27 +1520,13 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "barQuantize": 8,
-        "loopAtStep": 8,
-        "velocity": 0.3,
-        "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":2,"triggerFreq":3}, {"barStep":4,"triggerFreq":6}, {"barStep":6,"triggerFreq":4}, {"bar":3,"barStep":7,"triggerFreq":3}, {"bar":3,"barStep":5,"triggerFreq":4}, {"bar":3,"barStep":3,"triggerFreq":6}, {"bar":3,"barStep":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CHH", "barQuantize": 8, "loopAtStep": 8, "velocity": 0.3, "pan": -0.3, "notes": [ { "velocity": 1 }, { "barStep": 2, "triggerFreq": 3 }, { "barStep": 4, "triggerFreq": 6 }, { "barStep": 6, "triggerFreq": 4 }, { "bar": 3, "barStep": 7, "triggerFreq": 3 }, { "bar": 3, "barStep": 5, "triggerFreq": 4 }, { "bar": 3, "barStep": 3, "triggerFreq": 6 }, { "bar": 3, "barStep": 1, "triggerFreq": 4 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [ {"barStep":2,"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"barStep":2,"velocity":1}, {"bar":3,"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "CRASH",
@@ -2136,26 +1534,23 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      }
-  ],
-  "bpm": 100,
-  "tags": {"style":"funk","type":"default"}
+        "notes": [] } ],
+    "bpm": 100,
+    "tags": {
+      "style": "funk",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "funk",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "funk",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":2,"barStep":2,"velocity":1}, {"bar":3,"barStep":3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 3, "barStep": 3, "triggerFreq": 4 } ]
       },
       {
         "name": "SNARE",
@@ -2164,9 +1559,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":3}, {"bar":1,"barStep":3}, {"bar":2,"barStep":1}, {"bar":3,"barStep":3,"triggerFreq":4}, {"bar":3,"barStep":2,"triggerFreq":4}, {"bar":3,"barStep":1,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 3 }, { "bar": 1, "barStep": 3 }, { "bar": 2, "barStep": 1 }, { "bar": 3, "barStep": 3, "triggerFreq": 4 }, { "bar": 3, "barStep": 2, "triggerFreq": 4 }, { "bar": 3, "barStep": 1, "triggerFreq": 8 } ]
       },
       {
         "name": "TOM",
@@ -2174,47 +1567,13 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 4,
-        "velocity": 0.1,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 16,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 16,
-        "velocity": 0.6,
-        "pan": -0.3,
-        "notes": [ {"bar":1,"velocity":1}, {"bar":1,"barStep":2,"velocity":0.4}, {"bar":2,"velocity":1}, {"bar":2,"barStep":2,"velocity":0.5}, {"bar":3,"velocity":1}, {"bar":3,"barStep":2,"velocity":0.4}, {"barStep":2,"velocity":0.2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 4, "velocity": 0.1, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "COWBELL", "loopAtStep": 16, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "CHH", "loopAtStep": 16, "velocity": 0.6, "pan": -0.3, "notes": [ { "bar": 1, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 0.4 }, { "bar": 2, "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 0.5 }, { "bar": 3, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 0.4 }, { "barStep": 2, "velocity": 0.2 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       },
       {
         "name": "CRASH",
@@ -2223,28 +1582,27 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"bar":3,"barStep":2,"triggerFreq":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2, "triggerFreq": 6 } ]
       }
-  ],
-  "bpm": 120,
-  "tags": {"style":"funk","type":"default"}
+    ],
+    "bpm": 120,
+    "tags": {
+      "style": "funk",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "SlFunk",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "SlFunk",
+    "tracks": [
       {
         "name": "KICK",
         "bars": 8,
         "loopAtStep": 32,
         "swingAmount": 0.2,
         "velocity": 0.5,
-        "notes": [ {"velocity":0.6}, {"barStep":3,"velocity":1}, {"bar":2,"velocity":0.6}, {"bar":2,"barStep":3,"velocity":0.6}, {"bar":3,"barStep":2,"velocity":1}, {"bar":3,"barStep":3,"velocity":1}, {"bar":4,"velocity":0.6}, {"bar":4,"barStep":2,"velocity":1}, {"bar":5,"barStep":3,"velocity":1}, {"bar":6,"velocity":0.6}, {"bar":6,"barStep":2,"velocity":0.6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 0.6 }, { "barStep": 3, "velocity": 1 }, { "bar": 2, "velocity": 0.6 }, { "bar": 2, "barStep": 3, "velocity": 0.6 }, { "bar": 3, "barStep": 2, "velocity": 1 }, { "bar": 3, "barStep": 3, "velocity": 1 }, { "bar": 4, "velocity": 0.6 }, { "bar": 4, "barStep": 2, "velocity": 1 }, { "bar": 5, "barStep": 3, "velocity": 1 }, { "bar": 6, "velocity": 0.6 }, { "bar": 6, "barStep": 2, "velocity": 0.6 } ]
       },
       {
         "name": "SNARE",
@@ -2253,9 +1611,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":3,"barStep":1}, {"bar":5,"barStep":2}, {"bar":7,"barStep":1}, {"bar":7,"triggerFreq":4}, {"bar":7,"barStep":2,"triggerFreq":4}, {"bar":7,"barStep":3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 1 }, { "bar": 5, "barStep": 2 }, { "bar": 7, "barStep": 1 }, { "bar": 7, "triggerFreq": 4 }, { "bar": 7, "barStep": 2, "triggerFreq": 4 }, { "bar": 7, "barStep": 3, "triggerFreq": 4 } ]
       },
       {
         "name": "TOM",
@@ -2264,9 +1620,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "barStep": 3 } ]
       },
       {
         "name": "CLAP",
@@ -2275,9 +1629,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"velocity":1}, {"bar":2,"barStep":1,"velocity":1}, {"bar":2,"barStep":3,"velocity":1}, {"bar":3,"velocity":1}, {"bar":5,"velocity":1}, {"bar":6,"barStep":1,"velocity":1}, {"bar":7,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "velocity": 1 }, { "bar": 2, "barStep": 1, "velocity": 1 }, { "bar": 2, "barStep": 3, "velocity": 1 }, { "bar": 3, "velocity": 1 }, { "bar": 5, "velocity": 1 }, { "bar": 6, "barStep": 1, "velocity": 1 }, { "bar": 7, "velocity": 1 } ]
       },
       {
         "name": "COWBELL",
@@ -2286,29 +1638,14 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "bars": 8,
-        "loopAtStep": 32,
-        "swingAmount": 0.2,
-        "velocity": 0.3,
-        "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":1,"velocity":0.1}, {"bar":1,"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"velocity":1}, {"bar":2,"barStep":2,"velocity":1}, {"bar":3,"velocity":1}, {"bar":3,"barStep":1,"velocity":1}, {"bar":3,"barStep":2,"velocity":1}, {"bar":4,"barStep":2,"velocity":1}, {"bar":4,"barStep":3,"velocity":1}, {"bar":5,"velocity":1}, {"bar":5,"barStep":2,"velocity":1}, {"bar":6,"velocity":1}, {"bar":6,"barStep":2,"velocity":1}, {"bar":6,"barStep":3,"velocity":1}, {"bar":7,"velocity":1}, {"bar":7,"barStep":2,"velocity":1}, {"bar":7,"barStep":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CHH", "bars": 8, "loopAtStep": 32, "swingAmount": 0.2, "velocity": 0.3, "pan": -0.3, "notes": [ { "velocity": 1 }, { "barStep": 1, "velocity": 0.1 }, { "bar": 1, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 3, "velocity": 1 }, { "bar": 3, "barStep": 1, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 1 }, { "bar": 4, "barStep": 2, "velocity": 1 }, { "bar": 4, "barStep": 3, "velocity": 1 }, { "bar": 5, "velocity": 1 }, { "bar": 5, "barStep": 2, "velocity": 1 }, { "bar": 6, "velocity": 1 }, { "bar": 6, "barStep": 2, "velocity": 1 }, { "bar": 6, "barStep": 3, "velocity": 1 }, { "bar": 7, "velocity": 1 }, { "bar": 7, "barStep": 2, "velocity": 1 }, { "bar": 7, "barStep": 3, "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "bars": 8,
         "loopAtStep": 32,
         "pan": -0.2,
-        "notes": [ {"barStep":2,"velocity":1}, {"bar":4,"velocity":1}, {"bar":1,"barStep":1,"triggerFreq":4}, {"bar":2,"barStep":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1 }, { "bar": 4, "velocity": 1 }, { "bar": 1, "barStep": 1, "triggerFreq": 4 }, { "bar": 2, "barStep": 1, "triggerFreq": 4 } ]
       },
       {
         "name": "CRASH",
@@ -2317,27 +1654,26 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"velocity":0.4,"triggerFreq":2,"retriggerNum":6,"retriggerStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 0.4, "triggerFreq": 2, "retriggerNum": 6, "retriggerStep": 3 } ]
       }
-  ],
-  "bpm": 60,
-  "nbBars": 8,
-  "tags": {"style":"funk","type":"default"}
+    ],
+    "bpm": 60,
+    "nbBars": 8,
+    "tags": {
+      "style": "funk",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "FunkFill",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "FunkFill",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":1,"barStep":3,"velocity":1}, {"bar":2,"barStep":1,"velocity":1}, {"bar":2,"barStep":3,"velocity":1}, {"bar":3,"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 1, "barStep": 3, "velocity": 1 }, { "bar": 2, "barStep": 1, "velocity": 1 }, { "bar": 2, "barStep": 3, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -2345,9 +1681,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":2,"pitch":1}, {"bar":3,"barStep":2}, {"bar":3,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 2, "pitch": 1 }, { "bar": 3, "barStep": 2 }, { "bar": 3, "barStep": 3 } ]
       },
       {
         "name": "TOM",
@@ -2355,12 +1689,10 @@
         "velocity": 0.5,
         "pitch": 12,
         "pan": 0.5,
-        "panLfo": {"name":"panoTrack","wave":1,"freq":1,"min":0,"max":1,"phase":0},
+        "panLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 } ]
       },
       {
         "name": "CLAP",
@@ -2369,9 +1701,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":3,"triggerFreq":6}, {"bar":2,"barStep":2,"triggerFreq":6}, {"bar":2,"barStep":1,"triggerFreq":6}, {"bar":2,"triggerFreq":6}, {"bar":1,"barStep":2,"triggerFreq":6}, {"bar":3,"barStep":1,"triggerFreq":6}, {"bar":3,"barStep":3,"triggerFreq":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 3, "triggerFreq": 6 }, { "bar": 2, "barStep": 2, "triggerFreq": 6 }, { "bar": 2, "barStep": 1, "triggerFreq": 6 }, { "bar": 2, "triggerFreq": 6 }, { "bar": 1, "barStep": 2, "triggerFreq": 6 }, { "bar": 3, "barStep": 1, "triggerFreq": 6 }, { "bar": 3, "barStep": 3, "triggerFreq": 6 } ]
       },
       {
         "name": "COWBELL",
@@ -2379,55 +1709,32 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 4,
-        "velocity": 0.4,
-        "pan": -0.3,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CHH", "loopAtStep": 4, "velocity": 0.4, "pan": -0.3, "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CRASH",
-        "loopAtStep": 16,
-        "velocity": 0.3,
-        "pan": 1,
-        "reverbType": "hall",
-        "reverbAmount": 0.85,
-        "notes": [ {"velocity":1,"triggerFreq":6,"triggerPhase":5}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CRASH", "loopAtStep": 16, "velocity": 0.3, "pan": 1, "reverbType": "hall", "reverbAmount": 0.85, "notes": [ { "velocity": 1, "triggerFreq": 6, "triggerPhase": 5 } ]
       }
-  ],
-  "bpm": 100,
-  "tags": {"style":"funk","type":"default"}
+    ],
+    "bpm": 100,
+    "tags": {
+      "style": "funk",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "hip",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "hip",
+    "tracks": [
       {
         "name": "KICK",
         "bars": 8,
         "loopAtStep": 32,
         "velocity": 0.5,
-        "notes": [ {"velocity":0.6}, {"barStep":3,"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":2,"barStep":2,"velocity":1}, {"bar":4,"velocity":0.6}, {"bar":5,"barStep":2,"velocity":1}, {"bar":6,"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 0.6 }, { "barStep": 3, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 2, "barStep": 2, "velocity": 1 }, { "bar": 4, "velocity": 0.6 }, { "bar": 5, "barStep": 2, "velocity": 1 }, { "bar": 6, "barStep": 2, "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -2436,9 +1743,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":5}, {"bar":7}, {"bar":7,"barStep":2}, {"bar":7,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 5 }, { "bar": 7 }, { "bar": 7, "barStep": 2 }, { "bar": 7, "barStep": 3 } ]
       },
       {
         "name": "TOM",
@@ -2447,9 +1752,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":1,"pitch":3,"triggerFreq":8}, {"bar":3,"barStep":3,"triggerFreq":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 1, "pitch": 3, "triggerFreq": 8 }, { "bar": 3, "barStep": 3, "triggerFreq": 6 } ]
       },
       {
         "name": "CLAP",
@@ -2458,9 +1761,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":5,"velocity":1}, {"bar":7,"velocity":0.6}, {"bar":1,"barStep":1}, {"bar":3,"triggerFreq":6}, {"bar":3,"barStep":2,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 5, "velocity": 1 }, { "bar": 7, "velocity": 0.6 }, { "bar": 1, "barStep": 1 }, { "bar": 3, "triggerFreq": 6 }, { "bar": 3, "barStep": 2, "triggerFreq": 4 } ]
       },
       {
         "name": "COWBELL",
@@ -2469,31 +1770,14 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "bars": 8,
-        "loopAtStep": 4,
-        "swingAmount": 0.4,
-        "velocity": 0.4,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":2,"min":0,"max":1,"phase":0},
-        "pan": -0.3,
-        "notes": [ {"velocity":1}, {"barStep":1,"velocity":0.1}, {"barStep":2,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
+        "notes": [] }, { "name": "CHH", "bars": 8, "loopAtStep": 4, "swingAmount": 0.4, "velocity": 0.4, "velocityLfo": { "freq": 2, "min": 0, "max": 1, "phase": 0, "type": "triangle" }, "pan": -0.3, "notes": [ { "velocity": 1 }, { "barStep": 1, "velocity": 0.1 }, { "barStep": 2, "velocity": 1 } ] },
       {
         "name": "OHH",
         "bars": 8,
         "loopAtStep": 4,
         "velocity": 0.2,
         "pan": -0.2,
-        "notes": [ {"barStep":3,"velocity":1}, {"bar":6,"barStep":3,"velocity":0.1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 3, "velocity": 1 }, { "bar": 6, "barStep": 3, "velocity": 0.1 } ]
       },
       {
         "name": "CRASH",
@@ -2502,27 +1786,26 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"velocity":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1, "triggerFreq": 4 } ]
       }
-  ],
-  "bpm": 110,
-  "nbBars": 8,
-  "tags": {"style":"funk","type":"default"}
+    ],
+    "bpm": 110,
+    "nbBars": 8,
+    "tags": {
+      "style": "funk",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "electro",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "electro",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 8,
         "velocity": 0.5,
-        "notes": [ {"velocity":1}, {"bar":1,"barStep":2,"velocity":0.1}, {"bar":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 0.1 }, { "bar": 1 } ]
       },
       {
         "name": "SNARE",
@@ -2530,9 +1813,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 } ]
       },
       {
         "name": "TOM",
@@ -2540,20 +1821,16 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "triggerFreq": 8 } ]
       },
       {
         "name": "CLAP",
         "loopAtStep": 16,
-        "pitchLfo": {"name":"pitchTrack","wave":1,"freq":1,"min":0.3,"max":0.7,"phase":0},
+        "pitchLfo": { "freq": 1, "min": 0.3, "max": 0.7, "phase": 0, "type": "triangle" },
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"barStep":1,"triggerFreq":3}, {"bar":1,"barStep":3,"triggerFreq":3}, {"bar":2,"barStep":1,"triggerFreq":3}, {"bar":2,"barStep":2,"triggerFreq":3}, {"bar":3,"triggerFreq":3}, {"bar":3,"barStep":1,"triggerFreq":3}, {"bar":3,"barStep":2,"triggerFreq":3}, {"bar":3,"barStep":3,"triggerFreq":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "barStep": 1, "triggerFreq": 3 }, { "bar": 1, "barStep": 3, "triggerFreq": 3 }, { "bar": 2, "barStep": 1, "triggerFreq": 3 }, { "bar": 2, "barStep": 2, "triggerFreq": 3 }, { "bar": 3, "triggerFreq": 3 }, { "bar": 3, "barStep": 1, "triggerFreq": 3 }, { "bar": 3, "barStep": 2, "triggerFreq": 3 }, { "bar": 3, "barStep": 3, "triggerFreq": 3 } ]
       },
       {
         "name": "COWBELL",
@@ -2561,26 +1838,13 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 8,
-        "velocity": 0.3,
-        "pan": -0.3,
-        "notes": [ {"barStep":3,"velocity":1}, {"bar":1,"velocity":1}, {"bar":1,"barStep":2,"velocity":1}, {"bar":1,"barStep":3,"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CHH", "loopAtStep": 8, "velocity": 0.3, "pan": -0.3, "notes": [ { "barStep": 3, "velocity": 1 }, { "bar": 1, "velocity": 1 }, { "bar": 1, "barStep": 2, "velocity": 1 }, { "bar": 1, "barStep": 3, "velocity": 1 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 8,
         "pan": -0.2,
-        "notes": [ {"velocity":1}, {"barStep":2}, {"bar":1,"barStep":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 }, { "barStep": 2 }, { "bar": 1, "barStep": 1 } ]
       },
       {
         "name": "CRASH",
@@ -2589,25 +1853,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"bar":3,"barStep":3,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 3, "triggerFreq": 4 } ]
       }
-  ],
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "house",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "house",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.7,
-        "notes": [ {"velocity":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1 } ]
       },
       {
         "name": "SNARE",
@@ -2617,9 +1880,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1,"velocity":1}, {"bar":3,"barStep":2,"velocity":0.4,"pitch":4,"triggerFreq":4}, {"bar":3,"barStep":6,"velocity":0.4,"pitch":4,"triggerFreq":16,"triggerPhase":4}, {"bar":3,"barStep":5,"velocity":0.4,"pitch":4,"triggerFreq":8}, {"bar":3,"barStep":4,"velocity":0.3,"pitch":4,"triggerFreq":12}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "velocity": 1 }, { "bar": 3, "barStep": 2, "velocity": 0.4, "pitch": 4, "triggerFreq": 4 }, { "bar": 3, "barStep": 6, "velocity": 0.4, "pitch": 4, "triggerFreq": 16, "triggerPhase": 4 }, { "bar": 3, "barStep": 5, "velocity": 0.4, "pitch": 4, "triggerFreq": 8 }, { "bar": 3, "barStep": 4, "velocity": 0.3, "pitch": 4, "triggerFreq": 12 } ]
       },
       {
         "name": "TOM",
@@ -2627,37 +1888,20 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 16,
-        "swingAmount": 0.7,
-        "swingResolution": 2,
-        "velocity": 0.3,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"velocity":1}, {"bar":3,"velocity":1}, {"bar":2,"velocity":1,"triggerFreq":4,"triggerPhase":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 16, "swingAmount": 0.7, "swingResolution": 2, "velocity": 0.3, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "bar": 1, "velocity": 1 }, { "bar": 3, "velocity": 1 }, { "bar": 2, "velocity": 1, "triggerFreq": 4, "triggerPhase": 2 } ]
       },
       {
         "name": "COWBELL",
         "loopAtStep": 4,
         "swingAmount": 0.5,
         "velocity": 0.1,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":1,"min":0,"max":1,"phase":0},
+        "velocityLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "pitch": -5,
         "pan": 0.4,
-        "panLfo": {"name":"panoTrack","form":1,"isOn":true,"freq":1,"min":0,"max":1,"phase":0},
+        "panLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"barStep":2,"velocity":1,"triggerFreq":3}, {"bar":3,"barStep":3,"velocity":1,"pitch":-6,"triggerFreq":4}, {"barStep":3,"triggerFreq":6}, {"barStep":1,"triggerFreq":3}, {"triggerFreq":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1, "triggerFreq": 3 }, { "bar": 3, "barStep": 3, "velocity": 1, "pitch": -6, "triggerFreq": 4 }, { "barStep": 3, "triggerFreq": 6 }, { "barStep": 1, "triggerFreq": 3 }, { "triggerFreq": 6 } ]
       },
       {
         "name": "CHH",
@@ -2666,20 +1910,16 @@
         "velocity": 0.1,
         "pitch": 2,
         "pan": -0.3,
-        "notes": [ {"barStep":1,"velocity":1}, {"barStep":3,"velocity":1}, {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 1, "velocity": 1 }, { "barStep": 3, "velocity": 1 }, {} ]
       },
       {
         "name": "OHH",
         "loopAtStep": 4,
         "swingAmount": 0.3,
         "velocity": 0.5,
-        "velocityLfo": {"name":"volTrack","form":1,"isOn":true,"freq":1,"min":0.4,"max":0.8,"phase":0},
+        "velocityLfo": { "freq": 1, "min": 0.4, "max": 0.8, "phase": 0, "type": "triangle" },
         "pan": -0.2,
-        "notes": [ {"barStep":2,"velocity":1,"pan":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2, "velocity": 1, "pan": 1 } ]
       },
       {
         "name": "CRASH",
@@ -2688,25 +1928,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"velocity":1,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 1, "triggerFreq": 4 } ]
       }
-  ],
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "house2",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "house2",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       },
       {
         "name": "SNARE",
@@ -2714,20 +1953,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "TOM",
-        "loopAtStep": 8,
-        "velocity": 0.2,
-        "pan": 0.5,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"bar":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "TOM", "loopAtStep": 8, "velocity": 0.2, "pan": 0.5, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "bar": 1 } ]
       },
       {
         "name": "CLAP",
@@ -2735,21 +1961,17 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 } ]
       },
       {
         "name": "COWBELL",
         "loopAtStep": 16,
         "velocity": 0.1,
-        "pitchLfo": {"name":"pitchTrack","wave":1,"freq":1,"min":0,"max":1,"phase":0},
+        "pitchLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"barStep":3,"triggerFreq":4}, {"bar":1,"triggerFreq":4}, {"bar":3,"barStep":2,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 3, "triggerFreq": 4 }, { "bar": 1, "triggerFreq": 4 }, { "bar": 3, "barStep": 2, "triggerFreq": 4 } ]
       },
       {
         "name": "CHH",
@@ -2759,11 +1981,9 @@
         "pan": -0.3,
         "filterType": "highpass",
         "filterFreq": 158,
-        "filterQLfo": {"name":"Filter Q","wave":1,"freq":1,"min":0.707,"max":18.707,"phase":0},
+        "filterQLfo": { "freq": 1, "min": 0.707, "max": 18.707, "phase": 0, "type": "triangle" },
         "filterQ": 6.263,
-        "notes": [ {"bar":1,"barStep":2}, {"bar":1,"barStep":3}, {"bar":3,"barStep":1}, {"bar":3,"barStep":2}, {"bar":3,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "barStep": 2 }, { "bar": 1, "barStep": 3 }, { "bar": 3, "barStep": 1 }, { "bar": 3, "barStep": 2 }, { "bar": 3, "barStep": 3 } ]
       },
       {
         "name": "OHH",
@@ -2773,11 +1993,9 @@
         "pan": -0.2,
         "filterType": "highpass",
         "filterFreq": 22,
-        "filterFreqLfo": {"name":"Filter Freq","wave":1,"freq":1,"min":20,"max":20000,"phase":0},
+        "filterFreqLfo": { "freq": 1, "min": 20, "max": 20000, "phase": 0, "type": "triangle" },
         "filterQ": 13.307,
-        "notes": [ {"barStep":1}, {"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 1 }, { "barStep": 3 } ]
       },
       {
         "name": "CRASH",
@@ -2786,25 +2004,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"triggerFreq":8,"triggerPhase":1,"retriggerNum":6}, {"bar":3,"barStep":2,"triggerFreq":8,"retriggerNum":5}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "triggerFreq": 8, "triggerPhase": 1, "retriggerNum": 6 }, { "bar": 3, "barStep": 2, "triggerFreq": 8, "retriggerNum": 5 } ]
       }
-  ],
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "DanceIt",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "DanceIt",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       },
       {
         "name": "SNARE",
@@ -2814,9 +2031,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"barStep":1}, {"bar":3,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 1 }, { "bar": 3, "barStep": 3 } ]
       },
       {
         "name": "TOM",
@@ -2825,9 +2040,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":1,"triggerFreq":6}, {"bar":3,"barStep":3,"triggerFreq":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 1, "triggerFreq": 6 }, { "bar": 3, "barStep": 3, "triggerFreq": 6 } ]
       },
       {
         "name": "CLAP",
@@ -2836,9 +2049,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 } ]
       },
       {
         "name": "COWBELL",
@@ -2846,18 +2057,7 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 16,
-        "swingAmount": 0.2,
-        "pan": -0.3,
-        "notes": [ {"barStep":1}, {"barStep":2,"pitch":2}, {"bar":2,"barStep":1,"retriggerStep":2}, {"bar":1,"barStep":2}, {"bar":3,"barStep":2,"triggerFreq":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CHH", "loopAtStep": 16, "swingAmount": 0.2, "pan": -0.3, "notes": [ { "barStep": 1 }, { "barStep": 2, "pitch": 2 }, { "bar": 2, "barStep": 1, "retriggerStep": 2 }, { "bar": 1, "barStep": 2 }, { "bar": 3, "barStep": 2, "triggerFreq": 2 } ]
       },
       {
         "name": "OHH",
@@ -2866,9 +2066,7 @@
         "velocity": 0.7,
         "pitch": -3,
         "pan": -0.2,
-        "notes": [ {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 } ]
       },
       {
         "name": "CRASH",
@@ -2877,25 +2075,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"bar":3,"barStep":3,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 3, "triggerFreq": 8 } ]
       }
-  ],
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "Smurf",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "Smurf",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.5,
-        "notes": [ {}, {"bar":2,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "bar": 2, "barStep": 2 } ]
       },
       {
         "name": "SNARE",
@@ -2903,9 +2100,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}, {"bar":1,"barStep":2,"triggerFreq":2,"triggerPhase":1}, {"bar":3}, {"bar":2,"barStep":1,"triggerFreq":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 }, { "bar": 1, "barStep": 2, "triggerFreq": 2, "triggerPhase": 1 }, { "bar": 3 }, { "bar": 2, "barStep": 1, "triggerFreq": 2 } ]
       },
       {
         "name": "TOM",
@@ -2914,20 +2109,16 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"velocity":0.2,"triggerFreq":4}, {"bar":2,"barStep":1,"velocity":0.6,"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "velocity": 0.2, "triggerFreq": 4 }, { "bar": 2, "barStep": 1, "velocity": 0.6, "triggerFreq": 4 } ]
       },
       {
         "name": "CLAP",
         "loopAtStep": 16,
         "pan": -0.4,
-        "panLfo": {"name":"panoTrack","wave":1,"freq":10,"min":0,"max":1,"phase":0},
+        "panLfo": { "freq": 10, "min": 0, "max": 1, "phase": 0, "type": "triangle" },
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"triggerFreq":16}, {"bar":3,"barStep":1,"triggerFreq":16}, {"bar":3,"barStep":2,"triggerFreq":16}, {"bar":3,"barStep":3,"triggerFreq":16}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "triggerFreq": 16 }, { "bar": 3, "barStep": 1, "triggerFreq": 16 }, { "bar": 3, "barStep": 2, "triggerFreq": 16 }, { "bar": 3, "barStep": 3, "triggerFreq": 16 } ]
       },
       {
         "name": "COWBELL",
@@ -2936,25 +2127,19 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":2,"triggerFreq":4,"triggerPhase":4,"retriggerNum":3,"retriggerStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2, "triggerFreq": 4, "triggerPhase": 4, "retriggerNum": 3, "retriggerStep": 3 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 2,
         "pan": -0.3,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [ {"bar":2,"barStep":2,"triggerFreq":4,"triggerPhase":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 2, "triggerFreq": 4, "triggerPhase": 3 } ]
       },
       {
         "name": "CRASH",
@@ -2962,25 +2147,24 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"bar":2,"barStep":2,"triggerFreq":8,"triggerPhase":7,"retriggerStep":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 2, "triggerFreq": 8, "triggerPhase": 7, "retriggerStep": 4 } ]
       }
-  ],
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "SlowTrap",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "SlowTrap",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.3,
-        "notes": [ {}, {"bar":1,"barStep":2}, {"bar":2,"barStep":2,"triggerFreq":2,"retriggerNum":2,"retriggerStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "bar": 1, "barStep": 2 }, { "bar": 2, "barStep": 2, "triggerFreq": 2, "retriggerNum": 2, "retriggerStep": 2 } ]
       },
       {
         "name": "SNARE",
@@ -2989,9 +2173,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2 } ]
       },
       {
         "name": "TOM",
@@ -3001,9 +2183,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":2,"triggerFreq":8,"retriggerNum":3,"retriggerStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2, "triggerFreq": 8, "retriggerNum": 3, "retriggerStep": 2 } ]
       },
       {
         "name": "CLAP",
@@ -3011,9 +2191,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2 } ]
       },
       {
         "name": "COWBELL",
@@ -3021,26 +2199,13 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CHH",
-        "loopAtStep": 2,
-        "velocity": 0.8,
-        "pan": -0.3,
-        "notes": [ {}, {"bar":2,"triggerFreq":2,"triggerPhase":1,"retriggerNum":4}, {"bar":3,"triggerFreq":3,"retriggerNum":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CHH", "loopAtStep": 2, "velocity": 0.8, "pan": -0.3, "notes": [ {}, { "bar": 2, "triggerFreq": 2, "triggerPhase": 1, "retriggerNum": 4 }, { "bar": 3, "triggerFreq": 3, "retriggerNum": 4 } ]
       },
       {
         "name": "OHH",
         "loopAtStep": 16,
         "pan": -0.2,
-        "notes": [ {"bar":3,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2 } ]
       },
       {
         "name": "CRASH",
@@ -3049,26 +2214,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"bar":3,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2 } ]
       }
-  ],
-  "bpm": 100,
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "bpm": 100,
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "sweet",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "sweet",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 16,
         "velocity": 0.6,
-        "notes": [ {"velocity":0.99,"pan":0.5}, {"bar":2,"velocity":0.99,"pan":0.5}, {"bar":2,"barStep":2,"velocity":0.99,"pan":0.5}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "velocity": 0.99, "pan": 0.5 }, { "bar": 2, "velocity": 0.99, "pan": 0.5 }, { "bar": 2, "barStep": 2, "velocity": 0.99, "pan": 0.5 } ]
       },
       {
         "name": "SNARE",
@@ -3077,9 +2241,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1,"velocity":0.99,"pan":0.5}, {"bar":1,"barStep":3,"velocity":0.71,"pan":0.5}, {"bar":3,"velocity":0.71,"pan":0.5}, {"bar":3,"barStep":3,"velocity":0.71,"pan":0.5}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "velocity": 0.99, "pan": 0.5 }, { "bar": 1, "barStep": 3, "velocity": 0.71, "pan": 0.5 }, { "bar": 3, "velocity": 0.71, "pan": 0.5 }, { "bar": 3, "barStep": 3, "velocity": 0.71, "pan": 0.5 } ]
       },
       {
         "name": "TOM",
@@ -3089,49 +2251,13 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "CLAP",
-        "loopAtStep": 16,
-        "pan": -0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 16,
-        "swingAmount": 0.4,
-        "velocity": 0.2,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":2,"triggerFreq":6,"triggerPhase":5}, {"bar":3,"barStep":3,"triggerFreq":6,"triggerPhase":5}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "CLAP", "loopAtStep": 16, "pan": -0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [] }, { "name": "COWBELL", "loopAtStep": 16, "swingAmount": 0.4, "velocity": 0.2, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "bar": 3, "barStep": 2, "triggerFreq": 6, "triggerPhase": 5 }, { "bar": 3, "barStep": 3, "triggerFreq": 6, "triggerPhase": 5 } ]
       },
       {
         "name": "CHH",
         "loopAtStep": 16,
         "pan": -0.3,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "OHH",
-        "loopAtStep": 2,
-        "velocityLfo": {"name":"volTrack","wave":1,"freq":1,"min":0,"max":1,"phase":0},
-        "pan": -0.2,
-        "notes": [ {"velocity":0.99,"pan":0.5}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
+        "notes": [] }, { "name": "OHH", "loopAtStep": 2, "velocityLfo": { "freq": 1, "min": 0, "max": 1, "phase": 0, "type": "triangle" }, "pan": -0.2, "notes": [ { "velocity": 0.99, "pan": 0.5 } ] },
       {
         "name": "CRASH",
         "loopAtStep": 16,
@@ -3139,26 +2265,25 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"pan":-0.9,"triggerFreq":8}, {"bar":3,"barStep":3,"pan":0.9,"triggerFreq":8,"triggerPhase":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "pan": -0.9, "triggerFreq": 8 }, { "bar": 3, "barStep": 3, "pan": 0.9, "triggerFreq": 8, "triggerPhase": 1 } ]
       }
-  ],
-  "bpm": 90,
-  "tags": {"style":"electro","type":"default"}
+    ],
+    "bpm": 90,
+    "tags": {
+      "style": "electro",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "jazz",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "jazz",
+    "tracks": [
       {
         "name": "KICK",
         "loopAtStep": 8,
         "velocity": 0.5,
-        "notes": [ {}, {"bar":1,"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "bar": 1, "barStep": 2 } ]
       },
       {
         "name": "SNARE",
@@ -3167,9 +2292,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"barStep":2}, {"bar":1,"barStep":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 }, { "bar": 1, "barStep": 1 } ]
       },
       {
         "name": "TOM",
@@ -3179,9 +2302,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":3,"barStep":2,"velocity":0.3,"triggerFreq":8}, {"bar":3,"barStep":3,"pitch":-2,"triggerFreq":8}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 3, "barStep": 2, "velocity": 0.3, "triggerFreq": 8 }, { "bar": 3, "barStep": 3, "pitch": -2, "triggerFreq": 8 } ]
       },
       {
         "name": "CLAP",
@@ -3190,9 +2311,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"barStep":1}, {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "barStep": 1 }, { "barStep": 2 } ]
       },
       {
         "name": "COWBELL",
@@ -3202,9 +2321,7 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":2,"barStep":1,"triggerFreq":12}, {"bar":2,"barStep":3,"triggerFreq":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 2, "barStep": 1, "triggerFreq": 12 }, { "bar": 2, "barStep": 3, "triggerFreq": 6 } ]
       },
       {
         "name": "CHH",
@@ -3212,9 +2329,7 @@
         "swingAmount": 0.3,
         "velocity": 0.3,
         "pan": -0.3,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       },
       {
         "name": "OHH",
@@ -3222,9 +2337,7 @@
         "swingAmount": 0.3,
         "velocity": 0.4,
         "pan": -0.2,
-        "notes": [ {}, {"barStep":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "barStep": 1 } ]
       },
       {
         "name": "CRASH",
@@ -3232,27 +2345,26 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "triggerFreq": 4 } ]
       }
-  ],
-  "bpm": 60,
-  "tags": {"style":"jazz","type":"default"}
+    ],
+    "bpm": 60,
+    "tags": {
+      "style": "jazz",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "PolyRythm",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "PolyRythm",
+    "tracks": [
       {
         "name": "KICK",
         "barQuantize": 8,
         "loopAtStep": 32,
         "velocity": 0.5,
-        "notes": [ {}, {"bar":1}, {"bar":1,"barStep":3}, {"bar":2}, {"bar":3,"barStep":5}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {}, { "bar": 1 }, { "bar": 1, "barStep": 3 }, { "bar": 2 }, { "bar": 3, "barStep": 5 } ]
       },
       {
         "name": "SNARE",
@@ -3260,9 +2372,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"bar":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1 } ]
       },
       {
         "name": "TOM",
@@ -3271,9 +2381,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":1,"pitch":3}, {"bar":2,"pitch":5}, {"bar":3,"pitch":7}, {"retriggerNum":5,"retriggerStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 1, "pitch": 3 }, { "bar": 2, "pitch": 5 }, { "bar": 3, "pitch": 7 }, { "retriggerNum": 5, "retriggerStep": 3 } ]
       },
       {
         "name": "CLAP",
@@ -3281,19 +2389,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "COWBELL",
-        "loopAtStep": 16,
-        "pan": 0.4,
-        "reverbType": "room",
-        "reverbAmount": 0.25,
-        "notes": [ {"triggerFreq":8}, {"bar":3,"barStep":2,"triggerFreq":16}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "COWBELL", "loopAtStep": 16, "pan": 0.4, "reverbType": "room", "reverbAmount": 0.25, "notes": [ { "triggerFreq": 8 }, { "bar": 3, "barStep": 2, "triggerFreq": 16 } ]
       },
       {
         "name": "CHH",
@@ -3301,18 +2397,7 @@
         "loopAtStep": 3,
         "velocity": 0.9,
         "pan": -0.3,
-        "notes": [],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
-      },
-      {
-        "name": "OHH",
-        "barQuantize": 3,
-        "loopAtStep": 3,
-        "pan": -0.2,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [] }, { "name": "OHH", "barQuantize": 3, "loopAtStep": 3, "pan": -0.2, "notes": [ {} ]
       },
       {
         "name": "CRASH",
@@ -3320,27 +2405,26 @@
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {"triggerFreq":4}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "triggerFreq": 4 } ]
       }
-  ],
-  "bpm": 60,
-  "tags": {"style":"jazz","type":"default"}
+    ],
+    "bpm": 60,
+    "tags": {
+      "style": "jazz",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "ltgroove",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "ltgroove",
+    "tracks": [
       {
         "name": "KICK",
         "bars": 8,
         "loopAtStep": 4,
         "velocity": 0.5,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       },
       {
         "name": "SNARE",
@@ -3349,9 +2433,7 @@
         "pan": 0.3,
         "reverbType": "room",
         "reverbAmount": 0.5,
-        "notes": [ {"barStep":2}, {"bar":3,"barStep":2}, {"bar":3,"barStep":3}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 }, { "bar": 3, "barStep": 2 }, { "bar": 3, "barStep": 3 } ]
       },
       {
         "name": "TOM",
@@ -3361,9 +2443,7 @@
         "pan": 0.5,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"bar":7,"barStep":3}, {"bar":7,"barStep":2}, {"bar":7,"barStep":1}, {"bar":7}, {"bar":6,"barStep":3,"pitch":4}, {"bar":6,"barStep":2,"pitch":4}, {"bar":6,"pitch":4}, {"bar":5,"barStep":3,"pitch":6}, {"bar":5,"barStep":2,"pitch":6}, {"bar":5,"pitch":6}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "bar": 7, "barStep": 3 }, { "bar": 7, "barStep": 2 }, { "bar": 7, "barStep": 1 }, { "bar": 7 }, { "bar": 6, "barStep": 3, "pitch": 4 }, { "bar": 6, "barStep": 2, "pitch": 4 }, { "bar": 6, "pitch": 4 }, { "bar": 5, "barStep": 3, "pitch": 6 }, { "bar": 5, "barStep": 2, "pitch": 6 }, { "bar": 5, "pitch": 6 } ]
       },
       {
         "name": "CLAP",
@@ -3372,9 +2452,7 @@
         "pan": -0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       },
       {
         "name": "COWBELL",
@@ -3384,9 +2462,7 @@
         "pan": 0.4,
         "reverbType": "room",
         "reverbAmount": 0.25,
-        "notes": [ {"barStep":2}, {"bar":1}, {"bar":1,"barStep":3}, {"bar":3,"barStep":1}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 }, { "bar": 1 }, { "bar": 1, "barStep": 3 }, { "bar": 3, "barStep": 1 } ]
       },
       {
         "name": "CHH",
@@ -3397,11 +2473,9 @@
         "pan": -0.3,
         "filterType": "highpass",
         "filterFreq": 158,
-        "filterQLfo": {"name":"Filter Q","wave":1,"freq":1,"min":0.707,"max":18.707,"phase":0},
+        "filterQLfo": { "freq": 1, "min": 0.707, "max": 18.707, "phase": 0, "type": "triangle" },
         "filterQ": 17.987,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       },
       {
         "name": "OHH",
@@ -3412,11 +2486,9 @@
         "pan": -0.2,
         "filterType": "highpass",
         "filterFreq": 28,
-        "filterFreqLfo": {"name":"Filter Freq","wave":1,"freq":1,"min":20,"max":20000,"phase":0},
+        "filterFreqLfo": { "freq": 1, "min": 20, "max": 20000, "phase": 0, "type": "triangle" },
         "filterQ": 13.307,
-        "notes": [ {"barStep":2}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ { "barStep": 2 } ]
       },
       {
         "name": "CRASH",
@@ -3424,31 +2496,32 @@
         "loopAtStep": 32,
         "velocity": 0.5,
         "pitch": 8,
-        "pitchLfo": {"name":"lfo","freq":6,"min":0,"max":1,"phase":0},
+        "pitchLfo": { "freq": 6, "min": 0, "max": 1, "phase": 0, "type": "sine" },
         "pan": 1,
         "reverbType": "hall",
         "reverbAmount": 0.85,
-        "notes": [ {}],
-        "filterLfoFreq": 0,
-        "sampleLength": 1
+        "notes": [ {} ]
       }
-  ],
-  "bpm": 80,
-  "nbBars": 8,
-  "tags": {"style":"funk","type":"default"}
+    ],
+    "bpm": 80,
+    "nbBars": 8,
+    "tags": {
+      "style": "funk",
+      "type": "default"
+    }
   },
   {
-  "application": "online-ordrumbox",
-  "url": "https://www.ordrumbox.com",
-  "name": "DUB_ROOTS",
-  "description": "Dub roots heavy ",
-  "tracks": [
+    "application": "online-ordrumbox",
+    "url": "https://www.ordrumbox.com",
+    "name": "DUB_ROOTS",
+    "description": "Dub roots heavy ",
+    "tracks": [
       {
         "name": "KICK",
         "soundId": "punchy/kick.wav",
         "bars": 16,
         "loopAtStep": 64,
-        "notes": [ {"velocity":0.95}, {"barStep":2,"bar":1,"velocity":0.75}, {"bar":4,"velocity":0.9}, {"barStep":2,"bar":5,"velocity":0.7}, {"bar":8,"velocity":0.95}, {"barStep":2,"bar":9,"velocity":0.75}, {"bar":12,"velocity":0.9}, {"barStep":2,"bar":13,"velocity":0.7}]
+        "notes": [ { "velocity": 0.95 }, { "barStep": 2, "bar": 1, "velocity": 0.75 }, { "bar": 4, "velocity": 0.9 }, { "barStep": 2, "bar": 5, "velocity": 0.7 }, { "bar": 8, "velocity": 0.95 }, { "barStep": 2, "bar": 9, "velocity": 0.75 }, { "bar": 12, "velocity": 0.9 }, { "barStep": 2, "bar": 13, "velocity": 0.7 } ]
       },
       {
         "name": "SNARE",
@@ -3456,7 +2529,7 @@
         "bars": 16,
         "loopAtStep": 64,
         "pan": 0.3,
-        "notes": [ {"bar":2,"velocity":0.85}, {"bar":6,"velocity":0.85}, {"bar":10,"velocity":0.85}, {"bar":14,"velocity":0.85}],
+        "notes": [ { "bar": 2, "velocity": 0.85 }, { "bar": 6, "velocity": 0.85 }, { "bar": 10, "velocity": 0.85 }, { "bar": 14, "velocity": 0.85 } ],
         "reverbType": "plate",
         "reverbAmount": 0.6000000000000001
       },
@@ -3466,7 +2539,7 @@
         "bars": 16,
         "loopAtStep": 64,
         "pan": 0.5,
-        "notes": [ {"bar":1,"velocity":0.5}, {"bar":3,"velocity":0.5}, {"bar":5,"velocity":0.5}, {"bar":7,"velocity":0.5}, {"bar":9,"velocity":0.5}, {"bar":11,"velocity":0.5}, {"bar":13,"velocity":0.5}, {"bar":15,"velocity":0.5}]
+        "notes": [ { "bar": 1, "velocity": 0.5 }, { "bar": 3, "velocity": 0.5 }, { "bar": 5, "velocity": 0.5 }, { "bar": 7, "velocity": 0.5 }, { "bar": 9, "velocity": 0.5 }, { "bar": 11, "velocity": 0.5 }, { "bar": 13, "velocity": 0.5 }, { "bar": 15, "velocity": 0.5 } ]
       },
       {
         "name": "OHH",
@@ -3474,7 +2547,7 @@
         "bars": 16,
         "loopAtStep": 64,
         "pan": -0.4,
-        "notes": [ {"barStep":2,"bar":3,"velocity":0.55}, {"barStep":2,"bar":7,"velocity":0.55}, {"barStep":2,"bar":11,"velocity":0.55}, {"barStep":2,"bar":15,"velocity":0.55}]
+        "notes": [ { "barStep": 2, "bar": 3, "velocity": 0.55 }, { "barStep": 2, "bar": 7, "velocity": 0.55 }, { "barStep": 2, "bar": 11, "velocity": 0.55 }, { "barStep": 2, "bar": 15, "velocity": 0.55 } ]
       },
       {
         "name": "CHH",
@@ -3486,7 +2559,7 @@
         "filterType": "lowpass",
         "filterFreq": 2270,
         "filterQ": 11.700000000000001,
-        "notes": [ {"velocity":0.95,"pitch":-12}, {"barStep":3,"pitch":-12}, {"barStep":2,"bar":2,"velocity":0.85,"pitch":-12}, {"barStep":2,"bar":3,"velocity":0.7,"pitch":-10}, {"bar":4,"velocity":0.9,"pitch":-12}, {"bar":5,"velocity":0.75,"pitch":-12}, {"barStep":2,"bar":6,"pitch":-10}, {"bar":8,"velocity":0.95,"pitch":-12}, {"barStep":3,"bar":8,"pitch":-12}, {"barStep":2,"bar":10,"velocity":0.85,"pitch":-12}, {"barStep":2,"bar":11,"velocity":0.7,"pitch":-9}, {"bar":12,"velocity":0.9,"pitch":-12}, {"bar":13,"velocity":0.75,"pitch":-12}, {"barStep":2,"bar":14,"pitch":-10}],
+        "notes": [ { "velocity": 0.95, "pitch": -12 }, { "barStep": 3, "pitch": -12 }, { "barStep": 2, "bar": 2, "velocity": 0.85, "pitch": -12 }, { "barStep": 2, "bar": 3, "velocity": 0.7, "pitch": -10 }, { "bar": 4, "velocity": 0.9, "pitch": -12 }, { "bar": 5, "velocity": 0.75, "pitch": -12 }, { "barStep": 2, "bar": 6, "pitch": -10 }, { "bar": 8, "velocity": 0.95, "pitch": -12 }, { "barStep": 3, "bar": 8, "pitch": -12 }, { "barStep": 2, "bar": 10, "velocity": 0.85, "pitch": -12 }, { "barStep": 2, "bar": 11, "velocity": 0.7, "pitch": -9 }, { "bar": 12, "velocity": 0.9, "pitch": -12 }, { "bar": 13, "velocity": 0.75, "pitch": -12 }, { "barStep": 2, "bar": 14, "pitch": -10 } ],
         "mono": true
       },
       {
@@ -3496,7 +2569,7 @@
         "bars": 16,
         "loopAtStep": 64,
         "pan": -0.3,
-        "notes": [ {"barStep":2,"velocity":0.75,"pitch":2}, {"barStep":2,"bar":2,"velocity":0.65,"pitch":2}, {"barStep":2,"bar":4,"velocity":0.7,"pitch":5}, {"barStep":2,"bar":6,"velocity":0.65,"pitch":3}, {"barStep":2,"bar":8,"velocity":0.75,"pitch":2}, {"barStep":2,"bar":10,"velocity":0.65,"pitch":2}, {"barStep":2,"bar":12,"velocity":0.7}, {"barStep":2,"bar":14,"velocity":0.65,"pitch":3}],
+        "notes": [ { "barStep": 2, "velocity": 0.75, "pitch": 2 }, { "barStep": 2, "bar": 2, "velocity": 0.65, "pitch": 2 }, { "barStep": 2, "bar": 4, "velocity": 0.7, "pitch": 5 }, { "barStep": 2, "bar": 6, "velocity": 0.65, "pitch": 3 }, { "barStep": 2, "bar": 8, "velocity": 0.75, "pitch": 2 }, { "barStep": 2, "bar": 10, "velocity": 0.65, "pitch": 2 }, { "barStep": 2, "bar": 12, "velocity": 0.7 }, { "barStep": 2, "bar": 14, "velocity": 0.65, "pitch": 3 } ],
         "reverbType": "room",
         "reverbAmount": 0.3,
         "delayTime": 0.25,
@@ -3510,7 +2583,7 @@
         "bars": 16,
         "loopAtStep": 64,
         "pan": -0.2,
-        "notes": [ {"barStep":3,"velocity":0.7,"pitch":5}, {"barStep":3,"bar":2,"velocity":0.6,"pitch":5}, {"barStep":3,"bar":4,"velocity":0.65,"pitch":8}, {"barStep":3,"bar":6,"velocity":0.6,"pitch":7}, {"barStep":3,"bar":8,"velocity":0.7,"pitch":5}, {"barStep":3,"bar":10,"velocity":0.6,"pitch":5}, {"barStep":3,"bar":12,"velocity":0.65,"pitch":3}, {"barStep":3,"bar":14,"velocity":0.6,"pitch":7}],
+        "notes": [ { "barStep": 3, "velocity": 0.7, "pitch": 5 }, { "barStep": 3, "bar": 2, "velocity": 0.6, "pitch": 5 }, { "barStep": 3, "bar": 4, "velocity": 0.65, "pitch": 8 }, { "barStep": 3, "bar": 6, "velocity": 0.6, "pitch": 7 }, { "barStep": 3, "bar": 8, "velocity": 0.7, "pitch": 5 }, { "barStep": 3, "bar": 10, "velocity": 0.6, "pitch": 5 }, { "barStep": 3, "bar": 12, "velocity": 0.65, "pitch": 3 }, { "barStep": 3, "bar": 14, "velocity": 0.6, "pitch": 7 } ],
         "reverbType": "spring",
         "reverbAmount": 0.8500000000000001,
         "delayTime": 0.5,
@@ -3524,7 +2597,7 @@
         "bars": 16,
         "loopAtStep": 64,
         "pan": 1,
-        "notes": [ {"barStep":1,"bar":1,"velocity":0.6}, {"barStep":1,"bar":3,"velocity":0.55}, {"barStep":1,"bar":5,"velocity":0.6,"pitch":3}, {"barStep":1,"bar":7,"velocity":0.55,"pitch":2}, {"barStep":1,"bar":9,"velocity":0.6}, {"barStep":1,"bar":11,"velocity":0.55}, {"barStep":1,"bar":13,"velocity":0.6,"pitch":-2}, {"barStep":1,"bar":15,"velocity":0.55,"pitch":2}],
+        "notes": [ { "barStep": 1, "bar": 1, "velocity": 0.6 }, { "barStep": 1, "bar": 3, "velocity": 0.55 }, { "barStep": 1, "bar": 5, "velocity": 0.6, "pitch": 3 }, { "barStep": 1, "bar": 7, "velocity": 0.55, "pitch": 2 }, { "barStep": 1, "bar": 9, "velocity": 0.6 }, { "barStep": 1, "bar": 11, "velocity": 0.55 }, { "barStep": 1, "bar": 13, "velocity": 0.6, "pitch": -2 }, { "barStep": 1, "bar": 15, "velocity": 0.55, "pitch": 2 } ],
         "delayTime": 0.25,
         "delayAmount": 0.7000000000000001,
         "fxSelected": "delay"
@@ -3540,7 +2613,7 @@
         "filterType": "lowpass",
         "filterFreq": 1520,
         "filterQ": 14,
-        "notes": [ {"barStep":2,"bar":1,"velocity":0.6,"pitch":14}, {"barStep":1,"bar":2,"velocity":0.55,"pitch":12}, {"barStep":2,"bar":5,"velocity":0.6,"pitch":14}, {"barStep":1,"bar":6,"velocity":0.55,"pitch":17}, {"barStep":2,"bar":9,"velocity":0.6,"pitch":14}, {"barStep":1,"bar":10,"velocity":0.55,"pitch":12}, {"barStep":2,"bar":13,"velocity":0.6,"pitch":15}, {"barStep":1,"bar":14,"velocity":0.55,"pitch":14}],
+        "notes": [ { "barStep": 2, "bar": 1, "velocity": 0.6, "pitch": 14 }, { "barStep": 1, "bar": 2, "velocity": 0.55, "pitch": 12 }, { "barStep": 2, "bar": 5, "velocity": 0.6, "pitch": 14 }, { "barStep": 1, "bar": 6, "velocity": 0.55, "pitch": 17 }, { "barStep": 2, "bar": 9, "velocity": 0.6, "pitch": 14 }, { "barStep": 1, "bar": 10, "velocity": 0.55, "pitch": 12 }, { "barStep": 2, "bar": 13, "velocity": 0.6, "pitch": 15 }, { "barStep": 1, "bar": 14, "velocity": 0.55, "pitch": 14 } ],
         "reverbType": "hall",
         "reverbAmount": 0.7000000000000001,
         "delayTime": 0.25,
@@ -3553,7 +2626,25 @@
         "bars": 16,
         "loopAtStep": 8,
         "useSoftSynth": true,
-        "notes": [ {"arp":{"scaleName":"blues scale","intervals":[0,3,5,6,7,10],"mode":"up"},"triggerFreq":4,"retriggerNum":5,"retriggerStep":4}, {"bar":5}, {"barStep":1,"bar":8}, {"barStep":2,"bar":12}],
+        "notes": [ { "arp": { "scaleName": "blues scale", "intervals": [ 0, 3, 5, 6, 7, 10 ],
+              "mode": "up"
+            },
+            "triggerFreq": 4,
+            "retriggerNum": 5,
+            "retriggerStep": 4
+          },
+          {
+            "bar": 5
+          },
+          {
+            "barStep": 1,
+            "bar": 8
+          },
+          {
+            "barStep": 2,
+            "bar": 12
+          }
+        ],
         "reverbType": "gated",
         "reverbAmount": 0.7000000000000001,
         "synthSoundKey": "BASS1"
@@ -3564,11 +2655,17 @@
         "soundId": "matt/RIMSHOT.wav",
         "bars": 16,
         "loopAtStep": 64,
-        "notes": [ {"bar":3,"velocity":0.6}, {"barStep":3,"bar":3,"velocity":0.5}, {"bar":7,"velocity":0.6}, {"barStep":3,"bar":7,"velocity":0.5}, {"bar":11,"velocity":0.6}, {"barStep":3,"bar":11,"velocity":0.5}, {"bar":15,"velocity":0.6}, {"barStep":3,"bar":15,"velocity":0.5}]
+        "notes": [ { "bar": 3, "velocity": 0.6 }, { "barStep": 3, "bar": 3, "velocity": 0.5 }, { "bar": 7, "velocity": 0.6 }, { "barStep": 3, "bar": 7, "velocity": 0.5 }, { "bar": 11, "velocity": 0.6 }, { "barStep": 3, "bar": 11, "velocity": 0.5 }, { "bar": 15, "velocity": 0.6 }, { "barStep": 3, "bar": 15, "velocity": 0.5 } ]
       }
-  ],
-  "bpm": 75,
-  "nbBars": 16,
-  "tags": {"0":"dub","1":"roots","2":"reggae","3":"delay","4":"heavy"}
+    ],
+    "bpm": 75,
+    "nbBars": 16,
+    "tags": {
+      "0": "dub",
+      "1": "roots",
+      "2": "reggae",
+      "3": "delay",
+      "4": "heavy"
+    }
   }
 ]
