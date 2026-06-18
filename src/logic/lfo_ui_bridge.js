@@ -49,7 +49,7 @@ export default class LfoUiBridge {
         }
         if (Object.keys(lfos).length === 0) return null
 
-        if (this.#fallback) {
+        if (this.#fallback || !this.#node) {
             const values = {}
             for (const { lfoKey, resultKey } of LFO_MAP) {
                 const lfo = track[lfoKey]

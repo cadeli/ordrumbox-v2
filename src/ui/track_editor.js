@@ -233,10 +233,6 @@ export default class TrackEditor extends BasePanel {
     show({ track, trackIdx }) {
         this._track = track
         this._trackIdx = trackIdx
-        // Migrate filterQ from normalized [0,1] to raw Q [0.707, 18.707] if needed
-        if (track.filterQ < 0.707) {
-            track.filterQ = Utils.normalizedTrackFilterQToValue(track.filterQ)
-        }
         super.show(['ne-panel', 'tools-panel', 'output-panel', 'about-panel'])
         void this.synthEditor.ensureGeneratedSoundsLoaded()
         if (serviceRegistry.transport?.isRunning) {
@@ -246,6 +242,11 @@ export default class TrackEditor extends BasePanel {
 
     sync() {
         if (!this._track) return
+
+        // Migrate filterQ from normalized [0,1] to raw Q [0.707, 18.707] if needed
+        if (this._track.filterQ < 0.707) {
+            this._track.filterQ = Utils.normalizedTrackFilterQToValue(this._track.filterQ)
+        }
 
         const vis = appState.trackEditorVisibility
         const soundInfo = this._getSoundInfo()

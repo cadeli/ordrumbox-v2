@@ -7,6 +7,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
+import Utils from '../core/utils.js'
 import { applyParamsToStrip } from './strip_sync.js'
 import { computeTrackLfoValues } from '../logic/lfo_engine.js'
 
@@ -186,13 +187,15 @@ export default class AudioEngine {
 
             if (track.filterFreqLfo) {
                 const baseFreq = track.filterFreq ?? 1
-                const finalFreq = Math.max(0, Math.min(1, baseFreq + lfoValues.filterFreq))
+                const normBaseFreq = baseFreq > 1 ? Utils.hzToNormalizedTrackFilterFreq(baseFreq) : Math.max(0, Math.min(1, baseFreq))
+                const finalFreq = Math.max(0, Math.min(1, normBaseFreq + lfoValues.filterFreq))
                 strip.stripNode.parameters.get('cutoff')?.setTargetAtTime(finalFreq, atTime, t)
             }
 
             if (track.filterQLfo) {
                 const baseQ = track.filterQ ?? 0
-                const finalQ = Math.max(0, Math.min(1, baseQ + lfoValues.filterQ))
+                const normBaseQ = baseQ > 1 ? Utils.valueToNormalizedTrackFilterQ(baseQ) : Math.max(0, Math.min(1, baseQ))
+                const finalQ = Math.max(0, Math.min(1, normBaseQ + lfoValues.filterQ))
                 strip.stripNode.parameters.get('q')?.setTargetAtTime(finalQ, atTime, t)
             }
         }
