@@ -11,9 +11,8 @@ import { OrSlider } from './components/or_slider.js'
 import { bindVisibilityToggles, buildAccordionGroup, fmt } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
-import { computeLfoValue } from '../audio/math.js'
 import { TICK } from '../core/constants.js'
-import { LFO_MAP } from '../logic/lfo_engine.js'
+import LfoUiBridge from '../logic/lfo_ui_bridge.js'
 
 const fmtFreq = v => {
     const hz = Utils.normalizeTrackFilterFreqValue(v)
@@ -25,6 +24,7 @@ const fmtPitch = v => {
 }
 const fmtVal = (key, v) => {
     if (key === 'filterFreq') return fmtFreq(v)
+    if (key === 'filterQ') return v.toFixed(2)
     if (key === 'pitch') return fmtPitch(v)
     return fmt(v)
 }
@@ -65,7 +65,9 @@ const GROUPS = [
         props: [
             { key: 'filterType', label: 'Type', type: 'select', options: Utils.filterTypeList },
             { key: 'filterFreq', label: 'Freq', min: 0, max: 1, step: 0.01, lfo: 'filterFreqLfo' },
-            { key: 'filterQ', label: 'Q', min: 0, max: 1, step: 0.01, lfo: 'filterQLfo' }
+            { key: 'filterQ', label: 'Q', min: 0, max: 1, step: 0.01, lfo: 'filterQLfo',
+              normalize: v => Utils.valueToNormalizedTrackFilterQ(v),
+              denormalize: v => Utils.normalizedTrackFilterQToValue(v) }
         ]
     },
     {
@@ -101,6 +103,7 @@ export default class TrackEditor extends BasePanel {
         this._isDragging = false
         this._activeFxTab = 0
         this._sliders = new Map()
+        this._lfoBridge = null
         this._delegationBound = false
         this.synthEditor = new SynthEditor(this)
     }
@@ -172,46 +175,68 @@ export default class TrackEditor extends BasePanel {
             this._rafId = null
         }
         this._lastTick = -1
+        if (this._lfoBridge) {
+            this._lfoBridge.destroy()
+            this._lfoBridge = null
+        }
     }
 
-    _getLocalLfoValues() {
+    _lfoValuesForTick(tick) {
         if (!this._track) return null
-        const transport = serviceRegistry.transport
-        if (!transport) return null
-        const tick = transport.tick ?? 0
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return null
         const nbTicks = TICK * pattern.nbBars
-        const bpm = appState.bpm ?? 120
-        const values = {}
-        for (const { lfoKey, resultKey } of LFO_MAP) {
-            const lfo = this._track[lfoKey]
-            values[resultKey] = lfo ? computeLfoValue(lfo, tick, nbTicks, resultKey, null, bpm) : 0
+
+        if (!this._lfoBridge) {
+            this._lfoBridge = new LfoUiBridge(serviceRegistry.audioCtx)
         }
-        return values
+
+        return this._lfoBridge.compute(this._track, tick, nbTicks)
     }
 
-    _updateLfoSliders() {
-        if (!this._track || !this.isVisible) return
-        const lfoValues = this._getLocalLfoValues()
-        if (!lfoValues) return
-
+    _applyLfoValues(lfoValues) {
+        if (!lfoValues || !this._track) return
         GROUPS.forEach(g => {
             g.props.forEach(p => {
                 if (p.lfo && this._track[p.lfo]) {
                     const s = this._sliders.get(p.key)
                     if (s) {
-                        const renderedVal = lfoValues[p.key] ?? 0
-                        s.setValue(renderedVal)
+                        let val = lfoValues[p.key] ?? 0
+                        if (p.denormalize) val = p.denormalize(val)
+                        s.setValue(val)
                     }
                 }
             })
         })
     }
 
+    _updateLfoSliders() {
+        if (!this._track || !this.isVisible) return
+        const transport = serviceRegistry.transport
+        if (!transport) return
+        const tick = transport.tick
+        const result = this._lfoValuesForTick(tick)
+        if (!result) return
+
+        if (result instanceof Promise) {
+            result.then(values => {
+                if (values && transport.tick === tick) {
+                    this._applyLfoValues(values)
+                }
+            })
+            return
+        }
+
+        this._applyLfoValues(result)
+    }
+
     show({ track, trackIdx }) {
         this._track = track
         this._trackIdx = trackIdx
+        // Migrate filterQ from normalized [0,1] to raw Q [0.707, 18.707] if needed
+        if (track.filterQ < 0.707) {
+            track.filterQ = Utils.normalizedTrackFilterQToValue(track.filterQ)
+        }
         super.show(['ne-panel', 'tools-panel', 'output-panel', 'about-panel'])
         void this.synthEditor.ensureGeneratedSoundsLoaded()
         if (serviceRegistry.transport?.isRunning) {
@@ -297,12 +322,11 @@ export default class TrackEditor extends BasePanel {
                         hasLfo: !!(p.lfo && this._track[p.lfo]),
                         extraClass: isSelected,
                         format: (v) => fmtVal(p.key, v),
-                        normalize: (v) => {
+                        normalize: p.normalize || ((v) => {
                             if (p.key === 'filterFreq' && v > 1) return Utils.hzToNormalizedTrackFilterFreq(v)
-                            if (p.key === 'filterQ' && v > 1) return Utils.valueToNormalizedTrackFilterQ(v)
                             return v
-                        },
-                        denormalize: (v) => v,
+                        }),
+                        denormalize: p.denormalize || ((v) => v),
                         onChange: (v, key) => {
                             this._isDragging = true
                             this._track[key] = v
@@ -877,6 +901,10 @@ export default class TrackEditor extends BasePanel {
         this._trackIdx = -1
         this._selectedPropKey = null
         this._lastTick = -1
+        if (this._lfoBridge) {
+            this._lfoBridge.destroy()
+            this._lfoBridge = null
+        }
     }
 
     _onLoopSlider(input) {
