@@ -6,8 +6,7 @@ export default class Instrument {
 
     constructor(data = {}) {
         this.id = data.id ?? (logger.warn('INST', 'id fallback', data.id, Instrument.NOT_FOUND), Instrument.NOT_FOUND);
-        // Flexible type handling (boolean or string "true"/"false")
-        this.drum = data.drum === true || data.drum === "true";
+        this.drum = data.drum === true;
         this.pan = data.pan ?? (logger.warn('INST', 'pan fallback', data.pan, "0"), "0");
         this.name = data.name ?? (logger.warn('INST', 'name fallback', data.name, { syn: [] }), { syn: [] });
         this.subst = data.subst ?? (logger.warn('INST', 'subst fallback', data.subst, {}), {});

@@ -24,10 +24,10 @@ describe('Instrument', () => {
         expect(inst.midi[0].key).toBe('36')
     })
 
-    it('handles string "true"/"false" for drum type', () => {
+    it('handles boolean only for drum type (string "true"/"false" resolves to false)', () => {
         const inst1 = new Instrument({ drum: 'true' })
         const inst2 = new Instrument({ drum: 'false' })
-        expect(inst1.drum).toBe(true)
+        expect(inst1.drum).toBe(false)
         expect(inst2.drum).toBe(false)
     })
 
