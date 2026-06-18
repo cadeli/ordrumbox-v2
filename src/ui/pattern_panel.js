@@ -290,7 +290,7 @@ export default class PatternPanel extends BasePanel {
         const tracksEl = this._tracksEl
         if (!tracksEl) return
 
-        const dpr = window.devicePixelRatio || 1
+        const dpr = window.devicePixelRatio ?? (console.warn('PP', 'dpr fallback'), 1)
         
         // Find visible grid area using cached rects
         const firstBarCache = this._barRectsCache[appState.currentPage * 4]
@@ -377,7 +377,7 @@ export default class PatternPanel extends BasePanel {
 
     _resetVuAndWaveform() {
         if (!this.container) return
-        const vuEls = this._vuElCache || this.container.querySelectorAll('.pp-vu')
+        const vuEls = this._vuElCache ?? (console.warn('PP', 'vuElCache fallback'), this.container.querySelectorAll('.pp-vu'))
         for (const vuEl of vuEls) {
             const fill = vuEl.querySelector('.pp-vu-fill')
             if (fill) {
@@ -725,7 +725,7 @@ export default class PatternPanel extends BasePanel {
         const endBarPage = startBar + BARS_PER_PAGE
 
         const headerHtml = `<div class="pp-header">
-            <span class="pp-name">${this.esc(pattern.name || 'Unnamed')}</span>
+            <span class="pp-name">${this.esc(pattern.name ?? (console.warn('PP', 'name fallback'), 'Unnamed'))}</span>
             <span class="pp-meta">${pattern.bpm ?? 120} BPM</span>
             <span class="pp-meta">${pattern.nbBars ?? 4} bars</span>
             <span class="pp-meta">Page ${appState.currentPage + 1}</span>
@@ -744,7 +744,7 @@ export default class PatternPanel extends BasePanel {
             const barQuantize = track.barQuantize ?? 4
             const totalSteps = (track.bars ?? 4) * barQuantize
 
-            const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes || {})
+            const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? (console.warn('PP', 'track.notes fallback'), {}))
 
             const noteMap = new Map()
             notes.forEach(n => {
@@ -796,7 +796,7 @@ export default class PatternPanel extends BasePanel {
                         const loopAt = track.loopAtStep ?? totalSteps
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
 
-                        const ghosts = (ghostMap.get(absPos) || []).map(({ offset, type }) => {
+                        const ghosts = (ghostMap.get(absPos) ?? (console.warn('PP', 'ghostMap fallback'), [])).map(({ offset, type }) => {
                             const cls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
                             return `<div class="${cls}" style="left: ${offset * 100}%"></div>`
                         }).join('')
@@ -820,7 +820,7 @@ export default class PatternPanel extends BasePanel {
             tracksHtml += `
                 <div class="pp-track">
                     <div class="pp-vu ${isSelected ? 'selected' : ''}" data-track="${tIdx}"><div class="pp-vu-fill"></div></div>
-                    <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(track.name || 'Track')}</span>
+                    <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(track.name ?? (console.warn('PP', 'track name fallback'), 'Track'))}</span>
                     ${barsHtml}
                 </div>`
         })

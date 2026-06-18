@@ -72,6 +72,22 @@ src/
 - **Shared noise buffer**: `SynthVoice` uses a static shared noise `Float32Array` — don't allocate per-instance.
 - **Compressor DSP chain**: `preGain → compressor → HPF → LPF → master gain → output`. Pre-gain is k-rate; filters and master gain are a-rate.
 
+## Style
+
+- **Toujours des fallbacks explicites et verbeux** : pas de `||` pour les valeurs par défaut quand `??` est plus approprié. Pas de reliance sur le truthy/falsy coercion. Exemple :
+  ```js
+  // Bien — fallback verbeux explicite
+  const val = obj.prop ?? defaultValue
+  obj.method?.(arg)
+  const x = arr?.[i] ?? fallback
+
+  // Mal — implicite, casse pour les valeurs falsy valides (0, "", false)
+  const val = obj.prop || defaultValue
+  ```
+  Cela s'applique aux accès de propriétés, appels de méthodes, valeurs par défaut de paramètres, et toute forme de chaînage optionnel.
+
+- **Tout fallback doit tracer un `console.warn`** : quand un chemin de secours est emprunté (valeur par défaut, chaînage optionnel qui échoue, branche `else` de secours), on logue un `console.warn` avec un tag identifiant la source. Format : `console.warn('TAG', 'fallback reason', key, value)`. Cela permet de détecter les situations inattendues dans les traces sans avoir à instrumenter manuellement.
+
 ## Adding Tests
 
 Place test files in `tests/`. Import from `vitest` (`describe`, `it`, `expect`, `vi`, `beforeEach`). Use relative imports to `src/`. For audio worklet tests, mock `WorkletLoader`:

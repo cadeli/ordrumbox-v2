@@ -13,7 +13,7 @@ static TAG = "UTILS"
     static delayTimeLabels = ['1/16', '1/8', '1/4', '1/2', '1', '2', '4']
 
     static getDelayTimeInSeconds = (delayTimeValue, bpm) => {
-        const multiplier = Number(delayTimeValue) || 1;
+        const multiplier = ((_v=>!Number.isNaN(_v) && _v !== 0 ? _v : (console.warn('FB','num',delayTimeValue,1),1))(Number(delayTimeValue)));
         return (60 / bpm) * multiplier;
     }
 
@@ -76,7 +76,7 @@ static TAG = "UTILS"
             return { changed: false, reason: "track-too-short", loopAtStep: null, removedNotes: 0 }
         }
 
-        const minLoopSteps = Math.max(1, Number(options.minLoopSteps) || 1)
+        const minLoopSteps = Math.max(1, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',options.minLoopSteps,1),1))(Number(options.minLoopSteps))))
         const currentLoopAtStep = Utils.getTrackLoopAtStep(track)
         const candidates = Utils.getLoopCandidateSteps(trackSteps, minLoopSteps)
             .filter((loopAtStep) => loopAtStep < currentLoopAtStep)
@@ -226,20 +226,20 @@ static TAG = "UTILS"
     static semiToneToPitch = (semiTone) => (semiTone / 12) + 1;
 
     static normalizedTrackFilterFreqToHz = (value) => {
-        const v = Number(value) || 0
+        const v = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',value,0),0))(Number(value)))
         return Math.floor(FILTER_FREQ_MIN * Math.pow(1000, v))
     }
     static hzToNormalizedTrackFilterFreq = (hz) => {
-        const h = Math.max(FILTER_FREQ_MIN, Math.min(FILTER_FREQ_MAX, Number(hz) || 0))
+        const h = Math.max(FILTER_FREQ_MIN, Math.min(FILTER_FREQ_MAX, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',hz,0),0))(Number(hz)))))
         return Math.log10(h / FILTER_FREQ_MIN) / 3
     }
-    static normalizedTrackFilterQToValue = (value) => ((Number(value) || 0) * 18) + 0.707
+    static normalizedTrackFilterQToValue = (value) => ((((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',value,0),0))(Number(value)))) * 18) + 0.707
     static valueToNormalizedTrackFilterQ = (q) => {
-        const val = Math.max(0.707, Math.min(18.707, Number(q) || 0.707))
+        const val = Math.max(0.707, Math.min(18.707, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',q,0.707),0.707))(Number(q)))))
         return (val - 0.707) / 18
     }
-    static normalizedSynthFilterFreqToHz = (value) => Math.floor((2000 * (Number(value) || 0)) + 50)
-    static normalizedSynthFilterQToValue = (value) => (20 * (Number(value) || 0)) + 1
+    static normalizedSynthFilterFreqToHz = (value) => Math.floor((2000 * (((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',value,0),0))(Number(value))))) + 50)
+    static normalizedSynthFilterQToValue = (value) => (20 * (((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',value,0),0))(Number(value))))) + 1
 
     static normalizeTrackFilterFreqValue = (value) => {
         const numericValue = Number(value)

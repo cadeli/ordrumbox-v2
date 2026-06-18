@@ -93,9 +93,9 @@ export function init() {
         if (!(el instanceof HTMLInputElement) || el.type !== 'range') return
         if (el.disabled || el.readOnly) return
 
-        const min = parseFloat(el.min) || 0
-        const max = parseFloat(el.max) || 100
-        const step = parseFloat(el.step) || 1
+        const min = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',el.min,0),0))(parseFloat(el.min)))
+        const max = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',el.max,100),100))(parseFloat(el.max)))
+        const step = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',el.step,1),1))(parseFloat(el.step)))
         const cur = parseFloat(el.value)
         const dir = e.key === 'ArrowRight' ? 1 : -1
         let next = cur + dir * step

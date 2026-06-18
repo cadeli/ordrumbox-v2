@@ -35,8 +35,8 @@ export default class MfAutoGenerate {
             pattern = serviceRegistry.mfCmd.addPattern("Generated")
         }
 
-        const genre = options.genre || this.structureGen.getRandomGenre()
-        const structure = options.structure || this.structureGen.generateStructure(genre)
+        const genre = options.genre ?? (console.warn('AG', 'genre fallback'), this.structureGen.getRandomGenre())
+        const structure = options.structure ?? (console.warn('AG', 'structure fallback'), this.structureGen.generateStructure(genre))
 
         if (!pattern.tracks || pattern.tracks.length === 0) {
             for (const [trackName, config] of Object.entries(structure)) {
@@ -100,7 +100,7 @@ export default class MfAutoGenerate {
     }
 
     changeTrack = async (loop, pattern, track) => {
-        const genre = pattern._autoGenGenre || this.structureGen.getRandomGenre()
+        const genre = pattern._autoGenGenre ?? (console.warn('AG', '_autoGenGenre fallback'), this.structureGen.getRandomGenre())
         const element = this.structureGen.getElement(loop)
         const isSectionEnd = element.isLastLoopBeforeChange
         const density = isSectionEnd ? 0.2 : (SECTION_DENSITY[element.name] ?? 0.7)

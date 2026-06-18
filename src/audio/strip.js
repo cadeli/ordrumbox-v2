@@ -114,10 +114,10 @@ export default class MfStrip {
             return;
         }
 
-        let fFreq = Number(freq) || 0;
+        let fFreq = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',freq,0),0))(Number(freq)));
         if (fFreq > 1) fFreq = Utils.hzToNormalizedTrackFilterFreq(fFreq);
 
-        let fQ = Number(q) || 0;
+        let fQ = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',q,0),0))(Number(q)));
         if (fQ > 1) fQ = Utils.valueToNormalizedTrackFilterQ(fQ);
 
         const mode  = FILTER_MODES[this.currentFilterType] ?? 0;
@@ -132,7 +132,7 @@ export default class MfStrip {
         const time = this.audioCtx.currentTime;
         const params = this.stripNode.parameters;
 
-        const normalizedAmount = Math.min(1, Math.max(0, Number(amount) || 0));
+        const normalizedAmount = Math.min(1, Math.max(0, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',amount,0),0))(Number(amount)))));
         this.currentSaturationType = SATURATION_TYPES.includes(type) ? type : 'soft';
         this.currentSaturationAmount = normalizedAmount;
 
@@ -153,7 +153,7 @@ export default class MfStrip {
         const params = this.stripNode.parameters;
 
         const normalizedType = REVERB_PRESETS[type] ? type : 'none';
-        const normalizedAmount = Math.min(1, Math.max(0, Number(amount) || 0));
+        const normalizedAmount = Math.min(1, Math.max(0, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',amount,0),0))(Number(amount)))));
 
         this.currentReverbType = normalizedType;
         this.currentReverbAmount = normalizedAmount;
@@ -173,7 +173,7 @@ export default class MfStrip {
         const params = this.stripNode.parameters;
 
         const normalizedType = DELAY_MODES.hasOwnProperty(type) ? type : 'tape';
-        const normalizedAmount = Math.min(1, Math.max(0, Number(amount) || 0));
+        const normalizedAmount = Math.min(1, Math.max(0, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','num',amount,0),0))(Number(amount)))));
 
         this.currentDelayType = normalizedType;
         this.currentDelayAmount = normalizedAmount;

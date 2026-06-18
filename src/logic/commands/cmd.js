@@ -56,7 +56,7 @@ export default class MfCmd {
         // Find the pattern containing this track to increment its version
         for (const pattern of appState.patterns) {
             if (Utils.getTracksArray(pattern).includes(track)) {
-                pattern._version = (pattern._version || 0) + 1
+                pattern._version = (pattern._version ?? (console.warn('CMD', '_version fallback'), 0)) + 1
                 break
             }
         }
@@ -137,7 +137,7 @@ export default class MfCmd {
     }
 
     setPatternBpm = (pattern, bpm) => {
-        pattern.bpm = Number(bpm) || MfDefaults.getPatternProp({}, 'bpm')
+        pattern.bpm = ((_v=>!Number.isNaN(_v) && _v !== 0 ? _v : (console.warn('CMD','bpm NaN/0',bpm),MfDefaults.getPatternProp({},'bpm')))(Number(bpm)))
         return pattern
     }
 

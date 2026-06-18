@@ -117,7 +117,7 @@ class StripProcessor extends AudioWorkletProcessor {
 
         const sr = sampleRate;
         const frames = input[0].length;
-        const inL = input[0], inR = input[1] || inL;
+        const inL = input[0], inR = input[1] ?? (console.warn('STRIP', 'input[1] fallback'), inL);
         const outL = output[0], outR = output[1];
 
         // Hoist all k-rate params

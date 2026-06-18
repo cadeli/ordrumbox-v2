@@ -502,7 +502,7 @@ export default class TrackEditor extends BasePanel {
         const ledClass = auto ? 'lfo-led on' : 'lfo-led'
         const generatedSoundKeys = this.synthEditor.getGeneratedSoundKeys()
         const currentGeneratedSound = this._track.useSoftSynth === true
-            ? (this._track.synthSoundKey || 'BASS1')
+            ? (this._track.synthSoundKey ?? (console.warn('TE', 'synthSoundKey fallback'), 'BASS1'))
             : 'none'
 
         const keysWithSamples = new Set(
@@ -529,7 +529,7 @@ export default class TrackEditor extends BasePanel {
         } else {
             matchingSounds.forEach(s => {
                 const sel = s.url === currentSoundId ? ' selected' : ''
-                const label = `${s.kitName} / ${s.display_name || s.url}`
+                const label = `${s.kitName} / ${s.display_name ?? (console.warn('TE', 'display_name fallback'), s.url ?? (console.warn('TE', 'url fallback'), '??'))}`
                 content += `<option value="${s.url}"${sel}>${label}</option>`
             })
         }
@@ -578,7 +578,9 @@ export default class TrackEditor extends BasePanel {
             if (aSelected !== bSelected) return aSelected - bSelected
             const kitCompare = String(a.kitName ?? '').localeCompare(String(b.kitName ?? ''))
             if (kitCompare !== 0) return kitCompare
-            return (a.display_name || a.url).localeCompare(b.display_name || b.url)
+            const sortKeyA = a.display_name != null && a.display_name !== '' ? a.display_name : (console.warn('TE', 'display_name sort fallback'), a.url ?? '')
+            const sortKeyB = b.display_name != null && b.display_name !== '' ? b.display_name : (console.warn('TE', 'display_name sort fallback'), b.url ?? '')
+            return sortKeyA.localeCompare(sortKeyB)
         })
     }
 
@@ -599,12 +601,12 @@ export default class TrackEditor extends BasePanel {
 
     _getSoundInfo() {
         if (this._track.useSoftSynth === true) {
-            return this._track.synthSoundKey || null
+            return this._track.synthSoundKey ?? (console.warn('TE', 'synthSoundKey null fallback'), null)
         }
         const sound = soundRegistry.sounds[this._track.soundId]
         if (!sound) return null
-        const kit = sound.kit_name || ''
-        const name = sound.display_name || sound.key || sound.url || ''
+        const kit = sound.kit_name ?? (console.warn('TE', 'kit_name fallback'), '')
+        const name = sound.display_name ?? (console.warn('TE', 'display_name fallback'), sound.key ?? (console.warn('TE', 'sound.key fallback'), sound.url ?? (console.warn('TE', 'sound.url fallback'), '')))
         return kit ? `${kit}/${name}` : name
     }
 
@@ -634,7 +636,7 @@ export default class TrackEditor extends BasePanel {
         const min = lfo ? lfo.min : prop.min
         const max = lfo ? lfo.max : prop.max
         const phase = lfo ? lfo.phase : 0
-        const type = lfo ? (lfo.type || 'sine') : 'sine'
+        const type = lfo ? (lfo.type ?? (console.warn('TE', 'lfo.type fallback'), 'sine')) : 'sine'
 
         let lfoHtml = `<div class="ne-group lfo-panel">
             <div class="lfo-header">
@@ -682,7 +684,7 @@ export default class TrackEditor extends BasePanel {
         // Event delegation for all inputs, selects and buttons
         this.container.addEventListener('input', (e) => {
             const target = e.target
-            const key = target.dataset.key || target.dataset.lfoKey || target.dataset.loop
+            const key = target.dataset.key ?? (console.warn('TE', 'dataset.key fallback'), target.dataset.lfoKey ?? (console.warn('TE', 'dataset.lfoKey fallback'), target.dataset.loop))
             if (!key) return
 
             // Check if it's an OrSlider

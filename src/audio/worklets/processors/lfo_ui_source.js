@@ -15,13 +15,13 @@ function _lfoWf(phase, wave) {
 
 function _computeLfo(lfo, tick, nbTicks, key) {
     if (!lfo) return 0;
-    const f = Math.min(2, parseFloat(lfo.freq) || 1);
-    let min = parseFloat(lfo.min) || 0;
-    let max = parseFloat(lfo.max) || 1;
-    const ph = parseFloat(lfo.phase) || 0;
+    const f = Math.min(2, ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',lfo.freq,1),1))(parseFloat(lfo.freq))));
+    let min = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',lfo.min,0),0))(parseFloat(lfo.min)));
+    let max = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',lfo.max,1),1))(parseFloat(lfo.max)));
+    const ph = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',lfo.phase,0),0))(parseFloat(lfo.phase)));
     const wn = lfo.type || lfo.waveform || 'sine';
     let w = WAVE_LIST.indexOf(wn);
-    if (w === -1) w = parseFloat(wn) || 0;
+    if (w === -1) w = ((_v=>!Number.isNaN(_v)?_v:(console.warn('FB','pf',wn,0),0))(parseFloat(wn)));
 
     if (key === 'filterFreq' && (min > 1 || max > 1)) {
         min = Math.log10(Math.max(20, Math.min(20000, min)) / 20) / 3;

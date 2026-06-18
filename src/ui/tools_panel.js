@@ -198,7 +198,7 @@ export default class ToolsPanel extends BasePanel {
     sync() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (pattern && this.nameInput && document.activeElement !== this.nameInput) {
-            this.nameInput.value = pattern.name || ''
+            this.nameInput.value = pattern.name ?? (console.warn('TP', 'name fallback'), '')
         }
 
         const outputSelect = this.container.querySelector('#tp-midi-output-select')
@@ -215,10 +215,10 @@ export default class ToolsPanel extends BasePanel {
             // Only update if list changed or empty
             if (outputSelect.options.length !== outputs.length) {
                 outputSelect.innerHTML = outputs.map(o => 
-                    `<option value="${escapeHtml(o.id)}" ${o.id === currentOutputId ? 'selected' : ''}>${escapeHtml(o.name || 'Unknown')}</option>`
+                    `<option value="${escapeHtml(o.id)}" ${o.id === currentOutputId ? 'selected' : ''}>${escapeHtml(o.name ?? (console.warn('TP', 'name fallback'), 'Unknown'))}</option>`
                 ).join('')
             } else {
-                outputSelect.value = currentOutputId || ''
+                outputSelect.value = currentOutputId ?? (console.warn('TP', 'outputId fallback'), '')
             }
         } else {
             // Default inactive state
@@ -278,7 +278,7 @@ export default class ToolsPanel extends BasePanel {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `ordrumbox-${pattern.name || 'pattern'}.json`
+        a.download = `ordrumbox-${pattern.name ?? (console.warn('TP', 'download name fallback'), 'pattern')}.json`
         a.click()
         URL.revokeObjectURL(url)
     }
@@ -289,7 +289,7 @@ export default class ToolsPanel extends BasePanel {
         const { default: MidiExporter } = await import('../logic/midi/midi_exporter.js')
         const exporter = new MidiExporter()
         const loops = Math.round(this._wavLoops.getValue())
-        exporter.download(pattern, `ordrumbox-${pattern.name || 'pattern'}.mid`, { loops })
+        exporter.download(pattern, `ordrumbox-${pattern.name ?? (console.warn('TP', 'midi name fallback'), 'pattern')}.mid`, { loops })
     }
 
     async _exportWav() {
@@ -308,7 +308,7 @@ export default class ToolsPanel extends BasePanel {
             
             const loops = Math.round(this._wavLoops.getValue())
             const blob = await serviceRegistry.mfWavExporter.exportPatternToWav(pattern, loops)
-            serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${pattern.name || 'pattern'}.wav`)
+            serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${pattern.name ?? (console.warn('TP', 'wav name fallback'), 'pattern')}.wav`)
         } catch (e) {
             console.error('WAV Export failed', e)
             alert('WAV Export failed')

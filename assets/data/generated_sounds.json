@@ -1,5 +1,13 @@
 {
   "BASS0": {
+    "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.64,
       "octave": -1,
@@ -24,25 +32,17 @@
       "Q": 16,
       "filterEnvelopeAmount": 0.2
     },
-    "enveloppe": {
-      "attack": 0.005,
-      "decay": 0.12,
-      "sustain": 0,
-      "release": 0.05
-    },
-    "masterVolume": 0.35,
-    "slide": 0,
     "lfo": {
       "target": "NOT",
       "wave": "sine",
       "freq": 0,
       "depth": 0
     },
-    "noise": {
-      "mix": 0,
-      "filterType": "highpass",
-      "filterFreq": 1000,
-      "filterQ": 1
+    "enveloppe": {
+      "attack": 0.005,
+      "decay": 0.12,
+      "sustain": 0,
+      "release": 0.05
     },
     "lfo2": {
       "target": "NOT",
@@ -53,6 +53,13 @@
   },
   "BASS1": {
     "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.8,
       "octave": -1,
@@ -98,6 +105,13 @@
   },
   "BASS2": {
     "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.7,
       "octave": 0,
@@ -142,6 +156,14 @@
     }
   },
   "BASS3": {
+    "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.25,
       "octave": -1,
@@ -186,6 +208,14 @@
     }
   },
   "BASS4": {
+    "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.6,
       "octave": 0,
@@ -230,6 +260,14 @@
     }
   },
   "SYNTH1": {
+    "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.7,
       "octave": 0,
@@ -274,6 +312,14 @@
     }
   },
   "SYNTH2": {
+    "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.6,
       "octave": 0,
@@ -318,6 +364,14 @@
     }
   },
   "SYNTH3": {
+    "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.45,
       "octave": 0,
@@ -362,6 +416,14 @@
     }
   },
   "SN": {
+    "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.35,
       "octave": 1,
@@ -407,6 +469,13 @@
   },
   "PIANO": {
     "masterVolume": 0.35,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 0.8,
       "octave": 0,
@@ -445,6 +514,14 @@
     }
   },
   "TOM": {
+    "masterVolume": 0.35,
+    "slide": 150,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
     "vco1": {
       "gain": 1,
       "octave": -1,
@@ -457,11 +534,11 @@
       "detune": 5,
       "wave": "sine"
     },
-    "slide": 150,
     "filter": {
       "type": "lowpass",
       "freq": 800,
-      "Q": 2
+      "Q": 2,
+      "filterEnvelopeAmount": 0
     },
     "enveloppe": {
       "attack": 0.005,
@@ -477,17 +554,19 @@
     }
   },
   "CHH_SYNTH": {
-    "vco1": {
-      "gain": 0.5,
-      "octave": 2,
-      "detune": 0,
-      "wave": "square"
-    },
+    "masterVolume": 0.35,
+    "slide": 0,
     "noise": {
       "mix": 1,
       "filterType": "allpass",
       "filterFreq": 8000,
       "filterQ": 1
+    },
+    "vco1": {
+      "gain": 0.5,
+      "octave": 2,
+      "detune": 0,
+      "wave": "square"
     },
     "enveloppe": {
       "attack": 0.002,
@@ -503,17 +582,19 @@
     }
   },
   "OHH_SYNTH": {
-    "vco1": {
-      "gain": 0.6,
-      "octave": 2,
-      "detune": 0,
-      "wave": "square"
-    },
+    "masterVolume": 0.35,
+    "slide": 0,
     "noise": {
       "mix": 1,
       "filterType": "allpass",
       "filterFreq": 7000,
       "filterQ": 1
+    },
+    "vco1": {
+      "gain": 0.6,
+      "octave": 2,
+      "detune": 0,
+      "wave": "square"
     },
     "enveloppe": {
       "attack": 0.005,

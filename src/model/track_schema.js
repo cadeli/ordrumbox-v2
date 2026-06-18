@@ -49,7 +49,7 @@ export const TRACK_DEFAULTS = {
  * for missing properties.
  */
 export function normalizeTrack(track = {}) {
-    const t = track || {};
+    const t = track ?? (console.warn('TS', 'track null/undefined'), {});
     const { notes: inputNotes, ...rest } = t;
     const normalized = { ...TRACK_DEFAULTS, ...rest };
     normalized.notes = Array.isArray(inputNotes) ? [...inputNotes] : [];

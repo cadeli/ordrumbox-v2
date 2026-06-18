@@ -11,7 +11,7 @@ export default class MfPlayer {
         this.audioCtx = config.audioCtx
         this.mixer = config.mixer
         this.sounds = config.sounds
-        this.generatedSounds = config.generatedSounds || {}
+        this.generatedSounds = config.generatedSounds ?? (console.warn('PLAYER', 'generatedSounds fallback'), {})
         this.patterns = config.patterns
         this.getSelectedPatternNum = config.getSelectedPatternNum ?? (() => config.selectedPatternNum ?? 0)
         this.computeFlatNotes = config.computeFlatNotes
