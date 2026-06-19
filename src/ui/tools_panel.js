@@ -199,7 +199,7 @@ export default class ToolsPanel extends BasePanel {
     sync() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (pattern && this.nameInput && document.activeElement !== this.nameInput) {
-            this.nameInput.value = pattern.name ?? (logger.warn('TP', 'name fallback'), '')
+            this.nameInput.value = pattern.name ?? (logger.warn('ToolsPanel', 'name fallback'), '')
         }
 
         const outputSelect = this.container.querySelector('#tp-midi-output-select')
@@ -216,10 +216,10 @@ export default class ToolsPanel extends BasePanel {
             // Only update if list changed or empty
             if (outputSelect.options.length !== outputs.length) {
                 outputSelect.innerHTML = outputs.map(o => 
-                    `<option value="${escapeHtml(o.id)}" ${o.id === currentOutputId ? 'selected' : ''}>${escapeHtml(o.name ?? (logger.warn('TP', 'name fallback'), 'Unknown'))}</option>`
+                    `<option value="${escapeHtml(o.id)}" ${o.id === currentOutputId ? 'selected' : ''}>${escapeHtml(o.name ?? (logger.warn('ToolsPanel', 'name fallback'), 'Unknown'))}</option>`
                 ).join('')
             } else {
-                outputSelect.value = currentOutputId ?? (logger.warn('TP', 'outputId fallback'), '')
+                outputSelect.value = currentOutputId ?? (logger.warn('ToolsPanel', 'outputId fallback'), '')
             }
         } else {
             // Default inactive state
@@ -279,7 +279,7 @@ export default class ToolsPanel extends BasePanel {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `ordrumbox-${pattern.name ?? (logger.warn('TP', 'download name fallback'), 'pattern')}.json`
+        a.download = `ordrumbox-${pattern.name ?? (logger.warn('ToolsPanel', 'download name fallback'), 'pattern')}.json`
         a.click()
         URL.revokeObjectURL(url)
     }
@@ -290,7 +290,7 @@ export default class ToolsPanel extends BasePanel {
         const { default: MidiExporter } = await import('../logic/midi/midi_exporter.js')
         const exporter = new MidiExporter()
         const loops = Math.round(this._wavLoops.getValue())
-        exporter.download(pattern, `ordrumbox-${pattern.name ?? (logger.warn('TP', 'midi name fallback'), 'pattern')}.mid`, { loops })
+        exporter.download(pattern, `ordrumbox-${pattern.name ?? (logger.warn('ToolsPanel', 'midi name fallback'), 'pattern')}.mid`, { loops })
     }
 
     async _exportWav() {
@@ -309,7 +309,7 @@ export default class ToolsPanel extends BasePanel {
             
             const loops = Math.round(this._wavLoops.getValue())
             const blob = await serviceRegistry.mfWavExporter.exportPatternToWav(pattern, loops)
-            serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${pattern.name ?? (logger.warn('TP', 'wav name fallback'), 'pattern')}.wav`)
+            serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${pattern.name ?? (logger.warn('ToolsPanel', 'wav name fallback'), 'pattern')}.wav`)
         } catch (e) {
             console.error('WAV Export failed', e)
             alert('WAV Export failed')

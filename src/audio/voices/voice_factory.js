@@ -33,7 +33,7 @@ export default class VoiceFactory {
         if (!strip) return null
 
         if (track.useSoftSynth === true) {
-            const soundKey      = track?.synthSoundKey ?? (logger.warn('VF', 'synthSoundKey fallback'), "BASS1")
+            const soundKey      = track?.synthSoundKey ?? (logger.warn('VoiceFactory', 'synthSoundKey fallback'), "BASS1")
             const generatedSound = this.generatedSounds?.[soundKey]
             if (!generatedSound) return null
 

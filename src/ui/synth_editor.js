@@ -391,9 +391,9 @@ export default class SynthEditor {
     _drawOscillators(ctx, w, mid) {
         const draft = this._draft
         const vcos = [
-            { wave: draft.vco1?.wave ?? (logger.warn('SE', 'vco1.wave fallback'), 'sine'), gain: draft.vco1?.gain ?? 1, octave: draft.vco1?.octave ?? 0, detune: draft.vco1?.detune ?? 0 },
-            { wave: draft.vco2?.wave ?? (logger.warn('SE', 'vco2.wave fallback'), 'sine'), gain: draft.vco2?.gain ?? 0, octave: draft.vco2?.octave ?? 0, detune: draft.vco2?.detune ?? 0 },
-            { wave: draft.vco3?.wave ?? (logger.warn('SE', 'vco3.wave fallback'), 'sine'), gain: draft.vco3?.gain ?? 0, octave: draft.vco3?.octave ?? 0, detune: draft.vco3?.detune ?? 0 }
+            { wave: draft.vco1?.wave ?? (logger.warn('SynthEditor', 'vco1.wave fallback'), 'sine'), gain: draft.vco1?.gain ?? 1, octave: draft.vco1?.octave ?? 0, detune: draft.vco1?.detune ?? 0 },
+            { wave: draft.vco2?.wave ?? (logger.warn('SynthEditor', 'vco2.wave fallback'), 'sine'), gain: draft.vco2?.gain ?? 0, octave: draft.vco2?.octave ?? 0, detune: draft.vco2?.detune ?? 0 },
+            { wave: draft.vco3?.wave ?? (logger.warn('SynthEditor', 'vco3.wave fallback'), 'sine'), gain: draft.vco3?.gain ?? 0, octave: draft.vco3?.octave ?? 0, detune: draft.vco3?.detune ?? 0 }
         ]
 
         const masterVol = draft.masterVolume ?? 1.0

@@ -50,7 +50,7 @@ export function bindPanelToggles(container, getTarget) {
 export function bindAccordionToggles(container, getTarget, onChange) {
     container.querySelectorAll('.ne-toggle[data-toggle], .ne-toggle[data-about-toggle], .ne-group-accordion-toggle[data-toggle]').forEach(btn => {
         btn.addEventListener('click', (event) => {
-            const key = btn.dataset.toggle ?? (logger.warn('PH', 'toggle fallback'), btn.dataset.aboutToggle ?? (logger.warn('PH', 'aboutToggle fallback'), ''))
+            const key = btn.dataset.toggle ?? (logger.warn('PanelHelpers', 'toggle fallback'), btn.dataset.aboutToggle ?? (logger.warn('PanelHelpers', 'aboutToggle fallback'), ''))
             btn.classList.toggle('active')
             const isExpanded = btn.classList.contains('active')
             

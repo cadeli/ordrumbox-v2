@@ -56,7 +56,7 @@ export default class MfWavExporter {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = filename ?? (logger.warn('WAV', 'filename fallback'), 'pattern.wav')
+        a.download = filename ?? (logger.warn('WavExporter', 'filename fallback'), 'pattern.wav')
         a.click()
         URL.revokeObjectURL(url)
     }

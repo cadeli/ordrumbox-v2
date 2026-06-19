@@ -18,7 +18,7 @@ export default class AudioEngine {
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.sounds = config.sounds
-        this.generatedSounds = config.generatedSounds ?? (logger.warn('AE', 'generatedSounds fallback'), {})
+        this.generatedSounds = config.generatedSounds ?? (logger.warn('AudioEngine', 'generatedSounds fallback'), {})
         this.patterns = config.patterns
         this.getSelectedPatternNum = config.getSelectedPatternNum ?? (() => config.selectedPatternNum ?? 0)
         this.getAutoGenerate = config.getAutoGenerate
@@ -91,7 +91,7 @@ export default class AudioEngine {
         const pattern = this.patterns[this.getSelectedPatternNum()]
         if (!pattern) return this.flatNotes
 
-        const patternVersion = pattern._version ?? (logger.warn('AE', '_version fallback'), 0)
+        const patternVersion = pattern._version ?? (logger.warn('AudioEngine', '_version fallback'), 0)
         if (
             this._cachedPatternRef === pattern &&
             this._cachedLoop === loop &&
@@ -225,13 +225,13 @@ export default class AudioEngine {
             if (flatNote.track.mute === false) {
                 const mapping = this._resolveMidiMapping(flatNote.track.id)
                 if (mapping) {
-                    const channel   = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pi',mapping.ch,10),10))(parseInt(mapping.ch)))
-                    const note      = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pi',mapping.key,60),60))(parseInt(mapping.key)))
+                    const channel   = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('Fallback','pi',mapping.ch,10),10))(parseInt(mapping.ch)))
+                    const note      = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('Fallback','pi',mapping.key,60),60))(parseInt(mapping.key)))
                     const vel       = Math.floor(flatNote.velocity * 127)
                     const startTime = midiTime + (flatNote.swingTime * 1000)
 
                     midi.sendNoteOn(channel, note, vel, startTime)
-                    const durationMs = flatNote.duration ?? (logger.warn('AE', 'duration fallback'), 100)
+                    const durationMs = flatNote.duration ?? (logger.warn('AudioEngine', 'duration fallback'), 100)
                     midi.sendNoteOff(channel, note, startTime + durationMs)
                 }
             }
@@ -264,8 +264,8 @@ export default class AudioEngine {
             if (track) {
                 const mapping = this._resolveMidiMapping(track.id)
                 if (mapping) {
-                    const channel = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pi',mapping.ch,10),10))(parseInt(mapping.ch)))
-                    const note    = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('FB','pi',mapping.key,60),60))(parseInt(mapping.key)))
+                    const channel = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('Fallback','pi',mapping.ch,10),10))(parseInt(mapping.ch)))
+                    const note    = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('Fallback','pi',mapping.key,60),60))(parseInt(mapping.key)))
                     midi.sendNoteOn(channel, note, 100)
                     setTimeout(() => midi.sendNoteOff(channel, note), 100)
                 }

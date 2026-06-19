@@ -91,8 +91,8 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
     const importedPattern = addPattern(patternName)
 
     importedPattern.name = patternName ?? importedPattern.name ?? ''
-    importedPattern.bpm = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('PI','bpm NaN',sourcePattern?.bpm),importedPattern.bpm ?? 120))(Number(sourcePattern?.bpm)))
-    importedPattern.nbBars = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('PI','nbBars NaN',sourcePattern?.nbBars),importedPattern.nbBars ?? 4))(Number(sourcePattern?.nbBars)))
+    importedPattern.bpm = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('PatternImport','bpm NaN',sourcePattern?.bpm),importedPattern.bpm ?? 120))(Number(sourcePattern?.bpm)))
+    importedPattern.nbBars = ((_v=>!Number.isNaN(_v)?_v:(logger.warn('PatternImport','nbBars NaN',sourcePattern?.nbBars),importedPattern.nbBars ?? 4))(Number(sourcePattern?.nbBars)))
 
     if (sourcePattern?.application) importedPattern.application = sourcePattern.application
     if (sourcePattern?.url) importedPattern.url = sourcePattern.url
