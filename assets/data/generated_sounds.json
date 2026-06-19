@@ -406,7 +406,7 @@
       "attack": 0.25,
       "decay": 0.6,
       "sustain": 0.8,
-      "release": 1.4
+      "release": 0.4
     },
     "lfo2": {
       "target": "NOT",

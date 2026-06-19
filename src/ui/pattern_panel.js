@@ -57,7 +57,12 @@ export default class PatternPanel extends BasePanel {
             this._playhead.style.bottom = '0'
             this._playhead.style.zIndex = '10'
             this._playhead.style.pointerEvents = 'none'
-            this.container.appendChild(this._playhead)
+            const header = this.container.querySelector('.pp-header')
+            if (header) {
+                header.appendChild(this._playhead)
+            } else {
+                this.container.appendChild(this._playhead)
+            }
         }
     }
 
@@ -401,7 +406,7 @@ export default class PatternPanel extends BasePanel {
         const normInBar = tickInBar / TICK
 
         if (this._playhead.style.display !== 'block') this._playhead.style.display = 'block'
-        const x = (this._layoutCache?.tracksOffset ?? 0) + barCache.left + normInBar * barCache.width
+        const x = barCache.left + normInBar * barCache.width
         
         this._playhead.style.transform = `translateX(${x}px)`
         if (this._playhead.style.width !== '2px') this._playhead.style.width = `2px`
