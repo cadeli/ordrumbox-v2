@@ -18,6 +18,7 @@ import { serviceRegistry } from './state/service_registry.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
 import { logger } from "./core/logger.js"
+import { initWebMcpTools } from "./webmcp/webmcp_tools.js"
 
 serviceRegistry.audioCtx = null
 serviceRegistry.mfCmd = new MfCmd()
@@ -152,6 +153,8 @@ export function init() {
             serviceRegistry.mfCmd.setSelectedPatternNum(0)
 
         }
+
+        initWebMcpTools()
     })
 }
 
