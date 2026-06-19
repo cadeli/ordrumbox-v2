@@ -57,7 +57,7 @@ export default class MfCmd {
         // Find the pattern containing this track to increment its version
         for (const pattern of appState.patterns) {
             if (Utils.getTracksArray(pattern).includes(track)) {
-                pattern._version = (pattern._version ?? (logger.warn('Command', '_version fallback'), 0)) + 1
+                pattern._version = (pattern._version ?? 0) + 1
                 break
             }
         }

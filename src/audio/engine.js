@@ -91,7 +91,7 @@ export default class AudioEngine {
         const pattern = this.patterns[this.getSelectedPatternNum()]
         if (!pattern) return this.flatNotes
 
-        const patternVersion = pattern._version ?? (logger.warn('AudioEngine', '_version fallback'), 0)
+        const patternVersion = pattern._version ?? 0
         if (
             this._cachedPatternRef === pattern &&
             this._cachedLoop === loop &&

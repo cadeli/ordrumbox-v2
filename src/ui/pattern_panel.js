@@ -22,6 +22,10 @@ export default class PatternPanel extends BasePanel {
         this._cursorBarStep = 0
         this._cellMap = new Map()
         this._vuElCache = null
+        this._trackDataDirty = true
+        this._trackDataCache = new Map()
+        this._cachedPage = -1
+        this._cachedVersion = -1
     }
 
     createDOM() {
@@ -65,6 +69,7 @@ export default class PatternPanel extends BasePanel {
     subscribe() {
         playbackEvents.onPatternChange.push(() => {
             this._prevLoopTick = -1
+            this._trackDataDirty = true
             this.requestSync()
         })
         playbackEvents.onLoopPointChange.push((data) => {
@@ -291,7 +296,7 @@ export default class PatternPanel extends BasePanel {
         const tracksEl = this._tracksEl
         if (!tracksEl) return
 
-        const dpr = window.devicePixelRatio ?? (logger.warn('PatternPanel', 'dpr fallback'), 1)
+        const dpr = window.devicePixelRatio ?? 1
         
         // Find visible grid area using cached rects
         const firstBarCache = this._barRectsCache[appState.currentPage * 4]
@@ -378,7 +383,7 @@ export default class PatternPanel extends BasePanel {
 
     _resetVuAndWaveform() {
         if (!this.container) return
-        const vuEls = this._vuElCache ?? (logger.warn('PatternPanel', 'vuElCache fallback'), this.container.querySelectorAll('.pp-vu'))
+        const vuEls = this._vuElCache ?? this.container.querySelectorAll('.pp-vu')
         for (const vuEl of vuEls) {
             const fill = vuEl.querySelector('.pp-vu-fill')
             if (fill) {
@@ -739,30 +744,45 @@ export default class PatternPanel extends BasePanel {
 
         this._cellMap.clear()
 
+        const patternVersion = pattern._version ?? 0
+        const pageChanged = startBar !== this._cachedPage
+        if (this._trackDataDirty || this._cachedVersion !== patternVersion || pageChanged) {
+            this._trackDataCache.clear()
+            this._cachedVersion = patternVersion
+            this._cachedPage = startBar
+            this._trackDataDirty = false
+        }
+
         let tracksHtml = '<div class="pp-tracks">'
         tracks.forEach((track, tIdx) => {
             if (!track) return
             const barQuantize = track.barQuantize ?? 4
             const totalSteps = (track.bars ?? 4) * barQuantize
 
-            const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? (logger.warn('PatternPanel', 'track.notes fallback'), {}))
+            let cached = this._trackDataCache.get(tIdx)
+            if (!cached) {
+                const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? (logger.warn('PatternPanel', 'track.notes fallback'), {}))
 
-            const noteMap = new Map()
-            notes.forEach(n => {
-                noteMap.set(`${n.bar}:${n.barStep}`, n)
-            })
-
-            const ghostMap = new Map()
-            notes.forEach(note => {
-                this._getSubPositions(note, track).forEach(({ pos, type }) => {
-                    const stepAbs = Math.floor(pos)
-                    const bar = Math.floor(stepAbs / barQuantize)
-                    if (bar >= startBar && bar < endBarPage) {
-                        if (!ghostMap.has(stepAbs)) ghostMap.set(stepAbs, [])
-                        ghostMap.get(stepAbs).push({ offset: pos - stepAbs, type })
-                    }
+                const noteMap = new Map()
+                notes.forEach(n => {
+                    noteMap.set(`${n.bar}:${n.barStep}`, n)
                 })
-            })
+
+                const ghostMap = new Map()
+                notes.forEach(note => {
+                    this._getSubPositions(note, track).forEach(({ pos, type }) => {
+                        const stepAbs = Math.floor(pos)
+                        const bar = Math.floor(stepAbs / barQuantize)
+                        if (bar >= startBar && bar < endBarPage) {
+                            if (!ghostMap.has(stepAbs)) ghostMap.set(stepAbs, [])
+                            ghostMap.get(stepAbs).push({ offset: pos - stepAbs, type })
+                        }
+                    })
+                })
+
+                cached = { noteMap, ghostMap }
+                this._trackDataCache.set(tIdx, cached)
+            }
 
             let barsHtml = '<div class="pp-bars">'
             for (let b = startBar; b < endBarPage; b++) {
@@ -773,7 +793,7 @@ export default class PatternPanel extends BasePanel {
                         const absPos = b * barQuantize + s
                         const isBeyondTrack = b >= trackBarCount
 
-                        const note = noteMap.get(`${b}:${s}`)
+                        const note = cached.noteMap.get(`${b}:${s}`)
 
                         const cls = ['pp-cell']
                         if (isBeyondTrack) cls.push('pp-cell-out')
@@ -797,7 +817,7 @@ export default class PatternPanel extends BasePanel {
                         const loopAt = track.loopAtStep ?? totalSteps
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
 
-                        const ghosts = (ghostMap.get(absPos) ?? (logger.warn('PatternPanel', 'ghostMap fallback'), [])).map(({ offset, type }) => {
+                        const ghosts = (cached.ghostMap.get(absPos) ?? []).map(({ offset, type }) => {
                             const cls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
                             return `<div class="${cls}" style="left: ${offset * 100}%"></div>`
                         }).join('')
