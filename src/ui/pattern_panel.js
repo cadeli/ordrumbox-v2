@@ -52,18 +52,12 @@ export default class PatternPanel extends BasePanel {
             this._playhead.className = 'pp-playhead'
             this._playhead.style.display = 'none'
             this._playhead.style.position = 'absolute'
+            this._playhead.style.left = '0'
             this._playhead.style.top = '0'
             this._playhead.style.bottom = '0'
             this._playhead.style.zIndex = '10'
             this._playhead.style.pointerEvents = 'none'
-            this._playhead.style.willChange = 'transform'
-            const header = this.container.querySelector('.pp-header')
-            if (header) {
-                header.style.position = 'relative'
-                header.appendChild(this._playhead)
-            } else {
-                this.container.appendChild(this._playhead)
-            }
+            this.container.appendChild(this._playhead)
         }
     }
 
@@ -124,7 +118,8 @@ export default class PatternPanel extends BasePanel {
             containerLeft: containerRect.left,
             containerRight: containerRect.right,
             tracksLeft: tracksRect.left,
-            tracksHeight: tracksEl.clientHeight
+            tracksHeight: tracksEl.clientHeight,
+            tracksOffset: tracksRect.left - containerRect.left
         }
 
         const barEls = this.container.querySelectorAll('.pp-bar')
@@ -137,17 +132,6 @@ export default class PatternPanel extends BasePanel {
                 width: r.width
             }
         })
-        
-        const firstBar = this.container.querySelector('.pp-bar')
-        if (firstBar) {
-            const header = this.container.querySelector('.pp-header')
-            if (header) {
-                const barRect = firstBar.getBoundingClientRect()
-                const headerRect = header.getBoundingClientRect()
-                this._headerBarsLeft = barRect.left - headerRect.left
-                this._headerBarsWidth = barRect.width
-            }
-        }
     }
 
     requestSync() {
@@ -417,10 +401,8 @@ export default class PatternPanel extends BasePanel {
         const normInBar = tickInBar / TICK
 
         if (this._playhead.style.display !== 'block') this._playhead.style.display = 'block'
-        const x = this._headerBarsLeft + barCache.left + normInBar * barCache.width
+        const x = (this._layoutCache?.tracksOffset ?? 0) + barCache.left + normInBar * barCache.width
         
-        // Use a small threshold to avoid sub-pixel jitter if needed, 
-        // but translateX handles sub-pixels well.
         this._playhead.style.transform = `translateX(${x}px)`
         if (this._playhead.style.width !== '2px') this._playhead.style.width = `2px`
     }
