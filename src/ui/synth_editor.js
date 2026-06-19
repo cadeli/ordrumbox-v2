@@ -44,10 +44,10 @@ const SYNTH_SLIDER_META = {
     'noise.mix': { min: 0, max: 1, step: 0.01 },
     'noise.filterFreq': { min: 20, max: 20000, step: 1 },
     'noise.filterQ': { min: 0.1, max: 24, step: 0.1 },
-    'enveloppe.attack': { min: 0, max: 2, step: 0.001 },
-    'enveloppe.decay': { min: 0, max: 2, step: 0.001 },
+    'enveloppe.attack': { min: 0, max: 0.5, step: 0.001 },
+    'enveloppe.decay': { min: 0, max: 1.0, step: 0.001 },
     'enveloppe.sustain': { min: 0, max: 1, step: 0.01 },
-    'enveloppe.release': { min: 0, max: 3, step: 0.001 }
+    'enveloppe.release': { min: 0, max: 0.5, step: 0.001 }
 }
 
 const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_SLIDER_META).filter(k => !k.startsWith('lfo.') && !k.startsWith('lfo2.'))]

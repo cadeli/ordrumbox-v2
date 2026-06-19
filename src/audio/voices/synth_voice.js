@@ -229,10 +229,10 @@ export default class SynthVoice extends BaseVoice {
 
         const masterVolume = toFiniteNumber(gs.masterVolume, 0.8)
         this.masterVolume  = masterVolume
-        const attackTime    = env.attack ?? 0
-        const decayTime     = env.decay ?? 0
+        const attackTime    = Math.min(0.5, env.attack ?? 0)
+        const decayTime     = Math.min(1.0, env.decay ?? 0)
         const sustainLevel  = env.sustain ?? 1
-        const releaseTime   = env.release ?? 0
+        const releaseTime   = Math.min(0.5, env.release ?? 0)
         const peakGain      = this.noteVelo * masterVolume * accentMultiplier
 
         const safeAttack  = Math.max(MIN_ATTACK,  attackTime)
