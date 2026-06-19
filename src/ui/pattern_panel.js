@@ -682,7 +682,9 @@ export default class PatternPanel extends BasePanel {
 
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) {
-            this.container.innerHTML = '<div class="pp-header" style="color:#fff; padding:10px;">Waiting for patterns...</div>'
+            if (!this.container.querySelector('.pp-waiting')) {
+                this.container.innerHTML = '<div class="pp-header pp-waiting" style="color:#fff; padding:10px;">Waiting for patterns...</div>'
+            }
             return
         }
 
@@ -700,7 +702,12 @@ export default class PatternPanel extends BasePanel {
         </div>`
 
         if (tracks.length === 0) {
+            const prevHeight = this.container.offsetHeight
             this.container.innerHTML = headerHtml + '<div class="pp-empty" style="padding:40px; text-align:center; color:#888;">Empty Pattern</div>'
+            if (prevHeight > 0) {
+                this.container.style.minHeight = prevHeight + 'px'
+                requestAnimationFrame(() => { this.container.style.minHeight = '' })
+            }
             return
         }
 
@@ -809,7 +816,14 @@ export default class PatternPanel extends BasePanel {
         })
         tracksHtml += `<canvas class="pp-waveform-overlay"></canvas></div>`
 
+        const prevHeight = this.container.offsetHeight
         this.container.innerHTML = headerHtml + tracksHtml
+        if (prevHeight > 0) {
+            this.container.style.minHeight = prevHeight + 'px'
+            requestAnimationFrame(() => {
+                this.container.style.minHeight = ''
+            })
+        }
         this._ensurePlayhead()
         this._buildCellMap()
         this._applySelection()
