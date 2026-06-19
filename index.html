@@ -79,6 +79,26 @@
       min-height: 100vh;
       background-color: #000;
     }
+
+    /* Waiting screen — inlined to prevent CLS from async styles.css load */
+    #waiting-screen {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      padding: 24px; box-sizing: border-box;
+      background-color: #121212;
+      z-index: 10000;
+    }
+    #waiting-screen-start-btn {
+      width: 100%; max-width: 480px; box-sizing: border-box;
+      padding: 20px 40px; font-size: 18px; font-weight: bold;
+      border: 3px solid #ffffff; border-radius: 8px;
+      cursor: pointer; background-color: #e65100; color: #fff;
+      touch-action: manipulation;
+    }
+    #waiting-screen-start-btn.ready {
+      background-color: #1565c0; color: #fff;
+    }
   </style>
 </head>
 <body>
