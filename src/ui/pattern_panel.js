@@ -5,6 +5,7 @@ import { TICK } from '../core/constants.js'
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
+import BaseVoice from '../audio/voices/base_voice.js'
 
 export default class PatternPanel extends BasePanel {
     constructor() {
@@ -178,12 +179,6 @@ export default class PatternPanel extends BasePanel {
         this._waveformCanvas = this.container?.querySelector('.pp-waveform-overlay')
         this._tracksEl       = this.container?.querySelector('.pp-tracks')
         this._vuElCache      = this.container?.querySelectorAll('.pp-vu')
-        
-        this._perfData = {
-            lastTime: performance.now(),
-            frameTimes: [],
-            avgFrameTime: 0
-        }
 
         const loop = () => {
             const transport = serviceRegistry.transport
@@ -192,37 +187,24 @@ export default class PatternPanel extends BasePanel {
                 this._rafId = null
                 if (this._playhead) this._playhead.style.display = 'none'
                 this._resetVuAndWaveform()
-                this._updatePerfDisplay(0)
+                this._updatePerfDisplay()
                 return
             }
 
-            const startTime = performance.now()
-            
             this._updateVus(mixer)
             this._drawWaveform(mixer)
             this._updatePlayhead()
-            
-            const endTime = performance.now()
-            const frameDuration = endTime - startTime
-            
-            this._perfData.frameTimes.push(frameDuration)
-            if (this._perfData.frameTimes.length > 60) this._perfData.frameTimes.shift()
-            
-            if (this._perfData.frameTimes.length === 60) {
-                const avg = this._perfData.frameTimes.reduce((a, b) => a + b, 0) / 60
-                this._perfData.avgFrameTime = avg
-                this._updatePerfDisplay(avg)
-            }
+            this._updatePerfDisplay()
 
             this._rafId = requestAnimationFrame(loop)
         }
         this._rafId = requestAnimationFrame(loop)
     }
 
-    _updatePerfDisplay(avgMs) {
+    _updatePerfDisplay() {
         if (!this.container) return
         let perfEl = this.container.querySelector('.pp-perf-stats')
-        if (!perfEl && avgMs > 0) {
+        if (!perfEl) {
             perfEl = document.createElement('span')
             perfEl.className = 'pp-perf-stats pp-meta'
             perfEl.style.color = '#4ade80'
@@ -230,17 +212,10 @@ export default class PatternPanel extends BasePanel {
             const header = this.container.querySelector('.pp-header')
             if (header) header.appendChild(perfEl)
         }
-        if (perfEl) {
-            if (avgMs === 0) {
-                perfEl.textContent = ''
-                return
-            }
-            // Frame budget for 60fps is 16.6ms. 
-            // This measures just our JS execution time in the loop.
-            const budgetPct = (avgMs / 16.66) * 100
-            perfEl.textContent = `UI Load: ${avgMs.toFixed(2)}ms (${budgetPct.toFixed(1)}%)`
-            perfEl.style.color = budgetPct > 50 ? '#f43f5e' : (budgetPct > 20 ? '#fbbf24' : '#4ade80')
-        }
+        const nodes = BaseVoice.activeNodeCount
+        const notes = serviceRegistry.audioEngine?.mfSound?._activeNoteCount ?? 0
+        perfEl.textContent = `N:${notes}  Nodes:${nodes}`
+        perfEl.style.color = nodes > 200 ? '#f43f5e' : (nodes > 100 ? '#fbbf24' : '#4ade80')
     }
 
     _stopRafLoop() {

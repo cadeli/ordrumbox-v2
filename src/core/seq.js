@@ -1,5 +1,6 @@
 import Utils from './utils.js'
 import AudioEngine from '../audio/engine.js'
+import AudioStallDetector from '../audio/stall_detector.js'
 import Transport from '../logic/transport/transport.js'
 import { TICK } from './constants.js'
 import { appState } from '../state/app_state.js'
@@ -108,10 +109,17 @@ export default class MfSeq {
         this.ensureAudioEngine()
         await this.serviceRegistry.audioEngine.start(selPattern)
         this.serviceRegistry.transport.start()
+        this._stallDetector = new AudioStallDetector({
+            audioCtx: this.serviceRegistry.audioCtx,
+            transport: this.serviceRegistry.transport
+        })
+        this._stallDetector.start()
         this.playbackEvents.dispatchPlaybackStart()
     }
 
     stop = () => {
+        this._stallDetector?.stop()
+        this._stallDetector = null
         this.serviceRegistry.transport?.stop()
         this.playbackEvents.dispatchPlaybackStop()
         if (this.serviceRegistry.audioEngine) {

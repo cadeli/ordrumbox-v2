@@ -4,13 +4,17 @@ export default class NodePool {
     constructor(audioCtx) {
         this.audioCtx = audioCtx
         this._pools = {}
+        this._activeCount = 0
     }
+
+    get activeCount() { return this._activeCount }
 
     acquire(type) {
         let pool = this._pools[type]
         if (!pool) pool = this._pools[type] = []
         const node = pool.pop() ?? this._create(type)
         this.resetNode(node, type)
+        this._activeCount++
         return node
     }
 
@@ -18,6 +22,7 @@ export default class NodePool {
         if (!node) return
         try { node.disconnect() } catch (_) { /* already disconnected */ }
         const type = node.constructor.name
+        this._activeCount = Math.max(0, this._activeCount - 1)
         if (DISPOSABLE.has(type)) return
         let pool = this._pools[type]
         if (!pool) pool = this._pools[type] = []

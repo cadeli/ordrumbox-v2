@@ -22,6 +22,7 @@ export default class MfSound {
         // Track-level strip parameter cache to avoid redundant Web Audio API calls.
         // Key: track.name, Value: { _version, velocity, pan, filterType, ... }
         this._stripParamCache = new Map()
+        this._activeNoteCount = 0
     }
 
     getStrip = async (track) => {
@@ -82,6 +83,12 @@ export default class MfSound {
             }
             const voice = await this.voiceFactory.createVoice(flatNote)
             if (voice) {
+                this._activeNoteCount++
+                const prevOnEnded = voice.onEnded
+                voice.onEnded = () => {
+                    this._activeNoteCount = Math.max(0, this._activeNoteCount - 1)
+                    prevOnEnded?.()
+                }
                 let lfoContext = null
                 if (flatNote.track.pitchLfo) {
                     const tick = serviceRegistry.transport?.tick ?? 0

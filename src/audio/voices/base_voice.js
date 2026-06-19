@@ -1,4 +1,7 @@
 export default class BaseVoice {
+    static _activeNodeCount = 0
+    static get activeNodeCount() { return BaseVoice._activeNodeCount }
+
     constructor(audioCtx, strip, nodePool = null) {
         this.audioCtx = audioCtx
         this.strip = strip
@@ -21,6 +24,7 @@ export default class BaseVoice {
     }
 
     cleanup = () => {
+        const count = this.nodes.length
         this.nodes.forEach(node => {
             try { node.disconnect() } catch (e) {}
         })
@@ -31,10 +35,12 @@ export default class BaseVoice {
         }
         this._pooledNodes.length = 0
         this.nodes.length = 0
+        BaseVoice._activeNodeCount = Math.max(0, BaseVoice._activeNodeCount - count)
     }
 
     registerNode(node) {
         this.nodes.push(node)
+        BaseVoice._activeNodeCount++
         return node
     }
 
@@ -43,6 +49,7 @@ export default class BaseVoice {
             const node = this.nodePool.acquire(type)
             this._pooledNodes.push(node)
             this.nodes.push(node)
+            BaseVoice._activeNodeCount++
             return node
         }
         return this.registerNode(this._createNode(type))
