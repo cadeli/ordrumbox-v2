@@ -93,6 +93,13 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.workletNode._lastFreq1 = f1
         this.workletNode._lastFreq2 = f2
         this.workletNode._lastFreq3 = f3
+
+        // Safety: force-stop after 3 seconds to prevent infinite sustain
+        if (this._safetyTimer) clearTimeout(this._safetyTimer)
+        this._safetyTimer = setTimeout(() => {
+            if (!this.stopped) this.stop(this.audioCtx.currentTime)
+            this._safetyTimer = null
+        }, 3000)
     }
 
     stop(time) {
@@ -101,6 +108,10 @@ export default class WorkletSynthVoice extends BaseVoice {
         if (this._cleanupTimer) {
             clearTimeout(this._cleanupTimer)
             this._cleanupTimer = null
+        }
+        if (this._safetyTimer) {
+            clearTimeout(this._safetyTimer)
+            this._safetyTimer = null
         }
         if (this.workletNode) {
             postRelease(this.workletNode, time)
