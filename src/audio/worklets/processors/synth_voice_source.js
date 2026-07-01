@@ -199,7 +199,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.startTime = msg.startTime ?? 0;
             this.releaseTime = -1;
             this._envSegment = 1;
-            this._envSegmentStart = this.startTime;
+            this._envSegmentStart = 0;
             this._envLevel = 0;
             this._lastEnvTime = -1;
             // Glide: capture starting frequencies for ramp
@@ -209,13 +209,10 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this._glideElapsed = 0;
             // Filter envelope: start attack phase
             this._filtEnvSeg = 1;
-            this._filtEnvStart = this.startTime;
+            this._filtEnvStart = 0;
             this._filtEnvLevel = 0;
         } else if (msg.type === 'release') {
             this.releaseTime = msg.releaseTime ?? 0;
-            this.releaseStartLevel = this._envLevel;
-            this._envSegment = 4;
-            this._envSegmentStart = this.releaseTime;
         } else if (msg.type === 'update') {
             for (const k of Object.keys(msg)) {
                 if (k === 'type') continue;
@@ -566,6 +563,12 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             else y = this._filtLP + this._filtHP;
 
             // Envelope (incremental state machine)
+            // Check if release time reached: transition from attack/decay/sustain to release
+            if (this._envSegment > 0 && this._envSegment < 4 && this.releaseTime > 0 && currentTime >= this.releaseTime) {
+                this.releaseStartLevel = this._envLevel;
+                this._envSegment = 4;
+                this._envSegmentStart = t;
+            }
             const env = this._envelopeStep(t, A, D, S, R, V);
             y *= env * masterClamped;
 
