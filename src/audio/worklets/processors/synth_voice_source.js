@@ -64,6 +64,20 @@ function _sinLookup(phase) {
     return _sineTable[i & (SINE_TABLE_SIZE - 1)] * (1 - f) + _sineTable[(i + 1) & (SINE_TABLE_SIZE - 1)] * f;
 }
 
+// PolyBLEP anti-aliasing: smooths discontinuities at waveform transition points
+// t = current phase [0,1), dt = phase increment (freq / sampleRate)
+function _polyBLEP(t, dt) {
+    if (t < dt) {
+        t /= dt;
+        return t + t - t * t - 1.0;
+    }
+    if (t > 1.0 - dt) {
+        t = (t - 1.0) / dt;
+        return t * t + t + t + 1.0;
+    }
+    return 0.0;
+}
+
 // Cheap xorshift32 PRNG (replaces Math.random for noise)
 function _xorshift32(state) {
     state ^= state << 13;
@@ -166,15 +180,19 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         }
     }
 
-    _v(shape, phase) {
+    _v(shape, phase, dt) {
         if (shape < 0.5) return _sinLookup(phase);
         if (shape < 1.5) {
             if (phase < 0.25) return phase * 4;
             if (phase < 0.75) return 2 - phase * 4;
             return phase * 4 - 4;
         }
-        if (shape < 2.5) return phase * 2 - 1;
-        return phase < 0.5 ? 1 : -1;
+        if (shape < 2.5) {
+            const saw = phase * 2 - 1;
+            return saw - _polyBLEP(phase, dt);
+        }
+        const sq = phase < 0.5 ? 1 : -1;
+        return sq + _polyBLEP(phase, dt) - _polyBLEP((phase + 0.5) % 1, dt);
     }
 
     _lfoValue(target, depth, phase, det, gain, out) {
@@ -413,9 +431,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             if (this.phase2 >= 1) this.phase2 -= 1;
             if (this.phase3 >= 1) this.phase3 -= 1;
 
-            const o1 = this._v(w1, this.phase1) * g1c;
-            const o2 = this._v(w2, this.phase2) * g2c;
-            const o3 = this._v(w3, this.phase3) * g3c;
+            const o1 = this._v(w1, this.phase1, f1d / sr) * g1c;
+            const o2 = this._v(w2, this.phase2, f2d / sr) * g2c;
+            const o3 = this._v(w3, this.phase3, f3d / sr) * g3c;
             const oscSum = (o1 + o2 + o3) * oscMix;
 
             // Noise (cheap PRNG)
