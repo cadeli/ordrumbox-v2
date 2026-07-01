@@ -592,7 +592,7 @@ describe('SynthVoice parameter coverage', () => {
         // note velocity 0.6 → noteVelo = 0.6 * 0.25 = 0.15 → peakGain = 0.15 * 0.4 * 1.0 = 0.06
         voice.setup(makeFlatNote({ note: { velocity: 0.6 } }), 1.0)
 
-        expect(voice.gainEnv.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        expect(voice.gainEnv.gain.exponentialRampToValueAtTime).toHaveBeenCalledWith(
             0.06, expect.any(Number)
         )
     })
@@ -609,15 +609,15 @@ describe('SynthVoice parameter coverage', () => {
         // noteVelo = 1.0 * 0.25 = 0.25, not accented (0.25 < 0.5)
         // peakGain = 0.25 * 0.8 * 1.0 = 0.2
         // attack ramp: 0 -> 0.2 at time 1.0 + 0.02
-        expect(voice.gainEnv.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        expect(voice.gainEnv.gain.exponentialRampToValueAtTime).toHaveBeenCalledWith(
             0.2, 1.02
         )
-        // decay ramp: 0.2 -> 0.1 at time 1.02 + 0.15 = 1.17
+        // decay ramp: 0.2 -> 0.1 at time 1.02 + 0.15 = 1.17 (linear)
         expect(voice.gainEnv.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
             0.1, 1.17
         )
-        // release ramp: 0.1 -> MIN at releaseStart + 0.1
-        expect(voice.gainEnv.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+        // release ramp: 0.1 -> MIN at releaseStart + 0.1 (exponential)
+        expect(voice.gainEnv.gain.exponentialRampToValueAtTime).toHaveBeenCalledWith(
             0.001, voice.releaseStart + 0.1
         )
     })
@@ -688,8 +688,8 @@ describe('SynthVoice parameter coverage', () => {
         voice.setup(makeFlatNote({ fpitch: 1 }), 1.0)
 
         // When filterEnvelopeAmount > 0, filter frequency ramps
-        expect(voice.voiceFilter1.frequency.linearRampToValueAtTime).toHaveBeenCalled()
-        expect(voice.voiceFilter2.frequency.linearRampToValueAtTime).toHaveBeenCalled()
+        expect(voice.voiceFilter1.frequency.exponentialRampToValueAtTime).toHaveBeenCalled()
+        expect(voice.voiceFilter2.frequency.exponentialRampToValueAtTime).toHaveBeenCalled()
     })
 })
 

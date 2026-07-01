@@ -186,10 +186,10 @@ export default class SynthVoice extends BaseVoice {
         this.voiceFilter2.frequency.setValueAtTime(mFreq, time)
         this.voiceFilter2.Q.setValueAtTime(mQ, time)
         if (filterEnvAmt > 0) {
-            this.voiceFilter1.frequency.linearRampToValueAtTime(peakFreq, time + env.attack)
-            this.voiceFilter1.frequency.linearRampToValueAtTime(mFreq,    time + env.attack + env.decay)
-            this.voiceFilter2.frequency.linearRampToValueAtTime(peakFreq, time + env.attack)
-            this.voiceFilter2.frequency.linearRampToValueAtTime(mFreq,    time + env.attack + env.decay)
+            this.voiceFilter1.frequency.exponentialRampToValueAtTime(peakFreq, time + env.attack)
+            this.voiceFilter1.frequency.exponentialRampToValueAtTime(mFreq,    time + env.attack + env.decay)
+            this.voiceFilter2.frequency.exponentialRampToValueAtTime(peakFreq, time + env.attack)
+            this.voiceFilter2.frequency.exponentialRampToValueAtTime(mFreq,    time + env.attack + env.decay)
         }
 
         this.panNode.connect(this.voiceFilter1)
@@ -242,10 +242,11 @@ export default class SynthVoice extends BaseVoice {
         this.connectLfoTarget2(lfoTarget2)
 
         this.gainEnv.gain.setValueAtTime(MIN_GAIN_VALUE, time)
-        this.gainEnv.gain.linearRampToValueAtTime(peakGain, time + safeAttack)
-        this.gainEnv.gain.linearRampToValueAtTime(peakGain * sustainLevel, time + safeAttack + decayTime)
+        this.gainEnv.gain.exponentialRampToValueAtTime(peakGain, time + safeAttack)
+        const decayTarget = Math.max(MIN_GAIN_VALUE, peakGain * sustainLevel)
+        this.gainEnv.gain.linearRampToValueAtTime(decayTarget, time + safeAttack + decayTime)
         this.releaseStart = time + safeAttack + decayTime
-        this.gainEnv.gain.linearRampToValueAtTime(MIN_GAIN_VALUE, this.releaseStart + safeRelease)
+        this.gainEnv.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, this.releaseStart + safeRelease)
 
         this.totalStopTime = this.releaseStart + safeRelease + RELEASE_TIME
     }

@@ -294,7 +294,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const seg = this._envSegment;
         if (seg === 0) return 0;
         if (seg === 1) {
-            // Attack
+            // Attack — quadratic ease-in: t²
             if (A <= 0.0001) {
                 this._envLevel = peak;
                 this._envSegment = 2;
@@ -306,18 +306,21 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                     this._envSegment = 2;
                     this._envSegmentStart = t;
                 } else {
-                    this._envLevel = peak * (dt / A);
+                    const norm = dt / A;
+                    this._envLevel = peak * norm * norm;
                 }
             }
         }
         if (this._envSegment === 2) {
-            // Decay
+            // Decay — cubic ease-out: (1-t)^3
             const dt = t - this._envSegmentStart;
             if (D <= 0.0001 || dt >= D) {
                 this._envLevel = peak * S;
                 this._envSegment = 3;
             } else {
-                this._envLevel = peak * (S + (1 - S) * (1 - dt / D));
+                const norm = 1 - dt / D;
+                const curve = norm * norm * norm;
+                this._envLevel = peak * (S + (1 - S) * curve);
             }
         }
         if (this._envSegment === 3) {
@@ -325,13 +328,15 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this._envLevel = peak * S;
         }
         if (this._envSegment === 4) {
-            // Release
+            // Release — cubic ease-out: (1-t)^3
             const rt = t - this._envSegmentStart;
             if (R <= 0.0001 || rt >= R) {
                 this._envLevel = 0;
                 this._envSegment = 0;
             } else {
-                this._envLevel = this.releaseStartLevel * (1 - rt / R);
+                const norm = 1 - rt / R;
+                const curve = norm * norm * norm;
+                this._envLevel = this.releaseStartLevel * curve;
             }
         }
         return this._envLevel > 0 ? this._envLevel : 0;
