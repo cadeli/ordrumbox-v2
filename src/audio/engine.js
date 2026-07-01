@@ -139,6 +139,7 @@ export default class AudioEngine {
 
     stop = () => {
         this.isRunning = false
+        if (this.mfSound) this.mfSound.stopAllVoices()
         if (this.mixer.transportClock) {
             this.mixer.transportClock.offset.cancelScheduledValues(this.audioCtx.currentTime)
             this.mixer.transportClock.offset.setValueAtTime(0, this.audioCtx.currentTime)

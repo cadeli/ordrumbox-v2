@@ -582,7 +582,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 output[1][i] = y * panR;
             }
         }
-        return true;
+        // Return false when envelope is idle to let the AudioWorkletNode be GC'd
+        return this._envSegment !== 0;
     }
 }
 

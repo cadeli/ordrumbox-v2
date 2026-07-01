@@ -47,8 +47,10 @@ export default class MfSound {
     registerSynthVoice = (voice) => {
         if (!voice || typeof voice.updateGeneratedSound !== "function") return
         this.activeSynthVoices.add(voice)
+        const prevOnEnded = voice.onEnded
         voice.onEnded = () => {
             this.activeSynthVoices.delete(voice)
+            prevOnEnded?.()
         }
     }
 
@@ -197,6 +199,19 @@ export default class MfSound {
         }
 
         applyTrackToStrip(strip, track, time)
+    }
+
+    stopAllVoices = () => {
+        const time = this.audioCtx?.currentTime ?? 0
+        for (const voice of this._activeVoiceSet) {
+            if (voice && typeof voice.stop === "function") {
+                voice.stop(time)
+            }
+        }
+        this._activeVoiceSet.clear()
+        this.activeSynthVoices.clear()
+        this.activeVoices.clear()
+        this._activeNoteCount = 0
     }
 
     updateGeneratedSounds = (generatedSounds) => {
