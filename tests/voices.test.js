@@ -410,7 +410,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             'master', 'pan', 'velocity',
             'lfo1Target', 'lfo1Wave', 'lfo1Freq', 'lfo1Depth',
             'lfo2Target', 'lfo2Wave', 'lfo2Freq', 'lfo2Depth',
-            'slide', 'filterEnvAmt',
+            'slide', 'filterEnvAmt', 'fmAmount',
         ]
         for (const key of expectedKeys) {
             expect(msg).toHaveProperty(key)

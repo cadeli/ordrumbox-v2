@@ -63,6 +63,7 @@ describe('SynthEditor sub-panel toolbar', () => {
             'vco2',
             'vco3',
             'filter',
+            'fm',
             'lfo',
             'lfo2',
             'noise',

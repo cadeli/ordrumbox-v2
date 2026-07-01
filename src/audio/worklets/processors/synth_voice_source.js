@@ -151,6 +151,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             { name: 'lfo2Depth',  defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
             { name: 'slide',      defaultValue: 0,    minValue: 0,     maxValue: 2,     automationRate: 'k-rate' },
             { name: 'filterEnvAmt', defaultValue: 0,  minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
+            { name: 'fmAmount',   defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
         ];
     }
 
@@ -386,6 +387,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const lfo2Depth  = this._param('lfo2Depth', parameters.lfo2Depth);
         const slide      = this._param('slide', parameters.slide);
         const filterEnvAmt = this._param('filterEnvAmt', parameters.filterEnvAmt);
+        const fmAmount   = this._param('fmAmount', parameters.fmAmount);
 
         const oscMix = 1 - noiseMix;
 
@@ -525,16 +527,27 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 if (this._glideStart3 > 0) f3g = this._glideStart3 + (f3d - this._glideStart3) * glideT;
             }
 
+            // FM: osc2 → osc1 freq, osc3 → osc2 freq (modulation depth in Hz)
+            let f1fm = f1g, f2fm = f2g;
+            if (fmAmount > 0.001) {
+                const rawO2 = this._v(w2, this.phase2, f2g / sr);
+                const rawO3 = this._v(w3, this.phase3, f3g / sr);
+                f1fm = f1g + rawO2 * fmAmount * 1000;
+                f2fm = f2g + rawO3 * fmAmount * 1000;
+                if (f1fm < 0) f1fm = 0;
+                if (f2fm < 0) f2fm = 0;
+            }
+
             // Advance oscillators (use simple subtract)
-            this.phase1 += f1g / sr;
-            this.phase2 += f2g / sr;
+            this.phase1 += f1fm / sr;
+            this.phase2 += f2fm / sr;
             this.phase3 += f3g / sr;
             if (this.phase1 >= 1) this.phase1 -= 1;
             if (this.phase2 >= 1) this.phase2 -= 1;
             if (this.phase3 >= 1) this.phase3 -= 1;
 
-            const o1 = this._v(w1, this.phase1, f1g / sr) * g1c;
-            const o2 = this._v(w2, this.phase2, f2g / sr) * g2c;
+            const o1 = this._v(w1, this.phase1, f1fm / sr) * g1c;
+            const o2 = this._v(w2, this.phase2, f2fm / sr) * g2c;
             const o3 = this._v(w3, this.phase3, f3g / sr) * g3c;
             const oscSum = (o1 + o2 + o3) * oscMix;
 

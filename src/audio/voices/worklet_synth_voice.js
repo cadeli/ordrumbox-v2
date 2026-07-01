@@ -186,6 +186,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
             slide: toFiniteNumber(gs.slide, 0) / 1000,
             filterEnvAmt: clamp(toFiniteNumber(filterCfg.filterEnvelopeAmount, 0), 0, 1),
+            fmAmount: clamp(toFiniteNumber(gs.fm?.amount, 0), 0, 1),
         })
     }
 }

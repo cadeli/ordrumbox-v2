@@ -14,6 +14,7 @@ const SYNTH_GROUP_DEFAULTS = {
     vco2: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     vco3: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     filter: { type: 'lowpass', freq: 400, Q: 1, filterEnvelopeAmount: 0 },
+    fm: { amount: 0 },
     lfo: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     lfo2: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     noise: { mix: 0, filterType: 'highpass', filterFreq: 1000, filterQ: 1 },
@@ -44,6 +45,7 @@ const SYNTH_SLIDER_META = {
     'noise.mix': { min: 0, max: 1, step: 0.01 },
     'noise.filterFreq': { min: 20, max: 20000, step: 1 },
     'noise.filterQ': { min: 0.1, max: 24, step: 0.1 },
+    'fm.amount': { min: 0, max: 1, step: 0.01, label: 'FM' },
     'enveloppe.attack': { min: 0, max: 0.5, step: 0.001 },
     'enveloppe.decay': { min: 0, max: 1.0, step: 0.001 },
     'enveloppe.sustain': { min: 0, max: 1, step: 0.01 },
@@ -58,9 +60,10 @@ const SYNTH_GROUP_MERGE = {
 const SYNTH_GROUP_LABELS = {
     master: 'Master',
     filter: 'Flt',
+    fm: 'FM',
     enveloppe: 'Env'
 }
-const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'lfo', 'lfo2', 'noise', 'enveloppe']
+const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'fm', 'lfo', 'lfo2', 'noise', 'enveloppe']
 
 export default class SynthEditor {
     constructor(host) {

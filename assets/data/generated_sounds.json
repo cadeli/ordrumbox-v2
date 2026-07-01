@@ -608,5 +608,115 @@
       "freq": 0,
       "depth": 0
     }
+  },
+  "BELL1": {
+    "masterVolume": 0.45,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
+    "vco1": {
+      "gain": 1,
+      "octave": 1,
+      "detune": 0,
+      "wave": "sine"
+    },
+    "vco2": {
+      "gain": 0,
+      "octave": 2,
+      "detune": 0,
+      "wave": "sine"
+    },
+    "vco3": {
+      "gain": 0,
+      "octave": 0,
+      "detune": 0,
+      "wave": "sine"
+    },
+    "filter": {
+      "type": "bandpass",
+      "freq": 2000,
+      "Q": 2,
+      "filterEnvelopeAmount": 0.4
+    },
+    "fm": {
+      "amount": 0.7
+    },
+    "lfo": {
+      "target": "NOT",
+      "wave": "sine",
+      "freq": 0,
+      "depth": 0
+    },
+    "enveloppe": {
+      "attack": 0.003,
+      "decay": 0.15,
+      "sustain": 0,
+      "release": 0.08
+    },
+    "lfo2": {
+      "target": "NOT",
+      "wave": "sine",
+      "freq": 0,
+      "depth": 0
+    }
+  },
+  "BELL2": {
+    "masterVolume": 0.4,
+    "slide": 0,
+    "noise": {
+      "mix": 0,
+      "filterType": "highpass",
+      "filterFreq": 1000,
+      "filterQ": 1
+    },
+    "vco1": {
+      "gain": 1,
+      "octave": 0,
+      "detune": 0,
+      "wave": "sine"
+    },
+    "vco2": {
+      "gain": 0,
+      "octave": 1,
+      "detune": 7,
+      "wave": "sine"
+    },
+    "vco3": {
+      "gain": 0,
+      "octave": 2,
+      "detune": -3,
+      "wave": "sine"
+    },
+    "filter": {
+      "type": "lowpass",
+      "freq": 3000,
+      "Q": 3,
+      "filterEnvelopeAmount": 0.3
+    },
+    "fm": {
+      "amount": 0.35
+    },
+    "lfo": {
+      "target": "NOT",
+      "wave": "sine",
+      "freq": 0,
+      "depth": 0
+    },
+    "enveloppe": {
+      "attack": 0.005,
+      "decay": 0.8,
+      "sustain": 0.15,
+      "release": 0.4
+    },
+    "lfo2": {
+      "target": "NOT",
+      "wave": "sine",
+      "freq": 0,
+      "depth": 0
+    }
   }
 }
