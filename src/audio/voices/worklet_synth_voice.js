@@ -1,7 +1,7 @@
 import BaseVoice from './base_voice.js'
 import WorkletLoader from '../worklets/loader.js'
 import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
-import { computeOscFrequency, computeNoteRatio, computeAccent, toFiniteNumber } from '../math.js'
+import { computeOscFrequency, computeNoteRatio, computeAccent, toFiniteNumber, clamp } from '../math.js'
 import { RELEASE_TIME } from '../../core/constants.js'
 
 // Register the synth-voice processor (idempotent)
@@ -77,9 +77,32 @@ export default class WorkletSynthVoice extends BaseVoice {
 
     start(time) {
         if (!this.workletNode) return
-        postTrigger(this.workletNode, time)
-        
+
         const gs = this.generatedSound
+        const slideTime = toFiniteNumber(gs.slide, 0)
+        const hasGlide = slideTime > 0
+
+        // Compute target frequencies
+        const f1 = gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0
+        const f2 = gs.vco2 ? computeOscFrequency(this.noteRatio, gs.vco2.octave, gs.vco2.detune) : 0
+        const f3 = gs.vco3 ? computeOscFrequency(this.noteRatio, gs.vco3.octave, gs.vco3.detune) : 0
+
+        // Send trigger with last frequencies for glide
+        const triggerMsg = { type: 'trigger', startTime: time }
+        if (hasGlide) {
+            // Track is not available here, so we use a simple approach:
+            // Store last freqs on the workletNode itself
+            triggerMsg.lastFreq1 = this.workletNode._lastFreq1 ?? f1
+            triggerMsg.lastFreq2 = this.workletNode._lastFreq2 ?? f2
+            triggerMsg.lastFreq3 = this.workletNode._lastFreq3 ?? f3
+        }
+        this.workletNode.port.postMessage(triggerMsg)
+
+        // Store current freqs for next note's glide
+        this.workletNode._lastFreq1 = f1
+        this.workletNode._lastFreq2 = f2
+        this.workletNode._lastFreq3 = f3
+        
         const env = gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
         const attack = Math.max(0.003, toFiniteNumber(env.attack, 0.01))
         const decay = toFiniteNumber(env.decay, 0.1)
@@ -179,6 +202,8 @@ export default class WorkletSynthVoice extends BaseVoice {
             lfo2Wave: WAVE_TO_INT[gs.lfo2?.wave] ?? 0,
             lfo2Freq: toFiniteNumber(gs.lfo2?.freq, 0),
             lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
+            slide: toFiniteNumber(gs.slide, 0) / 1000,
+            filterEnvAmt: clamp(toFiniteNumber(filterCfg.filterEnvelopeAmount, 0), 0, 1),
         })
     }
 }

@@ -124,6 +124,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             { name: 'lfo2Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
             { name: 'lfo2Freq',   defaultValue: 1,    minValue: 0,     maxValue: 20,    automationRate: 'k-rate' },
             { name: 'lfo2Depth',  defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
+            { name: 'slide',      defaultValue: 0,    minValue: 0,     maxValue: 2,     automationRate: 'k-rate' },
+            { name: 'filterEnvAmt', defaultValue: 0,  minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
         ];
     }
 
@@ -154,6 +156,15 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this._envSegmentStart = 0;
         this._envA = 0; this._envD = 0; this._envS = 0; this._envR = 0; this._envPeak = 0;
         this._lastEnvTime = -1;
+        // Glide state
+        this._glideStart1 = 0; this._glideStart2 = 0; this._glideStart3 = 0;
+        this._glideTarget1 = 0; this._glideTarget2 = 0; this._glideTarget3 = 0;
+        this._glideTime = 0; this._glideElapsed = 0;
+        // Filter envelope state
+        this._filtEnvLevel = 0;
+        this._filtEnvSeg = 0; // 0=off, 1=attack, 2=decay
+        this._filtEnvStart = 0;
+        this._filtEnvBase = 0; this._filtEnvPeak = 0;
         this.port.onmessage = (e) => this._onMessage(e.data);
     }
 
@@ -166,6 +177,15 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this._envSegmentStart = this.startTime;
             this._envLevel = 0;
             this._lastEnvTime = -1;
+            // Glide: capture starting frequencies for ramp
+            this._glideStart1 = msg.lastFreq1 ?? 0;
+            this._glideStart2 = msg.lastFreq2 ?? 0;
+            this._glideStart3 = msg.lastFreq3 ?? 0;
+            this._glideElapsed = 0;
+            // Filter envelope: start attack phase
+            this._filtEnvSeg = 1;
+            this._filtEnvStart = this.startTime;
+            this._filtEnvLevel = 0;
         } else if (msg.type === 'release') {
             this.releaseTime = msg.releaseTime ?? 0;
             this.releaseStartLevel = this._envLevel;
@@ -327,6 +347,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const lfo2Wave   = Math.round(this._param('lfo2Wave', parameters.lfo2Wave));
         const lfo2Freq   = this._param('lfo2Freq', parameters.lfo2Freq);
         const lfo2Depth  = this._param('lfo2Depth', parameters.lfo2Depth);
+        const slide      = this._param('slide', parameters.slide);
+        const filterEnvAmt = this._param('filterEnvAmt', parameters.filterEnvAmt);
 
         const oscMix = 1 - noiseMix;
 
@@ -396,7 +418,35 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const lfo2Master = this._lfoScratch[1];
 
             // Apply LFO to filter frequency
-            const fFreqSample = fFreq + lfo1Filt + lfo2Filt;
+            let fFreqSample = fFreq + lfo1Filt + lfo2Filt;
+
+            // Filter envelope: ramp filter freq up during attack, back during decay
+            if (filterEnvAmt > 0.001 && this._filtEnvSeg > 0) {
+                if (this._filtEnvSeg === 1) {
+                    // Attack phase: ramp from base to peak
+                    const dt = t;
+                    const attack = A;
+                    if (attack > 0.0001 && dt < attack) {
+                        this._filtEnvLevel = dt / attack;
+                    } else {
+                        this._filtEnvLevel = 1;
+                        this._filtEnvSeg = 2;
+                    }
+                } else if (this._filtEnvSeg === 2) {
+                    // Decay phase: ramp from peak back to base
+                    const dt = t - A;
+                    const decay = D;
+                    if (decay > 0.0001 && dt < decay) {
+                        this._filtEnvLevel = 1 - (dt / decay);
+                    } else {
+                        this._filtEnvLevel = 0;
+                        this._filtEnvSeg = 0;
+                    }
+                }
+                // Modulate filter frequency: base + (maxRange * envAmt * envLevel)
+                const filtEnvMod = fFreqSample * filterEnvAmt * this._filtEnvLevel;
+                fFreqSample = fFreqSample + filtEnvMod;
+            }
 
             // Apply LFO to oscillator detune
             const d1Mod = d1 + this._lfo1Det[0] + this._lfo2Det[0];
@@ -423,17 +473,27 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const f2d = f2 * det2;
             const f3d = f3 * det3;
 
+            // Glide (slide): linear ramp from lastFreq to targetFreq
+            let f1g = f1d, f2g = f2d, f3g = f3d;
+            if (slide > 0.001) {
+                this._glideElapsed += 1 / sr;
+                const glideT = Math.min(this._glideElapsed / slide, 1);
+                if (this._glideStart1 > 0) f1g = this._glideStart1 + (f1d - this._glideStart1) * glideT;
+                if (this._glideStart2 > 0) f2g = this._glideStart2 + (f2d - this._glideStart2) * glideT;
+                if (this._glideStart3 > 0) f3g = this._glideStart3 + (f3d - this._glideStart3) * glideT;
+            }
+
             // Advance oscillators (use simple subtract)
-            this.phase1 += f1d / sr;
-            this.phase2 += f2d / sr;
-            this.phase3 += f3d / sr;
+            this.phase1 += f1g / sr;
+            this.phase2 += f2g / sr;
+            this.phase3 += f3g / sr;
             if (this.phase1 >= 1) this.phase1 -= 1;
             if (this.phase2 >= 1) this.phase2 -= 1;
             if (this.phase3 >= 1) this.phase3 -= 1;
 
-            const o1 = this._v(w1, this.phase1, f1d / sr) * g1c;
-            const o2 = this._v(w2, this.phase2, f2d / sr) * g2c;
-            const o3 = this._v(w3, this.phase3, f3d / sr) * g3c;
+            const o1 = this._v(w1, this.phase1, f1g / sr) * g1c;
+            const o2 = this._v(w2, this.phase2, f2g / sr) * g2c;
+            const o3 = this._v(w3, this.phase3, f3g / sr) * g3c;
             const oscSum = (o1 + o2 + o3) * oscMix;
 
             // Noise (cheap PRNG)
@@ -442,8 +502,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
 
             const dry = oscSum + noise;
 
-            // Filter: recompute coefficients only when LFO modulates filter freq
-            if (lfo1Filt !== 0 || lfo2Filt !== 0) {
+            // Filter: recompute coefficients when LFO or filter envelope modulates freq
+            if (lfo1Filt !== 0 || lfo2Filt !== 0 || (filterEnvAmt > 0.001 && this._filtEnvSeg > 0)) {
                 const fClamped = fFreqSample < 20 ? 20 : (fFreqSample > sr * 0.25 ? sr * 0.25 : fFreqSample);
                 const wdLfo = TWO_PI * (fClamped / sr);
                 const waLfo = 2 * sr * Math.tan(wdLfo * 0.5);

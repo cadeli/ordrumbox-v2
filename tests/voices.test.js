@@ -799,6 +799,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             'master', 'pan', 'velocity',
             'lfo1Target', 'lfo1Wave', 'lfo1Freq', 'lfo1Depth',
             'lfo2Target', 'lfo2Wave', 'lfo2Freq', 'lfo2Depth',
+            'slide', 'filterEnvAmt',
         ]
         for (const key of expectedKeys) {
             expect(msg).toHaveProperty(key)
@@ -930,18 +931,18 @@ describe('VoiceFactory', () => {
         expect(voice).toBeInstanceOf(SynthVoice)
     })
 
-    it('falls back to native SynthVoice when slide > 0 (no glide support in worklet)', async () => {
+    it('uses WorkletSynthVoice when slide > 0 (glide now supported in worklet)', async () => {
         appState.workletStatus = 'active'
         generatedSounds.BASS1.slide = 50
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
-        expect(voice).toBeInstanceOf(SynthVoice)
+        expect(voice).toBeInstanceOf(WorkletSynthVoice)
     })
 
-    it('falls back to native SynthVoice when filter envelope amount > 0', async () => {
+    it('uses WorkletSynthVoice when filter envelope amount > 0 (now supported in worklet)', async () => {
         appState.workletStatus = 'active'
         generatedSounds.BASS1.filter.filterEnvelopeAmount = 0.5
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
-        expect(voice).toBeInstanceOf(SynthVoice)
+        expect(voice).toBeInstanceOf(WorkletSynthVoice)
     })
 
     it('uses native SynthVoice when workletStatus is unavailable', async () => {
