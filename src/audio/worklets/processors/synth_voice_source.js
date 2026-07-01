@@ -9,13 +9,36 @@
  *   - 1 ADSR envelope (attack, decay, sustain, release)
  *   - 1 master gain
  *   - 1 stereo pan
- *   - 2 LFOs with target routing (FLT, VCO detune, master gain, osc gain)
+ *   - 2 LFOs with target routing (all native targets supported)
+ *   - Glide (slide) between notes
+ *   - Filter envelope modulation
+ *
+ * LFO target routing (per LFO):
+ *   0 = NOT (disabled)
+ *   1 = FLT  (filter frequency, ×1000)
+ *   2 = VCO1 (osc1 detune, ×1000)
+ *   3 = VCO2 (osc2 detune, ×1000)
+ *   4 = VCO3 (osc3 detune, ×1000)
+ *   5 = masterVolume (master gain, ×1)
+ *   6 = vco1.gain (osc1 gain, ×1)
+ *   7 = vco1.detune (osc1 detune, ×100)
+ *   8 = vco1.octave (osc1 detune, ×1200)
+ *   9 = vco2.gain (osc2 gain, ×1)
+ *  10 = vco2.detune (osc2 detune, ×100)
+ *  11 = vco2.octave (osc2 detune, ×1200)
+ *  12 = vco3.gain (osc3 gain, ×1)
+ *  13 = vco3.detune (osc3 detune, ×100)
+ *  14 = vco3.octave (osc3 detune, ×1200)
+ *  15 = filter.freq (filter frequency, ×1000)
+ *  16 = filter.filterEnvelopeAmount (filter frequency, ×1000)
+ *  17 = filter.Q (filter Q, ×24)
+ *  18 = noise.mix (noise gain, ×1)
  *
  * Trigger model:
  *   The host sends messages via `port`:
- *     { type: 'trigger', startTime }   — start envelope at startTime (seconds)
- *     { type: 'release', releaseTime } — start release phase at releaseTime
- *     { type: 'update', ...overrides } — live-update params
+ *     { type: 'trigger', startTime, lastFreq1, lastFreq2, lastFreq3 }
+ *     { type: 'release', releaseTime }
+ *     { type: 'update', ...overrides }
  *
  *   Inside `process()`, the envelope state is computed from
  *   (currentSample / sampleRate) - startTime, with ADSR segments.
@@ -37,13 +60,15 @@
  *   - 13: filterType (0=LP, 1=HP, 2=BP, 3=Notch)
  *   - 14: filterFreq (Hz, 20..20000)
  *   - 15: filterQ    (0.1..20)
- *   - 16: attack     (s, 0..5)
- *   - 17: decay      (s, 0..5)
+ *   - 16: attack     (s, 0..0.5)
+ *   - 17: decay      (s, 0..1)
  *   - 18: sustain    (linear, 0..1)
- *   - 19: release    (s, 0..5)
+ *   - 19: release    (s, 0..0.5)
  *   - 20: master     (linear, 0..2)
  *   - 21: pan        (-1..1)
  *   - 22: velocity   (linear, 0..1)
+ *   - 23: slide      (s, 0..2)
+ *   - 24: filterEnvAmt (linear, 0..1)
  */
 
 const SYNTH_VOICE_PROCESSOR_SOURCE = `
@@ -145,7 +170,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this._lfo1Gain = [0, 0, 0];
         this._lfo2Det = [0, 0, 0];
         this._lfo2Gain = [0, 0, 0];
-        this._lfoScratch = [0, 0];
+        this._lfoScratch = [0, 0, 0, 0];
         // Pre-allocated filter output (avoids object allocation per sample)
         this._filtLP = 0;
         this._filtHP = 0;
@@ -218,17 +243,27 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     _lfoValue(target, depth, phase, det, gain, out) {
         det[0] = 0; det[1] = 0; det[2] = 0;
         gain[0] = 0; gain[1] = 0; gain[2] = 0;
-        out[0] = 0; out[1] = 0;
+        out[0] = 0; out[1] = 0; out[2] = 0; out[3] = 0;
         if (target === 0) return;
         const raw = _sinLookup(phase) * depth;
-        if (target === 1) { out[0] = raw * 1000; return; }
-        if (target === 2) { det[0] = raw * 1200; return; }
-        if (target === 3) { det[1] = raw * 1200; return; }
-        if (target === 4) { det[2] = raw * 1200; return; }
-        if (target === 5) { out[1] = raw * 0.8; return; }
-        if (target === 6) { gain[0] = raw; return; }
-        if (target === 7) { det[1] = raw * 1200; return; } // Fixed: was det[0]
-        if (target === 8) { det[2] = raw * 1200; return; } // Fixed: was det[0]
+        if (target === 1)  { out[0] = raw * 1000; return; }
+        if (target === 2)  { det[0] = raw * 1000; return; }
+        if (target === 3)  { det[1] = raw * 1000; return; }
+        if (target === 4)  { det[2] = raw * 1000; return; }
+        if (target === 5)  { out[1] = raw; return; }
+        if (target === 6)  { gain[0] = raw; return; }
+        if (target === 7)  { det[0] = raw * 100; return; }
+        if (target === 8)  { det[0] = raw * 1200; return; }
+        if (target === 9)  { gain[1] = raw; return; }
+        if (target === 10) { det[1] = raw * 100; return; }
+        if (target === 11) { det[1] = raw * 1200; return; }
+        if (target === 12) { gain[2] = raw; return; }
+        if (target === 13) { det[2] = raw * 100; return; }
+        if (target === 14) { det[2] = raw * 1200; return; }
+        if (target === 15) { out[0] = raw * 1000; return; }
+        if (target === 16) { out[0] = raw * 1000; return; }
+        if (target === 17) { out[2] = raw * 24; return; }
+        if (target === 18) { out[3] = raw; return; }
     }
 
     _param(name, arr) {
@@ -413,9 +448,13 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this._lfoValue(lfo1Target, actualLfo1Depth, this.lfoPhase1, this._lfo1Det, this._lfo1Gain, this._lfoScratch);
             const lfo1Filt = this._lfoScratch[0];
             const lfo1Master = this._lfoScratch[1];
+            const lfo1Q = this._lfoScratch[2];
+            const lfo1Noise = this._lfoScratch[3];
             this._lfoValue(lfo2Target, actualLfo2Depth, this.lfoPhase2, this._lfo2Det, this._lfo2Gain, this._lfoScratch);
             const lfo2Filt = this._lfoScratch[0];
             const lfo2Master = this._lfoScratch[1];
+            const lfo2Q = this._lfoScratch[2];
+            const lfo2Noise = this._lfoScratch[3];
 
             // Apply LFO to filter frequency
             let fFreqSample = fFreq + lfo1Filt + lfo2Filt;
@@ -496,19 +535,26 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const o3 = this._v(w3, this.phase3, f3g / sr) * g3c;
             const oscSum = (o1 + o2 + o3) * oscMix;
 
-            // Noise (cheap PRNG)
+            // Noise (cheap PRNG) — apply LFO to noise mix
             this._rngState = _xorshift32(this._rngState);
-            const noise = (this._rngState / 2147483648) * noiseMix;
+            const noiseMod = noiseMix + lfo1Noise + lfo2Noise;
+            const noiseClamped = noiseMod < 0 ? 0 : (noiseMod > 1 ? 1 : noiseMod);
+            const noise = (this._rngState / 2147483648) * noiseClamped;
 
             const dry = oscSum + noise;
 
-            // Filter: recompute coefficients when LFO or filter envelope modulates freq
-            if (lfo1Filt !== 0 || lfo2Filt !== 0 || (filterEnvAmt > 0.001 && this._filtEnvSeg > 0)) {
+            // Compute modulated Q for filter
+            const qMod = fQval + lfo1Q + lfo2Q;
+            const kMod = 1 / (qMod < 0.1 ? 0.1 : (qMod > 20 ? 20 : qMod));
+            const needsFiltRecomp = lfo1Filt !== 0 || lfo2Filt !== 0 || (filterEnvAmt > 0.001 && this._filtEnvSeg > 0) || lfo1Q !== 0 || lfo2Q !== 0;
+
+            // Filter: recompute coefficients when LFO or filter envelope modulates freq or Q
+            if (needsFiltRecomp) {
                 const fClamped = fFreqSample < 20 ? 20 : (fFreqSample > sr * 0.25 ? sr * 0.25 : fFreqSample);
                 const wdLfo = TWO_PI * (fClamped / sr);
                 const waLfo = 2 * sr * Math.tan(wdLfo * 0.5);
                 const gLfo = waLfo * 0.5;
-                this._tptFilt(dry, gLfo, kCoeff);
+                this._tptFilt(dry, gLfo, kMod);
             } else {
                 this._tptFilt(dry, gCoeff, kCoeff);
             }

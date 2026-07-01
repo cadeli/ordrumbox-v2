@@ -917,18 +917,18 @@ describe('VoiceFactory', () => {
         expect(voice).toBeInstanceOf(WorkletSynthVoice)
     })
 
-    it('falls back to native SynthVoice when LFO target is set', async () => {
+    it('uses WorkletSynthVoice when LFO target is set', async () => {
         appState.workletStatus = 'active'
         generatedSounds.BASS1.lfo.target = 'VCO1'
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
-        expect(voice).toBeInstanceOf(SynthVoice)
+        expect(voice).toBeInstanceOf(WorkletSynthVoice)
     })
 
-    it('falls back to native SynthVoice when LFO target is FLT', async () => {
+    it('uses WorkletSynthVoice when LFO target is FLT', async () => {
         appState.workletStatus = 'active'
         generatedSounds.BASS1.lfo.target = 'FLT'
         const voice = await factory.createVoice(makeSoftSynthFlatNote())
-        expect(voice).toBeInstanceOf(SynthVoice)
+        expect(voice).toBeInstanceOf(WorkletSynthVoice)
     })
 
     it('uses WorkletSynthVoice when slide > 0 (glide now supported in worklet)', async () => {

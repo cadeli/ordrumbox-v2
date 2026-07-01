@@ -7,12 +7,10 @@ import { logger } from "../../core/logger.js"
 
 /**
  * Returns true if the given generatedSound config can run entirely on the
- * synth-voice worklet (no LFO routing, no glide, no filter envelope).
+ * synth-voice worklet.
  */
 function isWorkletCompatible(generatedSound) {
     if (!generatedSound) return false
-    if ((generatedSound.lfo?.target ?? 'NOT') !== 'NOT') return false
-    if ((generatedSound.lfo2?.target ?? 'NOT') !== 'NOT') return false
     return true
 }
 
