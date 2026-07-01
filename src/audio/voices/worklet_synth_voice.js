@@ -61,7 +61,11 @@ export default class WorkletSynthVoice extends BaseVoice {
         const ctx = this.audioCtx
         const gs = this.generatedSound
         this.noteRatio = computeNoteRatio(flatNote.fpitch)
-        this.noteVelo = (flatNote.note?.velocity ?? 0.8) * 0.25
+
+        // Normalize velocity by total VCO gain so output level matches SampleVoice
+        const totalVcoGain = toFiniteNumber(gs.vco1?.gain, 0) + toFiniteNumber(gs.vco2?.gain, 0) + toFiniteNumber(gs.vco3?.gain, 0)
+        const vcoNorm = totalVcoGain > 0.001 ? 1 / totalVcoGain : 1
+        this.noteVelo = (flatNote.note?.velocity ?? 0.8) * vcoNorm
 
         this.workletNode = this.registerNode(await createSynthVoiceNode(ctx))
         this._sendUpdate(gs, flatNote.pan ?? 0)
