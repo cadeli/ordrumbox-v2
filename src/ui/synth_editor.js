@@ -14,8 +14,8 @@ const SYNTH_GROUP_DEFAULTS = {
     vco2: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     vco3: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     filter: { type: 'lowpass', freq: 400, Q: 1, filterEnvelopeAmount: 0 },
-    lfo: { target: 'NOT', wave: 'sine', freq: 0, depth: 0 },
-    lfo2: { target: 'NOT', wave: 'sine', freq: 0, depth: 0 },
+    lfo: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
+    lfo2: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     noise: { mix: 0, filterType: 'highpass', filterFreq: 1000, filterQ: 1 },
     enveloppe: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 }
 }
@@ -307,6 +307,18 @@ export default class SynthEditor {
                 value: target,
                 label: target === 'NOT' ? 'off' : target
             }))
+        }
+        if ((path[0] === 'lfo' || path[0] === 'lfo2') && key === 'sync') {
+            return [
+                { value: 'off', label: 'free' },
+                { value: '1/1', label: '1/1' },
+                { value: '1/2', label: '1/2' },
+                { value: '1/4', label: '1/4' },
+                { value: '1/8', label: '1/8' },
+                { value: '1/16', label: '1/16' },
+                { value: '1/8T', label: '1/8T' },
+                { value: '1/16T', label: '1/16T' },
+            ]
         }
         return null
     }

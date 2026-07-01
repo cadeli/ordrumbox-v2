@@ -39,10 +39,10 @@
       "depth": 0
     },
     "enveloppe": {
-      "attack": 0.005,
-      "decay": 0.12,
+      "attack": 0.003,
+      "decay": 0.25,
       "sustain": 0,
-      "release": 0.05
+      "release": 0.12
     },
     "lfo2": {
       "target": "NOT",
@@ -91,10 +91,10 @@
       "depth": 0.12
     },
     "enveloppe": {
-      "attack": 0.01,
-      "decay": 0.12,
+      "attack": 0.006,
+      "decay": 0.28,
       "sustain": 0.7,
-      "release": 0.1
+      "release": 0.22
     },
     "lfo2": {
       "target": "NOT",

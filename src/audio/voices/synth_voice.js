@@ -17,7 +17,9 @@ import {
     computeOscFrequency,
     computeNoteRatio,
     computeAccent,
+    syncToHz,
 } from '../math.js'
+import { serviceRegistry } from '../../state/service_registry.js'
 
 const MIN_ATTACK  = 0.003
 const MIN_RELEASE = 0.008
@@ -128,7 +130,8 @@ export default class SynthVoice extends BaseVoice {
         if (lfoTarget !== 'NOT') {
             this.masterLfo = this.registerNode(this.audioCtx.createOscillator())
             this.masterLfo.type            = typeof gs.lfo?.wave === 'string' ? gs.lfo.wave : 'sine'
-            this.masterLfo.frequency.value = toFiniteNumber(gs.lfo?.freq, 0) + LFO_FREQ_OFFSET
+            const lfo1SyncHz = syncToHz(gs.lfo?.sync, serviceRegistry.transport?.bpm)
+            this.masterLfo.frequency.value = (lfo1SyncHz ?? toFiniteNumber(gs.lfo?.freq, 0)) + LFO_FREQ_OFFSET
             this.lfoGain.gain.value        = this.computeLfoDepth(lfoTarget)
             this.masterLfo.connect(this.lfoGain)
         }
@@ -136,7 +139,8 @@ export default class SynthVoice extends BaseVoice {
         if (lfoTarget2 !== 'NOT') {
             this.masterLfo2 = this.registerNode(this.audioCtx.createOscillator())
             this.masterLfo2.type            = typeof gs.lfo2?.wave === 'string' ? gs.lfo2.wave : 'sine'
-            this.masterLfo2.frequency.value = toFiniteNumber(gs.lfo2?.freq, 0) + LFO_FREQ_OFFSET
+            const lfo2SyncHz = syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm)
+            this.masterLfo2.frequency.value = (lfo2SyncHz ?? toFiniteNumber(gs.lfo2?.freq, 0)) + LFO_FREQ_OFFSET
             this.lfoGain2.gain.value        = this.computeLfoDepth2(lfoTarget2)
             this.masterLfo2.connect(this.lfoGain2)
         }
@@ -296,7 +300,8 @@ export default class SynthVoice extends BaseVoice {
             }
             const lfo = lfoNum === 1 ? this.masterLfo : this.masterLfo2
             lfo.type = typeof lfoConfig?.wave === 'string' ? lfoConfig.wave : 'sine'
-            lfo.frequency.setTargetAtTime(toFiniteNumber(lfoConfig?.freq, 0) + LFO_FREQ_OFFSET, time, rampTime)
+            const syncedHz = syncToHz(lfoConfig?.sync, serviceRegistry.transport?.bpm)
+            lfo.frequency.setTargetAtTime((syncedHz ?? toFiniteNumber(lfoConfig?.freq, 0)) + LFO_FREQ_OFFSET, time, rampTime)
             try { lfoGain.disconnect() } catch (e) {}
             lfoGain.gain.setTargetAtTime(depthFn(target), time, rampTime)
             connectFn(target)

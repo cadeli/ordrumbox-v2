@@ -116,3 +116,20 @@ export function computeAccent(noteVelo, accentAmount = 0.5) {
     const accentFilterBoost = isAccented ? accentAmount * 2000 : 0
     return { isAccented, accentMultiplier, accentFilterBoost }
 }
+
+const SYNC_NOTE_HZ = {
+    '1/1':  0.25,
+    '1/2':  0.5,
+    '1/4':  1,
+    '1/8':  2,
+    '1/16': 4,
+    '1/8T':  2 * 2 / 3,
+    '1/16T': 4 * 2 / 3,
+}
+
+export function syncToHz(syncValue, bpm) {
+    if (!syncValue || syncValue === 'off' || !bpm || bpm <= 0) return null
+    const base = SYNC_NOTE_HZ[syncValue]
+    if (base === undefined) return null
+    return base * (bpm / 60)
+}

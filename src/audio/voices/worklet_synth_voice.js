@@ -1,8 +1,9 @@
 import BaseVoice from './base_voice.js'
 import WorkletLoader from '../worklets/loader.js'
 import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
-import { computeOscFrequency, computeNoteRatio, computeAccent, toFiniteNumber, clamp } from '../math.js'
+import { computeOscFrequency, computeNoteRatio, computeAccent, toFiniteNumber, clamp, syncToHz } from '../math.js'
 import { RELEASE_TIME } from '../../core/constants.js'
+import { serviceRegistry } from '../../state/service_registry.js'
 
 // Register the synth-voice processor (idempotent)
 WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
@@ -196,11 +197,11 @@ export default class WorkletSynthVoice extends BaseVoice {
             velocity: peak,
             lfo1Target: LFO_TARGET_TO_INT[gs.lfo?.target] ?? 0,
             lfo1Wave: WAVE_TO_INT[gs.lfo?.wave] ?? 0,
-            lfo1Freq: toFiniteNumber(gs.lfo?.freq, 0),
+            lfo1Freq: syncToHz(gs.lfo?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo?.freq, 0),
             lfo1Depth: toFiniteNumber(gs.lfo?.depth, 0),
             lfo2Target: LFO_TARGET_TO_INT[gs.lfo2?.target] ?? 0,
             lfo2Wave: WAVE_TO_INT[gs.lfo2?.wave] ?? 0,
-            lfo2Freq: toFiniteNumber(gs.lfo2?.freq, 0),
+            lfo2Freq: syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo2?.freq, 0),
             lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
             slide: toFiniteNumber(gs.slide, 0) / 1000,
             filterEnvAmt: clamp(toFiniteNumber(filterCfg.filterEnvelopeAmount, 0), 0, 1),
