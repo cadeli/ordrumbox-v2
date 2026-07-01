@@ -6,6 +6,8 @@ import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { TICK } from '../core/constants.js'
 
+const MAX_POLYPHONY = 16
+
 export default class MfSound {
     constructor(audioCtx, mixer, sounds, generatedSounds) {
         this.audioCtx = audioCtx
@@ -14,6 +16,7 @@ export default class MfSound {
         this.generatedSounds = generatedSounds || {}
         this.activeVoices = new WeakMap()
         this.activeSynthVoices = new Set()
+        this._activeVoiceSet = new Set()
         this.nodePool = new NodePool(audioCtx)
         this.voiceFactory = new VoiceFactory(audioCtx, mixer, sounds, this.generatedSounds, this.nodePool)
         this.generatedSoundsLoading = false
@@ -78,15 +81,26 @@ export default class MfSound {
             if (!strip) return null
             this.updateStripFromTrack(strip, flatNote.track, time)
             this.stopPreviousVoice(flatNote.track, time)
+
+            // Polyphony limit: steal oldest voice when at capacity
+            if (this._activeVoiceSet.size >= MAX_POLYPHONY) {
+                const oldest = this._activeVoiceSet.values().next().value
+                if (oldest) {
+                    this.stopVoice(oldest, time)
+                }
+            }
+
             if (opts.syncGeneratedSounds) {
                 this.voiceFactory.generatedSounds = this.generatedSounds
             }
             const voice = await this.voiceFactory.createVoice(flatNote)
             if (voice) {
                 this._activeNoteCount++
+                this._activeVoiceSet.add(voice)
                 const prevOnEnded = voice.onEnded
                 voice.onEnded = () => {
                     this._activeNoteCount = Math.max(0, this._activeNoteCount - 1)
+                    this._activeVoiceSet.delete(voice)
                     prevOnEnded?.()
                 }
                 let lfoContext = null
