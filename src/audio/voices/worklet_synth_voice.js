@@ -36,22 +36,14 @@ function postUpdate(node, params) {
 }
 
 /**
- * Drop-in replacement for SynthVoice when AudioWorklet mode is active.
+ * Synth voice that runs entirely on an AudioWorklet processor.
  *
  * The host sends trigger/release/update messages via the worklet's port;
  * the worklet runs the ADSR + filter DSP in the audio thread. This avoids
  * the per-note OscillatorNode + GainNode + BiquadFilterNode allocation
- * pressure that the native SynthVoice imposes.
+ * pressure that a native Web Audio node graph would impose.
  *
- * Limitations (vs. native SynthVoice):
- *   - No glide (slide)
- *   - No LFO routing
- *   - Single filter (no dual)
- *   - No filter envelope
- *   - No noise sub-filter
- *
- * The voice_factory decides whether to instantiate this or the native
- * SynthVoice based on generatedSound content.
+ * Features: 3 VCOs, 2 LFOs, glide, filter envelope, noise sub-filter.
  */
 export default class WorkletSynthVoice extends BaseVoice {
     constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null) {
@@ -109,7 +101,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         const decay = toFiniteNumber(env.decay, 0.1)
         const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
 
-        // Auto-release after decay to match native SynthVoice behavior
+        // Auto-release after decay
         const releaseTime = time + attack + decay
         postRelease(this.workletNode, releaseTime)
 

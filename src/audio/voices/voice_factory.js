@@ -1,18 +1,6 @@
 import SampleVoice from './sample_voice.js'
-import SynthVoice from './synth_voice.js'
 import WorkletSynthVoice from './worklet_synth_voice.js'
-import { appState } from '../../state/app_state.js'
-import { toFiniteNumber } from '../math.js'
 import { logger } from "../../core/logger.js"
-
-/**
- * Returns true if the given generatedSound config can run entirely on the
- * synth-voice worklet.
- */
-function isWorkletCompatible(generatedSound) {
-    if (!generatedSound) return false
-    return true
-}
 
 export default class VoiceFactory {
     constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null) {
@@ -33,14 +21,7 @@ export default class VoiceFactory {
             const generatedSound = this.generatedSounds?.[soundKey]
             if (!generatedSound) return null
 
-            // Worklet voice for compatible sounds when worklets are active;
-            // native SynthVoice for advanced features (LFO routing, glide,
-            // filter envelope) not yet in the worklet, and as fallback when
-            // worklet init is unknown / unavailable.
-            if (appState.workletStatus === 'active' && isWorkletCompatible(generatedSound)) {
-                return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool)
-            }
-            return new SynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool)
+            return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool)
         }
 
         let soundBuffer = this.sounds[flatNote.soundId]?.buffer

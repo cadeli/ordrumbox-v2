@@ -484,8 +484,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                         this._filtEnvSeg = 0;
                     }
                 }
-                // Modulate filter frequency: base + (maxRange * envAmt * envLevel)
-                const filtEnvMod = fFreqSample * filterEnvAmt * this._filtEnvLevel;
+                // Modulate filter frequency: sweep from base toward FILTER_FREQ_MAX (20000 Hz)
+                // Matches native SynthVoice: peakFreq = mFreq + (FILTER_FREQ_MAX - mFreq) * envAmt
+                const filtEnvMod = (20000 - fFreqSample) * filterEnvAmt * this._filtEnvLevel;
                 fFreqSample = fFreqSample + filtEnvMod;
             }
 

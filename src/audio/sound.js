@@ -1,5 +1,4 @@
 import VoiceFactory from './voices/voice_factory.js'
-import SynthVoice from './voices/synth_voice.js'
 import NodePool from './node_pool.js'
 import { applyTrackToStrip } from './strip_sync.js'
 import { appState } from '../state/app_state.js'
