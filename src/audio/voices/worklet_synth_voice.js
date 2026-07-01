@@ -151,10 +151,12 @@ export default class WorkletSynthVoice extends BaseVoice {
         const filterCfg = gs.filter ?? {}
 
         // Match native peakGain = noteVelo * masterVolume * accentMultiplier
+        // -12 dB compensation: synth sustain RMS is much higher than sample drum transients
+        const SYNTH_RMS_COMP = 0.2512  // 10^(-12/20)
         const { accentMultiplier } = computeAccent(this.noteVelo)
         const masterVolume = toFiniteNumber(gs.masterVolume, 0.8)
         this.masterVolume = masterVolume
-        const peak = this.noteVelo * masterVolume * accentMultiplier
+        const peak = this.noteVelo * masterVolume * accentMultiplier * SYNTH_RMS_COMP
 
         postUpdate(this.workletNode, {
             osc1Freq: gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0,
