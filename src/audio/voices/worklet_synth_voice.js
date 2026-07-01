@@ -83,8 +83,6 @@ export default class WorkletSynthVoice extends BaseVoice {
         // Send trigger with last frequencies for glide
         const triggerMsg = { type: 'trigger', startTime: time }
         if (hasGlide) {
-            // Track is not available here, so we use a simple approach:
-            // Store last freqs on the workletNode itself
             triggerMsg.lastFreq1 = this.workletNode._lastFreq1 ?? f1
             triggerMsg.lastFreq2 = this.workletNode._lastFreq2 ?? f2
             triggerMsg.lastFreq3 = this.workletNode._lastFreq3 ?? f3
@@ -95,33 +93,11 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.workletNode._lastFreq1 = f1
         this.workletNode._lastFreq2 = f2
         this.workletNode._lastFreq3 = f3
-        
-        const env = gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
-        const attack = Math.max(0.003, toFiniteNumber(env.attack, 0.01))
-        const decay = toFiniteNumber(env.decay, 0.1)
-        const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
-
-        // Auto-release after decay
-        const releaseTime = time + attack + decay
-        postRelease(this.workletNode, releaseTime)
-
-        const totalSec = attack + decay + release + RELEASE_TIME
-        this.totalStopTime = time + totalSec
-        
-        // Cleanup refs after sound has fully finished
-        if (typeof setTimeout === 'function') {
-            this._cleanupTimer = setTimeout(() => {
-                this.cleanup()
-                if (this.onEnded) this.onEnded()
-                this._cleanupTimer = null
-            }, totalSec * 1000)
-        }
     }
 
     stop(time) {
         if (this.stopped) return
         super.stop(time)
-        // Cancel the cleanup timer to prevent race with new voices acquiring pooled nodes
         if (this._cleanupTimer) {
             clearTimeout(this._cleanupTimer)
             this._cleanupTimer = null
@@ -129,15 +105,17 @@ export default class WorkletSynthVoice extends BaseVoice {
         if (this.workletNode) {
             postRelease(this.workletNode, time)
         }
-        
-        // Schedule a final cleanup after the stop ramp completes (approx 100ms for safety)
-        const stopDelay = Math.max(0, time - this.audioCtx.currentTime) + 0.1
+
+        const gs = this.generatedSound
+        const env = gs?.enveloppe ?? { release: 0.1 }
+        const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
+        const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
         if (typeof setTimeout === 'function') {
             this._cleanupTimer = setTimeout(() => {
                 this.cleanup()
                 if (this.onEnded) this.onEnded()
                 this._cleanupTimer = null
-            }, stopDelay * 1000)
+            }, cleanupDelay * 1000)
         }
     }
 
