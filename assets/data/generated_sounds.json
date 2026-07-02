@@ -625,14 +625,14 @@
       "wave": "sine"
     },
     "vco2": {
-      "gain": 0,
+      "gain": 0.5,
       "octave": 2,
       "detune": 0,
       "wave": "sine"
     },
     "vco3": {
-      "gain": 0,
-      "octave": 0,
+      "gain": 0.4,
+      "octave": 4,
       "detune": 0,
       "wave": "sine"
     },
