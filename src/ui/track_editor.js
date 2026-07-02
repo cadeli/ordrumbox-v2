@@ -421,31 +421,22 @@ export default class TrackEditor extends BasePanel {
     }
 
     _renderFxGroup(isExpanded) {
-        let html = `<div class="ne-group ${isExpanded ? 'expanded' : 'collapsed'}" data-group="effects">
-            <button class="ne-group-accordion-toggle ne-toggle ${isExpanded ? 'active' : ''}" data-toggle="effects" title="Effects">
-                <span class="ne-group-accordion-icon">${isExpanded ? '&minus;' : '+'}</span>
-                <span class="ne-group-accordion-label">FX</span>
-            </button>
-            <div class="ne-group-content">
-                <div class="ne-group-label fx-header">
-                    <span>Effects</span>
-                    <span class="fx-tabs">`
-
+        let tabsHtml = ''
         if (isExpanded) {
             FX_DEFS.forEach((fx, i) => {
                 const activeClass = i === this._activeFxTab ? ' active' : ''
-                html += `<button class="fx-tab-btn${activeClass}" data-fx-tab="${i}" title="${fx.label}">${i + 1}</button>`
+                tabsHtml += `<button class="fx-tab-btn${activeClass}" data-fx-tab="${i}" title="${fx.label}">${i + 1}</button>`
             })
         }
+        const labelHtml = `<span>Effects</span><span class="fx-tabs">${tabsHtml}</span>`
 
-        html += `</span></div>`
-
+        let content = ''
         FX_DEFS.forEach((fx, idx) => {
             const on = this._isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
             const hiddenStyle = idx !== this._activeFxTab && isExpanded ? ' style="display:none"' : ''
 
-            html += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">
+            content += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">
                 <div class="ne-grid">
                     <div class="ne-row">
                         <button class="${ledClass}" data-fx-toggle="${fx.key}" title="${on ? 'Disable' : 'Enable'} ${fx.label}"></button>
@@ -457,15 +448,15 @@ export default class TrackEditor extends BasePanel {
                 if (!prop) return
                 const val = this._track[ck]
                 if (prop.type === 'select') {
-                    html += `<div class="ne-row" data-prop="${ck}">
+                    content += `<div class="ne-row" data-prop="${ck}">
                         <label style="min-width:20px">${prop.label}</label>
                         <select data-key="${ck}">`
                     prop.options.forEach((opt, idx2) => {
                         const label = prop.labels ? prop.labels[idx2] : opt
                         const sel = String(opt) === String(val) ? ' selected' : ''
-                        html += `<option value="${opt}"${sel}>${label}</option>`
+                        content += `<option value="${opt}"${sel}>${label}</option>`
                     })
-                    html += `</select></div>`
+                    content += `</select></div>`
                 } else {
                     const s = new OrSlider({
                         key: ck,
@@ -481,15 +472,17 @@ export default class TrackEditor extends BasePanel {
                     })
                     s._isDelegated = true
                     this._sliders.set(ck, s)
-                    html += s.toHTML()
+                    content += s.toHTML()
                 }
             })
 
-            html += `</div></div>`
+            content += `</div></div>`
         })
 
-        html += `</div></div>`
-        return html
+        return buildAccordionGroup('effects', 'Effects', 'FX', isExpanded, content, {
+            labelClass: 'ne-group-label fx-header',
+            labelHtml,
+        })
     }
 
     _isFxOn(fx) {
