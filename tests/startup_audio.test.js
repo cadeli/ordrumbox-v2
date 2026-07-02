@@ -268,7 +268,7 @@ describe('mixer.start() — no duplicate connections', () => {
 
         const mixer = new MfMixer(ctx)
         await WorkletLoader.ensureLoaded(ctx)
-        mixer._init()
+        mixer.start()
 
         const busInput = mixer.busInput
         const callsAfterInit = busInput.connect.mock.calls.length
@@ -278,9 +278,9 @@ describe('mixer.start() — no duplicate connections', () => {
         mixer.start()
         mixer.start()
 
-        // busInput.disconnect() must have been called at least once per start()
+        // busInput.disconnect() must have been called at least once per extra start()
         expect(busInput.disconnect.mock.calls.length).toBeGreaterThanOrEqual(3)
-        // busInput.connect() was called in _init() + 3× start(), but each start
+        // busInput.connect() was called in initial start() + 3× extra start(), but each start
         // disconnected first — so no duplicate signal accumulation.
         expect(busInput.connect.mock.calls.length).toBe(callsAfterInit + 3)
     })

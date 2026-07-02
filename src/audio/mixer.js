@@ -20,55 +20,17 @@ export default class MfMixer {
 
     /**
      * Async factory — loads the master-bus worklet then wires the graph.
-     * Use this instead of calling start() on a synchronously constructed mixer.
      */
     static async create(audioCtx) {
         const mixer = new MfMixer(audioCtx);
         await WorkletLoader.ensureLoaded(audioCtx);
-        await mixer._init();
+        mixer.start();
         return mixer;
-    }
-
-    // ─── Internal setup ─────────────────────────────────────────────────────────
-
-    _init() {
-        const ctx = this.audioCtx;
-
-        this.analyser = ctx.createAnalyser();
-            this.analyser.fftSize = 4096;
-        this.gFftData  = new Uint8Array(this.analyser.frequencyBinCount);
-        this.dataArray = new Uint8Array(this.analyser.fftSize);
-
-        this.busInput = ctx.createGain();
-
-        // Central Transport Clock (provides sample-accurate time to all strips)
-        this.transportClock = ctx.createConstantSource();
-        this.transportClock.offset.value = 0;
-
-        this.busWorklet = WorkletLoader.createNode(ctx, 'master-bus', {
-            numberOfInputs: 1,
-            numberOfOutputs: 1,
-            outputChannelCount: [2],
-        });
-
-        // strips → busInput → master-bus worklet → analyser → destination
-        this.busInput.connect(this.busWorklet);
-        this.busWorklet.connect(this.analyser);
-        this.analyser.connect(ctx.destination);
     }
 
     // ─── Lifecycle ──────────────────────────────────────────────────────────────
 
-    /**
-     * start() is kept for compatibility with AudioEngine (which calls mixer.start()).
-     * The heavy lifting now happens in the async factory; start() is a no-op if
-     * already initialised, or triggers a sync-safe reconnect.
-     */
     start = () => {
-        // Re-initialise any node that was torn down by stop(). This path is
-        // hit on every start() following a stop() (audio buses and analyser
-        // are nulled on stop) and on legacy cold-start (mixer constructed
-        // synchronously without the async factory).
         const ctx = this.audioCtx;
 
         if (!this.analyser) {
@@ -96,8 +58,7 @@ export default class MfMixer {
             });
         }
 
-        // Wire the bus only when every link is present. If the master worklet
-        // isn't ready yet, create() will wire it later via _init().
+        // Wire the bus only when every link is present.
         // Always disconnect first — Web Audio connect() accumulates duplicate
         // connections which double the signal each time.
         if (this.busInput && this.busWorklet && this.analyser) {
