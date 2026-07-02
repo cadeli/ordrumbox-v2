@@ -55,6 +55,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.noteRatio = 1
         this.masterVolume = 0.8
         this._cleanupTimer = null
+        this._autoReleaseTimer = null
     }
 
     async setup(flatNote, time) {
@@ -98,12 +99,15 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.workletNode._lastFreq2 = f2
         this.workletNode._lastFreq3 = f3
 
-        // Safety: force-stop after 3 seconds to prevent infinite sustain
-        if (this._safetyTimer) clearTimeout(this._safetyTimer)
-        this._safetyTimer = setTimeout(() => {
+        // Auto-release after one step (16th note = 0.25 * secondsPerBeat)
+        if (this._autoReleaseTimer) clearTimeout(this._autoReleaseTimer)
+        const bpm = serviceRegistry.transport?.bpm ?? 120
+        const stepDuration = 0.25 * (60 / bpm)
+        const releaseDelay = Math.max(0, (time + stepDuration - this.audioCtx.currentTime)) * 1000
+        this._autoReleaseTimer = setTimeout(() => {
             if (!this.stopped) this.stop(this.audioCtx.currentTime)
-            this._safetyTimer = null
-        }, 3000)
+            this._autoReleaseTimer = null
+        }, releaseDelay)
     }
 
     stop(time) {
@@ -113,9 +117,9 @@ export default class WorkletSynthVoice extends BaseVoice {
             clearTimeout(this._cleanupTimer)
             this._cleanupTimer = null
         }
-        if (this._safetyTimer) {
-            clearTimeout(this._safetyTimer)
-            this._safetyTimer = null
+        if (this._autoReleaseTimer) {
+            clearTimeout(this._autoReleaseTimer)
+            this._autoReleaseTimer = null
         }
         if (this.workletNode) {
             postRelease(this.workletNode, time)
@@ -151,12 +155,10 @@ export default class WorkletSynthVoice extends BaseVoice {
         const filterCfg = gs.filter ?? {}
 
         // Match native peakGain = noteVelo * masterVolume * accentMultiplier
-        // -12 dB compensation: synth sustain RMS is much higher than sample drum transients
-        const SYNTH_RMS_COMP = 0.2512  // 10^(-12/20)
         const { accentMultiplier } = computeAccent(this.noteVelo)
         const masterVolume = toFiniteNumber(gs.masterVolume, 0.8)
         this.masterVolume = masterVolume
-        const peak = this.noteVelo * masterVolume * accentMultiplier * SYNTH_RMS_COMP
+        const peak = this.noteVelo * masterVolume * accentMultiplier
 
         postUpdate(this.workletNode, {
             osc1Freq: gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0,
