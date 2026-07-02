@@ -5,7 +5,6 @@ import { TICK } from '../core/constants.js'
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
-import BaseVoice from '../audio/voices/base_voice.js'
 
 export default class PatternPanel extends BasePanel {
     constructor() {
@@ -176,14 +175,12 @@ export default class PatternPanel extends BasePanel {
                 this._rafId = null
                 if (this._playhead) this._playhead.style.display = 'none'
                 this._resetVuAndWaveform()
-                this._updatePerfDisplay()
                 return
             }
 
             this._updateVus(mixer)
             this._drawWaveform(mixer)
             this._updatePlayhead()
-            this._updatePerfDisplay()
 
             this._rafId = requestAnimationFrame(loop)
         }
@@ -191,20 +188,6 @@ export default class PatternPanel extends BasePanel {
     }
 
     _updatePerfDisplay() {
-        if (!this.container) return
-        let perfEl = this.container.querySelector('.pp-perf-stats')
-        if (!perfEl) {
-            perfEl = document.createElement('span')
-            perfEl.className = 'pp-perf-stats pp-meta'
-            perfEl.style.color = '#4ade80'
-            perfEl.style.marginLeft = 'auto'
-            const header = this.container.querySelector('.pp-header')
-            if (header) header.appendChild(perfEl)
-        }
-        const nodes = BaseVoice.activeNodeCount
-        const notes = serviceRegistry.audioEngine?.mfSound?._activeNoteCount ?? 0
-        perfEl.textContent = `N:${notes}  Nodes:${nodes}`
-        perfEl.style.color = nodes > 200 ? '#f43f5e' : (nodes > 100 ? '#fbbf24' : '#4ade80')
     }
 
     _stopRafLoop() {
