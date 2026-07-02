@@ -421,9 +421,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         // Pre-compute filter coefficients (hoisted when LFO depth=0 on filter)
         const fFreqMod = fFreq; // LFO applied per-sample below if needed
         const fQval = fQ;
-        const wd = TWO_PI * (Math.min(fFreqMod, sr * 0.25) / sr);
-        const wa = 2 * sr * Math.tan(wd * 0.5);
-        const gCoeff = wa * 0.5;
+        const gCoeff = Math.tan( PI* Math.min(fFreqMod, sr * 0.25)/sr)
         const kCoeff = 1 / fQval;
 
         // Pre-compute detune ratios (skip Math.pow when detune=0 and no LFO)
@@ -567,9 +565,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             // Filter: recompute coefficients when LFO or filter envelope modulates freq or Q
             if (needsFiltRecomp) {
                 const fClamped = fFreqSample < 20 ? 20 : (fFreqSample > sr * 0.25 ? sr * 0.25 : fFreqSample);
-                const wdLfo = TWO_PI * (fClamped / sr);
-                const waLfo = 2 * sr * Math.tan(wdLfo * 0.5);
-                const gLfo = waLfo * 0.5;
+                const gLfo = Math.tan(PI* fClamped/sr);
                 this._tptFilt(dry, gLfo, kMod);
             } else {
                 this._tptFilt(dry, gCoeff, kCoeff);
