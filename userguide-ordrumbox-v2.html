@@ -664,12 +664,12 @@
         </thead>
         <tbody>
             <tr><td><strong>masterVolume</strong></td><td>0–1</td><td>0.8</td><td>Synth output volume</td></tr>
-            <tr><td><strong>slide</strong></td><td>0–500</td><td>0</td><td>Portamento/glide time</td></tr>
+            <tr><td><strong>slide</strong></td><td>0–500 ms</td><td>0</td><td>Portamento/glide time between consecutive notes. When &gt; 0, pitch slides smoothly from the previous note to the new one.</td></tr>
         </tbody>
     </table>
 
     <h3>Oscillators (VCO1, VCO2, VCO3)</h3>
-    <p>Each oscillator has:</p>
+    <p>Three independent oscillators with PolyBLEP anti-aliasing. Each oscillator has:</p>
     <table>
         <thead>
             <tr>
@@ -683,9 +683,31 @@
             <tr><td><strong>gain</strong></td><td>0–1</td><td>vco1:1, others:0</td><td>Oscillator volume</td></tr>
             <tr><td><strong>octave</strong></td><td>-4 to 4</td><td>0</td><td>Octave offset</td></tr>
             <tr><td><strong>detune</strong></td><td>-100 to 100</td><td>0</td><td>Fine detuning in cents</td></tr>
-            <tr><td><strong>wave</strong></td><td>square, sawtooth, triangle, sine</td><td>sine</td><td>Waveform</td></tr>
+            <tr><td><strong>wave</strong></td><td>sine, triangle, sawtooth, square</td><td>sine</td><td>Waveform</td></tr>
         </tbody>
     </table>
+
+    <h3>FM (Frequency Modulation)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Range</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>amount</strong></td><td>0–1</td><td>0</td><td>FM depth. When &gt; 0, VCO2 modulates VCO1 frequency and VCO3 modulates VCO2 frequency (serial FM chain). The modulation amount scales the modulator output by ×1000 Hz.</td></tr>
+        </tbody>
+    </table>
+    <p><strong>How FM works:</strong></p>
+    <ul>
+        <li>The modulator waveform (VCO2 or VCO3) is computed first, then added to the carrier's base frequency.</li>
+        <li>At <code>amount = 0</code>, oscillators run independently (standard subtractive mode).</li>
+        <li>At <code>amount = 1</code>, maximum frequency modulation is applied, creating complex sidebands.</li>
+        <li>FM chain: VCO3 &rarr; modulates VCO2 freq &rarr; modulates VCO1 freq.</li>
+    </ul>
 
     <h3>Filter</h3>
     <table>
@@ -698,12 +720,13 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>type</strong></td><td>lowpass, highpass, bandpass, etc.</td><td>lowpass</td><td>Filter type</td></tr>
-            <tr><td><strong>freq</strong></td><td>20–20000</td><td>400 Hz</td><td>Cutoff frequency</td></tr>
-            <tr><td><strong>Q</strong></td><td>0.1–24</td><td>1</td><td>Resonance</td></tr>
-            <tr><td><strong>envAmount</strong></td><td>0–1</td><td>0</td><td>Envelope modulation depth</td></tr>
+            <tr><td><strong>type</strong></td><td>lowpass, highpass, bandpass, notch</td><td>lowpass</td><td>Filter type (TPT SVF topology)</td></tr>
+            <tr><td><strong>freq</strong></td><td>20–20000 Hz</td><td>400 Hz</td><td>Cutoff frequency</td></tr>
+            <tr><td><strong>Q</strong></td><td>0.1–24</td><td>1</td><td>Resonance (higher = narrower peak at cutoff)</td></tr>
+            <tr><td><strong>Env</strong></td><td>0–1</td><td>0</td><td>Filter envelope modulation depth. When &gt; 0, sweeps the cutoff frequency upward during the attack phase and back during the decay phase.</td></tr>
         </tbody>
     </table>
+    <p><strong>Filter envelope behavior:</strong> When <code>Env &gt; 0</code>, the cutoff frequency sweeps from its base value toward 20 kHz during the attack time, then returns to the base value during the decay time. At <code>Env = 1</code>, the sweep reaches the full 20 kHz range.</p>
 
     <h3>LFO</h3>
     <p>There are two independent LFOs (LFO and LFO2) with the same parameters:</p>
@@ -717,10 +740,43 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>target</strong></td><td>NOT, filter.freq, vco1.detune, etc.</td><td>NOT</td><td>Modulation target</td></tr>
-            <tr><td><strong>wave</strong></td><td>square, sawtooth, triangle, sine</td><td>sine</td><td>LFO waveform</td></tr>
-            <tr><td><strong>freq</strong></td><td>0–20</td><td>0</td><td>LFO rate</td></tr>
+            <tr><td><strong>target</strong></td><td>see target list below</td><td>NOT (disabled)</td><td>Modulation target</td></tr>
+            <tr><td><strong>wave</strong></td><td>sine, triangle, sawtooth, square</td><td>sine</td><td>LFO waveform</td></tr>
+            <tr><td><strong>freq</strong></td><td>0–20</td><td>0</td><td>LFO rate in cycles per 4 bars</td></tr>
             <tr><td><strong>depth</strong></td><td>0–1</td><td>0</td><td>Modulation depth</td></tr>
+            <tr><td><strong>sync</strong></td><td>off, 1/1, 1/2, 1/4, 1/8, 1/16, 1/8T, 1/16T</td><td>off</td><td>Tempo sync. When set to a note value, the LFO rate locks to the pattern BPM instead of the free-running freq. T = triplet.</td></tr>
+        </tbody>
+    </table>
+
+    <p><strong>LFO Targets:</strong></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Target</th>
+                <th>Description</th>
+                <th>Scale</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>NOT</strong></td><td>LFO disabled</td><td>—</td></tr>
+            <tr><td><strong>FLT</strong></td><td>Filter cutoff frequency</td><td>×1000 Hz</td></tr>
+            <tr><td><strong>VCO1</strong></td><td>VCO1 coarse frequency modulation</td><td>×1000 Hz</td></tr>
+            <tr><td><strong>VCO2</strong></td><td>VCO2 coarse frequency modulation</td><td>×1000 Hz</td></tr>
+            <tr><td><strong>VCO3</strong></td><td>VCO3 coarse frequency modulation</td><td>×1000 Hz</td></tr>
+            <tr><td><strong>masterVolume</strong></td><td>Master volume tremolo</td><td>×1</td></tr>
+            <tr><td><strong>vco1.gain</strong></td><td>VCO1 amplitude</td><td>×1</td></tr>
+            <tr><td><strong>vco1.detune</strong></td><td>VCO1 fine detune</td><td>×100 cents</td></tr>
+            <tr><td><strong>vco1.octave</strong></td><td>VCO1 octave offset</td><td>×1200 cents</td></tr>
+            <tr><td><strong>vco2.gain</strong></td><td>VCO2 amplitude</td><td>×1</td></tr>
+            <tr><td><strong>vco2.detune</strong></td><td>VCO2 fine detune</td><td>×100 cents</td></tr>
+            <tr><td><strong>vco2.octave</strong></td><td>VCO2 octave offset</td><td>×1200 cents</td></tr>
+            <tr><td><strong>vco3.gain</strong></td><td>VCO3 amplitude</td><td>×1</td></tr>
+            <tr><td><strong>vco3.detune</strong></td><td>VCO3 fine detune</td><td>×100 cents</td></tr>
+            <tr><td><strong>vco3.octave</strong></td><td>VCO3 octave offset</td><td>×1200 cents</td></tr>
+            <tr><td><strong>filter.freq</strong></td><td>Filter cutoff frequency (same as FLT)</td><td>×1000 Hz</td></tr>
+            <tr><td><strong>filter.filterEnvelopeAmount</strong></td><td>Filter envelope depth</td><td>×1000</td></tr>
+            <tr><td><strong>filter.Q</strong></td><td>Filter resonance</td><td>×24</td></tr>
+            <tr><td><strong>noise.mix</strong></td><td>Noise generator level</td><td>×1</td></tr>
         </tbody>
     </table>
 
@@ -735,8 +791,8 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>mix</strong></td><td>0–1</td><td>0</td><td>White noise level</td></tr>
-            <tr><td><strong>filterType</strong></td><td>filter types</td><td>highpass</td><td>Noise filter type</td></tr>
+            <tr><td><strong>mix</strong></td><td>0–1</td><td>0</td><td>White noise level (xorshift32 PRNG). Mixed with oscillator output.</td></tr>
+            <tr><td><strong>filterType</strong></td><td>lowpass, highpass, bandpass, notch</td><td>highpass</td><td>Noise filter type</td></tr>
             <tr><td><strong>filterFreq</strong></td><td>20–20000</td><td>1000 Hz</td><td>Noise filter cutoff</td></tr>
             <tr><td><strong>filterQ</strong></td><td>0.1–24</td><td>1</td><td>Noise filter resonance</td></tr>
         </tbody>
@@ -753,10 +809,10 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>attack</strong></td><td>0–2 s</td><td>0</td><td>Attack time</td></tr>
-            <tr><td><strong>decay</strong></td><td>0–2 s</td><td>0.12</td><td>Decay time</td></tr>
+            <tr><td><strong>attack</strong></td><td>0–0.5 s</td><td>0</td><td>Attack time (quadratic ease-in curve)</td></tr>
+            <tr><td><strong>decay</strong></td><td>0–1 s</td><td>0.12</td><td>Decay time (cubic ease-out curve)</td></tr>
             <tr><td><strong>sustain</strong></td><td>0–1</td><td>1</td><td>Sustain level</td></tr>
-            <tr><td><strong>release</strong></td><td>0–3 s</td><td>0.05</td><td>Release time</td></tr>
+            <tr><td><strong>release</strong></td><td>0–0.5 s</td><td>0.05</td><td>Release time (cubic ease-out curve)</td></tr>
         </tbody>
     </table>
 
