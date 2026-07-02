@@ -2,7 +2,7 @@ import BaseVoice from './base_voice.js'
 import WorkletLoader from '../worklets/loader.js'
 import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
 import { computeOscFrequency, computeNoteRatio, computeAccent, toFiniteNumber, clamp, syncToHz } from '../math.js'
-import { RELEASE_TIME } from '../../core/constants.js'
+import { RELEASE_TIME , NOTE_VELO_BALANCE } from '../../core/constants.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 
 // Register the synth-voice processor (idempotent)
@@ -158,7 +158,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         const { accentMultiplier } = computeAccent(this.noteVelo)
         const masterVolume = toFiniteNumber(gs.masterVolume, 0.8)
         this.masterVolume = masterVolume
-        const peak = this.noteVelo * masterVolume * accentMultiplier
+        const peak = this.noteVelo * masterVolume * accentMultiplier * NOTE_VELO_BALANCE //ATT compensation volume synth vs sample
 
         postUpdate(this.workletNode, {
             osc1Freq: gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0,

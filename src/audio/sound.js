@@ -209,7 +209,7 @@ export default class MfSound {
         }
         this._activeVoiceSet.clear()
         this.activeSynthVoices.clear()
-        this.activeVoices.clear()
+        this.activeVoices = new WeakMap()
         this._activeNoteCount = 0
     }
 

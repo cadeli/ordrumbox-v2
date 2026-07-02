@@ -10,7 +10,7 @@ export const LFO_FREQ_OFFSET = 0.1
 export const FILTER_FREQ_MIN = 20
 export const FILTER_FREQ_MAX = 20000
 export const NOISE_FILTER_FREQ_DEFAULT = 1000
-export const NOTE_VELO_BALANCE = 1 / 16
+export const NOTE_VELO_BALANCE = 1 / 8
 export const MIN_GAIN_VALUE = 0.001
 export const MIN_NOTE_RATIO = 0.0001
 
