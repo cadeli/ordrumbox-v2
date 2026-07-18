@@ -1,0 +1,105 @@
+import BaseGenerator from './base_generator.js'
+
+export default class MfKickGenerate extends BaseGenerator {
+    static KICK_GENERATION_CONFIGS = Object.freeze({
+        basic: {
+            mode: 'phrases',
+            loopPointBeat: 4,
+            loopPointStep: 0,
+            phrases: [
+                { beat: 0, step: 0, accent: true },
+                { beat: 1, step: 0, accent: true },
+                { beat: 2, step: 0, accent: true },
+                { beat: 2, step: 2 },
+                { beat: 3, step: 0, accent: true }
+            ],
+            velocity: {
+                base: 0.84,
+                accentOnBeat: 0.14,
+                ghost: -0.28,
+                randomSpread: 0.06,
+                clampMin: 0.42,
+                clampMax: 1
+            }
+        },
+        fourOnFloor: {
+            mode: 'grid',
+            loopPointBeat: 1,
+            loopPointStep: 0,
+            probabilities: [1, 0.05, 0.92, 0.08],
+            velocity: {
+                base: 0.86,
+                accentOnBeat: 0.12,
+                ghost: -0.35,
+                randomSpread: 0.04,
+                clampMin: 0.4,
+                clampMax: 1
+            }
+        },
+        syncopated: {
+            mode: 'grid',
+            loopPointBeat: 2,
+            loopPointStep: 0,
+            probabilities: [1, 0.26, 0.58, 0.34],
+            velocity: {
+                base: 0.78,
+                accentOnBeat: 0.18,
+                ghost: -0.24,
+                randomSpread: 0.08,
+                clampMin: 0.38,
+                clampMax: 1
+            }
+        },
+        break: {
+            mode: 'grid',
+            loopPointBeat: 4,
+            loopPointStep: 0,
+            probabilities: [1, 0, 0, 0],
+            velocity: {
+                base: 0.76,
+                accentOnBeat: 0.2,
+                ghost: -0.18,
+                randomSpread: 0.1,
+                clampMin: 0.36,
+                clampMax: 1
+            }
+        }
+    })
+
+    constructor() {
+        super('KICK', MfKickGenerate.KICK_GENERATION_CONFIGS)
+    }
+
+    generateNewKick = (kickTrack, variantName = null, density = 1) => {
+        const resolvedVariantName = this.resolveVariantName(variantName)
+        const config = this.configs[resolvedVariantName] ?? this.configs.basic
+
+        this.clearTrackNotes(kickTrack)
+
+        switch (config.mode) {
+            case 'grid':
+                this.generateGridVariant(kickTrack, config,
+                    (beat, step) => step === 0,
+                    (beat, step) => step !== 0,
+                    density
+                )
+                break
+            case 'phrases':
+            default:
+                this.generatePhraseVariant(kickTrack, config,
+                    () => 0,
+                    (phrase) => phrase.accent === true,
+                    (phrase) => phrase.ghost === true,
+                    density
+                )
+                break
+        }
+
+        this.applyLoopPoint(kickTrack, config)
+    }
+
+    getRndVariantName = () => {
+        const variants = Object.keys(this.configs).filter((v) => v !== 'break')
+        return variants[Math.floor(Math.random() * variants.length)] ?? 'basic'
+    }
+}

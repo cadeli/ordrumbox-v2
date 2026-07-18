@@ -1,0 +1,111 @@
+{
+  "application": "online-ordrumbox",
+  "url": "https://www.ordrumbox.com",
+  "name": "MinimalTechno",
+  "tracks": [
+      {
+        "name": "KICK",
+        "loopAtStep": 16,
+        "notes": [[0.95],[0.9,1],[0.92,2],[0.9,3]],
+        "noteKeys": [
+            "velocity",
+            "beat"
+          ]
+      },
+      {
+        "name": "CHH",
+        "loopAtStep": 16,
+        "pan": 0.3,
+        "notes": [[0.4],[0.35,0,2],[0.4,1],[0.35,1,2],[0.4,2],[0.35,2,2],[0.4,3],[0.35,3,2]],
+        "noteKeys": [
+            "velocity",
+            "beat",
+            "beatStep"
+          ]
+      },
+      {
+        "name": "OHH",
+        "loopAtStep": 16,
+        "pan": 0.5,
+        "notes": [[0.5,1,2],[0.45,3,2]],
+        "noteKeys": [
+            "velocity",
+            "beat",
+            "beatStep"
+          ]
+      },
+      {
+        "name": "SNARE",
+        "loopAtStep": 16,
+        "pan": -0.4,
+        "notes": [[0.6,1],[0.6,3]],
+        "noteKeys": [
+            "velocity",
+            "beat"
+          ]
+      },
+      {
+        "name": "CLAP",
+        "loopAtStep": 16,
+        "pan": 0.4,
+        "notes": [[0.55,1],[0.55,3]],
+        "noteKeys": [
+            "velocity",
+            "beat"
+          ]
+      },
+      {
+        "name": "BASS",
+        "loopAtStep": 16,
+        "pan": -0.3,
+        "notes": [[],[0.5,0,1],[0.8,2,0,-5],[0.5,2,1,-5],[0.6,2,2,-3]],
+        "noteKeys": [
+            "velocity",
+            "beat",
+            "beatStep",
+            "pitch"
+          ]
+      },
+      {
+        "name": "PERC",
+        "loopAtStep": 16,
+        "pan": -0.2,
+        "notes": [[0.35,0,3],[0.3,1,3],[0.35,2,3],[0.3,3,3]],
+        "noteKeys": [
+            "velocity",
+            "beat",
+            "beatStep"
+          ]
+      },
+      {
+        "name": "LO_TOM",
+        "loopAtStep": 16,
+        "pan": 1,
+        "notes": [[0.4,3,2],[0.3,3,3]],
+        "noteKeys": [
+            "velocity",
+            "beat",
+            "beatStep"
+          ]
+      },
+      {
+        "name": "CRASH",
+        "loopAtStep": 16,
+        "notes": [[0.5]],
+        "noteKeys": [
+            "velocity"
+          ]
+      },
+      {
+        "name": "TAMBOURINE",
+        "loopAtStep": 16,
+        "notes": [[0.3],[0.25,1],[0.3,2],[0.25,3]],
+        "noteKeys": [
+            "velocity",
+            "beat"
+          ]
+      }
+    ],
+  "bpm": 125,
+  "_version": 34
+}

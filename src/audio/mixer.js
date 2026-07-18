@@ -1,0 +1,172 @@
+import MfStrip from './strip.js';
+import WorkletLoader from './worklets/loader.js';
+import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js';
+
+// Register master bus processor at module load (idempotent)
+WorkletLoader.register('master-bus', MASTER_BUS_SOURCE);
+
+export default class MfMixer {
+    static TAG = "MFMIXER";
+
+    constructor(audioCtx) {
+        this.audioCtx = audioCtx;
+        this.trackName = "all";
+        this.strips = {};
+
+        this.analyser  = null;
+        this.busInput  = null;   // GainNode — all strip pans connect here
+        this.busWorklet = null;  // master-bus AudioWorkletNode
+    }
+
+    /**
+     * Async factory — loads the master-bus worklet then wires the graph.
+     */
+    static async create(audioCtx) {
+        try {
+            const mixer = new MfMixer(audioCtx);
+            await WorkletLoader.ensureLoaded(audioCtx);
+            mixer.start();
+            return mixer;
+        } catch (err) {
+            console.error('MfMixer::create failed', err)
+            return new MfMixer(audioCtx);
+        }
+    }
+
+    // ─── Lifecycle ──────────────────────────────────────────────────────────────
+
+    start = () => {
+        const ctx = this.audioCtx;
+
+        if (!this.analyser) {
+            this.analyser = ctx.createAnalyser();
+        this.analyser.fftSize = 4096;
+            this.gFftData  = new Uint8Array(this.analyser.frequencyBinCount);
+            this.dataArray = new Uint8Array(this.analyser.fftSize);
+        }
+        if (!this.busInput) {
+            this.busInput = ctx.createGain();
+        }
+        if (!this.transportClock) {
+            this.transportClock = ctx.createConstantSource();
+            this.transportClock.offset.value = 0;
+        }
+        // Recreate the master-bus worklet only if the worklets have already
+        // been loaded onto this context. Cold-start (worklets still loading)
+        // skips this — create() handles that case. The strips are re-added
+        // lazily by getOrCreateStrip() on the next note.
+        if (!this.busWorklet && WorkletLoader.isContextReady(ctx)) {
+            this.busWorklet = WorkletLoader.createNode(ctx, 'master-bus', {
+                numberOfInputs: 1,
+                numberOfOutputs: 1,
+                outputChannelCount: [2],
+            });
+        }
+
+        // Wire the bus only when every link is present.
+        // Always disconnect first — Web Audio connect() accumulates duplicate
+        // connections which double the signal each time.
+        if (this.busInput && this.busWorklet && this.analyser) {
+            try { this.busInput.disconnect(); } catch (_) {}
+            try { this.busWorklet.disconnect(); } catch (_) {}
+            try { this.analyser.disconnect(); } catch (_) {}
+            this.busInput.connect(this.busWorklet);
+            this.busWorklet.connect(this.analyser);
+            this.analyser.connect(ctx.destination);
+
+            try { this.transportClock.start(); } catch (_) {}
+        }
+    }
+
+    stop = () => {
+        this.deleteStrips();
+
+        const nodes = [this.busWorklet, this.busInput, this.analyser, this.transportClock];
+        for (const node of nodes) {
+            if (!node) continue;
+            try { node.disconnect(); } catch (e) { console.error(e); }
+            if (node === this.transportClock) {
+                try { node.stop(); } catch (_) {}
+            }
+        }
+
+        this.busWorklet = null;
+        this.busInput   = null;
+        this.analyser   = null;
+        this.transportClock = null;
+        this.gFftData   = null;
+        this.dataArray  = null;
+    }
+
+    // ─── Strip management ────────────────────────────────────────────────────────
+
+    /**
+     * Adds a strip asynchronously. Returns a Promise<MfStrip>.
+     */
+    addStrip = async (name) => {
+        if (this.strips[name]) return this.strips[name];
+
+        // Re-initialise bus nodes if they were torn down by stop().
+        if (!this.busInput) this.start();
+
+        const strip = await MfStrip.create(name, this.audioCtx, this);
+        this.strips[name] = strip;
+
+        if (strip.pan && this.busInput) {
+            strip.pan.connect(this.busInput);
+        }
+
+        return strip;
+    }
+
+    getOrCreateStrip = async (name) => {
+        if (!this.strips[name]) {
+            await this.addStrip(name);
+        }
+        return this.strips[name];
+    }
+
+    deleteStrips = () => {
+        for (const name of Object.keys(this.strips)) {
+            if (this.strips[name]?.delete) {
+                this.strips[name].delete();
+            }
+            delete this.strips[name];
+        }
+        this.strips = {};
+    }
+
+    setBpm = (bpm) => {
+        for (const strip of Object.values(this.strips)) {
+            strip.setBpm(bpm);
+        }
+    }
+
+    // ─── Master bus control ──────────────────────────────────────────────────────
+
+    setMasterBus = (options = {}) => {
+        if (!this.busWorklet) return;
+        const time  = this.audioCtx.currentTime;
+        const ramp  = 0.02;
+        const params = this.busWorklet.parameters;
+        const set = (name, val) => {
+            if (val !== undefined && params.get(name)) {
+                params.get(name).setTargetAtTime(val, time, ramp);
+            }
+        };
+
+        set('lowcut',        options.lowcut);
+        set('hicut',         options.hicut);
+        set('master',        options.master);
+        set('compThreshold', options.threshold);
+        set('compRatio',     options.ratio);
+        set('compKnee',      options.knee);
+        set('compAttack',    options.attack);
+        set('compRelease',   options.release);
+        set('compMakeup',    options.makeup);
+        set('preGain',       options.preGain);
+        if (options.bypass !== undefined && params.get('bypass')) {
+            params.get('bypass').setTargetAtTime(options.bypass ? 1 : 0, time, ramp);
+        }
+    }
+}

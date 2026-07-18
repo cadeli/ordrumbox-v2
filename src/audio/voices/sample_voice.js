@@ -1,0 +1,86 @@
+import BaseVoice from './base_voice.js'
+import MfDefaults from '../../patterns/defaults.js'
+import { computeLfoValue } from '../math.js'
+import {
+    PITCH_RAMP_TIME,
+    GAIN_ATTACK_RAMP,
+    RELEASE_TIME,
+    MIN_GAIN_VALUE,
+    STOP_BUFFER,
+    STOP_EXTRA_BUFFER,
+    TICK
+} from '../../core/constants.js'
+
+export default class SampleVoice extends BaseVoice {
+    constructor(audioCtx, strip, buffer, nodePool = null) {
+        super(audioCtx, strip, nodePool)
+        this.buffer = buffer
+        this.snd = null
+        this.gainEnvelope = null
+        this.panNode = null
+        this.noteVelo = 1
+    }
+
+    setup(flatNote, time, lfoContext = null) {
+        const track = flatNote.track
+
+        this.snd = this.registerNode(this.audioCtx.createBufferSource())
+        this.gainEnvelope = this.acquireNode('GainNode')
+        this.panNode = this.acquireNode('StereoPannerNode')
+
+        this.snd.buffer = this.buffer
+
+        let playbackRate = flatNote.fpitch ?? 1
+        if (track.pitchLfo && lfoContext) {
+            const { tick, nbTicks } = lfoContext
+            const lfoSemi = computeLfoValue(track.pitchLfo, tick, nbTicks, 'pitch')
+            playbackRate = Math.pow(2, lfoSemi / 12)
+        }
+        this.snd.playbackRate.setTargetAtTime(playbackRate, time, PITCH_RAMP_TIME)
+        this.panNode.pan.setValueAtTime(flatNote.pan ?? 0, time)
+
+        const decay = track.sampleDecay ?? 0.5
+        this.noteVelo = flatNote.note?.velocity ?? MfDefaults.getNoteProp(flatNote.note, 'velocity')
+
+        const safeDecay = Math.max(0.02, decay)
+        this.gainEnvelope.gain.setValueAtTime(0, time)
+        this.gainEnvelope.gain.linearRampToValueAtTime(this.noteVelo, time + GAIN_ATTACK_RAMP)
+        this.gainEnvelope.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, time + GAIN_ATTACK_RAMP + safeDecay)
+
+        this.snd.connect(this.gainEnvelope)
+        this.gainEnvelope.connect(this.panNode)
+        this.connectToStripInput(this.panNode)
+
+        this.snd.onended = () => {
+            this.cleanup()
+            if (this.onEnded) this.onEnded()
+        }
+
+        this.duration = GAIN_ATTACK_RAMP + safeDecay
+    }
+
+    start(time) {
+        this.snd.start(time)
+        this.snd.stop(time + this.duration + RELEASE_TIME)
+    }
+
+    stop(time) {
+        if (this.stopped) return
+        super.stop(time)
+
+        try {
+            this.gainEnvelope.gain.cancelScheduledValues(time)
+            const currentGain = Math.max(MIN_GAIN_VALUE, this.gainEnvelope.gain.value ?? this.noteVelo ?? 1)
+            this.gainEnvelope.gain.setValueAtTime(currentGain, time)
+            this.gainEnvelope.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, time + STOP_BUFFER)
+        } catch (e) {
+            console.error("SampleVoice::stop gain error", e)
+        }
+
+        try {
+            this.snd.stop(time + STOP_EXTRA_BUFFER)
+        } catch (e) {
+            // Ignore if already stopped
+        }
+    }
+}
