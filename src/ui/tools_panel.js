@@ -53,7 +53,7 @@ export default class ToolsPanel extends BasePanel {
                     </div>
                     <div id="tp-wav-loops-slot"></div>
                 `)}
-                ${buildAccordionGroup('import', 'Import', 'Import', true, `
+${buildAccordionGroup('import', 'Import', 'Import', true, `
                     <div class="ne-row">
                         <button class="ne-btn" id="tp-import-json">Import JSON</button>
                         <input type="file" id="tp-import-file" style="display: none" accept=".json">
@@ -65,6 +65,10 @@ export default class ToolsPanel extends BasePanel {
                     <div class="ne-row">
                         <button class="ne-btn" id="tp-import-midi">Import MIDI</button>
                         <input type="file" id="tp-import-midi-file" style="display: none" accept=".mid,.midi">
+                    </div>
+                    <div class="ne-row">
+                        <button class="ne-btn" id="tp-import-dir">Import Directory</button>
+                        <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav" webkitdirectory directory multiple>
                     </div>
                 `)}
                 ${buildAccordionGroup('midi-status', 'MIDI Status', 'Status', true, `
@@ -143,6 +147,10 @@ export default class ToolsPanel extends BasePanel {
         const importMidiFile = this.container.querySelector('#tp-import-midi-file')
         this.container.querySelector('#tp-import-midi').addEventListener('click', () => importMidiFile.click())
         importMidiFile.addEventListener('change', (e) => this._onImportMidiFile(e))
+
+        const importDirFile = this.container.querySelector('#tp-import-dir-file')
+        this.container.querySelector('#tp-import-dir').addEventListener('click', () => importDirFile.click())
+        importDirFile.addEventListener('change', (e) => this._onImportDir(e))
 
         this.container.querySelector('#tp-midi-enable').addEventListener('click', async () => {
             const btn = this.container.querySelector('#tp-midi-enable')
@@ -724,6 +732,83 @@ export default class ToolsPanel extends BasePanel {
             showToast('MIDI Import failed: ' + err.message, 'error')
         }
         e.target.value = ''
+    }
+
+    async _onImportDir(e) {
+        const files = e.target.files
+        if (!files || files.length === 0) return
+
+        try {
+            const wavFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.wav'))
+            if (wavFiles.length === 0) {
+                showToast('No .wav files found in selected directory', 'warning')
+                return
+            }
+
+            // Get drumkit name from directory path (webkitRelativePath = "dirname/file.wav")
+            const firstPath = files[0].webkitRelativePath ?? ''
+            const kitName = firstPath.split('/')[0] ?? 'imported'
+
+            const im = new InstrumentsManager()
+
+            // Clear in-place so VoiceFactory/Engine references stay valid
+            for (const key of Object.keys(soundRegistry.sounds)) delete soundRegistry.sounds[key]
+
+            const audioCtx = serviceRegistry.audioCtx
+            const instruments = []
+            let index = 0
+
+            for (const file of wavFiles) {
+                const fileName = file.name
+                const instrument = im.findInstrumentFromFileName(fileName)
+                const key = instrument.id
+
+                const arrayBuffer = await file.arrayBuffer()
+                const buffer = await audioCtx.decodeAudioData(arrayBuffer)
+
+                soundRegistry.sounds[fileName] = {
+                    kit_name: kitName,
+                    url: fileName,
+                    key,
+                    index: ++index,
+                    display_name: fileName,
+                    buffer,
+                    duration: Math.floor(buffer.duration * 1000),
+                    isLoad: true,
+                    playStatus: false
+                }
+
+                instruments.push({ display_name: fileName, key, url: fileName })
+            }
+
+            soundRegistry.drumkits[kitName] = { instruments }
+            soundRegistry.drumkitList = [{ name: kitName, instruments }]
+            appState.selectedDrumkitNum = 0
+
+            showToast(`Imported ${wavFiles.length} WAV files as drumkit "${kitName}"`, 'success')
+
+            this._autoAssignSounds()
+
+        } catch (err) {
+            console.error('Directory import failed', err)
+            showToast('Import failed: ' + err.message, 'error')
+        }
+        e.target.value = ''
+    }
+
+    async _autoAssignSounds() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) {
+            showToast('No pattern selected', 'warning')
+            return
+        }
+        
+        // Get the auto-assign service
+        const { getAutoAssignService } = await import('../state/service_registry.js')
+        const autoAssign = await getAutoAssignService()
+        
+        autoAssign.autoAssignSounds(pattern)
+        showToast('Auto-assign complete', 'success')
     }
 
     show() {
