@@ -750,10 +750,6 @@ ${buildAccordionGroup('import', 'Import', 'Import', true, `
             const kitName = firstPath.split('/')[0] ?? 'imported'
 
             const im = new InstrumentsManager()
-
-            // Clear in-place so VoiceFactory/Engine references stay valid
-            for (const key of Object.keys(soundRegistry.sounds)) delete soundRegistry.sounds[key]
-
             const audioCtx = serviceRegistry.audioCtx
             const instruments = []
             let index = 0
@@ -770,7 +766,7 @@ ${buildAccordionGroup('import', 'Import', 'Import', true, `
                     kit_name: kitName,
                     url: fileName,
                     key,
-                    index: ++index,
+                    index: Object.keys(soundRegistry.sounds).length + 1,
                     display_name: fileName,
                     buffer,
                     duration: Math.floor(buffer.duration * 1000),
@@ -781,9 +777,17 @@ ${buildAccordionGroup('import', 'Import', 'Import', true, `
                 instruments.push({ display_name: fileName, key, url: fileName })
             }
 
+            // Add/replace this drumkit only
             soundRegistry.drumkits[kitName] = { instruments }
-            soundRegistry.drumkitList = [{ name: kitName, instruments }]
-            appState.selectedDrumkitNum = 0
+
+            const existingIdx = soundRegistry.drumkitList.findIndex(d => d.name === kitName)
+            if (existingIdx >= 0) {
+                soundRegistry.drumkitList[existingIdx] = { name: kitName, instruments }
+                appState.selectedDrumkitNum = existingIdx
+            } else {
+                soundRegistry.drumkitList.push({ name: kitName, instruments })
+                appState.selectedDrumkitNum = soundRegistry.drumkitList.length - 1
+            }
 
             showToast(`Imported ${wavFiles.length} WAV files as drumkit "${kitName}"`, 'success')
 

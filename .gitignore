@@ -1,0 +1,11 @@
+**/temp
+**/bak
+**/release
+**/target
+**/coverage
+**/node_modules
+**/*.reapeaks
+**/*DS_Store
+*node_modules/*
+dist
+profile_logs/
