@@ -88,12 +88,9 @@ static TAG = "UTILS"
             return { changed: false, reason: "track-too-short", loopAtStep: null, removedNotes: 0 }
         }
 
-        const minLoopSteps = Math.max(1, Utils.toFiniteNumber(options.minLoopSteps, 1, 'minLoopSteps'))
         const currentLoopAtStep = Utils.getTrackLoopAtStep(track)
-        const candidates = Utils.getLoopCandidateSteps(trackSteps, minLoopSteps)
-            .filter((loopAtStep) => loopAtStep < currentLoopAtStep)
 
-        for (const loopAtStep of candidates) {
+        for (let loopAtStep = 1; loopAtStep < currentLoopAtStep; loopAtStep++) {
             if (!Utils.trackNotesMatchLoop(track, loopAtStep, trackSteps)) {
                 continue
             }

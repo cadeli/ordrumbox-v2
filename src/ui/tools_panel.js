@@ -38,36 +38,36 @@ export default class ToolsPanel extends BasePanel {
                         <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
                     </div>
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-compact">Compact Tracks</button>
+                        <button class="ne-btn" id="tp-compact" title="Remove empty tracks and re-index the pattern">Compact Tracks</button>
                     </div>
                 `)}
                 ${buildAccordionGroup('export', 'Export', 'Export', true, `
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-export-json">Export JSON</button>
+                        <button class="ne-btn" id="tp-export-json" title="Save the current pattern as a JSON file">Export JSON</button>
                     </div>
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-export-midi">Export MIDI</button>
+                        <button class="ne-btn" id="tp-export-midi" title="Export the current pattern to a Standard MIDI File (.mid)">Export MIDI</button>
                     </div>
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-export-wav">Export WAV</button>
+                        <button class="ne-btn" id="tp-export-wav" title="Render the pattern to an audio WAV file">Export WAV</button>
                     </div>
                     <div id="tp-wav-loops-slot"></div>
                 `)}
-${buildAccordionGroup('import', 'Import', 'Import', true, `
+                ${buildAccordionGroup('import', 'Import', 'Import', true, `
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-import-json">Import JSON</button>
+                        <button class="ne-btn" id="tp-import-json" title="Load a previously exported pattern from a JSON file">Import JSON</button>
                         <input type="file" id="tp-import-file" style="display: none" accept=".json">
                     </div>
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-import-wav">Import WAV</button>
+                        <button class="ne-btn" id="tp-import-wav" title="Replace the selected track's sound with a custom WAV sample">Import WAV</button>
                         <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav">
                     </div>
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-import-midi">Import MIDI</button>
+                        <button class="ne-btn" id="tp-import-midi" title="Import a Standard MIDI File (.mid) into a new pattern">Import MIDI</button>
                         <input type="file" id="tp-import-midi-file" style="display: none" accept=".mid,.midi">
                     </div>
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-import-dir">Import Directory</button>
+                        <button class="ne-btn" id="tp-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
                         <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav" webkitdirectory directory multiple>
                     </div>
                 `)}
@@ -104,10 +104,10 @@ ${buildAccordionGroup('import', 'Import', 'Import', true, `
                         <select id="tp-midi-output-select"></select>
                     </div>
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-midi-enable">Enable MIDI</button>
+                        <button class="ne-btn" id="tp-midi-enable" title="Connect or disconnect the MIDI output device">Enable MIDI</button>
                     </div>
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-midi-sync">Toggle Sync</button>
+                        <button class="ne-btn" id="tp-midi-sync" title="Toggle between internal clock and external MIDI clock sync">Toggle Sync</button>
                     </div>
                 `)}
             </div>

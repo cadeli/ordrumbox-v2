@@ -219,7 +219,7 @@ describe('Utils', () => {
     })
 
     describe('addLoopToTrackIfPossible', () => {
-        it('detects repeating 1-beat loop', () => {
+        it('detects smallest repeating loop and minimizes notes', () => {
             const track = {
                 nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
                 notes: [
@@ -240,12 +240,32 @@ describe('Utils', () => {
             expect(track.loopAtStep).toBe(4)
         })
 
-        it('returns unchanged if no loop found', () => {
+        it('compacts one note per beat to single note + 1-beat loop', () => {
+            const track = {
+                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
+                notes: [
+                    { beat: 0, beatStep: 0 },
+                    { beat: 1, beatStep: 0 },
+                    { beat: 2, beatStep: 0 },
+                    { beat: 3, beatStep: 0 },
+                ]
+            }
+            const result = Utils.addLoopToTrackIfPossible(track)
+            expect(result.changed).toBe(true)
+            expect(result.loopAtStep).toBe(4)
+            expect(track.notes.length).toBe(1)
+            expect(track.notes[0].beat).toBe(0)
+            expect(track.notes[0].beatStep).toBe(0)
+            expect(track.loopPointBeat).toBe(1)
+            expect(track.loopPointStep).toBe(0)
+        })
+
+        it('returns unchanged if notes are truly non-repeating', () => {
             const track = {
                 nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8,
                 notes: [
-                    { beat: 0, beatStep: 0 },
-                    { beat: 1, beatStep: 2 },
+                    { beat: 0, beatStep: 0, velocity: 0.8 },
+                    { beat: 1, beatStep: 2, velocity: 0.3 },
                 ]
             }
             const result = Utils.addLoopToTrackIfPossible(track)
