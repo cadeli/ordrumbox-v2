@@ -54,6 +54,10 @@
                 "display_name": "low_congas.wav",
                 "key": "LO_CONGAS",
                 "url": "real/low_congas.wav"
+            },{
+                "display_name": "bass-c3.wav",
+                "key": "BASS",
+                "url": "real/bass-c3.wav"
             },
             {
                 "display_name": "tambourine.wav",
