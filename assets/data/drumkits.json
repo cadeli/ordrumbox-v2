@@ -5,59 +5,69 @@
         "desc": "recorded by mweb in the studio",
         "instruments": [
             {
-                "display_name": "kick.wav",
+                "display_name": "kick",
                 "key": "KICK",
                 "url": "real/kick.wav"
             },
             {
-                "display_name": "snare.wav",
+                "display_name": "snare",
                 "key": "SNARE",
                 "url": "real/snare.wav"
             },
             {
-                "display_name": "tom.wav",
+                "display_name": "tom",
                 "key": "TOM",
                 "url": "real/tom.wav"
             },
             {
-                "display_name": "rimshot.wav",
+                "display_name": "rimshot",
                 "key": "CLAP",
                 "url": "real/rim.wav"
             },
             {
-                "display_name": "cow.wav",
+                "display_name": "cow",
                 "key": "COWBELL",
                 "url": "real/cow.wav"
             },
             {
-                "display_name": "chh.wav",
+                "display_name": "chh",
                 "key": "CHH",
                 "url": "real/chh.wav"
             },
             {
-                "display_name": "ohh.wav",
+                "display_name": "ohh",
                 "key": "OHH",
                 "url": "real/ohh.wav"
             },
             {
-                "display_name": "crash.wav",
+                "display_name": "crash",
                 "key": "CRASH",
                 "url": "real/crash.wav"
             },
             
             {
-                "display_name": "congas.wav",
+                "display_name": "congas",
                 "key": "CONGAS",
                 "url": "real/congas.wav"
             },
             {
-                "display_name": "low_congas.wav",
+                "display_name": "low_congas",
                 "key": "LO_CONGAS",
                 "url": "real/low_congas.wav"
             },{
-                "display_name": "bass-c3.wav",
+                "display_name": "bass-c3",
                 "key": "BASS",
                 "url": "real/bass-c3.wav"
+            },
+            {
+                "display_name": "gtr-c3",
+                "key": "GUITAR",
+                "url": "real/gtr-c3.wav"
+            },
+            {
+                "display_name": "piano-c3",
+                "key": "PIANO",
+                "url": "real/piano-c3.wav"
             },
             {
                 "display_name": "tambourine.wav",
@@ -72,61 +82,51 @@
         "desc": "recorded by mweb using 70' Soundcraft table and NEVE 1073",
         "instruments": [
             {
-                "kit_name": "matt",
                 "display_name": "CHH",
                 "key": "CHH",
                 "url": "matt/CHH.wav"
             },
             {
-                "kit_name": "matt",
                 "display_name": "SNAREH",
                 "key": "CLAP",
                 "url": "matt/SNARE_CL.wav"
             },
             {
-                "kit_name": "matt",
                 "display_name": "LOWTOM",
                 "key": "LO_TOM",
                 "url": "matt/LOW_TOM.wav"
             },
             {
-                "kit_name": "matt",
                 "display_name": "KICK",
                 "key": "KICK",
                 "url": "matt/KICK.wav"
             },
             {
-                "kit_name": "matt",
                 "display_name": "OHH",
                 "key": "OHH",
                 "url": "matt/OHH.wav"
             },
             {
-                "kit_name": "matt",
                 "display_name": "RIMSHOT",
                 "key": "RIMSHOT",
                 "url": "matt/RIMSHOT.wav"
             },
             {
-                "kit_name": "matt",
                 "display_name": "RIDE",
                 "key": "RIDE",
                 "url": "matt/RIDE.wav"
             },
              {
-                "kit_name": "matt",
                 "display_name": "CRASH",
                 "key": "CRASH",
                 "url": "matt/CRASH.wav"
             },
             {
-                "kit_name": "matt",
-                "display_name": "SNARE",
+                 "display_name": "SNARE",
                 "key": "SNARE",
                 "url": "matt/SNARE.wav"
             },
             {
-                "kit_name": "matt",
                 "display_name": "TOM",
                 "key": "TOM",
                 "url": "matt/TOM.wav"
@@ -139,52 +139,54 @@
         "desc": " by mweb layered classic electro drums ",
         "instruments": [
             {
-                "kit_name": "electro",
                 "display_name": "CHH",
                 "key": "CHH",
                 "url": "electro/chh.wav"
             },
             {
-                "kit_name": "electro",
                 "display_name": "CLAP",
                 "key": "CLAP",
                 "url": "electro/clap.wav"
             },
             {
-                "kit_name": "electro",
                 "display_name": "RIDE",
                 "key": "RIDE",
                 "url": "electro/ride.wav"
             },
             {
-                "kit_name": "electro",
                 "display_name": "KICK",
                 "key": "KICK",
                 "url": "electro/kick.wav"
             },
             {
-                "kit_name": "electro",
                 "display_name": "OHH",
                 "key": "OHH",
                 "url": "electro/ohh.wav"
             },
             {
-                "kit_name": "electro",
                 "display_name": "COWBELL",
                 "key": "COWBELL",
                 "url": "electro/cow.wav"
             },
             {
-                "kit_name": "electro",
                 "display_name": "SNARE",
                 "key": "SNARE",
                 "url": "electro/snare.wav"
             },
             {
-                "kit_name": "electro",
                 "display_name": "TOM",
                 "key": "TOM",
                 "url": "electro/tom.wav"
+            },
+            {
+                "display_name": "BASS",
+                "key": "BASS",
+                "url": "electro/acid-bass-c3.wav"
+            },
+            {
+                "display_name": "RHODES",
+                "key": "PIANO",
+                "url": "electro/rhodes-c3.wav"
             }
         ]
     },
@@ -194,56 +196,47 @@
         "desc": "This kit was generated using various layered accoustic drums",
         "instruments": [
             {
-                "kit_name": "open",
                 "display_name": "CHH",
                 "key": "CHH",
                 "url": "open/CHH.wav"
             },
             {
-                "kit_name": "open",
                 "display_name": "CLAP",
                 "key": "CLAP",
                 "url": "open/CLAP.wav"
             },
             {
-                "kit_name": "open",
                 "display_name": "CRASH",
                 "key": "CRASH",
                 "url": "open/CRASH.wav"
             },
             {
-                "kit_name": "open",
                 "display_name": "KICK",
                 "key": "KICK",
                 "url": "open/KICK.wav"
             },
             {
-                "kit_name": "open",
                 "display_name": "OHH",
                 "key": "OHH",
                 "url": "open/OHH.wav"
             },
             {
-                "kit_name": "open",
                 "display_name": "RIMSHOT",
                 "key": "RIMSHOT",
                 "url": "open/RIMSHOT.wav"
             },
             {
-                "kit_name": "open",
                 "display_name": "SIDE",
                 "key": "SIDE",
                 "url": "open/SIDE.wav"
             },
             {
-                "kit_name": "open",
                 "display_name": "SNARE",
                 "key": "SNARE",
                 "url": "open/SNARE.wav"
             },
             {
-                "kit_name": "open",
-                "display_name": "TOM",
+               "display_name": "TOM",
                 "key": "TOM",
                 "url": "open/TOM.wav"
             }
@@ -255,49 +248,41 @@
         "desc": "This kit was generated using various layered accoustic drums",
         "instruments": [
             {
-                "kit_name": "ropen",
-                "display_name": "CHH",
+               "display_name": "CHH",
                 "key": "CHH",
                 "url": "ropen/CHH.wav"
             },
             {
-                "kit_name": "ropen",
                 "display_name": "COWBELL",
                 "key": "COWBELL",
                 "url": "ropen/COWBELL.wav"
             },
             {
-                "kit_name": "ropen",
-                "display_name": "CRASH",
+               "display_name": "CRASH",
                 "key": "CRASH",
                 "url": "ropen/CRASH.wav"
             },
             {
-                "kit_name": "ropen",
                 "display_name": "KICK",
                 "key": "KICK",
                 "url": "ropen/KICK.wav"
             },
             {
-                "kit_name": "ropen",
                 "display_name": "OHH",
                 "key": "OHH",
                 "url": "ropen/OHH.wav"
             },
             {
-                "kit_name": "ropen",
                 "display_name": "RIDE",
                 "key": "RIDE",
                 "url": "ropen/RIDE.wav"
             },
             {
-                "kit_name": "ropen",
                 "display_name": "SNARE",
                 "key": "SNARE",
                 "url": "ropen/SNARE.wav"
             },
             {
-                "kit_name": "ropen",
                 "display_name": "TOM",
                 "key": "TOM",
                 "url": "ropen/TOM.wav"
