@@ -31,13 +31,6 @@ static TAG = "UTILS"
 
     static TRACK_RECALCULATED = TRACK_RECALCULATED;
 
-    static toFiniteNumber(value, fallback = 0, label = 'value') {
-        const num = Number(value)
-        if (Number.isFinite(num)) return num
-        logger.warn('Fallback', 'num', label, fallback)
-        return fallback
-    }
-
     static PATTERN_DEFAULTS = {
         "nbBeats": 4,
         "bpm": 120,

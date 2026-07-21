@@ -38,7 +38,7 @@ export default class ToolsPanel extends BasePanel {
                         <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
                     </div>
                     <div class="ne-row">
-                        <button class="ne-btn" id="tp-compact" title="Remove empty tracks and re-index the pattern">Compact Tracks</button>
+                        <button class="ne-btn" id="tp-compact" title="Detect repeating note patterns and add loop points to minimize notes">Compact Tracks</button>
                     </div>
                 `)}
                 ${buildAccordionGroup('export', 'Export', 'Export', true, `
@@ -287,7 +287,7 @@ export default class ToolsPanel extends BasePanel {
 
         serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.dispatchPatternChange()
-        console.log(`Compaction finished. Total redundant notes removed: ${totalRemoved}`)
+        logger.debug('ToolsPanel', `Compaction finished. Total redundant notes removed: ${totalRemoved}`)
     }
 
     _exportJson() {
@@ -789,9 +789,14 @@ export default class ToolsPanel extends BasePanel {
                 appState.selectedDrumkitNum = soundRegistry.drumkitList.length - 1
             }
 
+            playbackEvents.dispatchDrumkitChange()
+
             showToast(`Imported ${wavFiles.length} WAV files as drumkit "${kitName}"`, 'success')
 
             this._autoAssignSounds()
+
+            serviceRegistry.audioEngine?.invalidateCache()
+            playbackEvents.dispatchPatternChange()
 
         } catch (err) {
             console.error('Directory import failed', err)
