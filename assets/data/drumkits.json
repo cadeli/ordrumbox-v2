@@ -68,6 +68,10 @@
                 "display_name": "piano-c3",
                 "key": "PIANO",
                 "url": "real/piano-c3.wav"
+            },  {
+                "display_name": "synth-c3",
+                "key": "SYNTHLEAD",
+                "url": "real/synth-c3.wav"
             },
             {
                 "display_name": "tambourine.wav",
@@ -182,6 +186,11 @@
                 "display_name": "BASS",
                 "key": "BASS",
                 "url": "electro/acid-bass-c3.wav"
+            },
+             {
+                "display_name": "acid-synth-c3",
+                "key": "SYNTHLEAD",
+                "url": "electro/acid-synth-c3.wav"
             },
             {
                 "display_name": "RHODES",

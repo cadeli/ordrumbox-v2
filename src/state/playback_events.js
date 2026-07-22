@@ -15,6 +15,7 @@ export const playbackEvents = {
     onNoteTrigger: [],
     onStall: [],
     onStallResume: [],
+    onDrumkitManagerToggle: [],
 
     offPlaybackStart(fn) { this.onPlaybackStart = this.onPlaybackStart.filter(f => f !== fn) },
     offPlaybackStop(fn) { this.onPlaybackStop = this.onPlaybackStop.filter(f => f !== fn) },
@@ -32,6 +33,7 @@ export const playbackEvents = {
     offNoteTrigger(fn) { this.onNoteTrigger = this.onNoteTrigger.filter(f => f !== fn) },
     offStall(fn) { this.onStall = this.onStall.filter(f => f !== fn) },
     offStallResume(fn) { this.onStallResume = this.onStallResume.filter(f => f !== fn) },
+    offDrumkitManagerToggle(fn) { this.onDrumkitManagerToggle = this.onDrumkitManagerToggle.filter(f => f !== fn) },
 
     dispatchPlaybackStart() { this.onPlaybackStart.forEach(fn => fn()) },
     dispatchPlaybackStop() { this.onPlaybackStop.forEach(fn => fn()) },
@@ -48,5 +50,6 @@ export const playbackEvents = {
     dispatchLoopPointChange(data) { this.onLoopPointChange.forEach(fn => fn(data)) },
     dispatchNoteTrigger(data) { this.onNoteTrigger.forEach(fn => fn(data)) },
     dispatchStall(data) { this.onStall.forEach(fn => fn(data)) },
-    dispatchStallResume() { this.onStallResume.forEach(fn => fn()) }
+    dispatchStallResume() { this.onStallResume.forEach(fn => fn()) },
+    dispatchDrumkitManagerToggle(show) { this.onDrumkitManagerToggle.forEach(fn => fn(show)) }
 }

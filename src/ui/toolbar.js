@@ -91,6 +91,9 @@ export default class Toolbar {
 
         const kitLabel = document.createElement('label')
         kitLabel.textContent = 'Kit:'
+        kitLabel.title = 'Click to open Drumkit Manager'
+        kitLabel.style.cursor = 'pointer'
+        this.kitLabel = kitLabel
         this.drumkitSelect = document.createElement('select')
 
         this.autoGenBtn = document.createElement('button')
@@ -176,6 +179,10 @@ export default class Toolbar {
             if (!isNaN(num)) {
                 serviceRegistry.mfCmd.setSelectedDrumkitNum(num)
             }
+        })
+
+        this.kitLabel.addEventListener('click', () => {
+            playbackEvents.dispatchDrumkitManagerToggle(true)
         })
 
         this.autoGenBtn.addEventListener('click', async () => {

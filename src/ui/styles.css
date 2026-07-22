@@ -291,7 +291,7 @@
 }
 
 /* ---- Note Editor & Track Editor Panels ---- */
-#ne-panel, #te-panel, #tools-panel, #output-panel, #about-panel {
+#ne-panel, #te-panel, #tools-panel, #output-panel, #about-panel, #dm-panel {
     display: none;
     position: fixed; left: 0; right: 0;
     width: 100%;
@@ -303,7 +303,7 @@
     min-height: 100px; max-height: 250px;
 }
 .ui-hidden { display: none !important; }
-#ne-panel .ne-header, #te-panel .ne-header, #tools-panel .ne-header, #output-panel .ne-header, #about-panel .ne-header {
+#ne-panel .ne-header, #te-panel .ne-header, #tools-panel .ne-header, #output-panel .ne-header, #about-panel .ne-header, #dm-panel .ne-header {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 8px; font-size: 12px; border-bottom: 1px solid #333;
     padding-bottom: 4px; flex-wrap: nowrap;
@@ -322,15 +322,15 @@
 }
 .ne-toggle:hover { border-color: #e94560; color: #aaa; }
 .ne-toggle.active { background: #e94560; color: #fff; border-color: #ff4d6d; }
-#ne-panel .ne-track, #te-panel .ne-track, #tools-panel .ne-track, #output-panel .ne-track, #about-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; white-space: nowrap; }
+#ne-panel .ne-track, #te-panel .ne-track, #tools-panel .ne-track, #output-panel .ne-track, #about-panel .ne-track, #dm-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; white-space: nowrap; }
 #ne-panel .ne-pos, #te-panel .ne-pos, #tools-panel .ne-pos, #output-panel .ne-pos, #about-panel .ne-pos { color: #888; }
-#ne-panel .ne-body, #te-panel .ne-body, #tools-panel .ne-body, #output-panel .ne-body, #about-panel .ne-body { 
+#ne-panel .ne-body, #te-panel .ne-body, #tools-panel .ne-body, #output-panel .ne-body, #about-panel .ne-body, #dm-panel .ne-body { 
     display: flex; flex-direction: row; gap: 20px; align-items: flex-start;
     overflow-x: auto; padding-bottom: 8px;
 }
 
 @media (max-width: 768px), (max-height: 480px) {
-#ne-panel, #te-panel, #tools-panel, #output-panel, #about-panel {
+#ne-panel, #te-panel, #tools-panel, #output-panel, #about-panel, #dm-panel {
         position: fixed !important;
         top: 50% !important;
         left: 50% !important;
@@ -497,7 +497,7 @@
     background: #16213e; color: #eee; border: 1px solid #555;
     border-radius: 3px;
 }
-#ne-panel .ne-close, #te-panel .ne-close, #tools-panel .ne-close, #output-panel .ne-close, #about-panel .ne-close {
+#ne-panel .ne-close, #te-panel .ne-close, #tools-panel .ne-close, #output-panel .ne-close, #about-panel .ne-close, #dm-panel .ne-close {
     margin-left: auto; cursor: pointer; color: #fff;
     font-size: 18px; border: none; background: #e94560;
     padding: 0 8px; border-radius: 4px; line-height: 24px;
@@ -779,4 +779,208 @@
     background: #e94560;
     color: #fff;
     border-color: #e94560;
+}
+
+/* ── Drumkit Manager ───────────────────────────────────── */
+#dm-panel {
+    max-height: 320px;
+}
+
+.dm-body {
+    display: flex;
+    gap: 12px;
+    min-height: 180px;
+}
+
+.dm-list {
+    flex: 0 0 220px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: #12121e;
+    padding: 4px;
+}
+
+.dm-list-empty {
+    color: #666;
+    padding: 12px;
+    text-align: center;
+    font-style: italic;
+}
+
+.dm-list-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #ccc;
+}
+
+.dm-list-item:hover {
+    background: #2a2a3e;
+}
+
+.dm-list-item.dm-selected {
+    background: #3a2040;
+    border: 1px solid #e94560;
+    color: #fff;
+}
+
+.dm-play-btn {
+    cursor: pointer;
+    color: #4fc3f7;
+    font-size: 10px;
+    flex-shrink: 0;
+    width: 16px;
+    text-align: center;
+}
+
+.dm-play-btn:hover {
+    color: #81d4fa;
+}
+
+.dm-list-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.dm-detail {
+    flex: 1;
+    min-width: 0;
+}
+
+.dm-detail-empty {
+    color: #666;
+    padding: 20px;
+    text-align: center;
+    font-style: italic;
+}
+
+.dm-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.dm-play-large {
+    font-size: 16px;
+    width: 24px;
+    text-align: center;
+}
+
+.dm-detail-filename {
+    font-weight: bold;
+    color: #e94560;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dm-waveform-container {
+    margin-bottom: 8px;
+}
+
+.dm-waveform {
+    width: 100%;
+    height: 60px;
+    border-radius: 4px;
+    background: #0a0a14;
+    display: block;
+}
+
+.dm-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.dm-detail-row label {
+    flex: 0 0 70px;
+    color: #888;
+    font-size: 11px;
+}
+
+.dm-detail-row .ne-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.dm-detail-row input[type="range"] {
+    flex: 1;
+    min-width: 0;
+}
+
+.dm-detail-row .ne-val {
+    flex: 0 0 60px;
+    text-align: right;
+    color: #4fc3f7;
+    font-size: 11px;
+}
+
+.dm-detail-info {
+    color: #666;
+    font-size: 10px;
+    margin: 6px 0;
+}
+
+.dm-detail-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.dm-detail-columns {
+    display: flex;
+    gap: 12px;
+}
+
+.dm-detail-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dm-detail-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.dm-danger {
+    border-color: #c62828 !important;
+    color: #ef9a9a !important;
+}
+
+.dm-danger:hover {
+    background: #c62828 !important;
+    color: #fff !important;
+}
+
+.dm-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #333;
+}
+
+@media (max-width: 768px) {
+    .dm-body {
+        flex-direction: column;
+    }
+    .dm-list {
+        flex: none;
+        max-height: 120px;
+    }
+    #dm-panel {
+        max-height: 400px;
+    }
 }
