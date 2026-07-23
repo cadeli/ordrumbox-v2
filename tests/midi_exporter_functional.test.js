@@ -1271,7 +1271,7 @@ describe('MidiExporter — functional end-to-end', () => {
         it('track with unrecognized name gets default MIDI mapping', () => {
             const pattern = {
                 name: 'Unknown', bpm: 120, nbBeats: 1,
-                tracks: [track('XYLOPHONE_XYZ', 4, 1, 1, [
+                tracks: [track('ZZZ_QQQ_UNRECOGNIZED', 4, 1, 1, [
                     note(0, 0, { velocity: 0.8 }),
                 ])]
             }
