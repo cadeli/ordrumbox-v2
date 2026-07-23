@@ -94,10 +94,7 @@ export default class DrumkitManager extends BasePanel {
     }
 
     _getCurrentKitSounds() {
-        const kitName = soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name
-        if (!kitName) return []
         return Object.entries(soundRegistry.sounds)
-            .filter(([, s]) => s.kit_name === kitName)
             .map(([url, s]) => ({ url, instrumentKey: s.key, ...s }))
     }
 
