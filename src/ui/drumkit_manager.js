@@ -39,7 +39,7 @@ export default class DrumkitManager extends BasePanel {
                 <button class="ne-btn" id="dm-add-sample" title="Add a WAV file to the current kit">Add sample</button>
                 <button class="ne-btn" id="dm-auto-detect" title="Auto-detect instruments for all tracks">Auto-detect all</button>
                 <button class="ne-btn" id="dm-normalize-all" title="Normalize all samples to 0 dB peak">Normalize all</button>
-                <input type="file" id="dm-add-file" style="display:none" accept=".wav">
+                <input type="file" id="dm-add-file" style="display:none" accept=".wav,.flac,.mp3,.aac">
             </div>
         `
 
@@ -184,7 +184,7 @@ export default class DrumkitManager extends BasePanel {
                     <div class="dm-detail-actions">
                         <button class="ne-btn" id="dm-replace" title="Replace this sample with a WAV file">Replace</button>
                         <button class="ne-btn dm-danger" id="dm-remove" title="Remove this sample from the kit">Remove</button>
-                        <input type="file" id="dm-replace-file" style="display:none" accept=".wav">
+                        <input type="file" id="dm-replace-file" style="display:none" accept=".wav,.flac,.mp3,.aac">
                     </div>
                 </div>
                 <div class="dm-detail-right">

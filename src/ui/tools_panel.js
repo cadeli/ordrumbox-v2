@@ -60,7 +60,7 @@ export default class ToolsPanel extends BasePanel {
                     </div>
                     <div class="ne-row">
                         <button class="ne-btn" id="tp-import-wav" title="Replace the selected track's sound with a custom WAV sample">Import WAV</button>
-                        <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav">
+                        <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav,.flac,.mp3,.aac">
                     </div>
                     <div class="ne-row">
                         <button class="ne-btn" id="tp-import-midi" title="Import a Standard MIDI File (.mid) into a new pattern">Import MIDI</button>
@@ -68,7 +68,7 @@ export default class ToolsPanel extends BasePanel {
                     </div>
                     <div class="ne-row">
                         <button class="ne-btn" id="tp-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
-                        <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav" webkitdirectory directory multiple>
+                        <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav,.flac" webkitdirectory directory multiple>
                     </div>
                 `)}
                 ${buildAccordionGroup('midi-status', 'MIDI Status', 'Status', true, `
@@ -418,7 +418,7 @@ export default class ToolsPanel extends BasePanel {
             const detectedInstrument = im.findInstrumentFromFileName(file.name)
             const instrumentType = detectedInstrument?.id && detectedInstrument.id !== 'NOT_FOUND' 
                 ? detectedInstrument.id 
-                : file.name.replace('.wav', '').toUpperCase()
+                : file.name.replace(/\.\w+$/, '').toUpperCase()
 
             const url = `custom/${file.name}`
             const sound = {
@@ -427,7 +427,7 @@ export default class ToolsPanel extends BasePanel {
                 buffer: audioBuffer,
                 duration: Math.floor(audioBuffer.duration * 1000),
                 kit_name: soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? 'custom',
-                display_name: file.name.replace('.wav', ''),
+                display_name: file.name.replace(/\.\w+$/, ''),
                 isLoad: true,
                 playStatus: false,
                 index: Object.keys(soundRegistry.sounds).length + 1
@@ -739,9 +739,9 @@ export default class ToolsPanel extends BasePanel {
         if (!files || files.length === 0) return
 
         try {
-            const wavFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.wav'))
+            const wavFiles = Array.from(files).filter(f => /\.(wav|flac|mp3|aac)$/i.test(f.name))
             if (wavFiles.length === 0) {
-                showToast('No .wav files found in selected directory', 'warning')
+                showToast('No audio files found in selected directory', 'warning')
                 return
             }
 
