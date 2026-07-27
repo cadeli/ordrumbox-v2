@@ -941,7 +941,7 @@ export default class TrackEditor extends BasePanel {
             if (this._track.notes) {
                 this._track.notes.forEach(note => {
                     const steppc = note.steppc ?? Math.round((note.beatStep * 100) / (oldStepsPerBeat ?? 4))
-                    note.beatStep = Math.floor((steppc / 100) * val)
+                    note.beatStep = Math.min(Math.round((steppc / 100) * val), val - 1)
                 })
             }
         }

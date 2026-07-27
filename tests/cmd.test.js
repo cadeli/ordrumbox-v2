@@ -309,6 +309,130 @@ describe('Functional: MfCmd operations', () => {
             mfCmd.incrNbStepPerBar(track)
             expect(track.stepsPerBeat).not.toBe(original)
         })
+
+        it('roundtrips notes through 8→4→8 stepsPerBeat changes', () => {
+            const track = mfCmd.createTrack(4, 'KICK', 8)
+            const n0 = mfCmd.addNote(track, 0, 0)
+            const n1 = mfCmd.addNote(track, 0, 4)
+            const n2 = mfCmd.addNote(track, 1, 2)
+            const n3 = mfCmd.addNote(track, 2, 6)
+
+            const origBeats = track.notes.map(n => n.beat)
+            const origSteps = track.notes.map(n => n.beatStep)
+
+            track.stepsPerBeat = 4
+            track.notes.forEach(note => {
+                note.beatStep = Math.min(Math.round((note.steppc / 100) * 4), 3)
+            })
+
+            expect(track.notes.map(n => n.beatStep)).toEqual([0, 2, 1, 3])
+            track.notes.forEach((note, i) => {
+                expect(note.beat).toBe(origBeats[i])
+            })
+
+            track.stepsPerBeat = 8
+            track.notes.forEach(note => {
+                note.beatStep = Math.min(Math.round((note.steppc / 100) * 8), 7)
+            })
+
+            track.notes.forEach((note, i) => {
+                expect(note.beat).toBe(origBeats[i])
+                expect(note.beatStep).toBe(origSteps[i])
+            })
+        })
+
+        it('roundtrips notes through 8→1→8 stepsPerBeat changes via steppc', () => {
+            const track = mfCmd.createTrack(4, 'KICK', 8)
+            mfCmd.addNote(track, 0, 0)
+            mfCmd.addNote(track, 0, 3)
+            mfCmd.addNote(track, 0, 4)
+            mfCmd.addNote(track, 1, 6)
+
+            const origBeats = track.notes.map(n => n.beat)
+            const origSteps = track.notes.map(n => n.beatStep)
+
+            track.stepsPerBeat = 1
+            track.notes.forEach(note => {
+                note.beatStep = Math.min(Math.round((note.steppc / 100) * 1), 0)
+            })
+
+            track.stepsPerBeat = 8
+            track.notes.forEach(note => {
+                note.beatStep = Math.min(Math.round((note.steppc / 100) * 8), 7)
+            })
+
+            track.notes.forEach((note, i) => {
+                expect(note.beat).toBe(origBeats[i])
+                expect(note.beatStep).toBe(origSteps[i])
+            })
+        })
+
+        it('roundtrips notes through 6→2→6 stepsPerBeat changes via steppc', () => {
+            const track = mfCmd.createTrack(4, 'KICK', 6)
+            mfCmd.addNote(track, 0, 0)
+            mfCmd.addNote(track, 0, 1)
+            mfCmd.addNote(track, 0, 2)
+            mfCmd.addNote(track, 0, 3)
+            mfCmd.addNote(track, 0, 4)
+            mfCmd.addNote(track, 0, 5)
+            mfCmd.addNote(track, 1, 3)
+            mfCmd.addNote(track, 2, 5)
+
+            const origBeats = track.notes.map(n => n.beat)
+            const origSteps = track.notes.map(n => n.beatStep)
+
+            track.stepsPerBeat = 2
+            track.notes.forEach(note => {
+                note.beatStep = Math.min(Math.round((note.steppc / 100) * 2), 1)
+            })
+
+            track.stepsPerBeat = 6
+            track.notes.forEach(note => {
+                note.beatStep = Math.min(Math.round((note.steppc / 100) * 6), 5)
+            })
+
+            track.notes.forEach((note, i) => {
+                expect(note.beat).toBe(origBeats[i])
+                expect(note.beatStep).toBe(origSteps[i])
+            })
+        })
+
+        it('maps note to correct step on downsample via steppc (8→4)', () => {
+            const track = mfCmd.createTrack(4, 'KICK', 8)
+            mfCmd.addNote(track, 0, 7)
+
+            track.stepsPerBeat = 4
+            track.notes.forEach(note => {
+                note.beatStep = Math.min(Math.round((note.steppc / 100) * 4), 3)
+            })
+
+            expect(track.notes[0].beat).toBe(0)
+            expect(track.notes[0].beatStep).toBe(3)
+        })
+
+        it('preserves all notes through 4→1→4 via steppc', () => {
+            const track = mfCmd.createTrack(4, 'KICK', 4)
+            mfCmd.addNote(track, 0, 0)
+            mfCmd.addNote(track, 0, 1)
+            mfCmd.addNote(track, 0, 2)
+            mfCmd.addNote(track, 0, 3)
+
+            const origSteps = track.notes.map(n => n.beatStep)
+
+            track.stepsPerBeat = 1
+            track.notes.forEach(note => {
+                note.beatStep = Math.min(Math.round((note.steppc / 100) * 1), 0)
+            })
+
+            track.stepsPerBeat = 4
+            track.notes.forEach(note => {
+                note.beatStep = Math.min(Math.round((note.steppc / 100) * 4), 3)
+            })
+
+            track.notes.forEach((note, i) => {
+                expect(note.beatStep).toBe(origSteps[i])
+            })
+        })
     })
 
     describe('getTrackFromType', () => {

@@ -257,7 +257,7 @@ export default class MfCmd {
         }
 
         Object.values(track.notes).forEach((note) => {
-            note.beatStep = Math.floor((note.steppc / 100) * track.stepsPerBeat)
+            note.beatStep = Math.min(Math.round((note.steppc / 100) * track.stepsPerBeat), track.stepsPerBeat - 1)
         })
         track.loopPointStep = Math.floor((loopStepPc / 100) * track.stepsPerBeat)
         track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
