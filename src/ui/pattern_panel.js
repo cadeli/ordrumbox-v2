@@ -516,32 +516,36 @@ export default class PatternPanel extends BasePanel {
                 break
             case 'Enter':
                 e.preventDefault()
-                const track = tracks[this._cursorTrackIdx]
-                if (!track) return
+                {
+                    const track = tracks[this._cursorTrackIdx]
+                    if (!track) return
 
-                const cell = this._cellMap.get(`${this._cursorTrackIdx}:${this._cursorBeat}:${this._cursorBeatStep}`)
-                if (cell) {
-                    if (cell.classList.contains('filled')) {
-                        cell.classList.remove('filled', 'pp-trig-rand', 'pp-trig-fixed')
-                        cell.innerHTML = ''
+                    const cell = this._cellMap.get(`${this._cursorTrackIdx}:${this._cursorBeat}:${this._cursorBeatStep}`)
+                    if (cell) {
+                        const notesAtStep = (track.notes ?? []).filter(n => n.beat === this._cursorBeat && n.beatStep === this._cursorBeatStep)
+                        if (notesAtStep.length > 0) {
+                            const note = notesAtStep[0]
+                            if (this._selNote === note && this._selTrackIdx === this._cursorTrackIdx) {
+                                serviceRegistry.mfCmd.deleteNote(track, note)
+                                this._clearSelection()
+                            } else {
+                                this._selNote = note
+                                this._selTrackIdx = this._cursorTrackIdx
+                                this._applySelection()
+                                const pos = this._cursorBeat * (track.stepsPerBeat ?? 4) + this._cursorBeatStep
+                                playbackEvents.dispatchNoteSelect({ track, trackIdx: this._cursorTrackIdx, note, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
+                            }
+                        } else {
+                            const newNote = serviceRegistry.mfCmd.addNote(track, this._cursorBeat, this._cursorBeatStep)
+                            this._selNote = newNote
+                            this._selTrackIdx = this._cursorTrackIdx
+                            this._applySelection()
 
-                        const note = (track.notes ?? []).find(n => n.beat === this._cursorBeat && n.beatStep === this._cursorBeatStep)
-                        if (note) {
-                            serviceRegistry.mfCmd.deleteNote(track, note)
+                            const pos = this._cursorBeat * (track.stepsPerBeat ?? 4) + this._cursorBeatStep
+                            playbackEvents.dispatchNoteSelect({ track, trackIdx: this._cursorTrackIdx, note: newNote, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
                         }
-                        this._clearSelection()
-                    } else {
-                        cell.classList.add('filled')
-
-                        const newNote = serviceRegistry.mfCmd.addNote(track, this._cursorBeat, this._cursorBeatStep)
-                        this._selNote = newNote
-                        this._selTrackIdx = this._cursorTrackIdx
-                        this._applySelection()
-
-                        const pos = this._cursorBeat * (track.stepsPerBeat ?? 4) + this._cursorBeatStep
-                        playbackEvents.dispatchNoteSelect({ track, trackIdx: this._cursorTrackIdx, note: newNote, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
+                        this.sync()
                     }
-                    this.sync()
                 }
                 break
             default:
@@ -624,13 +628,14 @@ export default class PatternPanel extends BasePanel {
         const track = tracks[trackIdx]
         if (!track) return
 
-        const note = (track.notes ?? []).find(n => n.beat === beat && n.beatStep === beatStep)
+        const notesAtStep = (track.notes ?? []).filter(n => n.beat === beat && n.beatStep === beatStep)
 
-        if (note) {
+        if (notesAtStep.length > 0) {
+            const sliceEl = e.target.closest('.pp-note-slice')
+            const noteIdx = sliceEl ? parseInt(sliceEl.dataset.noteIdx, 10) : 0
+            const note = notesAtStep[Math.min(noteIdx, notesAtStep.length - 1)]
+
             if (this._selNote === note && this._selTrackIdx === trackIdx) {
-                cell.classList.remove('filled', 'pp-trig-rand', 'pp-trig-fixed')
-                cell.innerHTML = ''
-
                 serviceRegistry.mfCmd.deleteNote(track, note)
                 this._clearSelection()
 
@@ -644,8 +649,6 @@ export default class PatternPanel extends BasePanel {
             }
             return
         }
-
-        cell.classList.add('filled')
 
         const newNote = serviceRegistry.mfCmd.addNote(track, beat, beatStep)
         this._selNote = newNote
@@ -792,11 +795,14 @@ export default class PatternPanel extends BasePanel {
 
                 const noteMap = new Map()
                 notes.forEach(n => {
-                    noteMap.set(`${n.beat}:${n.beatStep}`, n)
+                    const key = `${n.beat}:${n.beatStep}`
+                    if (!noteMap.has(key)) noteMap.set(key, [])
+                    noteMap.get(key).push(n)
                 })
 
 const ghostMap = new Map()
-            noteMap.forEach(note => {
+            noteMap.forEach(notes => {
+                for (const note of notes) {
                     this._getSubPositions(note, track).forEach(({ pos, type }) => {
                         const stepAbs = Math.floor(pos)
                         const beat = Math.floor(stepAbs / stepsPerBeat)
@@ -805,7 +811,8 @@ const ghostMap = new Map()
                             ghostMap.get(stepAbs).push({ offset: pos - stepAbs, type })
                         }
                     })
-                })
+                }
+            })
 
                 cached = { noteMap, ghostMap }
                 this._trackDataCache.set(tIdx, cached)
@@ -820,24 +827,35 @@ const ghostMap = new Map()
                         const absPos = b * stepsPerBeat + s
                         const isBeyondTrack = b >= trackBarCount
 
-                        const note = cached.noteMap.get(`${b}:${s}`)
+                        const notesAtStep = cached.noteMap.get(`${b}:${s}`)
 
                         const cls = ['pp-cell']
                         if (isBeyondTrack) cls.push('pp-cell-out')
 
                         let trig = ''
                         let cellStyle = ''
-                        if (note) {
+                        let noteSlicesHtml = ''
+
+                        if (notesAtStep && notesAtStep.length > 0) {
                             cls.push('filled')
-                            const vel = note.velocity ?? 0.8
-                            const alpha = 0.25 + vel * 0.75
-                            cellStyle = ` style="opacity:${alpha.toFixed(2)}"`
-                            if ((note.prob ?? 1) < 1) {
+                            if (notesAtStep.length > 1) cls.push('pp-cell-multi')
+
+                            const slicePct = (100 / notesAtStep.length).toFixed(2)
+                            noteSlicesHtml = notesAtStep.map((note, ni) => {
+                                const vel = note.velocity ?? 0.8
+                                const alpha = 0.25 + vel * 0.75
+                                const pitch = note.pitch ?? 0
+                                const pct = ((pitch + 24) / 48) * 100
+                                return `<div class="pp-note-slice" data-note-idx="${ni}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"><div class="pp-pitch-beat" style="bottom:${pct.toFixed(1)}%"></div></div>`
+                            }).join('')
+
+                            const firstNote = notesAtStep[0]
+                            if ((firstNote.prob ?? 1) < 1) {
                                 cls.push('pp-trig-rand')
-                                trig = String(Math.round(note.prob * 10))
-                            } else if ((note.every ?? 1) > 1) {
+                                trig = String(Math.round(firstNote.prob * 10))
+                            } else if ((firstNote.every ?? 1) > 1) {
                                 cls.push('pp-trig-fixed')
-                                trig = String(note.every)
+                                trig = String(firstNote.every)
                             }
                         }
 
@@ -849,14 +867,7 @@ const ghostMap = new Map()
                             return `<div class="${cls}" style="left: ${offset * 100}%"></div>`
                         }).join('')
 
-                        let pitchIndicator = ''
-                        if (note) {
-                            const pitch = note.pitch ?? 0
-                            const pct = ((pitch + 24) / 48) * 100
-                            pitchIndicator = `<div class="pp-pitch-beat" style="bottom:${pct.toFixed(1)}%"></div>`
-                        }
-
-                        const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}${cellStyle}>${ghosts}${pitchIndicator}</div>`
+                        const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}>${ghosts}${noteSlicesHtml}</div>`
                         cellsHtml += cellHtml
                     }
                 }
@@ -878,6 +889,21 @@ const ghostMap = new Map()
 
         const prevHeight = this.container.offsetHeight
         this.container.innerHTML = headerHtml + tracksHtml
+
+        const tracksEl = this.container.querySelector('.pp-tracks')
+        if (tracksEl) {
+            const TRACK_HEIGHT = 28
+            const TRACK_GAP = 3
+            const MAX_VISIBLE = 10
+            if (tracks.length > MAX_VISIBLE) {
+                const maxH = MAX_VISIBLE * TRACK_HEIGHT + (MAX_VISIBLE - 1) * TRACK_GAP
+                tracksEl.style.maxHeight = maxH + 'px'
+                tracksEl.style.overflowY = 'auto'
+            } else {
+                tracksEl.style.maxHeight = ''
+                tracksEl.style.overflowY = ''
+            }
+        }
         if (prevHeight > 0) {
             this.container.style.minHeight = prevHeight + 'px'
             requestAnimationFrame(() => {
