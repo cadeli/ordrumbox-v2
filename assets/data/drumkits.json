@@ -7,76 +7,107 @@
             {
                 "display_name": "kick",
                 "key": "KICK",
-                "url": "real/kick.wav"
+                "url": "real/kick.wav",
+                "peakDb": -9.63,
+                "rootMidi": 36
             },
             {
                 "display_name": "snare",
                 "key": "SNARE",
-                "url": "real/snare.wav"
+                "url": "real/snare.wav",
+                "peakDb": -5.01,
+                "rootMidi": 28
             },
             {
                 "display_name": "tom",
                 "key": "TOM",
-                "url": "real/tom.wav"
+                "url": "real/tom.wav",
+                "peakDb": -9,
+                "rootMidi": 48
             },
             {
                 "display_name": "rimshot",
                 "key": "CLAP",
-                "url": "real/rim.wav"
+                "url": "real/rim.wav",
+                "peakDb": -7.38,
+                "rootMidi": 37
             },
             {
                 "display_name": "cow",
                 "key": "COWBELL",
-                "url": "real/cow.wav"
+                "url": "real/cow.wav",
+                "peakDb": -3,
+                "rootMidi": 47
             },
             {
                 "display_name": "chh",
                 "key": "CHH",
-                "url": "real/chh.wav"
+                "url": "real/chh.wav",
+                "peakDb": -6.02,
+                "rootMidi": 42
             },
             {
                 "display_name": "ohh",
                 "key": "OHH",
-                "url": "real/ohh.wav"
+                "url": "real/ohh.wav",
+                "peakDb": -24.04,
+                "rootMidi": 46
             },
             {
                 "display_name": "crash",
                 "key": "CRASH",
-                "url": "real/crash.wav"
+                "url": "real/crash.wav",
+                "peakDb": -12,
+                "rootMidi": 75
             },
-            
             {
                 "display_name": "congas",
                 "key": "CONGAS",
-                "url": "real/congas.wav"
+                "url": "real/congas.wav",
+                "peakDb": -2.19,
+                "rootMidi": 68
             },
             {
                 "display_name": "low_congas",
                 "key": "LO_CONGAS",
-                "url": "real/low_congas.wav"
-            },{
+                "url": "real/low_congas.wav",
+                "peakDb": -2.19,
+                "rootMidi": 37
+            },
+            {
                 "display_name": "bass-c3",
                 "key": "BASS",
-                "url": "real/bass-c3.wav"
+                "url": "real/bass-c3.wav",
+                "peakDb": -2.97,
+                "rootMidi": 48
             },
             {
                 "display_name": "gtr-c3",
                 "key": "GUITAR",
-                "url": "real/gtr-c3.wav"
+                "url": "real/gtr-c3.wav",
+                "peakDb": -3.95,
+                "rootMidi": 48
             },
             {
                 "display_name": "piano-c3",
                 "key": "PIANO",
-                "url": "real/piano-c3.wav"
-            },  {
+                "url": "real/piano-c3.wav",
+                "peakDb": -2.97,
+                "rootMidi": 48
+            },
+            {
                 "display_name": "synth-c3",
                 "key": "SYNTHLEAD",
-                "url": "real/synth-c3.wav"
+                "url": "real/synth-c3.wav",
+                "peakDb": -2.97,
+                "rootMidi": 48
             },
             {
                 "display_name": "tambourine.wav",
                 "key": "TAMBOURINE",
-                "url": "real/tambourine.wav"
+                "url": "real/tambourine.wav",
+                "peakDb": -2.19,
+                "rootMidi": 68
             }
         ]
     },
@@ -88,52 +119,72 @@
             {
                 "display_name": "CHH",
                 "key": "CHH",
-                "url": "matt/CHH.wav"
+                "url": "matt/CHH.wav",
+                "peakDb": -6.02,
+                "rootMidi": 42
             },
             {
                 "display_name": "SNAREH",
                 "key": "CLAP",
-                "url": "matt/SNARE_CL.wav"
+                "url": "matt/SNARE_CL.wav",
+                "peakDb": -9.71,
+                "rootMidi": 52
             },
             {
                 "display_name": "LOWTOM",
                 "key": "LO_TOM",
-                "url": "matt/LOW_TOM.wav"
+                "url": "matt/LOW_TOM.wav",
+                "peakDb": -7.89,
+                "rootMidi": 40
             },
             {
                 "display_name": "KICK",
                 "key": "KICK",
-                "url": "matt/KICK.wav"
+                "url": "matt/KICK.wav",
+                "peakDb": -3.35,
+                "rootMidi": 36
             },
             {
                 "display_name": "OHH",
                 "key": "OHH",
-                "url": "matt/OHH.wav"
+                "url": "matt/OHH.wav",
+                "peakDb": 0,
+                "rootMidi": 46
             },
             {
                 "display_name": "RIMSHOT",
                 "key": "RIMSHOT",
-                "url": "matt/RIMSHOT.wav"
+                "url": "matt/RIMSHOT.wav",
+                "peakDb": -8.19,
+                "rootMidi": 45
             },
             {
                 "display_name": "RIDE",
                 "key": "RIDE",
-                "url": "matt/RIDE.wav"
-            },
-             {
-                "display_name": "CRASH",
-                "key": "CRASH",
-                "url": "matt/CRASH.wav"
+                "url": "matt/RIDE.wav",
+                "peakDb": -6.38,
+                "rootMidi": 51
             },
             {
-                 "display_name": "SNARE",
+                "display_name": "CRASH",
+                "key": "CRASH",
+                "url": "matt/CRASH.wav",
+                "peakDb": -6.38,
+                "rootMidi": 49
+            },
+            {
+                "display_name": "SNARE",
                 "key": "SNARE",
-                "url": "matt/SNARE.wav"
+                "url": "matt/SNARE.wav",
+                "peakDb": -2.31,
+                "rootMidi": 49
             },
             {
                 "display_name": "TOM",
                 "key": "TOM",
-                "url": "matt/TOM.wav"
+                "url": "matt/TOM.wav",
+                "peakDb": -2.45,
+                "rootMidi": 43
             }
         ]
     },
@@ -145,57 +196,79 @@
             {
                 "display_name": "CHH",
                 "key": "CHH",
-                "url": "electro/chh.wav"
+                "url": "electro/chh.wav",
+                "peakDb": -8,
+                "rootMidi": 42
             },
             {
                 "display_name": "CLAP",
                 "key": "CLAP",
-                "url": "electro/clap.wav"
+                "url": "electro/clap.wav",
+                "peakDb": 0,
+                "rootMidi": 39
             },
             {
                 "display_name": "RIDE",
                 "key": "RIDE",
-                "url": "electro/ride.wav"
+                "url": "electro/ride.wav",
+                "peakDb": -6.01,
+                "rootMidi": 53
             },
             {
                 "display_name": "KICK",
                 "key": "KICK",
-                "url": "electro/kick.wav"
+                "url": "electro/kick.wav",
+                "peakDb": -7.15,
+                "rootMidi": 36
             },
             {
                 "display_name": "OHH",
                 "key": "OHH",
-                "url": "electro/ohh.wav"
+                "url": "electro/ohh.wav",
+                "peakDb": -6.62,
+                "rootMidi": 47
             },
             {
                 "display_name": "COWBELL",
                 "key": "COWBELL",
-                "url": "electro/cow.wav"
+                "url": "electro/cow.wav",
+                "peakDb": -6.02,
+                "rootMidi": 33
             },
             {
                 "display_name": "SNARE",
                 "key": "SNARE",
-                "url": "electro/snare.wav"
+                "url": "electro/snare.wav",
+                "peakDb": -6.08,
+                "rootMidi": 53
             },
             {
                 "display_name": "TOM",
                 "key": "TOM",
-                "url": "electro/tom.wav"
+                "url": "electro/tom.wav",
+                "peakDb": -6.01,
+                "rootMidi": 52
             },
             {
                 "display_name": "BASS",
                 "key": "BASS",
-                "url": "electro/acid-bass-c3.wav"
+                "url": "electro/acid-bass-c3.wav",
+                "peakDb": -7.5,
+                "rootMidi": 48
             },
-             {
+            {
                 "display_name": "acid-synth-c3",
                 "key": "SYNTHLEAD",
-                "url": "electro/acid-synth-c3.wav"
+                "url": "electro/acid-synth-c3.wav",
+                "peakDb": -2.97,
+                "rootMidi": 48
             },
             {
                 "display_name": "RHODES",
                 "key": "PIANO",
-                "url": "electro/rhodes-c3.wav"
+                "url": "electro/rhodes-c3.wav",
+                "peakDb": -7.4,
+                "rootMidi": 48
             }
         ]
     },
@@ -207,47 +280,65 @@
             {
                 "display_name": "CHH",
                 "key": "CHH",
-                "url": "open/CHH.wav"
+                "url": "open/CHH.wav",
+                "peakDb": -6.02,
+                "rootMidi": 42
             },
             {
                 "display_name": "CLAP",
                 "key": "CLAP",
-                "url": "open/CLAP.wav"
+                "url": "open/CLAP.wav",
+                "peakDb": -0.8,
+                "rootMidi": 41
             },
             {
                 "display_name": "CRASH",
                 "key": "CRASH",
-                "url": "open/CRASH.wav"
+                "url": "open/CRASH.wav",
+                "peakDb": -0.47,
+                "rootMidi": 54
             },
             {
                 "display_name": "KICK",
                 "key": "KICK",
-                "url": "open/KICK.wav"
+                "url": "open/KICK.wav",
+                "peakDb": -0.87,
+                "rootMidi": 36
             },
             {
                 "display_name": "OHH",
                 "key": "OHH",
-                "url": "open/OHH.wav"
+                "url": "open/OHH.wav",
+                "peakDb": 0,
+                "rootMidi": 46
             },
             {
                 "display_name": "RIMSHOT",
                 "key": "RIMSHOT",
-                "url": "open/RIMSHOT.wav"
+                "url": "open/RIMSHOT.wav",
+                "peakDb": -0.46,
+                "rootMidi": 51
             },
             {
                 "display_name": "SIDE",
                 "key": "SIDE",
-                "url": "open/SIDE.wav"
+                "url": "open/SIDE.wav",
+                "peakDb": -2.39,
+                "rootMidi": 53
             },
             {
                 "display_name": "SNARE",
                 "key": "SNARE",
-                "url": "open/SNARE.wav"
+                "url": "open/SNARE.wav",
+                "peakDb": -0.39,
+                "rootMidi": 53
             },
             {
-               "display_name": "TOM",
+                "display_name": "TOM",
                 "key": "TOM",
-                "url": "open/TOM.wav"
+                "url": "open/TOM.wav",
+                "peakDb": -0.68,
+                "rootMidi": 45
             }
         ]
     },
@@ -257,44 +348,60 @@
         "desc": "This kit was generated using various layered accoustic drums",
         "instruments": [
             {
-               "display_name": "CHH",
+                "display_name": "CHH",
                 "key": "CHH",
-                "url": "ropen/CHH.wav"
+                "url": "ropen/CHH.wav",
+                "peakDb": -6.02,
+                "rootMidi": 42
             },
             {
                 "display_name": "COWBELL",
                 "key": "COWBELL",
-                "url": "ropen/COWBELL.wav"
+                "url": "ropen/COWBELL.wav",
+                "peakDb": -0.89,
+                "rootMidi": 54
             },
             {
-               "display_name": "CRASH",
+                "display_name": "CRASH",
                 "key": "CRASH",
-                "url": "ropen/CRASH.wav"
+                "url": "ropen/CRASH.wav",
+                "peakDb": -0.88,
+                "rootMidi": 74
             },
             {
                 "display_name": "KICK",
                 "key": "KICK",
-                "url": "ropen/KICK.wav"
+                "url": "ropen/KICK.wav",
+                "peakDb": -4.85,
+                "rootMidi": 36
             },
             {
                 "display_name": "OHH",
                 "key": "OHH",
-                "url": "ropen/OHH.wav"
+                "url": "ropen/OHH.wav",
+                "peakDb": -9.63,
+                "rootMidi": 46
             },
             {
                 "display_name": "RIDE",
                 "key": "RIDE",
-                "url": "ropen/RIDE.wav"
+                "url": "ropen/RIDE.wav",
+                "peakDb": -0.89,
+                "rootMidi": 51
             },
             {
                 "display_name": "SNARE",
                 "key": "SNARE",
-                "url": "ropen/SNARE.wav"
+                "url": "ropen/SNARE.wav",
+                "peakDb": -0.91,
+                "rootMidi": 38
             },
             {
                 "display_name": "TOM",
                 "key": "TOM",
-                "url": "ropen/TOM.wav"
+                "url": "ropen/TOM.wav",
+                "peakDb": -0.8,
+                "rootMidi": 30
             }
         ]
     },
@@ -306,43 +413,59 @@
             {
                 "display_name": "kick.wav",
                 "key": "KICK",
-                "url": "generated/kick.wav"
+                "url": "generated/kick.wav",
+                "peakDb": -0.79,
+                "rootMidi": 36
             },
             {
                 "display_name": "snare.wav",
                 "key": "SNARE",
-                "url": "generated/snare.wav"
+                "url": "generated/snare.wav",
+                "peakDb": -0.9,
+                "rootMidi": 45
             },
             {
                 "kit_name": "generated",
                 "display_name": "tom.wav",
                 "key": "TOM",
-                "url": "generated/tom.wav"
+                "url": "generated/tom.wav",
+                "peakDb": -0.79,
+                "rootMidi": 58
             },
             {
                 "display_name": "clap.wav",
                 "key": "CLAP",
-                "url": "generated/clap.wav"
+                "url": "generated/clap.wav",
+                "peakDb": -0.85,
+                "rootMidi": 69
             },
             {
                 "display_name": "cow.wav",
                 "key": "COWBELL",
-                "url": "generated/cow.wav"
+                "url": "generated/cow.wav",
+                "peakDb": -0.72,
+                "rootMidi": 41
             },
             {
                 "display_name": "chh.wav",
                 "key": "CHH",
-                "url": "generated/chh.wav"
+                "url": "generated/chh.wav",
+                "peakDb": -0.83,
+                "rootMidi": 42
             },
             {
                 "display_name": "ohh.wav",
                 "key": "OHH",
-                "url": "generated/ohh.wav"
+                "url": "generated/ohh.wav",
+                "peakDb": -0.89,
+                "rootMidi": 57
             },
             {
                 "display_name": "crash.wav",
                 "key": "CRASH",
-                "url": "generated/crash.wav"
+                "url": "generated/crash.wav",
+                "peakDb": -0.68,
+                "rootMidi": 75
             }
         ]
     },
@@ -354,42 +477,58 @@
             {
                 "display_name": "bd.wav",
                 "key": "KICK",
-                "url": "human/bd.wav"
+                "url": "human/bd.wav",
+                "peakDb": -0.83,
+                "rootMidi": 36
             },
             {
                 "display_name": "Snare.wav",
                 "key": "SNARE",
-                "url": "human/Snare.wav"
+                "url": "human/Snare.wav",
+                "peakDb": -0.89,
+                "rootMidi": 39
             },
             {
                 "display_name": "MidTom.wav",
                 "key": "TOM",
-                "url": "human/MidTom.wav"
+                "url": "human/MidTom.wav",
+                "peakDb": -0.77,
+                "rootMidi": 51
             },
             {
                 "display_name": "HiTom.wav",
                 "key": "HI_TOM",
-                "url": "human/HiTom.wav"
+                "url": "human/HiTom.wav",
+                "peakDb": -0.73,
+                "rootMidi": 59
             },
             {
                 "display_name": "LowTom.wav",
                 "key": "LO_TOM",
-                "url": "human/LowTom.wav"
+                "url": "human/LowTom.wav",
+                "peakDb": -0.85,
+                "rootMidi": 50
             },
             {
                 "display_name": "chh.wav",
                 "key": "CHH",
-                "url": "human/chh.wav"
+                "url": "human/chh.wav",
+                "peakDb": -0.81,
+                "rootMidi": 42
             },
             {
                 "display_name": "OHH.wav",
                 "key": "OHH",
-                "url": "human/OHH.wav"
+                "url": "human/OHH.wav",
+                "peakDb": -0.87,
+                "rootMidi": 46
             },
             {
                 "display_name": "Crash.wav",
                 "key": "CRASH",
-                "url": "human/Crash.wav"
+                "url": "human/Crash.wav",
+                "peakDb": -0.89,
+                "rootMidi": 49
             }
         ]
     },
@@ -401,42 +540,58 @@
             {
                 "display_name": "kick.wav",
                 "key": "KICK",
-                "url": "8bits/kick.wav"
+                "url": "8bits/kick.wav",
+                "peakDb": -7.99,
+                "rootMidi": 52
             },
             {
                 "display_name": "snare.wav",
                 "key": "SNARE",
-                "url": "8bits/snare.wav"
+                "url": "8bits/snare.wav",
+                "peakDb": 0,
+                "rootMidi": 36
             },
             {
                 "display_name": "tom.wav",
                 "key": "TOM",
-                "url": "8bits/tom.wav"
+                "url": "8bits/tom.wav",
+                "peakDb": -3.45,
+                "rootMidi": 48
             },
             {
                 "display_name": "clap.wav",
                 "key": "CLAP",
-                "url": "8bits/clap.wav"
+                "url": "8bits/clap.wav",
+                "peakDb": -4.53,
+                "rootMidi": 39
             },
             {
                 "display_name": "cow.wav",
                 "key": "COWBELL",
-                "url": "8bits/cow.wav"
+                "url": "8bits/cow.wav",
+                "peakDb": -10.1,
+                "rootMidi": 68
             },
             {
                 "display_name": "chh.wav",
                 "key": "CHH",
-                "url": "8bits/chh.wav"
+                "url": "8bits/chh.wav",
+                "peakDb": -5.62,
+                "rootMidi": 42
             },
             {
                 "display_name": "ohh.wav",
                 "key": "OHH",
-                "url": "8bits/ohh.wav"
+                "url": "8bits/ohh.wav",
+                "peakDb": -4.41,
+                "rootMidi": 46
             },
             {
                 "display_name": "crash.wav",
                 "key": "CRASH",
-                "url": "8bits/crash.wav"
+                "url": "8bits/crash.wav",
+                "peakDb": -1.89,
+                "rootMidi": 49
             }
         ]
     },
@@ -448,47 +603,65 @@
             {
                 "display_name": "kick.wav",
                 "key": "KICK",
-                "url": "delagrange/kick.wav"
+                "url": "delagrange/kick.wav",
+                "peakDb": -5.66,
+                "rootMidi": 31
             },
             {
                 "display_name": "snare.wav",
                 "key": "SNARE",
-                "url": "delagrange/snare.wav"
+                "url": "delagrange/snare.wav",
+                "peakDb": -3.33,
+                "rootMidi": 63
             },
             {
                 "display_name": "tom.wav",
                 "key": "TOM",
-                "url": "delagrange/tom.wav"
+                "url": "delagrange/tom.wav",
+                "peakDb": -6,
+                "rootMidi": 28
             },
             {
                 "display_name": "clap.wav",
                 "key": "CLAP",
-                "url": "delagrange/clap.wav"
+                "url": "delagrange/clap.wav",
+                "peakDb": -3.54,
+                "rootMidi": 60
             },
             {
                 "display_name": "cow.wav",
                 "key": "COWBELL",
-                "url": "delagrange/cow.wav"
+                "url": "delagrange/cow.wav",
+                "peakDb": -6,
+                "rootMidi": 76
             },
             {
                 "display_name": "chh.wav",
                 "key": "CHH",
-                "url": "delagrange/chh.wav"
+                "url": "delagrange/chh.wav",
+                "peakDb": -6,
+                "rootMidi": 41
             },
             {
                 "display_name": "ohh.wav",
                 "key": "OHH",
-                "url": "delagrange/ohh.wav"
+                "url": "delagrange/ohh.wav",
+                "peakDb": -7.39,
+                "rootMidi": 34
             },
             {
                 "display_name": "crash.wav",
                 "key": "CRASH",
-                "url": "delagrange/crash.wav"
+                "url": "delagrange/crash.wav",
+                "peakDb": -6,
+                "rootMidi": 44
             },
             {
                 "display_name": "hit.wav",
                 "key": "HIT",
-                "url": "delagrange/hit.wav"
+                "url": "delagrange/hit.wav",
+                "peakDb": -6.12,
+                "rootMidi": 60
             }
         ]
     },
@@ -500,42 +673,58 @@
             {
                 "display_name": "kick.wav",
                 "key": "KICK",
-                "url": "vintage/kick.wav"
+                "url": "vintage/kick.wav",
+                "peakDb": -2.06,
+                "rootMidi": 33
             },
             {
                 "display_name": "snare.wav",
                 "key": "SNARE",
-                "url": "vintage/snare.wav"
+                "url": "vintage/snare.wav",
+                "peakDb": -3.3,
+                "rootMidi": 66
             },
             {
                 "display_name": "tom.wav",
                 "key": "TOM",
-                "url": "vintage/tom.wav"
+                "url": "vintage/tom.wav",
+                "peakDb": -2.76,
+                "rootMidi": 58
             },
             {
                 "display_name": "clap.wav",
                 "key": "CLAP",
-                "url": "vintage/clap.wav"
+                "url": "vintage/clap.wav",
+                "peakDb": -2.76,
+                "rootMidi": 39
             },
             {
                 "display_name": "cow.wav",
                 "key": "COWBELL",
-                "url": "vintage/cow.wav"
+                "url": "vintage/cow.wav",
+                "peakDb": -2.76,
+                "rootMidi": 38
             },
             {
                 "display_name": "chh.wav",
                 "key": "CHH",
-                "url": "vintage/chh.wav"
+                "url": "vintage/chh.wav",
+                "peakDb": -2.76,
+                "rootMidi": 42
             },
             {
                 "display_name": "ohh.wav",
                 "key": "OHH",
-                "url": "vintage/ohh.wav"
+                "url": "vintage/ohh.wav",
+                "peakDb": -2.76,
+                "rootMidi": 46
             },
             {
                 "display_name": "crash.wav",
                 "key": "CRASH",
-                "url": "vintage/crash.wav"
+                "url": "vintage/crash.wav",
+                "peakDb": -1.12,
+                "rootMidi": 49
             }
         ]
     },
@@ -547,42 +736,58 @@
             {
                 "display_name": "kick.wav",
                 "key": "KICK",
-                "url": "punchy/kick.wav"
+                "url": "punchy/kick.wav",
+                "peakDb": -8.67,
+                "rootMidi": 36
             },
             {
                 "display_name": "snare.wav",
                 "key": "SNARE",
-                "url": "punchy/snare.wav"
+                "url": "punchy/snare.wav",
+                "peakDb": -2.81,
+                "rootMidi": 49
             },
             {
                 "display_name": "tom.wav",
                 "key": "TOM",
-                "url": "punchy/tom.wav"
+                "url": "punchy/tom.wav",
+                "peakDb": -0.02,
+                "rootMidi": 38
             },
             {
                 "display_name": "clap.wav",
                 "key": "CLAP",
-                "url": "punchy/clap.wav"
+                "url": "punchy/clap.wav",
+                "peakDb": -5.99,
+                "rootMidi": 30
             },
             {
                 "display_name": "hit.wav",
                 "key": "HIT",
-                "url": "punchy/hit.wav"
+                "url": "punchy/hit.wav",
+                "peakDb": -2.44,
+                "rootMidi": 38
             },
             {
                 "display_name": "chh.wav",
                 "key": "CHH",
-                "url": "punchy/chh.wav"
+                "url": "punchy/chh.wav",
+                "peakDb": -10.12,
+                "rootMidi": 42
             },
             {
                 "display_name": "ohh.wav",
                 "key": "OHH",
-                "url": "punchy/ohh.wav"
+                "url": "punchy/ohh.wav",
+                "peakDb": -9.84,
+                "rootMidi": 46
             },
             {
                 "display_name": "crash.wav",
                 "key": "CRASH",
-                "url": "punchy/crash.wav"
+                "url": "punchy/crash.wav",
+                "peakDb": -2.62,
+                "rootMidi": 49
             }
         ]
     }

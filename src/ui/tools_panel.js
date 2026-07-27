@@ -515,6 +515,16 @@ export default class ToolsPanel extends BasePanel {
             const trackDefs = []
             const skippedChannels = []
 
+            const resolveRootMidi = (trackName) => {
+                const upper = trackName?.trim().toUpperCase() ?? ''
+                for (const sound of Object.values(soundRegistry.sounds ?? {})) {
+                    if (sound.rootMidi != null && upper.includes(sound.key?.toUpperCase() ?? '')) {
+                        return sound.rootMidi
+                    }
+                }
+                return C3_MIDI_NOTE
+            }
+
             for (const [channel, chNotes] of channelNotes) {
                 const program = channelPrograms.get(channel) ?? 0
                 const midiTrackName = channelTrackNames.get(channel) ?? ''
@@ -529,7 +539,7 @@ export default class ToolsPanel extends BasePanel {
                     if (melodicInst.id !== 'NOT_FOUND' && !melodicInst.drum) {
                         const trackName = melodicInst.id
                         if (!trackDefs.some(d => d.trackName === trackName)) {
-                            trackDefs.push({ trackName, groupNotes: chNotes, baseNote: C3_MIDI_NOTE, midiTrackName, program, channel, isDrum: false })
+                            trackDefs.push({ trackName, groupNotes: chNotes, baseNote: resolveRootMidi(trackName), midiTrackName, program, channel, isDrum: false })
                             logger.warn('MidiImport', `  → ${trackName} (tier1: findInstrumentFromMidiProgram ch=${channel} prog=${program})`)
                         }
                         continue
@@ -575,7 +585,7 @@ export default class ToolsPanel extends BasePanel {
                     if (nameInst) {
                         const trackName = nameInst.id
                         if (!trackDefs.some(d => d.trackName === trackName)) {
-                            trackDefs.push({ trackName, groupNotes: chNotes, baseNote: C3_MIDI_NOTE, midiTrackName, program, channel, isDrum: false })
+                            trackDefs.push({ trackName, groupNotes: chNotes, baseNote: resolveRootMidi(trackName), midiTrackName, program, channel, isDrum: false })
                             logger.warn('MidiImport', `  → ${trackName} (tier3: findByName "${midiTrackName}")`)
                         }
                         continue
@@ -587,7 +597,7 @@ export default class ToolsPanel extends BasePanel {
                 if (programInst.id !== 'NOT_FOUND') {
                     const trackName = programInst.id
                     if (!trackDefs.some(d => d.trackName === trackName)) {
-                        trackDefs.push({ trackName, groupNotes: chNotes, baseNote: C3_MIDI_NOTE, midiTrackName, program, channel, isDrum: false })
+                        trackDefs.push({ trackName, groupNotes: chNotes, baseNote: resolveRootMidi(trackName), midiTrackName, program, channel, isDrum: false })
                         logger.warn('MidiImport', `  → ${trackName} (tier4: findInstrumentFromMidiProgramAnyChannel prog=${program})`)
                     }
                 } else {
@@ -610,7 +620,7 @@ export default class ToolsPanel extends BasePanel {
 
                     const instId = allInstIds[fallbackIdx]
                     const chNotes = channelNotes.get(channel)
-                    trackDefs.push({ trackName: instId, groupNotes: chNotes, baseNote: C3_MIDI_NOTE, midiTrackName: channelTrackNames.get(channel) ?? '', program: channelPrograms.get(channel) ?? 0, channel, isDrum: false })
+                    trackDefs.push({ trackName: instId, groupNotes: chNotes, baseNote: resolveRootMidi(instId), midiTrackName: channelTrackNames.get(channel) ?? '', program: channelPrograms.get(channel) ?? 0, channel, isDrum: false })
                     usedIds.add(instId)
                     fallbackIdx++
                 }

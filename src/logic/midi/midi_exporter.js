@@ -25,6 +25,7 @@
  */
 
 import InstrumentsManager from '../services/instruments_manager.js'
+import { soundRegistry } from '../../state/sound_registry.js'
 import {
     computeFlatNotesFromPattern,
     computeNbTickForPattern,
@@ -95,7 +96,7 @@ function buildTempoTrack(bpm) {
 
 // ─── Instrument resolution ────────────────────────────────────────────────────
 
-function assignChannels(instrumentsManager, trackNames) {
+function assignChannels(instrumentsManager, trackNames, soundRegistry = null) {
     const channelMap = new Map()
     let nextMelodicChannel = 0
 
@@ -109,8 +110,15 @@ function assignChannels(instrumentsManager, trackNames) {
             const channel = isDrum ? DRUM_CHANNEL : nextMelodicChannel++
             const rawKey = mapping.key != null ? parseInt(mapping.key, 10) : NaN
             const rawProg = mapping.programm != null ? parseInt(mapping.programm, 10) : NaN
-            const midiNote = Number.isFinite(rawKey) ? rawKey : C3_MIDI_NOTE
             const program = Number.isFinite(rawProg) ? rawProg : null
+
+            let midiNote = Number.isFinite(rawKey) ? rawKey : C3_MIDI_NOTE
+
+            if (soundRegistry && !isDrum) {
+                const sampleRootMidi = _resolveRootMidiFromSounds(name, soundRegistry)
+                if (sampleRootMidi != null) midiNote = sampleRootMidi
+            }
+
             channelMap.set(name, { midiNote, channel, isDrum, program })
             continue
         }
@@ -118,6 +126,16 @@ function assignChannels(instrumentsManager, trackNames) {
         channelMap.set(name, { midiNote: DEFAULT_MIDI_NOTE, channel: DRUM_CHANNEL, isDrum: true, program: null })
     }
     return channelMap
+}
+
+function _resolveRootMidiFromSounds(trackName, soundRegistry) {
+    const upper = trackName?.trim().toUpperCase() ?? ''
+    for (const sound of Object.values(soundRegistry.sounds ?? {})) {
+        if (sound.rootMidi != null && upper.includes(sound.key?.toUpperCase() ?? '')) {
+            return sound.rootMidi
+        }
+    }
+    return null
 }
 
 export function resolveTrackMidi(trackName, instrumentsManager) {
@@ -231,7 +249,7 @@ export default class MidiExporter {
         const trackData = new Map()
 
         const unmutedNames = tracks.filter(t => !t.mute).map(t => t.name)
-        const channelMap = assignChannels(this.instrumentsManager, unmutedNames)
+        const channelMap = assignChannels(this.instrumentsManager, unmutedNames, soundRegistry)
 
         for (const track of tracks) {
             if (track.mute) continue

@@ -190,7 +190,9 @@ export default class MfResourcesLoader {
             buffer: buffer,
             duration: Math.floor(buffer.duration * 1000),
             isLoad: true,
-            playStatus: false
+            playStatus: false,
+            rootMidi: sample.rootMidi ?? null,
+            peakDb: sample.peakDb ?? null,
         }
         soundRegistry.sounds[sample.url] = sound
         return sound
