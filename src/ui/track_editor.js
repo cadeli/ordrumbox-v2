@@ -686,7 +686,7 @@ export default class TrackEditor extends BasePanel {
         // Event delegation for all inputs, selects and buttons
         this.container.addEventListener('input', (e) => {
             const target = e.target
-            const key = target.dataset.key ?? (logger.warn('TrackEditor', 'dataset.key fallback'), target.dataset.lfoKey ?? (logger.warn('TrackEditor', 'dataset.lfoKey fallback'), target.dataset.loop))
+            const key = target.dataset.key ?? target.dataset.lfoKey ?? target.dataset.loop
             if (!key) return
 
             // Check if it's an OrSlider
