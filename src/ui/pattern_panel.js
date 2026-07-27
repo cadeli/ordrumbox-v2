@@ -100,8 +100,12 @@ export default class PatternPanel extends BasePanel {
         const track = tracks[trackIdx]
         if (!track) return
 
-        const note = (track.notes ?? []).find(n => n.beat === beat && n.beatStep === beatStep)
-        if (!note) return
+        const notesAtStep = (track.notes ?? []).filter(n => n.beat === beat && n.beatStep === beatStep)
+        if (notesAtStep.length === 0) return
+
+        const sliceEl = e.target.closest('.pp-note-slice')
+        const noteIdx = sliceEl ? parseInt(sliceEl.dataset.noteIdx, 10) : 0
+        const note = notesAtStep[Math.min(noteIdx, notesAtStep.length - 1)]
 
         const trackPitch = track.pitch ?? 0
         const notePitch = note.pitch ?? 0
@@ -112,7 +116,7 @@ export default class PatternPanel extends BasePanel {
         this._tooltip.textContent = noteName
         this._tooltip.style.display = 'block'
 
-        const rect = cell.getBoundingClientRect()
+        const rect = (sliceEl ?? cell).getBoundingClientRect()
         const containerRect = this.container.getBoundingClientRect()
         this._tooltip.style.left = `${rect.left - containerRect.left + rect.width / 2 - this._tooltip.offsetWidth / 2}px`
         this._tooltip.style.top = `${rect.top - containerRect.top - this._tooltip.offsetHeight - 4}px`
@@ -671,7 +675,7 @@ export default class PatternPanel extends BasePanel {
     }
 
     _applySelection() {
-        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected, .pp-cell.cursor')
+        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected, .pp-cell.cursor, .pp-note-slice.selected')
         selected.forEach(el => el.classList.remove('selected', 'cursor'))
 
         if (this._selTrackIdx !== -1) {
@@ -680,7 +684,17 @@ export default class PatternPanel extends BasePanel {
                 const beat = this._selNote.beat
                 const step = this._selNote.beatStep
                 const sel = this._cellMap.get(`${trackIdx}:${beat}:${step}`)
-                if (sel) sel.classList.add('selected')
+                if (sel) {
+                    sel.classList.add('selected')
+                    const slices = sel.querySelectorAll('.pp-note-slice')
+                    if (slices.length > 0) {
+                        const notes = (appState.patterns[appState.selectedPatternNum]
+                            ? (Utils.getTracksArray(appState.patterns[appState.selectedPatternNum])?.[trackIdx]?.notes ?? [])
+                            : []).filter(n => n.beat === beat && n.beatStep === step)
+                        const idx = notes.indexOf(this._selNote)
+                        if (idx >= 0 && idx < slices.length) slices[idx].classList.add('selected')
+                    }
+                }
             } else if (this._cursorTrackIdx !== -1) {
                 const sel = this._cellMap.get(`${this._cursorTrackIdx}:${this._cursorBeat}:${this._cursorBeatStep}`)
                 if (sel) sel.classList.add('cursor')

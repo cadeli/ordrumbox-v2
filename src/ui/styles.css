@@ -194,6 +194,7 @@
 }
 #pattern-panel .pp-cell.selected { outline: 4px solid #fff; outline-offset: -2px; z-index: 10; }
 #pattern-panel .pp-cell.selected.filled { outline: 5px solid #fff; border-color: #fff; }
+#pattern-panel .pp-note-slice.selected { outline: 2px solid #fff; outline-offset: -1px; z-index: 5; filter: brightness(1.3); }
 #pattern-panel .pp-cell-multi { display: flex; padding: 0; border: none; }
 #pattern-panel .pp-cell-multi .pp-note-slice { height: 100%; background: #ff2a6d; box-shadow: 0 0 10px rgba(255, 42, 109, 0.7); border-right: 1px solid rgba(0,0,0,0.4); position: relative; flex-shrink: 0; }
 #pattern-panel .pp-cell-multi .pp-note-slice:last-child { border-right: none; }
