@@ -273,10 +273,12 @@ export default class AudioEngine {
             if (track) {
                 const mapping = this._resolveMidiMapping(track.id)
                 if (mapping) {
-                    const channel = parseInt(mapping.ch) ?? 9
-                    const note    = parseInt(mapping.key) ?? 60
-                    if (Number.isNaN(channel) || Number.isNaN(note)) {
-                        logger.warn('Fallback', 'pi', 'mapping', { ch: mapping.ch, key: mapping.key })
+                    const rawCh = parseInt(mapping.ch, 10)
+                    const rawNote = parseInt(mapping.key, 10)
+                    const channel = Number.isFinite(rawCh) ? rawCh : 9
+                    const note = Number.isFinite(rawNote) ? rawNote : 60
+                    if (!Number.isFinite(rawCh) || !Number.isFinite(rawNote)) {
+                        logger.warn('Engine', 'MIDI mapping NaN fallback', { ch: mapping.ch, key: mapping.key })
                     }
                     midi.sendNoteOn(channel, note, 100)
                     setTimeout(() => midi.sendNoteOff(channel, note), 100)

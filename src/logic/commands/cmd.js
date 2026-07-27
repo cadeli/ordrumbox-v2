@@ -96,6 +96,7 @@ export default class MfCmd {
     addNote = (track, beat, beatStep, pitch = 0) => {
         let steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
         if (steppc > 100) {
+            logger.warn('Cmd', `stepsPerBeat override ${track.stepsPerBeat} → 8 (beatStep ${beatStep})`)
             track.stepsPerBeat = 8
             steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
         }

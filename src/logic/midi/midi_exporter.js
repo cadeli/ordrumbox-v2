@@ -107,8 +107,10 @@ function assignChannels(instrumentsManager, trackNames) {
             const mapping = instrument.midi[0]
             const isDrum = instrument.drum === true
             const channel = isDrum ? DRUM_CHANNEL : nextMelodicChannel++
-            const midiNote = mapping.key != null ? parseInt(mapping.key, 10) : C3_MIDI_NOTE
-            const program = mapping.programm != null ? parseInt(mapping.programm, 10) : null
+            const rawKey = mapping.key != null ? parseInt(mapping.key, 10) : NaN
+            const rawProg = mapping.programm != null ? parseInt(mapping.programm, 10) : NaN
+            const midiNote = Number.isFinite(rawKey) ? rawKey : C3_MIDI_NOTE
+            const program = Number.isFinite(rawProg) ? rawProg : null
             channelMap.set(name, { midiNote, channel, isDrum, program })
             continue
         }
@@ -126,7 +128,8 @@ export function resolveTrackMidi(trackName, instrumentsManager) {
         const isDrum  = instrument.drum === true
         const channel = isDrum ? DRUM_CHANNEL : 0
         if (mapping.key != null) {
-            return { midiNote: parseInt(mapping.key, 10), channel, isDrum }
+            const rawKey = parseInt(mapping.key, 10)
+            return { midiNote: Number.isFinite(rawKey) ? rawKey : C3_MIDI_NOTE, channel, isDrum }
         }
         return { midiNote: C3_MIDI_NOTE, channel, isDrum }
     }

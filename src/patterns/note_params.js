@@ -1,5 +1,6 @@
 import Utils from '../core/utils.js'
 import MfDefaults from './defaults.js'
+import { logger } from '../core/logger.js'
 
 export default class MfNoteParams {
     static TAG = "MFNOTEPARAMS"
@@ -16,7 +17,13 @@ export default class MfNoteParams {
     static computePan(flatNote) {
         const notePan = MfDefaults.getNoteProp(flatNote.note, 'pan')
         const trackPan = MfDefaults.getTrackProp(flatNote.track, 'pan')
-        const pan = (parseFloat(notePan) + parseFloat(trackPan)) / 2
+        const n = parseFloat(notePan)
+        const t = parseFloat(trackPan)
+        if (!Number.isFinite(n) || !Number.isFinite(t)) {
+            logger.warn('NoteParams', 'NaN pan value', { notePan, trackPan })
+            return 0
+        }
+        const pan = (n + t) / 2
         return Math.floor(pan * 100) / 100
     }
 

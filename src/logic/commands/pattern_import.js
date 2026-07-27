@@ -127,22 +127,24 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
         if (Array.isArray(noteKeys) && Array.isArray(notes) && notes.length > 0 && Array.isArray(notes[0])) {
             for (const arr of notes) {
                 const sourceNote = compactArrayToNote(arr, noteKeys);
-                const note = addNote(
-                    track,
-                    Number(sourceNote.beat ?? 0),
-                    Number(sourceNote.beatStep ?? 0),
-                    Number(sourceNote.pitch ?? 0)
-                )
+                const b = Number(sourceNote.beat ?? 0)
+                const bs = Number(sourceNote.beatStep ?? 0)
+                const p = Number(sourceNote.pitch ?? 0)
+                if (!Number.isFinite(b) || !Number.isFinite(bs) || !Number.isFinite(p)) {
+                    logger.warn('PatternImport', 'NaN note values in compact format', { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch })
+                }
+                const note = addNote(track, b || 0, bs || 0, p || 0)
                 copyNoteProps(note, sourceNote, track)
             }
         } else {
             for (const sourceNote of Object.values(notes)) {
-                const note = addNote(
-                    track,
-                    Number(sourceNote.beat ?? 0),
-                    Number(sourceNote.beatStep ?? 0),
-                    Number(sourceNote.pitch ?? 0)
-                )
+                const b = Number(sourceNote.beat ?? 0)
+                const bs = Number(sourceNote.beatStep ?? 0)
+                const p = Number(sourceNote.pitch ?? 0)
+                if (!Number.isFinite(b) || !Number.isFinite(bs) || !Number.isFinite(p)) {
+                    logger.warn('PatternImport', 'NaN note values in legacy format', { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch })
+                }
+                const note = addNote(track, b || 0, bs || 0, p || 0)
                 copyNoteProps(note, sourceNote, track)
             }
         }
