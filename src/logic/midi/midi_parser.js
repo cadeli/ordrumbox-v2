@@ -149,7 +149,7 @@ export function midiTickToEngineTick(midiTick, division = 96) {
  * Convert velocity 0-127 to normalized 0-1.
  */
 export function midiVelocityToNormalized(velocity) {
-    return velocity / 127
+    return Math.round((velocity / 127) * 100) / 100
 }
 
 /**

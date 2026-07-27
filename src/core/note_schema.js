@@ -107,6 +107,8 @@ export const NOTE_POSITION_KEYS = new Set(['beat', 'beatStep', 'steppc', 'stepPe
  * @param {string[]} keys - The key order to use
  * @returns {Array} Compact note array
  */
+const NOTE_ROUND_2D = new Set(['velocity', 'pan', 'prob', 'rate'])
+
 export function noteToObjectCompact(note, keys = NOTE_KEY_ORDER) {
     let lastIndex = -1;
     for (let i = 0; i < keys.length; i++) {
@@ -120,7 +122,8 @@ export function noteToObjectCompact(note, keys = NOTE_KEY_ORDER) {
     if (lastIndex === -1) return [];
     const arr = [];
     for (let i = 0; i <= lastIndex; i++) {
-        arr.push(note[keys[i]] ?? NOTE_DEFAULTS[keys[i]]);
+        const val = note[keys[i]] ?? NOTE_DEFAULTS[keys[i]];
+        arr.push(NOTE_ROUND_2D.has(keys[i]) ? Math.round(val * 100) / 100 : val);
     }
     return arr;
 }

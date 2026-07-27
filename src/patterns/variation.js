@@ -41,7 +41,7 @@ function applyOps(flatNotes, track, ops, budget) {
                 remaining -= op.cost
                 break
             case 'velocity':
-                op.fn.note = { ...op.fn.note, velocity: Math.random() }
+                op.fn.note = { ...op.fn.note, velocity: Math.round(Math.random() * 100) / 100 }
                 remaining -= op.cost
                 break
             case 'pitch':
@@ -52,7 +52,7 @@ function applyOps(flatNotes, track, ops, budget) {
                 const note = {
                     ...Utils.NOTE_DEFAULTS,
                     pitch: op.fn.note.pitch ?? 0,
-                    velocity: Math.max(0.2, (op.fn.note.velocity ?? 0.8) * 0.7),
+                    velocity: Math.round(Math.max(0.2, (op.fn.note.velocity ?? 0.8) * 0.7) * 100) / 100,
                     pan: op.fn.note.pan ?? 0,
                     beat: op.target.beat,
                     beatStep: op.target.beatStep
@@ -67,7 +67,7 @@ function applyOps(flatNotes, track, ops, budget) {
                 const note = {
                     ...Utils.NOTE_DEFAULTS,
                     pitch: op.fn.note.pitch ?? 0,
-                    velocity: (op.fn.note.velocity ?? 0.8) * 0.8,
+                    velocity: Math.round((op.fn.note.velocity ?? 0.8) * 0.8 * 100) / 100,
                     pan: op.fn.note.pan ?? 0,
                     beat: op.target.beat,
                     beatStep: op.target.beatStep
@@ -82,7 +82,7 @@ function applyOps(flatNotes, track, ops, budget) {
                 const note = {
                     ...Utils.NOTE_DEFAULTS,
                     pitch: op.source.note.pitch ?? 0,
-                    velocity: (op.source.note.velocity ?? 0.8) * 0.5,
+                    velocity: Math.round((op.source.note.velocity ?? 0.8) * 0.5 * 100) / 100,
                     pan: op.source.note.pan ?? 0,
                     beat: op.target.beat,
                     beatStep: op.target.beatStep

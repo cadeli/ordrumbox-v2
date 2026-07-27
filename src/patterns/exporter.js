@@ -7,6 +7,13 @@ import {
     noteToObjectCompact
 } from '../core/note_schema.js';
 
+const ROUND_2D = new Set([
+    'velocity', 'pan', 'reverbAmount', 'delayDepth', 'delayTime',
+    'saturationAmount', 'swingAmount', 'filterFreq', 'filterQ', 'sampleDecay'
+])
+
+const round2 = (v) => typeof v === 'number' ? Math.round(v * 100) / 100 : v
+
 export class PatternExporter {
     static isDefaultValue(value, defaultVal) {
         if (value === defaultVal) return true;
@@ -45,7 +52,7 @@ export class PatternExporter {
                         cleaned.notes = [];
                     }
                 } else {
-                    cleaned[key] = val;
+                    cleaned[key] = ROUND_2D.has(key) ? round2(val) : val
                 }
             }
         }
