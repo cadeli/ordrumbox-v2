@@ -269,8 +269,7 @@
 }
 
 #pattern-panel .pp-ghost {
-    position: absolute; top: 25%; bottom: 25%; width: 70%;
-    transform: translateX(-50%);
+    position: absolute; top: 25%; bottom: 25%; left: 15%; right: 15%;
     border-radius: 2px; pointer-events: none;
 }
 #pattern-panel .pp-ghost-retrigger {

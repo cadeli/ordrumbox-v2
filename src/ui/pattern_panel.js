@@ -713,7 +713,7 @@ export default class PatternPanel extends BasePanel {
         const count = hasArp || retriggerNum > 1 ? retriggerNum : 0
 
         for (let i = 1; i < count; i++) {
-            const pos = basePos + i * stepSpacing
+            const pos = Math.round(basePos + i * stepSpacing)
             if (pos < totalSteps) positions.push({ pos, type: 'retrigger' })
         }
 
@@ -734,7 +734,7 @@ export default class PatternPanel extends BasePanel {
 
             const stepsSpan = endStep - basePos
             for (let i = 1; i <= euclidianFill; i++) {
-                const pos = basePos + (i * stepsSpan) / (euclidianFill + 1)
+                const pos = Math.round(basePos + (i * stepsSpan) / (euclidianFill + 1))
                 if (pos < totalSteps) positions.push({ pos, type: 'euclidian' })
             }
         }
@@ -868,9 +868,9 @@ const ghostMap = new Map()
                         const loopAt = track.loopAtStep ?? totalSteps
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
 
-                        const ghosts = (cached.ghostMap.get(absPos) ?? []).map(({ offset, type }) => {
+                        const ghosts = (cached.ghostMap.get(absPos) ?? []).map(({ type }) => {
                             const cls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
-                            return `<div class="${cls}" style="left: ${offset * 100}%"></div>`
+                            return `<div class="${cls}"></div>`
                         }).join('')
 
                         const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}>${ghosts}${noteSlicesHtml}</div>`
