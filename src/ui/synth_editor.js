@@ -4,6 +4,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
 import { bindAccordionToggles, buildAccordionGroup, fmt } from './components/panel_helpers.js'
+import { escapeHtml as _esc } from './components/ui_utils.js'
 import { OrSlider } from './components/or_slider.js'
 import { logger } from "../core/logger.js"
 
@@ -146,7 +147,7 @@ export default class SynthEditor {
         const groupNames = this._getOrderedGroupNames()
         this._ensureGroupVisibility(groupNames)
         let html = `<div class="ss-header">
-            <span class="ss-title">Soft Synth: ${this._esc(this._editKey)}</span>
+            <span class="ss-title">Soft Synth: ${_esc(this._editKey)}</span>
             <div class="ss-actions">
                 <button class="ne-btn active" data-action="synth-ok">OK</button>
                 <button class="ne-btn" data-action="synth-cancel">Cancel</button>
@@ -177,13 +178,13 @@ export default class SynthEditor {
                     groupContent += this._renderControl(path, key, val)
                 } else {
                     groupContent += `<div class="ss-row">
-                        <label>${this._esc(label)}</label>
+                        <label>${_esc(label)}</label>
                         ${this._renderControl(path, key, val)}
                     </div>`
                 }
             })
 
-            html += buildAccordionGroup(this._esc(groupName), this._esc(label), this._esc(label), isExpanded, groupContent, {
+            html += buildAccordionGroup(_esc(groupName), _esc(label), _esc(label), isExpanded, groupContent, {
                 cssPrefix: 'ss',
                 dataAttr: 'data-synth-group',
             })
@@ -199,7 +200,7 @@ export default class SynthEditor {
     _mountSliders(configs) {
         configs.forEach(({ path, val }) => {
             const pathStr = path.join('.')
-            const placeholder = this.panel.querySelector(`[data-synth-slider="${this._esc(pathStr)}"]`)
+            const placeholder = this.panel.querySelector(`[data-synth-slider="${_esc(pathStr)}"]`)
             if (!placeholder) return
 
             const meta = SYNTH_SLIDER_META[pathStr] ?? {
@@ -282,14 +283,14 @@ export default class SynthEditor {
     }
 
     _renderControl(path, key, val) {
-        const pathAttr = this._esc(path.join('.'))
+        const pathAttr = _esc(path.join('.'))
         const options = this._getOptions(path, key)
         if (options) {
             const opts = options.map(opt => {
                 const optionValue = typeof opt === 'object' ? opt.value : opt
                 const optionLabel = typeof opt === 'object' ? opt.label : opt
                 const selected = String(optionValue) === String(val) ? ' selected' : ''
-                return `<option value="${this._esc(optionValue)}"${selected}>${this._esc(optionLabel)}</option>`
+                return `<option value="${_esc(optionValue)}"${selected}>${_esc(optionLabel)}</option>`
             }).join('')
             return `<select data-synth-path="${pathAttr}">${opts}</select>`
         }
@@ -303,7 +304,7 @@ export default class SynthEditor {
             return `<div class="ss-control" data-synth-slider="${pathAttr}"></div>`
         }
 
-        return `<input type="text" value="${this._esc(val ?? '')}" data-synth-path="${pathAttr}">`
+        return `<input type="text" value="${_esc(val ?? '')}" data-synth-path="${pathAttr}">`
     }
 
     _getOptions(path, key) {
@@ -565,10 +566,5 @@ export default class SynthEditor {
 
     _clone(value) {
         return JSON.parse(JSON.stringify(value))
-    }
-
-    _esc(str) {
-        if (typeof str !== 'string') return String(str ?? '')
-        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     }
 }

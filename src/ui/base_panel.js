@@ -1,4 +1,4 @@
-import { injectUiCss, positionBelowPatternPanel, hidePanelsById, escapeHtml } from './components/panel_helpers.js'
+import { injectUiCss, positionBelowPatternPanel, hidePanelsById, escapeHtml, ALL_PANEL_IDS } from './components/panel_helpers.js'
 
 /**
  * BasePanel - Base class for all UI panels.
@@ -47,15 +47,21 @@ export default class BasePanel {
 
     /**
      * Standard show logic.
-     * @param {string[]} panelsToHide List of panel IDs to hide before showing this one.
+     * @param {string[]} [panelsToHide] Panel IDs to hide. Defaults to all other panels.
      */
-    show(panelsToHide = []) {
-        if (panelsToHide.length > 0) {
-            hidePanelsById(panelsToHide)
-        }
+    show(panelsToHide) {
+        hidePanelsById(panelsToHide ?? this._hideOtherPanels())
+        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
         this.container.style.display = 'block'
         this.sync()
         this.reposition()
+    }
+
+    /**
+     * Returns all canonical panel IDs except this panel's own ID.
+     */
+    _hideOtherPanels() {
+        return ALL_PANEL_IDS.filter(id => id !== this.id)
     }
 
     /**

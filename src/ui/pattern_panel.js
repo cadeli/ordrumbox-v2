@@ -5,6 +5,7 @@ import { TICK } from '../core/constants.js'
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
+import { pitchToNoteName } from './components/ui_utils.js'
 
 export default class PatternPanel extends BasePanel {
     constructor() {
@@ -77,15 +78,6 @@ export default class PatternPanel extends BasePanel {
         }
     }
 
-    static _pitchToNoteName(pitch) {
-        const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-        const baseMidi = 60
-        const midiNote = baseMidi + pitch
-        const noteIndex = ((midiNote % 12) + 12) % 12
-        const octave = Math.floor(midiNote / 12) - 1
-        return `${NOTE_NAMES[noteIndex]}${octave}`
-    }
-
     _onMouseOver(e) {
         const cell = e.target.closest('.pp-cell.filled')
         if (!cell) return
@@ -110,7 +102,7 @@ export default class PatternPanel extends BasePanel {
         const trackPitch = track.pitch ?? 0
         const notePitch = note.pitch ?? 0
         const totalPitch = trackPitch + notePitch
-        const noteName = PatternPanel._pitchToNoteName(totalPitch)
+        const noteName = pitchToNoteName(totalPitch)
 
         this._ensureTooltip()
         this._tooltip.textContent = noteName

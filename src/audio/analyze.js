@@ -224,7 +224,7 @@ export default class MfAudioAnalyze {
         const frameSize = Math.max(32, this.nextPowerOfTwo(Math.min(targetSize, samples.length)))
         if (samples.length <= frameSize) {
             const frame = new Float32Array(frameSize)
-            frame.set(samples.subeatray(0, Math.min(samples.length, frameSize)))
+            frame.set(samples.subarray(0, Math.min(samples.length, frameSize)))
             return frame
         }
 

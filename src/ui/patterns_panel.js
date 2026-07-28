@@ -86,8 +86,7 @@ export default class PatternsPanel extends BasePanel {
     }
 
     show() {
-        super.show(['te-panel', 'ne-panel', 'tools-panel', 'output-panel', 'about-panel', 'dm-panel', 'soft-synth-panel'])
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        super.show()
     }
 
     sync() {

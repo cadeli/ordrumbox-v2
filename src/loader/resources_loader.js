@@ -2,6 +2,7 @@ import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { fixPatterns, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
+import { idbGet, idbPut } from '../core/idb.js'
 import Utils from '../core/utils.js'
 
 export default class MfResourcesLoader {
@@ -13,9 +14,6 @@ export default class MfResourcesLoader {
     static get GENERATED_SOUNDS_URL() { return "assets/data/generated_sounds.json" }
     static get SETTINGS_URL() { return "assets/data/settings.json" }
     static get SETTINGS_KEY() { return 'ordrumbox_settings' }
-    static get DB_NAME() { return 'ordrumbox' }
-    static get DB_VERSION() { return 2 }
-    static get STORE_NAME() { return 'settings' }
 
     constructor(audioCtx = null) {
         this._audioCtx = audioCtx
@@ -120,31 +118,10 @@ export default class MfResourcesLoader {
         Object.assign(soundRegistry.generatedSounds, generatedSounds)
     }
 
-    _openDb() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(MfResourcesLoader.DB_NAME, MfResourcesLoader.DB_VERSION)
-            request.onupgradeneeded = () => {
-                const db = request.result
-                if (!db.objectStoreNames.contains(MfResourcesLoader.STORE_NAME)) {
-                    db.createObjectStore(MfResourcesLoader.STORE_NAME)
-                }
-            }
-            request.onsuccess = () => resolve(request.result)
-            request.onerror = () => reject(request.error)
-        })
-    }
-
     async loadSettings() {
         const defaults = { version: 1, sampleDirs: [], maxSampleDirs: 10 }
         try {
-            const db = await this._openDb()
-            const raw = await new Promise((resolve, reject) => {
-                const tx = db.transaction(MfResourcesLoader.STORE_NAME, 'readonly')
-                const req = tx.objectStore(MfResourcesLoader.STORE_NAME).get(MfResourcesLoader.SETTINGS_KEY)
-                req.onsuccess = () => resolve(req.result)
-                req.onerror = () => reject(req.error)
-            })
-            db.close()
+            const raw = await idbGet('settings', MfResourcesLoader.SETTINGS_KEY)
             if (raw) {
                 Object.assign(soundRegistry.settings, defaults, raw)
                 return
@@ -159,17 +136,7 @@ export default class MfResourcesLoader {
     async saveSettings() {
         const { version, sampleDirs, maxSampleDirs } = soundRegistry.settings
         try {
-            const db = await this._openDb()
-            await new Promise((resolve, reject) => {
-                const tx = db.transaction(MfResourcesLoader.STORE_NAME, 'readwrite')
-                const req = tx.objectStore(MfResourcesLoader.STORE_NAME).put(
-                    { version, sampleDirs, maxSampleDirs },
-                    MfResourcesLoader.SETTINGS_KEY
-                )
-                req.onsuccess = () => resolve()
-                req.onerror = () => reject(req.error)
-            })
-            db.close()
+            await idbPut('settings', MfResourcesLoader.SETTINGS_KEY, { version, sampleDirs, maxSampleDirs })
         } catch { /* IndexedDB unavailable */ }
     }
 

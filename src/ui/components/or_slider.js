@@ -30,7 +30,7 @@
  *   s.el                  — reference to DOM element (after mount/createElement)
  */
 
-const _defaultFmt = v => parseFloat(Number(v).toFixed(2))
+import { fmt as _defaultFmt, escapeHtml as _escHtml } from './ui_utils.js'
 
 export class OrSlider {
     /**
@@ -115,7 +115,7 @@ export class OrSlider {
         const normVal    = this._toNorm(this._value)
         const displayVal = this._fmt(this._value)
         return `<div class="${this._rowClasses()}" data-or-slider="${this._key}" data-prop="${this._key}">
-            <label>${this._escHtml(this._label)}</label>
+            <label>${_escHtml(this._label)}</label>
             <input type="range"
                    min="${this._min}" max="${this._max}" step="${this._step}"
                    value="${normVal}"
@@ -285,11 +285,5 @@ export class OrSlider {
         this.el       = null
         this._input   = null
         this._valSpan = null
-    }
-
-    // ─── Utilities ──────────────────────────────────────────────────────────
-
-    _escHtml(str) {
-        return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     }
 }

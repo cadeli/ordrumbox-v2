@@ -229,7 +229,7 @@ export default class TrackEditor extends BasePanel {
     show({ track, trackIdx }) {
         this._track = track
         this._trackIdx = trackIdx
-        super.show(['ne-panel', 'tools-panel', 'output-panel', 'about-panel'])
+        super.show()
         void this.synthEditor.ensureGeneratedSoundsLoaded()
         if (serviceRegistry.transport?.isRunning) {
             this._startStepWatch()

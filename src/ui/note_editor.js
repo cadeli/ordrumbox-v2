@@ -1,20 +1,11 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindVisibilityToggles, buildAccordionGroup, fmt } from './components/panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles, buildAccordionGroup, fmt, pitchToNoteName } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
 const SCALES_URL = 'assets/data/scales.json'
-
-const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-function pitchToNoteName(pitch, trackPitch = 0) {
-    const baseMidi = 60
-    const midiNote = baseMidi + trackPitch + pitch
-    const noteIndex = ((midiNote % 12) + 12) % 12
-    const octave = Math.floor(midiNote / 12) - 1
-    return `${NOTE_NAMES[noteIndex]}${octave}`
-}
 
 let _scalesCache = null
 

@@ -1,4 +1,12 @@
 import { logger } from "../../core/logger.js"
+export { fmt, escapeHtml, pitchToNoteName } from './ui_utils.js'
+
+/** Canonical set of all overlay panel IDs (pattern-panel is never hidden by other panels). */
+export const ALL_PANEL_IDS = [
+    'te-panel', 'ne-panel', 'tools-panel', 'output-panel',
+    'about-panel', 'dm-panel', 'soft-synth-panel'
+]
+
 export function injectUiCss() {
     if (document.getElementById('ui-styles')) return
     const link = document.createElement('link')
@@ -8,7 +16,7 @@ export function injectUiCss() {
     document.head.appendChild(link)
 }
 
-export const fmt = v => parseFloat(Number(v).toFixed(2))
+
 
 const PANEL_GAP_PX = 4
 
@@ -86,10 +94,7 @@ export function hidePanelsById(ids) {
     })
 }
 
-export function escapeHtml(value) {
-    const str = String(value ?? '')
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}
+
 
 /**
  * Generate a complete accordion group HTML string.

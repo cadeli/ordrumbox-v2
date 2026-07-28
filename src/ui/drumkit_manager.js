@@ -76,8 +76,7 @@ export default class DrumkitManager extends BasePanel {
     }
 
     show() {
-        super.show(['te-panel', 'ne-panel', 'tools-panel', 'output-panel', 'about-panel', 'soft-synth-panel'])
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        super.show()
     }
 
     sync() {

@@ -166,8 +166,7 @@ export default class OutputPanel extends BasePanel {
     }
 
     show() {
-        super.show(['te-panel', 'ne-panel', 'tools-panel', 'about-panel', 'soft-synth-panel'])
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        super.show()
         this._visible = true
         this._startAnimation()
     }
