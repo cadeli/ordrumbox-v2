@@ -1,6 +1,7 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import InstrumentsManager from '../services/instruments_manager.js'
+import { logger } from '../../core/logger.js'
 import {
     parseMidiNoteOn,
     parseMidiRealtime,
@@ -41,7 +42,7 @@ export default class MfMidi {
         }
 
         if (!this.isSupported()) {
-            console.info(`${MfMidi.TAG}: MIDI is not supported in this browser`)
+            logger.info('MfMidi', `${MfMidi.TAG}: MIDI is not supported in this browser`)
             return false
         }
 
@@ -52,12 +53,12 @@ export default class MfMidi {
                 this.midiAccess.addEventListener('statechange', this.onStateChange)
                 this.refreshPorts()
                 this.isReady = true
-                console.info(`${MfMidi.TAG}: MIDI ready`)
+                logger.info('MfMidi', `${MfMidi.TAG}: MIDI ready`)
                 this.renderIndicators()
                 return true
             } catch (error) {
                 this.isReady = false
-                console.warn(`${MfMidi.TAG}: Unable to initialize MIDI access`, error)
+                logger.warn('MfMidi', `${MfMidi.TAG}: Unable to initialize MIDI access`, error)
                 this.renderIndicators()
                 return false
             } finally {
@@ -209,7 +210,7 @@ export default class MfMidi {
                     output.send(data)
                 }
             } catch (e) {
-                console.warn(`${MfMidi.TAG}: Failed to send MIDI message`, e)
+                logger.warn('MfMidi', `${MfMidi.TAG}: Failed to send MIDI message`, e)
             }
         }
     }
@@ -244,7 +245,7 @@ export default class MfMidi {
     }
 
     onMidiMessage = (event) => {
-        console.log("onMidiMessage ", event)
+        logger.info('MfMidi', "onMidiMessage ", event)
         const data = event?.data
         if (!data || data.length < 3) {
             if (data && data.length === 1 && data[0] >= 0xF8) {
@@ -269,12 +270,12 @@ export default class MfMidi {
 
     onRealtimeMessage = (status) => {
         if (!this.externalSyncEnabled) return
-        console.log("onRealtimeMessage")
+        logger.info('MfMidi', "onRealtimeMessage")
         const type = parseMidiRealtime(status)
         switch (type) {
             case 'start':
                 this.handleExternalStart()
-                console.log("handleExternalStart")
+                logger.info('MfMidi', "handleExternalStart")
                 break
             case 'continue':
                 this.handleExternalContinue()
@@ -360,13 +361,13 @@ export default class MfMidi {
     triggerMappedTrack = async (noteNumber) => {
         const pattern = appState.patterns?.[appState.selectedPatternNum]
         if (!pattern) {
-            console.info(`${MfMidi.TAG}: No current pattern available`)
+            logger.info('MfMidi', `${MfMidi.TAG}: No current pattern available`)
             return
         }
 
         const trackIndex = this.instrumentsManager.findTrackIndexFromMidi(pattern, 9, noteNumber)
         if (trackIndex < 0) {
-            console.info(`${MfMidi.TAG}: No GM track mapped for MIDI note ${noteNumber} on channel 9`)
+            logger.info('MfMidi', `${MfMidi.TAG}: No GM track mapped for MIDI note ${noteNumber} on channel 9`)
             return
         }
 
@@ -374,7 +375,7 @@ export default class MfMidi {
             try {
                 await serviceRegistry.audioCtx.resume()
             } catch (error) {
-                console.warn(`${MfMidi.TAG}: Unable to resume audio context`, error)
+                logger.warn('MfMidi', `${MfMidi.TAG}: Unable to resume audio context`, error)
             }
         }
 

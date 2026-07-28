@@ -107,7 +107,7 @@ export default class SynthEditor {
                 serviceRegistry.audioEngine?.updateGeneratedSounds(soundRegistry.generatedSounds)
             } catch (error) {
                 this._loadFailed = true
-                console.error('SynthEditor: failed to load generated sounds', error)
+                logger.error('SynthEditor', 'SynthEditor: failed to load generated sounds', error)
             } finally {
                 this._loading = false
                 this._loadPromise = null

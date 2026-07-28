@@ -4,6 +4,7 @@ import { soundRegistry } from '../state/sound_registry.js'
 import { fixPatterns, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
 import { idbGet, idbPut } from '../core/idb.js'
 import Utils from '../core/utils.js'
+import { logger } from '../core/logger.js'
 
 export default class MfResourcesLoader {
     static TAG = "MFResourcesLoader"
@@ -94,7 +95,7 @@ export default class MfResourcesLoader {
             }
             return await response.json()
         } catch (error) {
-            console.error(`MfResourcesLoader::loadJsonResource: ${file}`, error)
+            logger.error('MfResourcesLoader', `MfResourcesLoader::loadJsonResource: ${file}`, error)
             throw error
         }
     }
@@ -197,7 +198,7 @@ export default class MfResourcesLoader {
             try {
                 return await this.loadSample(sample, kitName)
             } catch (error) {
-                console.error("MfResourcesLoader::loadSample error " + sample.url, error)
+                logger.error('MfResourcesLoader', "MfResourcesLoader::loadSample error " + sample.url, error)
                 return null
             } finally {
                 nbLoad++

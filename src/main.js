@@ -151,7 +151,7 @@ export function init() {
                 await serviceRegistry.mfResourcesLoader.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL)
             }
         } catch (e) {
-            console.error('Failed to load startup resources', e)
+            logger.error('Main', 'Failed to load startup resources', e)
         }
         if (appState.patterns.length > 0) {
             playbackEvents.dispatchPatternChange()
@@ -165,9 +165,9 @@ export function init() {
 
         idbReport().then(report => {
             console.group('%c IndexedDB Report', 'color: #e94560; font-weight: bold')
-            console.log('Usage:', report.usagePct ?? 'N/A', `(${(report.usageBytes ?? 0).toLocaleString()} / ${(report.quotaBytes ?? 0).toLocaleString()} bytes)`)
+            logger.info('Main', 'Usage:', report.usagePct ?? 'N/A', `(${(report.usageBytes ?? 0).toLocaleString()} / ${(report.quotaBytes ?? 0).toLocaleString()} bytes)`)
             for (const [store, keys] of Object.entries(report.stores ?? {})) {
-                console.log(`Store "${store}":`, keys.length, 'entries', keys)
+                logger.info('Main', `Store "${store}":`, keys.length, 'entries', keys)
             }
             console.groupEnd()
         })
@@ -284,8 +284,8 @@ function toggleVus() {
 }
 
 function logPatterns() {
-    console.log(JSON.stringify(appState.patterns))
-    console.log(JSON.stringify(soundRegistry.generatedSounds))
+    logger.info('Main', JSON.stringify(appState.patterns))
+    logger.info('Main', JSON.stringify(soundRegistry.generatedSounds))
 }
 
 function selectRandomPattern() {
@@ -325,7 +325,7 @@ async function convertToGeneratedSounds() {
         try {
             await serviceRegistry.mfResourcesLoader.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL)
         } catch (e) {
-            console.error('Failed to load generated sounds', e)
+            logger.error('Main', 'Failed to load generated sounds', e)
         }
     }
 
@@ -338,7 +338,7 @@ async function convertToGeneratedSounds() {
 
     serviceRegistry.mfPatterns.computeFlatNotesFromPattern(selPattern, 0)
     serviceRegistry.audioEngine?.invalidateCache()
-    console.log('All tracks converted to generated sounds')
+    logger.info('Main', 'All tracks converted to generated sounds')
 }
 
 async function exportCurrentTrackSound() {
@@ -365,9 +365,9 @@ async function exportCurrentTrackSound() {
 
     try {
         // const sampleRate = 44100
-        console.log(JSON.stringify(generatedSound, null, 2))
+        logger.info('Main', JSON.stringify(generatedSound, null, 2))
     } catch (e) {
-        console.error('Export failed', e)
+        logger.error('Main', 'Export failed', e)
         showToast('Export failed: ' + e.message, 'error')
     }
 }
@@ -379,7 +379,7 @@ if ('serviceWorker' in navigator) {
         
         try {
             const registration = await navigator.serviceWorker.register(swPath)
-            console.log('orDrumbox SW registered with scope:', registration.scope);
+            logger.info('Main', 'orDrumbox SW registered with scope:', registration.scope);
 
             // Check for updates periodically (every hour)
             setInterval(() => {
@@ -401,7 +401,7 @@ if ('serviceWorker' in navigator) {
                 });
             })
         } catch (error) {
-            console.error('orDrumbox SW registration failed:', error);
+            logger.error('Main', 'orDrumbox SW registration failed:', error);
         }
     });
 

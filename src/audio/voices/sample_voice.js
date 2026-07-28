@@ -1,6 +1,7 @@
 import BaseVoice from './base_voice.js'
 import MfDefaults from '../../patterns/defaults.js'
 import { computeLfoValue } from '../math.js'
+import { logger } from '../../core/logger.js'
 import {
     PITCH_RAMP_TIME,
     GAIN_ATTACK_RAMP,
@@ -74,7 +75,7 @@ export default class SampleVoice extends BaseVoice {
             this.gainEnvelope.gain.setValueAtTime(currentGain, time)
             this.gainEnvelope.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, time + STOP_BUFFER)
         } catch (e) {
-            console.error("SampleVoice::stop gain error", e)
+            logger.error('SampleVoice', "SampleVoice::stop gain error", e)
         }
 
         try {

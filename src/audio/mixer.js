@@ -1,6 +1,7 @@
 import MfStrip from './strip.js';
 import WorkletLoader from './worklets/loader.js';
 import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js';
+import { logger } from '../core/logger.js';
 
 // Register master bus processor at module load (idempotent)
 WorkletLoader.register('master-bus', MASTER_BUS_SOURCE);
@@ -28,7 +29,7 @@ export default class MfMixer {
             mixer.start();
             return mixer;
         } catch (err) {
-            console.error('MfMixer::create failed', err)
+            logger.error('MfMixer', 'MfMixer::create failed', err)
             return new MfMixer(audioCtx);
         }
     }
@@ -84,7 +85,7 @@ export default class MfMixer {
         const nodes = [this.busWorklet, this.busInput, this.analyser, this.transportClock];
         for (const node of nodes) {
             if (!node) continue;
-            try { node.disconnect(); } catch (e) { console.error(e); }
+            try { node.disconnect(); } catch (e) { logger.error('MfMixer', e); }
             if (node === this.transportClock) {
                 try { node.stop(); } catch (_) {}
             }

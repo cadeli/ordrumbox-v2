@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { logger } from '../src/core/logger.js'
 import MfResourcesLoader from '../src/loader/resources_loader.js'
 
 vi.mock('../src/state/app_state.js', () => {
@@ -72,8 +73,8 @@ describe('MfResourcesLoader', () => {
         globalThis.indexedDB = {
             open: vi.fn(() => makeIdbRequest(mockDb))
         }
-        vi.spyOn(console, 'error').mockImplementation(() => {})
-        vi.spyOn(console, 'log').mockImplementation(() => {})
+        vi.spyOn(logger, 'error').mockImplementation(() => {})
+        vi.spyOn(logger, 'info').mockImplementation(() => {})
         const { serviceRegistry } = await import('../src/state/service_registry.js')
         serviceRegistry.mfCmd = { importPatternFromJson: vi.fn() }
     })

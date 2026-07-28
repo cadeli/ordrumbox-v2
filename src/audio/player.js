@@ -88,7 +88,7 @@ export default class MfPlayer {
             }
             await Promise.all(promises)
         } catch (e) {
-            console.error(e)
+            logger.error('MfPlayer', e)
         }
     }
 
@@ -106,7 +106,7 @@ export default class MfPlayer {
 
             if (isSectionStart || isSectionEnd) {
                 const tag = isSectionEnd ? 'break' : 'generate'
-                console.log(`[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`)
+                logger.info('MfPlayer', `[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`)
             }
 
             const isHarmonicBoundary = isSectionStart || isSectionEnd
@@ -173,7 +173,7 @@ export default class MfPlayer {
         // Worklet mixer is always initialised by the engine before play;
         // legacy `mixer.compressor` check removed.
         await this.mfSound.playSample(flatNote, this.audioCtx.currentTime)
-        console.log("Play :" + track.name + "=" + this.sounds[track.soundId].url)
+        logger.info('MfPlayer', "Play :" + track.name + "=" + this.sounds[track.soundId].url)
     }
 
     updateGeneratedSounds = (generatedSounds) => {

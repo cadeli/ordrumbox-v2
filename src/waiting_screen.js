@@ -1,3 +1,5 @@
+import { logger } from './core/logger.js'
+
 class WaitingScreen {
     MIN_LOAD_TIME_MS = 20
 
@@ -26,7 +28,7 @@ class WaitingScreen {
     createDOM() {
         const container = document.getElementById('insert-ordrumbox-v2-here')
         if (!container) {
-            console.error('Container #insert-ordrumbox-v2-here not found')
+            logger.error('WaitingScreen', 'Container #insert-ordrumbox-v2-here not found')
             return
         }
 
@@ -92,7 +94,7 @@ class WaitingScreen {
                 mainModule.init()
             }
         } catch (error) {
-            console.error('Failed to load main application:', error)
+            logger.error('WaitingScreen', 'Failed to load main application:', error)
         }
     }
 }

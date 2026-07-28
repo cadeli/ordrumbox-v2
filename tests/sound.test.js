@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { logger } from '../src/core/logger.js'
 import MfSound from '../src/audio/sound.js'
 import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -324,7 +325,7 @@ describe('MfSound', () => {
     })
 
     it('_playVoice returns null on error without re-throwing', async () => {
-        const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const spy = vi.spyOn(logger, 'error').mockImplementation(() => {})
         sound.mixer.getOrCreateStrip.mockRejectedValue(new Error('boom'))
         const result = await sound._playVoice(makeFlatNote(), 1.0)
         expect(result).toBeNull()

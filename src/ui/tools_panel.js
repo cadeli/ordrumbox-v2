@@ -330,7 +330,7 @@ export default class ToolsPanel extends BasePanel {
             const blob = await serviceRegistry.mfWavExporter.exportPatternToWav(pattern, loops)
             serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${pattern.name ?? (logger.warn('ToolsPanel', 'wav name fallback'), 'pattern')}.wav`)
         } catch (e) {
-            console.error('WAV Export failed', e)
+            logger.error('ToolsPanel', 'WAV Export failed', e)
             showToast('WAV Export failed', 'error')
         } finally {
             this.exportWavBtn.disabled = false
@@ -384,7 +384,7 @@ export default class ToolsPanel extends BasePanel {
                     this.hide()
                 }
             } catch (err) {
-                console.error('Import failed', err)
+                logger.error('ToolsPanel', 'Import failed', err)
                 showToast('Import failed: ' + err.message, 'error')
             }
         }
@@ -462,7 +462,7 @@ export default class ToolsPanel extends BasePanel {
 
             showToast(`Sample "${file.name}" imported to kit "${kit?.name ?? 'N/A'}" as ${instrumentType} and assigned to track: ${track.name}`, 'success')
         } catch (err) {
-            console.error('WAV Import failed', err)
+            logger.error('ToolsPanel', 'WAV Import failed', err)
             showToast('WAV Import failed: ' + err.message, 'error')
         }
         e.target.value = ''
@@ -737,7 +737,7 @@ export default class ToolsPanel extends BasePanel {
             showToast(msg, 'success')
 
         } catch (err) {
-            console.error('MIDI Import failed', err)
+            logger.error('ToolsPanel', 'MIDI Import failed', err)
             logger.error('MidiImport', `failed: ${err.message}`)
             showToast('MIDI Import failed: ' + err.message, 'error')
         }
@@ -809,7 +809,7 @@ export default class ToolsPanel extends BasePanel {
             playbackEvents.dispatchPatternChange()
 
         } catch (err) {
-            console.error('Directory import failed', err)
+            logger.error('ToolsPanel', 'Directory import failed', err)
             showToast('Import failed: ' + err.message, 'error')
         }
         e.target.value = ''

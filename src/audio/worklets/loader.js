@@ -16,6 +16,8 @@
  * Falls back gracefully if AudioWorklet is not supported.
  */
 
+import { logger } from '../../core/logger.js'
+
 const registry = new Map()
 const loadedProcessors = new WeakMap() // audioCtx -> Set of loaded processor names
 
@@ -72,7 +74,7 @@ export default class WorkletLoader {
                 await audioCtx.audioWorklet.addModule(url)
                 contextLoadedSet.add(name)
             } catch (err) {
-                console.warn(`WorkletLoader: failed to load '${name}'`, err)
+                logger.warn('WorkletLoader', `WorkletLoader: failed to load '${name}'`, err)
                 throw err
             } finally {
                 try { URL.revokeObjectURL(url) } catch {}

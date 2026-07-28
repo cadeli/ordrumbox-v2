@@ -174,7 +174,7 @@ export default class InstrumentsManager {
                         const pattern = new RegExp(`^${syn}$`, 'i');
                         this.matchers.push({ pattern, instrument: inst });
                     } catch (e) {
-                        console.warn(`Regexp invalide: ${syn}`);
+                        logger.warn('Instrument', `Regexp invalide: ${syn}`);
                     }
                 });
             }
@@ -183,7 +183,7 @@ export default class InstrumentsManager {
 
 
     findById(id) {
-        return this.byId.get(id.toUpperCase()) || new Instrument();
+        return this.byId.get(id.toUpperCase()) ?? new Instrument();
     }
 
     findByName(name) {

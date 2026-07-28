@@ -208,7 +208,7 @@ export default class MfCmd {
             await this.autoAssignSoundsForNewDrumkit()
             playbackEvents.dispatchDrumkitChange()
         } catch (err) {
-            console.error('cmd::setSelectedDrumkitNum failed', err)
+            logger.error('MfCmd', 'cmd::setSelectedDrumkitNum failed', err)
         }
     }
 
@@ -221,7 +221,7 @@ export default class MfCmd {
             serviceRegistry.mfPatterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
             serviceRegistry.audioEngine?.invalidateCache()
         } catch (err) {
-            console.error('cmd::autoAssignSoundsForNewDrumkit failed', err)
+            logger.error('MfCmd', 'cmd::autoAssignSoundsForNewDrumkit failed', err)
         }
     }
 
@@ -240,7 +240,7 @@ export default class MfCmd {
                 // console.log(flatnotes)
             }
         } catch (err) {
-            console.error('cmd::setSelectedPatternNum failed', err)
+            logger.error('MfCmd', 'cmd::setSelectedPatternNum failed', err)
         }
     }
 

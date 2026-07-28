@@ -4,6 +4,7 @@
  * WorkletLoader framework tests.
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { logger } from '../src/core/logger.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
 
 describe('WorkletLoader', () => {
@@ -164,7 +165,7 @@ describe('WorkletLoader', () => {
         const revokeObjectURL = vi.fn()
         global.URL = { createObjectURL, revokeObjectURL }
         global.Blob = class {}
-        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
 
         WorkletLoader.register('proc', 'src')
         await expect(WorkletLoader.ensureLoaded(fakeCtx)).rejects.toThrow('parse fail')

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { logger } from '../src/core/logger.js'
 import BaseVoice from '../src/audio/voices/base_voice.js'
 import SampleVoice from '../src/audio/voices/sample_voice.js'
 import WorkletSynthVoice from '../src/audio/voices/worklet_synth_voice.js'
@@ -466,7 +467,7 @@ describe('VoiceFactory', () => {
     })
 
     it('returns null for SampleVoice when no soundBuffer is found', async () => {
-        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
         const flatNote = makeFlatNote({ soundId: 'missing_sound' })
         flatNote.track.soundId = 'also_missing'
         const voice = await factory.createVoice(flatNote)

@@ -4,6 +4,7 @@ import { applyTrackToStrip } from './strip_sync.js'
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
+import { logger } from '../core/logger.js'
 import { TICK } from '../core/constants.js'
 
 const MAX_POLYPHONY = 16
@@ -119,7 +120,7 @@ export default class MfSound {
             }
             return voice
         } catch (e) {
-            console.error("Error in _playVoice:", e)
+            logger.error('MfSound', 'Error in _playVoice:', e)
             return null
         }
     }
@@ -145,12 +146,12 @@ export default class MfSound {
             this.generatedSoundsLoading = false
             if (Object.keys(this.generatedSounds).length === 0) {
                 this.generatedSoundsLoadFailed = true
-                console.warn("MfSounds::loadGeneratedsounds loaded no generated sounds")
+                logger.warn('MfSound', 'loadGeneratedsounds loaded no generated sounds')
             }
         }).catch((error) => {
             this.generatedSoundsLoading = false
             this.generatedSoundsLoadFailed = true
-            console.error("MfSounds::loadGeneratedsounds failed", error)
+            logger.error('MfSound', 'loadGeneratedsounds failed', error)
         })
     }
 

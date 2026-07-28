@@ -8,6 +8,7 @@
  * 4. mixer.start() does not create duplicate connections.
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { logger } from '../src/core/logger.js'
 
 // ─── Shared stubs ────────────────────────────────────────────────────────────
 
@@ -158,7 +159,7 @@ describe('toggleStartStop — audioCtx creation', () => {
     })
 
     it('logs error and returns when AudioContext creation throws', async () => {
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const loggerSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
         const errorLoader = {
             get audioCtx() { throw new Error('No AudioContext') },
             ensureResourcesLoaded: vi.fn(),
@@ -176,11 +177,12 @@ describe('toggleStartStop — audioCtx creation', () => {
 
         seq.toggleStartStop()
 
-        expect(consoleSpy).toHaveBeenCalledWith(
+        expect(loggerSpy).toHaveBeenCalledWith(
+            'MfSeq',
             'MfSeq::toggleStartStop: Failed to create AudioContext',
             expect.any(Error)
         )
-        consoleSpy.mockRestore()
+        loggerSpy.mockRestore()
     })
 })
 

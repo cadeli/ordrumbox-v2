@@ -1,6 +1,7 @@
 import { TICK } from '../../core/constants.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
+import { logger } from '../../core/logger.js'
 
 export default class Transport {
     constructor(audioCtx) {
@@ -29,7 +30,7 @@ export default class Transport {
             if (e.data === "tick") {
                 this.scheduler()
             } else {
-                console.log("Transport worker message: " + e.data)
+                logger.info('Transport', "Transport worker message: " + e.data)
             }
         }
         this.timerWorker.postMessage({ "interval": this.lookahead })
@@ -64,7 +65,7 @@ export default class Transport {
         this.bpm = bpm
         this.clockInterval = 60 / (this.bpm * 24)
         appState.secondsPerBeat = 60 * 4 / (this.bpm * TICK)
-        console.log("Transport::setBpm new bpm is ", bpm)
+        logger.info('Transport', "Transport::setBpm new bpm is ", bpm)
     }
 
     scheduler = () => {
