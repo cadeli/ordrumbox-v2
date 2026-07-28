@@ -73,7 +73,7 @@ function makeFakeResourcesLoader(audioCtx) {
     return {
         audioCtx,
         ensureResourcesLoaded: vi.fn().mockResolvedValue(undefined),
-        loadPatterns: vi.fn().mockResolvedValue(undefined),
+        loadSong: vi.fn().mockResolvedValue(undefined),
         loadDrumkitList: vi.fn().mockResolvedValue(undefined),
         loadGeneratedSounds: vi.fn().mockResolvedValue(undefined),
     }

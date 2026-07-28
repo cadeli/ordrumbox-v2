@@ -16,6 +16,7 @@ export const playbackEvents = {
     onStall: [],
     onStallResume: [],
     onDrumkitManagerToggle: [],
+    onPatternsToggle: [],
 
     offPlaybackStart(fn) { this.onPlaybackStart = this.onPlaybackStart.filter(f => f !== fn) },
     offPlaybackStop(fn) { this.onPlaybackStop = this.onPlaybackStop.filter(f => f !== fn) },
@@ -34,6 +35,7 @@ export const playbackEvents = {
     offStall(fn) { this.onStall = this.onStall.filter(f => f !== fn) },
     offStallResume(fn) { this.onStallResume = this.onStallResume.filter(f => f !== fn) },
     offDrumkitManagerToggle(fn) { this.onDrumkitManagerToggle = this.onDrumkitManagerToggle.filter(f => f !== fn) },
+    offPatternsToggle(fn) { this.onPatternsToggle = this.onPatternsToggle.filter(f => f !== fn) },
 
     dispatchPlaybackStart() { this.onPlaybackStart.forEach(fn => fn()) },
     dispatchPlaybackStop() { this.onPlaybackStop.forEach(fn => fn()) },
@@ -51,5 +53,6 @@ export const playbackEvents = {
     dispatchNoteTrigger(data) { this.onNoteTrigger.forEach(fn => fn(data)) },
     dispatchStall(data) { this.onStall.forEach(fn => fn(data)) },
     dispatchStallResume() { this.onStallResume.forEach(fn => fn()) },
-    dispatchDrumkitManagerToggle(show) { this.onDrumkitManagerToggle.forEach(fn => fn(show)) }
+    dispatchDrumkitManagerToggle(show) { this.onDrumkitManagerToggle.forEach(fn => fn(show)) },
+    dispatchPatternsToggle(show) { this.onPatternsToggle.forEach(fn => fn(show)) }
 }

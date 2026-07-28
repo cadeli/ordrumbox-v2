@@ -9,8 +9,13 @@ export default class MfResourcesLoader {
     static get KITS_PATH() { return "assets/kits/" }
     static get SCALES_URL() { return "assets/data/scales.json" }
     static get DRUMKITS_URL() { return "assets/data/drumkits.json" }
-    static get PATTERNS_URL() { return "assets/data/patterns.json" }
+    static get SONG_URL() { return "assets/data/song.json" }
     static get GENERATED_SOUNDS_URL() { return "assets/data/generated_sounds.json" }
+    static get SETTINGS_URL() { return "assets/data/settings.json" }
+    static get SETTINGS_KEY() { return 'ordrumbox_settings' }
+    static get DB_NAME() { return 'ordrumbox' }
+    static get DB_VERSION() { return 2 }
+    static get STORE_NAME() { return 'settings' }
 
     constructor(audioCtx = null) {
         this._audioCtx = audioCtx
@@ -43,13 +48,19 @@ export default class MfResourcesLoader {
             if (this.isPatternsLoading || this.patternsLoadFailed) return
             this.isPatternsLoading = true
             try {
-                await this.loadPatterns(MfResourcesLoader.PATTERNS_URL)
+                await this.loadSong(MfResourcesLoader.SONG_URL)
                 this.isPatternsLoading = false
             } catch (error) {
                 this.isPatternsLoading = false
                 this.patternsLoadFailed = true
                 throw error
             }
+        }
+
+        // 1b. Load Settings from localStorage (or fallback to JSON file)
+        if (!soundRegistry.settings._loaded) {
+            await this.loadSettings()
+            soundRegistry.settings._loaded = true
         }
 
         // 2. Load Drumkit List if missing (needed for samples)
@@ -109,10 +120,69 @@ export default class MfResourcesLoader {
         Object.assign(soundRegistry.generatedSounds, generatedSounds)
     }
 
-    async loadPatterns(file) {
+    _openDb() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(MfResourcesLoader.DB_NAME, MfResourcesLoader.DB_VERSION)
+            request.onupgradeneeded = () => {
+                const db = request.result
+                if (!db.objectStoreNames.contains(MfResourcesLoader.STORE_NAME)) {
+                    db.createObjectStore(MfResourcesLoader.STORE_NAME)
+                }
+            }
+            request.onsuccess = () => resolve(request.result)
+            request.onerror = () => reject(request.error)
+        })
+    }
+
+    async loadSettings() {
+        const defaults = { version: 1, sampleDirs: [], maxSampleDirs: 10 }
+        try {
+            const db = await this._openDb()
+            const raw = await new Promise((resolve, reject) => {
+                const tx = db.transaction(MfResourcesLoader.STORE_NAME, 'readonly')
+                const req = tx.objectStore(MfResourcesLoader.STORE_NAME).get(MfResourcesLoader.SETTINGS_KEY)
+                req.onsuccess = () => resolve(req.result)
+                req.onerror = () => reject(req.error)
+            })
+            db.close()
+            if (raw) {
+                Object.assign(soundRegistry.settings, defaults, raw)
+                return
+            }
+        } catch { /* IndexedDB unavailable or empty */ }
+        try {
+            const settings = await this.loadJsonResource(MfResourcesLoader.SETTINGS_URL)
+            Object.assign(soundRegistry.settings, defaults, settings)
+        } catch { /* file not found — use defaults */ }
+    }
+
+    async saveSettings() {
+        const { version, sampleDirs, maxSampleDirs } = soundRegistry.settings
+        try {
+            const db = await this._openDb()
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(MfResourcesLoader.STORE_NAME, 'readwrite')
+                const req = tx.objectStore(MfResourcesLoader.STORE_NAME).put(
+                    { version, sampleDirs, maxSampleDirs },
+                    MfResourcesLoader.SETTINGS_KEY
+                )
+                req.onsuccess = () => resolve()
+                req.onerror = () => reject(req.error)
+            })
+            db.close()
+        } catch { /* IndexedDB unavailable */ }
+    }
+
+    async loadSong(file) {
         this.isPatternsComplete = false
-        const patterns = await this.loadJsonResource(file)
-        const fixedPatterns = this.fix(patterns)
+        const json = await this.loadJsonResource(file)
+        const patterns = json.patterns ?? json
+        appState.songInfos = {
+            name: json.infos?.name ?? '',
+            description: json.infos?.description ?? '',
+            date: json.infos?.date ?? '',
+        }
+        const fixedPatterns = this.fix(Array.isArray(patterns) ? patterns : Object.values(patterns))
         appState.patterns.length = 0
         fixedPatterns.forEach((pattern) => {
             if (pattern?.tracks) {

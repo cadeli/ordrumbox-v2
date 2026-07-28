@@ -6,7 +6,7 @@ const PRE_CACHE_ASSETS = [
   './logo.png',
   './favicon.ico',
   './assets/data/drumkits.json',
-  './assets/data/patterns.json',
+  './assets/data/song.json',
   './assets/data/scales.json',
   './assets/data/generated_sounds.json'
 ];

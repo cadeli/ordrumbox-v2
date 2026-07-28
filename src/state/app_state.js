@@ -27,6 +27,7 @@ export class AppState {
         flatNotes: null,
         workletStatus: 'unknown',
         showVus: true,
+        songInfos: { name: '', description: '', date: '' },
     }
 
     constructor() { Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility()) }

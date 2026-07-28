@@ -14,7 +14,7 @@ export const MfGlobals = {
     get urlkits() { return MfResourcesLoader.KITS_PATH },
     get urlscales() { return MfResourcesLoader.SCALES_URL },
     get urldrumkits() { return MfResourcesLoader.DRUMKITS_URL },
-    get urlpatterns() { return MfResourcesLoader.PATTERNS_URL },
+    get urlsong() { return MfResourcesLoader.SONG_URL },
     get urlgeneratedsounds() { return MfResourcesLoader.GENERATED_SOUNDS_URL },
 
     get sounds() { return soundRegistry.sounds },

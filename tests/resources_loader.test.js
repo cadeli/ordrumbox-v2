@@ -12,6 +12,7 @@ vi.mock('../src/state/sound_registry.js', () => {
         sounds: {},
         scales: {},
         generatedSounds: {},
+        settings: { version: 1, sampleDirs: [], maxSampleDirs: 10 },
         reset() { this.drumkitList = []; this.sounds = {}; this.scales = {}; this.generatedSounds = {} }
     }
     return { soundRegistry: state, __esModule: true }
@@ -46,6 +47,31 @@ describe('MfResourcesLoader', () => {
         loader = new MfResourcesLoader()
         fetchSpy = vi.fn()
         globalThis.fetch = fetchSpy
+        function makeIdbRequest(result) {
+            let _handler = null
+            const req = { result, onerror: null }
+            Object.defineProperty(req, 'onsuccess', {
+                get() { return _handler },
+                set(fn) { _handler = fn; queueMicrotask(() => fn?.()) },
+            })
+            return req
+        }
+        const mockStore = {
+            ordrumbox_settings: { version: 1, sampleDirs: [], maxSampleDirs: 10 }
+        }
+        const mockObjectStore = {
+            get: vi.fn((key) => makeIdbRequest(mockStore[key] ?? undefined)),
+            put: vi.fn((value, key) => { mockStore[key] = value; return makeIdbRequest(undefined) }),
+        }
+        const mockTx = { objectStore: vi.fn(() => mockObjectStore) }
+        const mockDb = {
+            close: vi.fn(),
+            transaction: vi.fn(() => mockTx),
+            objectStoreNames: { contains: vi.fn(() => true) }
+        }
+        globalThis.indexedDB = {
+            open: vi.fn(() => makeIdbRequest(mockDb))
+        }
         vi.spyOn(console, 'error').mockImplementation(() => {})
         vi.spyOn(console, 'log').mockImplementation(() => {})
         const { serviceRegistry } = await import('../src/state/service_registry.js')
@@ -54,6 +80,7 @@ describe('MfResourcesLoader', () => {
 
     afterEach(() => {
         vi.restoreAllMocks()
+        delete globalThis.indexedDB
     })
 
     describe('loadJsonResource', () => {
@@ -94,30 +121,31 @@ describe('MfResourcesLoader', () => {
         })
     })
 
-    describe('loadPatterns', () => {
+    describe('loadSong', () => {
         it('loads patterns into appState', async () => {
             const { appState } = await import('../src/state/app_state.js')
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.mfCmd = { importPatternFromJson: vi.fn() }
 
-            const patterns = [{ name: 'P1', bpm: 120, nbBeats: 4, tracks: [] }]
-            fetchSpy.mockResolvedValue(makeJsonResponse(patterns))
+            const song = { infos: { name: 'Test', description: '', date: '2025-01-01' }, patterns: [{ name: 'P1', bpm: 120, nbBeats: 4, tracks: [] }] }
+            fetchSpy.mockResolvedValue(makeJsonResponse(song))
 
-            await loader.loadPatterns('patterns.json')
+            await loader.loadSong('song.json')
 
             expect(serviceRegistry.mfCmd.importPatternFromJson).toHaveBeenCalledTimes(1)
+            expect(appState.songInfos.name).toBe('Test')
         })
 
         it('resets soundId when useAutoAssignSound is not false', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.mfCmd = { importPatternFromJson: vi.fn() }
-            const patterns = [{
+            const song = { infos: {}, patterns: [{
                 name: 'P1', bpm: 120, nbBeats: 4,
                 tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: true, notes: [] }]
-            }]
-            fetchSpy.mockResolvedValue(makeJsonResponse(patterns))
+            }] }
+            fetchSpy.mockResolvedValue(makeJsonResponse(song))
 
-            await loader.loadPatterns('patterns.json')
+            await loader.loadSong('song.json')
 
             const imported = serviceRegistry.mfCmd.importPatternFromJson.mock.calls[0][0]
             expect(imported.tracks[0].soundId).toBe('NOT_DEFINED')
@@ -126,13 +154,13 @@ describe('MfResourcesLoader', () => {
         it('keeps soundId when useAutoAssignSound is false', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.mfCmd = { importPatternFromJson: vi.fn() }
-            const patterns = [{
+            const song = { infos: {}, patterns: [{
                 name: 'P1', bpm: 120, nbBeats: 4,
                 tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: false, notes: [] }]
-            }]
-            fetchSpy.mockResolvedValue(makeJsonResponse(patterns))
+            }] }
+            fetchSpy.mockResolvedValue(makeJsonResponse(song))
 
-            await loader.loadPatterns('patterns.json')
+            await loader.loadSong('song.json')
 
             const imported = serviceRegistry.mfCmd.importPatternFromJson.mock.calls[0][0]
             expect(imported.tracks[0].soundId).toBe('kick.wav')
@@ -141,13 +169,13 @@ describe('MfResourcesLoader', () => {
         it('skips tracks with soundId NOT_DEFINED', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.mfCmd = { importPatternFromJson: vi.fn() }
-            const patterns = [{
+            const song = { infos: {}, patterns: [{
                 name: 'P1', bpm: 120, nbBeats: 4,
                 tracks: [{ name: 'KICK', soundId: 'NOT_DEFINED', notes: [] }]
-            }]
-            fetchSpy.mockResolvedValue(makeJsonResponse(patterns))
+            }] }
+            fetchSpy.mockResolvedValue(makeJsonResponse(song))
 
-            await loader.loadPatterns('patterns.json')
+            await loader.loadSong('song.json')
 
             const imported = serviceRegistry.mfCmd.importPatternFromJson.mock.calls[0][0]
             expect(imported.tracks[0].soundId).toBe('NOT_DEFINED')
@@ -186,6 +214,7 @@ describe('MfResourcesLoader', () => {
             serviceRegistry.mfCmd = { importPatternFromJson: vi.fn() }
             appState.patterns.length = 0
             soundRegistry.drumkitList.length = 0
+            soundRegistry.settings._loaded = false
             Object.keys(soundRegistry.sounds).forEach(k => delete soundRegistry.sounds[k])
 
             fetchSpy
@@ -224,6 +253,7 @@ describe('MfResourcesLoader', () => {
             serviceRegistry.mfCmd = { importPatternFromJson: vi.fn() }
             appState.patterns = [{ name: 'p' }]
             soundRegistry.drumkitList = [{ name: 'real', samples: [] }]
+            soundRegistry.settings._loaded = true
             Object.keys(soundRegistry.sounds).forEach(k => delete soundRegistry.sounds[k])
             loader.isSamplesLoading = true
 

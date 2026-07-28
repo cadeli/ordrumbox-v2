@@ -11,6 +11,7 @@ import ToolsPanel from './ui/tools_panel.js'
 import OutputPanel from './ui/output_panel.js'
 import AboutPanel from './ui/about_panel.js'
 import DrumkitManager from './ui/drumkit_manager.js'
+import PatternsPanel from './ui/patterns_panel.js'
 
 import MfResourcesLoader from './loader/resources_loader.js'
 import Utils from './core/utils.js'
@@ -20,6 +21,7 @@ import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
 import { logger } from "./core/logger.js"
 import { showToast } from './ui/toast.js'
+import { idbReport } from './core/idb.js'
 
 logger.suppressTags(['Instrument', 'Fallback', 'PatternImport'])
 logger.setLevel(logger.LEVELS?.INFO ?? 1)
@@ -42,7 +44,7 @@ function scheduleAfterFirstPaint(callback) {
 }
 
 
-let _toolbar, _patternPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager
+let _toolbar, _patternPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel
 
 export function init() {
     if (window.orientation > 1) {
@@ -67,6 +69,7 @@ export function init() {
     _outputPanel = new OutputPanel()
     _aboutPanel = new AboutPanel()
     _drumkitManager = new DrumkitManager()
+    _patternsPanel = new PatternsPanel()
     _toolbar.init()
     _patternPanel.init()
     _noteEditor.init()
@@ -75,6 +78,7 @@ export function init() {
     _outputPanel.init()
     _aboutPanel.init()
     _drumkitManager.init()
+    _patternsPanel.init()
 
     playbackEvents.onTrackSelect.push((data) => {
         if (data && data.trackIdx !== undefined) {
@@ -84,7 +88,7 @@ export function init() {
 
     window.addEventListener('resize', () => {
         const repositionable = [
-            _trackEditor, _noteEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager
+            _trackEditor, _noteEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel
         ]
         repositionable.forEach(p => {
             if (p?.reposition) p.reposition()
@@ -139,7 +143,7 @@ export function init() {
 
     scheduleAfterFirstPaint(async () => {
         try {
-            await serviceRegistry.mfResourcesLoader.loadPatterns(MfResourcesLoader.PATTERNS_URL)
+            await serviceRegistry.mfResourcesLoader.loadSong(MfResourcesLoader.SONG_URL)
             if (soundRegistry.drumkitList.length === 0) {
                 await serviceRegistry.mfResourcesLoader.loadDrumkitList(MfResourcesLoader.DRUMKITS_URL)
             }
@@ -157,8 +161,16 @@ export function init() {
             serviceRegistry.mfCmd.setSelectedDrumkitNum(0)
             // Then select pattern (which will auto-assign once sounds are loaded)
             serviceRegistry.mfCmd.setSelectedPatternNum(0)
-
         }
+
+        idbReport().then(report => {
+            console.group('%c IndexedDB Report', 'color: #e94560; font-weight: bold')
+            console.log('Usage:', report.usagePct ?? 'N/A', `(${(report.usageBytes ?? 0).toLocaleString()} / ${(report.quotaBytes ?? 0).toLocaleString()} bytes)`)
+            for (const [store, keys] of Object.entries(report.stores ?? {})) {
+                console.log(`Store "${store}":`, keys.length, 'entries', keys)
+            }
+            console.groupEnd()
+        })
     })
 }
 

@@ -315,7 +315,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
         name: "listPatterns",
-        description: "Returns the list of all patterns from patterns.json",
+        description: "Returns the list of all patterns from song.json",
         inputSchema: { type: "object", properties: {} }
     },
     {
@@ -408,10 +408,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const pattern = mfCmd.addPattern(String(patternName).trim());
       const filePath = await savePatternToDisk(pattern);
 
-      const patternsPath = resolve(__dirname, 'assets/data/patterns.json');
+      const patternsPath = resolve(__dirname, 'assets/data/song.json');
       const data = await readFile(patternsPath, 'utf-8');
       let patterns;
-      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
+      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
       patterns.push(pattern);
       await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns));
 
@@ -432,10 +432,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const loopStep = bq;
       let pattern = findPatternByName(patternName);
       if (!pattern) {
-        const patternsPath = resolve(__dirname, 'assets/data/patterns.json');
+        const patternsPath = resolve(__dirname, 'assets/data/song.json');
         const data = await readFile(patternsPath, 'utf-8');
         let patterns;
-        try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
+        try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
         const sourcePattern = patterns.find(p => p.name === patternName);
         if (sourcePattern) {
           const mfCmd = new MfCmd();
@@ -459,10 +459,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       const filePath = await savePatternToDisk(pattern);
 
-      const patternsPath = resolve(__dirname, 'assets/data/patterns.json');
+      const patternsPath = resolve(__dirname, 'assets/data/song.json');
       const data = await readFile(patternsPath, 'utf-8');
       let patterns;
-      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
+      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
       const idx = patterns.findIndex(p => p.name === patternName);
       if (idx >= 0) {
         patterns[idx] = pattern;
@@ -527,10 +527,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       const filePath = await savePatternToDisk(pattern);
 
-      const patternsPath = resolve(__dirname, 'assets/data/patterns.json');
+      const patternsPath = resolve(__dirname, 'assets/data/song.json');
       const data = await readFile(patternsPath, 'utf-8');
       let patterns;
-      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
+      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
       const idx = patterns.findIndex(p => p.name === patternName);
       if (idx >= 0) {
         patterns[idx] = pattern;
@@ -624,7 +624,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (toolName === "listPatterns") {
         try {
-            const patternsPath = resolve(__dirname, 'assets/data/patterns.json');
+            const patternsPath = resolve(__dirname, 'assets/data/song.json');
             const data = await readFile(patternsPath, 'utf-8');
             const patterns = JSON.parse(data);
             const patternNames = patterns.map(p => p.name).sort();
@@ -637,7 +637,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (toolName === "loadPattern") {
         const { patternName } = args;
         try {
-            const patternsPath = resolve(__dirname, 'assets/data/patterns.json');
+            const patternsPath = resolve(__dirname, 'assets/data/song.json');
             const data = await readFile(patternsPath, 'utf-8');
             const patterns = JSON.parse(data);
             const pattern = patterns.find(p => p.name === patternName);
@@ -716,10 +716,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     async function loadPatternFromJson(patternName) {
   let pattern = findPatternByName(patternName);
   if (!pattern) {
-    const patternsPath = resolve(__dirname, 'assets/data/patterns.json');
+    const patternsPath = resolve(__dirname, 'assets/data/song.json');
     const data = await readFile(patternsPath, 'utf-8');
     let patterns;
-    try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
+    try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
     const sourcePattern = patterns.find(p => p.name === patternName);
     if (sourcePattern) {
       const mfCmd = new MfCmd();
@@ -730,10 +730,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 }
 
 async function updatePatternInIndex(pattern) {
-  const patternsPath = resolve(__dirname, 'assets/data/patterns.json');
+  const patternsPath = resolve(__dirname, 'assets/data/song.json');
   const data = await readFile(patternsPath, 'utf-8');
   let patterns;
-  try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt patterns.json: ${e.message}`); }
+  try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
   const idx = patterns.findIndex(p => p.name === pattern.name);
   if (idx >= 0) {
     patterns[idx] = pattern;

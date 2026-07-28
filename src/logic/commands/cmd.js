@@ -138,6 +138,20 @@ export default class MfCmd {
         return pattern
     }
 
+    removePattern = (idx) => {
+        if (appState.patterns.length <= 1) return false
+        appState.patterns.splice(idx, 1)
+        if (appState.selectedPatternNum >= appState.patterns.length) {
+            appState.selectedPatternNum = appState.patterns.length - 1
+        }
+        return true
+    }
+
+    renamePattern = (idx, newName) => {
+        const pat = appState.patterns[idx]
+        if (pat) pat.name = String(newName ?? '').trim() || pat.name
+    }
+
     getPatternByName = (name) => {
         const normalizedName = String(name ?? '').trim().toUpperCase()
         return appState.patterns.find((pattern) => pattern?.name?.toUpperCase() === normalizedName) ?? null

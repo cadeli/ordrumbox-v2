@@ -87,6 +87,9 @@ export default class Toolbar {
 
         const patLabel = document.createElement('label')
         patLabel.textContent = 'Pattern:'
+        patLabel.title = 'Click to open Patterns Manager'
+        patLabel.style.cursor = 'pointer'
+        this.patLabel = patLabel
         this.patternSelect = document.createElement('select')
 
         const kitLabel = document.createElement('label')
@@ -183,6 +186,10 @@ export default class Toolbar {
 
         this.kitLabel.addEventListener('click', () => {
             playbackEvents.dispatchDrumkitManagerToggle(true)
+        })
+
+        this.patLabel.addEventListener('click', () => {
+            playbackEvents.dispatchPatternsToggle(true)
         })
 
         this.autoGenBtn.addEventListener('click', async () => {
