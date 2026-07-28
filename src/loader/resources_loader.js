@@ -193,6 +193,7 @@ export default class MfResourcesLoader {
             playStatus: false,
             rootMidi: sample.rootMidi ?? null,
             peakDb: sample.peakDb ?? null,
+            decay: sample.decay ?? null,
         }
         soundRegistry.sounds[sample.url] = sound
         return sound

@@ -166,7 +166,8 @@ export default class DrumkitManager extends BasePanel {
             ?.map(i => `<option value="${i.id}" ${i.id === detected.id ? 'selected' : ''}>${i.id}</option>`)
             .join('') ?? ''
 
-        const tooltipText = `${detected.id !== 'NOT_FOUND' ? 'Detected: ' + detected.id : 'No instrument detected'}\nPeak: ${peakDb} dB\nRMS: ${rmsDb} dB\nDuration: ${duration}`
+        const decayStr = sound.decay != null ? sound.decay + ' ms' : '—'
+        const tooltipText = `${detected.id !== 'NOT_FOUND' ? 'Detected: ' + detected.id : 'No instrument detected'}\nPeak: ${peakDb} dB\nRMS: ${rmsDb} dB\nDuration: ${duration}\nDecay: ${decayStr}`
 
         this._detailEl.innerHTML = `
             <div class="dm-detail-header">
@@ -179,7 +180,7 @@ export default class DrumkitManager extends BasePanel {
                         <canvas id="dm-waveform" class="dm-waveform" width="300" height="80"></canvas>
                     </div>
                     <div class="dm-detail-info">
-                        Peak: ${peakDb} dB | RMS: ${rmsDb} dB | ${duration}
+                        Peak: ${peakDb} dB | RMS: ${rmsDb} dB | ${duration} | Decay: ${decayStr}
                     </div>
                     <div class="dm-detail-actions">
                         <button class="ne-btn" id="dm-replace" title="Replace this sample with a WAV file">Replace</button>
@@ -205,6 +206,11 @@ export default class DrumkitManager extends BasePanel {
                         <label>Tune:</label>
                         <span class="ne-val" id="dm-tune-val">${noteStr}</span>
                         <input type="range" id="dm-tune" class="ne-slider" min="-12" max="12" step="0.1" value="0">
+                    </div>
+                    <div class="dm-detail-row">
+                        <label>Decay:</label>
+                        <span class="ne-val" id="dm-decay-val">${decayStr}</span>
+                        <input type="range" id="dm-decay" class="ne-slider" min="0" max="5000" step="10" value="${sound.decay ?? 0}">
                     </div>
                 </div>
             </div>
@@ -241,6 +247,10 @@ export default class DrumkitManager extends BasePanel {
             const baseHz = analysis?.fundamentalHz ?? 440
             const tunedHz = baseHz * Math.pow(2, semitones / 12)
             this._detailEl.querySelector('#dm-tune-val').textContent = formatNote(hzToNote(tunedHz))
+        })
+
+        this._detailEl.querySelector('#dm-decay')?.addEventListener('input', (e) => {
+            this._detailEl.querySelector('#dm-decay-val').textContent = `${Number(e.target.value)} ms`
         })
 
         this._detailEl.querySelector('#dm-replace')?.addEventListener('click', () => {
