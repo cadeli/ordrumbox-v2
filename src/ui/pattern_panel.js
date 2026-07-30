@@ -635,6 +635,15 @@ export default class PatternPanel extends BasePanel {
             return
         }
 
+        if (e.target.closest('#pp-add-track')) {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern) return
+            const trackNum = (Utils.getTracksArray(pattern).length) + 1
+            serviceRegistry.mfCmd?.addTrack(pattern, `T${trackNum}`)
+            this.sync()
+            return
+        }
+
         const cell = e.target.closest('.pp-cell')
         if (!cell) return
         const trackIdx = parseInt(cell.dataset.track, 10)
@@ -944,6 +953,7 @@ const ghostMap = new Map()
                     ${beatsHtml}
                 </div>`
         })
+        tracksHtml += `<div class="pp-add-track" id="pp-add-track">+ new track</div>`
         tracksHtml += `<canvas class="pp-waveform-overlay"></canvas></div>`
 
         const prevHeight = this.container.offsetHeight

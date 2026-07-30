@@ -60,16 +60,26 @@ export default class Toolbar {
         this.container = document.createElement('div')
         this.container.id = 'tb'
 
+        const brand = document.createElement('span')
+        brand.className = 'tb-brand'
+        brand.textContent = 'orDrumbox'
+
         this.startBtn = document.createElement('button')
         this.startBtn.className = 'tb-start'
-        this.startBtn.textContent = 'Start'
+        this.startBtn.textContent = '▶'
+        this.startBtn.title = 'Start / Stop'
 
         const bpmWrap = document.createElement('div')
-        bpmWrap.className = 'tb-bpm-wrap'
+        bpmWrap.className = 'tb-group'
+
+        const bpmLabel = document.createElement('span')
+        bpmLabel.className = 'tb-label'
+        bpmLabel.textContent = 'BPM'
 
         this.bpmToggle = document.createElement('button')
         this.bpmToggle.className = 'tb-bpm-toggle'
-        this.bpmToggle.textContent = 'BPM 120'
+        this.bpmToggle.textContent = '120'
+        bpmWrap.appendChild(bpmLabel)
         bpmWrap.appendChild(this.bpmToggle)
 
         this.bpmPanel = document.createElement('div')
@@ -85,19 +95,53 @@ export default class Toolbar {
         this.bpmPanel.appendChild(this.bpmValue)
         bpmWrap.appendChild(this.bpmPanel)
 
-        const patLabel = document.createElement('label')
-        patLabel.textContent = 'Pattern:'
+        const patWrap = document.createElement('div')
+        patWrap.className = 'tb-group'
+        const patLabel = document.createElement('span')
+        patLabel.className = 'tb-label'
+        patLabel.textContent = 'Pattern'
         patLabel.title = 'Click to open Patterns Manager'
         patLabel.style.cursor = 'pointer'
         this.patLabel = patLabel
         this.patternSelect = document.createElement('select')
+        patWrap.appendChild(patLabel)
+        patWrap.appendChild(this.patternSelect)
 
-        const kitLabel = document.createElement('label')
-        kitLabel.textContent = 'Kit:'
+        const pageWrap = document.createElement('div')
+        pageWrap.className = 'tb-group'
+        const pageLabelTop = document.createElement('span')
+        pageLabelTop.className = 'tb-label'
+        pageLabelTop.textContent = 'Page'
+        this.prevPageBtn = document.createElement('button')
+        this.prevPageBtn.className = 'tb-prev-page'
+        this.prevPageBtn.textContent = '◀'
+        this.prevPageBtn.title = 'Previous Page'
+        this.pageLabel = document.createElement('span')
+        this.pageLabel.className = 'tb-page-label'
+        this.pageLabel.textContent = 'P1'
+        this.nextPageBtn = document.createElement('button')
+        this.nextPageBtn.className = 'tb-next-page'
+        this.nextPageBtn.textContent = '▶'
+        this.nextPageBtn.title = 'Next Page'
+        pageWrap.appendChild(pageLabelTop)
+        const pageRow = document.createElement('div')
+        pageRow.className = 'tb-page-row'
+        pageRow.appendChild(this.prevPageBtn)
+        pageRow.appendChild(this.pageLabel)
+        pageRow.appendChild(this.nextPageBtn)
+        pageWrap.appendChild(pageRow)
+
+        const kitWrap = document.createElement('div')
+        kitWrap.className = 'tb-group'
+        const kitLabel = document.createElement('span')
+        kitLabel.className = 'tb-label'
+        kitLabel.textContent = 'Drumkit'
         kitLabel.title = 'Click to open Drumkit Manager'
         kitLabel.style.cursor = 'pointer'
         this.kitLabel = kitLabel
         this.drumkitSelect = document.createElement('select')
+        kitWrap.appendChild(kitLabel)
+        kitWrap.appendChild(this.drumkitSelect)
 
         this.autoGenBtn = document.createElement('button')
         this.autoGenBtn.className = 'tb-auto-gen'
@@ -107,42 +151,26 @@ export default class Toolbar {
         this.clearBtn.className = 'tb-clear'
         this.clearBtn.textContent = 'Clear'
 
-        // Pagination buttons
-        this.prevPageBtn = document.createElement('button')
-        this.prevPageBtn.className = 'tb-prev-page'
-        this.prevPageBtn.textContent = '◀'
-        this.prevPageBtn.title = 'Previous Page'
-
-        this.pageLabel = document.createElement('label')
-        this.pageLabel.className = 'tb-page-label'
-        this.pageLabel.textContent = 'P1'
-
-        this.nextPageBtn = document.createElement('button')
-        this.nextPageBtn.className = 'tb-next-page'
-        this.nextPageBtn.textContent = '▶'
-        this.nextPageBtn.title = 'Next Page'
-
         this.outputBtn = document.createElement('button')
         this.outputBtn.className = 'tb-output'
         this.outputBtn.textContent = 'Output'
 
         this.toolsBtn = document.createElement('button')
         this.toolsBtn.className = 'tb-tools'
-        this.toolsBtn.textContent = 'Tools'
+        this.toolsBtn.textContent = '⚙'
+        this.toolsBtn.title = 'Tools'
 
         this.aboutBtn = document.createElement('button')
         this.aboutBtn.className = 'tb-about'
-        this.aboutBtn.textContent = 'About'
+        this.aboutBtn.textContent = '⋮'
+        this.aboutBtn.title = 'About'
 
+        this.container.appendChild(brand)
         this.container.appendChild(this.startBtn)
         this.container.appendChild(bpmWrap)
-        this.container.appendChild(patLabel)
-        this.container.appendChild(this.patternSelect)
-        this.container.appendChild(this.prevPageBtn)
-        this.container.appendChild(this.pageLabel)
-        this.container.appendChild(this.nextPageBtn)
-        this.container.appendChild(kitLabel)
-        this.container.appendChild(this.drumkitSelect)
+        this.container.appendChild(patWrap)
+        this.container.appendChild(pageWrap)
+        this.container.appendChild(kitWrap)
         this.container.appendChild(this.autoGenBtn)
         this.container.appendChild(this.clearBtn)
         this.container.appendChild(this.outputBtn)
@@ -263,29 +291,29 @@ export default class Toolbar {
     }
 
     syncPage() {
-        this.pageLabel.textContent = `P${appState.currentPage + 1}`
-        this.prevPageBtn.disabled = appState.currentPage === 0
-        
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (pattern) {
             const stepsPerBeat = pattern.tracks[0]?.stepsPerBeat ?? 4
             const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
             const maxPage = Math.ceil(totalSteps / 16) - 1
+            this.pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
             this.nextPageBtn.disabled = appState.currentPage >= maxPage
         } else {
+            this.pageLabel.textContent = '1/1'
             this.nextPageBtn.disabled = true
         }
+        this.prevPageBtn.disabled = appState.currentPage === 0
     }
 
     syncBpmSlider = (bpm) => {
         this.bpmSlider.value = bpm
         this.bpmValue.textContent = bpm
-        this.bpmToggle.textContent = `BPM ${bpm}`
+        this.bpmToggle.textContent = bpm
     }
 
     syncPlayButton = () => {
         const running = serviceRegistry.transport?.isRunning ?? false
-        this.startBtn.textContent = running ? 'Stop' : 'Start'
+        this.startBtn.textContent = running ? '■' : '▶'
         this.startBtn.classList.toggle('running', running)
     }
 

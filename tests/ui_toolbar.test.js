@@ -45,14 +45,16 @@ describe('Toolbar UI Layout', () => {
     it('contains all essential control buttons', () => {
         const tb = document.getElementById('tb')
         const buttons = Array.from(tb.querySelectorAll('button'))
+        const classes = buttons.map(b => b.className)
         const textContents = buttons.map(b => b.textContent)
 
-        expect(textContents.some(t => t.includes('BPM'))).toBe(true)
-        expect(textContents).toContain('Start')
-        expect(textContents).toContain('Auto Gen')
-        expect(textContents).toContain('Clear')
-        expect(textContents).toContain('Output')
-        expect(textContents).toContain('Tools')
+        expect(textContents.some(t => t.includes('BPM')) || document.querySelector('.tb-label')?.textContent === 'BPM').toBe(true)
+        expect(classes).toContain('tb-start')
+        expect(classes).toContain('tb-auto-gen')
+        expect(classes).toContain('tb-clear')
+        expect(classes).toContain('tb-output')
+        expect(classes).toContain('tb-tools')
+        expect(classes).toContain('tb-about')
         
         // Check pagination arrows
         expect(textContents).toContain('◀')
@@ -82,7 +84,7 @@ describe('Toolbar UI Layout', () => {
         slider.dispatchEvent(new Event('input'))
         
         expect(valDisplay.textContent).toBe('140')
-        expect(toggle.textContent).toBe('BPM 140')
+        expect(toggle.textContent).toBe('140')
         expect(serviceRegistry.mfSeq.setBpm).toHaveBeenCalledWith(140)
     })
 
@@ -91,14 +93,14 @@ describe('Toolbar UI Layout', () => {
         expect(selects.length).toBe(2)
         
         // Check labels associated with selects
-        const labels = Array.from(document.querySelectorAll('#tb label')).map(l => l.textContent)
-        expect(labels).toContain('Pattern:')
-        expect(labels).toContain('Kit:')
+        const labels = Array.from(document.querySelectorAll('#tb .tb-label')).map(l => l.textContent)
+        expect(labels).toContain('Pattern')
+        expect(labels).toContain('Drumkit')
     })
 
     it('shows the current page indicator', () => {
         const label = document.querySelector('.tb-page-label')
         expect(label).not.toBeNull()
-        expect(label.textContent).toBe('P1')
+        expect(label.textContent).toBe('1/1')
     })
 })
