@@ -18,7 +18,7 @@ import MfDefaults from '../patterns/defaults.js'
  */
 export function applyTrackToStrip(strip, track, time, opts) {
     if (!strip || !track) return
-    const skipVP = opts?.skipVelocityPan === true
+    const skipVelocityPan = opts?.skipVelocityPan === true
     const readDefaults = opts?.readDefaults !== false
 
     if (track.filterType) {
@@ -39,7 +39,7 @@ export function applyTrackToStrip(strip, track, time, opts) {
         strip.updateDelay(track.delayType, track.delayTime, track.delayOn === false ? 0 : track.delayDepth)
     }
 
-    if (!skipVP) {
+    if (!skipVelocityPan) {
         const trackVelo = readDefaults
             ? (track.velocity ?? MfDefaults.getTrackProp(track, 'velocity'))
             : track.velocity
@@ -51,7 +51,7 @@ export function applyTrackToStrip(strip, track, time, opts) {
         if (trackPan !== undefined && !track.panLfo) strip.pan.pan.setTargetAtTime(trackPan, time, 0.01)
     }
 
-    if (track.mute === true || (opts?.soloActive === true && opts?.isSoloed !== true)) {
+    if (track.mute === true) {
         strip.output.gain.setTargetAtTime(0, time, 0.01)
     } else if (track.mute === false && !track.velocityLfo) {
         strip.output.gain.setTargetAtTime(track.velocity ?? 1.0, time, 0.01)

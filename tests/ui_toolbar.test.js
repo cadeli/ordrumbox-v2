@@ -88,14 +88,15 @@ describe('Toolbar UI Layout', () => {
         expect(serviceRegistry.mfSeq.setBpm).toHaveBeenCalledWith(140)
     })
 
-    it('contains the pattern and drumkit selectors', () => {
+    it('contains the pattern, drumkit and beats selectors', () => {
         const selects = document.querySelectorAll('#tb select')
-        expect(selects.length).toBe(2)
+        expect(selects.length).toBe(3)
         
         // Check labels associated with selects
         const labels = Array.from(document.querySelectorAll('#tb .tb-label')).map(l => l.textContent)
         expect(labels).toContain('Pattern')
         expect(labels).toContain('Drumkit')
+        expect(labels).toContain('Beats')
     })
 
     it('shows the current page indicator', () => {

@@ -3,6 +3,8 @@ import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { injectUiCss } from './components/panel_helpers.js'
+import { recalcLoopDerived } from '../model/track_schema.js'
+import Utils from '../core/utils.js'
 
 export default class Toolbar {
     constructor() {
@@ -143,6 +145,21 @@ export default class Toolbar {
         kitWrap.appendChild(kitLabel)
         kitWrap.appendChild(this.drumkitSelect)
 
+        const beatsWrap = document.createElement('div')
+        beatsWrap.className = 'tb-group'
+        const beatsLabel = document.createElement('span')
+        beatsLabel.className = 'tb-label'
+        beatsLabel.textContent = 'Beats'
+        this.beatsSelect = document.createElement('select')
+        for (let i = 1; i <= 16; i++) {
+            const opt = document.createElement('option')
+            opt.value = i
+            opt.textContent = i
+            this.beatsSelect.appendChild(opt)
+        }
+        beatsWrap.appendChild(beatsLabel)
+        beatsWrap.appendChild(this.beatsSelect)
+
         this.autoGenBtn = document.createElement('button')
         this.autoGenBtn.className = 'tb-auto-gen'
         this.autoGenBtn.textContent = 'Auto Gen'
@@ -153,7 +170,7 @@ export default class Toolbar {
 
         this.outputBtn = document.createElement('button')
         this.outputBtn.className = 'tb-output'
-        this.outputBtn.textContent = 'Output'
+        this.outputBtn.textContent = 'Master'
 
         this.toolsBtn = document.createElement('button')
         this.toolsBtn.className = 'tb-tools'
@@ -170,6 +187,7 @@ export default class Toolbar {
         this.container.appendChild(bpmWrap)
         this.container.appendChild(patWrap)
         this.container.appendChild(pageWrap)
+        this.container.appendChild(beatsWrap)
         this.container.appendChild(kitWrap)
         this.container.appendChild(this.autoGenBtn)
         this.container.appendChild(this.clearBtn)
@@ -216,6 +234,27 @@ export default class Toolbar {
             playbackEvents.dispatchDrumkitManagerToggle(true)
         })
 
+        this.beatsSelect.addEventListener('change', () => {
+            const val = parseInt(this.beatsSelect.value, 10)
+            if (isNaN(val)) return
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern) return
+            const oldStepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4
+            const oldBeats = (pattern.nbBeats ?? 4) * oldStepsPerBeat
+            pattern.nbBeats = val
+            Utils.getTracksArray(pattern).forEach(track => {
+                track.nbBeats = val
+                const maxSteps = val * (track.stepsPerBeat ?? 4)
+                if (track.loopAtStep > maxSteps) {
+                    track.loopAtStep = maxSteps
+                    recalcLoopDerived(track)
+                }
+            })
+            appState.currentPage = 0
+            this.syncPage()
+            playbackEvents.dispatchPatternChange()
+        })
+
         this.patLabel.addEventListener('click', () => {
             playbackEvents.dispatchPatternsToggle(true)
         })
@@ -260,7 +299,7 @@ export default class Toolbar {
         this.nextPageBtn.addEventListener('click', () => {
             const pattern = appState.patterns[appState.selectedPatternNum]
             if (!pattern) return
-            const stepsPerBeat = pattern.tracks[0]?.stepsPerBeat ?? 4
+            const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4
             const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
             const maxPage = Math.ceil(totalSteps / 16) - 1
             if (appState.currentPage < maxPage) {
@@ -286,6 +325,7 @@ export default class Toolbar {
         this.syncPlayButton()
         this.syncPatterns()
         this.syncDrumkits()
+        this.syncBeats()
         this.syncPage()
         this.syncAutoGenButton()
     }
@@ -293,7 +333,7 @@ export default class Toolbar {
     syncPage() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (pattern) {
-            const stepsPerBeat = pattern.tracks[0]?.stepsPerBeat ?? 4
+            const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4
             const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
             const maxPage = Math.ceil(totalSteps / 16) - 1
             this.pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
@@ -335,6 +375,7 @@ export default class Toolbar {
             this.patternSelect.selectedIndex = idx
         }
         this.syncBpmFromPattern()
+        this.syncBeats()
     }
 
     syncBpmFromPattern = () => {
@@ -356,6 +397,11 @@ export default class Toolbar {
             const idx = Math.min(appState.selectedDrumkitNum, this.drumkitSelect.options.length - 1)
             this.drumkitSelect.selectedIndex = idx
         }
+    }
+
+    syncBeats = () => {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        this.beatsSelect.value = pattern?.nbBeats ?? 4
     }
 
     _setupOverflowObserver() {

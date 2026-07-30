@@ -390,7 +390,6 @@ export default class TrackEditor extends BasePanel {
         let content = ''
         const loopProps = [
             { key: 'stepsPerBeat', label: 'Steps/Beat', min: 1, max: 8, step: 1, val: stepsPerBeat },
-            { key: 'nbBeats',        label: 'Beats',      min: 1, max: 16, step: 1, val: beats },
             { key: 'loopAtStep',  label: 'Loop Point', min: 1, max: maxSteps, step: 1, val: loopAtStep, format: fmtLoopPoint },
             { key: 'swingAmount', label: 'Swing',     min: 0, max: 1, step: 0.01, val: swing }
         ]
@@ -920,22 +919,7 @@ export default class TrackEditor extends BasePanel {
         const val = key === 'swingAmount' ? parseFloat(input.value) : parseInt(input.value)
         const oldStepsPerBeat = this._track.stepsPerBeat
 
-        if (key === 'nbBeats') {
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            if (pattern) {
-                pattern.nbBeats = val
-                pattern.tracks.forEach(t => {
-                    t.nbBeats = val
-                    const maxSteps = val * (t.stepsPerBeat ?? 4)
-                    if (t.loopAtStep > maxSteps) {
-                        t.loopAtStep = maxSteps
-                        recalcLoopDerived(t)
-                    }
-                })
-            }
-        } else {
-            this._track[key] = val
-        }
+        this._track[key] = val
 
         if (key === 'stepsPerBeat') {
             if (this._track.notes) {

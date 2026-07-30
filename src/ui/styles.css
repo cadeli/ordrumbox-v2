@@ -88,21 +88,26 @@
     color: #eee; font-weight: bold; font-size: 12px; min-width: 28px; text-align: center;
 }
 @media (max-width: 600px) {
-    #tb { gap: 4px; padding: 4px 6px; }
+    #tb { gap: 3px; padding: 4px 4px; }
     #tb button { font-size: 10px; padding: 4px 5px; min-height: 28px; }
-    #tb select { font-size: 10px; padding: 4px 4px; min-width: 70px; max-width: 100px; }
-    #tb label { font-size: 9px; }
-    #tb .tb-start { min-width: 48px; }
-    #tb .tb-bpm-toggle { width: 40px; font-size: 10px; padding: 4px 4px; }
+    #tb select { font-size: 10px; padding: 4px 4px; min-width: 60px; max-width: 90px; }
+    #tb .tb-brand { min-width: 0; max-width: 80px; font-size: 11px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #tb .tb-start { width: 34px; min-width: 34px; min-height: 34px; font-size: 14px; margin-left: -3px; }
+    #tb .tb-bpm-toggle { width: 38px; font-size: 10px; padding: 4px 3px; }
+    #tb .tb-tools, #tb .tb-about { font-size: 16px; min-width: 30px; min-height: 30px; }
     #tb .tb-bpm-panel input[type=range] { width: 80px; }
+    #tb .tb-label { font-size: 8px; }
 }
 @media (max-width: 400px) {
-    #tb { gap: 2px; padding: 3px 4px; }
-    #tb button { font-size: 9px; padding: 3px 4px; min-height: 24px; }
-    #tb select { font-size: 9px; padding: 3px 3px; min-width: 60px; max-width: 80px; }
-    #tb label { font-size: 8px; }
-    #tb .tb-start { min-width: 42px; }
-    #tb .tb-bpm-toggle { width: 36px; font-size: 9px; padding: 3px 3px; }
+    #tb { gap: 2px; padding: 3px 3px; }
+    #tb button { font-size: 9px; padding: 3px 3px; min-height: 24px; }
+    #tb select { font-size: 9px; padding: 3px 3px; min-width: 50px; max-width: 70px; }
+    #tb .tb-brand { max-width: 60px; font-size: 10px; }
+    #tb .tb-start { width: 30px; min-width: 30px; min-height: 30px; font-size: 12px; margin-left: -2px; }
+    #tb .tb-bpm-toggle { width: 34px; font-size: 9px; padding: 3px 2px; }
+    #tb .tb-tools, #tb .tb-about { font-size: 14px; min-width: 26px; min-height: 26px; }
+    #tb .tb-label { font-size: 7px; }
+    #tb .tb-auto-gen, #tb .tb-clear, #tb .tb-output { font-size: 8px; padding: 3px 3px; }
 }
 
 /* ---- Pattern Panel ---- */

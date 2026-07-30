@@ -155,12 +155,11 @@ describe('TrackEditor loop panel', () => {
         wrapper.innerHTML = html
 
         const qInput = wrapper.querySelector('input[data-loop="stepsPerBeat"]')
-        const bInput = wrapper.querySelector('input[data-loop="nbBeats"]')
         const lInput = wrapper.querySelector('input[data-loop="loopAtStep"]')
         const sInput = wrapper.querySelector('input[data-loop="swingAmount"]')
 
         expect(qInput.value).toBe('4')
-        expect(bInput.value).toBe('8')
+        expect(lInput).not.toBeNull()
         expect(lInput.value).toBe('16')
         expect(lInput.max).toBe('32') // 8 * 4
         expect(sInput).not.toBeNull()

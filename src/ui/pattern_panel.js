@@ -8,6 +8,8 @@ import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
 import { pitchToNoteName } from './components/ui_utils.js'
 
+const BEATS_PER_PAGE = 4
+
 export default class PatternPanel extends BasePanel {
     constructor() {
         super('pattern-panel')
@@ -421,7 +423,6 @@ export default class PatternPanel extends BasePanel {
         this._prevLoopTick = loopTick
 
         const currentPatternBeat = Math.floor(loopTick / TICK)
-        const BEATS_PER_PAGE = 4
         const startBeat = appState.currentPage * BEATS_PER_PAGE
         const endBeat = startBeat + BEATS_PER_PAGE
 
@@ -553,7 +554,6 @@ export default class PatternPanel extends BasePanel {
         const track = tracks[this._cursorTrackIdx]
         if (!track) return
 
-        const BEATS_PER_PAGE = 4
         const startBeat = appState.currentPage * BEATS_PER_PAGE
         if (this._cursorBeat < startBeat || this._cursorBeat >= startBeat + BEATS_PER_PAGE) {
             appState.currentPage = Math.floor(this._cursorBeat / BEATS_PER_PAGE)
@@ -805,7 +805,6 @@ export default class PatternPanel extends BasePanel {
 
         const tracks = Utils.getTracksArray(pattern)
 
-        const BEATS_PER_PAGE = 4
         const startBeat = appState.currentPage * BEATS_PER_PAGE
         const endBeatPage = startBeat + BEATS_PER_PAGE
 
