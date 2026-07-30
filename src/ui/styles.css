@@ -118,14 +118,14 @@
 }
 #pattern-panel .pp-track {
     display: flex; align-items: stretch; gap: 4px;
-    height: 28px;
-    min-height: 28px;
-    max-height: 28px;
+    height: 46px;
+    min-height: 46px;
+    max-height: 46px;
     flex-shrink: 0;
 }
 #pattern-panel .pp-track-name {
-    min-width: 100px; max-width: 100px; color: #fff; font-weight: bold;
-    white-space: nowrap; font-size: 13px; letter-spacing: 0.3px;
+    min-width: 0; flex: 1; color: #fff; font-weight: bold;
+    white-space: nowrap; font-size: 11px; letter-spacing: 0.3px;
     cursor: pointer; padding: 0 6px; border-radius: 3px;
     overflow: hidden; text-overflow: ellipsis;
     background: rgba(233, 69, 96, 0.1);
@@ -146,12 +146,53 @@
 #pattern-panel .pp-vu.selected { background: rgba(233, 69, 96, 0.4); }
 #pattern-panel .pp-track-name:hover { background: rgba(233, 69, 96, 0.2); }
 #pattern-panel .pp-track-name.selected { background: #fff; color: #1a1a2e; }
-#pattern-panel .pp-divider { width: 12px; background: #e94560; flex-shrink: 0; cursor: pointer; border-radius: 2px; transition: background 0.15s; }
-#pattern-panel .pp-divider.muted { background: rgba(255,255,255,0.12); }
-#pattern-panel .pp-divider:hover { background: rgba(233, 69, 96, 0.5); }
-#pattern-panel .pp-divider.muted:hover { background: rgba(255,255,255,0.2); }
+#pattern-panel .pp-divider { width: 12px; background: rgba(255,255,255,0.12); flex-shrink: 0; cursor: pointer; border-radius: 2px; transition: background 0.15s; }
+#pattern-panel .pp-divider.muted { background: #e94560; }
+#pattern-panel .pp-divider:hover { background: rgba(255,255,255,0.2); }
+#pattern-panel .pp-divider.muted:hover { background: rgba(233, 69, 96, 0.5); }
+#pattern-panel .pp-solo {
+    width: 12px; flex-shrink: 0; cursor: pointer; border-radius: 2px;
+    transition: background 0.15s; background: rgba(255,255,255,0.12);
+}
+#pattern-panel .pp-solo.active { background: #f59e0b; }
+#pattern-panel .pp-solo:hover { background: rgba(245,158,11,0.3); }
 #pattern-panel .pp-track.pp-muted .pp-cell { opacity: 0.25; }
 #pattern-panel .pp-track.pp-muted .pp-track-name { opacity: 0.4; }
+#pattern-panel .pp-track.pp-selected {
+    background: rgba(233, 69, 96, 0.15);
+    border-radius: 4px;
+}
+#pattern-panel .pp-track.pp-selected .pp-track-name {
+    background: transparent;
+    border-color: transparent;
+}
+#pattern-panel .pp-track.pp-selected .pp-track-name.selected {
+    background: #fff;
+    color: #1a1a2e;
+    border-color: #fff;
+}
+#pattern-panel .pp-track.pp-selected .pp-track-left {
+    background: transparent;
+}
+
+#pattern-panel .pp-track-left {
+    display: flex; flex-direction: column; justify-content: center;
+    min-width: 200px; max-width: 200px;
+    overflow: hidden; gap: 1px;
+}
+#pattern-panel .pp-track-top {
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 4px;
+}
+#pattern-panel .pp-track-url {
+    font-size: 11px; color: #888; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+    padding: 0 8px; line-height: 1.2;
+}
+#pattern-panel .pp-volume {
+    width: 60px; height: 14px; flex-shrink: 0;
+    accent-color: #e94560;
+}
 
 #pattern-panel .pp-waveform-overlay {
     position: absolute; top: 0; height: 100%;
@@ -294,9 +335,12 @@
         height: auto;
         overflow-y: hidden;
     }
-    #pattern-panel .pp-track-name { min-width: 65px; max-width: 65px; font-size: 10px; }
+    #pattern-panel .pp-track-name { min-width: 50px; max-width: 50px; font-size: 10px; }
     #pattern-panel .pp-beat { width: 100px; }
-    #pattern-panel .pp-track { height: 24px; min-height: 24px; max-height: 24px; }
+    #pattern-panel .pp-track { height: 32px; min-height: 32px; max-height: 32px; }
+    #pattern-panel .pp-track-left { min-width: 110px; max-width: 110px; }
+    #pattern-panel .pp-track-url { display: none; }
+    #pattern-panel .pp-volume { width: 40px; }
 }
 
 /* ---- Note Editor & Track Editor Panels ---- */

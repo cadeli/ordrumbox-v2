@@ -74,9 +74,13 @@ export default class MfPlayer {
 
             // Trigger all notes at the same tick concurrently
             const promises = []
+            const tracks = Object.values(selPat.tracks)
+            const anySolo = tracks.some(t => t.solo === true)
             for (let i = 0; i < notesToPlay.length; i++) {
                 const flatNote = notesToPlay[i]
-                if (flatNote.track.mute === false) {
+                const track = flatNote.track
+                const shouldPlay = anySolo ? track.solo === true : track.mute !== true
+                if (shouldPlay) {
                     MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
                     promises.push(mfSound.play(flatNote, atTime + flatNote.swingTime))
                     playbackEvents.dispatchNoteTrigger({

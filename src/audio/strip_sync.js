@@ -51,7 +51,7 @@ export function applyTrackToStrip(strip, track, time, opts) {
         if (trackPan !== undefined && !track.panLfo) strip.pan.pan.setTargetAtTime(trackPan, time, 0.01)
     }
 
-    if (track.mute === true) {
+    if (track.mute === true || (opts?.soloActive === true && opts?.isSoloed !== true)) {
         strip.output.gain.setTargetAtTime(0, time, 0.01)
     } else if (track.mute === false && !track.velocityLfo) {
         strip.output.gain.setTargetAtTime(track.velocity ?? 1.0, time, 0.01)

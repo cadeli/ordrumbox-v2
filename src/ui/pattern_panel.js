@@ -1,6 +1,7 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
+import { soundRegistry } from '../state/sound_registry.js'
 import { TICK } from '../core/constants.js'
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
@@ -38,6 +39,7 @@ export default class PatternPanel extends BasePanel {
             this.container.focus()
             this._onClick(e)
         }, { passive: false })
+        this.container.addEventListener('input', (e) => this._onInput(e))
         this.container.addEventListener('keydown', (e) => this._onKeyDown(e))
         this.container.addEventListener('mouseover', (e) => this._onMouseOver(e))
         this.container.addEventListener('mouseout', (e) => this._onMouseOut(e))
@@ -569,6 +571,31 @@ export default class PatternPanel extends BasePanel {
     }
 
     _onClick(e) {
+        const trackEl = e.target.closest('.pp-track')
+        if (trackEl && !e.target.closest('.pp-track-name') && !e.target.closest('.pp-divider') && !e.target.closest('.pp-solo') && !e.target.closest('.pp-cell') && !e.target.closest('.pp-volume')) {
+            const trackIdx = parseInt(trackEl.querySelector('.pp-track-name')?.dataset.track, 10)
+            if (isNaN(trackIdx)) return
+            this._cursorTrackIdx = trackIdx
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            const tracks = Utils.getTracksArray(pattern)
+            const track = tracks[trackIdx]
+            if (!track) return
+
+            if (this._selTrackIdx === trackIdx && !this._selNote) {
+                if (window.innerWidth <= 768) {
+                    playbackEvents.dispatchTrackSelect({ track, trackIdx })
+                } else {
+                    this._clearSelection()
+                }
+            } else {
+                this._selNote = null
+                this._selTrackIdx = trackIdx
+                this._applySelection()
+                playbackEvents.dispatchTrackSelect({ track, trackIdx })
+            }
+            return
+        }
+
         const trackNameEl = e.target.closest('.pp-track-name')
         if (trackNameEl) {
             const trackIdx = parseInt(trackNameEl.dataset.track, 10)
@@ -603,6 +630,19 @@ export default class PatternPanel extends BasePanel {
             const track = tracks[trackIdx]
             if (!track) return
             track.mute = track.mute !== true
+            this.sync()
+            return
+        }
+
+        const soloEl = e.target.closest('.pp-solo')
+        if (soloEl) {
+            const trackIdx = parseInt(soloEl.dataset.track, 10)
+            if (isNaN(trackIdx)) return
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            const tracks = Utils.getTracksArray(pattern)
+            const track = tracks[trackIdx]
+            if (!track) return
+            track.solo = track.solo !== true
             this.sync()
             return
         }
@@ -696,6 +736,20 @@ export default class PatternPanel extends BasePanel {
                 const sel = this.container.querySelector(`.pp-track-name[data-track="${this._selTrackIdx}"]`)
                 if (sel) sel.classList.add('selected')
             }
+        }
+    }
+
+    _onInput(e) {
+        const volSlider = e.target.closest('.pp-volume')
+        if (volSlider) {
+            const trackIdx = parseInt(volSlider.dataset.track, 10)
+            if (isNaN(trackIdx)) return
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            const tracks = Utils.getTracksArray(pattern)
+            const track = tracks[trackIdx]
+            if (!track) return
+            track.velocity = parseFloat(volSlider.value)
+            serviceRegistry.audioEngine?.syncTrack(track)
         }
     }
 
@@ -883,11 +937,22 @@ const ghostMap = new Map()
 
             const isSelected = this._selTrackIdx === tIdx && !this._selNote
             const isMuted = track.mute === true
+            const isSolo = track.solo === true
+            const soundUrl = track.soundId && track.soundId !== 'NOT_DEFINED'
+                ? (soundRegistry.sounds[track.soundId]?.url ?? track.soundId)
+                : ''
             tracksHtml += `
-                <div class="pp-track ${isMuted ? 'pp-muted' : ''}">
+                <div class="pp-track ${isMuted ? 'pp-muted' : ''} ${isSelected ? 'pp-selected' : ''}">
                     <div class="pp-vu ${isSelected ? 'selected' : ''}" data-track="${tIdx}"><div class="pp-vu-fill"></div></div>
-                    <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(track.name ?? (logger.warn('PatternPanel', 'track name fallback'), 'Track'))}</span>
-                    <div class="pp-divider ${isMuted ? 'muted' : ''}" data-track="${tIdx}" role="button" tabindex="0"></div>
+                    <div class="pp-track-left">
+                        <div class="pp-track-top">
+                            <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(track.name ?? (logger.warn('PatternPanel', 'track name fallback'), 'Track'))}</span>
+                            <input type="range" class="pp-volume" min="0" max="1" step="0.01" value="${track.velocity ?? 1}" data-track="${tIdx}">
+                        </div>
+                        ${soundUrl ? `<div class="pp-track-url" title="${this.esc(soundUrl)}">${this.esc(soundUrl)}</div>` : ''}
+                    </div>
+                    <div class="pp-divider ${isMuted ? 'muted' : ''}" data-track="${tIdx}" role="button" tabindex="0" title="Mute"></div>
+                    <div class="pp-solo ${isSolo ? 'active' : ''}" data-track="${tIdx}" role="button" tabindex="0" title="Solo"></div>
                     ${beatsHtml}
                 </div>`
         })
@@ -898,7 +963,7 @@ const ghostMap = new Map()
 
         const tracksEl = this.container.querySelector('.pp-tracks')
         if (tracksEl) {
-            const TRACK_HEIGHT = 28
+            const TRACK_HEIGHT = 46
             const TRACK_GAP = 3
             const MAX_VISIBLE = 10
             if (tracks.length > MAX_VISIBLE) {

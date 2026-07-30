@@ -248,11 +248,13 @@ export default class MidiExporter {
         // key: track name,  value: { midiNote, channel, events[] }
         const trackData = new Map()
 
-        const unmutedNames = tracks.filter(t => !t.mute).map(t => t.name)
+        const anySolo = tracks.some(t => t.solo === true)
+        const isTrackActive = (t) => anySolo ? t.solo === true : !t.mute
+        const unmutedNames = tracks.filter(isTrackActive).map(t => t.name)
         const channelMap = assignChannels(this.instrumentsManager, unmutedNames, soundRegistry)
 
         for (const track of tracks) {
-            if (track.mute) continue
+            if (!isTrackActive(track)) continue
             const resolved = channelMap.get(track.name) ?? { midiNote: DEFAULT_MIDI_NOTE, channel: DRUM_CHANNEL, isDrum: true, program: null }
             trackData.set(track.name, { midiNote: resolved.midiNote, channel: resolved.channel, program: resolved.program, events: [] })
         }
