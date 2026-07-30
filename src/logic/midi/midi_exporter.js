@@ -32,6 +32,7 @@ import {
 } from '../../patterns/engine.js'
 import { TICK } from '../../core/constants.js'
 import { computeLfoValue } from '../../audio/math.js'
+import Utils from '../../core/utils.js'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -248,13 +249,12 @@ export default class MidiExporter {
         // key: track name,  value: { midiNote, channel, events[] }
         const trackData = new Map()
 
-        const anySolo = tracks.some(t => t.solo === true)
-        const isTrackActive = (t) => anySolo ? t.solo === true : !t.mute
-        const unmutedNames = tracks.filter(isTrackActive).map(t => t.name)
+        const anySolo = Utils.hasAnySolo(tracks)
+        const unmutedNames = tracks.filter(t => Utils.shouldTrackPlay(t, anySolo)).map(t => t.name)
         const channelMap = assignChannels(this.instrumentsManager, unmutedNames, soundRegistry)
 
         for (const track of tracks) {
-            if (!isTrackActive(track)) continue
+            if (!Utils.shouldTrackPlay(track, anySolo)) continue
             const resolved = channelMap.get(track.name) ?? { midiNote: DEFAULT_MIDI_NOTE, channel: DRUM_CHANNEL, isDrum: true, program: null }
             trackData.set(track.name, { midiNote: resolved.midiNote, channel: resolved.channel, program: resolved.program, events: [] })
         }

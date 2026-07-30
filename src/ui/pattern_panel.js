@@ -570,29 +570,44 @@ export default class PatternPanel extends BasePanel {
         }
     }
 
+    _resolveTrack(idx) {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        const tracks = Utils.getTracksArray(pattern)
+        return tracks[idx] ?? null
+    }
+
+    _selectTrack(trackIdx) {
+        const track = this._resolveTrack(trackIdx)
+        if (!track) return
+        this._cursorTrackIdx = trackIdx
+
+        if (this._selTrackIdx === trackIdx && !this._selNote) {
+            if (window.innerWidth <= 768) {
+                playbackEvents.dispatchTrackSelect({ track, trackIdx })
+            } else {
+                this._clearSelection()
+            }
+        } else {
+            this._selNote = null
+            this._selTrackIdx = trackIdx
+            this._applySelection()
+            playbackEvents.dispatchTrackSelect({ track, trackIdx })
+        }
+    }
+
+    _toggleTrackProp(idx, prop) {
+        const track = this._resolveTrack(idx)
+        if (!track) return
+        track[prop] = track[prop] !== true
+        this.sync()
+    }
+
     _onClick(e) {
         const trackEl = e.target.closest('.pp-track')
         if (trackEl && !e.target.closest('.pp-track-name') && !e.target.closest('.pp-divider') && !e.target.closest('.pp-solo') && !e.target.closest('.pp-cell') && !e.target.closest('.pp-volume')) {
             const trackIdx = parseInt(trackEl.querySelector('.pp-track-name')?.dataset.track, 10)
             if (isNaN(trackIdx)) return
-            this._cursorTrackIdx = trackIdx
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            const tracks = Utils.getTracksArray(pattern)
-            const track = tracks[trackIdx]
-            if (!track) return
-
-            if (this._selTrackIdx === trackIdx && !this._selNote) {
-                if (window.innerWidth <= 768) {
-                    playbackEvents.dispatchTrackSelect({ track, trackIdx })
-                } else {
-                    this._clearSelection()
-                }
-            } else {
-                this._selNote = null
-                this._selTrackIdx = trackIdx
-                this._applySelection()
-                playbackEvents.dispatchTrackSelect({ track, trackIdx })
-            }
+            this._selectTrack(trackIdx)
             return
         }
 
@@ -600,24 +615,7 @@ export default class PatternPanel extends BasePanel {
         if (trackNameEl) {
             const trackIdx = parseInt(trackNameEl.dataset.track, 10)
             if (isNaN(trackIdx)) return
-            this._cursorTrackIdx = trackIdx
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            const tracks = Utils.getTracksArray(pattern)
-            const track = tracks[trackIdx]
-            if (!track) return
-
-            if (this._selTrackIdx === trackIdx && !this._selNote) {
-                if (window.innerWidth <= 768) {
-                    playbackEvents.dispatchTrackSelect({ track, trackIdx })
-                } else {
-                    this._clearSelection()
-                }
-            } else {
-                this._selNote = null
-                this._selTrackIdx = trackIdx
-                this._applySelection()
-                playbackEvents.dispatchTrackSelect({ track, trackIdx })
-            }
+            this._selectTrack(trackIdx)
             return
         }
 
@@ -625,12 +623,7 @@ export default class PatternPanel extends BasePanel {
         if (dividerEl) {
             const trackIdx = parseInt(dividerEl.dataset.track, 10)
             if (isNaN(trackIdx)) return
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            const tracks = Utils.getTracksArray(pattern)
-            const track = tracks[trackIdx]
-            if (!track) return
-            track.mute = track.mute !== true
-            this.sync()
+            this._toggleTrackProp(trackIdx, 'mute')
             return
         }
 
@@ -638,12 +631,7 @@ export default class PatternPanel extends BasePanel {
         if (soloEl) {
             const trackIdx = parseInt(soloEl.dataset.track, 10)
             if (isNaN(trackIdx)) return
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            const tracks = Utils.getTracksArray(pattern)
-            const track = tracks[trackIdx]
-            if (!track) return
-            track.solo = track.solo !== true
-            this.sync()
+            this._toggleTrackProp(trackIdx, 'solo')
             return
         }
 
@@ -923,8 +911,8 @@ const ghostMap = new Map()
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
 
                         const ghosts = (cached.ghostMap.get(absPos) ?? []).map(({ type }) => {
-                            const cls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
-                            return `<div class="${cls}"></div>`
+                            const ghostCls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
+                            return `<div class="${ghostCls}"></div>`
                         }).join('')
 
                         const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}>${ghosts}${noteSlicesHtml}</div>`

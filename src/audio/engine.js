@@ -230,12 +230,9 @@ export default class AudioEngine {
         const audioNow = this.audioCtx.currentTime
         const midiTime = perfNow + (atTime - audioNow) * 1000
 
-        const tracks = Object.values(selPat.tracks)
-        const anySolo = tracks.some(t => t.solo === true)
+        const anySolo = Utils.hasAnySolo(selPat.tracks)
         notesToPlay.forEach(flatNote => {
-            const track = flatNote.track
-            const shouldPlay = anySolo ? track.solo === true : track.mute !== true
-            if (shouldPlay) {
+            if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
                 const mapping = this._resolveMidiMapping(flatNote.track.id)
                 if (mapping) {
                     const channel   = Number.isFinite(parseInt(mapping.ch)) ? parseInt(mapping.ch) : (logger.warn('Fallback','pi',mapping.ch,9), 9)
@@ -375,7 +372,7 @@ export default class AudioEngine {
 
             const truePatternDuration = samplesPerPattern / sampleRate
 
-            const anySolo = Object.values(pattern.tracks).some(t => t.solo === true)
+            const anySolo = Utils.hasAnySolo(pattern.tracks)
             for (let loop = 0; loop < totalLoops; loop++) {
                 const loopStartTime = loop * truePatternDuration
                 this.computeFlatNotes(pattern, loop)
@@ -387,9 +384,7 @@ export default class AudioEngine {
                         const absoluteTime     = loopStartTime + noteTime
                         MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
 
-                        const track = flatNote.track
-                        const shouldPlay = anySolo ? track.solo === true : track.mute !== true
-                        if (shouldPlay) {
+                        if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
                             await offlineSound.play(flatNote, absoluteTime + flatNote.swingTime)
                         }
                     }

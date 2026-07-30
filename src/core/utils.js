@@ -306,4 +306,28 @@ static TAG = "UTILS"
         if (n.includes('SYNTH')) return 'BASS'
         return 'PERC'
     }
+
+    /**
+     * Determine whether a track should produce sound given solo/mute state.
+     * When any track has solo=true, only soloed tracks play.
+     * Otherwise, all non-muted tracks play.
+     *
+     * @param {object} track    – track object with mute/solo properties
+     * @param {boolean} anySolo – whether any track in the pattern has solo=true
+     * @returns {boolean}
+     */
+    static shouldTrackPlay(track, anySolo) {
+        return anySolo ? track.solo === true : track.mute !== true
+    }
+
+    /**
+     * Compute whether any track in a tracks collection has solo enabled.
+     *
+     * @param {object[]|object} tracks – array or object values of tracks
+     * @returns {boolean}
+     */
+    static hasAnySolo(tracks) {
+        const arr = Array.isArray(tracks) ? tracks : Object.values(tracks)
+        return arr.some(t => t.solo === true)
+    }
 }
