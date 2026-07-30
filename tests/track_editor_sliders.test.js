@@ -41,7 +41,7 @@ function setup() {
         'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} }
     }
     appState.trackEditorVisibility = {
-        basic: true, levels: true, filters: true, effects: true, sound: false, loop: false,
+        basic: true, levels: true, filters: true, effects: true, sound: false, loop: false, lfo: true,
     }
     // Patterns must include the editor's track so the onPatternChange
     // subscriber (which hides the editor when the track is missing) is
@@ -188,7 +188,7 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
         appState.selectedPatternNum = 0
         editor._track = track
         editor._trackIdx = 0
-        editor._selectedPropKey = 'velocity'
+        editor._selectedLfoTarget = 'velocity'
         editor.sync()
 
         // No LFO yet → no has-lfo
@@ -211,7 +211,7 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
 
     it('LFO sub-panel: freq/phase are managed by OrSlider with data-lfo-key', () => {
         editor._track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 2, min: 0, max: 1, phase: 0.3 } })
-        editor._selectedPropKey = 'velocity'
+        editor._selectedLfoTarget = 'velocity'
         editor.sync()
 
         const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
@@ -230,7 +230,7 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
 
     it('LFO sub-panel: changing freq via the OrSlider updates track.velocityLfo.freq', () => {
         editor._track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 } })
-        editor._selectedPropKey = 'velocity'
+        editor._selectedLfoTarget = 'velocity'
         editor.sync()
         const fn = vi.fn()
         playbackEvents.onTrackParamChange.push(fn)
@@ -244,7 +244,7 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
 
     it('LFO sub-panel: changing min in the dual-range updates the shared "min..max" display', () => {
         editor._track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1, min: 0.1, max: 0.9, phase: 0 } })
-        editor._selectedPropKey = 'velocity'
+        editor._selectedLfoTarget = 'velocity'
         editor.sync()
 
         const minInput = editor.container.querySelector('input[data-lfo-key="min"]')

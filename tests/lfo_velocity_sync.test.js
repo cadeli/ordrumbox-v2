@@ -127,7 +127,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             soundRegistry.sounds = {
                 'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} }
             }
-            appState.trackEditorVisibility = { basic: true, levels: true, filters: true, effects: true, sound: false, loop: false }
+            appState.trackEditorVisibility = { basic: true, levels: true, filters: true, effects: true, sound: false, loop: false, lfo: true }
         })
 
         it('pitch slider shows LFO value directly, not track.pitch + LFO', () => {

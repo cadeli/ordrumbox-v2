@@ -153,9 +153,9 @@
 }
 #pattern-panel .pp-track {
     display: flex; align-items: stretch; gap: 4px;
-    height: 46px;
-    min-height: 46px;
-    max-height: 46px;
+    height: 36px;
+    min-height: 36px;
+    max-height: 36px;
     flex-shrink: 0;
 }
 #pattern-panel .pp-track-name {
@@ -220,19 +220,19 @@
 #pattern-panel .pp-track-left {
     display: flex; flex-direction: column; justify-content: center;
     min-width: 200px; max-width: 200px;
-    overflow: hidden; gap: 1px;
+    overflow: hidden; gap: 0px;
 }
 #pattern-panel .pp-track-top {
     display: flex; align-items: center; gap: 4px;
     padding: 0 4px;
 }
 #pattern-panel .pp-track-url {
-    font-size: 11px; color: #888; white-space: nowrap;
+    font-size: 10px; color: #888; white-space: nowrap;
     overflow: hidden; text-overflow: ellipsis;
-    padding: 0 8px; line-height: 1.2;
+    padding: 0 8px; line-height: 1.1;
 }
 #pattern-panel .pp-volume {
-    width: 60px; height: 14px; flex-shrink: 0;
+    width: 60px; height: 12px; flex-shrink: 0;
     accent-color: #e94560;
 }
 
@@ -311,11 +311,6 @@
 }
 
 /* ---- LED Indicators ---- */
-.lfo-header {
-    display: flex; align-items: center; gap: 6px;
-    margin-bottom: 6px;
-}
-.lfo-header .ne-group-label { margin-bottom: 0; }
 .lfo-led {
     width: 12px; height: 12px; border-radius: 50%;
     background: #333; border: 1px solid #555;
@@ -480,14 +475,6 @@
 }
 #ne-panel .ne-group, #te-panel .ne-group, #tools-panel .ne-group, #output-panel .ne-group, #about-panel .ne-group {
     border-left: 1px solid #444; padding-left: 12px; flex-shrink: 0;
-}
-#ne-panel .ne-group.lfo-panel, #te-panel .ne-group.lfo-panel, #tools-panel .ne-group.lfo-panel, #output-panel .ne-group.lfo-panel, #about-panel .ne-group.lfo-panel {
-    background: rgba(230, 194, 0, 0.05);
-    border: 1px solid rgba(230, 194, 0, 0.2);
-    border-radius: 4px;
-    padding: 8px;
-    margin-left: 10px;
-    flex-direction: column !important;
 }
 #ne-panel .ne-group:first-child, #te-panel .ne-group:first-child, #tools-panel .ne-group:first-child, #output-panel .ne-group:first-child, #about-panel .ne-group:first-child { border-left: none; padding-left: 0; }
 #ne-panel .ne-group-label, #te-panel .ne-group-label, #tools-panel .ne-group-label, #output-panel .ne-group-label, #about-panel .ne-group-label {
@@ -706,7 +693,7 @@
     display: flex;
     flex-direction: row;
     gap: 8px;
-    align-items: stretch;
+    align-items: flex-start;
     overflow-x: auto;
     padding-bottom: 8px;
 }

@@ -78,7 +78,7 @@ describe('TrackEditor filterFreq display', () => {
         editor.init()
         editor._track = track
         appState.trackEditorVisibility = {
-            basic: false, levels: false, filters: true, effects: false, sound: false, loop: false,
+            basic: false, levels: false, filters: true, effects: false, sound: false, loop: false, lfo: true,
         }
         editor.sync()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')

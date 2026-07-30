@@ -107,6 +107,7 @@ export default class TrackEditor extends BasePanel {
         this._sliders = new Map()
         this._lfoBridge = null
         this._delegationBound = false
+        this._selectedLfoTarget = null
         this.synthEditor = new SynthEditor(this)
     }
 
@@ -336,17 +337,11 @@ export default class TrackEditor extends BasePanel {
                 }
             })
             bodyHtml += buildAccordionGroup(visKey, g.label, shortLabels[visKey], isExpanded, groupContent)
-
-            // LFO Sub-panel — rendered right after its parent group (Filters or Levels)
-            if (this._selectedPropKey && visKey !== 'effects') {
-                const prop = this._findProp(this._selectedPropKey)
-                const propGroupIdx = prop ? GROUPS.findIndex(g => g.props.includes(prop)) : -1
-                const propVisKey = ['basic', 'levels', 'filters', 'effects'][propGroupIdx]
-                if (prop && prop.lfo && propVisKey === visKey && isExpanded) {
-                    bodyHtml += this._renderLfoPanel(prop)
-                }
-            }
         })
+
+        if (vis.lfo) {
+            bodyHtml += this._renderLfoGroup()
+        }
 
         bodyHtml += '</div>'
         this.container.innerHTML = headerHtml + bodyHtml
@@ -627,24 +622,36 @@ export default class TrackEditor extends BasePanel {
         return null
     }
 
-    _renderLfoPanel(prop) {
+    _renderLfoGroup() {
+        if (!this._track) return ''
+
+        const LFO_PROPS = GROUPS.flatMap(g => g.props).filter(p => p.lfo)
+        if (!LFO_PROPS.length) return ''
+
+        if (!this._selectedLfoTarget || !LFO_PROPS.find(p => p.key === this._selectedLfoTarget)) {
+            this._selectedLfoTarget = LFO_PROPS[0].key
+        }
+
+        const prop = LFO_PROPS.find(p => p.key === this._selectedLfoTarget) ?? LFO_PROPS[0]
         const lfoKey = prop.lfo
         const lfo = this._track[lfoKey]
-        
+
         const ledClass = lfo ? 'lfo-led on' : 'lfo-led'
         const ledTitle = lfo ? 'Disable LFO' : 'Enable LFO'
         const freq = lfo ? lfo.freq : 1
         const min = lfo ? lfo.min : prop.min
         const max = lfo ? lfo.max : prop.max
         const phase = lfo ? lfo.phase : 0
-        const type = lfo ? (lfo.type ?? (logger.warn('TrackEditor', 'lfo.type fallback'), 'sine')) : 'sine'
+        const type = lfo ? (lfo.type ?? 'sine') : 'sine'
 
-        let lfoHtml = `<div class="ne-group lfo-panel">
-            <div class="lfo-header">
+        let content = `<div class="ne-row">
                 <button class="${ledClass}" data-action="toggle-lfo" title="${ledTitle}"></button>
-                <div class="ne-group-label">LFO: ${prop.label}</div>
-            </div>
-            <div class="ne-grid">
+                <select data-lfo-target-select style="max-width:90px">`
+        LFO_PROPS.forEach(p => {
+            const sel = p.key === this._selectedLfoTarget ? ' selected' : ''
+            content += `<option value="${p.key}"${sel}>${p.label}</option>`
+        })
+        content += `</select></div>
             <div class="ne-row">
                 <label>Type</label>
                 <select data-lfo-type-select>
@@ -670,9 +677,9 @@ export default class TrackEditor extends BasePanel {
                 <label>Phase</label>
                 <input type="range" min="0" max="1" step="0.01" value="${phase}" data-lfo-key="phase">
                 <span class="ne-val">${fmt(phase)}</span>
-            </div>
-            </div></div>`
-        return lfoHtml
+            </div>`
+
+        return buildAccordionGroup('lfo', 'LFO', 'LFO', true, content)
     }
 
     _bindEvents() {
@@ -712,13 +719,16 @@ export default class TrackEditor extends BasePanel {
             const target = e.target
             if (target.tagName === 'SELECT') {
                 if (target.dataset.key) this._onSelect(target)
-                else if (target.dataset.sound) {
+                else if (target.dataset.lfoTargetSelect) {
+                    this._selectedLfoTarget = target.value
+                    this.sync()
+                } else if (target.dataset.lfoTypeSelect) {
+                    this._onLfoSelect(target)
+                } else if (target.dataset.sound) {
                     // Logic from original handlers
                     if (target.dataset.sound === 'instrument') this._onInstrumentChange(target)
                     else if (target.dataset.sound === 'sample') this._onSampleChange(target)
                     else if (target.dataset.sound === 'generated') this._onGeneratedChange(target)
-                } else if (target.closest('.lfo-panel')) {
-                    this._onLfoSelect(target)
                 }
             } else if (target.type === 'range') {
                 this._isDragging = false
@@ -840,7 +850,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     _toggleLfo() {
-        const prop = this._findProp(this._selectedPropKey)
+        const prop = GROUPS.flatMap(g => g.props).find(p => p.key === this._selectedLfoTarget)
         if (!prop || !prop.lfo) return
         
         if (this._track[prop.lfo]) {
@@ -864,7 +874,8 @@ export default class TrackEditor extends BasePanel {
 
     _onLfoSlider(input) {
         this._isDragging = true
-        const prop = this._findProp(this._selectedPropKey)
+        const prop = GROUPS.flatMap(g => g.props).find(p => p.key === this._selectedLfoTarget)
+        if (!prop) return
         let lfo = this._track[prop.lfo]
         if (!lfo) {
             lfo = this._track[prop.lfo] = { type: 'sine', freq: 1, min: prop.min, max: prop.max, phase: 0 }
@@ -886,7 +897,8 @@ export default class TrackEditor extends BasePanel {
     }
 
     _onLfoSelect(sel) {
-        const prop = this._findProp(this._selectedPropKey)
+        const prop = GROUPS.flatMap(g => g.props).find(p => p.key === this._selectedLfoTarget)
+        if (!prop) return
         let lfo = this._track[prop.lfo]
         if (!lfo) {
             lfo = this._track[prop.lfo] = { type: sel.value, freq: 1, min: prop.min, max: prop.max, phase: 0 }
