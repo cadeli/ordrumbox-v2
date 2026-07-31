@@ -41,7 +41,7 @@
                 "key": "COWBELL",
                 "url": "real/cow.wav",
                 "peakDb": -3,
-                "rootMidi": 48,
+                "rootMidi": 62,
                 "decay": 526
             },
             {
@@ -73,7 +73,7 @@
                 "key": "CONGAS",
                 "url": "real/congas.wav",
                 "peakDb": -3,
-                "rootMidi": 67,
+                "rootMidi": 79,
                 "decay": 107
             },
             {
@@ -81,7 +81,7 @@
                 "key": "LO_CONGAS",
                 "url": "real/low_congas.wav",
                 "peakDb": -3,
-                "rootMidi": 24,
+                "rootMidi": 65,
                 "decay": 129
             },
             {
@@ -263,7 +263,7 @@
                 "key": "COWBELL",
                 "url": "electro/cow.wav",
                 "peakDb": -3,
-                "rootMidi": 19,
+                "rootMidi": 51,
                 "decay": 182
             },
             {
@@ -453,7 +453,7 @@
                 "key": "TOM",
                 "url": "ropen/TOM.wav",
                 "peakDb": -3,
-                "rootMidi": 31,
+                "rootMidi": 50,
                 "decay": 133
             }
         ]
@@ -501,7 +501,7 @@
                 "key": "COWBELL",
                 "url": "generated/cow.wav",
                 "peakDb": -3,
-                "rootMidi": 43,
+                "rootMidi": 69,
                 "decay": 64
             },
             {
@@ -610,7 +610,7 @@
                 "display_name": "kick.wav",
                 "key": "KICK",
                 "url": "8bits/kick.wav",
-                "peakDb": -2.96,
+                "peakDb": -3,
                 "rootMidi": 55,
                 "decay": 18
             },
@@ -793,7 +793,7 @@
                 "key": "COWBELL",
                 "url": "vintage/cow.wav",
                 "peakDb": -3,
-                "rootMidi": 36,
+                "rootMidi": 48,
                 "decay": 196
             },
             {
@@ -848,7 +848,7 @@
                 "key": "TOM",
                 "url": "punchy/tom.wav",
                 "peakDb": -3,
-                "rootMidi": 36,
+                "rootMidi": 48,
                 "decay": 861
             },
             {

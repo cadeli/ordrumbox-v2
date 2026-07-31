@@ -244,20 +244,20 @@
 #pattern-panel.pp-vus-hidden .pp-waveform-overlay { display: none; }
 
 #pattern-panel .pp-beats {
-    display: flex; gap: 4px; flex: 1;
+    display: flex; gap: 1px; flex: 1;
 }
 #pattern-panel .pp-beat {
-    display: flex; gap: 3px; flex: 1; background: rgba(255,255,255,0.01);
-    padding: 2px; border-radius: 3px; border: 1px solid #555;
+    display: flex; gap: 0; flex: 1; background: rgba(255,255,255,0.01);
+    padding: 0; border-radius: 1px; border: 1px solid #3a3a4a;
 }
 #pattern-panel .pp-cell.cursor {
     outline: 2px solid #e94560; outline-offset: -1px; z-index: 2;
 }
 #pattern-panel .pp-cell {
     flex: 1; height: 100%;
-    background: #1a1a2e; border-radius: 1px;
-    cursor: default; min-width: 2px; position: relative;
-    border: 1px solid #333; /* More subtle but visible border */
+    background: #1a1a2e; border-radius: 0;
+    cursor: default; min-width: 0; position: relative;
+    border: 1px solid #2a2a3e;
     touch-action: manipulation;
 }
 #pattern-panel .pp-cell.filled { 
