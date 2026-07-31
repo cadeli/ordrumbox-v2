@@ -159,6 +159,26 @@
     #tb .tb-auto-gen, #tb .tb-clear, #tb .tb-output { font-size: 8px; padding: 3px 3px; }
 }
 
+/* ---- View Buttons ---- */
+.tb-view-row {
+    display: flex; gap: 3px;
+}
+.tb-view-btn {
+    font-size: 10px; padding: 3px 6px;
+    border: 1px solid var(--border); border-radius: 3px;
+    background: var(--bg-input); color: var(--text-dim);
+    cursor: pointer; text-transform: uppercase; font-weight: bold;
+    white-space: nowrap;
+    touch-action: manipulation;
+}
+.tb-view-btn:hover { border-color: var(--accent); color: var(--text); }
+.tb-view-btn.actif {
+    background: var(--accent); color: var(--text); border-color: var(--accent);
+}
+@media (max-width: 600px) {
+    .tb-view-btn { font-size: 9px; padding: 2px 4px; }
+}
+
 /* ---- Pattern Panel ---- */
 #pattern-panel {
     position: fixed !important;
@@ -173,7 +193,7 @@
     font-size: 11px;
     color: var(--text-muted);
     z-index: 500; /* Below editors */
-    height: auto;
+    height: auto; min-height: 440px;
     display: flex;
     flex-direction: column;
 }

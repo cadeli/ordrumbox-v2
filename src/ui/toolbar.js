@@ -145,6 +145,31 @@ export default class Toolbar {
         kitWrap.appendChild(kitLabel)
         kitWrap.appendChild(this.drumkitSelect)
 
+        const viewWrap = document.createElement('div')
+        viewWrap.className = 'tb-group'
+        const viewLabel = document.createElement('span')
+        viewLabel.className = 'tb-label'
+        viewLabel.textContent = 'View'
+        const viewRow = document.createElement('div')
+        viewRow.className = 'tb-view-row'
+        this.gridBtn = document.createElement('button')
+        this.gridBtn.className = 'tb-view-btn actif'
+        this.gridBtn.textContent = 'Grid'
+        this.gridBtn.title = 'Toggle Pattern Grid'
+        this.synthBtn = document.createElement('button')
+        this.synthBtn.className = 'tb-view-btn'
+        this.synthBtn.textContent = 'Synth'
+        this.synthBtn.title = 'Toggle Soft Synth'
+        this.editBtn = document.createElement('button')
+        this.editBtn.className = 'tb-view-btn'
+        this.editBtn.textContent = 'Edit'
+        this.editBtn.title = 'Toggle Track Editor'
+        viewRow.appendChild(this.gridBtn)
+        viewRow.appendChild(this.synthBtn)
+        viewRow.appendChild(this.editBtn)
+        viewWrap.appendChild(viewLabel)
+        viewWrap.appendChild(viewRow)
+
         const beatsWrap = document.createElement('div')
         beatsWrap.className = 'tb-group'
         const beatsLabel = document.createElement('span')
@@ -189,6 +214,7 @@ export default class Toolbar {
         this.container.appendChild(pageWrap)
         this.container.appendChild(beatsWrap)
         this.container.appendChild(kitWrap)
+        this.container.appendChild(viewWrap)
         this.container.appendChild(this.autoGenBtn)
         this.container.appendChild(this.clearBtn)
         this.container.appendChild(this.outputBtn)
@@ -212,6 +238,16 @@ export default class Toolbar {
 
         this.aboutBtn.addEventListener('click', () => {
             playbackEvents.dispatchAboutToggle(true)
+        })
+
+        this.gridBtn.addEventListener('click', () => {
+            playbackEvents.dispatchGridToggle()
+        })
+        this.synthBtn.addEventListener('click', () => {
+            playbackEvents.dispatchSynthToggle()
+        })
+        this.editBtn.addEventListener('click', () => {
+            playbackEvents.dispatchEditToggle()
         })
 
         this.patternSelect.addEventListener('change', () => {

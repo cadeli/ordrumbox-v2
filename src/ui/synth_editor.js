@@ -235,11 +235,15 @@ export default class SynthEditor {
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
         this.host.container.style.display = 'none'
         this.panel.style.display = 'flex'
+        const synthBtn = document.querySelector('.tb-view-btn:nth-child(2)')
+        if (synthBtn) synthBtn.classList.add('actif')
     }
 
     _hideSynthPanel() {
         this.panel.style.display = 'none'
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        const synthBtn = document.querySelector('.tb-view-btn:nth-child(2)')
+        if (synthBtn) synthBtn.classList.remove('actif')
     }
 
     // ─── Rendering ────────────────────────────────────────────────────────

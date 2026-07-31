@@ -151,6 +151,40 @@ export default class TrackEditor extends BasePanel {
                 this.sync()
             }
         })
+        playbackEvents.onSynthToggle.push(() => {
+            const synthVisible = this.synthEditor?.panel?.style?.display === 'flex'
+            if (synthVisible) {
+                this.synthEditor.hidePanel()
+            } else {
+                this.hide()
+                void this.synthEditor.showPanel()
+            }
+            const gridBtn = document.querySelector('.tb-view-btn:nth-child(1)')
+            if (gridBtn) gridBtn.classList.toggle('actif', !synthVisible && this.synthEditor?.panel?.style?.display !== 'flex')
+            const synthBtn = document.querySelector('.tb-view-btn:nth-child(2)')
+            if (synthBtn) synthBtn.classList.toggle('actif', this.synthEditor?.panel?.style?.display === 'flex')
+            const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
+            if (editBtn) editBtn.classList.remove('actif')
+        })
+        playbackEvents.onEditToggle.push(() => {
+            const noteEditor = document.getElementById('ne-panel')
+            const trackVisible = this.isVisible
+            const noteVisible = noteEditor && noteEditor.style.display !== 'none' && noteEditor.style.display !== ''
+            if (trackVisible || noteVisible) {
+                this.hide()
+                playbackEvents.dispatchNoteSelect(null)
+            } else {
+                const pattern = appState.patterns[appState.selectedPatternNum]
+                const tracks = pattern?.tracks
+                const idx = appState.selectedTrackNum
+                const track = tracks?.[idx]
+                if (track) {
+                    this.show({ track, trackIdx: idx })
+                }
+            }
+            const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
+            if (editBtn) editBtn.classList.toggle('actif', this.isVisible)
+        })
     }
 
     _startStepWatch() {
@@ -235,6 +269,8 @@ export default class TrackEditor extends BasePanel {
         if (serviceRegistry.transport?.isRunning) {
             this._startStepWatch()
         }
+        const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
+        if (editBtn) editBtn.classList.add('actif')
     }
 
     sync() {
@@ -916,6 +952,8 @@ export default class TrackEditor extends BasePanel {
             this._lfoBridge.destroy()
             this._lfoBridge = null
         }
+        const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
+        if (editBtn) editBtn.classList.remove('actif')
     }
 
     _onLoopSlider(input) {

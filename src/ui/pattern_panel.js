@@ -167,6 +167,22 @@ export default class PatternPanel extends BasePanel {
             }
             this._applySelection()
         })
+        playbackEvents.onGridToggle.push(() => {
+            if (!this.container) return
+            const synthPanel = document.getElementById('soft-synth-panel')
+            const synthVisible = synthPanel && synthPanel.style.display === 'flex'
+            if (synthVisible) {
+                synthPanel.style.display = 'none'
+                document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+                document.getElementById('te-panel').style.display = ''
+                const synthBtn = document.querySelector('.tb-view-btn:nth-child(2)')
+                if (synthBtn) synthBtn.classList.remove('actif')
+            }
+            const gridBtn = document.querySelector('.tb-view-btn:nth-child(1)')
+            if (gridBtn) gridBtn.classList.add('actif')
+            const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
+            if (editBtn) editBtn.classList.remove('actif')
+        })
     }
 
     _updateBarCache() {
