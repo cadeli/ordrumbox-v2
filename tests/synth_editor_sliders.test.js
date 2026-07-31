@@ -19,12 +19,7 @@ const SAMPLE_DRAFT = {
     enveloppe: { attack: 0.01, decay: 0.12, sustain: 0.7, release: 0.1 }
 }
 
-function fireInput(el, value) {
-    el.value = String(value)
-    el.dispatchEvent(new Event('input', { bubbles: true }))
-}
-
-describe('SynthEditor — OrSlider integration', () => {
+describe('SynthEditor — OrKnob integration', () => {
     let trackEditor
     let mockTrack
 
@@ -88,115 +83,113 @@ describe('SynthEditor — OrSlider integration', () => {
         trackEditor._track = mockTrack
     })
 
-    it('renders each numeric parameter as a range input inside an OrSlider row', async () => {
+    it('renders each numeric parameter as an OrKnob row', async () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')
 
-        // Spot-check a few parameters
         for (const path of ['masterVolume', 'vco1.gain', 'filter.freq', 'enveloppe.attack', 'lfo.depth']) {
-            const input = panel.querySelector(`input[data-synth-path="${path}"]`)
-            expect(input, `missing input for ${path}`).not.toBeNull()
-            expect(input.type).toBe('range')
-            const row = input.closest('.ne-row')
-            expect(row, `OrSlider row missing for ${path}`).not.toBeNull()
-            // The row should also carry ss-row (panel-specific styling hook)
-            expect(row.classList.contains('ss-row')).toBe(true)
-            // The slider's own label is the ONLY label for this control
-            // (no duplicated label from the panel's ss-row wrapper)
-            const labelsInRow = row.querySelectorAll('label')
-            expect(labelsInRow.length, `expected exactly one label in row for ${path}`).toBe(1)
+            const knob = panel.querySelector(`.or-knob[data-or-knob="${path}"]`)
+            expect(knob, `missing knob for ${path}`).not.toBeNull()
+            const row = knob.closest('.ne-row')
+            expect(row, `OrKnob row missing for ${path}`).not.toBeNull()
+            expect(row.classList.contains('ne-row-knob')).toBe(true)
+            const labels = row.querySelectorAll('.or-knob-label')
+            expect(labels.length, `expected exactly one label in row for ${path}`).toBe(1)
         }
     })
 
-    it('displays the initial value with the 2-decimal format', async () => {
+    it('displays the initial value with the default format', async () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')
 
-        const v = panel.querySelector('input[data-synth-path="masterVolume"]')
-        const span = v.nextElementSibling
-        expect(span.textContent).toBe('0.9')
+        const masterRow = panel.querySelector(`[data-or-slider="masterVolume"]`)
+        const masterVal = masterRow.querySelector('.ne-val')
+        expect(masterVal.textContent).toBe('0.9')
 
-        const freq = panel.querySelector('input[data-synth-path="filter.freq"]')
-        const freqSpan = freq.nextElementSibling
-        expect(freqSpan.textContent).toBe('1200')
+        const freqRow = panel.querySelector(`[data-or-slider="filter.freq"]`)
+        const freqVal = freqRow.querySelector('.ne-val')
+        expect(freqVal.textContent).toBe('1200 Hz')
     })
 
-    it('keeps select controls as native <select> (not sliders)', async () => {
+    it('keeps select controls as native <select> (not knobs)', async () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')
 
-        for (const path of ['vco1.wave', 'filter.type', 'lfo.target', 'noise.filterType']) {
+        for (const path of ['lfo.target']) {
             const sel = panel.querySelector(`select[data-synth-path="${path}"]`)
             expect(sel, `missing select for ${path}`).not.toBeNull()
-            expect(panel.querySelector(`input[type=range][data-synth-path="${path}"]`)).toBeNull()
+            expect(panel.querySelector(`.or-knob[data-or-knob="${path}"]`)).toBeNull()
+        }
+
+        for (const path of ['vco1.wave', 'filter.type', 'noise.filterType']) {
+            expect(panel.querySelector(`select[data-synth-path="${path}"]`)).toBeNull()
+            expect(panel.querySelector(`.or-knob[data-or-knob="${path}"]`)).toBeNull()
         }
     })
 
-    it('changing a slider updates the draft and calls updateGeneratedSounds', async () => {
+    it('changing a knob updates the draft and calls updateGeneratedSounds', async () => {
         await trackEditor.synthEditor.openEditor()
-        const panel = document.getElementById('soft-synth-panel')
-        const masterVol = panel.querySelector('input[data-synth-path="masterVolume"]')
+        const knob = trackEditor.synthEditor._knobs.find(k => k._key === 'masterVolume')
+        expect(knob).not.toBeNull()
 
-        fireInput(masterVol, 0.42)
+        knob.setValue(0.42, true)
         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBeCloseTo(0.42, 5)
-        expect(masterVol.nextElementSibling.textContent).toBe('0.42')
+        const panel = document.getElementById('soft-synth-panel')
+        const valSpan = panel.querySelector(`[data-or-slider="masterVolume"] .ne-val`)
+        expect(valSpan.textContent).toBe('0.42')
         expect(serviceRegistry.audioEngine.updateGeneratedSounds).toHaveBeenCalled()
     })
 
-    it('changing a deep path slider (filter.freq) updates the nested draft value', async () => {
+    it('changing a deep path knob (filter.freq) updates the nested draft value', async () => {
         await trackEditor.synthEditor.openEditor()
-        const panel = document.getElementById('soft-synth-panel')
-        const freq = panel.querySelector('input[data-synth-path="filter.freq"]')
+        const knob = trackEditor.synthEditor._knobs.find(k => k._key === 'filter.freq')
+        expect(knob).not.toBeNull()
 
-        fireInput(freq, 2500)
+        knob.setValue(2500, true)
         expect(soundRegistry.generatedSounds.BASS1.filter.freq).toBe(2500)
-        expect(freq.nextElementSibling.textContent).toBe('2500')
+        const panel = document.getElementById('soft-synth-panel')
+        const valSpan = panel.querySelector(`[data-or-slider="filter.freq"] .ne-val`)
+        expect(valSpan.textContent).toBe('2500 Hz')
     })
 
-    it('re-opening the editor destroys old sliders and renders fresh ones', async () => {
+    it('re-opening the editor destroys old knobs and renders fresh ones', async () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')
-        const firstMasterVol = panel.querySelector('input[data-synth-path="masterVolume"]')
+        const firstKnob = panel.querySelector('.or-knob[data-or-knob="masterVolume"]')
 
         await trackEditor.synthEditor.openEditor()
-        const secondMasterVol = panel.querySelector('input[data-synth-path="masterVolume"]')
-        expect(secondMasterVol).not.toBe(firstMasterVol)
+        const secondKnob = panel.querySelector('.or-knob[data-or-knob="masterVolume"]')
+        expect(secondKnob).not.toBe(firstKnob)
     })
 
-    it('keyboard arrow on a slider moves by exactly one step (no double-fire)', async () => {
+    it('keyboard arrow on a knob moves by exactly one step', async () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')
-        const input = panel.querySelector('input[data-synth-path="filter.Q"]')
-        input.focus()
+        const knobEl = panel.querySelector('.or-knob[data-or-knob="filter.Q"]')
+        knobEl.focus()
 
-        input.dispatchEvent(new KeyboardEvent('keydown', {
+        knobEl.dispatchEvent(new KeyboardEvent('keydown', {
             key: 'ArrowRight', bubbles: true, cancelable: true,
         }))
 
-        // Q: min=0.1, max=24, step=0.1, value=2 → after one step: 2.1
-        expect(parseFloat(input.value)).toBeCloseTo(2.1, 5)
+        const knob = trackEditor.synthEditor._knobs.find(k => k._key === 'filter.Q')
+        expect(knob.getValue()).toBeCloseTo(2.1, 5)
     })
 
-    it('a focused slider has a visible selection indicator (CSS rule applied)', async () => {
-        // jsdom does not parse <link rel="stylesheet">, so we read the CSS
-        // file directly to verify the focus rules exist.
+    it('the knob has a focus rule in CSS', async () => {
         const fs = await import('fs')
         const path = await import('path')
         const cssPath = path.resolve(__dirname, '../src/ui/styles.css')
         const css = fs.readFileSync(cssPath, 'utf-8')
 
-        // 1. The shared focus outline rule must include #soft-synth-panel
-        const focusOutlineRe = /#soft-synth-panel[^{]*input\[type=range\]:focus\s*\{[^}]*outline:\s*1px\s+solid\s+#00fff5/s
-        expect(css, 'missing :focus rule for soft-synth slider').toMatch(focusOutlineRe)
+        const focusRe = /\.or-knob:focus\s*\{[^}]*outline/
+        expect(css, 'missing :focus rule for .or-knob').toMatch(focusRe)
 
-        // 2. A row-level :focus-within rule gives a clear visual indicator
-        //    (background + left beat) so the user sees which control is active.
         const focusWithinRe = /#soft-synth-panel\s+\.ne-row:focus-within\s*\{[^}]*#00fff5/s
-        expect(css, 'missing :focus-within rule for soft-synth slider row').toMatch(focusWithinRe)
+        expect(css, 'missing :focus-within rule for soft-synth knob row').toMatch(focusWithinRe)
     })
 
     it('boolean buttons still work (toggle on click)', async () => {
-        // Open the editor once to create the draft, then mutate it and re-render
         await trackEditor.synthEditor.openEditor()
         trackEditor.synthEditor._draft.someFlag = false
         soundRegistry.generatedSounds.BASS1.someFlag = false

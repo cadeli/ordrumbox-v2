@@ -31,6 +31,7 @@ export default class BasePanel {
     createDOM() {
         this.container = document.createElement('div')
         this.container.id = this.id
+        this.container.classList.add('ne-panel')
         this.container.style.display = 'none'
         document.body.appendChild(this.container)
     }

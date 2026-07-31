@@ -276,11 +276,9 @@ export default class TrackEditor extends BasePanel {
                 return
             }
             if (g.label === 'Sound') {
-                const soundExpanded = vis.sound
-                const loopExpanded = vis.loop
                 bodyHtml += `<div class="ne-group-sound-loop-wrapper">`
-                bodyHtml += this._renderSoundPanel(soundExpanded)
-                bodyHtml += this._renderLoopPanel(loopExpanded)
+                bodyHtml += this._renderSoundPanel(true)
+                bodyHtml += this._renderLoopPanel(true)
                 bodyHtml += `</div>`
                 return
             }
@@ -426,7 +424,6 @@ export default class TrackEditor extends BasePanel {
             const hiddenStyle = idx !== this._activeFxTab && isExpanded ? ' style="display:none"' : ''
 
             content += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">
-                <div class="ne-grid">
                     <div class="ne-row">
                         <button class="${ledClass}" data-fx-toggle="${fx.key}" title="${on ? 'Disable' : 'Enable'} ${fx.label}"></button>
                         <label style="min-width:24px;margin-right:8px">${fx.label}</label>
@@ -465,7 +462,7 @@ export default class TrackEditor extends BasePanel {
                 }
             })
 
-            content += `</div></div>`
+            content += `</div>`
         })
 
         return buildAccordionGroup('effects', 'Effects', 'FX', isExpanded, content, {
@@ -519,7 +516,7 @@ export default class TrackEditor extends BasePanel {
             content += `<option value="${id}"${sel}>${id}</option>`
         })
         content += `</select></div>
-                <div class="ne-row"><label title="${sampleTooltip}">Sample</label><select data-sound="sample">`
+        <div class="ne-row"><label title="${sampleTooltip}">Sample</label><select data-sound="sample">`
         if (matchingSounds.length === 0) {
             content += `<option value="">— no samples —</option>`
         } else {
@@ -530,8 +527,6 @@ export default class TrackEditor extends BasePanel {
             })
         }
         content += `</select></div>
-            </div>
-            <div class="ne-grid">
                 <div class="ne-row" style="border-top:1px solid #444;margin-top:6px;padding-top:6px">
                     <label>Synth</label>
                     <select data-sound="generated">
@@ -547,8 +542,7 @@ export default class TrackEditor extends BasePanel {
                 <div class="ne-row" data-sound-edit-row style="display:${currentGeneratedSound === 'none' ? 'none' : 'flex'}">
                     <label>Edit</label>
                     <button class="ne-btn" data-action="edit-synth">Edit</button>
-                </div>
-            </div>`
+                </div>`
 
         return buildAccordionGroup('sound', 'Sound', 'Snd', isExpanded, content, {
             labelClass: 'ne-group-label',

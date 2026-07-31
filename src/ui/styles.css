@@ -381,7 +381,8 @@
 }
 
 /* ---- Note Editor & Track Editor Panels ---- */
-#ne-panel, #te-panel, #tools-panel, #output-panel, #about-panel, #dm-panel, #pp-panel {
+/* ---- Panel Shell (shared by all ne-panels) ---- */
+.ne-panel {
     display: none;
     position: fixed; left: 0; right: 0;
     width: 100%;
@@ -389,11 +390,11 @@
     background: #1a1a2e; border-bottom: 2px solid #e94560;
     padding: 8px 12px; overflow-x: auto;
     font-family: monospace; font-size: 11px; color: #ccc;
-    z-index: 2000; /* Higher than pattern grid */
+    z-index: 2000;
     min-height: 100px; max-height: 250px;
 }
 .ui-hidden { display: none !important; }
-#ne-panel .ne-header, #te-panel .ne-header, #tools-panel .ne-header, #output-panel .ne-header, #about-panel .ne-header, #dm-panel .ne-header, #pp-panel .ne-header {
+.ne-panel .ne-header {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 8px; font-size: 12px; border-bottom: 1px solid #333;
     padding-bottom: 4px; flex-wrap: nowrap;
@@ -412,84 +413,40 @@
 }
 .ne-toggle:hover { border-color: #e94560; color: #aaa; }
 .ne-toggle.active { background: #e94560; color: #fff; border-color: #ff4d6d; }
-#ne-panel .ne-track, #te-panel .ne-track, #tools-panel .ne-track, #output-panel .ne-track, #about-panel .ne-track, #dm-panel .ne-track, #pp-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; white-space: nowrap; }
-#ne-panel .ne-pos, #te-panel .ne-pos, #tools-panel .ne-pos, #output-panel .ne-pos, #about-panel .ne-pos { color: #888; }
-#ne-panel .ne-body, #te-panel .ne-body, #tools-panel .ne-body, #output-panel .ne-body, #about-panel .ne-body, #dm-panel .ne-body, #pp-panel .ne-body { 
-    display: flex; flex-direction: row; gap: 20px; align-items: flex-start;
+.ne-panel .ne-track { color: #e94560; font-weight: bold; font-size: 14px; white-space: nowrap; }
+.ne-panel .ne-pos { color: #888; }
+.ne-panel .ne-body {
+    display: flex; flex-direction: row; gap: 8px; align-items: flex-start;
     overflow-x: auto; padding-bottom: 8px;
 }
-
-@media (max-width: 768px), (max-height: 480px) {
-#ne-panel, #te-panel, #tools-panel, #output-panel, #about-panel, #dm-panel, #pp-panel {
-        position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 96vw !important;
-        max-width: 900px !important;
-        height: auto !important;
-        max-height: 85vh !important;
-        background: #1a1a2e !important;
-        border: 2px solid #e94560 !important;
-        border-radius: 12px !important;
-        box-shadow: 0 0 60px rgba(0,0,0,0.95) !important;
-        flex-direction: column !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-        z-index: 10001 !important;
-    }
-    
-    .ne-header {
-        padding: 12px 16px !important;
-        border-bottom: 1px solid #333 !important;
-        background: rgba(255, 255, 255, 0.03) !important;
-        flex-shrink: 0 !important;
-        margin-bottom: 0 !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        position: static !important;
-    }
-
-    .ne-body {
-        padding: 16px !important;
-        overflow-x: auto !important;
-        overflow-y: auto !important;
-        flex-direction: row !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-        gap: 16px !important;
-        position: static !important;
-        transform: none !important;
-    }
-
-    #te-panel .ne-group, #ne-panel .ne-group, #tools-panel .ne-group, #output-panel .ne-group, #about-panel .ne-group {
-        border-left: 1px solid #444 !important;
-        padding-left: 12px !important;
-        border-bottom: none !important;
-        padding-bottom: 0 !important;
-    }
-    #te-panel .ne-group:first-child, #ne-panel .ne-group:first-child, #tools-panel .ne-group:first-child, #output-panel .ne-group:first-child, #about-panel .ne-group:first-child { border-left: none !important; }
+.ne-panel .ne-group {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch !important;
+    border-left: none !important;
+    padding-left: 0 !important;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    flex-shrink: 0;
+    overflow: hidden;
 }
-#ne-panel .ne-group, #te-panel .ne-group, #tools-panel .ne-group, #output-panel .ne-group, #about-panel .ne-group {
-    border-left: 1px solid #444; padding-left: 12px; flex-shrink: 0;
+.ne-panel .ne-group.expanded {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(233, 69, 96, 0.3);
 }
-#ne-panel .ne-group:first-child, #te-panel .ne-group:first-child, #tools-panel .ne-group:first-child, #output-panel .ne-group:first-child, #about-panel .ne-group:first-child { border-left: none; padding-left: 0; }
-#ne-panel .ne-group-label, #te-panel .ne-group-label, #tools-panel .ne-group-label, #output-panel .ne-group-label, #about-panel .ne-group-label {
+.ne-panel .ne-group.collapsed {
+    border-color: rgba(255, 255, 255, 0.03);
+    flex: 0 0 auto;
+    min-width: 0;
+    width: auto;
+}
+.ne-panel .ne-group-label {
     color: #e94560; font-size: 10px; text-transform: uppercase;
     letter-spacing: 1px; margin-bottom: 6px; font-weight: bold;
 }
-#ne-panel .ne-grid, #te-panel .ne-grid, #tools-panel .ne-grid, #output-panel .ne-grid, #about-panel .ne-grid {
-    display: flex; flex-direction: column; gap: 4px;
-}
-#output-panel .ne-grid.ne-grid-2col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px 12px;
-}
-#ne-panel .ne-row, #te-panel .ne-row, #tools-panel .ne-row, #output-panel .ne-row, #about-panel .ne-row {
+.ne-panel .ne-row {
     display: flex; align-items: center; gap: 8px; min-height: 20px;
     padding: 2px 4px; border-radius: 4px; cursor: pointer;
 }
@@ -505,17 +462,17 @@
     box-shadow: inset 2px 0 0 #00fff5;
     padding-left: 6px;
 }
-#ne-panel .ne-row label, #te-panel .ne-row label, #tools-panel .ne-row label, #output-panel .ne-row label, #about-panel .ne-row label {
+.ne-panel .ne-row label {
     min-width: 60px; color: #aaa; font-size: 11px;
 }
-#ne-panel .ne-row input[type=range], #te-panel .ne-row input[type=range], #tools-panel .ne-row input[type=range], #output-panel .ne-row input[type=range], #about-panel .ne-row input[type=range] {
+.ne-panel .ne-row input[type=range] {
     width: 80px; accent-color: #e94560; cursor: pointer;
 }
-#ne-panel .ne-row input[type=range]:focus, #te-panel .ne-row input[type=range]:focus, #tools-panel .ne-row input[type=range]:focus, #output-panel .ne-row input[type=range]:focus, #about-panel .ne-row input[type=range]:focus, #soft-synth-panel .ne-row input[type=range]:focus {
+.ne-panel .ne-row input[type=range]:focus {
     outline: 1px solid #00fff5;
     outline-offset: 2px;
 }
-#ne-panel .ne-row select, #te-panel .ne-row select, #tools-panel .ne-row select, #output-panel .ne-row select, #about-panel .ne-row select {
+.ne-panel .ne-row select {
     width: 80px; font-size: 10px; padding: 2px;
     background: #16213e; color: #eee; border: 1px solid #555;
     border-radius: 3px; cursor: pointer;
@@ -523,12 +480,23 @@
 #te-panel .ne-row select[data-sound="sample"] {
     width: 120px;
 }
-#ne-panel .ne-row .ne-val, #te-panel .ne-row .ne-val, #tools-panel .ne-row .ne-val, #output-panel .ne-row .ne-val, #about-panel .ne-row .ne-val {
+.ne-panel .ne-row .ne-val {
     width: 55px; text-align: right; color: #eee; font-weight: bold; font-size: 10px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.ne-panel .ne-row.no-cursor { cursor: default; }
+.ne-panel .ne-row .ne-input {
+    width: 100px; font-size: 11px; padding: 2px 4px;
+    background: #16213e; color: #eee; border: 1px solid #555;
+    border-radius: 3px;
+}
+.ne-panel .ne-close {
+    margin-left: auto; cursor: pointer; color: #fff;
+    font-size: 18px; border: none; background: #e94560;
+    padding: 0 8px; border-radius: 4px; line-height: 24px;
+}
 
-/* Dual Range Slider for LFO */
+/* ---- Dual Range Slider for LFO ---- */
 .ne-range-container {
     position: relative;
     width: 80px;
@@ -573,29 +541,14 @@
     z-index: 0;
 }
 
-#ne-panel .ne-row.no-cursor, #te-panel .ne-row.no-cursor, #tools-panel .ne-row.no-cursor, #output-panel .ne-row.no-cursor, #about-panel .ne-row.no-cursor { cursor: default; }
-#ne-panel .ne-row .ne-input, #te-panel .ne-row .ne-input, #tools-panel .ne-row .ne-input, #output-panel .ne-row .ne-input, #about-panel .ne-row .ne-input {
-    width: 100px; font-size: 11px; padding: 2px 4px;
-    background: #16213e; color: #eee; border: 1px solid #555;
-    border-radius: 3px;
-}
-#ne-panel .ne-close, #te-panel .ne-close, #tools-panel .ne-close, #output-panel .ne-close, #about-panel .ne-close, #dm-panel .ne-close, #pp-panel .ne-close {
-    margin-left: auto; cursor: pointer; color: #fff;
-    font-size: 18px; border: none; background: #e94560;
-    padding: 0 8px; border-radius: 4px; line-height: 24px;
-}
-
-/* ---- Track Editor specific ---- */
+/* ---- Buttons ---- */
 .ne-btn {
     font-size: 10px; padding: 2px 8px; border: 1px solid #555;
     border-radius: 3px; background: #16213e; color: #eee;
     cursor: pointer; min-width: 40px; text-align: center;
     text-transform: uppercase;
 }
-#tools-panel .ne-btn {
-    width: 100%;
-    box-sizing: border-box;
-}
+.ne-panel .ne-btn { width: 100%; box-sizing: border-box; }
 .ne-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
 
 /* ---- Soft Synth Editor ---- */
@@ -607,62 +560,124 @@
     padding: 10px 12px; overflow: auto;
     font-family: monospace; font-size: 11px; color: #ccc;
     z-index: 999; box-sizing: border-box;
-}
-#soft-synth-panel .ss-header {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 6px; padding-bottom: 6px;
-    border-bottom: 1px solid #333; flex-wrap: wrap;
+    flex-direction: column; gap: 6px;
 }
 #soft-synth-panel .ss-title {
     color: #e94560; font-weight: bold; font-size: 14px;
-    white-space: nowrap;
+    white-space: nowrap; padding-bottom: 6px;
+    border-bottom: 1px solid #333;
 }
-#soft-synth-panel .ss-actions {
-    display: flex; gap: 6px; margin-left: auto;
+#soft-synth-panel .ss-footer {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding-top: 6px; border-top: 1px solid #333;
 }
-#soft-synth-panel .ss-canvas-wrap canvas {
-    display: block; width: 100%; height: 100px;
+/* Waveform row: tabs + canvas inline */
+#soft-synth-panel .ss-wave-row {
+    display: flex; align-items: center; gap: 6px;
+}
+#soft-synth-panel .ss-wave-tab {
+    font-size: 10px; padding: 3px 8px; border: 1px solid #555;
+    border-radius: 3px; background: #16213e; color: #aaa;
+    cursor: pointer; text-transform: uppercase;
+}
+#soft-synth-panel .ss-wave-tab.active { background: #e94560; color: #fff; border-color: #e94560; }
+#soft-synth-panel canvas {
+    display: block; flex: 1; height: 88px;
     border: 1px solid #444; border-radius: 4px; background: #0d0d1a;
 }
+/* Groups row */
 #soft-synth-panel .ss-body {
     display: flex; flex-direction: row; gap: 4px;
     align-items: flex-start; flex-wrap: wrap;
 }
-#soft-synth-panel .ss-group {
-    min-width: 210px; flex: 0 0 auto;
-}
+#soft-synth-panel .ss-group { min-width: 210px; flex: 0 0 auto; }
 #soft-synth-panel .ss-group-label {
     color: #e94560; font-size: 10px; text-transform: uppercase;
     letter-spacing: 1px; margin-bottom: 6px; font-weight: bold;
 }
-#soft-synth-panel .ss-grid {
-    display: flex; flex-direction: column; gap: 5px;
+#soft-synth-panel .ss-card-body {
+    display: flex; flex-direction: row; flex-wrap: wrap; gap: 5px;
+    justify-content: center;
 }
-#soft-synth-panel .ss-row {
-    display: flex; align-items: center; gap: 8px; min-height: 24px;
+#soft-synth-panel .ss-card-body > .ne-row { flex: 0 0 auto; }
+/* Shared row styles for selects, booleans, icon rows */
+#soft-synth-panel .ne-row {
+    display: flex; align-items: center; gap: 6px;
     padding: 2px 4px; border-radius: 4px;
 }
-#soft-synth-panel .ss-row label {
-    min-width: 72px; color: #aaa; font-size: 11px;
-}
-#soft-synth-panel .ss-row input,
-#soft-synth-panel .ss-row select {
-    width: 96px; font-size: 10px; padding: 2px 4px;
-    background: #16213e; color: #eee; border: 1px solid #555;
-    border-radius: 3px; box-sizing: border-box;
-}
-#soft-synth-panel .ss-row input[type=range] {
-    width: 118px; padding: 0; accent-color: #e94560;
-}
-#soft-synth-panel .ss-row .ne-val {
-    min-width: 38px; text-align: right; color: #eee; font-weight: bold; font-size: 10px;
-}
-/* Highlight the entire slider row when one of its controls is focused,
-   so the user clearly sees which control is selected. Matches the
-   cyan accent used in the other panels. */
 #soft-synth-panel .ne-row:focus-within {
     background: rgba(0, 255, 245, 0.08);
     box-shadow: inset 2px 0 0 #00fff5;
+}
+#soft-synth-panel .ss-param-label {
+    color: #aaa; font-size: 10px; min-width: 40px;
+}
+#soft-synth-panel select {
+    font-size: 10px; padding: 2px 4px;
+    background: #16213e; color: #eee; border: 1px solid #555;
+    border-radius: 3px; box-sizing: border-box;
+}
+#soft-synth-panel .ss-tb-btn {
+    font-size: 9px; height: 22px; padding: 0 8px;
+    background: #16213e; color: #eee; border: 1px solid #555;
+    border-radius: 3px; cursor: pointer;
+}
+#soft-synth-panel .ss-tb-btn.active { background: #e94560; color: #fff; }
+/* Icon rows (wave shapes, filter types) */
+#soft-synth-panel .ss-icon-row { gap: 4px; }
+#soft-synth-panel .ss-wave-icon,
+#soft-synth-panel .ss-ft-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 28px;
+    background: #000; border: 1px solid #333; border-radius: 3px;
+    color: #8EEA3B; cursor: pointer; padding: 2px;
+    box-sizing: border-box;
+}
+#soft-synth-panel .ss-wave-icon svg,
+#soft-synth-panel .ss-ft-icon svg { width: 100%; height: 100%; }
+#soft-synth-panel .ss-wave-icon:hover,
+#soft-synth-panel .ss-ft-icon:hover { border-color: #8EEA3B; }
+#soft-synth-panel .ss-wave-icon.selected,
+#soft-synth-panel .ss-ft-icon.selected {
+    background: #0a2e0a; border-color: #8EEA3B;
+    box-shadow: 0 0 4px rgba(142, 234, 59, 0.4);
+}
+/* ---- OrKnob (rotary knob) ---- */
+#soft-synth-panel .ne-row-knob {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; padding: 2px 4px; border-radius: 4px;
+    flex: 0 0 72px; justify-content: center;
+}
+.or-knob {
+    --arc-deg: 0deg;
+    width: 40px; height: 40px; position: relative;
+    border-radius: 50%; cursor: pointer;
+    background: #16213e; border: 2px solid #333;
+    box-sizing: border-box; transition: border-color 0.15s;
+}
+.or-knob:hover { border-color: #8EEA3B; }
+.or-knob.dragging { border-color: #00fff5; }
+.or-knob:focus { outline: 1px solid #00fff5; outline-offset: 2px; }
+.or-knob-arc {
+    position: absolute; inset: 2px; border-radius: 50%;
+    background: conic-gradient(from -135deg,
+        #8EEA3B 0deg, #8EEA3B var(--arc-deg),
+        #333 var(--arc-deg), #333 270deg);
+    mask: radial-gradient(circle, transparent 55%, black 56%, black 70%, transparent 71%);
+    -webkit-mask: radial-gradient(circle, transparent 55%, black 56%, black 70%, transparent 71%);
+}
+.or-knob-disc {
+    position: absolute; inset: 6px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #2a2a4a, #16213e);
+}
+.or-knob-label {
+    color: #aaa; font-size: 9px; text-align: center;
+    line-height: 1; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; max-width: 72px;
+}
+#soft-synth-panel .ne-row-knob .ne-val {
+    min-width: 0; text-align: center; color: #eee;
+    font-weight: bold; font-size: 9px;
 }
 
 /* ---- Waiting Screen ---- */
@@ -684,11 +699,7 @@
 #waiting-screen-start-btn.ready { background-color: #1565c0; color: #fff; }
 
 /* ---- Collapsible Accordion Panels ---- */
-#ne-panel .ne-body, 
-#te-panel .ne-body, 
-#tools-panel .ne-body, 
-#output-panel .ne-body, 
-#about-panel .ne-body, 
+.ne-panel .ne-body,
 #soft-synth-panel .ss-body {
     display: flex;
     flex-direction: row;
@@ -698,11 +709,7 @@
     padding-bottom: 8px;
 }
 
-#ne-panel .ne-group, 
-#te-panel .ne-group, 
-#tools-panel .ne-group, 
-#output-panel .ne-group, 
-#about-panel .ne-group, 
+.ne-panel .ne-group,
 #soft-synth-panel .ss-group {
     display: flex !important;
     flex-direction: row !important;
@@ -717,26 +724,28 @@
     overflow: hidden;
 }
 
-#ne-panel .ne-group.expanded, 
-#te-panel .ne-group.expanded, 
-#tools-panel .ne-group.expanded, 
-#output-panel .ne-group.expanded, 
-#about-panel .ne-group.expanded, 
+.ne-panel .ne-group.expanded,
 #soft-synth-panel .ss-group.expanded {
     background: rgba(255, 255, 255, 0.04);
     border-color: rgba(233, 69, 96, 0.3);
 }
 
-#ne-panel .ne-group.collapsed, 
-#te-panel .ne-group.collapsed, 
-#tools-panel .ne-group.collapsed, 
-#output-panel .ne-group.collapsed, 
-#about-panel .ne-group.collapsed, 
+.ne-panel .ne-group.collapsed,
 #soft-synth-panel .ss-group.collapsed {
     border-color: rgba(255, 255, 255, 0.03);
     flex: 0 0 auto;
     min-width: 0;
     width: auto;
+}
+
+/* ne-grid: only used by output-panel (opt-in via gridId) */
+.ne-panel .ne-grid {
+    display: flex; flex-direction: column; gap: 4px;
+}
+.ne-panel .ne-grid.ne-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
 }
 
 .ne-group-accordion-toggle {
@@ -776,6 +785,9 @@
     color: #fff !important;
 }
 
+.ss-group .ne-group-accordion-label {
+    display: none;
+}
 .ne-group-accordion-label {
     writing-mode: vertical-lr;
     transform: rotate(180deg);
@@ -807,26 +819,11 @@
 }
 
 .ne-group-sound-loop-wrapper {
-    position: relative;
     display: flex !important;
     flex-direction: row !important;
+    gap: 8px;
     align-items: stretch !important;
     flex-shrink: 0;
-    overflow: hidden;
-}
-.ne-group-sound-loop-wrapper > .ne-group[data-group="loop"] {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    z-index: 1;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-}
-.ne-group-sound-loop-wrapper > .ne-group[data-group="loop"].expanded {
-    opacity: 1;
-    pointer-events: auto;
 }
 
 .fx-header {

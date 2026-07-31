@@ -100,7 +100,7 @@ describe('Soft Synth Editor display', () => {
         await trackEditor.synthEditor.openEditor()
 
         const panel = document.getElementById('soft-synth-panel')
-        expect(panel.style.display).toBe('block')
+        expect(panel.style.display).toBe('flex')
         expect(trackEditor.container.style.display).toBe('none')
     })
 
@@ -137,8 +137,8 @@ describe('Soft Synth Editor display', () => {
         const canvas = document.querySelector('#soft-synth-panel #ss-waveform')
         expect(canvas).not.toBeNull()
         expect(canvas.tagName).toBe('CANVAS')
-        expect(canvas.width).toBe(600)
-        expect(canvas.height).toBe(120)
+        expect(canvas.width).toBe(800)
+        expect(canvas.height).toBe(88)
     })
 
     it('renders one group block per draft key', async () => {
@@ -149,32 +149,36 @@ describe('Soft Synth Editor display', () => {
 
     it('renders an input control for every parameter path', async () => {
         await trackEditor.synthEditor.openEditor()
-        const inputs = document.querySelectorAll('#soft-synth-panel .ss-row input, #soft-synth-panel .ss-row select')
-        const paths = Array.from(inputs).map(i => i.dataset.synthPath)
-        expect(paths).toContain('masterVolume')
-        expect(paths).toContain('vco1.gain')
-        expect(paths).toContain('vco1.wave')
-        expect(paths).toContain('filter.freq')
-        expect(paths).toContain('enveloppe.attack')
-        expect(paths).toContain('lfo.target')
-        expect(paths.length).toBeGreaterThanOrEqual(20)
+        const knobs = document.querySelectorAll('#soft-synth-panel .or-knob')
+        const selects = document.querySelectorAll('#soft-synth-panel select')
+        const count = knobs.length + selects.length
+        expect(count).toBeGreaterThanOrEqual(20)
+
+        const knobKeys = Array.from(knobs).map(k => k.dataset.orKnob)
+        expect(knobKeys).toContain('masterVolume')
+        expect(knobKeys).toContain('vco1.gain')
+        expect(knobKeys).toContain('filter.freq')
+        expect(knobKeys).toContain('enveloppe.attack')
+
+        const selectPaths = Array.from(selects).map(s => s.dataset.synthPath)
+        expect(selectPaths).toContain('lfo.target')
     })
 
     it('keeps the softsynth visible when onPatternChange fires (play pressed)', async () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')
-        expect(panel.style.display).toBe('block')
+        expect(panel.style.display).toBe('flex')
 
         playbackEvents.dispatchPatternChange()
 
-        expect(panel.style.display).toBe('block')
+        expect(panel.style.display).toBe('flex')
         expect(trackEditor.container.style.display).toBe('none')
     })
 
     it('closes the panel and re-shows the track editor on Cancel', async () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')
-        expect(panel.style.display).toBe('block')
+        expect(panel.style.display).toBe('flex')
 
         trackEditor.synthEditor._closeEditor(false)
 

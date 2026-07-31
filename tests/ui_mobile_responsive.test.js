@@ -23,7 +23,7 @@ describe('Mobile Landscape UI Logic', () => {
         // Essential panels should be TRUE by default, others FALSE on mobile
         expect(mobileState.trackEditorVisibility.basic).toBe(true)
         expect(mobileState.trackEditorVisibility.levels).toBe(true)
-        expect(mobileState.trackEditorVisibility.loop).toBe(true)
+        expect(mobileState.trackEditorVisibility.loop).toBe(false)
         
         expect(mobileState.trackEditorVisibility.filters).toBe(false)
         expect(mobileState.trackEditorVisibility.effects).toBe(false)
@@ -69,14 +69,14 @@ describe('Mobile Landscape UI Logic', () => {
         const toggles = document.querySelectorAll('.ne-toggle')
         expect(toggles.length).toBe(6)
         
-        // basic (0), levels (1) and loop (5) should be active
+        // basic (0), levels (1), sound (4), loop (5) should be active (always visible)
         expect(toggles[0].classList.contains('active')).toBe(true)
         expect(toggles[1].classList.contains('active')).toBe(true)
+        expect(toggles[4].classList.contains('active')).toBe(true)
         expect(toggles[5].classList.contains('active')).toBe(true)
         
-        // filters (2), effects (3), sound (4) should be INACTIVE
+        // filters (2), effects (3) should be INACTIVE
         expect(toggles[2].classList.contains('active')).toBe(false)
         expect(toggles[3].classList.contains('active')).toBe(false)
-        expect(toggles[4].classList.contains('active')).toBe(false)
     })
 })

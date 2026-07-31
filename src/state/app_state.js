@@ -3,7 +3,7 @@ function buildDefaultVisibility() {
     return {
         trackEditorVisibility: {
             basic: true, levels: true,
-            filters: !isMobile, effects: !isMobile, sound: !isMobile, loop: true, lfo: !isMobile,
+            filters: !isMobile, effects: !isMobile, sound: !isMobile, loop: false, lfo: !isMobile,
         },
         noteEditorVisibility: {
             levels: !isMobile, triggers: !isMobile, retrig: !isMobile, arp: !isMobile,

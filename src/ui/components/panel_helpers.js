@@ -104,24 +104,27 @@ export function hidePanelsById(ids) {
  * @param {string} shortLabel – abbreviated label on toggle button
  * @param {boolean} expanded  – initial state
  * @param {string} content    – inner HTML of the group (grid rows, sliders…)
- * @param {object} [opts]     – cssPrefix, dataAttr, gridClass, labelClass, groupClass, gridId, extraAttrs
+ * @param {object} [opts]     – cssPrefix, dataAttr, labelClass, labelHtml, groupClass, extraAttrs, gridId, gridClass
  */
 export function buildAccordionGroup(key, label, shortLabel, expanded, content, opts = {}) {
     const {
         cssPrefix  = 'ne',
         dataAttr   = 'data-group',
-        gridClass  = `${cssPrefix}-grid`,
         labelClass = `${cssPrefix}-group-label`,
         labelHtml,
         groupClass = '',
-        gridId,
         extraAttrs = '',
+        gridId,
+        gridClass = '',
     } = opts
 
     const cls = [`${cssPrefix}-group`, expanded ? 'expanded' : 'collapsed', groupClass]
         .filter(Boolean).join(' ')
     const active = expanded ? ' active' : ''
     const icon   = expanded ? '&minus;' : '+'
+
+    const gridOpen  = gridId ? `<div class="${gridClass || `${cssPrefix}-grid`}" id="${gridId}">` : ''
+    const gridClose = gridId ? '</div>' : ''
 
     return `<div class="${cls}" ${dataAttr}="${key}"${extraAttrs ? ' ' + extraAttrs : ''}>` +
         `<button class="ne-group-accordion-toggle ne-toggle${active}" data-toggle="${key}" title="${label}">` +
@@ -130,7 +133,8 @@ export function buildAccordionGroup(key, label, shortLabel, expanded, content, o
         `</button>` +
         `<div class="ne-group-content">` +
             `<div class="${labelClass}">${labelHtml ?? label}</div>` +
-            `<div class="${gridClass}"${gridId ? ` id="${gridId}"` : ''}>` +
+            gridOpen +
             (content ?? '') +
-        `</div></div></div>`
+            gridClose +
+        `</div></div>`
 }

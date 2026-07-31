@@ -82,15 +82,14 @@ describe('SynthEditor sub-panel toolbar', () => {
     it('keeps OK and Cancel in the toolbar and preserves save/cancel behavior', async () => {
         await editor.openEditor()
 
-        const header = document.querySelector('#soft-synth-panel .ss-header')
-        const okButton = header.querySelector('[data-action="synth-ok"]')
-        const cancelButton = header.querySelector('[data-action="synth-cancel"]')
+        const panel = document.querySelector('#soft-synth-panel')
+        const okButton = panel.querySelector('[data-action="synth-ok"]')
+        const cancelButton = panel.querySelector('[data-action="synth-cancel"]')
         expect(okButton).not.toBeNull()
         expect(cancelButton).not.toBeNull()
 
-        const volume = document.querySelector('#soft-synth-panel input[data-synth-path="masterVolume"]')
-        volume.value = '0.25'
-        volume.dispatchEvent(new Event('input', { bubbles: true }))
+        const masterKnob = editor._knobs.find(k => k._key === 'masterVolume')
+        masterKnob.setValue(0.25, true)
         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.25)
 
         cancelButton.click()
@@ -98,9 +97,8 @@ describe('SynthEditor sub-panel toolbar', () => {
         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.8)
 
         await editor.openEditor()
-        const nextVolume = document.querySelector('#soft-synth-panel input[data-synth-path="masterVolume"]')
-        nextVolume.value = '0.3'
-        nextVolume.dispatchEvent(new Event('input', { bubbles: true }))
+        const nextKnob = editor._knobs.find(k => k._key === 'masterVolume')
+        nextKnob.setValue(0.3, true)
         document.querySelector('#soft-synth-panel [data-action="synth-ok"]').click()
 
         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.3)
