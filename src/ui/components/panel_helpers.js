@@ -138,3 +138,12 @@ export function buildAccordionGroup(key, label, shortLabel, expanded, content, o
             gridClose +
         `</div></div>`
 }
+
+/**
+ * Sets the active state of a toolbar view button.
+ * @param {'grid' | 'synth' | 'edit'} name
+ * @param {boolean} active
+ */
+export function setViewBtn(name, active) {
+    document.querySelector(`.tb-view-btn[data-view="${name}"]`)?.classList.toggle('actif', active)
+}

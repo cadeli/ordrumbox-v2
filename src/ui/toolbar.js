@@ -154,14 +154,17 @@ export default class Toolbar {
         viewRow.className = 'tb-view-row'
         this.gridBtn = document.createElement('button')
         this.gridBtn.className = 'tb-view-btn actif'
+        this.gridBtn.dataset.view = 'grid'
         this.gridBtn.textContent = 'Grid'
         this.gridBtn.title = 'Toggle Pattern Grid'
         this.synthBtn = document.createElement('button')
         this.synthBtn.className = 'tb-view-btn'
+        this.synthBtn.dataset.view = 'synth'
         this.synthBtn.textContent = 'Synth'
         this.synthBtn.title = 'Toggle Soft Synth'
         this.editBtn = document.createElement('button')
         this.editBtn.className = 'tb-view-btn'
+        this.editBtn.dataset.view = 'edit'
         this.editBtn.textContent = 'Edit'
         this.editBtn.title = 'Toggle Track Editor'
         viewRow.appendChild(this.gridBtn)

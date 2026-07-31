@@ -3,6 +3,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { TICK } from '../core/constants.js'
+import { setViewBtn } from './components/panel_helpers.js'
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
@@ -170,18 +171,16 @@ export default class PatternPanel extends BasePanel {
         playbackEvents.onGridToggle.push(() => {
             if (!this.container) return
             const synthPanel = document.getElementById('soft-synth-panel')
-            const synthVisible = synthPanel && synthPanel.style.display === 'flex'
-            if (synthVisible) {
+            if (synthPanel?.style?.display === 'flex') {
                 synthPanel.style.display = 'none'
                 document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-                document.getElementById('te-panel').style.display = ''
-                const synthBtn = document.querySelector('.tb-view-btn:nth-child(2)')
-                if (synthBtn) synthBtn.classList.remove('actif')
+                document.getElementById('te-panel')?.classList.remove('pp-split')
+                setViewBtn('synth', false)
             }
-            const gridBtn = document.querySelector('.tb-view-btn:nth-child(1)')
-            if (gridBtn) gridBtn.classList.add('actif')
-            const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
-            if (editBtn) editBtn.classList.remove('actif')
+            document.getElementById('pattern-panel')?.classList.remove('pp-split')
+            document.getElementById('te-panel')?.classList.remove('pp-split')
+            setViewBtn('grid', true)
+            setViewBtn('edit', false)
         })
     }
 

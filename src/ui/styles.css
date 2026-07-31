@@ -197,6 +197,25 @@
     display: flex;
     flex-direction: column;
 }
+#pattern-panel.pp-split {
+    width: 62%;
+    right: auto;
+    overflow-x: hidden;
+}
+.ne-panel.pp-split {
+    left: 62%;
+    right: 0;
+    width: 38%;
+    top: 64px !important;
+    max-height: none;
+    height: auto;
+    border-bottom: none;
+    border-left: 2px solid var(--border-dark);
+}
+@media (max-width: 768px), (max-height: 480px) {
+    #pattern-panel.pp-split { width: 100%; right: 0; }
+    .ne-panel.pp-split { left: 0; width: 100%; top: auto !important; }
+}
 #pattern-panel .pp-header {
     display: flex; align-items: center; gap: 10px;
     margin-bottom: 6px; font-size: 12px; white-space: nowrap;
@@ -488,6 +507,9 @@
     display: flex; flex-direction: row; gap: 8px; align-items: flex-start;
     overflow-x: auto; padding-bottom: 8px;
 }
+.ne-panel.pp-split .ne-body {
+    flex-wrap: wrap; overflow-x: hidden;
+}
 .ne-panel .ne-group {
     display: flex !important;
     flex-direction: row !important;
@@ -500,6 +522,9 @@
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
     flex-shrink: 0;
     overflow: hidden;
+}
+.ne-panel.pp-split .ne-group {
+    flex-shrink: 1; min-width: 200px;
 }
 .ne-panel .ne-group.expanded {
     background: rgba(255, 255, 255, 0.04);

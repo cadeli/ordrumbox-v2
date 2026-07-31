@@ -8,7 +8,7 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
-import { bindVisibilityToggles, buildAccordionGroup, fmt } from './components/panel_helpers.js'
+import { bindVisibilityToggles, buildAccordionGroup, fmt, setViewBtn } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
@@ -159,31 +159,28 @@ export default class TrackEditor extends BasePanel {
                 this.hide()
                 void this.synthEditor.showPanel()
             }
-            const gridBtn = document.querySelector('.tb-view-btn:nth-child(1)')
-            if (gridBtn) gridBtn.classList.toggle('actif', !synthVisible && this.synthEditor?.panel?.style?.display !== 'flex')
-            const synthBtn = document.querySelector('.tb-view-btn:nth-child(2)')
-            if (synthBtn) synthBtn.classList.toggle('actif', this.synthEditor?.panel?.style?.display === 'flex')
-            const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
-            if (editBtn) editBtn.classList.remove('actif')
+            setViewBtn('grid', !synthVisible && this.synthEditor?.panel?.style?.display !== 'flex')
+            setViewBtn('synth', this.synthEditor?.panel?.style?.display === 'flex')
+            setViewBtn('edit', false)
         })
         playbackEvents.onEditToggle.push(() => {
             const noteEditor = document.getElementById('ne-panel')
-            const trackVisible = this.isVisible
-            const noteVisible = noteEditor && noteEditor.style.display !== 'none' && noteEditor.style.display !== ''
-            if (trackVisible || noteVisible) {
+            const isNoteOpen = noteEditor?.style?.display === 'block'
+            if (this.isVisible || isNoteOpen) {
                 this.hide()
                 playbackEvents.dispatchNoteSelect(null)
             } else {
                 const pattern = appState.patterns[appState.selectedPatternNum]
-                const tracks = pattern?.tracks
                 const idx = appState.selectedTrackNum
-                const track = tracks?.[idx]
+                const track = pattern?.tracks?.[idx]
                 if (track) {
                     this.show({ track, trackIdx: idx })
                 }
             }
-            const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
-            if (editBtn) editBtn.classList.toggle('actif', this.isVisible)
+            const split = this.isVisible
+            document.getElementById('pattern-panel')?.classList.toggle('pp-split', split)
+            this.container?.classList.toggle('pp-split', split)
+            setViewBtn('edit', split)
         })
     }
 
@@ -269,8 +266,7 @@ export default class TrackEditor extends BasePanel {
         if (serviceRegistry.transport?.isRunning) {
             this._startStepWatch()
         }
-        const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
-        if (editBtn) editBtn.classList.add('actif')
+        setViewBtn('edit', true)
     }
 
     sync() {
@@ -943,6 +939,8 @@ export default class TrackEditor extends BasePanel {
         super.hide()
         this.synthEditor.reset()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        document.getElementById('pattern-panel')?.classList.remove('pp-split')
+        this.container?.classList.remove('pp-split')
         
         this._track = null
         this._trackIdx = -1
@@ -952,8 +950,13 @@ export default class TrackEditor extends BasePanel {
             this._lfoBridge.destroy()
             this._lfoBridge = null
         }
-        const editBtn = document.querySelector('.tb-view-btn:nth-child(3)')
-        if (editBtn) editBtn.classList.remove('actif')
+        setViewBtn('edit', false)
+    }
+
+    /** Skip vertical reposition when in side-by-side split mode. */
+    reposition() {
+        if (this.container?.classList.contains('pp-split')) return
+        super.reposition()
     }
 
     _onLoopSlider(input) {

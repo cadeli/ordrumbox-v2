@@ -3,7 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
-import { fmt, buildAccordionGroup } from './components/panel_helpers.js'
+import { fmt, buildAccordionGroup, setViewBtn } from './components/panel_helpers.js'
 import { escapeHtml as _esc } from './components/ui_utils.js'
 import { OrKnob } from './components/or_knob.js'
 import { logger } from '../core/logger.js'
@@ -235,15 +235,13 @@ export default class SynthEditor {
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
         this.host.container.style.display = 'none'
         this.panel.style.display = 'flex'
-        const synthBtn = document.querySelector('.tb-view-btn:nth-child(2)')
-        if (synthBtn) synthBtn.classList.add('actif')
+        setViewBtn('synth', true)
     }
 
     _hideSynthPanel() {
         this.panel.style.display = 'none'
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-        const synthBtn = document.querySelector('.tb-view-btn:nth-child(2)')
-        if (synthBtn) synthBtn.classList.remove('actif')
+        setViewBtn('synth', false)
     }
 
     // ─── Rendering ────────────────────────────────────────────────────────
