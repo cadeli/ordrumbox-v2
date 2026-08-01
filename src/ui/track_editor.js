@@ -329,8 +329,6 @@ export default class TrackEditor extends BasePanel {
         let sampleBarHtml = this._renderSampleBar()
         let knobBarHtml = this._renderKnobBar()
 
-        let bodyHtml = `<div class="ne-body">`
-
         this._sliders.forEach(s => s.destroy())
         this._sliders.clear()
 
@@ -341,7 +339,7 @@ export default class TrackEditor extends BasePanel {
         }
         tabBarHtml += '</div>'
 
-        let panelsHtml = '<div class="ne-tab-panels">'
+        let panelsHtml = ''
 
         const renderGroupProps = (group) => {
             let html = ''
@@ -414,9 +412,7 @@ export default class TrackEditor extends BasePanel {
             panelsHtml += `<div class="ne-tab-panel" data-tab-panel="${tab.id}"${vis}>${content}</div>`
         }
 
-        panelsHtml += '</div>'
-        bodyHtml += tabBarHtml + panelsHtml + '</div>'
-        this.container.innerHTML = headerHtml + sampleBarHtml + knobBarHtml + bodyHtml
+        this.container.innerHTML = headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + panelsHtml
         
         // Mount main sliders
         this._sliders.forEach(s => {
@@ -828,7 +824,7 @@ export default class TrackEditor extends BasePanel {
                     <button class="ne-btn" data-action="edit-synth">Edit</button>
                 </div>`
 
-        return `<div class="te-sound-header"><button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> autoassign</div>` + content
+        return `<div class="ne-row"><button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> <label>auto</label></div>` + content
     }
 
     _getSelectedDrumkitName() {
@@ -919,14 +915,17 @@ export default class TrackEditor extends BasePanel {
         const phase = lfo ? lfo.phase : 0
         const type = lfo ? (lfo.type ?? 'sine') : 'sine'
 
-        let content = `<div class="ne-row">
-                <button class="${ledClass}" data-action="toggle-lfo" title="${ledTitle}"></button>
-                <select data-lfo-target-select style="max-width:90px">`
+        let content = `<div class="te-mod-targets">`
         LFO_PROPS.forEach(p => {
-            const sel = p.key === this._selectedLfoTarget ? ' selected' : ''
-            content += `<option value="${p.key}"${sel}>${p.label}</option>`
+            const isActive = p.key === this._selectedLfoTarget
+            const lfoOn = !!this._track[p.lfo]
+            const ledClass = lfoOn ? 'lfo-led on' : 'lfo-led'
+            const activeClass = isActive ? ' active' : ''
+            content += `<div class="te-mod-btn${activeClass}">
+                <span class="${ledClass}" data-lfo-toggle-btn="${p.key}"></span>
+                <span data-lfo-select-btn="${p.key}">${p.label}</span></div>`
         })
-        content += `</select></div>
+        content += `</div>
             <div class="ne-row">
                 <label>Type</label>
                 <select data-lfo-type-select>
@@ -997,10 +996,7 @@ export default class TrackEditor extends BasePanel {
             }
             if (target.tagName === 'SELECT') {
                 if (target.dataset.key) this._onSelect(target)
-                else if (target.dataset.lfoTargetSelect) {
-                    this._selectedLfoTarget = target.value
-                    this.sync()
-                } else if (target.dataset.lfoTypeSelect) {
+                else if (target.dataset.lfoTypeSelect) {
                     this._onLfoSelect(target)
                 } else if (target.dataset.sound) {
                     // Logic from original handlers
@@ -1016,6 +1012,16 @@ export default class TrackEditor extends BasePanel {
 
         this.container.addEventListener('click', (e) => {
             const target = e.target
+
+            if (target.dataset.lfoToggleBtn) {
+                this._onLfoToggleBtn(target.dataset.lfoToggleBtn)
+                return
+            }
+            if (target.dataset.lfoSelectBtn) {
+                this._onLfoSelectBtn(target.dataset.lfoSelectBtn)
+                return
+            }
+
             const btn = target.closest('button')
             if (!btn) {
                 const row = target.closest('.ne-row[data-prop]')
@@ -1157,6 +1163,32 @@ export default class TrackEditor extends BasePanel {
         // Ensure engine is notified immediately
         playbackEvents.dispatchTrackParamChange(this._track)
         // Also dispatch pattern change so it gets saved
+        playbackEvents.dispatchPatternChange([this._track])
+    }
+
+    _onLfoSelectBtn(targetKey) {
+        this._selectedLfoTarget = targetKey
+        this.sync()
+    }
+
+    _onLfoToggleBtn(targetKey) {
+        this._selectedLfoTarget = targetKey
+        const allLfoProps = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].filter(p => p.lfo)
+        const prop = allLfoProps.find(p => p.key === targetKey)
+        if (!prop) return
+        if (this._track[prop.lfo]) {
+            delete this._track[prop.lfo]
+        } else {
+            this._track[prop.lfo] = {
+                type: 'sine',
+                freq: 1,
+                min: prop.min,
+                max: prop.max,
+                phase: 0
+            }
+        }
+        this.sync()
+        playbackEvents.dispatchTrackParamChange(this._track)
         playbackEvents.dispatchPatternChange([this._track])
     }
 
