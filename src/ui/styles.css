@@ -574,6 +574,31 @@
 #te-panel .ne-row select[data-sound="sample"] {
     width: 120px;
 }
+.te-sample-bar {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    margin: 0 4px 4px;
+    background: var(--bg-input); border: 1px solid var(--border-dark);
+    border-radius: 6px;
+}
+.te-sample-left {
+    display: flex; flex-direction: column; gap: 2px; width: 33%; flex-shrink: 0;
+}
+.te-sample-info {
+    font-size: 10px; color: var(--text-muted); white-space: nowrap;
+}
+.te-waveform {
+    height: 48px; width: 66%; border-radius: 3px;
+    background: rgba(0, 0, 0, 0.3); flex-shrink: 0;
+}
+.te-load-btn {
+    cursor: pointer; border: none; background: none;
+    font-size: 14px; padding: 2px 6px; border-radius: 3px;
+    color: var(--text-dim); transition: background 0.15s;
+    align-self: flex-start;
+}
+.te-load-btn:hover {
+    background: rgba(255,255,255,0.1); color: var(--text);
+}
 .ne-panel .ne-row .ne-val {
     width: 55px; text-align: right; color: var(--text-dim); font-weight: bold; font-size: 10px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;

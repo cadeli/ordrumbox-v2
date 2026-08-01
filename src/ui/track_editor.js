@@ -8,11 +8,12 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
-import { bindVisibilityToggles, buildAccordionGroup, fmt, setViewBtn } from './components/panel_helpers.js'
+import { bindCloseButton, bindVisibilityToggles, buildAccordionGroup, fmt, pitchToNoteName, setViewBtn } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
 import LfoUiBridge from '../logic/lfo_ui_bridge.js'
+import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
 import { logger } from "../core/logger.js"
 
 const fmtFreq = v => {
@@ -109,6 +110,9 @@ export default class TrackEditor extends BasePanel {
         this._delegationBound = false
         this._selectedLfoTarget = null
         this.synthEditor = new SynthEditor(this)
+        this._noteEditMode = false
+        this._selectedNote = null
+        this._noteSliders = []
     }
 
     createDOM() {
@@ -123,7 +127,25 @@ export default class TrackEditor extends BasePanel {
             this.show(data)
         })
         playbackEvents.onNoteSelect.push((data) => {
-            if (data) this.hide()
+            if (!data) {
+                if (this._noteEditMode) {
+                    this._noteEditMode = false
+                    this._selectedNote = null
+                    this._noteSliders.forEach(s => s.destroy())
+                    this._noteSliders = []
+                    if (this.isVisible) this.sync()
+                }
+                return
+            }
+            if (this.isVisible && data.track === this._track) {
+                this._noteEditMode = true
+                this._selectedNote = data
+                this._noteSliders.forEach(s => s.destroy())
+                this._noteSliders = []
+                this.sync()
+                return
+            }
+            this.hide()
         })
         playbackEvents.onOutputToggle.push(() => this.hide())
         playbackEvents.onPlaybackStart.push(() => {
@@ -272,6 +294,11 @@ export default class TrackEditor extends BasePanel {
     sync() {
         if (!this._track) return
 
+        if (this._noteEditMode) {
+            this._syncNoteEditMode()
+            return
+        }
+
         // Migrate filterQ from normalized [0,1] to raw Q [0.707, 18.707] if needed
         if (this._track.filterQ < 0.707) {
             this._track.filterQ = Utils.normalizedTrackFilterQToValue(this._track.filterQ)
@@ -284,6 +311,8 @@ export default class TrackEditor extends BasePanel {
             <span class="ne-track">Track: ${this.esc(this._track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
             <button class="ne-close">&times;</button>
         </div>`
+
+        let sampleBarHtml = this._renderSampleBar()
 
         let bodyHtml = `<div class="ne-body">`
 
@@ -374,7 +403,7 @@ export default class TrackEditor extends BasePanel {
         }
 
         bodyHtml += '</div>'
-        this.container.innerHTML = headerHtml + bodyHtml
+        this.container.innerHTML = headerHtml + sampleBarHtml + bodyHtml
         
         // Mount main sliders
         this._sliders.forEach(s => {
@@ -397,6 +426,179 @@ export default class TrackEditor extends BasePanel {
         }
         this.reposition()
         this._bindEvents()
+        this._drawSampleWaveform()
+    }
+
+    _renderSampleBar() {
+        const track = this._track
+        if (track.useSoftSynth) return ''
+        const soundId = track.soundId ?? ''
+        const sound = soundRegistry.sounds[soundId]
+        if (!sound?.buffer) return ''
+        const analysis = analyzeSample(sound.buffer)
+        const pitchStr = analysis?.noteInfo
+            ? `${analysis.noteInfo.note}${analysis.noteInfo.octave}`
+            : '—'
+        const durStr = analysis?.length != null ? (analysis.length * 1000).toFixed(0) + ' ms' : '—'
+        const peakStr = analysis?.peakDb != null ? analysis.peakDb.toFixed(1) + ' dB' : '—'
+        return `<div class="te-sample-bar">
+            <div class="te-sample-left">
+                <span class="te-sample-info" title="Pitch / Duration / Peak">${pitchStr} · ${durStr} · ${peakStr}</span>
+                <button class="te-load-btn" data-action="load-sample" title="Import sample to replace current">📁</button>
+                <input type="file" class="te-load-input" style="display:none" accept=".wav,.flac,.mp3,.aac">
+            </div>
+            <canvas class="te-waveform" width="500" height="48"></canvas>
+        </div>`
+    }
+
+    _drawSampleWaveform() {
+        const canvas = this.container?.querySelector('.te-waveform')
+        if (!canvas) return
+        const sound = soundRegistry.sounds[this._track?.soundId]
+        if (!sound?.buffer) return
+        const analysis = analyzeSample(sound.buffer)
+        if (!analysis?.envelope?.length) return
+        const ctx = canvas.getContext('2d')
+        drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, '#00fff5')
+
+        const decay = this._track.sampleDecay ?? 0.5
+        const totalSec = sound.buffer.duration
+        if (totalSec > 0) {
+            const ratio = Math.min(decay / totalSec, 1)
+            const x = ratio * canvas.width
+            ctx.strokeStyle = '#f5e642'
+            ctx.lineWidth = 2
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, canvas.height)
+            ctx.stroke()
+        }
+    }
+
+    _onLoadSample() {
+        const input = this.container?.querySelector('.te-load-input')
+        if (input) input.click()
+    }
+
+    async _onSampleFileSelected(e) {
+        const file = e.target.files?.[0]
+        if (!file || !this._track) return
+        const ctx = serviceRegistry.audioCtx
+        if (!ctx) return
+        try {
+            const arrayBuffer = await file.arrayBuffer()
+            const buffer = await ctx.decodeAudioData(arrayBuffer)
+            const soundId = this._track.soundId ?? ''
+            const oldSound = soundRegistry.sounds[soundId]
+            if (oldSound) {
+                clearAnalysisCache(oldSound.buffer)
+                oldSound.buffer = buffer
+                oldSound.display_name = file.name
+                oldSound.duration = Math.floor(buffer.duration * 1000)
+            } else {
+                soundRegistry.sounds[soundId] = {
+                    url: soundId,
+                    key: soundId,
+                    display_name: file.name,
+                    buffer,
+                    duration: Math.floor(buffer.duration * 1000),
+                    isLoad: true
+                }
+            }
+            this.sync()
+            playbackEvents.dispatchPatternChange([this._track])
+        } catch (err) {
+            logger.warn('TrackEditor', `Sample import failed: ${err.message}`)
+        }
+        e.target.value = ''
+    }
+
+    _syncNoteEditMode() {
+        const data = this._selectedNote
+        if (!data || !this._track) return
+
+        const { note, beat, beatStep } = data
+        this._noteSliders.forEach(s => s.destroy())
+        this._noteSliders = []
+
+        let headerHtml = `<div class="ne-header">
+            <span class="ne-track">Note: ${this.esc(this._track.name)} [beat ${beat} step ${beatStep}]</span>
+            <button class="ne-close" data-action="close-note-edit">&times;</button>
+        </div>`
+
+        const NOTE_GROUPS = [
+            { label: 'Vel / Pitch / Pan', props: [
+                { key: 'velocity', label: 'Vel', min: 0, max: 1, step: 0.01 },
+                { key: 'pitch', label: 'Pitch', min: -24, max: 24, step: 1 },
+                { key: 'pan', label: 'Pan', min: -1, max: 1, step: 0.01 }
+            ]},
+            { label: 'Triggers', props: [
+                { key: 'every', label: 'Every', min: 1, max: 16, step: 1 },
+                { key: 'pos', label: 'Pos', min: 0, max: 15, step: 1 },
+                { key: 'prob', label: 'Prob', min: 0, max: 1, step: 0.01 }
+            ]},
+            { label: 'Retrig', props: [
+                { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
+                { key: 'rate', label: 'Rate', min: 1, max: 16, step: 1 },
+                { key: 'euclidianFill', label: 'Eucl', min: 0, max: 16, step: 1 },
+                { key: 'arpTriggerProbability', label: 'Prob', min: 0, max: 1, step: 0.01 }
+            ]}
+        ]
+        const shortLabels = { 'Vel / Pitch / Pan': 'VPP', Triggers: 'Trig', Retrig: 'Retr' }
+
+        let bodyHtml = `<div class="ne-body">`
+        NOTE_GROUPS.forEach((g, idx) => {
+            const visKey = ['levels', 'triggers', 'retrig'][idx]
+            const isExpanded = appState.noteEditorVisibility?.[visKey] ?? true
+            let groupContent = ''
+            g.props.forEach(p => {
+                groupContent += `<div data-ne-slider="${p.key}"></div>`
+            })
+            bodyHtml += buildAccordionGroup(visKey, g.label, shortLabels[g.label], isExpanded, groupContent)
+        })
+        bodyHtml += '</div>'
+
+        this.container.innerHTML = headerHtml + bodyHtml
+
+        NOTE_GROUPS.forEach(g => {
+            g.props.forEach(p => {
+                const placeholder = this.container.querySelector(`[data-ne-slider="${p.key}"]`)
+                if (!placeholder) return
+                const slider = new OrSlider({
+                    key: p.key,
+                    label: p.label,
+                    min: p.min,
+                    max: p.max,
+                    step: p.step,
+                    value: note[p.key] ?? p.min,
+                    format: p.key === 'pitch'
+                        ? v => `${fmt(v)} ${pitchToNoteName(v, this._track?.pitch ?? 0)}`
+                        : fmt,
+                    onChange: v => {
+                        note[p.key] = v
+                        playbackEvents.dispatchTrackParamChange(this._track)
+                    }
+                })
+                this._noteSliders.push(slider)
+                placeholder.replaceWith(slider.createElement())
+            })
+        })
+
+        if (this.synthEditor?.panel?.style?.display !== 'block') {
+            this.container.style.display = 'block'
+        }
+        this.reposition()
+        this._bindNoteEditEvents()
+    }
+
+    _bindNoteEditEvents() {
+        this.container.querySelector('[data-action="close-note-edit"]')?.addEventListener('click', () => {
+            this._noteEditMode = false
+            this._selectedNote = null
+            this._noteSliders.forEach(s => s.destroy())
+            this._noteSliders = []
+            this.sync()
+        })
     }
 
     _renderLoopPanel(isExpanded) {
@@ -725,6 +927,7 @@ export default class TrackEditor extends BasePanel {
             const slider = Array.from(this._sliders.values()).find(s => s._input === target)
             if (slider) {
                 slider.handleInput(e)
+                if (key === 'sampleDecay') this._drawSampleWaveform()
             } else if (target.dataset.lfoKey) {
                 this._onLfoSlider(target)
             } else if (target.dataset.loop) {
@@ -743,6 +946,10 @@ export default class TrackEditor extends BasePanel {
 
         this.container.addEventListener('change', (e) => {
             const target = e.target
+            if (target.classList.contains('te-load-input')) {
+                this._onSampleFileSelected(e)
+                return
+            }
             if (target.tagName === 'SELECT') {
                 if (target.dataset.key) this._onSelect(target)
                 else if (target.dataset.lfoTargetSelect) {
@@ -787,6 +994,8 @@ export default class TrackEditor extends BasePanel {
                 this._toggleAuto()
             } else if (btn.dataset.action === 'edit-synth') {
                 this.synthEditor.openEditor()
+            } else if (btn.dataset.action === 'load-sample') {
+                this._onLoadSample()
             }
         })
 
@@ -946,6 +1155,10 @@ export default class TrackEditor extends BasePanel {
         this._trackIdx = -1
         this._selectedPropKey = null
         this._lastTick = -1
+        this._noteEditMode = false
+        this._selectedNote = null
+        this._noteSliders.forEach(s => s.destroy())
+        this._noteSliders = []
         if (this._lfoBridge) {
             this._lfoBridge.destroy()
             this._lfoBridge = null
