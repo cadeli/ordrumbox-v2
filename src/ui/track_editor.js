@@ -63,7 +63,6 @@ const GROUPS = [
     {
         label: 'Basic / Transport',
         props: [
-            { key: 'mono', label: 'Mono', type: 'boolean' },
             { key: 'auto', label: 'Auto', type: 'boolean' },
             { key: 'variation', label: 'Var Pos', min: 0, max: 100, step: 1 },
             { key: 'variation2', label: 'Var Prop', min: 0, max: 100, step: 1 },
@@ -824,7 +823,10 @@ export default class TrackEditor extends BasePanel {
                     <button class="ne-btn" data-action="edit-synth">Edit</button>
                 </div>`
 
-        return `<div class="ne-row"><button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> <label>auto</label></div>` + content
+        const monoActive = this._track.mono ? 'active' : ''
+        const monoLabel = this._track.mono ? 'ON' : 'OFF'
+        return `<div class="ne-row"><label>Mono</label><button class="ne-btn ${monoActive}" data-key="mono">${monoLabel}</button></div>
+        <div class="ne-row"><button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> <label>auto</label></div>` + content
     }
 
     _getSelectedDrumkitName() {
