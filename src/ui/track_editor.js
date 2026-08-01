@@ -399,12 +399,12 @@ export default class TrackEditor extends BasePanel {
             gen: () => renderGroupProps(GROUPS[0]),
             fx: () => {
                 let html = renderGroupProps(GROUPS[1])
-                html += this._renderFxGroup(true)
+                html += this._renderFxGroup()
                 return html
             },
-            snd: () => this._renderSoundPanel(true),
+            snd: () => this._renderSoundPanel(),
             mod: () => this._renderLfoGroup(),
-            loop: () => this._renderLoopPanel(true)
+            loop: () => this._renderLoopPanel()
         }
 
         for (const tab of TAB_DEFS) {
@@ -693,24 +693,22 @@ export default class TrackEditor extends BasePanel {
             content += s.toHTML()
         })
 
-        return buildAccordionGroup('loop', 'Loop / Pattern', 'Lp', isExpanded, content)
+        return content
     }
 
-    _renderFxGroup(isExpanded) {
+    _renderFxGroup() {
         let tabsHtml = ''
-        if (isExpanded) {
-            FX_DEFS.forEach((fx, i) => {
-                const activeClass = i === this._activeFxTab ? ' active' : ''
-                tabsHtml += `<button class="fx-tab-btn${activeClass}" data-fx-tab="${i}" title="${fx.label}">${i + 1}</button>`
-            })
-        }
-        const labelHtml = `<span>Effects</span><span class="fx-tabs">${tabsHtml}</span>`
+        FX_DEFS.forEach((fx, i) => {
+            const activeClass = i === this._activeFxTab ? ' active' : ''
+            tabsHtml += `<button class="fx-tab-btn${activeClass}" data-fx-tab="${i}" title="${fx.label}">${i + 1}</button>`
+        })
+        const labelHtml = `<div class="fx-tabs-row">${tabsHtml}</div>`
 
-        let content = ''
+        let content = labelHtml
         FX_DEFS.forEach((fx, idx) => {
             const on = this._isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
-            const hiddenStyle = idx !== this._activeFxTab && isExpanded ? ' style="display:none"' : ''
+            const hiddenStyle = idx !== this._activeFxTab ? ' style="display:none"' : ''
 
             content += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">
                     <div class="ne-row">
@@ -754,10 +752,7 @@ export default class TrackEditor extends BasePanel {
             content += `</div>`
         })
 
-        return buildAccordionGroup('effects', 'Effects', 'FX', isExpanded, content, {
-            labelClass: 'ne-group-label fx-header',
-            labelHtml,
-        })
+        return content
     }
 
     _isFxOn(fx) {
@@ -833,10 +828,7 @@ export default class TrackEditor extends BasePanel {
                     <button class="ne-btn" data-action="edit-synth">Edit</button>
                 </div>`
 
-        return buildAccordionGroup('sound', 'Sound', 'Snd', isExpanded, content, {
-            labelClass: 'ne-group-label',
-            labelHtml: `<button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> autoassign`,
-        })
+        return `<div class="te-sound-header"><button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> autoassign</div>` + content
     }
 
     _getSelectedDrumkitName() {
@@ -962,12 +954,10 @@ export default class TrackEditor extends BasePanel {
                 <span class="ne-val">${fmt(phase)}</span>
             </div>`
 
-        return buildAccordionGroup('lfo', 'LFO', 'LFO', true, content)
+        return content
     }
 
     _bindEvents() {
-        bindVisibilityToggles(this.container, appState.trackEditorVisibility, () => this.sync())
-
         if (this._delegationBound) {
             return
         }

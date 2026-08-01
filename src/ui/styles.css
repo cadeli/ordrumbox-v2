@@ -511,7 +511,7 @@
     flex-wrap: wrap; overflow-x: hidden;
 }
 #te-panel .ne-body {
-    flex-direction: column; gap: 4px;
+    flex-direction: column; gap: 0;
 }
 .ne-panel .ne-group {
     display: flex !important;
@@ -623,9 +623,9 @@
 }
 .ne-tab-bar {
     display: flex; flex-direction: row; gap: 2px;
-    padding: 4px 6px; margin: 0;
-    background: var(--bg-dark); border-radius: 4px;
-    box-sizing: border-box;
+    padding: 6px 10px; margin: 0 4px 4px;
+    background: var(--bg-input); border: 1px solid var(--border-dark);
+    border-radius: 6px 6px 0 0;
 }
 .ne-tab-btn {
     flex: 1; padding: 4px 2px; font-size: 9px; font-weight: bold;
@@ -644,6 +644,14 @@
 }
 .ne-tab-panels {
     flex: 1;
+}
+.ne-tab-panel {
+    background: var(--bg-input);
+    border: 1px solid var(--border-dark);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    padding: 6px 10px;
+    margin: 0 4px;
 }
 .ne-panel .ne-row.no-cursor { cursor: default; }
 .ne-panel .ne-row .ne-input {
