@@ -32,16 +32,25 @@ const fmtVal = (key, v) => {
     return fmt(v)
 }
 
+const FILTER_PROPS = [
+    { key: 'filterType', label: 'Type', type: 'select', options: Utils.filterTypeList },
+    { key: 'filterFreq', label: 'Freq', min: 0, max: 1, step: 0.01, lfo: 'filterFreqLfo' },
+    { key: 'filterQ', label: 'Q', min: 0, max: 1, step: 0.01, lfo: 'filterQLfo',
+      normalize: v => Utils.valueToNormalizedTrackFilterQ(v),
+      denormalize: v => Utils.normalizedTrackFilterQToValue(v) }
+]
+
 const FX_DEFS = [
-    { key: 'reverbOn', label: 'Reverb', controls: ['reverbAmount', 'reverbType'] },
-    { key: 'delayOn', label: 'Delay', controls: ['delayDepth', 'delayTime', 'delayType'] },
-    { key: 'sat', label: 'Sat', controls: ['saturationAmount', 'saturationType'] }
+    { key: 'reverbAmount', label: 'Reverb', controls: ['reverbAmount', 'reverbType'] },
+    { key: 'delayDepth', label: 'Delay', controls: ['delayDepth', 'delayTime', 'delayType'] },
+    { key: 'saturationAmount', label: 'Sat', controls: ['saturationAmount', 'saturationType'] },
+    { key: 'filterFreq', label: 'Filter', controls: ['filterType', 'filterFreq', 'filterQ'] }
 ]
 
 const FX_TOGGLE_DEFS = [
-    { key: 'reverbOn', controls: ['reverbAmount'] },
-    { key: 'delayOn', controls: ['delayDepth'] },
-    { key: 'sat', controls: ['saturationAmount'] }
+    { key: 'reverbAmount', controls: ['reverbAmount'] },
+    { key: 'delayDepth', controls: ['delayDepth'] },
+    { key: 'saturationAmount', controls: ['saturationAmount'] }
 ]
 
 const KNOB_PROPS = [
@@ -66,16 +75,6 @@ const GROUPS = [
             { key: 'auto', label: 'Auto', type: 'boolean' },
             { key: 'variation', label: 'Var Pos', min: 0, max: 100, step: 1 },
             { key: 'variation2', label: 'Var Prop', min: 0, max: 100, step: 1 },
-        ]
-    },
-    {
-        label: 'Filters',
-        props: [
-            { key: 'filterType', label: 'Type', type: 'select', options: Utils.filterTypeList },
-            { key: 'filterFreq', label: 'Freq', min: 0, max: 1, step: 0.01, lfo: 'filterFreqLfo' },
-            { key: 'filterQ', label: 'Q', min: 0, max: 1, step: 0.01, lfo: 'filterQLfo',
-              normalize: v => Utils.valueToNormalizedTrackFilterQ(v),
-              denormalize: v => Utils.normalizedTrackFilterQToValue(v) }
         ]
     },
     {
@@ -259,17 +258,16 @@ export default class TrackEditor extends BasePanel {
 
     _applyLfoValues(lfoValues) {
         if (!lfoValues || !this._track) return
-        GROUPS.forEach(g => {
-            g.props.forEach(p => {
-                if (p.lfo && this._track[p.lfo]) {
-                    const s = this._sliders.get(p.key)
-                    if (s) {
-                        let val = lfoValues[p.key] ?? 0
-                        if (p.denormalize) val = p.denormalize(val)
-                        s.setValue(val)
-                    }
+        const allProps = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS]
+        allProps.forEach(p => {
+            if (p.lfo && this._track[p.lfo]) {
+                const s = this._sliders.get(p.key)
+                if (s) {
+                    let val = lfoValues[p.key] ?? 0
+                    if (p.denormalize) val = p.denormalize(val)
+                    s.setValue(val)
                 }
-            })
+            }
         })
         KNOB_PROPS.forEach(p => {
             if (p.lfo && this._track[p.lfo]) {
@@ -394,11 +392,7 @@ export default class TrackEditor extends BasePanel {
 
         const TAB_PANEL_MAP = {
             gen: () => renderGroupProps(GROUPS[0]),
-            fx: () => {
-                let html = renderGroupProps(GROUPS[1])
-                html += this._renderFxGroup()
-                return html
-            },
+            fx: () => this._renderFxGroup(),
             snd: () => this._renderSoundPanel(),
             mod: () => this._renderLfoGroup(),
             loop: () => this._renderLoopPanel()
@@ -692,27 +686,27 @@ export default class TrackEditor extends BasePanel {
     }
 
     _renderFxGroup() {
-        let tabsHtml = ''
+        let tabsHtml = '<div class="te-mod-targets">'
         FX_DEFS.forEach((fx, i) => {
+            const on = this._isFxOn(fx)
+            const ledClass = on ? 'lfo-led on' : 'lfo-led'
             const activeClass = i === this._activeFxTab ? ' active' : ''
-            tabsHtml += `<button class="fx-tab-btn${activeClass}" data-fx-tab="${i}" title="${fx.label}">${i + 1}</button>`
+            tabsHtml += `<div class="te-mod-btn${activeClass}">
+                <span class="${ledClass}" data-fx-toggle-btn="${fx.key}"></span>
+                <span data-fx-tab="${i}">${fx.label}</span></div>`
         })
-        const labelHtml = `<div class="fx-tabs-row">${tabsHtml}</div>`
+        tabsHtml += '</div>'
 
-        let content = labelHtml
+        let content = tabsHtml
         FX_DEFS.forEach((fx, idx) => {
             const on = this._isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
             const hiddenStyle = idx !== this._activeFxTab ? ' style="display:none"' : ''
 
-            content += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">
-                    <div class="ne-row">
-                        <button class="${ledClass}" data-fx-toggle="${fx.key}" title="${on ? 'Disable' : 'Enable'} ${fx.label}"></button>
-                        <label style="min-width:24px;margin-right:8px">${fx.label}</label>
-                    </div>`
+            content += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">`
 
             fx.controls.forEach(ck => {
-                const prop = GROUPS.flatMap(g => g.props).find(p => p.key === ck)
+                const prop = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS].find(p => p.key === ck)
                 if (!prop) return
                 const val = this._track[ck]
                 if (prop.type === 'select') {
@@ -726,6 +720,8 @@ export default class TrackEditor extends BasePanel {
                     })
                     content += `</select></div>`
                 } else {
+                    const hasLfo = prop.lfo && this._track[prop.lfo] ? 'has-lfo' : ''
+                    const isSelected = this._selectedPropKey === ck ? 'selected' : ''
                     const s = new OrSlider({
                         key: ck,
                         label: prop.label,
@@ -733,6 +729,13 @@ export default class TrackEditor extends BasePanel {
                         max: prop.max,
                         step: prop.step,
                         value: val ?? prop.min,
+                        extraClass: `${isSelected} ${hasLfo}`.trim(),
+                        format: (v) => fmtVal(ck, v),
+                        normalize: prop.normalize ?? ((v) => {
+                            if (ck === 'filterFreq' && v > 1) return Utils.hzToNormalizedTrackFilterFreq(v)
+                            return v
+                        }),
+                        denormalize: prop.denormalize ?? ((v) => v),
                         onChange: (v, key) => {
                             this._track[key] = v
                             playbackEvents.dispatchTrackParamChange(this._track)
@@ -751,8 +754,8 @@ export default class TrackEditor extends BasePanel {
     }
 
     _isFxOn(fx) {
-        if (typeof this._track[fx.key] === 'boolean') return this._track[fx.key]
-        const amount = Number(this._track[fx.controls[0]] ?? 0)
+        if (fx.key === 'filterFreq') return true
+        const amount = Number(this._track[fx.key] ?? 0)
         return Number.isFinite(amount) && amount > 0
     }
 
@@ -898,7 +901,7 @@ export default class TrackEditor extends BasePanel {
     _renderLfoGroup() {
         if (!this._track) return ''
 
-        const LFO_PROPS = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].filter(p => p.lfo)
+        const LFO_PROPS = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
         if (!LFO_PROPS.length) return ''
 
         if (!this._selectedLfoTarget || !LFO_PROPS.find(p => p.key === this._selectedLfoTarget)) {
@@ -1023,6 +1026,14 @@ export default class TrackEditor extends BasePanel {
                 this._onLfoSelectBtn(target.dataset.lfoSelectBtn)
                 return
             }
+            if (target.dataset.fxToggleBtn) {
+                this._toggleFxByKey(target.dataset.fxToggleBtn)
+                return
+            }
+            if (target.dataset.fxTab) {
+                this._onFxTab({ dataset: { fxTab: target.dataset.fxTab } })
+                return
+            }
 
             const btn = target.closest('button')
             if (!btn) {
@@ -1129,8 +1140,12 @@ export default class TrackEditor extends BasePanel {
 
     _toggleFx(btn) {
         const key = btn.dataset.fxToggle
-        const fx = FX_TOGGLE_DEFS.find(def => def.key === key)
-        this._track[key] = fx ? !this._isFxOn(fx) : !this._track[key]
+        this._toggleFxByKey(key)
+    }
+
+    _toggleFxByKey(key) {
+        const isOn = Number(this._track[key] ?? 0) > 0
+        this._track[key] = isOn ? 0 : 0.5
         this.sync()
         playbackEvents.dispatchPatternChange([this._track])
     }
@@ -1138,15 +1153,18 @@ export default class TrackEditor extends BasePanel {
     _onFxTab(btn) {
         const tabIdx = parseInt(btn.dataset.fxTab, 10)
         this._activeFxTab = tabIdx
-        this.container.querySelectorAll('.fx-tab-btn').forEach(b => b.classList.remove('active'))
-        btn.classList.add('active')
+        const fxPanel = this.container.querySelector('[data-tab-panel="fx"]')
+        if (fxPanel) {
+            fxPanel.querySelectorAll('.te-mod-btn').forEach(b => b.classList.remove('active'))
+            fxPanel.querySelectorAll('.te-mod-btn')[tabIdx]?.classList.add('active')
+        }
         this.container.querySelectorAll('.fx-tab-panel').forEach(p => {
             p.style.display = p.dataset.fxPanel === String(tabIdx) ? '' : 'none'
         })
     }
 
     _toggleLfo() {
-        const prop = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
+        const prop = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
         if (!prop || !prop.lfo) return
         
         if (this._track[prop.lfo]) {
@@ -1175,7 +1193,7 @@ export default class TrackEditor extends BasePanel {
 
     _onLfoToggleBtn(targetKey) {
         this._selectedLfoTarget = targetKey
-        const allLfoProps = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].filter(p => p.lfo)
+        const allLfoProps = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
         const prop = allLfoProps.find(p => p.key === targetKey)
         if (!prop) return
         if (this._track[prop.lfo]) {
@@ -1196,7 +1214,7 @@ export default class TrackEditor extends BasePanel {
 
     _onLfoSlider(input) {
         this._isDragging = true
-        const prop = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
+        const prop = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
         if (!prop) return
         let lfo = this._track[prop.lfo]
         if (!lfo) {
@@ -1219,7 +1237,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     _onLfoSelect(sel) {
-        const prop = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
+        const prop = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
         if (!prop) return
         let lfo = this._track[prop.lfo]
         if (!lfo) {

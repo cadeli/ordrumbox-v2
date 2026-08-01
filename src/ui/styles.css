@@ -1012,34 +1012,6 @@
     justify-content: space-between;
 }
 
-.fx-tabs {
-    display: flex;
-    gap: 4px;
-}
-
-.fx-tab-btn {
-    background: var(--bg-elevated);
-    color: var(--text-ghost);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 2px 8px;
-    font-size: 11px;
-    cursor: pointer;
-    min-width: 24px;
-    text-align: center;
-}
-
-.fx-tab-btn:hover {
-    background: var(--bg-hover);
-    color: var(--text-muted);
-}
-
-.fx-tab-btn.active {
-    background: var(--accent);
-    color: var(--text);
-    border-color: var(--accent);
-}
-
 /* ── Drumkit Manager ───────────────────────────────────── */
 #dm-panel {
     max-height: 320px;
