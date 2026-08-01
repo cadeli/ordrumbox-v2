@@ -22,7 +22,6 @@ describe('Mobile Landscape UI Logic', () => {
         
         // Essential panels should be TRUE by default, others FALSE on mobile
         expect(mobileState.trackEditorVisibility.basic).toBe(true)
-        expect(mobileState.trackEditorVisibility.levels).toBe(true)
         expect(mobileState.trackEditorVisibility.loop).toBe(false)
         
         expect(mobileState.trackEditorVisibility.filters).toBe(false)
@@ -37,7 +36,6 @@ describe('Mobile Landscape UI Logic', () => {
         
         // Should be true for all panels on desktop
         expect(desktopState.trackEditorVisibility.basic).toBe(true)
-        expect(desktopState.trackEditorVisibility.levels).toBe(true)
     })
 
     it('renders TrackEditor with hidden panels in mobile landscape', () => {
@@ -59,24 +57,23 @@ describe('Mobile Landscape UI Logic', () => {
 
         // 4. Verify that buttons are rendered but the panels (ne-group) are NOT
         // (Except for the ones we didn't explicitly hide in GROUPS loop if any, 
-        // but our logic hides basic, levels, filters, effects, sound, loop)
+        // but our logic hides basic, filters, effects, sound, loop)
         
         const visibleGroups = document.querySelectorAll('.ne-group')
-        // All 6 groups are always rendered: basic, levels, filters, effects, sound, loop
-        expect(visibleGroups.length).toBe(6)
+        // All 5 groups are always rendered: basic, filters, effects, sound, loop
+        expect(visibleGroups.length).toBe(5)
 
-        // 5. Verify the toggle buttons exist in the header (6: basic, levels, filters, effects, sound, loop)
+        // 5. Verify the toggle buttons exist in the header (5: basic, filters, effects, sound, loop)
         const toggles = document.querySelectorAll('.ne-toggle')
-        expect(toggles.length).toBe(6)
+        expect(toggles.length).toBe(5)
         
-        // basic (0), levels (1), sound (4), loop (5) should be active (always visible)
+        // basic (0), sound (3), loop (4) should be active (always visible)
         expect(toggles[0].classList.contains('active')).toBe(true)
-        expect(toggles[1].classList.contains('active')).toBe(true)
+        expect(toggles[3].classList.contains('active')).toBe(true)
         expect(toggles[4].classList.contains('active')).toBe(true)
-        expect(toggles[5].classList.contains('active')).toBe(true)
         
-        // filters (2), effects (3) should be INACTIVE
+        // filters (1), effects (2) should be INACTIVE
+        expect(toggles[1].classList.contains('active')).toBe(false)
         expect(toggles[2].classList.contains('active')).toBe(false)
-        expect(toggles[3].classList.contains('active')).toBe(false)
     })
 })

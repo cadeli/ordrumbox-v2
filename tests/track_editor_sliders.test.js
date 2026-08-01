@@ -41,7 +41,7 @@ function setup() {
         'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} }
     }
     appState.trackEditorVisibility = {
-        basic: true, levels: true, filters: true, effects: true, sound: false, loop: false, lfo: true,
+        basic: true, filters: true, effects: true, sound: false, loop: false, lfo: true,
     }
     // Patterns must include the editor's track so the onPatternChange
     // subscriber (which hides the editor when the track is missing) is
@@ -70,7 +70,7 @@ describe('TrackEditor — OrSlider integration', () => {
         editor._track = makeTrack()
         editor.sync()
 
-        for (const key of ['velocity', 'pan', 'pitch', 'filterFreq', 'filterQ']) {
+        for (const key of ['filterFreq', 'filterQ', 'reverbAmount']) {
             const input = editor.container.querySelector(`input[data-key="${key}"]`)
             expect(input, `missing input for ${key}`).not.toBeNull()
             expect(input.type).toBe('range')
@@ -111,15 +111,14 @@ describe('TrackEditor — OrSlider integration', () => {
     })
 
     it('changing a slider via input updates the track and fires onTrackParamChange', () => {
-        editor._track = makeTrack({ velocity: 0.5 })
+        editor._track = makeTrack({ filterFreq: 0.5 })
         editor.sync()
         const fn = vi.fn()
         playbackEvents.onTrackParamChange.push(fn)
 
-        const input = editor.container.querySelector('input[data-key="velocity"]')
-        fireInput(input, 0.3)
-        expect(editor._track.velocity).toBeCloseTo(0.3, 5)
-        expect(input.nextElementSibling.textContent).toBe('0.3')
+        const input = editor.container.querySelector('input[data-key="filterFreq"]')
+        fireInput(input, 0.7)
+        expect(editor._track.filterFreq).toBeCloseTo(0.7, 5)
         expect(fn).toHaveBeenCalled()
     })
 
@@ -134,21 +133,21 @@ describe('TrackEditor — OrSlider integration', () => {
     })
 
     it('re-syncing destroys old OrSlider instances (no listener leak)', () => {
-        editor._track = makeTrack({ velocity: 0.5 })
+        editor._track = makeTrack({ filterFreq: 0.5 })
         editor.sync()
-        const firstInput = editor.container.querySelector('input[data-key="velocity"]')
+        const firstInput = editor.container.querySelector('input[data-key="filterFreq"]')
 
-        editor._track = makeTrack({ velocity: 0.9 })
+        editor._track = makeTrack({ filterFreq: 0.9 })
         editor.sync()
-        const secondInput = editor.container.querySelector('input[data-key="velocity"]')
+        const secondInput = editor.container.querySelector('input[data-key="filterFreq"]')
         expect(secondInput).not.toBe(firstInput)
         expect(secondInput.value).toBe('0.9')
     })
 
     it('keyboard arrow on a slider moves by exactly one step (no double-fire)', () => {
-        editor._track = makeTrack({ velocity: 0.5 })
+        editor._track = makeTrack({ filterFreq: 0.5 })
         editor.sync()
-        const input = editor.container.querySelector('input[data-key="velocity"]')
+        const input = editor.container.querySelector('input[data-key="filterFreq"]')
         input.focus()
         input.dispatchEvent(new KeyboardEvent('keydown', {
             key: 'ArrowRight', bubbles: true, cancelable: true,
@@ -167,46 +166,46 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
     })
 
     it('row with an LFO prop gets the "has-lfo" class', () => {
-        editor._track = makeTrack({ velocity: 0.5, pitchLfo: { freq: 1, min: 0, max: 0.5 } })
+        editor._track = makeTrack({ filterFreq: 0.5, filterFreqLfo: { freq: 1, min: 0, max: 0.5 } })
         editor.sync()
-        const pitchRow = editor.container.querySelector('.ne-row[data-prop="pitch"]')
-        expect(pitchRow).not.toBeNull()
-        expect(pitchRow.classList.contains('has-lfo')).toBe(true)
+        const freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
+        expect(freqRow).not.toBeNull()
+        expect(freqRow.classList.contains('has-lfo')).toBe(true)
     })
 
     it('row without an LFO prop does NOT get "has-lfo"', () => {
-        editor._track = makeTrack({ velocity: 0.5, pan: 0 })
+        editor._track = makeTrack({ filterFreq: 0.5, filterQ: 0.5 })
         editor.sync()
-        const panRow = editor.container.querySelector('.ne-row[data-prop="pan"]')
-        expect(panRow).not.toBeNull()
-        expect(panRow.classList.contains('has-lfo')).toBe(false)
+        const qRow = editor.container.querySelector('.ne-row[data-prop="filterQ"]')
+        expect(qRow).not.toBeNull()
+        expect(qRow.classList.contains('has-lfo')).toBe(false)
     })
 
     it('toggling the LFO on preserves the LFO mode (has-lfo re-applied after sync)', () => {
-        const track = makeTrack({ velocity: 0.5 })
+        const track = makeTrack({ filterFreq: 0.5 })
         appState.patterns = [{ tracks: [track] }]
         appState.selectedPatternNum = 0
         editor._track = track
         editor._trackIdx = 0
-        editor._selectedLfoTarget = 'velocity'
+        editor._selectedLfoTarget = 'filterFreq'
         editor.sync()
 
         // No LFO yet → no has-lfo
-        let velRow = editor.container.querySelector('.ne-row[data-prop="velocity"]')
-        expect(velRow.classList.contains('has-lfo')).toBe(false)
+        let freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
+        expect(freqRow.classList.contains('has-lfo')).toBe(false)
 
         // Toggle LFO on
         editor._toggleLfo()
-        velRow = editor.container.querySelector('.ne-row[data-prop="velocity"]')
-        expect(velRow).not.toBeNull()
-        expect(velRow.classList.contains('has-lfo')).toBe(true)
-        expect(editor._track.velocityLfo).toBeDefined()
+        freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
+        expect(freqRow).not.toBeNull()
+        expect(freqRow.classList.contains('has-lfo')).toBe(true)
+        expect(editor._track.filterFreqLfo).toBeDefined()
 
         // Toggle LFO off
         editor._toggleLfo()
-        velRow = editor.container.querySelector('.ne-row[data-prop="velocity"]')
-        expect(velRow.classList.contains('has-lfo')).toBe(false)
-        expect(editor._track.velocityLfo).toBeUndefined()
+        freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
+        expect(freqRow.classList.contains('has-lfo')).toBe(false)
+        expect(editor._track.filterFreqLfo).toBeUndefined()
     })
 
     it('LFO sub-panel: freq/phase are managed by OrSlider with data-lfo-key', () => {
@@ -290,8 +289,8 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
     it('LFO live update: writes the value to the track (displayed), not the base', () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         editor._track = makeTrack({
-            velocity: 0.5,
-            velocityLfo: { freq: 0, min: 0.8, max: 0.8, phase: 0 },
+            filterFreq: 0.5,
+            filterFreqLfo: { freq: 0, min: 0.8, max: 0.8, phase: 0 },
         })
         appState.patterns = [{ tracks: [editor._track], nbBeats: 4 }]
         appState.selectedPatternNum = 0
@@ -299,10 +298,10 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
 
         editor._updateLfoSliders()
 
-        const input = editor.container.querySelector('input[data-key="velocity"]')
+        const input = editor.container.querySelector('input[data-key="filterFreq"]')
         expect(parseFloat(input.value)).toBeCloseTo(0.8, 5)
-        expect(input.nextElementSibling.textContent).toBe('0.8')
+        expect(input.nextElementSibling.textContent).toBe('5.0k')
         // Editor does not mutate the track on LFO update (audio engine does)
-        expect(editor._track.velocity).toBe(0.5)
+        expect(editor._track.filterFreq).toBe(0.5)
     })
 })

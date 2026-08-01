@@ -23,6 +23,8 @@ describe('LFO Velocity Sync Verification', () => {
         let editor, track
         const lfoConfig = { freq: 2, phase: 0, min: 0, max: 1, waveform: 0 }
 
+        const knobOf = (key) => editor._knobs.find(k => k._key === key)
+
         beforeEach(() => {
             document.body.innerHTML = ''
             vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
@@ -31,7 +33,6 @@ describe('LFO Velocity Sync Verification', () => {
             track = { name: 'KICK', velocity: 0.5, velocityLfo: lfoConfig, stepsPerBeat: 4, nbBeats: 8 }
             appState.patterns = [{ tracks: [track], nbBeats: 8, bpm: 120 }]
             appState.selectedPatternNum = 0
-            appState.trackEditorVisibility.levels = true
             
             editor = new TrackEditor()
             editor.init()
@@ -44,13 +45,13 @@ describe('LFO Velocity Sync Verification', () => {
         it('animates to 1.0 (Peak) at tick 32 (freq=2, phase=0)', () => {
             serviceRegistry.transport.tick = 32
             editor._updateLfoSliders()
-            expect(editor._sliders.get('velocity').getValue()).toBeCloseTo(1, 5)
+            expect(knobOf('velocity').getValue()).toBeCloseTo(1, 5)
         })
 
         it('animates to 0.0 (trough) at tick 64 (freq=2, phase=0)', () => {
             serviceRegistry.transport.tick = 64
             editor._updateLfoSliders()
-            expect(editor._sliders.get('velocity').getValue()).toBeCloseTo(0, 5)
+            expect(knobOf('velocity').getValue()).toBeCloseTo(0, 5)
         })
     })
 
@@ -117,6 +118,8 @@ describe('LFO Pitch Replacement Semantics', () => {
     describe('TrackEditor Integration', () => {
         let editor, track
 
+        const knobOf = (key) => editor._knobs.find(k => k._key === key)
+
         beforeEach(() => {
             document.body.innerHTML = ''
             vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
@@ -127,7 +130,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             soundRegistry.sounds = {
                 'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} }
             }
-            appState.trackEditorVisibility = { basic: true, levels: true, filters: true, effects: true, sound: false, loop: false, lfo: true }
+            appState.trackEditorVisibility = { basic: true, filters: true, effects: true, sound: false, loop: false, lfo: true }
         })
 
         it('pitch slider shows LFO value directly, not track.pitch + LFO', () => {
@@ -155,7 +158,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0+0.5*6=3
             editor._updateLfoSliders()
 
-            const slider = editor._sliders.get('pitch')
+            const slider = knobOf('pitch')
             // Replacement: slider shows LFO value (3), NOT track.pitch + LFO (5 + 3 = 8)
             expect(slider.getValue()).toBeCloseTo(3, 5)
         })
@@ -185,7 +188,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0+0.5*12=6
             editor._updateLfoSliders()
 
-            const slider = editor._sliders.get('pitch')
+            const slider = knobOf('pitch')
             // Replacement: 6, NOT -10 + 6 = -4
             expect(slider.getValue()).toBeCloseTo(6, 5)
         })
@@ -215,7 +218,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0.6+0.5*0.4=0.8
             editor._updateLfoSliders()
 
-            expect(editor._sliders.get('velocity').getValue()).toBeCloseTo(0.8, 5)
+            expect(knobOf('velocity').getValue()).toBeCloseTo(0.8, 5)
         })
     })
 

@@ -8,6 +8,7 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
+import { OrKnob } from './components/or_knob.js'
 import { bindCloseButton, bindVisibilityToggles, buildAccordionGroup, fmt, pitchToNoteName, setViewBtn } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
@@ -43,6 +44,13 @@ const FX_TOGGLE_DEFS = [
     { key: 'sat', controls: ['saturationAmount'] }
 ]
 
+const KNOB_PROPS = [
+    { key: 'velocity',    label: 'Vel',   min: 0,  max: 1,  step: 0.01, lfo: 'velocityLfo' },
+    { key: 'pan',         label: 'Pan',   min: -1, max: 1,  step: 0.01, lfo: 'panLfo' },
+    { key: 'pitch',       label: 'Pitch', min: -24, max: 24, step: 1,   lfo: 'pitchLfo' },
+    { key: 'sampleDecay', label: 'Decay', min: 0,  max: 2,  step: 0.01 }
+]
+
 const GROUPS = [
     {
         label: 'Basic / Transport',
@@ -51,16 +59,6 @@ const GROUPS = [
             { key: 'auto', label: 'Auto', type: 'boolean' },
             { key: 'variation', label: 'Var Pos', min: 0, max: 100, step: 1 },
             { key: 'variation2', label: 'Var Prop', min: 0, max: 100, step: 1 },
-
-        ]
-    },
-    {
-        label: 'Levels / Pitch',
-        props: [
-            { key: 'velocity', label: 'Velo', min: 0, max: 1, step: 0.01, lfo: 'velocityLfo' },
-            { key: 'pan', label: 'Pan', min: -1, max: 1, step: 0.01, lfo: 'panLfo' },
-            { key: 'pitch', label: 'Pitch', min: -24, max: 24, step: 1, lfo: 'pitchLfo' },
-            { key: 'sampleDecay', label: 'Decay', min: 0, max: 2, step: 0.01 }
         ]
     },
     {
@@ -113,6 +111,7 @@ export default class TrackEditor extends BasePanel {
         this._noteEditMode = false
         this._selectedNote = null
         this._noteSliders = []
+        this._knobs = []
     }
 
     createDOM() {
@@ -264,6 +263,12 @@ export default class TrackEditor extends BasePanel {
                 }
             })
         })
+        KNOB_PROPS.forEach(p => {
+            if (p.lfo && this._track[p.lfo]) {
+                const knob = this._knobs.find(k => k._key === p.key)
+                if (knob) knob.setValue(lfoValues[p.key] ?? 0)
+            }
+        })
     }
 
     async _updateLfoSliders() {
@@ -313,6 +318,7 @@ export default class TrackEditor extends BasePanel {
         </div>`
 
         let sampleBarHtml = this._renderSampleBar()
+        let knobBarHtml = this._renderKnobBar()
 
         let bodyHtml = `<div class="ne-body">`
 
@@ -321,7 +327,6 @@ export default class TrackEditor extends BasePanel {
 
         const shortLabels = {
             basic: 'Basic',
-            levels: 'Lvl',
             filters: 'Flt',
             effects: 'FX',
             sound: 'Snd',
@@ -329,7 +334,7 @@ export default class TrackEditor extends BasePanel {
         }
 
         GROUPS.forEach((g, idx) => {
-            const visKey = ['basic', 'levels', 'filters', 'effects', 'sound', 'loop'][idx]
+            const visKey = ['basic', 'filters', 'effects', 'sound', 'loop'][idx]
             const isExpanded = vis[visKey]
 
             if (g.label === 'Effects') {
@@ -403,7 +408,7 @@ export default class TrackEditor extends BasePanel {
         }
 
         bodyHtml += '</div>'
-        this.container.innerHTML = headerHtml + sampleBarHtml + bodyHtml
+        this.container.innerHTML = headerHtml + sampleBarHtml + knobBarHtml + bodyHtml
         
         // Mount main sliders
         this._sliders.forEach(s => {
@@ -419,6 +424,39 @@ export default class TrackEditor extends BasePanel {
                     })
                 }
             }
+        })
+
+        this._knobs.forEach(k => k.destroy())
+        this._knobs = []
+        KNOB_PROPS.forEach(def => {
+            const placeholder = this.container.querySelector(`[data-or-knob="${def.key}"]`)
+            if (!placeholder) return
+            const knob = new OrKnob({
+                key: def.key,
+                label: def.label,
+                min: def.min,
+                max: def.max,
+                step: def.step,
+                value: this._track[def.key] ?? def.min,
+                format: def.key === 'velocity'
+                    ? v => Math.round(v * 100)
+                    : def.key === 'pitch'
+                        ? v => `${v >= 0 ? '+' : ''}${v}`
+                        : def.key === 'sampleDecay'
+                            ? v => v.toFixed(2)
+                            : fmt,
+                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : def.key === 'sampleDecay' ? 's' : '',
+                onChange: (v) => {
+                    this._track[def.key] = v
+                    playbackEvents.dispatchTrackParamChange(this._track)
+                    if (def.key === 'sampleDecay') this._drawSampleWaveform()
+                }
+            })
+            this._knobs.push(knob)
+            const el = knob.createElement()
+            el.removeAttribute('data-prop')
+            el.removeAttribute('data-or-slider')
+            placeholder.replaceWith(el)
         })
 
         if (this.synthEditor?.panel?.style?.display !== 'block') {
@@ -448,6 +486,15 @@ export default class TrackEditor extends BasePanel {
                 <input type="file" class="te-load-input" style="display:none" accept=".wav,.flac,.mp3,.aac">
             </div>
             <canvas class="te-waveform" width="500" height="48"></canvas>
+        </div>`
+    }
+
+    _renderKnobBar() {
+        return `<div class="te-knob-bar">
+            <div data-or-knob="velocity"></div>
+            <div data-or-knob="pan"></div>
+            <div data-or-knob="pitch"></div>
+            <div data-or-knob="sampleDecay"></div>
         </div>`
     }
 
@@ -853,7 +900,7 @@ export default class TrackEditor extends BasePanel {
     _renderLfoGroup() {
         if (!this._track) return ''
 
-        const LFO_PROPS = GROUPS.flatMap(g => g.props).filter(p => p.lfo)
+        const LFO_PROPS = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].filter(p => p.lfo)
         if (!LFO_PROPS.length) return ''
 
         if (!this._selectedLfoTarget || !LFO_PROPS.find(p => p.key === this._selectedLfoTarget)) {
@@ -1085,7 +1132,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     _toggleLfo() {
-        const prop = GROUPS.flatMap(g => g.props).find(p => p.key === this._selectedLfoTarget)
+        const prop = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
         if (!prop || !prop.lfo) return
         
         if (this._track[prop.lfo]) {
@@ -1109,7 +1156,7 @@ export default class TrackEditor extends BasePanel {
 
     _onLfoSlider(input) {
         this._isDragging = true
-        const prop = GROUPS.flatMap(g => g.props).find(p => p.key === this._selectedLfoTarget)
+        const prop = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
         if (!prop) return
         let lfo = this._track[prop.lfo]
         if (!lfo) {
@@ -1132,7 +1179,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     _onLfoSelect(sel) {
-        const prop = GROUPS.flatMap(g => g.props).find(p => p.key === this._selectedLfoTarget)
+        const prop = [...GROUPS.flatMap(g => g.props), ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
         if (!prop) return
         let lfo = this._track[prop.lfo]
         if (!lfo) {
@@ -1159,6 +1206,8 @@ export default class TrackEditor extends BasePanel {
         this._selectedNote = null
         this._noteSliders.forEach(s => s.destroy())
         this._noteSliders = []
+        this._knobs.forEach(k => k.destroy())
+        this._knobs = []
         if (this._lfoBridge) {
             this._lfoBridge.destroy()
             this._lfoBridge = null

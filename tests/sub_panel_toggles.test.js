@@ -57,13 +57,13 @@ describe('Sub-panel toggle toolbars', () => {
     })
 
     describe('Track Editor', () => {
-        it('renders all 7 toggle buttons (Basic, Lvl, Flt, FX, Snd, Lp, LFO)', () => {
+        it('renders all 6 toggle buttons (Basic, Flt, FX, Snd, Lp, LFO)', () => {
             const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
             playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
 
             const toggles = document.getElementById('te-panel').querySelectorAll('.ne-toggle[data-toggle]')
             const keys = Array.from(toggles).map(b => b.dataset.toggle)
-            expect(keys).toEqual(['basic', 'levels', 'filters', 'effects', 'sound', 'loop', 'lfo'])
+            expect(keys).toEqual(['basic', 'filters', 'effects', 'sound', 'loop', 'lfo'])
         })
 
         it('toggles panel visibility when a button is clicked', () => {

@@ -2,7 +2,7 @@ function buildDefaultVisibility() {
     const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 480)
     return {
         trackEditorVisibility: {
-            basic: true, levels: true,
+            basic: true,
             filters: !isMobile, effects: !isMobile, sound: !isMobile, loop: false, lfo: !isMobile,
         },
         noteEditorVisibility: {

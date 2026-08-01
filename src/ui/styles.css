@@ -603,6 +603,21 @@
     width: 55px; text-align: right; color: var(--text-dim); font-weight: bold; font-size: 10px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.te-knob-bar {
+    display: flex; flex-direction: row; justify-content: center; gap: 16px;
+    padding: 6px 10px; margin: 0 4px 4px;
+    background: var(--bg-input); border: 1px solid var(--border-dark);
+    border-radius: 6px;
+}
+.te-knob-bar .ne-row-knob {
+    flex-direction: column; align-items: center; gap: 2px; padding: 0 4px;
+    width: 70px;
+}
+.te-knob-bar .or-knob-label { font-size: 9px; text-align: center; }
+.te-knob-bar .ne-row-knob .ne-val {
+    font-size: 9px; text-align: center; width: auto; min-width: 0;
+    color: var(--text-dim); font-weight: bold; overflow: visible;
+}
 .ne-panel .ne-row.no-cursor { cursor: default; }
 .ne-panel .ne-row .ne-input {
     width: 100px; font-size: 11px; padding: 2px 4px;

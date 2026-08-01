@@ -78,7 +78,7 @@ describe('TrackEditor filterFreq display', () => {
         editor.init()
         editor._track = track
         appState.trackEditorVisibility = {
-            basic: false, levels: false, filters: true, effects: false, sound: false, loop: false, lfo: true,
+            basic: false, filters: true, effects: false, sound: false, loop: false, lfo: true,
         }
         editor.sync()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
@@ -256,13 +256,13 @@ describe('TrackEditor LFO row highlight', () => {
     it('marks the selected prop row with the "selected" class', () => {
         const editor = new TrackEditor()
         editor.init()
-        editor._track = { name: 'KICK', velocity: 0.5, pitchLfo: null }
-        editor._selectedPropKey = 'velocity'
+        editor._track = { name: 'KICK', filterFreq: 0.5, filterFreqLfo: null }
+        editor._selectedPropKey = 'filterFreq'
         editor.sync()
 
         const selectedRow = editor.container.querySelector('.ne-row.selected')
         expect(selectedRow).not.toBeNull()
-        expect(selectedRow.dataset.prop).toBe('velocity')
+        expect(selectedRow.dataset.prop).toBe('filterFreq')
     })
 
     it('marks rows whose prop has an LFO configured with the "has-lfo" class', () => {
@@ -270,16 +270,14 @@ describe('TrackEditor LFO row highlight', () => {
         editor.init()
         editor._track = {
             name: 'KICK',
-            velocity: 0.5,
-            pitchLfo: { freq: 1, min: 0, max: 0.5 },
-            pan: 0,
+            filterFreq: 0.5,
+            filterFreqLfo: { freq: 1, min: 0, max: 0.5 },
         }
         editor._selectedPropKey = null
         editor.sync()
 
         const lfoRows = editor.container.querySelectorAll('.ne-row.has-lfo')
-        // pitch is in the Levels group with lfo='pitchLfo' — it should be marked
-        const lfoProp = [...lfoRows].find(r => r.dataset.prop === 'pitch')
+        const lfoProp = [...lfoRows].find(r => r.dataset.prop === 'filterFreq')
         expect(lfoProp).toBeDefined()
     })
 })
