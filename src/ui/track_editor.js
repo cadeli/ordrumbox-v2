@@ -51,6 +51,14 @@ const KNOB_PROPS = [
     { key: 'sampleDecay', label: 'Decay', min: 0,  max: 2,  step: 0.01 }
 ]
 
+const TAB_DEFS = [
+    { id: 'fx',   label: 'fx' },
+    { id: 'snd',  label: 'sound' },
+    { id: 'mod',  label: 'modulation' },
+    { id: 'loop', label: 'loop' },
+    { id: 'gen',  label: 'generation' }
+]
+
 const GROUPS = [
     {
         label: 'Basic / Transport',
@@ -112,6 +120,7 @@ export default class TrackEditor extends BasePanel {
         this._selectedNote = null
         this._noteSliders = []
         this._knobs = []
+        this._activeTab = 'fx'
     }
 
     createDOM() {
@@ -325,54 +334,37 @@ export default class TrackEditor extends BasePanel {
         this._sliders.forEach(s => s.destroy())
         this._sliders.clear()
 
-        const shortLabels = {
-            basic: 'Basic',
-            filters: 'Flt',
-            effects: 'FX',
-            sound: 'Snd',
-            loop: 'Lp'
+        let tabBarHtml = '<div class="ne-tab-bar">'
+        for (const tab of TAB_DEFS) {
+            const cls = tab.id === this._activeTab ? ' active' : ''
+            tabBarHtml += `<button class="ne-tab-btn${cls}" data-ne-tab="${tab.id}">${tab.label}</button>`
         }
+        tabBarHtml += '</div>'
 
-        GROUPS.forEach((g, idx) => {
-            const visKey = ['basic', 'filters', 'effects', 'sound', 'loop'][idx]
-            const isExpanded = vis[visKey]
+        let panelsHtml = '<div class="ne-tab-panels">'
 
-            if (g.label === 'Effects') {
-                bodyHtml += this._renderFxGroup(isExpanded)
-                return
-            }
-            if (g.label === 'Sound') {
-                bodyHtml += `<div class="ne-group-sound-loop-wrapper">`
-                bodyHtml += this._renderSoundPanel(true)
-                bodyHtml += this._renderLoopPanel(true)
-                bodyHtml += `</div>`
-                return
-            }
-            if (g.label === 'Loop / Pattern') {
-                return
-            }
-            let groupContent = ''
-            g.props.forEach(p => {
+        const renderGroupProps = (group) => {
+            let html = ''
+            group.props.forEach(p => {
                 const val = this._track[p.key]
                 const isSelected = this._selectedPropKey === p.key ? 'selected' : ''
                 const hasLfo = p.lfo && this._track[p.lfo] ? 'has-lfo' : ''
-                
                 if (p.type === 'boolean') {
                     const active = val ? 'active' : ''
-                    groupContent += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
+                    html += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
                              <label>${p.label}</label>
                              <button class="ne-btn ${active}" data-key="${p.key}">${val ? 'ON' : 'OFF'}</button>
                              </div>`
                 } else if (p.type === 'select') {
-                    groupContent += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
+                    html += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
                              <label>${p.label}</label>
                              <select data-key="${p.key}">`
                     p.options.forEach((opt, idx) => {
                         const label = p.labels ? p.labels[idx] : opt
                         const sel = String(opt) === String(val) ? ' selected' : ''
-                        groupContent += `<option value="${opt}"${sel}>${label}</option>`
+                        html += `<option value="${opt}"${sel}>${label}</option>`
                     })
-                    groupContent += `</select></div>`
+                    html += `</select></div>`
                 } else {
                     const s = new OrSlider({
                         key: p.key,
@@ -397,17 +389,33 @@ export default class TrackEditor extends BasePanel {
                     })
                     s._isDelegated = true
                     this._sliders.set(p.key, s)
-                    groupContent += s.toHTML()
+                    html += s.toHTML()
                 }
             })
-            bodyHtml += buildAccordionGroup(visKey, g.label, shortLabels[visKey], isExpanded, groupContent)
-        })
-
-        if (vis.lfo) {
-            bodyHtml += this._renderLfoGroup()
+            return html
         }
 
-        bodyHtml += '</div>'
+        const TAB_PANEL_MAP = {
+            gen: () => renderGroupProps(GROUPS[0]),
+            fx: () => {
+                let html = renderGroupProps(GROUPS[1])
+                html += this._renderFxGroup(true)
+                return html
+            },
+            snd: () => this._renderSoundPanel(true),
+            mod: () => this._renderLfoGroup(),
+            loop: () => this._renderLoopPanel(true)
+        }
+
+        for (const tab of TAB_DEFS) {
+            const vis = tab.id === this._activeTab ? '' : ' style="display:none"'
+            const panelFn = TAB_PANEL_MAP[tab.id]
+            const content = panelFn ? panelFn() : ''
+            panelsHtml += `<div class="ne-tab-panel" data-tab-panel="${tab.id}"${vis}>${content}</div>`
+        }
+
+        panelsHtml += '</div>'
+        bodyHtml += tabBarHtml + panelsHtml + '</div>'
         this.container.innerHTML = headerHtml + sampleBarHtml + knobBarHtml + bodyHtml
         
         // Mount main sliders
@@ -1043,6 +1051,8 @@ export default class TrackEditor extends BasePanel {
                 this.synthEditor.openEditor()
             } else if (btn.dataset.action === 'load-sample') {
                 this._onLoadSample()
+            } else if (btn.dataset.neTab) {
+                this._onTabClick(btn.dataset.neTab)
             }
         })
 
@@ -1093,7 +1103,13 @@ export default class TrackEditor extends BasePanel {
             this._track.synthSoundKey = key
         }
         this.sync()
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.dispatchPatternChange([this._track])
+    }
+
+    _onTabClick(tabId) {
+        if (tabId === this._activeTab) return
+        this._activeTab = tabId
+        this.sync()
     }
 
     _toggleAuto() {

@@ -55,25 +55,16 @@ describe('Mobile Landscape UI Logic', () => {
         const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
         editor.show({ track: mockTrack, trackIdx: 0 })
 
-        // 4. Verify that buttons are rendered but the panels (ne-group) are NOT
-        // (Except for the ones we didn't explicitly hide in GROUPS loop if any, 
-        // but our logic hides basic, filters, effects, sound, loop)
-        
-        const visibleGroups = document.querySelectorAll('.ne-group')
-        // All 5 groups are always rendered: basic, filters, effects, sound, loop
-        expect(visibleGroups.length).toBe(5)
+        // 4. Verify tab bar with 5 tabs
+        const tabs = document.querySelectorAll('.ne-tab-btn[data-ne-tab]')
+        expect(tabs.length).toBe(5)
 
-        // 5. Verify the toggle buttons exist in the header (5: basic, filters, effects, sound, loop)
-        const toggles = document.querySelectorAll('.ne-toggle')
-        expect(toggles.length).toBe(5)
-        
-        // basic (0), sound (3), loop (4) should be active (always visible)
-        expect(toggles[0].classList.contains('active')).toBe(true)
-        expect(toggles[3].classList.contains('active')).toBe(true)
-        expect(toggles[4].classList.contains('active')).toBe(true)
-        
-        // filters (1), effects (2) should be INACTIVE
-        expect(toggles[1].classList.contains('active')).toBe(false)
-        expect(toggles[2].classList.contains('active')).toBe(false)
+        // 5. Verify tab panels are rendered
+        const panels = document.querySelectorAll('.ne-tab-panel[data-tab-panel]')
+        expect(panels.length).toBe(5)
+
+        // 6. Only one tab panel visible at a time
+        const visiblePanels = Array.from(panels).filter(p => p.style.display !== 'none')
+        expect(visiblePanels.length).toBe(1)
     })
 })

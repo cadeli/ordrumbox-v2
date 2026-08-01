@@ -57,24 +57,25 @@ describe('Sub-panel toggle toolbars', () => {
     })
 
     describe('Track Editor', () => {
-        it('renders all 6 toggle buttons (Basic, Flt, FX, Snd, Lp, LFO)', () => {
+        it('renders all 5 tab buttons (FX, SND, MOD, LOOP, GEN)', () => {
             const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
             playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
 
-            const toggles = document.getElementById('te-panel').querySelectorAll('.ne-toggle[data-toggle]')
-            const keys = Array.from(toggles).map(b => b.dataset.toggle)
-            expect(keys).toEqual(['basic', 'filters', 'effects', 'sound', 'loop', 'lfo'])
+            const tabs = document.getElementById('te-panel').querySelectorAll('.ne-tab-btn[data-ne-tab]')
+            const keys = Array.from(tabs).map(b => b.dataset.neTab)
+            expect(keys).toEqual(['fx', 'snd', 'mod', 'loop', 'gen'])
         })
 
-        it('toggles panel visibility when a button is clicked', () => {
+        it('switches active tab when a button is clicked', () => {
             const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
             playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
 
-            expect(appState.trackEditorVisibility.basic).toBe(true)
-            document.querySelector('#te-panel .ne-toggle[data-toggle="basic"]').click()
-            expect(appState.trackEditorVisibility.basic).toBe(false)
-            document.querySelector('#te-panel .ne-toggle[data-toggle="basic"]').click()
-            expect(appState.trackEditorVisibility.basic).toBe(true)
+            document.querySelector('#te-panel .ne-tab-btn[data-ne-tab="gen"]').click()
+            const genPanel = document.querySelector('#te-panel .ne-tab-panel[data-tab-panel="gen"]')
+            expect(genPanel.style.display).not.toBe('none')
+
+            const fxPanel = document.querySelector('#te-panel .ne-tab-panel[data-tab-panel="fx"]')
+            expect(fxPanel.style.display).toBe('none')
         })
 
         it('closes the panel when the close button is clicked', () => {
@@ -87,19 +88,14 @@ describe('Sub-panel toggle toolbars', () => {
             expect(te.style.display).toBe('none')
         })
 
-        it('preserves ne-group class when collapsed for CSS visibility rules', () => {
+        it('active tab panel is visible, others hidden', () => {
             const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
             playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
 
-            const basicGroup = document.querySelector('#te-panel [data-group="basic"]')
-            expect(basicGroup.classList.contains('ne-group')).toBe(true)
-            
-            // Toggle to collapsed
-            document.querySelector('#te-panel .ne-toggle[data-toggle="basic"]').click()
-            
-            const basicGroupCollapsed = document.querySelector('#te-panel [data-group="basic"]')
-            expect(basicGroupCollapsed.classList.contains('ne-group')).toBe(true)
-            expect(basicGroupCollapsed.classList.contains('collapsed')).toBe(true)
+            const panels = document.querySelectorAll('#te-panel .ne-tab-panel[data-tab-panel]')
+            const visiblePanels = Array.from(panels).filter(p => p.style.display !== 'none')
+            expect(visiblePanels.length).toBe(1)
+            expect(visiblePanels[0].dataset.tabPanel).toBe('fx')
         })
     })
 
