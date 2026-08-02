@@ -106,12 +106,12 @@ describe('TrackEditor filterFreq display', () => {
         editor._activeTab = 'fx'
         editor._activeFxTab = 3
         editor.sync()
-        const input = editor.container.querySelector('input[data-key="filterFreq"]')
-        input.value = '0.5'
-        // Simulate input event which OrSlider listens to
-        input.dispatchEvent(new Event('input', { bubbles: true }))
+        const knob = editor._fxKnobs.find(k => k._key === 'filterFreq')
+        knob.setValue(0.5)
+        knob._onChange?.(0.5, 'filterFreq')
         expect(editor._track.filterFreq).toBe(0.5)
-        expect(input.nextElementSibling.textContent).toBe('632Hz')
+        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
+        expect(valEl.textContent).toBe('632Hz')
     })
 
     it('_updateLfoSliders replaces base with the LFO value (Hz)', () => {

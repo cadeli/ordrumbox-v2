@@ -99,6 +99,9 @@ const GROUPS = [
     }
 ]
 
+const ALL_TRACK_PROPS = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS]
+const PROP_BY_KEY = new Map(ALL_TRACK_PROPS.map(p => [p.key, p]))
+
 export default class TrackEditor extends BasePanel {
     constructor() {
         super('te-panel')
@@ -118,6 +121,7 @@ export default class TrackEditor extends BasePanel {
         this._selectedNote = null
         this._noteSliders = []
         this._knobs = []
+        this._fxKnobs = []
         this._activeTab = 'fx'
     }
 
@@ -258,16 +262,12 @@ export default class TrackEditor extends BasePanel {
 
     _applyLfoValues(lfoValues) {
         if (!lfoValues || !this._track) return
-        const allProps = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS]
-        allProps.forEach(p => {
-            if (p.lfo && this._track[p.lfo]) {
-                const s = this._sliders.get(p.key)
-                if (s) {
-                    let val = lfoValues[p.key] ?? 0
-                    if (p.denormalize) val = p.denormalize(val)
-                    s.setValue(val)
-                }
-            }
+        ALL_TRACK_PROPS.forEach(p => {
+            if (!p.lfo || !this._track[p.lfo]) return
+            const ctrl = this._sliders.get(p.key) ?? this._fxKnobs.find(kn => kn._key === p.key)
+            if (!ctrl) return
+            const raw = lfoValues[p.key] ?? 0
+            ctrl.setValue(p.denormalize ? p.denormalize(raw) : raw)
         })
         KNOB_PROPS.forEach(p => {
             if (p.lfo && this._track[p.lfo]) {
@@ -328,6 +328,8 @@ export default class TrackEditor extends BasePanel {
 
         this._sliders.forEach(s => s.destroy())
         this._sliders.clear()
+        this._fxKnobs.forEach(k => k.destroy())
+        this._fxKnobs = []
 
         let tabBarHtml = '<div class="ne-tab-bar">'
         for (const tab of TAB_DEFS) {
@@ -421,6 +423,12 @@ export default class TrackEditor extends BasePanel {
                     })
                 }
             }
+        })
+
+        // Mount FX knobs
+        this._fxKnobs.forEach(k => {
+            const row = this.container.querySelector(`.ne-row[data-or-slider="${k._key}"]`)
+            if (row) k.mount(row)
         })
 
         this._knobs.forEach(k => k.destroy())
@@ -706,7 +714,7 @@ export default class TrackEditor extends BasePanel {
             content += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">`
 
             fx.controls.forEach(ck => {
-                const prop = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS].find(p => p.key === ck)
+                const prop = PROP_BY_KEY.get(ck)
                 if (!prop) return
                 const val = this._track[ck]
                 if (prop.type === 'select') {
@@ -722,7 +730,7 @@ export default class TrackEditor extends BasePanel {
                 } else {
                     const hasLfo = prop.lfo && this._track[prop.lfo] ? 'has-lfo' : ''
                     const isSelected = this._selectedPropKey === ck ? 'selected' : ''
-                    const s = new OrSlider({
+                    const knob = new OrKnob({
                         key: ck,
                         label: prop.label,
                         min: prop.min,
@@ -731,19 +739,13 @@ export default class TrackEditor extends BasePanel {
                         value: val ?? prop.min,
                         extraClass: `${isSelected} ${hasLfo}`.trim(),
                         format: (v) => fmtVal(ck, v),
-                        normalize: prop.normalize ?? ((v) => {
-                            if (ck === 'filterFreq' && v > 1) return Utils.hzToNormalizedTrackFilterFreq(v)
-                            return v
-                        }),
-                        denormalize: prop.denormalize ?? ((v) => v),
-                        onChange: (v, key) => {
-                            this._track[key] = v
+                        onChange: (v) => {
+                            this._track[ck] = v
                             playbackEvents.dispatchTrackParamChange(this._track)
                         }
                     })
-                    s._isDelegated = true
-                    this._sliders.set(ck, s)
-                    content += s.toHTML()
+                    this._fxKnobs.push(knob)
+                    content += knob.toHTML()
                 }
             })
 
@@ -1266,6 +1268,8 @@ export default class TrackEditor extends BasePanel {
         this._noteSliders = []
         this._knobs.forEach(k => k.destroy())
         this._knobs = []
+        this._fxKnobs.forEach(k => k.destroy())
+        this._fxKnobs = []
         if (this._lfoBridge) {
             this._lfoBridge.destroy()
             this._lfoBridge = null

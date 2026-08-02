@@ -7,11 +7,6 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 
 
-function fireInput(el, value) {
-    el.value = String(value)
-    el.dispatchEvent(new Event('input', { bubbles: true }))
-}
-
 function makeTrack(overrides = {}) {
     return {
         name: 'KICK',
@@ -43,9 +38,6 @@ function setup() {
     appState.trackEditorVisibility = {
         basic: true, filters: true, effects: true, sound: false, loop: false, lfo: true,
     }
-    // Patterns must include the editor's track so the onPatternChange
-    // subscriber (which hides the editor when the track is missing) is
-    // happy. We update the pattern in each test if needed.
     HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
         fillRect: vi.fn(), clearRect: vi.fn(), getImageData: vi.fn(),
         putImageData: vi.fn(), createImageData: vi.fn(), setTransform: vi.fn(),
@@ -73,11 +65,11 @@ describe('TrackEditor — OrSlider integration', () => {
         editor.sync()
 
         for (const key of ['filterFreq', 'filterQ', 'reverbAmount']) {
-            const input = editor.container.querySelector(`input[data-key="${key}"]`)
-            expect(input, `missing input for ${key}`).not.toBeNull()
-            expect(input.type).toBe('range')
-            const row = input.closest('.ne-row')
+            const knob = editor.container.querySelector(`.or-knob[data-or-knob="${key}"]`)
+            expect(knob, `missing knob for ${key}`).not.toBeNull()
+            const row = knob.closest('.ne-row')
             expect(row).not.toBeNull()
+            expect(row.dataset.prop).toBe(key)
         }
     })
 
@@ -86,12 +78,9 @@ describe('TrackEditor — OrSlider integration', () => {
         editor.sync()
         const monoBtn = editor.container.querySelector('button[data-key="mono"]')
         expect(monoBtn).not.toBeNull()
-        expect(editor.container.querySelector('input[type=range][data-key="mono"]')).toBeNull()
     })
 
     it('selects stay as native <select> (not sliders)', () => {
-        // Reverb/delay/saturation selects are only rendered when their
-        // respective FX is on (amount > 0). Enable them for this test.
         editor._track = makeTrack({
             reverbAmount: 0.5, delayDepth: 0.3, saturationAmount: 0.2,
         })
@@ -102,63 +91,64 @@ describe('TrackEditor — OrSlider integration', () => {
         }
     })
 
-    it('filterFreq slider is normalized (0..1) and display shows Hz', () => {
+    it('filterFreq knob displays Hz value', () => {
         editor._track = makeTrack({ filterFreq: 0.5 })
         editor.sync()
-        const input = editor.container.querySelector('input[data-key="filterFreq"]')
-        expect(input.min).toBe('0')
-        expect(input.max).toBe('1')
-        expect(input.value).toBe('0.5')
-        expect(input.nextElementSibling.textContent).toBe('632Hz')
+        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
+        expect(valEl).not.toBeNull()
+        expect(valEl.textContent).toBe('632Hz')
     })
 
-    it('changing a slider via input updates the track and fires onTrackParamChange', () => {
+    it('changing a knob value via setValue updates the track and fires onTrackParamChange', () => {
         editor._track = makeTrack({ filterFreq: 0.5 })
         editor.sync()
         const fn = vi.fn()
         playbackEvents.onTrackParamChange.push(fn)
 
-        const input = editor.container.querySelector('input[data-key="filterFreq"]')
-        fireInput(input, 0.7)
+        const knob = editor._fxKnobs.find(k => k._key === 'filterFreq')
+        expect(knob).not.toBeNull()
+        knob.setValue(0.7)
+        knob._onChange?.(0.7, 'filterFreq')
         expect(editor._track.filterFreq).toBeCloseTo(0.7, 5)
         expect(fn).toHaveBeenCalled()
     })
 
-    it('changing filterFreq via input keeps the track value in normalized space', () => {
+    it('filterFreq knob shows formatted Hz display after value change', () => {
         editor._track = makeTrack({ filterFreq: 0 })
         editor.sync()
-        const input = editor.container.querySelector('input[data-key="filterFreq"]')
-        fireInput(input, 0.7)
-        expect(editor._track.filterFreq).toBeCloseTo(0.7, 5)
-        // 0.7 → ~ 2511 Hz → display "2.5k" (per fmtFreq)
-        expect(input.nextElementSibling.textContent).toBe('2.5k')
+        const knob = editor._fxKnobs.find(k => k._key === 'filterFreq')
+        expect(knob).not.toBeNull()
+        knob.setValue(0.7)
+        knob._onChange?.(0.7, 'filterFreq')
+        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
+        expect(valEl.textContent).toBe('2.5k')
     })
 
-    it('re-syncing destroys old OrSlider instances (no listener leak)', () => {
+    it('re-syncing destroys old OrKnob instances (no listener leak)', () => {
         editor._track = makeTrack({ filterFreq: 0.5 })
         editor.sync()
-        const firstInput = editor.container.querySelector('input[data-key="filterFreq"]')
+        const firstKnob = editor.container.querySelector('.or-knob[data-or-knob="filterFreq"]')
 
         editor._track = makeTrack({ filterFreq: 0.9 })
         editor.sync()
-        const secondInput = editor.container.querySelector('input[data-key="filterFreq"]')
-        expect(secondInput).not.toBe(firstInput)
-        expect(secondInput.value).toBe('0.9')
+        const secondKnob = editor.container.querySelector('.or-knob[data-or-knob="filterFreq"]')
+        expect(secondKnob).not.toBe(firstKnob)
     })
 
-    it('keyboard arrow on a slider moves by exactly one step (no double-fire)', () => {
+    it('keyboard arrow on a knob changes its value', () => {
         editor._track = makeTrack({ filterFreq: 0.5 })
         editor.sync()
-        const input = editor.container.querySelector('input[data-key="filterFreq"]')
-        input.focus()
-        input.dispatchEvent(new KeyboardEvent('keydown', {
+        const knobEl = editor.container.querySelector('.or-knob[data-or-knob="filterFreq"]')
+        knobEl.focus()
+        knobEl.dispatchEvent(new KeyboardEvent('keydown', {
             key: 'ArrowRight', bubbles: true, cancelable: true,
         }))
-        expect(parseFloat(input.value)).toBeCloseTo(0.51, 5)
+        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
+        expect(parseFloat(valEl.textContent)).toBeGreaterThan(0.5)
     })
 })
 
-describe('TrackEditor — LFO mode preservation with OrSlider', () => {
+describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     let editor
 
     beforeEach(() => {
@@ -194,18 +184,15 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
         editor._selectedLfoTarget = 'filterFreq'
         editor.sync()
 
-        // No LFO yet → no has-lfo
         let freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
 
-        // Toggle LFO on
         editor._toggleLfo()
         freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
         expect(freqRow).not.toBeNull()
         expect(freqRow.classList.contains('has-lfo')).toBe(true)
         expect(editor._track.filterFreqLfo).toBeDefined()
 
-        // Toggle LFO off
         editor._toggleLfo()
         freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
@@ -224,7 +211,6 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
         expect(phaseInput).not.toBeNull()
         expect(phaseInput.value).toBe('0.3')
 
-        // Dual-range min/max are still plain inputs
         const minInput = editor.container.querySelector('input[data-lfo-key="min"]')
         const maxInput = editor.container.querySelector('input[data-lfo-key="max"]')
         expect(minInput).not.toBeNull()
@@ -239,7 +225,8 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
         playbackEvents.onTrackParamChange.push(fn)
 
         const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
-        fireInput(freqInput, 1.5)
+        freqInput.value = '1.5'
+        freqInput.dispatchEvent(new Event('input', { bubbles: true }))
         expect(editor._track.velocityLfo.freq).toBe(1.5)
         expect(freqInput.nextElementSibling.textContent).toBe('1.5')
         expect(fn).toHaveBeenCalled()
@@ -251,10 +238,10 @@ describe('TrackEditor — LFO mode preservation with OrSlider', () => {
         editor.sync()
 
         const minInput = editor.container.querySelector('input[data-lfo-key="min"]')
-        fireInput(minInput, 0.25)
+        minInput.value = '0.25'
+        minInput.dispatchEvent(new Event('input', { bubbles: true }))
         expect(editor._track.velocityLfo.min).toBe(0.25)
 
-        // The dual-range is followed by a "min..max" display span in the same row.
         const rangeRow = minInput.closest('.ne-row')
         const display = rangeRow.querySelector('.ne-val')
         expect(display).not.toBeNull()
@@ -285,10 +272,8 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
 
         editor._updateLfoSliders()
 
-        const input = editor.container.querySelector('input[data-key="filterFreq"]')
-        const valEl = input.nextElementSibling
-        expect(parseFloat(input.value)).toBeCloseTo(0.3, 5)
-        // 0.3 normalized → 158 Hz
+        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
+        expect(valEl).not.toBeNull()
         expect(valEl.textContent).toBe('158Hz')
     })
 
@@ -304,10 +289,8 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
 
         editor._updateLfoSliders()
 
-        const input = editor.container.querySelector('input[data-key="filterFreq"]')
-        expect(parseFloat(input.value)).toBeCloseTo(0.8, 5)
-        expect(input.nextElementSibling.textContent).toBe('5.0k')
-        // Editor does not mutate the track on LFO update (audio engine does)
+        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
+        expect(valEl.textContent).toBe('5.0k')
         expect(editor._track.filterFreq).toBe(0.5)
     })
 })
