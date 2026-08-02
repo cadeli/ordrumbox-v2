@@ -225,7 +225,7 @@ export function computeFlatNotesFromPattern(djtPattern, loop = 0, computeNextSte
             const pos = note.pos ?? 0
             const every = note.every ?? 1
             if (!isTrigged(pos, every, loop)
-                || !isProbabilityTrigged(note.prob ?? 1)) {
+                || !isProbabilityTrigged((track.probability ?? 1) * (note.prob ?? 1))) {
                 continue
             }
 

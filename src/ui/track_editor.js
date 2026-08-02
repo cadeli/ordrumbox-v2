@@ -81,6 +81,7 @@ const GROUPS = [
             { key: 'auto', label: 'Auto', type: 'boolean' },
             { key: 'variation', label: 'Var Pos', min: 0, max: 100, step: 1 },
             { key: 'variation2', label: 'Var Prop', min: 0, max: 100, step: 1 },
+            { key: 'probability', label: 'Prob', min: 0, max: 1, step: 0.01 },
         ]
     },
     {

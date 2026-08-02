@@ -40,7 +40,7 @@ export default class Toolbar {
         playbackEvents.onPatternChange.push(() => {
             this.syncPatterns()
             this.syncPage()
-            this.syncAutoGenButton()
+            this.syncGenButtons()
         })
         playbackEvents.onDrumkitChange.push(() => {
             this.syncDrumkits()
@@ -145,6 +145,34 @@ export default class Toolbar {
         kitWrap.appendChild(kitLabel)
         kitWrap.appendChild(this.drumkitSelect)
 
+        const genWrap = document.createElement('div')
+        genWrap.className = 'tb-group'
+        const genLabel = document.createElement('span')
+        genLabel.className = 'tb-label'
+        genLabel.textContent = 'Generation'
+        const genRow = document.createElement('div')
+        genRow.className = 'tb-view-row'
+        this.drumBtn = document.createElement('button')
+        this.drumBtn.className = 'tb-view-btn'
+        this.drumBtn.dataset.gen = 'drum'
+        this.drumBtn.textContent = 'Drum'
+        this.drumBtn.title = 'Generate drum pattern'
+        this.bassBtn = document.createElement('button')
+        this.bassBtn.className = 'tb-view-btn'
+        this.bassBtn.dataset.gen = 'bass'
+        this.bassBtn.textContent = 'Bass'
+        this.bassBtn.title = 'Generate bass line'
+        this.chordsBtn = document.createElement('button')
+        this.chordsBtn.className = 'tb-view-btn'
+        this.chordsBtn.dataset.gen = 'chords'
+        this.chordsBtn.textContent = 'Chords'
+        this.chordsBtn.title = 'Generate chords'
+        genRow.appendChild(this.drumBtn)
+        genRow.appendChild(this.bassBtn)
+        genRow.appendChild(this.chordsBtn)
+        genWrap.appendChild(genLabel)
+        genWrap.appendChild(genRow)
+
         const viewWrap = document.createElement('div')
         viewWrap.className = 'tb-group'
         const viewLabel = document.createElement('span')
@@ -188,10 +216,6 @@ export default class Toolbar {
         beatsWrap.appendChild(beatsLabel)
         beatsWrap.appendChild(this.beatsSelect)
 
-        this.autoGenBtn = document.createElement('button')
-        this.autoGenBtn.className = 'tb-auto-gen'
-        this.autoGenBtn.textContent = 'Auto Gen'
-
         this.clearBtn = document.createElement('button')
         this.clearBtn.className = 'tb-clear'
         this.clearBtn.textContent = 'Clear'
@@ -217,8 +241,8 @@ export default class Toolbar {
         this.container.appendChild(pageWrap)
         this.container.appendChild(beatsWrap)
         this.container.appendChild(kitWrap)
+        this.container.appendChild(genWrap)
         this.container.appendChild(viewWrap)
-        this.container.appendChild(this.autoGenBtn)
         this.container.appendChild(this.clearBtn)
         this.container.appendChild(this.outputBtn)
         this.container.appendChild(this.toolsBtn)
@@ -298,24 +322,95 @@ export default class Toolbar {
             playbackEvents.dispatchPatternsToggle(true)
         })
 
-        this.autoGenBtn.addEventListener('click', async () => {
+        this.drumBtn.addEventListener('click', async () => {
             const pattern = appState.patterns[appState.selectedPatternNum]
             if (!pattern) return
 
             const { getAutoGenerateService } = await import('../state/service_registry.js')
             const mfAutoGenerate = await getAutoGenerateService()
+            await mfAutoGenerate.generatePattern()
 
-            if (pattern.autoGen) {
-                pattern.autoGen = false
-                pattern._autoGenGenre = null
-                this.autoGenBtn.classList.remove('active')
-            } else {
-                await mfAutoGenerate.generatePattern()
-                pattern.autoGen = true
-                this.autoGenBtn.classList.add('active')
-                this.syncPatterns()
-                playbackEvents.dispatchPatternChange()
+            // Remove auto-added melodic tracks with no notes
+            if (pattern.tracks) {
+                pattern.tracks = pattern.tracks.filter(t => {
+                    const type = Utils.detectTrackType(t.name)
+                    const isMelodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
+                    return !isMelodic || (t.notes && t.notes.length > 0)
+                })
             }
+
+            for (const track of pattern.tracks) {
+                const type = Utils.detectTrackType(track.name)
+                const isDrum = type === 'KICK' || type === 'SNARE' || type === 'HAT' || type === 'CLAP' || type === 'COWBELL' || type === 'PERC'
+                track.auto = isDrum
+            }
+            this.syncGenButtons()
+            this.syncPatterns()
+            playbackEvents.dispatchPatternChange()
+        })
+
+        this.bassBtn.addEventListener('click', async () => {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern) return
+
+            const hasBass = pattern.tracks?.some(t => Utils.detectTrackType(t.name) === 'BASS')
+            if (!hasBass) {
+                const { getAutoGenerateService } = await import('../state/service_registry.js')
+                const mfAutoGenerate = await getAutoGenerateService()
+
+                if (!pattern._autoGenGenre) {
+                    pattern._autoGenGenre = mfAutoGenerate.structureGen.getRandomGenre()
+                }
+                const genre = pattern._autoGenGenre
+                const firstElement = mfAutoGenerate.structureGen.getElement(0)
+                const harmony = mfAutoGenerate.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+                const structure = mfAutoGenerate.structureGen.generateStructure(genre)
+                const bassVariant = structure.BASS ?? 'basic'
+
+                const track = serviceRegistry.mfCmd.addTrack(pattern, 'BASS')
+                track.useSoftSynth = true
+                track.useAutoAssignSound = false
+                track.synthSoundKey = 'BASS1'
+                track.velocity = 0.8
+                track.auto = true
+                await mfAutoGenerate.generateTrack(track, bassVariant, 1, pattern, harmony)
+                serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+            }
+            this.syncGenButtons()
+            this.syncPatterns()
+            playbackEvents.dispatchPatternChange()
+        })
+
+        this.chordsBtn.addEventListener('click', async () => {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern) return
+
+            const hasPiano = pattern.tracks?.some(t => Utils.detectTrackType(t.name) === 'PIANO')
+            if (!hasPiano) {
+                const { getAutoGenerateService } = await import('../state/service_registry.js')
+                const mfAutoGenerate = await getAutoGenerateService()
+
+                if (!pattern._autoGenGenre) {
+                    pattern._autoGenGenre = mfAutoGenerate.structureGen.getRandomGenre()
+                }
+                const genre = pattern._autoGenGenre
+                const firstElement = mfAutoGenerate.structureGen.getElement(0)
+                const harmony = mfAutoGenerate.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+                const structure = mfAutoGenerate.structureGen.generateStructure(genre)
+                const pianoVariant = structure.PIANO ?? 'chordStab'
+
+                const track = serviceRegistry.mfCmd.addTrack(pattern, 'PIANO')
+                track.useSoftSynth = true
+                track.useAutoAssignSound = false
+                track.synthSoundKey = 'PIANO'
+                track.velocity = 0.8
+                track.auto = true
+                await mfAutoGenerate.generateTrack(track, pianoVariant, 1, pattern, harmony)
+                serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+            }
+            this.syncGenButtons()
+            this.syncPatterns()
+            playbackEvents.dispatchPatternChange()
         })
 
         this.clearBtn.addEventListener('click', () => {
@@ -366,7 +461,7 @@ export default class Toolbar {
         this.syncDrumkits()
         this.syncBeats()
         this.syncPage()
-        this.syncAutoGenButton()
+        this.syncGenButtons()
     }
 
     syncPage() {
@@ -396,9 +491,16 @@ export default class Toolbar {
         this.startBtn.classList.toggle('running', running)
     }
 
-    syncAutoGenButton = () => {
+    syncGenButtons = () => {
         const pattern = appState.patterns[appState.selectedPatternNum]
-        this.autoGenBtn.classList.toggle('active', !!pattern?.autoGen)
+        const tracks = pattern?.tracks ?? []
+        const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
+        const hasDrumAuto = tracks.some(t => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
+        const hasBassAuto = tracks.some(t => t.auto && Utils.detectTrackType(t.name) === 'BASS')
+        const hasPianoAuto = tracks.some(t => t.auto && Utils.detectTrackType(t.name) === 'PIANO')
+        this.drumBtn.classList.toggle('actif', hasDrumAuto)
+        this.bassBtn.classList.toggle('actif', hasBassAuto)
+        this.chordsBtn.classList.toggle('actif', hasPianoAuto)
     }
 
     syncPatterns = () => {

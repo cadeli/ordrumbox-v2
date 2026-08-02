@@ -78,6 +78,7 @@ export const TRACK_DEFAULTS = {
     mono: false,
     variation: 0,
     variation2: 0,
+    probability: 1,
     filterType: "allpass",
     filterFreqLfo: null,
     filterFreq: 20,
