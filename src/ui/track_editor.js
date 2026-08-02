@@ -158,13 +158,7 @@ export default class TrackEditor extends BasePanel {
                         beatStep: firstNote.beatStep ?? 0
                     })
                 } else {
-                    this._noteEditor.showEmpty({
-                        track,
-                        trackIdx: data.trackIdx,
-                        beat: 0,
-                        beatStep: 0,
-                        pos: 0
-                    })
+                    this._noteEditor.showEmpty(data)
                 }
             }
         })

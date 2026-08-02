@@ -504,7 +504,8 @@
 .ne-panel .ne-pos { color: var(--text-ghost); }
 .ne-panel .ne-body {
     display: flex; flex-direction: row; gap: 8px; align-items: flex-start;
-    overflow-x: auto; padding-bottom: 8px;
+    overflow-y: auto; padding-bottom: 8px; max-height: 400px;
+    flex-wrap: wrap;
 }
 .ne-panel.pp-split .ne-body {
     flex-wrap: wrap; overflow-x: hidden;
@@ -1012,13 +1013,7 @@
 .ne-group.collapsed .ne-group-accordion-icon::before { content: '+'; }
 .ne-group.expanded .ne-group-accordion-icon::before { content: '−'; }
 
-.ne-group-content {
-    padding: 8px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    justify-content: flex-start;
-}
+.ne-panel .ne-group .ne-group-content { padding: 4px 8px; display: flex; flex-direction: column; gap: 4px; justify-content: flex-start; }
 
 .ne-group.collapsed .ne-group-content {
     display: none;

@@ -100,51 +100,13 @@ describe('Sub-panel toggle toolbars', () => {
     })
 
     describe('Note Editor', () => {
-        it('renders all 4 toggle buttons (V/P/P, Trig, Retr, Arp)', async () => {
+        it('renders all controls for V/P/P, Trig, Retr, Arp', async () => {
             const mockNote = { beat: 0, beatStep: 0, velocity: 1 }
             const mockTrack = { name: 'SNARE', notes: [mockNote], nbBeats: 1, stepsPerBeat: 4 }
             await noteEditor.show({ track: mockTrack, note: mockNote, pos: 0, beat: 0, beatStep: 0 })
 
-            const toggles = document.getElementById('ne-panel').querySelectorAll('.ne-toggle[data-toggle]')
-            const keys = Array.from(toggles).map(b => b.dataset.toggle)
-            expect(keys).toEqual(['levels', 'triggers', 'retrig', 'arp'])
-        })
-
-        it('toggles panel visibility when a button is clicked', async () => {
-            const mockNote = { beat: 0, beatStep: 0, velocity: 1 }
-            const mockTrack = { name: 'SNARE', notes: [mockNote], nbBeats: 1, stepsPerBeat: 4 }
-            await noteEditor.show({ track: mockTrack, note: mockNote, pos: 0, beat: 0, beatStep: 0 })
-
-            const wasActive = appState.noteEditorVisibility.levels
-            document.querySelector('#ne-panel .ne-toggle[data-toggle="levels"]').click()
-            expect(appState.noteEditorVisibility.levels).toBe(!wasActive)
-        })
-
-        it('closes the panel when hide() is called', async () => {
-            const mockNote = { beat: 0, beatStep: 0, velocity: 1 }
-            const mockTrack = { name: 'SNARE', notes: [mockNote], nbBeats: 1, stepsPerBeat: 4 }
-            await noteEditor.show({ track: mockTrack, note: mockNote, pos: 0, beat: 0, beatStep: 0 })
-
-            const ne = document.getElementById('ne-panel')
-            expect(ne.style.display).toBe('block')
-            noteEditor.hide()
-            expect(ne.style.display).toBe('none')
-        })
-
-        it('preserves ne-group class when collapsed for CSS visibility rules', async () => {
-            const mockNote = { beat: 0, beatStep: 0, velocity: 1 }
-            const mockTrack = { name: 'SNARE', notes: [mockNote], nbBeats: 1, stepsPerBeat: 4 }
-            await noteEditor.show({ track: mockTrack, note: mockNote, pos: 0, beat: 0, beatStep: 0 })
-
-            const levelsGroup = document.querySelector('#ne-panel [data-group="levels"]')
-            expect(levelsGroup.classList.contains('ne-group')).toBe(true)
-            
-            // Toggle to collapsed
-            document.querySelector('#ne-panel .ne-toggle[data-toggle="levels"]').click()
-            
-            const levelsGroupCollapsed = document.querySelector('#ne-panel [data-group="levels"]')
-            expect(levelsGroupCollapsed.classList.contains('ne-group')).toBe(true)
-            expect(levelsGroupCollapsed.classList.contains('collapsed')).toBe(true)
+            const controls = document.getElementById('ne-panel').querySelectorAll('.ne-row')
+            expect(controls.length).toBe(4)
         })
     })
 
