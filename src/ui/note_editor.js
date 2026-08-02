@@ -1,6 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindVisibilityToggles, buildAccordionGroup, fmt, pitchToNoteName, ALL_PANEL_IDS } from './components/panel_helpers.js'
+import { bindVisibilityToggles, buildAccordionGroup, fmt, pitchToNoteName } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -87,10 +87,6 @@ export default class NoteEditor extends BasePanel {
         })
     }
 
-    _hideOtherPanels() {
-        return ALL_PANEL_IDS.filter(id => id !== this.id && id !== 'te-panel')
-    }
-
     _getArpState(note) {
         if (!note.arp || typeof note.arp !== 'object' || Array.isArray(note.arp)) {
             return { scale: 'major', type: 'up', range: 0 }
@@ -127,17 +123,43 @@ export default class NoteEditor extends BasePanel {
         this.reposition()
     }
 
+    async showInline(data) {
+        this._track = data.track
+        this._note = data.note
+        this._pos = data.pos
+        this._beat = data.beat
+        this._beatStep = data.beatStep
+
+        await loadScales()
+        this.container.style.display = 'block'
+        this.sync()
+        this.reposition()
+    }
+
     async showEmpty(data) {
         this._track = data.track
         this._trackIdx = data.trackIdx ?? 0
         this._beat = data.beat ?? 0
         this._beatStep = data.beatStep ?? 0
         this._pos = data.pos ?? 0
-        // Create a default note object for the empty step
         this._note = { velocity: 1, pitch: 0, pan: 0, every: 1, prob: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arpTriggerProbability: 0, arpRange: 0 }
 
         await loadScales()
         super.show()
+        this.sync()
+        this.reposition()
+    }
+
+    async showEmptyInline(data) {
+        this._track = data.track
+        this._trackIdx = data.trackIdx ?? 0
+        this._beat = data.beat ?? 0
+        this._beatStep = data.beatStep ?? 0
+        this._pos = data.pos ?? 0
+        this._note = { velocity: 1, pitch: 0, pan: 0, every: 1, prob: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arpTriggerProbability: 0, arpRange: 0 }
+
+        await loadScales()
+        this.container.style.display = 'block'
         this.sync()
         this.reposition()
     }

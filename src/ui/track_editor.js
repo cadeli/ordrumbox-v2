@@ -139,6 +139,25 @@ export default class TrackEditor extends BasePanel {
         this.synthEditor.createDOM()
     }
 
+    _showNoteEditorForTrack(track, trackIdx) {
+        if (!this._noteEditor) return
+        const firstNote = track.notes?.[0]
+        if (firstNote) {
+            const stepsPerBeat = track.stepsPerBeat ?? 4
+            const pos = (firstNote.beat ?? 0) * stepsPerBeat + (firstNote.beatStep ?? 0)
+            this._noteEditor.showInline({
+                track,
+                trackIdx,
+                note: firstNote,
+                pos,
+                beat: firstNote.beat ?? 0,
+                beatStep: firstNote.beatStep ?? 0
+            })
+        } else {
+            this._noteEditor.showEmptyInline({ track, trackIdx })
+        }
+    }
+
     subscribe() {
         playbackEvents.onTrackSelect.push((data) => {
             if (!data) return
@@ -146,24 +165,7 @@ export default class TrackEditor extends BasePanel {
                 this._track = data.track
                 this._trackIdx = data.trackIdx
                 this.sync()
-                if (this._noteEditor) {
-                    const track = data.track
-                    const firstNote = track.notes?.[0]
-                    if (firstNote) {
-                        const stepsPerBeat = track.stepsPerBeat ?? 4
-                        const pos = (firstNote.beat ?? 0) * stepsPerBeat + (firstNote.beatStep ?? 0)
-                        this._noteEditor.show({
-                            track,
-                            trackIdx: data.trackIdx,
-                            note: firstNote,
-                            pos,
-                            beat: firstNote.beat ?? 0,
-                            beatStep: firstNote.beatStep ?? 0
-                        })
-                    } else {
-                        this._noteEditor.showEmpty(data)
-                    }
-                }
+                this._showNoteEditorForTrack(data.track, data.trackIdx)
             }
         })
         playbackEvents.onPlaybackStart.push(() => {
@@ -203,33 +205,19 @@ export default class TrackEditor extends BasePanel {
             setViewBtn('grid', !synthVisible && this.synthEditor?.panel?.style?.display !== 'flex')
             setViewBtn('synth', this.synthEditor?.panel?.style?.display === 'flex')
         })
-        playbackEvents.onEditToggle.push(() => {
-            if (this.isVisible) {
-                this.hide()
-                playbackEvents.dispatchNoteSelect(null)
-            } else {
-                const pattern = appState.patterns[appState.selectedPatternNum]
-                const idx = appState.selectedTrackNum
-                const track = pattern?.tracks?.[idx]
-                if (track) {
-                    this.show({ track, trackIdx: idx })
-                    const firstNote = track.notes?.[0]
-                    if (firstNote) {
-                        const stepsPerBeat = track.stepsPerBeat ?? 4
-                        const pos = (firstNote.beat ?? 0) * stepsPerBeat + (firstNote.beatStep ?? 0)
-                        this._noteEditor?.show({
-                            track,
-                            trackIdx: idx,
-                            note: firstNote,
-                            pos,
-                            beat: firstNote.beat ?? 0,
-                            beatStep: firstNote.beatStep ?? 0
-                        })
-                    } else {
-                        this._noteEditor?.showEmpty(track)
-                    }
-                }
-            }
+         playbackEvents.onEditToggle.push(() => {
+             if (this.isVisible) {
+                 this.hide()
+                 playbackEvents.dispatchNoteSelect(null)
+             } else {
+                 const pattern = appState.patterns[appState.selectedPatternNum]
+                 const idx = appState.selectedTrackNum
+                 const track = pattern?.tracks?.[idx]
+                 if (track) {
+                     this.show({ track, trackIdx: idx })
+                     this._showNoteEditorForTrack(track, idx)
+                 }
+             }
             const split = this.isVisible
             document.getElementById('pattern-panel')?.classList.toggle('pp-split', split)
             this.container?.classList.toggle('pp-split', split)
@@ -706,9 +694,9 @@ export default class TrackEditor extends BasePanel {
         const auto = this._track.useAutoAssignSound !== false
         const ledClass = auto ? 'lfo-led on' : 'lfo-led'
         const generatedSoundKeys = this.synthEditor.getGeneratedSoundKeys()
-        const currentGeneratedSound = this._track.useSoftSynth === true
-            ? (this._track.synthSoundKey ?? (logger.warn('TrackEditor', 'synthSoundKey fallback'), 'BASS1'))
-            : 'none'
+         const currentGeneratedSound = this._track.useSoftSynth === true
+             ? (this._track.synthSoundKey ?? 'BASS1')
+             : 'none'
 
         const keysWithSamples = new Set(
             soundRegistry.drumkitList.flatMap(kit => kit.instruments.map(s => s.key))
@@ -793,9 +781,9 @@ export default class TrackEditor extends BasePanel {
             if (aSelected !== bSelected) return aSelected - bSelected
             const kitCompare = String(a.kitName ?? '').localeCompare(String(b.kitName ?? ''))
             if (kitCompare !== 0) return kitCompare
-            const sortKeyA = a.display_name != null && a.display_name !== '' ? a.display_name : (logger.warn('TrackEditor', 'display_name sort fallback'), a.url ?? '')
-            const sortKeyB = b.display_name != null && b.display_name !== '' ? b.display_name : (logger.warn('TrackEditor', 'display_name sort fallback'), b.url ?? '')
-            return sortKeyA.localeCompare(sortKeyB)
+             const sortKeyA = a.display_name || a.url || ''
+             const sortKeyB = b.display_name || b.url || ''
+             return sortKeyA.localeCompare(sortKeyB)
         })
     }
 
@@ -816,12 +804,12 @@ export default class TrackEditor extends BasePanel {
 
     _getSoundInfo() {
         if (this._track.useSoftSynth === true) {
-            return this._track.synthSoundKey ?? (logger.warn('TrackEditor', 'synthSoundKey null fallback'), null)
+            return this._track.synthSoundKey ?? null
         }
         const sound = soundRegistry.sounds[this._track.soundId]
         if (!sound) return null
-        const kit = sound.kit_name ?? (logger.warn('TrackEditor', 'kit_name fallback'), '')
-        const name = sound.display_name ?? (logger.warn('TrackEditor', 'display_name fallback'), sound.key ?? (logger.warn('TrackEditor', 'sound.key fallback'), sound.url ?? (logger.warn('TrackEditor', 'sound.url fallback'), '')))
+        const kit = sound.kit_name ?? ''
+        const name = sound.display_name ?? sound.key ?? sound.url ?? ''
         return kit ? `${kit}/${name}` : name
     }
 
@@ -830,15 +818,6 @@ export default class TrackEditor extends BasePanel {
         const soundKey = soundRegistry.sounds[this._getCurrentSoundUrl()]?.key
         if (soundKey && keysWithSamples.has(soundKey)) return soundKey
         return instrumentIds[0] ?? 'KICK'
-    }
-
-    _findProp(key) {
-        for (const g of GROUPS) {
-            for (const p of g.props) {
-                if (p.key === key) return p
-            }
-        }
-        return null
     }
 
     _renderLfoGroup() {
@@ -855,8 +834,6 @@ export default class TrackEditor extends BasePanel {
         const lfoKey = prop.lfo
         const lfo = this._track[lfoKey]
 
-        const ledClass = lfo ? 'lfo-led on' : 'lfo-led'
-        const ledTitle = lfo ? 'Disable LFO' : 'Enable LFO'
         const freq = lfo ? lfo.freq : 1
         const min = lfo ? lfo.min : prop.min
         const max = lfo ? lfo.max : prop.max
@@ -867,10 +844,10 @@ export default class TrackEditor extends BasePanel {
         LFO_PROPS.forEach(p => {
             const isActive = p.key === this._selectedLfoTarget
             const lfoOn = !!this._track[p.lfo]
-            const ledClass = lfoOn ? 'lfo-led on' : 'lfo-led'
+            const ledCls = lfoOn ? 'lfo-led on' : 'lfo-led'
             const activeClass = isActive ? ' active' : ''
             content += `<div class="te-mod-btn${activeClass}">
-                <span class="${ledClass}" data-lfo-toggle-btn="${p.key}"></span>
+                <span class="${ledCls}" data-lfo-toggle-btn="${p.key}"></span>
                 <span data-lfo-select-btn="${p.key}">${p.label}</span></div>`
         })
         content += `</div>
@@ -1120,53 +1097,27 @@ export default class TrackEditor extends BasePanel {
         playbackEvents.dispatchTrackParamChange(this._track)
     }
 
-    _toggleLfo() {
-        const prop = [...ALL_TRACK_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
-        if (!prop || !prop.lfo) return
-        
-        if (this._track[prop.lfo]) {
-            delete this._track[prop.lfo]
-        } else {
-            this._track[prop.lfo] = {
-                type: 'sine',
-                freq: 1,
-                min: prop.min,
-                max: prop.max,
-                phase: 0
-            }
-        }
-        
-        this.sync()
-        // Ensure engine is notified immediately
-        playbackEvents.dispatchTrackParamChange(this._track)
-        // Also dispatch pattern change so it gets saved
-        playbackEvents.dispatchPatternChange([this._track])
-    }
-
-    _onLfoSelectBtn(targetKey) {
-        this._selectedLfoTarget = targetKey
-        this.sync()
-    }
-
     _onLfoToggleBtn(targetKey) {
         this._selectedLfoTarget = targetKey
+        this._toggleLfoForTarget(targetKey)
+    }
+
+    _toggleLfoForTarget(targetKey) {
         const allLfoProps = [...ALL_TRACK_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
         const prop = allLfoProps.find(p => p.key === targetKey)
         if (!prop) return
         if (this._track[prop.lfo]) {
             delete this._track[prop.lfo]
         } else {
-            this._track[prop.lfo] = {
-                type: 'sine',
-                freq: 1,
-                min: prop.min,
-                max: prop.max,
-                phase: 0
-            }
+            this._track[prop.lfo] = { type: 'sine', freq: 1, min: prop.min, max: prop.max, phase: 0 }
         }
         this.sync()
         playbackEvents.dispatchTrackParamChange(this._track)
         playbackEvents.dispatchPatternChange([this._track])
+    }
+
+    _toggleLfo() {
+        this._toggleLfoForTarget(this._selectedLfoTarget)
     }
 
     _onLfoSlider(input) {

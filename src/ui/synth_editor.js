@@ -849,7 +849,6 @@ export default class SynthEditor {
         this._draft = null
         this._loading = false
         this._loadFailed = false
-        this._cardCollapsed = {}
         this._cardBypassed = {}
         this._waveTab = 'wave'
     }
