@@ -172,6 +172,7 @@ describe('TrackEditor onPatternChange', () => {
         editor._trackIdx = 0
         appState.patterns = [{ tracks: [newTrack] }]
         appState.selectedPatternNum = 0
+        editor.show({ track: oldTrack, trackIdx: 0 })
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
@@ -182,19 +183,22 @@ describe('TrackEditor onPatternChange', () => {
         expect(syncSpy).toHaveBeenCalled()
     })
 
-    it('hides the editor when the track no longer exists in the new pattern', () => {
+    it('clears the track and re-syncs when the track no longer exists in the new pattern (does not auto-hide)', () => {
         const editor = new TrackEditor()
         editor.init()
         editor._track = { name: 'KICK', velocity: 0.7 }
         editor._trackIdx = 0
         appState.patterns = [{ tracks: [{ name: 'SNARE' }] }]
         appState.selectedPatternNum = 0
+        editor.show({ track: editor._track, trackIdx: 0 })
 
-        const hideSpy = vi.spyOn(editor, 'hide').mockImplementation(() => {})
+        const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
         playbackEvents.dispatchPatternChange()
 
-        expect(hideSpy).toHaveBeenCalled()
+        expect(editor._track).toBeNull()
+        expect(editor._trackIdx).toBe(-1)
+        expect(syncSpy).toHaveBeenCalled()
     })
 
     it('does nothing when no track is currently selected', () => {

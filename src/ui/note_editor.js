@@ -81,7 +81,9 @@ export default class NoteEditor extends BasePanel {
     subscribe() {
         playbackEvents.onNoteSelect.push((data) => {
             if (!data) return
-            this.show(data)
+            if (this.isVisible) {
+                this.show(data)
+            }
         })
     }
 

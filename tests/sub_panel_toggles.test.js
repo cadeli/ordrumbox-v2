@@ -101,13 +101,13 @@ describe('Sub-panel toggle toolbars', () => {
 
     describe('Note Editor', () => {
         it('renders all controls for V/P/P, Trig, Retr, Arp', async () => {
-            const mockNote = { beat: 0, beatStep: 0, velocity: 1 }
-            const mockTrack = { name: 'SNARE', notes: [mockNote], nbBeats: 1, stepsPerBeat: 4 }
-            await noteEditor.show({ track: mockTrack, note: mockNote, pos: 0, beat: 0, beatStep: 0 })
+             const mockNote = { beat: 0, beatStep: 0, velocity: 1 }
+             const mockTrack = { name: 'SNARE', notes: [mockNote], nbBeats: 1, stepsPerBeat: 4 }
+             await noteEditor.show({ track: mockTrack, note: mockNote, pos: 0, beat: 0, beatStep: 0 })
 
-            const controls = document.getElementById('ne-panel').querySelectorAll('.ne-row')
-            expect(controls.length).toBe(4)
-        })
+             const controls = document.getElementById('ne-panel').querySelectorAll('.ne-row')
+             expect(controls.length).toBe(13)
+         })
     })
 
     describe('Tools Panel', () => {

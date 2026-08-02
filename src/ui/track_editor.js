@@ -141,24 +141,28 @@ export default class TrackEditor extends BasePanel {
 
     subscribe() {
         playbackEvents.onTrackSelect.push((data) => {
-            if (!data) { this.hide(); return }
-            this.show(data)
-            if (this.isVisible && this._noteEditor) {
-                const track = data.track
-                const firstNote = track.notes?.[0]
-                if (firstNote) {
-                    const stepsPerBeat = track.stepsPerBeat ?? 4
-                    const pos = (firstNote.beat ?? 0) * stepsPerBeat + (firstNote.beatStep ?? 0)
-                    this._noteEditor.show({
-                        track,
-                        trackIdx: data.trackIdx,
-                        note: firstNote,
-                        pos,
-                        beat: firstNote.beat ?? 0,
-                        beatStep: firstNote.beatStep ?? 0
-                    })
-                } else {
-                    this._noteEditor.showEmpty(data)
+            if (!data) return
+            if (this.isVisible) {
+                this._track = data.track
+                this._trackIdx = data.trackIdx
+                this.sync()
+                if (this._noteEditor) {
+                    const track = data.track
+                    const firstNote = track.notes?.[0]
+                    if (firstNote) {
+                        const stepsPerBeat = track.stepsPerBeat ?? 4
+                        const pos = (firstNote.beat ?? 0) * stepsPerBeat + (firstNote.beatStep ?? 0)
+                        this._noteEditor.show({
+                            track,
+                            trackIdx: data.trackIdx,
+                            note: firstNote,
+                            pos,
+                            beat: firstNote.beat ?? 0,
+                            beatStep: firstNote.beatStep ?? 0
+                        })
+                    } else {
+                        this._noteEditor.showEmpty(data)
+                    }
                 }
             }
         })
@@ -175,16 +179,18 @@ export default class TrackEditor extends BasePanel {
             if (this._isDragging) return
             if (!this._track) return
             const pattern = appState.patterns[appState.selectedPatternNum]
-            if (!pattern?.tracks) { this.hide(); return }
+            if (!pattern?.tracks) return
             const newIdx = pattern.tracks.findIndex(t => t?.name === this._track.name)
             if (newIdx === -1) {
-                this.hide()
+                this._track = null
+                this._trackIdx = -1
+                if (this.isVisible) this.sync()
                 return
             }
             if (pattern.tracks[newIdx] !== this._track) {
                 this._track = pattern.tracks[newIdx]
                 this._trackIdx = newIdx
-                this.sync()
+                if (this.isVisible) this.sync()
             }
         })
         playbackEvents.onSynthToggle.push(() => {
