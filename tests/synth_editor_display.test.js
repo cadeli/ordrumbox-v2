@@ -111,15 +111,18 @@ describe('Soft Synth Editor display', () => {
         expect(title.textContent).toContain('BASS1')
     })
 
-    it('renders accordion toggles (one per group)', async () => {
+    it('renders fixed blocks with bypass buttons (one per group)', async () => {
         await trackEditor.synthEditor.openEditor()
-        const toggles = document.querySelectorAll('#soft-synth-panel .ne-group-accordion-toggle[data-toggle]')
-        expect(toggles.length).toBeGreaterThanOrEqual(Object.keys(SAMPLE_DRAFT).length)
+        const blocks = document.querySelectorAll('#soft-synth-panel [data-ss-card]')
+        expect(blocks.length).toBeGreaterThanOrEqual(Object.keys(SAMPLE_DRAFT).length)
 
-        const labels = Array.from(toggles).map(t => t.querySelector('.ne-group-accordion-label')?.textContent.trim())
+        const labels = Array.from(blocks).map(b => b.querySelector('.ss-group-label')?.textContent.trim())
         expect(labels).toContain('Master')
         expect(labels).toContain('Flt')
         expect(labels).toContain('Env')
+
+        const bypassBtns = document.querySelectorAll('#soft-synth-panel .ss-bypass-btn')
+        expect(bypassBtns.length).toBe(blocks.length)
     })
 
     it('renders the OK and Cancel action buttons', async () => {

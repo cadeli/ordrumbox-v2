@@ -53,11 +53,11 @@ describe('SynthEditor sub-panel toolbar', () => {
         editor.createDOM()
     })
 
-    it('renders one toggle per synth group and collapses on click', async () => {
+    it('renders one block per synth group with bypass button', async () => {
         await editor.openEditor()
 
-        const toggles = Array.from(document.querySelectorAll('#soft-synth-panel .ne-group-accordion-toggle[data-toggle]'))
-        expect(toggles.map(toggle => toggle.dataset.toggle)).toEqual([
+        const blocks = Array.from(document.querySelectorAll('#soft-synth-panel [data-ss-card]'))
+        expect(blocks.map(b => b.dataset.ssCard)).toEqual([
             'master',
             'vco1',
             'vco2',
@@ -70,13 +70,16 @@ describe('SynthEditor sub-panel toolbar', () => {
             'enveloppe'
         ])
 
-        const masterGroup = document.querySelector('#soft-synth-panel [data-synth-group="master"]')
-        expect(masterGroup.classList.contains('expanded')).toBe(true)
+        const bypassBtns = document.querySelectorAll('#soft-synth-panel .ss-bypass-btn[data-power-card]')
+        expect(bypassBtns.length).toBe(blocks.length)
 
-        const masterToggle = toggles.find(t => t.dataset.toggle === 'master')
-        masterToggle.click()
-        expect(masterToggle.classList.contains('active')).toBe(false)
-        expect(masterGroup.classList.contains('collapsed')).toBe(true)
+        const masterBlock = document.querySelector('#soft-synth-panel [data-ss-card="master"]')
+        const masterBtn = masterBlock.querySelector('.ss-bypass-btn')
+        expect(masterBtn.classList.contains('active')).toBe(true)
+
+        masterBtn.click()
+        expect(masterBtn.classList.contains('active')).toBe(false)
+        expect(masterBlock.classList.contains('bypassed')).toBe(true)
     })
 
     it('keeps OK and Cancel in the toolbar and preserves save/cancel behavior', async () => {
@@ -103,5 +106,105 @@ describe('SynthEditor sub-panel toolbar', () => {
 
         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.3)
         expect(audioEngine.invalidateCache).toHaveBeenCalled()
+    })
+
+    it('sets bypassFilter flag on draft when toggling filter bypass', async () => {
+        await editor.openEditor()
+
+        const filterCard = document.querySelector('#soft-synth-panel [data-ss-card="filter"]')
+        const filterBtn = filterCard.querySelector('.ss-bypass-btn')
+
+        expect(editor._draft.bypassFilter).toBeFalsy()
+        filterBtn.click()
+        expect(editor._draft.bypassFilter).toBe(true)
+        expect(filterCard.classList.contains('bypassed')).toBe(true)
+
+        filterBtn.click()
+        expect(editor._draft.bypassFilter).toBe(false)
+        expect(filterCard.classList.contains('bypassed')).toBe(false)
+    })
+
+    it('sets bypassEnv flag on draft when toggling envelope bypass', async () => {
+        await editor.openEditor()
+
+        const envCard = document.querySelector('#soft-synth-panel [data-ss-card="enveloppe"]')
+        const envBtn = envCard.querySelector('.ss-bypass-btn')
+
+        expect(editor._draft.bypassEnv).toBeFalsy()
+        envBtn.click()
+        expect(editor._draft.bypassEnv).toBe(true)
+
+        envBtn.click()
+        expect(editor._draft.bypassEnv).toBe(false)
+    })
+
+    it('sets bypassNoise flag on draft when toggling noise bypass', async () => {
+        await editor.openEditor()
+
+        const noiseCard = document.querySelector('#soft-synth-panel [data-ss-card="noise"]')
+        const noiseBtn = noiseCard.querySelector('.ss-bypass-btn')
+
+        expect(editor._draft.bypassNoise).toBeFalsy()
+        noiseBtn.click()
+        expect(editor._draft.bypassNoise).toBe(true)
+
+        noiseBtn.click()
+        expect(editor._draft.bypassNoise).toBe(false)
+    })
+
+    it('sets bypassLfo1 flag on draft when toggling lfo bypass', async () => {
+        await editor.openEditor()
+
+        const lfoCard = document.querySelector('#soft-synth-panel [data-ss-card="lfo"]')
+        const lfoBtn = lfoCard.querySelector('.ss-bypass-btn')
+
+        expect(editor._draft.bypassLfo1).toBeFalsy()
+        lfoBtn.click()
+        expect(editor._draft.bypassLfo1).toBe(true)
+
+        lfoBtn.click()
+        expect(editor._draft.bypassLfo1).toBe(false)
+    })
+
+    it('sets bypassFm flag on draft when toggling fm bypass', async () => {
+        await editor.openEditor()
+
+        const fmCard = document.querySelector('#soft-synth-panel [data-ss-card="fm"]')
+        const fmBtn = fmCard.querySelector('.ss-bypass-btn')
+
+        expect(editor._draft.bypassFm).toBeFalsy()
+        fmBtn.click()
+        expect(editor._draft.bypassFm).toBe(true)
+
+        fmBtn.click()
+        expect(editor._draft.bypassFm).toBe(false)
+    })
+
+    it('VCO bypass saves/restores gain (not a bypass flag)', async () => {
+        await editor.openEditor()
+
+        expect(editor._draft.vco1.gain).toBe(1)
+        const vco1Card = document.querySelector('#soft-synth-panel [data-ss-card="vco1"]')
+        const vco1Btn = vco1Card.querySelector('.ss-bypass-btn')
+
+        vco1Btn.click()
+        expect(editor._draft.vco1.gain).toBe(0)
+        expect(editor._draft.bypassVco1).toBeUndefined()
+
+        vco1Btn.click()
+        expect(editor._draft.vco1.gain).toBe(1)
+    })
+
+    it('propagates bypass flags to audioEngine via updateGeneratedSounds', async () => {
+        await editor.openEditor()
+
+        const filterCard = document.querySelector('#soft-synth-panel [data-ss-card="filter"]')
+        const filterBtn = filterCard.querySelector('.ss-bypass-btn')
+
+        audioEngine.updateGeneratedSounds.mockClear()
+        filterBtn.click()
+        expect(audioEngine.updateGeneratedSounds).toHaveBeenCalled()
+        const committed = audioEngine.updateGeneratedSounds.mock.calls[0][0]
+        expect(committed.BASS1.bypassFilter).toBe(true)
     })
 })

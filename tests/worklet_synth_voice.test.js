@@ -297,4 +297,202 @@ describe('SynthVoiceProcessor source', () => {
         for (let i = 50; i < FRAMES; i++) peak = Math.max(peak, Math.abs(out[0][i]))
         expect(peak).toBeLessThan(0.5)
     })
+
+    it('bypassFilter skips the filter (dry signal passes through)', () => {
+        const FRAMES = 4410
+        // With filter active (HP at 1000Hz, should attenuate 50Hz)
+        const procFilt = makeProc()
+        procFilt.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        const outFilt = runProcess(procFilt, {
+            osc1Freq: 50, osc1Gain: 1,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1,
+            filterType: 1, filterFreq: 1000, filterQ: 0.7
+        }, FRAMES)
+        let rmsFilt = 0
+        for (let i = FRAMES - 500; i < FRAMES; i++) rmsFilt += outFilt[0][i] * outFilt[0][i]
+        const levelFilt = Math.sqrt(rmsFilt / 500)
+
+        // With filter bypassed
+        const procByp = makeProc()
+        procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procByp.port.onmessage({ data: { type: 'update', bypassFilter: true } })
+        const outByp = runProcess(procByp, {
+            osc1Freq: 50, osc1Gain: 1,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1,
+            filterType: 1, filterFreq: 1000, filterQ: 0.7
+        }, FRAMES)
+        let rmsByp = 0
+        for (let i = FRAMES - 500; i < FRAMES; i++) rmsByp += outByp[0][i] * outByp[0][i]
+        const levelByp = Math.sqrt(rmsByp / 500)
+
+        // Bypassed filter should pass the 50Hz signal at higher level
+        expect(levelByp).toBeGreaterThan(levelFilt * 1.5)
+    })
+
+    it('bypassEnv replaces envelope with flat gain (no ADSR shaping)', () => {
+        const FRAMES = 256
+        // With envelope: short attack should produce ramp-up
+        const procEnv = makeProc()
+        procEnv.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        const outEnv = runProcess(procEnv, {
+            osc1Gain: 1, attack: 0.01, sustain: 0.5, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        // With bypass: envelope=1, should be constant from the start
+        const procByp = makeProc()
+        procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procByp.port.onmessage({ data: { type: 'update', bypassEnv: true } })
+        const outByp = runProcess(procByp, {
+            osc1Gain: 1, attack: 0.01, sustain: 0.5, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        // Bypassed env: first sample should be near full level (no ramp-up)
+        expect(Math.abs(outByp[0][10])).toBeGreaterThan(0.1)
+        // With envelope: first samples should be small (attack ramp)
+        expect(Math.abs(outEnv[0][10])).toBeLessThan(Math.abs(outByp[0][10]))
+    })
+
+    it('bypassNoise silences the noise generator', () => {
+        const FRAMES = 4410
+        // With noise
+        const procNoise = makeProc()
+        procNoise.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        const outNoise = runProcess(procNoise, {
+            osc1Gain: 0, noiseMix: 1,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        let rmsNoise = 0
+        for (let i = 100; i < FRAMES; i++) rmsNoise += outNoise[0][i] * outNoise[0][i]
+        const levelNoise = Math.sqrt(rmsNoise / (FRAMES - 100))
+
+        // With noise bypassed
+        const procByp = makeProc()
+        procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procByp.port.onmessage({ data: { type: 'update', bypassNoise: true } })
+        const outByp = runProcess(procByp, {
+            osc1Gain: 0, noiseMix: 1,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        let rmsByp = 0
+        for (let i = 100; i < FRAMES; i++) rmsByp += outByp[0][i] * outByp[0][i]
+        const levelByp = Math.sqrt(rmsByp / (FRAMES - 100))
+
+        expect(levelNoise).toBeGreaterThan(0.01)
+        expect(levelByp).toBeLessThan(0.01)
+    })
+
+    it('bypassLfo1 disables LFO1 modulation', () => {
+        const FRAMES = 4410
+        // With LFO targeting master gain (tremolo)
+        const procLfo = makeProc()
+        procLfo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procLfo.port.onmessage({ data: { type: 'update', lfo1Target: 5, lfo1Depth: 0.5, lfo1Freq: 5 } })
+        const outLfo = runProcess(procLfo, {
+            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
+            velocity: 0.5, master: 1
+        }, FRAMES)
+        // With LFO bypassed
+        const procByp = makeProc()
+        procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procByp.port.onmessage({ data: { type: 'update', lfo1Target: 5, lfo1Depth: 0.5, lfo1Freq: 5, bypassLfo1: true } })
+        const outByp = runProcess(procByp, {
+            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
+            velocity: 0.5, master: 1
+        }, FRAMES)
+        // With LFO, output should vary; with bypass, it should be constant
+        const variance = (arr) => {
+            let min = Infinity, max = -Infinity
+            for (let i = 200; i < arr.length; i++) { min = Math.min(min, arr[i]); max = Math.max(max, arr[i]) }
+            return max - min
+        }
+        expect(variance(outLfo[0])).toBeGreaterThan(variance(outByp[0]) + 0.05)
+    })
+
+    it('bypassFm disables frequency modulation', () => {
+        const FRAMES = 4410
+        // With FM cascade (algo 2: 3→2→1, high amount should produce sidebands)
+        const procFm = makeProc()
+        procFm.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procFm.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 2 } })
+        const outFm = runProcess(procFm, {
+            osc1Gain: 1, osc2Gain: 1, osc3Gain: 1, osc3Freq: 220,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        // With FM bypassed
+        const procByp = makeProc()
+        procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procByp.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 2, bypassFm: true } })
+        const outByp = runProcess(procByp, {
+            osc1Gain: 1, osc2Gain: 1, osc3Gain: 1, osc3Freq: 220,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        // FM should produce more zero crossings than non-FM
+        const countCrossings = (arr) => {
+            let c = 0
+            for (let i = 1; i < arr.length; i++) {
+                if ((arr[i - 1] < 0 && arr[i] >= 0) || (arr[i - 1] >= 0 && arr[i] < 0)) c++
+            }
+            return c
+        }
+        const crossingsFm = countCrossings(outFm[0])
+        const crossingsByp = countCrossings(outByp[0])
+        // FM should add sidebands = more crossings
+        expect(crossingsFm).toBeGreaterThan(crossingsByp)
+    })
+
+    it('fmAlgo 0 routes osc2→osc1 only', () => {
+        const FRAMES = 4410
+        // Algo 0: only osc2→osc1 (osc3 unmodulated)
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 0 } })
+        const out = runProcess(proc, {
+            osc1Gain: 1, osc2Gain: 1, osc3Gain: 0,
+            osc2Freq: 880,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        // Should produce output (FM is active on osc1)
+        let rms = 0
+        for (let i = 200; i < FRAMES; i++) rms += out[0][i] * out[0][i]
+        expect(Math.sqrt(rms / (FRAMES - 200))).toBeGreaterThan(0.1)
+    })
+
+    it('fmAlgo 3 (2+3→1) sums both modulators on osc1', () => {
+        const FRAMES = 4410
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 3 } })
+        const out = runProcess(proc, {
+            osc1Gain: 1, osc2Gain: 1, osc3Gain: 1,
+            osc2Freq: 880, osc3Freq: 660,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        let rms = 0
+        for (let i = 200; i < FRAMES; i++) rms += out[0][i] * out[0][i]
+        expect(Math.sqrt(rms / (FRAMES - 200))).toBeGreaterThan(0.1)
+    })
+
+    it('fmAlgo 4 (2↔1) cross-modulates osc1 and osc2', () => {
+        const FRAMES = 4410
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 4 } })
+        const out = runProcess(proc, {
+            osc1Gain: 1, osc2Gain: 1, osc3Gain: 0,
+            osc2Freq: 880,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        let rms = 0
+        for (let i = 200; i < FRAMES; i++) rms += out[0][i] * out[0][i]
+        expect(Math.sqrt(rms / (FRAMES - 200))).toBeGreaterThan(0.1)
+    })
 })

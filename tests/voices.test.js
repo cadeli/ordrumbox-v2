@@ -411,7 +411,8 @@ describe('WorkletSynthVoice parameter coverage', () => {
             'master', 'pan', 'velocity',
             'lfo1Target', 'lfo1Wave', 'lfo1Freq', 'lfo1Depth',
             'lfo2Target', 'lfo2Wave', 'lfo2Freq', 'lfo2Depth',
-            'slide', 'filterEnvAmt', 'fmAmount',
+            'slide', 'filterEnvAmt', 'fmAmount', 'fmAlgo',
+            'bypassNoise', 'bypassFilter', 'bypassEnv', 'bypassLfo1', 'bypassLfo2', 'bypassFm',
         ]
         for (const key of expectedKeys) {
             expect(msg).toHaveProperty(key)

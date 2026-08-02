@@ -3,7 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
-import { fmt, buildAccordionGroup, setViewBtn } from './components/panel_helpers.js'
+import { fmt, setViewBtn } from './components/panel_helpers.js'
 import { escapeHtml as _esc } from './components/ui_utils.js'
 import { OrKnob } from './components/or_knob.js'
 import { logger } from '../core/logger.js'
@@ -21,6 +21,14 @@ const FILTER_ICONS = {
     lowshelf: 'LS', highshelf: 'HS', notch: 'NT', allpass: 'AP',
 }
 
+const FM_ALGO_ICONS = {
+    0: '2→1',
+    1: '3→1',
+    2: '3→2→1',
+    3: '2+3→1',
+    4: '2↔1',
+}
+
 const SYNTH_GROUP_DEFAULTS = {
     masterVolume: 0.8,
     slide: 0,
@@ -28,7 +36,7 @@ const SYNTH_GROUP_DEFAULTS = {
     vco2: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     vco3: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     filter: { type: 'lowpass', freq: 400, Q: 1, filterEnvelopeAmount: 0 },
-    fm: { amount: 0 },
+    fm: { amount: 0, algo: 0 },
     lfo: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     lfo2: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     noise: { mix: 0, filterType: 'highpass', filterFreq: 1000, filterQ: 1 },
@@ -36,34 +44,30 @@ const SYNTH_GROUP_DEFAULTS = {
 }
 
 /** Parameter metadata: min, max, step, unit for each synth path. */
-const SYNTH_PARAM_META = {
-    'masterVolume': { min: 0, max: 1, step: 0.01, unit: '' },
-    'slide': { min: 0, max: 500, step: 1, unit: 'ms' },
-    'vco1.gain': { min: 0, max: 1, step: 0.01, unit: '' },
-    'vco1.octave': { min: -4, max: 4, step: 1, unit: 'oct' },
-    'vco1.detune': { min: -100, max: 100, step: 1, unit: 'ct' },
-    'vco2.gain': { min: 0, max: 1, step: 0.01, unit: '' },
-    'vco2.octave': { min: -4, max: 4, step: 1, unit: 'oct' },
-    'vco2.detune': { min: -100, max: 100, step: 1, unit: 'ct' },
-    'vco3.gain': { min: 0, max: 1, step: 0.01, unit: '' },
-    'vco3.octave': { min: -4, max: 4, step: 1, unit: 'oct' },
-    'vco3.detune': { min: -100, max: 100, step: 1, unit: 'ct' },
-    'filter.freq': { min: 20, max: 20000, step: 1, unit: 'Hz' },
-    'filter.Q': { min: 0.1, max: 24, step: 0.1, unit: '' },
-    'filter.filterEnvelopeAmount': { min: 0, max: 1, step: 0.01, label: 'Env', unit: '' },
-    'lfo.freq': { min: 0, max: 20, step: 0.01, unit: 'Hz' },
-    'lfo.depth': { min: 0, max: 1, step: 0.01, unit: '' },
-    'lfo2.freq': { min: 0, max: 20, step: 0.01, unit: 'Hz' },
-    'lfo2.depth': { min: 0, max: 1, step: 0.01, unit: '' },
-    'noise.mix': { min: 0, max: 1, step: 0.01, unit: '' },
-    'noise.filterFreq': { min: 20, max: 20000, step: 1, unit: 'Hz' },
-    'noise.filterQ': { min: 0.1, max: 24, step: 0.1, unit: '' },
-    'fm.amount': { min: 0, max: 1, step: 0.01, label: 'FM', unit: '' },
-    'enveloppe.attack': { min: 0, max: 0.5, step: 0.001, unit: 's' },
-    'enveloppe.decay': { min: 0, max: 1.0, step: 0.001, unit: 's' },
-    'enveloppe.sustain': { min: 0, max: 1, step: 0.01, unit: '' },
-    'enveloppe.release': { min: 0, max: 0.5, step: 0.001, unit: 's' }
-}
+const VCO_PARAM_DEFS = { gain: { min: 0, max: 1, step: 0.01 }, octave: { min: -4, max: 4, step: 1 }, detune: { min: -100, max: 100, step: 1 } }
+const SYNTH_PARAM_META = Object.fromEntries([
+    ['masterVolume', { min: 0, max: 1, step: 0.01, unit: '' }],
+    ['slide', { min: 0, max: 500, step: 1, unit: 'ms' }],
+    ...['vco1', 'vco2', 'vco3'].flatMap(vco =>
+        Object.entries(VCO_PARAM_DEFS).map(([k, v]) => [`${vco}.${k}`, { ...v, unit: k === 'gain' ? '' : k === 'octave' ? 'oct' : 'ct' }])
+    ),
+    ['filter.freq', { min: 20, max: 20000, step: 1, unit: 'Hz' }],
+    ['filter.Q', { min: 0.1, max: 24, step: 0.1, unit: '' }],
+    ['filter.filterEnvelopeAmount', { min: 0, max: 1, step: 0.01, label: 'Env', unit: '' }],
+    ['lfo.freq', { min: 0, max: 20, step: 0.01, unit: 'Hz' }],
+    ['lfo.depth', { min: 0, max: 1, step: 0.01, unit: '' }],
+    ['lfo2.freq', { min: 0, max: 20, step: 0.01, unit: 'Hz' }],
+    ['lfo2.depth', { min: 0, max: 1, step: 0.01, unit: '' }],
+    ['noise.mix', { min: 0, max: 1, step: 0.01, unit: '' }],
+    ['noise.filterFreq', { min: 20, max: 20000, step: 1, unit: 'Hz' }],
+    ['noise.filterQ', { min: 0.1, max: 24, step: 0.1, unit: '' }],
+    ['fm.amount', { min: 0, max: 1, step: 0.01, label: 'FM', unit: '' }],
+    ['fm.algo', { min: 0, max: 4, step: 1, label: 'Algo', unit: '' }],
+    ['enveloppe.attack', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
+    ['enveloppe.decay', { min: 0, max: 1.0, step: 0.001, unit: 's' }],
+    ['enveloppe.sustain', { min: 0, max: 1, step: 0.01, unit: '' }],
+    ['enveloppe.release', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
+])
 
 const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_PARAM_META).filter(k => !k.startsWith('lfo.') && !k.startsWith('lfo2.'))]
 const SYNTH_GROUP_MERGE = {
@@ -108,7 +112,6 @@ export default class SynthEditor {
         this._loadFailed = false
         this._knobs = []
         this._delegationBound = false
-        this._cardCollapsed = {}
         this._cardBypassed = {}
         this._waveTab = 'wave'
     }
@@ -278,23 +281,23 @@ export default class SynthEditor {
         </div>`
     }
 
-    /** @returns {string} accordion groups HTML. Pushes knob configs to the array. */
+    /** @returns {string} fixed block groups HTML. Pushes knob configs to the array. */
     _buildGroups(knobConfigs) {
         const groupNames = this._getOrderedGroupNames()
         let html = '<div class="ss-body">'
 
         for (const groupName of groupNames) {
-            const isCollapsed = this._cardCollapsed[groupName] ?? false
             const content = this._buildGroupContent(groupName, knobConfigs)
             const label = this._getGroupLabel(groupName)
-            const shortLabel = SYNTH_GROUP_LABELS[groupName] ?? (VCO_RE.test(groupName) ? groupName.toUpperCase() : groupName.slice(0, 3))
+            const isBypassed = this._cardBypassed[groupName] ?? false
 
-            html += buildAccordionGroup(groupName, label, shortLabel, !isCollapsed, content, {
-                cssPrefix: 'ss',
-                dataAttr: 'data-synth-group',
-                gridClass: 'ss-card-body',
-                labelClass: 'ss-group-label',
-            })
+            html += `<div class="ss-group${isBypassed ? ' bypassed' : ''}" data-ss-card="${groupName}">
+                <span class="ss-group-label">${_esc(label)}</span>
+                <button class="ss-bypass-btn${isBypassed ? '' : ' active'}" data-power-card="${groupName}" title="Bypass">
+                    <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>
+                </button>
+                <div class="ss-card-body">${content}</div>
+            </div>`
         }
 
         return `${html}</div>`
@@ -334,6 +337,9 @@ export default class SynthEditor {
         if ((pathStr === 'filter.type' || pathStr === 'noise.filterType') && options) {
             return this._buildIconRow(paramLabel, pathStr, val, 'ss-ft-icon', FILTER_ICONS)
         }
+        if (pathStr === 'fm.algo' && options) {
+            return this._buildIconRow(paramLabel, pathStr, val, 'ss-fm-icon', FM_ALGO_ICONS)
+        }
         if (options) {
             return this._buildSelectRow(paramLabel, pathStr, val, options)
         }
@@ -353,8 +359,9 @@ export default class SynthEditor {
     /** @returns {string} icon button row HTML (wave or filter type). */
     _buildIconRow(paramLabel, pathStr, val, cssClass, icons) {
         const options = this._getIconOptions(pathStr)
+        const isVcoWave = pathStr.startsWith('vco') && pathStr.endsWith('.wave')
         return `<div class="ne-row ss-icon-row">
-            <span class="ss-param-label">${_esc(paramLabel)}</span>
+            ${isVcoWave ? '' : `<span class="ss-param-label">${_esc(paramLabel)}</span>`}
             ${this._renderIconRow(options, pathStr, val, cssClass, icons)}
         </div>`
     }
@@ -363,6 +370,7 @@ export default class SynthEditor {
     _getIconOptions(pathStr) {
         if (pathStr.startsWith('vco') && pathStr.endsWith('.wave')) return Utils.waveList
         if (pathStr === 'filter.type' || pathStr === 'noise.filterType') return Utils.filterTypeList
+        if (pathStr === 'fm.algo') return [0, 1, 2, 3, 4]
         return []
     }
 
@@ -500,6 +508,7 @@ export default class SynthEditor {
         if (key === 'wave') return Utils.waveList
         if (path[0] === 'filter' && key === 'type') return Utils.filterTypeList
         if (path[0] === 'noise' && key === 'filterType') return Utils.filterTypeList
+        if (path[0] === 'fm' && key === 'algo') return [0, 1, 2, 3, 4]
         if (isLfo && key === 'target') {
             return SYNTH_LFO_TARGETS.map(target => ({ value: target, label: target === 'NOT' ? 'off' : target }))
         }
@@ -527,7 +536,6 @@ export default class SynthEditor {
     _handleClick(e) {
         const { target } = e
         if (this._handlePowerBtn(target, e)) return
-        if (this._handleAccordionToggle(target)) return
         if (this._handleWaveTab(target)) return
         if (this._handleBooleanBtn(target)) return
         if (this._handleIconBtn(target)) return
@@ -544,23 +552,24 @@ export default class SynthEditor {
         const card = this.panel.querySelector(`[data-ss-card="${groupName}"]`)
         if (card) card.classList.toggle('bypassed', this._cardBypassed[groupName])
         powerBtn.classList.toggle('active', !this._cardBypassed[groupName])
-        return true
-    }
 
-    /** Handles accordion group toggle (collapse/expand). */
-    _handleAccordionToggle(target) {
-        const toggleBtn = target.closest('.ne-group-accordion-toggle[data-toggle]')
-        if (!toggleBtn) return false
-        const groupName = toggleBtn.dataset.toggle
-        this._cardCollapsed[groupName] = !this._cardCollapsed[groupName]
-        const card = this.panel.querySelector(`[data-synth-group="${groupName}"]`)
-        if (card) {
-            card.classList.toggle('collapsed', this._cardCollapsed[groupName])
-            card.classList.toggle('expanded', !this._cardCollapsed[groupName])
+        const draftGroup = this._draft?.[groupName]
+        if (groupName.startsWith('vco') && draftGroup && typeof draftGroup === 'object') {
+            if (this._cardBypassed[groupName]) {
+                draftGroup._savedGain = draftGroup.gain ?? 0
+                draftGroup.gain = 0
+            } else {
+                draftGroup.gain = draftGroup._savedGain ?? (groupName === 'vco1' ? 1 : 0)
+                delete draftGroup._savedGain
+            }
+        } else {
+            const flagMap = { noise: 'bypassNoise', filter: 'bypassFilter', enveloppe: 'bypassEnv', lfo: 'bypassLfo1', lfo2: 'bypassLfo2', fm: 'bypassFm' }
+            const flag = flagMap[groupName]
+            if (flag) this._draft[flag] = this._cardBypassed[groupName]
         }
-        toggleBtn.classList.toggle('active', !this._cardCollapsed[groupName])
-        const icon = toggleBtn.querySelector('.ne-group-accordion-icon')
-        if (icon) icon.innerHTML = this._cardCollapsed[groupName] ? '+' : '&minus;'
+
+        this._drawWaveform()
+        this._previewDraft()
         return true
     }
 
@@ -585,13 +594,13 @@ export default class SynthEditor {
     }
 
     _handleIconBtn(target) {
-        const waveIcon = target.closest('.ss-wave-icon, .ss-ft-icon')
+        const waveIcon = target.closest('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon')
         if (!waveIcon) return false
         const path = waveIcon.dataset.synthPath
         const val = waveIcon.dataset.waveVal
         this._setValue(path, val)
-        const row = waveIcon.closest('.ss-wave-icons')
-        row.querySelectorAll('.ss-wave-icon, .ss-ft-icon').forEach(b => b.classList.remove('selected'))
+        const row = waveIcon.closest('.ne-row')
+        row?.querySelectorAll('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon').forEach(b => b.classList.remove('selected'))
         waveIcon.classList.add('selected')
         this._drawWaveform()
         return true

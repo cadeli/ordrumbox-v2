@@ -195,6 +195,13 @@ export default class WorkletSynthVoice extends BaseVoice {
             slide: toFiniteNumber(gs.slide, 0) / 1000,
             filterEnvAmt: clamp(toFiniteNumber(filterCfg.filterEnvelopeAmount, 0), 0, 1),
             fmAmount: clamp(toFiniteNumber(gs.fm?.amount, 0), 0, 1),
+            fmAlgo: clamp(Math.round(toFiniteNumber(gs.fm?.algo, 0)), 0, 4),
+            bypassNoise:  !!gs.bypassNoise,
+            bypassFilter: !!gs.bypassFilter,
+            bypassEnv:    !!gs.bypassEnv,
+            bypassLfo1:   !!gs.bypassLfo1,
+            bypassLfo2:   !!gs.bypassLfo2,
+            bypassFm:     !!gs.bypassFm,
         })
     }
 }

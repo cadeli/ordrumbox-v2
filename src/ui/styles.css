@@ -780,20 +780,14 @@
     border: 1px solid var(--border-dim); border-radius: 4px; background: var(--bg-canvas);
 }
 /* Groups row */
-#soft-synth-panel .ss-body {
-    display: flex; flex-direction: row; gap: 4px;
-    align-items: flex-start; flex-wrap: wrap;
-}
-#soft-synth-panel .ss-group { min-width: 210px; flex: 0 0 auto; }
 #soft-synth-panel .ss-group-label {
     color: var(--accent); font-size: 10px; text-transform: uppercase;
-    letter-spacing: 1px; margin-bottom: 6px; font-weight: bold;
+    letter-spacing: 1px; font-weight: bold;
 }
 #soft-synth-panel .ss-card-body {
     display: flex; flex-direction: row; flex-wrap: wrap; gap: 5px;
-    justify-content: center;
+    justify-content: center; width: 100%;
 }
-#soft-synth-panel .ss-card-body > .ne-row { flex: 0 0 auto; }
 /* Shared row styles for selects, booleans, icon rows */
 #soft-synth-panel .ne-row {
     display: flex; align-items: center; gap: 6px;
@@ -820,7 +814,8 @@
 /* Icon rows (wave shapes, filter types) */
 #soft-synth-panel .ss-icon-row { gap: 4px; }
 #soft-synth-panel .ss-wave-icon,
-#soft-synth-panel .ss-ft-icon {
+#soft-synth-panel .ss-ft-icon,
+#soft-synth-panel .ss-fm-icon {
     display: inline-flex; align-items: center; justify-content: center;
     width: 36px; height: 28px;
     background: var(--black); border: 1px solid var(--border-dark); border-radius: 3px;
@@ -830,9 +825,11 @@
 #soft-synth-panel .ss-wave-icon svg,
 #soft-synth-panel .ss-ft-icon svg { width: 100%; height: 100%; }
 #soft-synth-panel .ss-wave-icon:hover,
-#soft-synth-panel .ss-ft-icon:hover { border-color: var(--lime); }
+#soft-synth-panel .ss-ft-icon:hover,
+#soft-synth-panel .ss-fm-icon:hover { border-color: var(--lime); }
 #soft-synth-panel .ss-wave-icon.selected,
-#soft-synth-panel .ss-ft-icon.selected {
+#soft-synth-panel .ss-ft-icon.selected,
+#soft-synth-panel .ss-fm-icon.selected {
     background: var(--bg-lime); border-color: var(--lime);
     box-shadow: 0 0 4px rgba(142, 234, 59, 0.4);
 }
@@ -892,7 +889,7 @@
 }
 #waiting-screen-start-btn.ready { background-color: var(--blue-dark); color: var(--text); }
 
-/* ---- Collapsible Accordion Panels ---- */
+/* ---- Synth groups: fixed blocks with bypass ---- */
 .ne-panel .ne-body,
 #soft-synth-panel .ss-body {
     display: flex;
@@ -903,8 +900,7 @@
     padding-bottom: 8px;
 }
 
-.ne-panel .ne-group,
-#soft-synth-panel .ss-group {
+.ne-panel .ne-group {
     display: flex !important;
     flex-direction: row !important;
     align-items: stretch !important;
@@ -918,18 +914,54 @@
     overflow: hidden;
 }
 
-.ne-panel .ne-group.expanded,
-#soft-synth-panel .ss-group.expanded {
+#soft-synth-panel .ss-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
     background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(233, 69, 96, 0.3);
+    border: 1px solid rgba(233, 69, 96, 0.3);
+    border-radius: 6px;
+    min-width: 210px;
+    flex: 0 0 auto;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.ne-panel .ne-group.collapsed,
-#soft-synth-panel .ss-group.collapsed {
-    border-color: rgba(255, 255, 255, 0.03);
-    flex: 0 0 auto;
-    min-width: 0;
-    width: auto;
+#soft-synth-panel .ss-group.bypassed {
+    opacity: 0.4;
+    border-color: rgba(255, 255, 255, 0.04);
+}
+
+.ss-bypass-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--border-dark);
+    border-radius: 3px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.ss-bypass-btn svg { width: 12px; height: 12px; }
+
+.ss-bypass-btn:hover { border-color: var(--lime); color: var(--lime); }
+
+.ss-bypass-btn.active {
+    background: rgba(142, 234, 59, 0.15);
+    border-color: var(--lime);
+    color: var(--lime);
+}
+
+.ne-panel .ne-group.expanded {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(233, 69, 96, 0.3);
 }
 
 /* ne-grid: only used by output-panel (opt-in via gridId) */
@@ -962,13 +994,11 @@
     border-radius: 4px 0 0 4px !important;
 }
 
-.ne-group.collapsed .ne-group-accordion-toggle,
-.ss-group.collapsed .ne-group-accordion-toggle {
+.ne-group.collapsed .ne-group-accordion-toggle {
     border-radius: 4px !important;
 }
 
-.ne-group.expanded .ne-group-accordion-toggle,
-.ss-group.expanded .ne-group-accordion-toggle {
+.ne-group.expanded .ne-group-accordion-toggle {
     background: rgba(233, 69, 96, 0.15) !important;
     border-right: 1px solid rgba(233, 69, 96, 0.3) !important;
     color: var(--text) !important;
@@ -979,9 +1009,6 @@
     color: var(--text) !important;
 }
 
-.ss-group .ne-group-accordion-label {
-    display: none;
-}
 .ne-group-accordion-label {
     writing-mode: vertical-lr;
     transform: rotate(180deg);
@@ -1007,8 +1034,7 @@
     justify-content: flex-start;
 }
 
-.ne-group.collapsed .ne-group-content,
-.ss-group.collapsed .ne-group-content {
+.ne-group.collapsed .ne-group-content {
     display: none;
 }
 
