@@ -85,10 +85,19 @@ describe('TrackEditor — OrSlider integration', () => {
             reverbAmount: 0.5, delayDepth: 0.3, saturationAmount: 0.2,
         })
         editor.sync()
-        for (const key of ['filterType', 'reverbType', 'delayType', 'saturationType']) {
+        for (const key of ['reverbType', 'delayType', 'saturationType']) {
             const sel = editor.container.querySelector(`select[data-key="${key}"]`)
             expect(sel, `missing select for ${key}`).not.toBeNull()
         }
+    })
+
+    it('filterType renders as icon buttons', () => {
+        editor._track = makeTrack()
+        editor.sync()
+        const group = editor.container.querySelector('[data-fx-icon-key="filterType"]')
+        expect(group).not.toBeNull()
+        const btns = group.querySelectorAll('.fx-icon-btn')
+        expect(btns.length).toBe(3)
     })
 
     it('filterFreq knob displays Hz value', () => {

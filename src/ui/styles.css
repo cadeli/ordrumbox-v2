@@ -663,6 +663,20 @@
     color: var(--lime); border-color: var(--lime);
     background: rgba(142,234,59,0.1);
 }
+.fx-icon-row { gap: 4px; }
+.fx-icon-group { display: flex; gap: 3px; }
+.fx-icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 22px; font-size: 9px; font-weight: bold;
+    background: var(--black); border: 1px solid var(--border-dark); border-radius: 3px;
+    color: var(--lime); cursor: pointer;
+    box-sizing: border-box; transition: all 0.15s;
+}
+.fx-icon-btn:hover { border-color: var(--lime); }
+.fx-icon-btn.selected {
+    background: var(--bg-lime); border-color: var(--lime);
+    box-shadow: 0 0 4px rgba(142, 234, 59, 0.4);
+}
 .te-mod-btn .lfo-led { cursor: pointer; }
 .ne-panel .ne-row.no-cursor { cursor: default; }
 .ne-panel .ne-row .ne-input {

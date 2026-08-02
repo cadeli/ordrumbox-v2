@@ -32,8 +32,14 @@ const fmtVal = (key, v) => {
     return fmt(v)
 }
 
+const FILTER_TYPE_ICONS = {
+    lowpass:  'LP',
+    highpass: 'HP',
+    bandpass: 'BP',
+}
+
 const FILTER_PROPS = [
-    { key: 'filterType', label: 'Type', type: 'select', options: Utils.filterTypeList },
+    { key: 'filterType', label: 'Type', type: 'icon', options: ['lowpass', 'highpass', 'bandpass'] },
     { key: 'filterFreq', label: 'Freq', min: 0, max: 1, step: 0.01, lfo: 'filterFreqLfo' },
     { key: 'filterQ', label: 'Q', min: 0, max: 1, step: 0.01, lfo: 'filterQLfo',
       normalize: v => Utils.valueToNormalizedTrackFilterQ(v),
@@ -717,7 +723,17 @@ export default class TrackEditor extends BasePanel {
                 const prop = PROP_BY_KEY.get(ck)
                 if (!prop) return
                 const val = this._track[ck]
-                if (prop.type === 'select') {
+                if (prop.type === 'icon') {
+                    const icons = FILTER_TYPE_ICONS
+                    content += `<div class="ne-row fx-icon-row" data-prop="${ck}">
+                        <label style="min-width:20px">${prop.label}</label>
+                        <div class="fx-icon-group" data-fx-icon-key="${ck}">
+                        ${prop.options.map(opt => {
+                            const sel = String(opt) === String(val) ? ' selected' : ''
+                            return `<button class="fx-icon-btn${sel}" data-fx-icon-val="${opt}" title="${opt}">${icons[opt] ?? opt}</button>`
+                        }).join('')}
+                        </div></div>`
+                } else if (prop.type === 'select') {
                     content += `<div class="ne-row" data-prop="${ck}">
                         <label style="min-width:20px">${prop.label}</label>
                         <select data-key="${ck}">`
@@ -903,7 +919,7 @@ export default class TrackEditor extends BasePanel {
     _renderLfoGroup() {
         if (!this._track) return ''
 
-        const LFO_PROPS = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
+        const LFO_PROPS = [...ALL_TRACK_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
         if (!LFO_PROPS.length) return ''
 
         if (!this._selectedLfoTarget || !LFO_PROPS.find(p => p.key === this._selectedLfoTarget)) {
@@ -1036,6 +1052,10 @@ export default class TrackEditor extends BasePanel {
                 this._onFxTab({ dataset: { fxTab: target.dataset.fxTab } })
                 return
             }
+            if (target.dataset.fxIconVal) {
+                this._onFxIcon(target)
+                return
+            }
 
             const btn = target.closest('button')
             if (!btn) {
@@ -1165,8 +1185,20 @@ export default class TrackEditor extends BasePanel {
         })
     }
 
+    _onFxIcon(btn) {
+        if (!this._track) return
+        const key = btn.dataset.fxIconVal
+        const group = btn.closest('[data-fx-icon-key]')
+        if (!group) return
+        const propKey = group.dataset.fxIconKey
+        this._track[propKey] = key
+        group.querySelectorAll('.fx-icon-btn').forEach(b => b.classList.remove('selected'))
+        btn.classList.add('selected')
+        playbackEvents.dispatchTrackParamChange(this._track)
+    }
+
     _toggleLfo() {
-        const prop = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
+        const prop = [...ALL_TRACK_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
         if (!prop || !prop.lfo) return
         
         if (this._track[prop.lfo]) {
@@ -1195,7 +1227,7 @@ export default class TrackEditor extends BasePanel {
 
     _onLfoToggleBtn(targetKey) {
         this._selectedLfoTarget = targetKey
-        const allLfoProps = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
+        const allLfoProps = [...ALL_TRACK_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
         const prop = allLfoProps.find(p => p.key === targetKey)
         if (!prop) return
         if (this._track[prop.lfo]) {
@@ -1216,7 +1248,7 @@ export default class TrackEditor extends BasePanel {
 
     _onLfoSlider(input) {
         this._isDragging = true
-        const prop = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
+        const prop = [...ALL_TRACK_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
         if (!prop) return
         let lfo = this._track[prop.lfo]
         if (!lfo) {
@@ -1239,7 +1271,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     _onLfoSelect(sel) {
-        const prop = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
+        const prop = [...ALL_TRACK_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
         if (!prop) return
         let lfo = this._track[prop.lfo]
         if (!lfo) {
