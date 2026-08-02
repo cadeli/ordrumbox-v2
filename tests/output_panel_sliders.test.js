@@ -123,8 +123,8 @@ describe('OutputPanel — OrSlider integration', () => {
         const masterTarget = panel.container.querySelector('#op-master-vol')
         expect(masterTarget).not.toBeNull()
         const groups = panel.container.querySelectorAll('.ne-group')
-        expect(groups[1].querySelector('.ne-group-label').textContent).toBe('Compressor')
-        expect(groups[2].querySelector('.ne-group-label').textContent).toBe('Filters')
+        expect(groups[1].querySelector('.ne-group-accordion-label').textContent).toBe('Comp')
+        expect(groups[2].querySelector('.ne-group-accordion-label').textContent).toBe('Flt')
     })
 
     it('keyboard arrows on a slider still work (delegated handler from main.js)', () => {

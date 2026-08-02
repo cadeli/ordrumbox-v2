@@ -3,7 +3,7 @@ export { fmt, escapeHtml, pitchToNoteName } from './ui_utils.js'
 
 /** Canonical set of all overlay panel IDs (pattern-panel is never hidden by other panels). */
 export const ALL_PANEL_IDS = [
-    'te-panel', 'ne-panel', 'tools-panel', 'output-panel',
+    'te-panel', 'tools-panel', 'output-panel',
     'about-panel', 'dm-panel', 'soft-synth-panel'
 ]
 
@@ -70,8 +70,6 @@ export function bindAccordionToggles(container, getTarget, onChange) {
             if (group) {
                 group.classList.toggle('expanded', isExpanded)
                 group.classList.toggle('collapsed', !isExpanded)
-                const icon = group.querySelector('.ne-group-accordion-icon')
-                if (icon) icon.innerHTML = isExpanded ? '&minus;' : '+'
             }
             
             if (getTarget) {
@@ -110,8 +108,6 @@ export function buildAccordionGroup(key, label, shortLabel, expanded, content, o
     const {
         cssPrefix  = 'ne',
         dataAttr   = 'data-group',
-        labelClass = `${cssPrefix}-group-label`,
-        labelHtml,
         groupClass = '',
         extraAttrs = '',
         gridId,
@@ -121,18 +117,16 @@ export function buildAccordionGroup(key, label, shortLabel, expanded, content, o
     const cls = [`${cssPrefix}-group`, expanded ? 'expanded' : 'collapsed', groupClass]
         .filter(Boolean).join(' ')
     const active = expanded ? ' active' : ''
-    const icon   = expanded ? '&minus;' : '+'
 
     const gridOpen  = gridId ? `<div class="${gridClass || `${cssPrefix}-grid`}" id="${gridId}">` : ''
     const gridClose = gridId ? '</div>' : ''
 
     return `<div class="${cls}" ${dataAttr}="${key}"${extraAttrs ? ' ' + extraAttrs : ''}>` +
         `<button class="ne-group-accordion-toggle ne-toggle${active}" data-toggle="${key}" title="${label}">` +
-            `<span class="ne-group-accordion-icon">${icon}</span>` +
+            `<span class="ne-group-accordion-icon"></span>` +
             `<span class="ne-group-accordion-label">${shortLabel ?? label}</span>` +
         `</button>` +
         `<div class="ne-group-content">` +
-            `<div class="${labelClass}">${labelHtml ?? label}</div>` +
             gridOpen +
             (content ?? '') +
             gridClose +

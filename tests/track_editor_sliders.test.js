@@ -94,9 +94,9 @@ describe('TrackEditor — OrSlider integration', () => {
     it('filterType renders as icon buttons', () => {
         editor._track = makeTrack()
         editor.sync()
-        const group = editor.container.querySelector('[data-fx-icon-key="filterType"]')
-        expect(group).not.toBeNull()
-        const btns = group.querySelectorAll('.fx-icon-btn')
+        const row = editor.container.querySelector('.fx-icon-row[data-prop="filterType"]')
+        expect(row).not.toBeNull()
+        const btns = row.querySelectorAll('.fx-icon-btn')
         expect(btns.length).toBe(3)
     })
 

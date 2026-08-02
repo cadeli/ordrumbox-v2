@@ -74,6 +74,7 @@ export function init() {
     _patternPanel.init()
     _noteEditor.init()
     _trackEditor.init()
+    _trackEditor.setNoteEditor(_noteEditor)
     _toolsPanel.init()
     _outputPanel.init()
     _aboutPanel.init()
@@ -88,7 +89,7 @@ export function init() {
 
     window.addEventListener('resize', () => {
         const repositionable = [
-            _trackEditor, _noteEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel
+            _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel
         ]
         repositionable.forEach(p => {
             if (p?.reposition) p.reposition()

@@ -189,7 +189,7 @@ export default class SynthEditor {
                 this.panel.innerHTML = `<div class="ss-header">
                     <span class="ss-title">Soft Synth</span>
                 </div>
-                <div class="ss-body" style="padding:20px;color:#666;">
+                <div class="ss-body ss-body-empty">
                     No synth presets loaded.
                 </div>`
                 this._bindEvents()
@@ -350,7 +350,7 @@ export default class SynthEditor {
         if (typeof val === 'boolean') {
             return `<div class="ne-row">
                 <span class="ss-param-label">${_esc(paramLabel)}</span>
-                <button class="ss-tb-btn ${val ? 'active' : ''}" data-synth-path="${_esc(pathStr)}" data-synth-type="boolean" style="font-size:9px;height:22px;padding:0 8px;">${val ? 'ON' : 'OFF'}</button>
+                <button class="ss-tb-btn ss-tb-btn-boolean ${val ? 'active' : ''}" data-synth-path="${_esc(pathStr)}" data-synth-type="boolean">${val ? 'ON' : 'OFF'}</button>
             </div>`
         }
         return ''

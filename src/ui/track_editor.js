@@ -124,12 +124,14 @@ export default class TrackEditor extends BasePanel {
         this._delegationBound = false
         this._selectedLfoTarget = null
         this.synthEditor = new SynthEditor(this)
-        this._noteEditMode = false
-        this._selectedNote = null
-        this._noteSliders = []
         this._knobs = []
         this._fxKnobs = []
         this._activeTab = 'fx'
+        this._noteEditor = null
+    }
+
+    setNoteEditor(editor) {
+        this._noteEditor = editor
     }
 
     createDOM() {
@@ -140,31 +142,32 @@ export default class TrackEditor extends BasePanel {
     subscribe() {
         playbackEvents.onTrackSelect.push((data) => {
             if (!data) { this.hide(); return }
-            playbackEvents.dispatchNoteSelect(null)
             this.show(data)
-        })
-        playbackEvents.onNoteSelect.push((data) => {
-            if (!data) {
-                if (this._noteEditMode) {
-                    this._noteEditMode = false
-                    this._selectedNote = null
-                    this._noteSliders.forEach(s => s.destroy())
-                    this._noteSliders = []
-                    if (this.isVisible) this.sync()
+            if (this.isVisible && this._noteEditor) {
+                const track = data.track
+                const firstNote = track.notes?.[0]
+                if (firstNote) {
+                    const stepsPerBeat = track.stepsPerBeat ?? 4
+                    const pos = (firstNote.beat ?? 0) * stepsPerBeat + (firstNote.beatStep ?? 0)
+                    this._noteEditor.show({
+                        track,
+                        trackIdx: data.trackIdx,
+                        note: firstNote,
+                        pos,
+                        beat: firstNote.beat ?? 0,
+                        beatStep: firstNote.beatStep ?? 0
+                    })
+                } else {
+                    this._noteEditor.showEmpty({
+                        track,
+                        trackIdx: data.trackIdx,
+                        beat: 0,
+                        beatStep: 0,
+                        pos: 0
+                    })
                 }
-                return
             }
-            if (this.isVisible && data.track === this._track) {
-                this._noteEditMode = true
-                this._selectedNote = data
-                this._noteSliders.forEach(s => s.destroy())
-                this._noteSliders = []
-                this.sync()
-                return
-            }
-            this.hide()
         })
-        playbackEvents.onOutputToggle.push(() => this.hide())
         playbackEvents.onPlaybackStart.push(() => {
             this._startStepWatch()
         })
@@ -195,17 +198,13 @@ export default class TrackEditor extends BasePanel {
             if (synthVisible) {
                 this.synthEditor.hidePanel()
             } else {
-                this.hide()
                 void this.synthEditor.showPanel()
             }
             setViewBtn('grid', !synthVisible && this.synthEditor?.panel?.style?.display !== 'flex')
             setViewBtn('synth', this.synthEditor?.panel?.style?.display === 'flex')
-            setViewBtn('edit', false)
         })
         playbackEvents.onEditToggle.push(() => {
-            const noteEditor = document.getElementById('ne-panel')
-            const isNoteOpen = noteEditor?.style?.display === 'block'
-            if (this.isVisible || isNoteOpen) {
+            if (this.isVisible) {
                 this.hide()
                 playbackEvents.dispatchNoteSelect(null)
             } else {
@@ -214,6 +213,21 @@ export default class TrackEditor extends BasePanel {
                 const track = pattern?.tracks?.[idx]
                 if (track) {
                     this.show({ track, trackIdx: idx })
+                    const firstNote = track.notes?.[0]
+                    if (firstNote) {
+                        const stepsPerBeat = track.stepsPerBeat ?? 4
+                        const pos = (firstNote.beat ?? 0) * stepsPerBeat + (firstNote.beatStep ?? 0)
+                        this._noteEditor?.show({
+                            track,
+                            trackIdx: idx,
+                            note: firstNote,
+                            pos,
+                            beat: firstNote.beat ?? 0,
+                            beatStep: firstNote.beatStep ?? 0
+                        })
+                    } else {
+                        this._noteEditor?.showEmpty(track)
+                    }
                 }
             }
             const split = this.isVisible
@@ -302,6 +316,10 @@ export default class TrackEditor extends BasePanel {
         this._track = track
         this._trackIdx = trackIdx
         super.show()
+        if (this._noteEditor) {
+            this._noteEditor.container.style.display = 'block'
+            this._noteEditor.reposition()
+        }
         void this.synthEditor.ensureGeneratedSoundsLoaded()
         if (serviceRegistry.transport?.isRunning) {
             this._startStepWatch()
@@ -311,11 +329,6 @@ export default class TrackEditor extends BasePanel {
 
     sync() {
         if (!this._track) return
-
-        if (this._noteEditMode) {
-            this._syncNoteEditMode()
-            return
-        }
 
         // Migrate filterQ from normalized [0,1] to raw Q [0.707, 18.707] if needed
         if (this._track.filterQ < 0.707) {
@@ -327,7 +340,6 @@ export default class TrackEditor extends BasePanel {
         
         let headerHtml = `<div class="ne-header">
             <span class="ne-track">Track: ${this.esc(this._track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
-            <button class="ne-close">&times;</button>
         </div>`
 
         let sampleBarHtml = this._renderSampleBar()
@@ -408,10 +420,10 @@ export default class TrackEditor extends BasePanel {
         }
 
         for (const tab of TAB_DEFS) {
-            const vis = tab.id === this._activeTab ? '' : ' style="display:none"'
+            const isHidden = tab.id !== this._activeTab
             const panelFn = TAB_PANEL_MAP[tab.id]
             const content = panelFn ? panelFn() : ''
-            panelsHtml += `<div class="ne-tab-panel" data-tab-panel="${tab.id}"${vis}>${content}</div>`
+            panelsHtml += `<div class="ne-tab-panel ${isHidden ? 'ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${content}</div>`
         }
 
         this.container.innerHTML = headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + panelsHtml
@@ -475,6 +487,7 @@ export default class TrackEditor extends BasePanel {
             this.container.style.display = 'block'
         }
         this.reposition()
+        this._noteEditor?.reposition()
         this._bindEvents()
         this._drawSampleWaveform()
     }
@@ -572,94 +585,6 @@ export default class TrackEditor extends BasePanel {
         e.target.value = ''
     }
 
-    _syncNoteEditMode() {
-        const data = this._selectedNote
-        if (!data || !this._track) return
-
-        const { note, beat, beatStep } = data
-        this._noteSliders.forEach(s => s.destroy())
-        this._noteSliders = []
-
-        let headerHtml = `<div class="ne-header">
-            <span class="ne-track">Note: ${this.esc(this._track.name)} [beat ${beat} step ${beatStep}]</span>
-            <button class="ne-close" data-action="close-note-edit">&times;</button>
-        </div>`
-
-        const NOTE_GROUPS = [
-            { label: 'Vel / Pitch / Pan', props: [
-                { key: 'velocity', label: 'Vel', min: 0, max: 1, step: 0.01 },
-                { key: 'pitch', label: 'Pitch', min: -24, max: 24, step: 1 },
-                { key: 'pan', label: 'Pan', min: -1, max: 1, step: 0.01 }
-            ]},
-            { label: 'Triggers', props: [
-                { key: 'every', label: 'Every', min: 1, max: 16, step: 1 },
-                { key: 'pos', label: 'Pos', min: 0, max: 15, step: 1 },
-                { key: 'prob', label: 'Prob', min: 0, max: 1, step: 0.01 }
-            ]},
-            { label: 'Retrig', props: [
-                { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
-                { key: 'rate', label: 'Rate', min: 1, max: 16, step: 1 },
-                { key: 'euclidianFill', label: 'Eucl', min: 0, max: 16, step: 1 },
-                { key: 'arpTriggerProbability', label: 'Prob', min: 0, max: 1, step: 0.01 }
-            ]}
-        ]
-        const shortLabels = { 'Vel / Pitch / Pan': 'VPP', Triggers: 'Trig', Retrig: 'Retr' }
-
-        let bodyHtml = `<div class="ne-body">`
-        NOTE_GROUPS.forEach((g, idx) => {
-            const visKey = ['levels', 'triggers', 'retrig'][idx]
-            const isExpanded = appState.noteEditorVisibility?.[visKey] ?? true
-            let groupContent = ''
-            g.props.forEach(p => {
-                groupContent += `<div data-ne-slider="${p.key}"></div>`
-            })
-            bodyHtml += buildAccordionGroup(visKey, g.label, shortLabels[g.label], isExpanded, groupContent)
-        })
-        bodyHtml += '</div>'
-
-        this.container.innerHTML = headerHtml + bodyHtml
-
-        NOTE_GROUPS.forEach(g => {
-            g.props.forEach(p => {
-                const placeholder = this.container.querySelector(`[data-ne-slider="${p.key}"]`)
-                if (!placeholder) return
-                const slider = new OrSlider({
-                    key: p.key,
-                    label: p.label,
-                    min: p.min,
-                    max: p.max,
-                    step: p.step,
-                    value: note[p.key] ?? p.min,
-                    format: p.key === 'pitch'
-                        ? v => `${fmt(v)} ${pitchToNoteName(v, this._track?.pitch ?? 0)}`
-                        : fmt,
-                    onChange: v => {
-                        note[p.key] = v
-                        playbackEvents.dispatchTrackParamChange(this._track)
-                    }
-                })
-                this._noteSliders.push(slider)
-                placeholder.replaceWith(slider.createElement())
-            })
-        })
-
-        if (this.synthEditor?.panel?.style?.display !== 'block') {
-            this.container.style.display = 'block'
-        }
-        this.reposition()
-        this._bindNoteEditEvents()
-    }
-
-    _bindNoteEditEvents() {
-        this.container.querySelector('[data-action="close-note-edit"]')?.addEventListener('click', () => {
-            this._noteEditMode = false
-            this._selectedNote = null
-            this._noteSliders.forEach(s => s.destroy())
-            this._noteSliders = []
-            this.sync()
-        })
-    }
-
     _renderLoopPanel(isExpanded) {
         const beats = this._track.nbBeats ?? 4
         const stepsPerBeat = this._track.stepsPerBeat ?? 4
@@ -716,9 +641,9 @@ export default class TrackEditor extends BasePanel {
         FX_DEFS.forEach((fx, idx) => {
             const on = this._isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
-            const hiddenStyle = idx !== this._activeFxTab ? ' style="display:none"' : ''
+            const isHidden = idx !== this._activeFxTab
 
-            content += `<div class="fx-tab-panel"${hiddenStyle} data-fx-panel="${idx}">`
+            content += `<div class="fx-tab-panel ${isHidden ? 'fx-tab-panel-hidden' : ''}" data-fx-panel="${idx}">`
 
             fx.controls.forEach(ck => {
                 const prop = PROP_BY_KEY.get(ck)
@@ -727,16 +652,15 @@ export default class TrackEditor extends BasePanel {
                 if (prop.type === 'icon') {
                     const icons = FILTER_TYPE_ICONS
                     content += `<div class="ne-row fx-icon-row" data-prop="${ck}">
-                        <label style="min-width:20px">${prop.label}</label>
-                        <div class="fx-icon-group" data-fx-icon-key="${ck}">
+                        <label class="ne-row-label">${prop.label}</label>
                         ${prop.options.map(opt => {
                             const sel = String(opt) === String(val) ? ' selected' : ''
                             return `<button class="fx-icon-btn${sel}" data-fx-icon-val="${opt}" title="${opt}">${icons[opt] ?? opt}</button>`
                         }).join('')}
-                        </div></div>`
+                    </div>`
                 } else if (prop.type === 'select') {
                     content += `<div class="ne-row" data-prop="${ck}">
-                        <label style="min-width:20px">${prop.label}</label>
+                        <label class="ne-row-label">${prop.label}</label>
                         <select data-key="${ck}">`
                     prop.options.forEach((opt, idx2) => {
                         const label = prop.labels ? prop.labels[idx2] : opt
@@ -828,7 +752,7 @@ export default class TrackEditor extends BasePanel {
             })
         }
         content += `</select></div>
-                <div class="ne-row" style="border-top:1px solid #444;margin-top:6px;padding-top:6px">
+                <div class="ne-row ne-row-separator">
                     <label>Synth</label>
                     <select data-sound="generated">
                         <option value="none"${currentGeneratedSound === 'none' ? ' selected' : ''}>none</option>`
@@ -840,7 +764,7 @@ export default class TrackEditor extends BasePanel {
             content += `<option value="${this.esc(currentGeneratedSound)}" selected>${this.esc(currentGeneratedSound)}</option>`
         }
         content += `</select></div>
-                <div class="ne-row" data-sound-edit-row style="display:${currentGeneratedSound === 'none' ? 'none' : 'flex'}">
+                <div class="ne-row ${currentGeneratedSound === 'none' ? 'ne-row-hidden' : ''}" data-sound-edit-row>
                     <label>Edit</label>
                     <button class="ne-btn" data-action="edit-synth">Edit</button>
                 </div>`
@@ -969,7 +893,7 @@ export default class TrackEditor extends BasePanel {
                     <input type="range" min="${prop.min}" max="${prop.max}" step="${prop.step}" 
                         value="${max}" data-lfo-key="max" title="Max">
                 </div>
-                <span class="ne-val" style="min-width:60px">${fmt(min)}..${fmt(max)}</span>
+                <span class="ne-val ne-val-wide">${fmt(min)}..${fmt(max)}</span>
             </div>
             <div class="ne-row">
                 <label>Phase</label>
@@ -1067,9 +991,7 @@ export default class TrackEditor extends BasePanel {
                 return
             }
 
-            if (btn.classList.contains('ne-close')) {
-                this.hide()
-            } else if (btn.dataset.key) {
+            if (btn.dataset.key) {
                 this._onToggle(btn)
             } else if (btn.dataset.fxToggle) {
                 this._toggleFx(btn)
@@ -1295,10 +1217,6 @@ export default class TrackEditor extends BasePanel {
         this._trackIdx = -1
         this._selectedPropKey = null
         this._lastTick = -1
-        this._noteEditMode = false
-        this._selectedNote = null
-        this._noteSliders.forEach(s => s.destroy())
-        this._noteSliders = []
         this._knobs.forEach(k => k.destroy())
         this._knobs = []
         this._fxKnobs.forEach(k => k.destroy())
@@ -1306,6 +1224,9 @@ export default class TrackEditor extends BasePanel {
         if (this._lfoBridge) {
             this._lfoBridge.destroy()
             this._lfoBridge = null
+        }
+        if (this._noteEditor) {
+            this._noteEditor.hide()
         }
         setViewBtn('edit', false)
     }

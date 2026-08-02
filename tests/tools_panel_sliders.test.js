@@ -40,7 +40,7 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
 
         const row = input.closest('.ne-row')
         const group = row.closest('.ne-group')
-        expect(group.querySelector('.ne-group-label').textContent).toBe('Export')
+        expect(group.querySelector('.ne-group-accordion-label').textContent).toBe('Export')
         expect(row.querySelector('label').textContent).toBe('Loops')
     })
 

@@ -3,6 +3,23 @@ import { logger } from '../src/core/logger.js'
 
 logger.setLevel(logger.LEVELS.ERROR)
 
+// Inject minimal CSS for jsdom tests (jsdom doesn't load <link> stylesheets)
+if (typeof document !== 'undefined') {
+    const style = document.createElement('style')
+    style.textContent = `
+.ne-tab-panel-hidden { display: none !important; }
+.ne-row-hidden { display: none !important; }
+.fx-tab-panel-hidden { display: none !important; }
+.ne-row-label { min-width: 20px; }
+.ne-row-separator { border-top: 1px solid #444; margin-top: 6px; padding-top: 6px; }
+.ne-val-wide { min-width: 60px; }
+.ss-body-empty { padding: 20px; color: #666; text-align: center; }
+.ss-tb-btn-boolean { font-size: 9px; height: 22px; padding: 0 8px; }
+.fx-icon-row { display: flex; gap: 3px; align-items: center; }
+`
+    document.head.appendChild(style)
+}
+
 const stubContext = () => ({
     fillRect: vi.fn(),
     clearRect: vi.fn(),

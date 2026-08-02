@@ -59,7 +59,7 @@ describe('Sub-panel toggle toolbars', () => {
     describe('Track Editor', () => {
         it('renders all 5 tab buttons (FX, SND, MOD, LOOP, GEN)', () => {
             const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
-            playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
+            trackEditor.show({ track: mockTrack, trackIdx: 0 })
 
             const tabs = document.getElementById('te-panel').querySelectorAll('.ne-tab-btn[data-ne-tab]')
             const keys = Array.from(tabs).map(b => b.dataset.neTab)
@@ -68,32 +68,32 @@ describe('Sub-panel toggle toolbars', () => {
 
         it('switches active tab when a button is clicked', () => {
             const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
-            playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
+            trackEditor.show({ track: mockTrack, trackIdx: 0 })
 
             document.querySelector('#te-panel .ne-tab-btn[data-ne-tab="gen"]').click()
             const genPanel = document.querySelector('#te-panel .ne-tab-panel[data-tab-panel="gen"]')
-            expect(genPanel.style.display).not.toBe('none')
+            expect(getComputedStyle(genPanel).display).not.toBe('none')
 
             const fxPanel = document.querySelector('#te-panel .ne-tab-panel[data-tab-panel="fx"]')
-            expect(fxPanel.style.display).toBe('none')
+            expect(getComputedStyle(fxPanel).display).toBe('none')
         })
 
-        it('closes the panel when the close button is clicked', () => {
+        it('closes the panel when hide() is called', () => {
             const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
-            playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
+            trackEditor.show({ track: mockTrack, trackIdx: 0 })
 
             const te = document.getElementById('te-panel')
             expect(te.style.display).toBe('block')
-            te.querySelector('.ne-close').click()
+            trackEditor.hide()
             expect(te.style.display).toBe('none')
         })
 
         it('active tab panel is visible, others hidden', () => {
             const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
-            playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
+            trackEditor.show({ track: mockTrack, trackIdx: 0 })
 
             const panels = document.querySelectorAll('#te-panel .ne-tab-panel[data-tab-panel]')
-            const visiblePanels = Array.from(panels).filter(p => p.style.display !== 'none')
+            const visiblePanels = Array.from(panels).filter(p => getComputedStyle(p).display !== 'none')
             expect(visiblePanels.length).toBe(1)
             expect(visiblePanels[0].dataset.tabPanel).toBe('fx')
         })
@@ -120,14 +120,14 @@ describe('Sub-panel toggle toolbars', () => {
             expect(appState.noteEditorVisibility.levels).toBe(!wasActive)
         })
 
-        it('closes the panel when the close button is clicked', async () => {
+        it('closes the panel when hide() is called', async () => {
             const mockNote = { beat: 0, beatStep: 0, velocity: 1 }
             const mockTrack = { name: 'SNARE', notes: [mockNote], nbBeats: 1, stepsPerBeat: 4 }
             await noteEditor.show({ track: mockTrack, note: mockNote, pos: 0, beat: 0, beatStep: 0 })
 
             const ne = document.getElementById('ne-panel')
             expect(ne.style.display).toBe('block')
-            ne.querySelector('.ne-close').click()
+            noteEditor.hide()
             expect(ne.style.display).toBe('none')
         })
 

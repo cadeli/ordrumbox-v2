@@ -64,7 +64,7 @@ describe('Mobile Landscape UI Logic', () => {
         expect(panels.length).toBe(5)
 
         // 6. Only one tab panel visible at a time
-        const visiblePanels = Array.from(panels).filter(p => p.style.display !== 'none')
+        const visiblePanels = Array.from(panels).filter(p => getComputedStyle(p).display !== 'none')
         expect(visiblePanels.length).toBe(1)
     })
 })

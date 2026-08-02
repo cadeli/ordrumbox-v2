@@ -77,12 +77,12 @@ describe('Panel positioning below pattern panel on desktop', () => {
     })
 
     describe('Note Editor reposition', () => {
-        it('repositions below pattern panel when shown', async () => {
+        it('does not set top since it is nested inside track editor', async () => {
             const ne = new NoteEditor()
             ne.init()
             const container = ne.container
             await ne.show({ track: { name: 'SNARE', notes: [{ beat: 0, beatStep: 0 }], nbBeats: 1, stepsPerBeat: 4 }, note: { beat: 0, beatStep: 0 }, pos: 0, beat: 0, beatStep: 0 })
-            expect(container.style.top).toBe('352px')
+            expect(container.style.top).toBe('')
         })
     })
 

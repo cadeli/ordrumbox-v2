@@ -68,8 +68,8 @@ describe('AboutPanel (PWA)', () => {
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 
-    it('hides the other modals (te/ne/tools/output) when it opens', () => {
-        for (const id of ['te-panel', 'ne-panel', 'tools-panel', 'output-panel']) {
+    it('hides the other modals (te/tools/output) when it opens', () => {
+        for (const id of ['te-panel', 'tools-panel', 'output-panel']) {
             const el = document.createElement('div')
             el.id = id
             el.style.display = 'block'
@@ -78,7 +78,7 @@ describe('AboutPanel (PWA)', () => {
 
         playbackEvents.dispatchAboutToggle(true)
 
-        for (const id of ['te-panel', 'ne-panel', 'tools-panel', 'output-panel']) {
+        for (const id of ['te-panel', 'tools-panel', 'output-panel']) {
             expect(document.getElementById(id).style.display).toBe('none')
         }
         expect(document.getElementById('about-panel').style.display).toBe('block')

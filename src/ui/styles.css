@@ -226,7 +226,6 @@
 }
 #pattern-panel .pp-name { color: var(--accent); font-weight: bold; }
 #pattern-panel .pp-meta { color: var(--text-ghost); font-size: 10px; }
-#pattern-panel .pp-tracks { position: relative; }
 
 #pattern-panel .pp-tracks {
     display: flex;
@@ -479,7 +478,7 @@
     padding: 8px 12px; overflow-x: auto;
     font-family: monospace; font-size: 11px; color: var(--text-muted);
     z-index: 2000;
-    min-height: 100px; max-height: 250px;
+    min-height: auto; max-height: 250px;
 }
 .ui-hidden { display: none !important; }
 .ne-panel .ne-header {
@@ -511,11 +510,11 @@
     flex-wrap: wrap; overflow-x: hidden;
 }
 .ne-panel .ne-group {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: stretch !important;
-    border-left: none !important;
-    padding-left: 0 !important;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    border-left: none;
+    padding-left: 0;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 6px;
@@ -536,14 +535,18 @@
     min-width: 0;
     width: auto;
 }
-.ne-panel .ne-group-label {
-    color: var(--accent); font-size: 10px; text-transform: uppercase;
-    letter-spacing: 1px; margin-bottom: 6px; font-weight: bold;
-}
 .ne-panel .ne-row {
     display: flex; align-items: center; gap: 8px; min-height: 20px;
     padding: 2px 4px; border-radius: 4px; cursor: pointer;
 }
+.ne-row-label { min-width: 20px; }
+.ne-row-separator { border-top: 1px solid #444; margin-top: 6px; padding-top: 6px; }
+.ne-val-wide { min-width: 60px; }
+.ne-row-hidden { display: none !important; }
+.ne-tab-panel-hidden { display: none !important; }
+.fx-tab-panel-hidden { display: none !important; }
+.ss-body-empty { padding: 20px; color: #666; text-align: center; }
+.ss-tb-btn-boolean { font-size: 9px; height: 22px; padding: 0 8px; }
 /* Track editor: highlight the row currently selected for LFO editing, and
    mark rows that have an LFO attached so the user sees which controls are
    modulated. */
@@ -664,7 +667,7 @@
     background: rgba(142,234,59,0.1);
 }
 .fx-icon-row { gap: 4px; }
-.fx-icon-group { display: flex; gap: 3px; }
+.fx-icon-row { display: flex; gap: 3px; align-items: center; }
 .fx-icon-btn {
     display: inline-flex; align-items: center; justify-content: center;
     width: 30px; height: 22px; font-size: 9px; font-weight: bold;
@@ -748,50 +751,50 @@
 /* ---- Soft Synth Editor ---- */
 #soft-synth-panel {
     display: none;
-    position: fixed; top: 64px; left: 0; right: 0;
+    position: fixed; top: 48px; left: 0; right: 0;
     max-height: 70vh;
     background: var(--bg); border: 2px solid var(--accent);
-    padding: 10px 12px; overflow: auto;
+    padding: 4px 8px; overflow: auto;
     font-family: monospace; font-size: 11px; color: var(--text-muted);
     z-index: 999; box-sizing: border-box;
-    flex-direction: column; gap: 6px;
+    flex-direction: column; gap: 3px;
 }
 #soft-synth-panel .ss-title {
-    color: var(--accent); font-weight: bold; font-size: 14px;
-    white-space: nowrap; padding-bottom: 6px;
+    color: var(--accent); font-weight: bold; font-size: 12px;
+    white-space: nowrap; padding-bottom: 2px;
     border-bottom: 1px solid var(--border-dark);
 }
 #soft-synth-panel .ss-footer {
-    display: flex; justify-content: flex-end; gap: 8px;
-    padding-top: 6px; border-top: 1px solid var(--border-dark);
+    display: flex; justify-content: flex-end; gap: 6px;
+    padding-top: 3px; border-top: 1px solid var(--border-dark);
 }
 /* Waveform row: tabs + canvas inline */
 #soft-synth-panel .ss-wave-row {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 4px;
 }
 #soft-synth-panel .ss-wave-tab {
-    font-size: 10px; padding: 3px 8px; border: 1px solid var(--border);
+    font-size: 9px; padding: 2px 6px; border: 1px solid var(--border);
     border-radius: 3px; background: var(--bg-input); color: var(--text-subtle);
     cursor: pointer; text-transform: uppercase;
 }
 #soft-synth-panel .ss-wave-tab.active { background: var(--accent); color: var(--text); border-color: var(--accent); }
 #soft-synth-panel canvas {
-    display: block; flex: 1; height: 88px;
+    display: block; flex: 1; height: 56px;
     border: 1px solid var(--border-dim); border-radius: 4px; background: var(--bg-canvas);
 }
 /* Groups row */
 #soft-synth-panel .ss-group-label {
-    color: var(--accent); font-size: 10px; text-transform: uppercase;
-    letter-spacing: 1px; font-weight: bold;
+    color: var(--accent); font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.5px; font-weight: bold;
 }
 #soft-synth-panel .ss-card-body {
-    display: flex; flex-direction: row; flex-wrap: wrap; gap: 5px;
+    display: flex; flex-direction: row; flex-wrap: wrap; gap: 2px;
     justify-content: center; width: 100%;
 }
 /* Shared row styles for selects, booleans, icon rows */
 #soft-synth-panel .ne-row {
-    display: flex; align-items: center; gap: 6px;
-    padding: 2px 4px; border-radius: 4px;
+    display: flex; align-items: center; gap: 4px;
+    padding: 1px 3px; border-radius: 3px;
 }
 #soft-synth-panel .ne-row:focus-within {
     background: rgba(0, 255, 245, 0.08);
@@ -836,8 +839,8 @@
 /* ---- OrKnob (rotary knob) ---- */
 #soft-synth-panel .ne-row-knob {
     display: flex; flex-direction: column; align-items: center;
-    gap: 4px; padding: 2px 4px; border-radius: 4px;
-    flex: 0 0 72px; justify-content: center;
+    gap: 2px; padding: 1px 3px; border-radius: 3px;
+    flex: 0 0 62px; justify-content: center;
 }
 .or-knob {
     --arc-deg: 0deg;
@@ -894,36 +897,22 @@
 #soft-synth-panel .ss-body {
     display: flex;
     flex-direction: row;
-    gap: 8px;
+    gap: 4px;
     align-items: flex-start;
     overflow-x: auto;
-    padding-bottom: 8px;
-}
-
-.ne-panel .ne-group {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: stretch !important;
-    border-left: none !important;
-    padding-left: 0 !important;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-    flex-shrink: 0;
-    overflow: hidden;
+    padding-bottom: 2px;
 }
 
 #soft-synth-panel .ss-group {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
+    gap: 3px;
+    padding: 3px 6px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(233, 69, 96, 0.3);
     border-radius: 6px;
-    min-width: 210px;
+    min-width: 180px;
     flex: 0 0 auto;
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
@@ -959,11 +948,6 @@
     color: var(--lime);
 }
 
-.ne-panel .ne-group.expanded {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(233, 69, 96, 0.3);
-}
-
 /* ne-grid: only used by output-panel (opt-in via gridId) */
 .ne-panel .ne-grid {
     display: flex; flex-direction: column; gap: 4px;
@@ -975,38 +959,38 @@
 }
 
 .ne-group-accordion-toggle {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 12px !important;
-    width: 28px !important;
-    min-width: 28px !important;
-    height: 100% !important;
-    padding: 8px 0 !important;
-    border: none !important;
-    cursor: pointer !important;
-    background: var(--bg-dark) !important;
-    color: var(--text-muted) !important;
-    outline: none !important;
-    box-sizing: border-box !important;
-    flex-shrink: 0 !important;
-    border-radius: 4px 0 0 4px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    width: 28px;
+    min-width: 28px;
+    height: 100%;
+    padding: 8px 0;
+    border: none;
+    cursor: pointer;
+    background: var(--bg-dark);
+    color: var(--text-muted);
+    outline: none;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    border-radius: 4px 0 0 4px;
 }
 
 .ne-group.collapsed .ne-group-accordion-toggle {
-    border-radius: 4px !important;
+    border-radius: 4px;
 }
 
 .ne-group.expanded .ne-group-accordion-toggle {
-    background: rgba(233, 69, 96, 0.15) !important;
-    border-right: 1px solid rgba(233, 69, 96, 0.3) !important;
-    color: var(--text) !important;
+    background: rgba(233, 69, 96, 0.15);
+    border-right: 1px solid rgba(233, 69, 96, 0.3);
+    color: var(--text);
 }
 
 .ne-group-accordion-toggle:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: var(--text) !important;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
 }
 
 .ne-group-accordion-label {
@@ -1025,6 +1009,8 @@
     font-weight: bold;
     line-height: 1;
 }
+.ne-group.collapsed .ne-group-accordion-icon::before { content: '+'; }
+.ne-group.expanded .ne-group-accordion-icon::before { content: '−'; }
 
 .ne-group-content {
     padding: 8px 12px;
@@ -1038,13 +1024,6 @@
     display: none;
 }
 
-.ne-group-sound-loop-wrapper {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 8px;
-    align-items: stretch !important;
-    flex-shrink: 0;
-}
 
 .fx-header {
     display: flex;

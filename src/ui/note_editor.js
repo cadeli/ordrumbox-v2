@@ -1,6 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindVisibilityToggles, buildAccordionGroup, fmt, pitchToNoteName } from './components/panel_helpers.js'
+import { bindVisibilityToggles, buildAccordionGroup, fmt, pitchToNoteName, ALL_PANEL_IDS } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -71,14 +71,18 @@ export default class NoteEditor extends BasePanel {
         super('ne-panel')
         this._note = null
         this._track = null
+        this._trackEditor = null
+    }
+
+    setTrackEditor(te) {
+        this._trackEditor = te
     }
 
     subscribe() {
-        playbackEvents.onNoteSelect.push((data) => {
-            if (!data) { this.hide(); return }
-            this.show(data)
-        })
-        playbackEvents.onOutputToggle.push(() => this.hide())
+    }
+
+    _hideOtherPanels() {
+        return ALL_PANEL_IDS.filter(id => id !== this.id && id !== 'te-panel')
     }
 
     _getArpState(note) {
@@ -114,10 +118,32 @@ export default class NoteEditor extends BasePanel {
 
         await loadScales()
         super.show()
+        this.reposition()
+    }
+
+    async showEmpty(data) {
+        this._track = data.track
+        this._trackIdx = data.trackIdx ?? 0
+        this._beat = data.beat ?? 0
+        this._beatStep = data.beatStep ?? 0
+        this._pos = data.pos ?? 0
+        // Create a default note object for the empty step
+        this._note = { velocity: 1, pitch: 0, pan: 0, every: 1, prob: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arpTriggerProbability: 0, arpRange: 0 }
+
+        await loadScales()
+        super.show()
+        this.sync()
+        this.reposition()
     }
 
     sync() {
-        if (!this._note) return
+        if (!this._note) {
+            if (!this._track) return
+            this.container.innerHTML = `<div class="ne-header">
+                <span class="ne-track">${this.esc(this._track.name)} — no note</span>
+            </div>`
+            return
+        }
 
         // Destroy previous OrSlider instances so their listeners are cleaned up
         // before we wipe the container's innerHTML.
@@ -132,7 +158,6 @@ export default class NoteEditor extends BasePanel {
 
         let headerHtml = `<div class="ne-header">
             <span class="ne-track">${this.esc(this._track.name)} [beat ${this._beat} step ${this._beatStep}]</span>
-            <button class="ne-close">&times;</button>
         </div>`
 
         let bodyHtml = `<div class="ne-body">`
@@ -208,20 +233,22 @@ export default class NoteEditor extends BasePanel {
         this.container.querySelectorAll('select').forEach(sel => {
             sel.addEventListener('change', () => this._onSelect(sel))
         })
-        bindCloseButton(this.container, () => this.hide())
     }
 
     hide() {
         if (!this.isVisible) return
         super.hide()
-        
-        const wasActive = this._note !== null
         this._note = null
         this._track = null
+    }
 
-        if (wasActive) {
-            playbackEvents.dispatchNoteSelect(null)
-        }
+    reposition() {
+        const tePanel = document.getElementById('te-panel')
+        if (!tePanel || tePanel.style.display === 'none') return
+        const teRect = tePanel.getBoundingClientRect()
+        this.container.style.top = (tePanel.offsetTop + tePanel.offsetHeight) + 'px'
+        this.container.style.left = teRect.left + 'px'
+        this.container.style.width = teRect.width + 'px'
     }
 
     _composeArp() {

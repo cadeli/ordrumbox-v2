@@ -73,13 +73,12 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
     it('opens and closes the Track Editor', () => {
         const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
         
-        playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
+        trackEditor.show({ track: mockTrack, trackIdx: 0 })
         
         const te = document.getElementById('te-panel')
         expect(te.style.display).toBe('block')
 
-        const closeBtn = te.querySelector('.ne-close')
-        closeBtn.click()
+        trackEditor.hide()
 
         expect(te.style.display).toBe('none')
     })
@@ -88,14 +87,12 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
         const mockNote = { beat: 0, beatStep: 0, velocity: 1 }
         const mockTrack = { name: 'SNARE', notes: [mockNote], nbBeats: 1, stepsPerBeat: 4 }
         
-        // Use await to wait for scale loading
         await noteEditor.show({ track: mockTrack, note: mockNote, pos: 0, beat: 0, beatStep: 0 })
         
         const ne = document.getElementById('ne-panel')
         expect(ne.style.display).toBe('block')
 
-        const closeBtn = ne.querySelector('.ne-close')
-        closeBtn.click()
+        noteEditor.hide()
 
         expect(ne.style.display).toBe('none')
     })
@@ -133,7 +130,7 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
         expect(document.getElementById('tools-panel').style.display).toBe('none')
 
         const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
-        playbackEvents.dispatchTrackSelect({ track: mockTrack, trackIdx: 0 })
+        trackEditor.show({ track: mockTrack, trackIdx: 0 })
         expect(document.getElementById('te-panel').style.display).toBe('block')
         expect(document.getElementById('output-panel').style.display).toBe('none')
     })
