@@ -138,7 +138,7 @@ export function bindTabToggles(container, onChange) {
 
 /**
  * Sets the active state of a toolbar view button.
- * @param {'synth' | 'edit'} name
+ * @param {'synth' | 'edit' | 'proll'} name
  * @param {boolean} active
  */
 export function setViewBtn(name, active) {

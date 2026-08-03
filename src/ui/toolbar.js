@@ -191,8 +191,14 @@ export default class Toolbar {
         this.editBtn.dataset.view = 'edit'
         this.editBtn.textContent = 'Split'
         this.editBtn.title = 'Toggle Track Editor'
+        this.prollBtn = document.createElement('button')
+        this.prollBtn.className = 'tb-view-btn'
+        this.prollBtn.dataset.view = 'proll'
+        this.prollBtn.textContent = 'proll'
+        this.prollBtn.title = 'Toggle Proll'
         viewRow.appendChild(this.synthBtn)
         viewRow.appendChild(this.editBtn)
+        viewRow.appendChild(this.prollBtn)
         viewWrap.appendChild(viewLabel)
         viewWrap.appendChild(viewRow)
 
@@ -253,6 +259,9 @@ export default class Toolbar {
         })
         this.editBtn.addEventListener('click', () => {
             playbackEvents.dispatchEditToggle()
+        })
+        this.prollBtn.addEventListener('click', () => {
+            playbackEvents.dispatchProllToggle()
         })
 
         this.patternSelect.addEventListener('change', () => {
