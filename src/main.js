@@ -82,9 +82,6 @@ export function init() {
     _drumkitManager.init()
     _patternsPanel.init()
 
-    // Start in split mode
-    playbackEvents.dispatchEditToggle()
-
     playbackEvents.onTrackSelect.push((data) => {
         if (data && data.trackIdx !== undefined) {
             appState.selectedTrackNum = data.trackIdx
@@ -167,6 +164,9 @@ export function init() {
             serviceRegistry.mfCmd.setSelectedDrumkitNum(0)
             // Then select pattern (which will auto-assign once sounds are loaded)
             serviceRegistry.mfCmd.setSelectedPatternNum(0)
+
+            // Start in split mode (after patterns loaded)
+            playbackEvents.dispatchEditToggle()
         }
 
         idbReport().then(report => {

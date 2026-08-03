@@ -209,21 +209,22 @@ export default class TrackEditor extends BasePanel {
             }
             setViewBtn('synth', this.synthEditor?.panel?.style?.display === 'flex')
         })
-         playbackEvents.onEditToggle.push(() => {
-             if (this.isVisible) {
-                 this.hide()
-                 playbackEvents.dispatchNoteSelect(null)
-             } else {
-                 const pattern = appState.patterns[appState.selectedPatternNum]
-                 const idx = appState.selectedTrackNum
-                 const track = pattern?.tracks?.[idx]
-                 if (track) {
-                     this.show({ track, trackIdx: idx })
-                     this._showNoteEditorForTrack(track, idx)
-                 }
-             }
+playbackEvents.onEditToggle.push(() => {
+            if (this.isVisible) {
+                this.hide()
+                playbackEvents.dispatchNoteSelect(null)
+            } else {
+                const pattern = appState.patterns[appState.selectedPatternNum]
+                const idx = appState.selectedTrackNum
+                const track = pattern?.tracks?.[idx]
+                if (track) {
+                    console.log('trackeditor')
+                    this.show({ track, trackIdx: idx })
+                    console.log('noteeditor')
+                    this._showNoteEditorForTrack(track, idx)
+                }
+            }
             const split = this.isVisible
-            document.getElementById('pattern-panel')?.classList.toggle('pp-split', split)
             this.container?.classList.toggle('pp-split', split)
             setViewBtn('edit', split)
         })
@@ -1163,7 +1164,6 @@ export default class TrackEditor extends BasePanel {
         super.hide()
         this.synthEditor.reset()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-        document.getElementById('pattern-panel')?.classList.remove('pp-split')
         this.container?.classList.remove('pp-split')
         
         this._track = null

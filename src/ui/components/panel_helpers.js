@@ -1,4 +1,3 @@
-import { logger } from "../../core/logger.js"
 export { fmt, escapeHtml, pitchToNoteName } from './ui_utils.js'
 
 /** Canonical set of all overlay panel IDs (pattern-panel is never hidden by other panels). */
@@ -66,37 +65,6 @@ export function bindPanelToggles(container, getTarget) {
     })
 }
 
-export function bindAccordionToggles(container, getTarget, onChange) {
-    container.querySelectorAll('.ne-toggle[data-toggle], .ne-toggle[data-about-toggle], .ne-group-accordion-toggle[data-toggle]').forEach(btn => {
-        btn.addEventListener('click', (event) => {
-            const key = btn.dataset.toggle ?? btn.dataset.aboutToggle ?? ''
-            if (!btn.dataset.toggle) logger.warn('PanelHelpers', 'missing data-toggle, fell back to aboutToggle')
-            btn.classList.toggle('active')
-            const isExpanded = btn.classList.contains('active')
-            
-            let group = btn.closest('.ne-group, .ss-group')
-            if (!group) {
-                group = container.querySelector(`[data-group="${key}"], [data-synth-group="${key}"]`)
-            }
-            
-            if (group) {
-                group.classList.toggle('expanded', isExpanded)
-                group.classList.toggle('collapsed', !isExpanded)
-            }
-            
-            if (getTarget) {
-                const target = getTarget(key)
-                if (target) {
-                    target.style.display = isExpanded ? '' : 'none'
-                }
-            }
-            
-            onChange?.(key, isExpanded)
-            event.stopPropagation()
-        })
-    })
-}
-
 export function hidePanelsById(ids) {
     ids.forEach(id => {
         const panel = document.getElementById(id)
@@ -105,45 +73,6 @@ export function hidePanelsById(ids) {
 }
 
 
-
-/**
- * Generate a complete accordion group HTML string.
- *
- * @param {string} key        – data-group value
- * @param {string} label      – full label (shown inside content)
- * @param {string} shortLabel – abbreviated label on toggle button
- * @param {boolean} expanded  – initial state
- * @param {string} content    – inner HTML of the group (grid rows, sliders…)
- * @param {object} [opts]     – cssPrefix, dataAttr, labelClass, labelHtml, groupClass, extraAttrs, gridId, gridClass
- */
-export function buildAccordionGroup(key, label, shortLabel, expanded, content, opts = {}) {
-    const {
-        cssPrefix  = 'ne',
-        dataAttr   = 'data-group',
-        groupClass = '',
-        extraAttrs = '',
-        gridId,
-        gridClass = '',
-    } = opts
-
-    const cls = [`${cssPrefix}-group`, expanded ? 'expanded' : 'collapsed', groupClass]
-        .filter(Boolean).join(' ')
-    const active = expanded ? ' active' : ''
-
-    const gridOpen  = gridId ? `<div class="${gridClass || `${cssPrefix}-grid`}" id="${gridId}">` : ''
-    const gridClose = gridId ? '</div>' : ''
-
-    return `<div class="${cls}" ${dataAttr}="${key}"${extraAttrs ? ' ' + extraAttrs : ''}>` +
-        `<button class="ne-group-accordion-toggle ne-toggle${active}" data-toggle="${key}" title="${label}">` +
-            `<span class="ne-group-accordion-icon"></span>` +
-            `<span class="ne-group-accordion-label">${shortLabel ?? label}</span>` +
-        `</button>` +
-        `<div class="ne-group-content">` +
-            gridOpen +
-            (content ?? '') +
-            gridClose +
-        `</div></div>`
-}
 
 /**
  * Binds click handlers on `.ne-tab-btn` elements to toggle `.ne-tab-panel` visibility.
@@ -163,7 +92,7 @@ export function bindTabToggles(container, onChange) {
 
 /**
  * Sets the active state of a toolbar view button.
- * @param {'grid' | 'synth' | 'edit'} name
+ * @param {'synth' | 'edit'} name
  * @param {boolean} active
  */
 export function setViewBtn(name, active) {
