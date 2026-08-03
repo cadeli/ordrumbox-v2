@@ -126,7 +126,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         }
 
         const gs = this.generatedSound
-        const env = gs?.enveloppe ?? { release: 0.1 }
+        const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
         const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
         const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
         if (typeof setTimeout === 'function') {
@@ -150,7 +150,7 @@ export default class WorkletSynthVoice extends BaseVoice {
     // disconnect automatically. We only need to null the local ref.
 
     _sendUpdate(gs, pan) {
-        const env = gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
+        const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
         const noiseCfg = gs.noise ?? {}
         const filterCfg = gs.filter ?? {}
 

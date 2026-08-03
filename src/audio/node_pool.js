@@ -1,3 +1,5 @@
+import { safeDisconnect } from './math.js'
+
 const DISPOSABLE = new Set(['OscillatorNode', 'BufferSourceNode'])
 
 export default class NodePool {
@@ -20,7 +22,7 @@ export default class NodePool {
 
     release(node) {
         if (!node) return
-        try { node.disconnect() } catch (_) { /* already disconnected */ }
+        safeDisconnect(node)
         const type = node.constructor.name
         this._activeCount = Math.max(0, this._activeCount - 1)
         if (DISPOSABLE.has(type)) return
@@ -31,7 +33,7 @@ export default class NodePool {
 
     resetNode(node, type) {
         if (!node) return
-        try { node.disconnect() } catch (_) {}
+        safeDisconnect(node)
 
         try {
             switch (type) {

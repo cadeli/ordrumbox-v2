@@ -6,6 +6,15 @@ import {
 import Utils from '../core/utils.js'
 import { logger } from "../core/logger.js"
 
+export function safeDisconnect(node) {
+    if (!node || typeof node.disconnect !== 'function') return
+    try {
+        node.disconnect()
+    } catch (_) {
+        // Ignored: Node already disconnected
+    }
+}
+
 export function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value))
 }

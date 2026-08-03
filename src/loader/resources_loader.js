@@ -238,6 +238,6 @@ export default class MfResourcesLoader {
     }
 
     fix = (patterns) => {
-        return fixPatterns(JSON.parse(JSON.stringify(patterns)))
+        return fixPatterns(structuredClone(patterns))
     }
 }

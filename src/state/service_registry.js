@@ -8,6 +8,28 @@ export class ServiceRegistry {
 
     constructor() { Object.assign(this, ServiceRegistry.DEFAULTS) }
 
+    // Clean modern aliases without 'mf' prefix
+    get cmd() { return this.mfCmd }
+    set cmd(v) { this.mfCmd = v }
+
+    get patterns() { return this.mfPatterns }
+    set patterns(v) { this.mfPatterns = v }
+
+    get resourcesLoader() { return this.mfResourcesLoader }
+    set resourcesLoader(v) { this.mfResourcesLoader = v }
+
+    get seq() { return this.mfSeq }
+    set seq(v) { this.mfSeq = v }
+
+    get autoGenerate() { return this.mfAutoGenerate }
+    set autoGenerate(v) { this.mfAutoGenerate = v }
+
+    get autoAssign() { return this.mfAutoAssign }
+    set autoAssign(v) { this.mfAutoAssign = v }
+
+    get wavExporter() { return this.mfWavExporter }
+    set wavExporter(v) { this.mfWavExporter = v }
+
     reset() { Object.assign(this, ServiceRegistry.DEFAULTS) }
 }
 

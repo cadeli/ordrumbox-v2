@@ -220,8 +220,8 @@ export default class DrumkitManager extends BasePanel {
             const ctx = canvas?.getContext('2d')
             if (ctx) {
                 requestAnimationFrame(() => {
-                    const w = canvas.clientWidth || 300
-                    const h = canvas.clientHeight || 80
+                    const w = (canvas.clientWidth && canvas.clientWidth > 0) ? canvas.clientWidth : 300
+                    const h = (canvas.clientHeight && canvas.clientHeight > 0) ? canvas.clientHeight : 80
                     canvas.width = w
                     canvas.height = h
                     drawEnvelope(ctx, analysis.envelope, w, h)

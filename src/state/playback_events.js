@@ -1,64 +1,73 @@
-export const playbackEvents = {
-    onPlaybackStart: [],
-    onPlaybackStop: [],
-    onPatternChange: [],
-    onDrumkitChange: [],
-    onBpmChange: [],
-    onNoteSelect: [],
-    onTrackSelect: [],
-    onTrackParamChange: [],
-    onToolsToggle: [],
-    onOutputToggle: [],
-    onAboutToggle: [],
-    onWorkletStatusChange: [],
-    onLoopPointChange: [],
-    onNoteTrigger: [],
-    onStall: [],
-    onStallResume: [],
-    onDrumkitManagerToggle: [],
-    onPatternsToggle: [],
-    onSynthToggle: [],
-    onEditToggle: [],
+/**
+ * Generic EventBus with backward-compatible Proxy support for legacy onX / dispatchX calls.
+ */
+class EventBus {
+    constructor() {
+        this._listeners = new Map()
+    }
 
-    offPlaybackStart(fn) { this.onPlaybackStart = this.onPlaybackStart.filter(f => f !== fn) },
-    offPlaybackStop(fn) { this.onPlaybackStop = this.onPlaybackStop.filter(f => f !== fn) },
-    offPatternChange(fn) { this.onPatternChange = this.onPatternChange.filter(f => f !== fn) },
-    offDrumkitChange(fn) { this.onDrumkitChange = this.onDrumkitChange.filter(f => f !== fn) },
-    offBpmChange(fn) { this.onBpmChange = this.onBpmChange.filter(f => f !== fn) },
-    offNoteSelect(fn) { this.onNoteSelect = this.onNoteSelect.filter(f => f !== fn) },
-    offTrackSelect(fn) { this.onTrackSelect = this.onTrackSelect.filter(f => f !== fn) },
-    offTrackParamChange(fn) { this.onTrackParamChange = this.onTrackParamChange.filter(f => f !== fn) },
-    offToolsToggle(fn) { this.onToolsToggle = this.onToolsToggle.filter(f => f !== fn) },
-    offOutputToggle(fn) { this.onOutputToggle = this.onOutputToggle.filter(f => f !== fn) },
-    offAboutToggle(fn) { this.onAboutToggle = this.onAboutToggle.filter(f => f !== fn) },
-    offWorkletStatusChange(fn) { this.onWorkletStatusChange = this.onWorkletStatusChange.filter(f => f !== fn) },
-    offLoopPointChange(fn) { this.onLoopPointChange = this.onLoopPointChange.filter(f => f !== fn) },
-    offNoteTrigger(fn) { this.onNoteTrigger = this.onNoteTrigger.filter(f => f !== fn) },
-    offStall(fn) { this.onStall = this.onStall.filter(f => f !== fn) },
-    offStallResume(fn) { this.onStallResume = this.onStallResume.filter(f => f !== fn) },
-    offDrumkitManagerToggle(fn) { this.onDrumkitManagerToggle = this.onDrumkitManagerToggle.filter(f => f !== fn) },
-    offPatternsToggle(fn) { this.onPatternsToggle = this.onPatternsToggle.filter(f => f !== fn) },
-    offSynthToggle(fn) { this.onSynthToggle = this.onSynthToggle.filter(f => f !== fn) },
-    offEditToggle(fn) { this.onEditToggle = this.onEditToggle.filter(f => f !== fn) },
+    /** Subscribe to an event */
+    on(event, fn) {
+        if (typeof fn !== 'function') return () => {}
+        if (!this._listeners.has(event)) {
+            this._listeners.set(event, [])
+        }
+        this._listeners.get(event).push(fn)
+        return () => this.off(event, fn)
+    }
 
-    dispatchPlaybackStart() { this.onPlaybackStart.forEach(fn => fn()) },
-    dispatchPlaybackStop() { this.onPlaybackStop.forEach(fn => fn()) },
-    dispatchPatternChange(changedTracks) { this.onPatternChange.forEach(fn => fn(changedTracks)) },
-    dispatchDrumkitChange() { this.onDrumkitChange.forEach(fn => fn()) },
-    dispatchBpmChange(bpm) { this.onBpmChange.forEach(fn => fn(bpm)) },
-    dispatchNoteSelect(data) { this.onNoteSelect.forEach(fn => fn(data)) },
-    dispatchTrackSelect(data) { this.onTrackSelect.forEach(fn => fn(data)) },
-    dispatchTrackParamChange(track) { this.onTrackParamChange.forEach(fn => fn(track)) },
-    dispatchToolsToggle(show) { this.onToolsToggle.forEach(fn => fn(show)) },
-    dispatchOutputToggle(show) { this.onOutputToggle.forEach(fn => fn(show)) },
-    dispatchAboutToggle(show) { this.onAboutToggle.forEach(fn => fn(show)) },
-    dispatchWorkletStatusChange(status) { this.onWorkletStatusChange.forEach(fn => fn(status)) },
-    dispatchLoopPointChange(data) { this.onLoopPointChange.forEach(fn => fn(data)) },
-    dispatchNoteTrigger(data) { this.onNoteTrigger.forEach(fn => fn(data)) },
-    dispatchStall(data) { this.onStall.forEach(fn => fn(data)) },
-    dispatchStallResume() { this.onStallResume.forEach(fn => fn()) },
-    dispatchDrumkitManagerToggle(show) { this.onDrumkitManagerToggle.forEach(fn => fn(show)) },
-    dispatchPatternsToggle(show) { this.onPatternsToggle.forEach(fn => fn(show)) },
-    dispatchSynthToggle(show) { this.onSynthToggle.forEach(fn => fn(show)) },
-    dispatchEditToggle(show) { this.onEditToggle.forEach(fn => fn(show)) }
+    /** Unsubscribe from an event */
+    off(event, fn) {
+        const arr = this._listeners.get(event)
+        if (!arr) return
+        this._listeners.set(event, arr.filter(f => f !== fn))
+    }
+
+    /** Emit an event with payload */
+    emit(event, payload) {
+        const arr = this._listeners.get(event)
+        if (arr) {
+            arr.forEach(fn => fn(payload))
+        }
+    }
+
+    /** Get array of listeners for backward compatibility */
+    getListeners(event) {
+        if (!this._listeners.has(event)) {
+            this._listeners.set(event, [])
+        }
+        return this._listeners.get(event)
+    }
 }
+
+const bus = new EventBus()
+
+export const playbackEvents = new Proxy(bus, {
+    get(target, prop) {
+        if (typeof prop !== 'string') return Reflect.get(target, prop)
+        if (prop in target) return Reflect.get(target, prop)
+
+        // Legacy dispatchX(payload) -> bus.emit('X', payload)
+        if (prop.startsWith('dispatch')) {
+            const eventName = prop.slice(8)
+            const event = eventName.charAt(0).toLowerCase() + eventName.slice(1)
+            return (payload) => target.emit(event, payload)
+        }
+
+        // Legacy offX(fn) -> bus.off('X', fn)
+        if (prop.startsWith('off')) {
+            const eventName = prop.slice(3)
+            const event = eventName.charAt(0).toLowerCase() + eventName.slice(1)
+            return (fn) => target.off(event, fn)
+        }
+
+        // Legacy onX array access (e.g. playbackEvents.onPatternChange.push(fn))
+        if (prop.startsWith('on')) {
+            const eventName = prop.slice(2)
+            const event = eventName.charAt(0).toLowerCase() + eventName.slice(1)
+            return target.getListeners(event)
+        }
+
+        return Reflect.get(target, prop)
+    }
+})

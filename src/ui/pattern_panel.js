@@ -268,13 +268,14 @@ export default class PatternPanel extends BasePanel {
         }
         const strips = mixer.strips
         const vuEls = this._vuElCache
+        const currentPattern = appState.patterns[appState.selectedPatternNum]
+        const tracks = Utils.getTracksArray(currentPattern)
         for (const vuEl of vuEls) {
             // Use cached track index if available
             let tIdx = vuEl._tIdx
             if (tIdx === undefined) {
                 tIdx = vuEl._tIdx = parseInt(vuEl.dataset.track, 10)
             }
-            const tracks = Utils.getTracksArray(appState.patterns[appState.selectedPatternNum])
             const track = tracks?.[tIdx]
             const strip = track?.name ? strips[track.name] : null
             const level = strip?.getLevel ? strip.getLevel() : 0
@@ -734,7 +735,7 @@ export default class PatternPanel extends BasePanel {
             }
             case 'duplicate': {
                 const clone = mfCmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
-                Object.assign(clone, JSON.parse(JSON.stringify(pattern)))
+                Object.assign(clone, structuredClone(pattern))
                 clone.name = (pattern.name ?? 'Pattern') + ' copy'
                 const newIdx = appState.patterns.length - 1
                 await mfCmd.setSelectedPatternNum(newIdx)

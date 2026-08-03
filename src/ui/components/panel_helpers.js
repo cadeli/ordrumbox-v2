@@ -1,3 +1,6 @@
+import { OrSlider } from './or_slider.js'
+import { OrKnob } from './or_knob.js'
+
 export { fmt, escapeHtml, pitchToNoteName } from './ui_utils.js'
 
 /** Canonical set of all overlay panel IDs (pattern-panel is never hidden by other panels). */
@@ -5,6 +8,49 @@ export const ALL_PANEL_IDS = [
     'te-panel', 'tools-panel', 'output-panel',
     'about-panel', 'dm-panel', 'soft-synth-panel'
 ]
+
+/**
+ * Factory for building and mounting groups of OrSlider or OrKnob controls.
+ */
+export function createControlGroup(defs, targetModel, onChange, options = {}) {
+    const isKnobGroup = options.type === 'knob'
+    const controls = []
+    let html = ''
+
+    defs.forEach(def => {
+        const val = targetModel[def.key] ?? def.value ?? def.min ?? 0
+        const cfg = {
+            key: def.key,
+            label: def.label,
+            min: def.min ?? 0,
+            max: def.max ?? 1,
+            step: def.step ?? 0.01,
+            value: val,
+            defaultValue: def.defaultValue ?? val,
+            unit: def.unit ?? '',
+            format: def.format,
+            normalize: def.normalize,
+            denormalize: def.denormalize,
+            hasLfo: def.lfo ? !!targetModel[def.lfo] : false,
+            onChange: (newVal, key) => {
+                targetModel[key] = newVal
+                onChange?.(newVal, key)
+            }
+        }
+        const ctrl = isKnobGroup ? new OrKnob(cfg) : new OrSlider(cfg)
+        controls.push(ctrl)
+        html += ctrl.toHTML()
+    })
+
+    const mount = (container) => {
+        controls.forEach(ctrl => {
+            const row = container.querySelector(`[data-or-slider="${ctrl._key}"]`) ?? container.querySelector(`[data-prop="${ctrl._key}"]`)
+            if (row) ctrl.mount(row)
+        })
+    }
+
+    return { controls, html, mount }
+}
 
 export function injectUiCss() {
     if (document.getElementById('ui-styles')) return
