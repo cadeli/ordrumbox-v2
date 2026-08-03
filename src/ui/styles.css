@@ -768,9 +768,9 @@
 #soft-synth-panel {
     display: none;
     position: fixed; top: 48px; left: 0; right: 0;
-    max-height: 70vh;
+    height: 800px;
     background: var(--bg); border: 2px solid var(--accent);
-    padding: 4px 8px; overflow: auto;
+    padding: 4px 8px; overflow-y: auto; overflow-x: hidden;
     font-family: monospace; font-size: 11px; color: var(--text-muted);
     z-index: 999; box-sizing: border-box;
     flex-direction: column; gap: 3px;
@@ -913,9 +913,9 @@
 #soft-synth-panel .ss-body {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 4px;
     align-items: flex-start;
-    overflow-x: auto;
     padding-bottom: 2px;
 }
 

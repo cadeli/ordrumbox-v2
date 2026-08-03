@@ -193,7 +193,7 @@ export default class Toolbar {
         this.editBtn = document.createElement('button')
         this.editBtn.className = 'tb-view-btn'
         this.editBtn.dataset.view = 'edit'
-        this.editBtn.textContent = 'Edit'
+        this.editBtn.textContent = 'Split'
         this.editBtn.title = 'Toggle Track Editor'
         viewRow.appendChild(this.gridBtn)
         viewRow.appendChild(this.synthBtn)
