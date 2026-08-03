@@ -69,6 +69,7 @@ export class OrSlider {
 
         // Current value in denormalized space
         this._value = cfg.value ?? cfg.min
+        this._defaultValue = cfg.defaultValue ?? cfg.value ?? cfg.min
 
         this.el       = null   // div.ne-row — available after mount() / createElement()
         this._input   = null
@@ -76,6 +77,8 @@ export class OrSlider {
 
         this._boundOnInput   = this._onInput.bind(this)
         this._boundOnKeydown = this._onKeydown.bind(this)
+        this._boundOnDblClick = this._onDblClick.bind(this)
+        this._boundOnContextMenu = this._onContextMenu.bind(this)
     }
 
     // ─── Internal helpers ───────────────────────────────────────────────────
@@ -181,6 +184,41 @@ export class OrSlider {
             this._input.addEventListener('input',   this._boundOnInput)
             this._input.addEventListener('keydown', this._boundOnKeydown)
         }
+        if (this.el) {
+            this.el.addEventListener('dblclick', this._boundOnDblClick)
+            this.el.addEventListener('contextmenu', this._boundOnContextMenu)
+        } else if (this._input) {
+            this._input.addEventListener('dblclick', this._boundOnDblClick)
+            this._input.addEventListener('contextmenu', this._boundOnContextMenu)
+        }
+        if (this._valSpan) {
+            this._valSpan.addEventListener('dblclick', this._boundOnDblClick)
+            this._valSpan.addEventListener('contextmenu', this._boundOnContextMenu)
+        }
+    }
+
+    _onDblClick(e) {
+        e.preventDefault()
+        e.stopPropagation()
+        this.setValue(this._defaultValue, true)
+    }
+
+    _onContextMenu(e) {
+        e.preventDefault()
+        e.stopPropagation()
+        this.promptDirectInput()
+    }
+
+    promptDirectInput() {
+        const title = `Enter value for ${this._label} (${this._min}–${this._max}${this._unit ? ' ' + this._unit : ''}):`
+        const raw = window.prompt(title, this._value)
+        if (raw === null || raw.trim() === '') return
+        const num = parseFloat(raw)
+        if (!Number.isNaN(num)) {
+            const denorm = this._toDenorm(num)
+            const clamped = Math.min(this._max, Math.max(this._min, denorm))
+            this.setValue(clamped, true)
+        }
     }
 
     /**
@@ -212,8 +250,9 @@ export class OrSlider {
         e.stopPropagation()
 
         let multiplier = 1
-        if (e.shiftKey) multiplier = 10
+        if (e.shiftKey) multiplier = 0.1 // Shift = precision mode
         if (e.altKey)   multiplier = 0.1
+        if (e.ctrlKey || e.metaKey) multiplier = 10
 
         const delta    = (isUp ? 1 : -1) * this._step * multiplier
         const norm     = parseFloat(this._input.value)
@@ -282,6 +321,17 @@ export class OrSlider {
     destroy() {
         this._input?.removeEventListener('input',   this._boundOnInput)
         this._input?.removeEventListener('keydown', this._boundOnKeydown)
+        if (this.el) {
+            this.el.removeEventListener('dblclick', this._boundOnDblClick)
+            this.el.removeEventListener('contextmenu', this._boundOnContextMenu)
+        } else if (this._input) {
+            this._input.removeEventListener('dblclick', this._boundOnDblClick)
+            this._input.removeEventListener('contextmenu', this._boundOnContextMenu)
+        }
+        if (this._valSpan) {
+            this._valSpan.removeEventListener('dblclick', this._boundOnDblClick)
+            this._valSpan.removeEventListener('contextmenu', this._boundOnContextMenu)
+        }
         this.el       = null
         this._input   = null
         this._valSpan = null
