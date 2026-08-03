@@ -79,6 +79,22 @@
       min-height: 100vh;
       background-color: #000;
     }
+    @media (min-width: 1901px), (min-height: 1091px) {
+      body {
+        justify-content: center;
+        min-height: 100vh;
+        background: #0a0a0a;
+      }
+      #insert-ordrumbox-v2-here {
+        width: 1900px;
+        max-height: 1090px;
+        overflow: auto;
+        margin: auto;
+        border: 1px solid #222;
+        border-radius: 4px;
+        box-shadow: 0 0 60px rgba(0,0,0,.6);
+      }
+    }
 
     /* Waiting screen — inlined to prevent CLS from async styles.css load */
     #waiting-screen {

@@ -89,6 +89,7 @@ export function init() {
     })
 
     window.addEventListener('resize', () => {
+        console.log(`resize: ${window.innerWidth}x${window.innerHeight}`)
         const repositionable = [
             _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel
         ]

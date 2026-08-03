@@ -618,6 +618,12 @@ export default class PatternPanel extends BasePanel {
     }
 
     _onClick(e) {
+        const actionBtn = e.target.closest('.pp-action-btn')
+        if (actionBtn) {
+            this._onAction(actionBtn.dataset.ppAction)
+            return
+        }
+
         const trackEl = e.target.closest('.pp-track')
         if (trackEl && !e.target.closest('.pp-track-name') && !e.target.closest('.pp-divider') && !e.target.closest('.pp-solo') && !e.target.closest('.pp-cell') && !e.target.closest('.pp-volume')) {
             const trackIdx = parseInt(trackEl.querySelector('.pp-track-name')?.dataset.track, 10)
@@ -716,6 +722,74 @@ export default class PatternPanel extends BasePanel {
         selected.forEach(el => el.classList.remove('selected'))
         playbackEvents.dispatchNoteSelect(null)
         playbackEvents.dispatchTrackSelect(null)
+    }
+
+    async _onAction(action) {
+        const idx = appState.selectedPatternNum
+        const pattern = appState.patterns[idx]
+        if (!pattern && action !== 'replace') return
+        const mfCmd = serviceRegistry.mfCmd
+        const mfPatterns = serviceRegistry.mfPatterns
+
+        switch (action) {
+            case 'delete': {
+                if (appState.patterns.length <= 1) return
+                if (!confirm('Delete pattern "' + (pattern.name ?? '') + '"?')) return
+                mfCmd.removePattern(idx)
+                playbackEvents.dispatchPatternChange()
+                break
+            }
+            case 'clean': {
+                if (!confirm('Clear all notes in "' + (pattern.name ?? '') + '"?')) return
+                mfCmd.cleanPattern(pattern)
+                mfPatterns?.computeFlatNotesFromPattern(pattern)
+                playbackEvents.dispatchPatternChange()
+                break
+            }
+            case 'duplicate': {
+                const clone = mfCmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
+                Object.assign(clone, JSON.parse(JSON.stringify(pattern)))
+                clone.name = (pattern.name ?? 'Pattern') + ' copy'
+                const newIdx = appState.patterns.length - 1
+                await mfCmd.setSelectedPatternNum(newIdx)
+                playbackEvents.dispatchPatternChange()
+                break
+            }
+            case 'rename': {
+                const newName = prompt('Rename pattern:', pattern.name ?? '')
+                if (newName === null || newName.trim() === '') return
+                mfCmd.renamePattern(idx, newName.trim())
+                playbackEvents.dispatchPatternChange()
+                break
+            }
+            case 'save': {
+                const { PatternExporter } = await import('../patterns/exporter.js')
+                const data = PatternExporter.export(pattern)
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `ordrumbox-${pattern.name ?? 'pattern'}.json`
+                a.click()
+                URL.revokeObjectURL(url)
+                break
+            }
+            case 'replace': {
+                const input = document.createElement('input')
+                input.type = 'file'
+                input.accept = '.json'
+                input.onchange = async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const text = await file.text()
+                    const data = JSON.parse(text)
+                    mfCmd.importPatternFromJson(data)
+                    playbackEvents.dispatchPatternChange()
+                }
+                input.click()
+                break
+            }
+        }
     }
 
     _applySelection() {
@@ -827,10 +901,16 @@ export default class PatternPanel extends BasePanel {
         const firstStepsPerBeat = tracks[0]?.stepsPerBeat ?? 4
         const totalMeasures = Math.ceil(totalBeats / firstStepsPerBeat)
         const headerHtml = `<div class="pp-header">
+            <div class="pp-actions">
+                <button class="pp-action-btn" data-pp-action="delete" title="Delete pattern">✕</button>
+                <button class="pp-action-btn" data-pp-action="clean" title="Clear all notes">⌫</button>
+                <button class="pp-action-btn" data-pp-action="duplicate" title="Duplicate pattern">⧉</button>
+                <button class="pp-action-btn" data-pp-action="rename" title="Rename pattern">✎</button>
+                <button class="pp-action-btn" data-pp-action="save" title="Save as JSON">💾</button>
+                <button class="pp-action-btn" data-pp-action="replace" title="Load / replace pattern">📂</button>
+            </div>
             <span class="pp-name">${this.esc(pattern.name ?? (logger.warn('PatternPanel', 'name fallback'), 'Unnamed'))}</span>
-            <span class="pp-meta">${pattern.bpm ?? 120} BPM</span>
-            <span class="pp-meta">${totalBeats} beats (${totalMeasures} measures)</span>
-            <span class="pp-meta">Page ${appState.currentPage + 1}</span>
+            <span class="pp-meta">${pattern.bpm ?? 120} BPM · ${totalBeats} beats (${totalMeasures} measures) · Page ${appState.currentPage + 1}</span>
         </div>`
 
         if (tracks.length === 0) {

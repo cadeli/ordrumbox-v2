@@ -106,6 +106,7 @@ export default class Toolbar {
         patLabel.style.cursor = 'pointer'
         this.patLabel = patLabel
         this.patternSelect = document.createElement('select')
+
         patWrap.appendChild(patLabel)
         patWrap.appendChild(this.patternSelect)
 
@@ -216,10 +217,6 @@ export default class Toolbar {
         beatsWrap.appendChild(beatsLabel)
         beatsWrap.appendChild(this.beatsSelect)
 
-        this.clearBtn = document.createElement('button')
-        this.clearBtn.className = 'tb-clear'
-        this.clearBtn.textContent = 'Clear'
-
         this.outputBtn = document.createElement('button')
         this.outputBtn.className = 'tb-output'
         this.outputBtn.textContent = 'Master'
@@ -243,7 +240,6 @@ export default class Toolbar {
         this.container.appendChild(kitWrap)
         this.container.appendChild(genWrap)
         this.container.appendChild(viewWrap)
-        this.container.appendChild(this.clearBtn)
         this.container.appendChild(this.outputBtn)
         this.container.appendChild(this.toolsBtn)
         this.container.appendChild(this.aboutBtn)
@@ -411,15 +407,6 @@ export default class Toolbar {
             this.syncGenButtons()
             this.syncPatterns()
             playbackEvents.dispatchPatternChange()
-        })
-
-        this.clearBtn.addEventListener('click', () => {
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            if (pattern && confirm('Clear all notes in current pattern?')) {
-                serviceRegistry.mfCmd.cleanPattern(pattern)
-                serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
-                playbackEvents.dispatchPatternChange()
-            }
         })
 
         this.prevPageBtn.addEventListener('click', () => {

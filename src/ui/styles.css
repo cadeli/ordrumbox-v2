@@ -116,8 +116,6 @@
 #tb .tb-auto-gen:hover { background: var(--border-dim); }
 #tb .tb-auto-gen.active { background: var(--green-dark); border-color: var(--green-active); color: var(--text); }
 #tb .tb-auto-gen.active:hover { background: var(--green-active); }
-#tb .tb-clear { background: var(--border-dim); border-color: var(--border); color: var(--text); }
-#tb .tb-clear:hover { background: var(--border); border-color: var(--text-faint); }
 #tb .tb-tools { background: var(--bg-input); border-color: var(--border); color: var(--text-dim); }
 #tb .tb-tools:hover { border-color: var(--accent); }
 #tb select { min-width: 90px; max-width: 140px; }
@@ -156,7 +154,7 @@
     #tb .tb-bpm-toggle { width: 34px; font-size: 9px; padding: 3px 2px; }
     #tb .tb-tools, #tb .tb-about { font-size: 14px; min-width: 26px; min-height: 26px; }
     #tb .tb-label { font-size: 7px; }
-    #tb .tb-auto-gen, #tb .tb-clear, #tb .tb-output { font-size: 8px; padding: 3px 3px; }
+    #tb .tb-auto-gen, #tb .tb-output { font-size: 8px; padding: 3px 3px; }
 }
 
 /* ---- View Buttons ---- */
@@ -226,6 +224,23 @@
 }
 #pattern-panel .pp-name { color: var(--accent); font-weight: bold; }
 #pattern-panel .pp-meta { color: var(--text-ghost); font-size: 10px; }
+
+.pp-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.pp-action-btn {
+    width: 22px; height: 22px; padding: 0; margin: 0;
+    font-size: 12px; line-height: 1;
+    background: var(--border-dark); border: 1px solid var(--border); border-radius: 3px;
+    color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+#pattern-panel .pp-header .pp-actions {
+    width: calc(200px + 12px + 12px);
+    justify-content: center;
+    box-sizing: border-box;
+    align-items: center;
+    margin-top: -2px;
+}
+.pp-action-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 #pattern-panel .pp-tracks {
     display: flex;
@@ -463,6 +478,7 @@
     #pattern-panel .pp-beat { width: 100px; }
     #pattern-panel .pp-track { height: 32px; min-height: 32px; max-height: 32px; }
     #pattern-panel .pp-track-left { min-width: 110px; max-width: 110px; }
+    #pattern-panel .pp-header .pp-actions { width: calc(110px + 12px + 12px); }
     #pattern-panel .pp-track-url { display: none; }
     #pattern-panel .pp-volume { width: 40px; }
 }
