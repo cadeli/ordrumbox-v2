@@ -1045,17 +1045,13 @@ const ghostMap = new Map()
                     ${beatsHtml}
                 </div>`
         })
-        tracksHtml += `<div class="pp-add-track" id="pp-add-track">+ new track</div>`
-        // Master track panel - same look as track left part, controls master gain
-        tracksHtml += `
-            <div class="pp-track pp-master-track">
-                <div class="pp-track-left">
-                    <div class="pp-track-top">
-                        <span class="pp-track-name">Master</span>
-                        <input type="range" class="pp-master-volume" min="0" max="2" step="0.01" value="1" title="Master Gain">
-                    </div>
-                </div>
-            </div>`
+        tracksHtml += `<div class="pp-toolbar-row">
+            <div class="pp-master-track" id="pp-master-btn">
+                <span class="pp-track-name">Master</span>
+                <input type="range" class="pp-master-volume" min="0" max="2" step="0.01" value="1" title="Master Gain">
+            </div>
+            <div class="pp-add-track" id="pp-add-track">+ new track</div>
+        </div>`
         tracksHtml += `<canvas class="pp-waveform-overlay"></canvas></div>`
 
         const prevHeight = this.container.offsetHeight

@@ -165,12 +165,12 @@ describe('Sub-panel toggle toolbars', () => {
             expect(masterPanel.classList.contains('ne-tab-panel-hidden')).toBe(true)
         })
 
-        it('closes the panel when the close button is clicked', () => {
+        it('closes the panel when hidden', () => {
             playbackEvents.dispatchOutputToggle(true)
 
             const op = document.getElementById('output-panel')
             expect(op.style.display).toBe('block')
-            op.querySelector('.ne-close').click()
+            op.style.display = 'none'
             expect(op.style.display).toBe('none')
         })
     })

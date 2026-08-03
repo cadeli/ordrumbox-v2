@@ -1,6 +1,6 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
+import { bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -27,10 +27,9 @@ export default class OutputPanel extends BasePanel {
 
     createDOM() {
         super.createDOM()
-        this.container.innerHTML = `
+this.container.innerHTML = `
             <div class="ne-header">
-                <span class="ne-track">Output</span>
-                <button class="ne-close">&times;</button>
+                <span class="ne-track">Master</span>
             </div>
             <div class="ne-tab-bar">
                 <button class="ne-tab-btn active" data-ne-tab="master">Mst</button>
@@ -49,8 +48,7 @@ export default class OutputPanel extends BasePanel {
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="spectrum">
                 <div id="op-analyzer-group"><canvas id="op-spectrum"></canvas></div>
-            </div>
-        `
+            </div>`
 
         this._buildMasterSlider()
         this._buildPreGainSlider()
@@ -61,7 +59,6 @@ export default class OutputPanel extends BasePanel {
         this.canvas.width  = 256
         this.canvas.height = 100
 
-        bindCloseButton(this.container, () => this.hide())
         bindTabToggles(this.container)
     }
 
