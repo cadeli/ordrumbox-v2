@@ -1,6 +1,6 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindAccordionToggles, buildAccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -32,11 +32,23 @@ export default class OutputPanel extends BasePanel {
                 <span class="ne-track">Output</span>
                 <button class="ne-close">&times;</button>
             </div>
-            <div class="ne-body">
-                ${buildAccordionGroup('master', 'Master', 'Mst', true, '', { gridId: 'op-master-grid' })}
-                ${buildAccordionGroup('compressor', 'Compressor', 'Comp', true, '', { gridId: 'op-comp-grid', gridClass: 'ne-grid ne-grid-2col' })}
-                ${buildAccordionGroup('filters', 'Filters', 'Flt', true, '', { gridId: 'op-filters-grid' })}
-                ${buildAccordionGroup('spectrum', 'Spectrum', 'Spec', true, '<canvas id="op-spectrum"></canvas>', { extraAttrs: 'id="op-analyzer-group"' })}
+            <div class="ne-tab-bar">
+                <button class="ne-tab-btn active" data-ne-tab="master">Mst</button>
+                <button class="ne-tab-btn" data-ne-tab="compressor">Comp</button>
+                <button class="ne-tab-btn" data-ne-tab="filters">Flt</button>
+                <button class="ne-tab-btn" data-ne-tab="spectrum">Spec</button>
+            </div>
+            <div class="ne-tab-panel" data-tab-panel="master">
+                <div class="ne-grid" id="op-master-grid"></div>
+            </div>
+            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="compressor">
+                <div class="ne-grid ne-grid-2col" id="op-comp-grid"></div>
+            </div>
+            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="filters">
+                <div class="ne-grid" id="op-filters-grid"></div>
+            </div>
+            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="spectrum">
+                <div id="op-analyzer-group"><canvas id="op-spectrum"></canvas></div>
             </div>
         `
 
@@ -50,14 +62,7 @@ export default class OutputPanel extends BasePanel {
         this.canvas.height = 100
 
         bindCloseButton(this.container, () => this.hide())
-
-        const targetMap = {
-            master:     '#op-master-vol',
-            compressor: '.ne-group:nth-child(2) .ne-group-content',
-            filters:    '.ne-group:nth-child(3) .ne-group-content',
-            spectrum:   '#op-analyzer-group .ne-group-content',
-        }
-        bindAccordionToggles(this.container, (key) => this.container.querySelector(targetMap[key]))
+        bindTabToggles(this.container)
     }
 
     _buildMasterSlider() {

@@ -10,7 +10,7 @@ import { TICK } from '../core/constants.js'
 import { isMidiSupported, parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalized } from '../logic/midi/midi_parser.js'
 import { C3_MIDI_NOTE } from '../logic/midi/midi_exporter.js'
 import { showToast } from './toast.js'
-import { bindCloseButton, bindAccordionToggles, hidePanelsById, buildAccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, hidePanelsById, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
@@ -31,85 +31,90 @@ export default class ToolsPanel extends BasePanel {
                 <span class="ne-track">Tools</span>
                 <button class="ne-close">&times;</button>
             </div>
-            <div class="ne-body">
-                ${buildAccordionGroup('pattern', 'Pattern Settings', 'Pattern', true, `
-                    <div class="ne-row no-cursor">
-                        <label>Name</label>
-                        <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
-                    </div>
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-compact" title="Detect repeating note patterns and add loop points to minimize notes">Compact Tracks</button>
-                    </div>
-                `)}
-                ${buildAccordionGroup('export', 'Export', 'Export', true, `
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-export-json" title="Save the current pattern as a JSON file">Export JSON</button>
-                    </div>
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-export-midi" title="Export the current pattern to a Standard MIDI File (.mid)">Export MIDI</button>
-                    </div>
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-export-wav" title="Render the pattern to an audio WAV file">Export WAV</button>
-                    </div>
-                    <div id="tp-wav-loops-slot"></div>
-                `)}
-                ${buildAccordionGroup('import', 'Import', 'Import', true, `
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-import-json" title="Load a previously exported pattern from a JSON file">Import JSON</button>
-                        <input type="file" id="tp-import-file" style="display: none" accept=".json">
-                    </div>
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-import-wav" title="Replace the selected track's sound with a custom WAV sample">Import WAV</button>
-                        <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav,.flac,.mp3,.aac">
-                    </div>
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-import-midi" title="Import a Standard MIDI File (.mid) into a new pattern">Import MIDI</button>
-                        <input type="file" id="tp-import-midi-file" style="display: none" accept=".mid,.midi">
-                    </div>
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
-                        <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav,.flac" webkitdirectory directory multiple>
-                    </div>
-                `)}
-                ${buildAccordionGroup('midi-status', 'MIDI Status', 'Status', true, `
-                    <div class="ne-row no-cursor">
-                        <button class="lfo-led" id="midiSupportLed"></button>
-                        <label>Support:</label>
-                        <span class="ne-val" id="midiSupportLabel">Checking...</span>
-                    </div>
-                    <div class="ne-row no-cursor">
-                        <button class="lfo-led" id="midiReadyLed"></button>
-                        <label>Ready:</label>
-                        <span class="ne-val" id="midiReadyLabel">Locked</span>
-                    </div>
-                    <div class="ne-row no-cursor">
-                        <button class="lfo-led" id="midiConnectedLed"></button>
-                        <label>Inputs:</label>
-                        <span class="ne-val" id="midiConnectedLabel">None</span>
-                    </div>
-                    <div class="ne-row no-cursor">
-                        <button class="lfo-led" id="midiSyncLed"></button>
-                        <label>Ext Sync:</label>
-                        <span class="ne-val" id="midiSyncLabel">Internal</span>
-                    </div>
-                    <div class="ne-row no-cursor">
-                        <button class="lfo-led" id="midiActivityLed"></button>
-                        <label>Activity:</label>
-                        <span class="ne-val" id="midiActivityLabel">Idle</span>
-                    </div>
-                `)}
-                ${buildAccordionGroup('midi', 'MIDI', 'MIDI', true, `
-                    <div class="ne-row">
-                        <label>Output:</label>
-                        <select id="tp-midi-output-select"></select>
-                    </div>
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-midi-enable" title="Connect or disconnect the MIDI output device">Enable MIDI</button>
-                    </div>
-                    <div class="ne-row">
-                        <button class="ne-btn" id="tp-midi-sync" title="Toggle between internal clock and external MIDI clock sync">Toggle Sync</button>
-                    </div>
-                `)}
+            <div class="ne-tab-bar">
+                <button class="ne-tab-btn active" data-ne-tab="pattern">Pattern</button>
+                <button class="ne-tab-btn" data-ne-tab="export">Export</button>
+                <button class="ne-tab-btn" data-ne-tab="import">Import</button>
+                <button class="ne-tab-btn" data-ne-tab="midi-status">Status</button>
+                <button class="ne-tab-btn" data-ne-tab="midi">MIDI</button>
+            </div>
+            <div class="ne-tab-panel" data-tab-panel="pattern">
+                <div class="ne-row no-cursor">
+                    <label>Name</label>
+                    <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-compact" title="Detect repeating note patterns and add loop points to minimize notes">Compact Tracks</button>
+                </div>
+            </div>
+            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="export">
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-export-json" title="Save the current pattern as a JSON file">Export JSON</button>
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-export-midi" title="Export the current pattern to a Standard MIDI File (.mid)">Export MIDI</button>
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-export-wav" title="Render the pattern to an audio WAV file">Export WAV</button>
+                </div>
+                <div id="tp-wav-loops-slot"></div>
+            </div>
+            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="import">
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-import-json" title="Load a previously exported pattern from a JSON file">Import JSON</button>
+                    <input type="file" id="tp-import-file" style="display: none" accept=".json">
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-import-wav" title="Replace the selected track's sound with a custom WAV sample">Import WAV</button>
+                    <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav,.flac,.mp3,.aac">
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-import-midi" title="Import a Standard MIDI File (.mid) into a new pattern">Import MIDI</button>
+                    <input type="file" id="tp-import-midi-file" style="display: none" accept=".mid,.midi">
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
+                    <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav,.flac" webkitdirectory directory multiple>
+                </div>
+            </div>
+            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="midi-status">
+                <div class="ne-row no-cursor">
+                    <button class="lfo-led" id="midiSupportLed"></button>
+                    <label>Support:</label>
+                    <span class="ne-val" id="midiSupportLabel">Checking...</span>
+                </div>
+                <div class="ne-row no-cursor">
+                    <button class="lfo-led" id="midiReadyLed"></button>
+                    <label>Ready:</label>
+                    <span class="ne-val" id="midiReadyLabel">Locked</span>
+                </div>
+                <div class="ne-row no-cursor">
+                    <button class="lfo-led" id="midiConnectedLed"></button>
+                    <label>Inputs:</label>
+                    <span class="ne-val" id="midiConnectedLabel">None</span>
+                </div>
+                <div class="ne-row no-cursor">
+                    <button class="lfo-led" id="midiSyncLed"></button>
+                    <label>Ext Sync:</label>
+                    <span class="ne-val" id="midiSyncLabel">Internal</span>
+                </div>
+                <div class="ne-row no-cursor">
+                    <button class="lfo-led" id="midiActivityLed"></button>
+                    <label>Activity:</label>
+                    <span class="ne-val" id="midiActivityLabel">Idle</span>
+                </div>
+            </div>
+            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="midi">
+                <div class="ne-row">
+                    <label>Output:</label>
+                    <select id="tp-midi-output-select"></select>
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-midi-enable" title="Connect or disconnect the MIDI output device">Enable MIDI</button>
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-midi-sync" title="Toggle between internal clock and external MIDI clock sync">Toggle Sync</button>
+                </div>
             </div>
         `
         
@@ -186,12 +191,7 @@ export default class ToolsPanel extends BasePanel {
         })
 
         bindCloseButton(this.container, () => this.hide())
-
-        const groupMap = { pattern: 0, export: 1, import: 2, 'midi-status': 3, midi: 4 }
-        bindAccordionToggles(this.container, (key) => {
-            const groups = this.container.querySelectorAll('.ne-body > .ne-group')
-            return groups[groupMap[key]]
-        })
+        bindTabToggles(this.container)
     }
 
     subscribe() {

@@ -119,12 +119,10 @@ describe('OutputPanel — OrSlider integration', () => {
         expect(preGain.nextElementSibling.textContent).toBe('-3.0 dB')
     })
 
-    it('panel toggle selectors still resolve (id and :nth-child)', () => {
-        const masterTarget = panel.container.querySelector('#op-master-vol')
-        expect(masterTarget).not.toBeNull()
-        const groups = panel.container.querySelectorAll('.ne-group')
-        expect(groups[1].querySelector('.ne-group-accordion-label').textContent).toBe('Comp')
-        expect(groups[2].querySelector('.ne-group-accordion-label').textContent).toBe('Flt')
+    it('panel tab buttons have correct labels', () => {
+        const tabs = panel.container.querySelectorAll('.ne-tab-btn[data-ne-tab]')
+        const labels = Array.from(tabs).map(b => b.textContent.trim())
+        expect(labels).toEqual(['Mst', 'Comp', 'Flt', 'Spec'])
     })
 
     it('keyboard arrows on a slider still work (delegated handler from main.js)', () => {

@@ -146,6 +146,22 @@ export function buildAccordionGroup(key, label, shortLabel, expanded, content, o
 }
 
 /**
+ * Binds click handlers on `.ne-tab-btn` elements to toggle `.ne-tab-panel` visibility.
+ * @param {HTMLElement} container
+ * @param {function(string): void} [onChange]  – called with the newly activated tab id
+ */
+export function bindTabToggles(container, onChange) {
+    container.querySelectorAll('.ne-tab-btn[data-ne-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.neTab
+            container.querySelectorAll('.ne-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.neTab === id))
+            container.querySelectorAll('.ne-tab-panel').forEach(p => p.classList.toggle('ne-tab-panel-hidden', p.dataset.tabPanel !== id))
+            onChange?.(id)
+        })
+    })
+}
+
+/**
  * Sets the active state of a toolbar view button.
  * @param {'grid' | 'synth' | 'edit'} name
  * @param {boolean} active

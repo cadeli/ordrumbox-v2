@@ -111,28 +111,26 @@ describe('Sub-panel toggle toolbars', () => {
     })
 
     describe('Tools Panel', () => {
-        it('renders all 5 toggle buttons (Pattern, Export, Import, MIDI Status, MIDI)', () => {
+        it('renders all 5 tab buttons (Pattern, Export, Import, MIDI Status, MIDI)', () => {
             playbackEvents.dispatchToolsToggle(true)
 
-            const toggles = document.getElementById('tools-panel').querySelectorAll('.ne-toggle[data-toggle]')
-            const keys = Array.from(toggles).map(b => b.dataset.toggle)
+            const tabs = document.getElementById('tools-panel').querySelectorAll('.ne-tab-btn[data-ne-tab]')
+            const keys = Array.from(tabs).map(b => b.dataset.neTab)
             expect(keys).toEqual(['pattern', 'export', 'import', 'midi-status', 'midi'])
         })
 
-        it('hides the corresponding group when a toggle is clicked', () => {
+        it('switches active tab when a button is clicked', () => {
             playbackEvents.dispatchToolsToggle(true)
 
             const tp = document.getElementById('tools-panel')
-            const groupsBefore = tp.querySelectorAll('.ne-body > .ne-group')
-            expect(groupsBefore[0].style.display).not.toBe('none')
+            const exportTab = tp.querySelector('.ne-tab-btn[data-ne-tab="export"]')
+            exportTab.click()
 
-            tp.querySelector('.ne-toggle[data-toggle="pattern"]').click()
-            const groupsAfter = tp.querySelectorAll('.ne-body > .ne-group')
-            expect(groupsAfter[0].style.display).toBe('none')
+            const exportPanel = tp.querySelector('.ne-tab-panel[data-tab-panel="export"]')
+            expect(exportPanel.classList.contains('ne-tab-panel-hidden')).toBe(false)
 
-            tp.querySelector('.ne-toggle[data-toggle="pattern"]').click()
-            const groupsRestored = tp.querySelectorAll('.ne-body > .ne-group')
-            expect(groupsRestored[0].style.display).toBe('')
+            const patternPanel = tp.querySelector('.ne-tab-panel[data-tab-panel="pattern"]')
+            expect(patternPanel.classList.contains('ne-tab-panel-hidden')).toBe(true)
         })
 
         it('closes the panel when the close button is clicked', () => {
@@ -146,26 +144,25 @@ describe('Sub-panel toggle toolbars', () => {
     })
 
     describe('Output Panel', () => {
-        it('renders all 4 toggle buttons (Master, Comp, Flt, Spec)', () => {
+        it('renders all 4 tab buttons (Master, Comp, Flt, Spec)', () => {
             playbackEvents.dispatchOutputToggle(true)
 
-            const toggles = document.getElementById('output-panel').querySelectorAll('.ne-toggle[data-toggle]')
-            const keys = Array.from(toggles).map(b => b.dataset.toggle)
+            const tabs = document.getElementById('output-panel').querySelectorAll('.ne-tab-btn[data-ne-tab]')
+            const keys = Array.from(tabs).map(b => b.dataset.neTab)
             expect(keys).toEqual(['master', 'compressor', 'filters', 'spectrum'])
         })
 
-        it('hides the corresponding element when a toggle is clicked', () => {
+        it('switches active tab when a button is clicked', () => {
             playbackEvents.dispatchOutputToggle(true)
 
             const op = document.getElementById('output-panel')
-            const master = op.querySelector('#op-master-vol')
-            expect(master.style.display).not.toBe('none')
+            op.querySelector('.ne-tab-btn[data-ne-tab="compressor"]').click()
 
-            op.querySelector('.ne-toggle[data-toggle="master"]').click()
-            expect(master.style.display).toBe('none')
+            const compPanel = op.querySelector('.ne-tab-panel[data-tab-panel="compressor"]')
+            expect(compPanel.classList.contains('ne-tab-panel-hidden')).toBe(false)
 
-            op.querySelector('.ne-toggle[data-toggle="master"]').click()
-            expect(master.style.display).toBe('')
+            const masterPanel = op.querySelector('.ne-tab-panel[data-tab-panel="master"]')
+            expect(masterPanel.classList.contains('ne-tab-panel-hidden')).toBe(true)
         })
 
         it('closes the panel when the close button is clicked', () => {

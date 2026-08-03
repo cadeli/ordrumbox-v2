@@ -29,7 +29,7 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
         playbackEvents.dispatchToolsToggle(true)
     })
 
-    it('renders the WAV loops slider inside the Export group', () => {
+    it('renders the WAV loops slider inside the Export tab', () => {
         const input = toolsPanel.container.querySelector('input[data-key="tp-wav-loops"]')
         expect(input).not.toBeNull()
         expect(input.type).toBe('range')
@@ -38,9 +38,9 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
         expect(input.step).toBe('1')
         expect(input.value).toBe('1')
 
+        const panel = input.closest('.ne-tab-panel')
+        expect(panel.dataset.tabPanel).toBe('export')
         const row = input.closest('.ne-row')
-        const group = row.closest('.ne-group')
-        expect(group.querySelector('.ne-group-accordion-label').textContent).toBe('Export')
         expect(row.querySelector('label').textContent).toBe('Loops')
     })
 

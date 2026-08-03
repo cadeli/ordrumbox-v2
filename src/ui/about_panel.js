@@ -1,5 +1,5 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindAccordionToggles, buildAccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 
 const APP_VERSION = '2.0.0'
@@ -44,48 +44,45 @@ export default class AboutPanel extends BasePanel {
                 <span class="ne-track">About</span>
                 <button class="ne-close">&times;</button>
             </div>
-            <div class="ne-body">
-                ${buildAccordionGroup('info', 'Application', 'Info', true, `
-                    <div class="ne-row no-cursor">
-                        <label>Name</label>
-                        <span class="ne-val">${APP_NAME}</span>
-                    </div>
-                    <div class="ne-row no-cursor">
-                        <label>Version</label>
-                        <span class="ne-val">${APP_VERSION}</span>
-                    </div>
-                    <div class="ne-row no-cursor">
-                        <label>License</label>
-                        <span class="ne-val">${APP_LICENSE}</span>
-                    </div>
-                `, { extraAttrs: 'data-about-section="info"' })}
-                ${buildAccordionGroup('pwa', 'Progressive Web App', 'PWA', true, `
-                    <div class="ne-row" id="about-pwa-install-row" style="display:none">
-                        <label>Install</label>
-                        <button class="ne-btn" id="about-pwa-install">Install App</button>
-                    </div>
-                    <div class="ne-row no-cursor">
-                        <label>Website</label>
-                        <a href="${APP_WEBSITE}" target="_blank" rel="noopener" class="ne-val">${APP_WEBSITE}</a>
-                    </div>
-                    <div class="ne-row no-cursor">
-                        <label>Source</label>
-                        <a href="${APP_REPO}" target="_blank" rel="noopener" class="ne-val">${APP_REPO}</a>
-                    </div>
-                `, { extraAttrs: 'data-about-section="pwa"' })}
+            <div class="ne-tab-bar">
+                <button class="ne-tab-btn active" data-ne-tab="info">Info</button>
+                <button class="ne-tab-btn" data-ne-tab="pwa">PWA</button>
+            </div>
+            <div class="ne-tab-panel" data-tab-panel="info">
+                <div class="ne-row no-cursor">
+                    <label>Name</label>
+                    <span class="ne-val">${APP_NAME}</span>
+                </div>
+                <div class="ne-row no-cursor">
+                    <label>Version</label>
+                    <span class="ne-val">${APP_VERSION}</span>
+                </div>
+                <div class="ne-row no-cursor">
+                    <label>License</label>
+                    <span class="ne-val">${APP_LICENSE}</span>
+                </div>
+            </div>
+            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="pwa">
+                <div class="ne-row" id="about-pwa-install-row" style="display:none">
+                    <label>Install</label>
+                    <button class="ne-btn" id="about-pwa-install">Install App</button>
+                </div>
+                <div class="ne-row no-cursor">
+                    <label>Website</label>
+                    <a href="${APP_WEBSITE}" target="_blank" rel="noopener" class="ne-val">${APP_WEBSITE}</a>
+                </div>
+                <div class="ne-row no-cursor">
+                    <label>Source</label>
+                    <a href="${APP_REPO}" target="_blank" rel="noopener" class="ne-val">${APP_REPO}</a>
+                </div>
             </div>
         `
 
         bindCloseButton(this.container, () => this.hide())
+        bindTabToggles(this.container)
 
         this._installBtn = this.container.querySelector('#about-pwa-install')
         this._installBtn?.addEventListener('click', () => this._installPwa())
-
-        const groupMap = { info: 0, pwa: 1 }
-        bindAccordionToggles(this.container, (key) => {
-            const groups = this.container.querySelectorAll('.ne-body > .ne-group')
-            return groups[groupMap[key]]
-        })
     }
 
     _installPwa() {

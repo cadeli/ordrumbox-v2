@@ -108,9 +108,9 @@ describe('AboutPanel (PWA)', () => {
         expect(html).toContain('github.com/cadeli/ordrumbox-v2')
     })
 
-    it('has Info and PWA sub-panel toggles', () => {
-        const toggles = document.querySelectorAll('#about-panel [data-toggle]')
-        const keys = Array.from(toggles).map(b => b.dataset.toggle)
+    it('has Info and PWA tab buttons', () => {
+        const tabs = document.querySelectorAll('#about-panel .ne-tab-btn[data-ne-tab]')
+        const keys = Array.from(tabs).map(b => b.dataset.neTab)
         expect(keys).toEqual(['info', 'pwa'])
     })
 
