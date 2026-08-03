@@ -181,11 +181,6 @@ export default class Toolbar {
         viewLabel.textContent = 'View'
         const viewRow = document.createElement('div')
         viewRow.className = 'tb-view-row'
-        this.gridBtn = document.createElement('button')
-        this.gridBtn.className = 'tb-view-btn active'
-        this.gridBtn.dataset.view = 'grid'
-        this.gridBtn.textContent = 'Grid'
-        this.gridBtn.title = 'Toggle Pattern Grid'
         this.synthBtn = document.createElement('button')
         this.synthBtn.className = 'tb-view-btn'
         this.synthBtn.dataset.view = 'synth'
@@ -196,7 +191,6 @@ export default class Toolbar {
         this.editBtn.dataset.view = 'edit'
         this.editBtn.textContent = 'Split'
         this.editBtn.title = 'Toggle Track Editor'
-        viewRow.appendChild(this.gridBtn)
         viewRow.appendChild(this.synthBtn)
         viewRow.appendChild(this.editBtn)
         viewWrap.appendChild(viewLabel)
@@ -263,9 +257,6 @@ export default class Toolbar {
             playbackEvents.dispatchAboutToggle(true)
         })
 
-        this.gridBtn.addEventListener('click', () => {
-            playbackEvents.dispatchGridToggle()
-        })
         this.synthBtn.addEventListener('click', () => {
             playbackEvents.dispatchSynthToggle()
         })

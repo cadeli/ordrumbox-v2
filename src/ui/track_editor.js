@@ -207,7 +207,6 @@ export default class TrackEditor extends BasePanel {
                 void this.synthEditor.showPanel()
                 this.hide()
             }
-            setViewBtn('grid', !synthVisible && this.synthEditor?.panel?.style?.display !== 'flex')
             setViewBtn('synth', this.synthEditor?.panel?.style?.display === 'flex')
         })
          playbackEvents.onEditToggle.push(() => {

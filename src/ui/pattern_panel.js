@@ -168,20 +168,6 @@ export default class PatternPanel extends BasePanel {
             }
             this._applySelection()
         })
-        playbackEvents.onGridToggle.push(() => {
-            if (!this.container) return
-            const synthPanel = document.getElementById('soft-synth-panel')
-            if (synthPanel?.style?.display === 'flex') {
-                synthPanel.style.display = 'none'
-                document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-                document.getElementById('te-panel')?.classList.remove('pp-split')
-                setViewBtn('synth', false)
-            }
-            document.getElementById('pattern-panel')?.classList.remove('pp-split')
-            document.getElementById('te-panel')?.classList.remove('pp-split')
-            setViewBtn('grid', true)
-            setViewBtn('edit', false)
-        })
     }
 
     _updateBarCache() {

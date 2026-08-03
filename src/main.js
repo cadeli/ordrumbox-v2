@@ -82,6 +82,9 @@ export function init() {
     _drumkitManager.init()
     _patternsPanel.init()
 
+    // Start in split mode
+    playbackEvents.dispatchEditToggle()
+
     playbackEvents.onTrackSelect.push((data) => {
         if (data && data.trackIdx !== undefined) {
             appState.selectedTrackNum = data.trackIdx

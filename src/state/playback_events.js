@@ -17,7 +17,6 @@ export const playbackEvents = {
     onStallResume: [],
     onDrumkitManagerToggle: [],
     onPatternsToggle: [],
-    onGridToggle: [],
     onSynthToggle: [],
     onEditToggle: [],
 
@@ -39,7 +38,6 @@ export const playbackEvents = {
     offStallResume(fn) { this.onStallResume = this.onStallResume.filter(f => f !== fn) },
     offDrumkitManagerToggle(fn) { this.onDrumkitManagerToggle = this.onDrumkitManagerToggle.filter(f => f !== fn) },
     offPatternsToggle(fn) { this.onPatternsToggle = this.onPatternsToggle.filter(f => f !== fn) },
-    offGridToggle(fn) { this.onGridToggle = this.onGridToggle.filter(f => f !== fn) },
     offSynthToggle(fn) { this.onSynthToggle = this.onSynthToggle.filter(f => f !== fn) },
     offEditToggle(fn) { this.onEditToggle = this.onEditToggle.filter(f => f !== fn) },
 
@@ -61,7 +59,6 @@ export const playbackEvents = {
     dispatchStallResume() { this.onStallResume.forEach(fn => fn()) },
     dispatchDrumkitManagerToggle(show) { this.onDrumkitManagerToggle.forEach(fn => fn(show)) },
     dispatchPatternsToggle(show) { this.onPatternsToggle.forEach(fn => fn(show)) },
-    dispatchGridToggle(show) { this.onGridToggle.forEach(fn => fn(show)) },
     dispatchSynthToggle(show) { this.onSynthToggle.forEach(fn => fn(show)) },
     dispatchEditToggle(show) { this.onEditToggle.forEach(fn => fn(show)) }
 }
