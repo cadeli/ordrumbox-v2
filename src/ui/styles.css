@@ -544,6 +544,21 @@
 .ne-row-separator { border-top: 1px solid #444; margin-top: 6px; padding-top: 6px; }
 .ne-val-wide { min-width: 60px; }
 .ne-row-hidden { display: none !important; }
+.ne-knob-bar {
+    display: flex; flex-direction: row; justify-content: center; gap: 16px;
+    padding: 6px 10px; margin: 0 0 4px;
+    background: var(--bg-input); border: 1px solid var(--border-dark);
+    border-radius: 6px;
+}
+.ne-knob-bar .ne-row-knob {
+    flex-direction: column; align-items: center; gap: 2px; padding: 0 4px;
+    width: 70px;
+}
+.ne-knob-bar .or-knob-label { font-size: 9px; text-align: center; }
+.ne-knob-bar .ne-row-knob .ne-val {
+    font-size: 9px; text-align: center; width: auto; min-width: 0;
+    color: var(--text-dim); font-weight: bold; overflow: visible;
+}
 .ne-tab-panel-hidden { display: none !important; }
 .fx-tab-panel-hidden { display: none !important; }
 .ss-body-empty { padding: 20px; color: #666; text-align: center; }

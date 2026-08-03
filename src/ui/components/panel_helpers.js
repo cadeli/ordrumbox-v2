@@ -28,6 +28,14 @@ export function positionBelowPatternPanel(container) {
     }
 }
 
+export function syncWidthWithPatternPanel(container) {
+    const pp = document.getElementById('pattern-panel')
+    if (!pp || pp.classList.contains('ui-hidden')) return
+    const rect = pp.getBoundingClientRect()
+    container.style.left = rect.left + 'px'
+    container.style.width = rect.width + 'px'
+}
+
 export function bindCloseButton(container, onClose) {
     container.querySelector('.ne-close')?.addEventListener('click', onClose)
 }

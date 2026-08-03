@@ -1,7 +1,8 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindVisibilityToggles, buildAccordionGroup, fmt, pitchToNoteName } from './components/panel_helpers.js'
+import { fmt, pitchToNoteName } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
+import { OrKnob } from './components/or_knob.js'
 import BasePanel from './base_panel.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
@@ -30,16 +31,21 @@ function getScaleIntervals(scaleName, range) {
     return intervals
 }
 
+const KNOB_PROPS = [
+    { key: 'velocity', label: 'Vel',   min: 0,   max: 1,  step: 0.01 },
+    { key: 'pitch',    label: 'Pitch', min: -24, max: 24, step: 1 },
+    { key: 'pan',      label: 'Pan',   min: -1,  max: 1,  step: 0.01 }
+]
+
+const TAB_DEFS = [
+    { id: 'triggers', label: 'Trig' },
+    { id: 'retrig',   label: 'Retr' },
+    { id: 'arp',      label: 'Arp' }
+]
+
 const GROUPS = [
     {
-        label: 'Vel / Pitch / Pan',
-        props: [
-            { key: 'velocity', label: 'Vel', min: 0, max: 1, step: 0.01 },
-            { key: 'pitch', label: 'Pitch', min: -24, max: 24, step: 1 },
-            { key: 'pan', label: 'Pan', min: -1, max: 1, step: 0.01 }
-        ]
-    },
-    {
+        id: 'triggers',
         label: 'Triggers',
         props: [
             { key: 'every', label: 'Every', min: 1, max: 16, step: 1 },
@@ -48,6 +54,7 @@ const GROUPS = [
         ]
     },
     {
+        id: 'retrig',
         label: 'Retrig',
         props: [
             { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
@@ -57,6 +64,7 @@ const GROUPS = [
         ]
     },
     {
+        id: 'arp',
         label: 'Arp',
         props: [
             { key: 'arpScale', label: 'Scale', type: 'select', options: [] },
@@ -72,6 +80,8 @@ export default class NoteEditor extends BasePanel {
         this._note = null
         this._track = null
         this._trackEditor = null
+        this._knobs = []
+        this._activeTab = 'triggers'
     }
 
     setTrackEditor(te) {
@@ -173,32 +183,41 @@ export default class NoteEditor extends BasePanel {
             return
         }
 
-        // Destroy previous OrSlider instances so their listeners are cleaned up
-        // before we wipe the container's innerHTML.
+        // Destroy previous instances so their listeners are cleaned up
         if (this._sliders) this._sliders.forEach(s => s.destroy())
         this._sliders = []
+        this._knobs.forEach(k => k.destroy())
+        this._knobs = []
 
-        const vis = appState.noteEditorVisibility
         const scaleKeys = Object.keys(_scalesCache ?? {})
         const arpState = this._getArpState(this._note)
-        const scaleGroup = GROUPS[3]
+        const scaleGroup = GROUPS[2]
         scaleGroup.props[0].options = scaleKeys
 
         let headerHtml = `<div class="ne-header">
             <span class="ne-track">${this.esc(this._track.name)} [beat ${this._beat} step ${this._beatStep}]</span>
         </div>`
 
-        let bodyHtml = `<div class="ne-body">`
+        let knobBarHtml = `<div class="ne-knob-bar">`
+        KNOB_PROPS.forEach(p => {
+            knobBarHtml += `<div data-ne-knob="${p.key}"></div>`
+        })
+        knobBarHtml += '</div>'
 
-        GROUPS.forEach((g, idx) => {
-            const visKey = ['levels', 'triggers', 'retrig', 'arp'][idx]
-            const isExpanded = vis[visKey]
-            const shortLabels = {
-                levels: 'V/P/P',
-                triggers: 'Trig',
-                retrig: 'Retr',
-                arp: 'Arp'
-            }
+        // Tab bar
+        let tabBarHtml = '<div class="ne-tab-bar">'
+        for (const tab of TAB_DEFS) {
+            const cls = tab.id === this._activeTab ? ' active' : ''
+            tabBarHtml += `<button class="ne-tab-btn${cls}" data-ne-tab="${tab.id}">${tab.label}</button>`
+        }
+        tabBarHtml += '</div>'
+
+        // Tab panels
+        let panelsHtml = ''
+        TAB_DEFS.forEach((tab) => {
+            const g = GROUPS.find(gr => gr.id === tab.id)
+            if (!g) return
+            const isHidden = tab.id !== this._activeTab
 
             let groupContent = ''
             g.props.forEach(p => {
@@ -217,13 +236,36 @@ export default class NoteEditor extends BasePanel {
                     groupContent += `<div data-ne-slider="${p.key}"></div>`
                 }
             })
-            bodyHtml += buildAccordionGroup(visKey, g.label, shortLabels[visKey], isExpanded, groupContent)
+            panelsHtml += `<div class="ne-tab-panel ${isHidden ? 'ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${groupContent}</div>`
         })
 
-        bodyHtml += '</div>'
-        this.container.innerHTML = headerHtml + bodyHtml
-        
-        // Build OrSlider instances for each placeholder
+        this.container.innerHTML = headerHtml + knobBarHtml + tabBarHtml + panelsHtml
+
+        // Build OrKnob instances for the knob bar
+        KNOB_PROPS.forEach(def => {
+            const placeholder = this.container.querySelector(`[data-ne-knob="${def.key}"]`)
+            if (!placeholder) return
+
+            const knob = new OrKnob({
+                key: def.key,
+                label: def.label,
+                min: def.min,
+                max: def.max,
+                step: def.step,
+                value: this._note[def.key] ?? def.min,
+                format: def.key === 'velocity'
+                    ? v => Math.round(v * 100)
+                    : def.key === 'pitch'
+                        ? v => `${v >= 0 ? '+' : ''}${v}`
+                        : fmt,
+                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
+                onChange: (v) => this._onSlider(def.key, v)
+            })
+            this._knobs.push(knob)
+            placeholder.replaceWith(knob.createElement())
+        })
+
+        // Build OrSlider instances for the active tab panel
         GROUPS.forEach((g) => {
             g.props.forEach(p => {
                 if (p.type === 'select') return
@@ -256,7 +298,9 @@ export default class NoteEditor extends BasePanel {
     }
 
     _bindEvents() {
-        bindVisibilityToggles(this.container, appState.noteEditorVisibility, () => this.sync())
+        this.container.querySelectorAll('[data-ne-tab]').forEach(btn => {
+            btn.addEventListener('click', () => this._onTabClick(btn.dataset.neTab))
+        })
 
         this.container.querySelectorAll('select').forEach(sel => {
             sel.addEventListener('change', () => this._onSelect(sel))
@@ -266,6 +310,8 @@ export default class NoteEditor extends BasePanel {
     hide() {
         if (!this.isVisible) return
         super.hide()
+        this._knobs.forEach(k => k.destroy())
+        this._knobs = []
         this._note = null
         this._track = null
     }
@@ -277,6 +323,12 @@ export default class NoteEditor extends BasePanel {
         this.container.style.top = (tePanel.offsetTop + tePanel.offsetHeight) + 'px'
         this.container.style.left = teRect.left + 'px'
         this.container.style.width = teRect.width + 'px'
+    }
+
+    _onTabClick(tabId) {
+        if (tabId === this._activeTab) return
+        this._activeTab = tabId
+        this.sync()
     }
 
     _composeArp() {

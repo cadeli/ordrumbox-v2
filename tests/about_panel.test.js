@@ -68,7 +68,7 @@ describe('AboutPanel (PWA)', () => {
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 
-    it('hides the other modals (te/tools/output) when it opens', () => {
+    it('hides the other modals (tools/output) when it opens, keeps te-panel visible', () => {
         for (const id of ['te-panel', 'tools-panel', 'output-panel']) {
             const el = document.createElement('div')
             el.id = id
@@ -78,9 +78,10 @@ describe('AboutPanel (PWA)', () => {
 
         playbackEvents.dispatchAboutToggle(true)
 
-        for (const id of ['te-panel', 'tools-panel', 'output-panel']) {
+        for (const id of ['tools-panel', 'output-panel']) {
             expect(document.getElementById(id).style.display).toBe('none')
         }
+        expect(document.getElementById('te-panel').style.display).toBe('block')
         expect(document.getElementById('about-panel').style.display).toBe('block')
     })
 

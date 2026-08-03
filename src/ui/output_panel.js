@@ -1,6 +1,6 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindAccordionToggles, buildAccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles, buildAccordionGroup, ALL_PANEL_IDS, syncWidthWithPatternPanel } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 
@@ -23,6 +23,15 @@ export default class OutputPanel extends BasePanel {
         this._lowcutVal = 35
         this._hicutVal  = 18500
         this._spectrumLut = null
+    }
+
+    _hideOtherPanels() {
+        return ALL_PANEL_IDS.filter(id => id !== this.id && id !== 'te-panel' && id !== 'ne-panel')
+    }
+
+    reposition() {
+        super.reposition()
+        syncWidthWithPatternPanel(this.container)
     }
 
     createDOM() {

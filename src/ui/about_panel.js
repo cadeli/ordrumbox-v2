@@ -1,5 +1,5 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindAccordionToggles, buildAccordionGroup } from './components/panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles, buildAccordionGroup, ALL_PANEL_IDS, syncWidthWithPatternPanel } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 
 const APP_VERSION = '2.0.0'
@@ -14,6 +14,10 @@ export default class AboutPanel extends BasePanel {
         super('about-panel')
         this._deferredPrompt = null
         this._installBtn = null
+    }
+
+    _hideOtherPanels() {
+        return ALL_PANEL_IDS.filter(id => id !== this.id && id !== 'te-panel' && id !== 'ne-panel')
     }
 
     init() {
@@ -126,6 +130,7 @@ export default class AboutPanel extends BasePanel {
     reposition() {
         if (window.innerWidth > 768 && window.innerHeight > 480) {
             super.reposition()
+            syncWidthWithPatternPanel(this.container)
         }
     }
 }

@@ -6,7 +6,7 @@ function buildDefaultVisibility() {
             filters: !isMobile, effects: !isMobile, sound: !isMobile, loop: false, lfo: !isMobile,
         },
         noteEditorVisibility: {
-            levels: !isMobile, triggers: !isMobile, retrig: !isMobile, arp: !isMobile,
+            triggers: !isMobile, retrig: !isMobile, arp: !isMobile,
         },
     }
 }

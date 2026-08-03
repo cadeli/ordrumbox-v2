@@ -69,7 +69,7 @@ describe('NoteEditor — OrSlider integration', () => {
         noteEditor.init()
     })
 
-    it('renders a range slider + display span for each velocity/pitch/pan prop', async () => {
+    it('renders a rotary knob + display span for each velocity/pitch/pan prop', async () => {
         await showNote(noteEditor)
 
         for (const p of [
@@ -77,13 +77,12 @@ describe('NoteEditor — OrSlider integration', () => {
             { key: 'pitch',    label: 'Pitch' },
             { key: 'pan',      label: 'Pan' },
         ]) {
-            const input = noteEditor.container.querySelector(`input[data-key="${p.key}"]`)
-            const span  = noteEditor.container.querySelector(`.ne-val[data-key="${p.key}"]`)
-            expect(input, `missing input for ${p.key}`).not.toBeNull()
+            const knob = noteEditor.container.querySelector(`.or-knob[data-or-knob="${p.key}"]`)
+            const span = noteEditor.container.querySelector(`.ne-val[data-key="${p.key}"]`)
+            expect(knob, `missing knob for ${p.key}`).not.toBeNull()
             expect(span, `missing span for ${p.key}`).not.toBeNull()
-            const row = input.closest('.ne-row')
-            expect(row.querySelector('label').textContent).toBe(p.label)
-            expect(input.type).toBe('range')
+            const row = knob.closest('.ne-row-knob')
+            expect(row.querySelector('.or-knob-label').textContent).toBe(p.label)
         }
     })
 
@@ -100,12 +99,12 @@ describe('NoteEditor — OrSlider integration', () => {
         }
     })
 
-    it('displays the initial value using the rounded 2-decimal format', async () => {
+    it('displays the initial value using the knob format', async () => {
         await showNote(noteEditor, { velocity: 0.625, pan: -0.3 })
 
         const velocitySpan = noteEditor.container.querySelector(`.ne-val[data-key="velocity"]`)
         const panSpan      = noteEditor.container.querySelector(`.ne-val[data-key="pan"]`)
-        expect(velocitySpan.textContent).toBe('0.63')
+        expect(velocitySpan.textContent).toBe('63 %')
         expect(panSpan.textContent).toBe('-0.3')
     })
 
@@ -124,16 +123,15 @@ describe('NoteEditor — OrSlider integration', () => {
         expect(noteEditor.container.querySelector('input[type=range][data-key="arpType"]')).toBeNull()
     })
 
-    it('changing a slider updates the note and fires onPatternChange', async () => {
+    it('changing a knob updates the note and fires onPatternChange', async () => {
         const { note } = await showNote(noteEditor)
         const fn = vi.fn()
         playbackEvents.onPatternChange.push(fn)
 
-        const velocityInput = noteEditor.container.querySelector('input[data-key="velocity"]')
-        fireInput(velocityInput, 0.42)
+        const velocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
+        velocityKnob.setValue(0.42, true)
 
         expect(note.velocity).toBeCloseTo(0.42, 5)
-        expect(velocityInput.nextElementSibling.textContent).toBe('0.42')
         expect(fn).toHaveBeenCalled()
     })
 
@@ -164,29 +162,29 @@ describe('NoteEditor — OrSlider integration', () => {
         expect(note.arp).toEqual({ intervals: [0, 2], mode: 'up' })
     })
 
-    it('re-sync destroys old OrSliders (no leaked listeners) and renders new ones', async () => {
+    it('re-sync destroys old OrKnobs/OrSliders (no leaked listeners) and renders new ones', async () => {
         await showNote(noteEditor, { velocity: 0.5 })
-        const firstVelocityInput = noteEditor.container.querySelector('input[data-key="velocity"]')
+        const firstVelocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
 
         await showNote(noteEditor, { velocity: 0.9 })
-        const secondVelocityInput = noteEditor.container.querySelector('input[data-key="velocity"]')
+        const secondVelocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
 
-        // Different DOM node
-        expect(secondVelocityInput).not.toBe(firstVelocityInput)
-        expect(secondVelocityInput.value).toBe('0.9')
-        expect(secondVelocityInput.nextElementSibling.textContent).toBe('0.9')
+        // Different instance
+        expect(secondVelocityKnob).not.toBe(firstVelocityKnob)
+        expect(secondVelocityKnob.getValue()).toBe(0.9)
+        expect(secondVelocityKnob.el.querySelector('.ne-val').textContent).toBe('90 %')
     })
 
-    it('keyboard arrow on a slider updates its value (OrSlider _onKeydown)', async () => {
+    it('keyboard arrow on a knob updates its value (OrKnob _onKeydown)', async () => {
         const { note } = await showNote(noteEditor, { velocity: 0.5 })
 
-        const input = noteEditor.container.querySelector('input[data-key="velocity"]')
-        input.focus()
-        input.dispatchEvent(new KeyboardEvent('keydown', {
+        const velocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
+        const knobEl = velocityKnob.el.querySelector('.or-knob')
+        knobEl.focus()
+        knobEl.dispatchEvent(new KeyboardEvent('keydown', {
             key: 'ArrowRight', bubbles: true, cancelable: true,
         }))
 
         expect(note.velocity).toBeCloseTo(0.51, 5)
-        expect(input.value).toBe('0.51')
     })
 })
