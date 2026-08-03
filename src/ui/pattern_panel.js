@@ -611,6 +611,12 @@ export default class PatternPanel extends BasePanel {
             return
         }
 
+        const masterTrackEl = e.target.closest('.pp-master-track')
+        if (masterTrackEl) {
+            playbackEvents.dispatchOutputToggle(true)
+            return
+        }
+
         const trackEl = e.target.closest('.pp-track')
         if (trackEl && !e.target.closest('.pp-track-name') && !e.target.closest('.pp-divider') && !e.target.closest('.pp-solo') && !e.target.closest('.pp-cell') && !e.target.closest('.pp-volume')) {
             const trackIdx = parseInt(trackEl.querySelector('.pp-track-name')?.dataset.track, 10)

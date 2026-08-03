@@ -211,10 +211,6 @@ export default class Toolbar {
         beatsWrap.appendChild(beatsLabel)
         beatsWrap.appendChild(this.beatsSelect)
 
-        this.outputBtn = document.createElement('button')
-        this.outputBtn.className = 'tb-output'
-        this.outputBtn.textContent = 'Master'
-
         this.toolsBtn = document.createElement('button')
         this.toolsBtn.className = 'tb-tools'
         this.toolsBtn.textContent = '⚙'
@@ -234,7 +230,6 @@ export default class Toolbar {
         this.container.appendChild(kitWrap)
         this.container.appendChild(genWrap)
         this.container.appendChild(viewWrap)
-        this.container.appendChild(this.outputBtn)
         this.container.appendChild(this.toolsBtn)
         this.container.appendChild(this.aboutBtn)
         document.body.appendChild(this.container)
@@ -243,10 +238,6 @@ export default class Toolbar {
     bindEvents() {
         this.startBtn.addEventListener('click', () => {
             serviceRegistry.mfSeq.toggleStartStop()
-        })
-
-        this.outputBtn.addEventListener('click', () => {
-            playbackEvents.dispatchOutputToggle(true)
         })
 
         this.toolsBtn.addEventListener('click', () => {

@@ -154,7 +154,7 @@
     #tb .tb-bpm-toggle { width: 34px; font-size: 9px; padding: 3px 2px; }
     #tb .tb-tools, #tb .tb-about { font-size: 14px; min-width: 26px; min-height: 26px; }
     #tb .tb-label { font-size: 7px; }
-    #tb .tb-auto-gen, #tb .tb-output { font-size: 8px; padding: 3px 3px; }
+    #tb .tb-auto-gen { font-size: 8px; padding: 3px 3px; }
 }
 
 /* ---- View Buttons ---- */
@@ -345,18 +345,28 @@
     display: flex; align-items: stretch; gap: 4px;
     height: 36px; min-height: 36px; max-height: 36px;
     flex-shrink: 0;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    border-radius: 4px;
+    background: var(--accent);
+    border: 1px solid var(--accent-light);
     margin-top: 4px;
-    padding-top: 4px;
+    padding-top: 0;
+    padding: 2px 4px;
+}
+#pattern-panel .pp-master-track:hover {
+    background: var(--accent-light);
+    border-color: var(--accent-bright);
 }
 #pattern-panel .pp-master-track .pp-track-left {
     min-width: 200px; max-width: 200px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 4px;
+    background: transparent;
+    border-radius: 0;
 }
 #pattern-panel .pp-master-track .pp-track-name {
-    background: var(--accent); color: var(--bg);
+    background: var(--accent-light); color: var(--bg);
     font-weight: bold; font-size: 11px;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 #pattern-panel .pp-waveform-overlay {

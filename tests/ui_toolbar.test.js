@@ -50,7 +50,6 @@ describe('Toolbar UI Layout', () => {
 
         expect(textContents.some(t => t.includes('BPM')) || document.querySelector('.tb-label')?.textContent === 'BPM').toBe(true)
         expect(classes).toContain('tb-start')
-        expect(classes).toContain('tb-output')
         expect(classes).toContain('tb-tools')
         expect(classes).toContain('tb-about')
 
