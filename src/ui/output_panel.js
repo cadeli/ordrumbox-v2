@@ -32,22 +32,19 @@ this.container.innerHTML = `
                 <span class="ne-track">Master</span>
             </div>
             <div class="ne-tab-bar">
-                <button class="ne-tab-btn active" data-ne-tab="master">Mst</button>
+                <button class="ne-tab-btn active" data-ne-tab="master">vol</button>
                 <button class="ne-tab-btn" data-ne-tab="compressor">Comp</button>
                 <button class="ne-tab-btn" data-ne-tab="filters">Flt</button>
-                <button class="ne-tab-btn" data-ne-tab="spectrum">Spec</button>
             </div>
             <div class="ne-tab-panel" data-tab-panel="master">
                 <div class="ne-grid" id="op-master-grid"></div>
+                <div id="op-analyzer-group"><canvas id="op-spectrum"></canvas></div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="compressor">
                 <div class="ne-grid ne-grid-2col" id="op-comp-grid"></div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="filters">
                 <div class="ne-grid" id="op-filters-grid"></div>
-            </div>
-            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="spectrum">
-                <div id="op-analyzer-group"><canvas id="op-spectrum"></canvas></div>
             </div>`
 
         this._buildMasterSlider()

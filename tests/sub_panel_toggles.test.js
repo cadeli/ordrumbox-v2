@@ -144,12 +144,12 @@ describe('Sub-panel toggle toolbars', () => {
     })
 
     describe('Output Panel', () => {
-        it('renders all 4 tab buttons (Master, Comp, Flt, Spec)', () => {
+        it('renders all 3 tab buttons (Master, Comp, Flt)', () => {
             playbackEvents.dispatchOutputToggle(true)
 
             const tabs = document.getElementById('output-panel').querySelectorAll('.ne-tab-btn[data-ne-tab]')
             const keys = Array.from(tabs).map(b => b.dataset.neTab)
-            expect(keys).toEqual(['master', 'compressor', 'filters', 'spectrum'])
+            expect(keys).toEqual(['master', 'compressor', 'filters'])
         })
 
         it('switches active tab when a button is clicked', () => {

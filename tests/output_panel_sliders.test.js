@@ -122,7 +122,7 @@ describe('OutputPanel — OrSlider integration', () => {
     it('panel tab buttons have correct labels', () => {
         const tabs = panel.container.querySelectorAll('.ne-tab-btn[data-ne-tab]')
         const labels = Array.from(tabs).map(b => b.textContent.trim())
-        expect(labels).toEqual(['Mst', 'Comp', 'Flt', 'Spec'])
+        expect(labels).toEqual(['vol', 'Comp', 'Flt'])
     })
 
     it('keyboard arrows on a slider still work (delegated handler from main.js)', () => {
