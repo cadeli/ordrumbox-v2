@@ -47,10 +47,10 @@ const FILTER_PROPS = [
 ]
 
 const FX_DEFS = [
-    { key: 'reverbAmount', label: 'Reverb', controls: ['reverbAmount', 'reverbType'] },
+    { key: 'reverbAmount', label: 'Rev', controls: ['reverbAmount', 'reverbType'] },
     { key: 'delayDepth', label: 'Delay', controls: ['delayDepth', 'delayTime', 'delayType'] },
     { key: 'saturationAmount', label: 'Sat', controls: ['saturationAmount', 'saturationType'] },
-    { key: 'filterFreq', label: 'Filter', controls: ['filterType', 'filterFreq', 'filterQ'] }
+    { key: 'filterFreq', label: 'fltr', controls: ['filterType', 'filterFreq', 'filterQ'] }
 ]
 
 const FX_TOGGLE_DEFS = [
