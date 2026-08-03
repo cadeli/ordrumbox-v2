@@ -517,6 +517,86 @@
     #pattern-panel .pp-volume { width: 40px; }
 }
 
+/* ---- Piano Roll Panel ---- */
+#piano-roll-panel {
+    position: fixed !important;
+    top: 64px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    background: var(--bg);
+    border-bottom: 2px solid var(--border-dark);
+    padding: 6px 12px;
+    overflow: hidden;
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    z-index: 500;
+    height: auto;
+    min-height: 440px;
+    display: flex;
+    flex-direction: column;
+}
+#pp-piano-roll {
+    display: flex;
+    flex-direction: row;
+    height: calc(100% - 40px);
+    overflow: hidden;
+    flex: 1;
+}
+#pp-piano-roll-piano {
+    display: flex;
+    flex-direction: column-reverse;
+    width: 120px;
+    background: var(--bg-dark);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+.pp-piano-key {
+    height: 12px;
+    position: relative;
+    border-bottom: 1px solid var(--border-dark);
+}
+.pp-piano-key.white {
+    background: var(--bg-canvas);
+    color: var(--text);
+}
+.pp-piano-key.black {
+    background: var(--bg-dark);
+    color: var(--text-dim);
+    width: 80px;
+    margin-left: 20px;
+}
+.pp-piano-label {
+    position: absolute;
+    left: 4px;
+    font-size: 8px;
+    color: inherit;
+    pointer-events: none;
+}
+#pp-piano-roll-grid {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
+    background: var(--bg-canvas);
+}
+.pp-piano-step {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 12px;
+    border-left: 1px solid var(--border-dark);
+}
+.pp-piano-note {
+    position: absolute;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 2px;
+    cursor: pointer;
+}
+
 /* ---- Note Editor & Track Editor Panels ---- */
 /* ---- Panel Shell (shared by all ne-panels) ---- */
 .ne-panel {

@@ -73,7 +73,7 @@ export function positionBelowPatternPanel(container) {
     }
 }
 
-const SYNC_WIDTH_SKIP_IDS = ['pattern-panel', 'te-panel']
+const SYNC_WIDTH_SKIP_IDS = ['pattern-panel', 'te-panel', 'piano-roll-panel']
 
 export function syncWidthWithPatternPanel(container) {
     if (SYNC_WIDTH_SKIP_IDS.includes(container.id)) return

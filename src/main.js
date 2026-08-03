@@ -5,6 +5,7 @@ import * as patternsManager from './patterns/manager.js'
 
 import Toolbar from './ui/toolbar.js'
 import PatternPanel from './ui/pattern_panel.js'
+import PianoRollPanel from './ui/piano_roll_panel.js'
 import NoteEditor from './ui/note_editor.js'
 import TrackEditor from './ui/track_editor.js'
 import ToolsPanel from './ui/tools_panel.js'
@@ -44,7 +45,7 @@ function scheduleAfterFirstPaint(callback) {
 }
 
 
-let _toolbar, _patternPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel
+let _toolbar, _patternPanel, _pianoRollPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel
 
 export function init() {
     if (window.orientation > 1) {
@@ -63,6 +64,7 @@ export function init() {
 
     _toolbar = new Toolbar()
     _patternPanel = new PatternPanel()
+    _pianoRollPanel = new PianoRollPanel()
     _noteEditor = new NoteEditor()
     _trackEditor = new TrackEditor()
     _toolsPanel = new ToolsPanel()
@@ -72,6 +74,7 @@ export function init() {
     _patternsPanel = new PatternsPanel()
     _toolbar.init()
     _patternPanel.init()
+    _pianoRollPanel.init()
     _trackEditor.init()
     _noteEditor.setContainer(_trackEditor._neContainer)
     _noteEditor.init()
