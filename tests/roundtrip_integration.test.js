@@ -609,7 +609,8 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
     })
 
     it('renders correct number of tracks', () => {
-        const trackNames = panel.container.querySelectorAll('.pp-track-name')
+        // Only count regular track names, not the master track
+        const trackNames = panel.container.querySelectorAll('.pp-track:not(.pp-master-track) .pp-track-name')
         expect(trackNames.length).toBe(2)
         expect(trackNames[0].textContent).toBe('KICK')
         expect(trackNames[1].textContent).toBe('SNARE')

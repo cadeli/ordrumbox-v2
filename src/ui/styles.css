@@ -295,7 +295,9 @@
     flex-shrink: 0; text-align: center; padding: 6px 0;
     font-size: 12px; color: var(--text-ghost); cursor: pointer;
     border: 1px dashed rgba(255,255,255,0.15); border-radius: 4px;
-    margin: 4px 8px;
+    margin: auto 8px;
+    max-width: 200px;
+    width: 100%;
 }
 #pattern-panel .pp-add-track:hover { color: var(--accent); border-color: var(--accent); }
 #pattern-panel .pp-track.pp-muted .pp-cell { opacity: 0.25; }
