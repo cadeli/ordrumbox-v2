@@ -28,7 +28,10 @@ export function positionBelowPatternPanel(container) {
     }
 }
 
+const SYNC_WIDTH_SKIP_IDS = ['pattern-panel', 'te-panel']
+
 export function syncWidthWithPatternPanel(container) {
+    if (SYNC_WIDTH_SKIP_IDS.includes(container.id)) return
     const pp = document.getElementById('pattern-panel')
     if (!pp || pp.classList.contains('ui-hidden')) return
     const rect = pp.getBoundingClientRect()
@@ -66,7 +69,8 @@ export function bindPanelToggles(container, getTarget) {
 export function bindAccordionToggles(container, getTarget, onChange) {
     container.querySelectorAll('.ne-toggle[data-toggle], .ne-toggle[data-about-toggle], .ne-group-accordion-toggle[data-toggle]').forEach(btn => {
         btn.addEventListener('click', (event) => {
-            const key = btn.dataset.toggle ?? (logger.warn('PanelHelpers', 'toggle fallback'), btn.dataset.aboutToggle ?? (logger.warn('PanelHelpers', 'aboutToggle fallback'), ''))
+            const key = btn.dataset.toggle ?? btn.dataset.aboutToggle ?? ''
+            if (!btn.dataset.toggle) logger.warn('PanelHelpers', 'missing data-toggle, fell back to aboutToggle')
             btn.classList.toggle('active')
             const isExpanded = btn.classList.contains('active')
             
@@ -147,5 +151,5 @@ export function buildAccordionGroup(key, label, shortLabel, expanded, content, o
  * @param {boolean} active
  */
 export function setViewBtn(name, active) {
-    document.querySelector(`.tb-view-btn[data-view="${name}"]`)?.classList.toggle('actif', active)
+    document.querySelector(`.tb-view-btn[data-view="${name}"]`)?.classList.toggle('active', active)
 }

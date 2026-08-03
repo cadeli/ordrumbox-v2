@@ -364,10 +364,10 @@ describe('Roundtrip 3 — Panel show/hide mutual exclusion', () => {
         document.body.innerHTML = ''
     })
 
-    it('show() hides all other canonical panels', () => {
+    it('show() hides all other canonical panels (except te-panel)', () => {
         const panelA = new BasePanel('te-panel')
         panelA.init()
-        const panelB = new BasePanel('ne-panel')
+        const panelB = new BasePanel('output-panel')
         panelB.init()
         const panelC = new BasePanel('tools-panel')
         panelC.init()
@@ -381,7 +381,8 @@ describe('Roundtrip 3 — Panel show/hide mutual exclusion', () => {
 
         panelB.show()
         expect(panelB.container.style.display).toBe('block')
-        expect(panelA.container.style.display).toBe('none')
+        expect(panelA.container.style.display).toBe('block')
+        expect(panelC.container.style.display).toBe('none')
     })
 
     it('hide() makes container invisible', () => {

@@ -172,7 +172,7 @@
     touch-action: manipulation;
 }
 .tb-view-btn:hover { border-color: var(--accent); color: var(--text); }
-.tb-view-btn.actif {
+.tb-view-btn.active {
     background: var(--accent); color: var(--text); border-color: var(--accent);
 }
 @media (max-width: 600px) {
@@ -479,6 +479,12 @@
     font-family: monospace; font-size: 11px; color: var(--text-muted);
     z-index: 2000;
     min-height: auto; max-height: 250px;
+}
+#ne-container {
+    display: none;
+    border-top: 1px solid var(--border-dark);
+    padding: 4px 0;
+    margin-top: 4px;
 }
 .ui-hidden { display: none !important; }
 .ne-header {

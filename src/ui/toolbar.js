@@ -181,7 +181,7 @@ export default class Toolbar {
         const viewRow = document.createElement('div')
         viewRow.className = 'tb-view-row'
         this.gridBtn = document.createElement('button')
-        this.gridBtn.className = 'tb-view-btn actif'
+        this.gridBtn.className = 'tb-view-btn active'
         this.gridBtn.dataset.view = 'grid'
         this.gridBtn.textContent = 'Grid'
         this.gridBtn.title = 'Toggle Pattern Grid'
@@ -498,9 +498,9 @@ export default class Toolbar {
         const hasDrumAuto = tracks.some(t => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
         const hasBassAuto = tracks.some(t => t.auto && Utils.detectTrackType(t.name) === 'BASS')
         const hasPianoAuto = tracks.some(t => t.auto && Utils.detectTrackType(t.name) === 'PIANO')
-        this.drumBtn.classList.toggle('actif', hasDrumAuto)
-        this.bassBtn.classList.toggle('actif', hasBassAuto)
-        this.chordsBtn.classList.toggle('actif', hasPianoAuto)
+        this.drumBtn.classList.toggle('active', hasDrumAuto)
+        this.bassBtn.classList.toggle('active', hasBassAuto)
+        this.chordsBtn.classList.toggle('active', hasPianoAuto)
     }
 
     syncPatterns = () => {

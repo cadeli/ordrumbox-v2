@@ -2,7 +2,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { showToast } from './toast.js'
-import { bindCloseButton, ALL_PANEL_IDS, syncWidthWithPatternPanel } from './components/panel_helpers.js'
+import { bindCloseButton } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { idbGet, idbPut, idbKeys, idbDelete } from '../core/idb.js'
 
@@ -14,15 +14,6 @@ export default class PatternsPanel extends BasePanel {
         super('pp-panel')
         this._selectedIdx = null
         this._songName = 'Untitled'
-    }
-
-    _hideOtherPanels() {
-        return ALL_PANEL_IDS.filter(id => id !== this.id && id !== 'te-panel' && id !== 'ne-panel')
-    }
-
-    reposition() {
-        super.reposition()
-        syncWidthWithPatternPanel(this.container)
     }
 
     createDOM() {

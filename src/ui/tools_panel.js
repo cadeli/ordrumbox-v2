@@ -10,7 +10,7 @@ import { TICK } from '../core/constants.js'
 import { isMidiSupported, parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalized } from '../logic/midi/midi_parser.js'
 import { C3_MIDI_NOTE } from '../logic/midi/midi_exporter.js'
 import { showToast } from './toast.js'
-import { bindCloseButton, bindAccordionToggles, hidePanelsById, buildAccordionGroup, ALL_PANEL_IDS, syncWidthWithPatternPanel } from './components/panel_helpers.js'
+import { bindCloseButton, bindAccordionToggles, hidePanelsById, buildAccordionGroup } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
@@ -21,15 +21,6 @@ export default class ToolsPanel extends BasePanel {
         this.nameInput = null
         this._wavLoops = null
         this.exportWavBtn = null
-    }
-
-    _hideOtherPanels() {
-        return ALL_PANEL_IDS.filter(id => id !== this.id && id !== 'te-panel' && id !== 'ne-panel')
-    }
-
-    reposition() {
-        super.reposition()
-        syncWidthWithPatternPanel(this.container)
     }
 
     createDOM() {

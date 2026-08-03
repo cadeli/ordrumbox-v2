@@ -1,4 +1,6 @@
-import { injectUiCss, positionBelowPatternPanel, hidePanelsById, escapeHtml, ALL_PANEL_IDS } from './components/panel_helpers.js'
+import { injectUiCss, positionBelowPatternPanel, syncWidthWithPatternPanel, hidePanelsById, escapeHtml, ALL_PANEL_IDS } from './components/panel_helpers.js'
+
+const KEEP_VISIBLE_IDS = ['te-panel']
 
 /**
  * BasePanel - Base class for all UI panels.
@@ -36,19 +38,15 @@ export default class BasePanel {
         document.body.appendChild(this.container)
     }
 
-    /**
-     * Subscribes to playbackEvents. Override in derived classes.
-     */
+    /** Subscribes to playbackEvents. Override in derived classes. */
     subscribe() {}
 
-    /**
-     * Renders/updates the UI based on current state. Override in derived classes.
-     */
+    /** Renders/updates the UI based on current state. Override in derived classes. */
     sync() {}
 
     /**
      * Standard show logic.
-     * @param {string[]} [panelsToHide] Panel IDs to hide. Defaults to all other panels.
+     * @param {string[]} [panelsToHide] Panel IDs to hide. Defaults to all other panels except te-panel and ne-panel.
      */
     show(panelsToHide) {
         hidePanelsById(panelsToHide ?? this._hideOtherPanels())
@@ -59,40 +57,33 @@ export default class BasePanel {
     }
 
     /**
-     * Returns all canonical panel IDs except this panel's own ID.
+     * Returns panel IDs to hide when this panel opens.
+     * Excludes this panel's own ID and panels in KEEP_VISIBLE_IDS (te-panel, ne-panel).
      */
     _hideOtherPanels() {
-        return ALL_PANEL_IDS.filter(id => id !== this.id)
+        return ALL_PANEL_IDS.filter(id => id !== this.id && !KEEP_VISIBLE_IDS.includes(id))
     }
 
-    /**
-     * Standard hide logic.
-     */
+    /** Standard hide logic. */
     hide() {
-        if (this.container) {
-            this.container.style.display = 'none'
-        }
+        this.container?.style.setProperty('display', 'none')
     }
 
     /**
-     * Standard repositioning logic.
+     * Positions the panel below the pattern panel and syncs its width.
      */
     reposition() {
-        if (this.container) {
-            positionBelowPatternPanel(this.container)
-        }
+        if (!this.container) return
+        positionBelowPatternPanel(this.container)
+        syncWidthWithPatternPanel(this.container)
     }
 
-    /**
-     * Helper to escape HTML.
-     */
+    /** Helper to escape HTML. */
     esc(str) {
         return escapeHtml(str)
     }
 
-    /**
-     * Helper to check visibility.
-     */
+    /** @returns {boolean} whether the panel is currently visible */
     get isVisible() {
         return this.container && this.container.style.display !== 'none'
     }

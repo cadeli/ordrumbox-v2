@@ -136,6 +136,10 @@ export default class TrackEditor extends BasePanel {
 
     createDOM() {
         super.createDOM()
+        this._neContainer = document.createElement('div')
+        this._neContainer.id = 'ne-container'
+        this._neContainer.style.display = 'none'
+        this.container.appendChild(this._neContainer)
         this.synthEditor.createDOM()
     }
 
@@ -202,7 +206,6 @@ export default class TrackEditor extends BasePanel {
             } else {
                 void this.synthEditor.showPanel()
                 this.hide()
-                this._noteEditor?.hide()
             }
             setViewBtn('grid', !synthVisible && this.synthEditor?.panel?.style?.display !== 'flex')
             setViewBtn('synth', this.synthEditor?.panel?.style?.display === 'flex')
@@ -306,10 +309,6 @@ export default class TrackEditor extends BasePanel {
         this._track = track
         this._trackIdx = trackIdx
         super.show()
-        if (this._noteEditor) {
-            this._noteEditor.container.style.display = 'block'
-            this._noteEditor.reposition()
-        }
         void this.synthEditor.ensureGeneratedSoundsLoaded()
         if (serviceRegistry.transport?.isRunning) {
             this._startStepWatch()
@@ -417,6 +416,9 @@ export default class TrackEditor extends BasePanel {
         }
 
         this.container.innerHTML = headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + panelsHtml
+        if (this._neContainer) {
+            this.container.appendChild(this._neContainer)
+        }
         
         // Mount main sliders
         this._sliders.forEach(s => {
@@ -477,7 +479,6 @@ export default class TrackEditor extends BasePanel {
             this.container.style.display = 'block'
         }
         this.reposition()
-        this._noteEditor?.reposition()
         this._bindEvents()
         this._drawSampleWaveform()
     }

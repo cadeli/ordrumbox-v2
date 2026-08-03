@@ -6,7 +6,7 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
 import { hzToNote, formatNote } from '../core/hz_to_note.js'
 import { showToast } from './toast.js'
-import { bindCloseButton, ALL_PANEL_IDS, syncWidthWithPatternPanel } from './components/panel_helpers.js'
+import { bindCloseButton } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 
@@ -19,15 +19,6 @@ export default class DrumkitManager extends BasePanel {
         this._listEl = null
         this._detailEl = null
         this._audioCtx = null
-    }
-
-    _hideOtherPanels() {
-        return ALL_PANEL_IDS.filter(id => id !== this.id && id !== 'te-panel' && id !== 'ne-panel')
-    }
-
-    reposition() {
-        super.reposition()
-        syncWidthWithPatternPanel(this.container)
     }
 
     createDOM() {
