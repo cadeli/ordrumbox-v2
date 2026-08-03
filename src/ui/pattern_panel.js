@@ -823,6 +823,11 @@ export default class PatternPanel extends BasePanel {
             track.velocity = parseFloat(volSlider.value)
             serviceRegistry.audioEngine?.syncTrack(track)
         }
+        const masterSlider = e.target.closest('.pp-master-volume')
+        if (masterSlider) {
+            const value = parseFloat(masterSlider.value)
+            serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: value })
+        }
     }
 
     _getSubPositions(note, track) {
@@ -1034,6 +1039,16 @@ const ghostMap = new Map()
                 </div>`
         })
         tracksHtml += `<div class="pp-add-track" id="pp-add-track">+ new track</div>`
+        // Master track panel - same look as track left part, controls master gain
+        tracksHtml += `
+            <div class="pp-track pp-master-track">
+                <div class="pp-track-left">
+                    <div class="pp-track-top">
+                        <span class="pp-track-name">Master</span>
+                        <input type="range" class="pp-master-volume" min="0" max="2" step="0.01" value="1" title="Master Gain">
+                    </div>
+                </div>
+            </div>`
         tracksHtml += `<canvas class="pp-waveform-overlay"></canvas></div>`
 
         const prevHeight = this.container.offsetHeight

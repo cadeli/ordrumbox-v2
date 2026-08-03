@@ -50,7 +50,8 @@ describe('Pattern Panel UI Grid', () => {
     })
 
     it('renders the correct number of tracks', () => {
-        const trackNames = document.querySelectorAll('.pp-track-name')
+        // Only count regular track names, not the master track
+        const trackNames = document.querySelectorAll('.pp-track:not(.pp-master-track) .pp-track-name')
         expect(trackNames.length).toBe(1)
         expect(trackNames[0].textContent).toBe('KICK')
     })
