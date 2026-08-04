@@ -141,6 +141,7 @@ export default class PianoRollPanel extends BasePanel {
     _updateTrackName() {
         const label = this.container.querySelector('#pp-pr-track-name')
         if (label) label.textContent = this._track?.name ? ` — ${this._track.name}` : ''
+        label.textContent="eee"
     }
 
     /**
