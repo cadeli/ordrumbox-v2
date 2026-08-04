@@ -4,6 +4,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
 import { fmt, setViewBtn, setViewMode, escapeHtml } from './components/panel_helpers.js'
+import { showToast } from './toast.js'
 import { OrKnob } from './components/or_knob.js'
 import { logger } from '../core/logger.js'
 
@@ -388,7 +389,20 @@ export default class SynthEditor {
 
     /** @returns {string} footer HTML with OK/Cancel buttons. */
     _buildFooter() {
+        const keys = this.getGeneratedSoundKeys()
+        const currentKey = this._editKey ?? ''
+        const options = keys.map(key => {
+            const selected = key === currentKey ? ' selected' : ''
+            return `<option value="${escapeHtml(key)}"${selected}>${escapeHtml(key)}</option>`
+        }).join('')
         return `<div class="ss-footer">
+            <select class="ss-preset-select" data-action="synth-preset">
+                <option value="">-- preset --</option>
+                ${options}
+            </select>
+            <button class="ss-tb-btn" data-action="synth-new" title="New preset">+</button>
+            <button class="ss-tb-btn" data-action="synth-duplicate" title="Duplicate preset">⧉</button>
+            <button class="ss-tb-btn" data-action="synth-delete" title="Delete preset">✕</button>
             <button class="ss-tb-btn" data-action="synth-ok" title="Save">OK</button>
             <button class="ss-tb-btn" data-action="synth-cancel" title="Cancel">Cancel</button>
         </div>`
@@ -526,6 +540,9 @@ export default class SynthEditor {
                 this._setValue(target.dataset.synthPath, target.value)
                 this._drawWaveform()
             }
+            if (target.tagName === 'SELECT' && target.dataset.action === 'synth-preset') {
+                this._selectPreset(target.value)
+            }
         })
 
         this._delegationBound = true
@@ -604,16 +621,18 @@ export default class SynthEditor {
         return true
     }
 
-    _handleAction(target) {
-        const action = target.dataset.action
-        if (action === 'synth-ok') this._closeEditor(true)
-        else if (action === 'synth-cancel') this._closeEditor(false)
-        else if (action === 'synth-duplicate') this._duplicatePreset()
-        else if (action === 'synth-rename') this._renamePreset()
-        else if (action === 'synth-randomize') this._randomizePreset()
-        else return false
-        return true
-    }
+_handleAction(target) {
+         const action = target.dataset.action
+         if (action === 'synth-ok') this._closeEditor(true)
+         else if (action === 'synth-cancel') this._closeEditor(false)
+         else if (action === 'synth-duplicate') this._duplicatePreset()
+         else if (action === 'synth-rename') this._renamePreset()
+         else if (action === 'synth-randomize') this._randomizePreset()
+         else if (action === 'synth-new') this._newPreset()
+         else if (action === 'synth-delete') this._deletePreset()
+         else return false
+         return true
+     }
 
     _handlePresetNav(target) {
         const nav = target.closest('[data-preset-nav]')
@@ -624,23 +643,70 @@ export default class SynthEditor {
 
     // ─── Preset actions ───────────────────────────────────────────────────
 
-    _navigatePreset(dir) {
-        const keys = this.getGeneratedSoundKeys()
-        if (keys.length === 0) return
-        const idx = keys.indexOf(this._editKey)
-        const next = (idx + dir + keys.length) % keys.length
-        if (!this._loadPreset(keys[next])) return
-        this._renderEditor()
-    }
+_navigatePreset(dir) {
+         const keys = this.getGeneratedSoundKeys()
+         if (keys.length === 0) return
+         const idx = keys.indexOf(this._editKey)
+         const next = (idx + dir + keys.length) % keys.length
+         if (!this._loadPreset(keys[next])) return
+         this._renderEditor()
+     }
 
-    _duplicatePreset() {
-        if (!this._draft || !this._editKey) return
-        const newKey = `${this._editKey}_copy`
-        this._commitSound(newKey, this._draft)
-        this._editKey = newKey
-        this._original = structuredClone(this._draft)
-        this._renderEditor()
-    }
+     /** @param {string} key - preset key to load */
+     _selectPreset(key) {
+         if (!key || key === this._editKey) return
+         if (!this._loadPreset(key)) return
+         this._renderEditor()
+     }
+
+_duplicatePreset() {
+         if (!this._draft || !this._editKey) return
+         const newKey = `${this._editKey}_copy`
+         this._commitSound(newKey, this._draft)
+         this._editKey = newKey
+         this._original = structuredClone(this._draft)
+         this._renderEditor()
+     }
+
+     _newPreset() {
+         const keys = this.getGeneratedSoundKeys()
+         let base = 1
+         let name = 'new_preset'
+         while (keys.includes(name)) {
+             name = `new_preset_${base++}`
+         }
+         const sound = structuredClone(SYNTH_GROUP_DEFAULTS)
+         this._commitSound(name, sound)
+         this._editKey = name
+         this._original = structuredClone(sound)
+         this._draft = structuredClone(sound)
+         this._hydrateDraft()
+         this._renderEditor()
+         showToast(`Preset "${name}" created`, 'success')
+     }
+
+     _deletePreset() {
+         if (!this._editKey) return
+         const keys = this.getGeneratedSoundKeys()
+         if (keys.length <= 1) {
+             showToast('Cannot delete the last preset', 'warning')
+             return
+         }
+         const deletedName = this._editKey
+         const idx = keys.indexOf(this._editKey)
+         delete soundRegistry.generatedSounds[this._editKey]
+         serviceRegistry.audioEngine?.updateGeneratedSounds(soundRegistry.generatedSounds)
+         const nextIdx = idx < keys.length - 1 ? idx : idx - 1
+         const nextKey = keys[nextIdx] === deletedName
+             ? keys[(idx + 1) % keys.length]
+             : keys[nextIdx]
+         this._editKey = null
+         this._original = null
+         this._draft = null
+         this._loadPreset(nextKey)
+         this._renderEditor()
+         showToast(`Deleted "${deletedName}"`, 'success')
+     }
 
     _renamePreset() {
         if (!this._editKey) return
