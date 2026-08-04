@@ -70,7 +70,12 @@ export default class PianoRollPanel extends BasePanel {
         })
         this.container?.addEventListener('click', (e) => {
             const key = e.target.closest('.pp-pr-key')
-            if (key) this._playKey(parseInt(key.dataset.midi, 10))
+            if (key) {
+                this._playKey(parseInt(key.dataset.midi, 10))
+                return
+            }
+            const gridEl = e.target.closest('#pp-piano-grid')
+            if (gridEl) this._onGridClick(e, gridEl)
         })
 
         if (typeof ResizeObserver !== 'undefined') {
@@ -249,6 +254,53 @@ export default class PianoRollPanel extends BasePanel {
             fragment.appendChild(el)
         })
         gridEl.appendChild(fragment)
+    }
+
+    /**
+     * Click on the grid: adds a note where there is none, removes the
+     * note under the click when clicking exactly on it, or moves an
+     * existing step's note to the clicked pitch otherwise (a track can
+     * only hold one note per step — same rule pattern_panel.js follows).
+     */
+    _onGridClick(e, gridEl) {
+        const track = this._track
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        const mfCmd = serviceRegistry.mfCmd
+        if (!track || !pattern || !mfCmd) return
+
+        const rect = gridEl.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+
+        const stepsPerBeat = track.stepsPerBeat ?? 4
+        const nbBeats = pattern.nbBeats ?? 4
+        const totalSteps = nbBeats * stepsPerBeat
+
+        const step = Math.floor(x / this._cellWidth)
+        const row = TOTAL_KEYS - 1 - Math.floor(y / NOTE_HEIGHT)
+        if (step < 0 || step >= totalSteps || row < 0 || row >= TOTAL_KEYS) return
+
+        const beat = Math.floor(step / stepsPerBeat)
+        const beatStep = step % stepsPerBeat
+        const trackPitchOffset = track.pitch ?? 0
+        const clickedMidi = MIDI_MIN + row
+        const relativePitch = clickedMidi - MIDDLE_C - trackPitchOffset
+
+        const notesAtStep = (track.notes ?? []).filter(n => n.beat === beat && n.beatStep === beatStep)
+
+        if (notesAtStep.length > 0) {
+            const existing = notesAtStep[0]
+            const existingMidi = MIDDLE_C + trackPitchOffset + (existing.pitch ?? 0)
+            if (existingMidi === clickedMidi) {
+                mfCmd.deleteNote(track, existing)
+            } else {
+                existing.pitch = relativePitch
+            }
+        } else {
+            mfCmd.addNote(track, beat, beatStep, relativePitch)
+        }
+
+        playbackEvents.dispatchPatternChange([track])
     }
 
     _scrollToTrackCenter() {

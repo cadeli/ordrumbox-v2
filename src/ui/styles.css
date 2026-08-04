@@ -608,6 +608,7 @@
     position: relative;
     background: var(--bg-canvas);
     flex-shrink: 0;
+    cursor: pointer;
 }
 .pp-pr-col {
     position: absolute;
