@@ -141,7 +141,6 @@ export default class PianoRollPanel extends BasePanel {
     _updateTrackName() {
         const label = this.container.querySelector('#pp-pr-track-name')
         if (label) label.textContent = this._track?.name ? ` — ${this._track.name}` : ''
-        label.textContent="eee"
     }
 
     /**
@@ -283,7 +282,8 @@ export default class PianoRollPanel extends BasePanel {
         this.container.style.left = '0'
         this.container.style.right = 'auto'
         this.container.style.width = '79%'
-        this.container.style.height = 'auto'
-        this.container.style.minHeight = '440px'
+        // Height is governed by the CSS rule on #piano-roll-panel
+        // (height: min(70vh, 620px)) — do not override it inline here,
+        // that would silently defeat the vertical-scroll fix.
     }
 }
