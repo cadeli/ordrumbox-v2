@@ -3,14 +3,14 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { PatternExporter } from '../patterns/exporter.js'
-import { escapeHtml } from './components/panel_helpers.js'
+import { escapeHtml, downloadJson } from './components/panel_helpers.js'
 import InstrumentsManager, { GM_DRUM_NAMES, GM_PROGRAM_NAMES } from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { TICK } from '../core/constants.js'
 import { isMidiSupported, parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalized } from '../logic/midi/midi_parser.js'
 import { C3_MIDI_NOTE } from '../logic/midi/midi_exporter.js'
 import { showToast } from './toast.js'
-import { bindCloseButton, hidePanelsById, bindTabToggles } from './components/panel_helpers.js'
+import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
@@ -205,14 +205,6 @@ export default class ToolsPanel extends BasePanel {
                 this.sync()
             }
         })
-
-        // Hide if other selections happen
-        playbackEvents.onTrackSelect.push((data) => {
-            if (data) this.hide()
-        })
-        playbackEvents.onNoteSelect.push((data) => {
-            if (data) this.hide()
-        })
     }
 
     sync() {
@@ -293,14 +285,7 @@ export default class ToolsPanel extends BasePanel {
     _exportJson() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
-        const data = PatternExporter.export(pattern)
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `ordrumbox-${pattern.name ?? (logger.warn('ToolsPanel', 'download name fallback'), 'pattern')}.json`
-        a.click()
-        URL.revokeObjectURL(url)
+        downloadJson(PatternExporter.export(pattern), `ordrumbox-${pattern.name ?? 'pattern'}.json`)
     }
 
     async _exportMidi() {
@@ -828,9 +813,5 @@ export default class ToolsPanel extends BasePanel {
         
         autoAssign.autoAssignSounds(pattern)
         showToast('Auto-assign complete', 'success')
-    }
-
-    show() {
-        super.show()
     }
 }

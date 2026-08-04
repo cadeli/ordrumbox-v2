@@ -92,7 +92,6 @@ export function init() {
     })
 
     window.addEventListener('resize', () => {
-        console.log(`resize: ${window.innerWidth}x${window.innerHeight}`)
         const repositionable = [
             _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel
         ]
@@ -305,10 +304,6 @@ function selectRandomPattern() {
 function selectRandomDrumkit() {
     const num = Math.floor(Math.random() * soundRegistry.drumkitList.length)
     serviceRegistry.mfCmd.setSelectedDrumkitNum(num)
-}
-
-function addPattern() {
-    serviceRegistry.mfCmd.addPattern()
 }
 
 function toggleStartStop() {

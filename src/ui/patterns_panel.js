@@ -4,7 +4,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { showToast } from './toast.js'
 import { bindCloseButton } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
-import { idbGet, idbPut, idbKeys, idbDelete } from '../core/idb.js'
+import { idbGet, idbPut, idbKeys } from '../core/idb.js'
 
 const SONGS_STORE = 'songs'
 const SONG_VERSION = 1
@@ -78,15 +78,7 @@ export default class PatternsPanel extends BasePanel {
         playbackEvents.onPatternsToggle.push((show) => {
             if (show) this.show(); else this.hide()
         })
-        playbackEvents.onToolsToggle.push(() => this.hide())
-        playbackEvents.onOutputToggle.push(() => this.hide())
-        playbackEvents.onAboutToggle.push(() => this.hide())
-        playbackEvents.onDrumkitManagerToggle.push(() => this.hide())
         playbackEvents.onPatternChange.push(() => { if (this.isVisible) this.sync() })
-    }
-
-    show() {
-        super.show()
     }
 
     sync() {

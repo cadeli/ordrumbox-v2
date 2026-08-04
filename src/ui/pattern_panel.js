@@ -3,11 +3,11 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { TICK } from '../core/constants.js'
-import { setViewBtn } from './components/panel_helpers.js'
+
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
-import { pitchToNoteName } from './components/ui_utils.js'
+import { downloadJson, pitchToNoteName } from './components/panel_helpers.js'
 
 const BEATS_PER_PAGE = 4
 
@@ -245,9 +245,6 @@ export default class PatternPanel extends BasePanel {
             this._rafId = requestAnimationFrame(loop)
         }
         this._rafId = requestAnimationFrame(loop)
-    }
-
-    _updatePerfDisplay() {
     }
 
     _stopRafLoop() {
@@ -758,13 +755,7 @@ export default class PatternPanel extends BasePanel {
             case 'save': {
                 const { PatternExporter } = await import('../patterns/exporter.js')
                 const data = PatternExporter.export(pattern)
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = url
-                a.download = `ordrumbox-${pattern.name ?? 'pattern'}.json`
-                a.click()
-                URL.revokeObjectURL(url)
+                downloadJson(data, `ordrumbox-${pattern.name ?? 'pattern'}.json`)
                 break
             }
             case 'replace': {

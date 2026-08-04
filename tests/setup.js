@@ -44,6 +44,7 @@ const stubContext = () => ({
     transform: vi.fn(),
     rect: vi.fn(),
     clip: vi.fn(),
+    setLineDash: vi.fn(),
     canvas: { width: 0, height: 0 },
     getByteTimeDomainData: vi.fn(),
     getByteFrequencyData: vi.fn(),

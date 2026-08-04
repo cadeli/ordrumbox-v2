@@ -1,7 +1,7 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
-import { pitchToNoteName } from './components/ui_utils.js'
+import { setViewBtn, setViewMode, pitchToNoteName } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 
 const PIANO_ROLL_NOTE_HEIGHT = 12
@@ -21,7 +21,6 @@ export default class PianoRollPanel extends BasePanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Piano Roll</span>
-                <button class="ne-close">&times;</button>
             </div>
             <div class="pp-piano-roll" id="pp-piano-roll">
                 <div class="pp-piano-roll-piano" id="pp-piano-roll-piano"></div>
@@ -33,25 +32,35 @@ export default class PianoRollPanel extends BasePanel {
     subscribe() {
         playbackEvents.onPatternChange.push(() => this._sync())
         playbackEvents.onProllToggle.push(() => {
-            if (this.isVisible) {
-                this.hide()
-                document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-            } else {
-                this.show()
-                document.getElementById('pattern-panel')?.classList.add('ui-hidden')
-            }
+            if (this.isVisible) return
+            this.show()
         })
     }
 
     show() {
-        super.show(['te-panel', 'tools-panel', 'output-panel', 'about-panel', 'dm-panel', 'soft-synth-panel'])
+        super.show(['tools-panel', 'output-panel', 'about-panel', 'dm-panel', 'soft-synth-panel'])
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+        const tePanel = document.getElementById('te-panel')
+        if (tePanel) {
+            tePanel.classList.remove('ui-hidden')
+            tePanel.classList.add('pp-split')
+            tePanel.style.display = 'block'
+        }
         this.reposition()
+        setViewMode('proll')
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        const idx = appState.selectedTrackNum
+        const tracks = Utils.getTracksArray(pattern)
+        const track = tracks[idx]
+        if (track) {
+            playbackEvents.dispatchTrackSelect({ track, trackIdx: idx })
+        }
     }
 
     hide() {
         super.hide()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        setViewBtn('proll', false)
     }
 
     sync() {
@@ -96,6 +105,10 @@ export default class PianoRollPanel extends BasePanel {
         const stepsPerBeat = currentTrack.stepsPerBeat ?? 4
         const totalBeats = pattern.nbBeats ?? 4
         const totalSteps = totalBeats * stepsPerBeat
+        const totalKeys = PIANO_ROLL_OCTAVES * PIANO_ROLL_OCTAVE_KEYS
+        const gridHeight = totalKeys * PIANO_ROLL_NOTE_HEIGHT
+        gridEl.style.height = gridHeight + 'px'
+        gridEl.style.position = 'relative'
         let html = ''
         for (let s = 0; s < totalSteps; s++) {
             html += `<div class="pp-piano-step" data-step="${s}"></div>`
@@ -104,11 +117,13 @@ export default class PianoRollPanel extends BasePanel {
         notes.forEach(note => {
             const step = (note.beat ?? 0) * stepsPerBeat + (note.beatStep ?? 0)
             const pitch = note.pitch ?? 0
+            const noteRow = (pitch - PIANO_ROLL_BASE_OCTAVE * 12)
+            if (noteRow < 0 || noteRow >= totalKeys) return
             const noteEl = document.createElement('div')
             noteEl.className = 'pp-piano-note'
             noteEl.style.left = `${step * PIANO_ROLL_NOTE_HEIGHT}px`
             noteEl.style.width = `${PIANO_ROLL_NOTE_HEIGHT}px`
-            noteEl.style.bottom = `${(PIANO_ROLL_BASE_OCTAVE * 12 + pitch) * PIANO_ROLL_NOTE_HEIGHT}px`
+            noteEl.style.bottom = `${noteRow * PIANO_ROLL_NOTE_HEIGHT}px`
             gridEl.appendChild(noteEl)
         })
     }
@@ -118,8 +133,8 @@ export default class PianoRollPanel extends BasePanel {
         this.container.style.position = 'fixed'
         this.container.style.top = '64px'
         this.container.style.left = '0'
-        this.container.style.right = '0'
-        this.container.style.width = '100%'
+        this.container.style.right = 'auto'
+        this.container.style.width = '79%'
         this.container.style.height = 'auto'
         this.container.style.minHeight = '440px'
     }

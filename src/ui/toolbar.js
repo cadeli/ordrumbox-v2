@@ -189,7 +189,7 @@ export default class Toolbar {
         this.editBtn = document.createElement('button')
         this.editBtn.className = 'tb-view-btn'
         this.editBtn.dataset.view = 'edit'
-        this.editBtn.textContent = 'Split'
+        this.editBtn.textContent = 'Grid'
         this.editBtn.title = 'Toggle Track Editor'
         this.prollBtn = document.createElement('button')
         this.prollBtn.className = 'tb-view-btn'

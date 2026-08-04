@@ -160,8 +160,6 @@ this.container.innerHTML = `
 
     subscribe() {
         playbackEvents.onOutputToggle.push((show) => { if (show) this.show(); else this.hide() })
-        playbackEvents.onTrackSelect.push((data)  => { if (data) this.hide() })
-        playbackEvents.onNoteSelect.push((data)   => { if (data) this.hide() })
     }
 
     show() {
@@ -177,11 +175,6 @@ this.container.innerHTML = `
     }
 
     // ─── Internal ─────────────────────────────────────────────────────────────
-
-    sync() {
-        const mixer = serviceRegistry.audioEngine?.mixer
-        if (!mixer) return
-    }
 
     _startAnimation() {
         this._stopAnimation()

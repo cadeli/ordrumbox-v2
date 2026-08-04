@@ -18,7 +18,6 @@ export default class DrumkitManager extends BasePanel {
         this._selectedSoundKey = null
         this._listEl = null
         this._detailEl = null
-        this._audioCtx = null
     }
 
     createDOM() {
@@ -69,18 +68,10 @@ export default class DrumkitManager extends BasePanel {
         playbackEvents.onDrumkitManagerToggle.push((show) => {
             if (show) this.show(); else this.hide()
         })
-        playbackEvents.onToolsToggle.push(() => this.hide())
-        playbackEvents.onOutputToggle.push(() => this.hide())
-        playbackEvents.onAboutToggle.push(() => this.hide())
         playbackEvents.onDrumkitChange.push(() => { if (this.isVisible) this.sync() })
     }
 
-    show() {
-        super.show()
-    }
-
     sync() {
-        this._audioCtx = serviceRegistry.audioCtx
         this._renderList()
         if (this._selectedSoundKey && !soundRegistry.sounds[this._selectedSoundKey]) {
             this._selectedSoundKey = null

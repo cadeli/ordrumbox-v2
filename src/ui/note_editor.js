@@ -1,9 +1,9 @@
-import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { fmt, pitchToNoteName } from './components/panel_helpers.js'
+import { fmt, pitchToNoteName, knobFormat } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
 import BasePanel from './base_panel.js'
+import { logger } from '../core/logger.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
 const SCALES_URL = 'assets/data/scales.json'
@@ -23,7 +23,7 @@ async function loadScales() {
         const res = await fetch(SCALES_URL)
         _scalesCache = await res.json()
     } catch (err) {
-        console.warn('NoteEditor: failed to load scales, using empty defaults', err)
+        logger.warn('NoteEditor', 'failed to load scales, using empty defaults', err)
         _scalesCache = {}
     }
     return _scalesCache
@@ -297,11 +297,7 @@ export default class NoteEditor extends BasePanel {
                 max: def.max,
                 step: def.step,
                 value: this._note[def.key] ?? def.min,
-                format: def.key === 'velocity'
-                    ? v => Math.round(v * 100)
-                    : def.key === 'pitch'
-                        ? v => `${v >= 0 ? '+' : ''}${v}`
-                        : fmt,
+                format: knobFormat(def),
                 unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
                 onChange: (v) => this._onSlider(def.key, v)
             })

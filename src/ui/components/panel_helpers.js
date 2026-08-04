@@ -1,56 +1,13 @@
-import { OrSlider } from './or_slider.js'
-import { OrKnob } from './or_knob.js'
-
-export { fmt, escapeHtml, pitchToNoteName } from './ui_utils.js'
+import { fmt as _fmt, escapeHtml as _escapeHtml, pitchToNoteName as _pitchToNoteName } from './ui_utils.js'
+export const fmt = _fmt
+export const escapeHtml = _escapeHtml
+export const pitchToNoteName = _pitchToNoteName
 
 /** Canonical set of all overlay panel IDs (pattern-panel is never hidden by other panels). */
 export const ALL_PANEL_IDS = [
     'te-panel', 'tools-panel', 'output-panel',
     'about-panel', 'dm-panel', 'soft-synth-panel'
 ]
-
-/**
- * Factory for building and mounting groups of OrSlider or OrKnob controls.
- */
-export function createControlGroup(defs, targetModel, onChange, options = {}) {
-    const isKnobGroup = options.type === 'knob'
-    const controls = []
-    let html = ''
-
-    defs.forEach(def => {
-        const val = targetModel[def.key] ?? def.value ?? def.min ?? 0
-        const cfg = {
-            key: def.key,
-            label: def.label,
-            min: def.min ?? 0,
-            max: def.max ?? 1,
-            step: def.step ?? 0.01,
-            value: val,
-            defaultValue: def.defaultValue ?? val,
-            unit: def.unit ?? '',
-            format: def.format,
-            normalize: def.normalize,
-            denormalize: def.denormalize,
-            hasLfo: def.lfo ? !!targetModel[def.lfo] : false,
-            onChange: (newVal, key) => {
-                targetModel[key] = newVal
-                onChange?.(newVal, key)
-            }
-        }
-        const ctrl = isKnobGroup ? new OrKnob(cfg) : new OrSlider(cfg)
-        controls.push(ctrl)
-        html += ctrl.toHTML()
-    })
-
-    const mount = (container) => {
-        controls.forEach(ctrl => {
-            const row = container.querySelector(`[data-or-slider="${ctrl._key}"]`) ?? container.querySelector(`[data-prop="${ctrl._key}"]`)
-            if (row) ctrl.mount(row)
-        })
-    }
-
-    return { controls, html, mount }
-}
 
 export function injectUiCss() {
     if (document.getElementById('ui-styles')) return
@@ -88,29 +45,6 @@ export function bindCloseButton(container, onClose) {
     container.querySelector('.ne-close')?.addEventListener('click', onClose)
 }
 
-export function bindVisibilityToggles(container, visibilityState, onChange) {
-    container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
-        btn.addEventListener('click', (event) => {
-            const key = btn.dataset.toggle
-            visibilityState[key] = !visibilityState[key]
-            onChange?.(key, btn)
-            event.stopPropagation()
-        })
-    })
-}
-
-export function bindPanelToggles(container, getTarget) {
-    container.querySelectorAll('.ne-toggle[data-toggle]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.classList.toggle('active')
-            const target = getTarget(btn.dataset.toggle)
-            if (target) {
-                target.style.display = btn.classList.contains('active') ? '' : 'none'
-            }
-        })
-    })
-}
-
 export function hidePanelsById(ids) {
     ids.forEach(id => {
         const panel = document.getElementById(id)
@@ -143,4 +77,42 @@ export function bindTabToggles(container, onChange) {
  */
 export function setViewBtn(name, active) {
     document.querySelector(`.tb-view-btn[data-view="${name}"]`)?.classList.toggle('active', active)
+}
+
+/**
+ * Sets all toolbar view buttons for a given mode.
+ * @param {'synth' | 'edit' | 'proll'} mode
+ */
+export function setViewMode(mode) {
+    setViewBtn('synth', mode === 'synth')
+    setViewBtn('edit', mode === 'edit' || mode === 'proll')
+    setViewBtn('proll', mode === 'proll')
+}
+
+/**
+ * Downloads data as a JSON file.
+ * @param {unknown} data
+ * @param {string} filename
+ */
+export function downloadJson(data, filename) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+}
+
+/**
+ * Creates a Knob format callback for velocity/pitch/fallback.
+ */
+export function knobFormat(def) {
+    return def.key === 'velocity'
+        ? v => Math.round(v * 100)
+        : def.key === 'pitch'
+            ? v => `${v >= 0 ? '+' : ''}${v}`
+            : def.key === 'sampleDecay'
+                ? v => v.toFixed(2)
+                : fmt
 }

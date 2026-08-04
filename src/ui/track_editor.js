@@ -9,7 +9,7 @@ import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
-import { bindCloseButton, bindVisibilityToggles, fmt, pitchToNoteName, setViewBtn } from './components/panel_helpers.js'
+import { fmt, setViewBtn, setViewMode, knobFormat } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
@@ -51,12 +51,6 @@ const FX_DEFS = [
     { key: 'delayDepth', label: 'Delay', controls: ['delayDepth', 'delayTime', 'delayType'] },
     { key: 'saturationAmount', label: 'Sat', controls: ['saturationAmount', 'saturationType'] },
     { key: 'filterFreq', label: 'fltr', controls: ['filterType', 'filterFreq', 'filterQ'] }
-]
-
-const FX_TOGGLE_DEFS = [
-    { key: 'reverbAmount', controls: ['reverbAmount'] },
-    { key: 'delayDepth', controls: ['delayDepth'] },
-    { key: 'saturationAmount', controls: ['saturationAmount'] }
 ]
 
 const KNOB_PROPS = [
@@ -201,32 +195,36 @@ export default class TrackEditor extends BasePanel {
         })
         playbackEvents.onSynthToggle.push(() => {
             const synthVisible = this.synthEditor?.panel?.style?.display === 'flex'
+            if (synthVisible) return
+            void this.synthEditor.showPanel()
+            this.container.style.display = 'none'
+            if (this._noteEditor) this._noteEditor.hide()
+            document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+            const pianoRollPanel = document.getElementById('piano-roll-panel')
+            if (pianoRollPanel) pianoRollPanel.style.display = 'none'
+            setViewMode('synth')
+        })
+        playbackEvents.onEditToggle.push(() => {
+            const pianoRollPanel = document.getElementById('piano-roll-panel')
+            if (pianoRollPanel && pianoRollPanel.style.display !== 'none') {
+                pianoRollPanel.style.display = 'none'
+            }
+            document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+            const synthVisible = this.synthEditor?.panel?.style?.display === 'flex'
             if (synthVisible) {
                 this.synthEditor.hidePanel()
-            } else {
-                void this.synthEditor.showPanel()
-                this.hide()
             }
-            setViewBtn('synth', this.synthEditor?.panel?.style?.display === 'flex')
-        })
-playbackEvents.onEditToggle.push(() => {
-            if (this.isVisible) {
-                this.hide()
-                playbackEvents.dispatchNoteSelect(null)
-            } else {
+            if (!this.isVisible) {
                 const pattern = appState.patterns[appState.selectedPatternNum]
                 const idx = appState.selectedTrackNum
                 const track = pattern?.tracks?.[idx]
                 if (track) {
-                    console.log('trackeditor')
                     this.show({ track, trackIdx: idx })
-                    console.log('noteeditor')
                     this._showNoteEditorForTrack(track, idx)
                 }
             }
-            const split = this.isVisible
-            this.container?.classList.toggle('pp-split', split)
-            setViewBtn('edit', split)
+            this.container?.classList.add('pp-split')
+            setViewMode('edit')
         })
     }
 
@@ -324,7 +322,6 @@ playbackEvents.onEditToggle.push(() => {
             this._track.filterQ = Utils.normalizedTrackFilterQToValue(this._track.filterQ)
         }
 
-        const vis = appState.trackEditorVisibility
         const soundInfo = this._getSoundInfo()
         
         let headerHtml = `<div class="ne-header">
@@ -454,13 +451,7 @@ playbackEvents.onEditToggle.push(() => {
                 max: def.max,
                 step: def.step,
                 value: this._track[def.key] ?? def.min,
-                format: def.key === 'velocity'
-                    ? v => Math.round(v * 100)
-                    : def.key === 'pitch'
-                        ? v => `${v >= 0 ? '+' : ''}${v}`
-                        : def.key === 'sampleDecay'
-                            ? v => v.toFixed(2)
-                            : fmt,
+                format: knobFormat(def),
                 unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : def.key === 'sampleDecay' ? 's' : '',
                 onChange: (v) => {
                     this._track[def.key] = v
@@ -576,7 +567,7 @@ playbackEvents.onEditToggle.push(() => {
         e.target.value = ''
     }
 
-    _renderLoopPanel(isExpanded) {
+    _renderLoopPanel() {
         const beats = this._track.nbBeats ?? 4
         const stepsPerBeat = this._track.stepsPerBeat ?? 4
         const loopAtStep = this._track.loopAtStep ?? (beats * stepsPerBeat)
@@ -693,7 +684,7 @@ playbackEvents.onEditToggle.push(() => {
         return Number.isFinite(amount) && amount > 0
     }
 
-    _renderSoundPanel(isExpanded) {
+    _renderSoundPanel() {
         const auto = this._track.useAutoAssignSound !== false
         const ledClass = auto ? 'lfo-led on' : 'lfo-led'
         const generatedSoundKeys = this.synthEditor.getGeneratedSoundKeys()
@@ -977,8 +968,6 @@ playbackEvents.onEditToggle.push(() => {
                 this._toggleFx(btn)
             } else if (btn.dataset.fxTab) {
                 this._onFxTab(btn)
-            } else if (btn.dataset.action === 'toggle-lfo') {
-                this._toggleLfo()
             } else if (btn.dataset.action === 'toggle-auto') {
                 this._toggleAuto()
             } else if (btn.dataset.action === 'edit-synth') {
@@ -1063,11 +1052,6 @@ playbackEvents.onEditToggle.push(() => {
         this.sync()
     }
 
-    _toggleFx(btn) {
-        const key = btn.dataset.fxToggle
-        this._toggleFxByKey(key)
-    }
-
     _toggleFxByKey(key) {
         const isOn = Number(this._track[key] ?? 0) > 0
         this._track[key] = isOn ? 0 : 0.5
@@ -1086,18 +1070,6 @@ playbackEvents.onEditToggle.push(() => {
         this.container.querySelectorAll('.fx-tab-panel').forEach(p => {
             p.style.display = p.dataset.fxPanel === String(tabIdx) ? '' : 'none'
         })
-    }
-
-    _onFxIcon(btn) {
-        if (!this._track) return
-        const key = btn.dataset.fxIconVal
-        const group = btn.closest('[data-fx-icon-key]')
-        if (!group) return
-        const propKey = group.dataset.fxIconKey
-        this._track[propKey] = key
-        group.querySelectorAll('.fx-icon-btn').forEach(b => b.classList.remove('selected'))
-        btn.classList.add('selected')
-        playbackEvents.dispatchTrackParamChange(this._track)
     }
 
     _onLfoToggleBtn(targetKey) {

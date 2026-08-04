@@ -3,8 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
-import { fmt, setViewBtn } from './components/panel_helpers.js'
-import { escapeHtml as _esc } from './components/ui_utils.js'
+import { fmt, setViewBtn, setViewMode, escapeHtml } from './components/panel_helpers.js'
 import { OrKnob } from './components/or_knob.js'
 import { logger } from '../core/logger.js'
 
@@ -13,7 +12,6 @@ const WAVE_ICONS = {
     triangle: '<svg viewBox="0 0 24 14"><polyline points="0,12 6,2 12,12 18,2 24,12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
     sawtooth: '<svg viewBox="0 0 24 14"><polyline points="0,12 12,2 12,12 24,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
     square:   '<svg viewBox="0 0 24 14"><polyline points="0,12 0,2 6,2 6,12 12,12 12,2 18,2 18,12 24,12 24,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
-    random:   '<svg viewBox="0 0 24 14"><polyline points="0,7 2,3 4,11 6,5 8,10 10,2 12,9 14,4 16,12 18,6 20,8 22,3 24,7" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>',
 }
 
 const FILTER_ICONS = {
@@ -238,7 +236,7 @@ export default class SynthEditor {
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
         this.host.container.style.display = 'none'
         this.panel.style.display = 'flex'
-        setViewBtn('synth', true)
+        setViewMode('synth')
     }
 
     _hideSynthPanel() {
@@ -269,7 +267,7 @@ export default class SynthEditor {
 
     /** @returns {string} header HTML with preset title. */
     _buildHeader() {
-        return `<div class="ss-title">Soft Synth : ${_esc(this._editKey)}</div>`
+        return `<div class="ss-title">Soft Synth : ${escapeHtml(this._editKey)}</div>`
     }
 
     /** @returns {string} waveform canvas with Wave/Scope tabs. */
@@ -292,7 +290,7 @@ export default class SynthEditor {
             const isBypassed = this._cardBypassed[groupName] ?? false
 
             html += `<div class="ss-group${isBypassed ? ' bypassed' : ''}" data-ss-card="${groupName}">
-                <span class="ss-group-label">${_esc(label)}</span>
+                <span class="ss-group-label">${escapeHtml(label)}</span>
                 <button class="ss-bypass-btn${isBypassed ? '' : ' active'}" data-power-card="${groupName}" title="Bypass">
                     <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>
                 </button>
@@ -345,12 +343,12 @@ export default class SynthEditor {
         }
         if (typeof val === 'number') {
             knobConfigs.push({ path, val, key: pathStr, label: paramLabel })
-            return `<div class="ne-row" data-ss-knob-placeholder="${_esc(pathStr)}"></div>`
+            return `<div class="ne-row" data-ss-knob-placeholder="${escapeHtml(pathStr)}"></div>`
         }
         if (typeof val === 'boolean') {
             return `<div class="ne-row">
-                <span class="ss-param-label">${_esc(paramLabel)}</span>
-                <button class="ss-tb-btn ss-tb-btn-boolean ${val ? 'active' : ''}" data-synth-path="${_esc(pathStr)}" data-synth-type="boolean">${val ? 'ON' : 'OFF'}</button>
+                <span class="ss-param-label">${escapeHtml(paramLabel)}</span>
+                <button class="ss-tb-btn ss-tb-btn-boolean ${val ? 'active' : ''}" data-synth-path="${escapeHtml(pathStr)}" data-synth-type="boolean">${val ? 'ON' : 'OFF'}</button>
             </div>`
         }
         return ''
@@ -361,7 +359,7 @@ export default class SynthEditor {
         const options = this._getIconOptions(pathStr)
         const isVcoWave = pathStr.startsWith('vco') && pathStr.endsWith('.wave')
         return `<div class="ne-row ss-icon-row">
-            ${isVcoWave ? '' : `<span class="ss-param-label">${_esc(paramLabel)}</span>`}
+            ${isVcoWave ? '' : `<span class="ss-param-label">${escapeHtml(paramLabel)}</span>`}
             ${this._renderIconRow(options, pathStr, val, cssClass, icons)}
         </div>`
     }
@@ -380,11 +378,11 @@ export default class SynthEditor {
             const optionValue = typeof opt === 'object' ? opt.value : opt
             const optionLabel = typeof opt === 'object' ? opt.label : opt
             const selected = String(optionValue) === String(val) ? ' selected' : ''
-            return `<option value="${_esc(optionValue)}"${selected}>${_esc(optionLabel)}</option>`
+            return `<option value="${escapeHtml(optionValue)}"${selected}>${escapeHtml(optionLabel)}</option>`
         }).join('')
         return `<div class="ne-row">
-            <span class="ss-param-label">${_esc(paramLabel)}</span>
-            <select data-synth-path="${_esc(pathStr)}">${opts}</select>
+            <span class="ss-param-label">${escapeHtml(paramLabel)}</span>
+            <select data-synth-path="${escapeHtml(pathStr)}">${opts}</select>
         </div>`
     }
 
@@ -401,7 +399,7 @@ export default class SynthEditor {
         return options.map(opt => {
             const v = typeof opt === 'object' ? opt.value : opt
             const sel = String(v) === String(val) ? ' selected' : ''
-            return `<button class="${cssClass}${sel}" data-synth-path="${_esc(pathStr)}" data-wave-val="${_esc(v)}" title="${_esc(v)}">${icons[v] ?? v}</button>`
+            return `<button class="${cssClass}${sel}" data-synth-path="${escapeHtml(pathStr)}" data-wave-val="${escapeHtml(v)}" title="${escapeHtml(v)}">${icons[v] ?? v}</button>`
         }).join('')
     }
 
@@ -419,7 +417,7 @@ export default class SynthEditor {
      */
     _mountKnobs(configs) {
         for (const { path, val, key: pathStr, label } of configs) {
-            const placeholder = this.panel.querySelector(`[data-ss-knob-placeholder="${_esc(pathStr)}"]`)
+            const placeholder = this.panel.querySelector(`[data-ss-knob-placeholder="${escapeHtml(pathStr)}"]`)
             if (!placeholder) continue
 
             const meta = SYNTH_PARAM_META[pathStr] ?? {

@@ -4,7 +4,6 @@ import BasePanel from './base_panel.js'
 
 const APP_VERSION = '2.0.0'
 const APP_NAME = 'OrDrumbox'
-const APP_DESCRIPTION = 'Free online drum machine & step sequencer'
 const APP_LICENSE = 'GPL-3.0-only'
 const APP_REPO = 'https://github.com/cadeli/ordrumbox-v2'
 const APP_WEBSITE = 'https://www.ordrumbox.com'
@@ -109,10 +108,6 @@ export default class AboutPanel extends BasePanel {
             if (show) this.show()
             else this.hide()
         })
-        playbackEvents.onToolsToggle.push(() => this.hide())
-        playbackEvents.onOutputToggle.push(() => this.hide())
-        playbackEvents.onTrackSelect.push(() => this.hide())
-        playbackEvents.onNoteSelect.push(() => this.hide())
     }
 
     show() {
