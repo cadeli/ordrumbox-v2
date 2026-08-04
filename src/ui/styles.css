@@ -632,6 +632,7 @@
     z-index: 2000;
     min-height: auto; max-height: 250px;
 }
+#about-panel, #tools-panel { max-height: 500px; min-height: 400px; }
 #ne-container {
     display: none;
     border-top: 1px solid var(--border-dark);
@@ -745,6 +746,9 @@
 .ne-row .ne-val {
     width: 55px; text-align: right; color: var(--text-dim); font-weight: bold; font-size: 10px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#about-panel .ne-val {
+    width: auto; min-width: 120px; text-align: left; overflow: visible; text-overflow: unset; white-space: normal; word-break: break-all;
 }
 .ne-tab-bar {
     display: flex; flex-direction: row; gap: 2px;

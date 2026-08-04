@@ -65,10 +65,6 @@ export default class ToolsPanel extends BasePanel {
                     <input type="file" id="tp-import-file" style="display: none" accept=".json">
                 </div>
                 <div class="ne-row">
-                    <button class="ne-btn" id="tp-import-wav" title="Replace the selected track's sound with a custom WAV sample">Import WAV</button>
-                    <input type="file" id="tp-import-wav-file" style="display: none" accept=".wav,.flac,.mp3,.aac">
-                </div>
-                <div class="ne-row">
                     <button class="ne-btn" id="tp-import-midi" title="Import a Standard MIDI File (.mid) into a new pattern">Import MIDI</button>
                     <input type="file" id="tp-import-midi-file" style="display: none" accept=".mid,.midi">
                 </div>
@@ -144,10 +140,6 @@ export default class ToolsPanel extends BasePanel {
         const importFile = this.container.querySelector('#tp-import-file')
         this.container.querySelector('#tp-import-json').addEventListener('click', () => importFile.click())
         importFile.addEventListener('change', (e) => this._onImportFile(e))
-
-        const importWavFile = this.container.querySelector('#tp-import-wav-file')
-        this.container.querySelector('#tp-import-wav').addEventListener('click', () => importWavFile.click())
-        importWavFile.addEventListener('change', (e) => this._onImportWavFile(e))
 
         const importMidiFile = this.container.querySelector('#tp-import-midi-file')
         this.container.querySelector('#tp-import-midi').addEventListener('click', () => importMidiFile.click())
@@ -375,82 +367,6 @@ export default class ToolsPanel extends BasePanel {
         }
         reader.readAsText(file)
         e.target.value = '' // Reset for next time
-    }
-
-    async _onImportWavFile(e) {
-        const file = e.target.files[0]
-        if (!file) return
-
-        try {
-            const audioCtx = serviceRegistry.audioCtx
-            if (!audioCtx) {
-                showToast('Audio context not available', 'error')
-                return
-            }
-
-            const arrayBuffer = await file.arrayBuffer()
-            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
-
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            const tracks = Object.values(pattern?.tracks ?? {})
-            const track = tracks[appState.selectedTrackNum]
-            if (!track) {
-                showToast('No track selected', 'info')
-                return
-            }
-
-            const im = new InstrumentsManager()
-            const detectedInstrument = im.findInstrumentFromFileName(file.name)
-            const instrumentType = detectedInstrument?.id && detectedInstrument.id !== 'NOT_FOUND' 
-                ? detectedInstrument.id 
-                : file.name.replace(/\.\w+$/, '').toUpperCase()
-
-            const url = `custom/${file.name}`
-            const sound = {
-                url: url,
-                key: instrumentType,
-                buffer: audioBuffer,
-                duration: Math.floor(audioBuffer.duration * 1000),
-                kit_name: soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? 'custom',
-                display_name: file.name.replace(/\.\w+$/, ''),
-                isLoad: true,
-                playStatus: false,
-                index: Object.keys(soundRegistry.sounds).length + 1
-            }
-
-            soundRegistry.sounds[url] = sound
-
-            const kit = soundRegistry.drumkitList[appState.selectedDrumkitNum]
-            if (kit) {
-                kit.instruments.push({
-                    url: url,
-                    key: sound.key,
-                    display_name: sound.display_name,
-                    instrument: instrumentType
-                })
-            }
-
-            track.soundId = url
-            track.useAutoAssignSound = false
-            track.useSoftSynth = false
-            track.name = instrumentType
-            playbackEvents.dispatchPatternChange([track])
-            playbackEvents.dispatchDrumkitChange()
-
-            // Play the imported sound immediately
-            if (serviceRegistry.audioEngine) {
-                if (serviceRegistry.audioCtx?.state === 'suspended') {
-                    await serviceRegistry.audioCtx.resume()
-                }
-                serviceRegistry.audioEngine.simpleBeep(appState.selectedTrackNum)
-            }
-
-            showToast(`Sample "${file.name}" imported to kit "${kit?.name ?? 'N/A'}" as ${instrumentType} and assigned to track: ${track.name}`, 'success')
-        } catch (err) {
-            logger.error('ToolsPanel', 'WAV Import failed', err)
-            showToast('WAV Import failed: ' + err.message, 'error')
-        }
-        e.target.value = ''
     }
 
     async _onImportMidiFile(e) {
