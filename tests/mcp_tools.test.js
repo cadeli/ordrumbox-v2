@@ -60,26 +60,6 @@ describe('Functional: MCP tools flow', () => {
         expect(mfCmd.isNoteAt(snare, 1, 2).length).toBe(1)
     })
 
-    it('updateTrack applies noteUpdates to all notes in track', () => {
-        const pattern = mfCmd.addPattern('Test')
-        const track = mfCmd.addTrack(pattern, 'KICK', 4)
-        mfCmd.addNote(track, 0, 0)
-        mfCmd.addNote(track, 0, 1)
-        mfCmd.addNote(track, 0, 2)
-
-        // updateTrack signature: (patternName, trackName, updates, noteUpdates)
-        // The MCP server calls it differently - let's test the direct note property setting
-        for (const note of track.notes) {
-            note.every = 2
-            note.retriggerNum = 3
-        }
-
-        for (const note of track.notes) {
-            expect(note.every).toBe(2)
-            expect(note.retriggerNum).toBe(3)
-        }
-    })
-
     it('ensureTrack creates track only if not exists', () => {
         const pattern = mfCmd.addPattern('Test')
 

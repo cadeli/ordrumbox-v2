@@ -164,14 +164,5 @@ describe('Sub-panel toggle toolbars', () => {
             const masterPanel = op.querySelector('.ne-tab-panel[data-tab-panel="master"]')
             expect(masterPanel.classList.contains('ne-tab-panel-hidden')).toBe(true)
         })
-
-        it('closes the panel when hidden', () => {
-            playbackEvents.dispatchOutputToggle(true)
-
-            const op = document.getElementById('output-panel')
-            expect(op.style.display).toBe('block')
-            op.style.display = 'none'
-            expect(op.style.display).toBe('none')
-        })
     })
 })

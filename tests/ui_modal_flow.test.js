@@ -109,17 +109,6 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
         expect(tp.style.display).toBe('none')
     })
 
-    it('opens and closes the Output Panel', () => {
-        playbackEvents.dispatchOutputToggle(true)
-
-        const op = document.getElementById('output-panel')
-        expect(op.style.display).toBe('block')
-
-        op.style.display = 'none'
-
-        expect(op.style.display).toBe('none')
-    })
-
     it('ensures only one modal is visible at a time', () => {
         playbackEvents.dispatchToolsToggle(true)
         expect(document.getElementById('tools-panel').style.display).toBe('block')

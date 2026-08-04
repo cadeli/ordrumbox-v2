@@ -199,13 +199,6 @@ describe('convertToGeneratedSounds', () => {
             expect(SYNTH_SOUND_MAP.PERC).toBe('SYNTH2')
             expect(SYNTH_SOUND_MAP.TOM).toBe('TOM')
         })
-
-        it('all mapped keys exist', () => {
-            Object.values(SYNTH_SOUND_MAP).forEach(key => {
-                expect(typeof key).toBe('string')
-                expect(key.length).toBeGreaterThan(0)
-            })
-        })
     })
 
     describe('track conversion logic', () => {

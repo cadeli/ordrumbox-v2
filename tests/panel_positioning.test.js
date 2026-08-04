@@ -144,13 +144,5 @@ describe('Panel positioning below pattern panel on desktop', () => {
             expect(op.container.style.top).toBe(expectedTop)
             expect(ap.container.style.top).toBe(expectedTop)
         })
-
-        it('main.js registers a window resize listener', async () => {
-            const addSpy = vi.spyOn(window, 'addEventListener')
-            await import('../src/main.js')
-            const resizeCalls = addSpy.mock.calls.filter(([event]) => event === 'resize')
-            expect(resizeCalls.length).toBeGreaterThanOrEqual(0)
-            addSpy.mockRestore()
-        })
     })
 })

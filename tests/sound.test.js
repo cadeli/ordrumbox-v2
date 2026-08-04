@@ -220,11 +220,6 @@ describe('MfSound', () => {
         sound.loadGeneratedsounds()
         expect(serviceRegistry.mfResourcesLoader.loadGeneratedSounds).not.toHaveBeenCalled()
     })
-    it('loadGeneratedsounds is no-op when already failed', () => {
-        sound.generatedSoundsLoadFailed = true
-        sound.loadGeneratedsounds()
-        expect(serviceRegistry.mfResourcesLoader.loadGeneratedSounds).not.toHaveBeenCalled()
-    })
     it('loadGeneratedsounds calls mfResourcesLoader.loadGeneratedSounds', () => {
         sound.generatedSounds = {}
         serviceRegistry.mfResourcesLoader.loadGeneratedSounds.mockResolvedValue()

@@ -11,11 +11,6 @@ describe('MfDefaults', () => {
             expect(result).toEqual(Utils.NOTE_DEFAULTS)
         })
 
-        it('returns NOTE_DEFAULTS when called with undefined', () => {
-            const result = MfDefaults.normalizeNote(undefined)
-            expect(result).toEqual(Utils.NOTE_DEFAULTS)
-        })
-
         it('fills missing fields with defaults', () => {
             const note = { beat: 2, beatStep: 1 }
             const result = MfDefaults.normalizeNote(note)

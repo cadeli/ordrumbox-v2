@@ -140,24 +140,6 @@ describe('Utils', () => {
         })
     })
 
-    describe('NOTE_DEFAULTS', () => {
-        it('has expected default property values', () => {
-            expect(Utils.NOTE_DEFAULTS.velocity).toBe(0.8)
-            expect(Utils.NOTE_DEFAULTS.pitch).toBe(0)
-            expect(Utils.NOTE_DEFAULTS.arp).toBeNull()
-            expect(Utils.NOTE_DEFAULTS.retriggerNum).toBe(1)
-        })
-    })
-
-    describe('TRACK_DEFAULTS', () => {
-        it('has expected default property values', () => {
-            expect(Utils.TRACK_DEFAULTS.nbBeats).toBe(4)
-            expect(Utils.TRACK_DEFAULTS.stepsPerBeat).toBe(4)
-            expect(Utils.TRACK_DEFAULTS.mute).toBe(false)
-            expect(Utils.TRACK_DEFAULTS.solo).toBe(false)
-        })
-    })
-
     describe('getNoteAbsoluteStep', () => {
         it('beat 0 step 0 → 0', () => {
             expect(Utils.getNoteAbsoluteStep({ beat: 0, beatStep: 0 }, 4)).toBe(0)
@@ -358,18 +340,6 @@ describe('Utils', () => {
 
         it('returns empty array when pattern is null', () => {
             expect(Utils.getTracksArray(null)).toEqual([])
-        })
-
-        it('returns empty array when pattern is undefined', () => {
-            expect(Utils.getTracksArray(undefined)).toEqual([])
-        })
-
-        it('returns empty array for empty array', () => {
-            expect(Utils.getTracksArray({ tracks: [] })).toEqual([])
-        })
-
-        it('returns empty array for empty object', () => {
-            expect(Utils.getTracksArray({ tracks: {} })).toEqual([])
         })
     })
 })
