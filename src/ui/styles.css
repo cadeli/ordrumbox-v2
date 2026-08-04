@@ -532,8 +532,12 @@
     font-size: 11px;
     color: var(--text-muted);
     z-index: 500;
-    height: auto;
-    min-height: 440px;
+    /* Bounded (not auto) height so the scroll region below can actually
+       clip its content — an auto-height ancestor makes the child's
+       `height: calc(100% - ...)` resolve against nothing, which is why
+       vertical scrolling silently failed before. */
+    height: min(70vh, 620px);
+    min-height: 320px;
     display: flex;
     flex-direction: column;
 }
@@ -541,8 +545,25 @@
     display: flex;
     flex-direction: row;
     height: calc(100% - 36px);
-    overflow: hidden;
     flex: 1;
+    /* Every flex ancestor down to the scroll container needs min-height:0 —
+       otherwise flex items default to min-height:auto (their content size)
+       and overflow:auto on the descendant never gets a chance to engage. */
+    min-height: 0;
+    overflow: hidden;
+}
+#pp-piano-scroll {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    /* Single scroll container for both keys and grid: this is what keeps
+       the keyboard and the note grid vertically in sync — two separate
+       scrollable elements (as before) scroll independently of each other. */
+    overflow: auto;
+    position: relative;
 }
 #pp-piano-keys {
     display: flex;
@@ -551,9 +572,11 @@
     min-width: 80px;
     background: var(--bg-dark);
     border-right: 2px solid var(--border);
-    overflow-y: auto;
-    overflow-x: hidden;
     flex-shrink: 0;
+    /* Sticks to the left edge while the shared container scrolls
+       horizontally, but scrolls normally (with the grid) vertically. */
+    position: sticky;
+    left: 0;
     z-index: 2;
 }
 .pp-pr-key {
@@ -561,6 +584,12 @@
     position: relative;
     box-sizing: border-box;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 4px;
+    font-size: 9px;
+    color: var(--text-faint);
 }
 .pp-pr-key.white {
     background: var(--bg-elevated);
@@ -574,16 +603,11 @@
     border-left: 1px solid var(--border-dark);
 }
 .pp-pr-key.black:hover { background: var(--bg-beat); }
-#pp-piano-grid-wrap {
-    flex: 1;
-    overflow: auto;
-    position: relative;
-    min-width: 0;
-}
+.pp-pr-key.is-c { color: var(--text-subtle); font-weight: bold; }
 #pp-piano-grid {
     position: relative;
     background: var(--bg-canvas);
-    width: fit-content;
+    flex-shrink: 0;
 }
 .pp-pr-col {
     position: absolute;

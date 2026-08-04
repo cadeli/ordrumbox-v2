@@ -2,23 +2,29 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { soundRegistry } from '../state/sound_registry.js'
 import MfFlatNote from '../model/flatnote.js'
-import { setViewBtn, setViewMode, pitchToNoteName } from './components/panel_helpers.js'
+import { setViewBtn, setViewMode } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 
 const NOTE_HEIGHT = 14
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 const BLACK_KEY_INDICES = new Set([1, 3, 6, 8, 10])
 
-const MIN_OCTAVE = 2
-const MAX_OCTAVE = 6
-const TOTAL_OCTAVES = MAX_OCTAVE - MIN_OCTAVE + 1
-const TOTAL_KEYS = TOTAL_OCTAVES * 12
-const C4_PITCH = 48
+// Absolute MIDI range shown in the roll. A note's absolute pitch is
+// 60 (middle C) + track.pitch (-24..24) + note.pitch (-24..24), so the
+// widest possible span is [12, 108]. Using that exact range guarantees
+// every note the app can produce has a row to land on.
+const MIDI_MIN = 12
+const MIDI_MAX = 108
+const TOTAL_KEYS = MIDI_MAX - MIDI_MIN + 1
+const MIDDLE_C = 60
 
-function pitchName(pitch) {
-    return `${NOTE_NAMES[((pitch % 12) + 12) % 12]}${Math.floor(pitch / 12) - 1}`
+const MIN_CELL_WIDTH = 16
+const PREFERRED_CELL_WIDTH = 24
+const KEYS_COLUMN_WIDTH = 80
+
+function midiName(midi) {
+    return `${NOTE_NAMES[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`
 }
 
 export default class PianoRollPanel extends BasePanel {
@@ -26,8 +32,9 @@ export default class PianoRollPanel extends BasePanel {
         super('piano-roll-panel')
         this._track = null
         this._trackIdx = -1
-        this._cellWidth = 20
+        this._cellWidth = PREFERRED_CELL_WIDTH
         this._firstShow = true
+        this._resizeObserver = null
     }
 
     createDOM() {
@@ -35,11 +42,11 @@ export default class PianoRollPanel extends BasePanel {
         this.container.style.display = 'none'
         this.container.innerHTML = `
             <div class="ne-header">
-                <span class="ne-track">Piano Roll</span>
+                <span class="ne-track">Piano Roll<span id="pp-pr-track-name"></span></span>
             </div>
             <div class="pp-piano-roll" id="pp-piano-roll">
-                <div class="pp-piano-keys" id="pp-piano-keys"></div>
-                <div class="pp-piano-grid-wrap" id="pp-piano-grid-wrap">
+                <div class="pp-piano-scroll" id="pp-piano-scroll">
+                    <div class="pp-piano-keys" id="pp-piano-keys"></div>
                     <div class="pp-piano-grid" id="pp-piano-grid"></div>
                 </div>
             </div>
@@ -52,7 +59,10 @@ export default class PianoRollPanel extends BasePanel {
             if (!data) return
             this._track = data.track
             this._trackIdx = data.trackIdx
-            if (this.isVisible) this._sync()
+            if (this.isVisible) {
+                this._firstShow = true
+                this._sync()
+            }
         })
         playbackEvents.onProllToggle.push(() => {
             if (this.isVisible) return
@@ -60,8 +70,12 @@ export default class PianoRollPanel extends BasePanel {
         })
         this.container?.addEventListener('click', (e) => {
             const key = e.target.closest('.pp-pr-key')
-            if (key) this._playKey(parseInt(key.dataset.pitch, 10))
+            if (key) this._playKey(parseInt(key.dataset.midi, 10))
         })
+
+        if (typeof ResizeObserver !== 'undefined') {
+            this._resizeObserver = new ResizeObserver(() => this._onResize())
+        }
     }
 
     show() {
@@ -86,10 +100,17 @@ export default class PianoRollPanel extends BasePanel {
             playbackEvents.dispatchTrackSelect({ track, trackIdx: idx })
         }
         this._sync()
+
+        const scrollEl = this.container.querySelector('#pp-piano-scroll')
+        if (scrollEl && this._resizeObserver) {
+            this._resizeObserver.disconnect()
+            this._resizeObserver.observe(scrollEl)
+        }
     }
 
     hide() {
         super.hide()
+        this._resizeObserver?.disconnect()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
         setViewBtn('proll', false)
     }
@@ -98,42 +119,71 @@ export default class PianoRollPanel extends BasePanel {
         this._sync()
     }
 
+    _onResize() {
+        const prevWidth = this._cellWidth
+        this._measureCellWidth()
+        if (this._cellWidth !== prevWidth) this._sync()
+    }
+
     _sync() {
         if (!this.container) return
         this._measureCellWidth()
         this._renderKeys()
         this._renderGrid()
         this._renderNotes()
+        this._updateTrackName()
         if (this._firstShow) {
-            this._scrollToC4()
+            this._scrollToTrackCenter()
             this._firstShow = false
         }
     }
 
+    _updateTrackName() {
+        const label = this.container.querySelector('#pp-pr-track-name')
+        if (label) label.textContent = this._track?.name ? ` — ${this._track.name}` : ''
+    }
+
+    /**
+     * Column width: fills the available grid width when the pattern is
+     * short enough to fit, otherwise falls back to a fixed pixel width
+     * and the grid scrolls horizontally.
+     */
     _measureCellWidth() {
-        const ppCell = document.querySelector('#pattern-panel .pp-cell')
-        if (ppCell) {
-            this._cellWidth = ppCell.getBoundingClientRect().width || 20
+        const scrollEl = this.container.querySelector('#pp-piano-scroll')
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        const track = this._track
+        if (!scrollEl || !pattern || !track) {
+            this._cellWidth = PREFERRED_CELL_WIDTH
+            return
         }
+        const stepsPerBeat = track.stepsPerBeat ?? 4
+        const nbBeats = pattern.nbBeats ?? 4
+        const totalSteps = Math.max(1, nbBeats * stepsPerBeat)
+        const availableWidth = scrollEl.clientWidth - KEYS_COLUMN_WIDTH
+        const fitWidth = availableWidth / totalSteps
+        this._cellWidth = Math.max(MIN_CELL_WIDTH, Math.min(PREFERRED_CELL_WIDTH, fitWidth || PREFERRED_CELL_WIDTH))
     }
 
     _renderKeys() {
         const el = this.container.querySelector('#pp-piano-keys')
         if (!el) return
+        const gridHeight = TOTAL_KEYS * NOTE_HEIGHT
+        el.style.height = `${gridHeight}px`
+
         let html = ''
         for (let i = 0; i < TOTAL_KEYS; i++) {
-            const pitch = MIN_OCTAVE * 12 + i
-            const isBlack = BLACK_KEY_INDICES.has(((pitch % 12) + 12) % 12)
-            const name = pitchName(pitch)
-            html += `<div class="pp-pr-key ${isBlack ? 'black' : 'white'}" data-pitch="${pitch}" title="${name}"></div>`
+            const midi = MIDI_MIN + i
+            const isBlack = BLACK_KEY_INDICES.has(((midi % 12) + 12) % 12)
+            const isC = ((midi % 12) + 12) % 12 === 0
+            const name = midiName(midi)
+            html += `<div class="pp-pr-key ${isBlack ? 'black' : 'white'} ${isC ? 'is-c' : ''}" data-midi="${midi}" title="${name}">${isC ? name : ''}</div>`
         }
         el.innerHTML = html
     }
 
     _renderGrid() {
-        const wrapEl = this.container.querySelector('#pp-piano-grid-wrap')
         const gridEl = this.container.querySelector('#pp-piano-grid')
-        if (!wrapEl || !gridEl) return
+        if (!gridEl) return
 
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
@@ -144,9 +194,10 @@ export default class PianoRollPanel extends BasePanel {
         const nbBeats = pattern.nbBeats ?? 4
         const totalSteps = nbBeats * stepsPerBeat
         const gridHeight = TOTAL_KEYS * NOTE_HEIGHT
+        const gridWidth = totalSteps * this._cellWidth
 
         gridEl.style.height = `${gridHeight}px`
-        gridEl.style.width = `${totalSteps * this._cellWidth}px`
+        gridEl.style.width = `${gridWidth}px`
 
         let html = ''
         for (let s = 0; s < totalSteps; s++) {
@@ -160,10 +211,10 @@ export default class PianoRollPanel extends BasePanel {
         }
 
         for (let i = 0; i < TOTAL_KEYS; i++) {
-            const pitch = MIN_OCTAVE * 12 + i
-            const isC = ((pitch % 12) + 12) % 12 === 0
+            const midi = MIDI_MIN + i
+            const isC = ((midi % 12) + 12) % 12 === 0
             const y = i * NOTE_HEIGHT
-            html += `<div class="pp-pr-row ${isC ? 'octave' : ''}" style="bottom:${y}px;height:${NOTE_HEIGHT}px;width:${totalSteps * this._cellWidth}px"></div>`
+            html += `<div class="pp-pr-row ${isC ? 'octave' : ''}" style="bottom:${y}px;height:${NOTE_HEIGHT}px;width:${gridWidth}px"></div>`
         }
 
         gridEl.innerHTML = html
@@ -178,11 +229,15 @@ export default class PianoRollPanel extends BasePanel {
         if (!track) return
         const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? {})
         const stepsPerBeat = track.stepsPerBeat ?? 4
+        const trackPitchOffset = track.pitch ?? 0
 
+        const fragment = document.createDocumentFragment()
         notes.forEach(note => {
             const step = (note.beat ?? 0) * stepsPerBeat + (note.beatStep ?? 0)
-            const pitch = note.pitch ?? 0
-            const row = pitch - MIN_OCTAVE * 12
+            // note.pitch is relative to the track's own base pitch (semitone
+            // offset, typically -24..24) — not an absolute key index.
+            const absMidi = MIDDLE_C + trackPitchOffset + (note.pitch ?? 0)
+            const row = absMidi - MIDI_MIN
             if (row < 0 || row >= TOTAL_KEYS) return
 
             const el = document.createElement('div')
@@ -191,22 +246,28 @@ export default class PianoRollPanel extends BasePanel {
             el.style.width = `${this._cellWidth - 2}px`
             el.style.bottom = `${row * NOTE_HEIGHT + 1}px`
             el.style.height = `${NOTE_HEIGHT - 2}px`
-            gridEl.appendChild(el)
+            fragment.appendChild(el)
         })
+        gridEl.appendChild(fragment)
     }
 
-    _scrollToC4() {
-        const wrap = this.container.querySelector('#pp-piano-grid-wrap')
-        if (!wrap) return
-        const row = C4_PITCH - MIN_OCTAVE * 12
-        const target = row * NOTE_HEIGHT - wrap.clientHeight / 2
-        wrap.scrollTop = Math.max(0, target)
+    _scrollToTrackCenter() {
+        const scrollEl = this.container.querySelector('#pp-piano-scroll')
+        if (!scrollEl) return
+        const centerMidi = MIDDLE_C + (this._track?.pitch ?? 0)
+        const row = centerMidi - MIDI_MIN
+        // Rows are stacked bottom-up (low pitch at the bottom), so the
+        // vertical offset from the top is measured from the highest key.
+        const offsetFromTop = (TOTAL_KEYS - 1 - row) * NOTE_HEIGHT
+        const target = offsetFromTop - scrollEl.clientHeight / 2
+        scrollEl.scrollTop = Math.max(0, target)
     }
 
-    _playKey(pitch) {
+    _playKey(midi) {
         const track = this._track
-        if (!track) return
-        const note = { ...Utils.NOTE_DEFAULTS, pitch }
+        if (!track || Number.isNaN(midi)) return
+        const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
+        const note = { ...Utils.NOTE_DEFAULTS, pitch: relativePitch }
         const flatNote = new MfFlatNote(0, track, note)
         const audioEngine = serviceRegistry.audioEngine
         if (audioEngine?.mfSound) {
