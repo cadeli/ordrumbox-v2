@@ -6,6 +6,7 @@ import MfFlatNote from '../model/flatnote.js'
 import { setViewBtn, setViewMode } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
+import { pitchToNoteName } from './components/ui_utils.js'
 
 const NOTE_HEIGHT = 14
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -295,6 +296,17 @@ export default class PianoRollPanel extends BasePanel {
         const pageStartStep = this._pageStartBeat * stepsPerBeat
         const pageEndStep = Math.min(pageStartStep + pageSteps, totalSteps)
 
+        const ghostMap = new Map()
+        for (const note of notes) {
+            this._getSubPositions(note, track, totalSteps).forEach(({ pos, type }) => {
+                const stepAbs = Math.floor(pos)
+                if (stepAbs >= pageStartStep && stepAbs < pageEndStep) {
+                    if (!ghostMap.has(stepAbs)) ghostMap.set(stepAbs, [])
+                    ghostMap.get(stepAbs).push({ offset: pos - stepAbs, type })
+                }
+            })
+        }
+
         const fragment = document.createDocumentFragment()
         notes.forEach(note => {
             const step = (note.beat ?? 0) * stepsPerBeat + (note.beatStep ?? 0)
@@ -305,15 +317,78 @@ export default class PianoRollPanel extends BasePanel {
             if (row < 0 || row >= TOTAL_KEYS) return
 
             const pageStep = step - pageStartStep
+            const vel = note.velocity ?? 0.8
+            const alpha = 0.25 + vel * 0.75
+            const noteName = pitchToNoteName(note.pitch ?? 0, trackPitchOffset)
+
             const el = document.createElement('div')
             el.className = 'pp-pr-note'
             el.style.left = `${pageStep * this._cellWidth + 1}px`
             el.style.width = `${this._cellWidth - 2}px`
             el.style.bottom = `${row * NOTE_HEIGHT + 1}px`
             el.style.height = `${NOTE_HEIGHT - 2}px`
+            el.style.opacity = alpha.toFixed(2)
+            el.title = noteName
+            el.dataset.noteIdx = step
+
+            const prob = note.prob ?? 1
+            const every = note.every ?? 1
+            if (prob < 1) {
+                el.classList.add('pp-pr-trig-rand')
+                el.dataset.trig = String(Math.round(prob * 10))
+            } else if (every > 1) {
+                el.classList.add('pp-pr-trig-fixed')
+                el.dataset.trig = String(every)
+            }
+
+            const ghosts = ghostMap.get(step)
+            if (ghosts) {
+                for (const g of ghosts) {
+                    const gh = document.createElement('div')
+                    gh.className = g.type === 'euclidian' ? 'pp-pr-ghost pp-pr-ghost-euclidian' : 'pp-pr-ghost pp-pr-ghost-retrigger'
+                    el.appendChild(gh)
+                }
+            }
+
             fragment.appendChild(el)
         })
         gridEl.appendChild(fragment)
+    }
+
+    _getSubPositions(note, track, totalSteps) {
+        const stepsPerBeat = track.stepsPerBeat ?? 4
+        const basePos = (note.beat ?? 0) * stepsPerBeat + (note.beatStep ?? 0)
+        const retriggerNum = note.retriggerNum ?? 1
+        const rate = note.rate ?? 1
+        const euclidianFill = note.euclidianFill ?? 0
+        const hasArp = note.arp && (typeof note.arp === 'string' || (typeof note.arp === 'object' && !Array.isArray(note.arp) && Array.isArray(note.arp.intervals) && note.arp.intervals.length > 0))
+
+        const positions = []
+        const stepSpacing = rate < 8 ? rate / 8 : rate - 7
+        const count = hasArp || retriggerNum > 1 ? retriggerNum : 0
+
+        for (let i = 1; i < count; i++) {
+            const pos = Math.round(basePos + i * stepSpacing)
+            if (pos < totalSteps) positions.push({ pos, type: 'retrigger' })
+        }
+
+        if (euclidianFill > 0) {
+            const endStep = (() => {
+                let nextNotePos = totalSteps
+                for (const n of (track.notes ?? [])) {
+                    const nPos = (n.beat ?? 0) * stepsPerBeat + (n.beatStep ?? 0)
+                    if (nPos > basePos && nPos < nextNotePos) nextNotePos = nPos
+                }
+                return track.loopAtStep && track.loopAtStep > basePos && track.loopAtStep < nextNotePos
+                    ? track.loopAtStep : nextNotePos
+            })()
+            const stepsSpan = endStep - basePos
+            for (let i = 1; i <= euclidianFill; i++) {
+                const pos = Math.round(basePos + (i * stepsSpan) / (euclidianFill + 1))
+                if (pos < totalSteps) positions.push({ pos, type: 'euclidian' })
+            }
+        }
+        return positions
     }
 
     /**
