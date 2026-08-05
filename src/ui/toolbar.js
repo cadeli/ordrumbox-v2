@@ -313,23 +313,28 @@ export default class Toolbar {
             const pattern = appState.patterns[appState.selectedPatternNum]
             if (!pattern) return
 
-            const { getAutoGenerateService } = await import('../state/service_registry.js')
-            const mfAutoGenerate = await getAutoGenerateService()
-            await mfAutoGenerate.generatePattern()
+            const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
+            const hasDrumAuto = (pattern.tracks ?? []).some(t => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
 
-            // Remove auto-added melodic tracks with no notes
-            if (pattern.tracks) {
-                pattern.tracks = pattern.tracks.filter(t => {
-                    const type = Utils.detectTrackType(t.name)
-                    const isMelodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
-                    return !isMelodic || (t.notes && t.notes.length > 0)
-                })
-            }
+            if (hasDrumAuto) {
+                for (const track of pattern.tracks) {
+                    if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = false
+                }
+            } else {
+                const { getAutoGenerateService } = await import('../state/service_registry.js')
+                const mfAutoGenerate = await getAutoGenerateService()
+                await mfAutoGenerate.generatePattern()
 
-            for (const track of pattern.tracks) {
-                const type = Utils.detectTrackType(track.name)
-                const isDrum = type === 'KICK' || type === 'SNARE' || type === 'HAT' || type === 'CLAP' || type === 'COWBELL' || type === 'PERC'
-                track.auto = isDrum
+                if (pattern.tracks) {
+                    pattern.tracks = pattern.tracks.filter(t => {
+                        const type = Utils.detectTrackType(t.name)
+                        const isMelodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
+                        return !isMelodic || (t.notes && t.notes.length > 0)
+                    })
+                }
+                for (const track of pattern.tracks) {
+                    track.auto = drumTypes.has(Utils.detectTrackType(track.name))
+                }
             }
             this.syncGenButtons()
             this.syncPatterns()
@@ -340,28 +345,34 @@ export default class Toolbar {
             const pattern = appState.patterns[appState.selectedPatternNum]
             if (!pattern) return
 
-            const hasBass = pattern.tracks?.some(t => Utils.detectTrackType(t.name) === 'BASS')
-            if (!hasBass) {
+            const hasBassAuto = (pattern.tracks ?? []).some(t => t.auto && Utils.detectTrackType(t.name) === 'BASS')
+
+            if (hasBassAuto) {
+                for (const track of pattern.tracks) {
+                    if (Utils.detectTrackType(track.name) === 'BASS') track.auto = false
+                }
+            } else {
+                let bassTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'BASS')
                 const { getAutoGenerateService } = await import('../state/service_registry.js')
                 const mfAutoGenerate = await getAutoGenerateService()
 
-                if (!pattern._autoGenGenre) {
-                    pattern._autoGenGenre = mfAutoGenerate.structureGen.getRandomGenre()
-                }
-                const genre = pattern._autoGenGenre
-                const firstElement = mfAutoGenerate.structureGen.getElement(0)
-                const harmony = mfAutoGenerate.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
-                const structure = mfAutoGenerate.structureGen.generateStructure(genre)
-                const bassVariant = structure.BASS ?? 'basic'
+                if (!bassTrack) {
+                    if (!pattern._autoGenGenre) pattern._autoGenGenre = mfAutoGenerate.structureGen.getRandomGenre()
+                    const genre = pattern._autoGenGenre
+                    const firstElement = mfAutoGenerate.structureGen.getElement(0)
+                    const harmony = mfAutoGenerate.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+                    const structure = mfAutoGenerate.structureGen.generateStructure(genre)
+                    const bassVariant = structure.BASS ?? 'basic'
 
-                const track = serviceRegistry.mfCmd.addTrack(pattern, 'BASS')
-                track.useSoftSynth = true
-                track.useAutoAssignSound = false
-                track.synthSoundKey = 'BASS1'
-                track.velocity = 0.8
-                track.auto = true
-                await mfAutoGenerate.generateTrack(track, bassVariant, 1, pattern, harmony)
-                serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+                    bassTrack = serviceRegistry.mfCmd.addTrack(pattern, 'BASS')
+                    bassTrack.useSoftSynth = true
+                    bassTrack.useAutoAssignSound = false
+                    bassTrack.synthSoundKey = 'BASS1'
+                    bassTrack.velocity = 0.8
+                    await mfAutoGenerate.generateTrack(bassTrack, bassVariant, 1, pattern, harmony)
+                    serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+                }
+                bassTrack.auto = true
             }
             this.syncGenButtons()
             this.syncPatterns()
@@ -372,28 +383,34 @@ export default class Toolbar {
             const pattern = appState.patterns[appState.selectedPatternNum]
             if (!pattern) return
 
-            const hasPiano = pattern.tracks?.some(t => Utils.detectTrackType(t.name) === 'PIANO')
-            if (!hasPiano) {
+            const hasPianoAuto = (pattern.tracks ?? []).some(t => t.auto && Utils.detectTrackType(t.name) === 'PIANO')
+
+            if (hasPianoAuto) {
+                for (const track of pattern.tracks) {
+                    if (Utils.detectTrackType(track.name) === 'PIANO') track.auto = false
+                }
+            } else {
+                let pianoTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'PIANO')
                 const { getAutoGenerateService } = await import('../state/service_registry.js')
                 const mfAutoGenerate = await getAutoGenerateService()
 
-                if (!pattern._autoGenGenre) {
-                    pattern._autoGenGenre = mfAutoGenerate.structureGen.getRandomGenre()
-                }
-                const genre = pattern._autoGenGenre
-                const firstElement = mfAutoGenerate.structureGen.getElement(0)
-                const harmony = mfAutoGenerate.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
-                const structure = mfAutoGenerate.structureGen.generateStructure(genre)
-                const pianoVariant = structure.PIANO ?? 'chordStab'
+                if (!pianoTrack) {
+                    if (!pattern._autoGenGenre) pattern._autoGenGenre = mfAutoGenerate.structureGen.getRandomGenre()
+                    const genre = pattern._autoGenGenre
+                    const firstElement = mfAutoGenerate.structureGen.getElement(0)
+                    const harmony = mfAutoGenerate.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+                    const structure = mfAutoGenerate.structureGen.generateStructure(genre)
+                    const pianoVariant = structure.PIANO ?? 'chordStab'
 
-                const track = serviceRegistry.mfCmd.addTrack(pattern, 'PIANO')
-                track.useSoftSynth = true
-                track.useAutoAssignSound = false
-                track.synthSoundKey = 'PIANO'
-                track.velocity = 0.8
-                track.auto = true
-                await mfAutoGenerate.generateTrack(track, pianoVariant, 1, pattern, harmony)
-                serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+                    pianoTrack = serviceRegistry.mfCmd.addTrack(pattern, 'PIANO')
+                    pianoTrack.useSoftSynth = true
+                    pianoTrack.useAutoAssignSound = false
+                    pianoTrack.synthSoundKey = 'PIANO'
+                    pianoTrack.velocity = 0.8
+                    await mfAutoGenerate.generateTrack(pianoTrack, pianoVariant, 1, pattern, harmony)
+                    serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+                }
+                pianoTrack.auto = true
             }
             this.syncGenButtons()
             this.syncPatterns()

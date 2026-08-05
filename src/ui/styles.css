@@ -172,6 +172,7 @@
 .tb-view-btn:hover { border-color: var(--accent); color: var(--text); }
 .tb-view-btn.active {
     background: var(--accent); color: var(--text); border-color: var(--accent);
+    filter: invert(1);
 }
 @media (max-width: 600px) {
     .tb-view-btn { font-size: 9px; padding: 2px 4px; }
