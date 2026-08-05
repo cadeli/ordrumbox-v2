@@ -17,8 +17,9 @@ const WAVE_ICONS = {
 }
 
 const FILTER_ICONS = {
-    lowpass:  'LP', highpass: 'HP', bandpass: 'BP', peaking: 'PK',
-    lowshelf: 'LS', highshelf: 'HS', notch: 'NT', allpass: 'AP',
+    lowpass:  '<svg viewBox="0 0 24 14"><path d="M2 2 C8 2,14 12,22 12" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="2" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/><line x1="22" y1="2" x2="22" y2="12" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/></svg>',
+    highpass: '<svg viewBox="0 0 24 14"><path d="M2 12 C8 12,14 2,22 2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="2" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/><line x1="22" y1="2" x2="22" y2="12" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/></svg>',
+    bandpass: '<svg viewBox="0 0 24 14"><path d="M2 12 C6 12,10 2,12 2 C14 2,18 12,22 12" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="2" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/><line x1="22" y1="2" x2="22" y2="12" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2" opacity="0.4"/></svg>',
 }
 
 const FM_ALGO_ICONS = {
@@ -292,6 +293,8 @@ export default class SynthEditor {
             const isBypassed = this._cardBypassed[groupName] ?? false
 
             const isVco = VCO_RE.test(groupName)
+            const isFilter = groupName === 'filter'
+            const isNoise = groupName === 'noise'
             let waveRowHtml = ''
             if (isVco) {
                 const waveVal = this._draft?.[groupName]?.wave ?? 'sine'
@@ -300,6 +303,22 @@ export default class SynthEditor {
                 waveRowHtml = `<span class="ss-group-wave-row">${waveOpts.map(opt => {
                     const sel = String(opt) === String(waveVal) ? ' selected' : ''
                     return `<button class="ss-wave-icon${sel}" data-synth-path="${escapeHtml(pathStr)}" data-wave-val="${escapeHtml(opt)}" title="${escapeHtml(opt)}">${WAVE_ICONS[opt] ?? opt}</button>`
+                }).join('')}</span>`
+            } else if (isFilter || isNoise) {
+                const filterKey = isFilter ? 'type' : 'filterType'
+                const filterVal = this._draft?.[groupName]?.[filterKey] ?? 'lowpass'
+                const filterOpts = Utils.filterTypeList
+                const pathStr = `${groupName}.${filterKey}`
+                waveRowHtml = `<span class="ss-group-wave-row">${filterOpts.map(opt => {
+                    const sel = String(opt) === String(filterVal) ? ' selected' : ''
+                    return `<button class="ss-ft-icon${sel}" data-synth-path="${escapeHtml(pathStr)}" data-wave-val="${escapeHtml(opt)}" title="${escapeHtml(opt)}">${FILTER_ICONS[opt] ?? opt}</button>`
+                }).join('')}</span>`
+            } else if (groupName === 'fm') {
+                const algoVal = this._draft?.fm?.algo ?? 0
+                const algoOpts = Object.keys(FM_ALGO_ICONS).map(Number)
+                waveRowHtml = `<span class="ss-group-wave-row">${algoOpts.map(opt => {
+                    const sel = opt === algoVal ? ' selected' : ''
+                    return `<button class="ss-fm-icon${sel}" data-synth-path="fm.algo" data-wave-val="${opt}" title="${escapeHtml(FM_ALGO_ICONS[opt])}">${FM_ALGO_ICONS[opt]}</button>`
                 }).join('')}</span>`
             }
 
@@ -349,10 +368,10 @@ export default class SynthEditor {
             return this._buildIconRow(paramLabel, pathStr, val, 'ss-wave-icon', WAVE_ICONS)
         }
         if ((pathStr === 'filter.type' || pathStr === 'noise.filterType') && options) {
-            return this._buildIconRow(paramLabel, pathStr, val, 'ss-ft-icon', FILTER_ICONS)
+            return ''
         }
         if (pathStr === 'fm.algo' && options) {
-            return this._buildIconRow(paramLabel, pathStr, val, 'ss-fm-icon', FM_ALGO_ICONS)
+            return ''
         }
         if (options) {
             return this._buildSelectRow(paramLabel, pathStr, val, options)
@@ -629,8 +648,8 @@ export default class SynthEditor {
         const path = waveIcon.dataset.synthPath
         const val = waveIcon.dataset.waveVal
         this._setValue(path, val)
-        const row = waveIcon.closest('.ne-row')
-        row?.querySelectorAll('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon').forEach(b => b.classList.remove('selected'))
+        const scope = waveIcon.closest('.ne-row') ?? waveIcon.closest('.ss-group')
+        scope?.querySelectorAll('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon').forEach(b => b.classList.remove('selected'))
         waveIcon.classList.add('selected')
         this._drawWaveform()
         return true

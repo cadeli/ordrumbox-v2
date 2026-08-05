@@ -6,7 +6,7 @@ import { logger } from "./logger.js"
 export default class Utils {
 static TAG = "UTILS"
 
-    static filterTypeList = ['lowpass','highpass','bandpass','peaking','lowshelf','highshelf','notch','allpass']
+    static filterTypeList = ['lowpass','highpass','bandpass']
 
     static waveList = ["sine", "triangle", "sawtooth", "square", "random"]
 
