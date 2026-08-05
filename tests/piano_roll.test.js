@@ -595,6 +595,43 @@ describe('PianoRollPanel', () => {
             panel._clearIllumination()
             expect(getPlayingNotes().length).toBe(0)
         })
+
+        it('illuminates notes at loop-repeated positions (absStep % loopAtStep === basePos)', () => {
+            const track = getTrack()
+            const spb = track.stepsPerBeat
+            track.loopAtStep = 2 * spb
+            panel._sync()
+            const note = track.notes[0]
+            const basePos = (note.beat ?? 0) * spb + (note.beatStep ?? 0)
+            if (basePos >= track.loopAtStep) return
+
+            const repeatedStep = basePos + track.loopAtStep
+            panel._illuminateStep(repeatedStep, 77)
+            const playing = Array.from(getPlayingNotes()).filter(el => {
+                const idx = parseInt(el.dataset.note, 10)
+                return track.notes[idx] === note
+            })
+            expect(playing.length).toBe(1)
+        })
+
+        it('does not illuminate notes beyond loopAtStep even with modulo match', () => {
+            const track = getTrack()
+            const spb = track.stepsPerBeat
+            track.loopAtStep = 2 * spb
+            panel._sync()
+            const noteOutside = track.notes.find(n => {
+                const step = (n.beat ?? 0) * spb + (n.beatStep ?? 0)
+                return step >= track.loopAtStep
+            })
+            if (!noteOutside) return
+            const step = (noteOutside.beat ?? 0) * spb + (noteOutside.beatStep ?? 0)
+            panel._illuminateStep(step, 88)
+            const playing = Array.from(getPlayingNotes()).filter(el => {
+                const idx = parseInt(el.dataset.note, 10)
+                return track.notes[idx] === noteOutside
+            })
+            expect(playing.length).toBe(0)
+        })
     })
 
     describe('loop point lines', () => {

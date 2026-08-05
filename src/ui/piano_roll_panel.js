@@ -653,7 +653,9 @@ export default class PianoRollPanel extends BasePanel {
             if (!note) continue
             const basePos = (note.beat ?? 0) * stepsPerBeat + (note.beatStep ?? 0)
             if (basePos >= loopAtStep) continue
-            if (absStep === basePos || this._getSubPositions(note, track, totalSteps).some(s => s.pos === absStep)) {
+            const matchesBase = absStep % loopAtStep === basePos
+            const matchesSub = this._getSubPositions(note, track, totalSteps).some(s => s.pos < loopAtStep && absStep % loopAtStep === s.pos)
+            if (matchesBase || matchesSub) {
                 el.classList.add('playing')
                 this._litNoteEls.push(el)
             }
