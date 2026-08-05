@@ -1028,8 +1028,15 @@
 }
 /* Groups row */
 #soft-synth-panel .ss-group-label {
-    color: var(--accent); font-size: 9px; text-transform: uppercase;
+    color: var(--accent); font-size: 13px; text-transform: uppercase;
     letter-spacing: 0.5px; font-weight: bold;
+}
+#soft-synth-panel .ss-group-wave-row {
+    display: inline-flex; gap: 2px; align-items: center; justify-content: center;
+    flex: 1; min-width: 0;
+}
+#soft-synth-panel .ss-group-wave-row .ss-wave-icon {
+    width: 20px; height: 14px; padding: 1px;
 }
 #soft-synth-panel .ss-card-body {
     display: flex; flex-direction: row; flex-wrap: wrap; gap: 2px;
@@ -1180,6 +1187,7 @@
     cursor: pointer;
     transition: all 0.15s;
     flex-shrink: 0;
+    margin-left: auto;
 }
 
 .ss-bypass-btn svg { width: 12px; height: 12px; }

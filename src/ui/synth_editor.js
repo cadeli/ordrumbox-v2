@@ -13,6 +13,7 @@ const WAVE_ICONS = {
     triangle: '<svg viewBox="0 0 24 14"><polyline points="0,12 6,2 12,12 18,2 24,12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
     sawtooth: '<svg viewBox="0 0 24 14"><polyline points="0,12 12,2 12,12 24,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
     square:   '<svg viewBox="0 0 24 14"><polyline points="0,12 0,2 6,2 6,12 12,12 12,2 18,2 18,12 24,12 24,2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+    random:   '<svg viewBox="0 0 24 14"><polyline points="1,7 4,2 7,12 10,4 13,10 16,3 19,11 22,5 24,7" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
 }
 
 const FILTER_ICONS = {
@@ -290,8 +291,21 @@ export default class SynthEditor {
             const label = this._getGroupLabel(groupName)
             const isBypassed = this._cardBypassed[groupName] ?? false
 
+            const isVco = VCO_RE.test(groupName)
+            let waveRowHtml = ''
+            if (isVco) {
+                const waveVal = this._draft?.[groupName]?.wave ?? 'sine'
+                const waveOpts = Utils.waveList
+                const pathStr = `${groupName}.wave`
+                waveRowHtml = `<span class="ss-group-wave-row">${waveOpts.map(opt => {
+                    const sel = String(opt) === String(waveVal) ? ' selected' : ''
+                    return `<button class="ss-wave-icon${sel}" data-synth-path="${escapeHtml(pathStr)}" data-wave-val="${escapeHtml(opt)}" title="${escapeHtml(opt)}">${WAVE_ICONS[opt] ?? opt}</button>`
+                }).join('')}</span>`
+            }
+
             html += `<div class="ss-group${isBypassed ? ' bypassed' : ''}" data-ss-card="${groupName}">
                 <span class="ss-group-label">${escapeHtml(label)}</span>
+                ${waveRowHtml}
                 <button class="ss-bypass-btn${isBypassed ? '' : ' active'}" data-power-card="${groupName}" title="Bypass">
                     <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>
                 </button>
@@ -319,7 +333,7 @@ export default class SynthEditor {
         return fields.map(({ path, key, val }) => {
             const pathStr = path.join('.')
             const paramLabel = SYNTH_PARAM_META[pathStr]?.label ?? key
-            return this._buildField(path, key, val, pathStr, paramLabel, knobConfigs)
+            return this._buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName)
         }).join('')
     }
 
@@ -327,10 +341,11 @@ export default class SynthEditor {
      * Builds HTML for a single field (knob, icon row, select, or boolean).
      * @returns {string}
      */
-    _buildField(path, key, val, pathStr, paramLabel, knobConfigs) {
+    _buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName) {
         const options = this._getOptions(path, key)
 
         if (key === 'wave' && options) {
+            if (groupName && VCO_RE.test(groupName)) return ''
             return this._buildIconRow(paramLabel, pathStr, val, 'ss-wave-icon', WAVE_ICONS)
         }
         if ((pathStr === 'filter.type' || pathStr === 'noise.filterType') && options) {
