@@ -236,7 +236,7 @@ export default class NoteEditor extends BasePanel {
         const arpState = this._getArpState(this._note)
 
         const headerHtml = `<div class="ne-header">
-            <span class="ne-track">${this.esc(this._track.name)} [beat ${this._beat} step ${this._beatStep}]</span>
+            <span class="ne-track">${this.esc(this._track.name)} [beat ${this._beat + 1} step ${this._beatStep + 1}]</span>
         </div>`
 
         const knobBarHtml = `<div class="ne-knob-bar">${
