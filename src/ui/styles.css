@@ -1035,7 +1035,9 @@
     display: inline-flex; gap: 2px; align-items: center; justify-content: center;
     flex: 1; min-width: 0;
 }
-#soft-synth-panel .ss-group-wave-row .ss-wave-icon {
+#soft-synth-panel .ss-group-wave-row .ss-wave-icon,
+#soft-synth-panel .ss-group-wave-row .ss-ft-icon,
+#soft-synth-panel .ss-group-wave-row .ss-fm-icon {
     width: 20px; height: 14px; padding: 1px;
 }
 #soft-synth-panel .ss-card-body {
@@ -1060,7 +1062,7 @@
     border-radius: 3px; box-sizing: border-box;
 }
 #soft-synth-panel .ss-tb-btn {
-    font-size: 9px; height: 22px; padding: 0 8px;
+    font-size: 10px; height: 22px; padding: 0 8px;
     background: var(--bg-input); color: var(--text-dim); border: 1px solid var(--border);
     border-radius: 3px; cursor: pointer;
 }
@@ -1116,13 +1118,13 @@
     background: radial-gradient(circle at 40% 35%, var(--bg-knob), var(--bg-input));
 }
 .or-knob-label {
-    color: var(--text-subtle); font-size: 9px; text-align: center;
+    color: var(--text-subtle); font-size: 10px; text-align: center;
     line-height: 1; white-space: nowrap; overflow: hidden;
     text-overflow: ellipsis; max-width: 72px;
 }
 #soft-synth-panel .ne-row-knob .ne-val {
     min-width: 0; text-align: center; color: var(--text-dim);
-    font-weight: bold; font-size: 9px;
+    font-weight: bold; font-size: 10px;
 }
 
 /* ---- Waiting Screen ---- */
