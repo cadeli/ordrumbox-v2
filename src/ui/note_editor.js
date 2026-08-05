@@ -134,7 +134,15 @@ export default class NoteEditor extends BasePanel {
     subscribe() {
         playbackEvents.onNoteSelect.push((data) => {
             if (!data) return
-            if (this.isVisible) this.show(data)
+            if (data.note) {
+                if (this.isVisible) this.show(data)
+            } else {
+                this._track = data.track
+                this._beat = data.beat
+                this._beatStep = data.beatStep
+                this._note = null
+                if (this.isVisible) this.sync()
+            }
         })
     }
 
@@ -222,7 +230,7 @@ export default class NoteEditor extends BasePanel {
         if (!this._note) {
             if (!this._track) return
             this.container.innerHTML = `<div class="ne-header">
-                <span class="ne-track">${this.esc(this._track.name)} — no note</span>
+                <span class="ne-track">${this.esc(this._track.name)} [beat ${this._beat + 1} step ${this._beatStep + 1}] — no note</span>
             </div>`
             return
         }

@@ -565,7 +565,7 @@ export default class PatternPanel extends BasePanel {
         if (note) {
             playbackEvents.dispatchNoteSelect({ track, trackIdx: this._cursorTrackIdx, note, pos: this._cursorBeat * stepsPerBeat + this._cursorBeatStep, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
         } else {
-            playbackEvents.dispatchTrackSelect({ track, trackIdx: this._cursorTrackIdx })
+            playbackEvents.dispatchNoteSelect({ track, trackIdx: this._cursorTrackIdx, note: null, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
         }
     }
 

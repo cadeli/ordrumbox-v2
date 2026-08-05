@@ -560,7 +560,7 @@ export default class PianoRollPanel extends BasePanel {
             && (MIDDLE_C + trackPitchOffset + (n.pitch ?? 0)) === midi)
         this._selNote = note ?? null
         this._applySelection()
-        playbackEvents.dispatchNoteSelect(note ? { track, trackIdx: this._trackIdx, note, beat, beatStep } : null)
+        playbackEvents.dispatchNoteSelect(note ? { track, trackIdx: this._trackIdx, note, beat, beatStep } : { track, trackIdx: this._trackIdx, note: null, beat, beatStep })
         this._sync()
     }
 
