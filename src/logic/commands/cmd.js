@@ -79,17 +79,14 @@ export default class MfCmd {
     }
 
     deleteNote = (track, selNote) => {
-        let i = 0
-        let deleted = false
-        Object.values(track.notes).forEach((note) => {
-            if (note.beatStep === selNote.beatStep && note.beat === selNote.beat) {
-                track.notes.splice(i, 1)
-                deleted = true
+        const values = Object.values(track.notes)
+        for (let i = values.length - 1; i >= 0; i--) {
+            const note = values[i]
+            if (note.beatStep === selNote.beatStep && note.beat === selNote.beat && (note.pitch ?? 0) === (selNote.pitch ?? 0)) {
+                track.notes.splice(track.notes.indexOf(note), 1)
+                this._incrementPatternVersionByTrack(track)
+                return
             }
-            i++
-        })
-        if (deleted) {
-            this._incrementPatternVersionByTrack(track)
         }
     }
 

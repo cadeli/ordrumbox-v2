@@ -97,7 +97,7 @@ describe('Functional: MfCmd operations', () => {
             mfCmd.addNote(track, 1, 0)
             mfCmd.addNote(track, 2, 0)
 
-            mfCmd.deleteNote(track, { beat: 1, beatStep: 0 })
+            mfCmd.deleteNote(track, { beat: 1, beatStep: 0, pitch: 0 })
 
             expect(track.notes.length).toBe(2)
             expect(mfCmd.isNoteAt(track, 1, 0).length).toBe(0)

@@ -258,9 +258,8 @@ export default class PianoRollPanel extends BasePanel {
 
     /**
      * Click on the grid: adds a note where there is none, removes the
-     * note under the click when clicking exactly on it, or moves an
-     * existing step's note to the clicked pitch otherwise (a track can
-     * only hold one note per step — same rule pattern_panel.js follows).
+     * note under the click when clicking exactly on it, or adds a new
+     * note at a different pitch to form a chord otherwise.
      */
     _onGridClick(e, gridEl) {
         const track = this._track
@@ -289,12 +288,14 @@ export default class PianoRollPanel extends BasePanel {
         const notesAtStep = (track.notes ?? []).filter(n => n.beat === beat && n.beatStep === beatStep)
 
         if (notesAtStep.length > 0) {
-            const existing = notesAtStep[0]
-            const existingMidi = MIDDLE_C + trackPitchOffset + (existing.pitch ?? 0)
-            if (existingMidi === clickedMidi) {
-                mfCmd.deleteNote(track, existing)
+            const hit = notesAtStep.find(n => {
+                const midi = MIDDLE_C + trackPitchOffset + (n.pitch ?? 0)
+                return midi === clickedMidi
+            })
+            if (hit) {
+                mfCmd.deleteNote(track, hit)
             } else {
-                existing.pitch = relativePitch
+                mfCmd.addNote(track, beat, beatStep, relativePitch)
             }
         } else {
             mfCmd.addNote(track, beat, beatStep, relativePitch)
