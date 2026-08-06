@@ -452,7 +452,7 @@
     border-radius: 4px;
     font-size: 11px;
     font-family: monospace;
-    white-space: nowrap;
+    white-space: pre-wrap;
     pointer-events: none;
     z-index: 100;
     border: 1px solid rgba(255, 255, 255, 0.2);

@@ -1,7 +1,8 @@
-import { fmt as _fmt, escapeHtml as _escapeHtml, pitchToNoteName as _pitchToNoteName } from './ui_utils.js'
+import { fmt as _fmt, escapeHtml as _escapeHtml, pitchToNoteName as _pitchToNoteName, formatNoteTooltip as _formatNoteTooltip } from './ui_utils.js'
 export const fmt = _fmt
 export const escapeHtml = _escapeHtml
 export const pitchToNoteName = _pitchToNoteName
+export const formatNoteTooltip = _formatNoteTooltip
 
 /** Canonical set of all overlay panel IDs (pattern-panel is never hidden by other panels). */
 export const ALL_PANEL_IDS = [

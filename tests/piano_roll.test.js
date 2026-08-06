@@ -278,7 +278,7 @@ describe('PianoRollPanel', () => {
         it('sets title tooltip with note name on each note', () => {
             const notes = getNotes()
             for (const n of notes) {
-                expect(n.title).toMatch(/^[A-G]#?\d$/)
+                expect(n.title).toMatch(/^[A-G]#?\d+\s+MIDI\s+\d+/)
             }
         })
 

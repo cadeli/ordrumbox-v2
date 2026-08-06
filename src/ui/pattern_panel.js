@@ -7,7 +7,7 @@ import { TICK } from '../core/constants.js'
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 import { logger, nameOr } from "../core/logger.js"
-import { downloadJson, pitchToNoteName } from './components/panel_helpers.js'
+import { downloadJson, pitchToNoteName, formatNoteTooltip } from './components/panel_helpers.js'
 
 const BEATS_PER_PAGE = 4
 
@@ -110,7 +110,7 @@ export default class PatternPanel extends BasePanel {
         const noteName = pitchToNoteName(totalPitch)
 
         this._ensureTooltip()
-        this._tooltip.textContent = noteName
+        this._tooltip.textContent = formatNoteTooltip(note, trackPitch)
         this._tooltip.style.display = 'block'
 
         const rect = (sliceEl ?? cell).getBoundingClientRect()

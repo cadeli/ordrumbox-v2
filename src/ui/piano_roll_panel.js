@@ -5,7 +5,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import MfFlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
-import { pitchToNoteName } from './components/ui_utils.js'
+import { pitchToNoteName, formatNoteTooltip } from './components/ui_utils.js'
 
 const NOTE_HEIGHT = 14
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -284,7 +284,7 @@ export default class PianoRollPanel extends BasePanel {
             el.style.bottom = `${row * NOTE_HEIGHT + 1}px`
             el.style.height = `${NOTE_HEIGHT - 2}px`
             el.style.opacity = (0.25 + vel * 0.75).toFixed(2)
-            el.title = pitchToNoteName(note.pitch ?? 0, trackPitchOffset)
+            el.title = formatNoteTooltip(note, trackPitchOffset)
             el.dataset.note = String(noteIdx)
 
             const prob = note.prob ?? 1
