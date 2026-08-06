@@ -240,6 +240,10 @@
     color: var(--text-muted); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
 }
+.pp-action-btn[data-pp-action="save"],
+.pp-action-btn[data-pp-action="replace"] {
+    font-size: 18px;
+}
 #pattern-panel .pp-header .pp-actions {
     width: calc(200px + 12px + 12px);
     justify-content: center;
