@@ -338,7 +338,7 @@ export default class Toolbar {
                     })
                 }
                 for (const track of pattern.tracks) {
-                    track.auto = drumTypes.has(Utils.detectTrackType(track.name))
+                    if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = true
                 }
             }
             this.syncGenButtons()
