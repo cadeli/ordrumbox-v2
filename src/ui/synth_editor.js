@@ -797,31 +797,74 @@ _duplicatePreset() {
         this._drawEnvCanvas()
     }
 
+    /** Returns wave value [-1,1] for a given normalized phase [0,1). */
+    _waveAtPhase(wave, p) {
+        switch (wave) {
+            case 'sine': return Math.sin(2 * Math.PI * p)
+            case 'square': return Math.sin(2 * Math.PI * p) >= 0 ? 1 : -1
+            case 'sawtooth': return 2 * p - 1
+            case 'triangle': return 4 * Math.abs(p - 0.5) - 1
+            default: return Math.sin(2 * Math.PI * p)
+        }
+    }
+
     _drawOscillators(ctx, w, mid) {
         const vcos = this._buildVcoArray()
         const masterVol = this._draft.masterVolume ?? 1.0
+        const fmAmount = this._draft.fm?.amount ?? 0
+        const fmAlgo = this._draft.fm?.algo ?? 0
         const cycles = 4
         const sampleRate = WAVE_BUFFER.length
         const samplesPerCycle = Math.floor(sampleRate / cycles)
 
-        WAVE_BUFFER.fill(0)
+        const freqMult = vcos.map(v =>
+            Math.pow(2, v.octave) * Math.pow(2, v.detune / 1200)
+        )
 
-        for (const vco of vcos) {
-            if (vco.gain <= 0) continue
-            const freqMult = Math.pow(2, vco.octave) * Math.pow(2, vco.detune / 1200)
-            for (let i = 0; i < sampleRate; i++) {
-                const t = i / sampleRate
-                const p = ((t * cycles * freqMult * samplesPerCycle) % samplesPerCycle) / samplesPerCycle
-                let val
-                switch (vco.wave) {
-                    case 'sine': val = Math.sin(2 * Math.PI * p); break
-                    case 'square': val = Math.sin(2 * Math.PI * p) >= 0 ? 1 : -1; break
-                    case 'sawtooth': val = 2 * p - 1; break
-                    case 'triangle': val = 4 * Math.abs(p - 0.5) - 1; break
-                    default: val = Math.sin(2 * Math.PI * p)
-                }
-                WAVE_BUFFER[i] += val * vco.gain
+        const modDepth = fmAmount * 0.25
+        const phase = [0, 0, 0]
+        const modAccum = [0, 0, 0]
+
+        for (let i = 0; i < sampleRate; i++) {
+            const t = i / sampleRate
+
+            const modPhases = [0, 0, 0]
+            for (let v = 0; v < 3; v++) {
+                modPhases[v] = ((t * cycles * freqMult[v] * samplesPerCycle) % samplesPerCycle) / samplesPerCycle
             }
+
+            let mod1 = 0, mod2 = 0, mod3 = 0
+            if (fmAmount > 0) {
+                switch (fmAlgo) {
+                    case 0: // 2→1
+                        mod1 = this._waveAtPhase(vcos[1].wave, modPhases[1]) * modDepth
+                        break
+                    case 1: // 3→1
+                        mod1 = this._waveAtPhase(vcos[2].wave, modPhases[2]) * modDepth
+                        break
+                    case 2: // 3→2→1
+                        mod3 = this._waveAtPhase(vcos[2].wave, modPhases[2]) * modDepth
+                        mod2 = this._waveAtPhase(vcos[1].wave, modPhases[1] + mod3) * modDepth
+                        mod1 = mod2
+                        break
+                    case 3: // 2+3→1
+                        mod1 = (this._waveAtPhase(vcos[1].wave, modPhases[1])
+                              + this._waveAtPhase(vcos[2].wave, modPhases[2])) * modDepth
+                        break
+                    case 4: // 2↔1
+                        modAccum[1] += this._waveAtPhase(vcos[0].wave, modPhases[0]) * modDepth
+                        modAccum[0] += this._waveAtPhase(vcos[1].wave, modPhases[1]) * modDepth
+                        mod1 = modAccum[0]
+                        mod2 = modAccum[1]
+                        break
+                }
+            }
+
+            const val0 = this._waveAtPhase(vcos[0].wave, modPhases[0] + mod1)
+            const val1 = this._waveAtPhase(vcos[1].wave, modPhases[1] + mod2)
+            const val2 = this._waveAtPhase(vcos[2].wave, modPhases[2] + mod3)
+
+            WAVE_BUFFER[i] = val0 * vcos[0].gain + val1 * vcos[1].gain + val2 * vcos[2].gain
         }
 
         let maxVal = 0
