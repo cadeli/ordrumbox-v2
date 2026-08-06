@@ -1169,6 +1169,8 @@
     border-radius: 6px;
     flex: 1 1 calc(20% - 4px);
     max-width: calc(20% - 4px);
+    height: 20vh;
+    overflow-y: auto;
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
