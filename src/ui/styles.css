@@ -192,7 +192,7 @@
     font-size: 11px;
     color: var(--text-muted);
     z-index: 500; /* Below editors */
-    height: auto; min-height: 440px;
+    height: 440px;
     display: flex;
     flex-direction: column;
     width: 79%;
@@ -204,8 +204,8 @@
     right: 0;
     width: 21%;
     top: 64px !important;
-    height: calc(100vh - 64px);
-    max-height: calc(100vh - 64px);
+    height: 440px;
+    max-height: 440px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -221,7 +221,7 @@
 }
 @media (max-width: 768px), (max-height: 480px) {
     #pattern-panel { width: 100%; right: 0; }
-    .ne-panel.pp-split { left: 0; width: 100%; top: auto !important; height: 50vh; max-height: 50vh; }
+    .ne-panel.pp-split { left: 0; width: 100%; top: auto !important; height: 440px; max-height: 440px; }
 }
 #pattern-panel .pp-header {
     display: flex; align-items: center; gap: 10px;
@@ -543,12 +543,11 @@
     font-size: 11px;
     color: var(--text-muted);
     z-index: 500;
-    /* Bounded (not auto) height so the scroll region below can actually
+    /* Bounded height so the scroll region below can actually
        clip its content — an auto-height ancestor makes the child's
        `height: calc(100% - ...)` resolve against nothing, which is why
        vertical scrolling silently failed before. */
-    height: min(70vh, 620px);
-    min-height: 320px;
+    height: 440px;
     display: flex;
     flex-direction: column;
 }
@@ -728,7 +727,7 @@
     padding: 8px 12px; overflow-x: auto;
     font-family: monospace; font-size: 11px; color: var(--text-muted);
     z-index: 2000;
-    min-height: auto; max-height: 250px;
+    min-height: auto;
 }
 #about-panel, #tools-panel { max-height: 500px; min-height: 400px; }
 #ne-container {
@@ -988,7 +987,7 @@
 #soft-synth-panel {
     display: none;
     position: fixed; top: 48px; left: 0; right: 0;
-    height: 800px;
+    height: 440px;
     background: var(--bg); border: 2px solid var(--accent);
     padding: 16px 8px 8px 8px; overflow-y: auto; overflow-x: hidden;
     font-family: monospace; font-size: 11px; color: var(--text-muted);
