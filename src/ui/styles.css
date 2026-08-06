@@ -20,7 +20,7 @@
   --bg-input: #16213e;
   --bg-lime: #0a2e0a;
   --bg-list: #12121e;
-  --bg-selected: #3a2040;
+  --bg-selected: #833295;
   --bg-surface: #121212;
   --black: #000;
   --blue: #4fc3f7;
@@ -149,9 +149,9 @@
     touch-action: manipulation;
 }
 .tb-view-btn:hover { border-color: var(--accent); color: var(--text); }
-.tb-view-btn.active {
-    background: var(--accent); color: var(--text); border-color: var(--accent);
-    filter: invert(1);
+#tb .tb-view-btn.active {
+    background: var(--accent-bright); color: var(--text); border-color: var(--accent-bright);
+    box-shadow: 0 0 8px rgba(255,42,109,0.5);
 }
 
 /* ---- Pattern Panel ---- */
