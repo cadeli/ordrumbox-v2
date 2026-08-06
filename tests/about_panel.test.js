@@ -114,10 +114,10 @@ describe('AboutPanel (PWA)', () => {
         expect(keys).toEqual(['info', 'pwa'])
     })
 
-    it('closes the panel when the close button is clicked', () => {
+    it('can be toggled via dispatchAboutToggle', () => {
         playbackEvents.dispatchAboutToggle(true)
-        const panel = document.getElementById('about-panel')
-        panel.querySelector('.ne-close').click()
-        expect(panel.style.display).toBe('none')
+        expect(document.getElementById('about-panel').style.display).toBe('block')
+        playbackEvents.dispatchAboutToggle(false)
+        expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 })

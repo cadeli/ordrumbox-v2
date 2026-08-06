@@ -103,8 +103,7 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
         const tp = document.getElementById('tools-panel')
         expect(tp.style.display).toBe('block')
 
-        const closeBtn = tp.querySelector('.ne-close')
-        closeBtn.click()
+        playbackEvents.dispatchToolsToggle(false)
 
         expect(tp.style.display).toBe('none')
     })

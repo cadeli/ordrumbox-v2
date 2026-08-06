@@ -133,12 +133,12 @@ describe('Sub-panel toggle toolbars', () => {
             expect(patternPanel.classList.contains('ne-tab-panel-hidden')).toBe(true)
         })
 
-        it('closes the panel when the close button is clicked', () => {
+        it('can be toggled via dispatchToolsToggle', () => {
             playbackEvents.dispatchToolsToggle(true)
 
             const tp = document.getElementById('tools-panel')
             expect(tp.style.display).toBe('block')
-            tp.querySelector('.ne-close').click()
+            playbackEvents.dispatchToolsToggle(false)
             expect(tp.style.display).toBe('none')
         })
     })

@@ -29,7 +29,6 @@ export default class ToolsPanel extends BasePanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Tools</span>
-                <button class="ne-close">&times;</button>
             </div>
             <div class="ne-tab-bar">
                 <button class="ne-tab-btn active" data-ne-tab="pattern">Pattern</button>
