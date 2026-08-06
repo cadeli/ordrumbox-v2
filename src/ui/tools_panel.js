@@ -13,7 +13,7 @@ import { showToast } from './toast.js'
 import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
-import { logger } from "../core/logger.js"
+import { logger, nameOr } from "../core/logger.js"
 
 export default class ToolsPanel extends BasePanel {
     constructor() {
@@ -202,7 +202,7 @@ export default class ToolsPanel extends BasePanel {
     sync() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (pattern && this.nameInput && document.activeElement !== this.nameInput) {
-            this.nameInput.value = pattern.name ?? (logger.warn('ToolsPanel', 'name fallback'), '')
+            this.nameInput.value = nameOr(pattern.name, '', 'ToolsPanel', 'name fallback')
         }
 
         const outputSelect = this.container.querySelector('#tp-midi-output-select')
@@ -219,10 +219,10 @@ export default class ToolsPanel extends BasePanel {
             // Only update if list changed or empty
             if (outputSelect.options.length !== outputs.length) {
                 outputSelect.innerHTML = outputs.map(o => 
-                    `<option value="${escapeHtml(o.id)}" ${o.id === currentOutputId ? 'selected' : ''}>${escapeHtml(o.name ?? (logger.warn('ToolsPanel', 'name fallback'), 'Unknown'))}</option>`
+                    `<option value="${escapeHtml(o.id)}" ${o.id === currentOutputId ? 'selected' : ''}>${escapeHtml(nameOr(o.name, 'Unknown', 'ToolsPanel', 'name fallback'))}</option>`
                 ).join('')
             } else {
-                outputSelect.value = currentOutputId ?? (logger.warn('ToolsPanel', 'outputId fallback'), '')
+                outputSelect.value = nameOr(currentOutputId, '', 'ToolsPanel', 'outputId fallback')
             }
         } else {
             // Default inactive state
@@ -286,7 +286,7 @@ export default class ToolsPanel extends BasePanel {
         const { default: MidiExporter } = await import('../logic/midi/midi_exporter.js')
         const exporter = new MidiExporter()
         const loops = Math.round(this._wavLoops.getValue())
-        exporter.download(pattern, `ordrumbox-${pattern.name ?? (logger.warn('ToolsPanel', 'midi name fallback'), 'pattern')}.mid`, { loops })
+        exporter.download(pattern, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`, { loops })
     }
 
     async _exportWav() {
@@ -305,7 +305,7 @@ export default class ToolsPanel extends BasePanel {
             
             const loops = Math.round(this._wavLoops.getValue())
             const blob = await serviceRegistry.mfWavExporter.exportPatternToWav(pattern, loops)
-            serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${pattern.name ?? (logger.warn('ToolsPanel', 'wav name fallback'), 'pattern')}.wav`)
+            serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`)
         } catch (e) {
             logger.error('ToolsPanel', 'WAV Export failed', e)
             showToast('WAV Export failed', 'error')

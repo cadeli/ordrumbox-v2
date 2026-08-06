@@ -1,6 +1,6 @@
 import SampleVoice from './sample_voice.js'
 import WorkletSynthVoice from './worklet_synth_voice.js'
-import { logger } from "../../core/logger.js"
+import { logger, nameOr } from "../../core/logger.js"
 
 export default class VoiceFactory {
     constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null) {
@@ -17,7 +17,7 @@ export default class VoiceFactory {
         if (!strip) return null
 
         if (track.useSoftSynth === true) {
-            const soundKey      = track?.synthSoundKey ?? (logger.warn('VoiceFactory', 'synthSoundKey fallback'), "BASS1")
+            const soundKey      = nameOr(track?.synthSoundKey, "BASS1", 'VoiceFactory', 'synthSoundKey fallback')
             const generatedSound = this.generatedSounds?.[soundKey]
             if (!generatedSound) return null
 

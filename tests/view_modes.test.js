@@ -12,9 +12,10 @@ import PatternPanel from '../src/ui/pattern_panel.js'
 import PianoRollPanel from '../src/ui/piano_roll_panel.js'
 import OutputPanel from '../src/ui/output_panel.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
+import ViewManager from '../src/ui/view_manager.js'
 
 describe('View modes (proll / grid / synth)', () => {
-    let trackEditor, noteEditor, patternPanel, pianoRoll, toolsPanel, outputPanel
+    let trackEditor, noteEditor, patternPanel, pianoRoll, toolsPanel, outputPanel, viewManager
 
     const MOCK_TRACK = {
         name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4,
@@ -118,6 +119,14 @@ describe('View modes (proll / grid / synth)', () => {
         toolsPanel.init()
         outputPanel = new OutputPanel()
         outputPanel.init()
+
+        viewManager = new ViewManager({
+            trackEditor,
+            synthEditor: trackEditor.synthEditor,
+            pianoRollPanel: pianoRoll,
+            noteEditor,
+        })
+        viewManager.init()
     })
 
     function showTrack() {

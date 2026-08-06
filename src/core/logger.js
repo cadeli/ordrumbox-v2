@@ -24,3 +24,18 @@ export const logger = {
     warn: (tag, ...args) => log(LEVELS.WARN, tag, ...args),
     error: (tag, ...args) => log(LEVELS.ERROR, tag, ...args),
 }
+
+/**
+ * Returns `value` if not nullish, otherwise logs a warning and returns `fallback`.
+ * @template T
+ * @param {T | null | undefined} value
+ * @param {T} fallback
+ * @param {string} tag   – logger tag (e.g. 'AudioEngine')
+ * @param {string} msg   – warning message
+ * @returns {T}
+ */
+export function nameOr(value, fallback, tag, msg) {
+    if (value != null) return value
+    logger.warn(tag, msg)
+    return fallback
+}

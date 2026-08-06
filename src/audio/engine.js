@@ -10,7 +10,7 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { applyParamsToStrip } from './strip_sync.js'
 import { computeTrackLfoValues } from '../logic/lfo_engine.js'
-import { logger } from "../core/logger.js"
+import { logger, nameOr } from "../core/logger.js"
 
 export default class AudioEngine {
     static TAG = "AUDIOENGINE"
@@ -18,7 +18,7 @@ export default class AudioEngine {
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.sounds = config.sounds
-        this.generatedSounds = config.generatedSounds ?? (logger.warn('AudioEngine', 'generatedSounds fallback'), {})
+        this.generatedSounds = nameOr(config.generatedSounds, {}, 'AudioEngine', 'generatedSounds fallback')
         this.patterns = config.patterns
         this.getSelectedPatternNum = config.getSelectedPatternNum ?? (() => config.selectedPatternNum ?? 0)
         this.getAutoGenerate = config.getAutoGenerate
@@ -241,7 +241,7 @@ export default class AudioEngine {
                     const startTime = midiTime + (flatNote.swingTime * 1000)
 
                     midi.sendNoteOn(channel, note, vel, startTime)
-                    const durationMs = flatNote.duration ?? (logger.warn('AudioEngine', 'duration fallback'), 100)
+                    const durationMs = nameOr(flatNote.duration, 100, 'AudioEngine', 'duration fallback')
                     midi.sendNoteOff(channel, note, startTime + durationMs)
                 }
             }

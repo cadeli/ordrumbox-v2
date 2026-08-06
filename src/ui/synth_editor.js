@@ -3,7 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
-import { fmt, setViewBtn, setViewMode, escapeHtml } from './components/panel_helpers.js'
+import { fmt, escapeHtml } from './components/panel_helpers.js'
 import { showToast } from './toast.js'
 import { OrKnob } from './components/or_knob.js'
 import { logger } from '../core/logger.js'
@@ -236,16 +236,11 @@ export default class SynthEditor {
     }
 
     _showSynthPanel() {
-        document.getElementById('pattern-panel')?.classList.add('ui-hidden')
-        this.host.container.style.display = 'none'
         this.panel.style.display = 'flex'
-        setViewMode('synth')
     }
 
     _hideSynthPanel() {
         this.panel.style.display = 'none'
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-        setViewBtn('synth', false)
     }
 
     // ─── Rendering ────────────────────────────────────────────────────────

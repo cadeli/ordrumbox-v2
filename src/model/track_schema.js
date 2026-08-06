@@ -1,4 +1,4 @@
-import { logger } from "../core/logger.js"
+import { logger, nameOr } from "../core/logger.js"
 /**
  * track_schema.js — Single source of truth for the track structure.
  *
@@ -106,7 +106,7 @@ export const TRACK_DEFAULTS = {
  * for missing properties.
  */
 export function normalizeTrack(track = {}) {
-    const t = track ?? (logger.warn('TrackSchema', 'track null/undefined'), {});
+    const t = nameOr(track, {}, 'TrackSchema', 'track null/undefined')
     const { notes: inputNotes, ...rest } = t;
     const normalized = { ...TRACK_DEFAULTS, ...rest };
     normalized.notes = Array.isArray(inputNotes) ? [...inputNotes] : [];

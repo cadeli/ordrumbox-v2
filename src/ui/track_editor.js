@@ -9,7 +9,7 @@ import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
-import { fmt, setViewBtn, setViewMode, knobFormat } from './components/panel_helpers.js'
+import { fmt, setViewBtn, knobFormat } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
@@ -193,39 +193,7 @@ export default class TrackEditor extends BasePanel {
                 if (this.isVisible) this.sync()
             }
         })
-        playbackEvents.onSynthToggle.push(() => {
-            const synthVisible = this.synthEditor?.panel?.style?.display === 'flex'
-            if (synthVisible) return
-            void this.synthEditor.showPanel()
-            this.container.style.display = 'none'
-            if (this._noteEditor) this._noteEditor.hide()
-            document.getElementById('pattern-panel')?.classList.add('ui-hidden')
-            const pianoRollPanel = document.getElementById('piano-roll-panel')
-            if (pianoRollPanel) pianoRollPanel.style.display = 'none'
-            setViewMode('synth')
-        })
-        playbackEvents.onEditToggle.push(() => {
-            const pianoRollPanel = document.getElementById('piano-roll-panel')
-            if (pianoRollPanel && pianoRollPanel.style.display !== 'none') {
-                pianoRollPanel.style.display = 'none'
-            }
-            document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-            const synthVisible = this.synthEditor?.panel?.style?.display === 'flex'
-            if (synthVisible) {
-                this.synthEditor.hidePanel()
-            }
-            if (!this.isVisible) {
-                const pattern = appState.patterns[appState.selectedPatternNum]
-                const idx = appState.selectedTrackNum
-                const track = pattern?.tracks?.[idx]
-                if (track) {
-                    this.show({ track, trackIdx: idx })
-                    this._showNoteEditorForTrack(track, idx)
-                }
-            }
-            this.container?.classList.add('pp-split')
-            setViewMode('edit')
-        })
+
     }
 
     _startStepWatch() {

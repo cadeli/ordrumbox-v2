@@ -3,7 +3,6 @@ import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import MfFlatNote from '../model/flatnote.js'
-import { setViewBtn, setViewMode } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
 import { pitchToNoteName } from './components/ui_utils.js'
@@ -77,10 +76,6 @@ export default class PianoRollPanel extends BasePanel {
                 this._sync()
             }
         })
-        playbackEvents.onProllToggle.push(() => {
-            if (this.isVisible) return
-            this.show()
-        })
         playbackEvents.onPlaybackStart.push(() => this._startRafLoop())
         playbackEvents.onPlaybackStop.push(() => {
             this._stopRafLoop()
@@ -107,15 +102,7 @@ export default class PianoRollPanel extends BasePanel {
         this._pageStartBeat = 0
         this._clearSelection()
         super.show(['tools-panel', 'output-panel', 'about-panel', 'dm-panel', 'soft-synth-panel'])
-        document.getElementById('pattern-panel')?.classList.add('ui-hidden')
-        const tePanel = document.getElementById('te-panel')
-        if (tePanel) {
-            tePanel.classList.remove('ui-hidden')
-            tePanel.classList.add('pp-split')
-            tePanel.style.display = 'block'
-        }
         this.reposition()
-        setViewMode('proll')
         const pattern = appState.patterns[appState.selectedPatternNum]
         const idx = appState.selectedTrackNum
         const track = Utils.getTracksArray(pattern)?.[idx]
@@ -143,8 +130,6 @@ export default class PianoRollPanel extends BasePanel {
         this._clearSelection()
         document.removeEventListener('keydown', this._onKeyDown)
         this.container?.removeEventListener('wheel', this._onWheel)
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-        setViewBtn('proll', false)
     }
 
     sync() { this._sync() }

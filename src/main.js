@@ -13,6 +13,7 @@ import OutputPanel from './ui/output_panel.js'
 import AboutPanel from './ui/about_panel.js'
 import DrumkitManager from './ui/drumkit_manager.js'
 import PatternsPanel from './ui/patterns_panel.js'
+import ViewManager from './ui/view_manager.js'
 
 import MfResourcesLoader from './loader/resources_loader.js'
 import Utils from './core/utils.js'
@@ -45,7 +46,7 @@ function scheduleAfterFirstPaint(callback) {
 }
 
 
-let _toolbar, _patternPanel, _pianoRollPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel
+let _toolbar, _patternPanel, _pianoRollPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel, _viewManager
 
 export function init() {
     if (window.orientation > 1) {
@@ -84,6 +85,14 @@ export function init() {
     _aboutPanel.init()
     _drumkitManager.init()
     _patternsPanel.init()
+
+    _viewManager = new ViewManager({
+        trackEditor: _trackEditor,
+        synthEditor: _trackEditor.synthEditor,
+        pianoRollPanel: _pianoRollPanel,
+        noteEditor: _noteEditor,
+    })
+    _viewManager.init()
 
     playbackEvents.onTrackSelect.push((data) => {
         if (data && data.trackIdx !== undefined) {

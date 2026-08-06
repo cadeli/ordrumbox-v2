@@ -4,7 +4,7 @@ import { bufferToWav } from './wav_encoder.js'
 import { appState } from '../../state/app_state.js'
 import { getAutoGenerateService, serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import { logger } from "../../core/logger.js"
+import { logger, nameOr } from "../../core/logger.js"
 
 export default class MfWavExporter {
     constructor() {
@@ -56,7 +56,7 @@ export default class MfWavExporter {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = filename ?? (logger.warn('WavExporter', 'filename fallback'), 'pattern.wav')
+        a.download = nameOr(filename, 'pattern.wav', 'WavExporter', 'filename fallback')
         a.click()
         URL.revokeObjectURL(url)
     }

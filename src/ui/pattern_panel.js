@@ -6,7 +6,7 @@ import { TICK } from '../core/constants.js'
 
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
-import { logger } from "../core/logger.js"
+import { logger, nameOr } from "../core/logger.js"
 import { downloadJson, pitchToNoteName } from './components/panel_helpers.js'
 
 const BEATS_PER_PAGE = 4
@@ -898,7 +898,7 @@ export default class PatternPanel extends BasePanel {
                 <button class="pp-action-btn" data-pp-action="save" title="Save as JSON">💾</button>
                 <button class="pp-action-btn" data-pp-action="replace" title="Load / replace pattern">📂</button>
             </div>
-            <span class="pp-name">${this.esc(pattern.name ?? (logger.warn('PatternPanel', 'name fallback'), 'Unnamed'))}</span>
+            <span class="pp-name">${this.esc(nameOr(pattern.name, 'Unnamed', 'PatternPanel', 'name fallback'))}</span>
             <span class="pp-meta">${pattern.bpm ?? 120} BPM · ${totalBeats} beats (${totalMeasures} measures) · Page ${appState.currentPage + 1}</span>
         </div>`
 
@@ -931,7 +931,7 @@ export default class PatternPanel extends BasePanel {
 
             let cached = this._trackDataCache.get(tIdx)
             if (!cached) {
-                const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? (logger.warn('PatternPanel', 'track.notes fallback'), {}))
+                const notes = Array.isArray(track.notes) ? track.notes : Object.values(nameOr(track.notes, {}, 'PatternPanel', 'track.notes fallback'))
 
                 const noteMap = new Map()
                 notes.forEach(n => {
@@ -1026,7 +1026,7 @@ const ghostMap = new Map()
                     <div class="pp-vu ${isSelected ? 'selected' : ''}" data-track="${tIdx}"><div class="pp-vu-fill"></div></div>
                     <div class="pp-track-left">
                         <div class="pp-track-top">
-                            <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(track.name ?? (logger.warn('PatternPanel', 'track name fallback'), 'Track'))}</span>
+                            <span class="pp-track-name ${isSelected ? 'selected' : ''}" data-track="${tIdx}">${this.esc(nameOr(track.name, 'Track', 'PatternPanel', 'track name fallback'))}</span>
                             <input type="range" class="pp-volume" min="0" max="1" step="0.01" value="${track.velocity ?? 1}" data-track="${tIdx}">
                         </div>
                         ${soundUrl ? `<div class="pp-track-url" title="${this.esc(soundUrl)}">${this.esc(soundUrl)}</div>` : ''}
