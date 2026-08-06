@@ -82,31 +82,32 @@ describe('SynthEditor sub-panel toolbar', () => {
         expect(masterBlock.classList.contains('bypassed')).toBe(true)
     })
 
-    it('keeps OK and Cancel in the toolbar and preserves save/cancel behavior', async () => {
-        await editor.openEditor()
+it('keeps Save and Revert in the toolbar and preserves save/revert behavior', async () => {
+         await editor.openEditor()
 
-        const panel = document.querySelector('#soft-synth-panel')
-        const okButton = panel.querySelector('[data-action="synth-ok"]')
-        const cancelButton = panel.querySelector('[data-action="synth-cancel"]')
-        expect(okButton).not.toBeNull()
-        expect(cancelButton).not.toBeNull()
+         const panel = document.querySelector('#soft-synth-panel')
+         const saveButton = panel.querySelector('[data-action="synth-ok"]')
+         const revertButton = panel.querySelector('[data-action="synth-revert"]')
+         expect(saveButton).not.toBeNull()
+         expect(revertButton).not.toBeNull()
 
-        const masterKnob = editor._knobs.find(k => k._key === 'masterVolume')
-        masterKnob.setValue(0.25, true)
-        expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.25)
+         const masterKnob = editor._knobs.find(k => k._key === 'masterVolume')
+         masterKnob.setValue(0.25, true)
+         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.25)
 
-        cancelButton.click()
-        expect(document.getElementById('soft-synth-panel').style.display).toBe('none')
-        expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.8)
+         revertButton.click()
+         expect(document.getElementById('soft-synth-panel').style.display).toBe('flex')
+         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.8)
 
-        await editor.openEditor()
-        const nextKnob = editor._knobs.find(k => k._key === 'masterVolume')
-        nextKnob.setValue(0.3, true)
-        document.querySelector('#soft-synth-panel [data-action="synth-ok"]').click()
+         await editor.openEditor()
+         const nextKnob = editor._knobs.find(k => k._key === 'masterVolume')
+         nextKnob.setValue(0.3, true)
+         document.querySelector('#soft-synth-panel [data-action="synth-ok"]').click()
 
-        expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.3)
-        expect(audioEngine.invalidateCache).toHaveBeenCalled()
-    })
+         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.3)
+         expect(audioEngine.invalidateCache).toHaveBeenCalled()
+         expect(document.getElementById('soft-synth-panel').style.display).toBe('flex')
+     })
 
     it('sets bypassFilter flag on draft when toggling filter bypass', async () => {
         await editor.openEditor()

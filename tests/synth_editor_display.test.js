@@ -118,15 +118,15 @@ describe('Soft Synth Editor display', () => {
         expect(bypassBtns.length).toBe(blocks.length)
     })
 
-    it('renders the OK and Cancel action buttons', async () => {
-        await trackEditor.synthEditor.openEditor()
-        const okBtn = document.querySelector('#soft-synth-panel [data-action="synth-ok"]')
-        const cancelBtn = document.querySelector('#soft-synth-panel [data-action="synth-cancel"]')
-        expect(okBtn).not.toBeNull()
-        expect(okBtn.textContent.trim()).toBe('OK')
-        expect(cancelBtn).not.toBeNull()
-        expect(cancelBtn.textContent.trim()).toBe('Cancel')
-    })
+it('renders the Save and Revert action buttons', async () => {
+         await trackEditor.synthEditor.openEditor()
+         const saveBtn = document.querySelector('#soft-synth-panel [data-action="synth-ok"]')
+         const revertBtn = document.querySelector('#soft-synth-panel [data-action="synth-revert"]')
+         expect(saveBtn).not.toBeNull()
+         expect(saveBtn.textContent.trim()).toBe('Save')
+         expect(revertBtn).not.toBeNull()
+         expect(revertBtn.textContent.trim()).toBe('Revert')
+     })
 
     it('renders the waveform canvas', async () => {
         await trackEditor.synthEditor.openEditor()
@@ -171,7 +171,7 @@ describe('Soft Synth Editor display', () => {
         expect(trackEditor.container.style.display).toBe('none')
     })
 
-    it('closes the panel and re-shows the track editor on Cancel', async () => {
+    it('closes the panel and re-shows the track editor when reverting', async () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')
         expect(panel.style.display).toBe('flex')

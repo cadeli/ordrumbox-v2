@@ -426,17 +426,18 @@ export default class SynthEditor {
             const selected = key === currentKey ? ' selected' : ''
             return `<option value="${escapeHtml(key)}"${selected}>${escapeHtml(key)}</option>`
         }).join('')
-        return `<div class="ss-footer">
-            <select class="ss-preset-select" data-action="synth-preset">
-                <option value="">-- preset --</option>
-                ${options}
-            </select>
-            <button class="ss-tb-btn" data-action="synth-new" title="New preset">+</button>
-            <button class="ss-tb-btn" data-action="synth-duplicate" title="Duplicate preset">⧉</button>
-            <button class="ss-tb-btn" data-action="synth-delete" title="Delete preset">✕</button>
-            <button class="ss-tb-btn" data-action="synth-ok" title="Save">OK</button>
-            <button class="ss-tb-btn" data-action="synth-cancel" title="Cancel">Cancel</button>
-        </div>`
+return `<div class="ss-footer">
+             <select class="ss-preset-select" data-action="synth-preset">
+                 <option value="">-- preset --</option>
+                 ${options}
+             </select>
+             <button class="ss-tb-btn" data-action="synth-delete" title="Delete preset">✕</button>
+             <span class="ss-footer-sep"></span>
+             <button class="ss-tb-btn" data-action="synth-new" title="New preset">+</button>
+             <button class="ss-tb-btn" data-action="synth-duplicate" title="Duplicate preset">⧉</button>
+             <button class="ss-tb-btn" data-action="synth-ok" title="Save">Save</button>
+             <button class="ss-tb-btn" data-action="synth-revert" title="Revert to original settings">Revert</button>
+         </div>`
     }
 
     /** Renders icon buttons (wave shapes, filter types). */
@@ -654,8 +655,8 @@ export default class SynthEditor {
 
 _handleAction(target) {
          const action = target.dataset.action
-         if (action === 'synth-ok') this._closeEditor(true)
-         else if (action === 'synth-cancel') this._closeEditor(false)
+if (action === 'synth-ok') this._savePreset()
+          else if (action === 'synth-revert') this._revertPreset()
          else if (action === 'synth-duplicate') this._duplicatePreset()
          else if (action === 'synth-rename') this._renamePreset()
          else if (action === 'synth-randomize') this._randomizePreset()
@@ -983,7 +984,24 @@ _duplicatePreset() {
 
     // ─── Close / reset ────────────────────────────────────────────────────
 
-    _closeEditor(shouldSave) {
+    _savePreset() {
+          if (!this._editKey || !this._draft) return
+          this._commitSound(this._editKey, this._draft)
+          serviceRegistry.audioEngine?.invalidateCache?.()
+          playbackEvents.dispatchPatternChange([this.host._track])
+          this._renderEditor()
+      }
+
+      _revertPreset() {
+          if (!this._editKey || !this._original) return
+          this._commitSound(this._editKey, this._original)
+          this._draft = structuredClone(this._original)
+          this._renderEditor()
+          serviceRegistry.audioEngine?.invalidateCache?.()
+          playbackEvents.dispatchPatternChange([this.host._track])
+      }
+
+      _closeEditor(shouldSave) {
         if (shouldSave && this._editKey && this._draft) {
             this._commitSound(this._editKey, this._draft)
             serviceRegistry.audioEngine?.invalidateCache?.()

@@ -240,6 +240,9 @@
     color: var(--text-muted); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
 }
+.pp-action-btn[data-pp-action="delete"] {
+    margin-right: 6px;
+}
 .pp-action-btn[data-pp-action="save"],
 .pp-action-btn[data-pp-action="replace"] {
     font-size: 16px;
@@ -399,6 +402,7 @@
     display: flex; gap: 0; flex: 1; background: rgba(255,255,255,0.01);
     padding: 0; border-radius: 1px; border: 1px solid var(--bg-beat);
 }
+#pattern-panel .pp-beat:nth-child(odd) { background: rgba(255,255,255,0.05); }
 #pattern-panel .pp-cell.cursor {
     outline: 2px solid var(--accent); outline-offset: -1px; z-index: 2;
 }
@@ -596,7 +600,7 @@
     pointer-events: none;
     border-left: 1px solid var(--border-dark);
 }
-.pp-pr-col.beat { border-left-color: var(--border); }
+.pp-pr-col.beat { border-left-color: var(--border); background: rgba(255,255,0,0.04); }
 .pp-pr-col.half { border-left: 1px dotted var(--border-dim); }
 .pp-pr-row {
     position: absolute;
@@ -989,6 +993,13 @@
 }
 #soft-synth-panel .ss-footer .ss-tb-btn {
     font-size: 11px; padding: 0 6px;
+}
+#soft-synth-panel .ss-footer-sep {
+    width: 1px; height: 16px;
+    background: var(--border-dark);
+    margin: 0 4px;
+    display: inline-block;
+    vertical-align: middle;
 }
 #soft-synth-panel .ss-wave-tab {
     font-size: 9px; padding: 2px 6px; border: 1px solid var(--border);
