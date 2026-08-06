@@ -83,6 +83,7 @@ const SYNTH_GROUP_LABELS = {
 }
 const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'fm', 'lfo', 'lfo2', 'noise', 'enveloppe']
 const VCO_RE = /^vco\d+$/i
+const LFO_RE = /^lfo\d*$/i
 
 const LFO_SYNC_OPTIONS = [
     { value: 'off', label: 'free' },
@@ -288,10 +289,11 @@ export default class SynthEditor {
             const isBypassed = this._cardBypassed[groupName] ?? false
 
             const isVco = VCO_RE.test(groupName)
+            const isLfo = LFO_RE.test(groupName)
             const isFilter = groupName === 'filter'
             const isNoise = groupName === 'noise'
             let waveRowHtml = ''
-            if (isVco) {
+            if (isVco || isLfo) {
                 const waveVal = this._draft?.[groupName]?.wave ?? 'sine'
                 const waveOpts = Utils.waveList
                 const pathStr = `${groupName}.wave`
@@ -359,7 +361,7 @@ export default class SynthEditor {
         const options = this._getOptions(path, key)
 
         if (key === 'wave' && options) {
-            if (groupName && VCO_RE.test(groupName)) return ''
+            if (groupName && (VCO_RE.test(groupName) || LFO_RE.test(groupName))) return ''
             return this._buildIconRow(paramLabel, pathStr, val, 'ss-wave-icon', WAVE_ICONS)
         }
         if ((pathStr === 'filter.type' || pathStr === 'noise.filterType') && options) {
