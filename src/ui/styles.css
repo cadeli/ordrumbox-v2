@@ -1025,12 +1025,14 @@
 }
 #soft-synth-panel .ss-group-wave-row {
     display: inline-flex; gap: 2px; align-items: center; justify-content: center;
-    flex: 1; min-width: 0;
+    flex: 1; min-width: 0; flex-wrap: wrap;
 }
 #soft-synth-panel .ss-group-wave-row .ss-wave-icon,
-#soft-synth-panel .ss-group-wave-row .ss-ft-icon,
-#soft-synth-panel .ss-group-wave-row .ss-fm-icon {
+#soft-synth-panel .ss-group-wave-row .ss-ft-icon {
     width: 20px; height: 14px; padding: 1px;
+}
+#soft-synth-panel .ss-group-wave-row .ss-fm-icon {
+    width: auto; height: 14px; padding: 1px 3px; font-size: 9px; white-space: nowrap;
 }
 #soft-synth-panel .ss-card-body {
     display: flex; flex-direction: row; flex-wrap: wrap; gap: 2px;
