@@ -19,7 +19,16 @@ function ensureContainer() {
         pointer-events:none; font-family:sans-serif;
     `
     document.body.appendChild(c)
+    ensureStyles()
     return c
+}
+
+function ensureStyles() {
+    if (document.getElementById('odbox-toast-keyframes')) return
+    const s = document.createElement('style')
+    s.id = 'odbox-toast-keyframes'
+    s.textContent = `@keyframes odbox-toast-in{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}`
+    document.head.appendChild(s)
 }
 
 export function showToast(message, type = 'info') {
@@ -35,10 +44,6 @@ export function showToast(message, type = 'info') {
         animation:odbox-toast-in 0.3s ease-out;
     `
     el.textContent = message
-
-    const style = document.createElement('style')
-    style.textContent = `@keyframes odbox-toast-in{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}`
-    el.appendChild(style)
 
     container.appendChild(el)
 

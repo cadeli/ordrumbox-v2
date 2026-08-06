@@ -46,6 +46,10 @@ export default class ToolsPanel extends BasePanel {
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-compact" title="Detect repeating note patterns and add loop points to minimize notes">Compact Tracks</button>
                 </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-clear" title="Remove all notes from every track in the current pattern">Clear</button>
+                    <button class="ne-btn" id="tp-rnd" title="Write random notes into each track of the current pattern">Rnd</button>
+                </div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="export">
                 <div class="ne-row">
@@ -118,6 +122,8 @@ export default class ToolsPanel extends BasePanel {
         this.nameInput.addEventListener('input', () => this._onNameChange())
         
         this.container.querySelector('#tp-compact').addEventListener('click', () => this._compactPattern())
+        this.container.querySelector('#tp-clear').addEventListener('click', () => this._clearPattern())
+        this.container.querySelector('#tp-rnd').addEventListener('click', () => this._randomizePattern())
         
         this.container.querySelector('#tp-export-json').addEventListener('click', () => this._exportJson())
         
@@ -272,6 +278,39 @@ export default class ToolsPanel extends BasePanel {
         serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.dispatchPatternChange()
         logger.debug('ToolsPanel', `Compaction finished. Total redundant notes removed: ${totalRemoved}`)
+    }
+
+    _clearPattern() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) return
+        serviceRegistry.mfCmd?.cleanPattern(pattern)
+        serviceRegistry.audioEngine?.invalidateCache()
+        playbackEvents.dispatchPatternChange()
+    }
+
+    _randomizePattern() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) return
+        const tracks = Utils.getTracksArray(pattern)
+        for (const track of tracks) {
+            const beats = track.nbBeats ?? pattern.nbBeats ?? 4
+            const stepsPerBeat = track.stepsPerBeat ?? 4
+            const totalSteps = beats * stepsPerBeat
+            const noteCount = Math.max(1, Math.floor(totalSteps * (0.15 + Math.random() * 0.2)))
+            const used = new Set()
+            for (let i = 0; i < noteCount; i++) {
+                let step
+                do { step = Math.floor(Math.random() * totalSteps) } while (used.has(step))
+                used.add(step)
+                const beat = Math.floor(step / stepsPerBeat)
+                const beatStep = step % stepsPerBeat
+                const pitch = Math.floor(Math.random() * 13) - 6
+                const note = serviceRegistry.mfCmd?.addNote(track, beat, beatStep, pitch)
+                if (note) note.velocity = 0.5 + Math.random() * 0.5
+            }
+        }
+        serviceRegistry.audioEngine?.invalidateCache()
+        playbackEvents.dispatchPatternChange()
     }
 
     _exportJson() {

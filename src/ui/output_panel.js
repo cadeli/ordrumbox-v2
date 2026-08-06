@@ -95,6 +95,22 @@ this.container.innerHTML = `
     _buildCompressorSliders() {
         this._compSliders = {}
         const grid = this.container.querySelector('#op-comp-grid')
+
+        this._compBypass = false
+        this._compBypassBtn = document.createElement('button')
+        this._compBypassBtn.className = 'ne-btn active'
+        this._compBypassBtn.textContent = 'ON'
+        this._compBypassBtn.addEventListener('click', () => {
+            this._compBypass = !this._compBypass
+            this._compBypassBtn.textContent = this._compBypass ? 'OFF' : 'ON'
+            this._compBypassBtn.classList.toggle('active', !this._compBypass)
+            serviceRegistry.audioEngine?.mixer?.setMasterBus({ bypass: this._compBypass })
+        })
+        const row = document.createElement('div')
+        row.className = 'ne-grid-row'
+        row.appendChild(this._compBypassBtn)
+        grid.appendChild(row)
+
         COMPRESSOR_PARAMS.forEach(p => {
             const slider = new OrSlider({
                 key:      p.key,
