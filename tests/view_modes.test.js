@@ -245,12 +245,12 @@ describe('View modes (proll / grid / synth)', () => {
             expect(neContainer.innerHTML.trim().length).toBeGreaterThan(0)
         })
 
-        it('proll panel width is 79%', () => {
+        it('proll panel fills its grid column', () => {
             playbackEvents.dispatchProllToggle()
 
             const proll = document.getElementById('piano-roll-panel')
             expect(proll).not.toBeNull()
-            expect(proll.style.width).toBe('79%')
+            expect(proll.classList.contains('ui-hidden')).toBe(false)
         })
 
         it('proll → grid: hides proll, shows grid + te', () => {

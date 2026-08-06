@@ -86,6 +86,15 @@ export function init() {
     _drumkitManager.init()
     _patternsPanel.init()
 
+    const appContent = document.createElement('div')
+    appContent.id = 'app-content'
+    appContent.appendChild(_patternPanel.container)
+    appContent.appendChild(_pianoRollPanel.container)
+    appContent.appendChild(_trackEditor.container)
+    document.body.appendChild(appContent)
+
+    _patternPanel.container.style.display = 'flex'
+
     _viewManager = new ViewManager({
         trackEditor: _trackEditor,
         synthEditor: _trackEditor.synthEditor,
