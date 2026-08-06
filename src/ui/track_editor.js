@@ -380,9 +380,9 @@ export default class TrackEditor extends BasePanel {
             panelsHtml += `<div class="ne-tab-panel ${isHidden ? 'ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${content}</div>`
         }
 
-        this.container.innerHTML = headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + `<div class="te-scroll">${panelsHtml}</div>`
+        this.container.innerHTML = `<div class="track-editor">${headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + `<div class="te-scroll">${panelsHtml}</div>`}</div>`
         if (this._neContainer) {
-            this.container.querySelector('.te-scroll')?.appendChild(this._neContainer)
+            this.container.appendChild(this._neContainer)
         }
         
         // Mount main sliders

@@ -204,13 +204,18 @@
     right: 0;
     width: 21%;
     top: 64px !important;
-    height: 440px;
-    max-height: 440px;
+    height: auto;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     border-bottom: none;
     border-left: 2px solid var(--border-dark);
+}
+.track-editor {
+    height: 440px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 .te-scroll {
     flex: 1;
@@ -221,7 +226,7 @@
 }
 @media (max-width: 768px), (max-height: 480px) {
     #pattern-panel { width: 100%; right: 0; }
-    .ne-panel.pp-split { left: 0; width: 100%; top: auto !important; height: 440px; max-height: 440px; }
+    .ne-panel.pp-split { left: 0; width: 100%; top: auto !important; height: auto; }
 }
 #pattern-panel .pp-header {
     display: flex; align-items: center; gap: 10px;
@@ -735,7 +740,8 @@
     border-top: 1px solid var(--border-dark);
     padding: 4px 0;
     margin-top: 4px;
-    flex: 0 0 20%;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
 }
 .ui-hidden { display: none !important; }
