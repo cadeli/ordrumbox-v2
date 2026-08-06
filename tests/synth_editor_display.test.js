@@ -104,13 +104,6 @@ describe('Soft Synth Editor display', () => {
         expect(trackEditor.container.style.display).toBe('none')
     })
 
-    it('renders the title with the synth sound key', async () => {
-        await trackEditor.synthEditor.openEditor()
-        const title = document.querySelector('#soft-synth-panel .ss-title')
-        expect(title).not.toBeNull()
-        expect(title.textContent).toContain('BASS1')
-    })
-
     it('renders fixed blocks with bypass buttons (one per group)', async () => {
         await trackEditor.synthEditor.openEditor()
         const blocks = document.querySelectorAll('#soft-synth-panel [data-ss-card]')
@@ -137,11 +130,11 @@ describe('Soft Synth Editor display', () => {
 
     it('renders the waveform canvas', async () => {
         await trackEditor.synthEditor.openEditor()
-        const canvas = document.querySelector('#soft-synth-panel #ss-waveform')
+        const canvas = document.querySelector('#soft-synth-panel .ss-waveform')
         expect(canvas).not.toBeNull()
         expect(canvas.tagName).toBe('CANVAS')
-        expect(canvas.width).toBe(800)
-        expect(canvas.height).toBe(88)
+        expect(canvas.width).toBe(320)
+        expect(canvas.height).toBe(64)
     })
 
     it('renders one group block per draft key', async () => {

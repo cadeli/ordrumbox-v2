@@ -253,9 +253,7 @@ export default class SynthEditor {
         this._destroyKnobs()
         const knobConfigs = []
 
-        let html = this._buildHeader()
-        html += this._buildWaveSection()
-        html += this._buildGroups(knobConfigs)
+        let html = this._buildGroups(knobConfigs)
         html += this._buildFooter()
 
         this.panel.innerHTML = html
@@ -267,15 +265,6 @@ export default class SynthEditor {
     /** @returns {string} header HTML with preset title. */
     _buildHeader() {
         return `<div class="ss-title">Soft Synth : ${escapeHtml(this._editKey)}</div>`
-    }
-
-    /** @returns {string} waveform canvas with Wave/Scope tabs. */
-    _buildWaveSection() {
-        return `<div class="ss-wave-row">
-            <button class="ss-wave-tab active" data-wave-tab="wave">Wave</button>
-            <button class="ss-wave-tab" data-wave-tab="scope">Scope</button>
-            <canvas id="ss-waveform" width="800" height="88"></canvas>
-        </div>`
     }
 
     /** @returns {string} fixed block groups HTML. Pushes knob configs to the array. */
@@ -319,12 +308,18 @@ export default class SynthEditor {
                 }).join('')}</span>`
             }
 
+            let extraHtml = ''
+            if (groupName === 'master') {
+                extraHtml = `<canvas class="ss-waveform" width="320" height="64"></canvas>`
+            }
+
             html += `<div class="ss-group${isBypassed ? ' bypassed' : ''}" data-ss-card="${groupName}">
                 <span class="ss-group-label">${escapeHtml(label)}</span>
                 ${waveRowHtml}
                 <button class="ss-bypass-btn${isBypassed ? '' : ' active'}" data-power-card="${groupName}" title="Bypass">
                     <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>
                 </button>
+                ${extraHtml}
                 <div class="ss-card-body">${content}</div>
             </div>`
         }
@@ -346,11 +341,16 @@ export default class SynthEditor {
                 ? Object.entries(this._draft[groupName]).map(([key, val]) => ({ path: [groupName, key], key, val }))
                 : [{ path: [groupName], key: groupName, val: this._draft[groupName] }]
 
-        return fields.map(({ path, key, val }) => {
+        const fieldsHtml = fields.map(({ path, key, val }) => {
             const pathStr = path.join('.')
             const paramLabel = SYNTH_PARAM_META[pathStr]?.label ?? key
             return this._buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName)
         }).join('')
+
+        if (groupName === 'enveloppe') {
+            return `<canvas class="ss-env-canvas" width="320" height="64"></canvas>${fieldsHtml}`
+        }
+        return fieldsHtml
     }
 
     /**
@@ -774,7 +774,7 @@ _duplicatePreset() {
     // ─── Waveform drawing ─────────────────────────────────────────────────
 
     _drawWaveform() {
-        const canvas = this.panel.querySelector('#ss-waveform')
+        const canvas = this.panel.querySelector('.ss-waveform')
         if (!canvas || !this._draft) return
         const ctx = canvas.getContext('2d')
         if (!ctx) return
@@ -794,7 +794,7 @@ _duplicatePreset() {
         if (this._waveTab === 'wave') {
             this._drawOscillators(ctx, w, mid)
         }
-        this._drawAdsrEnvelope(ctx, w, mid)
+        this._drawEnvCanvas()
     }
 
     _drawOscillators(ctx, w, mid) {
@@ -856,6 +856,27 @@ _duplicatePreset() {
                 detune: v.detune ?? 0
             }
         })
+    }
+
+    _drawEnvCanvas() {
+        const canvas = this.panel.querySelector('.ss-env-canvas')
+        if (!canvas || !this._draft) return
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+        const w = canvas.width
+        const h = canvas.height
+        const mid = h / 2
+
+        ctx.fillStyle = '#0d0d1a'
+        ctx.fillRect(0, 0, w, h)
+        ctx.strokeStyle = '#2D3438'
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo(0, mid)
+        ctx.lineTo(w, mid)
+        ctx.stroke()
+
+        this._drawAdsrEnvelope(ctx, w, mid)
     }
 
     _drawAdsrPath(ctx, pts, scaleX, scaleY) {
