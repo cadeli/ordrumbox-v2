@@ -85,7 +85,7 @@ export function setViewBtn(name, active) {
  */
 export function setViewMode(mode) {
     setViewBtn('synth', mode === 'synth')
-    setViewBtn('edit', mode === 'edit' || mode === 'proll')
+    setViewBtn('edit', mode === 'edit')
     setViewBtn('proll', mode === 'proll')
 }
 

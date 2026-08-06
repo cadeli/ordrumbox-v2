@@ -49,6 +49,7 @@
   --vu-green: #4ade80;
   --vu-red: #ef4444;
   --vu-yellow: #eab308;
+  --panel-height: 300px;
 }
 
 /* ---- Toolbar ---- */
@@ -734,14 +735,13 @@
     z-index: 2000;
     min-height: auto;
 }
-#about-panel, #tools-panel { max-height: 500px; min-height: 400px; }
+#about-panel, #tools-panel { height: var(--panel-height); }
 #ne-container {
     display: none;
     border-top: 1px solid var(--border-dark);
     padding: 4px 0;
     margin-top: 4px;
-    flex: 1;
-    min-height: 0;
+    height: var(--panel-height);
     overflow-y: auto;
 }
 .ui-hidden { display: none !important; }
@@ -1214,6 +1214,7 @@
 }
 
 /* ne-grid: only used by output-panel (opt-in via gridId) */
+#output-panel { height: var(--panel-height); }
 .ne-grid {
     display: flex; flex-direction: column; gap: 4px;
 }
@@ -1231,7 +1232,7 @@
 
 /* ── Drumkit Manager ───────────────────────────────────── */
 #dm-panel {
-    max-height: 320px;
+    height: var(--panel-height);
 }
 
 .dm-body {
@@ -1434,6 +1435,7 @@
 }
 
 /* ---- Patterns Panel ---- */
+#pp-panel { height: var(--panel-height); }
 #pp-panel .pp-body {
     display: flex; flex-direction: row; gap: 16px;
     max-height: 180px; align-items: flex-start;
