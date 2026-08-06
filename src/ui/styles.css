@@ -242,7 +242,7 @@
 }
 .pp-action-btn[data-pp-action="save"],
 .pp-action-btn[data-pp-action="replace"] {
-    font-size: 18px;
+    font-size: 16px;
 }
 #pattern-panel .pp-header .pp-actions {
     width: calc(200px + 12px + 12px);

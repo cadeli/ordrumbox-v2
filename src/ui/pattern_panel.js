@@ -895,8 +895,8 @@ export default class PatternPanel extends BasePanel {
                 <button class="pp-action-btn" data-pp-action="clean" title="Clear all notes">⌫</button>
                 <button class="pp-action-btn" data-pp-action="duplicate" title="Duplicate pattern">⧉</button>
                 <button class="pp-action-btn" data-pp-action="rename" title="Rename pattern">✎</button>
-                <button class="pp-action-btn" data-pp-action="save" title="Save as JSON">⬇</button>
-                <button class="pp-action-btn" data-pp-action="replace" title="Load / replace pattern">⬆</button>
+                <button class="pp-action-btn" data-pp-action="save" title="Save as JSON">↓</button>
+                <button class="pp-action-btn" data-pp-action="replace" title="Load / replace pattern">↑</button>
             </div>
             <span class="pp-name">${this.esc(nameOr(pattern.name, 'Unnamed', 'PatternPanel', 'name fallback'))}</span>
             <span class="pp-meta">${pattern.bpm ?? 120} BPM · ${totalBeats} beats (${totalMeasures} measures) · Page ${appState.currentPage + 1}</span>
