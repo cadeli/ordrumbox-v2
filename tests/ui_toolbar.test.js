@@ -58,9 +58,9 @@ describe('Toolbar UI Layout', () => {
         expect(textContents).toContain('▶')
 
         // Check generation buttons
-        expect(textContents).toContain('Drum')
-        expect(textContents).toContain('Bass')
-        expect(textContents).toContain('Chords')
+        expect(textContents).toContain('↻ Drum')
+        expect(textContents).toContain('↻ Bass')
+        expect(textContents).toContain('↻ Chords')
     })
 
     it('toggles the BPM panel visibility when clicked', () => {

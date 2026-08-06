@@ -154,19 +154,19 @@ export default class Toolbar {
         const genRow = document.createElement('div')
         genRow.className = 'tb-view-row'
         this.drumBtn = document.createElement('button')
-        this.drumBtn.className = 'tb-view-btn'
+        this.drumBtn.className = 'tb-view-btn tb-gen-btn'
         this.drumBtn.dataset.gen = 'drum'
-        this.drumBtn.textContent = 'Drum'
+        this.drumBtn.textContent = '↻ Drum'
         this.drumBtn.title = 'Generate drum pattern'
         this.bassBtn = document.createElement('button')
-        this.bassBtn.className = 'tb-view-btn'
+        this.bassBtn.className = 'tb-view-btn tb-gen-btn'
         this.bassBtn.dataset.gen = 'bass'
-        this.bassBtn.textContent = 'Bass'
+        this.bassBtn.textContent = '↻ Bass'
         this.bassBtn.title = 'Generate bass line'
         this.chordsBtn = document.createElement('button')
-        this.chordsBtn.className = 'tb-view-btn'
+        this.chordsBtn.className = 'tb-view-btn tb-gen-btn'
         this.chordsBtn.dataset.gen = 'chords'
-        this.chordsBtn.textContent = 'Chords'
+        this.chordsBtn.textContent = '↻ Chords'
         this.chordsBtn.title = 'Generate chords'
         genRow.appendChild(this.drumBtn)
         genRow.appendChild(this.bassBtn)
@@ -235,6 +235,11 @@ export default class Toolbar {
         this.container.appendChild(beatsWrap)
         this.container.appendChild(kitWrap)
         this.container.appendChild(genWrap)
+
+        const sep = document.createElement('div')
+        sep.className = 'tb-sep'
+        this.container.appendChild(sep)
+
         this.container.appendChild(viewWrap)
         this.container.appendChild(this.toolsBtn)
         this.container.appendChild(this.aboutBtn)

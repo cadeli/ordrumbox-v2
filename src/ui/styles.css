@@ -154,6 +154,27 @@
     box-shadow: 0 0 8px rgba(255,42,109,0.5);
 }
 
+/* ---- Generation Buttons (amber tint) ---- */
+.tb-gen-btn {
+    background: rgba(245,158,11,0.08); color: var(--amber);
+    border-color: rgba(245,158,11,0.2);
+}
+.tb-gen-btn:hover {
+    background: rgba(245,158,11,0.18); border-color: var(--amber);
+}
+#tb .tb-gen-btn.active {
+    background: rgba(245,158,11,0.2); color: var(--amber);
+    border-color: var(--amber);
+    box-shadow: 0 0 6px rgba(245,158,11,0.3);
+}
+
+/* ---- Toolbar Separator ---- */
+.tb-sep {
+    width: 1px; height: 28px;
+    background: var(--border-dark);
+    margin: 0 6px; align-self: center; flex-shrink: 0;
+}
+
 /* ---- Pattern Panel ---- */
 #pattern-panel {
     position: fixed !important;
