@@ -8,7 +8,6 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 
 const makeGeneratedSound = () => ({
     masterVolume: 0.8,
-    slide: 0,
     vco1: { gain: 1, octave: 0, detune: 0, wave: 'sine' },
     filter: { type: 'lowpass', freq: 400, Q: 1, filterEnvelopeAmount: 0 },
     enveloppe: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 }

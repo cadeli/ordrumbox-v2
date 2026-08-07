@@ -9,7 +9,6 @@ import { playbackEvents } from '../src/state/playback_events.js'
 
 const SAMPLE_DRAFT = {
     masterVolume: 0.9,
-    slide: 0,
     vco1: { gain: 1, octave: 0, detune: 0, wave: 'sine' },
     vco2: { gain: 0, octave: 0, detune: 0, wave: 'sawtooth' },
     vco3: { gain: 0, octave: 0, detune: 0, wave: 'square' },

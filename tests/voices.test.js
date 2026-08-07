@@ -110,7 +110,6 @@ function makeFlatNote(overrides = {}) {
 function makeGeneratedSound(overrides = {}) {
     return {
         masterVolume: 0.8,
-        slide: 0,
         vco1: { wave: 'sine', octave: 0, detune: 0, gain: 1 },
         vco2: null,
         vco3: null,
@@ -326,7 +325,6 @@ describe('WorkletSynthVoice parameter coverage', () => {
         const strip = createMockStrip()
         const gs = makeGeneratedSound({
             masterVolume: 0.6,
-            slide: 0,
             vco1: { wave: 'square', gain: 0.7, octave: 1, detune: 20 },
             vco2: { wave: 'triangle', gain: 0.4, octave: -1, detune: -30 },
             vco3: { wave: 'sawtooth', gain: 0.5, octave: 0, detune: 5 },
@@ -411,7 +409,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             'master', 'pan', 'velocity',
             'lfo1Target', 'lfo1Wave', 'lfo1Freq', 'lfo1Depth',
             'lfo2Target', 'lfo2Wave', 'lfo2Freq', 'lfo2Depth',
-            'slide', 'filterEnvAmt', 'fmAmount', 'fmAlgo',
+            'filterEnvAmt', 'fmAmount', 'fmAlgo',
             'bypassNoise', 'bypassFilter', 'bypassEnv', 'bypassLfo1', 'bypassLfo2', 'bypassFm',
         ]
         for (const key of expectedKeys) {

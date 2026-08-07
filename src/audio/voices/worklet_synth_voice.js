@@ -43,7 +43,7 @@ function postUpdate(node, params) {
  * the per-note OscillatorNode + GainNode + BiquadFilterNode allocation
  * pressure that a native Web Audio node graph would impose.
  *
- * Features: 3 VCOs, 2 LFOs, glide, filter envelope, noise sub-filter.
+ * Features: 3 VCOs, 2 LFOs, filter envelope, noise sub-filter.
  */
 export default class WorkletSynthVoice extends BaseVoice {
     constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null) {
@@ -77,27 +77,14 @@ export default class WorkletSynthVoice extends BaseVoice {
         if (!this.workletNode) return
 
         const gs = this.generatedSound
-        const slideTime = toFiniteNumber(gs.slide, 0)
-        const hasGlide = slideTime > 0
 
         // Compute target frequencies
         const f1 = gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0
         const f2 = gs.vco2 ? computeOscFrequency(this.noteRatio, gs.vco2.octave, gs.vco2.detune) : 0
         const f3 = gs.vco3 ? computeOscFrequency(this.noteRatio, gs.vco3.octave, gs.vco3.detune) : 0
 
-        // Send trigger with last frequencies for glide
-        const triggerMsg = { type: 'trigger', startTime: time }
-        if (hasGlide) {
-            triggerMsg.lastFreq1 = this.workletNode._lastFreq1 ?? f1
-            triggerMsg.lastFreq2 = this.workletNode._lastFreq2 ?? f2
-            triggerMsg.lastFreq3 = this.workletNode._lastFreq3 ?? f3
-        }
-        this.workletNode.port.postMessage(triggerMsg)
-
-        // Store current freqs for next note's glide
-        this.workletNode._lastFreq1 = f1
-        this.workletNode._lastFreq2 = f2
-        this.workletNode._lastFreq3 = f3
+        // Send trigger
+        this.workletNode.port.postMessage({ type: 'trigger', startTime: time })
 
         // Auto-release after one step (16th note = 0.25 * secondsPerBeat)
         if (this._autoReleaseTimer) clearTimeout(this._autoReleaseTimer)
@@ -192,7 +179,6 @@ export default class WorkletSynthVoice extends BaseVoice {
             lfo2Wave: WAVE_TO_INT[gs.lfo2?.wave] ?? 0,
             lfo2Freq: syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo2?.freq, 0),
             lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
-            slide: toFiniteNumber(gs.slide, 0) / 1000,
             filterEnvAmt: clamp(toFiniteNumber(filterCfg.filterEnvelopeAmount, 0), 0, 1),
             fmAmount: clamp(toFiniteNumber(gs.fm?.amount, 0), 0, 1),
             fmAlgo: clamp(Math.round(toFiniteNumber(gs.fm?.algo, 0)), 0, 4),

@@ -10,7 +10,6 @@
  *   - 1 master gain
  *   - 1 stereo pan
  *   - 2 LFOs with target routing (all native targets supported)
- *   - Glide (slide) between notes
  *   - Filter envelope modulation
  *
  * LFO target routing (per LFO):
@@ -36,7 +35,7 @@
  *
  * Trigger model:
  *   The host sends messages via `port`:
- *     { type: 'trigger', startTime, lastFreq1, lastFreq2, lastFreq3 }
+ *     { type: 'trigger', startTime }
  *     { type: 'release', releaseTime }
  *     { type: 'update', ...overrides }
  *
@@ -67,8 +66,7 @@
  *   - 20: master     (linear, 0..2)
  *   - 21: pan        (-1..1)
  *   - 22: velocity   (linear, 0..1)
- *   - 23: slide      (s, 0..2)
- *   - 24: filterEnvAmt (linear, 0..1)
+ *   - 23: filterEnvAmt (linear, 0..1)
  */
 
 const SYNTH_VOICE_PROCESSOR_SOURCE = `
@@ -149,7 +147,6 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             { name: 'lfo2Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
             { name: 'lfo2Freq',   defaultValue: 1,    minValue: 0,     maxValue: 20,    automationRate: 'k-rate' },
             { name: 'lfo2Depth',  defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
-            { name: 'slide',      defaultValue: 0,    minValue: 0,     maxValue: 2,     automationRate: 'k-rate' },
             { name: 'filterEnvAmt', defaultValue: 0,  minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
             { name: 'fmAmount',   defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
         ];
@@ -182,10 +179,6 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this._envSegmentStart = 0;
         this._envA = 0; this._envD = 0; this._envS = 0; this._envR = 0; this._envPeak = 0;
         this._lastEnvTime = -1;
-        // Glide state
-        this._glideStart1 = 0; this._glideStart2 = 0; this._glideStart3 = 0;
-        this._glideTarget1 = 0; this._glideTarget2 = 0; this._glideTarget3 = 0;
-        this._glideTime = 0; this._glideElapsed = 0;
         // Filter envelope state
         this._filtEnvLevel = 0;
         this._filtEnvSeg = 0; // 0=off, 1=attack, 2=decay
@@ -203,11 +196,6 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this._envSegmentStart = 0;
             this._envLevel = 0;
             this._lastEnvTime = -1;
-            // Glide: capture starting frequencies for ramp
-            this._glideStart1 = msg.lastFreq1 ?? 0;
-            this._glideStart2 = msg.lastFreq2 ?? 0;
-            this._glideStart3 = msg.lastFreq3 ?? 0;
-            this._glideElapsed = 0;
             // Filter envelope: start attack phase
             this._filtEnvSeg = 1;
             this._filtEnvStart = 0;
@@ -385,7 +373,6 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const lfo2Wave   = Math.round(this._param('lfo2Wave', parameters.lfo2Wave));
         const lfo2Freq   = this._param('lfo2Freq', parameters.lfo2Freq);
         const lfo2Depth  = this._param('lfo2Depth', parameters.lfo2Depth);
-        const slide      = this._param('slide', parameters.slide);
         const filterEnvAmt = this._param('filterEnvAmt', parameters.filterEnvAmt);
         const fmAmount   = this._param('fmAmount', parameters.fmAmount);
         const fmAlgo     = Math.round(this._param('fmAlgo', [0]));
@@ -524,40 +511,30 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const f2d = f2 * det2;
             const f3d = f3 * det3;
 
-            // Glide (slide): linear ramp from lastFreq to targetFreq
-            let f1g = f1d, f2g = f2d, f3g = f3d;
-            if (slide > 0.001) {
-                this._glideElapsed += 1 / sr;
-                const glideT = Math.min(this._glideElapsed / slide, 1);
-                if (this._glideStart1 > 0) f1g = this._glideStart1 + (f1d - this._glideStart1) * glideT;
-                if (this._glideStart2 > 0) f2g = this._glideStart2 + (f2d - this._glideStart2) * glideT;
-                if (this._glideStart3 > 0) f3g = this._glideStart3 + (f3d - this._glideStart3) * glideT;
-            }
-
             // FM algorithm routing
             //  0: 2→1     (osc2 mod osc1)
             //  1: 3→1     (osc3 mod osc1)
             //  2: 3→2→1   (cascade — default)
             //  3: 2+3→1   (both mod osc1)
             //  4: 2↔1     (cross: osc2→osc1, osc1→osc2)
-            let f1fm = f1g, f2fm = f2g;
+            let f1fm = f1d, f2fm = f2d;
             if (!bypassFm && fmAmount > 0.001) {
-                const rawO2 = this._v(w2, this.phase2, f2g / sr);
-                const rawO3 = this._v(w3, this.phase3, f3g / sr);
+                const rawO2 = this._v(w2, this.phase2, f2d / sr);
+                const rawO3 = this._v(w3, this.phase3, f3d / sr);
                 const fmDepth = fmAmount * 1000;
                 if (fmAlgo === 0) {
-                    f1fm = f1g + rawO2 * fmDepth;
+                    f1fm = f1d + rawO2 * fmDepth;
                 } else if (fmAlgo === 1) {
-                    f1fm = f1g + rawO3 * fmDepth;
+                    f1fm = f1d + rawO3 * fmDepth;
                 } else if (fmAlgo === 2) {
-                    f1fm = f1g + rawO2 * fmDepth;
-                    f2fm = f2g + rawO3 * fmDepth;
+                    f1fm = f1d + rawO2 * fmDepth;
+                    f2fm = f2d + rawO3 * fmDepth;
                 } else if (fmAlgo === 3) {
-                    f1fm = f1g + (rawO2 + rawO3) * fmDepth;
+                    f1fm = f1d + (rawO2 + rawO3) * fmDepth;
                 } else if (fmAlgo === 4) {
-                    const rawO1 = this._v(w1, this.phase1, f1g / sr);
-                    f1fm = f1g + rawO2 * fmDepth;
-                    f2fm = f2g + rawO1 * fmDepth;
+                    const rawO1 = this._v(w1, this.phase1, f1d / sr);
+                    f1fm = f1d + rawO2 * fmDepth;
+                    f2fm = f2d + rawO1 * fmDepth;
                 }
                 if (f1fm < 0) f1fm = 0;
                 if (f2fm < 0) f2fm = 0;
@@ -566,14 +543,14 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             // Advance oscillators (use simple subtract)
             this.phase1 += f1fm / sr;
             this.phase2 += f2fm / sr;
-            this.phase3 += f3g / sr;
+            this.phase3 += f3d / sr;
             if (this.phase1 >= 1) this.phase1 -= 1;
             if (this.phase2 >= 1) this.phase2 -= 1;
             if (this.phase3 >= 1) this.phase3 -= 1;
 
             const o1 = this._v(w1, this.phase1, f1fm / sr) * g1c;
             const o2 = this._v(w2, this.phase2, f2fm / sr) * g2c;
-            const o3 = this._v(w3, this.phase3, f3g / sr) * g3c;
+            const o3 = this._v(w3, this.phase3, f3d / sr) * g3c;
             const oscSum = (o1 + o2 + o3) * oscMix;
 
             // Noise (cheap PRNG) — apply LFO to noise mix

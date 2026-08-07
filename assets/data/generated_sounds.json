@@ -1,7 +1,6 @@
 {
   "BASS0": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -53,7 +52,6 @@
   },
   "BASS1": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -105,7 +103,6 @@
   },
   "BASS2": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -157,7 +154,6 @@
   },
   "BASS3": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -209,7 +205,6 @@
   },
   "BASS4": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -261,7 +256,6 @@
   },
   "SYNTH1": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -313,7 +307,6 @@
   },
   "SYNTH2": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -365,7 +358,6 @@
   },
   "SYNTH3": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -417,7 +409,6 @@
   },
   "SN": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -469,7 +460,6 @@
   },
   "PIANO": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -515,7 +505,6 @@
   },
   "TOM": {
     "masterVolume": 0.35,
-    "slide": 150,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -555,7 +544,6 @@
   },
   "CHH_SYNTH": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 1,
       "filterType": "allpass",
@@ -589,7 +577,6 @@
   },
   "OHH_SYNTH": {
     "masterVolume": 0.35,
-    "slide": 0,
     "noise": {
       "mix": 1,
       "filterType": "allpass",
@@ -623,7 +610,6 @@
   },
   "BELL1": {
     "masterVolume": 0.45,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",
@@ -678,7 +664,6 @@
   },
   "BELL2": {
     "masterVolume": 0.4,
-    "slide": 0,
     "noise": {
       "mix": 0,
       "filterType": "highpass",

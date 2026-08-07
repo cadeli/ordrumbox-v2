@@ -120,7 +120,6 @@ describe('volume comparison — sample vs synth', () => {
         const generatedSounds = {
             BASS1: {
                 masterVolume: 0.35,
-                slide: 0,
                 vco1: { wave: 'sine', octave: 0, detune: 0, gain: 0.8 },
                 vco2: { wave: 'triangle', octave: 0, detune: 0, gain: 0.4 },
                 vco3: { wave: 'sawtooth', octave: 0, detune: 0, gain: 0.15 },

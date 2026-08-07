@@ -32,7 +32,6 @@ const FM_ALGO_ICONS = {
 
 const SYNTH_GROUP_DEFAULTS = {
     masterVolume: 0.8,
-    slide: 0,
     vco1: { gain: 1, octave: 0, detune: 0, wave: 'sine' },
     vco2: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     vco3: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
@@ -48,7 +47,6 @@ const SYNTH_GROUP_DEFAULTS = {
 const VCO_PARAM_DEFS = { gain: { min: 0, max: 1, step: 0.01 }, octave: { min: -4, max: 4, step: 1 }, detune: { min: -100, max: 100, step: 1 } }
 const SYNTH_PARAM_META = Object.fromEntries([
     ['masterVolume', { min: 0, max: 1, step: 0.01, unit: '' }],
-    ['slide', { min: 0, max: 500, step: 1, unit: 'ms' }],
     ...['vco1', 'vco2', 'vco3'].flatMap(vco =>
         Object.entries(VCO_PARAM_DEFS).map(([k, v]) => [`${vco}.${k}`, { ...v, unit: k === 'gain' ? '' : k === 'octave' ? 'oct' : 'ct' }])
     ),
@@ -72,7 +70,7 @@ const SYNTH_PARAM_META = Object.fromEntries([
 
 const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_PARAM_META).filter(k => !k.startsWith('lfo.') && !k.startsWith('lfo2.'))]
 const SYNTH_GROUP_MERGE = {
-    master: ['masterVolume', 'slide']
+    master: ['masterVolume']
 }
 const SYNTH_GROUP_LABELS = {
     master: 'Master',
