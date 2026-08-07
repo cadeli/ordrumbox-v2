@@ -201,6 +201,73 @@ describe('Utils', () => {
             expect(track.loopPointStep).toBe(0)
         })
 
+        it('compacts each track independently when called on multiple tracks', () => {
+            const trackA = {
+                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
+                notes: [
+                    { beat: 0, beatStep: 0, velocity: 0.8 },
+                    { beat: 1, beatStep: 0, velocity: 0.8 },
+                    { beat: 2, beatStep: 0, velocity: 0.8 },
+                    { beat: 3, beatStep: 0, velocity: 0.8 },
+                ]
+            }
+            const trackB = {
+                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
+                notes: [
+                    { beat: 0, beatStep: 1, velocity: 0.6 },
+                    { beat: 1, beatStep: 1, velocity: 0.6 },
+                    { beat: 2, beatStep: 1, velocity: 0.6 },
+                    { beat: 3, beatStep: 1, velocity: 0.6 },
+                ]
+            }
+            const trackC = {
+                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
+                notes: [
+                    { beat: 0, beatStep: 0, velocity: 0.8 },
+                    { beat: 0, beatStep: 2, velocity: 0.6 },
+                    { beat: 1, beatStep: 0, velocity: 0.8 },
+                    { beat: 1, beatStep: 2, velocity: 0.6 },
+                    { beat: 2, beatStep: 0, velocity: 0.8 },
+                    { beat: 2, beatStep: 2, velocity: 0.6 },
+                    { beat: 3, beatStep: 0, velocity: 0.8 },
+                    { beat: 3, beatStep: 2, velocity: 0.6 },
+                ]
+            }
+
+            const resultA = Utils.addLoopToTrackIfPossible(trackA)
+            const resultB = Utils.addLoopToTrackIfPossible(trackB)
+            const resultC = Utils.addLoopToTrackIfPossible(trackC)
+
+            // Track A: 4 notes → 1 note, loop at 4 steps (1 beat)
+            expect(resultA.changed).toBe(true)
+            expect(resultA.loopAtStep).toBe(4)
+            expect(trackA.notes.length).toBe(1)
+            expect(trackA.notes[0].beat).toBe(0)
+            expect(trackA.notes[0].beatStep).toBe(0)
+            expect(trackA.loopPointBeat).toBe(1)
+            expect(trackA.loopPointStep).toBe(0)
+
+            // Track B: 4 notes → 1 note, loop at 4 steps (1 beat)
+            expect(resultB.changed).toBe(true)
+            expect(resultB.loopAtStep).toBe(4)
+            expect(trackB.notes.length).toBe(1)
+            expect(trackB.notes[0].beat).toBe(0)
+            expect(trackB.notes[0].beatStep).toBe(1)
+            expect(trackB.loopPointBeat).toBe(1)
+            expect(trackB.loopPointStep).toBe(0)
+
+            // Track C: 8 notes → 2 notes, loop at 4 steps (1 beat)
+            expect(resultC.changed).toBe(true)
+            expect(resultC.loopAtStep).toBe(4)
+            expect(trackC.notes.length).toBe(2)
+            expect(trackC.loopPointBeat).toBe(1)
+            expect(trackC.loopPointStep).toBe(0)
+
+            // All tracks independent: trackB note step differs from trackA
+            expect(trackB.notes[0].beatStep).toBe(1)
+            expect(trackA.notes[0].beatStep).toBe(0)
+        })
+
         it('returns unchanged if notes are truly non-repeating', () => {
             const track = {
                 nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8,
@@ -211,6 +278,21 @@ describe('Utils', () => {
             }
             const result = Utils.addLoopToTrackIfPossible(track)
             expect(result.changed).toBe(false)
+        })
+
+        it('returns unchanged if track has no notes and loopAtStep stays same', () => {
+            const track = {
+                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 8,
+                notes: []
+            }
+            const originalLoopAtStep = track.loopAtStep
+            const originalLoopPointBeat = track.loopPointBeat
+            const originalLoopPointStep = track.loopPointStep
+            const result = Utils.addLoopToTrackIfPossible(track)
+            expect(result.changed).toBe(false)
+            expect(track.loopAtStep).toBe(originalLoopAtStep)
+            expect(track.loopPointBeat).toBe(originalLoopPointBeat)
+            expect(track.loopPointStep).toBe(originalLoopPointStep)
         })
 
         it('handles invalid track', () => {

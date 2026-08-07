@@ -82,6 +82,15 @@ static TAG = "UTILS"
 
         const currentLoopAtStep = Utils.getTrackLoopAtStep(track)
 
+        if (track.notes.length === 0) {
+            return {
+                changed: false,
+                reason: "no-notes",
+                loopAtStep: currentLoopAtStep,
+                removedNotes: 0
+            }
+        }
+
         for (let loopAtStep = 1; loopAtStep < currentLoopAtStep; loopAtStep++) {
             if (!Utils.trackNotesMatchLoop(track, loopAtStep, trackSteps)) {
                 continue
