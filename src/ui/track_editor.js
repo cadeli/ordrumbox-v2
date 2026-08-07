@@ -1037,6 +1037,11 @@ export default class TrackEditor extends BasePanel {
         this.sync()
     }
 
+    _onLfoSelectBtn(targetKey) {
+        this._selectedLfoTarget = targetKey
+        this.sync()
+    }
+
     _onLfoToggleBtn(targetKey) {
         this._selectedLfoTarget = targetKey
         this._toggleLfoForTarget(targetKey)
