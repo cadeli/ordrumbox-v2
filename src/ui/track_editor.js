@@ -9,6 +9,7 @@ import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
+import { OrTab } from './components/or_tab.js'
 import { fmt, setViewBtn, knobFormat } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
@@ -120,7 +121,11 @@ export default class TrackEditor extends BasePanel {
         this.synthEditor = new SynthEditor(this)
         this._knobs = []
         this._fxKnobs = []
-        this._activeTab = 'fx'
+        this._tab = new OrTab({
+            tabs: TAB_DEFS,
+            defaultTab: 'fx',
+            onChange: () => this.sync()
+        })
         this._noteEditor = null
     }
 
@@ -304,12 +309,7 @@ export default class TrackEditor extends BasePanel {
         this._fxKnobs.forEach(k => k.destroy())
         this._fxKnobs = []
 
-        let tabBarHtml = '<div class="ne-tab-bar">'
-        for (const tab of TAB_DEFS) {
-            const cls = tab.id === this._activeTab ? ' active' : ''
-            tabBarHtml += `<button class="ne-tab-btn${cls}" data-ne-tab="${tab.id}">${tab.label}</button>`
-        }
-        tabBarHtml += '</div>'
+        let tabBarHtml = this._tab.renderBar()
 
         let panelsHtml = ''
 
@@ -374,7 +374,7 @@ export default class TrackEditor extends BasePanel {
         }
 
         for (const tab of TAB_DEFS) {
-            const isHidden = tab.id !== this._activeTab
+            const isHidden = this._tab.isHidden(tab.id)
             const panelFn = TAB_PANEL_MAP[tab.id]
             const content = panelFn ? panelFn() : ''
             panelsHtml += `<div class="ne-tab-panel ${isHidden ? 'ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${content}</div>`
@@ -384,6 +384,7 @@ export default class TrackEditor extends BasePanel {
         if (this._neContainer) {
             this.container.appendChild(this._neContainer)
         }
+        this._tab.bindTo(this.container)
         
         // Mount main sliders
         this._sliders.forEach(s => {
@@ -942,8 +943,6 @@ export default class TrackEditor extends BasePanel {
                 this.synthEditor.openEditor()
             } else if (btn.dataset.action === 'load-sample') {
                 this._onLoadSample()
-            } else if (btn.dataset.neTab) {
-                this._onTabClick(btn.dataset.neTab)
             }
         })
 
@@ -995,12 +994,6 @@ export default class TrackEditor extends BasePanel {
         }
         this.sync()
         playbackEvents.dispatchPatternChange([this._track])
-    }
-
-    _onTabClick(tabId) {
-        if (tabId === this._activeTab) return
-        this._activeTab = tabId
-        this.sync()
     }
 
     _toggleAuto() {

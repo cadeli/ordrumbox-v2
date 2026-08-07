@@ -2,6 +2,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { fmt, pitchToNoteName, knobFormat } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
+import { OrTab } from './components/or_tab.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 
@@ -99,7 +100,11 @@ export default class NoteEditor extends BasePanel {
         this._beatStep = 0
         this._knobs = []
         this._sliders = []
-        this._activeTab = 'triggers'
+        this._tab = new OrTab({
+            tabs: TAB_DEFS,
+            defaultTab: 'triggers',
+            onChange: () => this.sync()
+        })
     }
 
     /** Provide the external container before init so the editor renders into it. */
@@ -251,16 +256,12 @@ export default class NoteEditor extends BasePanel {
             KNOB_PROPS.map(p => `<div data-ne-knob="${p.key}"></div>`).join('')
         }</div>`
 
-        const tabBarHtml = `<div class="ne-tab-bar">${
-            TAB_DEFS.map(t =>
-                `<button class="ne-tab-btn${t.id === this._activeTab ? ' active' : ''}" data-ne-tab="${t.id}">${t.label}</button>`
-            ).join('')
-        }</div>`
+        const tabBarHtml = this._tab.renderBar()
 
         const panelsHtml = TAB_DEFS.map(tab => {
             const g = GROUPS.find(gr => gr.id === tab.id)
             if (!g) return ''
-            const isHidden = tab.id !== this._activeTab
+            const isHidden = this._tab.isHidden(tab.id)
             const groupContent = g.props.map(p => this._renderProp(p, arpState, scaleKeys)).join('')
             return `<div class="ne-tab-panel${isHidden ? ' ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${groupContent}</div>`
         }).join('')
@@ -269,6 +270,7 @@ export default class NoteEditor extends BasePanel {
 
         this._mountKnobs()
         this._mountSliders(arpState)
+        this._tab.bindTo(this.container)
         this._bindEvents()
     }
 
@@ -345,9 +347,6 @@ export default class NoteEditor extends BasePanel {
 
     /** @private */
     _bindEvents() {
-        this.container.querySelectorAll('[data-ne-tab]').forEach(btn => {
-            btn.addEventListener('click', () => this._onTabClick(btn.dataset.neTab))
-        })
         this.container.querySelectorAll('select').forEach(sel => {
             sel.addEventListener('change', () => this._onSelect(sel))
         })
@@ -369,12 +368,6 @@ export default class NoteEditor extends BasePanel {
 
     /** No-op — positioning is handled by the parent container (track editor). */
     reposition() {}
-
-    _onTabClick(tabId) {
-        if (tabId === this._activeTab) return
-        this._activeTab = tabId
-        this.sync()
-    }
 
     /** Builds note.arp from scale intervals + mode, or nulls it if range <= 0. */
     _composeArp() {
