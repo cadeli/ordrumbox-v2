@@ -598,7 +598,7 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         editor._track = makeTrack({
             filterFreq: 632,
-            filterFreqLfo: { freq: 0, min: 0.3, max: 0.3, phase: 0 },
+            filterFreqLfo: { freq: 0, min: 158, max: 158, phase: 0 },
         })
         appState.patterns = [{ tracks: [editor._track], nbBeats: 4 }]
         appState.selectedPatternNum = 0
@@ -615,7 +615,7 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         editor._track = makeTrack({
             filterFreq: 632,
-            filterFreqLfo: { freq: 0, min: 0.8, max: 0.8, phase: 0 },
+            filterFreqLfo: { freq: 0, min: 5000, max: 5000, phase: 0 },
         })
         appState.patterns = [{ tracks: [editor._track], nbBeats: 4 }]
         appState.selectedPatternNum = 0

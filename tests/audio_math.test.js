@@ -99,26 +99,22 @@ describe('audioMath - computeLfoValue (replace semantics, controlKey normalizati
         }
     })
 
-    it('normalizes filterFreq LFO config from Hz to [0,1] when min/max > 1', () => {
-        // 20000 Hz → normalized = log10(20000/20)/3 = 1.0
-        // 20 Hz    → normalized = log10(20/20)/3    = 0.0
-        // phase 0 maps to -0.25 in getLfoWaveformValue, sin(2π*-0.25) = -1 → min
+    it('filterFreq LFO outputs physical Hz values directly', () => {
+        // phase 0 = trough → output = min
         const lfo = { freq: 1, min: 20, max: 20000, phase: 0 }
-        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterFreq')).toBe(0)
+        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterFreq')).toBe(20)
     })
 
-    it('keeps filterFreq LFO config in [0,1] when already normalized', () => {
+    it('filterFreq LFO min/max in any range outputs physical values', () => {
         const lfo = { freq: 1, min: 0.2, max: 0.8, phase: 0 }
-        // phase 0 = trough → min of normalized range = 0.2
+        // phase 0 = trough → min of range = 0.2
         expect(computeLfoValue(lfo, 0, TICK * 4, 'filterFreq')).toBe(0.2)
     })
 
-    it('normalizes filterQ LFO config from Q to [0,1] when min/max > 1', () => {
-        // Q=0.707 → normalized = (0.707-0.707)/18 = 0
-        // Q=18.707 → normalized = (18.707-0.707)/18 = 1
-        // phase 0 = trough → min of normalized range = 0
+    it('filterQ LFO outputs physical Q values directly', () => {
+        // phase 0 = trough → output = min
         const lfo = { freq: 1, min: 0.707, max: 18.707, phase: 0 }
-        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterQ')).toBe(0)
+        expect(computeLfoValue(lfo, 0, TICK * 4, 'filterQ')).toBeCloseTo(0.707, 2)
     })
 
     it('handles string-typed freq and min/max (as stored in JSON)', () => {

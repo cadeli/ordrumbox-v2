@@ -111,7 +111,7 @@ export default class MfStrip {
         this.currentFilterType = type ?? 'allpass';
 
         if (this.currentFilterType === 'allpass') {
-            params.get('cutoff')?.setTargetAtTime(1, time, RAMP_TIME);
+            params.get('cutoff')?.setTargetAtTime(20000, time, RAMP_TIME);
             return;
         }
 
@@ -119,12 +119,12 @@ export default class MfStrip {
         params.get('filterMode')?.setTargetAtTime(mode, time, RAMP_TIME);
 
         if (freq !== undefined) {
-            const fFreq = Utils.hzToNormalizedTrackFilterFreq(freq);
+            const fFreq = Utils.toFiniteNumber(freq, 20, 'freq');
             params.get('cutoff')?.setTargetAtTime(fFreq, time, RAMP_TIME);
         }
 
         if (q !== undefined) {
-            const fQ = Utils.valueToNormalizedTrackFilterQ(q);
+            const fQ = Utils.toFiniteNumber(q, 0.707, 'q');
             params.get('q')?.setTargetAtTime(fQ, time, RAMP_TIME);
         }
     }

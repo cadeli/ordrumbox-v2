@@ -61,20 +61,12 @@ export function computeNoteRatio(fpitch) {
 export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null, audioTime = null, bpm = null) {
     if (!lfo) return 0
     const freqVal = Utils.toFiniteNumber(parseFloat(lfo.freq), 1, 'lfo.freq')
-    let min = Utils.toFiniteNumber(parseFloat(lfo.min), 0, 'lfo.min')
-    let max = Utils.toFiniteNumber(parseFloat(lfo.max), 1, 'lfo.max')
+    const min = Utils.toFiniteNumber(parseFloat(lfo.min), 0, 'lfo.min')
+    const max = Utils.toFiniteNumber(parseFloat(lfo.max), 1, 'lfo.max')
     const phase = Utils.toFiniteNumber(parseFloat(lfo.phase), 0, 'lfo.phase')
     const waveName = lfo.type ?? lfo.waveform ?? 'sine'
     let wave = Utils.waveList.indexOf(waveName)
     if (wave === -1) wave = Utils.toFiniteNumber(parseFloat(waveName), 0, 'waveName')
-
-    if (controlKey === 'filterFreq' && (min > 1 || max > 1)) {
-        min = Utils.hzToNormalizedTrackFilterFreq(min)
-        max = Utils.hzToNormalizedTrackFilterFreq(max)
-    } else if (controlKey === 'filterQ' && (min > 1 || max > 1)) {
-        min = Utils.valueToNormalizedTrackFilterQ(min)
-        max = Utils.valueToNormalizedTrackFilterQ(max)
-    }
 
     // Frequency in cycles per 4 beats. 1.0 = 1 cycle per 4 beats.
     // Clamp to [0, 2] as per requirements.

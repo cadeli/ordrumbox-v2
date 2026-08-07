@@ -38,7 +38,7 @@
       "depth": 0
     },
     "enveloppe": {
-      "attack": 0.003,
+      "attack": 0.03,
       "decay": 0.25,
       "sustain": 0,
       "release": 0.12
@@ -89,7 +89,7 @@
       "depth": 0.12
     },
     "enveloppe": {
-      "attack": 0.006,
+      "attack": 0.06,
       "decay": 0.28,
       "sustain": 0.7,
       "release": 0.22
@@ -191,7 +191,7 @@
       "depth": 0
     },
     "enveloppe": {
-      "attack": 0.005,
+      "attack": 0.03,
       "decay": 0.18,
       "sustain": 0.5,
       "release": 0.08
@@ -242,7 +242,7 @@
       "depth": 0.05
     },
     "enveloppe": {
-      "attack": 0.01,
+      "attack": 0.03,
       "decay": 0.5,
       "sustain": 0.2,
       "release": 0.12
@@ -446,7 +446,7 @@
       "depth": 0.02
     },
     "enveloppe": {
-      "attack": 0.005,
+      "attack": 0.03,
       "decay": 0.08,
       "sustain": 0,
       "release": 0.05
@@ -491,7 +491,7 @@
       "filterEnvelopeAmount": 0.05
     },
     "enveloppe": {
-      "attack": 0.002,
+      "attack": 0.02,
       "decay": 1.0,
       "sustain": 0.05,
       "release": 0.5
@@ -530,7 +530,7 @@
       "filterEnvelopeAmount": 0
     },
     "enveloppe": {
-      "attack": 0.005,
+      "attack": 0.05,
       "decay": 0.4,
       "sustain": 0,
       "release": 0.2
@@ -563,7 +563,7 @@
       "wave": "square"
     },
     "enveloppe": {
-      "attack": 0.002,
+      "attack": 0.02,
       "decay": 0.05,
       "sustain": 0,
       "release": 0.05
@@ -596,7 +596,7 @@
       "wave": "square"
     },
     "enveloppe": {
-      "attack": 0.005,
+      "attack": 0.05,
       "decay": 0.3,
       "sustain": 0.1,
       "release": 0.2
@@ -650,7 +650,7 @@
       "depth": 0
     },
     "enveloppe": {
-      "attack": 0.003,
+      "attack": 0.03,
       "decay": 0.15,
       "sustain": 0,
       "release": 0.08
@@ -704,7 +704,7 @@
       "depth": 0
     },
     "enveloppe": {
-      "attack": 0.005,
+      "attack": 0.05,
       "decay": 0.8,
       "sustain": 0.15,
       "release": 0.4

@@ -41,10 +41,8 @@ const FILTER_TYPE_ICONS = {
 
 const FILTER_PROPS = [
     { key: 'filterType', label: 'Type', type: 'icon', options: ['lowpass', 'highpass', 'bandpass'] },
-    { key: 'filterFreq', label: 'Freq', min: 20, max: 20000, step: 1, lfo: 'filterFreqLfo',
-      denormalize: v => Utils.normalizedTrackFilterFreqToHz(v) },
-    { key: 'filterQ', label: 'Q', min: 0.707, max: 18.707, step: 0.01, lfo: 'filterQLfo',
-      denormalize: v => Utils.normalizedTrackFilterQToValue(v) }
+    { key: 'filterFreq', label: 'Freq', min: 20, max: 20000, step: 1, lfo: 'filterFreqLfo' },
+    { key: 'filterQ', label: 'Q', min: 0.707, max: 18.707, step: 0.01, lfo: 'filterQLfo' }
 ]
 
 const FX_DEFS = [

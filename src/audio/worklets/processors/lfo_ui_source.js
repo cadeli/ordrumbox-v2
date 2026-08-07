@@ -21,22 +21,12 @@ function _lfoWf(phase, wave) {
 function _computeLfo(lfo, tick, nbTicks, key) {
     if (!lfo) return 0;
     const f = Math.min(2, _toFinite(lfo.freq, 1));
-    let min = _toFinite(lfo.min, 0);
-    let max = _toFinite(lfo.max, 1);
+    const min = _toFinite(lfo.min, 0);
+    const max = _toFinite(lfo.max, 1);
     const ph = _toFinite(lfo.phase, 0);
     const wn = lfo.type ?? lfo.waveform ?? 'sine';
     let w = WAVE_LIST.indexOf(wn);
     if (w === -1) w = _toFinite(wn, 0);
-
-    if (key === 'filterFreq' && (min > 1 || max > 1)) {
-        min = Math.log10(Math.max(20, Math.min(20000, min)) / 20) / 3;
-        max = Math.log10(Math.max(20, Math.min(20000, max)) / 20) / 3;
-    } else if (key === 'filterQ' && (min > 1 || max > 1)) {
-        min = Math.max(0.707, Math.min(18.707, min));
-        max = Math.max(0.707, Math.min(18.707, max));
-        min = (min - 0.707) / 18;
-        max = (max - 0.707) / 18;
-    }
 
     const cp = (tick / 128) * f + ph;
     let v = _lfoWf(cp, w);

@@ -66,30 +66,6 @@ describe('Utils', () => {
     })
 
     describe('filter normalization', () => {
-        describe('normalizedTrackFilterFreqToHz', () => {
-            it('0 → 20Hz', () => {
-                expect(Utils.normalizedTrackFilterFreqToHz(0)).toBe(20)
-            })
-
-            it('1 → 20000Hz', () => {
-                expect(Utils.normalizedTrackFilterFreqToHz(1)).toBe(20000)
-            })
-
-        it('0.5 → 632Hz', () => {
-            expect(Utils.normalizedTrackFilterFreqToHz(0.5)).toBe(632)
-        })
-        })
-
-        describe('normalizedTrackFilterQToValue', () => {
-            it('0 → 0.707', () => {
-                expect(Utils.normalizedTrackFilterQToValue(0)).toBe(0.707)
-            })
-
-            it('1 → 18.707', () => {
-                expect(Utils.normalizedTrackFilterQToValue(1)).toBeCloseTo(18.707, 3)
-            })
-        })
-
         describe('normalizedSynthFilterFreqToHz', () => {
             it('0 → 50Hz', () => {
                 expect(Utils.normalizedSynthFilterFreqToHz(0)).toBe(50)

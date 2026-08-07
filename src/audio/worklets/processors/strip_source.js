@@ -58,9 +58,9 @@ class _DelayLine {
 class StripProcessor extends AudioWorkletProcessor {
     static get parameterDescriptors() {
         return [
-            // Filter (expecting normalized 0..1 values)
-            { name: 'cutoff', defaultValue: 1, minValue: 0, maxValue: 1 },
-            { name: 'q',      defaultValue: 0, minValue: 0, maxValue: 1 },
+            // Filter (expecting physical Hz / Q values)
+            { name: 'cutoff', defaultValue: 20000, minValue: 20, maxValue: 20000 },
+            { name: 'q',      defaultValue: 0.707, minValue: 0.707, maxValue: 18.707 },
             { name: 'filterMode', defaultValue: 0, minValue: 0, maxValue: 3 }, // 0:LP, 1:HP, 2:BP, 3:Notch
             // Saturation
             { name: 'satType', defaultValue: 0, minValue: 0, maxValue: 2 },
@@ -146,10 +146,8 @@ class StripProcessor extends AudioWorkletProcessor {
 
         for (let i = 0; i < frames; i++) {
             // --- 1. Filter (Stereo TPT SVF) ---
-            const normCut = pCut < 0 ? 0 : (pCut > 1 ? 1 : pCut);
-            const fHz = 20 * Math.pow(1000, normCut);
-            const normQ = pQ < 0 ? 0 : (pQ > 1 ? 1 : pQ);
-            const Q = normQ * 18 + 0.707;
+            const fHz = pCut < 20 ? 20 : (pCut > 20000 ? 20000 : pCut);
+            const Q = pQ < 0.707 ? 0.707 : (pQ > 18.707 ? 18.707 : pQ);
 
             const g = Math.tan(PI * fHz / sr), k = 1 / Q;
             const a1 = 1 / (1 + g * (g + k)), a2 = g * a1, a3 = g * a2;

@@ -117,11 +117,11 @@ describe('TrackEditor filterFreq display', () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         const editor = new TrackEditor()
         editor.init()
-        // LFO with freq=0 → fixed output = bias + ((raw+1)/2)*0 = 0.3
+        // LFO with freq=0 → fixed output = min value = 158 Hz
         editor._track = {
             name: 'KICK',
             filterFreq: 632,
-            filterFreqLfo: { freq: 0, min: 0.3, max: 0.3, phase: 0 },
+            filterFreqLfo: { freq: 0, min: 158, max: 158, phase: 0 },
         }
         editor._activeTab = 'fx'
         editor._activeFxTab = 3
@@ -130,7 +130,6 @@ describe('TrackEditor filterFreq display', () => {
         editor.sync()
         editor._updateLfoSliders()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
-        // 0.3 (normalized LFO output) → Utils.normalizedTrackFilterFreqToHz(0.3) = floor(20 * 1000^0.3) = 158
         expect(valEl.textContent).toBe('158Hz')
     })
 })

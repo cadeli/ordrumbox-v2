@@ -1,4 +1,3 @@
-import { FILTER_FREQ_MIN, FILTER_FREQ_MAX } from './constants.js'
 import { TRACK_DEFAULTS, TRACK_RECALCULATED } from '../model/track_schema.js'
 import { NOTE_DEFAULTS, NOTE_RECALCULATED, NOTE_POSITION_KEYS } from './note_schema.js'
 import { logger } from "./logger.js"
@@ -227,19 +226,6 @@ static TAG = "UTILS"
 
     static semiToneToPitch = (semiTone) => Math.pow(2, semiTone / 12);
 
-    static normalizedTrackFilterFreqToHz = (value) => {
-        const v = Utils.toFiniteNumber(value, 0, 'filterFreq')
-        return Math.floor(FILTER_FREQ_MIN * Math.pow(1000, v))
-    }
-    static hzToNormalizedTrackFilterFreq = (hz) => {
-        const h = Math.max(FILTER_FREQ_MIN, Math.min(FILTER_FREQ_MAX, Utils.toFiniteNumber(hz, 0, 'hz')))
-        return Math.log10(h / FILTER_FREQ_MIN) / 3
-    }
-    static normalizedTrackFilterQToValue = (value) => (Utils.toFiniteNumber(value, 0, 'filterQ') * 18) + 0.707
-    static valueToNormalizedTrackFilterQ = (q) => {
-        const val = Math.max(0.707, Math.min(18.707, Utils.toFiniteNumber(q, 0.707, 'filterQ')))
-        return (val - 0.707) / 18
-    }
     static normalizedSynthFilterFreqToHz = (value) => Math.floor((2000 * Utils.toFiniteNumber(value, 0, 'synthFilterFreq')) + 50)
     static normalizedSynthFilterQToValue = (value) => (20 * Utils.toFiniteNumber(value, 0, 'synthFilterQ')) + 1
 

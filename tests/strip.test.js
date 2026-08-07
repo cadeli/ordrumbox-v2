@@ -50,9 +50,9 @@ describe('MfStrip (Unified Worklet)', () => {
         expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalled()
         expect(params.get('filterMode').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
 
-        // allpass sets cutoff to 1 (normalized), which maps to 20kHz in the worklet.
+        // allpass sets cutoff to 20000 (fully open).
         strip.updateFilter('allpass')
-        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
+        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(20000, expect.any(Number), expect.any(Number))
     })
 
     it('updateFilter skips cutoff when freq is undefined', async () => {
@@ -86,33 +86,27 @@ describe('MfStrip (Unified Worklet)', () => {
         expect(params.get('filterMode').setTargetAtTime).toHaveBeenCalled()
     })
 
-    it('updateFilter normalizes physical Hz/Q to 0..1 for worklet', async () => {
+    it('updateFilter passes physical Hz/Q directly to worklet', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         const params = strip.stripNode.parameters
 
-        // freq=20 Hz → normalized 0 (log10(20/20)/3 = 0)
         strip.updateFilter('lowpass', 20, 0.707)
-        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
-        // Q=0.707 → normalized 0 ((0.707 - 0.707) / 18 = 0)
-        expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(20, expect.any(Number), expect.any(Number))
+        expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(0.707, expect.any(Number), expect.any(Number))
 
         params.get('cutoff').setTargetAtTime.mockClear()
         params.get('q').setTargetAtTime.mockClear()
 
-        // freq=20000 Hz → normalized 1
         strip.updateFilter('lowpass', 20000, 18.707)
-        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
-        // Q=18.707 → normalized 1
-        expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
+        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(20000, expect.any(Number), expect.any(Number))
+        expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(18.707, expect.any(Number), expect.any(Number))
 
         params.get('cutoff').setTargetAtTime.mockClear()
         params.get('q').setTargetAtTime.mockClear()
 
-        // mid values: freq → exactly 0.5 norm, Q=9.707 → exactly 0.5 norm
-        const midHz = 20 * Math.pow(1000, 0.5)
-        strip.updateFilter('lowpass', midHz, 9.707)
-        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
-        expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
+        strip.updateFilter('lowpass', 1000, 5)
+        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(1000, expect.any(Number), expect.any(Number))
+        expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(5, expect.any(Number), expect.any(Number))
     })
 
     it('updateSaturation sets satMix and satDrive', async () => {
