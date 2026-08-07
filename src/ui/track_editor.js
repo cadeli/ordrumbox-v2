@@ -827,7 +827,7 @@ export default class TrackEditor extends BasePanel {
         content += `</div>
             <div class="ne-row">
                 <label>Type</label>
-                <select data-lfo-type-select>
+                <select data-lfo-type-select="1">
                     ${Utils.waveList.map(w => `<option value="${w}" ${w === type ? 'selected' : ''}>${w}</option>`).join('')}
                 </select>
             </div>

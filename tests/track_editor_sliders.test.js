@@ -258,6 +258,216 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     })
 })
 
+describe('TrackEditor — modulation sub-tab selection & toggle', () => {
+    let editor
+
+    beforeEach(() => {
+        setup()
+        editor = new TrackEditor()
+        editor.init()
+    })
+
+    function showModTab(track) {
+        editor._track = track
+        editor._tab.setActive('mod')
+        editor.sync()
+    }
+
+    it('renders all LFO sub-tab buttons (filterFreq, filterQ, Vel, Pan, Pitch)', () => {
+        showModTab(makeTrack())
+        const btns = editor.container.querySelectorAll('[data-lfo-select-btn]')
+        const keys = [...btns].map(b => b.dataset.lfoSelectBtn)
+        expect(keys).toEqual(['filterFreq', 'filterQ', 'velocity', 'pan', 'pitch'])
+    })
+
+    it('clicking a sub-tab button selects it (active class moves)', () => {
+        showModTab(makeTrack())
+        editor.container.querySelector('[data-lfo-select-btn="pan"]').click()
+
+        const panBtn = editor.container.querySelector('[data-lfo-select-btn="pan"]').closest('.te-mod-btn')
+        expect(panBtn.classList.contains('active')).toBe(true)
+
+        const velBtn = editor.container.querySelector('[data-lfo-select-btn="velocity"]').closest('.te-mod-btn')
+        expect(velBtn.classList.contains('active')).toBe(false)
+    })
+
+    it('clicking a sub-tab button updates _selectedLfoTarget', () => {
+        showModTab(makeTrack())
+        editor.container.querySelector('[data-lfo-select-btn="pitch"]').click()
+        expect(editor._selectedLfoTarget).toBe('pitch')
+    })
+
+    it('clicking a sub-tab shows that target LFO controls (freq, range, phase)', () => {
+        const track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1.5, min: 0.1, max: 0.9, phase: 0.5 } })
+        showModTab(track)
+
+        editor.container.querySelector('[data-lfo-select-btn="velocity"]').click()
+
+        const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
+        expect(freqInput).not.toBeNull()
+        expect(freqInput.value).toBe('1.5')
+    })
+
+    it('clicking different sub-tabs switches the displayed controls', () => {
+        const track = makeTrack({
+            velocity: 0.5, velocityLfo: { freq: 1.8, min: 0, max: 1, phase: 0 },
+            filterFreq: 0.5, filterFreqLfo: { freq: 0.5, min: 0.2, max: 0.8, phase: 0.3 },
+        })
+        showModTab(track)
+
+        editor.container.querySelector('[data-lfo-select-btn="filterFreq"]').click()
+        const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
+        expect(freqInput.value).toBe('0.5')
+
+        editor.container.querySelector('[data-lfo-select-btn="velocity"]').click()
+        const freqInput2 = editor.container.querySelector('input[data-lfo-key="freq"]')
+        expect(freqInput2.value).toBe('1.8')
+    })
+
+    it('clicking the toggle LED turns LFO on/off for the target', () => {
+        const track = makeTrack({ velocity: 0.5 })
+        showModTab(track)
+
+        expect(track.velocityLfo).toBeUndefined()
+
+        editor.container.querySelector('[data-lfo-toggle-btn="velocity"]').click()
+
+        expect(track.velocityLfo).toBeDefined()
+        expect(track.velocityLfo.type).toBe('sine')
+        expect(track.velocityLfo.freq).toBe(1)
+
+        editor.container.querySelector('[data-lfo-toggle-btn="velocity"]').click()
+        expect(track.velocityLfo).toBeUndefined()
+    })
+
+    it('toggle button fires dispatchPatternChange', () => {
+        const track = makeTrack({ velocity: 0.5 })
+        showModTab(track)
+        const fn = vi.fn()
+        playbackEvents.onPatternChange.push(fn)
+
+        editor.container.querySelector('[data-lfo-toggle-btn="velocity"]').click()
+        expect(fn).toHaveBeenCalled()
+    })
+
+    it('toggle button also selects the target and shows its controls', () => {
+        const track = makeTrack({
+            velocity: 0.5,
+            filterFreq: 0.5
+        })
+        showModTab(track)
+
+        editor.container.querySelector('[data-lfo-toggle-btn="filterFreq"]').click()
+
+        expect(editor._selectedLfoTarget).toBe('filterFreq')
+        expect(track.filterFreqLfo).toBeDefined()
+        const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
+        expect(freqInput.value).toBe('1')
+    })
+
+    it('changing LFO freq via slider updates track data and display', () => {
+        const track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 } })
+        showModTab(track)
+
+        editor.container.querySelector('[data-lfo-select-btn="velocity"]').click()
+        const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
+        freqInput.value = '1.5'
+        freqInput.dispatchEvent(new Event('input', { bubbles: true }))
+
+        expect(track.velocityLfo.freq).toBe(1.5)
+        expect(freqInput.value).toBe('1.5')
+        expect(freqInput.nextElementSibling.textContent).toBe('1.5')
+    })
+
+    it('changing LFO freq fires dispatchTrackParamChange', () => {
+        const track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 } })
+        showModTab(track)
+        const fn = vi.fn()
+        playbackEvents.onTrackParamChange.push(fn)
+
+        editor.container.querySelector('[data-lfo-select-btn="velocity"]').click()
+        const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
+        freqInput.value = '1.2'
+        freqInput.dispatchEvent(new Event('input', { bubbles: true }))
+
+        expect(fn).toHaveBeenCalled()
+    })
+
+    it('changing LFO min/max range updates track data and display', () => {
+        const track = makeTrack({ pan: 0, panLfo: { freq: 1, min: -0.5, max: 0.5, phase: 0 } })
+        showModTab(track)
+
+        editor.container.querySelector('[data-lfo-select-btn="pan"]').click()
+        const minInput = editor.container.querySelector('input[data-lfo-key="min"]')
+        minInput.value = '-0.8'
+        minInput.dispatchEvent(new Event('input', { bubbles: true }))
+
+        expect(track.panLfo.min).toBe(-0.8)
+        const rangeRow = minInput.closest('.ne-row')
+        const display = rangeRow.querySelector('.ne-val')
+        expect(display.textContent).toBe('-0.8..0.5')
+    })
+
+    it('changing LFO phase via slider updates track data and display', () => {
+        const track = makeTrack({ pitch: 0, pitchLfo: { freq: 1, min: 0, max: 1, phase: 0 } })
+        showModTab(track)
+
+        editor.container.querySelector('[data-lfo-select-btn="pitch"]').click()
+        const phaseInput = editor.container.querySelector('input[data-lfo-key="phase"]')
+        phaseInput.value = '0.75'
+        phaseInput.dispatchEvent(new Event('input', { bubbles: true }))
+
+        expect(track.pitchLfo.phase).toBe(0.75)
+        expect(phaseInput.nextElementSibling.textContent).toBe('0.75')
+    })
+
+    it('LFO type select updates track data', () => {
+        const track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 } })
+        showModTab(track)
+
+        editor.container.querySelector('[data-lfo-select-btn="velocity"]').click()
+        const typeSelect = editor.container.querySelector('select[data-lfo-type-select]')
+        typeSelect.value = 'square'
+        typeSelect.dispatchEvent(new Event('change', { bubbles: true }))
+
+        expect(track.velocityLfo.type).toBe('square')
+
+        const typeSelectAfter = editor.container.querySelector('select[data-lfo-type-select]')
+        expect(typeSelectAfter.value).toBe('square')
+    })
+
+    it('LED shows "on" class when the LFO is active', () => {
+        const track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 } })
+        showModTab(track)
+
+        const led = editor.container.querySelector('[data-lfo-toggle-btn="velocity"]')
+        expect(led.classList.contains('on')).toBe(true)
+
+        const pitchLed = editor.container.querySelector('[data-lfo-toggle-btn="pitch"]')
+        expect(pitchLed.classList.contains('on')).toBe(false)
+    })
+
+    it('full cycle: select sub-tab → toggle on → change freq → verify display → toggle off', () => {
+        const track = makeTrack({ velocity: 0.5 })
+        showModTab(track)
+
+        editor.container.querySelector('[data-lfo-select-btn="velocity"]').click()
+        expect(editor._selectedLfoTarget).toBe('velocity')
+
+        editor.container.querySelector('[data-lfo-toggle-btn="velocity"]').click()
+        expect(track.velocityLfo).toBeDefined()
+
+        const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
+        freqInput.value = '1.8'
+        freqInput.dispatchEvent(new Event('input', { bubbles: true }))
+        expect(track.velocityLfo.freq).toBe(1.8)
+        expect(freqInput.nextElementSibling.textContent).toBe('1.8')
+
+        editor.container.querySelector('[data-lfo-toggle-btn="velocity"]').click()
+        expect(track.velocityLfo).toBeUndefined()
+    })
+})
+
 describe('TrackEditor — _updateLfoSliders uses setValue', () => {
     let editor
 
