@@ -196,8 +196,8 @@ export default class AudioEngine {
             }
 
             if (track.filterFreqLfo) {
-                const baseFreq = track.filterFreq ?? 1
-                const normBaseFreq = baseFreq > 1 ? Utils.hzToNormalizedTrackFilterFreq(baseFreq) : Math.max(0, Math.min(1, baseFreq))
+                const baseFreq = track.filterFreq ?? 20
+                const normBaseFreq = Utils.hzToNormalizedTrackFilterFreq(baseFreq)
                 const finalFreq = Math.max(0, Math.min(1, normBaseFreq + lfoValues.filterFreq))
                 strip.stripNode.parameters.get('cutoff')?.setTargetAtTime(finalFreq, atTime, t)
             }

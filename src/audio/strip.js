@@ -119,8 +119,7 @@ export default class MfStrip {
         params.get('filterMode')?.setTargetAtTime(mode, time, RAMP_TIME);
 
         if (freq !== undefined) {
-            let fFreq = Utils.toFiniteNumber(freq, 0, 'freq');
-            if (fFreq > 1) fFreq = Utils.hzToNormalizedTrackFilterFreq(fFreq);
+            const fFreq = Utils.hzToNormalizedTrackFilterFreq(freq);
             params.get('cutoff')?.setTargetAtTime(fFreq, time, RAMP_TIME);
         }
 

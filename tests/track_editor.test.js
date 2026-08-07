@@ -87,42 +87,40 @@ describe('TrackEditor filterFreq display', () => {
     })
 
     it('20 Hz is rendered as "20Hz"', () => {
-        expect(getFreqDisplay({ name: 'KICK', filterFreq: 0 })).toBe('20Hz')
+        expect(getFreqDisplay({ name: 'KICK', filterFreq: 20 })).toBe('20Hz')
     })
 
-    it('mid frequency (~632 Hz) is rendered as "632Hz"', () => {
-        // normalized 0.5 → 632 Hz (per Utils.normalizedTrackFilterFreqToHz)
-        expect(getFreqDisplay({ name: 'KICK', filterFreq: 0.5 })).toBe('632Hz')
+    it('632 Hz is rendered as "632Hz"', () => {
+        expect(getFreqDisplay({ name: 'KICK', filterFreq: 632 })).toBe('632Hz')
     })
 
     it('20 kHz is rendered as "20.0k"', () => {
-        expect(getFreqDisplay({ name: 'KICK', filterFreq: 1 })).toBe('20.0k')
+        expect(getFreqDisplay({ name: 'KICK', filterFreq: 20000 })).toBe('20.0k')
     })
 
     it('_onSlider formats the display in Hz while dragging', () => {
         const editor = new TrackEditor()
         editor.init()
-        editor._track = { name: 'KICK', filterFreq: 0 }
+        editor._track = { name: 'KICK', filterFreq: 20 }
         editor._activeTab = 'fx'
         editor._activeFxTab = 3
         editor.sync()
         const knob = editor._fxKnobs.find(k => k._key === 'filterFreq')
-        knob.setValue(0.5)
-        knob._onChange?.(0.5, 'filterFreq')
-        expect(editor._track.filterFreq).toBe(0.5)
+        knob.setValue(632)
+        knob._onChange?.(632, 'filterFreq')
+        expect(editor._track.filterFreq).toBe(632)
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         expect(valEl.textContent).toBe('632Hz')
     })
 
     it('_updateLfoSliders replaces base with the LFO value (Hz)', () => {
-        // Replace semantics: when LFO is on, the LFO value IS the value (not added to base).
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         const editor = new TrackEditor()
         editor.init()
         // LFO with freq=0 → fixed output = bias + ((raw+1)/2)*0 = 0.3
         editor._track = {
             name: 'KICK',
-            filterFreq: 0.5,
+            filterFreq: 632,
             filterFreqLfo: { freq: 0, min: 0.3, max: 0.3, phase: 0 },
         }
         editor._activeTab = 'fx'
@@ -132,7 +130,7 @@ describe('TrackEditor filterFreq display', () => {
         editor.sync()
         editor._updateLfoSliders()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
-        // 0.3 (normalized) → Utils.normalizedTrackFilterFreqToHz(0.3) = floor(20 * 1000^0.3) = 158
+        // 0.3 (normalized LFO output) → Utils.normalizedTrackFilterFreqToHz(0.3) = floor(20 * 1000^0.3) = 158
         expect(valEl.textContent).toBe('158Hz')
     })
 })

@@ -109,23 +109,6 @@ describe('Utils', () => {
                 expect(Utils.normalizedSynthFilterQToValue(1)).toBe(21)
             })
         })
-
-        describe('normalizeTrackFilterFreqValue', () => {
-            it('value <= 1 → converts to Hz', () => {
-                expect(Utils.normalizeTrackFilterFreqValue(0)).toBe(20)
-                expect(Utils.normalizeTrackFilterFreqValue(1)).toBe(20000)
-            })
-
-            it('value > 1 → returns as-is', () => {
-                expect(Utils.normalizeTrackFilterFreqValue(440)).toBe(440)
-                expect(Utils.normalizeTrackFilterFreqValue(1000)).toBe(1000)
-            })
-
-            it('invalid value → 20', () => {
-                expect(Utils.normalizeTrackFilterFreqValue('abc')).toBe(20)
-                expect(Utils.normalizeTrackFilterFreqValue(NaN)).toBe(20)
-            })
-        })
     })
 
     describe('getRandomKey', () => {

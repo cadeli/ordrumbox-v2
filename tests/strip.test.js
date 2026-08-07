@@ -46,7 +46,7 @@ describe('MfStrip (Unified Worklet)', () => {
     it('updateFilter sets cutoff, filterMode and allpass-high-cutoff', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         const params = strip.stripNode.parameters
-        strip.updateFilter('highpass', 0.5, 0.5)
+        strip.updateFilter('highpass', 1000, 1)
         expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalled()
         expect(params.get('filterMode').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
 
@@ -59,7 +59,7 @@ describe('MfStrip (Unified Worklet)', () => {
         const strip = await MfStrip.create('KICK', ctx)
         const params = strip.stripNode.parameters
         params.get('cutoff').setTargetAtTime.mockClear()
-        strip.updateFilter('lowpass', undefined, 0.5)
+        strip.updateFilter('lowpass', undefined, 1)
         expect(params.get('cutoff').setTargetAtTime).not.toHaveBeenCalled()
         expect(params.get('q').setTargetAtTime).toHaveBeenCalled()
         expect(params.get('filterMode').setTargetAtTime).toHaveBeenCalled()
@@ -69,7 +69,7 @@ describe('MfStrip (Unified Worklet)', () => {
         const strip = await MfStrip.create('KICK', ctx)
         const params = strip.stripNode.parameters
         params.get('q').setTargetAtTime.mockClear()
-        strip.updateFilter('lowpass', 0.5, undefined)
+        strip.updateFilter('lowpass', 1000, undefined)
         expect(params.get('q').setTargetAtTime).not.toHaveBeenCalled()
         expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalled()
         expect(params.get('filterMode').setTargetAtTime).toHaveBeenCalled()
@@ -86,25 +86,33 @@ describe('MfStrip (Unified Worklet)', () => {
         expect(params.get('filterMode').setTargetAtTime).toHaveBeenCalled()
     })
 
-    it('updateFilter normalizes filterQ from denormalized range to 0..1', async () => {
+    it('updateFilter normalizes physical Hz/Q to 0..1 for worklet', async () => {
         const strip = await MfStrip.create('KICK', ctx)
         const params = strip.stripNode.parameters
 
-        // filterQ=0.707 (minimum denormalized) → normalized 0.0
-        strip.updateFilter('lowpass', 0.5, 0.707)
+        // freq=20 Hz → normalized 0 (log10(20/20)/3 = 0)
+        strip.updateFilter('lowpass', 20, 0.707)
+        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        // Q=0.707 → normalized 0 ((0.707 - 0.707) / 18 = 0)
         expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
 
+        params.get('cutoff').setTargetAtTime.mockClear()
         params.get('q').setTargetAtTime.mockClear()
 
-        // filterQ=9.707 (middle) → normalized 0.5
-        strip.updateFilter('lowpass', 0.5, 9.707)
-        expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
-
-        params.get('q').setTargetAtTime.mockClear()
-
-        // filterQ=18.707 (maximum denormalized) → normalized 1.0
-        strip.updateFilter('lowpass', 0.5, 18.707)
+        // freq=20000 Hz → normalized 1
+        strip.updateFilter('lowpass', 20000, 18.707)
+        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
+        // Q=18.707 → normalized 1
         expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(1, expect.any(Number), expect.any(Number))
+
+        params.get('cutoff').setTargetAtTime.mockClear()
+        params.get('q').setTargetAtTime.mockClear()
+
+        // mid values: freq → exactly 0.5 norm, Q=9.707 → exactly 0.5 norm
+        const midHz = 20 * Math.pow(1000, 0.5)
+        strip.updateFilter('lowpass', midHz, 9.707)
+        expect(params.get('cutoff').setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
+        expect(params.get('q').setTargetAtTime).toHaveBeenCalledWith(0.5, expect.any(Number), expect.any(Number))
     })
 
     it('updateSaturation sets satMix and satDrive', async () => {

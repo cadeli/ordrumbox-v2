@@ -243,12 +243,6 @@ static TAG = "UTILS"
     static normalizedSynthFilterFreqToHz = (value) => Math.floor((2000 * Utils.toFiniteNumber(value, 0, 'synthFilterFreq')) + 50)
     static normalizedSynthFilterQToValue = (value) => (20 * Utils.toFiniteNumber(value, 0, 'synthFilterQ')) + 1
 
-    static normalizeTrackFilterFreqValue = (value) => {
-        const numericValue = Number(value)
-        if (!Number.isFinite(numericValue)) return FILTER_FREQ_MIN
-        return numericValue <= 1 ? Utils.normalizedTrackFilterFreqToHz(numericValue) : numericValue
-    }
-
     static normalizeSynthFilterFreqValue = (value) => {
         const numericValue = Number(value)
         if (!Number.isFinite(numericValue)) return 50

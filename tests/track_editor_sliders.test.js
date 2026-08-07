@@ -11,7 +11,7 @@ function makeTrack(overrides = {}) {
     return {
         name: 'KICK',
         velocity: 0.8, pan: 0, pitch: 0, sampleDecay: 0.5,
-        filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.5,
+        filterType: 'lowpass', filterFreq: 632, filterQ: 1,
         filterEnvelopeAmount: 0, filterLfo: 0,
         reverbAmount: 0, reverbType: 'none',
         delayDepth: 0, delayTime: 0.25, delayType: 'none',
@@ -101,7 +101,7 @@ describe('TrackEditor — OrSlider integration', () => {
     })
 
     it('filterFreq knob displays Hz value', () => {
-        editor._track = makeTrack({ filterFreq: 0.5 })
+        editor._track = makeTrack({ filterFreq: 632 })
         editor.sync()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         expect(valEl).not.toBeNull()
@@ -109,51 +109,50 @@ describe('TrackEditor — OrSlider integration', () => {
     })
 
     it('changing a knob value via setValue updates the track and fires onTrackParamChange', () => {
-        editor._track = makeTrack({ filterFreq: 0.5 })
+        editor._track = makeTrack({ filterFreq: 632 })
         editor.sync()
         const fn = vi.fn()
         playbackEvents.onTrackParamChange.push(fn)
 
         const knob = editor._fxKnobs.find(k => k._key === 'filterFreq')
         expect(knob).not.toBeNull()
-        knob.setValue(0.7)
-        knob._onChange?.(0.7, 'filterFreq')
-        expect(editor._track.filterFreq).toBeCloseTo(0.7, 5)
+        knob.setValue(1000)
+        knob._onChange?.(1000, 'filterFreq')
+        expect(editor._track.filterFreq).toBeCloseTo(1000, 5)
         expect(fn).toHaveBeenCalled()
     })
 
     it('filterFreq knob shows formatted Hz display after value change', () => {
-        editor._track = makeTrack({ filterFreq: 0 })
+        editor._track = makeTrack({ filterFreq: 20 })
         editor.sync()
         const knob = editor._fxKnobs.find(k => k._key === 'filterFreq')
         expect(knob).not.toBeNull()
-        knob.setValue(0.7)
-        knob._onChange?.(0.7, 'filterFreq')
+        knob.setValue(2500)
+        knob._onChange?.(2500, 'filterFreq')
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         expect(valEl.textContent).toBe('2.5k')
     })
 
     it('re-syncing destroys old OrKnob instances (no listener leak)', () => {
-        editor._track = makeTrack({ filterFreq: 0.5 })
+        editor._track = makeTrack({ filterFreq: 632 })
         editor.sync()
         const firstKnob = editor.container.querySelector('.or-knob[data-or-knob="filterFreq"]')
 
-        editor._track = makeTrack({ filterFreq: 0.9 })
+        editor._track = makeTrack({ filterFreq: 5000 })
         editor.sync()
         const secondKnob = editor.container.querySelector('.or-knob[data-or-knob="filterFreq"]')
         expect(secondKnob).not.toBe(firstKnob)
     })
 
     it('keyboard arrow on a knob changes its value', () => {
-        editor._track = makeTrack({ filterFreq: 0.5 })
+        editor._track = makeTrack({ filterFreq: 1000 })
         editor.sync()
         const knobEl = editor.container.querySelector('.or-knob[data-or-knob="filterFreq"]')
         knobEl.focus()
         knobEl.dispatchEvent(new KeyboardEvent('keydown', {
             key: 'ArrowRight', bubbles: true, cancelable: true,
         }))
-        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
-        expect(parseFloat(valEl.textContent)).toBeGreaterThan(0.5)
+        expect(editor._track.filterFreq).toBeGreaterThan(1000)
     })
 })
 
@@ -169,7 +168,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     })
 
     it('row with an LFO prop gets the "has-lfo" class', () => {
-        editor._track = makeTrack({ filterFreq: 0.5, filterFreqLfo: { freq: 1, min: 0, max: 0.5 } })
+        editor._track = makeTrack({ filterFreq: 632, filterFreqLfo: { freq: 1, min: 0, max: 0.5 } })
         editor.sync()
         const freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
         expect(freqRow).not.toBeNull()
@@ -177,7 +176,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     })
 
     it('row without an LFO prop does NOT get "has-lfo"', () => {
-        editor._track = makeTrack({ filterFreq: 0.5, filterQ: 0.5 })
+        editor._track = makeTrack({ filterFreq: 632, filterQ: 1 })
         editor.sync()
         const qRow = editor.container.querySelector('.ne-row[data-prop="filterQ"]')
         expect(qRow).not.toBeNull()
@@ -185,7 +184,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     })
 
     it('toggling the LFO on preserves the LFO mode (has-lfo re-applied after sync)', () => {
-        const track = makeTrack({ filterFreq: 0.5 })
+        const track = makeTrack({ filterFreq: 632 })
         appState.patterns = [{ tracks: [track] }]
         appState.selectedPatternNum = 0
         editor._track = track
@@ -311,7 +310,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
     it('clicking different sub-tabs switches the displayed controls', () => {
         const track = makeTrack({
             velocity: 0.5, velocityLfo: { freq: 1.8, min: 0, max: 1, phase: 0 },
-            filterFreq: 0.5, filterFreqLfo: { freq: 0.5, min: 0.2, max: 0.8, phase: 0.3 },
+            filterFreq: 632, filterFreqLfo: { freq: 0.5, min: 0.2, max: 0.8, phase: 0.3 },
         })
         showModTab(track)
 
@@ -353,7 +352,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
     it('toggle button also selects the target and shows its controls', () => {
         const track = makeTrack({
             velocity: 0.5,
-            filterFreq: 0.5
+            filterFreq: 632
         })
         showModTab(track)
 
@@ -497,7 +496,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 
     it('clicking the filter LED toggles filterType to allpass when active', () => {
-        const track = makeTrack({ filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.5 })
+        const track = makeTrack({ filterType: 'lowpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
         editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]').click()
@@ -505,7 +504,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 
     it('clicking the filter LED restores previous type when off', () => {
-        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
         editor._prevFilterType = 'highpass'
@@ -514,7 +513,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 
     it('clicking the filter LED restores lowpass as default when no previous type', () => {
-        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
         editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]').click()
@@ -522,7 +521,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 
     it('LED toggles on → off → on cycle', () => {
-        const track = makeTrack({ filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.5 })
+        const track = makeTrack({ filterType: 'lowpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
         const toggle = () => editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]')
@@ -535,7 +534,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 
     it('filter icon click sets filterType', () => {
-        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
         const hpIcon = editor.container.querySelector('[data-fx-icon-val="highpass"]')
@@ -544,7 +543,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 
     it('clicking the same filter icon toggles to allpass', () => {
-        const track = makeTrack({ filterType: 'bandpass', filterFreq: 0.5, filterQ: 0.5 })
+        const track = makeTrack({ filterType: 'bandpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
         const bpIcon = editor.container.querySelector('[data-fx-icon-val="bandpass"]')
@@ -553,7 +552,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 
     it('filter icon click fires dispatchPatternChange', () => {
-        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
         const fn = vi.fn()
         playbackEvents.onPatternChange.push(fn)
@@ -563,7 +562,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 
     it('filter icon selected class reflects current type', () => {
-        const track = makeTrack({ filterType: 'highpass', filterFreq: 0.5, filterQ: 0.5 })
+        const track = makeTrack({ filterType: 'highpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
         const hpIcon = editor.container.querySelector('[data-fx-icon-val="highpass"]')
@@ -574,7 +573,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 
     it('no icon is selected when filter is allpass', () => {
-        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
         const icons = editor.container.querySelectorAll('[data-fx-icon-val]')
@@ -598,7 +597,7 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
     it('LFO live update: replace semantics via setValue (Hz display)', () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         editor._track = makeTrack({
-            filterFreq: 0.5,
+            filterFreq: 632,
             filterFreqLfo: { freq: 0, min: 0.3, max: 0.3, phase: 0 },
         })
         appState.patterns = [{ tracks: [editor._track], nbBeats: 4 }]
@@ -615,7 +614,7 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
     it('LFO live update: writes the value to the track (displayed), not the base', () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         editor._track = makeTrack({
-            filterFreq: 0.5,
+            filterFreq: 632,
             filterFreqLfo: { freq: 0, min: 0.8, max: 0.8, phase: 0 },
         })
         appState.patterns = [{ tracks: [editor._track], nbBeats: 4 }]
@@ -626,6 +625,6 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
 
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         expect(valEl.textContent).toBe('5.0k')
-        expect(editor._track.filterFreq).toBe(0.5)
+        expect(editor._track.filterFreq).toBe(632)
     })
 })

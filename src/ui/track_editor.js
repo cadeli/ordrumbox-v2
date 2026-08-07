@@ -19,8 +19,8 @@ import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample
 import { logger } from "../core/logger.js"
 
 const fmtFreq = v => {
-    const hz = Utils.normalizeTrackFilterFreqValue(v)
-    return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : Math.round(hz) + 'Hz'
+    const hz = Math.round(Utils.toFiniteNumber(v, 20, 'filterFreq'))
+    return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : hz + 'Hz'
 }
 const fmtPitch = v => {
     const n = Math.round(v)
@@ -41,9 +41,9 @@ const FILTER_TYPE_ICONS = {
 
 const FILTER_PROPS = [
     { key: 'filterType', label: 'Type', type: 'icon', options: ['lowpass', 'highpass', 'bandpass'] },
-    { key: 'filterFreq', label: 'Freq', min: 0, max: 1, step: 0.01, lfo: 'filterFreqLfo' },
-    { key: 'filterQ', label: 'Q', min: 0, max: 1, step: 0.01, lfo: 'filterQLfo',
-      normalize: v => Utils.valueToNormalizedTrackFilterQ(v),
+    { key: 'filterFreq', label: 'Freq', min: 20, max: 20000, step: 1, lfo: 'filterFreqLfo',
+      denormalize: v => Utils.normalizedTrackFilterFreqToHz(v) },
+    { key: 'filterQ', label: 'Q', min: 0.707, max: 18.707, step: 0.01, lfo: 'filterQLfo',
       denormalize: v => Utils.normalizedTrackFilterQToValue(v) }
 ]
 
@@ -302,11 +302,6 @@ export default class TrackEditor extends BasePanel {
     sync() {
         if (!this._track) return
 
-        // Migrate filterQ from normalized [0,1] to raw Q [0.707, 18.707] if needed
-        if (this._track.filterQ < 0.707) {
-            this._track.filterQ = Utils.normalizedTrackFilterQToValue(this._track.filterQ)
-        }
-
         const soundInfo = this._getSoundInfo()
         
         let headerHtml = `<div class="ne-header">
@@ -358,10 +353,7 @@ export default class TrackEditor extends BasePanel {
                         hasLfo: !!(p.lfo && this._track[p.lfo]),
                         extraClass: isSelected,
                         format: (v) => fmtVal(p.key, v),
-                        normalize: p.normalize ?? ((v) => {
-                            if (p.key === 'filterFreq' && v > 1) return Utils.hzToNormalizedTrackFilterFreq(v)
-                            return v
-                        }),
+                        normalize: p.normalize ?? ((v) => v),
                         denormalize: p.denormalize ?? ((v) => v),
                         onChange: (v, key) => {
                             this._isDragging = true
