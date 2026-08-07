@@ -185,7 +185,7 @@ describe('SynthEditor — OrKnob integration', () => {
         const focusRe = /\.or-knob:focus\s*\{[^}]*outline/
         expect(css, 'missing :focus rule for .or-knob').toMatch(focusRe)
 
-        const focusWithinRe = /#soft-synth-panel\s+\.ne-row:focus-within\s*\{[^}]*(?:#00fff5|var\(--cyan\))/s
+        const focusWithinRe = /#soft-synth-panel\s+\.ne-row:focus-within\s*\{[^}]*(?:#00fff5|var\(--cyan\)|var\(--color-info\))/s
         expect(css, 'missing :focus-within rule for soft-synth knob row').toMatch(focusWithinRe)
     })
 

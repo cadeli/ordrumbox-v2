@@ -112,6 +112,83 @@ src/
   ```
   This applies to property access, method calls, parameter defaults, and any form of optional chaining.
 
+## CSS Design Tokens
+
+`src/ui/styles.css` uses a rationalized `:root` token system. Always use tokens instead of hardcoded values.
+
+### Backgrounds
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--bg-deep` | `#0a0a14` | Deepest layer (canvas base) |
+| `--bg-canvas` | `#0d0d1a` | Canvas background |
+| `--bg` | `#1a1a2e` | Primary panel background |
+| `--bg-surface` | `#12121e` | Lists, cards |
+| `--bg-input` | `#16213e` | Input fields, selects |
+| `--bg-elevated` | `#2a2a3e` | Elevated surfaces (knobs, popups) |
+| `--bg-hover` | `#3a3a4e` | Hover states, beat markers |
+| `--bg-accent` | `#0f3460` | Accent background (active btn) |
+| `--bg-selected` | `#833295` | Selected state |
+| `--bg-success` | `#0a2e0a` | Success tint (velocity bars) |
+
+### Text
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--text` | `#fff` | Primary text |
+| `--text-dim` | `#eee` | Slightly dimmed (buttons, selects) |
+| `--text-secondary` | `#ccc` | Secondary labels |
+| `--text-tertiary` | `#888` | Hints, placeholders |
+| `--text-disabled` | `#555` | Disabled state |
+
+### Borders
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--border-subtle` | `#333` | Subtle dividers |
+| `--border` | `#555` | Default borders |
+| `--border-strong` | `#888` | Emphasized borders |
+
+### Accent (Rose)
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--accent` | `#e94560` | Primary accent |
+| `--accent-400` | `#ff4d6d` | Light accent |
+| `--accent-600` | `#d63050` | Dark accent |
+| `--accent-700` | `#ff2a6d` | Bright accent (active grid btns) |
+
+### Semantic Colors
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--color-success` | `#4ade80` | Success, active states |
+| `--color-success-dark` | `#1a7f37` | Dark success (start btn) |
+| `--color-warning` | `#f59e0b` | Warning, amber |
+| `--color-danger` | `#c62828` | Danger, errors |
+| `--color-danger-light` | `#ef9a9a` | Light danger |
+| `--color-info` | `#4fc3f7` | Info, cyan/blue |
+
+### Typography
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--fs-xs` | `9px` | Labels, tiny text |
+| `--fs-sm` | `10px` | Secondary text |
+| `--fs-base` | `11px` | Body text |
+| `--fs-md` | `12px` | Medium text |
+| `--fs-lg` | `14px` | Large text, headings |
+
+### Z-Index Layers
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--z-base` | `0` | Default layer |
+| `--z-content` | `2` | Content elements |
+| `--z-overlay` | `10` | Overlays, dropdowns |
+| `--z-panel` | `100` | Panels, modals |
+| `--z-toolbar` | `200` | Toolbars |
+| `--z-toast` | `9999` | Toasts, notifications |
+
+### Rules
+- Never use hardcoded colors, font-sizes, or z-index values
+- Use `var(--token-name)` for all values
+- Add new tokens to `:root` if needed (follow naming convention)
+- Prefer semantic tokens over raw scale tokens
+
 ## Adding Tests
 
 Place test files in `tests/`. Import from `vitest` (`describe`, `it`, `expect`, `vi`, `beforeEach`). Use relative imports to `src/`. For audio worklet tests, mock `WorkletLoader`:
