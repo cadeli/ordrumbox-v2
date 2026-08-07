@@ -51,38 +51,15 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
         }
     }
 
-    describe('Clear button', () => {
-        it('is present in the pattern tab', () => {
+    describe('Clear button removed from tools panel', () => {
+        it('Clear button is not present in the pattern tab (moved to pattern panel toolbar)', () => {
             const btn = toolsPanel.container.querySelector('#tp-clear')
-            expect(btn).not.toBeNull()
-            expect(btn.textContent).toBe('Clear')
+            expect(btn).toBeNull()
         })
 
-        it('removes all notes from all tracks', () => {
-            addNotes(6)
-            const pattern = appState.patterns[0]
-            const totalBefore = pattern.tracks.reduce((s, t) => s + t.notes.length, 0)
-            expect(totalBefore).toBeGreaterThan(0)
-
-            toolsPanel.container.querySelector('#tp-clear').click()
-
-            const totalAfter = pattern.tracks.reduce((s, t) => s + t.notes.length, 0)
-            expect(totalAfter).toBe(0)
-        })
-
-        it('dispatches patternChange', () => {
-            addNotes(3)
-            const spy = vi.fn()
-            playbackEvents.onPatternChange.push(spy)
-
-            toolsPanel.container.querySelector('#tp-clear').click()
-            expect(spy).toHaveBeenCalled()
-        })
-
-        it('is a no-op when no pattern exists', () => {
-            appState.patterns = []
-            appState.selectedPatternNum = -1
-            toolsPanel.container.querySelector('#tp-clear').click()
+        it('Name input is not present in the pattern tab (moved to pattern panel toolbar)', () => {
+            const input = toolsPanel.container.querySelector('#tp-pattern-name')
+            expect(input).toBeNull()
         })
     })
 

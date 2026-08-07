@@ -21,7 +21,7 @@ export function injectUiCss() {
 
 
 
-const PANEL_GAP_PX = 8
+const PANEL_GAP_PX = 4
 
 export function positionBelowPatternPanel(container) {
     if (window.innerWidth <= 768 || window.innerHeight <= 480) return

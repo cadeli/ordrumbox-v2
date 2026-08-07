@@ -18,7 +18,6 @@ import { logger, nameOr } from "../core/logger.js"
 export default class ToolsPanel extends BasePanel {
     constructor() {
         super('tools-panel')
-        this.nameInput = null
         this._wavLoops = null
         this.exportWavBtn = null
     }
@@ -38,15 +37,10 @@ export default class ToolsPanel extends BasePanel {
                 <button class="ne-tab-btn" data-ne-tab="midi">MIDI</button>
             </div>
             <div class="ne-tab-panel" data-tab-panel="pattern">
-                <div class="ne-row no-cursor">
-                    <label>Name</label>
-                    <input type="text" class="ne-input" id="tp-pattern-name" placeholder="Pattern Name">
-                </div>
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-compact" title="Detect repeating note patterns and add loop points to minimize notes">Compact Tracks</button>
                 </div>
                 <div class="ne-row">
-                    <button class="ne-btn" id="tp-clear" title="Remove all notes from every track in the current pattern">Clear</button>
                     <button class="ne-btn" id="tp-rnd" title="Write random notes into each track of the current pattern">Rnd</button>
                 </div>
             </div>
@@ -117,11 +111,7 @@ export default class ToolsPanel extends BasePanel {
             </div>
         `
         
-        this.nameInput = this.container.querySelector('#tp-pattern-name')
-        this.nameInput.addEventListener('input', () => this._onNameChange())
-        
         this.container.querySelector('#tp-compact').addEventListener('click', () => this._compactPattern())
-        this.container.querySelector('#tp-clear').addEventListener('click', () => this._clearPattern())
         this.container.querySelector('#tp-rnd').addEventListener('click', () => this._randomizePattern())
         
         this.container.querySelector('#tp-export-json').addEventListener('click', () => this._exportJson())
@@ -206,9 +196,6 @@ export default class ToolsPanel extends BasePanel {
 
     sync() {
         const pattern = appState.patterns[appState.selectedPatternNum]
-        if (pattern && this.nameInput && document.activeElement !== this.nameInput) {
-            this.nameInput.value = nameOr(pattern.name, '', 'ToolsPanel', 'name fallback')
-        }
 
         const outputSelect = this.container.querySelector('#tp-midi-output-select')
         const enableBtn = this.container.querySelector('#tp-midi-enable')
@@ -253,15 +240,6 @@ export default class ToolsPanel extends BasePanel {
         }
     }
 
-    _onNameChange() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (pattern) {
-            pattern.name = this.nameInput.value
-            // We only need to trigger pattern change to update other UI components (like Toolbar)
-            playbackEvents.dispatchPatternChange()
-        }
-    }
-
     _compactPattern() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern || !pattern.tracks) return
@@ -277,14 +255,6 @@ export default class ToolsPanel extends BasePanel {
         serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.dispatchPatternChange()
         logger.debug('ToolsPanel', `Compaction finished. Total redundant notes removed: ${totalRemoved}`)
-    }
-
-    _clearPattern() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern) return
-        serviceRegistry.mfCmd?.cleanPattern(pattern)
-        serviceRegistry.audioEngine?.invalidateCache()
-        playbackEvents.dispatchPatternChange()
     }
 
     _randomizePattern() {
