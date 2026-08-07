@@ -77,6 +77,13 @@
   --vu-yellow: #eab308;
 }
 
+/* ---- Global ---- */
+body {
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+}
+
 /* ---- Toolbar ---- */
 #tb {
     position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-toolbar);
@@ -214,7 +221,7 @@
     font-size: var(--fs-base);
     color: var(--text-secondary);
     z-index: var(--z-panel);
-    height: 440px;
+    height: 444px;
     display: flex;
     flex-direction: column;
     width: 79%;
@@ -234,7 +241,7 @@
     border-left: 2px solid var(--border-subtle);
 }
 .track-editor {
-    height: 440px;
+    height: 444px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -558,7 +565,7 @@
     font-size: var(--fs-base);
     color: var(--text-secondary);
     z-index: var(--z-panel);
-    height: 440px;
+    height: 444px;
     min-height: 320px;
     display: flex;
     flex-direction: column;
