@@ -708,8 +708,8 @@ export default class PatternPanel extends BasePanel {
     _clearSelection() {
         this._selNote = null
         this._selTrackIdx = -1
-        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected')
-        selected.forEach(el => el.classList.remove('selected'))
+        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected, .pp-track.pp-selected')
+        selected.forEach(el => el.classList.remove('selected', 'pp-selected'))
         playbackEvents.dispatchNoteSelect(null)
         playbackEvents.dispatchTrackSelect(null)
     }
@@ -777,8 +777,12 @@ export default class PatternPanel extends BasePanel {
     }
 
     _applySelection() {
-        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected, .pp-cell.cursor, .pp-note-slice.selected')
-        selected.forEach(el => el.classList.remove('selected', 'cursor'))
+        const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected, .pp-cell.cursor, .pp-note-slice.selected, .pp-track.pp-selected')
+        selected.forEach(el => el.classList.remove('selected', 'cursor', 'pp-selected'))
+
+        const currentTrackIdx = this._selTrackIdx !== -1
+            ? this._selTrackIdx
+            : (appState.selectedTrackNum ?? -1)
 
         if (this._selTrackIdx !== -1) {
             if (this._selNote) {
@@ -806,6 +810,13 @@ export default class PatternPanel extends BasePanel {
                 const sel = this.container.querySelector(`.pp-track-name[data-track="${this._selTrackIdx}"]`)
                 if (sel) sel.classList.add('selected')
             }
+        }
+
+        if (currentTrackIdx !== -1) {
+            const trackSel = this.container.querySelector(`.pp-track-name[data-track="${currentTrackIdx}"]`)
+            if (trackSel) trackSel.classList.add('selected')
+            const trackEl = trackSel?.closest('.pp-track')
+            if (trackEl) trackEl.classList.add('pp-selected')
         }
     }
 
@@ -1015,7 +1026,8 @@ const ghostMap = new Map()
             }
             beatsHtml += '</div>'
 
-            const isSelected = this._selTrackIdx === tIdx && !this._selNote
+            const currentTrackIdx = this._selTrackIdx !== -1 ? this._selTrackIdx : (appState.selectedTrackNum ?? -1)
+            const isSelected = currentTrackIdx === tIdx
             const isMuted = track.mute === true
             const isSolo = track.solo === true
             const soundUrl = track.soundId && track.soundId !== 'NOT_DEFINED'
