@@ -117,6 +117,7 @@ export default class TrackEditor extends BasePanel {
         this._lfoBridge = null
         this._delegationBound = false
         this._selectedLfoTarget = null
+        this._prevFilterType = undefined
         this.synthEditor = new SynthEditor(this)
         this._knobs = []
         this._fxKnobs = []
@@ -659,7 +660,10 @@ export default class TrackEditor extends BasePanel {
     }
 
     _isFxOn(fx) {
-        if (fx.key === 'filterFreq') return true
+        if (fx.key === 'filterFreq') {
+            const ft = this._track.filterType
+            return ft != null && ft !== 'allpass'
+        }
         const amount = Number(this._track[fx.key] ?? 0)
         return Number.isFinite(amount) && amount > 0
     }
@@ -1025,8 +1029,31 @@ export default class TrackEditor extends BasePanel {
     }
 
     _toggleFxByKey(key) {
-        const isOn = Number(this._track[key] ?? 0) > 0
-        this._track[key] = isOn ? 0 : 0.5
+        if (key === 'filterFreq') {
+            const cur = this._track.filterType
+            const isOn = cur != null && cur !== 'allpass'
+            if (isOn) {
+                this._prevFilterType = cur
+                this._track.filterType = 'allpass'
+            } else {
+                this._track.filterType = this._prevFilterType ?? 'lowpass'
+            }
+        } else {
+            const isOn = Number(this._track[key] ?? 0) > 0
+            this._track[key] = isOn ? 0 : 0.5
+        }
+        this.sync()
+        playbackEvents.dispatchPatternChange([this._track])
+    }
+
+    _onFxIcon(target) {
+        const val = target.dataset.fxIconVal
+        if (!val) return
+        if (target.closest('[data-prop="filterType"]')) {
+            const cur = this._track.filterType
+            this._track.filterType = (cur === val) ? 'allpass' : val
+            this._prevFilterType = (cur === val) ? undefined : cur
+        }
         this.sync()
         playbackEvents.dispatchPatternChange([this._track])
     }

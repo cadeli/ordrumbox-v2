@@ -468,6 +468,122 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
     })
 })
 
+describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
+    let editor
+
+    beforeEach(() => {
+        setup()
+        editor = new TrackEditor()
+        editor.init()
+    })
+
+    function showFxTab(track) {
+        editor._track = track
+        editor._tab.setActive('fx')
+        editor._fxTab.setActive('3')
+        editor.sync()
+    }
+
+    it('filter LED is off when filterType is allpass', () => {
+        showFxTab(makeTrack({ filterType: 'allpass' }))
+        const led = editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]')
+        expect(led.classList.contains('on')).toBe(false)
+    })
+
+    it('filter LED is on when filterType is lowpass', () => {
+        showFxTab(makeTrack({ filterType: 'lowpass' }))
+        const led = editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]')
+        expect(led.classList.contains('on')).toBe(true)
+    })
+
+    it('clicking the filter LED toggles filterType to allpass when active', () => {
+        const track = makeTrack({ filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.5 })
+        showFxTab(track)
+
+        editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]').click()
+        expect(track.filterType).toBe('allpass')
+    })
+
+    it('clicking the filter LED restores previous type when off', () => {
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        showFxTab(track)
+
+        editor._prevFilterType = 'highpass'
+        editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]').click()
+        expect(track.filterType).toBe('highpass')
+    })
+
+    it('clicking the filter LED restores lowpass as default when no previous type', () => {
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        showFxTab(track)
+
+        editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]').click()
+        expect(track.filterType).toBe('lowpass')
+    })
+
+    it('LED toggles on → off → on cycle', () => {
+        const track = makeTrack({ filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.5 })
+        showFxTab(track)
+
+        const toggle = () => editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]')
+
+        expect(track.filterType).toBe('lowpass')
+        toggle().click()
+        expect(track.filterType).toBe('allpass')
+        toggle().click()
+        expect(track.filterType).toBe('lowpass')
+    })
+
+    it('filter icon click sets filterType', () => {
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        showFxTab(track)
+
+        const hpIcon = editor.container.querySelector('[data-fx-icon-val="highpass"]')
+        hpIcon.click()
+        expect(track.filterType).toBe('highpass')
+    })
+
+    it('clicking the same filter icon toggles to allpass', () => {
+        const track = makeTrack({ filterType: 'bandpass', filterFreq: 0.5, filterQ: 0.5 })
+        showFxTab(track)
+
+        const bpIcon = editor.container.querySelector('[data-fx-icon-val="bandpass"]')
+        bpIcon.click()
+        expect(track.filterType).toBe('allpass')
+    })
+
+    it('filter icon click fires dispatchPatternChange', () => {
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        showFxTab(track)
+        const fn = vi.fn()
+        playbackEvents.onPatternChange.push(fn)
+
+        editor.container.querySelector('[data-fx-icon-val="lowpass"]').click()
+        expect(fn).toHaveBeenCalled()
+    })
+
+    it('filter icon selected class reflects current type', () => {
+        const track = makeTrack({ filterType: 'highpass', filterFreq: 0.5, filterQ: 0.5 })
+        showFxTab(track)
+
+        const hpIcon = editor.container.querySelector('[data-fx-icon-val="highpass"]')
+        expect(hpIcon.classList.contains('selected')).toBe(true)
+
+        const lpIcon = editor.container.querySelector('[data-fx-icon-val="lowpass"]')
+        expect(lpIcon.classList.contains('selected')).toBe(false)
+    })
+
+    it('no icon is selected when filter is allpass', () => {
+        const track = makeTrack({ filterType: 'allpass', filterFreq: 0.5, filterQ: 0.5 })
+        showFxTab(track)
+
+        const icons = editor.container.querySelectorAll('[data-fx-icon-val]')
+        icons.forEach(icon => {
+            expect(icon.classList.contains('selected')).toBe(false)
+        })
+    })
+})
+
 describe('TrackEditor — _updateLfoSliders uses setValue', () => {
     let editor
 

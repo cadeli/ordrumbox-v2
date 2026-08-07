@@ -21,7 +21,7 @@ export function applyTrackToStrip(strip, track, time, opts) {
     const skipVelocityPan = opts?.skipVelocityPan === true
     const readDefaults = opts?.readDefaults !== false
 
-    if (track.filterType) {
+    if (track.filterType !== undefined) {
         strip.updateFilter(
             track.filterType,
             track.filterFreqLfo ? undefined : track.filterFreq,
