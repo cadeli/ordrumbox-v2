@@ -2,7 +2,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { TICK } from '../core/constants.js'
+import { TICK, isMobileViewport } from '../core/constants.js'
 
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
@@ -581,7 +581,7 @@ export default class PatternPanel extends BasePanel {
         this._cursorTrackIdx = trackIdx
 
         if (this._selTrackIdx === trackIdx && !this._selNote) {
-            if (window.innerWidth <= 768) {
+            if (isMobileViewport()) {
                 playbackEvents.dispatchTrackSelect({ track, trackIdx })
             } else {
                 this._clearSelection()

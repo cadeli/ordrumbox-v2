@@ -40,3 +40,13 @@ export const FALLBACK_FPS = 60
 // ── Loop / Pattern ─────────────────────────────────────────────────
 export const MAX_LOOP_RETRY = 20
 export const MAX_EXPORT_LOOPS = 16
+
+// ── Mobile breakpoint thresholds ───────────────────────────────────
+export const MOBILE_MAX_WIDTH = 768
+export const MOBILE_MAX_HEIGHT = 480
+
+/** True when viewport matches mobile criteria (portrait or landscape) */
+export function isMobileViewport() {
+    return typeof window !== 'undefined'
+        && (window.innerWidth <= MOBILE_MAX_WIDTH || window.innerHeight <= MOBILE_MAX_HEIGHT)
+}

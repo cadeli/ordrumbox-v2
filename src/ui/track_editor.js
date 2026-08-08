@@ -13,7 +13,7 @@ import { OrTab } from './components/or_tab.js'
 import { fmt, setViewBtn, knobFormat } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
-import { TICK } from '../core/constants.js'
+import { TICK, isMobileViewport } from '../core/constants.js'
 import LfoUiBridge from '../logic/lfo_ui_bridge.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
 import { logger } from "../core/logger.js"
@@ -1143,8 +1143,9 @@ export default class TrackEditor extends BasePanel {
         setViewBtn('edit', false)
     }
 
-    /** Skip vertical reposition when in side-by-side split mode. */
+    /** Skip vertical reposition when in side-by-side split mode or on mobile. */
     reposition() {
+        if (isMobileViewport()) return
         if (this.container?.classList.contains('pp-split')) return
         super.reposition()
     }

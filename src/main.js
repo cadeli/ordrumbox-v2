@@ -14,6 +14,8 @@ import AboutPanel from './ui/about_panel.js'
 import DrumkitManager from './ui/drumkit_manager.js'
 import PatternsPanel from './ui/patterns_panel.js'
 import ViewManager from './ui/view_manager.js'
+import MobileTabBar from './ui/mobile_tab_bar.js'
+import PatternSettingsPanel from './ui/pattern_settings_panel.js'
 
 import MfResourcesLoader from './loader/resources_loader.js'
 import Utils from './core/utils.js'
@@ -46,7 +48,7 @@ function scheduleAfterFirstPaint(callback) {
 }
 
 
-let _toolbar, _patternPanel, _pianoRollPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel, _viewManager
+let _toolbar, _patternPanel, _pianoRollPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel, _viewManager, _mobileTabBar, _patternSettingsPanel
 
 export function init() {
     if (window.orientation > 1) {
@@ -85,6 +87,11 @@ export function init() {
     _aboutPanel.init()
     _drumkitManager.init()
     _patternsPanel.init()
+
+    _mobileTabBar = new MobileTabBar()
+    _mobileTabBar.init()
+    _patternSettingsPanel = new PatternSettingsPanel()
+    _patternSettingsPanel.init()
 
     const appContent = document.createElement('div')
     appContent.id = 'app-content'

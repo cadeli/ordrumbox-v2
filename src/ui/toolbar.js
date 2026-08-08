@@ -3,6 +3,7 @@ import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { injectUiCss } from './components/panel_helpers.js'
+import { isMobileViewport } from '../core/constants.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import Utils from '../core/utils.js'
 
@@ -63,7 +64,7 @@ export default class Toolbar {
         this.container.id = 'tb'
 
         const brand = document.createElement('span')
-        brand.className = 'tb-brand'
+        brand.className = 'tb-brand tb-hide-mobile'
         brand.textContent = 'orDrumbox'
 
         this.startBtn = document.createElement('button')
@@ -111,7 +112,7 @@ export default class Toolbar {
         patWrap.appendChild(this.patternSelect)
 
         const pageWrap = document.createElement('div')
-        pageWrap.className = 'tb-group'
+        pageWrap.className = 'tb-group tb-hide-mobile'
         const pageLabelTop = document.createElement('span')
         pageLabelTop.className = 'tb-label'
         pageLabelTop.textContent = 'Page'
@@ -147,7 +148,7 @@ export default class Toolbar {
         kitWrap.appendChild(this.drumkitSelect)
 
         const genWrap = document.createElement('div')
-        genWrap.className = 'tb-group'
+        genWrap.className = 'tb-group tb-hide-mobile'
         const genLabel = document.createElement('span')
         genLabel.className = 'tb-label'
         genLabel.textContent = 'Generation'
@@ -175,7 +176,7 @@ export default class Toolbar {
         genWrap.appendChild(genRow)
 
         const viewWrap = document.createElement('div')
-        viewWrap.className = 'tb-group'
+        viewWrap.className = 'tb-group tb-hide-mobile'
         const viewLabel = document.createElement('span')
         viewLabel.className = 'tb-label'
         viewLabel.textContent = 'View'
@@ -203,7 +204,7 @@ export default class Toolbar {
         viewWrap.appendChild(viewRow)
 
         const beatsWrap = document.createElement('div')
-        beatsWrap.className = 'tb-group'
+        beatsWrap.className = 'tb-group tb-hide-mobile'
         const beatsLabel = document.createElement('span')
         beatsLabel.className = 'tb-label'
         beatsLabel.textContent = 'Beats'
@@ -223,12 +224,23 @@ export default class Toolbar {
         this.toolsBtn.title = 'Tools'
 
         this.aboutBtn = document.createElement('button')
-        this.aboutBtn.className = 'tb-about'
+        this.aboutBtn.className = 'tb-about tb-hide-mobile'
         this.aboutBtn.textContent = '⋮'
         this.aboutBtn.title = 'About'
 
+        /* Mobile-specific elements */
+        this.patternNameMobile = document.createElement('span')
+        this.patternNameMobile.className = 'tb-pattern-name-mobile'
+        this.patternNameMobile.textContent = 'Pattern 1'
+
+        this.settingsBtn = document.createElement('button')
+        this.settingsBtn.className = 'tb-settings-btn'
+        this.settingsBtn.textContent = '⚙'
+        this.settingsBtn.title = 'Pattern Settings'
+
         this.container.appendChild(brand)
         this.container.appendChild(this.startBtn)
+        this.container.appendChild(this.patternNameMobile)
         this.container.appendChild(bpmWrap)
         this.container.appendChild(patWrap)
         this.container.appendChild(pageWrap)
@@ -243,6 +255,7 @@ export default class Toolbar {
         this.container.appendChild(viewWrap)
         this.container.appendChild(this.toolsBtn)
         this.container.appendChild(this.aboutBtn)
+        this.container.appendChild(this.settingsBtn)
         document.body.appendChild(this.container)
     }
 
@@ -257,6 +270,10 @@ export default class Toolbar {
 
         this.aboutBtn.addEventListener('click', () => {
             playbackEvents.dispatchAboutToggle(true)
+        })
+
+        this.settingsBtn.addEventListener('click', () => {
+            playbackEvents.dispatchPatternSettingsToggle(true)
         })
 
         this.synthBtn.addEventListener('click', () => {
@@ -517,6 +534,14 @@ export default class Toolbar {
         }
         this.syncBpmFromPattern()
         this.syncBeats()
+        this.syncPatternNameMobile()
+    }
+
+    syncPatternNameMobile = () => {
+        const pat = appState.patterns[appState.selectedPatternNum]
+        if (pat && this.patternNameMobile) {
+            this.patternNameMobile.textContent = pat.name ?? `Pattern ${appState.selectedPatternNum + 1}`
+        }
     }
 
     syncBpmFromPattern = () => {
@@ -546,7 +571,7 @@ export default class Toolbar {
     }
 
     _setupOverflowObserver() {
-        const isMobile = () => window.innerWidth <= 768
+        const isMobile = () => isMobileViewport()
         const check = () => {
             if (!this.container) return
             const overflowing = isMobile() && this.container.scrollWidth > this.container.clientWidth + 1

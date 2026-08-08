@@ -1,4 +1,5 @@
 import { fmt as _fmt, escapeHtml as _escapeHtml, pitchToNoteName as _pitchToNoteName, formatNoteTooltip as _formatNoteTooltip } from './ui_utils.js'
+import { isMobileViewport } from '../../core/constants.js'
 export const fmt = _fmt
 export const escapeHtml = _escapeHtml
 export const pitchToNoteName = _pitchToNoteName
@@ -24,7 +25,7 @@ export function injectUiCss() {
 const PANEL_GAP_PX = 4
 
 export function positionBelowPatternPanel(container) {
-    if (window.innerWidth <= 768 || window.innerHeight <= 480) return
+    if (isMobileViewport()) return
     const patternPanel = document.getElementById('pattern-panel')
     if (patternPanel) {
         const savedMinHeight = patternPanel.style.minHeight
@@ -38,6 +39,7 @@ export function positionBelowPatternPanel(container) {
 const SYNC_WIDTH_SKIP_IDS = ['pattern-panel', 'te-panel', 'piano-roll-panel']
 
 export function syncWidthWithPatternPanel(container) {
+    if (isMobileViewport()) return
     if (SYNC_WIDTH_SKIP_IDS.includes(container.id)) return
     const pp = document.getElementById('pattern-panel')
     if (!pp || pp.classList.contains('ui-hidden')) return
@@ -90,7 +92,7 @@ export function setViewBtn(name, active) {
  */
 export function setViewMode(mode) {
     setViewBtn('synth', mode === 'synth')
-    setViewBtn('edit', mode === 'edit')
+    setViewBtn('edit', mode === 'edit' || mode === 'mobileTrack')
     setViewBtn('proll', mode === 'proll')
 }
 

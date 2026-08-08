@@ -1,5 +1,7 @@
+import { isMobileViewport } from '../core/constants.js'
+
 function buildDefaultVisibility() {
-    const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || window.innerHeight <= 480)
+    const isMobile = isMobileViewport()
     return {
         trackEditorVisibility: {
             basic: true,

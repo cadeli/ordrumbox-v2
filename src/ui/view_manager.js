@@ -20,6 +20,8 @@ export default class ViewManager {
         playbackEvents.onSynthToggle.push(() => this._switchTo('synth'))
         playbackEvents.onEditToggle.push(() => this._switchTo('edit'))
         playbackEvents.onProllToggle.push(() => this._switchTo('proll'))
+        playbackEvents.onMobileSeqToggle.push(() => this._switchTo('mobileSeq'))
+        playbackEvents.onMobileTrackToggle.push(() => this._switchTo('mobileTrack'))
     }
 
     get currentView() {
@@ -37,10 +39,20 @@ export default class ViewManager {
             this._noteEditor.hide()
             this._trackEditor.hide()
         }
+        if (prev === 'mobileSeq') {
+            this._pianoRollPanel.hide()
+            document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        }
+        if (prev === 'mobileTrack') {
+            this._noteEditor.hide()
+            this._trackEditor.hide()
+        }
 
         if (view === 'synth') this._showSynth()
         if (view === 'proll') this._showProll()
         if (view === 'edit') this._showEdit()
+        if (view === 'mobileSeq') this._showMobileSeq()
+        if (view === 'mobileTrack') this._showMobileTrack()
 
         setViewMode(view)
     }
@@ -79,6 +91,26 @@ export default class ViewManager {
             tePanel.style.display = 'block'
         }
         this._pianoRollPanel.show()
+        document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+    }
+
+    _showMobileSeq() {
+        this._synthEditor.hidePanel()
+        this._noteEditor.hide()
+        this._trackEditor.hide()
+        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+    }
+
+    _showMobileTrack() {
+        this._synthEditor.hidePanel()
+        this._pianoRollPanel.hide()
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        const idx = appState.selectedTrackNum
+        const track = pattern?.tracks?.[idx]
+        if (track) {
+            this._trackEditor.show({ track, trackIdx: idx })
+            this._trackEditor._showNoteEditorForTrack(track, idx)
+        }
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
     }
 }

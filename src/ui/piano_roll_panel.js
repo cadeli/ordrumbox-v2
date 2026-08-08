@@ -2,6 +2,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { serviceRegistry } from '../state/service_registry.js'
+import { isMobileViewport } from '../core/constants.js'
 import MfFlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
@@ -655,10 +656,11 @@ export default class PianoRollPanel extends BasePanel {
 
     reposition() {
         if (!this.container) return
+        const isMobile = isMobileViewport()
         this.container.style.position = 'fixed'
-        this.container.style.top = '64px'
+        this.container.style.top = isMobile ? '48px' : '64px'
         this.container.style.left = '0'
         this.container.style.right = 'auto'
-        this.container.style.width = '79%'
+        this.container.style.width = isMobile ? '100%' : '79%'
     }
 }
