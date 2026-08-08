@@ -228,32 +228,32 @@ describe('Mobile CSS: pp-container full width', () => {
     })
 })
 
-describe('Mobile CSS: Track editor + note editor side-by-side in landscape', () => {
-    it('#te-panel: flex row layout for landscape', () => {
-        const re = /@media\s*\(min-width:\s*600px\)\s*\{[\s\S]*?#te-panel\s*\{[\s\S]*?flex-direction:\s*row/s
-        expect(re.test(MOBILE_MEDIA)).toBe(true)
+describe('Mobile CSS: Track editor + note editor 3-column landscape layout', () => {
+    it('.mobile-track-3col: flex row layout', () => {
+        expect(hasRuleAnywhere('.mobile-track-3col', 'display', 'flex')).toBe(true)
+        expect(hasRuleAnywhere('.mobile-track-3col', 'flex-direction', 'row')).toBe(true)
     })
 
-    it('.track-editor gets flex: 1 1 50% in landscape', () => {
-        const re = /@media\s*\(min-width:\s*600px\)\s*\{[\s\S]*?#te-panel\s*>\s*\.track-editor\s*\{[\s\S]*?flex:\s*1\s*1\s*50%/s
-        expect(re.test(MOBILE_MEDIA)).toBe(true)
+    it('.mtl-col: flex column with overflow-y auto', () => {
+        expect(hasRuleAnywhere('.mtl-col', 'display', 'flex')).toBe(true)
+        expect(hasRuleAnywhere('.mtl-col', 'flex-direction', 'column')).toBe(true)
+        expect(hasRuleAnywhere('.mtl-col', 'overflow-y', 'auto')).toBe(true)
     })
 
-    it('#ne-container gets flex: 1 1 50% and left border in landscape', () => {
-        const re = /@media\s*\(min-width:\s*600px\)\s*\{[\s\S]*?#ne-container\s*\{[\s\S]*?flex:\s*1\s*1\s*50%/s
-        expect(re.test(MOBILE_MEDIA)).toBe(true)
-        const reBorder = /@media\s*\(min-width:\s*600px\)\s*\{[\s\S]*?#ne-container\s*\{[\s\S]*?border-left/s
-        expect(reBorder.test(MOBILE_MEDIA)).toBe(true)
+    it('.mtl-knobs: fixed-width column with border-right', () => {
+        expect(hasRuleAnywhere('.mtl-knobs', 'border-right', '1px solid var(--border-subtle)')).toBe(true)
     })
 
-    it('visible tab panel gets column-count: 2 for two-column layout', () => {
-        const re = /@media\s*\(min-width:\s*600px\)\s*\{[\s\S]*?\.ne-tab-panel:not\(\.ne-tab-panel-hidden\)\s*\{[\s\S]*?column-count:\s*2/s
-        expect(re.test(MOBILE_MEDIA)).toBe(true)
+    it('.mtl-note-tabs: border-left separator', () => {
+        expect(hasRuleAnywhere('.mtl-note-tabs', 'border-left', '1px solid var(--border-subtle)')).toBe(true)
     })
 
-    it('.ne-row gets break-inside: avoid for clean column breaks', () => {
-        const re = /@media\s*\(min-width:\s*600px\)\s*\{[\s\S]*?\.ne-row\s*\{[\s\S]*?break-inside:\s*avoid/s
-        expect(re.test(MOBILE_MEDIA)).toBe(true)
+    it('visible tab panel in mtl-col gets column-count: 2', () => {
+        expect(hasRuleAnywhere('.mtl-col .ne-tab-panel:not(.ne-tab-panel-hidden)', 'column-count', '2')).toBe(true)
+    })
+
+    it('.mtl-col .ne-row gets break-inside: avoid', () => {
+        expect(hasRuleAnywhere('.mtl-col .ne-row', 'break-inside', 'avoid')).toBe(true)
     })
 })
 

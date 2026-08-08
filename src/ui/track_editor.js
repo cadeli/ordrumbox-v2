@@ -14,6 +14,7 @@ import { fmt, setViewBtn, knobFormat } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 import { TICK, isMobileViewport } from '../core/constants.js'
+import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
 import LfoUiBridge from '../logic/lfo_ui_bridge.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
 import { logger } from "../core/logger.js"
@@ -443,6 +444,12 @@ export default class TrackEditor extends BasePanel {
         this.reposition()
         this._bindEvents()
         this._drawSampleWaveform()
+
+        if (isMobileLandscape()) {
+            applyLayout(this.container, this._neContainer)
+        } else {
+            removeLayout(this.container)
+        }
     }
 
     _renderSampleBar() {
