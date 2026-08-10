@@ -91,6 +91,19 @@ describe('TrackEditor — OrSlider integration', () => {
         }
     })
 
+    it('switches FX subtabs without rebuilding the Track Editor', () => {
+        editor._track = makeTrack()
+        editor.sync()
+        const syncSpy = vi.spyOn(editor, 'sync')
+
+        editor.container.querySelector('[data-fx-tab="1"]').click()
+
+        expect(syncSpy).not.toHaveBeenCalled()
+        expect(editor.container.querySelector('[data-fx-panel="1"]').classList.contains('fx-tab-panel-hidden')).toBe(false)
+        expect(editor.container.querySelector('[data-fx-panel="0"]').classList.contains('fx-tab-panel-hidden')).toBe(true)
+        expect(editor.container.querySelector('[data-fx-tab="1"]').closest('.te-mod-btn').classList.contains('active')).toBe(true)
+    })
+
     it('filterType renders as icon buttons', () => {
         editor._track = makeTrack()
         editor.sync()

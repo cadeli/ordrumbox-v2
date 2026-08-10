@@ -1065,8 +1065,16 @@ export default class TrackEditor extends BasePanel {
 
     _onFxTab(btn) {
         const tabIdx = parseInt(btn.dataset.fxTab, 10)
-        this._fxTab.setActive(String(tabIdx))
-        this.sync()
+        if (Number.isNaN(tabIdx)) return
+
+        const activeTab = String(tabIdx)
+        this._fxTab.setActive(activeTab)
+        this._fxTab.togglePanels(this.container)
+
+        this.container.querySelectorAll('.te-mod-btn').forEach(tab => {
+            const tabButton = tab.querySelector('[data-fx-tab]')
+            tab.classList.toggle('active', tabButton?.dataset.fxTab === activeTab)
+        })
     }
 
     _onLfoSelectBtn(targetKey) {

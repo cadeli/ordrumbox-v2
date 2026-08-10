@@ -254,6 +254,7 @@ body {
     min-height: 0;
     display: flex;
     flex-direction: column;
+    scrollbar-gutter: stable;
 }
 #pattern-panel .pp-header {
     display: flex; align-items: center; gap: 10px;
@@ -804,6 +805,11 @@ body {
 }
 .ne-tab-panel-hidden { display: none !important; }
 .fx-tab-panel-hidden { display: none !important; }
+.fx-tab-panel {
+    /* Every FX tab occupies the same footprint, preventing a vertical jump
+       between short tabs (reverb/saturation) and the filter controls. */
+    min-height: 140px;
+}
 .ss-body-empty { padding: 20px; color: #666; text-align: center; }
 .ss-tb-btn-boolean { font-size: var(--fs-xs); height: 22px; padding: 0 8px; }
 /* Track editor: highlight the row currently selected for LFO editing, and
