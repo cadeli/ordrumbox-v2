@@ -26,6 +26,7 @@ import { playbackEvents } from './state/playback_events.js'
 import { logger } from "./core/logger.js"
 import { showToast } from './ui/toast.js'
 import { idbReport } from './core/idb.js'
+import { isMobileViewport } from './core/constants.js'
 
 logger.suppressTags(['Instrument', 'Fallback', 'PatternImport'])
 logger.setLevel(logger.LEVELS?.INFO ?? 1)
@@ -194,6 +195,10 @@ export function init() {
 
             // Start in split mode (after patterns loaded)
             playbackEvents.dispatchEditToggle()
+
+            if (!isMobileViewport()) {
+                playbackEvents.dispatchOutputToggle(true)
+            }
         }
 
         idbReport().then(report => {
