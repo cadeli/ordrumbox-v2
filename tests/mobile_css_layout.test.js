@@ -96,8 +96,8 @@ describe('Mobile CSS: Toolbar overrides', () => {
         expect(hasRule(MOBILE_MEDIA, '#tb .tb-pattern-name-mobile', 'flex', '1')).toBe(true)
     })
 
-    it('shows .tb-settings-btn with display: flex', () => {
-        expect(hasRule(MOBILE_MEDIA, '#tb .tb-settings-btn', 'display', 'flex')).toBe(true)
+    it('hides .tb-settings-btn on mobile', () => {
+        expect(hasRule(MOBILE_MEDIA, '#tb .tb-settings-btn', 'display', 'none')).toBe(true)
     })
 
     it('hides .tb-view-row (desktop view buttons)', () => {
@@ -121,8 +121,8 @@ describe('Mobile CSS: Desktop base hides mobile-only elements', () => {
 
 describe('Mobile CSS: Panel full-width positioning', () => {
     for (const sel of MOBILE_PANELS) {
-        it(`${sel}: top: 48px, left: 0, width: 100%, bottom: 60px`, () => {
-            expect(hasRule(MOBILE_MEDIA, sel, 'top', '48px !important')).toBe(true)
+        it(`${sel}: top: var(--tb-h, 48px), left: 0, width: 100%, bottom: 60px`, () => {
+            expect(hasRule(MOBILE_MEDIA, sel, 'top', 'var(--tb-h, 48px) !important')).toBe(true)
             expect(hasRule(MOBILE_MEDIA, sel, 'left', '0 !important')).toBe(true)
             expect(hasRule(MOBILE_MEDIA, sel, 'width', '100% !important')).toBe(true)
             expect(hasRule(MOBILE_MEDIA, sel, 'bottom', '60px !important')).toBe(true)
@@ -135,9 +135,9 @@ describe('Mobile CSS: Panel full-width positioning', () => {
 })
 
 describe('Mobile CSS: Pattern settings panel', () => {
-    it('#pattern-settings-panel: position fixed, top 48px', () => {
+    it('#pattern-settings-panel: position fixed, top var(--tb-h, 48px)', () => {
         expect(hasRule(MOBILE_MEDIA, '#pattern-settings-panel', 'position', 'fixed')).toBe(true)
-        expect(hasRule(MOBILE_MEDIA, '#pattern-settings-panel', 'top', '48px')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '#pattern-settings-panel', 'top', 'var(--tb-h, 48px)')).toBe(true)
     })
 
     it('#pattern-settings-panel: left: 0, right: 0, bottom: 60px', () => {
@@ -197,9 +197,8 @@ describe('Mobile CSS: Tab bar base styles', () => {
         expect(hasRuleAnywhere('#mobile-tab-bar', 'justify-content', 'space-around')).toBe(true)
     })
 
-    it('.mtb-btn: flex: 1, flex-direction: column', () => {
+    it('.mtb-btn: flex: 1', () => {
         expect(hasRuleAnywhere('#mobile-tab-bar .mtb-btn', 'flex', '1')).toBe(true)
-        expect(hasRuleAnywhere('#mobile-tab-bar .mtb-btn', 'flex-direction', 'column')).toBe(true)
     })
 
     it('.mtb-btn.active: color accent', () => {

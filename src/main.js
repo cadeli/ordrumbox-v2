@@ -128,6 +128,17 @@ export function init() {
         })
     })
 
+    const tbEl = document.getElementById('tb')
+    if (tbEl && typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                document.documentElement.style.setProperty('--tb-h', `${entry.contentRect.height}px`)
+            }
+        })
+        ro.observe(tbEl)
+        document.documentElement.style.setProperty('--tb-h', `${tbEl.getBoundingClientRect().height}px`)
+    }
+
     // Ensure all <input type="range"> sliders respond to Arrow Left/Right
     // when focused, regardless of native browser quirks or CSS that might
     // block the default behavior (e.g. the LFO dual-range container uses
@@ -195,8 +206,11 @@ export function init() {
             // Then select pattern (which will auto-assign once sounds are loaded)
             serviceRegistry.mfCmd.setSelectedPatternNum(0)
 
-            // Start in split mode (after patterns loaded)
-            playbackEvents.dispatchEditToggle()
+            if (isMobileViewport()) {
+                playbackEvents.dispatchMobileSeqToggle()
+            } else {
+                playbackEvents.dispatchEditToggle()
+            }
 
             if (!isMobileViewport()) {
                 playbackEvents.dispatchOutputToggle(true)

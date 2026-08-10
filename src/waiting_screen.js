@@ -35,10 +35,18 @@ class WaitingScreen {
         const screen = document.createElement('div')
         screen.id = 'waiting-screen'
 
+        const logo = document.createElement('img')
+        logo.src = new URL('../assets/images/logo-big.png', import.meta.url).href
+        logo.alt = 'orDrumbox v2'
+        logo.width = 600
+        logo.height = 300
+        logo.fetchPriority = 'high'
+
         const btn = document.createElement('button')
         btn.id = 'waiting-screen-start-btn'
         btn.textContent = 'Start orDrumbox V2'
 
+        screen.appendChild(logo)
         screen.appendChild(btn)
         container.appendChild(screen)
 

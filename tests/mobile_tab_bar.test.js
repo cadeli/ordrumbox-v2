@@ -231,7 +231,7 @@ describe('Mobile tab bar', () => {
             expect(el).not.toBeNull()
         })
 
-        it('CSS contains mobile overrides: top 48px and width 100% for all panels', () => {
+        it('CSS contains mobile overrides: top var(--tb-h, 48px) and width 100% for all panels', () => {
             const __filename = fileURLToPath(import.meta.url)
             const __dirname = dirname(__filename)
             const cssPath = resolve(__dirname, '../src/ui/styles.css')
@@ -240,7 +240,7 @@ describe('Mobile tab bar', () => {
             const selectors = ['#pattern-panel', '#te-panel', '#soft-synth-panel', '#tools-panel', '#piano-roll-panel']
             for (const sel of selectors) {
                 const escapedSel = sel.replace('#', '\\#')
-                const regex = new RegExp(`${escapedSel}\\s*\\{[^}]*top:\\s*48px[^}]*width:\\s*100%`, 's')
+                const regex = new RegExp(`${escapedSel}\\s*\\{[^}]*top:\\s*var\\(--tb-h,\\s*48px\\)[^}]*width:\\s*100%`, 's')
                 expect(css).toMatch(regex)
             }
         })

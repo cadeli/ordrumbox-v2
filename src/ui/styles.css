@@ -1163,12 +1163,20 @@ body {
     background-color: var(--bg-surface);
     z-index: var(--z-toast);
 }
+#waiting-screen img {
+    max-width: 100%;
+    height: auto;
+    pointer-events: none;
+}
 #waiting-screen-start-btn {
-    width: 100%; max-width: 480px; box-sizing: border-box;
+    position: absolute;
+    top: 66.67%; left: 50%;
+    transform: translate(-50%, -50%);
     padding: 20px 40px; font-size: 18px; font-weight: bold;
     border: 3px solid var(--text); border-radius: 8px;
     cursor: pointer; background-color: var(--color-warning); color: var(--text);
     touch-action: manipulation;
+    z-index: 1;
 }
 #waiting-screen-start-btn.ready { background-color: var(--color-info); color: var(--text); }
 
@@ -1522,24 +1530,9 @@ body {
         cursor: text;
     }
 
-    /* Settings button for pattern settings panel */
+    /* Settings button for pattern settings panel — hidden on mobile */
     #tb .tb-settings-btn {
-        background: var(--bg-input);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        color: var(--text-dim);
-        font-size: var(--fs-lg);
-        width: 32px;
-        height: 32px;
-        cursor: pointer;
-        touch-action: manipulation;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    #tb .tb-settings-btn:hover {
-        background: var(--bg-hover);
+        display: none;
     }
 
     /* Pattern settings panel (mobile overlay) */
@@ -1561,7 +1554,7 @@ body {
 
     #pattern-settings-panel {
         position: fixed;
-        top: 48px;
+        top: var(--tb-h, 48px);
         left: 0;
         right: 0;
         bottom: 60px;
@@ -1664,9 +1657,9 @@ body {
         box-sizing: border-box;
     }
 
-    /* Mobile: all panels full width, positioned below toolbar (48px) and above tab bar (60px) */
+    /* Mobile: all panels full width, positioned below toolbar and above tab bar (60px) */
     #pattern-panel {
-        top: 48px !important;
+        top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
@@ -1675,7 +1668,7 @@ body {
     }
 
     #te-panel {
-        top: 48px !important;
+        top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
@@ -1869,7 +1862,7 @@ body {
     }
 
     #soft-synth-panel {
-        top: 48px !important;
+        top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
@@ -1878,7 +1871,7 @@ body {
     }
 
     #tools-panel {
-        top: 48px !important;
+        top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
@@ -1887,7 +1880,7 @@ body {
     }
 
     #piano-roll-panel {
-        top: 48px !important;
+        top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
@@ -1896,7 +1889,7 @@ body {
     }
 
     #about-panel {
-        top: 48px !important;
+        top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
@@ -1905,7 +1898,7 @@ body {
     }
 
     #output-panel {
-        top: 48px !important;
+        top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
@@ -1914,7 +1907,7 @@ body {
     }
 
     #dm-panel {
-        top: 48px !important;
+        top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
@@ -1943,22 +1936,16 @@ body {
 #mobile-tab-bar .mtb-btn {
     flex: 1;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     background: none;
     border: none;
     color: var(--text-dim);
-    font-size: var(--fs-xs);
+    font-size: var(--fs-sm);
     cursor: pointer;
     touch-action: manipulation;
     padding: 4px;
     box-sizing: border-box;
-}
-
-#mobile-tab-bar .mtb-btn i {
-    font-size: var(--fs-lg);
-    margin-bottom: 2px;
 }
 
 #mobile-tab-bar .mtb-btn.active {
