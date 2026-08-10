@@ -1668,10 +1668,10 @@ body {
     }
 
     #te-panel {
+        position: fixed !important;
         top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
-        height: auto !important;
         bottom: 60px !important;
         overflow: hidden !important;
         padding: 0 !important;
