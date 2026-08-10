@@ -133,7 +133,7 @@ export class OrTab {
     bindTo(root) {
         const { bar, dataAttr } = this.#css
         const camelDataAttr = OrTab.#toCamel(dataAttr)
-        const barEl = root.querySelector(`.${bar}`)
+        const barEl = root.classList?.contains(bar) ? root : (root.querySelector(`:scope > .${bar}`) ?? root.querySelector(`.${bar}`))
         if (!barEl || barEl.dataset.orTabBound) return
         barEl.dataset.orTabBound = '1'
         barEl.addEventListener('click', (e) => {

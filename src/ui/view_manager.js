@@ -1,18 +1,21 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { appState } from '../state/app_state.js'
 import { setViewMode } from './components/panel_helpers.js'
+import { isMobileViewport } from '../core/constants.js'
 
 /**
- * ViewManager — single coordinator for synth / edit / proll view switching.
- * Listens to the 3 toolbar toggle events and calls panel.show() / panel.hide()
+ * ViewManager — single coordinator for synth / edit / proll / tools view switching.
+ * Listens to toolbar and tab toggle events and calls panel.show() / panel.hide()
  * without touching another panel's DOM.
  */
 export default class ViewManager {
-    constructor({ trackEditor, synthEditor, pianoRollPanel, noteEditor }) {
+    constructor({ trackEditor, synthEditor, pianoRollPanel, noteEditor, toolsPanel, patternSettingsPanel }) {
         this._trackEditor = trackEditor
         this._synthEditor = synthEditor
         this._pianoRollPanel = pianoRollPanel
         this._noteEditor = noteEditor
+        this._toolsPanel = toolsPanel
+        this._patternSettingsPanel = patternSettingsPanel
         this._currentView = null
     }
 
@@ -22,6 +25,10 @@ export default class ViewManager {
         playbackEvents.onProllToggle.push(() => this._switchTo('proll'))
         playbackEvents.onMobileSeqToggle.push(() => this._switchTo('mobileSeq'))
         playbackEvents.onMobileTrackToggle.push(() => this._switchTo('mobileTrack'))
+        playbackEvents.onToolsToggle.push((show) => {
+            if (show) this._switchTo('tools')
+            else if (this._currentView === 'tools') this._switchTo('mobileSeq')
+        })
     }
 
     get currentView() {
@@ -32,6 +39,10 @@ export default class ViewManager {
         if (view === this._currentView) return
         const prev = this._currentView
         this._currentView = view
+
+        if (this._patternSettingsPanel?.hide) {
+            this._patternSettingsPanel.hide()
+        }
 
         if (prev === 'synth') this._synthEditor.hidePanel()
         if (prev === 'proll') this._pianoRollPanel.hide()
@@ -47,12 +58,16 @@ export default class ViewManager {
             this._noteEditor.hide()
             this._trackEditor.hide()
         }
+        if (prev === 'tools') {
+            this._toolsPanel?.hide()
+        }
 
         if (view === 'synth') this._showSynth()
         if (view === 'proll') this._showProll()
         if (view === 'edit') this._showEdit()
         if (view === 'mobileSeq') this._showMobileSeq()
         if (view === 'mobileTrack') this._showMobileTrack()
+        if (view === 'tools') this._showTools()
 
         setViewMode(view)
     }
@@ -60,6 +75,7 @@ export default class ViewManager {
     _showSynth() {
         this._noteEditor.hide()
         this._trackEditor.hide()
+        this._toolsPanel?.hide()
         void this._synthEditor.showPanel()
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
     }
@@ -67,6 +83,7 @@ export default class ViewManager {
     _showEdit() {
         this._synthEditor.hidePanel()
         this._pianoRollPanel.hide()
+        this._toolsPanel?.hide()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
         if (!this._trackEditor.isVisible) {
             const pattern = appState.patterns[appState.selectedPatternNum]
@@ -84,11 +101,14 @@ export default class ViewManager {
         this._synthEditor.hidePanel()
         this._noteEditor.hide()
         this._trackEditor.hide()
-        const tePanel = document.getElementById('te-panel')
-        if (tePanel) {
-            tePanel.classList.remove('ui-hidden')
-            tePanel.classList.add('pp-split')
-            tePanel.style.display = 'block'
+        this._toolsPanel?.hide()
+        if (!isMobileViewport()) {
+            const tePanel = document.getElementById('te-panel')
+            if (tePanel) {
+                tePanel.classList.remove('ui-hidden')
+                tePanel.classList.add('pp-split')
+                tePanel.style.display = 'block'
+            }
         }
         this._pianoRollPanel.show()
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
@@ -98,12 +118,14 @@ export default class ViewManager {
         this._synthEditor.hidePanel()
         this._noteEditor.hide()
         this._trackEditor.hide()
+        this._toolsPanel?.hide()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
     }
 
     _showMobileTrack() {
         this._synthEditor.hidePanel()
         this._pianoRollPanel.hide()
+        this._toolsPanel?.hide()
         const pattern = appState.patterns[appState.selectedPatternNum]
         const idx = appState.selectedTrackNum
         const track = pattern?.tracks?.[idx]
@@ -113,4 +135,16 @@ export default class ViewManager {
         }
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
     }
+
+    _showTools() {
+        this._synthEditor.hidePanel()
+        this._pianoRollPanel.hide()
+        this._noteEditor.hide()
+        this._trackEditor.hide()
+        document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+        if (this._toolsPanel) {
+            this._toolsPanel.show()
+        }
+    }
 }
+

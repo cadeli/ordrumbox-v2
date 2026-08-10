@@ -58,8 +58,9 @@ export default class MobileTabBar {
         }
         for (const [event, tab] of Object.entries(tabMap)) {
             const onKey = 'on' + event.charAt(0).toUpperCase() + event.slice(1)
-            playbackEvents[onKey].push(() => {
+            playbackEvents[onKey].push((arg) => {
                 if (!this._isSwitching) {
+                    if (event === 'toolsToggle' && arg === false) return
                     this._currentTab = tab
                     this._updateActive()
                 }

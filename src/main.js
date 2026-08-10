@@ -108,6 +108,8 @@ export function init() {
         synthEditor: _trackEditor.synthEditor,
         pianoRollPanel: _pianoRollPanel,
         noteEditor: _noteEditor,
+        toolsPanel: _toolsPanel,
+        patternSettingsPanel: _patternSettingsPanel,
     })
     _viewManager.init()
 

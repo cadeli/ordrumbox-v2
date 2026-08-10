@@ -383,11 +383,16 @@ export default class TrackEditor extends BasePanel {
             panelsHtml += `<div class="ne-tab-panel ${isHidden ? 'ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${content}</div>`
         }
 
+        if (this._neContainer && this._neContainer.parentElement && this._neContainer.parentElement !== this.container) {
+            this.container.appendChild(this._neContainer)
+        }
+
         this.container.innerHTML = `<div class="track-editor">${headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + `<div class="te-scroll">${panelsHtml}</div>`}</div>`
         if (this._neContainer) {
             this.container.appendChild(this._neContainer)
         }
-        this._tab.bindTo(this.container)
+        const teElement = this.container.querySelector('.track-editor') ?? this.container
+        this._tab.bindTo(teElement)
         
         // Mount main sliders
         this._sliders.forEach(s => {
@@ -447,6 +452,9 @@ export default class TrackEditor extends BasePanel {
 
         if (isMobileLandscape()) {
             applyLayout(this.container, this._neContainer)
+            if (this._track) {
+                this._showNoteEditorForTrack(this._track, this._trackIdx)
+            }
         } else {
             removeLayout(this.container)
         }
@@ -1127,6 +1135,7 @@ export default class TrackEditor extends BasePanel {
 
     hide() {
         if (!this.isVisible) return
+        if (this.container) removeLayout(this.container)
         super.hide()
         this.synthEditor.reset()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')

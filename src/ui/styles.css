@@ -1706,37 +1706,122 @@ body {
         min-width: 0;
         overflow-y: auto;
         overflow-x: hidden;
+        position: relative;
     }
 
     .mtl-knobs {
-        flex: 0 0 auto;
+        flex: 0 0 170px;
+        width: 170px;
+        min-width: 140px;
+        max-width: 180px;
         padding: 4px;
+        box-sizing: border-box;
         border-right: 1px solid var(--border-subtle);
     }
 
+    .mtl-knobs .ne-header {
+        font-size: var(--fs-xs);
+        padding: 2px;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mtl-knobs .te-sample-bar {
+        padding: 4px;
+        margin-bottom: 4px;
+        gap: 4px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mtl-knobs .te-knob-bar {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 4px 6px;
+        padding: 4px;
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .mtl-knobs .te-knob-bar .ne-row-knob {
+        width: 46px;
+        padding: 0;
+        gap: 1px;
+    }
+
+    .mtl-knobs .te-knob-bar .or-knob {
+        width: 32px;
+        height: 32px;
+    }
+
+    .mtl-knobs .te-knob-bar .or-knob-label,
+    .mtl-knobs .te-knob-bar .ne-val {
+        font-size: 8px;
+    }
+
     .mtl-track-tabs {
-        flex: 1 1 40%;
+        flex: 1 1 50%;
     }
 
     .mtl-note-tabs {
-        flex: 1 1 40%;
+        flex: 1 1 50%;
         border-left: 1px solid var(--border-subtle);
+    }
+
+    /* Make tab bars sticky at top of column during scrolling */
+    .mtl-track-tabs > .ne-tab-bar,
+    .mtl-note-tabs .ne-tab-bar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--bg);
+        padding: 2px 0;
+        margin: 0;
+        border-bottom: 1px solid var(--border-subtle);
+        flex-shrink: 0;
     }
 
     .mtl-col .te-scroll {
         flex: 1;
-        overflow-y: auto;
-        overflow-x: hidden;
+        overflow: visible;
     }
 
     .mtl-col .ne-tab-panel:not(.ne-tab-panel-hidden) {
         column-count: 2;
         column-gap: 8px;
+        padding: 4px;
+        box-sizing: border-box;
     }
 
     .mtl-col .ne-row {
         break-inside: avoid;
         page-break-inside: avoid;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 4px;
+    }
+
+    .mtl-col .ne-row label {
+        font-size: var(--fs-xs);
+        min-width: 45px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mtl-col .ne-row input[type="range"],
+    .mtl-col .ne-row select,
+    .mtl-col .ne-row .ne-btn {
+        min-width: 0;
+        flex: 1;
     }
 
     #ne-container {
@@ -1744,7 +1829,38 @@ body {
         height: auto !important;
         border-top: none !important;
         margin-top: 0 !important;
-        padding: 4px 8px;
+        padding: 2px 4px;
+        align-self: stretch;
+        box-sizing: border-box;
+    }
+
+    #ne-container .ne-header {
+        font-size: var(--fs-xs);
+        padding: 2px 4px;
+        margin-bottom: 2px;
+    }
+
+    #ne-container .ne-knob-bar {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 4px;
+        padding: 2px 4px;
+        margin-bottom: 4px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    #ne-container .ne-knob-bar .ne-row-knob {
+        width: 44px;
+        padding: 0;
+        gap: 1px;
+    }
+
+    #ne-container .ne-knob-bar .or-knob {
+        width: 30px;
+        height: 30px;
     }
 
     .te-waveform {
