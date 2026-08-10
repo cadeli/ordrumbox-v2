@@ -153,7 +153,7 @@ body {
 #tb .tb-tools:hover { border-color: var(--accent); }
 #tb .tb-pattern-name-mobile { display: none; }
 #tb .tb-settings-btn { display: none; }
-#tb select { min-width: 90px; max-width: 140px; }
+#tb select { min-width: 60px; max-width: 140px; }
 #tb .tb-bpm-toggle { width: 48px; font-size: var(--fs-base); padding: 5px 6px; text-align: center; }
 #tb .tb-bpm-panel {
     display: none; align-items: center; gap: 6px;
