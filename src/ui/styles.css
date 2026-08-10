@@ -1616,7 +1616,47 @@ body {
 
     /* Hide desktop toolbar items that move to mobile tab bar */
     #tb .tb-view-row { display: none; }
-    #tb .tb-gen-row { display: none; }
+
+    /* Mobile: compact page/beats/gen controls in toolbar */
+    #tb .tb-page-group .tb-label,
+    #tb .tb-beats-group .tb-label,
+    #tb .tb-gen-group .tb-label {
+        display: none;
+    }
+
+    #tb .tb-page-group,
+    #tb .tb-beats-group,
+    #tb .tb-gen-group {
+        gap: 2px;
+    }
+
+    #tb .tb-page-row {
+        gap: 2px;
+    }
+
+    #tb .tb-prev-page,
+    #tb .tb-next-page {
+        width: 24px;
+        height: 24px;
+        font-size: var(--fs-xs);
+    }
+
+    #tb .tb-page-label {
+        font-size: var(--fs-xs);
+        min-width: 20px;
+    }
+
+    #tb .tb-beats-group select {
+        height: 24px;
+        font-size: var(--fs-xs);
+        padding: 0 2px;
+    }
+
+    #tb .tb-gen-btn {
+        font-size: var(--fs-xs);
+        padding: 3px 5px;
+        white-space: nowrap;
+    }
 
     /* Mobile: pattern panel takes full width */
     .pp-container {

@@ -112,7 +112,7 @@ export default class Toolbar {
         patWrap.appendChild(this.patternSelect)
 
         const pageWrap = document.createElement('div')
-        pageWrap.className = 'tb-group tb-hide-mobile'
+        pageWrap.className = 'tb-group tb-page-group'
         const pageLabelTop = document.createElement('span')
         pageLabelTop.className = 'tb-label'
         pageLabelTop.textContent = 'Page'
@@ -148,7 +148,7 @@ export default class Toolbar {
         kitWrap.appendChild(this.drumkitSelect)
 
         const genWrap = document.createElement('div')
-        genWrap.className = 'tb-group tb-hide-mobile'
+        genWrap.className = 'tb-group tb-gen-group'
         const genLabel = document.createElement('span')
         genLabel.className = 'tb-label'
         genLabel.textContent = 'Generation'
@@ -204,7 +204,7 @@ export default class Toolbar {
         viewWrap.appendChild(viewRow)
 
         const beatsWrap = document.createElement('div')
-        beatsWrap.className = 'tb-group tb-hide-mobile'
+        beatsWrap.className = 'tb-group tb-beats-group'
         const beatsLabel = document.createElement('span')
         beatsLabel.className = 'tb-label'
         beatsLabel.textContent = 'Beats'

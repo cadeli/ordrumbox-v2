@@ -104,8 +104,8 @@ describe('Mobile CSS: Toolbar overrides', () => {
         expect(hasRule(MOBILE_MEDIA, '#tb .tb-view-row', 'display', 'none')).toBe(true)
     })
 
-    it('hides .tb-gen-row (desktop gen buttons)', () => {
-        expect(hasRule(MOBILE_MEDIA, '#tb .tb-gen-row', 'display', 'none')).toBe(true)
+    it('hides .tb-view-row (desktop view buttons)', () => {
+        expect(hasRule(MOBILE_MEDIA, '#tb .tb-view-row', 'display', 'none')).toBe(true)
     })
 })
 
