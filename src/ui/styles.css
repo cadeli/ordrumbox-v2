@@ -746,6 +746,8 @@ body {
     box-sizing: border-box;
     background: var(--bg); border-bottom: 2px solid var(--accent);
     padding: 8px 12px; overflow-x: auto;
+    /* Reserve scrollbar space so opening a long panel does not resize its controls. */
+    scrollbar-gutter: stable;
     font-family: monospace; font-size: var(--fs-base); color: var(--text-secondary);
     z-index: var(--z-toolbar);
     min-height: auto;
@@ -999,6 +1001,20 @@ body {
 }
 .ne-btn { width: 100%; box-sizing: border-box; }
 .ne-btn.active { background: var(--accent); border-color: var(--accent); color: var(--text); }
+
+/* Tools actions are independent commands, not form fields.  Keeping their
+   intrinsic width avoids oversized buttons when the fixed panel is wide. */
+#tools-panel .ne-tab-panel {
+    grid-template-columns: repeat(auto-fit, minmax(140px, max-content));
+    justify-content: start;
+    align-content: start;
+}
+#tools-panel .ne-row { min-width: 0; }
+#tools-panel .ne-btn {
+    width: auto;
+    min-width: 140px;
+    max-width: 100%;
+}
 
 /* ---- Soft Synth Editor ---- */
 #soft-synth-panel {
@@ -1565,6 +1581,7 @@ body {
         padding: 8px;
         padding-top: 36px;
         box-sizing: border-box;
+        scrollbar-gutter: stable;
         display: none;
     }
 
@@ -1593,12 +1610,45 @@ body {
 
     #pattern-settings-panel .ps-control {
         flex: 1;
+        min-width: 0;
     }
 
-    #pattern-settings-panel select,
-    #pattern-settings-panel button {
+    #pattern-settings-panel .ps-row > select {
+        flex: 1;
+        min-width: 0;
         width: 100%;
         font-size: var(--fs-base);
+        padding: 6px 8px;
+    }
+
+    #pattern-settings-panel .ps-page-controls {
+        display: grid;
+        grid-template-columns: 32px minmax(32px, max-content) 32px;
+        justify-content: start;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #pattern-settings-panel .ps-page-controls .ps-btn {
+        width: 32px;
+        padding: 6px 0;
+    }
+
+    #pattern-settings-panel .ps-page-label {
+        min-width: 32px;
+        text-align: center;
+    }
+
+    #pattern-settings-panel .ps-gen-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    #pattern-settings-panel .ps-gen-controls .ps-btn {
+        flex: 1 1 82px;
+        min-width: 0;
+        width: auto;
         padding: 6px 8px;
     }
 

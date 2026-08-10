@@ -165,12 +165,21 @@ describe('Mobile CSS: Pattern settings panel', () => {
         expect(hasRule(MOBILE_MEDIA, '#pattern-settings-panel .ps-close-btn', 'right', '8px')).toBe(true)
     })
 
-    it('panel controls (select, button): width 100%', () => {
-        const re = /#pattern-settings-panel\s+(select|button)\s*\{[^}]*width\s*:\s*100%/g
-        const selectMatch = re.test(MOBILE_MEDIA)
-        re.lastIndex = 0
-        const buttonMatch = re.test(MOBILE_MEDIA)
-        expect(selectMatch || buttonMatch).toBe(true)
+    it('keeps select controls fluid without making action buttons full width', () => {
+        expect(hasRule(MOBILE_MEDIA, '#pattern-settings-panel .ps-row > select', 'width', '100%')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '#pattern-settings-panel .ps-gen-controls .ps-btn', 'width', 'auto')).toBe(true)
+    })
+
+    it('lays out page and generation actions as compact control groups', () => {
+        expect(hasRule(MOBILE_MEDIA, '#pattern-settings-panel .ps-page-controls', 'display', 'grid')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '#pattern-settings-panel .ps-gen-controls', 'display', 'flex')).toBe(true)
+    })
+})
+
+describe('Tools panel action sizing', () => {
+    it('uses compact intrinsic-width actions rather than panel-wide buttons', () => {
+        expect(hasRuleAnywhere('#tools-panel .ne-btn', 'width', 'auto')).toBe(true)
+        expect(hasRuleAnywhere('#tools-panel .ne-btn', 'min-width', '140px')).toBe(true)
     })
 })
 
