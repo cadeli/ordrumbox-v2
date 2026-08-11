@@ -10,7 +10,7 @@
                 "url": "real/kick.wav",
                 "peakDb": -3,
                 "rootMidi": 72,
-                "decay": 34
+                "decay": 5000
             },
             {
                 "display_name": "snare",
@@ -18,7 +18,7 @@
                 "url": "real/snare.wav",
                 "peakDb": -3,
                 "rootMidi": 31,
-                "decay": 89
+                "decay": 5000
             },
             {
                 "display_name": "tom",
@@ -26,7 +26,7 @@
                 "url": "real/tom.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 422
+                "decay": 5000
             },
             {
                 "display_name": "rimshot",
@@ -34,7 +34,7 @@
                 "url": "real/rim.wav",
                 "peakDb": -3,
                 "rootMidi": 19,
-                "decay": 85
+                "decay": 5000
             },
             {
                 "display_name": "cow",
@@ -42,7 +42,7 @@
                 "url": "real/cow.wav",
                 "peakDb": -3,
                 "rootMidi": 62,
-                "decay": 526
+                "decay": 5000
             },
             {
                 "display_name": "chh",
@@ -50,7 +50,7 @@
                 "url": "real/chh.wav",
                 "peakDb": -3,
                 "rootMidi": 72,
-                "decay": 126
+                "decay": 5000
             },
             {
                 "display_name": "ohh",
@@ -58,7 +58,7 @@
                 "url": "real/ohh.wav",
                 "peakDb": -3,
                 "rootMidi": 67,
-                "decay": 218
+                "decay": 5000
             },
             {
                 "display_name": "crash",
@@ -66,7 +66,7 @@
                 "url": "real/crash.wav",
                 "peakDb": -3,
                 "rootMidi": 72,
-                "decay": 354
+                "decay": 5000
             },
             {
                 "display_name": "congas",
@@ -74,7 +74,7 @@
                 "url": "real/congas.wav",
                 "peakDb": -3,
                 "rootMidi": 79,
-                "decay": 107
+                "decay": 5000
             },
             {
                 "display_name": "low_congas",
@@ -82,7 +82,7 @@
                 "url": "real/low_congas.wav",
                 "peakDb": -3,
                 "rootMidi": 65,
-                "decay": 129
+                "decay": 5000
             },
             {
                 "display_name": "bass-c3",
@@ -90,7 +90,7 @@
                 "url": "real/bass-c3.wav",
                 "peakDb": -3,
                 "rootMidi": 36,
-                "decay": 830
+                "decay": 5000
             },
             {
                 "display_name": "gtr-c3",
@@ -98,7 +98,7 @@
                 "url": "real/gtr-c3.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 302
+                "decay": 5000
             },
             {
                 "display_name": "piano-c3",
@@ -106,7 +106,7 @@
                 "url": "real/piano-c3.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 600
+                "decay": 5000
             },
             {
                 "display_name": "synth-c3",
@@ -114,7 +114,7 @@
                 "url": "real/synth-c3.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 3790
+                "decay": 5000
             },
             {
                 "display_name": "tambourine.wav",
@@ -122,7 +122,7 @@
                 "url": "real/tambourine.wav",
                 "peakDb": -3,
                 "rootMidi": 67,
-                "decay": 292
+                "decay": 5000
             }
         ]
     },
@@ -137,7 +137,7 @@
                 "url": "matt/CHH.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 234
+                "decay": 5000
             },
             {
                 "display_name": "SNAREH",
@@ -145,7 +145,7 @@
                 "url": "matt/SNARE_CL.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 124
+                "decay": 5000
             },
             {
                 "display_name": "LOWTOM",
@@ -153,7 +153,7 @@
                 "url": "matt/LOW_TOM.wav",
                 "peakDb": -3,
                 "rootMidi": 43,
-                "decay": 286
+                "decay": 5000
             },
             {
                 "display_name": "KICK",
@@ -161,7 +161,7 @@
                 "url": "matt/KICK.wav",
                 "peakDb": -3,
                 "rootMidi": 72,
-                "decay": 125
+                "decay": 5000
             },
             {
                 "display_name": "OHH",
@@ -169,7 +169,7 @@
                 "url": "matt/OHH.wav",
                 "peakDb": -3,
                 "rootMidi": 67,
-                "decay": 423
+                "decay": 5000
             },
             {
                 "display_name": "RIMSHOT",
@@ -177,7 +177,7 @@
                 "url": "matt/RIMSHOT.wav",
                 "peakDb": -3,
                 "rootMidi": 43,
-                "decay": 177
+                "decay": 5000
             },
             {
                 "display_name": "RIDE",
@@ -185,7 +185,7 @@
                 "url": "matt/RIDE.wav",
                 "peakDb": -3,
                 "rootMidi": 24,
-                "decay": 768
+                "decay": 5000
             },
             {
                 "display_name": "CRASH",
@@ -193,7 +193,7 @@
                 "url": "matt/CRASH.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 1711
+                "decay": 5000
             },
             {
                 "display_name": "SNARE",
@@ -201,7 +201,7 @@
                 "url": "matt/SNARE.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 135
+                "decay": 5000
             },
             {
                 "display_name": "TOM",
@@ -209,7 +209,7 @@
                 "url": "matt/TOM.wav",
                 "peakDb": -3,
                 "rootMidi": 43,
-                "decay": 169
+                "decay": 5000
             }
         ]
     },
@@ -224,7 +224,7 @@
                 "url": "electro/chh.wav",
                 "peakDb": -3,
                 "rootMidi": 19,
-                "decay": 66
+                "decay": 5000
             },
             {
                 "display_name": "CLAP",
@@ -232,7 +232,7 @@
                 "url": "electro/clap.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 225
+                "decay": 5000
             },
             {
                 "display_name": "RIDE",
@@ -240,7 +240,7 @@
                 "url": "electro/ride.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 675
+                "decay": 5000
             },
             {
                 "display_name": "KICK",
@@ -248,7 +248,7 @@
                 "url": "electro/kick.wav",
                 "peakDb": -3,
                 "rootMidi": 72,
-                "decay": 196
+                "decay": 5000
             },
             {
                 "display_name": "OHH",
@@ -256,7 +256,7 @@
                 "url": "electro/ohh.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 533
+                "decay": 5000
             },
             {
                 "display_name": "COWBELL",
@@ -264,7 +264,7 @@
                 "url": "electro/cow.wav",
                 "peakDb": -3,
                 "rootMidi": 51,
-                "decay": 182
+                "decay": 5000
             },
             {
                 "display_name": "SNARE",
@@ -272,7 +272,7 @@
                 "url": "electro/snare.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 121
+                "decay": 5000
             },
             {
                 "display_name": "TOM",
@@ -280,7 +280,7 @@
                 "url": "electro/tom.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 129
+                "decay": 5000
             },
             {
                 "display_name": "BASS",
@@ -288,7 +288,7 @@
                 "url": "electro/acid-bass-c3.wav",
                 "peakDb": -3,
                 "rootMidi": 36,
-                "decay": 420
+                "decay": 5000
             },
             {
                 "display_name": "acid-synth-c3",
@@ -296,7 +296,7 @@
                 "url": "electro/acid-synth-c3.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 353
+                "decay": 5000
             },
             {
                 "display_name": "RHODES",
@@ -304,7 +304,7 @@
                 "url": "electro/rhodes-c3.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 677
+                "decay": 5000
             }
         ]
     },
@@ -319,7 +319,7 @@
                 "url": "open/CHH.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 164
+                "decay": 5000
             },
             {
                 "display_name": "CLAP",
@@ -327,7 +327,7 @@
                 "url": "open/CLAP.wav",
                 "peakDb": -3,
                 "rootMidi": 43,
-                "decay": 106
+                "decay": 5000
             },
             {
                 "display_name": "CRASH",
@@ -335,7 +335,7 @@
                 "url": "open/CRASH.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 914
+                "decay": 5000
             },
             {
                 "display_name": "KICK",
@@ -343,7 +343,7 @@
                 "url": "open/KICK.wav",
                 "peakDb": -3,
                 "rootMidi": 31,
-                "decay": 38
+                "decay": 5000
             },
             {
                 "display_name": "OHH",
@@ -351,7 +351,7 @@
                 "url": "open/OHH.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 509
+                "decay": 5000
             },
             {
                 "display_name": "RIMSHOT",
@@ -359,7 +359,7 @@
                 "url": "open/RIMSHOT.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 114
+                "decay": 5000
             },
             {
                 "display_name": "SIDE",
@@ -367,7 +367,7 @@
                 "url": "open/SIDE.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 119
+                "decay": 5000
             },
             {
                 "display_name": "SNARE",
@@ -375,7 +375,7 @@
                 "url": "open/SNARE.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 104
+                "decay": 5000
             },
             {
                 "display_name": "TOM",
@@ -383,7 +383,7 @@
                 "url": "open/TOM.wav",
                 "peakDb": -3,
                 "rootMidi": 43,
-                "decay": 490
+                "decay": 5000
             }
         ]
     },
@@ -398,7 +398,7 @@
                 "url": "ropen/CHH.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 250
+                "decay": 5000
             },
             {
                 "display_name": "COWBELL",
@@ -406,7 +406,7 @@
                 "url": "ropen/COWBELL.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 528
+                "decay": 5000
             },
             {
                 "display_name": "CRASH",
@@ -414,7 +414,7 @@
                 "url": "ropen/CRASH.wav",
                 "peakDb": -3,
                 "rootMidi": 72,
-                "decay": 2189
+                "decay": 5000
             },
             {
                 "display_name": "KICK",
@@ -422,7 +422,7 @@
                 "url": "ropen/KICK.wav",
                 "peakDb": -3,
                 "rootMidi": 31,
-                "decay": 95
+                "decay": 5000
             },
             {
                 "display_name": "OHH",
@@ -430,7 +430,7 @@
                 "url": "ropen/OHH.wav",
                 "peakDb": -3,
                 "rootMidi": 67,
-                "decay": 1095
+                "decay": 5000
             },
             {
                 "display_name": "RIDE",
@@ -438,7 +438,7 @@
                 "url": "ropen/RIDE.wav",
                 "peakDb": -3,
                 "rootMidi": 24,
-                "decay": 491
+                "decay": 5000
             },
             {
                 "display_name": "SNARE",
@@ -446,7 +446,7 @@
                 "url": "ropen/SNARE.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 141
+                "decay": 5000
             },
             {
                 "display_name": "TOM",
@@ -454,7 +454,7 @@
                 "url": "ropen/TOM.wav",
                 "peakDb": -3,
                 "rootMidi": 50,
-                "decay": 133
+                "decay": 5000
             }
         ]
     },
@@ -469,7 +469,7 @@
                 "url": "generated/kick.wav",
                 "peakDb": -3,
                 "rootMidi": 43,
-                "decay": 48
+                "decay": 5000
             },
             {
                 "display_name": "snare.wav",
@@ -477,7 +477,7 @@
                 "url": "generated/snare.wav",
                 "peakDb": -3,
                 "rootMidi": 43,
-                "decay": 119
+                "decay": 5000
             },
             {
                 "kit_name": "generated",
@@ -486,7 +486,7 @@
                 "url": "generated/tom.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 57
+                "decay": 5000
             },
             {
                 "display_name": "clap.wav",
@@ -494,7 +494,7 @@
                 "url": "generated/clap.wav",
                 "peakDb": -3,
                 "rootMidi": 67,
-                "decay": 210
+                "decay": 5000
             },
             {
                 "display_name": "cow.wav",
@@ -502,7 +502,7 @@
                 "url": "generated/cow.wav",
                 "peakDb": -3,
                 "rootMidi": 69,
-                "decay": 64
+                "decay": 5000
             },
             {
                 "display_name": "chh.wav",
@@ -510,7 +510,7 @@
                 "url": "generated/chh.wav",
                 "peakDb": -3,
                 "rootMidi": 19,
-                "decay": 89
+                "decay": 5000
             },
             {
                 "display_name": "ohh.wav",
@@ -518,7 +518,7 @@
                 "url": "generated/ohh.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 217
+                "decay": 5000
             },
             {
                 "display_name": "crash.wav",
@@ -526,7 +526,7 @@
                 "url": "generated/crash.wav",
                 "peakDb": -3,
                 "rootMidi": 67,
-                "decay": 179
+                "decay": 5000
             }
         ]
     },
@@ -541,7 +541,7 @@
                 "url": "human/bd.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 73
+                "decay": 5000
             },
             {
                 "display_name": "Snare.wav",
@@ -549,7 +549,7 @@
                 "url": "human/Snare.wav",
                 "peakDb": -3,
                 "rootMidi": 36,
-                "decay": 30
+                "decay": 5000
             },
             {
                 "display_name": "MidTom.wav",
@@ -557,7 +557,7 @@
                 "url": "human/MidTom.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 244
+                "decay": 5000
             },
             {
                 "display_name": "HiTom.wav",
@@ -565,7 +565,7 @@
                 "url": "human/HiTom.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 281
+                "decay": 5000
             },
             {
                 "display_name": "LowTom.wav",
@@ -573,7 +573,7 @@
                 "url": "human/LowTom.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 235
+                "decay": 5000
             },
             {
                 "display_name": "chh.wav",
@@ -581,7 +581,7 @@
                 "url": "human/chh.wav",
                 "peakDb": -3,
                 "rootMidi": 72,
-                "decay": 48
+                "decay": 5000
             },
             {
                 "display_name": "OHH.wav",
@@ -589,7 +589,7 @@
                 "url": "human/OHH.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 261
+                "decay": 5000
             },
             {
                 "display_name": "Crash.wav",
@@ -597,7 +597,7 @@
                 "url": "human/Crash.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 594
+                "decay": 5000
             }
         ]
     },
@@ -612,7 +612,7 @@
                 "url": "8bits/kick.wav",
                 "peakDb": -3,
                 "rootMidi": 55,
-                "decay": 18
+                "decay": 5000
             },
             {
                 "display_name": "snare.wav",
@@ -620,7 +620,7 @@
                 "url": "8bits/snare.wav",
                 "peakDb": -3,
                 "rootMidi": 36,
-                "decay": 95
+                "decay": 5000
             },
             {
                 "display_name": "tom.wav",
@@ -628,7 +628,7 @@
                 "url": "8bits/tom.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 330
+                "decay": 5000
             },
             {
                 "display_name": "clap.wav",
@@ -636,7 +636,7 @@
                 "url": "8bits/clap.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 260
+                "decay": 5000
             },
             {
                 "display_name": "cow.wav",
@@ -644,7 +644,7 @@
                 "url": "8bits/cow.wav",
                 "peakDb": -3,
                 "rootMidi": 67,
-                "decay": 91
+                "decay": 5000
             },
             {
                 "display_name": "chh.wav",
@@ -652,7 +652,7 @@
                 "url": "8bits/chh.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 30
+                "decay": 5000
             },
             {
                 "display_name": "ohh.wav",
@@ -660,7 +660,7 @@
                 "url": "8bits/ohh.wav",
                 "peakDb": -3,
                 "rootMidi": 19,
-                "decay": 32
+                "decay": 5000
             },
             {
                 "display_name": "crash.wav",
@@ -668,7 +668,7 @@
                 "url": "8bits/crash.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 237
+                "decay": 5000
             }
         ]
     },
@@ -683,7 +683,7 @@
                 "url": "delagrange/kick.wav",
                 "peakDb": -3,
                 "rootMidi": 31,
-                "decay": 64
+                "decay": 5000
             },
             {
                 "display_name": "snare.wav",
@@ -691,7 +691,7 @@
                 "url": "delagrange/snare.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 361
+                "decay": 5000
             },
             {
                 "display_name": "tom.wav",
@@ -699,7 +699,7 @@
                 "url": "delagrange/tom.wav",
                 "peakDb": -3,
                 "rootMidi": 31,
-                "decay": 73
+                "decay": 5000
             },
             {
                 "display_name": "clap.wav",
@@ -707,7 +707,7 @@
                 "url": "delagrange/clap.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 137
+                "decay": 5000
             },
             {
                 "display_name": "cow.wav",
@@ -715,7 +715,7 @@
                 "url": "delagrange/cow.wav",
                 "peakDb": -3,
                 "rootMidi": 72,
-                "decay": 142
+                "decay": 5000
             },
             {
                 "display_name": "chh.wav",
@@ -723,7 +723,7 @@
                 "url": "delagrange/chh.wav",
                 "peakDb": -3,
                 "rootMidi": 43,
-                "decay": 166
+                "decay": 5000
             },
             {
                 "display_name": "ohh.wav",
@@ -731,7 +731,7 @@
                 "url": "delagrange/ohh.wav",
                 "peakDb": -3,
                 "rootMidi": 36,
-                "decay": 354
+                "decay": 5000
             },
             {
                 "display_name": "crash.wav",
@@ -739,7 +739,7 @@
                 "url": "delagrange/crash.wav",
                 "peakDb": -3,
                 "rootMidi": 43,
-                "decay": 547
+                "decay": 5000
             },
             {
                 "display_name": "hit.wav",
@@ -747,7 +747,7 @@
                 "url": "delagrange/hit.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 98
+                "decay": 5000
             }
         ]
     },
@@ -762,7 +762,7 @@
                 "url": "vintage/kick.wav",
                 "peakDb": -3,
                 "rootMidi": 19,
-                "decay": 220
+                "decay": 5000
             },
             {
                 "display_name": "snare.wav",
@@ -770,7 +770,7 @@
                 "url": "vintage/snare.wav",
                 "peakDb": -3,
                 "rootMidi": 67,
-                "decay": 73
+                "decay": 5000
             },
             {
                 "display_name": "tom.wav",
@@ -778,7 +778,7 @@
                 "url": "vintage/tom.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
-                "decay": 194
+                "decay": 5000
             },
             {
                 "display_name": "clap.wav",
@@ -786,7 +786,7 @@
                 "url": "vintage/clap.wav",
                 "peakDb": -3,
                 "rootMidi": 19,
-                "decay": 26
+                "decay": 5000
             },
             {
                 "display_name": "cow.wav",
@@ -794,7 +794,7 @@
                 "url": "vintage/cow.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 196
+                "decay": 5000
             },
             {
                 "display_name": "chh.wav",
@@ -802,7 +802,7 @@
                 "url": "vintage/chh.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 50
+                "decay": 5000
             },
             {
                 "display_name": "ohh.wav",
@@ -810,7 +810,7 @@
                 "url": "vintage/ohh.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 234
+                "decay": 5000
             },
             {
                 "display_name": "crash.wav",
@@ -818,7 +818,7 @@
                 "url": "vintage/crash.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 395
+                "decay": 5000
             }
         ]
     },
@@ -833,7 +833,7 @@
                 "url": "punchy/kick.wav",
                 "peakDb": -3,
                 "rootMidi": 72,
-                "decay": 222
+                "decay": 5000
             },
             {
                 "display_name": "snare.wav",
@@ -841,7 +841,7 @@
                 "url": "punchy/snare.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 127
+                "decay": 5000
             },
             {
                 "display_name": "tom.wav",
@@ -849,7 +849,7 @@
                 "url": "punchy/tom.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 861
+                "decay": 5000
             },
             {
                 "display_name": "clap.wav",
@@ -857,7 +857,7 @@
                 "url": "punchy/clap.wav",
                 "peakDb": -3,
                 "rootMidi": 31,
-                "decay": 82
+                "decay": 5000
             },
             {
                 "display_name": "hit.wav",
@@ -865,7 +865,7 @@
                 "url": "punchy/hit.wav",
                 "peakDb": -3,
                 "rootMidi": 36,
-                "decay": 336
+                "decay": 5000
             },
             {
                 "display_name": "chh.wav",
@@ -873,7 +873,7 @@
                 "url": "punchy/chh.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 80
+                "decay": 5000
             },
             {
                 "display_name": "ohh.wav",
@@ -881,7 +881,7 @@
                 "url": "punchy/ohh.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
-                "decay": 206
+                "decay": 5000
             },
             {
                 "display_name": "crash.wav",
@@ -889,7 +889,7 @@
                 "url": "punchy/crash.wav",
                 "peakDb": -3,
                 "rootMidi": 24,
-                "decay": 67
+                "decay": 5000
             }
         ]
     }
