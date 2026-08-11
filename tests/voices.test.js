@@ -236,6 +236,22 @@ describe('SampleVoice', () => {
         expect(voice.snd.playbackRate.setTargetAtTime).toHaveBeenCalledWith(1.5, 1.0, expect.any(Number))
     })
 
+    it('applies the assigned sample gain, tune, and decay', () => {
+        const adjustedVoice = new SampleVoice(ctx, strip, buffer, null, {
+            gainDb: -6,
+            tune: 12,
+            decay: 250,
+        })
+        adjustedVoice.setup(makeFlatNote(), 1.0)
+
+        expect(adjustedVoice.snd.playbackRate.setTargetAtTime).toHaveBeenCalledWith(2, 1.0, expect.any(Number))
+        expect(adjustedVoice.gainEnvelope.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
+            expect.closeTo(0.8 * Math.pow(10, -6 / 20), 5),
+            expect.any(Number)
+        )
+        expect(adjustedVoice.duration).toBeLessThan(0.3)
+    })
+
     it('setup applies pan via pan.setValueAtTime', () => {
         voice.setup(makeFlatNote({ pan: 0.3 }), 1.0)
         expect(voice.panNode.pan.setValueAtTime).toHaveBeenCalledWith(0.3, 1.0)
@@ -279,7 +295,7 @@ describe('SampleVoice', () => {
             serviceRegistry.transport = { isRunning: true, tick: 0, bpm: 120 }
         })
 
-        it('setup replaces fpitch with the pitchLFO value (in semitones, snapshot at note start)', () => {
+        it('setup applies the pitch LFO value (in semitones, snapshot at note start)', () => {
             const flatNote = makeFlatNote({ fpitch: 1 })
             flatNote.track.pitchLfo = { freq: 1, min: 0, max: 12, phase: 0.25 }
             voice.setup(flatNote, 1.0, { tick: 0, nbTicks: 128 })

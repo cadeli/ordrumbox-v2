@@ -13,9 +13,10 @@ import {
 } from '../../core/constants.js'
 
 export default class SampleVoice extends BaseVoice {
-    constructor(audioCtx, strip, buffer, nodePool = null) {
+    constructor(audioCtx, strip, buffer, nodePool = null, sample = null) {
         super(audioCtx, strip, nodePool)
         this.buffer = buffer
+        this.sample = sample
         this.snd = null
         this.gainEnvelope = null
         this.panNode = null
@@ -31,21 +32,25 @@ export default class SampleVoice extends BaseVoice {
 
         this.snd.buffer = this.buffer
 
-        let playbackRate = flatNote.fpitch ?? 1
+        const tune = this.sample?.tune ?? 0
+        let playbackRate = (flatNote.fpitch ?? 1) * Math.pow(2, tune / 12)
         if (track.pitchLfo && lfoContext) {
             const { tick, nbTicks } = lfoContext
             const lfoSemi = computeLfoValue(track.pitchLfo, tick, nbTicks, 'pitch')
-            playbackRate = Math.pow(2, lfoSemi / 12)
+            playbackRate *= Math.pow(2, lfoSemi / 12)
         }
         this.snd.playbackRate.setTargetAtTime(playbackRate, time, PITCH_RAMP_TIME)
         this.panNode.pan.setValueAtTime(flatNote.pan ?? 0, time)
 
-        const decay = track.sampleDecay ?? 0.5
+        const decay = this.sample?.decay != null
+            ? this.sample.decay / 1000
+            : track.sampleDecay ?? 0.5
+        const sampleGain = Math.pow(10, (this.sample?.gainDb ?? 0) / 20)
         this.noteVelo = flatNote.note?.velocity ?? MfDefaults.getNoteProp(flatNote.note, 'velocity')
 
         const safeDecay = Math.max(0.02, decay)
         this.gainEnvelope.gain.setValueAtTime(0, time)
-        this.gainEnvelope.gain.linearRampToValueAtTime(this.noteVelo, time + GAIN_ATTACK_RAMP)
+        this.gainEnvelope.gain.linearRampToValueAtTime(this.noteVelo * sampleGain, time + GAIN_ATTACK_RAMP)
         this.gainEnvelope.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, time + GAIN_ATTACK_RAMP + safeDecay)
 
         this.snd.connect(this.gainEnvelope)

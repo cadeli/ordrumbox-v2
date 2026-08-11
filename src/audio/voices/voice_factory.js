@@ -24,12 +24,13 @@ export default class VoiceFactory {
             return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool)
         }
 
-        let soundBuffer = this.sounds[flatNote.soundId]?.buffer
-        if (!soundBuffer) soundBuffer = this.sounds[track.soundId]?.buffer
+        let sound = this.sounds[flatNote.soundId]
+        if (!sound?.buffer) sound = this.sounds[track.soundId]
+        const soundBuffer = sound?.buffer
         if (!soundBuffer) {
             logger.warn(`VoiceFactory: No soundBuffer for track ${track.name}`)
             return null
         }
-        return new SampleVoice(this.audioCtx, strip, soundBuffer, this.nodePool)
+        return new SampleVoice(this.audioCtx, strip, soundBuffer, this.nodePool, sound)
     }
 }

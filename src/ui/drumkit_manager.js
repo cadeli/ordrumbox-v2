@@ -6,7 +6,7 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
 import { hzToNote, formatNote } from '../core/hz_to_note.js'
 import { showToast } from './toast.js'
-import { bindCloseButton } from './components/panel_helpers.js'
+import { bindCloseButton, downloadJson } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 
@@ -26,6 +26,11 @@ export default class DrumkitManager extends BasePanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Drumkit Manager</span>
+                <div class="dm-file-actions">
+                    <button class="dm-icon-btn" id="dm-save-kit" title="Save current drumkit mapping">💾</button>
+                    <button class="dm-icon-btn" id="dm-load-kit" title="Load drumkit mapping">📂</button>
+                    <input type="file" id="dm-load-kit-file" style="display:none" accept="application/json,.json">
+                </div>
                 <button class="ne-close">&times;</button>
             </div>
             <div class="dm-body">
@@ -62,6 +67,16 @@ export default class DrumkitManager extends BasePanel {
         this.container.querySelector('#dm-normalize-all').addEventListener('click', () => {
             this._onNormalizeAll()
         })
+
+        this.container.querySelector('#dm-save-kit').addEventListener('click', () => {
+            this._saveCurrentKit()
+        })
+        this.container.querySelector('#dm-load-kit').addEventListener('click', () => {
+            this.container.querySelector('#dm-load-kit-file').click()
+        })
+        this.container.querySelector('#dm-load-kit-file').addEventListener('change', (e) => {
+            this._onLoadKitFile(e)
+        })
     }
 
     subscribe() {
@@ -86,6 +101,105 @@ export default class DrumkitManager extends BasePanel {
     _getCurrentKitSounds() {
         return Object.entries(soundRegistry.sounds)
             .map(([url, s]) => ({ url, instrumentKey: s.key, ...s }))
+    }
+
+    _currentKitName() {
+        return soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? null
+    }
+
+    _exportCurrentKit() {
+        const name = this._currentKitName()
+        if (!name) return null
+
+        const instruments = Object.values(soundRegistry.sounds)
+            .filter(sound => sound.kit_name === name)
+            .map(sound => ({
+                url: sound.url,
+                display_name: sound.display_name,
+                key: sound.key,
+                rootMidi: sound.rootMidi ?? null,
+                peakDb: sound.peakDb ?? null,
+                decay: sound.decay ?? null,
+                gainDb: sound.gainDb ?? 0,
+                tune: sound.tune ?? 0,
+            }))
+
+        return { version: 1, name, instruments }
+    }
+
+    _saveCurrentKit() {
+        const kit = this._exportCurrentKit()
+        if (!kit) {
+            showToast('No drumkit selected', 'warning')
+            return
+        }
+        const safeName = kit.name.replaceAll(/[^a-z0-9_-]/gi, '_')
+        downloadJson(kit, `ordrumbox-drumkit-${safeName}.json`)
+        showToast(`Saved drumkit "${kit.name}"`, 'success')
+    }
+
+    async _onLoadKitFile(e) {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        try {
+            const data = JSON.parse(await file.text())
+            await this._restoreDrumkit(data)
+        } catch (err) {
+            logger.warn(TAG, `Drumkit load failed: ${err.message}`)
+            showToast('Invalid drumkit JSON', 'error')
+        } finally {
+            e.target.value = ''
+        }
+    }
+
+    /** Restore a drumkit mapping and the editable per-sample settings. */
+    async _restoreDrumkit(data) {
+        if (!data || typeof data.name !== 'string' || !Array.isArray(data.instruments)) {
+            throw new Error('Missing drumkit name or instruments')
+        }
+
+        const instruments = data.instruments
+            .filter(sample => typeof sample?.url === 'string' && typeof sample?.key === 'string')
+            .map(sample => ({
+                url: sample.url,
+                display_name: sample.display_name ?? sample.url,
+                key: sample.key,
+                rootMidi: sample.rootMidi ?? null,
+                peakDb: sample.peakDb ?? null,
+                decay: sample.decay ?? null,
+                gainDb: sample.gainDb ?? 0,
+                tune: sample.tune ?? 0,
+            }))
+        if (!instruments.length) throw new Error('No valid instruments')
+
+        const kit = { name: data.name, instruments: structuredClone(instruments) }
+        const existingIndex = soundRegistry.drumkitList.findIndex(entry => entry.name === kit.name)
+        if (existingIndex === -1) soundRegistry.drumkitList.push(kit)
+        else soundRegistry.drumkitList.splice(existingIndex, 1, kit)
+        soundRegistry.drumkits[kit.name] = { name: kit.name, instruments: structuredClone(instruments) }
+
+        for (const sample of instruments) {
+            const sound = soundRegistry.sounds[sample.url]
+            if (!sound) continue
+            Object.assign(sound, sample, { kit_name: kit.name })
+        }
+
+        const kitIndex = soundRegistry.drumkitList.findIndex(entry => entry.name === kit.name)
+        appState.selectedDrumkitNum = kitIndex
+        appState.selectedDrumkit = kit.name
+        try {
+            await serviceRegistry.mfResourcesLoader?.loadMissingSamplesFromDrumkits([kit])
+            await serviceRegistry.mfCmd?.autoAssignSoundsForNewDrumkit?.()
+        } catch (err) {
+            logger.warn(TAG, `Some samples could not be loaded for "${kit.name}": ${err.message}`)
+            showToast(`Loaded mapping for "${kit.name}"; some samples are unavailable`, 'warning')
+        }
+
+        playbackEvents.dispatchDrumkitChange()
+        this._selectedSoundKey = null
+        this.sync()
+        showToast(`Loaded drumkit "${kit.name}"`, 'success')
     }
 
     _renderList() {
@@ -153,9 +267,11 @@ export default class DrumkitManager extends BasePanel {
             .join('')
 
         const instOptions = InstrumentsManager.DATA?.instruments
-            ?.map(i => `<option value="${i.id}" ${i.id === detected.id ? 'selected' : ''}>${i.id}</option>`)
+            ?.map(i => `<option value="${i.id}" ${i.id === sound.key ? 'selected' : ''}>${i.id}</option>`)
             .join('') ?? ''
 
+        const gainDb = sound.gainDb ?? 0
+        const tune = sound.tune ?? 0
         const decayStr = sound.decay != null ? sound.decay + ' ms' : '—'
         const tooltipText = `${detected.id !== 'NOT_FOUND' ? 'Detected: ' + detected.id : 'No instrument detected'}\nPeak: ${peakDb} dB\nRMS: ${rmsDb} dB\nDuration: ${duration}\nDecay: ${decayStr}`
 
@@ -189,13 +305,13 @@ export default class DrumkitManager extends BasePanel {
                     </div>
                     <div class="dm-detail-row">
                         <label>Gain:</label>
-                        <span class="ne-val" id="dm-gain-val">${peakDb} dB</span>
-                        <input type="range" id="dm-gain" class="ne-slider" min="-24" max="6" step="0.1" value="0">
+                        <span class="ne-val" id="dm-gain-val">${Number(gainDb).toFixed(1)} dB</span>
+                        <input type="range" id="dm-gain" class="ne-slider" min="-24" max="6" step="0.1" value="${gainDb}">
                     </div>
                     <div class="dm-detail-row">
                         <label>Tune:</label>
                         <span class="ne-val" id="dm-tune-val">${noteStr}</span>
-                        <input type="range" id="dm-tune" class="ne-slider" min="-12" max="12" step="0.1" value="0">
+                        <input type="range" id="dm-tune" class="ne-slider" min="-12" max="12" step="0.1" value="${tune}">
                     </div>
                     <div class="dm-detail-row">
                         <label>Decay:</label>
@@ -228,20 +344,32 @@ export default class DrumkitManager extends BasePanel {
             this._moveToKit(key, e.target.value)
         })
 
+        this._detailEl.querySelector('#dm-inst-select')?.addEventListener('change', (e) => {
+            this._setInstrument(key, e.target.value)
+        })
+
         this._detailEl.querySelector('#dm-gain')?.addEventListener('input', (e) => {
-            this._detailEl.querySelector('#dm-gain-val').textContent = `${Number(e.target.value).toFixed(1)} dB`
+            sound.gainDb = Number(e.target.value)
+            this._detailEl.querySelector('#dm-gain-val').textContent = `${sound.gainDb.toFixed(1)} dB`
         })
 
         this._detailEl.querySelector('#dm-tune')?.addEventListener('input', (e) => {
-            const semitones = Number(e.target.value)
+            sound.tune = Number(e.target.value)
             const baseHz = analysis?.fundamentalHz ?? 440
-            const tunedHz = baseHz * Math.pow(2, semitones / 12)
+            const tunedHz = baseHz * Math.pow(2, sound.tune / 12)
             this._detailEl.querySelector('#dm-tune-val').textContent = formatNote(hzToNote(tunedHz))
         })
 
         this._detailEl.querySelector('#dm-decay')?.addEventListener('input', (e) => {
-            this._detailEl.querySelector('#dm-decay-val').textContent = `${Number(e.target.value)} ms`
+            sound.decay = Number(e.target.value)
+            this._detailEl.querySelector('#dm-decay-val').textContent = `${sound.decay} ms`
         })
+
+        for (const controlId of ['dm-gain', 'dm-tune', 'dm-decay']) {
+            this._detailEl.querySelector(`#${controlId}`)?.addEventListener('change', () => {
+                playbackEvents.dispatchDrumkitChange()
+            })
+        }
 
         this._detailEl.querySelector('#dm-replace')?.addEventListener('click', () => {
             this._detailEl.querySelector('#dm-replace-file').click()
@@ -263,8 +391,12 @@ export default class DrumkitManager extends BasePanel {
         if (!sound?.buffer) return
 
         const source = ctx.createBufferSource()
+        const gain = ctx.createGain()
         source.buffer = sound.buffer
-        source.connect(ctx.destination)
+        source.detune.value = (sound.tune ?? 0) * 100
+        gain.gain.value = Math.pow(10, (sound.gainDb ?? 0) / 20)
+        source.connect(gain)
+        gain.connect(ctx.destination)
         source.start()
     }
 
@@ -302,6 +434,31 @@ export default class DrumkitManager extends BasePanel {
         newListEntry.instruments.push(instEntry)
 
         showToast(`Moved "${sound.display_name}" to kit "${newKitName}"`, 'success')
+        playbackEvents.dispatchDrumkitChange()
+        this.sync()
+    }
+
+    /**
+     * Persist a manually chosen instrument in every representation of a sample.
+     * Auto-assign resolves samples from `soundRegistry.sounds`, while kit lists
+     * are used by the rest of the UI and loaders; they must remain in sync.
+     */
+    _setInstrument(soundKey, instrumentKey) {
+        const sound = soundRegistry.sounds[soundKey]
+        if (!sound || !instrumentKey || sound.key === instrumentKey) return
+
+        sound.key = instrumentKey
+        const kitName = sound.kit_name
+        const updateInstrumentEntry = (kit) => {
+            kit?.instruments?.forEach(entry => {
+                if (entry.url === soundKey) entry.key = instrumentKey
+            })
+        }
+
+        updateInstrumentEntry(soundRegistry.drumkits[kitName])
+        updateInstrumentEntry(soundRegistry.drumkitList.find(kit => kit.name === kitName))
+
+        showToast(`Set "${sound.display_name}" to instrument "${instrumentKey}"`, 'success')
         playbackEvents.dispatchDrumkitChange()
         this.sync()
     }

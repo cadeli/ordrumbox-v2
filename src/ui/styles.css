@@ -1364,6 +1364,29 @@ body {
     margin-bottom: 8px;
 }
 
+.dm-file-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.dm-icon-btn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg-input);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: var(--fs-md);
+}
+
+.dm-icon-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+}
+
 .dm-play-large {
     font-size: 16px;
     width: 24px;

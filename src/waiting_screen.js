@@ -1,5 +1,3 @@
-import { logger } from './core/logger.js'
-
 class WaitingScreen {
     MIN_LOAD_TIME_MS = 20
 
@@ -10,48 +8,10 @@ class WaitingScreen {
     }
 
     init() {
-        this.injectCSS()
-        this.createDOM()
+        this.screenElement = document.getElementById('waiting-screen')
+        this.buttonElement = document.getElementById('waiting-screen-start-btn')
         this.startTimer()
         this.bindEvents()
-    }
-
-    injectCSS() {
-        if (document.getElementById('ui-styles')) return
-        const link = document.createElement('link')
-        link.id = 'ui-styles'
-        link.rel = 'stylesheet'
-        link.href = new URL('./ui/styles.css', import.meta.url).href
-        document.head.appendChild(link)
-    }
-
-    createDOM() {
-        const container = document.getElementById('insert-ordrumbox-v2-here')
-        if (!container) {
-            logger.error('WaitingScreen', 'Container #insert-ordrumbox-v2-here not found')
-            return
-        }
-
-        const screen = document.createElement('div')
-        screen.id = 'waiting-screen'
-
-        const logo = document.createElement('img')
-        logo.src = new URL('../assets/images/logo-big.png', import.meta.url).href
-        logo.alt = 'orDrumbox v2'
-        logo.width = 600
-        logo.height = 300
-        logo.fetchPriority = 'high'
-
-        const btn = document.createElement('button')
-        btn.id = 'waiting-screen-start-btn'
-        btn.textContent = 'Start orDrumbox V2'
-
-        screen.appendChild(logo)
-        screen.appendChild(btn)
-        container.appendChild(screen)
-
-        this.screenElement = screen
-        this.buttonElement = btn
     }
 
     startTimer() {
@@ -96,13 +56,14 @@ class WaitingScreen {
 
     async loadMainApp() {
         try {
+            const { logger } = await import('./core/logger.js')
             const mainModule = await import('./main.js')
 
             if (typeof mainModule.init === 'function') {
                 mainModule.init()
             }
         } catch (error) {
-            logger.error('WaitingScreen', 'Failed to load main application:', error)
+            console.error('WaitingScreen', 'Failed to load main application:', error)
         }
     }
 }
