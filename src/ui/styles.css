@@ -859,13 +859,14 @@ body {
     background: rgba(0, 0, 0, 0.3); flex-shrink: 0;
 }
 .te-load-btn {
-    cursor: pointer; border: none; background: none;
-    font-size: var(--fs-lg); padding: 2px 6px; border-radius: 3px;
-    color: var(--text-dim); transition: background 0.15s;
-    align-self: flex-start;
+    width: 22px; height: 22px; padding: 0; margin: 0;
+    font-size: var(--fs-md); line-height: 1;
+    background: var(--border-subtle); border: 1px solid var(--border); border-radius: 3px;
+    color: var(--text-secondary); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
 }
 .te-load-btn:hover {
-    background: rgba(255,255,255,0.1); color: var(--text);
+    background: var(--accent); color: #fff; border-color: var(--accent);
 }
 .ne-row .ne-val {
     width: 55px; text-align: right; color: var(--text-dim); font-weight: bold; font-size: var(--fs-sm);
@@ -1371,20 +1372,17 @@ body {
 }
 
 .dm-icon-btn {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     padding: 0;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    background: var(--bg-input);
-    color: var(--text-dim);
-    cursor: pointer;
-    font-size: var(--fs-md);
+    font-size: var(--fs-md); line-height: 1;
+    background: var(--border-subtle); border: 1px solid var(--border); border-radius: 3px;
+    color: var(--text-secondary); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
 }
 
 .dm-icon-btn:hover {
-    border-color: var(--accent);
-    color: var(--text);
+    background: var(--accent); color: #fff; border-color: var(--accent);
 }
 
 .dm-play-large {

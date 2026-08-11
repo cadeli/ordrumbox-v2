@@ -27,8 +27,8 @@ export default class DrumkitManager extends BasePanel {
             <div class="ne-header">
                 <span class="ne-track">Drumkit Manager</span>
                 <div class="dm-file-actions">
-                    <button class="dm-icon-btn" id="dm-save-kit" title="Save current drumkit mapping">💾</button>
-                    <button class="dm-icon-btn" id="dm-load-kit" title="Load drumkit mapping">📂</button>
+                    <button class="dm-icon-btn" id="dm-save-kit" title="Save current drumkit mapping">↓</button>
+                    <button class="dm-icon-btn" id="dm-load-kit" title="Load drumkit mapping">↑</button>
                     <input type="file" id="dm-load-kit-file" style="display:none" accept="application/json,.json">
                 </div>
                 <button class="ne-close">&times;</button>
