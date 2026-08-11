@@ -165,7 +165,6 @@ describe('Functional: MfCmd operations', () => {
                 fxSelected: 'delay',
                 saturationType: 'hard',
                 saturationAmount: 0.5,
-                sampleDecay: 0.8,
                 synthSoundKey: 'saw'
             }
             mfCmd.updateTrack(track, source)
@@ -194,7 +193,6 @@ describe('Functional: MfCmd operations', () => {
             expect(track.fxSelected).toBe('delay')
             expect(track.saturationType).toBe('hard')
             expect(track.saturationAmount).toBe(0.5)
-            expect(track.sampleDecay).toBe(0.8)
             expect(track.synthSoundKey).toBe('saw')
         })
 
@@ -491,17 +489,15 @@ describe('Functional: MfCmd operations', () => {
             expect(track.soundId).toBe('snd_42')
             expect(track.useAutoAssignSound).toBe(false)
             expect(track.useSoftSynth).toBe(false)
-            expect(track.sampleDecay).toBe(0.5)
         })
     })
 
     describe('changeTrackName', () => {
-        it('updates name and sampleDecay', () => {
+        it('updates name', () => {
             const track = mfCmd.createTrack(4, 'KICK', 4)
             mfCmd.changeTrackName(track, 'NEWNAME')
 
             expect(track.name).toBe('NEWNAME')
-            expect(track.sampleDecay).toBe(0.5)
         })
     })
 

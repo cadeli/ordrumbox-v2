@@ -309,12 +309,10 @@ export default class MfCmd {
         track.soundId = soundId
         track.useAutoAssignSound = false
         track.useSoftSynth = false
-        track.sampleDecay = 0.5
     }
 
     changeTrackName = (track, newName) => {
         track.name = newName
-        track.sampleDecay = 0.5
     }
 
     getSoundIdFromUrl = (url) => {

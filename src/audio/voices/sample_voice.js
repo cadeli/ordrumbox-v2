@@ -42,9 +42,7 @@ export default class SampleVoice extends BaseVoice {
         this.snd.playbackRate.setTargetAtTime(playbackRate, time, PITCH_RAMP_TIME)
         this.panNode.pan.setValueAtTime(flatNote.pan ?? 0, time)
 
-        const decay = this.sample?.decay != null
-            ? this.sample.decay / 1000
-            : track.sampleDecay ?? 0.5
+        const decay = (this.sample?.decay ?? 500) / 1000
         const sampleGain = Math.pow(10, (this.sample?.gainDb ?? 0) / 20)
         this.noteVelo = flatNote.note?.velocity ?? MfDefaults.getNoteProp(flatNote.note, 'velocity')
 

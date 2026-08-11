@@ -119,7 +119,7 @@ export function knobFormat(def) {
         ? v => Math.round(v * 100)
         : def.key === 'pitch'
             ? v => `${v >= 0 ? '+' : ''}${v}`
-            : def.key === 'sampleDecay'
-                ? v => v.toFixed(2)
+            : def.key === 'decay'
+                ? v => `${Math.round(v)} ms`
                 : fmt
 }

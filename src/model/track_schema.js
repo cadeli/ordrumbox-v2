@@ -53,7 +53,6 @@ import { logger, nameOr } from "../core/logger.js"
  * @property {boolean} reverbOn             - Reverb enabled. Default: true
  * @property {boolean} delayOn              - Delay enabled. Default: true
  * @property {string|null} synthSoundKey    - Synth preset key. Default: null
- * @property {number}  sampleDecay          - Sample decay time. Default: 0.5
  * @property {Array}   notes                - Note array (objects or compact arrays). Default: []
  */
 export const TRACK_DEFAULTS = {
@@ -97,7 +96,6 @@ export const TRACK_DEFAULTS = {
     reverbOn: true,
     delayOn: true,
     synthSoundKey: null,
-    sampleDecay: 0.5,
     notes: []
 };
 
@@ -138,7 +136,6 @@ export const TRACK_VALUE_RANGES = {
     delayTime:     { min: 0,    max: 4 },
     delayDepth:   { min: 0,    max: 1 },
     saturationAmount: { min: 0, max: 1 },
-    sampleDecay:   { min: 0,    max: 2 },
     variation:     { min: 0,    max: 100 },
     variation2:    { min: 0,    max: 100 },
 };

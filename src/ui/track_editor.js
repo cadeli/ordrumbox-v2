@@ -57,7 +57,7 @@ const KNOB_PROPS = [
     { key: 'velocity',    label: 'Vel',   min: 0,  max: 1,  step: 0.01, lfo: 'velocityLfo' },
     { key: 'pan',         label: 'Pan',   min: -1, max: 1,  step: 0.01, lfo: 'panLfo' },
     { key: 'pitch',       label: 'Pitch', min: -24, max: 24, step: 1,   lfo: 'pitchLfo' },
-    { key: 'sampleDecay', label: 'Decay', min: 0,  max: 2,  step: 0.01 }
+    { key: 'decay', label: 'Decay', min: 0,  max: 5000, step: 10 }
 ]
 
 const TAB_DEFS = [
@@ -421,19 +421,25 @@ export default class TrackEditor extends BasePanel {
         KNOB_PROPS.forEach(def => {
             const placeholder = this.container.querySelector(`[data-or-knob="${def.key}"]`)
             if (!placeholder) return
+            const isDecay = def.key === 'decay'
+            const sound = isDecay ? soundRegistry.sounds[this._track?.soundId] : null
             const knob = new OrKnob({
                 key: def.key,
                 label: def.label,
                 min: def.min,
                 max: def.max,
                 step: def.step,
-                value: this._track[def.key] ?? def.min,
+                value: isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min),
                 format: knobFormat(def),
-                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : def.key === 'sampleDecay' ? 's' : '',
+                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : isDecay ? 'ms' : '',
                 onChange: (v) => {
-                    this._track[def.key] = v
+                    if (isDecay) {
+                        if (sound) sound.decay = v
+                    } else {
+                        this._track[def.key] = v
+                    }
                     playbackEvents.dispatchTrackParamChange(this._track)
-                    if (def.key === 'sampleDecay') this._drawSampleWaveform()
+                    if (isDecay) this._drawSampleWaveform()
                 }
             })
             this._knobs.push(knob)
@@ -487,7 +493,7 @@ export default class TrackEditor extends BasePanel {
             <div data-or-knob="velocity"></div>
             <div data-or-knob="pan"></div>
             <div data-or-knob="pitch"></div>
-            <div data-or-knob="sampleDecay"></div>
+            <div data-or-knob="decay"></div>
         </div>`
     }
 
@@ -501,10 +507,10 @@ export default class TrackEditor extends BasePanel {
         const ctx = canvas.getContext('2d')
         drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, '#00fff5')
 
-        const decay = this._track.sampleDecay ?? 0.5
+        const decaySec = (sound.decay ?? 0) / 1000
         const totalSec = sound.buffer.duration
         if (totalSec > 0) {
-            const ratio = Math.min(decay / totalSec, 1)
+            const ratio = Math.min(decaySec / totalSec, 1)
             const x = ratio * canvas.width
             ctx.strokeStyle = '#f5e642'
             ctx.lineWidth = 2
@@ -879,7 +885,7 @@ export default class TrackEditor extends BasePanel {
             const slider = Array.from(this._sliders.values()).find(s => s._input === target)
             if (slider) {
                 slider.handleInput(e)
-                if (key === 'sampleDecay') this._drawSampleWaveform()
+                if (key === 'decay') this._drawSampleWaveform()
             } else if (target.dataset.lfoKey) {
                 this._onLfoSlider(target)
             } else if (target.dataset.loop) {

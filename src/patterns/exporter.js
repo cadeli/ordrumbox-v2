@@ -9,7 +9,7 @@ import {
 
 const ROUND_2D = new Set([
     'velocity', 'pan', 'reverbAmount', 'delayDepth', 'delayTime',
-    'saturationAmount', 'swingAmount', 'filterFreq', 'filterQ', 'sampleDecay'
+    'saturationAmount', 'swingAmount', 'filterFreq', 'filterQ'
 ])
 
 const round2 = (v) => typeof v === 'number' ? Math.round(v * 100) / 100 : v
