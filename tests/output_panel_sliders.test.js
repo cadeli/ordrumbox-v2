@@ -3,12 +3,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import OutputPanel from '../src/ui/output_panel.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 
-function fireInput(el, value) {
-    el.value = String(value)
-    el.dispatchEvent(new Event('input', { bubbles: true }))
+function fireKey(el, key) {
+    el.focus()
+    el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
 }
 
-describe('OutputPanel — OrSlider integration', () => {
+describe('OutputPanel — master controls', () => {
     let panel
     let setMasterBusMock
 
@@ -20,25 +20,27 @@ describe('OutputPanel — OrSlider integration', () => {
         panel.init()
     })
 
-    it('renders the master volume slider with correct id, label, min/max', () => {
-        const input = panel.container.querySelector('#op-master-vol')
-        expect(input).not.toBeNull()
-        expect(input.type).toBe('range')
-        expect(input.min).toBe('0')
-        expect(input.max).toBe('2')
-        expect(input.step).toBe('0.01')
-        expect(input.value).toBe('1')
-        const row = input.closest('.ne-row')
-        expect(row.classList.contains('no-cursor')).toBe(true)
-        expect(row.querySelector('label').textContent).toBe('Volume')
+    it('renders the master volume knob with correct label and initial value', () => {
+        const knob = panel.container.querySelector('[data-or-knob="op-master-vol"]')
+        expect(knob).not.toBeNull()
+        expect(knob.closest('.ne-row-knob')).not.toBeNull()
+        const row = knob.closest('.ne-row')
+        expect(row.querySelector('.or-knob-label').textContent).toBe('Volume')
+        expect(row.querySelector('.ne-val').textContent).toBe('1.00')
     })
 
-    it('master volume: changing value calls setMasterBus({ master }) and updates display', () => {
-        const input  = panel.container.querySelector('#op-master-vol')
-        const valEl  = input.nextElementSibling
-        fireInput(input, 1.5)
-        expect(setMasterBusMock).toHaveBeenCalledWith({ master: 1.5 })
-        expect(valEl.textContent).toBe('1.50')
+    it('master volume: arrow key changes value and calls setMasterBus({ master })', () => {
+        const knob = panel.container.querySelector('[data-or-knob="op-master-vol"]')
+        fireKey(knob, 'ArrowRight')
+        expect(setMasterBusMock).toHaveBeenCalledWith({ master: 1.01 })
+        const valEl = knob.closest('.ne-row').querySelector('.ne-val')
+        expect(valEl.textContent).toBe('1.01')
+    })
+
+    it('master volume knob: ArrowDown decrements value', () => {
+        const knob = panel.container.querySelector('[data-or-knob="op-master-vol"]')
+        fireKey(knob, 'ArrowDown')
+        expect(setMasterBusMock).toHaveBeenCalledWith({ master: 0.99 })
     })
 
     it('low cut / high cut sliders: built with correct ranges and "Hz" unit', () => {
@@ -59,64 +61,12 @@ describe('OutputPanel — OrSlider integration', () => {
     it('low cut / high cut: each change pushes both values together', () => {
         const lowcut = panel.container.querySelector('input[data-key="op-lowcut"]')
         const hicut  = panel.container.querySelector('input[data-key="op-hicut"]')
-        fireInput(lowcut, 80)
+        lowcut.value = '80'
+        lowcut.dispatchEvent(new Event('input', { bubbles: true }))
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ lowcut: 80, hicut: 18500 })
-        fireInput(hicut, 12000)
+        hicut.value = '12000'
+        hicut.dispatchEvent(new Event('input', { bubbles: true }))
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ lowcut: 80, hicut: 12000 })
-    })
-
-    it('compressor sliders: 6 rows with correct keys, labels, units, and display', () => {
-        const expected = [
-            { key: 'threshold', label: 'Threshold', unit: 'dB', display: '-18 dB' },
-            { key: 'ratio',     label: 'Ratio',     unit: '',   display: '8' },
-            { key: 'attack',    label: 'Attack',    unit: 's',  display: '0.002 s' },
-            { key: 'release',   label: 'Release',   unit: 's',  display: '0.08 s' },
-            { key: 'knee',      label: 'Knee',      unit: 'dB', display: '3 dB' },
-            { key: 'makeup',    label: 'Makeup',    unit: 'dB', display: '8 dB' },
-        ]
-        for (const e of expected) {
-            const input = panel.container.querySelector(`input[data-key="${e.key}"]`)
-            expect(input, `missing input for ${e.key}`).not.toBeNull()
-            const row = input.closest('.ne-row')
-            expect(row.classList.contains('no-cursor')).toBe(true)
-            expect(row.querySelector('label').textContent).toBe(e.label)
-            expect(input.nextElementSibling.textContent).toBe(e.display)
-        }
-    })
-
-    it('compressor: changing a slider calls setMasterBus with the correct key', () => {
-        const threshold = panel.container.querySelector('input[data-key="threshold"]')
-        fireInput(threshold, -20)
-        expect(setMasterBusMock).toHaveBeenLastCalledWith({ threshold: -20 })
-    })
-
-    it('compressor: sub-second params (attack/release) show 3 decimals', () => {
-        const attack = panel.container.querySelector('input[data-key="attack"]')
-        fireInput(attack, 0.123)
-        expect(attack.nextElementSibling.textContent).toBe('0.123 s')
-    })
-
-    it('compressor: integer params (threshold/knee/ratio) show rounded values', () => {
-        const ratio = panel.container.querySelector('input[data-key="ratio"]')
-        fireInput(ratio, 8)
-        expect(ratio.nextElementSibling.textContent).toBe('8')
-        const knee = panel.container.querySelector('input[data-key="knee"]')
-        fireInput(knee, 12.7)
-        expect(knee.nextElementSibling.textContent).toBe('13 dB')
-    })
-
-    it('pre-gain slider: renders with correct range and calls setMasterBus', () => {
-        const preGain = panel.container.querySelector('input[data-key="op-pregain"]')
-        expect(preGain).not.toBeNull()
-        expect(preGain.min).toBe('-20')
-        expect(preGain.max).toBe('20')
-        expect(preGain.value).toBe('0')
-        expect(preGain.nextElementSibling.textContent).toBe('+0.0 dB')
-        fireInput(preGain, 6)
-        expect(setMasterBusMock).toHaveBeenLastCalledWith({ preGain: 6 })
-        expect(preGain.nextElementSibling.textContent).toBe('+6.0 dB')
-        fireInput(preGain, -3)
-        expect(preGain.nextElementSibling.textContent).toBe('-3.0 dB')
     })
 
     it('panel tab buttons have correct labels', () => {
@@ -124,16 +74,91 @@ describe('OutputPanel — OrSlider integration', () => {
         const labels = Array.from(tabs).map(b => b.textContent.trim())
         expect(labels).toEqual(['vol', 'Comp', 'Flt'])
     })
+})
 
-    it('keyboard arrows on a slider still work (delegated handler from main.js)', () => {
-        // The OrSlider component has its own keydown handler, but the
-        // delegated handler from main.js also covers all range inputs.
-        // We just verify that an ArrowRight on the master volume updates it.
-        const input = panel.container.querySelector('#op-master-vol')
-        input.focus()
-        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }))
-        expect(parseFloat(input.value)).toBeCloseTo(1.01, 5)
-        // OrSlider's own _onKeydown fires the onChange callback
-        expect(setMasterBusMock).toHaveBeenCalled()
+describe('OutputPanel — compressor (VST knobs)', () => {
+    let panel
+    let setMasterBusMock
+
+    beforeEach(() => {
+        document.body.innerHTML = ''
+        setMasterBusMock = vi.fn()
+        serviceRegistry.audioEngine = { mixer: { setMasterBus: setMasterBusMock } }
+        panel = new OutputPanel()
+        panel.init()
+    })
+
+    it('renders 6 compressor knobs with correct labels and default values', () => {
+        const expected = [
+            { key: 'threshold', label: 'Threshold', display: '-18 dB' },
+            { key: 'ratio',     label: 'Ratio',     display: '8' },
+            { key: 'attack',    label: 'Attack',    display: '0.002 s' },
+            { key: 'release',   label: 'Release',   display: '0.08 s' },
+            { key: 'knee',      label: 'Knee',      display: '3 dB' },
+            { key: 'makeup',    label: 'Makeup',    display: '8 dB' },
+        ]
+        for (const e of expected) {
+            const knob = panel.container.querySelector(`[data-or-knob="${e.key}"]`)
+            expect(knob, `missing knob for ${e.key}`).not.toBeNull()
+            const row = knob.closest('.ne-row')
+            expect(row.querySelector('.or-knob-label').textContent).toBe(e.label)
+            expect(row.querySelector('.ne-val').textContent).toBe(e.display)
+        }
+    })
+
+    it('compressor: arrow key on knob calls setMasterBus with correct key', () => {
+        const knob = panel.container.querySelector('[data-or-knob="threshold"]')
+        fireKey(knob, 'ArrowRight')
+        expect(setMasterBusMock).toHaveBeenLastCalledWith({ threshold: -17 })
+    })
+
+    it('compressor: sub-second params (attack/release) show 3 decimals', () => {
+        const knob = panel.container.querySelector('[data-or-knob="attack"]')
+        fireKey(knob, 'ArrowRight')
+        expect(setMasterBusMock).toHaveBeenLastCalledWith({ attack: 0.003 })
+        const val = knob.closest('.ne-row').querySelector('.ne-val')
+        expect(val.textContent).toBe('0.003 s')
+    })
+
+    it('compressor: integer params (ratio/knee/makeup) show rounded values', () => {
+        const ratio = panel.container.querySelector('[data-or-knob="ratio"]')
+        fireKey(ratio, 'ArrowRight')
+        expect(setMasterBusMock).toHaveBeenLastCalledWith({ ratio: 8.5 })
+        const ratioVal = ratio.closest('.ne-row').querySelector('.ne-val')
+        expect(ratioVal.textContent).toBe('8.5')
+
+        const knee = panel.container.querySelector('[data-or-knob="knee"]')
+        fireKey(knee, 'ArrowRight')
+        expect(setMasterBusMock).toHaveBeenLastCalledWith({ knee: 4 })
+        const kneeVal = knee.closest('.ne-row').querySelector('.ne-val')
+        expect(kneeVal.textContent).toBe('4 dB')
+    })
+
+    it('pre-gain knob: renders with correct value and calls setMasterBus', () => {
+        const knob = panel.container.querySelector('[data-or-knob="op-pregain"]')
+        expect(knob).not.toBeNull()
+        const val = knob.closest('.ne-row').querySelector('.ne-val')
+        expect(val.textContent).toBe('+0.0 dB')
+        fireKey(knob, 'ArrowRight')
+        expect(setMasterBusMock).toHaveBeenLastCalledWith({ preGain: 0.5 })
+    })
+
+    it('bypass button: toggles compressor on/off', () => {
+        const btn = panel.container.querySelector('.op-comp-bypass')
+        expect(btn).not.toBeNull()
+        expect(btn.classList.contains('active')).toBe(true)
+        btn.click()
+        expect(setMasterBusMock).toHaveBeenLastCalledWith({ bypass: true })
+        expect(btn.classList.contains('active')).toBe(false)
+        btn.click()
+        expect(setMasterBusMock).toHaveBeenLastCalledWith({ bypass: false })
+        expect(btn.classList.contains('active')).toBe(true)
+    })
+
+    it('compressor panel has VST-style header', () => {
+        const header = panel.container.querySelector('.op-comp-header')
+        expect(header).not.toBeNull()
+        const title = header.querySelector('.op-comp-title')
+        expect(title.textContent).toBe('COMPRESSOR')
     })
 })

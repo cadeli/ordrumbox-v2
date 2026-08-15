@@ -15,43 +15,32 @@ describe('OutputPanel — compressor bypass button', () => {
         panel.init()
     })
 
-    it('exists in the compressor tab with initial "ON" label', () => {
-        const compPanel = panel.container.querySelector('[data-tab-panel="compressor"]')
-        const btn = compPanel.querySelector('.ne-btn')
+    it('exists in the compressor tab with active class (compressor ON by default)', () => {
+        const btn = panel.container.querySelector('.op-comp-bypass')
         expect(btn).not.toBeNull()
-        expect(btn.textContent).toBe('ON')
-    })
-
-    it('starts with active class (compressor ON by default)', () => {
-        const compPanel = panel.container.querySelector('[data-tab-panel="compressor"]')
-        const btn = compPanel.querySelector('.ne-btn')
         expect(btn.classList.contains('active')).toBe(true)
     })
 
     it('clicking toggles to OFF and dispatches bypass: true', () => {
-        const compPanel = panel.container.querySelector('[data-tab-panel="compressor"]')
-        const btn = compPanel.querySelector('.ne-btn')
+        const btn = panel.container.querySelector('.op-comp-bypass')
         btn.click()
-        expect(btn.textContent).toBe('OFF')
         expect(btn.classList.contains('active')).toBe(false)
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ bypass: true })
     })
 
     it('clicking again toggles back to ON and dispatches bypass: false', () => {
-        const compPanel = panel.container.querySelector('[data-tab-panel="compressor"]')
-        const btn = compPanel.querySelector('.ne-btn')
+        const btn = panel.container.querySelector('.op-comp-bypass')
         btn.click()
         btn.click()
-        expect(btn.textContent).toBe('ON')
         expect(btn.classList.contains('active')).toBe(true)
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ bypass: false })
     })
 
-    it('bypass button is the first interactive element in the compressor grid', () => {
-        const compPanel = panel.container.querySelector('[data-tab-panel="compressor"]')
-        const grid = compPanel.querySelector('#op-comp-grid')
-        const btn = grid.querySelector('.ne-btn')
+    it('bypass button is inside the compressor panel header', () => {
+        const header = panel.container.querySelector('.op-comp-header')
+        expect(header).not.toBeNull()
+        const btn = header.querySelector('.op-comp-bypass')
         expect(btn).not.toBeNull()
-        expect(btn.textContent).toBe('ON')
+        expect(btn.classList.contains('active')).toBe(true)
     })
 })

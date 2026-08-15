@@ -1271,6 +1271,92 @@ body {
     gap: 4px 12px;
 }
 
+/* ── Compressor Panel (VST style) ─────────────────────── */
+.op-comp-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px 8px;
+}
+.op-comp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 4px;
+    margin-bottom: 2px;
+}
+.op-comp-title {
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+.op-comp-bypass {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-tertiary);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+    line-height: 1;
+}
+.op-comp-bypass:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.op-comp-bypass.active {
+    border-color: var(--color-success);
+    color: var(--color-success);
+    background: var(--bg-success);
+    box-shadow: 0 0 6px var(--color-success);
+}
+.op-comp-knobs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    justify-content: center;
+}
+.op-comp-knobs .ne-row-knob {
+    flex: 0 0 auto;
+    min-width: 56px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0 4px;
+}
+.op-comp-knobs .or-knob-label {
+    font-size: var(--fs-xs);
+    text-align: center;
+}
+.op-comp-knobs .ne-val {
+    font-size: var(--fs-xs);
+    text-align: center;
+    width: auto;
+    min-width: 0;
+    color: var(--text-dim);
+    font-weight: bold;
+    overflow: visible;
+    white-space: nowrap;
+}
+.op-comp-pregain {
+    margin-top: 4px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 4px;
+    justify-self: center;
+}
+.op-comp-pregain .or-knob-label {
+    font-size: var(--fs-xs) !important;
+}
+
 .fx-header {
     display: flex;
     align-items: center;

@@ -2,6 +2,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
+import { OrKnob } from './components/or_knob.js'
 import BasePanel from './base_panel.js'
 
 const COMPRESSOR_PARAMS = [
@@ -41,7 +42,7 @@ this.container.innerHTML = `
                 <div id="op-analyzer-group"><canvas id="op-spectrum"></canvas></div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="compressor">
-                <div class="ne-grid ne-grid-2col" id="op-comp-grid"></div>
+                <div class="op-comp-panel" id="op-comp-panel"></div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="filters">
                 <div class="ne-grid" id="op-filters-grid"></div>
@@ -60,73 +61,80 @@ this.container.innerHTML = `
     }
 
     _buildMasterSlider() {
-        this._masterVol = new OrSlider({
+        this._masterVol = new OrKnob({
             key:     'op-master-vol',
             label:   'Volume',
             min:     0,
             max:     2,
             step:    0.01,
             value:   1,
-            noCursor: true,
             format:  v => v.toFixed(2),
             onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: v }),
         })
-        const row = this._masterVol.createElement()
-        row.querySelector('input[type=range]').id = 'op-master-vol'
-        this.container.querySelector('#op-master-grid').appendChild(row)
+        const el = this._masterVol.createElement()
+        el.dataset.orSlider = 'op-master-vol'
+        this.container.querySelector('#op-master-grid').appendChild(el)
     }
 
     _buildPreGainSlider() {
-        this._preGain = new OrSlider({
+        this._preGain = new OrKnob({
             key:     'op-pregain',
             label:   'Pre-Gain',
             min:     -20,
             max:     20,
             step:    0.5,
             value:   0,
-            noCursor: true,
             format:  v => (v >= 0 ? '+' : '') + v.toFixed(1),
             unit:    'dB',
             onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v }),
         })
-        this.container.querySelector('#op-comp-grid').appendChild(this._preGain.createElement())
+        const el = this._preGain.createElement()
+        el.classList.add('op-comp-pregain')
+        this.container.querySelector('#op-comp-panel').appendChild(el)
     }
 
     _buildCompressorSliders() {
         this._compSliders = {}
-        const grid = this.container.querySelector('#op-comp-grid')
+        const panel = this.container.querySelector('#op-comp-panel')
 
         this._compBypass = false
+        const header = document.createElement('div')
+        header.className = 'op-comp-header'
+        const title = document.createElement('span')
+        title.className = 'op-comp-title'
+        title.textContent = 'COMPRESSOR'
         this._compBypassBtn = document.createElement('button')
-        this._compBypassBtn.className = 'ne-btn active'
-        this._compBypassBtn.textContent = 'ON'
+        this._compBypassBtn.className = 'op-comp-bypass active'
+        this._compBypassBtn.innerHTML = '&#9889;'
+        this._compBypassBtn.title = 'Compressor on/off'
         this._compBypassBtn.addEventListener('click', () => {
             this._compBypass = !this._compBypass
-            this._compBypassBtn.textContent = this._compBypass ? 'OFF' : 'ON'
             this._compBypassBtn.classList.toggle('active', !this._compBypass)
             serviceRegistry.audioEngine?.mixer?.setMasterBus({ bypass: this._compBypass })
         })
-        const row = document.createElement('div')
-        row.className = 'ne-grid-row'
-        row.appendChild(this._compBypassBtn)
-        grid.appendChild(row)
+        header.append(title, this._compBypassBtn)
+        panel.appendChild(header)
+
+        const knobsRow = document.createElement('div')
+        knobsRow.className = 'op-comp-knobs'
 
         COMPRESSOR_PARAMS.forEach(p => {
-            const slider = new OrSlider({
+            const knob = new OrKnob({
                 key:      p.key,
                 label:    p.label,
                 min:      p.min,
                 max:      p.max,
                 step:     p.step,
                 value:    p.default,
-                noCursor: true,
                 format:   v => p.step < 1 ? parseFloat(v.toFixed(3)) : Math.round(v),
                 unit:     p.unit ?? '',
                 onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v }),
             })
-            this._compSliders[p.key] = slider
-            grid.appendChild(slider.createElement())
+            this._compSliders[p.key] = knob
+            knobsRow.appendChild(knob.createElement())
         })
+
+        panel.appendChild(knobsRow)
     }
 
     _buildFilterSliders() {
