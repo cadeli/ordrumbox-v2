@@ -10,7 +10,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 function makeTrack(overrides = {}) {
     return {
         name: 'KICK',
-        velocity: 0.8, pan: 0, pitch: 0, sampleDecay: 0.5,
+        velocity: 0.8, pan: 0, pitch: 0,
         filterType: 'lowpass', filterFreq: 632, filterQ: 1,
         filterEnvelopeAmount: 0, filterLfo: 0,
         reverbAmount: 0, reverbType: 'none',

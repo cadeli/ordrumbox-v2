@@ -341,7 +341,7 @@ describe('simpleBeep — SampleVoice through real mixer chain', () => {
         const strip = await mixer.getOrCreateStrip('KICK')
         expect(strip).toBeTruthy()
 
-        const track = { name: 'KICK', soundId: 'kick.wav', pitchLfo: null, sampleDecay: 0.3 }
+        const track = { name: 'KICK', soundId: 'kick.wav', pitchLfo: null }
         const note = { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, fpitch: 1, name: 'test' }
         const flatNote = new MfFlatNote(0, track, note)
 

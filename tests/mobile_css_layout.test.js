@@ -103,10 +103,6 @@ describe('Mobile CSS: Toolbar overrides', () => {
     it('hides .tb-view-row (desktop view buttons)', () => {
         expect(hasRule(MOBILE_MEDIA, '#tb .tb-view-row', 'display', 'none')).toBe(true)
     })
-
-    it('hides .tb-view-row (desktop view buttons)', () => {
-        expect(hasRule(MOBILE_MEDIA, '#tb .tb-view-row', 'display', 'none')).toBe(true)
-    })
 })
 
 describe('Mobile CSS: Desktop base hides mobile-only elements', () => {

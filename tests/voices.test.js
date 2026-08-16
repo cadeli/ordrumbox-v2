@@ -98,7 +98,6 @@ function makeFlatNote(overrides = {}) {
         track: {
             name: 'KICK',
             useSoftSynth: false,
-            sampleDecay: 0.5,
             pitchLfo: null,
             panLfo: null,
             soundId: 'snd_kick',
