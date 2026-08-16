@@ -11,6 +11,8 @@ import { logger } from "../../core/logger.js"
 
 export default class MfCmd {
     static TAG = "MFCMD"
+    static #DERIVED_KEYS = new Set(['loopPointBeat', 'loopPointStep'])
+    static #TRACK_KEY_SET = new Set(Object.keys(TRACK_DEFAULTS))
 
     constructor() {
     }
@@ -26,20 +28,16 @@ export default class MfCmd {
         
         let changed = false
         // Derived properties are handled separately
-        const derivedKeys = new Set(['loopPointBeat', 'loopPointStep'])
-        const allTrackKeys = new Set(Object.keys(TRACK_DEFAULTS))
-        
         for (const [k, v] of Object.entries(updates)) {
-            if (allTrackKeys.has(k) && !derivedKeys.has(k)) {
-                let clamped = v
-                const range = TRACK_VALUE_RANGES[k]
-                if (range && typeof v === 'number' && Number.isFinite(v)) {
-                    clamped = Math.min(range.max, Math.max(range.min, v))
-                }
-                if (track[k] !== clamped) {
-                    track[k] = clamped
-                    changed = true
-                }
+            if (MfCmd.#DERIVED_KEYS.has(k) || !MfCmd.#TRACK_KEY_SET.has(k)) continue
+            let clamped = v
+            const range = TRACK_VALUE_RANGES[k]
+            if (range && typeof v === 'number' && Number.isFinite(v)) {
+                clamped = Math.min(range.max, Math.max(range.min, v))
+            }
+            if (track[k] !== clamped) {
+                track[k] = clamped
+                changed = true
             }
         }
 
@@ -68,15 +66,8 @@ export default class MfCmd {
         }
     }
 
-    isNoteAt = (track, beat, beatStep) => {
-        let notes = []
-        Object.values(track.notes).forEach((note) => {
-            if (note.beatStep === beatStep && note.beat === beat) {
-                notes.push(note)
-            }
-        })
-        return notes
-    }
+    isNoteAt = (track, beat, beatStep) =>
+        Object.values(track.notes).filter(n => n.beatStep === beatStep && n.beat === beat)
 
     deleteNote = (track, selNote) => {
         const values = Object.values(track.notes)
@@ -177,21 +168,8 @@ export default class MfCmd {
     }
 
     createPattern = (name) => {
-        if (!name) {
-            let nb = 0
-            if (appState.patterns.length) {
-                nb = appState.patterns.length
-            }
-            name = "NewPat_" + nb
-        }
-        let pattern = {
-            "name": name,
-            "description": "",
-            "tracks": [],
-            "bpm": 120,
-            "nbBeats": 4
-        }
-        return pattern
+        name ??= `NewPat_${appState.patterns.length}`
+        return { name, description: "", tracks: [], bpm: 120, nbBeats: 4 }
     }
 
     kitIsLoaded = (drumkit) => {
@@ -296,13 +274,7 @@ export default class MfCmd {
     }
 
     getAllSoundsForType(soundKey) {
-        let retSounds = []
-        for (const soundId in soundRegistry.sounds) {
-            if (soundRegistry.sounds[soundId].key === soundKey) {
-                retSounds.push(soundRegistry.sounds[soundId])
-            }
-        }
-        return retSounds
+        return Object.values(soundRegistry.sounds).filter(s => s.key === soundKey)
     }
 
     changeTrackSound = (track, soundId) => {
@@ -316,12 +288,8 @@ export default class MfCmd {
     }
 
     getSoundIdFromUrl = (url) => {
-        for (const soundId in soundRegistry.sounds) {
-            if (soundRegistry.sounds[soundId].url === url) {
-                return soundId;
-            }
-        }
-        return NOT_FOUND;
+        const entry = Object.entries(soundRegistry.sounds).find(([, s]) => s.url === url)
+        return entry?.[0] ?? NOT_FOUND
     }
 
 }

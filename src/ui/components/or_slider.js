@@ -250,9 +250,9 @@ export class OrSlider {
         e.stopPropagation()
 
         let multiplier = 1
-        if (e.shiftKey) multiplier = 0.1 // Shift = precision mode
-        if (e.altKey)   multiplier = 0.1
-        if (e.ctrlKey || e.metaKey) multiplier = 10
+        const isFine = e.shiftKey || e.altKey
+        if (isFine) multiplier = 0.1
+        else if (e.ctrlKey || e.metaKey) multiplier = 10
 
         const delta    = (isUp ? 1 : -1) * this._step * multiplier
         const norm     = parseFloat(this._input.value)

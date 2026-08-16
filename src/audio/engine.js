@@ -233,8 +233,8 @@ export default class AudioEngine {
             if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
                 const mapping = this._resolveMidiMapping(flatNote.track.id)
                 if (mapping) {
-                    const channel   = Number.isFinite(parseInt(mapping.ch)) ? parseInt(mapping.ch) : (logger.warn('Fallback','pi',mapping.ch,9), 9)
-                    const note      = Number.isFinite(parseInt(mapping.key)) ? parseInt(mapping.key) : (logger.warn('Fallback','pi',mapping.key,60), 60)
+                    const channel   = Number.isFinite(parseInt(mapping.ch, 10)) ? parseInt(mapping.ch, 10) : (logger.warn('Fallback','pi',mapping.ch,9), 9)
+                    const note      = Number.isFinite(parseInt(mapping.key, 10)) ? parseInt(mapping.key, 10) : (logger.warn('Fallback','pi',mapping.key,60), 60)
                     const vel       = Math.floor(flatNote.velocity * 127)
                     const startTime = midiTime + (flatNote.swingTime * 1000)
 

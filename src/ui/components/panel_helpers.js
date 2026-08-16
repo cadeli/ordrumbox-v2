@@ -114,12 +114,9 @@ export function downloadJson(data, filename) {
 /**
  * Creates a Knob format callback for velocity/pitch/fallback.
  */
-export function knobFormat(def) {
-    return def.key === 'velocity'
-        ? v => Math.round(v * 100)
-        : def.key === 'pitch'
-            ? v => `${v >= 0 ? '+' : ''}${v}`
-            : def.key === 'decay'
-                ? v => `${Math.round(v)} ms`
-                : fmt
-}
+const KNOB_FORMATTERS = new Map([
+    ['velocity', v => Math.round(v * 100)],
+    ['pitch',    v => `${v >= 0 ? '+' : ''}${v}`],
+    ['decay',    v => `${Math.round(v)} ms`],
+])
+export const knobFormat = (def) => KNOB_FORMATTERS.get(def.key) ?? fmt

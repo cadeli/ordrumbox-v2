@@ -887,7 +887,7 @@ export default class PatternPanel extends BasePanel {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) {
             if (!this.container.querySelector('.pp-waiting')) {
-                this.container.innerHTML = '<div class="pp-header pp-waiting" style="color:#fff; padding:10px;">Waiting for patterns...</div>'
+                this.container.innerHTML = '<div class="pp-header pp-waiting">Waiting for patterns...</div>'
             }
             return
         }

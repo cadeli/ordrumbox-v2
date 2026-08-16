@@ -22,10 +22,10 @@ export default class MobileTabBar {
         this.container.id = 'mobile-tab-bar'
 
         const tabs = [
-            { id: 'seq', label: 'Sequencer', icon: '🎵' },
-            { id: 'track', label: 'Track', icon: '🎸' },
-            { id: 'synth', label: 'Synth', icon: 'synth' },
-            { id: 'tools', label: 'Tools', icon: '⚙' },
+            { id: 'seq', label: 'Sequencer' },
+            { id: 'track', label: 'Track' },
+            { id: 'synth', label: 'Synth' },
+            { id: 'tools', label: 'Tools' },
         ]
 
         tabs.forEach(tab => {

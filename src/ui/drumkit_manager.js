@@ -100,7 +100,7 @@ export default class DrumkitManager extends BasePanel {
 
     _getCurrentKitSounds() {
         return Object.entries(soundRegistry.sounds)
-            .map(([url, s]) => ({ url, instrumentKey: s.key, ...s }))
+            .map(([url, s]) => ({ url, ...s }))
     }
 
     _currentKitName() {
@@ -420,7 +420,7 @@ export default class DrumkitManager extends BasePanel {
 
         let newKit = soundRegistry.drumkits[newKitName]
         if (!newKit) {
-            newKit = { instruments: [] }
+            newKit = { name: newKitName, instruments: [] }
             soundRegistry.drumkits[newKitName] = newKit
         }
         const instEntry = { display_name: sound.display_name, key: sound.key, url: soundKey }
@@ -565,7 +565,6 @@ export default class DrumkitManager extends BasePanel {
             showToast('No pattern selected', 'warning')
             return
         }
-        const { getAutoAssignService } = await import('../state/service_registry.js')
         const autoAssign = await getAutoAssignService()
         autoAssign.autoAssignSounds(pattern)
         showToast('Auto-detect complete', 'success')
@@ -599,7 +598,7 @@ export default class DrumkitManager extends BasePanel {
             }
 
             clearAnalysisCache(s.buffer)
-            soundRegistry.sounds[s.key].buffer = newBuffer
+            soundRegistry.sounds[s.url].buffer = newBuffer
             count++
         }
 

@@ -174,7 +174,7 @@ export default class MfStrip {
         const time = this.audioCtx.currentTime;
         const params = this.stripNode.parameters;
 
-        const normalizedType = DELAY_MODES.hasOwnProperty(type) ? type : 'tape';
+        const normalizedType = Object.hasOwn(DELAY_MODES, type) ? type : 'tape';
         const normalizedAmount = Math.min(1, Math.max(0, Utils.toFiniteNumber(amount, 0, 'amount')));
 
         this.currentDelayType = normalizedType;

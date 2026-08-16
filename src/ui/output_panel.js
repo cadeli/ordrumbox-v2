@@ -223,9 +223,12 @@ this.container.innerHTML = `
         const ctx = canvas.getContext('2d')
         const w = canvas.width
         const h = canvas.height
+        if (!this._bgColor) {
+            this._bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas').trim() || '#0d0d1a'
+        }
         const data = serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {
-            ctx.fillStyle = '#0d0d1a'
+            ctx.fillStyle = this._bgColor
             ctx.fillRect(0, 0, w, h)
             return
         }
@@ -245,7 +248,7 @@ this.container.innerHTML = `
             }
         }
 
-        ctx.fillStyle = '#0d0d1a'
+        ctx.fillStyle = this._bgColor
         ctx.fillRect(0, 0, w, h)
 
         for (let i = 0; i < beatCount; i++) {

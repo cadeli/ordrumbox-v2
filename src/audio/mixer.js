@@ -134,7 +134,6 @@ export default class MfMixer {
             }
             delete this.strips[name];
         }
-        this.strips = {};
     }
 
     setBpm = (bpm) => {

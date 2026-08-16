@@ -1354,7 +1354,7 @@ body {
     justify-self: center;
 }
 .op-comp-pregain .or-knob-label {
-    font-size: var(--fs-xs) !important;
+    font-size: var(--fs-xs);
 }
 
 .fx-header {
