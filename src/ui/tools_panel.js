@@ -14,6 +14,7 @@ import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import { logger, nameOr } from "../core/logger.js"
+import { getCacheStats, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, formatBytes, formatDate, cacheSample, cacheDrumkits } from '../cache/idb_cache.js'
 
 export default class ToolsPanel extends BasePanel {
     constructor() {
@@ -35,6 +36,7 @@ export default class ToolsPanel extends BasePanel {
                 <button class="ne-tab-btn" data-ne-tab="import">Import</button>
                 <button class="ne-tab-btn" data-ne-tab="midi-status">Status</button>
                 <button class="ne-tab-btn" data-ne-tab="midi">MIDI</button>
+                <button class="ne-tab-btn" data-ne-tab="cache">Cache</button>
             </div>
             <div class="ne-tab-panel" data-tab-panel="pattern">
                 <div class="ne-row">
@@ -109,6 +111,21 @@ export default class ToolsPanel extends BasePanel {
                     <button class="ne-btn" id="tp-midi-sync" title="Toggle between internal clock and external MIDI clock sync">Toggle Sync</button>
                 </div>
             </div>
+            <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="cache">
+                <div class="ne-row no-cursor" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 4px; margin-bottom: 4px;">
+                    <label>Total:</label>
+                    <span class="ne-val" id="cache-total-size">-</span>
+                    <span class="ne-val" id="cache-total-count" style="margin-left: auto;"></span>
+                </div>
+                <div id="tp-cache-list" style="max-height: 140px; overflow-y: auto; font-size: var(--fs-sm); margin-bottom: 4px;"></div>
+                <div id="tp-cache-btns" style="display: flex; flex-direction: column; gap: 3px;">
+                    <button class="ne-btn" id="tp-cache-refresh" title="Refresh cache list">Refresh</button>
+                    <button class="ne-btn" id="tp-cache-clear-patterns" title="Clear cached patterns from IDB">Clear Patterns</button>
+                    <button class="ne-btn" id="tp-cache-clear-drumkits" title="Clear cached drumkits from IDB">Clear Drumkits</button>
+                    <button class="ne-btn" id="tp-cache-clear-samples" title="Clear cached samples from IDB">Clear Samples</button>
+                    <button class="ne-btn" id="tp-cache-clear-all" title="Clear all cached data from IDB" style="color: var(--color-danger);">Clear All Cache</button>
+                </div>
+            </div>
         `
         
         this.container.querySelector('#tp-compact').addEventListener('click', () => this._compactPattern())
@@ -177,6 +194,28 @@ export default class ToolsPanel extends BasePanel {
             }
         })
 
+        this.container.querySelector('#tp-cache-refresh').addEventListener('click', () => this._refreshCacheStats())
+        this.container.querySelector('#tp-cache-clear-patterns').addEventListener('click', async () => {
+            await clearPatternsCache()
+            showToast('Patterns cache cleared', 'success')
+            this._refreshCacheStats()
+        })
+        this.container.querySelector('#tp-cache-clear-drumkits').addEventListener('click', async () => {
+            await clearDrumkitsCache()
+            showToast('Drumkits cache cleared', 'success')
+            this._refreshCacheStats()
+        })
+        this.container.querySelector('#tp-cache-clear-samples').addEventListener('click', async () => {
+            await clearSamplesCache()
+            showToast('Samples cache cleared', 'success')
+            this._refreshCacheStats()
+        })
+        this.container.querySelector('#tp-cache-clear-all').addEventListener('click', async () => {
+            await clearAllCache()
+            showToast('All cache cleared', 'success')
+            this._refreshCacheStats()
+        })
+
         bindCloseButton(this.container, () => this.hide())
         bindTabToggles(this.container)
     }
@@ -226,6 +265,11 @@ export default class ToolsPanel extends BasePanel {
             this._setLedState('midiActivityLed', false, 'Idle')
             if (outputSelect) outputSelect.innerHTML = '<option value="">MIDI Not Enabled</option>'
         }
+
+        // Refresh cache stats if cache tab is visible
+        if (this.isVisible) {
+            this._refreshCacheStats()
+        }
     }
 
     _setLedState(ledId, isOn, label) {
@@ -237,6 +281,39 @@ export default class ToolsPanel extends BasePanel {
         }
         if (text) {
             text.innerText = label
+        }
+    }
+
+    async _refreshCacheStats() {
+        try {
+            const stats = await getCacheStats()
+            const q = (sel) => this.container.querySelector(sel)
+
+            q('#cache-total-size').textContent = formatBytes(stats.totalBytes)
+            q('#cache-total-count').textContent = `${stats.entries.length} file(s)`
+
+            const listEl = q('#tp-cache-list')
+            if (stats.entries.length === 0) {
+                listEl.innerHTML = '<div style="color: var(--text-tertiary); padding: 4px 0;">No cached files</div>'
+                return
+            }
+
+            const sorted = [...stats.entries].sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
+            const TYPE_LABELS = { patterns: 'PAT', drumkits: 'DK', samples: 'SMP' }
+
+            listEl.innerHTML = sorted.map(e => {
+                const label = TYPE_LABELS[e.type] ?? e.type
+                const date = formatDate(e.savedAt)
+                const size = formatBytes(e.size)
+                return `<div style="display:flex; align-items:center; gap:4px; padding:2px 0; border-bottom:1px solid var(--border-subtle);" title="${escapeHtml(e.key)}">` +
+                    `<span style="min-width:28px;color:var(--accent);font-weight:600;">${label}</span>` +
+                    `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">${escapeHtml(e.key)}</span>` +
+                    `<span style="color:var(--text-tertiary);min-width:52px;text-align:right;flex-shrink:0;">${size}</span>` +
+                    `<span style="color:var(--text-tertiary);min-width:90px;text-align:right;flex-shrink:0;">${date}</span>` +
+                    `</div>`
+            }).join('')
+        } catch (e) {
+            logger.error('ToolsPanel', 'Failed to refresh cache stats', e)
         }
     }
 
@@ -694,6 +771,7 @@ export default class ToolsPanel extends BasePanel {
                 }
 
                 instruments.push({ display_name: fileName, key, url: fileName })
+                cacheSample(fileName, arrayBuffer).catch(() => {})
             }
 
             // Add/replace this drumkit only
@@ -707,6 +785,8 @@ export default class ToolsPanel extends BasePanel {
                 soundRegistry.drumkitList.push({ name: kitName, instruments })
                 appState.selectedDrumkitNum = soundRegistry.drumkitList.length - 1
             }
+
+            await cacheDrumkits(Object.fromEntries(soundRegistry.drumkitList.map(d => [d.name, d])))
 
             playbackEvents.dispatchDrumkitChange()
 

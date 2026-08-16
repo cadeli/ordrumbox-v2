@@ -3,6 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { fixPatterns, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
 import { idbGet, idbPut } from '../core/idb.js'
+import { cachePatterns, getCachedPatterns, cacheDrumkits, getCachedDrumkits, cacheSample, getCachedSample } from '../cache/idb_cache.js'
 import Utils from '../core/utils.js'
 import { logger } from '../core/logger.js'
 
@@ -101,7 +102,13 @@ export default class MfResourcesLoader {
     }
 
     async loadDrumkitList(file) {
-        const jsonDrumkits = await this.loadJsonResource(file)
+        let jsonDrumkits = await getCachedDrumkits()
+        if (!jsonDrumkits) {
+            jsonDrumkits = await this.loadJsonResource(file)
+            await cacheDrumkits(jsonDrumkits)
+        } else {
+            logger.debug('MfResourcesLoader', 'Drumkit list loaded from IDB cache')
+        }
         soundRegistry.drumkitList.length = 0
         Object.values(jsonDrumkits).forEach((drumkit) => {
             soundRegistry.drumkitList.push(drumkit)
@@ -143,7 +150,13 @@ export default class MfResourcesLoader {
 
     async loadSong(file) {
         this.isPatternsComplete = false
-        const json = await this.loadJsonResource(file)
+        let json = await getCachedPatterns()
+        if (!json) {
+            json = await this.loadJsonResource(file)
+            await cachePatterns(json)
+        } else {
+            logger.debug('MfResourcesLoader', 'Patterns loaded from IDB cache')
+        }
         const patterns = json.patterns ?? json
         appState.songInfos = {
             name: json.infos?.name ?? '',
@@ -213,11 +226,17 @@ export default class MfResourcesLoader {
     }
 
     loadSample = async (sample, kit_name) => {
-        const response = await fetch(MfResourcesLoader.KITS_PATH + sample.url)
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`)
+        let arrayBuffer = await getCachedSample(sample.url)
+        if (!arrayBuffer) {
+            const response = await fetch(MfResourcesLoader.KITS_PATH + sample.url)
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`)
+            }
+            arrayBuffer = await response.arrayBuffer()
+            await cacheSample(sample.url, arrayBuffer)
+        } else {
+            logger.debug('MfResourcesLoader', `Sample "${sample.url}" loaded from IDB cache`)
         }
-        const arrayBuffer = await response.arrayBuffer()
         const buffer = await this.audioCtx.decodeAudioData(arrayBuffer)
         const sound = {
             kit_name: kit_name,

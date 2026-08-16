@@ -1023,6 +1023,17 @@ body {
     max-width: 100%;
 }
 
+/* Cache tab: buttons in single column, full width */
+#tp-cache-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+#tp-cache-btns .ne-btn {
+    width: 100%;
+    min-width: 0;
+}
+
 /* ---- Soft Synth Editor ---- */
 #soft-synth-panel {
     display: none;

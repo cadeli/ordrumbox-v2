@@ -111,12 +111,12 @@ describe('Sub-panel toggle toolbars', () => {
     })
 
     describe('Tools Panel', () => {
-        it('renders all 5 tab buttons (Pattern, Export, Import, MIDI Status, MIDI)', () => {
+        it('renders all 6 tab buttons (Pattern, Export, Import, MIDI Status, MIDI, Cache)', () => {
             playbackEvents.dispatchToolsToggle(true)
 
             const tabs = document.getElementById('tools-panel').querySelectorAll('.ne-tab-btn[data-ne-tab]')
             const keys = Array.from(tabs).map(b => b.dataset.neTab)
-            expect(keys).toEqual(['pattern', 'export', 'import', 'midi-status', 'midi'])
+            expect(keys).toEqual(['pattern', 'export', 'import', 'midi-status', 'midi', 'cache'])
         })
 
         it('switches active tab when a button is clicked', () => {

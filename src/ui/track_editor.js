@@ -724,7 +724,9 @@ export default class TrackEditor extends BasePanel {
         } else {
             matchingSounds.forEach(s => {
                 const sel = s.url === currentSoundId ? ' selected' : ''
-                const label = `${s.url ?? '??'}`
+                const kit = s.kitName ?? ''
+                const name = s.display_name ?? s.url ?? '??'
+                const label = kit ? `${kit}/${name}` : name
                 content += `<option value="${s.url}"${sel}>${label}</option>`
             })
         }

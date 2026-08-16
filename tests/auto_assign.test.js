@@ -91,4 +91,56 @@ describe('Functional: Auto-assign sounds', () => {
         // CLAP has no direct sound but should try equivalents
         expect(track.soundId).not.toBe('NOT_DEFINED')
     })
+
+    it('getSoundIdFromKitAndTrackname returns matching sound in kit', () => {
+        const result = mfAutoAssign.getSoundIdFromKitAndTrackname('real', 'KICK')
+        expect(result).toBe('snd_kick')
+    })
+
+    it('getSoundIdFromKitAndTrackname returns NOT_FOUND for unknown track', () => {
+        const result = mfAutoAssign.getSoundIdFromKitAndTrackname('real', 'TOM')
+        expect(result).toBe(MfAutoAssign.NOT_FOUND)
+    })
+
+    it('getSoundIdFromKitAndTrackname returns NOT_FOUND for unknown kit', () => {
+        const result = mfAutoAssign.getSoundIdFromKitAndTrackname('nonexistent', 'KICK')
+        expect(result).toBe(MfAutoAssign.NOT_FOUND)
+    })
+
+    it('getSoundIdFromTrackname finds sound by key match', () => {
+        const result = mfAutoAssign.getSoundIdFromTrackname('KICK')
+        expect(result).toBe('snd_kick')
+    })
+
+    it('getSoundIdFromTrackname returns NOT_FOUND for unknown name', () => {
+        const result = mfAutoAssign.getSoundIdFromTrackname('GUITAR')
+        expect(result).toBe(MfAutoAssign.NOT_FOUND)
+    })
+
+    it('getSoundIdByKeyContaining finds sound by partial key match', () => {
+        const result = mfAutoAssign.getSoundIdByKeyContaining('real', 'KIC')
+        expect(result).toBe('snd_kick')
+    })
+
+    it('getSoundIdByKeyContaining with null kit searches all kits', () => {
+        const result = mfAutoAssign.getSoundIdByKeyContaining(null, 'KIC')
+        expect(result).toBe('snd_kick')
+    })
+
+    it('getSoundIdByKeyContaining returns NOT_FOUND for empty search', () => {
+        const result = mfAutoAssign.getSoundIdByKeyContaining('real', '')
+        expect(result).toBe(MfAutoAssign.NOT_FOUND)
+    })
+
+    it('autoAssignSounds with empty sounds does not crash', () => {
+        mfAutoAssign._soundRegistry.sounds = {}
+        const pattern = mfCmd.addPattern('Test')
+        const track = mfCmd.addTrack(pattern, 'KICK', 4)
+        track.useAutoAssignSound = true
+        const originalSoundId = track.soundId
+
+        mfAutoAssign.autoAssignSounds(pattern)
+
+        expect(track.soundId).toBe(originalSoundId)
+    })
 })

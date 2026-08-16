@@ -3,6 +3,7 @@ import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../src/model/track_schema.js
 import { MfGlobals } from '../src/core/globals.js'
 import MfCmd from '../src/logic/commands/cmd.js'
 import TrackVariation from '../src/patterns/variation.js'
+import MfFlatNote from '../src/model/flatnote.js'
 
 describe('Track variation2', () => {
     let mfCmd
@@ -138,5 +139,92 @@ describe('Track variation2', () => {
             if (n.retriggerNum !== 1 || n.rate !== 1 || n.euclidianFill !== 0 || n.prob !== 1) changed++
         }
         expect(changed).toBeGreaterThanOrEqual(1)
+    })
+})
+
+describe('TrackVariation.apply (position-based)', () => {
+    let mfCmd
+
+    beforeEach(() => {
+        MfGlobals.resetAll()
+        mfCmd = new MfCmd()
+        MfGlobals.mfCmd = mfCmd
+    })
+
+    function makeTrack(name = 'KICK', nbBeats = 4, stepsPerBeat = 4) {
+        const pattern = mfCmd.addPattern('Test')
+        pattern.nbBeats = nbBeats
+        return mfCmd.addTrack(pattern, name, stepsPerBeat)
+    }
+
+    function makeFlatNote(tick, track, beat, beatStep, velocity = 0.8, pitch = 0) {
+        const note = { beat, beatStep, velocity, pitch, pan: 0 }
+        return new MfFlatNote(tick, track, note)
+    }
+
+    it('variation=0 is a no-op', () => {
+        const track = makeTrack()
+        track.variation = 0
+        const flatNotes = new Map()
+        const fn = makeFlatNote(0, track, 0, 0)
+        flatNotes.set(0, [fn])
+        const before = new Map([...flatNotes].map(([k, v]) => [k, [...v]]))
+
+        TrackVariation.apply(flatNotes, track, 128, 128, 8, 0)
+
+        expect(flatNotes.size).toBe(before.size)
+    })
+
+    it('variation>0 with notes spaced apart adds anticipation and double notes', () => {
+        const track = makeTrack()
+        track.variation = 100
+        track.stepsPerBeat = 4
+        const tickPerStep = 8
+        const nbTickForLoop = 128
+
+        const flatNotes = new Map()
+        const fn0 = makeFlatNote(0, track, 0, 0)
+        const fn2 = makeFlatNote(16, track, 0, 2)
+        flatNotes.set(0, [fn0])
+        flatNotes.set(16, [fn2])
+
+        TrackVariation.apply(flatNotes, track, nbTickForLoop, nbTickForLoop, tickPerStep, 100)
+
+        const totalNotes = [...flatNotes.values()].flat().length
+        expect(totalNotes).toBeGreaterThan(2)
+    })
+
+    it('variation>0 with empty flatNotes does not crash', () => {
+        const track = makeTrack()
+        track.variation = 80
+        const flatNotes = new Map()
+
+        TrackVariation.apply(flatNotes, track, 128, 128, 8, 80)
+
+        expect(flatNotes.size).toBe(0)
+    })
+
+    it('variation>0 with single note generates ops', () => {
+        const track = makeTrack()
+        track.variation = 100
+        const flatNotes = new Map()
+        const fn = makeFlatNote(0, track, 0, 0)
+        flatNotes.set(0, [fn])
+
+        TrackVariation.apply(flatNotes, track, 128, 128, 8, 100)
+
+        const totalNotes = [...flatNotes.values()].flat().length
+        expect(totalNotes).toBeGreaterThanOrEqual(1)
+    })
+
+    it('applyNoteVariation with variation2=0 does nothing', () => {
+        const track = makeTrack()
+        track.variation2 = 0
+        const notes = [{ beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 }]
+        track.notes = notes
+
+        TrackVariation.applyNoteVariation(track)
+
+        expect(notes[0].retriggerNum).toBe(1)
     })
 })

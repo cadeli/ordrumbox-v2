@@ -1,12 +1,14 @@
 const DB_NAME = 'ordrumbox'
-const DB_VERSION = 2
+const DB_VERSION = 3
+
+const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples']
 
 export function openDb() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION)
         request.onupgradeneeded = () => {
             const db = request.result
-            for (const name of ['settings', 'songs']) {
+            for (const name of ALL_STORES) {
                 if (!db.objectStoreNames.contains(name)) {
                     db.createObjectStore(name)
                 }
@@ -66,6 +68,57 @@ export async function idbKeys(storeName) {
             const tx = db.transaction(storeName, 'readonly')
             const req = tx.objectStore(storeName).getAllKeys()
             req.onsuccess = () => resolve(req.result)
+            req.onerror = () => reject(req.error)
+        })
+    } finally {
+        db.close()
+    }
+}
+
+export async function idbClearStore(storeName) {
+    const db = await openDb()
+    try {
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readwrite')
+            const req = tx.objectStore(storeName).clear()
+            req.onsuccess = () => resolve()
+            req.onerror = () => reject(req.error)
+        })
+    } finally {
+        db.close()
+    }
+}
+
+export async function idbGetAll(storeName) {
+    const db = await openDb()
+    try {
+        return await new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readonly')
+            const req = tx.objectStore(storeName).getAll()
+            req.onsuccess = () => resolve(req.result)
+            req.onerror = () => reject(req.error)
+        })
+    } finally {
+        db.close()
+    }
+}
+
+export async function idbGetAllEntries(storeName) {
+    const db = await openDb()
+    try {
+        return await new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readonly')
+            const req = tx.objectStore(storeName).openCursor()
+            const entries = []
+            req.onsuccess = () => {
+                const cursor = req.result
+                if (cursor) {
+                    entries.push({ key: cursor.key, value: cursor.value })
+                    cursor.continue()
+                } else {
+                    resolve(entries)
+                }
+            }
             req.onerror = () => reject(req.error)
         })
     } finally {
