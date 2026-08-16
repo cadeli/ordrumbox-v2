@@ -141,9 +141,15 @@
             <li><a href="#6-tools-panel">Tools Panel</a></li>
             <li><a href="#7-output-panel">Output Panel</a></li>
             <li><a href="#8-synth-editor">Synth Editor</a></li>
-            <li><a href="#9-keyboard-shortcuts">Keyboard Shortcuts</a></li>
-            <li><a href="#10-audio-signal-flow">Audio Signal Flow</a></li>
-            <li><a href="#11-installation--offline-use">Installation & Offline Use</a></li>
+            <li><a href="#9-piano-roll">Piano Roll</a></li>
+            <li><a href="#10-patterns-panel">Patterns Panel</a></li>
+            <li><a href="#11-pattern-settings">Pattern Settings</a></li>
+            <li><a href="#12-drumkit-manager">Drumkit Manager</a></li>
+            <li><a href="#13-about-panel">About Panel</a></li>
+            <li><a href="#14-mobile-tab-bar">Mobile Tab Bar</a></li>
+            <li><a href="#15-keyboard-shortcuts">Keyboard Shortcuts</a></li>
+            <li><a href="#16-audio-signal-flow">Audio Signal Flow</a></li>
+            <li><a href="#17-installation--offline-use">Installation & Offline Use</a></li>
         </ol>
     </div>
 
@@ -198,7 +204,49 @@
     <ul>
         <li><strong>Pattern name</strong> (red), <strong>BPM</strong>, <strong>beat count</strong>, and <strong>track count</strong> are shown in the header.</li>
         <li>Each track row shows: <strong>track name</strong> + <strong>step grid</strong>.</li>
+        <li><strong>Playhead</strong> — vertical line moving across the grid during playback.</li>
+        <li><strong>Waveform overlay</strong> — real-time waveform display over the grid (toggle with V key).</li>
+        <li><strong>VU meters</strong> — real-time level bars on each track row.</li>
     </ul>
+
+    <h3>Header Action Buttons</h3>
+    <table>
+        <thead>
+            <tr><th>Button</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>✕ Delete</strong></td><td>Delete the current pattern (with confirmation)</td></tr>
+            <tr><td><strong>⌫ Clean</strong></td><td>Clear all notes from the current pattern (with confirmation)</td></tr>
+            <tr><td><strong>⧉ Duplicate</strong></td><td>Duplicate the current pattern</td></tr>
+            <tr><td><strong>✎ Rename</strong></td><td>Rename the current pattern</td></tr>
+            <tr><td><strong>↓ Save</strong></td><td>Export pattern as JSON file</td></tr>
+            <tr><td><strong>↑ Replace</strong></td><td>Load/replace pattern from JSON file</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Per-Track Controls</h3>
+    <table>
+        <thead>
+            <tr><th>Control</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Track name</strong></td><td>Click to open Track Editor for that track</td></tr>
+            <tr><td><strong>Volume slider</strong></td><td>Per-track volume (range 0–1)</td></tr>
+            <tr><td><strong>Mute divider</strong></td><td>Click to toggle mute for the track</td></tr>
+            <tr><td><strong>Solo button</strong></td><td>Click to solo the track (only this track plays)</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Bottom Row</h3>
+    <table>
+        <thead>
+            <tr><th>Control</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Master</strong></td><td>Master volume slider (range 0–2)</td></tr>
+            <tr><td><strong>+ new track</strong></td><td>Add a new empty track to the pattern</td></tr>
+        </tbody>
+    </table>
 
     <h3>Cell Colors</h3>
     <table>
@@ -258,6 +306,8 @@
             <tr><td><strong>Mono</strong></td><td>on/off</td><td>off</td><td>Forces monophonic playback</td></tr>
             <tr><td><strong>Auto</strong></td><td>on/off</td><td>off</td><td>When enabled, this track is automatically regenerated at each loop boundary using the pattern generator</td></tr>
             <tr><td><strong>Variation</strong></td><td>0–100%</td><td>0</td><td>Automatic beat randomization intensity. Each loop iteration gets a fresh budget of operations (100% = 16 pts). Operations are applied greedily until the budget is exhausted.</td></tr>
+            <tr><td><strong>Var Prop</strong></td><td>0–100%</td><td>0</td><td>Variation probability — controls how likely each variation operation is to trigger within its budget.</td></tr>
+            <tr><td><strong>Prob</strong></td><td>0–1</td><td>1</td><td>Track-level note probability. All notes on this track have this base probability of triggering (independent of per-note probability).</td></tr>
         </tbody>
     </table>
 
@@ -278,7 +328,7 @@
             <tr><td><strong>Velo</strong></td><td>0–1</td><td>1.0</td><td>Track volume multiplier</td></tr>
             <tr><td><strong>Pan</strong></td><td>-1 to 1</td><td>0</td><td>Stereo panning (left/right)</td></tr>
             <tr><td><strong>Pitch</strong></td><td>-24 to 24</td><td>0</td><td>Pitch offset in semitones</td></tr>
-            <tr><td><strong>Decay</strong></td><td>0–2 s</td><td>0.5</td><td>Sample decay time (exponential fade-out from peak to silence)</td></tr>
+            <tr><td><strong>Decay</strong></td><td>0–5000 ms</td><td>sample default</td><td>Sample decay time in milliseconds (from drumkit). Controls how long the sound fades out after the attack phase. Editable in the Track Editor and Drumkit Manager.</td></tr>
         </tbody>
     </table>
     <p>All four parameters support LFO modulation (click the row to open LFO settings).</p>
@@ -411,6 +461,8 @@
             <tr><td><strong>Sample</strong></td><td>Specific sample file selector</td></tr>
             <tr><td><strong>Synth</strong></td><td>Soft-synth generated sound selection</td></tr>
             <tr><td><strong>Edit</strong></td><td>Opens the Synth Editor for the selected generated sound</td></tr>
+            <tr><td><strong>↑ Load</strong></td><td>Import an audio file (WAV/FLAC/MP3) to replace the current track's sample</td></tr>
+            <tr><td><strong>Waveform</strong></td><td>Sample waveform display with decay marker (yellow vertical line)</td></tr>
         </tbody>
     </table>
 
@@ -522,22 +574,23 @@
     <hr>
 
     <h2 id="6-tools-panel">6. Tools Panel</h2>
-    <p>The Tools Panel opens when clicking the "Tools" button in the toolbar.</p>
+    <p>The Tools Panel opens when clicking the "Tools" button in the toolbar. It has three tabs: Pattern, Export, and Import.</p>
     
-    <h3>Pattern Settings</h3>
+    <h3>Pattern Tab</h3>
     <table>
         <thead>
             <tr>
-                <th>Control</th>
+                <th>Button</th>
                 <th>Description</th>
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>Name</strong></td><td>Text input to rename the current pattern</td></tr>
+            <tr><td><strong>Compact</strong></td><td>Detects repeating note patterns across tracks and adds loop points to minimize the number of notes</td></tr>
+            <tr><td><strong>Rnd</strong></td><td>Writes random notes into each track of the current pattern using the pattern generator</td></tr>
         </tbody>
     </table>
 
-    <h3>Export</h3>
+    <h3>Export Tab</h3>
     <table>
         <thead>
             <tr>
@@ -576,7 +629,7 @@
         <li>Muted tracks are excluded</li>
     </ul>
 
-    <h3>Import</h3>
+    <h3>Import Tab</h3>
     <table>
         <thead>
             <tr>
@@ -586,6 +639,8 @@
         </thead>
         <tbody>
             <tr><td><strong>Import JSON</strong></td><td>Opens file picker for <code>.json</code> files, imports as a new pattern</td></tr>
+            <tr><td><strong>Import MIDI</strong></td><td>Opens file picker for <code>.mid</code> / <code>.midi</code> files, imports MIDI into new pattern(s)</td></tr>
+            <tr><td><strong>Import Directory</strong></td><td>Opens folder picker for audio files (<code>.wav</code>, <code>.flac</code>), imports folder contents as a new drumkit</td></tr>
         </tbody>
     </table>
 
@@ -595,6 +650,7 @@
     <p>The Output Panel opens when clicking the "Output" button in the toolbar. It provides master mixing controls and a real-time spectrum analyzer.</p>
     
     <h3>Master</h3>
+    <p>The Volume tab features a rotary knob for master output volume, displayed above the real-time spectrum analyzer.</p>
     <table>
         <thead>
             <tr>
@@ -605,7 +661,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>Volume</strong></td><td>0–2</td><td>1.0</td><td>Master output volume</td></tr>
+            <tr><td><strong>Volume</strong></td><td>0–2</td><td>1.0</td><td>Master output volume (rotary knob). Vertical drag or arrow keys to adjust.</td></tr>
         </tbody>
     </table>
 
@@ -627,7 +683,8 @@
     </table>
 
     <h3>Compressor</h3>
-    <p>The compressor section uses a 2-column grid layout and includes pre-gain, compression, and makeup gain controls. The signal chain is: <code>Pre-Gain &rarr; Compressor &rarr; Low-cut &rarr; High-cut &rarr; Master Gain</code>.</p>
+    <p>The compressor section uses a VST-style rotary knob layout with a power button toggle. The signal chain is: <code>Pre-Gain &rarr; Compressor &rarr; Low-cut &rarr; High-cut &rarr; Master Gain</code>.</p>
+    <p>The <strong>power button</strong> (&#9889; icon, top-right) toggles the compressor on/off. Green glow = active, dimmed = bypassed.</p>
     <table>
         <thead>
             <tr>
@@ -639,15 +696,16 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>Pre-Gain</strong></td><td>-20 to +20</td><td>0</td><td>dB</td><td>Input gain before the compressor</td></tr>
-            <tr><td><strong>Threshold</strong></td><td>-40–0</td><td>-18</td><td>dB</td><td>Compression threshold</td></tr>
-            <tr><td><strong>Ratio</strong></td><td>1–20</td><td>8</td><td>—</td><td>Compression ratio</td></tr>
-            <tr><td><strong>Attack</strong></td><td>0–1</td><td>0.002</td><td>s</td><td>Response speed</td></tr>
-            <tr><td><strong>Release</strong></td><td>0–1</td><td>0.08</td><td>s</td><td>Recovery speed</td></tr>
-            <tr><td><strong>Knee</strong></td><td>0–40</td><td>3</td><td>dB</td><td>Curve softness</td></tr>
-            <tr><td><strong>Makeup</strong></td><td>0–24</td><td>8</td><td>dB</td><td>Output gain to compensate for compression</td></tr>
+            <tr><td><strong>Pre-Gain</strong></td><td>-20 to +20</td><td>0</td><td>dB</td><td>Input gain before the compressor (rotary knob, separated below the other knobs)</td></tr>
+            <tr><td><strong>Threshold</strong></td><td>-40–0</td><td>-18</td><td>dB</td><td>Compression threshold (rotary knob)</td></tr>
+            <tr><td><strong>Ratio</strong></td><td>1–20</td><td>8</td><td>—</td><td>Compression ratio (rotary knob)</td></tr>
+            <tr><td><strong>Attack</strong></td><td>0–1</td><td>0.002</td><td>s</td><td>Response speed (rotary knob)</td></tr>
+            <tr><td><strong>Release</strong></td><td>0–1</td><td>0.08</td><td>s</td><td>Recovery speed (rotary knob)</td></tr>
+            <tr><td><strong>Knee</strong></td><td>0–40</td><td>3</td><td>dB</td><td>Curve softness (rotary knob)</td></tr>
+            <tr><td><strong>Makeup</strong></td><td>0–24</td><td>8</td><td>dB</td><td>Output gain to compensate for compression (rotary knob)</td></tr>
         </tbody>
     </table>
+    <p><strong>Knob interaction:</strong> Vertical drag to change value. Arrow keys for precision (±step). Shift+drag or Shift+arrows for fine mode (±0.1 step). Double-click to reset to default.</p>
 
     <h3>Spectrum Analyzer</h3>
     <p>A real-time frequency spectrum display updated via <code>requestAnimationFrame</code>. Beats are colored from dark (low amplitude) to red (high amplitude).</p>
@@ -657,6 +715,31 @@
     <h2 id="8-synth-editor">8. Synth Editor</h2>
     <p>The Synth Editor is a full-screen overlay for editing soft synthesizer parameters. It opens from the Track Editor's "Edit" button when a generated sound is selected.</p>
     <p><strong>Header:</strong> OK (saves changes) / Cancel (reverts) buttons.</p>
+
+    <h3>Preset Management</h3>
+    <p>The footer bar provides preset management controls:</p>
+    <table>
+        <thead>
+            <tr><th>Control</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Preset selector</strong></td><td>Dropdown to load a built-in or user preset</td></tr>
+            <tr><td><strong>Save</strong></td><td>Save current settings to the selected preset</td></tr>
+            <tr><td><strong>Revert</strong></td><td>Revert to the last saved state</td></tr>
+            <tr><td><strong>+ (New)</strong></td><td>Create a new user preset</td></tr>
+            <tr><td><strong>⧉ (Duplicate)</strong></td><td>Duplicate the current preset</td></tr>
+            <tr><td><strong>✕ (Delete)</strong></td><td>Delete the current user preset</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Group Controls</h3>
+    <p>Each parameter group (Oscillators, Filter, LFO, etc.) has a <strong>bypass/power button</strong> (LED toggle). When dimmed, the group is bypassed and its processing is skipped.</p>
+
+    <h3>Visual Displays</h3>
+    <ul>
+        <li><strong>Waveform preview</strong> — Shows the oscillator output waveform (updated in real-time when playing)</li>
+        <li><strong>ADSR envelope canvas</strong> — Visual display of the attack/decay/sustain/release envelope shape</li>
+    </ul>
 
     <h3>Master Volume</h3>
     <table>
@@ -704,15 +787,28 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td><strong>amount</strong></td><td>0–1</td><td>0</td><td>FM depth. When &gt; 0, VCO2 modulates VCO1 frequency and VCO3 modulates VCO2 frequency (serial FM chain). The modulation amount scales the modulator output by ×1000 Hz.</td></tr>
+            <tr><td><strong>amount</strong></td><td>0–1</td><td>0</td><td>FM depth. When &gt; 0, modulators affect carrier frequency. The modulation amount scales the modulator output by ×1000 Hz.</td></tr>
+            <tr><td><strong>algo</strong></td><td>0–4</td><td>0</td><td>FM routing algorithm (see below)</td></tr>
+        </tbody>
+    </table>
+    <p><strong>FM Algorithms:</strong></p>
+    <table>
+        <thead>
+            <tr><th>Algo</th><th>Routing</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>0</td><td>2 → 1</td><td>VCO2 modulates VCO1 frequency</td></tr>
+            <tr><td>1</td><td>3 → 1</td><td>VCO3 modulates VCO1 frequency</td></tr>
+            <tr><td>2</td><td>3 → 2 → 1</td><td>Serial chain: VCO3 modulates VCO2, VCO2 modulates VCO1</td></tr>
+            <tr><td>3</td><td>2+3 → 1</td><td>VCO2 and VCO3 both modulate VCO1 (parallel)</td></tr>
+            <tr><td>4</td><td>2 ↔ 1</td><td>Cross-modulation: VCO2 modulates VCO1 and VCO1 modulates VCO2</td></tr>
         </tbody>
     </table>
     <p><strong>How FM works:</strong></p>
     <ul>
-        <li>The modulator waveform (VCO2 or VCO3) is computed first, then added to the carrier's base frequency.</li>
         <li>At <code>amount = 0</code>, oscillators run independently (standard subtractive mode).</li>
         <li>At <code>amount = 1</code>, maximum frequency modulation is applied, creating complex sidebands.</li>
-        <li>FM chain: VCO3 &rarr; modulates VCO2 freq &rarr; modulates VCO1 freq.</li>
+        <li>Use the Algo selector to choose different modulation routings.</li>
     </ul>
 
     <h3>Filter</h3>
@@ -824,7 +920,186 @@
 
     <hr>
 
-    <h2 id="9-keyboard-shortcuts">9. Keyboard Shortcuts</h2>
+    <h2 id="9-piano-roll">9. Piano Roll</h2>
+    <p>The Piano Roll is an alternative view to the Pattern Panel step grid. It displays notes on a vertical pitch axis (MIDI-style) with time on the horizontal axis. Open it from the toolbar or view switcher.</p>
+    <h3>Layout</h3>
+    <ul>
+        <li><strong>Keys column</strong> (left): piano keyboard showing MIDI note names (C3, C#3, D3, etc.)</li>
+        <li><strong>Grid</strong>: time flows left-to-right, pitch flows bottom-to-top</li>
+        <li><strong>Note bars</strong>: horizontal rectangles — length = duration, vertical position = pitch</li>
+    </ul>
+    <h3>Interactions</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Click on empty grid</td><td>Creates a note at that pitch and time</td></tr>
+            <tr><td>Click on a note</td><td>Selects it, opens Note Editor</td></tr>
+            <tr><td>Click on selected note</td><td>Deletes it</td></tr>
+            <tr><td>Arrow keys</td><td>Move cursor (pitch up/down, time left/right)</td></tr>
+            <tr><td>Enter</td><td>Create or toggle note at cursor position</td></tr>
+        </tbody>
+    </table>
+    <p><strong>Page navigation:</strong> The piano roll displays one page of beats at a time (default: 4 beats). Use the page buttons in the toolbar to navigate between pages.</p>
+
+    <hr>
+
+    <h2 id="10-patterns-panel">10. Patterns Panel</h2>
+    <p>The Patterns Panel manages all patterns in the current song. Open it from the toolbar pattern selector.</p>
+    <h3>Pattern List</h3>
+    <ul>
+        <li>Shows all patterns in the current song</li>
+        <li>Click a pattern to select it and load it into the sequencer</li>
+        <li>Double-click a pattern name to rename it</li>
+    </ul>
+    <h3>Actions</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Button</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>+ Pattern</strong></td><td>Adds a new empty pattern to the song</td></tr>
+            <tr><td><strong>Rename</strong></td><td>Rename the selected pattern</td></tr>
+            <tr><td><strong>Delete</strong></td><td>Delete the selected pattern (with confirmation)</td></tr>
+            <tr><td><strong>Save Song</strong></td><td>Save the entire song (all patterns) to IndexedDB</td></tr>
+            <tr><td><strong>Load Song</strong></td><td>Load a previously saved song from IndexedDB</td></tr>
+        </tbody>
+    </table>
+    <h3>Song Name</h3>
+    <p>Double-click the song name at the top to rename it. Default: "Untitled".</p>
+
+    <hr>
+
+    <h2 id="11-pattern-settings">11. Pattern Settings</h2>
+    <p>The Pattern Settings panel provides quick access to pattern-level parameters. On mobile, it opens from the toolbar gear icon. On desktop, it's accessible from the toolbar.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Page</strong></td><td>P1, P2, ...</td><td>Navigate between pages of the pattern (each page = 4 beats by default)</td></tr>
+            <tr><td><strong>Beats</strong></td><td>1–16</td><td>Number of beats in the pattern</td></tr>
+            <tr><td><strong>Drumkit</strong></td><td>all kits</td><td>Switch drumkit for all tracks in the pattern</td></tr>
+            <tr><td><strong>Pattern</strong></td><td>all patterns</td><td>Switch to a different pattern</td></tr>
+            <tr><td><strong>Generation</strong></td><td>Drum / Bass / Chords</td><td>Auto-generate notes for the selected category using the pattern generator</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 id="12-drumkit-manager">12. Drumkit Manager</h2>
+    <p>The Drumkit Manager lets you inspect and edit individual samples in a drumkit. Open it from the toolbar or Track Editor.</p>
+    <h3>Header Actions</h3>
+    <table>
+        <thead>
+            <tr><th>Button</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>↓ Save</strong></td><td>Export current drumkit as a <code>.json</code> file</td></tr>
+            <tr><td><strong>↑ Load</strong></td><td>Import a drumkit from a <code>.json</code> file</td></tr>
+        </tbody>
+    </table>
+    <h3>Sound List</h3>
+    <ul>
+        <li>Lists all samples in the currently loaded drumkit</li>
+        <li>Click a sample to select it and view details</li>
+        <li>Each sample row has a <strong>▶ play</strong> button to audition the sound</li>
+    </ul>
+    <h3>Sample Details</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Control</th>
+                <th>Range</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>▶ Play</strong></td><td>—</td><td>Audition the selected sample</td></tr>
+            <tr><td><strong>Waveform</strong></td><td>—</td><td>Visual display of the sample waveform</td></tr>
+            <tr><td><strong>Info</strong></td><td>—</td><td>Peak dB, RMS dB, duration, detected note</td></tr>
+            <tr><td><strong>Tune</strong></td><td>-12 to +12 st</td><td>Coarse pitch tuning in semitones</td></tr>
+            <tr><td><strong>Decay</strong></td><td>0–5000 ms</td><td>Decay time in milliseconds (used by Track Editor decay knob)</td></tr>
+            <tr><td><strong>Gain</strong></td><td>-24 to +6 dB</td><td>Output gain trim</td></tr>
+            <tr><td><strong>Replace</strong></td><td>—</td><td>Replace sample with another audio file</td></tr>
+            <tr><td><strong>Remove</strong></td><td>—</td><td>Remove sample from the kit</td></tr>
+            <tr><td><strong>Kit</strong></td><td>all kits</td><td>Move sample to a different drumkit</td></tr>
+            <tr><td><strong>Instrument</strong></td><td>all instruments</td><td>Change instrument assignment (KICK, SNARE, etc.)</td></tr>
+        </tbody>
+    </table>
+    <h3>Footer Actions</h3>
+    <table>
+        <thead>
+            <tr><th>Button</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>+ Add</strong></td><td>Add a WAV/FLAC/MP3/AAC audio file to the current kit</td></tr>
+            <tr><td><strong>Auto-detect</strong></td><td>Auto-detect and assign instruments for all tracks in the kit</td></tr>
+            <tr><td><strong>Normalize</strong></td><td>Normalize all samples to 0 dB peak</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 id="13-about-panel">13. About Panel</h2>
+    <p>The About Panel displays application information and PWA installation options. Open it from the toolbar.</p>
+    <h3>Info Tab</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Name</strong></td><td>OrDrumbox</td></tr>
+            <tr><td><strong>Version</strong></td><td>2.0.0</td></tr>
+            <tr><td><strong>License</strong></td><td>GPL-3.0-only</td></tr>
+        </tbody>
+    </table>
+    <h3>PWA Tab</h3>
+    <ul>
+        <li><strong>Install App</strong> — Button to install orDrumbox as a Progressive Web App (appears when supported by the browser)</li>
+        <li><strong>Website</strong> — Link to ordrumbox.com</li>
+        <li><strong>Source</strong> — Link to the GitHub repository</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="14-mobile-tab-bar">14. Mobile Tab Bar</h2>
+    <p>On mobile viewports (width &le; 768px), a bottom tab bar replaces the toolbar for navigation between views.</p>
+    <h3>Tabs</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Tab</th>
+                <th>View</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Sequencer</strong></td><td>Pattern grid</td><td>Step sequencer view (default on mobile)</td></tr>
+            <tr><td><strong>Track</strong></td><td>Track Editor</td><td>Opens the Track Editor for the selected track</td></tr>
+            <tr><td><strong>Synth</strong></td><td>Synth Editor</td><td>Opens the Synth Editor (if a synth sound is selected)</td></tr>
+            <tr><td><strong>Tools</strong></td><td>Tools Panel</td><td>Opens the Tools panel (export/import, settings)</td></tr>
+        </tbody>
+    </table>
+    <p>The active tab is highlighted. Tapping the same tab again does nothing. Switching views dispatches the corresponding event and updates the main display.</p>
+
+    <hr>
+
+    <h2 id="15-keyboard-shortcuts">15. Keyboard Shortcuts</h2>
     <table>
         <thead>
             <tr>
@@ -851,7 +1126,7 @@
 
     <hr>
 
-    <h2 id="10-audio-signal-flow">10. Audio Signal Flow</h2>
+    <h2 id="16-audio-signal-flow">16. Audio Signal Flow</h2>
     <h3>Per-Track Signal Chain</h3>
     <pre>
 Sample/Synth &rarr; Filter &rarr; Saturation &rarr; Dry Gain &rarr; Reverb &rarr; Delay &rarr; Stereo Panner &rarr; Mixer Bus
@@ -865,7 +1140,7 @@ Mixer Bus &rarr; Pre-Gain &rarr; Compressor &rarr; Low-cut Filter (35 Hz) &rarr;
 
     <hr>
 
-    <h2 id="11-installation--offline-use">11. Installation & Offline Use</h2>
+    <h2 id="17-installation--offline-use">17. Installation & Offline Use</h2>
     <p>orDrumbox v2 can be used in three different ways:</p>
     
     <h3>1. Web Application</h3>
