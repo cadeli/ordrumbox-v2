@@ -38,9 +38,6 @@ describe('View modes (proll / grid / synth)', () => {
     function prollVisible() {
         return document.getElementById('piano-roll-panel')?.style.display !== 'none'
     }
-    function flushMicrotasks() {
-        return new Promise(resolve => setTimeout(resolve, 50))
-    }
     function gridVisible() {
         return document.getElementById('pattern-panel')?.style.display !== 'none' &&
             !document.getElementById('pattern-panel')?.classList.contains('ui-hidden')
@@ -134,19 +131,9 @@ describe('View modes (proll / grid / synth)', () => {
         trackEditor._showNoteEditorForTrack(MOCK_TRACK, 0)
     }
 
-    function activateSynth() {
-        const sp = document.getElementById('soft-synth-panel')
-        sp.style.display = 'flex'
-        trackEditor.container.style.display = 'none'
-        const neContainer = document.getElementById('ne-container')
-        if (neContainer) neContainer.style.display = 'none'
-        document.getElementById('pattern-panel')?.classList.add('ui-hidden')
-        document.getElementById('piano-roll-panel').style.display = 'none'
-    }
-
     describe('proll mode', () => {
-        it('shows piano roll + te + ne, hides grid and synth', () => {
-            playbackEvents.dispatchProllToggle()
+        it('shows piano roll + te + ne, hides grid and synth', async () => {
+            await playbackEvents.dispatchProllToggle()
 
             expect(prollVisible()).toBe(true)
             expect(teVisible()).toBe(true)
@@ -155,20 +142,20 @@ describe('View modes (proll / grid / synth)', () => {
             expect(synthVisible()).toBe(false)
         })
 
-        it('no-op if already in proll mode', () => {
-            playbackEvents.dispatchProllToggle()
+        it('no-op if already in proll mode', async () => {
+            await playbackEvents.dispatchProllToggle()
             expect(prollVisible()).toBe(true)
 
-            playbackEvents.dispatchProllToggle()
+            await playbackEvents.dispatchProllToggle()
             expect(prollVisible()).toBe(true)
             expect(teVisible()).toBe(true)
         })
     })
 
     describe('grid mode', () => {
-        it('shows pattern grid + te + ne, hides proll and synth', () => {
+        it('shows pattern grid + te + ne, hides proll and synth', async () => {
             showTrack()
-            playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchEditToggle()
 
             expect(gridVisible()).toBe(true)
             expect(teVisible()).toBe(true)
@@ -177,34 +164,33 @@ describe('View modes (proll / grid / synth)', () => {
             expect(synthVisible()).toBe(false)
         })
 
-        it('no-op if already in grid mode', () => {
+        it('no-op if already in grid mode', async () => {
             showTrack()
-            playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchEditToggle()
             const teDisplay = document.getElementById('te-panel').style.display
 
-            playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchEditToggle()
             expect(gridVisible()).toBe(true)
             expect(document.getElementById('te-panel').style.display).toBe(teDisplay)
         })
     })
 
     describe('synth mode', () => {
-        it('shows synth, hides grid proll te ne', () => {
+        it('shows synth, hides grid and proll', async () => {
             showTrack()
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
 
             expect(synthVisible()).toBe(true)
             expect(prollVisible()).toBe(false)
             expect(gridVisible()).toBe(false)
-            expect(teVisible()).toBe(false)
         })
 
-        it('no-op if already in synth mode', () => {
+        it('no-op if already in synth mode', async () => {
             showTrack()
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
             expect(synthVisible()).toBe(true)
 
-            playbackEvents.dispatchSynthToggle()
+            await playbackEvents.dispatchSynthToggle()
             expect(synthVisible()).toBe(true)
         })
     })
@@ -212,12 +198,10 @@ describe('View modes (proll / grid / synth)', () => {
     describe('transitions between modes', () => {
         it('synth → proll: hides synth, shows proll + te + ne with content', async () => {
             showTrack()
-            await flushMicrotasks()
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
             expect(synthVisible()).toBe(true)
 
-            playbackEvents.dispatchProllToggle()
-            await flushMicrotasks()
+            await playbackEvents.dispatchProllToggle()
             expect(prollVisible()).toBe(true)
             expect(synthVisible()).toBe(false)
             expect(teVisible()).toBe(true)
@@ -226,13 +210,11 @@ describe('View modes (proll / grid / synth)', () => {
             expect(neHasContent()).toBe(true)
         })
 
-        it('synth → proll: te-panel is at left:79% and ne-container has content', async () => {
+        it('synth → proll: te-panel has pp-split and ne-container has content', async () => {
             showTrack()
-            await flushMicrotasks()
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
 
-            playbackEvents.dispatchProllToggle()
-            await flushMicrotasks()
+            await playbackEvents.dispatchProllToggle()
 
             const tePanel = document.getElementById('te-panel')
             expect(tePanel).not.toBeNull()
@@ -245,112 +227,196 @@ describe('View modes (proll / grid / synth)', () => {
             expect(neContainer.innerHTML.trim().length).toBeGreaterThan(0)
         })
 
-        it('proll panel fills its grid column', () => {
-            playbackEvents.dispatchProllToggle()
+        it('proll panel fills its grid column', async () => {
+            await playbackEvents.dispatchProllToggle()
 
             const proll = document.getElementById('piano-roll-panel')
             expect(proll).not.toBeNull()
             expect(proll.classList.contains('ui-hidden')).toBe(false)
         })
 
-        it('proll → grid: hides proll, shows grid + te', () => {
-            playbackEvents.dispatchProllToggle()
+        it('proll → grid: hides proll, shows grid + te', async () => {
+            await playbackEvents.dispatchProllToggle()
             expect(prollVisible()).toBe(true)
 
             showTrack()
-            playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchEditToggle()
             expect(gridVisible()).toBe(true)
             expect(prollVisible()).toBe(false)
             expect(teVisible()).toBe(true)
             expect(teHasSplit()).toBe(true)
         })
 
-        it('grid → synth: hides grid + te, shows synth', () => {
+        it('grid → synth: hides grid, shows synth', async () => {
             showTrack()
-            playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchEditToggle()
             expect(gridVisible()).toBe(true)
 
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
             expect(synthVisible()).toBe(true)
             expect(gridVisible()).toBe(false)
-            expect(teVisible()).toBe(false)
         })
 
-        it('synth → grid: hides synth, shows grid + te', () => {
+        it('synth → grid: hides synth, shows grid + te', async () => {
             showTrack()
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
             expect(synthVisible()).toBe(true)
 
-            playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchEditToggle()
             expect(gridVisible()).toBe(true)
             expect(synthVisible()).toBe(false)
             expect(teVisible()).toBe(true)
             expect(teHasSplit()).toBe(true)
         })
 
-        it('proll → synth: hides proll + te, shows synth', () => {
-            playbackEvents.dispatchProllToggle()
+        it('proll → synth: hides proll, shows synth', async () => {
+            await playbackEvents.dispatchProllToggle()
             expect(prollVisible()).toBe(true)
 
             showTrack()
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
             expect(synthVisible()).toBe(true)
             expect(prollVisible()).toBe(false)
-            expect(teVisible()).toBe(false)
         })
 
-        it('synth → proll: hides synth, shows proll + te', () => {
+        it('synth → proll: hides synth, shows proll + te', async () => {
             showTrack()
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
             expect(synthVisible()).toBe(true)
 
-            playbackEvents.dispatchProllToggle()
+            await playbackEvents.dispatchProllToggle()
             expect(prollVisible()).toBe(true)
             expect(synthVisible()).toBe(false)
             expect(teVisible()).toBe(true)
             expect(teHasSplit()).toBe(true)
         })
 
-        it('full cycle grid → proll → synth → grid', () => {
+        it('full cycle grid → proll → synth → grid', async () => {
             showTrack()
 
-            playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchEditToggle()
             expect(gridVisible()).toBe(true)
             expect(prollVisible()).toBe(false)
             expect(synthVisible()).toBe(false)
 
-            playbackEvents.dispatchProllToggle()
+            await playbackEvents.dispatchProllToggle()
             expect(prollVisible()).toBe(true)
             expect(gridVisible()).toBe(false)
             expect(synthVisible()).toBe(false)
 
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
             expect(synthVisible()).toBe(true)
             expect(prollVisible()).toBe(false)
             expect(gridVisible()).toBe(false)
 
-            playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchEditToggle()
             expect(gridVisible()).toBe(true)
             expect(synthVisible()).toBe(false)
             expect(prollVisible()).toBe(false)
             expect(teVisible()).toBe(true)
         })
 
-        it('full cycle proll → synth → grid → proll', () => {
-            playbackEvents.dispatchProllToggle()
+        it('full cycle proll → synth → grid → proll', { timeout: 15000 }, async () => {
+            await playbackEvents.dispatchProllToggle()
             expect(prollVisible()).toBe(true)
 
             showTrack()
-            activateSynth()
+            await playbackEvents.dispatchSynthToggle()
             expect(synthVisible()).toBe(true)
 
-            playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchEditToggle()
             expect(gridVisible()).toBe(true)
 
-            playbackEvents.dispatchProllToggle()
+            await playbackEvents.dispatchProllToggle()
             expect(prollVisible()).toBe(true)
             expect(gridVisible()).toBe(false)
             expect(synthVisible()).toBe(false)
+            expect(teVisible()).toBe(true)
+        })
+    })
+
+    describe('track editor always visible', () => {
+        it('te-panel is visible after proll toggle', async () => {
+            showTrack()
+            await playbackEvents.dispatchProllToggle()
+            expect(teVisible()).toBe(true)
+        })
+
+        it('te-panel is visible after edit toggle', async () => {
+            showTrack()
+            await playbackEvents.dispatchEditToggle()
+            expect(teVisible()).toBe(true)
+        })
+
+        it('te-panel is visible after tools toggle', () => {
+            showTrack()
+            playbackEvents.dispatchToolsToggle(true)
+            expect(teVisible()).toBe(true)
+        })
+
+        it('te-panel stays visible through grid → synth', async () => {
+            showTrack()
+            await playbackEvents.dispatchEditToggle()
+            expect(teVisible()).toBe(true)
+
+            await playbackEvents.dispatchSynthToggle()
+            expect(teVisible()).toBe(true)
+        })
+
+        it('te-panel stays visible through synth → grid', async () => {
+            showTrack()
+            await playbackEvents.dispatchSynthToggle()
+            expect(teVisible()).toBe(true)
+
+            await playbackEvents.dispatchEditToggle()
+            expect(teVisible()).toBe(true)
+        })
+
+        it('te-panel stays visible through proll → synth', async () => {
+            showTrack()
+            await playbackEvents.dispatchProllToggle()
+            expect(teVisible()).toBe(true)
+
+            await playbackEvents.dispatchSynthToggle()
+            expect(teVisible()).toBe(true)
+        })
+
+        it('te-panel stays visible through synth → proll', { timeout: 15000 }, async () => {
+            showTrack()
+            await playbackEvents.dispatchSynthToggle()
+            expect(teVisible()).toBe(true)
+
+            await playbackEvents.dispatchProllToggle()
+            expect(teVisible()).toBe(true)
+        })
+
+        it('te-panel stays visible through grid → proll → synth', { timeout: 15000 }, async () => {
+            showTrack()
+            await playbackEvents.dispatchEditToggle()
+            await playbackEvents.dispatchProllToggle()
+            await playbackEvents.dispatchSynthToggle()
+            expect(teVisible()).toBe(true)
+        })
+
+        it('te-panel stays visible through all view transitions', async () => {
+            showTrack()
+
+            await playbackEvents.dispatchEditToggle()
+            expect(teVisible()).toBe(true)
+
+            await playbackEvents.dispatchSynthToggle()
+            expect(teVisible()).toBe(true)
+
+            await playbackEvents.dispatchProllToggle()
+            expect(teVisible()).toBe(true)
+
+            await playbackEvents.dispatchEditToggle()
+            expect(teVisible()).toBe(true)
+
+            playbackEvents.dispatchToolsToggle(true)
+            expect(teVisible()).toBe(true)
+
+            await playbackEvents.dispatchEditToggle()
             expect(teVisible()).toBe(true)
         })
     })

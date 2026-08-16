@@ -755,8 +755,9 @@ export default class ToolsPanel extends BasePanel {
                 const instrument = im.findInstrumentFromFileName(fileName)
                 const key = instrument.id
 
-                const arrayBuffer = await file.arrayBuffer()
-                const buffer = await audioCtx.decodeAudioData(arrayBuffer)
+                const rawBuffer = await file.arrayBuffer()
+                const arrayBuffer = rawBuffer.slice(0)
+                const buffer = await audioCtx.decodeAudioData(rawBuffer)
 
                 soundRegistry.sounds[fileName] = {
                     kit_name: kitName,
