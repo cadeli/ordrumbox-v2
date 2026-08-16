@@ -75,7 +75,9 @@ describe('Mobile tab bar', () => {
             trackEditor,
             synthEditor: trackEditor.synthEditor,
             pianoRollPanel: { hide: vi.fn(), show: vi.fn() },
-            noteEditor
+            noteEditor,
+            toolsPanel,
+            patternSettingsPanel: { hide: vi.fn(), show: vi.fn(), _isOpen: false }
         })
         viewManager.init()
 

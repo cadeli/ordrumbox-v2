@@ -16,17 +16,19 @@ globalThis.Worker = MockWorker
 
 vi.mock('../src/logic/transport/transport.js', () => {
     return {
-        default: vi.fn().mockImplementation(() => ({
-            audioCtx: null,
-            isRunning: false,
-            tick: 1,
-            bpm: 120,
-            onSchedule: null,
-            setBpm: vi.fn(function(bpm) { this.bpm = bpm }),
-            start: vi.fn(),
-            stop: vi.fn(),
-            ensureTimerWorker: vi.fn(),
-        })),
+        default: vi.fn().mockImplementation(function() {
+            return {
+                audioCtx: null,
+                isRunning: false,
+                tick: 1,
+                bpm: 120,
+                onSchedule: null,
+                setBpm: vi.fn(function(bpm) { this.bpm = bpm }),
+                start: vi.fn(),
+                stop: vi.fn(),
+                ensureTimerWorker: vi.fn(),
+            }
+        }),
     }
 })
 

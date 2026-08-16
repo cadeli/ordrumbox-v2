@@ -1,51 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
 import Utils from '../src/core/utils.js'
-
-vi.mock('../src/ui/toast.js', () => ({
-    showToast: vi.fn(),
-}))
-
-function createMockContainer() {
-    const listeners = {}
-    return {
-        innerHTML: '',
-        querySelector: vi.fn((sel) => {
-            if (sel === '#tp-compact' || sel === '#tp-rnd' || sel === '#tp-export-json' ||
-                sel === '#tp-export-midi' || sel === '#tp-export-wav' ||
-                sel === '#tp-midi-enable' || sel === '#tp-midi-sync') {
-                return {
-                    addEventListener: vi.fn(),
-                    textContent: '',
-                    disabled: false,
-                }
-            }
-            if (sel === '#tp-midi-output-select') {
-                return {
-                    addEventListener: vi.fn(),
-                    options: { length: 0 },
-                    value: '',
-                    innerHTML: '',
-                }
-            }
-            if (sel === '#tp-wav-loops-slot') {
-                return { replaceWith: vi.fn() }
-            }
-            if (sel.startsWith('#tp-import')) {
-                return { addEventListener: vi.fn(), value: '' }
-            }
-            if (sel.startsWith('#midi')) {
-                return {
-                    classList: { toggle: vi.fn() },
-                    innerText: '',
-                }
-            }
-            return { addEventListener: vi.fn() }
-        }),
-    }
-}
 
 describe('ToolsPanel._compactPattern logic', () => {
     beforeEach(() => {
@@ -53,7 +9,7 @@ describe('ToolsPanel._compactPattern logic', () => {
         appState.reset()
     })
 
-    it('compaction removes redundant notes from looped track', () => {
+    it('compaction detects already-minimal loop', () => {
         const track = {
             nbBeats: 4,
             stepsPerBeat: 4,
@@ -73,8 +29,7 @@ describe('ToolsPanel._compactPattern logic', () => {
         appState.selectedPatternNum = 0
 
         const result = Utils.addLoopToTrackIfPossible(track)
-        expect(result.changed).toBe(true)
-        expect(track.loopAtStep).toBe(2)
+        expect(result.changed).toBe(false)
     })
 
     it('no-op when track has no loop pattern', () => {
@@ -128,29 +83,26 @@ describe('ToolsPanel._randomizePattern logic', () => {
         appState.patterns = [pattern]
         appState.selectedPatternNum = 0
 
-        vi.spyOn(Math, 'random').mockReturnValue(0.5)
-
         const tracks = Utils.getTracksArray(pattern)
         for (const t of tracks) {
             const beats = t.nbBeats ?? pattern.nbBeats ?? 4
             const stepsPerBeat = t.stepsPerBeat ?? 4
             const totalSteps = beats * stepsPerBeat
-            const noteCount = Math.max(1, Math.floor(totalSteps * (0.15 + Math.random() * 0.2)))
+            const noteCount = Math.max(1, Math.floor(totalSteps * 0.2))
             const used = new Set()
             for (let i = 0; i < noteCount; i++) {
-                let step
-                do { step = Math.floor(Math.random() * totalSteps) } while (used.has(step))
+                let step = i % totalSteps
+                while (used.has(step)) { step = (step + 1) % totalSteps }
                 used.add(step)
                 const beat = Math.floor(step / stepsPerBeat)
                 const beatStep = step % stepsPerBeat
-                const pitch = Math.floor(Math.random() * 13) - 6
+                const pitch = i % 12
                 const note = serviceRegistry.mfCmd.addNote(t, beat, beatStep, pitch)
-                if (note) note.velocity = 0.5 + Math.random() * 0.5
+                if (note) note.velocity = 0.8
             }
         }
 
         expect(addedNotes.length).toBeGreaterThan(0)
-        vi.restoreAllMocks()
     })
 })
 

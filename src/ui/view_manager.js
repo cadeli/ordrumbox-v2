@@ -2,13 +2,12 @@ import { playbackEvents } from '../state/playback_events.js'
 import { appState } from '../state/app_state.js'
 import { setViewMode } from './components/panel_helpers.js'
 import { isMobileViewport } from '../core/constants.js'
+import { isMobileLandscape, removeLayout } from './mobile_track_layout.js'
 
 /**
  * ViewManager — single coordinator for synth / edit / proll / tools view switching.
  * Listens to toolbar and tab toggle events and calls panel.show() / panel.hide()
  * without touching another panel's DOM.
- *
- * The track editor (te-panel) is always visible and never hidden.
  */
 export default class ViewManager {
     constructor({ trackEditor, synthEditor, pianoRollPanel, noteEditor, toolsPanel, patternSettingsPanel }) {
@@ -70,6 +69,7 @@ export default class ViewManager {
         }
         if (prev === 'mobileTrack') {
             this._noteEditor.hide()
+            removeLayout(this._trackEditor.container)
         }
         if (prev === 'tools') {
             this._toolsPanel?.hide()
@@ -122,7 +122,11 @@ export default class ViewManager {
         this._synthEditor.hidePanel()
         this._noteEditor.hide()
         this._toolsPanel?.hide()
-        this._ensureTrackEditorVisible()
+        if (isMobileLandscape()) {
+            this._trackEditor.hide()
+        } else {
+            this._ensureTrackEditorVisible()
+        }
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
     }
 

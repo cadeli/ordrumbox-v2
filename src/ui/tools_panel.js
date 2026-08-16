@@ -14,7 +14,7 @@ import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import { logger, nameOr } from "../core/logger.js"
-import { getCacheStats, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, formatBytes, formatDate, cacheSample, cacheDrumkits } from '../cache/idb_cache.js'
+import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, formatBytes, formatDate, cacheSample, cacheDrumkits } from '../cache/idb_cache.js'
 
 export default class ToolsPanel extends BasePanel {
     constructor() {
@@ -298,6 +298,17 @@ export default class ToolsPanel extends BasePanel {
                 return
             }
 
+            const drumkits = await getCachedDrumkits()
+            const urlToKit = {}
+            if (drumkits && typeof drumkits === 'object') {
+                for (const [kitName, kit] of Object.entries(drumkits)) {
+                    const instruments = kit?.instruments ?? []
+                    for (const inst of instruments) {
+                        if (inst.url) urlToKit[inst.url] = kitName
+                    }
+                }
+            }
+
             const sorted = [...stats.entries].sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
             const TYPE_LABELS = { patterns: 'PAT', drumkits: 'DK', samples: 'SMP' }
 
@@ -305,9 +316,14 @@ export default class ToolsPanel extends BasePanel {
                 const label = TYPE_LABELS[e.type] ?? e.type
                 const date = formatDate(e.savedAt)
                 const size = formatBytes(e.size)
-                return `<div style="display:flex; align-items:center; gap:4px; padding:2px 0; border-bottom:1px solid var(--border-subtle);" title="${escapeHtml(e.key)}">` +
+                const kitName = e.type === 'samples' ? (urlToKit[e.key] ?? '') : ''
+                const tooltip = e.type === 'samples' && kitName
+                    ? `${e.key}\nDrumkit: ${kitName}`
+                    : e.key
+                return `<div style="display:flex; align-items:center; gap:4px; padding:2px 0; border-bottom:1px solid var(--border-subtle);" title="${escapeHtml(tooltip)}">` +
                     `<span style="min-width:28px;color:var(--accent);font-weight:600;">${label}</span>` +
                     `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">${escapeHtml(e.key)}</span>` +
+                    (kitName ? `<span style="color:var(--text-secondary);min-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;" title="${escapeHtml(kitName)}">${escapeHtml(kitName)}</span>` : `<span style="min-width:80px;flex-shrink:0;"></span>`) +
                     `<span style="color:var(--text-tertiary);min-width:52px;text-align:right;flex-shrink:0;">${size}</span>` +
                     `<span style="color:var(--text-tertiary);min-width:90px;text-align:right;flex-shrink:0;">${date}</span>` +
                     `</div>`
