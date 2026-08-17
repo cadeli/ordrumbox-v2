@@ -65,14 +65,17 @@ export default class ViewManager {
             this._patternSettingsPanel.hide()
         }
 
-        if (prev === 'proll') this._pianoRollPanel.hide()
+        if (prev === 'proll') this._pianoRollPanel?.hide()
         if (prev === 'mobileSeq') {
-            this._pianoRollPanel.hide()
+            this._pianoRollPanel?.hide()
             document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
         }
         if (prev === 'mobileTrack') {
-            this._noteEditor.hide()
+            this._noteEditor?.hide()
             removeLayout(this._trackEditor.container)
+        }
+        if (isMobileViewport() && (prev === 'tools' || prev === 'dm' || prev === 'pp')) {
+            this._hideOtherSlotPanels(null)
         }
 
         if (view === 'synth') this._showSynth()
@@ -91,6 +94,9 @@ export default class ViewManager {
             : null
         if (!panel) return
         if (show) {
+            if (isMobileViewport()) {
+                this._currentView = kind
+            }
             this._hideOtherSlotPanels(kind)
             this._ensureTrackEditorVisible()
             this._ensureNoteEditorVisible()
@@ -98,6 +104,9 @@ export default class ViewManager {
             if (this._outputPanel?.isVisible) this._outputPanel.hide()
         } else {
             panel.hide()
+            if (isMobileViewport() && this._currentView === kind) {
+                this._currentView = 'mobileSeq'
+            }
             this._outputPanel?.show()
         }
     }

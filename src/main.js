@@ -99,7 +99,8 @@ export function init() {
     appContent.appendChild(_patternPanel.container)
     appContent.appendChild(_pianoRollPanel.container)
     appContent.appendChild(_trackEditor.container)
-    document.body.appendChild(appContent)
+    const mountTarget = document.getElementById('app-main') ?? document.body
+    mountTarget.appendChild(appContent)
 
     _patternPanel.container.style.display = 'flex'
 
