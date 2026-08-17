@@ -417,6 +417,7 @@ export default class PianoRollPanel extends BasePanel {
                 this._cursorStep = step
                 this._cursorRow = row
                 this._applySelection()
+                playbackEvents.dispatchTrackSelect({ track, trackIdx: this._trackIdx })
                 playbackEvents.dispatchNoteSelect({ track, trackIdx: this._trackIdx, note: hit, beat, beatStep })
             }
         } else {
@@ -426,6 +427,7 @@ export default class PianoRollPanel extends BasePanel {
             this._cursorRow = row
             this._applySelection()
             playbackEvents.dispatchPatternChange([track])
+            playbackEvents.dispatchTrackSelect({ track, trackIdx: this._trackIdx })
             playbackEvents.dispatchNoteSelect({ track, trackIdx: this._trackIdx, note: newNote, beat, beatStep })
         }
     }

@@ -160,8 +160,10 @@ export default class PatternPanel extends BasePanel {
         })
         playbackEvents.onTrackSelect.push((data) => {
             if (data) {
+                if (this._selTrackIdx !== data.trackIdx) {
+                    this._selNote = null
+                }
                 this._selTrackIdx = data.trackIdx
-                this._selNote = null
             } else {
                 this._selTrackIdx = -1
                 this._selNote = null
@@ -689,6 +691,7 @@ export default class PatternPanel extends BasePanel {
                 this._selTrackIdx = trackIdx
                 this._applySelection()
                 const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
+                playbackEvents.dispatchTrackSelect({ track, trackIdx })
                 playbackEvents.dispatchNoteSelect({ track, trackIdx, note, pos, beat, beatStep })
             }
             return
@@ -700,6 +703,7 @@ export default class PatternPanel extends BasePanel {
         this._applySelection()
 
         const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
+        playbackEvents.dispatchTrackSelect({ track, trackIdx })
         playbackEvents.dispatchNoteSelect({ track, trackIdx, note: newNote, pos, beat, beatStep })
 
         requestAnimationFrame(() => this.sync())
