@@ -155,6 +155,7 @@ export default class TrackEditor extends BasePanel {
 
     _showNoteEditorForTrack(track, trackIdx) {
         if (!this._noteEditor) return
+        this._noteEditor.container.style.display = 'block'
         const firstNote = track.notes?.[0]
         if (firstNote) {
             const stepsPerBeat = track.stepsPerBeat ?? 4

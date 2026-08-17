@@ -60,9 +60,6 @@ export default class ViewManager {
 
         if (prev === 'synth') this._synthEditor.hidePanel()
         if (prev === 'proll') this._pianoRollPanel.hide()
-        if (prev === 'edit') {
-            this._noteEditor.hide()
-        }
         if (prev === 'mobileSeq') {
             this._pianoRollPanel.hide()
             document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
@@ -85,10 +82,19 @@ export default class ViewManager {
         setViewMode(view)
     }
 
+    _ensureNoteEditorVisible() {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        const idx = appState.selectedTrackNum
+        const track = pattern?.tracks?.[idx]
+        if (track && this._trackEditor.isVisible) {
+            this._trackEditor._showNoteEditorForTrack(track, idx)
+        }
+    }
+
     _showSynth() {
-        this._noteEditor.hide()
         this._toolsPanel?.hide()
         this._ensureTrackEditorVisible()
+        this._ensureNoteEditorVisible()
         void this._synthEditor.showPanel()
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
     }
@@ -99,33 +105,26 @@ export default class ViewManager {
         this._toolsPanel?.hide()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
         this._ensureTrackEditorVisible()
-        if (this._trackEditor.isVisible) {
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            const idx = appState.selectedTrackNum
-            const track = pattern?.tracks?.[idx]
-            if (track) {
-                this._trackEditor._showNoteEditorForTrack(track, idx)
-            }
-        }
+        this._ensureNoteEditorVisible()
     }
 
     _showProll() {
         this._synthEditor.hidePanel()
-        this._noteEditor.hide()
         this._toolsPanel?.hide()
         this._ensureTrackEditorVisible()
+        this._ensureNoteEditorVisible()
         this._pianoRollPanel.show()
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
     }
 
     _showMobileSeq() {
         this._synthEditor.hidePanel()
-        this._noteEditor.hide()
         this._toolsPanel?.hide()
         if (isMobileLandscape()) {
             this._trackEditor.hide()
         } else {
             this._ensureTrackEditorVisible()
+            this._ensureNoteEditorVisible()
         }
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
     }
@@ -135,20 +134,15 @@ export default class ViewManager {
         this._pianoRollPanel.hide()
         this._toolsPanel?.hide()
         this._ensureTrackEditorVisible()
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        const idx = appState.selectedTrackNum
-        const track = pattern?.tracks?.[idx]
-        if (track) {
-            this._trackEditor._showNoteEditorForTrack(track, idx)
-        }
+        this._ensureNoteEditorVisible()
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
     }
 
     _showTools() {
         this._synthEditor.hidePanel()
         this._pianoRollPanel.hide()
-        this._noteEditor.hide()
         this._ensureTrackEditorVisible()
+        this._ensureNoteEditorVisible()
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')
         if (this._toolsPanel) {
             this._toolsPanel.show()

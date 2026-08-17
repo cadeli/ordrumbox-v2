@@ -1051,7 +1051,7 @@ body {
     border-bottom: 1px solid var(--border-subtle);
 }
 #soft-synth-panel .ss-footer {
-    display: flex; justify-content: flex-end; gap: 6px;
+    display: flex; justify-content: flex-start; gap: 6px;
     padding-top: 3px; border-top: 1px solid var(--border-subtle);
 }
 #soft-synth-panel .ss-preset-select {
