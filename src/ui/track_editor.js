@@ -13,7 +13,7 @@ import { OrTab } from './components/or_tab.js'
 import { fmt, setViewBtn, knobFormat } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
-import { TICK, isMobileViewport } from '../core/constants.js'
+import { TICK } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
 import LfoUiBridge from '../logic/lfo_ui_bridge.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
@@ -149,7 +149,7 @@ export default class TrackEditor extends BasePanel {
         this._neContainer = document.createElement('div')
         this._neContainer.id = 'ne-container'
         this._neContainer.style.display = 'none'
-        this.container.appendChild(this._neContainer)
+        document.body.appendChild(this._neContainer)
         this.synthEditor.createDOM()
     }
 
@@ -384,14 +384,11 @@ export default class TrackEditor extends BasePanel {
             panelsHtml += `<div class="ne-tab-panel ${isHidden ? 'ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${content}</div>`
         }
 
-        if (this._neContainer && this._neContainer.parentElement && this._neContainer.parentElement !== this.container) {
-            this.container.appendChild(this._neContainer)
+        if (this._neContainer && this._neContainer.parentElement && this._neContainer.parentElement !== document.body) {
+            document.body.appendChild(this._neContainer)
         }
 
         this.container.innerHTML = `<div class="track-editor">${headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + `<div class="te-scroll">${panelsHtml}</div>`}</div>`
-        if (this._neContainer) {
-            this.container.appendChild(this._neContainer)
-        }
         const teElement = this.container.querySelector('.track-editor') ?? this.container
         this._tab.bindTo(teElement)
         
@@ -453,7 +450,6 @@ export default class TrackEditor extends BasePanel {
         if (this.synthEditor?.panel?.style?.display !== 'block') {
             this.container.style.display = 'block'
         }
-        this.reposition()
         this._bindEvents()
         this._drawSampleWaveform()
 
@@ -1174,13 +1170,6 @@ export default class TrackEditor extends BasePanel {
             this._noteEditor.hide()
         }
         setViewBtn('edit', false)
-    }
-
-    /** Skip vertical reposition when in side-by-side split mode or on mobile. */
-    reposition() {
-        if (isMobileViewport()) return
-        if (this.container?.classList.contains('pp-split')) return
-        super.reposition()
     }
 
     _onLoopSlider(input) {

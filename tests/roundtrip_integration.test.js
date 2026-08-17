@@ -420,7 +420,7 @@ describe('Roundtrip 3 — Panel show/hide mutual exclusion', () => {
         expect(pp.classList.contains('ui-hidden')).toBe(true)
     })
 
-    it('showing a panel hides the previous one', () => {
+    it('showing a panel does not hide the previous one (panels are independent)', () => {
         const panel1 = new BasePanel('dm-panel')
         panel1.init()
         const panel2 = new BasePanel('about-panel')
@@ -431,7 +431,7 @@ describe('Roundtrip 3 — Panel show/hide mutual exclusion', () => {
 
         panel2.show()
         expect(panel2.isVisible).toBe(true)
-        expect(panel1.isVisible).toBe(false)
+        expect(panel1.isVisible).toBe(true)
     })
 })
 

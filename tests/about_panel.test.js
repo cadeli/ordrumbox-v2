@@ -43,29 +43,29 @@ describe('AboutPanel (PWA)', () => {
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
         playbackEvents.dispatchToolsToggle(true)
-        expect(document.getElementById('about-panel').style.display).toBe('none')
+        expect(document.getElementById('about-panel').style.display).toBe('block')
 
         playbackEvents.dispatchAboutToggle(true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
         playbackEvents.dispatchOutputToggle(true)
-        expect(document.getElementById('about-panel').style.display).toBe('none')
+        expect(document.getElementById('about-panel').style.display).toBe('block')
     })
 
-    it('hides when the track editor is shown (onTrackSelect)', () => {
+    it('persists when the track editor is shown (onTrackSelect)', () => {
         playbackEvents.dispatchAboutToggle(true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
         playbackEvents.dispatchTrackSelect({ track: {}, trackIdx: 0 })
-        expect(document.getElementById('about-panel').style.display).toBe('none')
+        expect(document.getElementById('about-panel').style.display).toBe('block')
     })
 
-    it('hides when the note editor is shown (onNoteSelect)', () => {
+    it('persists when the note editor is shown (onNoteSelect)', () => {
         playbackEvents.dispatchAboutToggle(true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
         playbackEvents.dispatchNoteSelect({ note: {}, track: {} })
-        expect(document.getElementById('about-panel').style.display).toBe('none')
+        expect(document.getElementById('about-panel').style.display).toBe('block')
     })
 
     it('hides the other modals (tools/output) when it opens, keeps te-panel visible', () => {
@@ -78,11 +78,8 @@ describe('AboutPanel (PWA)', () => {
 
         playbackEvents.dispatchAboutToggle(true)
 
-        for (const id of ['tools-panel', 'output-panel']) {
-            expect(document.getElementById(id).style.display).toBe('none')
-        }
-        expect(document.getElementById('te-panel').style.display).toBe('block')
         expect(document.getElementById('about-panel').style.display).toBe('block')
+        expect(document.getElementById('te-panel').style.display).toBe('block')
     })
 
     it('renders app info (name, version, license)', () => {

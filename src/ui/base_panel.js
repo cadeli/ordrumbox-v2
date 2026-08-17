@@ -1,16 +1,4 @@
-import { injectUiCss, positionBelowPatternPanel, syncWidthWithPatternPanel, hidePanelsById, escapeHtml, ALL_PANEL_IDS } from './components/panel_helpers.js'
-import { playbackEvents } from '../state/playback_events.js'
-
-const KEEP_VISIBLE_IDS = ['te-panel']
-
-/** Maps panel IDs to the event names that should hide them when fired. */
-const HIDE_ON_EVENTS = {
-    'tools-panel':    ['trackSelect', 'noteSelect'],
-    'about-panel':    ['toolsToggle', 'outputToggle', 'trackSelect', 'noteSelect'],
-    'dm-panel':       ['toolsToggle', 'outputToggle', 'aboutToggle'],
-    'pp-panel':       ['toolsToggle', 'outputToggle', 'aboutToggle', 'drumkitManagerToggle'],
-    'soft-synth-panel': ['trackSelect', 'noteSelect'],
-}
+import { injectUiCss, positionBelowPatternPanel, syncWidthWithPatternPanel, escapeHtml } from './components/panel_helpers.js'
 
 /**
  * BasePanel - Base class for all UI panels.
@@ -30,19 +18,6 @@ export default class BasePanel {
         this.createDOM()
         this.sync()
         this.subscribe()
-        this._registerHideEvents()
-    }
-
-    /**
-     * Auto-registers hide subscriptions for this panel based on HIDE_ON_EVENTS map.
-     */
-    _registerHideEvents() {
-        const events = HIDE_ON_EVENTS[this.id]
-        if (!events) return
-        for (const evt of events) {
-            const listeners = playbackEvents.getListeners(evt)
-            listeners.push(() => this.hide())
-        }
     }
 
     injectCSS() {
@@ -67,23 +42,11 @@ export default class BasePanel {
     /** Renders/updates the UI based on current state. Override in derived classes. */
     sync() {}
 
-    /**
-     * Standard show logic.
-     * @param {string[]} [panelsToHide] Panel IDs to hide. Defaults to all other panels except te-panel and ne-panel.
-     */
-    show(panelsToHide) {
-        hidePanelsById(panelsToHide ?? this._hideOtherPanels())
+    /** Standard show logic. */
+    show() {
         this.container.style.display = 'block'
         this.sync()
         this.reposition()
-    }
-
-    /**
-     * Returns panel IDs to hide when this panel opens.
-     * Excludes this panel's own ID and panels in KEEP_VISIBLE_IDS (te-panel, ne-panel).
-     */
-    _hideOtherPanels() {
-        return ALL_PANEL_IDS.filter(id => id !== this.id && !KEEP_VISIBLE_IDS.includes(id))
     }
 
     /** Standard hide logic. */

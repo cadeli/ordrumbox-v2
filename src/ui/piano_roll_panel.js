@@ -2,7 +2,6 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { isMobileViewport } from '../core/constants.js'
 import MfFlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
@@ -102,7 +101,7 @@ export default class PianoRollPanel extends BasePanel {
         this._firstShow = true
         this._pageStartBeat = 0
         this._clearSelection()
-        super.show(['tools-panel', 'soft-synth-panel'])
+        super.show()
         this.reposition()
         const pattern = appState.patterns[appState.selectedPatternNum]
         const idx = appState.selectedTrackNum
@@ -656,13 +655,4 @@ export default class PianoRollPanel extends BasePanel {
         this._prevLitTick = -1
     }
 
-    reposition() {
-        if (!this.container) return
-        const isMobile = isMobileViewport()
-        this.container.style.position = 'fixed'
-        this.container.style.top = isMobile ? '48px' : '64px'
-        this.container.style.left = '0'
-        this.container.style.right = 'auto'
-        this.container.style.width = isMobile ? '100%' : '79%'
-    }
 }

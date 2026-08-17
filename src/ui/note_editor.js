@@ -366,7 +366,7 @@ export default class NoteEditor extends BasePanel {
         this._track = null
     }
 
-    /** No-op — positioning is handled by the parent container (track editor). */
+    /** No-op — Note Editor is nested inside Track Editor and positioned by its parent. */
     reposition() {}
 
     /** Builds note.arp from scale intervals + mode, or nulls it if range <= 0. */

@@ -108,17 +108,16 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
         expect(tp.style.display).toBe('none')
     })
 
-    it('ensures only one modal is visible at a time', () => {
+    it('panels are independent — showing one does not hide others', () => {
         playbackEvents.dispatchToolsToggle(true)
         expect(document.getElementById('tools-panel').style.display).toBe('block')
 
         playbackEvents.dispatchOutputToggle(true)
         expect(document.getElementById('output-panel').style.display).toBe('block')
-        expect(document.getElementById('tools-panel').style.display).toBe('none')
+        expect(document.getElementById('tools-panel').style.display).toBe('block')
 
         const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
         trackEditor.show({ track: mockTrack, trackIdx: 0 })
         expect(document.getElementById('te-panel').style.display).toBe('block')
-        expect(document.getElementById('output-panel').style.display).toBe('none')
     })
 })

@@ -1,6 +1,5 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
-import { isMobileViewport } from '../core/constants.js'
 import BasePanel from './base_panel.js'
 
 const APP_VERSION = '2.0.0'
@@ -113,11 +112,5 @@ export default class AboutPanel extends BasePanel {
     show() {
         super.show()
         this._detectPwaStatus()
-    }
-
-    reposition() {
-        if (!isMobileViewport()) {
-            super.reposition()
-        }
     }
 }

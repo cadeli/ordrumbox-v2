@@ -254,7 +254,7 @@ export default class SynthEditor {
         let html = this._buildGroups(knobConfigs)
         html += this._buildFooter()
 
-        this.panel.innerHTML = html
+        this.panel.innerHTML = `<div class="ss-scroll">${html}</div>`
         this._mountKnobs(knobConfigs)
         this._bindEvents()
         this._drawWaveform()
