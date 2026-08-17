@@ -39,6 +39,10 @@ export default class MfWavExporter {
         // before playNotes, otherwise this.player is null and notes are dropped.
         await exporterAudioEngine.start(pattern)
 
+        // Sync strip BPM so delay/reverb timing matches the pattern tempo.
+        // engine.start() applies track effects but never calls mixer.setBpm().
+        exporterAudioEngine.mixer.setBpm(pattern.bpm)
+
         // Simple offline scheduling
         const totalTicks = pattern.nbBeats * TICK * loopsCount
 

@@ -58,6 +58,17 @@ export default class MfSound {
     stopVoice = (voice, time) => {
         if (!voice || typeof voice.stop !== "function") return
         voice.stop(time)
+        // Remove from active tracking immediately so polyphony limit
+        // is freed right away. In offline export, onended never fires
+        // during the scheduling loop, so without this the set fills up
+        // and steals voices far too aggressively.
+        if (this._activeVoiceSet.has(voice)) {
+            this._activeNoteCount = Math.max(0, this._activeNoteCount - 1)
+            this._activeVoiceSet.delete(voice)
+        }
+        if (this.activeSynthVoices.has(voice)) {
+            this.activeSynthVoices.delete(voice)
+        }
     }
 
     stopPreviousVoice = (track, time) => {

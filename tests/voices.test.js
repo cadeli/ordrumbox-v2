@@ -570,7 +570,10 @@ describe('VoiceFactory', () => {
             voice.stop(1.0)
             voice.stop(1.0)
             const releases = postMessageMock.mock.calls.filter(c => c[0].type === 'release')
-            expect(releases).toHaveLength(1)
+            // start() sends a deferred auto-release, stop() sends its own
+            // release — calling stop() twice still produces only 1 stop-release.
+            expect(releases).toHaveLength(2)
+            expect(releases[1][0]).toEqual({ type: 'release', releaseTime: 1.0 })
         })
 
         it('maps wave names to int waveform ids', async () => {

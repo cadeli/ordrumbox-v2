@@ -86,15 +86,31 @@ export default class WorkletSynthVoice extends BaseVoice {
         // Send trigger
         this.workletNode.port.postMessage({ type: 'trigger', startTime: time })
 
-        // Auto-release after one step (16th note = 0.25 * secondsPerBeat)
+        // Auto-release after one step (16th note = 0.25 * secondsPerBeat).
+        // Send a deferred release directly to the worklet processor instead of
+        // relying on setTimeout. The processor checks `releaseTime` against
+        // `currentTime` in its per-sample loop, so this works correctly in
+        // both real-time and OfflineAudioContext (export).
         if (this._autoReleaseTimer) clearTimeout(this._autoReleaseTimer)
         const bpm = serviceRegistry.transport?.bpm ?? 120
         const stepDuration = 0.25 * (60 / bpm)
-        const releaseDelay = Math.max(0, (time + stepDuration - this.audioCtx.currentTime)) * 1000
+        const autoReleaseTime = time + stepDuration
+        postRelease(this.workletNode, autoReleaseTime)
+
+        // Schedule JS-side cleanup (node disconnect + onEnded callback) after
+        // the release phase completes. This uses setTimeout which is fine for
+        // cleanup — it only affects memory, not audio output.
+        const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
+        const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
+        const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
         this._autoReleaseTimer = setTimeout(() => {
-            if (!this.stopped) this.stop(this.audioCtx.currentTime)
+            if (!this.stopped) {
+                this.stopped = true
+                this.cleanup()
+                if (this.onEnded) this.onEnded()
+            }
             this._autoReleaseTimer = null
-        }, releaseDelay)
+        }, cleanupDelay * 1000)
     }
 
     stop(time) {
