@@ -407,7 +407,7 @@ describe('Roundtrip 3 — Panel show/hide mutual exclusion', () => {
         expect(panel.isVisible).toBe(false)
     })
 
-    it('pattern-panel is unhidden when any panel shows', () => {
+    it('pattern-panel is NOT unhidden when a panel shows (view switch controls it)', () => {
         const pp = document.createElement('div')
         pp.id = 'pattern-panel'
         pp.classList.add('ui-hidden')
@@ -417,7 +417,7 @@ describe('Roundtrip 3 — Panel show/hide mutual exclusion', () => {
         panel.init()
         panel.show()
 
-        expect(pp.classList.contains('ui-hidden')).toBe(false)
+        expect(pp.classList.contains('ui-hidden')).toBe(true)
     })
 
     it('showing a panel hides the previous one', () => {

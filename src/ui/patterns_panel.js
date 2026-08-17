@@ -2,7 +2,6 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { showToast } from './toast.js'
-import { bindCloseButton } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { idbGet, idbPut, idbKeys } from '../core/idb.js'
 
@@ -22,7 +21,6 @@ export default class PatternsPanel extends BasePanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Patterns</span>
-                <button class="ne-close">&times;</button>
             </div>
             <div class="pp-body">
                 <div class="pp-list" id="pp-list"></div>
@@ -46,8 +44,6 @@ export default class PatternsPanel extends BasePanel {
 
         this._listEl = this.container.querySelector('#pp-list')
         this._songNameEl = this.container.querySelector('#pp-song-name')
-
-        bindCloseButton(this.container, () => this.hide())
 
         this.container.querySelector('#pp-add').addEventListener('click', () => {
             const newIdx = appState.patterns.length

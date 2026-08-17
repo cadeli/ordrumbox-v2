@@ -112,7 +112,6 @@ export default class ViewManager {
     _showEdit() {
         this._synthEditor.hidePanel()
         this._pianoRollPanel.hide()
-        this._toolsPanel?.hide()
         document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
         this._ensureTrackEditorVisible()
         this._ensureNoteEditorVisible()
@@ -120,7 +119,6 @@ export default class ViewManager {
 
     _showProll() {
         this._synthEditor.hidePanel()
-        this._toolsPanel?.hide()
         this._ensureTrackEditorVisible()
         this._ensureNoteEditorVisible()
         this._pianoRollPanel.show()
@@ -129,7 +127,6 @@ export default class ViewManager {
 
     _showMobileSeq() {
         this._synthEditor.hidePanel()
-        this._toolsPanel?.hide()
         if (isMobileLandscape()) {
             this._trackEditor.hide()
         } else {
@@ -142,7 +139,6 @@ export default class ViewManager {
     _showMobileTrack() {
         this._synthEditor.hidePanel()
         this._pianoRollPanel.hide()
-        this._toolsPanel?.hide()
         this._ensureTrackEditorVisible()
         this._ensureNoteEditorVisible()
         document.getElementById('pattern-panel')?.classList.add('ui-hidden')

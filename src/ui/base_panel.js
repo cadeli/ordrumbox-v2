@@ -73,7 +73,6 @@ export default class BasePanel {
      */
     show(panelsToHide) {
         hidePanelsById(panelsToHide ?? this._hideOtherPanels())
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
         this.container.style.display = 'block'
         this.sync()
         this.reposition()

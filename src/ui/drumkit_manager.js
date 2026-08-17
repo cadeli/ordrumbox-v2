@@ -6,7 +6,7 @@ import InstrumentsManager from '../logic/services/instruments_manager.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
 import { hzToNote, formatNote } from '../core/hz_to_note.js'
 import { showToast } from './toast.js'
-import { bindCloseButton, downloadJson } from './components/panel_helpers.js'
+import { downloadJson } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 
@@ -31,7 +31,6 @@ export default class DrumkitManager extends BasePanel {
                     <button class="dm-icon-btn" id="dm-load-kit" title="Load drumkit mapping">↑</button>
                     <input type="file" id="dm-load-kit-file" style="display:none" accept="application/json,.json">
                 </div>
-                <button class="ne-close">&times;</button>
             </div>
             <div class="dm-body">
                 <div class="dm-list" id="dm-list"></div>
@@ -49,8 +48,6 @@ export default class DrumkitManager extends BasePanel {
 
         this._listEl = this.container.querySelector('#dm-list')
         this._detailEl = this.container.querySelector('#dm-detail')
-
-        bindCloseButton(this.container, () => this.hide())
 
         this.container.querySelector('#dm-add-sample').addEventListener('click', () => {
             this.container.querySelector('#dm-add-file').click()
