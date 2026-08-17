@@ -42,7 +42,9 @@ export default class ViewManager {
             const idx = appState.selectedTrackNum
             const track = pattern?.tracks?.[idx]
             if (track) {
-                this._trackEditor.show({ track, trackIdx: idx })
+                this._trackEditor._track = track
+                this._trackEditor._trackIdx = idx
+                this._trackEditor.sync()
             }
         }
         this._trackEditor.container?.style.setProperty('display', 'block')
@@ -91,8 +93,16 @@ export default class ViewManager {
         }
     }
 
-    _showSynth() {
+    _hideBottomPanels() {
         this._toolsPanel?.hide()
+        if (this._patternSettingsPanel?.hide) this._patternSettingsPanel.hide()
+        for (const id of ['about-panel', 'dm-panel', 'pp-panel', 'output-panel']) {
+            document.getElementById(id)?.style.setProperty('display', 'none')
+        }
+    }
+
+    _showSynth() {
+        this._hideBottomPanels()
         this._ensureTrackEditorVisible()
         this._ensureNoteEditorVisible()
         void this._synthEditor.showPanel()

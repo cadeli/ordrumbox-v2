@@ -6,7 +6,6 @@ const KEEP_VISIBLE_IDS = ['te-panel']
 /** Maps panel IDs to the event names that should hide them when fired. */
 const HIDE_ON_EVENTS = {
     'tools-panel':    ['trackSelect', 'noteSelect'],
-    'output-panel':   ['trackSelect', 'noteSelect'],
     'about-panel':    ['toolsToggle', 'outputToggle', 'trackSelect', 'noteSelect'],
     'dm-panel':       ['toolsToggle', 'outputToggle', 'aboutToggle'],
     'pp-panel':       ['toolsToggle', 'outputToggle', 'aboutToggle', 'drumkitManagerToggle'],

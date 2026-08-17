@@ -102,7 +102,7 @@ export default class PianoRollPanel extends BasePanel {
         this._firstShow = true
         this._pageStartBeat = 0
         this._clearSelection()
-        super.show(['tools-panel', 'output-panel', 'about-panel', 'dm-panel', 'soft-synth-panel'])
+        super.show(['tools-panel', 'soft-synth-panel'])
         this.reposition()
         const pattern = appState.patterns[appState.selectedPatternNum]
         const idx = appState.selectedTrackNum

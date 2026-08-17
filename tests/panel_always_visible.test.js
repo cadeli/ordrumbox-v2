@@ -53,6 +53,13 @@ describe('TE & NE always visible (desktop)', () => {
         patternPanel.id = 'pattern-panel'
         document.body.appendChild(patternPanel)
 
+        for (const id of ['about-panel', 'dm-panel', 'pp-panel', 'output-panel', 'soft-synth-panel', 'piano-roll-panel']) {
+            const el = document.createElement('div')
+            el.id = id
+            el.style.display = 'none'
+            document.body.appendChild(el)
+        }
+
         mockSynthEditor = {
             createDOM: () => {},
             getGeneratedSoundKeys: () => [],
@@ -61,13 +68,8 @@ describe('TE & NE always visible (desktop)', () => {
                 if (el) el.style.display = 'none'
             },
             showPanel: () => {
-                let el = document.getElementById('soft-synth-panel')
-                if (!el) {
-                    el = document.createElement('div')
-                    el.id = 'soft-synth-panel'
-                    document.body.appendChild(el)
-                }
-                el.style.display = 'block'
+                const el = document.getElementById('soft-synth-panel')
+                if (el) el.style.display = 'block'
             },
             ensureGeneratedSoundsLoaded: async () => {},
             reset: () => {}
@@ -79,13 +81,11 @@ describe('TE & NE always visible (desktop)', () => {
                 if (el) el.style.display = 'none'
             },
             show: () => {
-                let el = document.getElementById('piano-roll-panel')
-                if (!el) {
-                    el = document.createElement('div')
-                    el.id = 'piano-roll-panel'
-                    document.body.appendChild(el)
+                const el = document.getElementById('piano-roll-panel')
+                if (el) el.style.display = 'block'
+                for (const id of ['tools-panel', 'soft-synth-panel']) {
+                    document.getElementById(id)?.style.setProperty('display', 'none')
                 }
-                el.style.display = 'block'
             }
         }
 
@@ -129,7 +129,11 @@ describe('TE & NE always visible (desktop)', () => {
     function expectPanelVisible(id) {
         const el = document.getElementById(id)
         expect(el).not.toBeNull()
-        expect(el.style.display).not.toBe('none')
+        if (id === 'pattern-settings-panel') {
+            expect(el.classList.contains('open')).toBe(true)
+        } else {
+            expect(el.style.display).not.toBe('none')
+        }
     }
 
     it('edit: TE and NE visible', () => {
@@ -212,5 +216,102 @@ describe('TE & NE always visible (desktop)', () => {
         expectTEVisible()
         expectNEVisible()
         expectPanelVisible('pattern-panel')
+    })
+
+    it('about panel persists across edit -> proll switch', () => {
+        document.getElementById('about-panel').style.display = 'block'
+        expectPanelVisible('about-panel')
+        playbackEvents.dispatchProllToggle()
+        expectPanelVisible('about-panel')
+    })
+
+    it('about panel persists across proll -> edit switch', () => {
+        document.getElementById('about-panel').style.display = 'block'
+        playbackEvents.dispatchProllToggle()
+        expectPanelVisible('about-panel')
+        playbackEvents.dispatchEditToggle()
+        expectPanelVisible('about-panel')
+    })
+
+    it('about panel hides on synth view', () => {
+        document.getElementById('about-panel').style.display = 'block'
+        expectPanelVisible('about-panel')
+        playbackEvents.dispatchSynthToggle()
+        const el = document.getElementById('about-panel')
+        expect(el).not.toBeNull()
+        expect(el.style.display).toBe('none')
+    })
+
+    it('dm panel persists across edit <-> proll switches', () => {
+        document.getElementById('dm-panel').style.display = 'block'
+        expectPanelVisible('dm-panel')
+        playbackEvents.dispatchProllToggle()
+        expectPanelVisible('dm-panel')
+        playbackEvents.dispatchEditToggle()
+        expectPanelVisible('dm-panel')
+    })
+
+    it('dm panel hides on synth view', () => {
+        document.getElementById('dm-panel').style.display = 'block'
+        expectPanelVisible('dm-panel')
+        playbackEvents.dispatchSynthToggle()
+        const el = document.getElementById('dm-panel')
+        expect(el).not.toBeNull()
+        expect(el.style.display).toBe('none')
+    })
+
+    it('pp panel persists across edit <-> proll switches', () => {
+        document.getElementById('pp-panel').style.display = 'block'
+        expectPanelVisible('pp-panel')
+        playbackEvents.dispatchProllToggle()
+        expectPanelVisible('pp-panel')
+        playbackEvents.dispatchEditToggle()
+        expectPanelVisible('pp-panel')
+    })
+
+    it('pp panel hides on synth view', () => {
+        document.getElementById('pp-panel').style.display = 'block'
+        expectPanelVisible('pp-panel')
+        playbackEvents.dispatchSynthToggle()
+        const el = document.getElementById('pp-panel')
+        expect(el).not.toBeNull()
+        expect(el.style.display).toBe('none')
+    })
+
+    it('pattern-settings hides on any view switch', () => {
+        patternSettingsPanel.show()
+        expectPanelVisible('pattern-settings-panel')
+        playbackEvents.dispatchEditToggle()
+        expect(patternSettingsPanel._isOpen).toBe(false)
+    })
+
+    it('output-panel (master) persists across edit -> proll switch', () => {
+        document.getElementById('output-panel').style.display = 'block'
+        expectPanelVisible('output-panel')
+        playbackEvents.dispatchProllToggle()
+        expectPanelVisible('output-panel')
+    })
+
+    it('output-panel (master) persists after trackSelect event', () => {
+        document.getElementById('output-panel').style.display = 'block'
+        expectPanelVisible('output-panel')
+        playbackEvents.dispatchTrackSelect({ track: {}, trackIdx: 0 })
+        expectPanelVisible('output-panel')
+    })
+
+    it('output-panel (master) persists after noteSelect event', () => {
+        document.getElementById('output-panel').style.display = 'block'
+        expectPanelVisible('output-panel')
+        playbackEvents.dispatchNoteSelect({ note: {}, track: {} })
+        expectPanelVisible('output-panel')
+    })
+
+    it('output-panel (master) hides on synth view', () => {
+        document.getElementById('output-panel').style.display = 'block'
+        expectPanelVisible('output-panel')
+        playbackEvents.dispatchSynthToggle()
+        const el = document.getElementById('output-panel')
+        expect(el).not.toBeNull()
+        expect(el.style.display).toBe('none')
     })
 })
