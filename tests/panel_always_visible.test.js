@@ -7,8 +7,8 @@
  * Desktop layout (1200×800):
  *   Left top    : 80% × 450px @ top:64  — pattern / piano-roll / synth (switchable)
  *   Right top   : 20% × 450px @ top:64, left:80% — track editor
- *   Left bottom : 80% × 200px @ top:518 — about / output / dm / pp
- *   Right bottom: 20% × 200px @ top:518, left:80% — note editor
+ *   Left bottom : 80% × 300px @ top:518 — about / output / dm / pp
+ *   Right bottom: 20% × 300px @ top:518, left:80% — note editor
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
@@ -24,7 +24,7 @@ import { positionBelowPatternPanel } from '../src/ui/components/panel_helpers.js
 const LAYOUT = {
     toolbarH:      64,
     mainH:         450,
-    secondaryH:    200,
+    secondaryH:    300,
     gap:           4,
     leftPct:       80,
     rightPct:      20,
@@ -222,7 +222,7 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         })
     })
 
-    // ── Note editor (right-bottom slot: 20% × 200px @ top:518) ────────
+    // ── Note editor (right-bottom slot: 20% × 300px @ top:518) ────────
 
     describe('Note editor → right-bottom slot', () => {
         it('NE visible in edit view', () => {
@@ -253,7 +253,7 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         })
     })
 
-    // ── Secondary panels (left-bottom slot: 80% × 200px @ top:≥518) ───
+    // ── Secondary panels (left-bottom slot: 80% × 300px @ top:≥518) ───
 
     describe('Secondary panels → left-bottom slot', () => {
         const panels = ['about-panel', 'dm-panel', 'pp-panel', 'output-panel', 'tools-panel']

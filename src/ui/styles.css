@@ -69,7 +69,7 @@
   --z-toast: 9999;
 
   /* ── Layout ── */
-  --panel-height: 200px;
+  --panel-height: 300px;
 
   /* ── VU Meter ── */
   --vu-green: #4ade80;
@@ -760,7 +760,7 @@ body {
     top: 518px;
     left: 80%;
     width: 20%;
-    height: 200px;
+    height: var(--panel-height);
     border-left: 2px solid var(--border-subtle);
     padding: 4px 6px;
     overflow-y: auto;
