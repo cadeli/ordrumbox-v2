@@ -93,9 +93,10 @@ export class OrSlider {
         return this._denormalize ? this._denormalize(v) : v
     }
 
-    /** Formats the denormalized value for display */
+    /** Formats the denormalized value for display, truncated to prevent CLS. */
     _fmt(v) {
-        const str = String(this._format(v))
+        const raw = String(this._format(v))
+        const str = raw.length > 8 ? raw.slice(0, 8) : raw
         return this._unit ? `${str} ${this._unit}` : str
     }
 
@@ -180,6 +181,7 @@ export class OrSlider {
     // ─── Event binding ──────────────────────────────────────────────────────
 
     _bind() {
+        this._unbind()
         if (this._input && !this._isDelegated) {
             this._input.addEventListener('input',   this._boundOnInput)
             this._input.addEventListener('keydown', this._boundOnKeydown)
@@ -194,6 +196,22 @@ export class OrSlider {
         if (this._valSpan) {
             this._valSpan.addEventListener('dblclick', this._boundOnDblClick)
             this._valSpan.addEventListener('contextmenu', this._boundOnContextMenu)
+        }
+    }
+
+    _unbind() {
+        this._input?.removeEventListener('input',   this._boundOnInput)
+        this._input?.removeEventListener('keydown', this._boundOnKeydown)
+        if (this.el) {
+            this.el.removeEventListener('dblclick', this._boundOnDblClick)
+            this.el.removeEventListener('contextmenu', this._boundOnContextMenu)
+        } else if (this._input) {
+            this._input.removeEventListener('dblclick', this._boundOnDblClick)
+            this._input.removeEventListener('contextmenu', this._boundOnContextMenu)
+        }
+        if (this._valSpan) {
+            this._valSpan.removeEventListener('dblclick', this._boundOnDblClick)
+            this._valSpan.removeEventListener('contextmenu', this._boundOnContextMenu)
         }
     }
 
@@ -319,19 +337,7 @@ export class OrSlider {
 
     /** Removes event listeners. Call before removing the element from the DOM. */
     destroy() {
-        this._input?.removeEventListener('input',   this._boundOnInput)
-        this._input?.removeEventListener('keydown', this._boundOnKeydown)
-        if (this.el) {
-            this.el.removeEventListener('dblclick', this._boundOnDblClick)
-            this.el.removeEventListener('contextmenu', this._boundOnContextMenu)
-        } else if (this._input) {
-            this._input.removeEventListener('dblclick', this._boundOnDblClick)
-            this._input.removeEventListener('contextmenu', this._boundOnContextMenu)
-        }
-        if (this._valSpan) {
-            this._valSpan.removeEventListener('dblclick', this._boundOnDblClick)
-            this._valSpan.removeEventListener('contextmenu', this._boundOnContextMenu)
-        }
+        this._unbind()
         this.el       = null
         this._input   = null
         this._valSpan = null

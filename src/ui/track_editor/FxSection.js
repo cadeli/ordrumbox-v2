@@ -109,20 +109,25 @@ export default class FxSection {
                 } else {
                     const hasLfo = prop.lfo && track[prop.lfo] ? 'has-lfo' : ''
                     const isSelected = co._selectedPropKey === ck ? 'selected' : ''
-                    const knob = new OrKnob({
-                        key: ck,
-                        label: prop.label,
-                        min: prop.min,
-                        max: prop.max,
-                        step: prop.step,
-                        value: val ?? prop.min,
-                        extraClass: `${isSelected} ${hasLfo}`.trim(),
-                        format: (v) => fmtVal(ck, v),
-                        onChange: (v) => {
-                            co._track[ck] = v
-                            co._playbackEvents.dispatchTrackParamChange(co._track)
-                        }
-                    })
+                    let knob = co._fxKnobs.find(k => k._key === ck)
+                    if (knob) {
+                        knob.setValue(val ?? prop.min)
+                    } else {
+                        knob = new OrKnob({
+                            key: ck,
+                            label: prop.label,
+                            min: prop.min,
+                            max: prop.max,
+                            step: prop.step,
+                            value: val ?? prop.min,
+                            extraClass: `${isSelected} ${hasLfo}`.trim(),
+                            format: (v) => fmtVal(ck, v),
+                            onChange: (v) => {
+                                co._track[ck] = v
+                                co._playbackEvents.dispatchTrackParamChange(co._track)
+                            }
+                        })
+                    }
                     co._fxKnobs.push(knob)
                     content += knob.toHTML()
                 }

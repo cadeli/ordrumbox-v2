@@ -9,6 +9,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import Utils from '../core/utils.js'
+import { createSignal, effect, batch } from '../core/signals.js'
 
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
@@ -64,6 +65,7 @@ export default class TrackEditor extends BasePanel {
         this._knobs = []
         this._fxKnobs = []
         this._noteEditor = null
+        this._knobDisposers = []
 
         // ── Sub-components ───────────────────────────────────────────
         this.synthEditor = new SynthEditor(this)
@@ -243,9 +245,12 @@ export default class TrackEditor extends BasePanel {
         let sampleBarHtml = this._renderSampleBar()
         let knobBarHtml = this._renderKnobBar()
 
-        // ── Destroy old slider/knob state (but keep-alive: reuse instances) ──
+        // ── Snapshot existing instances for reuse ──────────────────
+        const prevSliders = new Map(this._sliders)
         this._sliders.clear()
+        const prevFxKnobs = new Map(this._fxKnobs.map(k => [k._key, k]))
         this._fxKnobs = []
+        const prevKnobs = new Map(this._knobs.map(k => [k._key, k]))
 
         let tabBarHtml = this._tab.renderBar()
 
@@ -296,35 +301,61 @@ export default class TrackEditor extends BasePanel {
         })
 
         // ── Knob bar (keep-alive: reuse OrKnob instances) ───────────
-        this._knobs.forEach(k => k.destroy())
-        this._knobs = []
+        for (const d of this._knobDisposers) d()
+        this._knobDisposers = []
+
         KNOB_PROPS.forEach(def => {
             const placeholder = this.container.querySelector(`[data-or-knob="${def.key}"]`)
             if (!placeholder) return
             const isDecay = def.key === 'decay'
             const sound = isDecay ? this._soundRegistry.sounds[this._track?.soundId] : null
-            const knob = new OrKnob({
-                key: def.key,
-                label: def.label,
-                min: def.min,
-                max: def.max,
-                step: def.step,
-                value: isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min),
-                format: knobFormat(def),
-                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : isDecay ? 'ms' : '',
-                onChange: (v) => {
-                    if (isDecay) { if (sound) sound.decay = v }
-                    else { this._track[def.key] = v }
-                    this._playbackEvents.dispatchTrackParamChange(this._track)
-                    if (isDecay) this._drawSampleWaveform()
-                }
-            })
+            const initialVal = isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min)
+            const [getVal, setVal] = createSignal(initialVal)
+
+            let knob = prevKnobs.get(def.key)
+            if (knob) {
+                knob._onChange = (v) => setVal(v)
+                knob.setValue(initialVal)
+                const row = this.container.querySelector(`.ne-row[data-or-slider="${def.key}"]`)
+                if (row) knob.mount(row)
+            } else {
+                knob = new OrKnob({
+                    key: def.key,
+                    label: def.label,
+                    min: def.min,
+                    max: def.max,
+                    step: def.step,
+                    value: initialVal,
+                    format: knobFormat(def),
+                    unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : isDecay ? 'ms' : '',
+                    onChange: (v) => setVal(v)
+                })
+                const el = knob.createElement()
+                el.removeAttribute('data-prop')
+                placeholder.replaceWith(el)
+            }
             this._knobs.push(knob)
-            const el = knob.createElement()
-            el.removeAttribute('data-prop')
-            el.removeAttribute('data-or-slider')
-            placeholder.replaceWith(el)
+
+            this._knobDisposers.push(effect(() => {
+                const v = getVal()
+                knob.setValue(v)
+                if (isDecay) { if (sound) sound.decay = v }
+                else { this._track[def.key] = v }
+                this._playbackEvents.dispatchTrackParamChange(this._track)
+                if (isDecay) this._drawSampleWaveform()
+            }))
         })
+
+        // ── Destroy orphaned instances that weren't reused ────────
+        for (const [key, slider] of prevSliders) {
+            if (!this._sliders.has(key)) slider.destroy()
+        }
+        for (const [key, knob] of prevFxKnobs) {
+            if (!this._fxKnobs.some(k => k._key === key)) knob.destroy()
+        }
+        for (const [key, knob] of prevKnobs) {
+            if (!this._knobs.some(k => k._key === key)) knob.destroy()
+        }
 
         if (this.synthEditor?.panel?.style?.display !== 'block') {
             this.container.style.display = 'block'
@@ -652,6 +683,8 @@ export default class TrackEditor extends BasePanel {
         this._trackIdx = -1
         this._selectedPropKey = null
         this._lastTick = -1
+        for (const d of this._knobDisposers) d()
+        this._knobDisposers = []
         this._knobs.forEach(k => k.destroy())
         this._knobs = []
         this._fxKnobs.forEach(k => k.destroy())

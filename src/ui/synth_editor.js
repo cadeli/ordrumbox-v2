@@ -185,8 +185,10 @@ export default class SynthEditor {
 
             const existing = existingByPath.get(pathStr)
             if (existing) {
+                existing._onChange = v => this._onKnobChange(pathStr, v)
                 existing.setValue(val)
-                placeholder.replaceWith(existing.createElement())
+                const row = this.panel.querySelector(`.ne-row[data-or-slider="${escapeHtml(pathStr)}"]`)
+                if (row) existing.mount(row)
                 this._knobMap.set(pathStr, existing)
             } else {
                 const meta = SYNTH_PARAM_META[pathStr] ?? {

@@ -809,8 +809,9 @@ body {
 }
 .ne-knob-bar .or-knob-label, .te-knob-bar .or-knob-label { font-size: var(--fs-xs); text-align: center; }
 .ne-knob-bar .ne-row-knob .ne-val, .te-knob-bar .ne-row-knob .ne-val {
-    font-size: var(--fs-xs); text-align: center; width: auto; min-width: 0;
-    color: var(--text-dim); font-weight: bold; overflow: visible;
+    font-size: var(--fs-xs); text-align: center; width: 55px; max-width: 55px; min-width: 0;
+    color: var(--text-dim); font-weight: bold; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
 }
 .ne-tab-panel-hidden { display: none !important; }
 .fx-tab-panel-hidden { display: none !important; }
@@ -1210,8 +1211,9 @@ body {
     text-overflow: ellipsis; max-width: 72px;
 }
 #soft-synth-panel .ne-row-knob .ne-val {
-    min-width: 0; text-align: center; color: var(--text-dim);
-    font-weight: bold; font-size: var(--fs-sm);
+    min-width: 0; max-width: 55px; text-align: center; color: var(--text-dim);
+    font-weight: bold; font-size: var(--fs-sm); overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
 }
 
 /* ---- Waiting Screen ---- */

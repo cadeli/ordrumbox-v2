@@ -162,15 +162,15 @@ describe('NoteEditor — OrSlider integration', () => {
         expect(note.arp).toEqual({ intervals: [0, 2], mode: 'up' })
     })
 
-    it('re-sync destroys old OrKnobs/OrSliders (no leaked listeners) and renders new ones', async () => {
+    it('re-sync keeps alive OrKnobs/OrSliders via setValue (no leaked listeners)', async () => {
         await showNote(noteEditor, { velocity: 0.5 })
         const firstVelocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
 
         await showNote(noteEditor, { velocity: 0.9 })
         const secondVelocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
 
-        // Different instance
-        expect(secondVelocityKnob).not.toBe(firstVelocityKnob)
+        // Same instance kept alive via setValue
+        expect(secondVelocityKnob).toBe(firstVelocityKnob)
         expect(secondVelocityKnob.getValue()).toBe(0.9)
         expect(secondVelocityKnob.el.querySelector('.ne-val').textContent).toBe('90 %')
     })

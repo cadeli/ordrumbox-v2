@@ -240,11 +240,6 @@ export default class NoteEditor extends BasePanel {
             return
         }
 
-        this._sliders.forEach(s => s.destroy())
-        this._sliders = []
-        this._knobs.forEach(k => k.destroy())
-        this._knobs = []
-
         const scaleKeys = Object.keys(_scalesCache ?? {})
         const arpState = this._getArpState(this._note)
 
@@ -268,8 +263,8 @@ export default class NoteEditor extends BasePanel {
 
         this.container.innerHTML = headerHtml + knobBarHtml + tabBarHtml + panelsHtml
 
-        this._mountKnobs()
-        this._mountSliders(arpState)
+        this._syncKnobs()
+        this._syncSliders(arpState)
         this._tab.bindTo(this.container)
         this._bindEvents()
     }
@@ -294,30 +289,50 @@ export default class NoteEditor extends BasePanel {
         return this._note['_' + p.key] ?? p.options[0]
     }
 
-    /** @private */
-    _mountKnobs() {
+    /** @private Keep-alive: reuse existing knobs via setValue, create only new ones. */
+    _syncKnobs() {
+        const prevKnobs = new Map(this._knobs.map(k => [k._key, k]))
+        this._knobs = []
+
         for (const def of KNOB_PROPS) {
             const placeholder = this.container.querySelector(`[data-ne-knob="${def.key}"]`)
             if (!placeholder) continue
 
-            const knob = new OrKnob({
-                key: def.key,
-                label: def.label,
-                min: def.min,
-                max: def.max,
-                step: def.step,
-                value: this._note[def.key] ?? def.min,
-                format: knobFormat(def),
-                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
-                onChange: (v) => this._onSlider(def.key, v)
-            })
+            let knob = prevKnobs.get(def.key)
+            if (knob) {
+                knob._onChange = (v) => this._onSlider(def.key, v)
+                knob.setValue(this._note[def.key] ?? def.min)
+                const row = this.container.querySelector(`.ne-row[data-or-slider="${def.key}"]`)
+                if (row) knob.mount(row)
+            } else {
+                knob = new OrKnob({
+                    key: def.key,
+                    label: def.label,
+                    min: def.min,
+                    max: def.max,
+                    step: def.step,
+                    value: this._note[def.key] ?? def.min,
+                    format: knobFormat(def),
+                    unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
+                    onChange: (v) => this._onSlider(def.key, v)
+                })
+                const el = knob.createElement()
+                el.removeAttribute('data-prop')
+                placeholder.replaceWith(el)
+            }
             this._knobs.push(knob)
-            placeholder.replaceWith(knob.createElement())
+        }
+
+        for (const [key, knob] of prevKnobs) {
+            if (!this._knobs.some(k => k._key === key)) knob.destroy()
         }
     }
 
-    /** @private */
-    _mountSliders(arpState) {
+    /** @private Keep-alive: reuse existing sliders via setValue, create only new ones. */
+    _syncSliders(arpState) {
+        const prevSliders = new Map(this._sliders.map(s => [s._key, s]))
+        this._sliders = []
+
         for (const g of GROUPS) {
             for (const p of g.props) {
                 if (p.type === 'select') continue
@@ -327,21 +342,35 @@ export default class NoteEditor extends BasePanel {
                 let val = this._note[p.key] ?? p.min
                 if (p.key === 'arpRange') val = arpState.range
 
-                const slider = new OrSlider({
-                    key: p.key,
-                    label: p.label,
-                    min: p.min,
-                    max: p.max,
-                    step: p.step,
-                    value: val,
-                    format: p.key === 'pitch'
-                        ? v => `${fmt(v)} ${pitchToNoteName(v, this._track?.pitch ?? 0)}`
-                        : fmt,
-                    onChange: v => this._onSlider(p.key, v),
-                })
+                let slider = prevSliders.get(p.key)
+                if (slider) {
+                    slider._onChange = (v) => this._onSlider(p.key, v)
+                    slider.setValue(val)
+                    const row = this.container.querySelector(`.ne-row[data-or-slider="${p.key}"]`)
+                    if (row) slider.mount(row)
+                } else {
+                    slider = new OrSlider({
+                        key: p.key,
+                        label: p.label,
+                        min: p.min,
+                        max: p.max,
+                        step: p.step,
+                        value: val,
+                        format: p.key === 'pitch'
+                            ? v => `${fmt(v)} ${pitchToNoteName(v, this._track?.pitch ?? 0)}`
+                            : fmt,
+                        onChange: v => this._onSlider(p.key, v),
+                    })
+                    const el = slider.createElement()
+                    el.removeAttribute('data-prop')
+                    placeholder.replaceWith(el)
+                }
                 this._sliders.push(slider)
-                placeholder.replaceWith(slider.createElement())
             }
+        }
+
+        for (const [key, slider] of prevSliders) {
+            if (!this._sliders.some(s => s._key === key)) slider.destroy()
         }
     }
 

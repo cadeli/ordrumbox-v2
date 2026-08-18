@@ -34,26 +34,32 @@ export default class GenerationSection {
                     <label>${p.label}</label>
                     <select data-key="${p.key}">${renderOptions(p.options, val, { labels: p.labels })}</select></div>`
             } else {
-                const s = new OrSlider({
-                    key: p.key,
-                    label: p.label,
-                    min: p.min,
-                    max: p.max,
-                    step: p.step,
-                    value: val ?? p.min,
-                    hasLfo: !!(p.lfo && track[p.lfo]),
-                    extraClass: isSelected,
-                    format: (v) => fmtVal(p.key, v),
-                    normalize: p.normalize ?? ((v) => v),
-                    denormalize: p.denormalize ?? ((v) => v),
-                    onChange: (v, key) => {
-                        co._isDragging = true
-                        co._track[key] = v
-                        co._playbackEvents.dispatchTrackParamChange(co._track)
-                    }
-                })
+                let s = co._sliders.get(p.key)
+                if (s) {
+                    s.setValue(val ?? p.min)
+                    s._hasLfo = !!(p.lfo && track[p.lfo])
+                } else {
+                    s = new OrSlider({
+                        key: p.key,
+                        label: p.label,
+                        min: p.min,
+                        max: p.max,
+                        step: p.step,
+                        value: val ?? p.min,
+                        hasLfo: !!(p.lfo && track[p.lfo]),
+                        extraClass: isSelected,
+                        format: (v) => fmtVal(p.key, v),
+                        normalize: p.normalize ?? ((v) => v),
+                        denormalize: p.denormalize ?? ((v) => v),
+                        onChange: (v, key) => {
+                            co._isDragging = true
+                            co._track[key] = v
+                            co._playbackEvents.dispatchTrackParamChange(co._track)
+                        }
+                    })
+                    co._sliders.set(p.key, s)
+                }
                 s._isDelegated = true
-                co._sliders.set(p.key, s)
                 html += s.toHTML()
             }
         })

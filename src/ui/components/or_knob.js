@@ -50,9 +50,10 @@ export class OrKnob {
         this._boundOnContextMenu = this._onContextMenu.bind(this)
     }
 
-    /** Formats the value for display. */
+    /** Formats the value for display, truncated to prevent CLS. */
     _fmt(v) {
-        const s = String(this._format(v))
+        const raw = String(this._format(v))
+        const s = raw.length > 8 ? raw.slice(0, 8) : raw
         return this._unit ? `${s} ${this._unit}` : s
     }
 
@@ -141,6 +142,7 @@ export class OrKnob {
 
     /** @private */
     _bind(rowEl) {
+        this._unbind()
         this.el = rowEl
         this._valSpan = rowEl.querySelector('.ne-val')
         this._knobEl = rowEl.querySelector('.or-knob')
@@ -151,6 +153,16 @@ export class OrKnob {
         this._knobEl.addEventListener('contextmenu', this._boundOnContextMenu)
         this._valSpan?.addEventListener('dblclick', this._boundOnDblClick)
         this._valSpan?.addEventListener('contextmenu', this._boundOnContextMenu)
+    }
+
+    /** @private */
+    _unbind() {
+        this._knobEl?.removeEventListener('mousedown', this._boundOnMousedown)
+        this._knobEl?.removeEventListener('keydown', this._boundOnKeydown)
+        this._knobEl?.removeEventListener('dblclick', this._boundOnDblClick)
+        this._knobEl?.removeEventListener('contextmenu', this._boundOnContextMenu)
+        this._valSpan?.removeEventListener('dblclick', this._boundOnDblClick)
+        this._valSpan?.removeEventListener('contextmenu', this._boundOnContextMenu)
     }
 
     /** @private */
@@ -259,12 +271,7 @@ export class OrKnob {
 
     /** Removes event listeners. */
     destroy() {
-        this._knobEl?.removeEventListener('mousedown', this._boundOnMousedown)
-        this._knobEl?.removeEventListener('keydown', this._boundOnKeydown)
-        this._knobEl?.removeEventListener('dblclick', this._boundOnDblClick)
-        this._knobEl?.removeEventListener('contextmenu', this._boundOnContextMenu)
-        this._valSpan?.removeEventListener('dblclick', this._boundOnDblClick)
-        this._valSpan?.removeEventListener('contextmenu', this._boundOnContextMenu)
+        this._unbind()
         this.el = null
         this._valSpan = null
         this._knobEl = null

@@ -36,19 +36,25 @@ export default class LoopSection {
         ]
 
         loopProps.forEach(p => {
-            const s = new OrSlider({
-                key: p.key,
-                label: p.label,
-                min: p.min,
-                max: p.max,
-                step: p.step,
-                value: p.val,
-                format: p.format,
-                dataAttr: 'data-loop',
-                onChange: (v, key) => co._onLoopSlider({ dataset: { loop: key }, value: v })
-            })
+            let s = co._sliders.get(p.key)
+            if (s) {
+                s.setValue(p.val)
+                if (p.key === 'loopAtStep') s.setMax?.(maxSteps)
+            } else {
+                s = new OrSlider({
+                    key: p.key,
+                    label: p.label,
+                    min: p.min,
+                    max: p.max,
+                    step: p.step,
+                    value: p.val,
+                    format: p.format,
+                    dataAttr: 'data-loop',
+                    onChange: (v, key) => co._onLoopSlider({ dataset: { loop: key }, value: v })
+                })
+                co._sliders.set(p.key, s)
+            }
             s._isDelegated = true
-            co._sliders.set(p.key, s)
             content += s.toHTML()
         })
 
