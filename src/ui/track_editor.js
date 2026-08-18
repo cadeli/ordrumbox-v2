@@ -9,7 +9,6 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import Utils from '../core/utils.js'
-import { createSignal, effect, batch } from '../core/signals.js'
 
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
@@ -65,7 +64,6 @@ export default class TrackEditor extends BasePanel {
         this._knobs = []
         this._fxKnobs = []
         this._noteEditor = null
-        this._knobDisposers = []
 
         // ── Sub-components ───────────────────────────────────────────
         this.synthEditor = new SynthEditor(this)
@@ -301,19 +299,14 @@ export default class TrackEditor extends BasePanel {
         })
 
         // ── Knob bar (keep-alive: reuse OrKnob instances) ───────────
-        for (const d of this._knobDisposers) d()
-        this._knobDisposers = []
-
         KNOB_PROPS.forEach(def => {
             const placeholder = this.container.querySelector(`[data-or-knob="${def.key}"]`)
             if (!placeholder) return
             const isDecay = def.key === 'decay'
             const sound = isDecay ? this._soundRegistry.sounds[this._track?.soundId] : null
             const initialVal = isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min)
-            const [getVal, setVal] = createSignal(initialVal)
 
             const onChange = (v) => {
-                setVal(v)
                 if (isDecay) { if (sound) sound.decay = v }
                 else { this._track[def.key] = v }
                 this._playbackEvents.dispatchTrackParamChange(this._track)
@@ -341,10 +334,6 @@ export default class TrackEditor extends BasePanel {
             el.removeAttribute('data-prop')
             placeholder.replaceWith(el)
             this._knobs.push(knob)
-
-            this._knobDisposers.push(effect(() => {
-                knob.setValue(getVal())
-            }))
         })
 
         // ── Destroy orphaned instances that weren't reused ────────
@@ -684,8 +673,6 @@ export default class TrackEditor extends BasePanel {
         this._trackIdx = -1
         this._selectedPropKey = null
         this._lastTick = -1
-        for (const d of this._knobDisposers) d()
-        this._knobDisposers = []
         this._knobs.forEach(k => k.destroy())
         this._knobs = []
         this._fxKnobs.forEach(k => k.destroy())

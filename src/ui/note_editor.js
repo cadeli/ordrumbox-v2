@@ -302,8 +302,6 @@ export default class NoteEditor extends BasePanel {
             if (knob) {
                 knob._onChange = (v) => this._onSlider(def.key, v)
                 knob.setValue(this._note[def.key] ?? def.min)
-                const row = this.container.querySelector(`.ne-row[data-or-slider="${def.key}"]`)
-                if (row) knob.mount(row)
             } else {
                 knob = new OrKnob({
                     key: def.key,
@@ -316,10 +314,10 @@ export default class NoteEditor extends BasePanel {
                     unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
                     onChange: (v) => this._onSlider(def.key, v)
                 })
-                const el = knob.createElement()
-                el.removeAttribute('data-prop')
-                placeholder.replaceWith(el)
             }
+            const el = knob.createElement()
+            el.removeAttribute('data-prop')
+            placeholder.replaceWith(el)
             this._knobs.push(knob)
         }
 
@@ -346,8 +344,6 @@ export default class NoteEditor extends BasePanel {
                 if (slider) {
                     slider._onChange = (v) => this._onSlider(p.key, v)
                     slider.setValue(val)
-                    const row = this.container.querySelector(`.ne-row[data-or-slider="${p.key}"]`)
-                    if (row) slider.mount(row)
                 } else {
                     slider = new OrSlider({
                         key: p.key,
@@ -361,10 +357,10 @@ export default class NoteEditor extends BasePanel {
                             : fmt,
                         onChange: v => this._onSlider(p.key, v),
                     })
-                    const el = slider.createElement()
-                    el.removeAttribute('data-prop')
-                    placeholder.replaceWith(el)
                 }
+                const el = slider.createElement()
+                el.removeAttribute('data-prop')
+                placeholder.replaceWith(el)
                 this._sliders.push(slider)
             }
         }

@@ -18,7 +18,10 @@ export function createSignal(initial) {
     const deps = new Set()
 
     const get = () => {
-        if (_currentEffect) deps.add(_currentEffect)
+        if (_currentEffect) {
+            deps.add(_currentEffect)
+            _currentEffect.deps.add(deps)
+        }
         return value
     }
 

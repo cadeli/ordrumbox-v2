@@ -187,15 +187,13 @@ export default class SynthEditor {
             if (existing) {
                 existing._onChange = v => this._onKnobChange(pathStr, v)
                 existing.setValue(val)
-                const row = this.panel.querySelector(`.ne-row[data-or-slider="${escapeHtml(pathStr)}"]`)
-                if (row) existing.mount(row)
                 this._knobMap.set(pathStr, existing)
             } else {
                 const meta = SYNTH_PARAM_META[pathStr] ?? {
                     min: 0, max: Math.max(1, Math.ceil(val ?? 1)),
                     step: Number.isInteger(val) ? 1 : 0.001,
                 }
-                const knob = new OrKnob({
+                this._knobMap.set(pathStr, new OrKnob({
                     key:      pathStr,
                     label:    label,
                     min:      meta.min,
@@ -205,10 +203,9 @@ export default class SynthEditor {
                     format:   fmt,
                     unit:     meta.unit ?? '',
                     onChange: v => this._onKnobChange(pathStr, v),
-                })
-                this._knobMap.set(pathStr, knob)
-                placeholder.replaceWith(knob.createElement())
+                }))
             }
+            placeholder.replaceWith(this._knobMap.get(pathStr).createElement())
         }
     }
 
