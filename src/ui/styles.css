@@ -1403,10 +1403,6 @@ body {
 }
 
 /* ── Drumkit Manager ───────────────────────────────────── */
-#dm-panel {
-    height: var(--panel-height);
-}
-
 .dm-body {
     display: flex;
     gap: 12px;
@@ -1614,7 +1610,6 @@ body {
 }
 
 /* ---- Patterns Panel ---- */
-#pp-panel { height: var(--panel-height); }
 #pp-panel .pp-body {
     display: flex; flex-direction: row; gap: 16px;
     max-height: 180px; align-items: flex-start;
