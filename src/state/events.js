@@ -13,4 +13,6 @@ export const EVENT = Object.freeze({
     GEN_TOGGLE:          'genToggle',
     VARIATION_CHANGE:    'variationChange',
     GEN_PRESET_CHANGE:   'genPresetChange',
+    NOTE_TRIGGER:        'noteTrigger',
+    NOTE_SELECT:         'noteSelect',
 })
