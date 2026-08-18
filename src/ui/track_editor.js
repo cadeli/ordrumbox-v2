@@ -312,12 +312,18 @@ export default class TrackEditor extends BasePanel {
             const initialVal = isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min)
             const [getVal, setVal] = createSignal(initialVal)
 
+            const onChange = (v) => {
+                setVal(v)
+                if (isDecay) { if (sound) sound.decay = v }
+                else { this._track[def.key] = v }
+                this._playbackEvents.dispatchTrackParamChange(this._track)
+                if (isDecay) this._drawSampleWaveform()
+            }
+
             let knob = prevKnobs.get(def.key)
             if (knob) {
-                knob._onChange = (v) => setVal(v)
+                knob._onChange = onChange
                 knob.setValue(initialVal)
-                const row = this.container.querySelector(`.ne-row[data-or-slider="${def.key}"]`)
-                if (row) knob.mount(row)
             } else {
                 knob = new OrKnob({
                     key: def.key,
@@ -328,21 +334,16 @@ export default class TrackEditor extends BasePanel {
                     value: initialVal,
                     format: knobFormat(def),
                     unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : isDecay ? 'ms' : '',
-                    onChange: (v) => setVal(v)
+                    onChange
                 })
-                const el = knob.createElement()
-                el.removeAttribute('data-prop')
-                placeholder.replaceWith(el)
             }
+            const el = knob.createElement()
+            el.removeAttribute('data-prop')
+            placeholder.replaceWith(el)
             this._knobs.push(knob)
 
             this._knobDisposers.push(effect(() => {
-                const v = getVal()
-                knob.setValue(v)
-                if (isDecay) { if (sound) sound.decay = v }
-                else { this._track[def.key] = v }
-                this._playbackEvents.dispatchTrackParamChange(this._track)
-                if (isDecay) this._drawSampleWaveform()
+                knob.setValue(getVal())
             }))
         })
 
