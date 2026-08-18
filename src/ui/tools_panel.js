@@ -7,12 +7,13 @@ import { escapeHtml, downloadJson, renderOptions } from './components/panel_help
 import InstrumentsManager, { GM_DRUM_NAMES, GM_PROGRAM_NAMES } from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { TICK } from '../core/constants.js'
-import { isMidiSupported, parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalized } from '../logic/midi/midi_parser.js'
+import { parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalized } from '../logic/midi/midi_parser.js'
 import { C3_MIDI_NOTE } from '../logic/midi/midi_exporter.js'
 import { showToast } from './toast.js'
 import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
+import MidiIndicatorView from './midi_indicator_view.js'
 import { logger, nameOr } from "../core/logger.js"
 import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, formatBytes, formatDate, cacheSample, cacheDrumkits } from '../cache/idb_cache.js'
 
@@ -216,6 +217,8 @@ export default class ToolsPanel extends BasePanel {
             this._refreshCacheStats()
         })
 
+        this._midiView = new MidiIndicatorView(this.container)
+
         bindCloseButton(this.container, () => this.hide())
         bindTabToggles(this.container)
     }
@@ -240,7 +243,8 @@ export default class ToolsPanel extends BasePanel {
         const enableBtn = this.container.querySelector('#tp-midi-enable')
 
         if (serviceRegistry.midiManager) {
-            serviceRegistry.midiManager.renderIndicators()
+            this._midiView.connect(serviceRegistry.midiManager)
+            this._midiView.sync(serviceRegistry.midiManager)
             enableBtn.textContent = serviceRegistry.midiManager.isReady ? 'Disable MIDI' : 'Enable MIDI'
 
             // Sync output list
@@ -256,31 +260,14 @@ export default class ToolsPanel extends BasePanel {
                 outputSelect.value = nameOr(currentOutputId, '', 'ToolsPanel', 'outputId fallback')
             }
         } else {
-            // Default inactive state
-            const support = isMidiSupported()
-            this._setLedState('midiSupportLed', support, support ? 'Supported' : 'Unavailable')
-            this._setLedState('midiReadyLed', false, 'Locked')
-            this._setLedState('midiConnectedLed', false, 'None')
-            this._setLedState('midiSyncLed', false, 'Internal')
-            this._setLedState('midiActivityLed', false, 'Idle')
+            this._midiView.disconnect()
+            this._midiView.sync(null)
             if (outputSelect) outputSelect.innerHTML = '<option value="">MIDI Not Enabled</option>'
         }
 
         // Refresh cache stats if cache tab is visible
         if (this.isVisible) {
             this._refreshCacheStats()
-        }
-    }
-
-    _setLedState(ledId, isOn, label) {
-        const led = this.container.querySelector(`#${ledId}`)
-        const text = this.container.querySelector(`#${ledId.replace('Led', 'Label')}`)
-        if (led) {
-            led.classList.toggle('midi-indicator-on', !!isOn)
-            led.classList.toggle('midi-indicator-off', !isOn)
-        }
-        if (text) {
-            text.innerText = label
         }
     }
 

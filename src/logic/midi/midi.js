@@ -10,10 +10,11 @@ import {
     isMidiSupported,
 } from './midi_parser.js'
 
-export default class MfMidi {
+export default class MfMidi extends EventTarget {
     static TAG = "MFMIDI"
 
     constructor() {
+        super()
         this.midiAccess = null
         this.inputs = []
         this.outputs = []
@@ -23,7 +24,6 @@ export default class MfMidi {
         this.isReady = false
         this.isInitializing = false
         this.initPromise = null
-        this.activityTimer = null
         this.externalSyncEnabled = false
         this.clockPulseTimes = []
         this.clockStartTime = null
@@ -54,12 +54,12 @@ export default class MfMidi {
                 this.refreshPorts()
                 this.isReady = true
                 logger.info('MfMidi', `${MfMidi.TAG}: MIDI ready`)
-                this.renderIndicators()
+                this.dispatchEvent(new Event('statusChange'))
                 return true
             } catch (error) {
                 this.isReady = false
                 logger.warn('MfMidi', `${MfMidi.TAG}: Unable to initialize MIDI access`, error)
-                this.renderIndicators()
+                this.dispatchEvent(new Event('statusChange'))
                 return false
             } finally {
                 this.isInitializing = false
@@ -85,7 +85,7 @@ export default class MfMidi {
         this.inputHandlers.clear()
         this.isReady = false
         this.selectedOutputId = null
-        this.renderIndicators()
+        this.dispatchEvent(new Event('statusChange'))
     }
 
     getButtonLabel = () => {
@@ -108,60 +108,13 @@ export default class MfMidi {
         }
     }
 
-    renderIndicators = () => {
-        this.setLedState('midiSupportLed', this.isSupported(), this.isSupported() ? 'Supported' : 'Unavailable')
-        this.setLedState('midiReadyLed', this.isReady, this.isReady ? 'Ready' : 'Locked')
-        this.setLedState('midiConnectedLed', this.inputs.length > 0, this.inputs.length > 0 ? `${this.inputs.length} input(s)` : 'No inputs')
-        this.setLedState('midiSyncLed', this.externalSyncEnabled, this.externalSyncEnabled ? 'External sync' : 'Internal')
-    }
-
-    flashActivity = () => {
-        const led = document.getElementById('midiActivityLed')
-        const label = document.getElementById('midiActivityLabel')
-        if (led) {
-            led.classList.add('midi-indicator-on')
-            led.classList.remove('midi-indicator-off')
-        }
-        if (label) {
-            label.innerText = 'Activity'
-        }
-
-        if (this.activityTimer) {
-            window.clearTimeout(this.activityTimer)
-        }
-        this.activityTimer = window.setTimeout(() => {
-            const resetLed = document.getElementById('midiActivityLed')
-            const resetLabel = document.getElementById('midiActivityLabel')
-            if (resetLed) {
-                resetLed.classList.add('midi-indicator-off')
-                resetLed.classList.remove('midi-indicator-on')
-            }
-            if (resetLabel) {
-                resetLabel.innerText = 'Idle'
-            }
-        }, 120)
-    }
-
-    setLedState = (ledId, isOn, label) => {
-        const led = document.getElementById(ledId)
-        const labelId = ledId.replace('Led', 'Label')
-        const text = document.getElementById(labelId)
-        if (led) {
-            led.classList.toggle('midi-indicator-on', !!isOn)
-            led.classList.toggle('midi-indicator-off', !isOn)
-        }
-        if (text) {
-            text.innerText = label
-        }
-    }
-
     onStateChange = () => {
         this.refreshPorts()
     }
 
     refreshPorts = () => {
         if (!this.midiAccess) {
-            this.renderIndicators()
+            this.dispatchEvent(new Event('statusChange'))
             return
         }
 
@@ -192,7 +145,7 @@ export default class MfMidi {
             this.selectedOutputId = this.outputs[0].id
         }
 
-        this.renderIndicators()
+        this.dispatchEvent(new Event('statusChange'))
     }
 
     setSelectedOutput = (id) => {
@@ -264,7 +217,7 @@ export default class MfMidi {
         if (!noteOn) return
         if (noteOn.channel !== 9) return
 
-        this.flashActivity()
+        this.dispatchEvent(new Event('activity'))
         this.triggerMappedTrack(noteOn.noteNumber)
     }
 
@@ -294,14 +247,14 @@ export default class MfMidi {
     toggleExternalSync = () => {
         this.externalSyncEnabled = !this.externalSyncEnabled
         this.resetExternalClockTracking()
-        this.renderIndicators()
+        this.dispatchEvent(new Event('statusChange'))
         return this.externalSyncEnabled
     }
 
     setExternalSyncEnabled = (enabled) => {
         this.externalSyncEnabled = !!enabled
         this.resetExternalClockTracking()
-        this.renderIndicators()
+        this.dispatchEvent(new Event('statusChange'))
         return this.externalSyncEnabled
     }
 
