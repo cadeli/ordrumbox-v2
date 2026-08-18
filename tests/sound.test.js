@@ -6,7 +6,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 
 vi.mock('../src/state/service_registry.js', () => ({
     serviceRegistry: {
-        mfResourcesLoader: { loadGeneratedSounds: vi.fn().mockResolvedValue() },
+        resourcesLoader: { loadGeneratedSounds: vi.fn().mockResolvedValue() },
     },
 }))
 
@@ -110,7 +110,7 @@ describe('MfSound', () => {
         generatedSounds = { BASS1: { vco1: { wave: 'sine', octave: 0, detune: 0, gain: 1 }, masterVolume: 0.8 } }
         sound  = new MfSound(ctx, mixer, sounds, generatedSounds)
         sound.voiceFactory = makeVoiceFactory()
-        serviceRegistry.mfResourcesLoader.loadGeneratedSounds.mockClear()
+        serviceRegistry.resourcesLoader.loadGeneratedSounds.mockClear()
     })
 
     // ── getStrip ──────────────────────────────────────────────────────
@@ -218,13 +218,13 @@ describe('MfSound', () => {
     it('loadGeneratedsounds is no-op when already loading', () => {
         sound.generatedSoundsLoading = true
         sound.loadGeneratedsounds()
-        expect(serviceRegistry.mfResourcesLoader.loadGeneratedSounds).not.toHaveBeenCalled()
+        expect(serviceRegistry.resourcesLoader.loadGeneratedSounds).not.toHaveBeenCalled()
     })
-    it('loadGeneratedsounds calls mfResourcesLoader.loadGeneratedSounds', () => {
+    it('loadGeneratedsounds calls resourcesLoader.loadGeneratedSounds', () => {
         sound.generatedSounds = {}
-        serviceRegistry.mfResourcesLoader.loadGeneratedSounds.mockResolvedValue()
+        serviceRegistry.resourcesLoader.loadGeneratedSounds.mockResolvedValue()
         sound.loadGeneratedsounds()
-        expect(serviceRegistry.mfResourcesLoader.loadGeneratedSounds).toHaveBeenCalled()
+        expect(serviceRegistry.resourcesLoader.loadGeneratedSounds).toHaveBeenCalled()
     })
 
     // ── updateStripFromTrack ──────────────────────────────────────────

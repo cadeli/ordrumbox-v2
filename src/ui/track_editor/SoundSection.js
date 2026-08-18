@@ -87,13 +87,13 @@ export default class SoundSection {
         const co = this._co
         const track = co._track
         const newName = target.value
-        co._serviceRegistry.mfCmd.changeTrackName(track, newName)
+        co._serviceRegistry.cmd.changeTrackName(track, newName)
         const firstSample = this._getPreferredSampleForInstrument(newName)
         if (firstSample) {
             if (!co._soundRegistry.sounds[firstSample.url]?.buffer) {
-                await co._serviceRegistry.mfResourcesLoader.loadSample(firstSample, firstSample.kitName)
+                await co._serviceRegistry.resourcesLoader.loadSample(firstSample, firstSample.kitName)
             }
-            co._serviceRegistry.mfCmd.changeTrackSound(track, firstSample.url)
+            co._serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
         }
         co.sync()
         co._playbackEvents.dispatchPatternChange([track])
@@ -110,10 +110,10 @@ export default class SoundSection {
                 if (s) { foundKit = kit; foundSample = s; break }
             }
             if (foundSample && foundKit) {
-                await co._serviceRegistry.mfResourcesLoader.loadSample(foundSample, foundKit.name)
+                await co._serviceRegistry.resourcesLoader.loadSample(foundSample, foundKit.name)
             }
         }
-        co._serviceRegistry.mfCmd.changeTrackSound(track, url)
+        co._serviceRegistry.cmd.changeTrackSound(track, url)
         co._playbackEvents.dispatchPatternChange([track])
     }
 

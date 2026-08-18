@@ -101,7 +101,7 @@ export default class MfCmd {
     }
 
     addTrack = (pattern, type, stepsPerBeat = 4) => {
-        // console.log("mfCmd::addTrack " + pattern.name + " = " + type)
+        // console.log("cmd::addTrack " + pattern.name + " = " + type)
 
         let track = this.createTrack(pattern.nbBeats, type, stepsPerBeat);
         pattern.tracks.push(track)
@@ -179,7 +179,7 @@ export default class MfCmd {
     setSelectedDrumkitNum = async (num) => {
         try {
             appState.selectedDrumkitNum = num
-            await serviceRegistry.mfResourcesLoader.loadMissingSamplesFromDrumkits([soundRegistry.drumkitList[num]])
+            await serviceRegistry.resourcesLoader.loadMissingSamplesFromDrumkits([soundRegistry.drumkitList[num]])
             await this.autoAssignSoundsForNewDrumkit()
             playbackEvents.dispatchDrumkitChange()
         } catch (err) {
@@ -190,10 +190,10 @@ export default class MfCmd {
     autoAssignSoundsForNewDrumkit = async () => {
         try {
             let selPattern = appState.patterns[appState.selectedPatternNum]
-            serviceRegistry.mfSeq.setBpm(selPattern.bpm)
-            const mfAutoAssign = await getAutoAssignService()
-            mfAutoAssign.autoAssignSounds(selPattern)
-            serviceRegistry.mfPatterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
+            serviceRegistry.seq.setBpm(selPattern.bpm)
+            const autoAssign = await getAutoAssignService()
+            autoAssign.autoAssignSounds(selPattern)
+            serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
             serviceRegistry.audioEngine?.invalidateCache()
         } catch (err) {
             logger.error('MfCmd', 'cmd::autoAssignSoundsForNewDrumkit failed', err)
@@ -203,15 +203,15 @@ export default class MfCmd {
     setSelectedPatternNum = async (num) => {
         try {
             if (appState.patterns.length > 0) {
-                //console.log("mfCmd::setSelectedPatternNum " + num + " = " + appState.patterns[num].name)
+                //console.log("cmd::setSelectedPatternNum " + num + " = " + appState.patterns[num].name)
                 appState.selectedPatternNum = num
                 let selPattern = appState.patterns[appState.selectedPatternNum]
-                serviceRegistry.mfSeq.setBpm(selPattern.bpm)
+                serviceRegistry.seq.setBpm(selPattern.bpm)
                 if (Object.keys(soundRegistry.sounds).length > 0) {
-                    const mfAutoAssign = await getAutoAssignService()
-                    mfAutoAssign.autoAssignSounds(selPattern)
+                    const autoAssign = await getAutoAssignService()
+                    autoAssign.autoAssignSounds(selPattern)
                 }
-                serviceRegistry.mfPatterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
+                serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
                 // console.log(flatnotes)
             }
         } catch (err) {

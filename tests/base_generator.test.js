@@ -4,7 +4,7 @@ import MfCmd from '../src/logic/commands/cmd.js'
 import BaseGenerator from '../src/logic/generators/base_generator.js'
 
 describe('BaseGenerator', () => {
-    let generator, mfCmd
+    let generator, cmd
 
     const testConfigs = {
         basic: {
@@ -42,8 +42,8 @@ describe('BaseGenerator', () => {
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
         generator = new BaseGenerator('TEST', testConfigs)
     })
 
@@ -97,7 +97,7 @@ describe('BaseGenerator', () => {
     })
 
     describe('addNote', () => {
-        it('creates note via mfCmd', () => {
+        it('creates note via cmd', () => {
             const track = { name: 'TEST', stepsPerBeat: 4, nbBeats: 4, notes: [] }
             generator.addNote(track, 0, 2, 0, 0.8)
             expect(track.notes.length).toBe(1)

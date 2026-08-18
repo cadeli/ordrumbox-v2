@@ -16,16 +16,16 @@ describe('Toolbar UI Layout', () => {
         soundRegistry.reset()
         
         // Mock serviceRegistry dependencies
-        serviceRegistry.mfSeq = {
+        serviceRegistry.seq = {
             toggleStartStop: vi.fn(),
             setBpm: vi.fn()
         }
-        serviceRegistry.mfCmd = {
+        serviceRegistry.cmd = {
             setSelectedPatternNum: vi.fn(),
             setSelectedDrumkitNum: vi.fn(),
             cleanPattern: vi.fn()
         }
-        serviceRegistry.mfPatterns = {
+        serviceRegistry.patterns = {
             computeFlatNotesFromPattern: vi.fn()
         }
 
@@ -87,7 +87,7 @@ describe('Toolbar UI Layout', () => {
         
         expect(valDisplay.textContent).toBe('140')
         expect(toggle.textContent).toBe('140')
-        expect(serviceRegistry.mfSeq.setBpm).toHaveBeenCalledWith(140)
+        expect(serviceRegistry.seq.setBpm).toHaveBeenCalledWith(140)
     })
 
     it('contains the pattern, drumkit and beats selectors', () => {

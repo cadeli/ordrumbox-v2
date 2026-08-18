@@ -32,12 +32,12 @@ logger.suppressTags(['Instrument', 'Fallback', 'PatternImport'])
 logger.setLevel(logger.LEVELS?.INFO ?? 1)
 
 serviceRegistry.audioCtx = null
-serviceRegistry.mfCmd = new MfCmd()
-serviceRegistry.mfResourcesLoader = new MfResourcesLoader()
-serviceRegistry.mfSeq = new MfSeq()
-serviceRegistry.mfAutoGenerate = null
-serviceRegistry.mfPatterns = patternsManager
-serviceRegistry.mfAutoAssign = null
+serviceRegistry.cmd = new MfCmd()
+serviceRegistry.resourcesLoader = new MfResourcesLoader()
+serviceRegistry.seq = new MfSeq()
+serviceRegistry.autoGenerate = null
+serviceRegistry.patterns = patternsManager
+serviceRegistry.autoAssign = null
 serviceRegistry.midiManager = null
 
 
@@ -192,12 +192,12 @@ export function init() {
 
     scheduleAfterFirstPaint(async () => {
         try {
-            await serviceRegistry.mfResourcesLoader.loadSong(MfResourcesLoader.SONG_URL)
+            await serviceRegistry.resourcesLoader.loadSong(MfResourcesLoader.SONG_URL)
             if (soundRegistry.drumkitList.length === 0) {
-                await serviceRegistry.mfResourcesLoader.loadDrumkitList(MfResourcesLoader.DRUMKITS_URL)
+                await serviceRegistry.resourcesLoader.loadDrumkitList(MfResourcesLoader.DRUMKITS_URL)
             }
             if (Object.keys(soundRegistry.generatedSounds).length === 0) {
-                await serviceRegistry.mfResourcesLoader.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL)
+                await serviceRegistry.resourcesLoader.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL)
             }
         } catch (e) {
             logger.error('Main', 'Failed to load startup resources', e)
@@ -207,9 +207,9 @@ export function init() {
             playbackEvents.dispatchDrumkitChange()
             
             // Set initial drumkit first to trigger sample loading
-            serviceRegistry.mfCmd.setSelectedDrumkitNum(0)
+            serviceRegistry.cmd.setSelectedDrumkitNum(0)
             // Then select pattern (which will auto-assign once sounds are loaded)
-            serviceRegistry.mfCmd.setSelectedPatternNum(0)
+            serviceRegistry.cmd.setSelectedPatternNum(0)
 
             if (isMobileViewport()) {
                 playbackEvents.dispatchMobileSeqToggle()
@@ -328,13 +328,13 @@ function toggleTrackMute(trackIndex) {
 }
 
 function previewTrack(trackIndex) {
-    serviceRegistry.mfSeq.simpleBeep(trackIndex)
+    serviceRegistry.seq.simpleBeep(trackIndex)
 }
 
 async function generatePattern() {
     const { getAutoGenerateService } = await import('./state/service_registry.js')
-    const mfAutoGenerate = await getAutoGenerateService()
-    await mfAutoGenerate.generatePattern()
+    const autoGen = await getAutoGenerateService()
+    await autoGen.generatePattern()
 }
 
 function toggleVus() {
@@ -349,16 +349,16 @@ function logPatterns() {
 
 function selectRandomPattern() {
     const num = Math.floor(Math.random() * appState.patterns.length)
-    serviceRegistry.mfCmd.setSelectedPatternNum(num)
+    serviceRegistry.cmd.setSelectedPatternNum(num)
 }
 
 function selectRandomDrumkit() {
     const num = Math.floor(Math.random() * soundRegistry.drumkitList.length)
-    serviceRegistry.mfCmd.setSelectedDrumkitNum(num)
+    serviceRegistry.cmd.setSelectedDrumkitNum(num)
 }
 
 function toggleStartStop() {
-    serviceRegistry.mfSeq.toggleStartStop()
+    serviceRegistry.seq.toggleStartStop()
 }
 
 const SYNTH_SOUND_MAP = {
@@ -378,7 +378,7 @@ async function convertToGeneratedSounds() {
 
     if (Object.keys(soundRegistry.generatedSounds).length === 0) {
         try {
-            await serviceRegistry.mfResourcesLoader.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL)
+            await serviceRegistry.resourcesLoader.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL)
         } catch (e) {
             logger.error('Main', 'Failed to load generated sounds', e)
         }
@@ -391,7 +391,7 @@ async function convertToGeneratedSounds() {
         track.synthSoundKey = SYNTH_SOUND_MAP[type] ?? 'BASS1'
     })
 
-    serviceRegistry.mfPatterns.computeFlatNotesFromPattern(selPattern, 0)
+    serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0)
     serviceRegistry.audioEngine?.invalidateCache()
     logger.info('Main', 'All tracks converted to generated sounds')
 }

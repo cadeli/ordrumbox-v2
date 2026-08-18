@@ -31,7 +31,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
         appState.patterns = [structuredClone(TEST_PATTERN)]
         appState.selectedPatternNum = 0
 
-        serviceRegistry.mfCmd = new MfCmd()
+        serviceRegistry.cmd = new MfCmd()
 
         document.body.innerHTML = ''
 
@@ -47,7 +47,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
             const track = tracks[i % tracks.length]
             const beat = i % (track.nbBeats ?? 4)
             const beatStep = i % (track.stepsPerBeat ?? 4)
-            serviceRegistry.mfCmd.addNote(track, beat, beatStep, 0)
+            serviceRegistry.cmd.addNote(track, beat, beatStep, 0)
         }
     }
 

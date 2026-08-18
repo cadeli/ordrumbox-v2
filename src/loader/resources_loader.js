@@ -175,7 +175,7 @@ export default class MfResourcesLoader {
                     }
                 })
             }
-            serviceRegistry.mfCmd.importPatternFromJson(pattern)
+            serviceRegistry.cmd.importPatternFromJson(pattern)
         })
     }
 

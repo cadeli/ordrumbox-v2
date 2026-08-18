@@ -100,7 +100,7 @@ describe('simpleBeep — real audio rendering', () => {
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = patternsManager
+        serviceRegistry.patterns = patternsManager
 
         soundRegistry.sounds = {
             'kick.wav': { url: 'kick.wav', buffer: kickBuffer, key: 'KICK' },
@@ -156,7 +156,7 @@ describe('simpleBeep — real audio rendering', () => {
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = patternsManager
+        serviceRegistry.patterns = patternsManager
 
         soundRegistry.sounds = {
             'kick.wav': { url: 'kick.wav', buffer: kickBuffer, key: 'KICK' },
@@ -208,7 +208,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = patternsManager
+        serviceRegistry.patterns = patternsManager
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await MfMixer.create(ctx)
@@ -239,7 +239,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = patternsManager
+        serviceRegistry.patterns = patternsManager
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await MfMixer.create(ctx)
@@ -285,7 +285,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = patternsManager
+        serviceRegistry.patterns = patternsManager
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
         const mixer = await MfMixer.create(ctx)

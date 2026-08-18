@@ -83,8 +83,8 @@ describe('PianoRollPanel', () => {
         appState.selectedTrackNum = 0
 
         serviceRegistry.transport = { isRunning: false, tick: 0 }
-        serviceRegistry.mfCmd = makeCmd()
-        serviceRegistry.audioEngine = { mfSound: { play: vi.fn() } }
+        serviceRegistry.cmd = makeCmd()
+        serviceRegistry.audioEngine = { sound: { play: vi.fn() } }
 
         document.body.innerHTML = ''
         global.window.innerWidth = 1200

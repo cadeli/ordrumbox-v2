@@ -40,7 +40,7 @@ export default class MfAutoGenerate {
         try {
             let pattern = appState.patterns[appState.selectedPatternNum]
             if (!pattern) {
-                pattern = serviceRegistry.mfCmd.addPattern("Generated")
+                pattern = serviceRegistry.cmd.addPattern("Generated")
             }
 
             const genre = options.genre
@@ -57,7 +57,7 @@ export default class MfAutoGenerate {
 
             if (!pattern.tracks || pattern.tracks.length === 0) {
                 for (const [trackName, config] of Object.entries(structure)) {
-                    const track = serviceRegistry.mfCmd.addTrack(pattern, trackName)
+                    const track = serviceRegistry.cmd.addTrack(pattern, trackName)
                     logger.info(MfAutoGenerate.TAG, `  track=${trackName}, variant=${config}`)
                     await this.generateTrack(track, config, 1, pattern, harmony)
                 }
@@ -85,16 +85,16 @@ export default class MfAutoGenerate {
 
             const hasBassTrack = pattern.tracks.some(t => Utils.detectTrackType(t.name) === 'BASS')
             if (!hasBassTrack) {
-                const bassTrack = serviceRegistry.mfCmd.addTrack(pattern, 'BASS')
+                const bassTrack = serviceRegistry.cmd.addTrack(pattern, 'BASS')
                 bassTrack.useSoftSynth = false
                 bassTrack.useAutoAssignSound = true
                 bassTrack.synthSoundKey = 'BASS1'
                 bassTrack.velocity = 0.5
             }
 
-            const mfAutoAssign = await getAutoAssignService()
-            await mfAutoAssign.autoAssignSounds(pattern)
-            serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+            const autoAssign = await getAutoAssignService()
+            await autoAssign.autoAssignSounds(pattern)
+            serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
 
             logger.info(MfAutoGenerate.TAG, `generatePattern: done (${pattern.tracks.length} tracks)`)
             return pattern
@@ -196,7 +196,7 @@ export default class MfAutoGenerate {
                     track.notes = []
                     await this.generateTrack(track, config, density, pattern, harmony)
                 }
-                serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+                serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
             } else {
                 logger.warn(MfAutoGenerate.TAG, `  -> no config found for type=${type}`)
             }

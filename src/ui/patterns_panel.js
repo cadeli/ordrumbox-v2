@@ -47,8 +47,8 @@ export default class PatternsPanel extends BasePanel {
 
         this.container.querySelector('#pp-add').addEventListener('click', () => {
             const newIdx = appState.patterns.length
-            serviceRegistry.mfCmd.addPattern()
-            serviceRegistry.mfCmd.setSelectedPatternNum(newIdx)
+            serviceRegistry.cmd.addPattern()
+            serviceRegistry.cmd.setSelectedPatternNum(newIdx)
             appState.currentPage = 0
             playbackEvents.dispatchPatternChange()
             this._selectedIdx = newIdx
@@ -135,7 +135,7 @@ export default class PatternsPanel extends BasePanel {
         const commit = () => {
             const newName = input.value.trim()
             if (newName && newName !== currentName) {
-                serviceRegistry.mfCmd.renamePattern(idx, newName)
+                serviceRegistry.cmd.renamePattern(idx, newName)
                 playbackEvents.dispatchPatternChange()
             }
             this.sync()
@@ -182,7 +182,7 @@ export default class PatternsPanel extends BasePanel {
     }
 
     _selectPattern(idx) {
-        serviceRegistry.mfCmd.setSelectedPatternNum(idx)
+        serviceRegistry.cmd.setSelectedPatternNum(idx)
         appState.currentPage = 0
         playbackEvents.dispatchPatternChange()
         this._selectedIdx = idx
@@ -197,7 +197,7 @@ export default class PatternsPanel extends BasePanel {
         const name = appState.patterns[idx]?.name ?? `Pattern ${idx}`
         if (!confirm(`Delete "${name}"?`)) return
 
-        serviceRegistry.mfCmd.removePattern(idx)
+        serviceRegistry.cmd.removePattern(idx)
         this._selectedIdx = appState.selectedPatternNum
         playbackEvents.dispatchPatternChange()
         this.sync()
@@ -245,7 +245,7 @@ export default class PatternsPanel extends BasePanel {
                 appState.patterns.push(pat)
             }
             this._songName = data.name ?? choice.trim()
-            serviceRegistry.mfCmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
+            serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
             appState.currentPage = 0
             playbackEvents.dispatchPatternChange()
             this.sync()

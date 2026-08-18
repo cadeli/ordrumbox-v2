@@ -153,7 +153,7 @@ export default class MfSound {
     loadGeneratedsounds = () => {
         if (this.generatedSoundsLoading || this.generatedSoundsLoadFailed) return
         this.generatedSoundsLoading = true
-        serviceRegistry.mfResourcesLoader?.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL).then(() => {
+        serviceRegistry.resourcesLoader?.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL).then(() => {
             this.generatedSoundsLoading = false
             if (Object.keys(this.generatedSounds).length === 0) {
                 this.generatedSoundsLoadFailed = true

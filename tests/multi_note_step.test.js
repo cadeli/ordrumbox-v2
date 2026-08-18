@@ -12,12 +12,12 @@ import { parseMidi, findAllNotes } from './helpers/midi_reader.js'
 const MIDI_RATIO = 96 / TICK
 
 describe('Multiple notes at the same step', () => {
-    let mfCmd
+    let cmd
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
     })
 
     // ── FlatNotes engine ────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ describe('Multiple notes at the same step', () => {
                 }]
             }
 
-            const imported = mfCmd.importPatternFromJson(source)
+            const imported = cmd.importPatternFromJson(source)
             const track = imported.tracks[0]
 
             expect(track.notes.length).toBe(2)
@@ -134,9 +134,9 @@ describe('Multiple notes at the same step', () => {
                 }]
             }
 
-            const imported = mfCmd.importPatternFromJson(source)
+            const imported = cmd.importPatternFromJson(source)
             const exported = PatternExporter.export(imported)
-            const reimported = mfCmd.importPatternFromJson(exported)
+            const reimported = cmd.importPatternFromJson(exported)
             const track = reimported.tracks[0]
 
             expect(track.notes.length).toBe(3)
@@ -164,9 +164,9 @@ describe('Multiple notes at the same step', () => {
                 }]
             }
 
-            const once = mfCmd.importPatternFromJson(source)
+            const once = cmd.importPatternFromJson(source)
             const exportedOnce = PatternExporter.export(once)
-            const twice = mfCmd.importPatternFromJson(exportedOnce)
+            const twice = cmd.importPatternFromJson(exportedOnce)
             const exportedTwice = PatternExporter.export(twice)
 
             expect(exportedTwice.tracks).toEqual(exportedOnce.tracks)

@@ -86,7 +86,7 @@ async function renderPattern(pattern, sounds, generatedSounds) {
 
     soundRegistry.reset()
     serviceRegistry.reset()
-    serviceRegistry.mfPatterns = patternsManager
+    serviceRegistry.patterns = patternsManager
 
     Object.assign(soundRegistry.sounds, sounds)
     Object.assign(soundRegistry.generatedSounds, generatedSounds)

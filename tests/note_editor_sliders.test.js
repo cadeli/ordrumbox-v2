@@ -43,7 +43,7 @@ describe('NoteEditor — OrSlider integration', () => {
         soundRegistry.sounds = {
             'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} }
         }
-        serviceRegistry.mfCmd = { changeTrackSound: vi.fn() }
+        serviceRegistry.cmd = { changeTrackSound: vi.fn() }
 
         document.body.innerHTML = ''
 

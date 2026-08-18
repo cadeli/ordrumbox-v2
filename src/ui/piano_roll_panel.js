@@ -388,8 +388,8 @@ export default class PianoRollPanel extends BasePanel {
 
     _onGridClick(e, gridEl) {
         const track = this._track
-        const mfCmd = serviceRegistry.mfCmd
-        if (!track || !mfCmd) return
+        const cmd = serviceRegistry.cmd
+        if (!track || !cmd) return
         const { stepsPerBeat, totalSteps, pageStartStep } = this._pageInfo()
         const rect = gridEl.getBoundingClientRect()
         const pageStep = Math.floor((e.clientX - rect.left) / this._cellWidth)
@@ -408,7 +408,7 @@ export default class PianoRollPanel extends BasePanel {
 
         if (hit) {
             if (this._selNote === hit) {
-                mfCmd.deleteNote(track, hit)
+                cmd.deleteNote(track, hit)
                 this._clearSelection()
                 playbackEvents.dispatchPatternChange([track])
             } else {
@@ -420,7 +420,7 @@ export default class PianoRollPanel extends BasePanel {
                 playbackEvents.dispatchNoteSelect({ track, trackIdx: this._trackIdx, note: hit, beat, beatStep })
             }
         } else {
-            const newNote = mfCmd.addNote(track, beat, beatStep, relativePitch)
+            const newNote = cmd.addNote(track, beat, beatStep, relativePitch)
             this._selNote = newNote
             this._cursorStep = step
             this._cursorRow = row
@@ -443,7 +443,7 @@ export default class PianoRollPanel extends BasePanel {
         if (!track || Number.isNaN(midi)) return
         const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
         const flatNote = new MfFlatNote(0, track, { ...Utils.NOTE_DEFAULTS, pitch: relativePitch })
-        serviceRegistry.audioEngine?.mfSound?.play(flatNote, serviceRegistry.audioEngine.audioCtx.currentTime)
+        serviceRegistry.audioEngine?.sound?.play(flatNote, serviceRegistry.audioEngine.audioCtx.currentTime)
     }
 
     _totalPages() {
@@ -477,7 +477,7 @@ export default class PianoRollPanel extends BasePanel {
         const track = this._track
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!track || !pattern) return
-        const mfCmd = serviceRegistry.mfCmd
+        const cmd = serviceRegistry.cmd
         const { stepsPerBeat, totalSteps, pageStartStep } = this._pageInfo()
 
         const isArrow = e.key.startsWith('Arrow')
@@ -508,14 +508,14 @@ export default class PianoRollPanel extends BasePanel {
 
             if (note) {
                 if (this._selNote === note) {
-                    mfCmd.deleteNote(track, note)
+                    cmd.deleteNote(track, note)
                     this._clearSelection()
                     playbackEvents.dispatchPatternChange([track])
                     return
                 }
                 this._selNote = note
             } else {
-                this._selNote = mfCmd.addNote(track, beat, beatStep, relativePitch)
+                this._selNote = cmd.addNote(track, beat, beatStep, relativePitch)
                 playbackEvents.dispatchPatternChange([track])
             }
             this._applySelection()
@@ -523,8 +523,8 @@ export default class PianoRollPanel extends BasePanel {
             return
         }
 
-        if (this._selNote && mfCmd) {
-            mfCmd.deleteNote(track, this._selNote)
+        if (this._selNote && cmd) {
+            cmd.deleteNote(track, this._selNote)
             this._clearSelection()
             playbackEvents.dispatchPatternChange([track])
         }

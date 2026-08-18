@@ -109,7 +109,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const seq = new MfSeq({
             serviceRegistry: {
                 audioCtx: null,
-                mfResourcesLoader: fakeLoader,
+                resourcesLoader: fakeLoader,
                 transport: null,
                 audioEngine: null,
             },
@@ -128,7 +128,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const seq = new MfSeq({
             serviceRegistry: {
                 audioCtx: fakeCtx,
-                mfResourcesLoader: fakeLoader,
+                resourcesLoader: fakeLoader,
                 transport: makeFakeTransport(),
                 audioEngine: null,
             },
@@ -147,7 +147,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const seq = new MfSeq({
             serviceRegistry: {
                 audioCtx: fakeCtx,
-                mfResourcesLoader: fakeLoader,
+                resourcesLoader: fakeLoader,
                 transport: makeFakeTransport(),
                 audioEngine: null,
             },
@@ -169,7 +169,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const seq = new MfSeq({
             serviceRegistry: {
                 audioCtx: null,
-                mfResourcesLoader: errorLoader,
+                resourcesLoader: errorLoader,
                 transport: null,
                 audioEngine: null,
             },
@@ -197,10 +197,10 @@ describe('toggleStartStop — start guard', () => {
         const seq = new MfSeq({
             serviceRegistry: {
                 audioCtx: fakeCtx,
-                mfResourcesLoader: fakeLoader,
+                resourcesLoader: fakeLoader,
                 transport: fakeTransport,
                 audioEngine: null,
-                mfCmd: { setSelectedPatternNum: vi.fn() },
+                cmd: { setSelectedPatternNum: vi.fn() },
             },
         })
 

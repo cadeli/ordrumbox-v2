@@ -21,7 +21,7 @@ export default class MfPlayer {
         this.getFlatNotes = config.getFlatNotes
         this.TICK = config.TICK
         this.secondsPerBeat = config.secondsPerBeat
-        this.mfSound = new MfSound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds)
+        this.sound = new MfSound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds)
         this.loop = 0
         this.lastDisplayBeats = 0
 
@@ -62,7 +62,7 @@ export default class MfPlayer {
             if (!notesToPlay) return
 
             const secondsPerBeat = this.secondsPerBeat
-            const mfSound = this.mfSound
+            const sound = this.sound
 
             // Cache trackIdxMap (only rebuild when tracks object changes)
             if (this._trackIdxMapRef !== selPat.tracks) {
@@ -79,7 +79,7 @@ export default class MfPlayer {
                 const flatNote = notesToPlay[i]
                 if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
                     MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
-                    promises.push(mfSound.play(flatNote, atTime + flatNote.swingTime))
+                    promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
                     playbackEvents.dispatchNoteTrigger({
                         trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
                         beat: flatNote.note.beat,
@@ -100,8 +100,8 @@ export default class MfPlayer {
         const trackKeys = Object.keys(tracks)
 
         if (selPat.autoGen) {
-            const mfAutoGenerate = await getAutoGenerateService()
-            const element = mfAutoGenerate.structureGen.getElement(this.loop)
+            const autoGen = await getAutoGenerateService()
+            const element = autoGen.structureGen.getElement(this.loop)
             const isSectionStart = element.loopInElement === 0
             const isSectionEnd = element.isLastLoopBeforeChange
 
@@ -118,7 +118,7 @@ export default class MfPlayer {
                     const type = Utils.detectTrackType(track.name)
                     if (type !== 'BASS' && type !== 'PIANO' && type !== 'ORGAN') continue
                 }
-                promises.push(mfAutoGenerate.changeTrack(this.loop, selPat, track))
+                promises.push(autoGen.changeTrack(this.loop, selPat, track))
             }
             await Promise.all(promises)
         } else {
@@ -128,8 +128,8 @@ export default class MfPlayer {
                 if (track.auto === true) {
                     promises.push(
                         (async () => {
-                            const mfAutoGenerate = await this.getAutoGenerate()
-                            return mfAutoGenerate.changeTrack(this.loop, selPat, track)
+                            const autoGen = await this.getAutoGenerate()
+                            return autoGen.changeTrack(this.loop, selPat, track)
                         })()
                     )
                 }
@@ -173,12 +173,12 @@ export default class MfPlayer {
 
         // Worklet mixer is always initialised by the engine before play;
         // legacy `mixer.compressor` check removed.
-        await this.mfSound.playSample(flatNote, this.audioCtx.currentTime)
+        await this.sound.playSample(flatNote, this.audioCtx.currentTime)
         logger.info('MfPlayer', "Play :" + track.name + "=" + this.sounds[track.soundId].url)
     }
 
     updateGeneratedSounds = (generatedSounds) => {
         this.generatedSounds = generatedSounds
-        this.mfSound.generatedSounds = generatedSounds
+        this.sound.generatedSounds = generatedSounds
     }
 }

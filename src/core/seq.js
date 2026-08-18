@@ -45,7 +45,7 @@ export default class MfSeq {
             patterns: this.appState.patterns,
             selectedPatternNum: this.appState.selectedPatternNum,
             getSelectedPatternNum: () => this.appState.selectedPatternNum,
-            computeNextStep: (note, track) => this.serviceRegistry.mfPatterns.computeNextPatternStepNote(note, track),
+            computeNextStep: (note, track) => this.serviceRegistry.patterns.computeNextPatternStepNote(note, track),
             getAutoGenerate: getAutoGenerateService,
             uiState: {}, // UI state removed
             TICK,
@@ -92,7 +92,7 @@ export default class MfSeq {
 
     _startInner = async () => {
         try {
-            await this.serviceRegistry.mfResourcesLoader.ensureResourcesLoaded()
+            await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
             this.playbackEvents.dispatchDrumkitChange()
         } catch (error) {
             logger.error('MfSeq', "MfSeq::start: Failed to load resources", error)
@@ -108,9 +108,9 @@ export default class MfSeq {
         // Ensure transport has the current audioCtx (created in toggleStartStop)
         this.ensureTransport()
         this.serviceRegistry.transport.setBpm(selPattern.bpm)
-        const mfAutoAssign = await getAutoAssignService()
-        await mfAutoAssign.autoAssignSounds(selPattern)
-        this.serviceRegistry.mfPatterns.computeFlatNotesFromPattern(selPattern, 0)
+        const autoAssign = await getAutoAssignService()
+        await autoAssign.autoAssignSounds(selPattern)
+        this.serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0)
 
         this.ensureAudioEngine()
         await this.serviceRegistry.audioEngine.start(selPattern)
@@ -138,7 +138,7 @@ export default class MfSeq {
         // gesture handler so that resume() is allowed by the browser.
         if (!this.serviceRegistry.audioCtx) {
             try {
-                this.serviceRegistry.audioCtx = this.serviceRegistry.mfResourcesLoader.audioCtx
+                this.serviceRegistry.audioCtx = this.serviceRegistry.resourcesLoader.audioCtx
             } catch (err) {
                 logger.error('MfSeq', "MfSeq::toggleStartStop: Failed to create AudioContext", err)
                 return
@@ -170,7 +170,7 @@ export default class MfSeq {
 
     simpleBeep = async (indexTrack) => {
         if (!this.serviceRegistry.audioCtx) {
-            this.serviceRegistry.audioCtx = this.serviceRegistry.mfResourcesLoader.audioCtx
+            this.serviceRegistry.audioCtx = this.serviceRegistry.resourcesLoader.audioCtx
         }
         if (!this.serviceRegistry.audioCtx) return
         if (this.serviceRegistry.audioCtx.state === 'suspended') {
@@ -182,13 +182,13 @@ export default class MfSeq {
         if (!track) return
         if (track.soundId === "NOT_DEFINED" || !track.soundId) {
             try {
-                await this.serviceRegistry.mfResourcesLoader.ensureResourcesLoaded()
+                await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
             } catch (e) {
                 logger.error('MfSeq', "simpleBeep: resources not loaded", e)
                 return
             }
-            const mfAutoAssign = await getAutoAssignService()
-            mfAutoAssign.autoAssignTrackSounds(track)
+            const autoAssign = await getAutoAssignService()
+            autoAssign.autoAssignTrackSounds(track)
         }
         if (this.serviceRegistry.audioEngine?.mixer) {
             await this.serviceRegistry.audioEngine.simpleBeep(indexTrack)

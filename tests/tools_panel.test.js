@@ -65,7 +65,7 @@ describe('ToolsPanel._randomizePattern logic', () => {
 
     it('randomize adds notes to tracks', () => {
         const addedNotes = []
-        serviceRegistry.mfCmd = {
+        serviceRegistry.cmd = {
             addNote: vi.fn((track, beat, beatStep, pitch) => {
                 const note = { beat, beatStep, pitch, velocity: 0.8 }
                 addedNotes.push(note)
@@ -97,7 +97,7 @@ describe('ToolsPanel._randomizePattern logic', () => {
                 const beat = Math.floor(step / stepsPerBeat)
                 const beatStep = step % stepsPerBeat
                 const pitch = i % 12
-                const note = serviceRegistry.mfCmd.addNote(t, beat, beatStep, pitch)
+                const note = serviceRegistry.cmd.addNote(t, beat, beatStep, pitch)
                 if (note) note.velocity = 0.8
             }
         }

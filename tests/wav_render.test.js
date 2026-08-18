@@ -284,7 +284,7 @@ describe('real render — orDrumbox pattern', () => {
 
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = patternsManager
+        serviceRegistry.patterns = patternsManager
 
         // Create a real AudioBuffer via node-web-audio-api
         const bufLength = SAMPLE_RATE / 2

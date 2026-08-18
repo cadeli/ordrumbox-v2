@@ -69,7 +69,7 @@ const SIMPLE_JSON = {
     ],
 }
 
-function importMidiToPattern(midiBytes, mfCmd) {
+function importMidiToPattern(midiBytes, cmd) {
     const midiData = parseMidi(new Uint8Array(midiBytes))
     const notes = findAllNotes(midiData)
     const PPQN = midiData.header.division ?? 96
@@ -147,12 +147,12 @@ function importMidiToPattern(midiBytes, mfCmd) {
         }
     }
 
-    const pattern = mfCmd.addPattern('roundtrip-midi')
+    const pattern = cmd.addPattern('roundtrip-midi')
     pattern.nbBeats = 32
     pattern.bpm = bpm
 
     for (const def of trackDefs) {
-        const track = mfCmd.addTrack(pattern, def.trackName)
+        const track = cmd.addTrack(pattern, def.trackName)
         const ticksPerStep = TICK / (track.stepsPerBeat ?? 4)
 
         for (const note of def.groupNotes) {
@@ -161,7 +161,7 @@ function importMidiToPattern(midiBytes, mfCmd) {
             const beatStep = Math.round((engineTicks % TICK) / ticksPerStep)
             const pitch = note.note - def.baseNote
 
-            mfCmd.addNote(track, beat, beatStep, pitch)
+            cmd.addNote(track, beat, beatStep, pitch)
         }
     }
 
@@ -197,22 +197,22 @@ function notesEqual(a, b) {
 }
 
 describe('MIDI JSON Roundtrip', () => {
-    let mfCmd, originalPattern
+    let cmd, originalPattern
 
     beforeEach(() => {
         appState.patterns = []
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = patternsManager
+        serviceRegistry.patterns = patternsManager
         soundRegistry.reset()
 
-        mfCmd = new MfCmd()
-        serviceRegistry.mfCmd = mfCmd
+        cmd = new MfCmd()
+        serviceRegistry.cmd = cmd
 
         originalPattern = importPatternFromJson(
             SIMPLE_JSON,
-            (name) => mfCmd.addPattern(name),
-            (pat, name) => mfCmd.addTrack(pat, name),
-            (track, beat, beatStep, pitch) => mfCmd.addNote(track, beat, beatStep, pitch)
+            (name) => cmd.addPattern(name),
+            (pat, name) => cmd.addTrack(pat, name),
+            (track, beat, beatStep, pitch) => cmd.addNote(track, beat, beatStep, pitch)
         )
     })
 
@@ -226,7 +226,7 @@ describe('MIDI JSON Roundtrip', () => {
         const exporter = new MidiExporter(im)
         const midiBytes = exporter.export(originalPattern, { loops: 1 })
 
-        const reimported = importMidiToPattern(midiBytes, mfCmd)
+        const reimported = importMidiToPattern(midiBytes, cmd)
 
         const origPositions = getNotePositions(originalPattern)
         const reimportedPositions = getNotePositions(reimported)
@@ -243,7 +243,7 @@ describe('MIDI JSON Roundtrip', () => {
         const exporter = new MidiExporter(im)
         const midiBytes = exporter.export(originalPattern, { loops: 1 })
 
-        const reimported = importMidiToPattern(midiBytes, mfCmd)
+        const reimported = importMidiToPattern(midiBytes, cmd)
 
         const origPositions = getNotePositions(originalPattern)
         const reimportedPositions = getNotePositions(reimported)
@@ -263,7 +263,7 @@ describe('MIDI JSON Roundtrip', () => {
         const exporter = new MidiExporter(im)
         const midiBytes = exporter.export(originalPattern, { loops: 1 })
 
-        const reimported = importMidiToPattern(midiBytes, mfCmd)
+        const reimported = importMidiToPattern(midiBytes, cmd)
 
         const origPositions = getNotePositions(originalPattern)
         const reimportedPositions = getNotePositions(reimported)
@@ -283,7 +283,7 @@ describe('MIDI JSON Roundtrip', () => {
         const exporter = new MidiExporter(im)
         const midiBytes = exporter.export(originalPattern, { loops: 1 })
 
-        const reimported = importMidiToPattern(midiBytes, mfCmd)
+        const reimported = importMidiToPattern(midiBytes, cmd)
 
         const origPositions = getNotePositions(originalPattern)
         const reimportedPositions = getNotePositions(reimported)

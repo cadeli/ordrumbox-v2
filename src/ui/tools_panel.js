@@ -367,7 +367,7 @@ export default class ToolsPanel extends BasePanel {
                 const beat = Math.floor(step / stepsPerBeat)
                 const beatStep = step % stepsPerBeat
                 const pitch = Math.floor(Math.random() * 13) - 6
-                const note = serviceRegistry.mfCmd?.addNote(track, beat, beatStep, pitch)
+                const note = serviceRegistry.cmd?.addNote(track, beat, beatStep, pitch)
                 if (note) note.velocity = 0.5 + Math.random() * 0.5
             }
         }
@@ -399,14 +399,14 @@ export default class ToolsPanel extends BasePanel {
         this.exportWavBtn.textContent = 'Exporting...'
         
         try {
-            if (!serviceRegistry.mfWavExporter) {
+            if (!serviceRegistry.wavExporter) {
                 const { default: MfWavExporter } = await import('../audio/export/wav_exporter.js')
-                serviceRegistry.mfWavExporter = new MfWavExporter()
+                serviceRegistry.wavExporter = new MfWavExporter()
             }
             
             const loops = Math.round(this._wavLoops.getValue())
-            const blob = await serviceRegistry.mfWavExporter.exportPatternToWav(pattern, loops)
-            serviceRegistry.mfWavExporter.downloadWav(blob, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`)
+            const blob = await serviceRegistry.wavExporter.exportPatternToWav(pattern, loops)
+            serviceRegistry.wavExporter.downloadWav(blob, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`)
         } catch (e) {
             logger.error('ToolsPanel', 'WAV Export failed', e)
             showToast('WAV Export failed', 'error')
@@ -454,10 +454,10 @@ export default class ToolsPanel extends BasePanel {
                     }
                 }
 
-                const newPattern = serviceRegistry.mfCmd.importPatternFromJson(data)
+                const newPattern = serviceRegistry.cmd.importPatternFromJson(data)
                 const newIdx = appState.patterns.indexOf(newPattern)
                 if (newIdx !== -1) {
-                    await serviceRegistry.mfCmd.setSelectedPatternNum(newIdx)
+                    await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
                     playbackEvents.dispatchPatternChange()
                     this.hide()
                 }
@@ -670,7 +670,7 @@ export default class ToolsPanel extends BasePanel {
             }
 
             const baseName = file.name.replace(/\.midi?$/i, '')
-            const mfCmd = serviceRegistry.mfCmd
+            const cmd = serviceRegistry.cmd
             const bpm = midiData.header.tempo ? Math.round(60000000 / midiData.header.tempo) : 120
             const PPQN = midiData.header.division ?? 96
             const TICK_RATIO = PPQN / TICK
@@ -698,7 +698,7 @@ export default class ToolsPanel extends BasePanel {
                 const patEndBeat = patStartBeat + patBeats
 
                 const suffix = numPatterns > 1 ? ` ${p + 1}/${numPatterns}` : ''
-                const pattern = mfCmd.addPattern(`${baseName}${suffix}`)
+                const pattern = cmd.addPattern(`${baseName}${suffix}`)
                 pattern.nbBeats = patBeats
                 pattern.bpm = bpm
 
@@ -706,7 +706,7 @@ export default class ToolsPanel extends BasePanel {
                 const patEndTick = patEndBeat * TICK
 
                 for (const def of trackDefs) {
-                    const track = mfCmd.addTrack(pattern, def.trackName)
+                    const track = cmd.addTrack(pattern, def.trackName)
                     const ticksPerStep = TICK / (track.stepsPerBeat ?? 4)
 
                     let noteCount = 0
@@ -718,7 +718,7 @@ export default class ToolsPanel extends BasePanel {
                         const beatStep = Math.round((engineTicks % TICK) / ticksPerStep)
                         const pitch = note.note - def.baseNote
 
-                        mfCmd.addNote(track, beat, beatStep, pitch)
+                        cmd.addNote(track, beat, beatStep, pitch)
                         const addedNote = track.notes.at(-1)
                         if (addedNote) {
                             addedNote.velocity = midiVelocityToNormalized(note.velocity)
@@ -730,7 +730,7 @@ export default class ToolsPanel extends BasePanel {
             }
 
             const newIdx = appState.patterns.length - 1
-            await mfCmd.setSelectedPatternNum(newIdx)
+            await cmd.setSelectedPatternNum(newIdx)
 
             serviceRegistry.audioEngine?.invalidateCache()
             const msg = numPatterns > 1

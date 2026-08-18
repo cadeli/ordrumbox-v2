@@ -17,9 +17,9 @@ describe('Toolbar overflow (mobile single-line)', () => {
         document.body.innerHTML = ''
 
         serviceRegistry.transport = { isRunning: false }
-        serviceRegistry.mfSeq = { toggleStartStop: vi.fn() }
-        serviceRegistry.mfCmd = { setSelectedPatternNum: vi.fn(), setSelectedDrumkitNum: vi.fn(), cleanPattern: vi.fn() }
-        serviceRegistry.mfPatterns = { computeFlatNotesFromPattern: vi.fn() }
+        serviceRegistry.seq = { toggleStartStop: vi.fn() }
+        serviceRegistry.cmd = { setSelectedPatternNum: vi.fn(), setSelectedDrumkitNum: vi.fn(), cleanPattern: vi.fn() }
+        serviceRegistry.patterns = { computeFlatNotesFromPattern: vi.fn() }
 
         appState.patterns = [{ name: 'P1', bpm: 120, nbBeats: 1, stepsPerBeat: 16, tracks: [{ stepsPerBeat: 16 }] }]
         soundRegistry.drumkitList = [{ name: 'real', instruments: [] }]

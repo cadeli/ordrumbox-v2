@@ -10,14 +10,14 @@ import MfPercGenerate from '../src/logic/generators/perc_generate.js'
 import { appState } from '../src/state/app_state.js'
 
 describe('Generators', () => {
-    let mfCmd
+    let cmd
     let seed
     let originalRandom
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
         seed = 42
         originalRandom = Math.random
         Math.random = () => {
@@ -31,9 +31,9 @@ describe('Generators', () => {
     })
 
     function createTestTrack(name, beats = 4, stepsPerBeat = 4) {
-        const pattern = mfCmd.addPattern('TestPattern')
+        const pattern = cmd.addPattern('TestPattern')
         pattern.nbBeats = beats
-        return mfCmd.addTrack(pattern, name, stepsPerBeat)
+        return cmd.addTrack(pattern, name, stepsPerBeat)
     }
 
     // ── Kick Generator ─────────────────────────────────────────────
@@ -383,64 +383,64 @@ describe('Generators', () => {
 
     describe('_autoGenGenre consistency', () => {
         it('generatePattern stores the genre used on the pattern', async () => {
-            const mfAutoGenerate = new MfAutoGenerate()
+            const autoGen = new MfAutoGenerate()
             const pattern = appState.patterns[appState.selectedPatternNum]
-            await mfAutoGenerate.generatePattern()
+            await autoGen.generatePattern()
             expect(typeof pattern._autoGenGenre).toBe('string')
             expect(pattern._autoGenGenre.length).toBeGreaterThan(0)
         })
 
         it('changeTrack uses the same genre as generatePattern', async () => {
-            const mfAutoGenerate = new MfAutoGenerate()
+            const autoGen = new MfAutoGenerate()
             const pattern = appState.patterns[appState.selectedPatternNum]
-            await mfAutoGenerate.generatePattern()
+            await autoGen.generatePattern()
 
             const genreFromPattern = pattern._autoGenGenre
             const tracks = Object.values(pattern.tracks)
 
             for (const track of tracks) {
-                await mfAutoGenerate.changeTrack(0, pattern, track)
+                await autoGen.changeTrack(0, pattern, track)
             }
 
             expect(pattern._autoGenGenre).toBe(genreFromPattern)
         })
 
         it('changeTrack does not pick a new random genre when _autoGenGenre is set', async () => {
-            const mfAutoGenerate = new MfAutoGenerate()
+            const autoGen = new MfAutoGenerate()
             const pattern = appState.patterns[appState.selectedPatternNum]
-            await mfAutoGenerate.generatePattern()
+            await autoGen.generatePattern()
 
             const fixedGenre = pattern._autoGenGenre
             const track = Object.values(pattern.tracks)[0]
 
-            await mfAutoGenerate.changeTrack(0, pattern, track)
-            await mfAutoGenerate.changeTrack(1, pattern, track)
-            await mfAutoGenerate.changeTrack(4, pattern, track)
+            await autoGen.changeTrack(0, pattern, track)
+            await autoGen.changeTrack(1, pattern, track)
+            await autoGen.changeTrack(4, pattern, track)
 
             expect(pattern._autoGenGenre).toBe(fixedGenre)
         })
 
         it('genre is derived from pattern tags when available', async () => {
-            const mfAutoGenerate = new MfAutoGenerate()
+            const autoGen = new MfAutoGenerate()
             const pattern = appState.patterns[appState.selectedPatternNum]
             pattern.tags = { style: 'rock', type: 'default' }
-            await mfAutoGenerate.generatePattern()
+            await autoGen.generatePattern()
             expect(pattern._autoGenGenre).toBe('rock')
         })
 
         it('genre falls back to random when tags have no matching style', async () => {
-            const mfAutoGenerate = new MfAutoGenerate()
+            const autoGen = new MfAutoGenerate()
             const pattern = appState.patterns[appState.selectedPatternNum]
             pattern.tags = { style: 'unknown_style', type: 'default' }
-            await mfAutoGenerate.generatePattern()
+            await autoGen.generatePattern()
             expect(['techno', 'house', 'drumandbass', 'hiphop', 'rock']).toContain(pattern._autoGenGenre)
         })
 
         it('genre falls back to random when pattern has no tags', async () => {
-            const mfAutoGenerate = new MfAutoGenerate()
+            const autoGen = new MfAutoGenerate()
             const pattern = appState.patterns[appState.selectedPatternNum]
             pattern.tags = null
-            await mfAutoGenerate.generatePattern()
+            await autoGen.generatePattern()
             expect(typeof pattern._autoGenGenre).toBe('string')
         })
     })

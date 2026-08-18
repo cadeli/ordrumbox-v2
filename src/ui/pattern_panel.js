@@ -290,7 +290,7 @@ export default class PatternPanel extends BasePanel {
                         if (notesAtStep.length > 0) {
                             const note = notesAtStep[0]
                             if (this._selNote === note && this._selTrackIdx === this._cursorTrackIdx) {
-                                this._serviceRegistry.mfCmd.deleteNote(track, note)
+                                this._serviceRegistry.cmd.deleteNote(track, note)
                                 this._clearSelection()
                             } else {
                                 this._selNote = note
@@ -300,7 +300,7 @@ export default class PatternPanel extends BasePanel {
                                 this._playbackEvents.emit('noteSelect', { track, trackIdx: this._cursorTrackIdx, note, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
                             }
                         } else {
-                            const newNote = this._serviceRegistry.mfCmd.addNote(track, this._cursorBeat, this._cursorBeatStep)
+                            const newNote = this._serviceRegistry.cmd.addNote(track, this._cursorBeat, this._cursorBeatStep)
                             this._selNote = newNote
                             this._selTrackIdx = this._cursorTrackIdx
                             this._applySelection()
@@ -416,7 +416,7 @@ export default class PatternPanel extends BasePanel {
             const pattern = this._appState.patterns[this._appState.selectedPatternNum]
             if (!pattern) return
             const trackNum = (Utils.getTracksArray(pattern).length) + 1
-            this._serviceRegistry.mfCmd?.addTrack(pattern, `T${trackNum}`)
+            this._serviceRegistry.cmd?.addTrack(pattern, `T${trackNum}`)
             this.sync()
             return
         }
@@ -446,7 +446,7 @@ export default class PatternPanel extends BasePanel {
             const note = notesAtStep[Math.min(noteIdx, notesAtStep.length - 1)]
 
             if (this._selNote === note && this._selTrackIdx === trackIdx) {
-                this._serviceRegistry.mfCmd.deleteNote(track, note)
+                this._serviceRegistry.cmd.deleteNote(track, note)
                 this._clearSelection()
 
                 requestAnimationFrame(() => this.sync())
@@ -461,7 +461,7 @@ export default class PatternPanel extends BasePanel {
             return
         }
 
-        const newNote = this._serviceRegistry.mfCmd.addNote(track, beat, beatStep)
+        const newNote = this._serviceRegistry.cmd.addNote(track, beat, beatStep)
         this._selNote = newNote
         this._selTrackIdx = trackIdx
         this._applySelection()
@@ -486,37 +486,37 @@ export default class PatternPanel extends BasePanel {
         const idx = this._appState.selectedPatternNum
         const pattern = this._appState.patterns[idx]
         if (!pattern && action !== 'replace') return
-        const mfCmd = this._serviceRegistry.mfCmd
-        const mfPatterns = this._serviceRegistry.mfPatterns
+        const cmd = this._serviceRegistry.cmd
+        const patterns = this._serviceRegistry.patterns
 
         switch (action) {
             case 'delete': {
                 if (this._appState.patterns.length <= 1) return
                 if (!confirm('Delete pattern "' + (pattern.name ?? '') + '"?')) return
-                mfCmd.removePattern(idx)
+                cmd.removePattern(idx)
                 this._playbackEvents.emit('patternChange')
                 break
             }
             case 'clean': {
                 if (!confirm('Clear all notes in "' + (pattern.name ?? '') + '"?')) return
-                mfCmd.cleanPattern(pattern)
-                mfPatterns?.computeFlatNotesFromPattern(pattern)
+                cmd.cleanPattern(pattern)
+                patterns?.computeFlatNotesFromPattern(pattern)
                 this._playbackEvents.emit('patternChange')
                 break
             }
             case 'duplicate': {
-                const clone = mfCmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
+                const clone = cmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
                 Object.assign(clone, structuredClone(pattern))
                 clone.name = (pattern.name ?? 'Pattern') + ' copy'
                 const newIdx = this._appState.patterns.length - 1
-                await mfCmd.setSelectedPatternNum(newIdx)
+                await cmd.setSelectedPatternNum(newIdx)
                 this._playbackEvents.emit('patternChange')
                 break
             }
             case 'rename': {
                 const newName = prompt('Rename pattern:', pattern.name ?? '')
                 if (newName === null || newName.trim() === '') return
-                mfCmd.renamePattern(idx, newName.trim())
+                cmd.renamePattern(idx, newName.trim())
                 this._playbackEvents.emit('patternChange')
                 break
             }
@@ -535,7 +535,7 @@ export default class PatternPanel extends BasePanel {
                     if (!file) return
                     const text = await file.text()
                     const data = JSON.parse(text)
-                    mfCmd.importPatternFromJson(data)
+                    cmd.importPatternFromJson(data)
                     this._playbackEvents.emit('patternChange')
                 }
                 input.click()

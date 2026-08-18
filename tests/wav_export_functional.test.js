@@ -224,7 +224,7 @@ describe('WAV Export — functional end-to-end', () => {
         _trackedSources = []
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = patternsManager
+        serviceRegistry.patterns = patternsManager
         soundRegistry.sounds = {
             'kick.wav': {
                 url: 'kick.wav',

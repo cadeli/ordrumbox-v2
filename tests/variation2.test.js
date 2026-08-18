@@ -6,12 +6,12 @@ import TrackVariation from '../src/patterns/variation.js'
 import MfFlatNote from '../src/model/flatnote.js'
 
 describe('Track variation2', () => {
-    let mfCmd
+    let cmd
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
     })
 
     it('has default value of 0', () => {
@@ -23,18 +23,18 @@ describe('Track variation2', () => {
     })
 
     it('is accepted by updateTrack', () => {
-        const pattern = mfCmd.addPattern('Test')
-        const track = mfCmd.addTrack(pattern, 'KICK')
-        mfCmd.updateTrack(track, { variation2: 50 })
+        const pattern = cmd.addPattern('Test')
+        const track = cmd.addTrack(pattern, 'KICK')
+        cmd.updateTrack(track, { variation2: 50 })
         expect(track.variation2).toBe(50)
     })
 
     it('is clamped by updateTrack when out of range', () => {
-        const pattern = mfCmd.addPattern('Test')
-        const track = mfCmd.addTrack(pattern, 'KICK')
-        mfCmd.updateTrack(track, { variation2: 150 })
+        const pattern = cmd.addPattern('Test')
+        const track = cmd.addTrack(pattern, 'KICK')
+        cmd.updateTrack(track, { variation2: 150 })
         expect(track.variation2).toBe(100)
-        mfCmd.updateTrack(track, { variation2: -10 })
+        cmd.updateTrack(track, { variation2: -10 })
         expect(track.variation2).toBe(0)
     })
 
@@ -143,18 +143,18 @@ describe('Track variation2', () => {
 })
 
 describe('TrackVariation.apply (position-based)', () => {
-    let mfCmd
+    let cmd
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
     })
 
     function makeTrack(name = 'KICK', nbBeats = 4, stepsPerBeat = 4) {
-        const pattern = mfCmd.addPattern('Test')
+        const pattern = cmd.addPattern('Test')
         pattern.nbBeats = nbBeats
-        return mfCmd.addTrack(pattern, name, stepsPerBeat)
+        return cmd.addTrack(pattern, name, stepsPerBeat)
     }
 
     function makeFlatNote(tick, track, beat, beatStep, velocity = 0.8, pitch = 0) {

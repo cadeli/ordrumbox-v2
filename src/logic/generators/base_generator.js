@@ -6,7 +6,7 @@ export default class BaseGenerator {
     constructor(instrumentName, configs, addNoteFn) {
         this.instrumentName = instrumentName
         this.configs = configs
-        this.addNoteFn = addNoteFn ?? ((track, beat, beatStep, pitch) => serviceRegistry.mfCmd.addNote(track, beat, beatStep, pitch))
+        this.addNoteFn = addNoteFn ?? ((track, beat, beatStep, pitch) => serviceRegistry.cmd.addNote(track, beat, beatStep, pitch))
     }
 
     addNote = (track, beat, beatStep, pitch = 0, velocity = 0.8, isGhost = false) => {

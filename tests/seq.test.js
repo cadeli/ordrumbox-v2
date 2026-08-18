@@ -46,22 +46,22 @@ describe('MfSeq', () => {
             destination: {},
             createGain: vi.fn().mockReturnValue({ gain: { value: 1 }, connect: vi.fn(), disconnect: vi.fn() }),
         }
-        serviceRegistry.mfResourcesLoader = {
+        serviceRegistry.resourcesLoader = {
             audioCtx: serviceRegistry.audioCtx,
             ensureResourcesLoaded: vi.fn().mockResolvedValue(undefined),
         }
-        serviceRegistry.mfCmd = {
+        serviceRegistry.cmd = {
             addNote: vi.fn().mockReturnValue({ velocity: 0.8 }),
         }
-        serviceRegistry.mfPatterns = {
+        serviceRegistry.patterns = {
             computeFlatNotesFromPattern: vi.fn(),
             computeNextPatternStepNote: vi.fn().mockReturnValue([]),
         }
-        serviceRegistry.mfAutoAssign = {
+        serviceRegistry.autoAssign = {
             autoAssignSounds: vi.fn().mockResolvedValue(undefined),
             autoAssignTrackSounds: vi.fn(),
         }
-        serviceRegistry.mfAutoGenerate = null
+        serviceRegistry.autoGenerate = null
         appState.patterns = [{
             bpm: 120,
             nbBeats: 4,
@@ -171,7 +171,7 @@ describe('MfSeq', () => {
     })
 
     it('toggleStartStop does nothing if audioCtx creation fails', () => {
-        serviceRegistry.mfResourcesLoader = { audioCtx: null, ensureResourcesLoaded: vi.fn() }
+        serviceRegistry.resourcesLoader = { audioCtx: null, ensureResourcesLoaded: vi.fn() }
         serviceRegistry.audioCtx = null
         serviceRegistry.transport = null
         const seq = new MfSeq()

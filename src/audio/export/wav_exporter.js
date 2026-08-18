@@ -27,7 +27,7 @@ export default class MfWavExporter {
             patterns: [pattern],
             selectedPatternNum: 0,
             getSelectedPatternNum: () => 0,
-            computeNextStep: (note, track) => serviceRegistry.mfPatterns.computeNextPatternStepNote(note, track),
+            computeNextStep: (note, track) => serviceRegistry.patterns.computeNextPatternStepNote(note, track),
             getAutoGenerate: getAutoGenerateService,
             uiState: {},
             TICK,

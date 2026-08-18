@@ -2,15 +2,15 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { MfGlobals } from '../src/core/globals.js'
 import MfCmd from '../src/logic/commands/cmd.js'
 
-function ensureTrack(mfCmd, pattern, trackName, stepsPerBeat) {
+function ensureTrack(cmd, pattern, trackName, stepsPerBeat) {
     let track = pattern.tracks.find(t => t.name === trackName)
     if (!track) {
-        track = mfCmd.addTrack(pattern, trackName, stepsPerBeat)
+        track = cmd.addTrack(pattern, trackName, stepsPerBeat)
     }
     return track
 }
 
-function ensurePatternHasEnoughBeats(mfCmd, pattern, requiredBeat) {
+function ensurePatternHasEnoughBeats(cmd, pattern, requiredBeat) {
     if (requiredBeat >= pattern.nbBeats) {
         const newNbBeats = Math.ceil((requiredBeat + 1) / 4) * 4
         pattern.nbBeats = newNbBeats
@@ -18,16 +18,16 @@ function ensurePatternHasEnoughBeats(mfCmd, pattern, requiredBeat) {
 }
 
 describe('Functional: MCP tools flow', () => {
-    let mfCmd
+    let cmd
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
     })
 
     it('createNewPattern creates pattern with expected structure', () => {
-        const pattern = mfCmd.addPattern('MyBeat')
+        const pattern = cmd.addPattern('MyBeat')
 
         expect(pattern.name).toBe('MyBeat')
         expect(pattern.bpm).toBe(120)
@@ -37,9 +37,9 @@ describe('Functional: MCP tools flow', () => {
     })
 
     it('addNotesToPattern converts step to beat/beatStep correctly', () => {
-        const pattern = mfCmd.addPattern('MyBeat')
-        const kick = mfCmd.addTrack(pattern, 'KICK', 4)
-        const snare = mfCmd.addTrack(pattern, 'SNARE', 4)
+        const pattern = cmd.addPattern('MyBeat')
+        const kick = cmd.addTrack(pattern, 'KICK', 4)
+        const snare = cmd.addTrack(pattern, 'SNARE', 4)
 
         const notes = [
             { trackName: 'KICK', step: 0 },
@@ -48,53 +48,53 @@ describe('Functional: MCP tools flow', () => {
         ]
 
         for (const noteData of notes) {
-            const track = ensureTrack(mfCmd, pattern, noteData.trackName, 4)
+            const track = ensureTrack(cmd, pattern, noteData.trackName, 4)
             const beat = Math.floor(noteData.step / 4)
             const beatStep = noteData.step % 4
-            ensurePatternHasEnoughBeats(mfCmd, pattern, beat)
-            mfCmd.addNote(track, beat, beatStep)
+            ensurePatternHasEnoughBeats(cmd, pattern, beat)
+            cmd.addNote(track, beat, beatStep)
         }
 
-        expect(mfCmd.isNoteAt(kick, 0, 0).length).toBe(1)
-        expect(mfCmd.isNoteAt(kick, 1, 0).length).toBe(1)
-        expect(mfCmd.isNoteAt(snare, 1, 2).length).toBe(1)
+        expect(cmd.isNoteAt(kick, 0, 0).length).toBe(1)
+        expect(cmd.isNoteAt(kick, 1, 0).length).toBe(1)
+        expect(cmd.isNoteAt(snare, 1, 2).length).toBe(1)
     })
 
     it('ensureTrack creates track only if not exists', () => {
-        const pattern = mfCmd.addPattern('Test')
+        const pattern = cmd.addPattern('Test')
 
-        const track1 = ensureTrack(mfCmd, pattern, 'KICK', 4)
-        const track2 = ensureTrack(mfCmd, pattern, 'KICK', 4)
+        const track1 = ensureTrack(cmd, pattern, 'KICK', 4)
+        const track2 = ensureTrack(cmd, pattern, 'KICK', 4)
 
         expect(track1).toBe(track2)
         expect(pattern.tracks.length).toBe(1)
     })
 
     it('ensurePatternHasEnoughBeats expands pattern when needed', () => {
-        const pattern = mfCmd.addPattern('Test')
+        const pattern = cmd.addPattern('Test')
         expect(pattern.nbBeats).toBe(4)
 
-        ensurePatternHasEnoughBeats(mfCmd, pattern, 5)
+        ensurePatternHasEnoughBeats(cmd, pattern, 5)
 
         expect(pattern.nbBeats).toBeGreaterThanOrEqual(6)
     })
 
     it('full MCP workflow: create → add notes → update → verify', () => {
-        const pattern = mfCmd.addPattern('Workflow')
-        const kick = ensureTrack(mfCmd, pattern, 'KICK', 4)
-        const snare = ensureTrack(mfCmd, pattern, 'SNARE', 4)
+        const pattern = cmd.addPattern('Workflow')
+        const kick = ensureTrack(cmd, pattern, 'KICK', 4)
+        const snare = ensureTrack(cmd, pattern, 'SNARE', 4)
 
-        mfCmd.addNote(kick, 0, 0)
-        mfCmd.addNote(kick, 0, 2)
-        mfCmd.addNote(snare, 0, 1)
+        cmd.addNote(kick, 0, 0)
+        cmd.addNote(kick, 0, 2)
+        cmd.addNote(snare, 0, 1)
 
-        mfCmd.updateTrack(kick, { velocity: 0.9 })
+        cmd.updateTrack(kick, { velocity: 0.9 })
 
         expect(kick.velocity).toBe(0.9)
         expect(kick.notes.length).toBe(2)
         expect(snare.notes.length).toBe(1)
-        expect(mfCmd.isNoteAt(kick, 0, 0).length).toBe(1)
-        expect(mfCmd.isNoteAt(kick, 0, 2).length).toBe(1)
-        expect(mfCmd.isNoteAt(snare, 0, 1).length).toBe(1)
+        expect(cmd.isNoteAt(kick, 0, 0).length).toBe(1)
+        expect(cmd.isNoteAt(kick, 0, 2).length).toBe(1)
+        expect(cmd.isNoteAt(snare, 0, 1).length).toBe(1)
     })
 })

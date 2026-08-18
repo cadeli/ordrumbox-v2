@@ -161,9 +161,9 @@ export default class MfBassGenerate extends BaseGenerator {
     }
 
     loadScales = async () => {
-        if (this.isScalesLoading || !serviceRegistry.mfResourcesLoader) return
+        if (this.isScalesLoading || !serviceRegistry.resourcesLoader) return
         this.isScalesLoading = true
-        await serviceRegistry.mfResourcesLoader.loadScales(MfResourcesLoader.SCALES_URL)
+        await serviceRegistry.resourcesLoader.loadScales(MfResourcesLoader.SCALES_URL)
         this.checkResources()
     }
 

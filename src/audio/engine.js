@@ -33,7 +33,7 @@ export default class AudioEngine {
         this._midiMappingCache = new Map()
         this.mixer = new MfMixer(this.audioCtx)
         this.player = null
-        this.mfSound = null
+        this.sound = null
 
         // Worklet initialisation happens asynchronously. The player/sound are
         // constructed AFTER the worklet mixer is ready so they hold the correct
@@ -54,7 +54,7 @@ export default class AudioEngine {
                 TICK: this.TICK,
                 secondsPerBeat: this.secondsPerBeat,
             })
-            this.mfSound = this.player.mfSound
+            this.sound = this.player.sound
 
             appState.workletStatus = 'active'
             playbackEvents.dispatchWorkletStatusChange('active')
@@ -145,7 +145,7 @@ export default class AudioEngine {
 
     stop = () => {
         this.isRunning = false
-        if (this.mfSound) this.mfSound.stopAllVoices()
+        if (this.sound) this.sound.stopAllVoices()
         if (this.mixer.transportClock) {
             this.mixer.transportClock.offset.cancelScheduledValues(this.audioCtx.currentTime)
             this.mixer.transportClock.offset.setValueAtTime(0, this.audioCtx.currentTime)
@@ -313,7 +313,7 @@ export default class AudioEngine {
 
     syncTrack = async (track) => {
         if (!track) return
-        this.mfSound?.invalidateStripCache(track.name)
+        this.sound?.invalidateStripCache(track.name)
         await this.updateStrip(track.name, track)
     }
 

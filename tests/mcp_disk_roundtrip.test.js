@@ -8,12 +8,12 @@ import { resolve } from 'node:path'
 const TMP_DIR = resolve(import.meta.dirname, '__tmp_mcp_test__')
 
 describe('Functional: MCP generate → disk save → import', () => {
-    let mfCmd
+    let cmd
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
     })
 
     afterEach(async () => {
@@ -27,23 +27,23 @@ describe('Functional: MCP generate → disk save → import', () => {
     it('create → add notes → export → write disk → read back → reimport preserves everything', async () => {
         await mkdir(TMP_DIR, { recursive: true })
 
-        const pattern = mfCmd.addPattern('McpTest')
+        const pattern = cmd.addPattern('McpTest')
         pattern.bpm = 90
         pattern.nbBeats = 8
         pattern.tags = ['hiphop', 'bass']
 
-        const kick = mfCmd.addTrack(pattern, 'KICK')
-        mfCmd.addNote(kick, 0, 0, 0)
+        const kick = cmd.addTrack(pattern, 'KICK')
+        cmd.addNote(kick, 0, 0, 0)
         kick.notes[0].velocity = 0.95
 
-        const snare = mfCmd.addTrack(pattern, 'SNARE')
-        mfCmd.addNote(snare, 1, 0, 0)
+        const snare = cmd.addTrack(pattern, 'SNARE')
+        cmd.addNote(snare, 1, 0, 0)
         snare.notes[0].velocity = 0.85
 
-        const bass = mfCmd.addTrack(pattern, 'BASS')
-        mfCmd.addNote(bass, 0, 0, 0)
-        mfCmd.addNote(bass, 0, 2, -5)
-        mfCmd.addNote(bass, 1, 0, 3)
+        const bass = cmd.addTrack(pattern, 'BASS')
+        cmd.addNote(bass, 0, 0, 0)
+        cmd.addNote(bass, 0, 2, -5)
+        cmd.addNote(bass, 1, 0, 3)
         bass.notes[0].velocity = 0.8
         bass.notes[1].velocity = 0.6
         bass.notes[2].velocity = 0.7
@@ -59,7 +59,7 @@ describe('Functional: MCP generate → disk save → import', () => {
         expect(parsed.bpm).toBe(90)
         expect(parsed.nbBeats).toBe(8)
 
-        const reimported = mfCmd.importPatternFromJson(parsed)
+        const reimported = cmd.importPatternFromJson(parsed)
 
         expect(reimported.name).toBe('McpTest')
         expect(reimported.bpm).toBe(90)
@@ -95,11 +95,11 @@ describe('Functional: MCP generate → disk save → import', () => {
     it('multiple save cycles are stable (simulates create → addNotes → setBpm → setTags)', async () => {
         await mkdir(TMP_DIR, { recursive: true })
 
-        const pattern = mfCmd.addPattern('CycleTest')
+        const pattern = cmd.addPattern('CycleTest')
         pattern.bpm = 95
         pattern.nbBeats = 8
-        const kick = mfCmd.addTrack(pattern, 'KICK')
-        mfCmd.addNote(kick, 0, 0, 0)
+        const kick = cmd.addTrack(pattern, 'KICK')
+        cmd.addNote(kick, 0, 0, 0)
         kick.notes[0].velocity = 0.9
 
         const filePath = resolve(TMP_DIR, 'cycletest.json')
@@ -117,13 +117,13 @@ describe('Functional: MCP generate → disk save → import', () => {
         await save(pattern)
 
         const p1 = await load()
-        const r1 = mfCmd.importPatternFromJson(p1)
+        const r1 = cmd.importPatternFromJson(p1)
         r1.bpm = 128
         r1.tags = ['techno']
         await save(r1)
 
         const p2 = await load()
-        const r2 = mfCmd.importPatternFromJson(p2)
+        const r2 = cmd.importPatternFromJson(p2)
         expect(r2.bpm).toBe(128)
         expect(r2.tags).toEqual(expect.objectContaining({ 0: 'techno' }))
         expect(r2.tracks).toHaveLength(1)
@@ -133,7 +133,7 @@ describe('Functional: MCP generate → disk save → import', () => {
         await save(r2)
 
         const p3 = await load()
-        const r3 = mfCmd.importPatternFromJson(p3)
+        const r3 = cmd.importPatternFromJson(p3)
         expect(r3.bpm).toBe(128)
         expect(r3.tags).toEqual(expect.objectContaining({ 0: 'techno', 1: 'minimal' }))
         expect(r3.tracks[0].notes[0].beat).toBe(0)
@@ -142,10 +142,10 @@ describe('Functional: MCP generate → disk save → import', () => {
     it('empty tracks and notes survive disk round-trip', async () => {
         await mkdir(TMP_DIR, { recursive: true })
 
-        const pattern = mfCmd.addPattern('EmptyTest')
+        const pattern = cmd.addPattern('EmptyTest')
         pattern.bpm = 100
         pattern.nbBeats = 8
-        mfCmd.addTrack(pattern, 'KICK')
+        cmd.addTrack(pattern, 'KICK')
 
         const exported = PatternExporter.export(pattern)
         const filePath = resolve(TMP_DIR, 'emptytest.json')
@@ -155,7 +155,7 @@ describe('Functional: MCP generate → disk save → import', () => {
         const parsed = JSON.parse(raw)
         expect(parsed.bpm).toBe(100)
         expect(parsed.nbBeats).toBe(8)
-        const reimported = mfCmd.importPatternFromJson(parsed)
+        const reimported = cmd.importPatternFromJson(parsed)
 
         expect(reimported.name).toBe('EmptyTest')
         expect(reimported.bpm).toBe(100)
@@ -167,11 +167,11 @@ describe('Functional: MCP generate → disk save → import', () => {
     it('JSON on disk is always valid after each save step', async () => {
         await mkdir(TMP_DIR, { recursive: true })
 
-        const pattern = mfCmd.addPattern('ValidJson')
+        const pattern = cmd.addPattern('ValidJson')
         pattern.bpm = 135
         pattern.nbBeats = 8
-        const kick = mfCmd.addTrack(pattern, 'KICK')
-        mfCmd.addNote(kick, 0, 0, 0)
+        const kick = cmd.addTrack(pattern, 'KICK')
+        cmd.addNote(kick, 0, 0, 0)
         kick.notes[0].velocity = 0.9
         kick.notes[0].every = 2
 
@@ -191,20 +191,20 @@ describe('Functional: MCP generate → disk save → import', () => {
         const p1 = await saveAndVerify(pattern, 'initial')
         expect(p1.bpm).toBe(135)
         expect(p1.nbBeats).toBe(8)
-        const r1 = mfCmd.importPatternFromJson(p1)
+        const r1 = cmd.importPatternFromJson(p1)
         r1.bpm = 140
         r1.nbBeats = 8
         await saveAndVerify(r1, 'after bpm')
 
         const p2 = await saveAndVerify(r1, 'after tags')
-        const r2 = mfCmd.importPatternFromJson(p2)
+        const r2 = cmd.importPatternFromJson(p2)
         r2.tags = ['dark', 'techno']
         await saveAndVerify(r2, 'after tags set')
 
         const p3 = await saveAndVerify(r2, 'final')
         expect(p3.bpm).toBe(140)
         expect(p3.tags).toEqual(expect.arrayContaining(['dark', 'techno']))
-        const r3 = mfCmd.importPatternFromJson(p3)
+        const r3 = cmd.importPatternFromJson(p3)
         expect(r3.bpm).toBe(140)
         expect(r3.nbBeats).toBe(8)
         expect(r3.tracks[0].notes[0].every).toBe(2)

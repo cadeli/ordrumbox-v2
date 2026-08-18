@@ -25,7 +25,7 @@ export default class PresetSection {
         co._loading = true
         co._loadPromise = (async () => {
             try {
-                await co._serviceRegistry.mfResourcesLoader?.loadGeneratedSounds(
+                await co._serviceRegistry.resourcesLoader?.loadGeneratedSounds(
                     (await import('../../loader/resources_loader.js')).default.GENERATED_SOUNDS_URL
                 )
                 co._serviceRegistry.audioEngine?.updateGeneratedSounds(co._soundRegistry.generatedSounds)

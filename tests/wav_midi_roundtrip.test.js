@@ -402,7 +402,7 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
     beforeEach(() => {
         soundRegistry.reset()
         serviceRegistry.reset()
-        serviceRegistry.mfPatterns = patternsManager
+        serviceRegistry.patterns = patternsManager
 
         soundRegistry.sounds = {
             'kick.wav': { url: 'kick.wav', buffer: { duration: 1, length: 44100, getChannelData: () => new Float32Array(44100) }, key: 'KICK' },

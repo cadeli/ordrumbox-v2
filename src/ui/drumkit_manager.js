@@ -186,8 +186,8 @@ export default class DrumkitManager extends BasePanel {
         appState.selectedDrumkitNum = kitIndex
         appState.selectedDrumkit = kit.name
         try {
-            await serviceRegistry.mfResourcesLoader?.loadMissingSamplesFromDrumkits([kit])
-            await serviceRegistry.mfCmd?.autoAssignSoundsForNewDrumkit?.()
+            await serviceRegistry.resourcesLoader?.loadMissingSamplesFromDrumkits([kit])
+            await serviceRegistry.cmd?.autoAssignSoundsForNewDrumkit?.()
         } catch (err) {
             logger.warn(TAG, `Some samples could not be loaded for "${kit.name}": ${err.message}`)
             showToast(`Loaded mapping for "${kit.name}"; some samples are unavailable`, 'warning')

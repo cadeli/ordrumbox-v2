@@ -4,17 +4,17 @@ import MfCmd from '../src/logic/commands/cmd.js'
 import Utils from '../src/core/utils.js'
 
 describe('Functional: MfCmd operations', () => {
-    let mfCmd
+    let cmd
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
     })
 
     describe('Pattern CRUD', () => {
         it('createPattern produces correct defaults', () => {
-            const pattern = mfCmd.addPattern('Test')
+            const pattern = cmd.addPattern('Test')
 
             expect(pattern.name).toBe('Test')
             expect(pattern.bpm).toBe(120)
@@ -25,45 +25,45 @@ describe('Functional: MfCmd operations', () => {
 
         it('auto-generates name when null', () => {
             MfGlobals.patterns = [{ name: 'a' }, { name: 'b' }]
-            const pattern = mfCmd.addPattern(null)
+            const pattern = cmd.addPattern(null)
 
             expect(pattern.name).toBe('NewPat_2')
         })
 
         it('setPatternBpm updates correctly', () => {
-            const pattern = mfCmd.addPattern('Test')
-            mfCmd.setPatternBpm(pattern, 140)
+            const pattern = cmd.addPattern('Test')
+            cmd.setPatternBpm(pattern, 140)
 
             expect(pattern.bpm).toBe(140)
         })
 
         it('getPatternByName finds by name case-insensitive', () => {
-            mfCmd.addPattern('TestPat')
-            expect(mfCmd.getPatternByName('testpat')).toBeTruthy()
-            expect(mfCmd.getPatternByName('TESTPAT')).toBeTruthy()
-            expect(mfCmd.getPatternByName('noname')).toBeNull()
+            cmd.addPattern('TestPat')
+            expect(cmd.getPatternByName('testpat')).toBeTruthy()
+            expect(cmd.getPatternByName('TESTPAT')).toBeTruthy()
+            expect(cmd.getPatternByName('noname')).toBeNull()
         })
 
         it('setPatternDescription sets description', () => {
-            const pattern = mfCmd.addPattern('Test')
-            mfCmd.setPatternDescription(pattern, 'my desc')
+            const pattern = cmd.addPattern('Test')
+            cmd.setPatternDescription(pattern, 'my desc')
             expect(pattern.description).toBe('my desc')
         })
 
         it('setPatternDescription handles null pattern', () => {
-            expect(() => mfCmd.setPatternDescription(null, 'x')).toThrow()
+            expect(() => cmd.setPatternDescription(null, 'x')).toThrow()
         })
 
         it('setPatternBpm with invalid value uses default', () => {
-            const pattern = mfCmd.addPattern('Test')
-            mfCmd.setPatternBpm(pattern, 0)
+            const pattern = cmd.addPattern('Test')
+            cmd.setPatternBpm(pattern, 0)
             expect(pattern.bpm).toBe(120)
         })
     })
 
     describe('Track operations', () => {
         it('createTrack produces correct default structure', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
+            const track = cmd.createTrack(4, 'KICK', 4)
 
             expect(track.name).toBe('KICK')
             expect(track.nbBeats).toBe(4)
@@ -77,8 +77,8 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('addNote produces correct default note structure', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            const note = mfCmd.addNote(track, 1, 2, 5)
+            const track = cmd.createTrack(4, 'KICK', 4)
+            const note = cmd.addNote(track, 1, 2, 5)
 
             expect(note.beat).toBe(1)
             expect(note.beatStep).toBe(2)
@@ -92,31 +92,31 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('deleteNote removes correct note', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.addNote(track, 0, 0)
-            mfCmd.addNote(track, 1, 0)
-            mfCmd.addNote(track, 2, 0)
+            const track = cmd.createTrack(4, 'KICK', 4)
+            cmd.addNote(track, 0, 0)
+            cmd.addNote(track, 1, 0)
+            cmd.addNote(track, 2, 0)
 
-            mfCmd.deleteNote(track, { beat: 1, beatStep: 0, pitch: 0 })
+            cmd.deleteNote(track, { beat: 1, beatStep: 0, pitch: 0 })
 
             expect(track.notes.length).toBe(2)
-            expect(mfCmd.isNoteAt(track, 1, 0).length).toBe(0)
-            expect(mfCmd.isNoteAt(track, 0, 0).length).toBe(1)
-            expect(mfCmd.isNoteAt(track, 2, 0).length).toBe(1)
+            expect(cmd.isNoteAt(track, 1, 0).length).toBe(0)
+            expect(cmd.isNoteAt(track, 0, 0).length).toBe(1)
+            expect(cmd.isNoteAt(track, 2, 0).length).toBe(1)
         })
 
         it('isNoteAt returns array of notes at position', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.addNote(track, 0, 0)
-            mfCmd.addNote(track, 0, 0)
+            const track = cmd.createTrack(4, 'KICK', 4)
+            cmd.addNote(track, 0, 0)
+            cmd.addNote(track, 0, 0)
 
-            expect(mfCmd.isNoteAt(track, 0, 0).length).toBe(2)
-            expect(mfCmd.isNoteAt(track, 99, 99).length).toBe(0)
+            expect(cmd.isNoteAt(track, 0, 0).length).toBe(2)
+            expect(cmd.isNoteAt(track, 99, 99).length).toBe(0)
         })
 
         it('updateTrack applies whitelisted properties only', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.updateTrack(track, { nbBeats: 8, mute: true, unknownProp: 'test' })
+            const track = cmd.createTrack(4, 'KICK', 4)
+            cmd.updateTrack(track, { nbBeats: 8, mute: true, unknownProp: 'test' })
 
             expect(track.nbBeats).toBe(8)
             expect(track.mute).toBe(true)
@@ -124,13 +124,13 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('cleanTrack removes all notes and resets loop', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.addNote(track, 0, 0)
+            const track = cmd.createTrack(4, 'KICK', 4)
+            cmd.addNote(track, 0, 0)
             track.loopPointBeat = 2
             track.loopPointStep = 2
             track.loopAtStep = 10
 
-            mfCmd.cleanTrack(track)
+            cmd.cleanTrack(track)
 
             expect(track.notes).toEqual([])
             expect(track.loopPointStep).toBe(0)
@@ -139,7 +139,7 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('copies all known properties via updateTrack', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
+            const track = cmd.createTrack(4, 'KICK', 4)
             const source = {
                 soundId: 'snd_1',
                 nbBeats: 8,
@@ -167,7 +167,7 @@ describe('Functional: MfCmd operations', () => {
                 saturationAmount: 0.5,
                 synthSoundKey: 'saw'
             }
-            mfCmd.updateTrack(track, source)
+            cmd.updateTrack(track, source)
 
             expect(track.soundId).toBe('snd_1')
             expect(track.nbBeats).toBe(8)
@@ -197,40 +197,40 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('computes loopPointBeat/Step after update', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.updateTrack(track, { loopAtStep: 10 })
+            const track = cmd.createTrack(4, 'KICK', 4)
+            cmd.updateTrack(track, { loopAtStep: 10 })
             expect(track.loopPointBeat).toBe(2)
             expect(track.loopPointStep).toBe(2)
         })
 
         it('updateTrack returns track unchanged for null updates', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            expect(mfCmd.updateTrack(track, null)).toBe(track)
-            expect(mfCmd.updateTrack(track, undefined)).toBe(track)
+            const track = cmd.createTrack(4, 'KICK', 4)
+            expect(cmd.updateTrack(track, null)).toBe(track)
+            expect(cmd.updateTrack(track, undefined)).toBe(track)
         })
 
         it('updateTrack returns track unchanged for non-object updates', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            expect(mfCmd.updateTrack(track, 42)).toBe(track)
+            const track = cmd.createTrack(4, 'KICK', 4)
+            expect(cmd.updateTrack(track, 42)).toBe(track)
         })
 
         it('computes loopPointBeat/Step from stepsPerBeat and loopAtStep', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.updateTrack(track, { stepsPerBeat: 8, loopAtStep: 20 })
+            const track = cmd.createTrack(4, 'KICK', 4)
+            cmd.updateTrack(track, { stepsPerBeat: 8, loopAtStep: 20 })
             expect(track.loopPointBeat).toBe(2)
             expect(track.loopPointStep).toBe(4)
         })
 
         it('computes loopAtStep from loopPointBeat/Step when loopAtStep undefined', () => {
             const track = { stepsPerBeat: 4, loopPointBeat: 2, loopPointStep: 1 }
-            mfCmd.updateTrack(track, {})
+            cmd.updateTrack(track, {})
             expect(track.loopAtStep).toBe(9)
         })
 
         it('caps stepsPerBeat at 8 when steppc exceeds 100', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
+            const track = cmd.createTrack(4, 'KICK', 4)
             track.stepsPerBeat = 4
-            const note = mfCmd.addNote(track, 0, 5)
+            const note = cmd.addNote(track, 0, 5)
             expect(track.stepsPerBeat).toBe(8)
             expect(note.steppc).toBe(63)
         })
@@ -238,8 +238,8 @@ describe('Functional: MfCmd operations', () => {
 
     describe('Note property updates', () => {
         it('can set note properties directly', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            const note = mfCmd.addNote(track, 0, 0)
+            const track = cmd.createTrack(4, 'KICK', 4)
+            const note = cmd.addNote(track, 0, 0)
             note.beatStep = 2
             note.beat = 1
             note.velocity = 0.5
@@ -282,16 +282,16 @@ describe('Functional: MfCmd operations', () => {
 
     describe('Loop point increment', () => {
         it('decrements loopAtStep with wrap-around', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
+            const track = cmd.createTrack(4, 'KICK', 4)
             track.loopAtStep = 16
 
-            mfCmd.incrLoopPoint(track)
+            cmd.incrLoopPoint(track)
             expect(track.loopAtStep).toBe(15)
             expect(track.loopPointBeat).toBe(3)
             expect(track.loopPointStep).toBe(3)
 
             for (let i = 0; i < 15; i++) {
-                mfCmd.incrLoopPoint(track)
+                cmd.incrLoopPoint(track)
             }
             expect(track.loopAtStep).toBe(16)
         })
@@ -299,21 +299,21 @@ describe('Functional: MfCmd operations', () => {
 
     describe('Bar quantize cycle', () => {
         it('incrNbStepPerBar changes stepsPerBeat', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            const note = mfCmd.addNote(track, 0, 2)
+            const track = cmd.createTrack(4, 'KICK', 4)
+            const note = cmd.addNote(track, 0, 2)
             note.steppc = 50
 
             const original = track.stepsPerBeat
-            mfCmd.incrNbStepPerBar(track)
+            cmd.incrNbStepPerBar(track)
             expect(track.stepsPerBeat).not.toBe(original)
         })
 
         it('roundtrips notes through 8→4→8 stepsPerBeat changes', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 8)
-            const n0 = mfCmd.addNote(track, 0, 0)
-            const n1 = mfCmd.addNote(track, 0, 4)
-            const n2 = mfCmd.addNote(track, 1, 2)
-            const n3 = mfCmd.addNote(track, 2, 6)
+            const track = cmd.createTrack(4, 'KICK', 8)
+            const n0 = cmd.addNote(track, 0, 0)
+            const n1 = cmd.addNote(track, 0, 4)
+            const n2 = cmd.addNote(track, 1, 2)
+            const n3 = cmd.addNote(track, 2, 6)
 
             const origBeats = track.notes.map(n => n.beat)
             const origSteps = track.notes.map(n => n.beatStep)
@@ -340,11 +340,11 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('roundtrips notes through 8→1→8 stepsPerBeat changes via steppc', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 8)
-            mfCmd.addNote(track, 0, 0)
-            mfCmd.addNote(track, 0, 3)
-            mfCmd.addNote(track, 0, 4)
-            mfCmd.addNote(track, 1, 6)
+            const track = cmd.createTrack(4, 'KICK', 8)
+            cmd.addNote(track, 0, 0)
+            cmd.addNote(track, 0, 3)
+            cmd.addNote(track, 0, 4)
+            cmd.addNote(track, 1, 6)
 
             const origBeats = track.notes.map(n => n.beat)
             const origSteps = track.notes.map(n => n.beatStep)
@@ -366,15 +366,15 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('roundtrips notes through 6→2→6 stepsPerBeat changes via steppc', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 6)
-            mfCmd.addNote(track, 0, 0)
-            mfCmd.addNote(track, 0, 1)
-            mfCmd.addNote(track, 0, 2)
-            mfCmd.addNote(track, 0, 3)
-            mfCmd.addNote(track, 0, 4)
-            mfCmd.addNote(track, 0, 5)
-            mfCmd.addNote(track, 1, 3)
-            mfCmd.addNote(track, 2, 5)
+            const track = cmd.createTrack(4, 'KICK', 6)
+            cmd.addNote(track, 0, 0)
+            cmd.addNote(track, 0, 1)
+            cmd.addNote(track, 0, 2)
+            cmd.addNote(track, 0, 3)
+            cmd.addNote(track, 0, 4)
+            cmd.addNote(track, 0, 5)
+            cmd.addNote(track, 1, 3)
+            cmd.addNote(track, 2, 5)
 
             const origBeats = track.notes.map(n => n.beat)
             const origSteps = track.notes.map(n => n.beatStep)
@@ -396,8 +396,8 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('maps note to correct step on downsample via steppc (8→4)', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 8)
-            mfCmd.addNote(track, 0, 7)
+            const track = cmd.createTrack(4, 'KICK', 8)
+            cmd.addNote(track, 0, 7)
 
             track.stepsPerBeat = 4
             track.notes.forEach(note => {
@@ -409,11 +409,11 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('preserves all notes through 4→1→4 via steppc', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.addNote(track, 0, 0)
-            mfCmd.addNote(track, 0, 1)
-            mfCmd.addNote(track, 0, 2)
-            mfCmd.addNote(track, 0, 3)
+            const track = cmd.createTrack(4, 'KICK', 4)
+            cmd.addNote(track, 0, 0)
+            cmd.addNote(track, 0, 1)
+            cmd.addNote(track, 0, 2)
+            cmd.addNote(track, 0, 3)
 
             const origSteps = track.notes.map(n => n.beatStep)
 
@@ -435,32 +435,32 @@ describe('Functional: MfCmd operations', () => {
 
     describe('getTrackFromType', () => {
         it('finds track by name in pattern', () => {
-            const pattern = mfCmd.addPattern('Test')
-            mfCmd.addTrack(pattern, 'KICK')
-            mfCmd.addTrack(pattern, 'SNARE')
+            const pattern = cmd.addPattern('Test')
+            cmd.addTrack(pattern, 'KICK')
+            cmd.addTrack(pattern, 'SNARE')
 
-            expect(mfCmd.getTrackFromType(pattern, 'KICK').name).toBe('KICK')
-            expect(mfCmd.getTrackFromType(pattern, 'SNARE').name).toBe('SNARE')
-            expect(mfCmd.getTrackFromType(pattern, 'MISSING')).toBeNull()
+            expect(cmd.getTrackFromType(pattern, 'KICK').name).toBe('KICK')
+            expect(cmd.getTrackFromType(pattern, 'SNARE').name).toBe('SNARE')
+            expect(cmd.getTrackFromType(pattern, 'MISSING')).toBeNull()
         })
     })
 
     describe('setNbBeats', () => {
         it('changes pattern nbBeats and updates tracks', () => {
-            const pattern = mfCmd.addPattern('Test')
-            mfCmd.addTrack(pattern, 'KICK')
-            mfCmd.setNbBeats(pattern, 2)
+            const pattern = cmd.addPattern('Test')
+            cmd.addTrack(pattern, 'KICK')
+            cmd.setNbBeats(pattern, 2)
 
             expect(pattern.nbBeats).toBe(8)
             expect(pattern.tracks[0].nbBeats).toBe(8)
         })
 
         it('adjusts loopAtStep if it exceeds old beat count', () => {
-            const pattern = mfCmd.addPattern('Test')
-            mfCmd.addTrack(pattern, 'KICK')
+            const pattern = cmd.addPattern('Test')
+            cmd.addTrack(pattern, 'KICK')
             pattern.tracks[0].loopAtStep = 32
 
-            mfCmd.setNbBeats(pattern, 1)
+            cmd.setNbBeats(pattern, 1)
             expect(pattern.tracks[0].loopAtStep).toBe(16)
             expect(pattern.tracks[0].nbBeats).toBe(4)
         })
@@ -468,13 +468,13 @@ describe('Functional: MfCmd operations', () => {
 
     describe('cleanPattern', () => {
         it('empties all tracks in pattern', () => {
-            const pattern = mfCmd.addPattern('Test')
-            const t1 = mfCmd.addTrack(pattern, 'KICK')
-            const t2 = mfCmd.addTrack(pattern, 'SNARE')
-            mfCmd.addNote(t1, 0, 0)
-            mfCmd.addNote(t2, 0, 0)
+            const pattern = cmd.addPattern('Test')
+            const t1 = cmd.addTrack(pattern, 'KICK')
+            const t2 = cmd.addTrack(pattern, 'SNARE')
+            cmd.addNote(t1, 0, 0)
+            cmd.addNote(t2, 0, 0)
 
-            mfCmd.cleanPattern(pattern)
+            cmd.cleanPattern(pattern)
 
             expect(t1.notes).toEqual([])
             expect(t2.notes).toEqual([])
@@ -483,8 +483,8 @@ describe('Functional: MfCmd operations', () => {
 
     describe('changeTrackSound', () => {
         it('updates soundId and flags', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.changeTrackSound(track, 'snd_42')
+            const track = cmd.createTrack(4, 'KICK', 4)
+            cmd.changeTrackSound(track, 'snd_42')
 
             expect(track.soundId).toBe('snd_42')
             expect(track.useAutoAssignSound).toBe(false)
@@ -494,8 +494,8 @@ describe('Functional: MfCmd operations', () => {
 
     describe('changeTrackName', () => {
         it('updates name', () => {
-            const track = mfCmd.createTrack(4, 'KICK', 4)
-            mfCmd.changeTrackName(track, 'NEWNAME')
+            const track = cmd.createTrack(4, 'KICK', 4)
+            cmd.changeTrackName(track, 'NEWNAME')
 
             expect(track.name).toBe('NEWNAME')
         })
@@ -509,7 +509,7 @@ describe('Functional: MfCmd operations', () => {
                 s3: { key: 'kd', kit_name: 'electro' }
             }
 
-            const sounds = mfCmd.getAllSoundsForType('kd')
+            const sounds = cmd.getAllSoundsForType('kd')
             expect(sounds.length).toBe(2)
             expect(sounds[0].kit_name).toBe('real')
             expect(sounds[1].kit_name).toBe('electro')
@@ -517,7 +517,7 @@ describe('Functional: MfCmd operations', () => {
 
         it('returns empty array when no match', () => {
             MfGlobals.sounds = { s1: { key: 'kd' } }
-            expect(mfCmd.getAllSoundsForType('xx')).toEqual([])
+            expect(cmd.getAllSoundsForType('xx')).toEqual([])
         })
     })
 
@@ -528,21 +528,21 @@ describe('Functional: MfCmd operations', () => {
                 snd_2: { url: 'kits/real/snare.wav' }
             }
 
-            expect(mfCmd.getSoundIdFromUrl('kits/real/kick.wav')).toBe('snd_1')
-            expect(mfCmd.getSoundIdFromUrl('kits/real/snare.wav')).toBe('snd_2')
+            expect(cmd.getSoundIdFromUrl('kits/real/kick.wav')).toBe('snd_1')
+            expect(cmd.getSoundIdFromUrl('kits/real/snare.wav')).toBe('snd_2')
         })
 
         it('returns NOT_FOUND when no match', () => {
             MfGlobals.sounds = { snd_1: { url: 'a.wav' } }
-            expect(mfCmd.getSoundIdFromUrl('b.wav')).toBe('NOT_FOUND')
+            expect(cmd.getSoundIdFromUrl('b.wav')).toBe('NOT_FOUND')
         })
     })
 
     describe('kitIsLoaded', () => {
         it('returns true when kit sounds are loaded', () => {
             MfGlobals.sounds = { s1: { kit_name: 'real' } }
-            expect(mfCmd.kitIsLoaded({ name: 'real' })).toBe(true)
-            expect(mfCmd.kitIsLoaded({ name: 'electro' })).toBe(false)
+            expect(cmd.kitIsLoaded({ name: 'real' })).toBe(true)
+            expect(cmd.kitIsLoaded({ name: 'electro' })).toBe(false)
         })
     })
 })

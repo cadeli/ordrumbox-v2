@@ -44,7 +44,7 @@ describe('SynthEditor — OrKnob integration', () => {
             updateGeneratedSounds: vi.fn(),
             invalidateCache: vi.fn()
         }
-        serviceRegistry.mfCmd = { changeTrackSound: vi.fn() }
+        serviceRegistry.cmd = { changeTrackSound: vi.fn() }
 
         document.body.innerHTML = ''
 

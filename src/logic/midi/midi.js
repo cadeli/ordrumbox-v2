@@ -312,20 +312,20 @@ export default class MfMidi {
 
     handleExternalStart = () => {
         this.resetExternalClockTracking()
-        if (!serviceRegistry.mfSeq.isRunning) {
-            serviceRegistry.mfSeq.toggleStartStop()
+        if (!serviceRegistry.seq.isRunning) {
+            serviceRegistry.seq.toggleStartStop()
         }
     }
 
     handleExternalContinue = () => {
-        if (!serviceRegistry.mfSeq.isRunning) {
-            serviceRegistry.mfSeq.toggleStartStop()
+        if (!serviceRegistry.seq.isRunning) {
+            serviceRegistry.seq.toggleStartStop()
         }
     }
 
     handleExternalStop = () => {
-        if (serviceRegistry.mfSeq.isRunning) {
-            serviceRegistry.mfSeq.toggleStartStop()
+        if (serviceRegistry.seq.isRunning) {
+            serviceRegistry.seq.toggleStartStop()
         }
         this.resetExternalClockTracking()
     }
@@ -342,15 +342,15 @@ export default class MfMidi {
                 this.clockPulseTimes = updateClockPulseTracking(this.clockPulseTimes, now)
                 const bpm = estimateBpmFromClockPulses(this.clockPulseTimes)
                 if (Number.isFinite(bpm) && bpm > 0) {
-                    serviceRegistry.mfSeq.setBpm(Math.round(bpm * 100) / 100)
+                    serviceRegistry.seq.setBpm(Math.round(bpm * 100) / 100)
                 }
             }
         } else {
             this.clockPulseTimes.push(now)
         }
 
-        if (!serviceRegistry.mfSeq.isRunning) {
-            serviceRegistry.mfSeq.toggleStartStop()
+        if (!serviceRegistry.seq.isRunning) {
+            serviceRegistry.seq.toggleStartStop()
         }
     }
 
@@ -379,8 +379,8 @@ export default class MfMidi {
             }
         }
 
-        if (serviceRegistry.mfSeq) {
-            serviceRegistry.mfSeq.simpleBeep(trackIndex)
+        if (serviceRegistry.seq) {
+            serviceRegistry.seq.simpleBeep(trackIndex)
         }
     }
 }

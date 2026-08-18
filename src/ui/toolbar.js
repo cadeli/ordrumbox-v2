@@ -261,7 +261,7 @@ export default class Toolbar {
 
     bindEvents() {
         this.startBtn.addEventListener('click', () => {
-            serviceRegistry.mfSeq.toggleStartStop()
+            serviceRegistry.seq.toggleStartStop()
         })
 
         this.toolsBtn.addEventListener('click', () => {
@@ -289,7 +289,7 @@ export default class Toolbar {
         this.patternSelect.addEventListener('change', () => {
             const num = parseInt(this.patternSelect.value, 10)
             if (!isNaN(num)) {
-                serviceRegistry.mfCmd.setSelectedPatternNum(num)
+                serviceRegistry.cmd.setSelectedPatternNum(num)
                 appState.currentPage = 0
                 this.syncPage()
             }
@@ -298,7 +298,7 @@ export default class Toolbar {
         this.drumkitSelect.addEventListener('change', () => {
             const num = parseInt(this.drumkitSelect.value, 10)
             if (!isNaN(num)) {
-                serviceRegistry.mfCmd.setSelectedDrumkitNum(num)
+                serviceRegistry.cmd.setSelectedDrumkitNum(num)
             }
         })
 
@@ -344,8 +344,8 @@ export default class Toolbar {
                 }
             } else {
                 const { getAutoGenerateService } = await import('../state/service_registry.js')
-                const mfAutoGenerate = await getAutoGenerateService()
-                await mfAutoGenerate.generatePattern()
+                const autoGen = await getAutoGenerateService()
+                await autoGen.generatePattern()
 
                 if (pattern.tracks) {
                     pattern.tracks = pattern.tracks.filter(t => {
@@ -376,23 +376,23 @@ export default class Toolbar {
             } else {
                 let bassTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'BASS')
                 const { getAutoGenerateService } = await import('../state/service_registry.js')
-                const mfAutoGenerate = await getAutoGenerateService()
+                const autoGen = await getAutoGenerateService()
 
                 if (!bassTrack) {
-                    if (!pattern._autoGenGenre) pattern._autoGenGenre = mfAutoGenerate.structureGen.getRandomGenre()
+                    if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre
-                    const firstElement = mfAutoGenerate.structureGen.getElement(0)
-                    const harmony = mfAutoGenerate.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
-                    const structure = mfAutoGenerate.structureGen.generateStructure(genre)
+                    const firstElement = autoGen.structureGen.getElement(0)
+                    const harmony = autoGen.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+                    const structure = autoGen.structureGen.generateStructure(genre)
                     const bassVariant = structure.BASS ?? 'basic'
 
-                    bassTrack = serviceRegistry.mfCmd.addTrack(pattern, 'BASS')
+                    bassTrack = serviceRegistry.cmd.addTrack(pattern, 'BASS')
                     bassTrack.useSoftSynth = true
                     bassTrack.useAutoAssignSound = false
                     bassTrack.synthSoundKey = 'BASS1'
                     bassTrack.velocity = 0.8
-                    await mfAutoGenerate.generateTrack(bassTrack, bassVariant, 1, pattern, harmony)
-                    serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+                    await autoGen.generateTrack(bassTrack, bassVariant, 1, pattern, harmony)
+                    serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
                 }
                 bassTrack.auto = true
             }
@@ -414,23 +414,23 @@ export default class Toolbar {
             } else {
                 let pianoTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'PIANO')
                 const { getAutoGenerateService } = await import('../state/service_registry.js')
-                const mfAutoGenerate = await getAutoGenerateService()
+                const autoGen = await getAutoGenerateService()
 
                 if (!pianoTrack) {
-                    if (!pattern._autoGenGenre) pattern._autoGenGenre = mfAutoGenerate.structureGen.getRandomGenre()
+                    if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre
-                    const firstElement = mfAutoGenerate.structureGen.getElement(0)
-                    const harmony = mfAutoGenerate.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
-                    const structure = mfAutoGenerate.structureGen.generateStructure(genre)
+                    const firstElement = autoGen.structureGen.getElement(0)
+                    const harmony = autoGen.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+                    const structure = autoGen.structureGen.generateStructure(genre)
                     const pianoVariant = structure.PIANO ?? 'chordStab'
 
-                    pianoTrack = serviceRegistry.mfCmd.addTrack(pattern, 'PIANO')
+                    pianoTrack = serviceRegistry.cmd.addTrack(pattern, 'PIANO')
                     pianoTrack.useSoftSynth = true
                     pianoTrack.useAutoAssignSound = false
                     pianoTrack.synthSoundKey = 'PIANO'
                     pianoTrack.velocity = 0.8
-                    await mfAutoGenerate.generateTrack(pianoTrack, pianoVariant, 1, pattern, harmony)
-                    serviceRegistry.mfPatterns.computeFlatNotesFromPattern(pattern)
+                    await autoGen.generateTrack(pianoTrack, pianoVariant, 1, pattern, harmony)
+                    serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
                 }
                 pianoTrack.auto = true
             }
@@ -467,7 +467,7 @@ export default class Toolbar {
         this.bpmSlider.addEventListener('input', () => {
             const bpm = parseInt(this.bpmSlider.value, 10)
             this.bpmValue.textContent = bpm
-            serviceRegistry.mfSeq?.setBpm(bpm)
+            serviceRegistry.seq?.setBpm(bpm)
             playbackEvents.dispatchBpmChange(bpm)
         })
     }

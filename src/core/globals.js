@@ -68,31 +68,31 @@ export const MfGlobals = {
     get selectedTrackNum() { return appState.selectedTrackNum },
     set selectedTrackNum(v) { appState.selectedTrackNum = v },
 
-    get mfCmd() { return serviceRegistry.mfCmd },
-    set mfCmd(v) { serviceRegistry.mfCmd = v },
+    get cmd() { return serviceRegistry.cmd },
+    set cmd(v) { serviceRegistry.cmd = v },
 
-    get mfPatterns() { return serviceRegistry.mfPatterns },
-    set mfPatterns(v) { serviceRegistry.mfPatterns = v },
+    get mfPatterns() { return serviceRegistry.patterns },
+    set mfPatterns(v) { serviceRegistry.patterns = v },
 
     get midiManager() { return serviceRegistry.midiManager },
     set midiManager(v) { serviceRegistry.midiManager = v },
 
-    get mfResourcesLoader() { return serviceRegistry.mfResourcesLoader },
-    set mfResourcesLoader(v) { serviceRegistry.mfResourcesLoader = v },
+    get mfResourcesLoader() { return serviceRegistry.resourcesLoader },
+    set mfResourcesLoader(v) { serviceRegistry.resourcesLoader = v },
 
-    get mfSeq() { return serviceRegistry.mfSeq },
-    set mfSeq(v) { serviceRegistry.mfSeq = v },
+    get mfSeq() { return serviceRegistry.seq },
+    set mfSeq(v) { serviceRegistry.seq = v },
 
-    get mfAutoGenerate() { return serviceRegistry.mfAutoGenerate },
-    set mfAutoGenerate(v) { serviceRegistry.mfAutoGenerate = v },
+    get mfAutoGenerate() { return serviceRegistry.autoGenerate },
+    set mfAutoGenerate(v) { serviceRegistry.autoGenerate = v },
 
-    get mfAutoAssign() { return serviceRegistry.mfAutoAssign },
-    set mfAutoAssign(v) { serviceRegistry.mfAutoAssign = v },
+    get mfAutoAssign() { return serviceRegistry.autoAssign },
+    set mfAutoAssign(v) { serviceRegistry.autoAssign = v },
 
     getAutoAssign: () => getAutoAssignService(),
 
-    get mfWavExporter() { return serviceRegistry.mfWavExporter },
-    set mfWavExporter(v) { serviceRegistry.mfWavExporter = v },
+    get mfWavExporter() { return serviceRegistry.wavExporter },
+    set mfWavExporter(v) { serviceRegistry.wavExporter = v },
 
     get TICK() { return TICK },
 

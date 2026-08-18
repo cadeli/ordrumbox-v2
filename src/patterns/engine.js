@@ -171,7 +171,7 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
     }
 
     if (euclidianFill > 0) {
-        // euclidianFill needs computeNextPatternStepNote which depends on mfCmd
+        // euclidianFill needs computeNextPatternStepNote which depends on cmd
         // so we handle it separately
     }
 }

@@ -136,17 +136,17 @@ describe('MfStructureSong', () => {
 })
 
 describe('convertToGeneratedSounds', () => {
-    let mfCmd
+    let cmd
     let pattern
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
         MfGlobals.mfPatterns = { computeFlatNotesFromPattern: () => {} }
-        serviceRegistry.mfSeq = { setBpm: () => {} }
-        pattern = mfCmd.addPattern('Test')
-        mfCmd.setSelectedPatternNum(0)
+        serviceRegistry.seq = { setBpm: () => {} }
+        pattern = cmd.addPattern('Test')
+        cmd.setSelectedPatternNum(0)
     })
 
     describe('detectTrackSynthType', () => {
@@ -212,7 +212,7 @@ describe('convertToGeneratedSounds', () => {
         }
 
         it('converts KICK track to generated sound', () => {
-            mfCmd.addTrack(pattern, 'KICK')
+            cmd.addTrack(pattern, 'KICK')
             convertTracks()
             const track = pattern.tracks[0]
             expect(track.useSoftSynth).toBe(true)
@@ -221,65 +221,65 @@ describe('convertToGeneratedSounds', () => {
         })
 
         it('converts SNARE track', () => {
-            mfCmd.addTrack(pattern, 'SNARE')
+            cmd.addTrack(pattern, 'SNARE')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('SN')
         })
 
         it('converts CHH track', () => {
-            mfCmd.addTrack(pattern, 'CHH')
+            cmd.addTrack(pattern, 'CHH')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('CHH_SYNTH')
         })
 
         it('converts BASS track', () => {
-            mfCmd.addTrack(pattern, 'BASS')
+            cmd.addTrack(pattern, 'BASS')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('BASS2')
         })
 
         it('converts unknown track to PERC', () => {
-            mfCmd.addTrack(pattern, 'Clap')
+            cmd.addTrack(pattern, 'Clap')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('SYNTH2')
         })
 
         it('converts TOM track', () => {
-            mfCmd.addTrack(pattern, 'TOM')
+            cmd.addTrack(pattern, 'TOM')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('TOM')
         })
 
         it('converts BD to KICK synth', () => {
-            mfCmd.addTrack(pattern, 'BD')
+            cmd.addTrack(pattern, 'BD')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('BASS0')
         })
 
         it('converts SD to SNARE synth', () => {
-            mfCmd.addTrack(pattern, 'SD')
+            cmd.addTrack(pattern, 'SD')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('SN')
         })
 
         it('converts OHH to OHH synth', () => {
-            mfCmd.addTrack(pattern, 'OHH')
+            cmd.addTrack(pattern, 'OHH')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('OHH_SYNTH')
         })
 
         it('converts SynthLead to BASS synth', () => {
-            mfCmd.addTrack(pattern, 'SynthLead')
+            cmd.addTrack(pattern, 'SynthLead')
             convertTracks()
             expect(pattern.tracks[0].synthSoundKey).toBe('BASS2')
         })
 
         it('converts all tracks in a multi-track pattern', () => {
-            mfCmd.addTrack(pattern, 'KICK')
-            mfCmd.addTrack(pattern, 'SNARE')
-            mfCmd.addTrack(pattern, 'CHH')
-            mfCmd.addTrack(pattern, 'BASS')
-            mfCmd.addTrack(pattern, 'TOM')
+            cmd.addTrack(pattern, 'KICK')
+            cmd.addTrack(pattern, 'SNARE')
+            cmd.addTrack(pattern, 'CHH')
+            cmd.addTrack(pattern, 'BASS')
+            cmd.addTrack(pattern, 'TOM')
 
             convertTracks()
 
@@ -291,8 +291,8 @@ describe('convertToGeneratedSounds', () => {
         })
 
         it('marks all tracks useSoftSynth = true', () => {
-            mfCmd.addTrack(pattern, 'KICK')
-            mfCmd.addTrack(pattern, 'SNARE')
+            cmd.addTrack(pattern, 'KICK')
+            cmd.addTrack(pattern, 'SNARE')
 
             convertTracks()
 
@@ -339,18 +339,18 @@ describe('Utils.detectTrackType', () => {
 })
 
 describe('MfCmd drumkit selection', () => {
-    let mfCmd
+    let cmd
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
     })
 
     describe('kitIsLoaded', () => {
         it('returns false when no sounds are loaded', () => {
             const drumkit = { name: 'TestKit', instruments: [] }
-            expect(mfCmd.kitIsLoaded(drumkit)).toBe(false)
+            expect(cmd.kitIsLoaded(drumkit)).toBe(false)
         })
 
         it('returns true when all sounds for the kit are loaded', () => {
@@ -358,7 +358,7 @@ describe('MfCmd drumkit selection', () => {
                 kit_name: 'TestKit', url: 'test.wav', key: 'KICK'
             }
             const drumkit = { name: 'TestKit', instruments: [{ key: 'KICK' }] }
-            expect(mfCmd.kitIsLoaded(drumkit)).toBe(true)
+            expect(cmd.kitIsLoaded(drumkit)).toBe(true)
         })
     })
 })

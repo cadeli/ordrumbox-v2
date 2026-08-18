@@ -4,12 +4,12 @@ import MfCmd from '../src/logic/commands/cmd.js'
 import { PatternExporter } from '../src/patterns/exporter.js'
 
 describe('Functional: Pattern serialization round-trip', () => {
-    let mfCmd
+    let cmd
 
     beforeEach(() => {
         MfGlobals.resetAll()
-        mfCmd = new MfCmd()
-        MfGlobals.mfCmd = mfCmd
+        cmd = new MfCmd()
+        MfGlobals.cmd = cmd
     })
 
     it('full pattern round-trip preserves all properties', () => {
@@ -44,9 +44,9 @@ describe('Functional: Pattern serialization round-trip', () => {
             ]
         }
 
-        const imported = mfCmd.importPatternFromJson(sourcePattern)
+        const imported = cmd.importPatternFromJson(sourcePattern)
         const exported = PatternExporter.export(imported)
-        const reimported = mfCmd.importPatternFromJson(exported)
+        const reimported = cmd.importPatternFromJson(exported)
 
         expect(reimported.name).toBe(sourcePattern.name)
         expect(reimported.bpm).toBe(sourcePattern.bpm)
@@ -77,7 +77,7 @@ describe('Functional: Pattern serialization round-trip', () => {
     })
 
     it('export includes metadata', () => {
-        const pattern = mfCmd.addPattern('Test')
+        const pattern = cmd.addPattern('Test')
         const exported = PatternExporter.export(pattern)
 
         expect(exported.application).toBe('online-ordrumbox')
@@ -93,9 +93,9 @@ describe('Functional: Pattern serialization round-trip', () => {
             tracks: []
         }
 
-        const imported = mfCmd.importPatternFromJson(sourcePattern)
+        const imported = cmd.importPatternFromJson(sourcePattern)
         const exported = PatternExporter.export(imported)
-        const reimported = mfCmd.importPatternFromJson(exported)
+        const reimported = cmd.importPatternFromJson(exported)
 
         expect(reimported.name).toBe('Empty')
         expect(reimported.bpm).toBe(120)
@@ -120,7 +120,7 @@ describe('Functional: Pattern serialization round-trip', () => {
             }]
         }
 
-        const imported = mfCmd.importPatternFromJson(sourcePattern)
+        const imported = cmd.importPatternFromJson(sourcePattern)
         const note = imported.tracks[0].notes[0]
 
         expect(note.velocity).toBe(0.8)
@@ -147,9 +147,9 @@ describe('Functional: Pattern serialization round-trip', () => {
                 ]
             }]
         }
-        const once = mfCmd.importPatternFromJson(source)
+        const once = cmd.importPatternFromJson(source)
         const exportedOnce = PatternExporter.export(once)
-        const twice = mfCmd.importPatternFromJson(exportedOnce)
+        const twice = cmd.importPatternFromJson(exportedOnce)
         const exportedTwice = PatternExporter.export(twice)
 
         expect(exportedTwice.name).toBe(exportedOnce.name)
@@ -177,9 +177,9 @@ describe('Functional: Pattern serialization round-trip', () => {
                 notes: [{ beat: 0, beatStep: 0 }]
             }]
         }
-        const imported = mfCmd.importPatternFromJson(source)
+        const imported = cmd.importPatternFromJson(source)
         const exported = PatternExporter.export(imported)
-        const reimported = mfCmd.importPatternFromJson(exported)
+        const reimported = cmd.importPatternFromJson(exported)
         const track = reimported.tracks[0]
 
         expect(track.name).toBe('TOM')
@@ -204,7 +204,7 @@ describe('Functional: Pattern serialization round-trip', () => {
                 ]
             }]
         }
-        const imported = mfCmd.importPatternFromJson(source)
+        const imported = cmd.importPatternFromJson(source)
         const note = imported.tracks[0].notes[0]
 
         expect(note.arp).toEqual([0, 4, 7])
@@ -227,7 +227,7 @@ describe('Functional: Pattern serialization round-trip', () => {
                 notes: [{ beat: 0, beatStep: 0 }]
             }]
         }
-        const imported = mfCmd.importPatternFromJson(source)
+        const imported = cmd.importPatternFromJson(source)
         expect(imported.application).toBe('test-app')
         expect(imported.url).toBe('https://test.com')
 
@@ -235,7 +235,7 @@ describe('Functional: Pattern serialization round-trip', () => {
         expect(exported.application).toBe('test-app')
         expect(exported.url).toBe('https://test.com')
 
-        const reimported = mfCmd.importPatternFromJson(exported)
+        const reimported = cmd.importPatternFromJson(exported)
         expect(reimported.application).toBe('test-app')
         expect(reimported.url).toBe('https://test.com')
     })
@@ -252,18 +252,18 @@ describe('Functional: Pattern serialization round-trip', () => {
                 notes: []
             }]
         }
-        const imported = mfCmd.importPatternFromJson(source)
+        const imported = cmd.importPatternFromJson(source)
         const exported = PatternExporter.export(imported)
-        const reimported = mfCmd.importPatternFromJson(exported)
+        const reimported = cmd.importPatternFromJson(exported)
 
         expect(reimported.tracks).toHaveLength(1)
         expect(reimported.tracks[0].notes).toEqual([])
     })
 
     it('pattern with all-default track strips to minimal export', () => {
-        const pattern = mfCmd.addPattern('DefaultTrack')
-        const track = mfCmd.addTrack(pattern, 'KICK')
-        mfCmd.addNote(track, 0, 0, 0)
+        const pattern = cmd.addPattern('DefaultTrack')
+        const track = cmd.addTrack(pattern, 'KICK')
+        cmd.addNote(track, 0, 0, 0)
 
         const exported = PatternExporter.export(pattern)
         expect(exported.application).toBe('online-ordrumbox')
@@ -272,7 +272,7 @@ describe('Functional: Pattern serialization round-trip', () => {
         expect(exported.tracks).toHaveLength(1)
         expect(exported.tracks[0].name).toBe('KICK')
 
-        const reimported = mfCmd.importPatternFromJson(exported)
+        const reimported = cmd.importPatternFromJson(exported)
         expect(reimported.name).toBe('DefaultTrack')
         expect(reimported.tracks).toHaveLength(1)
     })
@@ -294,7 +294,7 @@ describe('Functional: Pattern serialization round-trip', () => {
                 notes: [{ beat: 0, beatStep: 0 }]
             }]
         }
-        const imported = mfCmd.importPatternFromJson(source)
+        const imported = cmd.importPatternFromJson(source)
         const track = imported.tracks[0]
 
         expect(track.filterType).toBe('lowpass')
