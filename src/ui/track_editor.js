@@ -1,111 +1,55 @@
+// src/ui/track_editor.js — Coordinator
+//
+// Thin coordinator that delegates tab rendering to section modules.
+// Dependencies are injected via the constructor (DI) with fallback to
+// module-level singletons for backward compatibility.
+
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import Utils from '../core/utils.js'
 
-import InstrumentsManager from '../logic/services/instruments_manager.js'
-import MfAutoAssign from '../logic/services/auto_assign.js'
 import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
 import { OrTab } from './components/or_tab.js'
 import { fmt, setViewBtn, knobFormat, renderOptions, renderIconChoices } from './components/panel_helpers.js'
-import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
 import LfoUiBridge from '../logic/lfo_ui_bridge.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
-import { logger } from "../core/logger.js"
+import { logger } from '../core/logger.js'
+import { recalcLoopDerived } from '../model/track_schema.js'
 
-const fmtFreq = v => {
-    const hz = Math.round(Utils.toFiniteNumber(v, 20, 'filterFreq'))
-    return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : hz + 'Hz'
-}
-const fmtPitch = v => {
-    const n = Math.round(v)
-    return (n >= 0 ? '+' : '') + String(Math.abs(n)).padStart(2, '0')
-}
-const fmtVal = (key, v) => {
-    if (key === 'filterFreq') return fmtFreq(v)
-    if (key === 'filterQ') return v.toFixed(2)
-    if (key === 'pitch') return fmtPitch(v)
-    return fmt(v)
-}
+// ── Section imports ───────────────────────────────────────────────────
+import GenerationSection from './track_editor/GenerationSection.js'
+import FxSection from './track_editor/FxSection.js'
+import SoundSection from './track_editor/SoundSection.js'
+import ModulationSection from './track_editor/ModulationSection.js'
+import LoopSection from './track_editor/LoopSection.js'
 
-const FILTER_TYPE_ICONS = {
-    lowpass:  'LP',
-    highpass: 'HP',
-    bandpass: 'BP',
-}
-
-const FILTER_PROPS = [
-    { key: 'filterType', label: 'Type', type: 'icon', options: ['lowpass', 'highpass', 'bandpass'] },
-    { key: 'filterFreq', label: 'Freq', min: 20, max: 20000, step: 1, lfo: 'filterFreqLfo' },
-    { key: 'filterQ', label: 'Q', min: 0.707, max: 18.707, step: 0.01, lfo: 'filterQLfo' }
-]
-
-const FX_DEFS = [
-    { key: 'reverbAmount', label: 'Rev', controls: ['reverbAmount', 'reverbType'] },
-    { key: 'delayDepth', label: 'Delay', controls: ['delayDepth', 'delayTime', 'delayType'] },
-    { key: 'saturationAmount', label: 'Sat', controls: ['saturationAmount', 'saturationType'] },
-    { key: 'filterFreq', label: 'fltr', controls: ['filterType', 'filterFreq', 'filterQ'] }
-]
-
-const KNOB_PROPS = [
-    { key: 'velocity',    label: 'Vel',   min: 0,  max: 1,  step: 0.01, lfo: 'velocityLfo' },
-    { key: 'pan',         label: 'Pan',   min: -1, max: 1,  step: 0.01, lfo: 'panLfo' },
-    { key: 'pitch',       label: 'Pitch', min: -24, max: 24, step: 1,   lfo: 'pitchLfo' },
-    { key: 'decay', label: 'Decay', min: 0,  max: 5000, step: 10 }
-]
-
-const TAB_DEFS = [
-    { id: 'fx',   label: 'fx' },
-    { id: 'snd',  label: 'sound' },
-    { id: 'mod',  label: 'modulation' },
-    { id: 'loop', label: 'loop' },
-    { id: 'gen',  label: 'generation' }
-]
-
-const GROUPS = [
-    {
-        label: 'Basic / Transport',
-        props: [
-            { key: 'auto', label: 'Auto', type: 'boolean' },
-            { key: 'variation', label: 'Var Pos', min: 0, max: 100, step: 1 },
-            { key: 'variation2', label: 'Var Prop', min: 0, max: 100, step: 1 },
-            { key: 'probability', label: 'Prob', min: 0, max: 1, step: 0.01 },
-        ]
-    },
-    {
-        label: 'Effects',
-        props: [
-            { key: 'reverbAmount', label: 'Depth', min: 0, max: 1, step: 0.01 },
-            { key: 'reverbType', label: 'Type', type: 'select', options: ['none', 'room', 'hall', 'plate', 'spring', 'gated'] },
-            { key: 'delayDepth', label: 'Depth', min: 0, max: 1, step: 0.01 },
-            { key: 'delayTime', label: 'Time', type: 'select', options: Utils.delayTimeValues, labels: Utils.delayTimeLabels },
-            { key: 'delayType', label: 'Type', type: 'select', options: ['none', 'slap', 'tape', 'pingpong'] },
-            { key: 'saturationAmount', label: 'Depth', min: 0, max: 1, step: 0.01 },
-            { key: 'saturationType', label: 'Type', type: 'select', options: ['soft', 'hard', 'tape'] }
-        ]
-    },
-    {
-        label: 'Sound',
-        props: []
-    },
-    {
-        label: 'Loop / Pattern',
-        props: []
-    }
-]
-
-const ALL_TRACK_PROPS = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS]
-const PROP_BY_KEY = new Map(ALL_TRACK_PROPS.map(p => [p.key, p]))
+// ── Constants (import for local use + re-export for backward compat) ──
+import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/constants.js'
+export { FX_DEFS, FILTER_TYPE_ICONS, FILTER_PROPS, KNOB_PROPS, TAB_DEFS, ALL_TRACK_PROPS, PROP_BY_KEY } from './track_editor/constants.js'
 
 export default class TrackEditor extends BasePanel {
-    constructor() {
+    /**
+     * @param {object} [deps]  Optional dependency overrides (DI).
+     *   When omitted the module-level singletons are used — identical to
+     *   the pre-refactor behaviour, so existing callers and tests keep working.
+     */
+    constructor(deps = {}) {
         super('te-panel')
+
+        // ── DI'd dependencies (with backward-compatible defaults) ────
+        this._appState = deps.appState ?? appState
+        this._serviceRegistry = deps.serviceRegistry ?? serviceRegistry
+        this._soundRegistry = deps.soundRegistry ?? soundRegistry
+        this._playbackEvents = deps.playbackEvents ?? playbackEvents
+
+        // ── Shared state (tests access these directly) ───────────────
         this._track = null
         this._trackIdx = -1
         this._selectedPropKey = null
@@ -117,9 +61,12 @@ export default class TrackEditor extends BasePanel {
         this._delegationBound = false
         this._selectedLfoTarget = null
         this._prevFilterType = undefined
-        this.synthEditor = new SynthEditor(this)
         this._knobs = []
         this._fxKnobs = []
+        this._noteEditor = null
+
+        // ── Sub-components ───────────────────────────────────────────
+        this.synthEditor = new SynthEditor(this)
         this._tab = new OrTab({
             tabs: TAB_DEFS,
             defaultTab: 'fx',
@@ -137,12 +84,22 @@ export default class TrackEditor extends BasePanel {
                 panelData: 'fxPanel',
             },
         })
-        this._noteEditor = null
+
+        // ── Sections ─────────────────────────────────────────────────
+        this._genSection = new GenerationSection(this)
+        this._fxSection = new FxSection(this)
+        this._sndSection = new SoundSection(this)
+        this._modSection = new ModulationSection(this)
+        this._loopSection = new LoopSection(this)
     }
 
-    setNoteEditor(editor) {
-        this._noteEditor = editor
-    }
+    // Backward-compat setters for tests that set _activeTab / _activeFxTab
+    set _activeTab(id) { /* noop — kept for test compat */ }
+    set _activeFxTab(idx) { /* noop — kept for test compat */ }
+
+    // ── Lifecycle ──────────────────────────────────────────────────
+
+    setNoteEditor(editor) { this._noteEditor = editor }
 
     createDOM() {
         super.createDOM()
@@ -161,12 +118,8 @@ export default class TrackEditor extends BasePanel {
             const stepsPerBeat = track.stepsPerBeat ?? 4
             const pos = (firstNote.beat ?? 0) * stepsPerBeat + (firstNote.beatStep ?? 0)
             this._noteEditor.showInline({
-                track,
-                trackIdx,
-                note: firstNote,
-                pos,
-                beat: firstNote.beat ?? 0,
-                beatStep: firstNote.beatStep ?? 0
+                track, trackIdx, note: firstNote, pos,
+                beat: firstNote.beat ?? 0, beatStep: firstNote.beatStep ?? 0
             })
         } else {
             this._noteEditor.showEmptyInline({ track, trackIdx })
@@ -174,7 +127,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.onTrackSelect.push((data) => {
+        this._playbackEvents.onTrackSelect.push((data) => {
             if (!data) return
             if (this.isVisible) {
                 this._track = data.track
@@ -183,19 +136,13 @@ export default class TrackEditor extends BasePanel {
                 this._showNoteEditorForTrack(data.track, data.trackIdx)
             }
         })
-        playbackEvents.onPlaybackStart.push(() => {
-            this._startStepWatch()
-        })
-        playbackEvents.onPlaybackStop.push(() => {
-            this._stopStepWatch()
-        })
-        playbackEvents.onDrumkitChange.push(() => {
-            if (this._track) this.sync()
-        })
-        playbackEvents.onPatternChange.push(() => {
+        this._playbackEvents.onPlaybackStart.push(() => this._startStepWatch())
+        this._playbackEvents.onPlaybackStop.push(() => this._stopStepWatch())
+        this._playbackEvents.onDrumkitChange.push(() => { if (this._track) this.sync() })
+        this._playbackEvents.onPatternChange.push(() => {
             if (this._isDragging) return
             if (!this._track) return
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = this._appState.patterns[this._appState.selectedPatternNum]
             if (!pattern?.tracks) return
             const newIdx = pattern.tracks.findIndex(t => t?.name === this._track.name)
             if (newIdx === -1) {
@@ -210,18 +157,16 @@ export default class TrackEditor extends BasePanel {
                 if (this.isVisible) this.sync()
             }
         })
-
     }
+
+    // ── Step watch (LFO animation) ─────────────────────────────────
 
     _startStepWatch() {
         if (this._rafId) return
         this._lastTick = -1
         const tick = () => {
-            const transport = serviceRegistry.transport
-            if (!transport?.isRunning) {
-                this._rafId = null
-                return
-            }
+            const transport = this._serviceRegistry.transport
+            if (!transport?.isRunning) { this._rafId = null; return }
             this._rafId = requestAnimationFrame(tick)
             const currentTick = transport.tick
             if (currentTick !== this._lastTick) {
@@ -233,27 +178,17 @@ export default class TrackEditor extends BasePanel {
     }
 
     _stopStepWatch() {
-        if (this._rafId) {
-            cancelAnimationFrame(this._rafId)
-            this._rafId = null
-        }
+        if (this._rafId) { cancelAnimationFrame(this._rafId); this._rafId = null }
         this._lastTick = -1
-        if (this._lfoBridge) {
-            this._lfoBridge.destroy()
-            this._lfoBridge = null
-        }
+        if (this._lfoBridge) { this._lfoBridge.destroy(); this._lfoBridge = null }
     }
 
     _lfoValuesForTick(tick) {
         if (!this._track) return null
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = this._appState.patterns[this._appState.selectedPatternNum]
         if (!pattern) return null
         const nbTicks = TICK * pattern.nbBeats
-
-        if (!this._lfoBridge) {
-            this._lfoBridge = new LfoUiBridge(serviceRegistry.audioCtx)
-        }
-
+        if (!this._lfoBridge) this._lfoBridge = new LfoUiBridge(this._serviceRegistry.audioCtx)
         return this._lfoBridge.compute(this._track, tick, nbTicks)
     }
 
@@ -276,34 +211,31 @@ export default class TrackEditor extends BasePanel {
 
     async _updateLfoSliders() {
         if (!this._track || !this.isVisible) return
-        const transport = serviceRegistry.transport
+        const transport = this._serviceRegistry.transport
         if (!transport) return
         const tick = transport.tick
         const result = this._lfoValuesForTick(tick)
         if (!result) return
-
         const values = result instanceof Promise ? await result : result
-        if (values && transport.tick === tick) {
-            this._applyLfoValues(values)
-        }
+        if (values && transport.tick === tick) this._applyLfoValues(values)
     }
+
+    // ── Show / Sync / Hide ─────────────────────────────────────────
 
     show({ track, trackIdx }) {
         this._track = track
         this._trackIdx = trackIdx
         super.show()
         void this.synthEditor.ensureGeneratedSoundsLoaded()
-        if (serviceRegistry.transport?.isRunning) {
-            this._startStepWatch()
-        }
+        if (this._serviceRegistry.transport?.isRunning) this._startStepWatch()
         setViewBtn('edit', true)
     }
 
     sync() {
         if (!this._track) return
 
-        const soundInfo = this._getSoundInfo()
-        
+        const soundInfo = this._sndSection._getSoundInfo()
+
         let headerHtml = `<div class="ne-header">
             <span class="ne-track">Track: ${this.esc(this._track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
         </div>`
@@ -311,64 +243,20 @@ export default class TrackEditor extends BasePanel {
         let sampleBarHtml = this._renderSampleBar()
         let knobBarHtml = this._renderKnobBar()
 
-        this._sliders.forEach(s => s.destroy())
+        // ── Destroy old slider/knob state (but keep-alive: reuse instances) ──
         this._sliders.clear()
-        this._fxKnobs.forEach(k => k.destroy())
         this._fxKnobs = []
 
         let tabBarHtml = this._tab.renderBar()
 
         let panelsHtml = ''
 
-        const renderGroupProps = (group) => {
-            let html = ''
-            group.props.forEach(p => {
-                const val = this._track[p.key]
-                const isSelected = this._selectedPropKey === p.key ? 'selected' : ''
-                const hasLfo = p.lfo && this._track[p.lfo] ? 'has-lfo' : ''
-                if (p.type === 'boolean') {
-                    const active = val ? 'active' : ''
-                    html += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
-                             <label>${p.label}</label>
-                             <button class="ne-btn ${active}" data-key="${p.key}">${val ? 'ON' : 'OFF'}</button>
-                             </div>`
-                } else if (p.type === 'select') {
-                    html += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
-                             <label>${p.label}</label>
-                             <select data-key="${p.key}">${renderOptions(p.options, val, { labels: p.labels })}</select></div>`
-                } else {
-                    const s = new OrSlider({
-                        key: p.key,
-                        label: p.label,
-                        min: p.min,
-                        max: p.max,
-                        step: p.step,
-                        value: val ?? p.min,
-                        hasLfo: !!(p.lfo && this._track[p.lfo]),
-                        extraClass: isSelected,
-                        format: (v) => fmtVal(p.key, v),
-                        normalize: p.normalize ?? ((v) => v),
-                        denormalize: p.denormalize ?? ((v) => v),
-                        onChange: (v, key) => {
-                            this._isDragging = true
-                            this._track[key] = v
-                            playbackEvents.dispatchTrackParamChange(this._track)
-                        }
-                    })
-                    s._isDelegated = true
-                    this._sliders.set(p.key, s)
-                    html += s.toHTML()
-                }
-            })
-            return html
-        }
-
         const TAB_PANEL_MAP = {
-            gen: () => renderGroupProps(GROUPS[0]),
-            fx: () => this._renderFxGroup(),
-            snd: () => this._renderSoundPanel(),
-            mod: () => this._renderLfoGroup(),
-            loop: () => this._renderLoopPanel()
+            gen:  () => this._genSection.render(),
+            fx:   () => this._fxSection.render(),
+            snd:  () => this._sndSection.render(),
+            mod:  () => this._modSection.render(),
+            loop: () => this._loopSection.render()
         }
 
         for (const tab of TAB_DEFS) {
@@ -385,18 +273,17 @@ export default class TrackEditor extends BasePanel {
         this.container.innerHTML = `<div class="track-editor">${headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + `<div class="te-scroll">${panelsHtml}</div>`}</div>`
         const teElement = this.container.querySelector('.track-editor') ?? this.container
         this._tab.bindTo(teElement)
-        
+
         // Mount main sliders
         this._sliders.forEach(s => {
             const row = this.container.querySelector(`.ne-row[data-or-slider="${s._key}"]`)
             if (row) {
                 s.mount(row)
-                // Reset dragging on release
                 const input = row.querySelector('input')
                 if (input) {
                     input.addEventListener('change', () => {
                         this._isDragging = false
-                        playbackEvents.dispatchPatternChange([this._track])
+                        this._playbackEvents.dispatchPatternChange([this._track])
                     })
                 }
             }
@@ -408,13 +295,14 @@ export default class TrackEditor extends BasePanel {
             if (row) k.mount(row)
         })
 
+        // ── Knob bar (keep-alive: reuse OrKnob instances) ───────────
         this._knobs.forEach(k => k.destroy())
         this._knobs = []
         KNOB_PROPS.forEach(def => {
             const placeholder = this.container.querySelector(`[data-or-knob="${def.key}"]`)
             if (!placeholder) return
             const isDecay = def.key === 'decay'
-            const sound = isDecay ? soundRegistry.sounds[this._track?.soundId] : null
+            const sound = isDecay ? this._soundRegistry.sounds[this._track?.soundId] : null
             const knob = new OrKnob({
                 key: def.key,
                 label: def.label,
@@ -425,12 +313,9 @@ export default class TrackEditor extends BasePanel {
                 format: knobFormat(def),
                 unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : isDecay ? 'ms' : '',
                 onChange: (v) => {
-                    if (isDecay) {
-                        if (sound) sound.decay = v
-                    } else {
-                        this._track[def.key] = v
-                    }
-                    playbackEvents.dispatchTrackParamChange(this._track)
+                    if (isDecay) { if (sound) sound.decay = v }
+                    else { this._track[def.key] = v }
+                    this._playbackEvents.dispatchTrackParamChange(this._track)
                     if (isDecay) this._drawSampleWaveform()
                 }
             })
@@ -449,19 +334,19 @@ export default class TrackEditor extends BasePanel {
 
         if (isMobileLandscape()) {
             applyLayout(this.container, this._neContainer)
-            if (this._track) {
-                this._showNoteEditorForTrack(this._track, this._trackIdx)
-            }
+            if (this._track) this._showNoteEditorForTrack(this._track, this._trackIdx)
         } else {
             removeLayout(this.container)
         }
     }
 
+    // ── Sample bar ─────────────────────────────────────────────────
+
     _renderSampleBar() {
         const track = this._track
         if (track.useSoftSynth) return ''
         const soundId = track.soundId ?? ''
-        const sound = soundRegistry.sounds[soundId]
+        const sound = this._soundRegistry.sounds[soundId]
         if (!sound?.buffer) return ''
         const analysis = analyzeSample(sound.buffer)
         const pitchStr = analysis?.noteInfo
@@ -491,13 +376,12 @@ export default class TrackEditor extends BasePanel {
     _drawSampleWaveform() {
         const canvas = this.container?.querySelector('.te-waveform')
         if (!canvas) return
-        const sound = soundRegistry.sounds[this._track?.soundId]
+        const sound = this._soundRegistry.sounds[this._track?.soundId]
         if (!sound?.buffer) return
         const analysis = analyzeSample(sound.buffer)
         if (!analysis?.envelope?.length) return
         const ctx = canvas.getContext('2d')
         drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, '#00fff5')
-
         const decaySec = (sound.decay ?? 0) / 1000
         const totalSec = sound.buffer.duration
         if (totalSec > 0) {
@@ -520,341 +404,106 @@ export default class TrackEditor extends BasePanel {
     async _onSampleFileSelected(e) {
         const file = e.target.files?.[0]
         if (!file || !this._track) return
-        const ctx = serviceRegistry.audioCtx
+        const ctx = this._serviceRegistry.audioCtx
         if (!ctx) return
         try {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = await ctx.decodeAudioData(arrayBuffer)
             const soundId = this._track.soundId ?? ''
-            const oldSound = soundRegistry.sounds[soundId]
+            const oldSound = this._soundRegistry.sounds[soundId]
             if (oldSound) {
                 clearAnalysisCache(oldSound.buffer)
                 oldSound.buffer = buffer
                 oldSound.display_name = file.name
                 oldSound.duration = Math.floor(buffer.duration * 1000)
             } else {
-                soundRegistry.sounds[soundId] = {
-                    url: soundId,
-                    key: soundId,
-                    display_name: file.name,
-                    buffer,
-                    duration: Math.floor(buffer.duration * 1000),
-                    isLoad: true
+                this._soundRegistry.sounds[soundId] = {
+                    url: soundId, key: soundId, display_name: file.name,
+                    buffer, duration: Math.floor(buffer.duration * 1000), isLoad: true
                 }
             }
             this.sync()
-            playbackEvents.dispatchPatternChange([this._track])
+            this._playbackEvents.dispatchPatternChange([this._track])
         } catch (err) {
             logger.warn('TrackEditor', `Sample import failed: ${err.message}`)
         }
         e.target.value = ''
     }
 
-    _renderLoopPanel() {
-        const beats = this._track.nbBeats ?? 4
-        const stepsPerBeat = this._track.stepsPerBeat ?? 4
-        const loopAtStep = this._track.loopAtStep ?? (beats * stepsPerBeat)
-        const maxSteps = beats * stepsPerBeat
-        const swing = this._track.swingAmount ?? 0
+    // ── Backward-compat delegations to sections ────────────────────
 
-        const fmtLoopPoint = (step) => {
-            const b = Math.floor((step - 1) / stepsPerBeat) + 1
-            const s = ((step - 1) % stepsPerBeat) + 1
-            return `${b}.${s}`
-        }
+    _renderFxGroup()              { return this._fxSection.render() }
+    _renderSoundPanel()           { return this._sndSection.render() }
+    _renderLfoGroup()             { return this._modSection.render() }
+    _renderLoopPanel()            { return this._loopSection.render() }
+    _isFxOn(fx)                   { return this._fxSection.isFxOn(fx) }
 
-        let content = ''
-        const loopProps = [
-            { key: 'stepsPerBeat', label: 'Steps/Beat', min: 1, max: 8, step: 1, val: stepsPerBeat },
-            { key: 'loopAtStep',  label: 'Loop Point', min: 1, max: maxSteps, step: 1, val: loopAtStep, format: fmtLoopPoint },
-            { key: 'swingAmount', label: 'Swing',     min: 0, max: 1, step: 0.01, val: swing }
-        ]
-
-        loopProps.forEach(p => {
-            const s = new OrSlider({
-                key: p.key,
-                label: p.label,
-                min: p.min,
-                max: p.max,
-                step: p.step,
-                value: p.val,
-                format: p.format,
-                dataAttr: 'data-loop',
-                onChange: (v, key) => this._onLoopSlider({ dataset: { loop: key }, value: v })
-            })
-            s._isDelegated = true
-            this._sliders.set(p.key, s)
-            content += s.toHTML()
-        })
-
-        return content
+    _toggleFxByKey(key) {
+        this._fxSection.toggleFxByKey(key)
+        this.sync()
+        this._playbackEvents.dispatchPatternChange([this._track])
     }
 
-    _renderFxGroup() {
-        let tabsHtml = '<div class="te-mod-targets">'
-        FX_DEFS.forEach((fx, i) => {
-            const on = this._isFxOn(fx)
-            const ledClass = on ? 'lfo-led on' : 'lfo-led'
-            const activeClass = this._fxTab.isHidden(String(i)) ? '' : ' active'
-            tabsHtml += `<div class="te-mod-btn${activeClass}">
-                <span class="${ledClass}" data-fx-toggle-btn="${fx.key}"></span>
-                <span data-fx-tab="${i}">${fx.label}</span></div>`
-        })
-        tabsHtml += '</div>'
-
-        let content = tabsHtml
-        FX_DEFS.forEach((fx, idx) => {
-            const isHidden = this._fxTab.isHidden(String(idx))
-            const on = this._isFxOn(fx)
-            const ledClass = on ? 'lfo-led on' : 'lfo-led'
-
-            content += `<div class="fx-tab-panel ${isHidden ? 'fx-tab-panel-hidden' : ''}" data-fx-panel="${idx}">`
-
-            fx.controls.forEach(ck => {
-                const prop = PROP_BY_KEY.get(ck)
-                if (!prop) return
-                const val = this._track[ck]
-                if (prop.type === 'icon') {
-                    content += `<div class="ne-row fx-icon-row" data-prop="${ck}">
-                        <label class="ne-row-label">${prop.label}</label>
-                        ${renderIconChoices(prop.options, val, FILTER_TYPE_ICONS, { cssClass: 'fx-icon-btn', valueDataAttr: 'data-fx-icon-val' })}
-                    </div>`
-                } else if (prop.type === 'select') {
-                    content += `<div class="ne-row" data-prop="${ck}">
-                        <label class="ne-row-label">${prop.label}</label>
-                        <select data-key="${ck}">${renderOptions(prop.options, val, { labels: prop.labels })}</select></div>`
-                } else {
-                    const hasLfo = prop.lfo && this._track[prop.lfo] ? 'has-lfo' : ''
-                    const isSelected = this._selectedPropKey === ck ? 'selected' : ''
-                    const knob = new OrKnob({
-                        key: ck,
-                        label: prop.label,
-                        min: prop.min,
-                        max: prop.max,
-                        step: prop.step,
-                        value: val ?? prop.min,
-                        extraClass: `${isSelected} ${hasLfo}`.trim(),
-                        format: (v) => fmtVal(ck, v),
-                        onChange: (v) => {
-                            this._track[ck] = v
-                            playbackEvents.dispatchTrackParamChange(this._track)
-                        }
-                    })
-                    this._fxKnobs.push(knob)
-                    content += knob.toHTML()
-                }
-            })
-
-            content += `</div>`
-        })
-
-        return content
+    _onFxIcon(target) {
+        this._fxSection.onFxIcon(target)
+        this.sync()
+        this._playbackEvents.dispatchPatternChange([this._track])
     }
 
-    _isFxOn(fx) {
-        if (fx.key === 'filterFreq') {
-            const ft = this._track.filterType
-            return ft != null && ft !== 'allpass'
-        }
-        const amount = Number(this._track[fx.key] ?? 0)
-        return Number.isFinite(amount) && amount > 0
+    _onFxTab(btn)                 { this._fxSection.onFxTab(btn) }
+
+    _onLfoSelectBtn(k) {
+        this._modSection.onSelectBtn(k)
+        this.sync()
     }
 
-    _renderSoundPanel() {
-        const auto = this._track.useAutoAssignSound !== false
-        const ledClass = auto ? 'lfo-led on' : 'lfo-led'
-        const generatedSoundKeys = this.synthEditor.getGeneratedSoundKeys()
-         const currentGeneratedSound = this._track.useSoftSynth === true
-             ? (this._track.synthSoundKey ?? 'BASS1')
-             : 'none'
-
-        const keysWithSamples = new Set(
-            soundRegistry.drumkitList.flatMap(kit => kit.instruments.map(s => s.key))
-        )
-        const instrumentIds = InstrumentsManager.DATA.instruments
-            .map(i => i.id)
-            .filter(id => keysWithSamples.has(id))
-            .sort()
-        const currentName = this._getCurrentInstrumentName(instrumentIds, keysWithSamples)
-        const currentSoundId = this._getCurrentSoundUrl()
-        const matchingSounds = this._getSamplesForInstrument(currentName)
-
-        const NL = '&#10;'
-        const currentSound = soundRegistry.sounds[currentSoundId]
-        const sampleTooltip = currentSound
-            ? [
-                `Kit: ${currentSound.kit_name ?? '?'}`,
-                `URL: ${currentSound.url ?? '?'}`,
-                `Instrument: ${currentSound.key ?? '?'}`,
-                `Synth: ${this._track.useSoftSynth === true ? 'yes' : 'no'}`,
-                `Size: ${currentSound.buffer?.length != null ? currentSound.buffer.length.toLocaleString() + ' samples' : '?'}`,
-                `Length: ${currentSound.duration != null ? currentSound.duration + ' ms' : '?'}`
-            ].join(NL)
-            : ''
-
-        let content = ''
-        content += `<div class="ne-row"><label>Instr</label><select data-sound="instrument">${renderOptions(instrumentIds, currentName)}</select></div>
-        <div class="ne-row"><label title="${sampleTooltip}">Sample</label><select data-sound="sample">`
-        if (matchingSounds.length === 0) {
-            content += `<option value="">— no samples —</option>`
-        } else {
-            const sampleValues = matchingSounds.map(s => s.url)
-            const sampleLabels = matchingSounds.map(s => {
-                const kit = s.kitName ?? ''
-                const name = s.display_name ?? s.url ?? '??'
-                return kit ? `${kit}/${name}` : name
-            })
-            content += renderOptions(sampleValues, currentSoundId, { labels: sampleLabels })
-        }
-        const synthOpts = ['none', ...generatedSoundKeys]
-        if (this._track.useSoftSynth === true && !generatedSoundKeys.includes(currentGeneratedSound)) {
-            synthOpts.push(currentGeneratedSound)
-        }
-        content += `</select></div>
-                <div class="ne-row ne-row-separator">
-                    <label>Synth</label>
-                    <select data-sound="generated">${renderOptions(synthOpts, currentGeneratedSound, { escape: this.esc })}</select></div>
-                <div class="ne-row ${currentGeneratedSound === 'none' ? 'ne-row-hidden' : ''}" data-sound-edit-row>
-                    <label>Edit</label>
-                    <button class="ne-btn" data-action="edit-synth">Edit</button>
-                </div>`
-
-        const monoActive = this._track.mono ? 'active' : ''
-        const monoLabel = this._track.mono ? 'ON' : 'OFF'
-        return `<div class="ne-row"><label>Mono</label><button class="ne-btn ${monoActive}" data-key="mono">${monoLabel}</button></div>
-        <div class="ne-row"><button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> <label>auto</label></div>` + content
+    _onLfoToggleBtn(k) {
+        this._modSection.onToggleBtn(k)
+        this.sync()
+        this._playbackEvents.dispatchTrackParamChange(this._track)
+        this._playbackEvents.dispatchPatternChange([this._track])
     }
 
-    _getSelectedDrumkitName() {
-        return soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? ''
+    _onLfoSlider(input) {
+        const needsSync = this._modSection.onSlider(input)
+        if (needsSync) this.sync()
+        this._playbackEvents.dispatchTrackParamChange(this._track)
     }
 
-    _getAllKitSamples() {
-        return soundRegistry.drumkitList.flatMap(kit =>
-            kit.instruments.map(s => ({ ...s, kitName: kit.name }))
-        )
+    _onLfoSelect(sel) {
+        this._modSection.onSelect(sel)
+        this._playbackEvents.dispatchTrackParamChange(this._track)
     }
 
-    _sortSamplesForCurrentKit(samples) {
-        const selectedKitName = this._getSelectedDrumkitName()
-        return [...samples].sort((a, b) => {
-            const aSelected = a.kitName === selectedKitName ? 0 : 1
-            const bSelected = b.kitName === selectedKitName ? 0 : 1
-            if (aSelected !== bSelected) return aSelected - bSelected
-            const kitCompare = String(a.kitName ?? '').localeCompare(String(b.kitName ?? ''))
-            if (kitCompare !== 0) return kitCompare
-             const sortKeyA = a.display_name || a.url || ''
-             const sortKeyB = b.display_name || b.url || ''
-             return sortKeyA.localeCompare(sortKeyB)
-        })
+    _toggleLfoForTarget(k) {
+        this._modSection._toggleLfoForTarget(k)
+        this.sync()
+        this._playbackEvents.dispatchTrackParamChange(this._track)
+        this._playbackEvents.dispatchPatternChange([this._track])
     }
 
-    _getSamplesForInstrument(instrumentId) {
-        return this._sortSamplesForCurrentKit(
-            this._getAllKitSamples().filter(s => s.key === instrumentId)
-        )
+    _toggleLfo() {
+        this._toggleLfoForTarget(this._selectedLfoTarget)
     }
 
-    _getPreferredSampleForInstrument(instrumentId) {
-        return this._getSamplesForInstrument(instrumentId)[0] ?? null
-    }
+    _getPreferredSampleForInstrument(id) { return this._sndSection._getPreferredSampleForInstrument(id) }
+    _getCurrentInstrumentName(ids, keys) { return this._sndSection._getCurrentInstrumentName(ids, keys) }
+    _getSoundInfo()                       { return this._sndSection._getSoundInfo() }
+    _getSelectedDrumkitName()             { return this._sndSection._getSelectedDrumkitName() }
+    _getAllKitSamples()                   { return this._sndSection._getAllKitSamples() }
+    _sortSamplesForCurrentKit(samples)    { return this._sndSection._sortSamplesForCurrentKit(samples) }
+    _getSamplesForInstrument(id)          { return this._sndSection._getSamplesForInstrument(id) }
+    _getCurrentSoundUrl()                 { return this._sndSection._getCurrentSoundUrl() }
 
-    _getCurrentSoundUrl() {
-        const soundId = this._track.soundId ?? ''
-        return soundRegistry.sounds[soundId]?.url ?? soundId
-    }
-
-    _getSoundInfo() {
-        if (this._track.useSoftSynth === true) {
-            return this._track.synthSoundKey ?? null
-        }
-        const sound = soundRegistry.sounds[this._track.soundId]
-        if (!sound) return null
-        const kit = sound.kit_name ?? ''
-        const name = sound.display_name ?? sound.key ?? sound.url ?? ''
-        return kit ? `${kit}/${name}` : name
-    }
-
-    _getCurrentInstrumentName(instrumentIds, keysWithSamples) {
-        if (keysWithSamples.has(this._track.name)) return this._track.name
-        const soundKey = soundRegistry.sounds[this._getCurrentSoundUrl()]?.key
-        if (soundKey && keysWithSamples.has(soundKey)) return soundKey
-        return instrumentIds[0] ?? 'KICK'
-    }
-
-    _renderLfoGroup() {
-        if (!this._track) return ''
-
-        const LFO_PROPS = [...ALL_TRACK_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
-        if (!LFO_PROPS.length) return ''
-
-        if (!this._selectedLfoTarget || !LFO_PROPS.find(p => p.key === this._selectedLfoTarget)) {
-            this._selectedLfoTarget = LFO_PROPS[0].key
-        }
-
-        const prop = LFO_PROPS.find(p => p.key === this._selectedLfoTarget) ?? LFO_PROPS[0]
-        const lfoKey = prop.lfo
-        const lfo = this._track[lfoKey]
-
-        const freq = lfo ? lfo.freq : 1
-        const min = lfo ? lfo.min : prop.min
-        const max = lfo ? lfo.max : prop.max
-        const phase = lfo ? lfo.phase : 0
-        const type = lfo ? (lfo.type ?? 'sine') : 'sine'
-
-        let content = `<div class="te-mod-targets">`
-        LFO_PROPS.forEach(p => {
-            const isActive = p.key === this._selectedLfoTarget
-            const lfoOn = !!this._track[p.lfo]
-            const ledCls = lfoOn ? 'lfo-led on' : 'lfo-led'
-            const activeClass = isActive ? ' active' : ''
-            content += `<div class="te-mod-btn${activeClass}">
-                <span class="${ledCls}" data-lfo-toggle-btn="${p.key}"></span>
-                <span data-lfo-select-btn="${p.key}">${p.label}</span></div>`
-        })
-        content += `</div>
-            <div class="ne-row">
-                <label>Type</label>
-                <select data-lfo-type-select="1">
-                    ${renderOptions(Utils.waveList, type)}
-                </select>
-            </div>
-            <div class="ne-row">
-                <label>Freq</label>
-                <input type="range" min="0.1" max="2" step="0.1" value="${freq}" data-lfo-key="freq">
-                <span class="ne-val">${fmt(freq)}</span>
-            </div>
-            <div class="ne-row">
-                <label>Range</label>
-                <div class="ne-range-container">
-                    <input type="range" min="${prop.min}" max="${prop.max}" step="${prop.step}" 
-                        value="${min}" data-lfo-key="min" title="Min">
-                    <input type="range" min="${prop.min}" max="${prop.max}" step="${prop.step}" 
-                        value="${max}" data-lfo-key="max" title="Max">
-                </div>
-                <span class="ne-val ne-val-wide">${fmt(min)}..${fmt(max)}</span>
-            </div>
-            <div class="ne-row">
-                <label>Phase</label>
-                <input type="range" min="0" max="1" step="0.01" value="${phase}" data-lfo-key="phase">
-                <span class="ne-val">${fmt(phase)}</span>
-            </div>`
-
-        return content
-    }
+    // ── Event delegation ───────────────────────────────────────────
 
     _bindEvents() {
-        if (this._delegationBound) {
-            return
-        }
+        if (this._delegationBound) return
 
-        // Event delegation for all inputs, selects and buttons
         this.container.addEventListener('input', (e) => {
             const target = e.target
             const key = target.dataset.key ?? target.dataset.lfoKey ?? target.dataset.loop
             if (!key) return
-
-            // Check if it's an OrSlider
             const slider = Array.from(this._sliders.values()).find(s => s._input === target)
             if (slider) {
                 slider.handleInput(e)
@@ -862,7 +511,6 @@ export default class TrackEditor extends BasePanel {
             } else if (target.dataset.lfoKey) {
                 this._onLfoSlider(target)
             } else if (target.dataset.loop) {
-                // _onLoopSlider expects an input object with value and dataset
                 this._onLoopSlider(target)
             }
         })
@@ -883,43 +531,25 @@ export default class TrackEditor extends BasePanel {
             }
             if (target.tagName === 'SELECT') {
                 if (target.dataset.key) this._onSelect(target)
-                else if (target.dataset.lfoTypeSelect) {
-                    this._onLfoSelect(target)
-                } else if (target.dataset.sound) {
-                    // Logic from original handlers
-                    if (target.dataset.sound === 'instrument') this._onInstrumentChange(target)
-                    else if (target.dataset.sound === 'sample') this._onSampleChange(target)
-                    else if (target.dataset.sound === 'generated') this._onGeneratedChange(target)
+                else if (target.dataset.lfoTypeSelect) this._onLfoSelect(target)
+                else if (target.dataset.sound) {
+                    if (target.dataset.sound === 'instrument') this._sndSection.onInstrumentChange(target)
+                    else if (target.dataset.sound === 'sample') this._sndSection.onSampleChange(target)
+                    else if (target.dataset.sound === 'generated') this._sndSection.onGeneratedChange(target)
                 }
             } else if (target.type === 'range') {
                 this._isDragging = false
-                playbackEvents.dispatchPatternChange([this._track])
+                this._playbackEvents.dispatchPatternChange([this._track])
             }
         })
 
         this.container.addEventListener('click', (e) => {
             const target = e.target
-
-            if (target.dataset.lfoToggleBtn) {
-                this._onLfoToggleBtn(target.dataset.lfoToggleBtn)
-                return
-            }
-            if (target.dataset.lfoSelectBtn) {
-                this._onLfoSelectBtn(target.dataset.lfoSelectBtn)
-                return
-            }
-            if (target.dataset.fxToggleBtn) {
-                this._toggleFxByKey(target.dataset.fxToggleBtn)
-                return
-            }
-            if (target.dataset.fxTab) {
-                this._onFxTab({ dataset: { fxTab: target.dataset.fxTab } })
-                return
-            }
-            if (target.dataset.fxIconVal) {
-                this._onFxIcon(target)
-                return
-            }
+            if (target.dataset.lfoToggleBtn)  { this._onLfoToggleBtn(target.dataset.lfoToggleBtn); return }
+            if (target.dataset.lfoSelectBtn)  { this._onLfoSelectBtn(target.dataset.lfoSelectBtn); return }
+            if (target.dataset.fxToggleBtn)   { this._toggleFxByKey(target.dataset.fxToggleBtn); return }
+            if (target.dataset.fxTab)         { this._onFxTab({ dataset: { fxTab: target.dataset.fxTab } }); return }
+            if (target.dataset.fxIconVal)     { this._onFxIcon(target); return }
 
             const btn = target.closest('button')
             if (!btn) {
@@ -930,81 +560,13 @@ export default class TrackEditor extends BasePanel {
                 return
             }
 
-            if (btn.dataset.key) {
-                this._onToggle(btn)
-            } else if (btn.dataset.fxToggle) {
-                this._toggleFx(btn)
-            } else if (btn.dataset.fxTab) {
-                this._onFxTab(btn)
-            } else if (btn.dataset.action === 'toggle-auto') {
-                this._toggleAuto()
-            } else if (btn.dataset.action === 'edit-synth') {
-                this.synthEditor.openEditor()
-            } else if (btn.dataset.action === 'load-sample') {
-                this._onLoadSample()
-            }
+            if (btn.dataset.key)            this._onToggle(btn)
+            else if (btn.dataset.action === 'toggle-auto')  this._sndSection.toggleAuto()
+            else if (btn.dataset.action === 'edit-synth')   this.synthEditor.openEditor()
+            else if (btn.dataset.action === 'load-sample')  this._onLoadSample()
         })
 
         this._delegationBound = true
-    }
-
-    _onInstrumentChange = async (target) => {
-        const newName = target.value
-        serviceRegistry.mfCmd.changeTrackName(this._track, newName)
-        const firstSample = this._getPreferredSampleForInstrument(newName)
-        if (firstSample) {
-            if (!soundRegistry.sounds[firstSample.url]?.buffer) {
-                await serviceRegistry.mfResourcesLoader.loadSample(firstSample, firstSample.kitName)
-            }
-            serviceRegistry.mfCmd.changeTrackSound(this._track, firstSample.url)
-        }
-        this.sync()
-        playbackEvents.dispatchPatternChange([this._track])
-    }
-
-
-    _onSampleChange = async (target) => {
-        const url = target.value
-        if (!soundRegistry.sounds[url]?.buffer) {
-            let foundKit, foundSample
-            for (const kit of soundRegistry.drumkitList) {
-                const s = kit.instruments.find(i => i.url === url)
-                if (s) { foundKit = kit; foundSample = s; break }
-            }
-            if (foundSample && foundKit) {
-                await serviceRegistry.mfResourcesLoader.loadSample(foundSample, foundKit.name)
-            }
-        }
-        serviceRegistry.mfCmd.changeTrackSound(this._track, url)
-        playbackEvents.dispatchPatternChange([this._track])
-    }
-
-    _onGeneratedChange = async (target) => {
-        const key = target.value
-        if (key === 'none') {
-            this._track.useSoftSynth = false
-        } else {
-            if (!soundRegistry.generatedSounds[key]) {
-                await this.synthEditor.ensureGeneratedSoundsLoaded()
-            }
-            this._track.useSoftSynth = true
-            this._track.useAutoAssignSound = false
-            this._track.synthSoundKey = key
-        }
-        this.sync()
-        playbackEvents.dispatchPatternChange([this._track])
-    }
-
-    _toggleAuto() {
-        this._track.useAutoAssignSound = this._track.useAutoAssignSound === false
-        if (this._track.useAutoAssignSound) {
-            this._track.useSoftSynth = false
-            this._track.synthSoundKey = null
-            const aa = new MfAutoAssign()
-            aa.autoAssignTrackSounds(this._track)
-        }
-        this.sync()
-        playbackEvents.dispatchPatternChange([this._track])
     }
 
     _onRowClick(propKey) {
@@ -1012,138 +574,22 @@ export default class TrackEditor extends BasePanel {
         this.sync()
     }
 
-    _toggleFxByKey(key) {
-        if (key === 'filterFreq') {
-            const cur = this._track.filterType
-            const isOn = cur != null && cur !== 'allpass'
-            if (isOn) {
-                this._prevFilterType = cur
-                this._track.filterType = 'allpass'
-            } else {
-                this._track.filterType = this._prevFilterType ?? 'lowpass'
-            }
-        } else {
-            const isOn = Number(this._track[key] ?? 0) > 0
-            this._track[key] = isOn ? 0 : 0.5
-        }
-        this.sync()
-        playbackEvents.dispatchPatternChange([this._track])
+    _onSelect(sel) {
+        if (!this._track) return
+        const key = sel.dataset.key
+        let val = sel.value
+        if (key === 'delayTime') val = parseFloat(val)
+        this._track[key] = val
+        this._playbackEvents.dispatchTrackParamChange(this._track)
     }
 
-    _onFxIcon(target) {
-        const val = target.dataset.fxIconVal
-        if (!val) return
-        if (target.closest('[data-prop="filterType"]')) {
-            const cur = this._track.filterType
-            this._track.filterType = (cur === val) ? 'allpass' : val
-            this._prevFilterType = (cur === val) ? undefined : cur
-        }
-        this.sync()
-        playbackEvents.dispatchPatternChange([this._track])
-    }
-
-    _onFxTab(btn) {
-        const tabIdx = parseInt(btn.dataset.fxTab, 10)
-        if (Number.isNaN(tabIdx)) return
-
-        const activeTab = String(tabIdx)
-        this._fxTab.setActive(activeTab)
-        this._fxTab.togglePanels(this.container)
-
-        this.container.querySelectorAll('.te-mod-btn').forEach(tab => {
-            const tabButton = tab.querySelector('[data-fx-tab]')
-            tab.classList.toggle('active', tabButton?.dataset.fxTab === activeTab)
-        })
-    }
-
-    _onLfoSelectBtn(targetKey) {
-        this._selectedLfoTarget = targetKey
-        this.sync()
-    }
-
-    _onLfoToggleBtn(targetKey) {
-        this._selectedLfoTarget = targetKey
-        this._toggleLfoForTarget(targetKey)
-    }
-
-    _toggleLfoForTarget(targetKey) {
-        const allLfoProps = [...ALL_TRACK_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
-        const prop = allLfoProps.find(p => p.key === targetKey)
-        if (!prop) return
-        if (this._track[prop.lfo]) {
-            delete this._track[prop.lfo]
-        } else {
-            this._track[prop.lfo] = { type: 'sine', freq: 1, min: prop.min, max: prop.max, phase: 0 }
-        }
-        this.sync()
-        playbackEvents.dispatchTrackParamChange(this._track)
-        playbackEvents.dispatchPatternChange([this._track])
-    }
-
-    _toggleLfo() {
-        this._toggleLfoForTarget(this._selectedLfoTarget)
-    }
-
-    _onLfoSlider(input) {
-        this._isDragging = true
-        const prop = [...ALL_TRACK_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
-        if (!prop) return
-        let lfo = this._track[prop.lfo]
-        if (!lfo) {
-            lfo = this._track[prop.lfo] = { type: 'sine', freq: 1, min: prop.min, max: prop.max, phase: 0 }
-            this.sync()
-        }
-        const key = input.dataset.lfoKey
-        lfo[key] = parseFloat(input.value)
-        
-        if (key === 'min' || key === 'max') {
-            const row = input.closest?.('.ne-row')
-            const valEl = row?.querySelector('.ne-val')
-            if (valEl) valEl.textContent = `${fmt(lfo.min)}..${fmt(lfo.max)}`
-        } else {
-            if (input.nextElementSibling) {
-                input.nextElementSibling.textContent = fmt(input.value)
-            }
-        }
-        playbackEvents.dispatchTrackParamChange(this._track)
-    }
-
-    _onLfoSelect(sel) {
-        const prop = [...ALL_TRACK_PROPS, ...KNOB_PROPS].find(p => p.key === this._selectedLfoTarget)
-        if (!prop) return
-        let lfo = this._track[prop.lfo]
-        if (!lfo) {
-            lfo = this._track[prop.lfo] = { type: sel.value, freq: 1, min: prop.min, max: prop.max, phase: 0 }
-            this.sync()
-        }
-        lfo.type = sel.value
-        playbackEvents.dispatchTrackParamChange(this._track)
-    }
-
-    hide() {
-        if (!this.isVisible) return
-        if (this.container) removeLayout(this.container)
-        super.hide()
-        this.synthEditor.reset()
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-        this.container?.classList.remove('pp-split')
-        
-        this._track = null
-        this._trackIdx = -1
-        this._selectedPropKey = null
-        this._lastTick = -1
-        this._knobs.forEach(k => k.destroy())
-        this._knobs = []
-        this._fxKnobs.forEach(k => k.destroy())
-        this._fxKnobs = []
-        if (this._lfoBridge) {
-            this._lfoBridge.destroy()
-            this._lfoBridge = null
-        }
-        if (this._noteEditor) {
-            this._noteEditor.hide()
-        }
-        setViewBtn('edit', false)
+    _onToggle(btn) {
+        if (!this._track) return
+        const key = btn.dataset.key
+        this._track[key] = !this._track[key]
+        btn.textContent = this._track[key] ? 'ON' : 'OFF'
+        btn.classList.toggle('active', this._track[key])
+        this._playbackEvents.dispatchTrackParamChange(this._track)
     }
 
     _onLoopSlider(input) {
@@ -1165,53 +611,55 @@ export default class TrackEditor extends BasePanel {
         }
 
         const maxSteps = (this._track.nbBeats ?? 4) * (this._track.stepsPerBeat ?? 4)
-        if (this._track.loopAtStep > maxSteps) {
-            this._track.loopAtStep = maxSteps
-        }
+        if (this._track.loopAtStep > maxSteps) this._track.loopAtStep = maxSteps
 
         recalcLoopDerived(this._track)
 
         if (input.nextElementSibling) {
             input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
         }
-        
+
         const loopSlider = this._sliders.get('loopAtStep')
         if (loopSlider) {
             loopSlider.setMax?.(maxSteps)
-            if (key !== 'loopAtStep') {
-                loopSlider.setValue(this._track.loopAtStep)
-            }
+            if (key !== 'loopAtStep') loopSlider.setValue(this._track.loopAtStep)
         }
-        
+
         if (key === 'loopAtStep') {
-            playbackEvents.dispatchLoopPointChange({
-                trackIdx: this._trackIdx,
-                loopAtStep: this._track.loopAtStep
+            this._playbackEvents.dispatchLoopPointChange({
+                trackIdx: this._trackIdx, loopAtStep: this._track.loopAtStep
             })
         }
-        
+
         if (key === 'swingAmount') {
-            playbackEvents.dispatchTrackParamChange(this._track)
+            this._playbackEvents.dispatchTrackParamChange(this._track)
         } else {
-            playbackEvents.dispatchPatternChange([this._track])
+            this._playbackEvents.dispatchPatternChange([this._track])
         }
     }
 
-    _onSelect(sel) {
-        if (!this._track) return
-        const key = sel.dataset.key
-        let val = sel.value
-        if (key === 'delayTime') val = parseFloat(val)
-        this._track[key] = val
-        playbackEvents.dispatchTrackParamChange(this._track)
-    }
+    // ── Hide ───────────────────────────────────────────────────────
 
-    _onToggle(btn) {
-        if (!this._track) return
-        const key = btn.dataset.key
-        this._track[key] = !this._track[key]
-        btn.textContent = this._track[key] ? 'ON' : 'OFF'
-        btn.classList.toggle('active', this._track[key])
-        playbackEvents.dispatchTrackParamChange(this._track)
+    hide() {
+        if (!this.isVisible) return
+        if (this.container) removeLayout(this.container)
+        super.hide()
+        this.synthEditor.reset()
+        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        this.container?.classList.remove('pp-split')
+
+        this._track = null
+        this._trackIdx = -1
+        this._selectedPropKey = null
+        this._lastTick = -1
+        this._knobs.forEach(k => k.destroy())
+        this._knobs = []
+        this._fxKnobs.forEach(k => k.destroy())
+        this._fxKnobs = []
+        if (this._lfoBridge) { this._lfoBridge.destroy(); this._lfoBridge = null }
+        if (this._noteEditor) this._noteEditor.hide()
+        setViewBtn('edit', false)
     }
 }
+
+
