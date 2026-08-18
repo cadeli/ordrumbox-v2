@@ -221,12 +221,12 @@ export default class ToolsPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.onToolsToggle.push((show) => {
+        playbackEvents.on("toolsToggle", (show) => {
             if (show) this.show()
             else this.hide()
         })
         
-        playbackEvents.onPatternChange.push(() => {
+        playbackEvents.on("patternChange", () => {
             if (this.isVisible) {
                 this.sync()
             }
@@ -346,7 +346,7 @@ export default class ToolsPanel extends BasePanel {
         })
 
         serviceRegistry.audioEngine?.invalidateCache()
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit("patternChange")
         logger.debug('ToolsPanel', `Compaction finished. Total redundant notes removed: ${totalRemoved}`)
     }
 
@@ -372,7 +372,7 @@ export default class ToolsPanel extends BasePanel {
             }
         }
         serviceRegistry.audioEngine?.invalidateCache()
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit("patternChange")
     }
 
     _exportJson() {
@@ -458,7 +458,7 @@ export default class ToolsPanel extends BasePanel {
                 const newIdx = appState.patterns.indexOf(newPattern)
                 if (newIdx !== -1) {
                     await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
-                    playbackEvents.dispatchPatternChange()
+                    playbackEvents.emit("patternChange")
                     this.hide()
                 }
             } catch (err) {
@@ -805,14 +805,14 @@ export default class ToolsPanel extends BasePanel {
 
             await cacheDrumkits(Object.fromEntries(soundRegistry.drumkitList.map(d => [d.name, d])))
 
-            playbackEvents.dispatchDrumkitChange()
+            playbackEvents.emit("drumkitChange")
 
             showToast(`Imported ${wavFiles.length} WAV files as drumkit "${kitName}"`, 'success')
 
             this._autoAssignSounds()
 
             serviceRegistry.audioEngine?.invalidateCache()
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
 
         } catch (err) {
             logger.error('ToolsPanel', 'Directory import failed', err)

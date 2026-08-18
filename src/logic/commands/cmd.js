@@ -181,7 +181,7 @@ export default class MfCmd {
             appState.selectedDrumkitNum = num
             await serviceRegistry.resourcesLoader.loadMissingSamplesFromDrumkits([soundRegistry.drumkitList[num]])
             await this.autoAssignSoundsForNewDrumkit()
-            playbackEvents.dispatchDrumkitChange()
+            playbackEvents.emit("drumkitChange")
         } catch (err) {
             logger.error('MfCmd', 'cmd::setSelectedDrumkitNum failed', err)
         }

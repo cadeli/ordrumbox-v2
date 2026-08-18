@@ -80,7 +80,7 @@ export default class MfPlayer {
                 if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
                     MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
                     promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
-                    playbackEvents.dispatchNoteTrigger({
+                    playbackEvents.emit('noteTrigger', {
                         trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
                         beat: flatNote.note.beat,
                         beatStep: flatNote.note.beatStep

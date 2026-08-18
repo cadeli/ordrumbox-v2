@@ -26,7 +26,7 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
 
         toolsPanel = new ToolsPanel()
         toolsPanel.init()
-        playbackEvents.dispatchToolsToggle(true)
+        playbackEvents.emit("toolsToggle", true)
     })
 
     it('renders the WAV loops slider inside the Export tab', () => {

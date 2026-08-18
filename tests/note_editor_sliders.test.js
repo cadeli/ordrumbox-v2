@@ -126,7 +126,7 @@ describe('NoteEditor — OrSlider integration', () => {
     it('changing a knob updates the note and fires onPatternChange', async () => {
         const { note } = await showNote(noteEditor)
         const fn = vi.fn()
-        playbackEvents.onPatternChange.push(fn)
+        playbackEvents.on("patternChange", fn)
 
         const velocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
         velocityKnob.setValue(0.42, true)

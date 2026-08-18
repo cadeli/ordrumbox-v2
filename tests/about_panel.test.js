@@ -26,45 +26,45 @@ describe('AboutPanel (PWA)', () => {
     })
 
     it('opens when onAboutToggle(true) is fired', () => {
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
         const panel = document.getElementById('about-panel')
         expect(panel.style.display).toBe('block')
     })
 
     it('closes when onAboutToggle(false) is fired', () => {
-        playbackEvents.dispatchAboutToggle(true)
-        playbackEvents.dispatchAboutToggle(false)
+        playbackEvents.emit("aboutToggle", true)
+        playbackEvents.emit("aboutToggle", false)
         const panel = document.getElementById('about-panel')
         expect(panel.style.display).toBe('none')
     })
 
     it('hides when another modal (Tools/Output) is shown', () => {
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.dispatchToolsToggle(true)
+        playbackEvents.emit("toolsToggle", true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.dispatchOutputToggle(true)
+        playbackEvents.emit("outputToggle", true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
     })
 
     it('persists when the track editor is shown (onTrackSelect)', () => {
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.dispatchTrackSelect({ track: {}, trackIdx: 0 })
+        playbackEvents.emit("trackSelect", { track: {}, trackIdx: 0 })
         expect(document.getElementById('about-panel').style.display).toBe('block')
     })
 
     it('persists when the note editor is shown (onNoteSelect)', () => {
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.dispatchNoteSelect({ note: {}, track: {} })
+        playbackEvents.emit("noteSelect", { note: {}, track: {} })
         expect(document.getElementById('about-panel').style.display).toBe('block')
     })
 
@@ -76,14 +76,14 @@ describe('AboutPanel (PWA)', () => {
             document.body.appendChild(el)
         }
 
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
 
         expect(document.getElementById('about-panel').style.display).toBe('block')
         expect(document.getElementById('te-panel').style.display).toBe('block')
     })
 
     it('renders app info (name, version, license)', () => {
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
         const html = document.getElementById('about-panel').innerHTML
         expect(html).toContain('OrDrumbox')
         expect(html).toContain('2.0.0')
@@ -92,14 +92,14 @@ describe('AboutPanel (PWA)', () => {
     })
 
     it('renders the PWA section with install button (hidden by default)', () => {
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
         const installRow = document.getElementById('about-panel').querySelector('#about-pwa-install-row')
         expect(installRow).not.toBeNull()
         expect(installRow.style.display).toBe('none')
     })
 
     it('renders external links to website and source', () => {
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
         const html = document.getElementById('about-panel').innerHTML
         expect(html).toContain('https://www.ordrumbox.com')
         expect(html).toContain('github.com/cadeli/ordrumbox-v2')
@@ -112,9 +112,9 @@ describe('AboutPanel (PWA)', () => {
     })
 
     it('can be toggled via dispatchAboutToggle', () => {
-        playbackEvents.dispatchAboutToggle(true)
+        playbackEvents.emit("aboutToggle", true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
-        playbackEvents.dispatchAboutToggle(false)
+        playbackEvents.emit("aboutToggle", false)
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 })

@@ -37,7 +37,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
 
         toolsPanel = new ToolsPanel()
         toolsPanel.init()
-        playbackEvents.dispatchToolsToggle(true)
+        playbackEvents.emit("toolsToggle", true)
     })
 
     function addNotes(count) {
@@ -119,7 +119,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
 
         it('dispatches patternChange', () => {
             const spy = vi.fn()
-            playbackEvents.onPatternChange.push(spy)
+            playbackEvents.on("patternChange", spy)
 
             toolsPanel.container.querySelector('#tp-rnd').click()
             expect(spy).toHaveBeenCalled()

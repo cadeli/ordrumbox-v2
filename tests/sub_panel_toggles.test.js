@@ -112,7 +112,7 @@ describe('Sub-panel toggle toolbars', () => {
 
     describe('Tools Panel', () => {
         it('renders all 6 tab buttons (Pattern, Export, Import, MIDI Status, MIDI, Cache)', () => {
-            playbackEvents.dispatchToolsToggle(true)
+            playbackEvents.emit("toolsToggle", true)
 
             const tabs = document.getElementById('tools-panel').querySelectorAll('.ne-tab-btn[data-ne-tab]')
             const keys = Array.from(tabs).map(b => b.dataset.neTab)
@@ -120,7 +120,7 @@ describe('Sub-panel toggle toolbars', () => {
         })
 
         it('switches active tab when a button is clicked', () => {
-            playbackEvents.dispatchToolsToggle(true)
+            playbackEvents.emit("toolsToggle", true)
 
             const tp = document.getElementById('tools-panel')
             const exportTab = tp.querySelector('.ne-tab-btn[data-ne-tab="export"]')
@@ -134,18 +134,18 @@ describe('Sub-panel toggle toolbars', () => {
         })
 
         it('can be toggled via dispatchToolsToggle', () => {
-            playbackEvents.dispatchToolsToggle(true)
+            playbackEvents.emit("toolsToggle", true)
 
             const tp = document.getElementById('tools-panel')
             expect(tp.style.display).toBe('block')
-            playbackEvents.dispatchToolsToggle(false)
+            playbackEvents.emit("toolsToggle", false)
             expect(tp.style.display).toBe('none')
         })
     })
 
     describe('Output Panel', () => {
         it('renders all 3 tab buttons (Master, Comp, Flt)', () => {
-            playbackEvents.dispatchOutputToggle(true)
+            playbackEvents.emit("outputToggle", true)
 
             const tabs = document.getElementById('output-panel').querySelectorAll('.ne-tab-btn[data-ne-tab]')
             const keys = Array.from(tabs).map(b => b.dataset.neTab)
@@ -153,7 +153,7 @@ describe('Sub-panel toggle toolbars', () => {
         })
 
         it('switches active tab when a button is clicked', () => {
-            playbackEvents.dispatchOutputToggle(true)
+            playbackEvents.emit("outputToggle", true)
 
             const op = document.getElementById('output-panel')
             op.querySelector('.ne-tab-btn[data-ne-tab="compressor"]').click()

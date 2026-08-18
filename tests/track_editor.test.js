@@ -173,7 +173,7 @@ describe('TrackEditor onPatternChange', () => {
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit("patternChange")
 
         expect(editor._track).toBe(newTrack)
         expect(editor._trackIdx).toBe(0)
@@ -191,7 +191,7 @@ describe('TrackEditor onPatternChange', () => {
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit("patternChange")
 
         expect(editor._track).toBeNull()
         expect(editor._trackIdx).toBe(-1)
@@ -203,7 +203,7 @@ describe('TrackEditor onPatternChange', () => {
         editor.init()
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit("patternChange")
 
         expect(syncSpy).not.toHaveBeenCalled()
     })
@@ -231,7 +231,7 @@ describe('TrackEditor loop slider events', () => {
         editor.show({ track, trackIdx: 0 })
 
         const onLoopPointChangeSpy = vi.fn()
-        playbackEvents.onLoopPointChange.push(onLoopPointChangeSpy)
+        playbackEvents.on("loopPointChange", onLoopPointChangeSpy)
 
         // Simulate the onChange call that happens during drag/input
         // This is what _renderLoopPanel does: 

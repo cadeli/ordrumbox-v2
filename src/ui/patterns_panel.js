@@ -50,7 +50,7 @@ export default class PatternsPanel extends BasePanel {
             serviceRegistry.cmd.addPattern()
             serviceRegistry.cmd.setSelectedPatternNum(newIdx)
             appState.currentPage = 0
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
             this._selectedIdx = newIdx
             this.sync()
             showToast('Pattern added', 'success')
@@ -71,10 +71,10 @@ export default class PatternsPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.onPatternsToggle.push((show) => {
+        playbackEvents.on("patternsToggle", (show) => {
             if (show) this.show(); else this.hide()
         })
-        playbackEvents.onPatternChange.push(() => { if (this.isVisible) this.sync() })
+        playbackEvents.on("patternChange", () => { if (this.isVisible) this.sync() })
     }
 
     sync() {
@@ -136,7 +136,7 @@ export default class PatternsPanel extends BasePanel {
             const newName = input.value.trim()
             if (newName && newName !== currentName) {
                 serviceRegistry.cmd.renamePattern(idx, newName)
-                playbackEvents.dispatchPatternChange()
+                playbackEvents.emit("patternChange")
             }
             this.sync()
         }
@@ -184,7 +184,7 @@ export default class PatternsPanel extends BasePanel {
     _selectPattern(idx) {
         serviceRegistry.cmd.setSelectedPatternNum(idx)
         appState.currentPage = 0
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit("patternChange")
         this._selectedIdx = idx
         this._renderList()
     }
@@ -199,7 +199,7 @@ export default class PatternsPanel extends BasePanel {
 
         serviceRegistry.cmd.removePattern(idx)
         this._selectedIdx = appState.selectedPatternNum
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit("patternChange")
         this.sync()
         showToast(`Deleted "${name}"`, 'success')
     }
@@ -247,7 +247,7 @@ export default class PatternsPanel extends BasePanel {
             this._songName = data.name ?? choice.trim()
             serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
             appState.currentPage = 0
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
             this.sync()
             showToast(`Song "${this._songName}" loaded`, 'success')
         } catch (err) {

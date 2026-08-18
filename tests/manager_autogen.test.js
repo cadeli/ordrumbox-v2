@@ -70,7 +70,7 @@ describe('MfPatterns', () => {
     it('fires onPatternChange callbacks', async () => {
         const cb = vi.fn()
         const { playbackEvents } = await import('../src/state/playback_events.js')
-        playbackEvents.onPatternChange.push(cb)
+        playbackEvents.on("patternChange", cb)
         patternsMgr.computeFlatNotesFromPattern(pattern, 0)
         expect(cb).toHaveBeenCalled()
         playbackEvents.onPatternChange.pop()

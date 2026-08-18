@@ -159,39 +159,39 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
 
     describe('Main panels → left-top slot', () => {
         it('pattern-panel visible in edit view', () => {
-            playbackEvents.dispatchEditToggle()
+            playbackEvents.emit("editToggle")
             const el = document.getElementById('pattern-panel')
             expect(el.style.display).not.toBe('none')
         })
 
         it('piano-roll-panel visible in proll view', () => {
-            playbackEvents.dispatchProllToggle()
+            playbackEvents.emit("prollToggle")
             const el = document.getElementById('piano-roll-panel')
             expect(el.style.display).toBe('block')
         })
 
         it('soft-synth-panel visible in synth view', () => {
-            playbackEvents.dispatchSynthToggle()
+            playbackEvents.emit("synthToggle")
             const el = document.getElementById('soft-synth-panel')
             expect(el.style.display).toBe('block')
         })
 
         it('pattern-panel visible in edit regardless of secondary panels', () => {
-            playbackEvents.dispatchEditToggle()
+            playbackEvents.emit("editToggle")
             document.getElementById('about-panel').style.display = 'block'
             document.getElementById('dm-panel').style.display = 'block'
             expect(document.getElementById('pattern-panel').style.display).not.toBe('none')
         })
 
         it('piano-roll visible in proll regardless of about panel', () => {
-            playbackEvents.dispatchProllToggle()
+            playbackEvents.emit("prollToggle")
             document.getElementById('about-panel').style.display = 'block'
             expect(document.getElementById('piano-roll-panel').style.display).toBe('block')
         })
 
         it('synth visible in synth view regardless of tools panel', () => {
-            playbackEvents.dispatchSynthToggle()
-            playbackEvents.dispatchToolsToggle(true)
+            playbackEvents.emit("synthToggle")
+            playbackEvents.emit("toolsToggle", true)
             expect(document.getElementById('soft-synth-panel').style.display).toBe('block')
         })
     })
@@ -200,10 +200,10 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
 
     describe('Track editor → right-top slot', () => {
         const views = [
-            ['edit',     () => playbackEvents.dispatchEditToggle()],
-            ['synth',    () => playbackEvents.dispatchSynthToggle()],
-            ['proll',    () => playbackEvents.dispatchProllToggle()],
-            ['tools',    () => playbackEvents.dispatchToolsToggle(true)],
+            ['edit',     () => playbackEvents.emit("editToggle")],
+            ['synth',    () => playbackEvents.emit("synthToggle")],
+            ['proll',    () => playbackEvents.emit("prollToggle")],
+            ['tools',    () => playbackEvents.emit("toolsToggle", true)],
         ]
 
         for (const [name, dispatch] of views) {
@@ -214,7 +214,7 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         }
 
         it('TE visible with multiple secondary panels', () => {
-            playbackEvents.dispatchSynthToggle()
+            playbackEvents.emit("synthToggle")
             for (const id of ['about-panel', 'dm-panel', 'output-panel']) {
                 document.getElementById(id).style.display = 'block'
             }
@@ -226,27 +226,27 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
 
     describe('Note editor → right-bottom slot', () => {
         it('NE visible in edit view', () => {
-            playbackEvents.dispatchEditToggle()
+            playbackEvents.emit("editToggle")
             expectNEVisible()
         })
 
         it('NE visible in synth view', () => {
-            playbackEvents.dispatchSynthToggle()
+            playbackEvents.emit("synthToggle")
             expectNEVisible()
         })
 
         it('NE visible in proll view', () => {
-            playbackEvents.dispatchProllToggle()
+            playbackEvents.emit("prollToggle")
             expectNEVisible()
         })
 
         it('NE visible in tools view', () => {
-            playbackEvents.dispatchToolsToggle(true)
+            playbackEvents.emit("toolsToggle", true)
             expectNEVisible()
         })
 
         it('NE visible with secondary panels', () => {
-            playbackEvents.dispatchSynthToggle()
+            playbackEvents.emit("synthToggle")
             document.getElementById('about-panel').style.display = 'block'
             document.getElementById('dm-panel').style.display = 'block'
             expectNEVisible()
@@ -269,7 +269,7 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         }
 
         it('about-panel positioned below main in edit view', () => {
-            playbackEvents.dispatchEditToggle()
+            playbackEvents.emit("editToggle")
             const el = document.getElementById('about-panel')
             el.style.display = 'block'
             positionBelowPatternPanel(el)
@@ -277,7 +277,7 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         })
 
         it('about-panel positioned below main in synth view', () => {
-            playbackEvents.dispatchSynthToggle()
+            playbackEvents.emit("synthToggle")
             const el = document.getElementById('about-panel')
             el.style.display = 'block'
             positionBelowPatternPanel(el)
@@ -285,7 +285,7 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         })
 
         it('about-panel positioned below main in proll view', () => {
-            playbackEvents.dispatchProllToggle()
+            playbackEvents.emit("prollToggle")
             const el = document.getElementById('about-panel')
             el.style.display = 'block'
             positionBelowPatternPanel(el)
@@ -310,7 +310,7 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         })
 
         it('secondary panels do not overlap pattern-panel', () => {
-            playbackEvents.dispatchEditToggle()
+            playbackEvents.emit("editToggle")
             const mainBottom = LAYOUT.toolbarH + LAYOUT.mainH
             const el = document.getElementById('about-panel')
             el.style.display = 'block'
@@ -320,7 +320,7 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         })
 
         it('secondary panels do not overlap synth panel', () => {
-            playbackEvents.dispatchSynthToggle()
+            playbackEvents.emit("synthToggle")
             const mainBottom = LAYOUT.toolbarH + LAYOUT.mainH
             for (const id of ['about-panel', 'dm-panel', 'output-panel']) {
                 const el = document.getElementById(id)
@@ -341,11 +341,11 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
     describe('Panel persistence across view cycles', () => {
         it('TE visible across full cycle edit→synth→proll→tools→edit', () => {
             for (const dispatch of [
-                playbackEvents.dispatchEditToggle,
-                playbackEvents.dispatchSynthToggle,
-                playbackEvents.dispatchProllToggle,
-                () => playbackEvents.dispatchToolsToggle(true),
-                playbackEvents.dispatchEditToggle,
+                () => playbackEvents.emit("editToggle"),
+                () => playbackEvents.emit("synthToggle"),
+                () => playbackEvents.emit("prollToggle"),
+                () => playbackEvents.emit("toolsToggle", true),
+                () => playbackEvents.emit("editToggle"),
             ]) {
                 dispatch()
                 expectTEVisible()
@@ -354,11 +354,11 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
 
         it('NE visible across full cycle edit→synth→proll→tools→edit', () => {
             for (const dispatch of [
-                playbackEvents.dispatchEditToggle,
-                playbackEvents.dispatchSynthToggle,
-                playbackEvents.dispatchProllToggle,
-                () => playbackEvents.dispatchToolsToggle(true),
-                playbackEvents.dispatchEditToggle,
+                () => playbackEvents.emit("editToggle"),
+                () => playbackEvents.emit("synthToggle"),
+                () => playbackEvents.emit("prollToggle"),
+                () => playbackEvents.emit("toolsToggle", true),
+                () => playbackEvents.emit("editToggle"),
             ]) {
                 dispatch()
                 expectNEVisible()
@@ -368,9 +368,9 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         it('about-panel persists across edit/synth/proll switches', () => {
             document.getElementById('about-panel').style.display = 'block'
             for (const dispatch of [
-                playbackEvents.dispatchEditToggle,
-                playbackEvents.dispatchSynthToggle,
-                playbackEvents.dispatchProllToggle,
+                () => playbackEvents.emit("editToggle"),
+                () => playbackEvents.emit("synthToggle"),
+                () => playbackEvents.emit("prollToggle"),
             ]) {
                 dispatch()
                 expect(document.getElementById('about-panel').style.display).not.toBe('none')
@@ -380,9 +380,9 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         it('dm-panel persists across edit/synth/proll switches', () => {
             document.getElementById('dm-panel').style.display = 'block'
             for (const dispatch of [
-                playbackEvents.dispatchEditToggle,
-                playbackEvents.dispatchSynthToggle,
-                playbackEvents.dispatchProllToggle,
+                () => playbackEvents.emit("editToggle"),
+                () => playbackEvents.emit("synthToggle"),
+                () => playbackEvents.emit("prollToggle"),
             ]) {
                 dispatch()
                 expect(document.getElementById('dm-panel').style.display).not.toBe('none')
@@ -392,9 +392,9 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         it('pp-panel persists across edit/synth/proll switches', () => {
             document.getElementById('pp-panel').style.display = 'block'
             for (const dispatch of [
-                playbackEvents.dispatchEditToggle,
-                playbackEvents.dispatchSynthToggle,
-                playbackEvents.dispatchProllToggle,
+                () => playbackEvents.emit("editToggle"),
+                () => playbackEvents.emit("synthToggle"),
+                () => playbackEvents.emit("prollToggle"),
             ]) {
                 dispatch()
                 expect(document.getElementById('pp-panel').style.display).not.toBe('none')
@@ -404,9 +404,9 @@ describe('Desktop layout — each panel in its slot (idempotent)', () => {
         it('output-panel persists across view switches', () => {
             document.getElementById('output-panel').style.display = 'block'
             for (const dispatch of [
-                playbackEvents.dispatchEditToggle,
-                playbackEvents.dispatchSynthToggle,
-                playbackEvents.dispatchProllToggle,
+                () => playbackEvents.emit("editToggle"),
+                () => playbackEvents.emit("synthToggle"),
+                () => playbackEvents.emit("prollToggle"),
             ]) {
                 dispatch()
                 expect(document.getElementById('output-panel').style.display).not.toBe('none')

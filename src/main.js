@@ -117,7 +117,7 @@ export function init() {
     })
     _viewManager.init()
 
-    playbackEvents.onTrackSelect.push((data) => {
+    playbackEvents.on("trackSelect", (data) => {
         if (data && data.trackIdx !== undefined) {
             appState.selectedTrackNum = data.trackIdx
         }
@@ -203,8 +203,8 @@ export function init() {
             logger.error('Main', 'Failed to load startup resources', e)
         }
         if (appState.patterns.length > 0) {
-            playbackEvents.dispatchPatternChange()
-            playbackEvents.dispatchDrumkitChange()
+            playbackEvents.emit("patternChange")
+            playbackEvents.emit("drumkitChange")
             
             // Set initial drumkit first to trigger sample loading
             serviceRegistry.cmd.setSelectedDrumkitNum(0)
@@ -212,13 +212,13 @@ export function init() {
             serviceRegistry.cmd.setSelectedPatternNum(0)
 
             if (isMobileViewport()) {
-                playbackEvents.dispatchMobileSeqToggle()
+                playbackEvents.emit("mobileSeqToggle")
             } else {
-                playbackEvents.dispatchEditToggle()
+                playbackEvents.emit("editToggle")
             }
 
             if (!isMobileViewport()) {
-                playbackEvents.dispatchOutputToggle(true)
+                playbackEvents.emit("outputToggle", true)
             }
         }
 
@@ -339,7 +339,7 @@ async function generatePattern() {
 
 function toggleVus() {
     appState.showVus = !appState.showVus
-    playbackEvents.dispatchTrackParamChange(null)
+    playbackEvents.emit("trackParamChange", null)
 }
 
 function logPatterns() {

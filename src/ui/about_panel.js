@@ -103,7 +103,7 @@ export default class AboutPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.onAboutToggle.push((show) => {
+        playbackEvents.on("aboutToggle", (show) => {
             if (show) this.show()
             else this.hide()
         })

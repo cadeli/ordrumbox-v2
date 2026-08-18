@@ -124,7 +124,7 @@ export default class FxSection {
                             format: (v) => fmtVal(ck, v),
                             onChange: (v) => {
                                 co._track[ck] = v
-                                co._playbackEvents.dispatchTrackParamChange(co._track)
+                                co._playbackEvents.emit("trackParamChange", co._track)
                             }
                         })
                     }

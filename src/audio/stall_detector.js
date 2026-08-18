@@ -52,7 +52,7 @@ export default class AudioStallDetector {
 
         if (this._stalled) {
             this._stalled = false
-            playbackEvents.dispatchStallResume()
+            playbackEvents.emit("stallResume")
         }
     }
 
@@ -65,12 +65,12 @@ export default class AudioStallDetector {
         if (state === 'suspended' && this._transport?.isRunning && !this._stalled) {
             this._stalled = true
             logger.warn('StallDetector', 'AudioContext suspended during playback')
-            playbackEvents.dispatchStall({ reason: 'context-suspended' })
+            playbackEvents.emit("stall", { reason: 'context-suspended' })
             this._tryResume()
         } else if (state === 'running' && this._stalled) {
             this._stalled = false
             logger.warn('StallDetector', 'AudioContext resumed')
-            playbackEvents.dispatchStallResume()
+            playbackEvents.emit("stallResume")
         }
     }
 
@@ -85,12 +85,12 @@ export default class AudioStallDetector {
             if (!this._stalled) {
                 this._stalled = true
                 logger.warn('StallDetector', 'Scheduler stalled — tick not advancing')
-                playbackEvents.dispatchStall({ reason: 'scheduler-silent' })
+                playbackEvents.emit("stall", { reason: 'scheduler-silent' })
                 this._tryResume()
             }
         } else if (this._stalled) {
             this._stalled = false
-            playbackEvents.dispatchStallResume()
+            playbackEvents.emit("stallResume")
         }
     }
 

@@ -234,9 +234,11 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
         const spy1 = vi.fn()
         const spy2 = vi.fn()
         const spy3 = vi.fn()
-        playbackEvents.onBpmChange.push(spy1, spy2, spy3)
+        playbackEvents.on('bpmChange', spy1)
+        playbackEvents.on('bpmChange', spy2)
+        playbackEvents.on('bpmChange', spy3)
 
-        playbackEvents.dispatchBpmChange(140)
+        playbackEvents.emit('bpmChange', 140)
 
         expect(spy1).toHaveBeenCalledWith(140)
         expect(spy2).toHaveBeenCalledWith(140)
@@ -246,34 +248,35 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
     it('off removes the correct subscriber', () => {
         const spy1 = vi.fn()
         const spy2 = vi.fn()
-        playbackEvents.onPatternChange.push(spy1, spy2)
+        playbackEvents.on('patternChange', spy1)
+        playbackEvents.on('patternChange', spy2)
 
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit('patternChange')
         expect(spy1).toHaveBeenCalledTimes(1)
         expect(spy2).toHaveBeenCalledTimes(1)
 
-        playbackEvents.offPatternChange(spy1)
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.off('patternChange', spy1)
+        playbackEvents.emit('patternChange')
         expect(spy1).toHaveBeenCalledTimes(1)
         expect(spy2).toHaveBeenCalledTimes(2)
     })
 
     it('multiple dispatches accumulate call count', () => {
         const spy = vi.fn()
-        playbackEvents.onPlaybackStart.push(spy)
+        playbackEvents.on("playbackStart", spy)
 
-        playbackEvents.dispatchPlaybackStart()
-        playbackEvents.dispatchPlaybackStart()
-        playbackEvents.dispatchPlaybackStart()
+        playbackEvents.emit("playbackStart")
+        playbackEvents.emit("playbackStart")
+        playbackEvents.emit("playbackStart")
         expect(spy).toHaveBeenCalledTimes(3)
     })
 
     it('dispatch with payload carries data through', () => {
         const spy = vi.fn()
-        playbackEvents.onNoteTrigger.push(spy)
+        playbackEvents.on("noteTrigger", spy)
 
         const data = { trackIdx: 2, beat: 1, beatStep: 3 }
-        playbackEvents.dispatchNoteTrigger(data)
+        playbackEvents.emit("noteTrigger", data)
         expect(spy).toHaveBeenCalledWith(data)
     })
 
@@ -282,15 +285,15 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
         const spyOutput = vi.fn()
         const spyAbout = vi.fn()
         const spyDM = vi.fn()
-        playbackEvents.onToolsToggle.push(spyTools)
-        playbackEvents.onOutputToggle.push(spyOutput)
-        playbackEvents.onAboutToggle.push(spyAbout)
-        playbackEvents.onDrumkitManagerToggle.push(spyDM)
+        playbackEvents.on("toolsToggle", spyTools)
+        playbackEvents.on("outputToggle", spyOutput)
+        playbackEvents.on("aboutToggle", spyAbout)
+        playbackEvents.on("drumkitManagerToggle", spyDM)
 
-        playbackEvents.dispatchToolsToggle(true)
-        playbackEvents.dispatchOutputToggle(false)
-        playbackEvents.dispatchAboutToggle(true)
-        playbackEvents.dispatchDrumkitManagerToggle(false)
+        playbackEvents.emit("toolsToggle", true)
+        playbackEvents.emit("outputToggle", false)
+        playbackEvents.emit("aboutToggle", true)
+        playbackEvents.emit("drumkitManagerToggle", false)
 
         expect(spyTools).toHaveBeenCalledWith(true)
         expect(spyOutput).toHaveBeenCalledWith(false)
@@ -300,23 +303,23 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
 
     it('track select/deselect lifecycle', () => {
         const spy = vi.fn()
-        playbackEvents.onTrackSelect.push(spy)
+        playbackEvents.on("trackSelect", spy)
 
-        playbackEvents.dispatchTrackSelect({ trackIdx: 0, track: {} })
+        playbackEvents.emit("trackSelect", { trackIdx: 0, track: {} })
         expect(spy).toHaveBeenCalledWith(expect.objectContaining({ trackIdx: 0 }))
 
-        playbackEvents.dispatchTrackSelect(null)
+        playbackEvents.emit("trackSelect", null)
         expect(spy).toHaveBeenCalledWith(null)
     })
 
     it('note select/deselect lifecycle', () => {
         const spy = vi.fn()
-        playbackEvents.onNoteSelect.push(spy)
+        playbackEvents.on("noteSelect", spy)
 
-        playbackEvents.dispatchNoteSelect({ note: {}, beat: 0, beatStep: 1 })
+        playbackEvents.emit("noteSelect", { note: {}, beat: 0, beatStep: 1 })
         expect(spy).toHaveBeenCalledTimes(1)
 
-        playbackEvents.dispatchNoteSelect(null)
+        playbackEvents.emit("noteSelect", null)
         expect(spy).toHaveBeenCalledTimes(2)
         expect(spy).toHaveBeenLastCalledWith(null)
     })
@@ -324,27 +327,28 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
     it('offAll cleans specific event channel', () => {
         const spy1 = vi.fn()
         const spy2 = vi.fn()
-        playbackEvents.onDrumkitChange.push(spy1, spy2)
+        playbackEvents.on('drumkitChange', spy1)
+        playbackEvents.on('drumkitChange', spy2)
 
-        playbackEvents.dispatchDrumkitChange()
+        playbackEvents.emit("drumkitChange")
         expect(spy1).toHaveBeenCalledTimes(1)
 
-        playbackEvents.offDrumkitChange(spy1)
-        playbackEvents.offDrumkitChange(spy2)
+        playbackEvents.off('drumkitChange', spy1)
+        playbackEvents.off('drumkitChange', spy2)
         expect(playbackEvents.onDrumkitChange).toHaveLength(0)
 
-        playbackEvents.dispatchDrumkitChange()
+        playbackEvents.emit("drumkitChange")
         expect(spy1).toHaveBeenCalledTimes(1)
         expect(spy2).toHaveBeenCalledTimes(1)
     })
 
     it('BPM change roundtrip through event chain', () => {
         let receivedBpm = null
-        playbackEvents.onBpmChange.push((bpm) => { receivedBpm = bpm })
-        playbackEvents.dispatchBpmChange(140)
+        playbackEvents.on("bpmChange", (bpm) => { receivedBpm = bpm })
+        playbackEvents.emit("bpmChange", 140)
         expect(receivedBpm).toBe(140)
 
-        playbackEvents.dispatchBpmChange(90)
+        playbackEvents.emit("bpmChange", 90)
         expect(receivedBpm).toBe(90)
     })
 })

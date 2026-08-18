@@ -77,10 +77,10 @@ export default class DrumkitManager extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.onDrumkitManagerToggle.push((show) => {
+        playbackEvents.on("drumkitManagerToggle", (show) => {
             if (show) this.show(); else this.hide()
         })
-        playbackEvents.onDrumkitChange.push(() => { if (this.isVisible) this.sync() })
+        playbackEvents.on("drumkitChange", () => { if (this.isVisible) this.sync() })
     }
 
     sync() {
@@ -193,7 +193,7 @@ export default class DrumkitManager extends BasePanel {
             showToast(`Loaded mapping for "${kit.name}"; some samples are unavailable`, 'warning')
         }
 
-        playbackEvents.dispatchDrumkitChange()
+        playbackEvents.emit("drumkitChange")
         this._selectedSoundKey = null
         this.sync()
         showToast(`Loaded drumkit "${kit.name}"`, 'success')
@@ -364,7 +364,7 @@ export default class DrumkitManager extends BasePanel {
 
         for (const controlId of ['dm-gain', 'dm-tune', 'dm-decay']) {
             this._detailEl.querySelector(`#${controlId}`)?.addEventListener('change', () => {
-                playbackEvents.dispatchDrumkitChange()
+                playbackEvents.emit("drumkitChange")
             })
         }
 
@@ -431,7 +431,7 @@ export default class DrumkitManager extends BasePanel {
         newListEntry.instruments.push(instEntry)
 
         showToast(`Moved "${sound.display_name}" to kit "${newKitName}"`, 'success')
-        playbackEvents.dispatchDrumkitChange()
+        playbackEvents.emit("drumkitChange")
         this.sync()
     }
 
@@ -456,7 +456,7 @@ export default class DrumkitManager extends BasePanel {
         updateInstrumentEntry(soundRegistry.drumkitList.find(kit => kit.name === kitName))
 
         showToast(`Set "${sound.display_name}" to instrument "${instrumentKey}"`, 'success')
-        playbackEvents.dispatchDrumkitChange()
+        playbackEvents.emit("drumkitChange")
         this.sync()
     }
 
@@ -478,7 +478,7 @@ export default class DrumkitManager extends BasePanel {
 
         this._selectedSoundKey = null
         showToast(`Removed "${sound.display_name}"`, 'success')
-        playbackEvents.dispatchDrumkitChange()
+        playbackEvents.emit("drumkitChange")
         this.sync()
     }
 
@@ -547,7 +547,7 @@ export default class DrumkitManager extends BasePanel {
             }
 
             showToast(`Added "${fileName}" to kit "${kitName}"`, 'success')
-            playbackEvents.dispatchDrumkitChange()
+            playbackEvents.emit("drumkitChange")
             this.sync()
         } catch (err) {
             logger.warn(TAG, `Add sample failed: ${err.message}`)

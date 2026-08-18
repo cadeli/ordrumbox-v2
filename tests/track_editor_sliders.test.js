@@ -125,7 +125,7 @@ describe('TrackEditor — OrSlider integration', () => {
         editor._track = makeTrack({ filterFreq: 632 })
         editor.sync()
         const fn = vi.fn()
-        playbackEvents.onTrackParamChange.push(fn)
+        playbackEvents.on("trackParamChange", fn)
 
         const knob = editor._fxKnobs.find(k => k._key === 'filterFreq')
         expect(knob).not.toBeNull()
@@ -243,7 +243,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         editor._selectedLfoTarget = 'velocity'
         editor.sync()
         const fn = vi.fn()
-        playbackEvents.onTrackParamChange.push(fn)
+        playbackEvents.on("trackParamChange", fn)
 
         const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
         freqInput.value = '1.5'
@@ -356,7 +356,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
         const track = makeTrack({ velocity: 0.5 })
         showModTab(track)
         const fn = vi.fn()
-        playbackEvents.onPatternChange.push(fn)
+        playbackEvents.on("patternChange", fn)
 
         editor.container.querySelector('[data-lfo-toggle-btn="velocity"]').click()
         expect(fn).toHaveBeenCalled()
@@ -395,7 +395,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
         const track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 } })
         showModTab(track)
         const fn = vi.fn()
-        playbackEvents.onTrackParamChange.push(fn)
+        playbackEvents.on("trackParamChange", fn)
 
         editor.container.querySelector('[data-lfo-select-btn="velocity"]').click()
         const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
@@ -568,7 +568,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
         const track = makeTrack({ filterType: 'allpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
         const fn = vi.fn()
-        playbackEvents.onPatternChange.push(fn)
+        playbackEvents.on("patternChange", fn)
 
         editor.container.querySelector('[data-fx-icon-val="lowpass"]').click()
         expect(fn).toHaveBeenCalled()

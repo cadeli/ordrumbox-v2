@@ -137,7 +137,7 @@ export default class NoteEditor extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.onNoteSelect.push((data) => {
+        playbackEvents.on("noteSelect", (data) => {
             if (!data) return
             if (data.note) {
                 if (this.isVisible) this.show(data)
@@ -409,13 +409,13 @@ export default class NoteEditor extends BasePanel {
         if (!this._note || !this._track) return
         this._note[key] = val
         if (key === 'arpRange') this._composeArp()
-        playbackEvents.dispatchPatternChange([this._track])
+        playbackEvents.emit("patternChange", [this._track])
     }
 
     _onSelect(sel) {
         if (!this._note || !this._track) return
         this._note['_' + sel.dataset.key] = sel.value
         this._composeArp()
-        playbackEvents.dispatchPatternChange([this._track])
+        playbackEvents.emit("patternChange", [this._track])
     }
 }

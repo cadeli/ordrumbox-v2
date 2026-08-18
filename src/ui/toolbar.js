@@ -36,18 +36,18 @@ export default class Toolbar {
     }
 
     subscribeEvents() {
-        playbackEvents.onPlaybackStart.push(() => this.syncPlayButton())
-        playbackEvents.onPlaybackStop.push(() => this.syncPlayButton())
-        playbackEvents.onPatternChange.push(() => {
+        playbackEvents.on("playbackStart", () => this.syncPlayButton())
+        playbackEvents.on("playbackStop", () => this.syncPlayButton())
+        playbackEvents.on("patternChange", () => {
             this.syncPatterns()
             this.syncPage()
             this.syncGenButtons()
         })
-        playbackEvents.onDrumkitChange.push(() => {
+        playbackEvents.on("drumkitChange", () => {
             this.syncDrumkits()
             this.syncPatterns()
         })
-        playbackEvents.onBpmChange.push((bpm) => {
+        playbackEvents.on("bpmChange", (bpm) => {
             this.syncBpmSlider(bpm)
         })
     }
@@ -265,25 +265,25 @@ export default class Toolbar {
         })
 
         this.toolsBtn.addEventListener('click', () => {
-            playbackEvents.dispatchToolsToggle(true)
+            playbackEvents.emit("toolsToggle", true)
         })
 
         this.aboutBtn.addEventListener('click', () => {
-            playbackEvents.dispatchAboutToggle(true)
+            playbackEvents.emit("aboutToggle", true)
         })
 
         this.settingsBtn.addEventListener('click', () => {
-            playbackEvents.dispatchPatternSettingsToggle(true)
+            playbackEvents.emit("patternSettingsToggle", true)
         })
 
         this.synthBtn.addEventListener('click', () => {
-            playbackEvents.dispatchSynthToggle()
+            playbackEvents.emit("synthToggle")
         })
         this.editBtn.addEventListener('click', () => {
-            playbackEvents.dispatchEditToggle()
+            playbackEvents.emit("editToggle")
         })
         this.prollBtn.addEventListener('click', () => {
-            playbackEvents.dispatchProllToggle()
+            playbackEvents.emit("prollToggle")
         })
 
         this.patternSelect.addEventListener('change', () => {
@@ -303,7 +303,7 @@ export default class Toolbar {
         })
 
         this.kitLabel.addEventListener('click', () => {
-            playbackEvents.dispatchDrumkitManagerToggle(true)
+            playbackEvents.emit("drumkitManagerToggle", true)
         })
 
         this.beatsSelect.addEventListener('change', () => {
@@ -324,11 +324,11 @@ export default class Toolbar {
             })
             appState.currentPage = 0
             this.syncPage()
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
         })
 
         this.patLabel.addEventListener('click', () => {
-            playbackEvents.dispatchPatternsToggle(true)
+            playbackEvents.emit("patternsToggle", true)
         })
 
         this.drumBtn.addEventListener('click', async () => {
@@ -360,7 +360,7 @@ export default class Toolbar {
             }
             this.syncGenButtons()
             this.syncPatterns()
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
         })
 
         this.bassBtn.addEventListener('click', async () => {
@@ -398,7 +398,7 @@ export default class Toolbar {
             }
             this.syncGenButtons()
             this.syncPatterns()
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
         })
 
         this.chordsBtn.addEventListener('click', async () => {
@@ -436,14 +436,14 @@ export default class Toolbar {
             }
             this.syncGenButtons()
             this.syncPatterns()
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
         })
 
         this.prevPageBtn.addEventListener('click', () => {
             if (appState.currentPage > 0) {
                 appState.currentPage--
                 this.syncPage()
-                playbackEvents.dispatchPatternChange()
+                playbackEvents.emit("patternChange")
             }
         })
 
@@ -456,7 +456,7 @@ export default class Toolbar {
             if (appState.currentPage < maxPage) {
                 appState.currentPage++
                 this.syncPage()
-                playbackEvents.dispatchPatternChange()
+                playbackEvents.emit("patternChange")
             }
         })
 
@@ -468,7 +468,7 @@ export default class Toolbar {
             const bpm = parseInt(this.bpmSlider.value, 10)
             this.bpmValue.textContent = bpm
             serviceRegistry.seq?.setBpm(bpm)
-            playbackEvents.dispatchBpmChange(bpm)
+            playbackEvents.emit("bpmChange", bpm)
         })
     }
 

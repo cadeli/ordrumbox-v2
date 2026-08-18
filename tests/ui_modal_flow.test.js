@@ -98,21 +98,21 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
     })
 
     it('opens and closes the Tools Panel', () => {
-        playbackEvents.dispatchToolsToggle(true)
+        playbackEvents.emit("toolsToggle", true)
         
         const tp = document.getElementById('tools-panel')
         expect(tp.style.display).toBe('block')
 
-        playbackEvents.dispatchToolsToggle(false)
+        playbackEvents.emit("toolsToggle", false)
 
         expect(tp.style.display).toBe('none')
     })
 
     it('panels are independent — showing one does not hide others', () => {
-        playbackEvents.dispatchToolsToggle(true)
+        playbackEvents.emit("toolsToggle", true)
         expect(document.getElementById('tools-panel').style.display).toBe('block')
 
-        playbackEvents.dispatchOutputToggle(true)
+        playbackEvents.emit("outputToggle", true)
         expect(document.getElementById('output-panel').style.display).toBe('block')
         expect(document.getElementById('tools-panel').style.display).toBe('block')
 

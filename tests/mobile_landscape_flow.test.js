@@ -113,23 +113,23 @@ describe('Mobile Landscape View Switching & Tab Order Consistency', () => {
 
     it('switches views cleanly regardless of order: seq -> tools -> synth -> track -> seq', () => {
         // Start in mobileSeq
-        playbackEvents.dispatchMobileSeqToggle()
+        playbackEvents.emit("mobileSeqToggle")
         expect(viewManager.currentView).toBe('mobileSeq')
         expect(mockPatternPanel.classList.contains('ui-hidden')).toBe(false)
 
         // 1. Switch to tools
-        playbackEvents.dispatchToolsToggle(true)
+        playbackEvents.emit("toolsToggle", true)
         expect(viewManager.currentView).toBe('tools')
         expect(toolsPanel.isVisible).toBe(true)
 
         // 2. Switch to synth
-        playbackEvents.dispatchSynthToggle()
+        playbackEvents.emit("synthToggle")
         expect(viewManager.currentView).toBe('synth')
         expect(toolsPanel.isVisible).toBe(false)
         expect(document.getElementById('soft-synth-panel')?.style.display).toBe('block')
 
         // 3. Switch to track
-        playbackEvents.dispatchMobileTrackToggle()
+        playbackEvents.emit("mobileTrackToggle")
         expect(viewManager.currentView).toBe('mobileTrack')
         expect(document.getElementById('soft-synth-panel')?.style.display).toBe('none')
         expect(trackEditor.isVisible).toBe(true)
@@ -139,22 +139,22 @@ describe('Mobile Landscape View Switching & Tab Order Consistency', () => {
         expect(layout3col).not.toBeNull()
 
         // 4. Switch back to seq
-        playbackEvents.dispatchMobileSeqToggle()
+        playbackEvents.emit("mobileSeqToggle")
         expect(viewManager.currentView).toBe('mobileSeq')
         expect(trackEditor.isVisible).toBe(false)
         expect(mockPatternPanel.classList.contains('ui-hidden')).toBe(false)
     })
 
     it('cleans up 3-column layout when track editor is hidden', () => {
-        playbackEvents.dispatchMobileTrackToggle()
+        playbackEvents.emit("mobileTrackToggle")
         expect(trackEditor.container.querySelector('.mobile-track-3col')).not.toBeNull()
 
-        playbackEvents.dispatchMobileSeqToggle()
+        playbackEvents.emit("mobileSeqToggle")
         expect(trackEditor.container.querySelector('.mobile-track-3col')).toBeNull()
     })
 
     it('re-renders note editor in col3 when TrackEditor syncs in mobile landscape', () => {
-        playbackEvents.dispatchMobileTrackToggle()
+        playbackEvents.emit("mobileTrackToggle")
 
         // Trigger track editor sync
         trackEditor.sync()
@@ -171,7 +171,7 @@ describe('Mobile Landscape View Switching & Tab Order Consistency', () => {
         patternSettingsPanel.show()
         expect(patternSettingsPanel._isOpen).toBe(true)
 
-        playbackEvents.dispatchMobileTrackToggle()
+        playbackEvents.emit("mobileTrackToggle")
         expect(patternSettingsPanel._isOpen).toBe(false)
     })
 })

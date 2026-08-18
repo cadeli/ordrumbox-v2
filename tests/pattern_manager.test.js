@@ -11,11 +11,14 @@ vi.mock('../src/state/app_state.js', () => {
 
 vi.mock('../src/state/playback_events.js', () => {
     const callbacks = []
+    const bus = {
+        on: (ev, fn) => { callbacks.push(fn) },
+        off: (ev, fn) => { const i = callbacks.indexOf(fn); if (i >= 0) callbacks.splice(i, 1) },
+        emit: (ev) => callbacks.forEach(fn => fn()),
+        _clearCallbacks: () => { callbacks.length = 0 },
+    }
     return {
-        playbackEvents: { 
-            onPatternChange: callbacks,
-            dispatchPatternChange: () => callbacks.forEach(fn => fn())
-        },
+        playbackEvents: bus,
         __esModule: true
     }
 })
@@ -125,7 +128,7 @@ describe('MfPatterns', () => {
         it('fires onPatternChange callbacks', async () => {
             const { playbackEvents } = await import('../src/state/playback_events.js')
             const cb = vi.fn()
-            playbackEvents.onPatternChange.push(cb)
+            playbackEvents.on("patternChange", cb)
 
             const pattern = {
                 name: 'Test',
@@ -137,7 +140,7 @@ describe('MfPatterns', () => {
             mgr.computeFlatNotesFromPattern(pattern, 0)
             expect(cb).toHaveBeenCalled()
 
-            playbackEvents.onPatternChange.length = 0
+            playbackEvents._clearCallbacks()
         })
     })
 

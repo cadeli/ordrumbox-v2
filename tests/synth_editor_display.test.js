@@ -164,7 +164,7 @@ it('renders the Save and Revert action buttons', async () => {
         const panel = document.getElementById('soft-synth-panel')
         expect(panel.style.display).toBe('flex')
 
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit("patternChange")
 
         expect(panel.style.display).toBe('flex')
         expect(trackEditor.container.style.display).toBe('none')

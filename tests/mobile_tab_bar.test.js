@@ -107,24 +107,24 @@ describe('Mobile tab bar', () => {
 
     describe('tab-to-view mapping via dispatch', () => {
         it('dispatching mobileSeqToggle shows pattern grid', () => {
-            playbackEvents.dispatchMobileSeqToggle()
+            playbackEvents.emit("mobileSeqToggle")
             expect(seqVisible()).toBe(true)
         })
 
         it('dispatching mobileTrackToggle shows track editor and hides pattern grid', () => {
-            playbackEvents.dispatchMobileTrackToggle()
+            playbackEvents.emit("mobileTrackToggle")
             expect(seqVisible()).toBe(false)
             expect(teVisible()).toBe(true)
         })
 
         it('dispatching synthToggle shows synth panel', () => {
-            playbackEvents.dispatchSynthToggle()
+            playbackEvents.emit("synthToggle")
             const el = document.getElementById('soft-synth-panel')
             expect(el).not.toBeNull()
         })
 
         it('dispatching toolsToggle(true) shows tools panel', () => {
-            playbackEvents.dispatchToolsToggle(true)
+            playbackEvents.emit("toolsToggle", true)
             expect(toolsVisible()).toBe(true)
         })
     })
@@ -132,21 +132,21 @@ describe('Mobile tab bar', () => {
     describe('click on tab button triggers correct dispatch', () => {
         it('clicking Track tab dispatches mobileTrackToggle', () => {
             const spy = vi.fn()
-            playbackEvents.onMobileTrackToggle.push(spy)
+            playbackEvents.on("mobileTrackToggle", spy)
             mobileTabBar.container.querySelector('[data-tab="track"]').click()
             expect(spy).toHaveBeenCalled()
         })
 
         it('clicking Synth tab dispatches synthToggle', () => {
             const spy = vi.fn()
-            playbackEvents.onSynthToggle.push(spy)
+            playbackEvents.on("synthToggle", spy)
             mobileTabBar.container.querySelector('[data-tab="synth"]').click()
             expect(spy).toHaveBeenCalled()
         })
 
         it('clicking Tools tab dispatches toolsToggle(true)', () => {
             const spy = vi.fn()
-            playbackEvents.onToolsToggle.push(spy)
+            playbackEvents.on("toolsToggle", spy)
             mobileTabBar.container.querySelector('[data-tab="tools"]').click()
             expect(spy).toHaveBeenCalledWith(true)
         })
@@ -154,7 +154,7 @@ describe('Mobile tab bar', () => {
         it('clicking Sequencer tab after switching away dispatches mobileSeqToggle', () => {
             mobileTabBar.container.querySelector('[data-tab="track"]').click()
             const spy = vi.fn()
-            playbackEvents.onMobileSeqToggle.push(spy)
+            playbackEvents.on("mobileSeqToggle", spy)
             mobileTabBar.container.querySelector('[data-tab="seq"]').click()
             expect(spy).toHaveBeenCalled()
         })
@@ -189,7 +189,7 @@ describe('Mobile tab bar', () => {
             const trackBtn = mobileTabBar.container.querySelector('[data-tab="track"]')
             trackBtn.click()
             const spy = vi.fn()
-            playbackEvents.onMobileTrackToggle.push(spy)
+            playbackEvents.on("mobileTrackToggle", spy)
             trackBtn.click()
             expect(spy).not.toHaveBeenCalled()
         })
@@ -198,8 +198,8 @@ describe('Mobile tab bar', () => {
     describe('no recursive dispatch', () => {
         it('does not cause infinite recursion when dispatching events', () => {
             const spy = vi.fn()
-            playbackEvents.onMobileSeqToggle.push(spy)
-            playbackEvents.dispatchMobileSeqToggle()
+            playbackEvents.on("mobileSeqToggle", spy)
+            playbackEvents.emit("mobileSeqToggle")
             expect(spy).toHaveBeenCalledTimes(1)
         })
     })
@@ -208,27 +208,27 @@ describe('Mobile tab bar', () => {
         const MOBILE_TOOLBAR_HEIGHT = 48
 
         it('pattern panel is visible below toolbar when mobileSeqToggle dispatched', () => {
-            playbackEvents.dispatchMobileSeqToggle()
+            playbackEvents.emit("mobileSeqToggle")
             const el = document.getElementById('pattern-panel')
             expect(el).not.toBeNull()
             expect(el.classList.contains('ui-hidden')).toBe(false)
         })
 
         it('track editor is visible below toolbar when mobileTrackToggle dispatched', () => {
-            playbackEvents.dispatchMobileTrackToggle()
+            playbackEvents.emit("mobileTrackToggle")
             const el = document.getElementById('te-panel')
             expect(el).not.toBeNull()
             expect(el.style.display === 'block' || el.style.display === 'flex').toBe(true)
         })
 
         it('synth panel exists when synthToggle dispatched', () => {
-            playbackEvents.dispatchSynthToggle()
+            playbackEvents.emit("synthToggle")
             const el = document.getElementById('soft-synth-panel')
             expect(el).not.toBeNull()
         })
 
         it('tools panel is visible when toolsToggle dispatched', () => {
-            playbackEvents.dispatchToolsToggle(true)
+            playbackEvents.emit("toolsToggle", true)
             const el = document.getElementById('tools-panel')
             expect(el).not.toBeNull()
         })

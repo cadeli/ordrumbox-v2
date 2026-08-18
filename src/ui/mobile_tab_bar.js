@@ -76,10 +76,10 @@ export default class MobileTabBar {
 
         try {
             const dispatchMap = {
-                seq: () => playbackEvents.dispatchMobileSeqToggle(),
-                track: () => playbackEvents.dispatchMobileTrackToggle(),
-                synth: () => playbackEvents.dispatchSynthToggle(),
-                tools: () => playbackEvents.dispatchToolsToggle(true),
+                seq: () => playbackEvents.emit("mobileSeqToggle"),
+                track: () => playbackEvents.emit("mobileTrackToggle"),
+                synth: () => playbackEvents.emit("synthToggle"),
+                tools: () => playbackEvents.emit("toolsToggle", true),
             }
             dispatchMap[tab]?.()
         } finally {

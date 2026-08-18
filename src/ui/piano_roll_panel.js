@@ -66,8 +66,8 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.onPatternChange.push(() => this._sync())
-        playbackEvents.onTrackSelect.push((data) => {
+        playbackEvents.on("patternChange", () => this._sync())
+        playbackEvents.on("trackSelect", (data) => {
             if (!data) return
             this._track = data.track
             this._trackIdx = data.trackIdx
@@ -76,8 +76,8 @@ export default class PianoRollPanel extends BasePanel {
                 this._sync()
             }
         })
-        playbackEvents.onPlaybackStart.push(() => this._startRafLoop())
-        playbackEvents.onPlaybackStop.push(() => {
+        playbackEvents.on("playbackStart", () => this._startRafLoop())
+        playbackEvents.on("playbackStop", () => {
             this._stopRafLoop()
             if (this._playhead) this._playhead.style.display = 'none'
             this._prevLoopTick = -1
@@ -109,7 +109,7 @@ export default class PianoRollPanel extends BasePanel {
         if (track) {
             this._track = track
             this._trackIdx = idx
-            playbackEvents.dispatchTrackSelect({ track, trackIdx: idx })
+            playbackEvents.emit("trackSelect", { track, trackIdx: idx })
         }
         this._sync()
         const scrollEl = this.container.querySelector('#pp-piano-scroll')
@@ -201,7 +201,7 @@ export default class PianoRollPanel extends BasePanel {
         this._selNote = null
         this._cursorStep = -1
         this._cursorRow = -1
-        playbackEvents.dispatchNoteSelect(null)
+        playbackEvents.emit("noteSelect", null)
     }
 
     _measureCellWidth() {
@@ -410,14 +410,14 @@ export default class PianoRollPanel extends BasePanel {
             if (this._selNote === hit) {
                 cmd.deleteNote(track, hit)
                 this._clearSelection()
-                playbackEvents.dispatchPatternChange([track])
+                playbackEvents.emit("patternChange", [track])
             } else {
                 this._selNote = hit
                 this._cursorStep = step
                 this._cursorRow = row
                 this._applySelection()
-                playbackEvents.dispatchTrackSelect({ track, trackIdx: this._trackIdx })
-                playbackEvents.dispatchNoteSelect({ track, trackIdx: this._trackIdx, note: hit, beat, beatStep })
+                playbackEvents.emit("trackSelect", { track, trackIdx: this._trackIdx })
+                playbackEvents.emit("noteSelect", { track, trackIdx: this._trackIdx, note: hit, beat, beatStep })
             }
         } else {
             const newNote = cmd.addNote(track, beat, beatStep, relativePitch)
@@ -425,9 +425,9 @@ export default class PianoRollPanel extends BasePanel {
             this._cursorStep = step
             this._cursorRow = row
             this._applySelection()
-            playbackEvents.dispatchPatternChange([track])
-            playbackEvents.dispatchTrackSelect({ track, trackIdx: this._trackIdx })
-            playbackEvents.dispatchNoteSelect({ track, trackIdx: this._trackIdx, note: newNote, beat, beatStep })
+            playbackEvents.emit("patternChange", [track])
+            playbackEvents.emit("trackSelect", { track, trackIdx: this._trackIdx })
+            playbackEvents.emit("noteSelect", { track, trackIdx: this._trackIdx, note: newNote, beat, beatStep })
         }
     }
 
@@ -510,23 +510,23 @@ export default class PianoRollPanel extends BasePanel {
                 if (this._selNote === note) {
                     cmd.deleteNote(track, note)
                     this._clearSelection()
-                    playbackEvents.dispatchPatternChange([track])
+                    playbackEvents.emit("patternChange", [track])
                     return
                 }
                 this._selNote = note
             } else {
                 this._selNote = cmd.addNote(track, beat, beatStep, relativePitch)
-                playbackEvents.dispatchPatternChange([track])
+                playbackEvents.emit("patternChange", [track])
             }
             this._applySelection()
-            if (this._selNote) playbackEvents.dispatchNoteSelect({ track, trackIdx: this._trackIdx, note: this._selNote, beat, beatStep })
+            if (this._selNote) playbackEvents.emit("noteSelect", { track, trackIdx: this._trackIdx, note: this._selNote, beat, beatStep })
             return
         }
 
         if (this._selNote && cmd) {
             cmd.deleteNote(track, this._selNote)
             this._clearSelection()
-            playbackEvents.dispatchPatternChange([track])
+            playbackEvents.emit("patternChange", [track])
         }
     }
 
@@ -547,7 +547,7 @@ export default class PianoRollPanel extends BasePanel {
             && (MIDDLE_C + trackPitchOffset + (n.pitch ?? 0)) === midi)
         this._selNote = note ?? null
         this._applySelection()
-        playbackEvents.dispatchNoteSelect(note ? { track, trackIdx: this._trackIdx, note, beat, beatStep } : { track, trackIdx: this._trackIdx, note: null, beat, beatStep })
+        playbackEvents.emit("noteSelect", note ? { track, trackIdx: this._trackIdx, note, beat, beatStep } : { track, trackIdx: this._trackIdx, note: null, beat, beatStep })
         this._sync()
     }
 

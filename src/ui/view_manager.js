@@ -27,14 +27,14 @@ export default class ViewManager {
     }
 
     init() {
-        playbackEvents.onSynthToggle.push(() => this._switchTo('synth'))
-        playbackEvents.onEditToggle.push(() => this._switchTo('edit'))
-        playbackEvents.onProllToggle.push(() => this._switchTo('proll'))
-        playbackEvents.onMobileSeqToggle.push(() => this._switchTo('mobileSeq'))
-        playbackEvents.onMobileTrackToggle.push(() => this._switchTo('mobileTrack'))
-        playbackEvents.onToolsToggle.push((show) => this._toggleSlotPanel(show, 'tools'))
-        playbackEvents.onDrumkitManagerToggle.push((show) => this._toggleSlotPanel(show, 'dm'))
-        playbackEvents.onPatternsToggle.push((show) => this._toggleSlotPanel(show, 'pp'))
+        playbackEvents.on("synthToggle", () => this._switchTo('synth'))
+        playbackEvents.on("editToggle", () => this._switchTo('edit'))
+        playbackEvents.on("prollToggle", () => this._switchTo('proll'))
+        playbackEvents.on("mobileSeqToggle", () => this._switchTo('mobileSeq'))
+        playbackEvents.on("mobileTrackToggle", () => this._switchTo('mobileTrack'))
+        playbackEvents.on("toolsToggle", (show) => this._toggleSlotPanel(show, 'tools'))
+        playbackEvents.on("drumkitManagerToggle", (show) => this._toggleSlotPanel(show, 'dm'))
+        playbackEvents.on("patternsToggle", (show) => this._toggleSlotPanel(show, 'pp'))
     }
 
     get currentView() {

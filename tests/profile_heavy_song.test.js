@@ -227,7 +227,7 @@ describe('Profile heavy song (64 beats, 8 tracks, synths, LFOs, automation)', ()
         measurements.flatNotesMs = t3 - t2
 
         const t4 = performance.now()
-        playbackEvents.dispatchPatternChange()
+        playbackEvents.emit("patternChange")
         const t5 = performance.now()
         measurements.patternChangeMs = t5 - t4
 

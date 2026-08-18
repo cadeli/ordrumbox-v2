@@ -57,11 +57,11 @@ export default class AudioEngine {
             this.sound = this.player.sound
 
             appState.workletStatus = 'active'
-            playbackEvents.dispatchWorkletStatusChange('active')
+            playbackEvents.emit("workletStatusChange", 'active')
         }).catch(err => {
             logger.warn('AudioEngine: worklet init failed, audio unavailable', err)
             appState.workletStatus = 'unavailable'
-            playbackEvents.dispatchWorkletStatusChange('unavailable')
+            playbackEvents.emit("workletStatusChange", 'unavailable')
         })
 
         this.isRunning = false

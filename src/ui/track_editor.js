@@ -127,7 +127,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     subscribe() {
-        this._playbackEvents.onTrackSelect.push((data) => {
+        this._playbackEvents.on("trackSelect", (data) => {
             if (!data) return
             if (this.isVisible) {
                 this._track = data.track
@@ -136,10 +136,10 @@ export default class TrackEditor extends BasePanel {
                 this._showNoteEditorForTrack(data.track, data.trackIdx)
             }
         })
-        this._playbackEvents.onPlaybackStart.push(() => this._startStepWatch())
-        this._playbackEvents.onPlaybackStop.push(() => this._stopStepWatch())
-        this._playbackEvents.onDrumkitChange.push(() => { if (this._track) this.sync() })
-        this._playbackEvents.onPatternChange.push(() => {
+        this._playbackEvents.on("playbackStart", () => this._startStepWatch())
+        this._playbackEvents.on("playbackStop", () => this._stopStepWatch())
+        this._playbackEvents.on("drumkitChange", () => { if (this._track) this.sync() })
+        this._playbackEvents.on("patternChange", () => {
             if (this._isDragging) return
             if (!this._track) return
             const pattern = this._appState.patterns[this._appState.selectedPatternNum]
@@ -286,7 +286,7 @@ export default class TrackEditor extends BasePanel {
                 if (input) {
                     input.addEventListener('change', () => {
                         this._isDragging = false
-                        this._playbackEvents.dispatchPatternChange([this._track])
+                        this._playbackEvents.emit("patternChange", [this._track])
                     })
                 }
             }
@@ -309,7 +309,7 @@ export default class TrackEditor extends BasePanel {
             const onChange = (v) => {
                 if (isDecay) { if (sound) sound.decay = v }
                 else { this._track[def.key] = v }
-                this._playbackEvents.dispatchTrackParamChange(this._track)
+                this._playbackEvents.emit("trackParamChange", this._track)
                 if (isDecay) this._drawSampleWaveform()
             }
 
@@ -444,7 +444,7 @@ export default class TrackEditor extends BasePanel {
                 }
             }
             this.sync()
-            this._playbackEvents.dispatchPatternChange([this._track])
+            this._playbackEvents.emit("patternChange", [this._track])
         } catch (err) {
             logger.warn('TrackEditor', `Sample import failed: ${err.message}`)
         }
@@ -462,13 +462,13 @@ export default class TrackEditor extends BasePanel {
     _toggleFxByKey(key) {
         this._fxSection.toggleFxByKey(key)
         this.sync()
-        this._playbackEvents.dispatchPatternChange([this._track])
+        this._playbackEvents.emit("patternChange", [this._track])
     }
 
     _onFxIcon(target) {
         this._fxSection.onFxIcon(target)
         this.sync()
-        this._playbackEvents.dispatchPatternChange([this._track])
+        this._playbackEvents.emit("patternChange", [this._track])
     }
 
     _onFxTab(btn)                 { this._fxSection.onFxTab(btn) }
@@ -481,26 +481,26 @@ export default class TrackEditor extends BasePanel {
     _onLfoToggleBtn(k) {
         this._modSection.onToggleBtn(k)
         this.sync()
-        this._playbackEvents.dispatchTrackParamChange(this._track)
-        this._playbackEvents.dispatchPatternChange([this._track])
+        this._playbackEvents.emit("trackParamChange", this._track)
+        this._playbackEvents.emit("patternChange", [this._track])
     }
 
     _onLfoSlider(input) {
         const needsSync = this._modSection.onSlider(input)
         if (needsSync) this.sync()
-        this._playbackEvents.dispatchTrackParamChange(this._track)
+        this._playbackEvents.emit("trackParamChange", this._track)
     }
 
     _onLfoSelect(sel) {
         this._modSection.onSelect(sel)
-        this._playbackEvents.dispatchTrackParamChange(this._track)
+        this._playbackEvents.emit("trackParamChange", this._track)
     }
 
     _toggleLfoForTarget(k) {
         this._modSection._toggleLfoForTarget(k)
         this.sync()
-        this._playbackEvents.dispatchTrackParamChange(this._track)
-        this._playbackEvents.dispatchPatternChange([this._track])
+        this._playbackEvents.emit("trackParamChange", this._track)
+        this._playbackEvents.emit("patternChange", [this._track])
     }
 
     _toggleLfo() {
@@ -560,7 +560,7 @@ export default class TrackEditor extends BasePanel {
                 }
             } else if (target.type === 'range') {
                 this._isDragging = false
-                this._playbackEvents.dispatchPatternChange([this._track])
+                this._playbackEvents.emit("patternChange", [this._track])
             }
         })
 
@@ -601,7 +601,7 @@ export default class TrackEditor extends BasePanel {
         let val = sel.value
         if (key === 'delayTime') val = parseFloat(val)
         this._track[key] = val
-        this._playbackEvents.dispatchTrackParamChange(this._track)
+        this._playbackEvents.emit("trackParamChange", this._track)
     }
 
     _onToggle(btn) {
@@ -610,7 +610,7 @@ export default class TrackEditor extends BasePanel {
         this._track[key] = !this._track[key]
         btn.textContent = this._track[key] ? 'ON' : 'OFF'
         btn.classList.toggle('active', this._track[key])
-        this._playbackEvents.dispatchTrackParamChange(this._track)
+        this._playbackEvents.emit("trackParamChange", this._track)
     }
 
     _onLoopSlider(input) {
@@ -647,15 +647,15 @@ export default class TrackEditor extends BasePanel {
         }
 
         if (key === 'loopAtStep') {
-            this._playbackEvents.dispatchLoopPointChange({
+            this._playbackEvents.emit('loopPointChange', {
                 trackIdx: this._trackIdx, loopAtStep: this._track.loopAtStep
             })
         }
 
         if (key === 'swingAmount') {
-            this._playbackEvents.dispatchTrackParamChange(this._track)
+            this._playbackEvents.emit("trackParamChange", this._track)
         } else {
-            this._playbackEvents.dispatchPatternChange([this._track])
+            this._playbackEvents.emit("patternChange", [this._track])
         }
     }
 

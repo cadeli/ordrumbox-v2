@@ -183,7 +183,7 @@ this.container.innerHTML = `
     }
 
     subscribe() {
-        playbackEvents.onOutputToggle.push((show) => { if (show) this.show(); else this.hide() })
+        playbackEvents.on("outputToggle", (show) => { if (show) this.show(); else this.hide() })
     }
 
     show() {

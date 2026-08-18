@@ -61,7 +61,7 @@ export const playbackEvents = new Proxy(bus, {
             return (fn) => target.off(event, fn)
         }
 
-        // Legacy onX array access (e.g. playbackEvents.onPatternChange.push(fn))
+        // Legacy onX array access (e.g. playbackEvents.on("patternChange", fn))
         if (prop.startsWith('on')) {
             const eventName = prop.slice(2)
             const event = eventName.charAt(0).toLowerCase() + eventName.slice(1)

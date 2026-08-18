@@ -96,7 +96,7 @@ export default class SoundSection {
             co._serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
         }
         co.sync()
-        co._playbackEvents.dispatchPatternChange([track])
+        co._playbackEvents.emit("patternChange", [track])
     }
 
     async onSampleChange(target) {
@@ -114,7 +114,7 @@ export default class SoundSection {
             }
         }
         co._serviceRegistry.cmd.changeTrackSound(track, url)
-        co._playbackEvents.dispatchPatternChange([track])
+        co._playbackEvents.emit("patternChange", [track])
     }
 
     async onGeneratedChange(target) {
@@ -132,7 +132,7 @@ export default class SoundSection {
             track.synthSoundKey = key
         }
         co.sync()
-        co._playbackEvents.dispatchPatternChange([track])
+        co._playbackEvents.emit("patternChange", [track])
     }
 
     toggleAuto() {
@@ -146,7 +146,7 @@ export default class SoundSection {
             aa.autoAssignTrackSounds(track)
         }
         co.sync()
-        co._playbackEvents.dispatchPatternChange([track])
+        co._playbackEvents.emit("patternChange", [track])
     }
 
     // ── Helpers (also exposed on coordinator for backward compat) ──

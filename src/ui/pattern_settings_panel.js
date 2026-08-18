@@ -109,7 +109,7 @@ export default class PatternSettingsPanel {
         this._prevPageBtn.addEventListener('click', () => {
             if (appState.currentPage > 0) {
                 appState.currentPage--
-                playbackEvents.dispatchPatternChange()
+                playbackEvents.emit("patternChange")
             }
         })
 
@@ -121,7 +121,7 @@ export default class PatternSettingsPanel {
             const maxPage = Math.ceil(totalSteps / 16) - 1
             if (appState.currentPage < maxPage) {
                 appState.currentPage++
-                playbackEvents.dispatchPatternChange()
+                playbackEvents.emit("patternChange")
             }
         })
 
@@ -142,7 +142,7 @@ export default class PatternSettingsPanel {
                 }
             })
             appState.currentPage = 0
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
         })
 
         this._drumkitSelect.addEventListener('change', () => {
@@ -157,7 +157,7 @@ export default class PatternSettingsPanel {
             if (!isNaN(num)) {
                 serviceRegistry.cmd.setSelectedPatternNum(num)
                 appState.currentPage = 0
-                playbackEvents.dispatchPatternChange()
+                playbackEvents.emit("patternChange")
             }
         })
 
@@ -185,7 +185,7 @@ export default class PatternSettingsPanel {
                     if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = true
                 }
             }
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
         })
 
         this._bassBtn.addEventListener('click', async () => {
@@ -217,7 +217,7 @@ export default class PatternSettingsPanel {
                 }
                 bassTrack.auto = true
             }
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
         })
 
         this._chordsBtn.addEventListener('click', async () => {
@@ -249,14 +249,14 @@ export default class PatternSettingsPanel {
                 }
                 pianoTrack.auto = true
             }
-            playbackEvents.dispatchPatternChange()
+            playbackEvents.emit("patternChange")
         })
     }
 
     _subscribeEvents() {
-        playbackEvents.onPatternChange.push(() => this.sync())
-        playbackEvents.onDrumkitChange.push(() => this.syncDrumkits())
-        playbackEvents.onPatternSettingsToggle.push((show) => {
+        playbackEvents.on("patternChange", () => this.sync())
+        playbackEvents.on("drumkitChange", () => this.syncDrumkits())
+        playbackEvents.on("patternSettingsToggle", (show) => {
             if (show) this.show()
             else this.hide()
         })

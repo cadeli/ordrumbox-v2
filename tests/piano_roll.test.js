@@ -460,7 +460,7 @@ describe('PianoRollPanel', () => {
     describe('note editor integration', () => {
         it('dispatches noteSelect when a note is clicked', () => {
             const listener = vi.fn()
-            playbackEvents.onNoteSelect.push(listener)
+            playbackEvents.on("noteSelect", listener)
 
             const track = getTrack()
             const note = track.notes[0]
@@ -475,7 +475,7 @@ describe('PianoRollPanel', () => {
 
         it('dispatches noteSelect(null) on clearSelection', () => {
             const listener = vi.fn()
-            playbackEvents.onNoteSelect.push(listener)
+            playbackEvents.on("noteSelect", listener)
             panel._clearSelection()
             expect(listener).toHaveBeenCalledWith(null)
         })

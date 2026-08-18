@@ -51,7 +51,7 @@ export default class MfSeq {
             TICK,
             secondsPerBeat: this.appState.secondsPerBeat,
         })
-        this.playbackEvents.onPatternChange.push((changedTracks) => {
+        this.playbackEvents.on("patternChange", (changedTracks) => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
                 const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
@@ -64,7 +64,7 @@ export default class MfSeq {
                 }
             }
         })
-        this.playbackEvents.onTrackParamChange.push((track) => {
+        this.playbackEvents.on("trackParamChange", (track) => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.syncTrack(track)
             }
@@ -93,7 +93,7 @@ export default class MfSeq {
     _startInner = async () => {
         try {
             await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
-            this.playbackEvents.dispatchDrumkitChange()
+            this.playbackEvents.emit("drumkitChange")
         } catch (error) {
             logger.error('MfSeq', "MfSeq::start: Failed to load resources", error)
             return
@@ -120,14 +120,14 @@ export default class MfSeq {
             transport: this.serviceRegistry.transport
         })
         this._stallDetector.start()
-        this.playbackEvents.dispatchPlaybackStart()
+        this.playbackEvents.emit("playbackStart")
     }
 
     stop = () => {
         this._stallDetector?.stop()
         this._stallDetector = null
         this.serviceRegistry.transport?.stop()
-        this.playbackEvents.dispatchPlaybackStop()
+        this.playbackEvents.emit("playbackStop")
         if (this.serviceRegistry.audioEngine) {
             this.serviceRegistry.audioEngine.stop()
         }
