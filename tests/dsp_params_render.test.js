@@ -1,6 +1,6 @@
 /**
  * DSP audio parameter tests — verifies that velocity, pitch, pan,
- * filter, and LFO produce the expected audio effects using
+ * filter, LFO, and decay produce the expected audio effects using
  * real node-web-audio-api OfflineAudioContext rendering.
  */
 import { describe, it, expect } from 'vitest'
@@ -23,6 +23,12 @@ function peak(samples) {
     let max = 0
     for (let i = 0; i < samples.length; i++) max = Math.max(max, Math.abs(samples[i]))
     return max
+}
+
+function totalEnergy(samples) {
+    let sum = 0
+    for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i]
+    return sum
 }
 
 function energyInRange(samples, sampleRate, lowHz, highHz) {
@@ -517,5 +523,68 @@ describe('arpeggio → pitch sequence', () => {
         for (let i = 1; i < analyses.length; i++) {
             expect(analyses[i].spectralCentroidHz).toBeGreaterThan(analyses[i - 1].spectralCentroidHz)
         }
+    })
+})
+
+// ─── Decay → amplitude envelope Tests ───────────────────────────────────────
+
+const GAIN_ATTACK_RAMP = 0.005
+const MIN_GAIN_VALUE = 0.001
+
+/**
+ * Render a burst using the exact SampleVoice gain envelope:
+ * linear ramp 0→gain over GAIN_ATTACK_RAMP, then exponential ramp to MIN_GAIN_VALUE over safeDecay.
+ * @param {{ decayMs: number, gain?: number, freq?: number }} cfg
+ */
+async function renderDecayBurst({ decayMs, gain = 0.8, freq = 440 } = {}) {
+    const safeDecay = Math.max(0.02, decayMs / 1000)
+    const totalDuration = Math.max(0.5, GAIN_ATTACK_RAMP + safeDecay + 0.05)
+    const totalSamples = Math.ceil(totalDuration * SAMPLE_RATE)
+    const ctx = new OfflineAudioContext(1, totalSamples, SAMPLE_RATE)
+
+    const osc = ctx.createOscillator()
+    osc.type = 'sine'
+    osc.frequency.value = freq
+
+    const gainNode = ctx.createGain()
+    gainNode.gain.setValueAtTime(0, 0)
+    gainNode.gain.linearRampToValueAtTime(gain, GAIN_ATTACK_RAMP)
+    gainNode.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, GAIN_ATTACK_RAMP + safeDecay)
+
+    osc.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    osc.start(0)
+    osc.stop(totalDuration)
+
+    const rendered = await ctx.startRendering()
+    return rendered.getChannelData(0)
+}
+
+describe('decay → amplitude envelope', () => {
+    it('shorter decay produces less total energy than longer decay', async () => {
+        const short = await renderDecayBurst({ decayMs: 50 })
+        const long = await renderDecayBurst({ decayMs: 500 })
+
+        expect(totalEnergy(short)).toBeLessThan(totalEnergy(long))
+    })
+
+    it('short decay is near-silent in late window, long decay is not', async () => {
+        const short = await renderDecayBurst({ decayMs: 80 })
+        const long_ = await renderDecayBurst({ decayMs: 400 })
+
+        const lateStart = Math.floor(0.2 * SAMPLE_RATE)
+        const lateEnd = Math.floor(0.35 * SAMPLE_RATE)
+
+        const shortLate = rms(short.slice(lateStart, lateEnd))
+        const longLate = rms(long_.slice(lateStart, lateEnd))
+
+        expect(longLate).toBeGreaterThan(shortLate * 5)
+    })
+
+    it('decay 0 clamps to minimum 20ms — very short sound', async () => {
+        const minDecay = await renderDecayBurst({ decayMs: 0 })
+        const midDecay = await renderDecayBurst({ decayMs: 200 })
+
+        expect(totalEnergy(minDecay)).toBeLessThan(totalEnergy(midDecay))
     })
 })
