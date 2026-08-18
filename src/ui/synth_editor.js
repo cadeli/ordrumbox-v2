@@ -3,6 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import MfResourcesLoader from '../loader/resources_loader.js'
+import { renderOptions, renderIconChoices } from './components/panel_helpers.js'
 import { fmt, escapeHtml } from './components/panel_helpers.js'
 import { showToast } from './toast.js'
 import { OrKnob } from './components/or_knob.js'
@@ -282,28 +283,26 @@ export default class SynthEditor {
             let waveRowHtml = ''
             if (isVco || isLfo) {
                 const waveVal = this._draft?.[groupName]?.wave ?? 'sine'
-                const waveOpts = Utils.waveList
                 const pathStr = `${groupName}.wave`
-                waveRowHtml = `<span class="ss-group-wave-row">${waveOpts.map(opt => {
-                    const sel = String(opt) === String(waveVal) ? ' selected' : ''
-                    return `<button class="ss-wave-icon${sel}" data-synth-path="${escapeHtml(pathStr)}" data-wave-val="${escapeHtml(opt)}" title="${escapeHtml(opt)}">${WAVE_ICONS[opt] ?? opt}</button>`
-                }).join('')}</span>`
+                waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.waveList, waveVal, WAVE_ICONS, {
+                    cssClass: 'ss-wave-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
+                    extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
+                })}</span>`
             } else if (isFilter || isNoise) {
                 const filterKey = isFilter ? 'type' : 'filterType'
                 const filterVal = this._draft?.[groupName]?.[filterKey] ?? 'lowpass'
-                const filterOpts = Utils.filterTypeList
                 const pathStr = `${groupName}.${filterKey}`
-                waveRowHtml = `<span class="ss-group-wave-row">${filterOpts.map(opt => {
-                    const sel = String(opt) === String(filterVal) ? ' selected' : ''
-                    return `<button class="ss-ft-icon${sel}" data-synth-path="${escapeHtml(pathStr)}" data-wave-val="${escapeHtml(opt)}" title="${escapeHtml(opt)}">${FILTER_ICONS[opt] ?? opt}</button>`
-                }).join('')}</span>`
+                waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.filterTypeList, filterVal, FILTER_ICONS, {
+                    cssClass: 'ss-ft-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
+                    extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
+                })}</span>`
             } else if (groupName === 'fm') {
                 const algoVal = this._draft?.fm?.algo ?? 0
                 const algoOpts = Object.keys(FM_ALGO_ICONS).map(Number)
-                waveRowHtml = `<span class="ss-group-wave-row">${algoOpts.map(opt => {
-                    const sel = opt === algoVal ? ' selected' : ''
-                    return `<button class="ss-fm-icon${sel}" data-synth-path="fm.algo" data-wave-val="${opt}" title="${escapeHtml(FM_ALGO_ICONS[opt])}">${FM_ALGO_ICONS[opt]}</button>`
-                }).join('')}</span>`
+                waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(algoOpts, algoVal, FM_ALGO_ICONS, {
+                    cssClass: 'ss-fm-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
+                    extraAttrs: (v) => ` data-synth-path="fm.algo"`
+                })}</span>`
             }
 
             let extraHtml = ''
@@ -404,15 +403,9 @@ export default class SynthEditor {
 
     /** @returns {string} select dropdown row HTML. */
     _buildSelectRow(paramLabel, pathStr, val, options) {
-        const opts = options.map(opt => {
-            const optionValue = typeof opt === 'object' ? opt.value : opt
-            const optionLabel = typeof opt === 'object' ? opt.label : opt
-            const selected = String(optionValue) === String(val) ? ' selected' : ''
-            return `<option value="${escapeHtml(optionValue)}"${selected}>${escapeHtml(optionLabel)}</option>`
-        }).join('')
         return `<div class="ne-row">
             <span class="ss-param-label">${escapeHtml(paramLabel)}</span>
-            <select data-synth-path="${escapeHtml(pathStr)}">${opts}</select>
+            <select data-synth-path="${escapeHtml(pathStr)}">${renderOptions(options, val, { escape: escapeHtml })}</select>
         </div>`
     }
 
@@ -420,10 +413,7 @@ export default class SynthEditor {
     _buildFooter() {
         const keys = this.getGeneratedSoundKeys()
         const currentKey = this._editKey ?? ''
-        const options = keys.map(key => {
-            const selected = key === currentKey ? ' selected' : ''
-            return `<option value="${escapeHtml(key)}"${selected}>${escapeHtml(key)}</option>`
-        }).join('')
+        const options = renderOptions(keys, currentKey, { escape: escapeHtml })
 return `<div class="ss-footer">
              <select class="ss-preset-select" data-action="synth-preset">
                  <option value="">-- preset --</option>
@@ -440,11 +430,10 @@ return `<div class="ss-footer">
 
     /** Renders icon buttons (wave shapes, filter types). */
     _renderIconRow(options, pathStr, val, cssClass, icons) {
-        return options.map(opt => {
-            const v = typeof opt === 'object' ? opt.value : opt
-            const sel = String(v) === String(val) ? ' selected' : ''
-            return `<button class="${cssClass}${sel}" data-synth-path="${escapeHtml(pathStr)}" data-wave-val="${escapeHtml(v)}" title="${escapeHtml(v)}">${icons[v] ?? v}</button>`
-        }).join('')
+        return renderIconChoices(options, val, icons, {
+            cssClass, valueDataAttr: 'data-wave-val', escape: escapeHtml,
+            extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
+        })
     }
 
     // ─── Knob mounting ────────────────────────────────────────────────────

@@ -10,7 +10,7 @@ import SynthEditor from './synth_editor.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
 import { OrTab } from './components/or_tab.js'
-import { fmt, setViewBtn, knobFormat } from './components/panel_helpers.js'
+import { fmt, setViewBtn, knobFormat, renderOptions, renderIconChoices } from './components/panel_helpers.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
@@ -335,13 +335,7 @@ export default class TrackEditor extends BasePanel {
                 } else if (p.type === 'select') {
                     html += `<div class="ne-row ${isSelected} ${hasLfo}" data-prop="${p.key}">
                              <label>${p.label}</label>
-                             <select data-key="${p.key}">`
-                    p.options.forEach((opt, idx) => {
-                        const label = p.labels ? p.labels[idx] : opt
-                        const sel = String(opt) === String(val) ? ' selected' : ''
-                        html += `<option value="${opt}"${sel}>${label}</option>`
-                    })
-                    html += `</select></div>`
+                             <select data-key="${p.key}">${renderOptions(p.options, val, { labels: p.labels })}</select></div>`
                 } else {
                     const s = new OrSlider({
                         key: p.key,
@@ -621,24 +615,14 @@ export default class TrackEditor extends BasePanel {
                 if (!prop) return
                 const val = this._track[ck]
                 if (prop.type === 'icon') {
-                    const icons = FILTER_TYPE_ICONS
                     content += `<div class="ne-row fx-icon-row" data-prop="${ck}">
                         <label class="ne-row-label">${prop.label}</label>
-                        ${prop.options.map(opt => {
-                            const sel = String(opt) === String(val) ? ' selected' : ''
-                            return `<button class="fx-icon-btn${sel}" data-fx-icon-val="${opt}" title="${opt}">${icons[opt] ?? opt}</button>`
-                        }).join('')}
+                        ${renderIconChoices(prop.options, val, FILTER_TYPE_ICONS, { cssClass: 'fx-icon-btn', valueDataAttr: 'data-fx-icon-val' })}
                     </div>`
                 } else if (prop.type === 'select') {
                     content += `<div class="ne-row" data-prop="${ck}">
                         <label class="ne-row-label">${prop.label}</label>
-                        <select data-key="${ck}">`
-                    prop.options.forEach((opt, idx2) => {
-                        const label = prop.labels ? prop.labels[idx2] : opt
-                        const sel = String(opt) === String(val) ? ' selected' : ''
-                        content += `<option value="${opt}"${sel}>${label}</option>`
-                    })
-                    content += `</select></div>`
+                        <select data-key="${ck}">${renderOptions(prop.options, val, { labels: prop.labels })}</select></div>`
                 } else {
                     const hasLfo = prop.lfo && this._track[prop.lfo] ? 'has-lfo' : ''
                     const isSelected = this._selectedPropKey === ck ? 'selected' : ''
@@ -709,37 +693,27 @@ export default class TrackEditor extends BasePanel {
             : ''
 
         let content = ''
-        content += `<div class="ne-row"><label>Instr</label><select data-sound="instrument">`
-        instrumentIds.forEach(id => {
-            const sel = id === currentName ? ' selected' : ''
-            content += `<option value="${id}"${sel}>${id}</option>`
-        })
-        content += `</select></div>
+        content += `<div class="ne-row"><label>Instr</label><select data-sound="instrument">${renderOptions(instrumentIds, currentName)}</select></div>
         <div class="ne-row"><label title="${sampleTooltip}">Sample</label><select data-sound="sample">`
         if (matchingSounds.length === 0) {
             content += `<option value="">— no samples —</option>`
         } else {
-            matchingSounds.forEach(s => {
-                const sel = s.url === currentSoundId ? ' selected' : ''
+            const sampleValues = matchingSounds.map(s => s.url)
+            const sampleLabels = matchingSounds.map(s => {
                 const kit = s.kitName ?? ''
                 const name = s.display_name ?? s.url ?? '??'
-                const label = kit ? `${kit}/${name}` : name
-                content += `<option value="${s.url}"${sel}>${label}</option>`
+                return kit ? `${kit}/${name}` : name
             })
+            content += renderOptions(sampleValues, currentSoundId, { labels: sampleLabels })
+        }
+        const synthOpts = ['none', ...generatedSoundKeys]
+        if (this._track.useSoftSynth === true && !generatedSoundKeys.includes(currentGeneratedSound)) {
+            synthOpts.push(currentGeneratedSound)
         }
         content += `</select></div>
                 <div class="ne-row ne-row-separator">
                     <label>Synth</label>
-                    <select data-sound="generated">
-                        <option value="none"${currentGeneratedSound === 'none' ? ' selected' : ''}>none</option>`
-        generatedSoundKeys.forEach(key => {
-            const sel = key === currentGeneratedSound ? ' selected' : ''
-            content += `<option value="${this.esc(key)}"${sel}>${this.esc(key)}</option>`
-        })
-        if (this._track.useSoftSynth === true && !generatedSoundKeys.includes(currentGeneratedSound)) {
-            content += `<option value="${this.esc(currentGeneratedSound)}" selected>${this.esc(currentGeneratedSound)}</option>`
-        }
-        content += `</select></div>
+                    <select data-sound="generated">${renderOptions(synthOpts, currentGeneratedSound, { escape: this.esc })}</select></div>
                 <div class="ne-row ${currentGeneratedSound === 'none' ? 'ne-row-hidden' : ''}" data-sound-edit-row>
                     <label>Edit</label>
                     <button class="ne-btn" data-action="edit-synth">Edit</button>
@@ -842,7 +816,7 @@ export default class TrackEditor extends BasePanel {
             <div class="ne-row">
                 <label>Type</label>
                 <select data-lfo-type-select="1">
-                    ${Utils.waveList.map(w => `<option value="${w}" ${w === type ? 'selected' : ''}>${w}</option>`).join('')}
+                    ${renderOptions(Utils.waveList, type)}
                 </select>
             </div>
             <div class="ne-row">

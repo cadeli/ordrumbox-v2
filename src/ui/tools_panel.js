@@ -3,7 +3,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { PatternExporter } from '../patterns/exporter.js'
-import { escapeHtml, downloadJson } from './components/panel_helpers.js'
+import { escapeHtml, downloadJson, renderOptions } from './components/panel_helpers.js'
 import InstrumentsManager, { GM_DRUM_NAMES, GM_PROGRAM_NAMES } from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { TICK } from '../core/constants.js'
@@ -249,9 +249,9 @@ export default class ToolsPanel extends BasePanel {
             
             // Only update if list changed or empty
             if (outputSelect.options.length !== outputs.length) {
-                outputSelect.innerHTML = outputs.map(o => 
-                    `<option value="${escapeHtml(o.id)}" ${o.id === currentOutputId ? 'selected' : ''}>${escapeHtml(nameOr(o.name, 'Unknown', 'ToolsPanel', 'name fallback'))}</option>`
-                ).join('')
+                const values = outputs.map(o => o.id)
+                const labels = outputs.map(o => nameOr(o.name, 'Unknown', 'ToolsPanel', 'name fallback'))
+                outputSelect.innerHTML = renderOptions(values, currentOutputId, { labels, escape: escapeHtml })
             } else {
                 outputSelect.value = nameOr(currentOutputId, '', 'ToolsPanel', 'outputId fallback')
             }

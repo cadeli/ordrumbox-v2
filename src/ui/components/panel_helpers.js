@@ -117,3 +117,52 @@ const KNOB_FORMATTERS = new Map([
     ['decay',    v => `${Math.round(v)} ms`],
 ])
 export const knobFormat = (def) => KNOB_FORMATTERS.get(def.key) ?? fmt
+
+// ─── Option / Icon rendering helpers ──────────────────────────────────────
+
+const _eq = (a, b) => String(a) === String(b)
+
+/**
+ * Builds <option> tags with correct `selected` marking.
+ *
+ * @param {Array<string|{value:string,label:string}>} options
+ * @param {*} currentValue  Currently selected value
+ * @param {object}          [opts]
+ * @param {string[]}        [opts.labels]   Override display labels (index-aligned)
+ * @param {function}        [opts.escape]   HTML-escape function (e.g. escapeHtml)
+ * @returns {string} HTML
+ */
+export function renderOptions(options, currentValue, { labels, escape: esc } = {}) {
+    return options.map((opt, i) => {
+        const value = typeof opt === 'object' ? opt.value : opt
+        const label = labels?.[i] ?? (typeof opt === 'object' ? opt.label : opt)
+        const sel = _eq(value, currentValue) ? ' selected' : ''
+        const dVal = esc ? esc(value) : value
+        const dLbl = esc ? esc(label) : label
+        return `<option value="${dVal}"${sel}>${dLbl}</option>`
+    }).join('')
+}
+
+/**
+ * Builds icon-toggle buttons with `selected` class on the active one.
+ *
+ * @param {Array<string|number|{value:*,label:string}>} options
+ * @param {*}       currentValue   Currently selected value
+ * @param {Object}  iconMap        value → icon content (text / SVG / emoji)
+ * @param {object}  [opts]
+ * @param {string}  [opts.cssClass]      CSS class for every button
+ * @param {string}  [opts.valueDataAttr] data-* attribute carrying the value (e.g. 'data-wave-val')
+ * @param {function}[opts.escape]        HTML-escape function
+ * @param {function}[opts.extraAttrs]    (value) => string — extra HTML attributes per button
+ * @returns {string} HTML
+ */
+export function renderIconChoices(options, currentValue, iconMap, { cssClass, valueDataAttr, escape: esc, extraAttrs } = {}) {
+    return options.map(opt => {
+        const value = typeof opt === 'object' ? opt.value : opt
+        const sel = _eq(value, currentValue) ? ' selected' : ''
+        const dVal = esc ? esc(value) : value
+        const icon = iconMap[value] ?? value
+        const extra = extraAttrs ? extraAttrs(value) : ''
+        return `<button class="${cssClass}${sel}" ${valueDataAttr}="${dVal}" title="${dVal}"${extra}>${icon}</button>`
+    }).join('')
+}
