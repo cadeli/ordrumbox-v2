@@ -21,7 +21,7 @@ No lint or typecheck commands are configured (eslint is in devDeps but has no co
 
 ## Test Setup
 
-- 63 test files in `tests/*.test.js`
+- 89 test files in `tests/*.test.js` (1694 tests)
 - Vitest uses `vite.config.js` defaults (no separate vitest config)
 - Audio tests use `node-web-audio-api` for `OfflineAudioContext` — must set globals:
   ```js
@@ -33,10 +33,15 @@ No lint or typecheck commands are configured (eslint is in devDeps but has no co
   ```js
   soundRegistry.reset()
   serviceRegistry.reset()
-  serviceRegistry.mfPatterns = new MfPatterns()
   ```
 - Mock pattern: create `makeParam()`, `makeNode()`, `makeStrip()`, `makeMixer()` helpers locally in each test file (no shared mock utility)
 - Canvas mock: `tests/setup.js` stubs `document.createElement('canvas')` returning a mock 2D context (used by spectrum analyzer and waveform overlay). Wired into `vite.config.js` as `setupFiles`.
+- Test helpers in `tests/helpers/`:
+  - `midi_builder.js` — Synthetic MIDI binary builder (`buildMidi()`, `buildDrumMidi()`, `buildEmptyMidi()`) for testing import pipelines
+  - `midi_reader.js` — MIDI binary reader for testing export pipelines
+  - `wav_builder.js` — Synthetic WAV builder for audio analysis tests
+  - `onset_detector.js` — Onset detection helper
+  - `worklet_mocks.js` — AudioWorklet node mocks
 
 ## Architecture
 
@@ -47,7 +52,7 @@ src/
   audio/               — Engine, mixer, strip, sound, voices, worklets, export
   patterns/            — Pattern manager, engine, exporter, defaults, fixer, variation
   logic/               — Commands (cmd.js), generators, MIDI, services, transport
-  state/               — app_state.js, service_registry.js, sound_registry.js, playback_events.js
+  state/               — app_state.js, service_registry.js, sound_registry.js, playback_events.js, events.js
   ui/                  — Panels: toolbar, pattern, note/track editors, tools, output, about, synth
   loader/              — resources_loader.js (loads patterns, drumkits, sounds)
   model/               — flatnote.js, instrument.js
@@ -55,7 +60,7 @@ src/
 
 **Key singletons** (state layer):
 - `appState` — current patterns, selected track/pattern, UI flags
-- `serviceRegistry` — audioCtx, mfCmd, mfSeq, mfPatterns, mfResourcesLoader, audioEngine, midiManager
+- `serviceRegistry` — audioCtx, cmd, seq, patterns, resourcesLoader, audioEngine, midiManager
 - `soundRegistry` — sounds, generatedSounds, drumkitList
 - `playbackEvents` — event bus for pattern/track/drumkit changes
 
@@ -73,6 +78,9 @@ src/
 - **`NOTE_VELO_BALANCE` (1/8)**: Synth voice velocity is scaled by this constant to compensate volume difference between synth and sample voices. Factor in when computing expected velocity values in tests.
 - **Compressor DSP chain**: `preGain → compressor → HPF → LPF → master gain → output`. Pre-gain is k-rate; filters and master gain are a-rate.
 - **Track Variation** (`src/patterns/variation.js`): Budget-based randomization applied per loop iteration in `computeFlatNotesFromPattern`. Budget = `variation * 16 / 100`. Operations: anticipation (3pts), double (3pts), ghost (3pts), silence (3pts), velocity (1pt), pitch (1pt).
+- **`serviceRegistry` property names**: Services are referenced without `mf` prefix (e.g. `serviceRegistry.cmd`, `serviceRegistry.seq`, `serviceRegistry.patterns`). The `mf` prefix was removed.
+- **Granular events**: The event bus emits both `patternChange` (legacy, backward-compat) and granular events (`noteChange`, `patternStructureChange`, `patternMetaChange`). Consumers should prefer the granular event for their specific concern. `track_editor.js` keeps `patternChange` because it does structural track reference re-validation, not data changes.
+- **Import services**: `MidiImportService` and `WavImportService` in `src/logic/services/` handle file import logic extracted from `tools_panel.js`. They depend on `serviceRegistry.cmd` for pattern/track/note creation.
 
 ## Style
 

@@ -28,6 +28,7 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 
 ### Audio & Export
 - High-quality WAV export for use in other DAWs
+- MIDI import/export with track and program change support
 - Real-time audio analysis and visualization
 - Multiple drumkits with authentic sounds
 
@@ -44,6 +45,8 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 ### MIDI Support
 - Compatible with external MIDI controllers
 - General MIDI (GM) standard support
+- Import MIDI files into patterns (auto-maps instruments and drums)
+- Export patterns to MIDI files
 
 ## Getting Started
 
@@ -97,6 +100,8 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 
 ### Data Management
 - Import and export patterns as local project files (JSON)
+- Import MIDI files — automatically maps GM instruments and drums to tracks
+- Import WAV/drumkit directories — drag a folder of audio files to create a new drumkit
 - Save and load your creations
 
 
@@ -107,6 +112,8 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 npm install
 npm run dev          # Vite dev server (port 3000)
 npm test             # Run all tests (Vitest)
+npm run test:watch   # Watch mode
+npm run test:coverage # Test coverage
 npm run build        # Production build
 npm run electron:dev # Desktop app (Electron)
 ```
@@ -115,7 +122,7 @@ npm run electron:dev # Desktop app (Electron)
 
 - Framework: Vanilla JavaScript with ES6 modules
 - Build Tool: Vite
-- Test Framework: Vitest (63 test files, 1124 tests)
+- Test Framework: Vitest (89 test files, 1694 tests)
 - Audio: Web Audio API with AudioWorklet support
 - Node Pool: Recycling of GainNode, BiquadFilterNode, and StereoPannerNode for reduced GC pressure
 - Storage: LocalStorage for persistence, JSON for import/export
