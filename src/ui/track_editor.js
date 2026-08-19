@@ -586,7 +586,6 @@ export default class TrackEditor extends BasePanel {
 
             if (btn.dataset.key)            this._onToggle(btn)
             else if (btn.dataset.action === 'toggle-auto')  this._sndSection.toggleAuto()
-            else if (btn.dataset.action === 'edit-synth')   this.synthEditor.openEditor()
             else if (btn.dataset.action === 'load-sample')  this._onLoadSample()
         })
 

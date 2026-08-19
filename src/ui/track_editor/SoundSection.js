@@ -69,11 +69,7 @@ export default class SoundSection {
         content += `</select></div>
                 <div class="ne-row ne-row-separator">
                     <label>Synth</label>
-                    <select data-sound="generated">${renderOptions(synthOpts, currentGeneratedSound, { escape: co.esc })}</select></div>
-                <div class="ne-row ${currentGeneratedSound === 'none' ? 'ne-row-hidden' : ''}" data-sound-edit-row>
-                    <label>Edit</label>
-                    <button class="ne-btn" data-action="edit-synth">Edit</button>
-                </div>`
+                    <select data-sound="generated">${renderOptions(synthOpts, currentGeneratedSound, { escape: co.esc })}</select></div>`
 
         const monoActive = track.mono ? 'active' : ''
         const monoLabel = track.mono ? 'ON' : 'OFF'
