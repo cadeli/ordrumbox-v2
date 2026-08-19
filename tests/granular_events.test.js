@@ -43,6 +43,9 @@ describe('Granular patternChange events', () => {
 
         cmd = new MfCmd()
         serviceRegistry.cmd = cmd
+        serviceRegistry.seq = { setBpm: vi.fn() }
+        serviceRegistry.patterns = { computeFlatNotesFromPattern: vi.fn() }
+        serviceRegistry.audioEngine = { invalidateCache: vi.fn(), syncAllTracks: vi.fn(), syncTrack: vi.fn() }
 
         document.body.innerHTML = ''
         HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({

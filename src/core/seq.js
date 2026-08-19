@@ -112,6 +112,10 @@ export default class MfSeq {
         }
 
         // Ensure transport has the current audioCtx (created in toggleStartStop)
+        if (!this.serviceRegistry.audioCtx) {
+            logger.warn('MfSeq', "MfSeq::start: No audioCtx available")
+            return
+        }
         this.ensureTransport()
         this.serviceRegistry.transport.setBpm(selPattern.bpm)
         const autoAssign = await getAutoAssignService()
