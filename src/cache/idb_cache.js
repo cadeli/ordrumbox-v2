@@ -80,6 +80,16 @@ export async function getCachedSample(url) {
     }
 }
 
+export async function removeCacheEntry(type, key) {
+    const store = type === 'patterns' ? PATTERNS_STORE
+        : type === 'drumkits' ? DRUMKITS_STORE
+        : type === 'samples' ? SAMPLES_STORE
+        : null
+    if (!store) return
+    await idbDelete(store, key)
+    logger.debug('IdbCache', `Removed ${type} entry: "${key}"`)
+}
+
 export async function clearPatternsCache() {
     await idbClearStore(PATTERNS_STORE)
     logger.debug('IdbCache', 'Patterns cache cleared')

@@ -14,7 +14,7 @@ import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import MidiIndicatorView from './midi_indicator_view.js'
 import { logger, nameOr } from "../core/logger.js"
-import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, formatBytes, formatDate } from '../cache/idb_cache.js'
+import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, removeCacheEntry, formatBytes, formatDate } from '../cache/idb_cache.js'
 
 export default class ToolsPanel extends BasePanel {
     constructor() {
@@ -217,6 +217,14 @@ export default class ToolsPanel extends BasePanel {
             showToast('All cache cleared', 'success')
             this._refreshCacheStats()
         })
+        this.container.querySelector('#tp-cache-list').addEventListener('click', async (e) => {
+            const btn = e.target.closest('.tp-cache-item-del')
+            if (!btn) return
+            const { cacheType, cacheKey } = btn.dataset
+            if (!window.confirm(`Remove "${cacheKey}" from ${cacheType} cache?`)) return
+            await removeCacheEntry(cacheType, cacheKey)
+            this._refreshCacheStats()
+        })
 
         this._midiView = new MidiIndicatorView(this.container)
 
@@ -308,6 +316,7 @@ export default class ToolsPanel extends BasePanel {
                     (kitName ? `<span class="tp-cache-item-kit" title="${escapeHtml(kitName)}">${escapeHtml(kitName)}</span>` : `<span class="tp-cache-item-kit"></span>`) +
                     `<span class="tp-cache-item-size">${size}</span>` +
                     `<span class="tp-cache-item-date">${date}</span>` +
+                    `<button class="tp-cache-item-del" data-cache-type="${e.type}" data-cache-key="${escapeHtml(e.key)}" title="Remove">&#x2715;</button>` +
                     `</div>`
             }).join('')
         } catch (e) {

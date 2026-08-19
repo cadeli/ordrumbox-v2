@@ -1044,9 +1044,10 @@ body {
 }
 .tp-cache-list {
     max-height: 140px;
-    overflow-y: auto;
+    overflow-y: scroll;
     font-size: var(--fs-sm);
     margin-bottom: 4px;
+    scrollbar-gutter: stable;
 }
 .tp-cache-item {
     display: flex;
@@ -1084,6 +1085,22 @@ body {
 }
 .tp-cache-item-date {
     min-width: 90px;
+}
+.tp-cache-item-del {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 0 2px;
+    font-size: var(--fs-sm);
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0.5;
+    transition: color 0.15s, opacity 0.15s;
+}
+.tp-cache-item-del:hover {
+    color: var(--color-danger);
+    opacity: 1;
 }
 .tp-cache-empty {
     color: var(--text-tertiary);
