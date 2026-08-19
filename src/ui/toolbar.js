@@ -38,10 +38,14 @@ export default class Toolbar {
     subscribeEvents() {
         playbackEvents.on("playbackStart", () => this.syncPlayButton())
         playbackEvents.on("playbackStop", () => this.syncPlayButton())
-        playbackEvents.on("patternChange", () => {
-            this.syncPatterns()
-            this.syncPage()
+        playbackEvents.on("noteChange", () => {
             this.syncGenButtons()
+        })
+        playbackEvents.on("patternStructureChange", () => {
+            this.syncPatterns()
+        })
+        playbackEvents.on("patternMetaChange", () => {
+            this.syncPage()
         })
         playbackEvents.on("drumkitChange", () => {
             this.syncDrumkits()
@@ -324,6 +328,7 @@ export default class Toolbar {
             })
             appState.currentPage = 0
             this.syncPage()
+            playbackEvents.emit("patternMetaChange")
             playbackEvents.emit("patternChange")
         })
 
@@ -360,6 +365,7 @@ export default class Toolbar {
             }
             this.syncGenButtons()
             this.syncPatterns()
+            playbackEvents.emit("noteChange")
             playbackEvents.emit("patternChange")
         })
 
@@ -398,6 +404,7 @@ export default class Toolbar {
             }
             this.syncGenButtons()
             this.syncPatterns()
+            playbackEvents.emit("noteChange")
             playbackEvents.emit("patternChange")
         })
 
@@ -436,6 +443,7 @@ export default class Toolbar {
             }
             this.syncGenButtons()
             this.syncPatterns()
+            playbackEvents.emit("noteChange")
             playbackEvents.emit("patternChange")
         })
 
@@ -443,6 +451,7 @@ export default class Toolbar {
             if (appState.currentPage > 0) {
                 appState.currentPage--
                 this.syncPage()
+                playbackEvents.emit("patternMetaChange")
                 playbackEvents.emit("patternChange")
             }
         })
@@ -456,6 +465,7 @@ export default class Toolbar {
             if (appState.currentPage < maxPage) {
                 appState.currentPage++
                 this.syncPage()
+                playbackEvents.emit("patternMetaChange")
                 playbackEvents.emit("patternChange")
             }
         })

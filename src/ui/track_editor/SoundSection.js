@@ -96,6 +96,7 @@ export default class SoundSection {
             co._serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
         }
         co.sync()
+        co._playbackEvents.emit("trackParamChange", track)
         co._playbackEvents.emit("patternChange", [track])
     }
 
@@ -114,6 +115,7 @@ export default class SoundSection {
             }
         }
         co._serviceRegistry.cmd.changeTrackSound(track, url)
+        co._playbackEvents.emit("trackParamChange", track)
         co._playbackEvents.emit("patternChange", [track])
     }
 
@@ -132,6 +134,7 @@ export default class SoundSection {
             track.synthSoundKey = key
         }
         co.sync()
+        co._playbackEvents.emit("trackParamChange", track)
         co._playbackEvents.emit("patternChange", [track])
     }
 
@@ -146,6 +149,7 @@ export default class SoundSection {
             aa.autoAssignTrackSounds(track)
         }
         co.sync()
+        co._playbackEvents.emit("trackParamChange", track)
         co._playbackEvents.emit("patternChange", [track])
     }
 

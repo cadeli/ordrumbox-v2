@@ -376,6 +376,7 @@ export default class SynthEditor {
         if (!this._editKey || !this._draft) return
         this._presets.commitSound(this._editKey, this._draft)
         this._serviceRegistry.audioEngine?.invalidateCache?.()
+        this._playbackEvents.emit('trackParamChange', this.host._track)
         this._playbackEvents.emit('patternChange', [this.host._track])
         this._renderEditor()
     }
@@ -386,6 +387,7 @@ export default class SynthEditor {
         this._draft = structuredClone(this._original)
         this._renderEditor()
         this._serviceRegistry.audioEngine?.invalidateCache?.()
+        this._playbackEvents.emit('trackParamChange', this.host._track)
         this._playbackEvents.emit('patternChange', [this.host._track])
     }
 
@@ -393,6 +395,7 @@ export default class SynthEditor {
         if (shouldSave && this._editKey && this._draft) {
             this._presets.commitSound(this._editKey, this._draft)
             this._serviceRegistry.audioEngine?.invalidateCache?.()
+            this._playbackEvents.emit('trackParamChange', this.host._track)
             this._playbackEvents.emit('patternChange', [this.host._track])
         } else if (!shouldSave && this._editKey && this._original) {
             this._presets.commitSound(this._editKey, this._original)

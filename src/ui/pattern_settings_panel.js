@@ -109,6 +109,7 @@ export default class PatternSettingsPanel {
         this._prevPageBtn.addEventListener('click', () => {
             if (appState.currentPage > 0) {
                 appState.currentPage--
+                playbackEvents.emit("patternMetaChange")
                 playbackEvents.emit("patternChange")
             }
         })
@@ -121,6 +122,7 @@ export default class PatternSettingsPanel {
             const maxPage = Math.ceil(totalSteps / 16) - 1
             if (appState.currentPage < maxPage) {
                 appState.currentPage++
+                playbackEvents.emit("patternMetaChange")
                 playbackEvents.emit("patternChange")
             }
         })
@@ -142,6 +144,7 @@ export default class PatternSettingsPanel {
                 }
             })
             appState.currentPage = 0
+            playbackEvents.emit("patternMetaChange")
             playbackEvents.emit("patternChange")
         })
 
@@ -157,6 +160,7 @@ export default class PatternSettingsPanel {
             if (!isNaN(num)) {
                 serviceRegistry.cmd.setSelectedPatternNum(num)
                 appState.currentPage = 0
+                playbackEvents.emit("patternStructureChange")
                 playbackEvents.emit("patternChange")
             }
         })
@@ -185,6 +189,7 @@ export default class PatternSettingsPanel {
                     if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = true
                 }
             }
+            playbackEvents.emit("noteChange")
             playbackEvents.emit("patternChange")
         })
 
@@ -217,6 +222,7 @@ export default class PatternSettingsPanel {
                 }
                 bassTrack.auto = true
             }
+            playbackEvents.emit("noteChange")
             playbackEvents.emit("patternChange")
         })
 
@@ -249,12 +255,14 @@ export default class PatternSettingsPanel {
                 }
                 pianoTrack.auto = true
             }
+            playbackEvents.emit("noteChange")
             playbackEvents.emit("patternChange")
         })
     }
 
     _subscribeEvents() {
-        playbackEvents.on("patternChange", () => this.sync())
+        playbackEvents.on("patternMetaChange", () => this.sync())
+        playbackEvents.on("patternStructureChange", () => this.sync())
         playbackEvents.on("drumkitChange", () => this.syncDrumkits())
         playbackEvents.on("patternSettingsToggle", (show) => {
             if (show) this.show()

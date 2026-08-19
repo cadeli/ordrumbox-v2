@@ -22,6 +22,7 @@ export { normalizeArp, hasArp, getArpNoteCount, isTrigged, isProbabilityTrigged,
 export function computeFlatNotesFromPattern(djtPattern, loop = 0) {
     const flatNotes = _computeFlatNotesFromPattern(djtPattern, loop, null, TICK)
     appState.flatNotes = flatNotes
+    playbackEvents.emit("noteChange")
     playbackEvents.emit("patternChange")
     return flatNotes
 }

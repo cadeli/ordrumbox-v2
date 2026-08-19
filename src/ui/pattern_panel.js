@@ -120,11 +120,14 @@ export default class PatternPanel extends BasePanel {
     }
 
     subscribe() {
-        this._playbackEvents.on('patternChange', () => {
+        const onPatternDirty = () => {
             this._overlay.resetPrevLoopTick()
             this._trackDataDirty = true
             this.requestSync()
-        })
+        }
+        this._playbackEvents.on('noteChange', onPatternDirty)
+        this._playbackEvents.on('trackParamChange', onPatternDirty)
+        this._playbackEvents.on('patternStructureChange', onPatternDirty)
         this._playbackEvents.on('loopPointChange', (data) => {
             if (data && typeof data.trackIdx === 'number' && typeof data.loopAtStep === 'number') {
                 this.updateLoopPoint(data.trackIdx, data.loopAtStep)
@@ -492,6 +495,7 @@ export default class PatternPanel extends BasePanel {
                 if (this._appState.patterns.length <= 1) return
                 if (!confirm('Delete pattern "' + (pattern.name ?? '') + '"?')) return
                 cmd.removePattern(idx)
+                this._playbackEvents.emit('patternStructureChange')
                 this._playbackEvents.emit('patternChange')
                 break
             }
@@ -499,6 +503,7 @@ export default class PatternPanel extends BasePanel {
                 if (!confirm('Clear all notes in "' + (pattern.name ?? '') + '"?')) return
                 cmd.cleanPattern(pattern)
                 patterns?.computeFlatNotesFromPattern(pattern)
+                this._playbackEvents.emit('noteChange')
                 this._playbackEvents.emit('patternChange')
                 break
             }
@@ -508,6 +513,7 @@ export default class PatternPanel extends BasePanel {
                 clone.name = (pattern.name ?? 'Pattern') + ' copy'
                 const newIdx = this._appState.patterns.length - 1
                 await cmd.setSelectedPatternNum(newIdx)
+                this._playbackEvents.emit('patternStructureChange')
                 this._playbackEvents.emit('patternChange')
                 break
             }
@@ -515,6 +521,7 @@ export default class PatternPanel extends BasePanel {
                 const newName = prompt('Rename pattern:', pattern.name ?? '')
                 if (newName === null || newName.trim() === '') return
                 cmd.renamePattern(idx, newName.trim())
+                this._playbackEvents.emit('patternStructureChange')
                 this._playbackEvents.emit('patternChange')
                 break
             }
@@ -534,6 +541,7 @@ export default class PatternPanel extends BasePanel {
                     const text = await file.text()
                     const data = JSON.parse(text)
                     cmd.importPatternFromJson(data)
+                    this._playbackEvents.emit('patternStructureChange')
                     this._playbackEvents.emit('patternChange')
                 }
                 input.click()

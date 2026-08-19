@@ -64,8 +64,14 @@ export default class MfSeq {
                 }
             }
         })
+        this.playbackEvents.on("noteChange", () => {
+            if (this.serviceRegistry.audioEngine) {
+                this.serviceRegistry.audioEngine.invalidateCache()
+            }
+        })
         this.playbackEvents.on("trackParamChange", (track) => {
             if (this.serviceRegistry.audioEngine) {
+                this.serviceRegistry.audioEngine.invalidateCache()
                 this.serviceRegistry.audioEngine.syncTrack(track)
             }
         })

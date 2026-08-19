@@ -286,6 +286,7 @@ export default class TrackEditor extends BasePanel {
                 if (input) {
                     input.addEventListener('change', () => {
                         this._isDragging = false
+                        this._playbackEvents.emit("trackParamChange", this._track)
                         this._playbackEvents.emit("patternChange", [this._track])
                     })
                 }
@@ -444,6 +445,7 @@ export default class TrackEditor extends BasePanel {
                 }
             }
             this.sync()
+            this._playbackEvents.emit("trackParamChange", this._track)
             this._playbackEvents.emit("patternChange", [this._track])
         } catch (err) {
             logger.warn('TrackEditor', `Sample import failed: ${err.message}`)
@@ -560,6 +562,7 @@ export default class TrackEditor extends BasePanel {
                 }
             } else if (target.type === 'range') {
                 this._isDragging = false
+                this._playbackEvents.emit("trackParamChange", this._track)
                 this._playbackEvents.emit("patternChange", [this._track])
             }
         })
@@ -655,6 +658,7 @@ export default class TrackEditor extends BasePanel {
         if (key === 'swingAmount') {
             this._playbackEvents.emit("trackParamChange", this._track)
         } else {
+            this._playbackEvents.emit("trackParamChange", this._track)
             this._playbackEvents.emit("patternChange", [this._track])
         }
     }

@@ -66,7 +66,9 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on("patternChange", () => this._sync())
+        playbackEvents.on("noteChange", () => this._sync())
+        playbackEvents.on("trackParamChange", () => this._sync())
+        playbackEvents.on("patternStructureChange", () => this._sync())
         playbackEvents.on("trackSelect", (data) => {
             if (!data) return
             this._track = data.track
@@ -410,6 +412,7 @@ export default class PianoRollPanel extends BasePanel {
             if (this._selNote === hit) {
                 cmd.deleteNote(track, hit)
                 this._clearSelection()
+                playbackEvents.emit("noteChange", [track])
                 playbackEvents.emit("patternChange", [track])
             } else {
                 this._selNote = hit
@@ -425,6 +428,7 @@ export default class PianoRollPanel extends BasePanel {
             this._cursorStep = step
             this._cursorRow = row
             this._applySelection()
+            playbackEvents.emit("noteChange", [track])
             playbackEvents.emit("patternChange", [track])
             playbackEvents.emit("trackSelect", { track, trackIdx: this._trackIdx })
             playbackEvents.emit("noteSelect", { track, trackIdx: this._trackIdx, note: newNote, beat, beatStep })
@@ -510,12 +514,14 @@ export default class PianoRollPanel extends BasePanel {
                 if (this._selNote === note) {
                     cmd.deleteNote(track, note)
                     this._clearSelection()
+                    playbackEvents.emit("noteChange", [track])
                     playbackEvents.emit("patternChange", [track])
                     return
                 }
                 this._selNote = note
             } else {
                 this._selNote = cmd.addNote(track, beat, beatStep, relativePitch)
+                playbackEvents.emit("noteChange", [track])
                 playbackEvents.emit("patternChange", [track])
             }
             this._applySelection()
@@ -526,6 +532,7 @@ export default class PianoRollPanel extends BasePanel {
         if (this._selNote && cmd) {
             cmd.deleteNote(track, this._selNote)
             this._clearSelection()
+            playbackEvents.emit("noteChange", [track])
             playbackEvents.emit("patternChange", [track])
         }
     }

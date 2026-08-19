@@ -203,6 +203,7 @@ export function init() {
             logger.error('Main', 'Failed to load startup resources', e)
         }
         if (appState.patterns.length > 0) {
+            playbackEvents.emit("patternStructureChange")
             playbackEvents.emit("patternChange")
             playbackEvents.emit("drumkitChange")
             

@@ -229,12 +229,6 @@ export default class ToolsPanel extends BasePanel {
             if (show) this.show()
             else this.hide()
         })
-        
-        playbackEvents.on("patternChange", () => {
-            if (this.isVisible) {
-                this.sync()
-            }
-        })
     }
 
     sync() {
@@ -334,8 +328,9 @@ export default class ToolsPanel extends BasePanel {
         })
 
         serviceRegistry.audioEngine?.invalidateCache()
+        playbackEvents.emit("noteChange")
         playbackEvents.emit("patternChange")
-        logger.debug('ToolsPanel', `Compaction finished. Total redundant notes removed: ${totalRemoved}`)
+
     }
 
     _randomizePattern() {
@@ -360,6 +355,7 @@ export default class ToolsPanel extends BasePanel {
             }
         }
         serviceRegistry.audioEngine?.invalidateCache()
+        playbackEvents.emit("noteChange")
         playbackEvents.emit("patternChange")
     }
 
@@ -445,6 +441,7 @@ export default class ToolsPanel extends BasePanel {
                 const newIdx = appState.patterns.indexOf(newPattern)
                 if (newIdx !== -1) {
                     await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
+                    playbackEvents.emit("patternStructureChange")
                     playbackEvents.emit("patternChange")
                     this.hide()
                 }
