@@ -4,24 +4,25 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { PatternExporter } from '../patterns/exporter.js'
 import { escapeHtml, downloadJson, renderOptions } from './components/panel_helpers.js'
-import InstrumentsManager, { GM_DRUM_NAMES, GM_PROGRAM_NAMES } from '../logic/services/instruments_manager.js'
+import MidiImportService from '../logic/services/midi_import_service.js'
+import WavImportService from '../logic/services/wav_import_service.js'
 import Utils from '../core/utils.js'
-import { TICK } from '../core/constants.js'
-import { parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalized } from '../logic/midi/midi_parser.js'
-import { C3_MIDI_NOTE } from '../logic/midi/midi_exporter.js'
+import { MAX_IMPORT_SIZE, MAX_IMPORT_TRACKS, MAX_IMPORT_NOTES } from '../core/constants.js'
 import { showToast } from './toast.js'
 import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import MidiIndicatorView from './midi_indicator_view.js'
 import { logger, nameOr } from "../core/logger.js"
-import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, formatBytes, formatDate, cacheSample, cacheDrumkits } from '../cache/idb_cache.js'
+import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, formatBytes, formatDate } from '../cache/idb_cache.js'
 
 export default class ToolsPanel extends BasePanel {
     constructor() {
         super('tools-panel')
         this._wavLoops = null
         this.exportWavBtn = null
+        this._midiImportService = new MidiImportService()
+        this._wavImportService = new WavImportService()
     }
 
     createDOM() {
@@ -113,18 +114,18 @@ export default class ToolsPanel extends BasePanel {
                 </div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="cache">
-                <div class="ne-row no-cursor" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 4px; margin-bottom: 4px;">
+                <div class="ne-row no-cursor tp-cache-header">
                     <label>Total:</label>
                     <span class="ne-val" id="cache-total-size">-</span>
-                    <span class="ne-val" id="cache-total-count" style="margin-left: auto;"></span>
+                    <span class="ne-val tp-cache-count" id="cache-total-count"></span>
                 </div>
-                <div id="tp-cache-list" style="max-height: 140px; overflow-y: auto; font-size: var(--fs-sm); margin-bottom: 4px;"></div>
-                <div id="tp-cache-btns" style="display: flex; flex-direction: column; gap: 3px;">
+                <div id="tp-cache-list" class="tp-cache-list"></div>
+                <div id="tp-cache-btns">
                     <button class="ne-btn" id="tp-cache-refresh" title="Refresh cache list">Refresh</button>
                     <button class="ne-btn" id="tp-cache-clear-patterns" title="Clear cached patterns from IDB">Clear Patterns</button>
                     <button class="ne-btn" id="tp-cache-clear-drumkits" title="Clear cached drumkits from IDB">Clear Drumkits</button>
                     <button class="ne-btn" id="tp-cache-clear-samples" title="Clear cached samples from IDB">Clear Samples</button>
-                    <button class="ne-btn" id="tp-cache-clear-all" title="Clear all cached data from IDB" style="color: var(--color-danger);">Clear All Cache</button>
+                    <button class="ne-btn tp-cache-danger" id="tp-cache-clear-all" title="Clear all cached data from IDB">Clear All Cache</button>
                 </div>
             </div>
         `
@@ -281,7 +282,7 @@ export default class ToolsPanel extends BasePanel {
 
             const listEl = q('#tp-cache-list')
             if (stats.entries.length === 0) {
-                listEl.innerHTML = '<div style="color: var(--text-tertiary); padding: 4px 0;">No cached files</div>'
+                listEl.innerHTML = '<div class="tp-cache-empty">No cached files</div>'
                 return
             }
 
@@ -307,12 +308,12 @@ export default class ToolsPanel extends BasePanel {
                 const tooltip = e.type === 'samples' && kitName
                     ? `${e.key}\nDrumkit: ${kitName}`
                     : e.key
-                return `<div style="display:flex; align-items:center; gap:4px; padding:2px 0; border-bottom:1px solid var(--border-subtle);" title="${escapeHtml(tooltip)}">` +
-                    `<span style="min-width:28px;color:var(--accent);font-weight:600;">${label}</span>` +
-                    `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">${escapeHtml(e.key)}</span>` +
-                    (kitName ? `<span style="color:var(--text-secondary);min-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;" title="${escapeHtml(kitName)}">${escapeHtml(kitName)}</span>` : `<span style="min-width:80px;flex-shrink:0;"></span>`) +
-                    `<span style="color:var(--text-tertiary);min-width:52px;text-align:right;flex-shrink:0;">${size}</span>` +
-                    `<span style="color:var(--text-tertiary);min-width:90px;text-align:right;flex-shrink:0;">${date}</span>` +
+                return `<div class="tp-cache-item" title="${escapeHtml(tooltip)}">` +
+                    `<span class="tp-cache-item-label">${label}</span>` +
+                    `<span class="tp-cache-item-key">${escapeHtml(e.key)}</span>` +
+                    (kitName ? `<span class="tp-cache-item-kit" title="${escapeHtml(kitName)}">${escapeHtml(kitName)}</span>` : `<span class="tp-cache-item-kit"></span>`) +
+                    `<span class="tp-cache-item-size">${size}</span>` +
+                    `<span class="tp-cache-item-date">${date}</span>` +
                     `</div>`
             }).join('')
         } catch (e) {
@@ -407,7 +408,6 @@ export default class ToolsPanel extends BasePanel {
         const file = e.target.files[0]
         if (!file) return
 
-        const MAX_IMPORT_SIZE = 10 * 1024 * 1024 // 10 MB
         if (file.size > MAX_IMPORT_SIZE) {
             showToast('File too large (max 10 MB)', 'error')
             e.target.value = ''
@@ -428,15 +428,15 @@ export default class ToolsPanel extends BasePanel {
                     // tracks can be object or array, both are fine
                 }
                 const trackEntries = Object.values(tracks ?? {})
-                if (trackEntries.length > 64) {
-                    showToast('Too many tracks (max 64)', 'error')
+                if (trackEntries.length > MAX_IMPORT_TRACKS) {
+                    showToast(`Too many tracks (max ${MAX_IMPORT_TRACKS})`, 'error')
                     return
                 }
                 let totalNotes = 0
                 for (const t of trackEntries) {
                     totalNotes += Object.values(t?.notes ?? {}).length
-                    if (totalNotes > 10000) {
-                        showToast('Too many notes (max 10000)', 'error')
+                    if (totalNotes > MAX_IMPORT_NOTES) {
+                        showToast(`Too many notes (max ${MAX_IMPORT_NOTES})`, 'error')
                         return
                     }
                 }
@@ -462,269 +462,12 @@ export default class ToolsPanel extends BasePanel {
         if (!file) return
 
         try {
-            logger.debug('MidiImport', `parsing "${file.name}" (${file.size} bytes)`)
-            const arrayBuffer = await file.arrayBuffer()
-            const midiData = parseMidi(new Uint8Array(arrayBuffer))
-
-            logger.debug('MidiImport', `format: ${midiData.header.format}, tracks: ${midiData.tracks.length}, division: ${midiData.header.division}, tempo: ${midiData.header.tempo ?? 'none'}`)
-
-            const notes = findAllNotes(midiData)
-            if (notes.length === 0) {
-                logger.warn('MidiImport', 'no Note On events found — file may be type-0 with only track 0, or empty')
-                showToast('No MIDI notes found in file', 'warning')
-                return
-            }
-            logger.debug('MidiImport', `found ${notes.length} note-on events`)
-
-            const channelPrograms = extractProgramChanges(midiData)
-            logger.debug('MidiImport', `program changes: ${[...channelPrograms.entries()].map(([ch, pr]) => `ch${ch}=pr${pr}`).join(', ') || 'none'}`)
-
-            const im = new InstrumentsManager()
-
-            const channelNotes = new Map()
-            const channelTrackNames = new Map()
-            for (const note of notes) {
-                if (!channelNotes.has(note.channel)) channelNotes.set(note.channel, [])
-                channelNotes.get(note.channel).push(note)
-                if (!channelTrackNames.has(note.channel)) {
-                    channelTrackNames.set(note.channel, midiData.trackNames[note.trackIdx] ?? '')
-                }
-            }
-            logger.debug('MidiImport', `channels with notes: ${[...channelNotes.keys()].join(', ')} (${[...channelNotes.values()].map(n => n.length).join('+')} notes)`)
-
-            const { trackDefs, skippedChannels } = this._resolveTrackDefs(midiData, channelNotes, channelTrackNames, channelPrograms, im)
-
-            this._logImportSummary(trackDefs, channelNotes, channelPrograms)
-
-            const baseName = file.name.replace(/\.midi?$/i, '')
-            const bpm = midiData.header.tempo ? Math.round(60000000 / midiData.header.tempo) : 120
-            const PPQN = midiData.header.division ?? 96
-            this._createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN, skippedChannels)
-
-            const newIdx = appState.patterns.length - 1
-            await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
-
-            serviceRegistry.audioEngine?.invalidateCache()
-            const msg = trackDefs.length > 0 && newIdx >= 0
-                ? `MIDI imported: ${trackDefs.length} track(s)`
-                : 'MIDI import completed'
-            showToast(msg, 'success')
-
+            await this._midiImportService.importFile(file)
         } catch (err) {
             logger.error('ToolsPanel', 'MIDI Import failed', err)
-            logger.error('MidiImport', `failed: ${err.message}`)
             showToast('MIDI Import failed: ' + err.message, 'error')
         }
         e.target.value = ''
-    }
-
-    _resolveTrackDefs(midiData, channelNotes, channelTrackNames, channelPrograms, im) {
-        const resolveRootMidi = (trackName) => {
-            const upper = trackName?.trim().toUpperCase() ?? ''
-            for (const sound of Object.values(soundRegistry.sounds ?? {})) {
-                if (sound.rootMidi != null && upper.includes(sound.key?.toUpperCase() ?? '')) {
-                    return sound.rootMidi
-                }
-            }
-            return C3_MIDI_NOTE
-        }
-
-        const makeDef = (trackName, groupNotes, opts) => ({
-            trackName, groupNotes, midiTrackName: opts.midiTrackName, program: opts.program, channel: opts.channel, ...opts
-        })
-
-        const trackDefs = []
-        const skippedChannels = []
-
-        for (const [channel, chNotes] of channelNotes) {
-            const program = channelPrograms.get(channel) ?? 0
-            const midiTrackName = channelTrackNames.get(channel) ?? ''
-            const isDrumChannel = channel === 9
-
-            logger.warn('MidiImport', `── Channel ${channel}, program=${program}, name="${midiTrackName}", notes=${chNotes.length} ──`)
-
-            if (!isDrumChannel) {
-                const melodicInst = im.findInstrumentFromMidiProgram(channel, program)
-                if (melodicInst.id !== 'NOT_FOUND' && !melodicInst.drum) {
-                    const trackName = melodicInst.id
-                    if (!trackDefs.some(d => d.trackName === trackName)) {
-                        trackDefs.push(makeDef(trackName, chNotes, { baseNote: resolveRootMidi(trackName), midiTrackName, program, channel, isDrum: false }))
-                        logger.warn('MidiImport', `  → ${trackName} (tier1: findInstrumentFromMidiProgram ch=${channel} prog=${program})`)
-                    }
-                    continue
-                }
-            }
-
-            const drumResult = this._resolveDrumTrack(chNotes, channel, program, midiTrackName, im, resolveRootMidi)
-            if (drumResult) {
-                for (const def of drumResult) trackDefs.push(def)
-                continue
-            }
-
-            if (midiTrackName) {
-                const nameInst = im.findByName(midiTrackName)
-                if (nameInst) {
-                    const trackName = nameInst.id
-                    if (!trackDefs.some(d => d.trackName === trackName)) {
-                        trackDefs.push(makeDef(trackName, chNotes, { baseNote: resolveRootMidi(trackName), midiTrackName, program, channel, isDrum: false }))
-                        logger.warn('MidiImport', `  → ${trackName} (tier3: findByName "${midiTrackName}")`)
-                    }
-                    continue
-                }
-            }
-
-            const programInst = im.findInstrumentFromMidiProgramAnyChannel(program)
-            if (programInst.id !== 'NOT_FOUND') {
-                const trackName = programInst.id
-                if (!trackDefs.some(d => d.trackName === trackName)) {
-                    trackDefs.push(makeDef(trackName, chNotes, { baseNote: resolveRootMidi(trackName), midiTrackName, program, channel, isDrum: false }))
-                    logger.warn('MidiImport', `  → ${trackName} (tier4: findInstrumentFromMidiProgramAnyChannel prog=${program})`)
-                }
-            } else {
-                skippedChannels.push(channel)
-                logger.warn('MidiImport', `  → SKIPPED (aucun instrument trouvé pour ch=${channel} prog=${program})`)
-            }
-        }
-
-        for (const channel of skippedChannels) {
-            const allInstIds = [...im.byId.keys()].sort()
-            const usedIds = new Set(trackDefs.map(d => d.trackName))
-            let fallbackIdx = 0
-            while (fallbackIdx < allInstIds.length && usedIds.has(allInstIds[fallbackIdx])) fallbackIdx++
-            if (fallbackIdx >= allInstIds.length) continue
-
-            const instId = allInstIds[fallbackIdx]
-            const chNotes = channelNotes.get(channel)
-            const program = channelPrograms.get(channel) ?? 0
-            trackDefs.push(makeDef(instId, chNotes, { baseNote: resolveRootMidi(instId), midiTrackName: channelTrackNames.get(channel) ?? '', program, channel, isDrum: false }))
-            usedIds.add(instId)
-        }
-
-        return { trackDefs, skippedChannels }
-    }
-
-    _resolveDrumTrack(chNotes, channel, program, midiTrackName, im, resolveRootMidi) {
-        const noteGroups = new Map()
-        for (const note of chNotes) {
-            if (!noteGroups.has(note.note)) noteGroups.set(note.note, [])
-            noteGroups.get(note.note).push(note)
-        }
-
-        const results = []
-        let drumFound = false
-        for (const [noteNum, grpNotes] of noteGroups) {
-            let drumInst = im.findInstrumentFromMidi(channel, noteNum)
-            let matchMethod = drumInst.id !== 'NOT_FOUND' ? 'findInstrumentFromMidi' : null
-            if (drumInst.id === 'NOT_FOUND') {
-                const gmName = GM_DRUM_NAMES[noteNum]
-                if (gmName) {
-                    drumInst = im.findInstrumentFromFileName(gmName)
-                    if (drumInst.id !== 'NOT_FOUND') matchMethod = `GM_DRUM_NAMES[${noteNum}]="${gmName}" → findInstrumentFromFileName`
-                }
-                if (drumInst.id === 'NOT_FOUND') {
-                    logger.warn('MidiImport', `  note ${noteNum}: aucun instrument trouvé`)
-                    continue
-                }
-            }
-
-            const trackName = drumInst.id
-            if (!results.some(d => d.trackName === trackName)) {
-                results.push({ trackName, groupNotes: grpNotes, baseNote: noteNum, midiTrackName, program, channel, isDrum: true, key: noteNum })
-                drumFound = true
-                logger.warn('MidiImport', `  → ${trackName} (tier2: ${matchMethod}, note=${noteNum})`)
-            }
-        }
-
-        return drumFound ? results : null
-    }
-
-    _logImportSummary(trackDefs) {
-        const drumkitList = soundRegistry.drumkitList
-        const selDrumkitName = drumkitList?.[appState.selectedDrumkitNum]?.name ?? ''
-
-        const resolveSampleUrl = (trackName) => {
-            for (const sound of Object.values(soundRegistry.sounds)) {
-                if (sound.kit_name === selDrumkitName && trackName.toUpperCase().includes(sound.key.toUpperCase())) {
-                    return sound.url
-                }
-            }
-            for (const sound of Object.values(soundRegistry.sounds)) {
-                if (trackName.toUpperCase().includes(sound.key.toUpperCase())) {
-                    return sound.url
-                }
-            }
-            return null
-        }
-
-        logger.warn('MidiImport', `═══ IMPORT SUMMARY: ${trackDefs.length} track(s) ═══`)
-        for (const def of trackDefs) {
-            const sampleUrl = resolveSampleUrl(def.trackName) ?? '?'
-            if (def.isDrum) {
-                const gmName = GM_DRUM_NAMES[def.key] ?? ''
-                logger.warn('MidiImport', `  original: "ch: ${def.channel}, key: ${def.key}${gmName ? ', ' + gmName : ''}" → ${def.trackName} (${def.groupNotes.length} notes) [${sampleUrl}]`)
-            } else {
-                const gmProgName = GM_PROGRAM_NAMES[def.program] ?? ''
-                logger.warn('MidiImport', `  original: "ch: ${def.channel}, program: ${def.program}${gmProgName ? ', ' + gmProgName : ''}" → ${def.trackName} (${def.groupNotes.length} notes) [${sampleUrl}]`)
-            }
-        }
-        logger.warn('MidiImport', `═══════════════════════════════════════════`)
-    }
-
-    _createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN, skippedChannels) {
-        const cmd = serviceRegistry.cmd
-        const TICK_RATIO = PPQN / TICK
-        const MAX_BEATS = 32
-        const MAX_PATTERNS = 16
-
-        let maxTick = 0
-        for (const def of trackDefs) {
-            for (const note of def.groupNotes) {
-                if (note.absTick > maxTick) maxTick = note.absTick
-            }
-        }
-        const totalEngineTicks = Math.round(maxTick / TICK_RATIO)
-        const totalBeats = Math.max(1, Math.ceil(totalEngineTicks / TICK))
-
-        const numPatterns = Math.min(MAX_PATTERNS, Math.ceil(totalBeats / MAX_BEATS))
-        const beatsPerPattern = MAX_BEATS
-
-        logger.debug('MidiImport', `maxTick=${maxTick}, PPQN=${PPQN}, TICK_RATIO=${TICK_RATIO.toFixed(3)}, totalBeats=${totalBeats}, patterns=${numPatterns}, beatsPerPattern=${beatsPerPattern}`)
-
-        for (let p = 0; p < numPatterns; p++) {
-            const patStartBeat = p * beatsPerPattern
-            const patEndBeat = patStartBeat + beatsPerPattern
-
-            const suffix = numPatterns > 1 ? ` ${p + 1}/${numPatterns}` : ''
-            const pattern = cmd.addPattern(`${baseName}${suffix}`)
-            pattern.nbBeats = beatsPerPattern
-            pattern.bpm = bpm
-
-            const patStartTick = patStartBeat * TICK
-            const patEndTick = patEndBeat * TICK
-
-            for (const def of trackDefs) {
-                const track = cmd.addTrack(pattern, def.trackName)
-                const ticksPerStep = TICK / (track.stepsPerBeat ?? 4)
-
-                let noteCount = 0
-                for (const note of def.groupNotes) {
-                    const engineTicks = Math.round(note.absTick / TICK_RATIO)
-                    if (engineTicks < patStartTick || engineTicks >= patEndTick) continue
-
-                    const beat = Math.floor(engineTicks / TICK) - patStartBeat
-                    const beatStep = Math.round((engineTicks % TICK) / ticksPerStep)
-                    const pitch = note.note - def.baseNote
-
-                    cmd.addNote(track, beat, beatStep, pitch)
-                    const addedNote = track.notes.at(-1)
-                    if (addedNote) {
-                        addedNote.velocity = midiVelocityToNormalized(note.velocity)
-                    }
-                    noteCount++
-                }
-                logger.debug('MidiImport', `pattern "${pattern.name}" track "${def.trackName}": ${noteCount} notes placed`)
-            }
-        }
     }
 
     async _onImportDir(e) {
@@ -732,88 +475,16 @@ export default class ToolsPanel extends BasePanel {
         if (!files || files.length === 0) return
 
         try {
-            const wavFiles = Array.from(files).filter(f => /\.(wav|flac|mp3|aac)$/i.test(f.name))
-            if (wavFiles.length === 0) {
-                showToast('No audio files found in selected directory', 'warning')
-                return
+            const { kitName, fileCount } = await this._wavImportService.importDirectory(files)
+            if (fileCount > 0) {
+                await this._wavImportService.autoAssignSounds()
+                serviceRegistry.audioEngine?.invalidateCache()
+                playbackEvents.emit("patternChange")
             }
-
-            // Get drumkit name from directory path (webkitRelativePath = "dirname/file.wav")
-            const firstPath = files[0].webkitRelativePath ?? ''
-            const kitName = firstPath.split('/')[0] ?? 'imported'
-
-            const im = new InstrumentsManager()
-            const audioCtx = serviceRegistry.audioCtx
-            const instruments = []
-            let index = 0
-
-            for (const file of wavFiles) {
-                const fileName = file.name
-                const instrument = im.findInstrumentFromFileName(fileName)
-                const key = instrument.id
-
-                const rawBuffer = await file.arrayBuffer()
-                const arrayBuffer = rawBuffer.slice(0)
-                const buffer = await audioCtx.decodeAudioData(rawBuffer)
-
-                soundRegistry.sounds[fileName] = {
-                    kit_name: kitName,
-                    url: fileName,
-                    key,
-                    index: Object.keys(soundRegistry.sounds).length + 1,
-                    display_name: fileName,
-                    buffer,
-                    duration: Math.floor(buffer.duration * 1000),
-                    isLoad: true,
-                    playStatus: false
-                }
-
-                instruments.push({ display_name: fileName, key, url: fileName })
-                cacheSample(fileName, arrayBuffer).catch(() => {})
-            }
-
-            // Add/replace this drumkit only
-            soundRegistry.drumkits[kitName] = { instruments }
-
-            const existingIdx = soundRegistry.drumkitList.findIndex(d => d.name === kitName)
-            if (existingIdx >= 0) {
-                soundRegistry.drumkitList[existingIdx] = { name: kitName, instruments }
-                appState.selectedDrumkitNum = existingIdx
-            } else {
-                soundRegistry.drumkitList.push({ name: kitName, instruments })
-                appState.selectedDrumkitNum = soundRegistry.drumkitList.length - 1
-            }
-
-            await cacheDrumkits(Object.fromEntries(soundRegistry.drumkitList.map(d => [d.name, d])))
-
-            playbackEvents.emit("drumkitChange")
-
-            showToast(`Imported ${wavFiles.length} WAV files as drumkit "${kitName}"`, 'success')
-
-            this._autoAssignSounds()
-
-            serviceRegistry.audioEngine?.invalidateCache()
-            playbackEvents.emit("patternChange")
-
         } catch (err) {
             logger.error('ToolsPanel', 'Directory import failed', err)
             showToast('Import failed: ' + err.message, 'error')
         }
         e.target.value = ''
-    }
-
-    async _autoAssignSounds() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern) {
-            showToast('No pattern selected', 'warning')
-            return
-        }
-        
-        // Get the auto-assign service
-        const { getAutoAssignService } = await import('../state/service_registry.js')
-        const autoAssign = await getAutoAssignService()
-        
-        autoAssign.autoAssignSounds(pattern)
-        showToast('Auto-assign complete', 'success')
     }
 }

@@ -1,11 +1,9 @@
 // src/ui/pattern_panel/PlaybackOverlaySection.js
 // Playhead animation, VU meter updates, waveform canvas drawing, RAF loop.
 
-import { TICK } from '../../core/constants.js'
+import { TICK, BEATS_PER_PAGE } from '../../core/constants.js'
 import { appState } from '../../state/app_state.js'
 import Utils from '../../core/utils.js'
-
-const BEATS_PER_PAGE = 4
 
 export default class PlaybackOverlaySection {
     /** @param {import('./pattern_panel.js').default} co */

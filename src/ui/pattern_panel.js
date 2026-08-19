@@ -8,7 +8,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { isMobileViewport } from '../core/constants.js'
+import { isMobileViewport, BEATS_PER_PAGE } from '../core/constants.js'
 
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
@@ -18,8 +18,6 @@ import { downloadJson, pitchToNoteName, formatNoteTooltip } from './components/p
 import HeaderSection from './pattern_panel/HeaderSection.js'
 import GridSection from './pattern_panel/GridSection.js'
 import PlaybackOverlaySection from './pattern_panel/PlaybackOverlaySection.js'
-
-const BEATS_PER_PAGE = 4
 
 export default class PatternPanel extends BasePanel {
     /**
@@ -627,7 +625,7 @@ export default class PatternPanel extends BasePanel {
 
         if (tracks.length === 0) {
             const prevHeight = this.container.offsetHeight
-            this.container.innerHTML = headerHtml + '<div class="pp-empty" style="padding:40px; text-align:center; color:#888;">Empty Pattern</div>'
+            this.container.innerHTML = headerHtml + '<div class="pp-empty">Empty Pattern</div>'
             if (prevHeight > 0) {
                 this.container.style.minHeight = prevHeight + 'px'
                 requestAnimationFrame(() => { this.container.style.minHeight = '' })

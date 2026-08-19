@@ -36,6 +36,16 @@ export const DELAY_FEEDBACK = Object.freeze({
 
 // ── UI / Display ───────────────────────────────────────────────────
 export const FALLBACK_FPS = 60
+export const BEATS_PER_PAGE = 4
+
+// ── Import limits ──────────────────────────────────────────────────
+export const MAX_IMPORT_SIZE = 10 * 1024 * 1024
+export const MAX_IMPORT_TRACKS = 64
+export const MAX_IMPORT_NOTES = 10_000
+
+// ── MIDI import ────────────────────────────────────────────────────
+export const MIDI_MAX_BEATS = 32
+export const MIDI_MAX_PATTERNS = 16
 
 // ── Loop / Pattern ─────────────────────────────────────────────────
 export const MAX_LOOP_RETRY = 20
