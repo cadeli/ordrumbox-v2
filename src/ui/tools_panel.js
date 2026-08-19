@@ -15,6 +15,7 @@ import BasePanel from './base_panel.js'
 import MidiIndicatorView from './midi_indicator_view.js'
 import { logger, nameOr } from "../core/logger.js"
 import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, removeCacheEntry, formatBytes, formatDate } from '../cache/idb_cache.js'
+import MidiExporter from '../logic/midi/midi_exporter.js'
 
 export default class ToolsPanel extends BasePanel {
     constructor() {
@@ -377,7 +378,6 @@ export default class ToolsPanel extends BasePanel {
     async _exportMidi() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
-        const { default: MidiExporter } = await import('../logic/midi/midi_exporter.js')
         const exporter = new MidiExporter()
         const loops = Math.round(this._wavLoops.getValue())
         exporter.download(pattern, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`, { loops })

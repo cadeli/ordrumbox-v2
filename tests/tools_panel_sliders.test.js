@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+const downloadMock = vi.fn()
+vi.mock('../src/logic/midi/midi_exporter.js', () => ({
+    default: class { download = downloadMock },
+}))
+
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -73,12 +79,7 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
         appState.patterns = [pattern]
         appState.selectedPatternNum = 0
 
-        // Stub the dynamic import to avoid loading the MIDI exporter module
-        const downloadMock = vi.fn()
-        vi.doMock('../src/logic/midi/midi_exporter.js', () => ({
-            default: class { download = downloadMock },
-        }))
-
+        downloadMock.mockClear()
         await toolsPanel._exportMidi()
 
         expect(downloadMock).toHaveBeenCalledTimes(1)
