@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 
 export default defineConfig({
     root: '.',
@@ -26,7 +26,7 @@ export default defineConfig({
         // 3. Assets
         rollupOptions: {
             input: {
-                main: resolve(__dirname, 'index.html'), // main entry point
+                main: resolve(import.meta.dirname, 'index.html'), // main entry point
             },
             output: {
                 entryFileNames: 'assets/js/[name].[hash].js',
