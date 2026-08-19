@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { MfGlobals } from '../src/core/globals.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import { Globals } from '../src/core/globals.js'
+import Commander from '../src/logic/commands/cmd.js'
 import { PatternExporter } from '../src/patterns/exporter.js'
 import { mkdir, writeFile, readFile, unlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
@@ -11,9 +11,9 @@ describe('Functional: MCP generate → disk save → import', () => {
     let cmd
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
-        MfGlobals.cmd = cmd
+        Globals.resetAll()
+        cmd = new Commander()
+        Globals.cmd = cmd
     })
 
     afterEach(async () => {

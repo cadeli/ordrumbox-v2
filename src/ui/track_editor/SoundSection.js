@@ -3,7 +3,7 @@
 
 import { renderOptions } from '../components/panel_helpers.js'
 import InstrumentsManager from '../../logic/services/instruments_manager.js'
-import MfAutoAssign from '../../logic/services/auto_assign.js'
+import AutoAssign from '../../logic/services/auto_assign.js'
 
 export default class SoundSection {
     /** @param {import('./track_editor.js').default} co */
@@ -145,7 +145,7 @@ export default class SoundSection {
         if (track.useAutoAssignSound) {
             track.useSoftSynth = false
             track.synthSoundKey = null
-            const aa = new MfAutoAssign()
+            const aa = new AutoAssign()
             aa.autoAssignTrackSounds(track)
         }
         co.sync()

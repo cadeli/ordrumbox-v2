@@ -2,18 +2,18 @@
  * Onset detector for WAV audio analysis.
  *
  * Detects note onsets in WAV audio using energy-based onset detection
- * on the amplitude envelope. Works with the MfAudioAnalyze class.
+ * on the amplitude envelope. Works with the AudioAnalyzer class.
  *
  * Usage:
  *   import { detectOnsets, detectOnsetsFromWav } from './helpers/onset_detector.js'
- *   import MfAudioAnalyze from '../src/audio/analyze.js'
+ *   import AudioAnalyzer from '../src/audio/analyze.js'
  *
- *   const analyzer = new MfAudioAnalyze()
+ *   const analyzer = new AudioAnalyzer()
  *   const onsets = detectOnsetsFromWav(analyzer, wavBytes, { sampleRate: 44100 })
  *   // → [{ sample: 44100, time: 1.0, energy: 0.8 }]
  */
 
-import MfAudioAnalyze from '../../src/audio/analyze.js'
+import AudioAnalyzer from '../../src/audio/analyze.js'
 
 /**
  * Detect onsets from raw Float32Array audio data using energy-based detection.
@@ -81,9 +81,9 @@ export function detectOnsets(samples, sampleRate, options = {}) {
 }
 
 /**
- * Detect onsets from a WAV file (Uint8Array) using MfAudioAnalyze for decoding.
+ * Detect onsets from a WAV file (Uint8Array) using AudioAnalyzer for decoding.
  *
- * @param {MfAudioAnalyze} analyzer - Instance of MfAudioAnalyze
+ * @param {AudioAnalyzer} analyzer - Instance of AudioAnalyzer
  * @param {Uint8Array} wavBytes - Complete WAV file as bytes
  * @param {Object} [options]
  * @param {number} [options.windowSize=1024] - Analysis window size

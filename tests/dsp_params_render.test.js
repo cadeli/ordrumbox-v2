@@ -5,11 +5,11 @@
  */
 import { describe, it, expect } from 'vitest'
 import nodeWaa from 'node-web-audio-api'
-import MfAudioAnalyze from '../src/audio/analyze.js'
+import AudioAnalyzer from '../src/audio/analyze.js'
 
 const { OfflineAudioContext } = nodeWaa
 const SAMPLE_RATE = 44100
-const analyzer = new MfAudioAnalyze()
+const analyzer = new AudioAnalyzer()
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

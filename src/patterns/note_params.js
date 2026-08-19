@@ -1,9 +1,9 @@
 import Utils from '../core/utils.js'
-import MfDefaults from './defaults.js'
+import Defaults from './defaults.js'
 import { logger } from '../core/logger.js'
 
-export default class MfNoteParams {
-    static TAG = "MFNOTEPARAMS"
+export default class NoteParams {
+    static TAG = "NoteParams"
 
     static SWING_RESOLUTION_OVERRIDE = 2
 
@@ -15,8 +15,8 @@ export default class MfNoteParams {
     }
 
     static computePan(flatNote) {
-        const notePan = MfDefaults.getNoteProp(flatNote.note, 'pan')
-        const trackPan = MfDefaults.getTrackProp(flatNote.track, 'pan')
+        const notePan = Defaults.getNoteProp(flatNote.note, 'pan')
+        const trackPan = Defaults.getTrackProp(flatNote.track, 'pan')
         const n = parseFloat(notePan)
         const t = parseFloat(trackPan)
         if (!Number.isFinite(n) || !Number.isFinite(t)) {
@@ -28,8 +28,8 @@ export default class MfNoteParams {
     }
 
     static computePitch(flatNote) {
-        const notePitch = MfDefaults.getNoteProp(flatNote.note, 'pitch')
-        const trackPitch = MfDefaults.getTrackProp(flatNote.track, 'pitch')
+        const notePitch = Defaults.getNoteProp(flatNote.note, 'pitch')
+        const trackPitch = Defaults.getTrackProp(flatNote.track, 'pitch')
         const fpitch = Utils.semiToneToPitch(notePitch + trackPitch)
         return Math.floor(fpitch * 100) / 100
     }

@@ -3,7 +3,7 @@
  *
  * Inlined as a string and loaded via Blob URL by WorkletLoader.
  * Replaces the native DynamicsCompressor + cascaded BiquadFilters
- * + master GainNode in MfMixer with a unified, low-latency DSP chain:
+ * + master GainNode in Mixer with a unified, low-latency DSP chain:
  *
  *   input  ->  pre-gain  ->  compressor  ->  highpass (~35Hz)  ->  lowpass (~18500Hz)
  *          ->  master gain  ->  output

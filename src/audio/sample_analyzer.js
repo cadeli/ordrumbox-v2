@@ -1,7 +1,7 @@
-import MfAudioAnalyze from './analyze.js'
+import AudioAnalyzer from './analyze.js'
 import { hzToNote } from '../core/hz_to_note.js'
 
-const _analyzer = new MfAudioAnalyze()
+const _analyzer = new AudioAnalyzer()
 const _cache = new Map()
 
 /**

@@ -1,6 +1,6 @@
 import BaseGenerator from './base_generator.js'
 
-export default class MfMelodyGenerate extends BaseGenerator {
+export default class MelodyGenerate extends BaseGenerator {
     static MELODY_GENERATION_CONFIGS = Object.freeze({
         chordStab: {
             mode: 'phrases',
@@ -135,7 +135,7 @@ export default class MfMelodyGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('MELODY', MfMelodyGenerate.MELODY_GENERATION_CONFIGS)
+        super('MELODY', MelodyGenerate.MELODY_GENERATION_CONFIGS)
     }
 
     generateNewMelody = (melodyTrack, variantName = null, density = 1, pattern = null, harmony = { root: 0, scale: null }) => {

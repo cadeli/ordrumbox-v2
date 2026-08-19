@@ -1,6 +1,6 @@
 
-import MfSeq from './core/seq.js'
-import MfCmd from './logic/commands/cmd.js'
+import Sequencer from './core/seq.js'
+import Commander from './logic/commands/cmd.js'
 import * as patternsManager from './patterns/manager.js'
 
 import Toolbar from './ui/toolbar.js'
@@ -17,7 +17,7 @@ import ViewManager from './ui/view_manager.js'
 import MobileTabBar from './ui/mobile_tab_bar.js'
 import PatternSettingsPanel from './ui/pattern_settings_panel.js'
 
-import MfResourcesLoader from './loader/resources_loader.js'
+import ResourcesLoader from './loader/resources_loader.js'
 import Utils from './core/utils.js'
 import { appState } from './state/app_state.js'
 import { serviceRegistry } from './state/service_registry.js'
@@ -32,9 +32,9 @@ logger.suppressTags(['Instrument', 'Fallback', 'PatternImport'])
 logger.setLevel(logger.LEVELS?.INFO ?? 1)
 
 serviceRegistry.audioCtx = null
-serviceRegistry.cmd = new MfCmd()
-serviceRegistry.resourcesLoader = new MfResourcesLoader()
-serviceRegistry.seq = new MfSeq()
+serviceRegistry.cmd = new Commander()
+serviceRegistry.resourcesLoader = new ResourcesLoader()
+serviceRegistry.seq = new Sequencer()
 serviceRegistry.autoGenerate = null
 serviceRegistry.patterns = patternsManager
 serviceRegistry.autoAssign = null
@@ -192,12 +192,12 @@ export function init() {
 
     scheduleAfterFirstPaint(async () => {
         try {
-            await serviceRegistry.resourcesLoader.loadSong(MfResourcesLoader.SONG_URL)
+            await serviceRegistry.resourcesLoader.loadSong(ResourcesLoader.SONG_URL)
             if (soundRegistry.drumkitList.length === 0) {
-                await serviceRegistry.resourcesLoader.loadDrumkitList(MfResourcesLoader.DRUMKITS_URL)
+                await serviceRegistry.resourcesLoader.loadDrumkitList(ResourcesLoader.DRUMKITS_URL)
             }
             if (Object.keys(soundRegistry.generatedSounds).length === 0) {
-                await serviceRegistry.resourcesLoader.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL)
+                await serviceRegistry.resourcesLoader.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
             }
         } catch (e) {
             logger.error('Main', 'Failed to load startup resources', e)
@@ -379,7 +379,7 @@ async function convertToGeneratedSounds() {
 
     if (Object.keys(soundRegistry.generatedSounds).length === 0) {
         try {
-            await serviceRegistry.resourcesLoader.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL)
+            await serviceRegistry.resourcesLoader.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
         } catch (e) {
             logger.error('Main', 'Failed to load generated sounds', e)
         }

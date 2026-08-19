@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MfGlobals } from '../src/core/globals.js'
-import MfCmd from '../src/logic/commands/cmd.js'
-import MfStructureSong from '../src/logic/generators/structure_song.js'
+import { Globals } from '../src/core/globals.js'
+import Commander from '../src/logic/commands/cmd.js'
+import StructureSong from '../src/logic/generators/structure_song.js'
 import Utils from '../src/core/utils.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
@@ -29,16 +29,16 @@ function detectTrackSynthType(name) {
     if (n.includes('SYNTH')) return 'BASS'
     return 'PERC'
 }
-describe('MfStructureSong', () => {
+describe('StructureSong', () => {
     let structure
 
     beforeEach(() => {
-        structure = new MfStructureSong()
+        structure = new StructureSong()
     })
 
     describe('GENRES', () => {
         it('contains expected genres', () => {
-            expect(MfStructureSong.GENRES).toEqual(
+            expect(StructureSong.GENRES).toEqual(
                 expect.arrayContaining(['techno', 'house', 'drumandbass', 'hiphop', 'rock'])
             )
         })
@@ -46,13 +46,13 @@ describe('MfStructureSong', () => {
 
     describe('STRUCTURES', () => {
         it('has an entry for each genre', () => {
-            MfStructureSong.GENRES.forEach(genre => {
-                expect(MfStructureSong.STRUCTURES).toHaveProperty(genre)
+            StructureSong.GENRES.forEach(genre => {
+                expect(StructureSong.STRUCTURES).toHaveProperty(genre)
             })
         })
 
         it('each structure maps track names to variant strings', () => {
-            Object.values(MfStructureSong.STRUCTURES).forEach(structure => {
+            Object.values(StructureSong.STRUCTURES).forEach(structure => {
                 Object.entries(structure).forEach(([track, variant]) => {
                     expect(typeof track).toBe('string')
                     expect(typeof variant).toBe('string')
@@ -65,12 +65,12 @@ describe('MfStructureSong', () => {
     describe('getRandomGenre', () => {
         it('returns a genre from GENRES', () => {
             const genre = structure.getRandomGenre()
-            expect(MfStructureSong.GENRES).toContain(genre)
+            expect(StructureSong.GENRES).toContain(genre)
         })
 
         it('can return each genre over multiple calls', () => {
             const results = new Set(Array.from({ length: 100 }, () => structure.getRandomGenre()))
-            MfStructureSong.GENRES.forEach(genre => {
+            StructureSong.GENRES.forEach(genre => {
                 expect(results.has(genre)).toBe(true)
             })
         })
@@ -78,7 +78,7 @@ describe('MfStructureSong', () => {
 
     describe('generateStructure', () => {
         it('returns a non-empty object for each genre', () => {
-            MfStructureSong.GENRES.forEach(genre => {
+            StructureSong.GENRES.forEach(genre => {
                 const result = structure.generateStructure(genre)
                 expect(Object.keys(result).length).toBeGreaterThan(0)
             })
@@ -87,12 +87,12 @@ describe('MfStructureSong', () => {
         it('returns a copy, not the original', () => {
             const result = structure.generateStructure('techno')
             result.NewTrack = 'basic'
-            expect(MfStructureSong.STRUCTURES.techno).not.toHaveProperty('NewTrack')
+            expect(StructureSong.STRUCTURES.techno).not.toHaveProperty('NewTrack')
         })
 
         it('defaults to techno for unknown genre', () => {
             const result = structure.generateStructure('unknown')
-            expect(result).toEqual(MfStructureSong.STRUCTURES.techno)
+            expect(result).toEqual(StructureSong.STRUCTURES.techno)
         })
     })
 
@@ -140,10 +140,10 @@ describe('convertToGeneratedSounds', () => {
     let pattern
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
-        MfGlobals.cmd = cmd
-        MfGlobals.mfPatterns = { computeFlatNotesFromPattern: () => {} }
+        Globals.resetAll()
+        cmd = new Commander()
+        Globals.cmd = cmd
+        Globals.patternManager = { computeFlatNotesFromPattern: () => {} }
         serviceRegistry.seq = { setBpm: () => {} }
         pattern = cmd.addPattern('Test')
         cmd.setSelectedPatternNum(0)
@@ -338,13 +338,13 @@ describe('Utils.detectTrackType', () => {
     })
 })
 
-describe('MfCmd drumkit selection', () => {
+describe('Commander drumkit selection', () => {
     let cmd
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
-        MfGlobals.cmd = cmd
+        Globals.resetAll()
+        cmd = new Commander()
+        Globals.cmd = cmd
     })
 
     describe('kitIsLoaded', () => {

@@ -1,7 +1,7 @@
 import BaseGenerator from './base_generator.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 
-export default class MfPercGenerate extends BaseGenerator {
+export default class PercGenerate extends BaseGenerator {
     static PERC_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
@@ -159,7 +159,7 @@ export default class MfPercGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('PERC', MfPercGenerate.PERC_GENERATION_CONFIGS)
+        super('PERC', PercGenerate.PERC_GENERATION_CONFIGS)
     }
 
     generateNewPerc = (percTrack, variantName = null, density = 1) => {

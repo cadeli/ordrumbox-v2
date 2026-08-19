@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import MfWavExporter from '../src/audio/export/wav_exporter.js'
+import WavExporter from '../src/audio/export/wav_exporter.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import * as patternsManager from '../src/patterns/manager.js'
@@ -102,7 +102,7 @@ describe('WAV Exporter', () => {
             ]
         }
 
-        const exporter = new MfWavExporter()
+        const exporter = new WavExporter()
         
         // Spy on AudioContext.createBufferSource to see if something is played
         const createBufferSourceSpy = vi.spyOn(MockOfflineAudioContext.prototype, 'createBufferSource')
@@ -129,7 +129,7 @@ describe('WAV Exporter', () => {
             return new orig(...args)
         }
         
-        const exporter = new MfWavExporter()
+        const exporter = new WavExporter()
         await exporter.exportPatternToWav(pattern, 1)
         
         global.OfflineAudioContext = orig

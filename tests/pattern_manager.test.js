@@ -38,7 +38,7 @@ function makeNote(beat, beatStep, props = {}) {
     return { beat, beatStep, velocity: 0.8, pitch: 0, ...props }
 }
 
-describe('MfPatterns', () => {
+describe('PatternManager', () => {
     let mgr
 
     beforeEach(() => {

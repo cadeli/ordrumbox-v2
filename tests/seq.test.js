@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { MfGlobals } from '../src/core/globals.js'
+import { Globals } from '../src/core/globals.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { appState } from '../src/state/app_state.js'
 
@@ -32,11 +32,11 @@ vi.mock('../src/logic/transport/transport.js', () => {
     }
 })
 
-describe('MfSeq', () => {
-    let MfSeq
+describe('Sequencer', () => {
+    let Sequencer
 
     beforeEach(async () => {
-        MfGlobals.resetAll()
+        Globals.resetAll()
         serviceRegistry.audioCtx = {
             currentTime: 0,
             state: 'running',
@@ -70,43 +70,43 @@ describe('MfSeq', () => {
         }]
         appState.selectedPatternNum = 0
 
-        MfSeq = (await import('../src/core/seq.js')).default
+        Sequencer = (await import('../src/core/seq.js')).default
     })
 
     it('constructor creates transport if none exists', () => {
         serviceRegistry.transport = null
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         expect(serviceRegistry.transport).toBeDefined()
     })
 
     it('constructor reuses existing transport', () => {
         const existing = { audioCtx: serviceRegistry.audioCtx, onSchedule: null }
         serviceRegistry.transport = existing
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         expect(serviceRegistry.transport).toBe(existing)
     })
 
     it('isRunning returns false when no transport', () => {
         serviceRegistry.transport = null
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         serviceRegistry.transport = null
         expect(seq.isRunning).toBe(false)
     })
 
     it('tick returns transport tick', () => {
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         serviceRegistry.transport.tick = 42
         expect(seq.tick).toBe(42)
     })
 
     it('tick returns 0 when no transport', () => {
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         serviceRegistry.transport = null
         expect(seq.tick).toBe(0)
     })
 
     it('setBpm updates transport and pattern bpm', () => {
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         seq.setBpm(140)
         expect(serviceRegistry.transport.bpm).toBe(140)
         expect(appState.patterns[0].bpm).toBe(140)
@@ -114,13 +114,13 @@ describe('MfSeq', () => {
 
     it('setBpm propagates to audioEngine if exists', () => {
         serviceRegistry.audioEngine = { setBpm: vi.fn() }
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         seq.setBpm(150)
         expect(serviceRegistry.audioEngine.setBpm).toHaveBeenCalledWith(150)
     })
 
     it('stop stops transport and dispatches event', () => {
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         serviceRegistry.transport = { stop: vi.fn(), isRunning: false }
         seq.stop()
         expect(serviceRegistry.transport.stop).toHaveBeenCalledOnce()
@@ -128,7 +128,7 @@ describe('MfSeq', () => {
 
     it('stop stops audioEngine', () => {
         serviceRegistry.audioEngine = { stop: vi.fn() }
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         seq.stop()
         expect(serviceRegistry.audioEngine.stop).toHaveBeenCalledOnce()
     })
@@ -136,14 +136,14 @@ describe('MfSeq', () => {
     it('toggleStartStop resumes suspended audioCtx', () => {
         serviceRegistry.audioCtx.state = 'suspended'
         serviceRegistry.transport = { isRunning: true, stop: vi.fn() }
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         seq.toggleStartStop()
         expect(serviceRegistry.audioCtx.resume).toHaveBeenCalledOnce()
     })
 
     it('toggleStartStop calls start when not running', () => {
         serviceRegistry.transport = { isRunning: false, stop: vi.fn(), start: vi.fn(), audioCtx: serviceRegistry.audioCtx }
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         seq.start = vi.fn()
         seq.toggleStartStop()
         expect(seq.start).toHaveBeenCalledOnce()
@@ -151,7 +151,7 @@ describe('MfSeq', () => {
 
     it('toggleStartStop calls stop when running', () => {
         serviceRegistry.transport = { isRunning: true, stop: vi.fn(), audioCtx: serviceRegistry.audioCtx }
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         seq.stop = vi.fn()
         seq.toggleStartStop()
         expect(seq.stop).toHaveBeenCalledOnce()
@@ -159,14 +159,14 @@ describe('MfSeq', () => {
 
     it('ensureTransport sets onSchedule on new transport', () => {
         serviceRegistry.transport = null
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         expect(serviceRegistry.transport.onSchedule).toBeTypeOf('function')
     })
 
     it('ensureTransport sets audioCtx when missing', () => {
         const fakeTransport = { audioCtx: null, onSchedule: null }
         serviceRegistry.transport = fakeTransport
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         expect(fakeTransport.audioCtx).toBe(serviceRegistry.audioCtx)
     })
 
@@ -174,7 +174,7 @@ describe('MfSeq', () => {
         serviceRegistry.resourcesLoader = { audioCtx: null, ensureResourcesLoaded: vi.fn() }
         serviceRegistry.audioCtx = null
         serviceRegistry.transport = null
-        const seq = new MfSeq()
+        const seq = new Sequencer()
         seq.toggleStartStop()
         // No crash = pass
     })

@@ -3,7 +3,7 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest'
 import DrumkitManager from '../src/ui/drumkit_manager.js'
-import MfAutoAssign from '../src/logic/services/auto_assign.js'
+import AutoAssign from '../src/logic/services/auto_assign.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 
@@ -51,7 +51,7 @@ describe('DrumkitManager instrument mapping', () => {
         expect(soundRegistry.drumkitList[0].instruments[0].key).toBe('KICK')
 
         const track = { name: 'KICK', soundId: null, useAutoAssignSound: true, useSoftSynth: false }
-        const autoAssign = new MfAutoAssign({ appState, soundRegistry })
+        const autoAssign = new AutoAssign({ appState, soundRegistry })
         autoAssign.autoAssignSounds({ name: 'test', tracks: [track] })
 
         expect(track.soundId).toBe(SOUND_ID)

@@ -10,8 +10,8 @@ import {
     isMidiSupported,
 } from './midi_parser.js'
 
-export default class MfMidi extends EventTarget {
-    static TAG = "MFMIDI"
+export default class MidiManager extends EventTarget {
+    static TAG = "MidiManager"
 
     constructor() {
         super()
@@ -42,7 +42,7 @@ export default class MfMidi extends EventTarget {
         }
 
         if (!this.isSupported()) {
-            logger.info('MfMidi', `${MfMidi.TAG}: MIDI is not supported in this browser`)
+            logger.info('MidiManager', `${MidiManager.TAG}: MIDI is not supported in this browser`)
             return false
         }
 
@@ -53,12 +53,12 @@ export default class MfMidi extends EventTarget {
                 this.midiAccess.addEventListener('statechange', this.onStateChange)
                 this.refreshPorts()
                 this.isReady = true
-                logger.info('MfMidi', `${MfMidi.TAG}: MIDI ready`)
+                logger.info('MidiManager', `${MidiManager.TAG}: MIDI ready`)
                 this.dispatchEvent(new Event('statusChange'))
                 return true
             } catch (error) {
                 this.isReady = false
-                logger.warn('MfMidi', `${MfMidi.TAG}: Unable to initialize MIDI access`, error)
+                logger.warn('MidiManager', `${MidiManager.TAG}: Unable to initialize MIDI access`, error)
                 this.dispatchEvent(new Event('statusChange'))
                 return false
             } finally {
@@ -163,7 +163,7 @@ export default class MfMidi extends EventTarget {
                     output.send(data)
                 }
             } catch (e) {
-                logger.warn('MfMidi', `${MfMidi.TAG}: Failed to send MIDI message`, e)
+                logger.warn('MidiManager', `${MidiManager.TAG}: Failed to send MIDI message`, e)
             }
         }
     }
@@ -198,7 +198,7 @@ export default class MfMidi extends EventTarget {
     }
 
     onMidiMessage = (event) => {
-        logger.info('MfMidi', "onMidiMessage ", event)
+        logger.info('MidiManager', "onMidiMessage ", event)
         const data = event?.data
         if (!data || data.length < 3) {
             if (data && data.length === 1 && data[0] >= 0xF8) {
@@ -223,12 +223,12 @@ export default class MfMidi extends EventTarget {
 
     onRealtimeMessage = (status) => {
         if (!this.externalSyncEnabled) return
-        logger.info('MfMidi', "onRealtimeMessage")
+        logger.info('MidiManager', "onRealtimeMessage")
         const type = parseMidiRealtime(status)
         switch (type) {
             case 'start':
                 this.handleExternalStart()
-                logger.info('MfMidi', "handleExternalStart")
+                logger.info('MidiManager', "handleExternalStart")
                 break
             case 'continue':
                 this.handleExternalContinue()
@@ -314,13 +314,13 @@ export default class MfMidi extends EventTarget {
     triggerMappedTrack = async (noteNumber) => {
         const pattern = appState.patterns?.[appState.selectedPatternNum]
         if (!pattern) {
-            logger.info('MfMidi', `${MfMidi.TAG}: No current pattern available`)
+            logger.info('MidiManager', `${MidiManager.TAG}: No current pattern available`)
             return
         }
 
         const trackIndex = this.instrumentsManager.findTrackIndexFromMidi(pattern, 9, noteNumber)
         if (trackIndex < 0) {
-            logger.info('MfMidi', `${MfMidi.TAG}: No GM track mapped for MIDI note ${noteNumber} on channel 9`)
+            logger.info('MidiManager', `${MidiManager.TAG}: No GM track mapped for MIDI note ${noteNumber} on channel 9`)
             return
         }
 
@@ -328,7 +328,7 @@ export default class MfMidi extends EventTarget {
             try {
                 await serviceRegistry.audioCtx.resume()
             } catch (error) {
-                logger.warn('MfMidi', `${MfMidi.TAG}: Unable to resume audio context`, error)
+                logger.warn('MidiManager', `${MidiManager.TAG}: Unable to resume audio context`, error)
             }
         }
 

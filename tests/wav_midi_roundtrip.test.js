@@ -19,7 +19,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import MfWavExporter from '../src/audio/export/wav_exporter.js'
+import WavExporter from '../src/audio/export/wav_exporter.js'
 import MidiExporter, { C3_MIDI_NOTE } from '../src/logic/midi/midi_exporter.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
@@ -412,7 +412,7 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
             'clap.wav': { url: 'clap.wav', buffer: { duration: 1, length: 44100, getChannelData: () => new Float32Array(44100) }, key: 'CLAP' },
         }
 
-        wavExporter = new MfWavExporter()
+        wavExporter = new WavExporter()
         pattern = createComplexPattern()
     })
 

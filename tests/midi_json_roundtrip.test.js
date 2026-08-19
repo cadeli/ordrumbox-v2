@@ -21,7 +21,7 @@ import { C3_MIDI_NOTE } from '../src/logic/midi/midi_exporter.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
 import { parseMidi, findAllNotes, extractProgramChanges } from '../src/logic/midi/midi_parser.js'
 import { TICK } from '../src/core/constants.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/cmd.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
@@ -205,7 +205,7 @@ describe('MIDI JSON Roundtrip', () => {
         serviceRegistry.patterns = patternsManager
         soundRegistry.reset()
 
-        cmd = new MfCmd()
+        cmd = new Commander()
         serviceRegistry.cmd = cmd
 
         originalPattern = importPatternFromJson(

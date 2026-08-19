@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../src/model/track_schema.js'
-import { MfGlobals } from '../src/core/globals.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import { Globals } from '../src/core/globals.js'
+import Commander from '../src/logic/commands/cmd.js'
 import TrackVariation from '../src/patterns/variation.js'
-import MfFlatNote from '../src/model/flatnote.js'
+import FlatNote from '../src/model/flatnote.js'
 
 describe('Track variation2', () => {
     let cmd
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
-        MfGlobals.cmd = cmd
+        Globals.resetAll()
+        cmd = new Commander()
+        Globals.cmd = cmd
     })
 
     it('has default value of 0', () => {
@@ -146,9 +146,9 @@ describe('TrackVariation.apply (position-based)', () => {
     let cmd
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
-        MfGlobals.cmd = cmd
+        Globals.resetAll()
+        cmd = new Commander()
+        Globals.cmd = cmd
     })
 
     function makeTrack(name = 'KICK', nbBeats = 4, stepsPerBeat = 4) {
@@ -159,7 +159,7 @@ describe('TrackVariation.apply (position-based)', () => {
 
     function makeFlatNote(tick, track, beat, beatStep, velocity = 0.8, pitch = 0) {
         const note = { beat, beatStep, velocity, pitch, pan: 0 }
-        return new MfFlatNote(tick, track, note)
+        return new FlatNote(tick, track, note)
     }
 
     it('variation=0 is a no-op', () => {

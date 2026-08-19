@@ -1,9 +1,9 @@
 import BaseGenerator from './base_generator.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import MfResourcesLoader from '../../loader/resources_loader.js'
+import ResourcesLoader from '../../loader/resources_loader.js'
 import { logger } from '../../core/logger.js'
 
-export default class MfBassGenerate extends BaseGenerator {
+export default class BassGenerate extends BaseGenerator {
     static BASS_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
@@ -155,7 +155,7 @@ export default class MfBassGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('BASS', MfBassGenerate.BASS_GENERATION_CONFIGS)
+        super('BASS', BassGenerate.BASS_GENERATION_CONFIGS)
         this._toneThreshold = 5
         this.isScalesLoading = false
     }
@@ -163,7 +163,7 @@ export default class MfBassGenerate extends BaseGenerator {
     loadScales = async () => {
         if (this.isScalesLoading || !serviceRegistry.resourcesLoader) return
         this.isScalesLoading = true
-        await serviceRegistry.resourcesLoader.loadScales(MfResourcesLoader.SCALES_URL)
+        await serviceRegistry.resourcesLoader.loadScales(ResourcesLoader.SCALES_URL)
         this.checkResources()
     }
 
@@ -171,7 +171,7 @@ export default class MfBassGenerate extends BaseGenerator {
         this.isScalesLoading = false
      }
 
-    static TAG = 'MFBASSGENERATE'
+    static TAG = 'BassGenerate'
 
     generateNewBass = (bassTrack, variantName = null, density = 1, harmony = { root: 0, scale: null }) => {
         const resolvedVariantName = this.resolveVariantName(variantName)
@@ -180,7 +180,7 @@ export default class MfBassGenerate extends BaseGenerator {
         const tones = this.getScaleSteps(scaleName)
         const rootNote = (config.rootNote ?? 0) + (harmony.root ?? 0)
 
-        logger.info(MfBassGenerate.TAG, `generateNewBass: variant=${resolvedVariantName}, mode=${config.mode}, density=${density}, rootNote=${rootNote} (harmony=${JSON.stringify(harmony)})`)
+        logger.info(BassGenerate.TAG, `generateNewBass: variant=${resolvedVariantName}, mode=${config.mode}, density=${density}, rootNote=${rootNote} (harmony=${JSON.stringify(harmony)})`)
 
         this.clearTrackNotes(bassTrack)
 

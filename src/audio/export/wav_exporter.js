@@ -6,7 +6,7 @@ import { getAutoGenerateService, serviceRegistry } from '../../state/service_reg
 import { soundRegistry } from '../../state/sound_registry.js'
 import { logger, nameOr } from "../../core/logger.js"
 
-export default class MfWavExporter {
+export default class WavExporter {
     constructor() {
     }
 

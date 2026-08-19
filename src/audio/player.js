@@ -1,13 +1,13 @@
-import MfSound from './sound.js'
-import MfFlatNote from '../model/flatnote.js'
-import MfNoteParams from '../patterns/note_params.js'
+import Sound from './sound.js'
+import FlatNote from '../model/flatnote.js'
+import NoteParams from '../patterns/note_params.js'
 import { getAutoGenerateService } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { logger, nameOr } from "../core/logger.js"
 import Utils from '../core/utils.js'
 
-export default class MfPlayer {
-    static TAG = "MFPLAYER"
+export default class Player {
+    static TAG = "Player"
 
     constructor(config) {
         this.audioCtx = config.audioCtx
@@ -21,7 +21,7 @@ export default class MfPlayer {
         this.getFlatNotes = config.getFlatNotes
         this.TICK = config.TICK
         this.secondsPerBeat = config.secondsPerBeat
-        this.sound = new MfSound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds)
+        this.sound = new Sound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds)
         this.loop = 0
         this.lastDisplayBeats = 0
 
@@ -78,7 +78,7 @@ export default class MfPlayer {
             for (let i = 0; i < notesToPlay.length; i++) {
                 const flatNote = notesToPlay[i]
                 if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
-                    MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
+                    NoteParams.applyNoteParams(flatNote, secondsPerBeat)
                     promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
                     playbackEvents.emit('noteTrigger', {
                         trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
@@ -89,7 +89,7 @@ export default class MfPlayer {
             }
             await Promise.all(promises)
         } catch (e) {
-            logger.error('MfPlayer', e)
+            logger.error('Player', e)
         }
     }
 
@@ -107,7 +107,7 @@ export default class MfPlayer {
 
             if (isSectionStart || isSectionEnd) {
                 const tag = isSectionEnd ? 'break' : 'generate'
-                logger.info('MfPlayer', `[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`)
+                logger.info('Player', `[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`)
             }
 
             const isHarmonicBoundary = isSectionStart || isSectionEnd
@@ -169,12 +169,12 @@ export default class MfPlayer {
             rate: 1,
             euclidianFill: 0
         }
-        const flatNote = new MfFlatNote(0, track, note)
+        const flatNote = new FlatNote(0, track, note)
 
         // Worklet mixer is always initialised by the engine before play;
         // legacy `mixer.compressor` check removed.
         await this.sound.playSample(flatNote, this.audioCtx.currentTime)
-        logger.info('MfPlayer', "Play :" + track.name + "=" + this.sounds[track.soundId].url)
+        logger.info('Player', "Play :" + track.name + "=" + this.sounds[track.soundId].url)
     }
 
     updateGeneratedSounds = (generatedSounds) => {

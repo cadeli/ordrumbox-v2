@@ -384,8 +384,8 @@ export default class ToolsPanel extends BasePanel {
         
         try {
             if (!serviceRegistry.wavExporter) {
-                const { default: MfWavExporter } = await import('../audio/export/wav_exporter.js')
-                serviceRegistry.wavExporter = new MfWavExporter()
+                const { default: WavExporter } = await import('../audio/export/wav_exporter.js')
+                serviceRegistry.wavExporter = new WavExporter()
             }
             
             const loops = Math.round(this._wavLoops.getValue())

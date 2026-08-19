@@ -7,7 +7,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { EVENT } from '../src/state/events.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/cmd.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 import PatternPanel from '../src/ui/pattern_panel.js'
 import NoteEditor from '../src/ui/note_editor.js'
@@ -41,7 +41,7 @@ describe('Granular patternChange events', () => {
         appState.selectedPatternNum = 0
         appState.currentPage = 0
 
-        cmd = new MfCmd()
+        cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn() }
         serviceRegistry.patterns = { computeFlatNotesFromPattern: vi.fn() }

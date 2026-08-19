@@ -2,7 +2,7 @@
  * Shared mocks for AudioWorklet-based audio modules.
  *
  * Centralises the AudioParam / AudioWorkletNode / AudioContext stubs used by
- * tests that exercise worklet-backed classes (MfStrip, MfSound, …) without a
+ * tests that exercise worklet-backed classes (Strip, Sound, …) without a
  * real AudioContext.
  */
 import { vi } from 'vitest'

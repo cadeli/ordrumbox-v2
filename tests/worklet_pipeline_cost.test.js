@@ -8,9 +8,9 @@
  * cost of constructing the worklet pipeline:
  *
  *   1. WorkletLoader.ensureLoaded() with all processors registered
- *   2. MfStrip.create() × N tracks (creates the unified strip worklet node
+ *   2. Strip.create() × N tracks (creates the unified strip worklet node
  *      and per-strip LFO gain nodes)
- *   3. MfMixer instantiation + start() (creates busInput + busWorklet +
+ *   3. Mixer instantiation + start() (creates busInput + busWorklet +
  *      analyser, wires them up)
  *   4. syncAllTracks(pattern) (the path engine.start() runs after mixer.start)
  *
@@ -36,8 +36,8 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import WorkletLoader from '../src/audio/worklets/loader.js'
-import MfStrip from '../src/audio/strip.js'
-import MfMixer from '../src/audio/mixer.js'
+import Strip from '../src/audio/strip.js'
+import Mixer from '../src/audio/mixer.js'
 import AudioEngine from '../src/audio/engine.js'
 import { appState } from '../src/state/app_state.js'
 import { installWorkletMocks, makeParam, makeNode } from './helpers/worklet_mocks.js'
@@ -123,7 +123,7 @@ describe('Worklet pipeline JS cost (proxy benchmark)', () => {
     })
 
     it('measure ensureLoaded + strip creation + mixer.start + syncAllTracks', async () => {
-        // Importing MfStrip and MfMixer registers 'strip' and 'master-bus'
+        // Importing Strip and Mixer registers 'strip' and 'master-bus'
         // worklet processors at module load. The import path in this file's
         // top-level imports is enough — no extra registration needed here.
 
@@ -132,18 +132,18 @@ describe('Worklet pipeline JS cost (proxy benchmark)', () => {
         const t1 = performance.now()
         measurements.ensureLoadedMs = t1 - t0
 
-        // 2. MfStrip.create × 8
+        // 2. Strip.create × 8
         const t2 = performance.now()
         const strips = await Promise.all(
-            pattern.tracks.map(t => MfStrip.create(t.name, ctx))
+            pattern.tracks.map(t => Strip.create(t.name, ctx))
         )
         const t3 = performance.now()
         measurements.stripCreateMs = t3 - t2
         measurements.stripCount = strips.length
 
-        // 3. MfMixer instantiation + start()
+        // 3. Mixer instantiation + start()
         const t4 = performance.now()
-        const mixer = new MfMixer(ctx, { analyser: null, lfo: null, getOrCreateStrip: () => null })
+        const mixer = new Mixer(ctx, { analyser: null, lfo: null, getOrCreateStrip: () => null })
         await mixer.start()
         const t5 = performance.now()
         measurements.mixerStartMs = t5 - t4

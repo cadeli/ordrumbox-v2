@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import * as patternsManager from '../src/patterns/manager.js'
-import MfAutoGenerate from '../src/logic/generators/auto_generate.js'
-import MfPercGenerate from '../src/logic/generators/perc_generate.js'
-import { MfGlobals } from '../src/core/globals.js'
+import AutoGenerate from '../src/logic/generators/auto_generate.js'
+import PercGenerate from '../src/logic/generators/perc_generate.js'
+import { Globals } from '../src/core/globals.js'
 import Utils from '../src/core/utils.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/cmd.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
@@ -12,8 +12,8 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function makePatternWithTrack(name = 'KICK', stepsPerBeat = 4, beats = 4) {
-    MfGlobals.resetAll()
-    const cmd = new MfCmd()
+    Globals.resetAll()
+    const cmd = new Commander()
     serviceRegistry.cmd = cmd
     const pattern = cmd.addPattern('Test')
     pattern.nbBeats = beats
@@ -39,15 +39,15 @@ function addNoteToTrack(track, beat, beatStep) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MfPatterns (patterns/manager.js)
+// PatternManager (patterns/manager.js)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('MfPatterns', () => {
+describe('PatternManager', () => {
     let patternsMgr, cmd, pattern
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
+        Globals.resetAll()
+        cmd = new Commander()
         serviceRegistry.cmd = cmd
         patternsMgr = patternsManager
         serviceRegistry.patterns = patternsMgr
@@ -159,19 +159,19 @@ describe('MfPatterns', () => {
 })
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MfAutoGenerate (auto_generate.js)
+// AutoGenerate (auto_generate.js)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('MfAutoGenerate', () => {
+describe('AutoGenerate', () => {
     let autoGen
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        const cmd = new MfCmd()
+        Globals.resetAll()
+        const cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.patterns = patternsManager
         soundRegistry.scales = { 'pentatonic minor': [0, 3, 5, 7, 10] }
-        autoGen = new MfAutoGenerate()
+        autoGen = new AutoGenerate()
     })
 
     // ── detectTrackType ───────────────────────────────────────────────
@@ -236,17 +236,17 @@ describe('MfAutoGenerate', () => {
 })
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MfPercGenerate extra variants
+// PercGenerate extra variants
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('MfPercGenerate – extra variants', () => {
+describe('PercGenerate – extra variants', () => {
     beforeEach(() => {
         soundRegistry.scales = { 'pentatonic minor': [0, 3, 5, 7, 10], 'dorian': [0, 2, 3, 5, 7, 9, 10] }
     })
 
     it('basic: produces notes with pitch values', () => {
         const track = makePercTrack()
-        new MfPercGenerate().generateNewPerc(track, 'basic')
+        new PercGenerate().generateNewPerc(track, 'basic')
         if (track.notes.length > 0) {
             expect(track.notes.every(n => typeof n.pitch === 'number')).toBe(true)
         }
@@ -254,7 +254,7 @@ describe('MfPercGenerate – extra variants', () => {
 
     it('conversation: produces notes in both call and response beats', () => {
         const track = makePercTrack({ nbBeats: 4 })
-        new MfPercGenerate().generateNewPerc(track, 'conversation')
+        new PercGenerate().generateNewPerc(track, 'conversation')
         // Should have notes across beats 0..3
         const beats = new Set(track.notes.map(n => n.beat))
         expect(beats.size).toBeGreaterThanOrEqual(0) // random, so can be 0
@@ -263,7 +263,7 @@ describe('MfPercGenerate – extra variants', () => {
     it('all variants produce notes with velocity in [0,1]', () => {
         for (const variant of ['basic', 'conversation']) {
             const track = makePercTrack()
-            new MfPercGenerate().generateNewPerc(track, variant)
+            new PercGenerate().generateNewPerc(track, variant)
             for (const note of track.notes) {
                 expect(note.velocity).toBeGreaterThanOrEqual(0)
                 expect(note.velocity).toBeLessThanOrEqual(1)
@@ -272,26 +272,26 @@ describe('MfPercGenerate – extra variants', () => {
     })
 
     it('resolvePhrasePitch: returns pitch+pitchBias for numeric phrase.pitch', () => {
-        const gen = new MfPercGenerate()
+        const gen = new PercGenerate()
         const result = gen.resolvePhrasePitch({ pitch: 5 }, [0, 4, 7], {}, 3)
         expect(result).toBe(8)
     })
 
     it('resolvePhrasePitch: reuse returns cached pitch', () => {
-        const gen = new MfPercGenerate()
+        const gen = new PercGenerate()
         const cached = { 0: 12 }
         const result = gen.resolvePhrasePitch({ source: 'reuse', reuseIndex: 0 }, [0, 4, 7], cached, 0)
         expect(result).toBe(12)
     })
 
     it('resolvePhrasePitch: root returns pitchBias', () => {
-        const gen = new MfPercGenerate()
+        const gen = new PercGenerate()
         const result = gen.resolvePhrasePitch({ source: 'root' }, [0, 4, 7], {}, 5)
         expect(result).toBe(5)
     })
 
     it('resolvePhrasePitch: randomScale picks from tones + pitchBias', () => {
-        const gen = new MfPercGenerate()
+        const gen = new PercGenerate()
         const tones = [0, 4, 7]
         const result = gen.resolvePhrasePitch({ source: 'randomScale' }, tones, {}, 3)
         const allPossible = tones.map(t => (t > 6 ? t - 12 : t) + 3)
@@ -300,7 +300,7 @@ describe('MfPercGenerate – extra variants', () => {
 
     it('generatePercCallResponseVariant produces notes within loopPointAbsolute', () => {
         const track = makePercTrack({ nbBeats: 4 })
-        const gen = new MfPercGenerate()
+        const gen = new PercGenerate()
         const tones = [0, 4, 7]
         const config = {
             loopPointBeat: 4, loopPointStep: 0,
@@ -317,7 +317,7 @@ describe('MfPercGenerate – extra variants', () => {
 
     it('generatePercFillVariant places notes at startBar', () => {
         const track = makePercTrack({ nbBeats: 4 })
-        const gen = new MfPercGenerate()
+        const gen = new PercGenerate()
         const config = {
             loopPointBeat: 4, loopPointStep: 0,
             startBarOffset: 1,
@@ -332,19 +332,19 @@ describe('MfPercGenerate – extra variants', () => {
 
     it('loop point is set after generation', () => {
         const track = makePercTrack()
-        new MfPercGenerate().generateNewPerc(track, 'basic')
+        new PercGenerate().generateNewPerc(track, 'basic')
         expect(track.loopPointBeat).toBeGreaterThan(0)
     })
 })
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MfWavExporter — downloadWav
+// WavExporter — downloadWav
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('MfWavExporter – downloadWav', () => {
+describe('WavExporter – downloadWav', () => {
     it('downloadWav creates an anchor and triggers click', async () => {
-        const { default: MfWavExporter } = await import('../src/audio/export/wav_exporter.js')
-        const exporter = new MfWavExporter()
+        const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
+        const exporter = new WavExporter()
 
         const mockUrl = 'blob:mock'
         const mockAnchor = { href: '', download: '', click: vi.fn() }
@@ -368,8 +368,8 @@ describe('MfWavExporter – downloadWav', () => {
     })
 
     it('downloadWav defaults filename to pattern.wav', async () => {
-        const { default: MfWavExporter } = await import('../src/audio/export/wav_exporter.js')
-        const exporter = new MfWavExporter()
+        const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
+        const exporter = new WavExporter()
 
         const mockAnchor = { href: '', download: '', click: vi.fn() }
         vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:x'), revokeObjectURL: vi.fn() })

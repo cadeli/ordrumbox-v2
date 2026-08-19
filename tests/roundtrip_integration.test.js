@@ -15,7 +15,7 @@ import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/cmd.js'
 import { TICK } from '../src/core/constants.js'
 
 // ─── Shared state cleanup ────────────────────────────────────────────────
@@ -40,7 +40,7 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
         cleanState()
         serviceRegistry.reset()
         soundRegistry.reset()
-        cmd = new MfCmd()
+        cmd = new Commander()
     })
 
     it('creates pattern, adds tracks, adds notes, verifies state', () => {

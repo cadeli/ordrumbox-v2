@@ -105,8 +105,8 @@ describe('toggleStartStop — audioCtx creation', () => {
         const fakeCtx = makeFakeAudioCtx()
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
 
-        const { default: MfSeq } = await import('../src/core/seq.js')
-        const seq = new MfSeq({
+        const { default: Sequencer } = await import('../src/core/seq.js')
+        const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: null,
                 resourcesLoader: fakeLoader,
@@ -124,8 +124,8 @@ describe('toggleStartStop — audioCtx creation', () => {
         const fakeCtx = makeFakeAudioCtx({ state: 'suspended' })
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
 
-        const { default: MfSeq } = await import('../src/core/seq.js')
-        const seq = new MfSeq({
+        const { default: Sequencer } = await import('../src/core/seq.js')
+        const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: fakeCtx,
                 resourcesLoader: fakeLoader,
@@ -143,8 +143,8 @@ describe('toggleStartStop — audioCtx creation', () => {
         const fakeCtx = makeFakeAudioCtx({ state: 'running' })
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
 
-        const { default: MfSeq } = await import('../src/core/seq.js')
-        const seq = new MfSeq({
+        const { default: Sequencer } = await import('../src/core/seq.js')
+        const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: fakeCtx,
                 resourcesLoader: fakeLoader,
@@ -165,8 +165,8 @@ describe('toggleStartStop — audioCtx creation', () => {
             ensureResourcesLoaded: vi.fn(),
         }
 
-        const { default: MfSeq } = await import('../src/core/seq.js')
-        const seq = new MfSeq({
+        const { default: Sequencer } = await import('../src/core/seq.js')
+        const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: null,
                 resourcesLoader: errorLoader,
@@ -178,8 +178,8 @@ describe('toggleStartStop — audioCtx creation', () => {
         seq.toggleStartStop()
 
         expect(loggerSpy).toHaveBeenCalledWith(
-            'MfSeq',
-            'MfSeq::toggleStartStop: Failed to create AudioContext',
+            'Sequencer',
+            'Sequencer::toggleStartStop: Failed to create AudioContext',
             expect.any(Error)
         )
         loggerSpy.mockRestore()
@@ -193,8 +193,8 @@ describe('toggleStartStop — start guard', () => {
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
         const fakeTransport = makeFakeTransport()
 
-        const { default: MfSeq } = await import('../src/core/seq.js')
-        const seq = new MfSeq({
+        const { default: Sequencer } = await import('../src/core/seq.js')
+        const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: fakeCtx,
                 resourcesLoader: fakeLoader,
@@ -247,7 +247,7 @@ describe('mixer.start() — no duplicate connections', () => {
             })),
         }
 
-        const { default: MfMixer } = await import('../src/audio/mixer.js')
+        const { default: Mixer } = await import('../src/audio/mixer.js')
         const { default: WorkletLoader } = await import('../src/audio/worklets/loader.js')
 
         // Mock WorkletLoader to avoid real worklet loading
@@ -268,7 +268,7 @@ describe('mixer.start() — no duplicate connections', () => {
             port: { postMessage: vi.fn() },
         })
 
-        const mixer = new MfMixer(ctx)
+        const mixer = new Mixer(ctx)
         await WorkletLoader.ensureLoaded(ctx)
         mixer.start()
 

@@ -1,15 +1,15 @@
 import { appState } from '../../state/app_state.js'
 import { getAutoAssignService, serviceRegistry } from '../../state/service_registry.js'
 import Utils from '../../core/utils.js'
-import MfCowbellGenerate from './cowbell_generate.js'
-import MfBassGenerate from './bass_generate.js'
-import MfClapGenerate from './clap_generate.js'
-import MfHatGenerate from './hat_generate.js'
-import MfKickGenerate from './kick_generate.js'
-import MfMelodyGenerate from './melody_generate.js'
-import MfPercGenerate from './perc_generate.js'
-import MfSnareGenerate from './snare_generate.js'
-import MfStructureSong from './structure_song.js'
+import CowbellGenerate from './cowbell_generate.js'
+import BassGenerate from './bass_generate.js'
+import ClapGenerate from './clap_generate.js'
+import HatGenerate from './hat_generate.js'
+import KickGenerate from './kick_generate.js'
+import MelodyGenerate from './melody_generate.js'
+import PercGenerate from './perc_generate.js'
+import SnareGenerate from './snare_generate.js'
+import StructureSong from './structure_song.js'
 import { logger } from "../../core/logger.js"
 
 const SECTION_DENSITY = Object.freeze({
@@ -21,19 +21,19 @@ const SECTION_DENSITY = Object.freeze({
     outro: 0.3
 })
 
-export default class MfAutoGenerate {
-    static TAG = "MFAUTOGENERATE"
+export default class AutoGenerate {
+    static TAG = "AutoGenerate"
 
     constructor() {
-        this.kickGen = new MfKickGenerate()
-        this.snareGen = new MfSnareGenerate()
-        this.hatGen = new MfHatGenerate()
-        this.clapGen = new MfClapGenerate()
-        this.percGen = new MfPercGenerate()
-        this.cowbellGen = new MfCowbellGenerate()
-        this.bassGen = new MfBassGenerate()
-        this.melodyGen = new MfMelodyGenerate()
-        this.structureGen = new MfStructureSong()
+        this.kickGen = new KickGenerate()
+        this.snareGen = new SnareGenerate()
+        this.hatGen = new HatGenerate()
+        this.clapGen = new ClapGenerate()
+        this.percGen = new PercGenerate()
+        this.cowbellGen = new CowbellGenerate()
+        this.bassGen = new BassGenerate()
+        this.melodyGen = new MelodyGenerate()
+        this.structureGen = new StructureSong()
     }
 
     generatePattern = async (options = {}) => {
@@ -44,7 +44,7 @@ export default class MfAutoGenerate {
             }
 
             const genre = options.genre
-                ?? MfStructureSong.resolveGenreFromTags(pattern.tags)
+                ?? StructureSong.resolveGenreFromTags(pattern.tags)
                 ?? this.structureGen.getRandomGenre()
             const structure = options.structure ?? this.structureGen.generateStructure(genre)
 
@@ -53,12 +53,12 @@ export default class MfAutoGenerate {
             const firstElement = this.structureGen.getElement(0)
             const harmony = this.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
 
-            logger.info(MfAutoGenerate.TAG, `generatePattern: genre=${genre}, harmony=${JSON.stringify(harmony)}, tracks=${Object.keys(structure).join(',')}`)
+            logger.info(AutoGenerate.TAG, `generatePattern: genre=${genre}, harmony=${JSON.stringify(harmony)}, tracks=${Object.keys(structure).join(',')}`)
 
             if (!pattern.tracks || pattern.tracks.length === 0) {
                 for (const [trackName, config] of Object.entries(structure)) {
                     const track = serviceRegistry.cmd.addTrack(pattern, trackName)
-                    logger.info(MfAutoGenerate.TAG, `  track=${trackName}, variant=${config}`)
+                    logger.info(AutoGenerate.TAG, `  track=${trackName}, variant=${config}`)
                     await this.generateTrack(track, config, 1, pattern, harmony)
                 }
             } else {
@@ -77,7 +77,7 @@ export default class MfAutoGenerate {
                     }
 
                     if (config) {
-                        logger.info(MfAutoGenerate.TAG, `  track=${track.name}, variant=${config}`)
+                        logger.info(AutoGenerate.TAG, `  track=${track.name}, variant=${config}`)
                         await this.generateTrack(track, config, 1, pattern, harmony)
                     }
                 }
@@ -96,10 +96,10 @@ export default class MfAutoGenerate {
             await autoAssign.autoAssignSounds(pattern)
             serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
 
-            logger.info(MfAutoGenerate.TAG, `generatePattern: done (${pattern.tracks.length} tracks)`)
+            logger.info(AutoGenerate.TAG, `generatePattern: done (${pattern.tracks.length} tracks)`)
             return pattern
         } catch (err) {
-            logger.warn(MfAutoGenerate.TAG, 'generatePattern failed', err)
+            logger.warn(AutoGenerate.TAG, 'generatePattern failed', err)
             return null
         }
     }
@@ -134,7 +134,7 @@ export default class MfAutoGenerate {
                 await this.bassGen.generateNewBass(track, config, density, harmony)
                 break
             default:
-                logger.warn(MfAutoGenerate.TAG, `generateTrack: unknown type=${type} for track=${track.name}`)
+                logger.warn(AutoGenerate.TAG, `generateTrack: unknown type=${type} for track=${track.name}`)
         }
     }
 
@@ -154,7 +154,7 @@ export default class MfAutoGenerate {
             const density = isSectionEnd ? 0.2 : (SECTION_DENSITY[element.name] ?? 0.7)
             const harmony = this.structureGen.resolveHarmony(genre, element.name, element.loopInElement)
 
-            logger.info(MfAutoGenerate.TAG, `changeTrack: loop=${loop}, section=${element.name}#${element.number}, track=${track.name}, harmony=${JSON.stringify(harmony)}, sectionEnd=${isSectionEnd}, break=${isBreak}, density=${density}`)
+            logger.info(AutoGenerate.TAG, `changeTrack: loop=${loop}, section=${element.name}#${element.number}, track=${track.name}, harmony=${JSON.stringify(harmony)}, sectionEnd=${isSectionEnd}, break=${isBreak}, density=${density}`)
 
             const structure = this._cachedGenre === genre
                 ? this._cachedStructure
@@ -175,12 +175,12 @@ export default class MfAutoGenerate {
 
             if (config ) {
                 if (isBreak && type === 'SNARE') {
-                    logger.info(MfAutoGenerate.TAG, `  -> breakCrescendo mode`)
+                    logger.info(AutoGenerate.TAG, `  -> breakCrescendo mode`)
                     await this.snareGen.generateNewSnare(track, 'breakCrescendo', density)
                 } else if (isSectionEnd) {
                     const sectionEndVariant = this._resolveSectionEndVariant(track, type)
                     const mergeVariant = sectionEndVariant ?? config
-                    logger.info(MfAutoGenerate.TAG, `  -> section-end merge (variant=${mergeVariant})`)
+                    logger.info(AutoGenerate.TAG, `  -> section-end merge (variant=${mergeVariant})`)
                     const savedNotes = [...track.notes]
                     await this.generateTrack(track, mergeVariant, density, pattern, harmony)
                     const seen = new Set(savedNotes.map(n => `${n.beat}:${n.beatStep}`))
@@ -192,16 +192,16 @@ export default class MfAutoGenerate {
                     }
                     track.notes = savedNotes
                 } else {
-                    logger.info(MfAutoGenerate.TAG, `  -> full regenerate (variant=${config})`)
+                    logger.info(AutoGenerate.TAG, `  -> full regenerate (variant=${config})`)
                     track.notes = []
                     await this.generateTrack(track, config, density, pattern, harmony)
                 }
                 serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
             } else {
-                logger.warn(MfAutoGenerate.TAG, `  -> no config found for type=${type}`)
+                logger.warn(AutoGenerate.TAG, `  -> no config found for type=${type}`)
             }
         } catch (err) {
-            logger.warn(MfAutoGenerate.TAG, 'changeTrack failed', err)
+            logger.warn(AutoGenerate.TAG, 'changeTrack failed', err)
         }
     }
 

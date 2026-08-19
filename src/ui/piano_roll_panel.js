@@ -2,7 +2,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import MfFlatNote from '../model/flatnote.js'
+import FlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
 import { pitchToNoteName, formatNoteTooltip } from './components/ui_utils.js'
@@ -446,7 +446,7 @@ export default class PianoRollPanel extends BasePanel {
         const track = this._track
         if (!track || Number.isNaN(midi)) return
         const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
-        const flatNote = new MfFlatNote(0, track, { ...Utils.NOTE_DEFAULTS, pitch: relativePitch })
+        const flatNote = new FlatNote(0, track, { ...Utils.NOTE_DEFAULTS, pitch: relativePitch })
         serviceRegistry.audioEngine?.sound?.play(flatNote, serviceRegistry.audioEngine.audioCtx.currentTime)
     }
 

@@ -1,6 +1,6 @@
 import BaseGenerator from './base_generator.js'
 
-export default class MfSnareGenerate extends BaseGenerator {
+export default class SnareGenerate extends BaseGenerator {
     static SNARE_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
@@ -110,7 +110,7 @@ export default class MfSnareGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('SNARE', MfSnareGenerate.SNARE_GENERATION_CONFIGS)
+        super('SNARE', SnareGenerate.SNARE_GENERATION_CONFIGS)
     }
 
     generateNewSnare = (snareTrack, variantName = null, density = 1) => {

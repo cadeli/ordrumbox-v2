@@ -1,5 +1,5 @@
 import BaseVoice from './base_voice.js'
-import MfDefaults from '../../patterns/defaults.js'
+import Defaults from '../../patterns/defaults.js'
 import { computeLfoValue } from '../math.js'
 import { logger } from '../../core/logger.js'
 import {
@@ -44,7 +44,7 @@ export default class SampleVoice extends BaseVoice {
 
         const decay = (this.sample?.decay ?? 500) / 1000
         const sampleGain = Math.pow(10, (this.sample?.gainDb ?? 0) / 20)
-        this.noteVelo = flatNote.note?.velocity ?? MfDefaults.getNoteProp(flatNote.note, 'velocity')
+        this.noteVelo = flatNote.note?.velocity ?? Defaults.getNoteProp(flatNote.note, 'velocity')
 
         const safeDecay = Math.max(0.02, decay)
         this.gainEnvelope.gain.setValueAtTime(0, time)

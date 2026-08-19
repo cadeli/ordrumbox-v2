@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MfGlobals } from '../src/core/globals.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import { Globals } from '../src/core/globals.js'
+import Commander from '../src/logic/commands/cmd.js'
 import Utils from '../src/core/utils.js'
 
-describe('Functional: MfCmd operations', () => {
+describe('Functional: Commander operations', () => {
     let cmd
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
-        MfGlobals.cmd = cmd
+        Globals.resetAll()
+        cmd = new Commander()
+        Globals.cmd = cmd
     })
 
     describe('Pattern CRUD', () => {
@@ -24,7 +24,7 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('auto-generates name when null', () => {
-            MfGlobals.patterns = [{ name: 'a' }, { name: 'b' }]
+            Globals.patterns = [{ name: 'a' }, { name: 'b' }]
             const pattern = cmd.addPattern(null)
 
             expect(pattern.name).toBe('NewPat_2')
@@ -503,7 +503,7 @@ describe('Functional: MfCmd operations', () => {
 
     describe('getAllSoundsForType', () => {
         it('finds sounds by key', () => {
-            MfGlobals.sounds = {
+            Globals.sounds = {
                 s1: { key: 'kd', kit_name: 'real' },
                 s2: { key: 'sd', kit_name: 'real' },
                 s3: { key: 'kd', kit_name: 'electro' }
@@ -516,14 +516,14 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('returns empty array when no match', () => {
-            MfGlobals.sounds = { s1: { key: 'kd' } }
+            Globals.sounds = { s1: { key: 'kd' } }
             expect(cmd.getAllSoundsForType('xx')).toEqual([])
         })
     })
 
     describe('getSoundIdFromUrl', () => {
         it('finds soundId by url', () => {
-            MfGlobals.sounds = {
+            Globals.sounds = {
                 snd_1: { url: 'kits/real/kick.wav' },
                 snd_2: { url: 'kits/real/snare.wav' }
             }
@@ -533,14 +533,14 @@ describe('Functional: MfCmd operations', () => {
         })
 
         it('returns NOT_FOUND when no match', () => {
-            MfGlobals.sounds = { snd_1: { url: 'a.wav' } }
+            Globals.sounds = { snd_1: { url: 'a.wav' } }
             expect(cmd.getSoundIdFromUrl('b.wav')).toBe('NOT_FOUND')
         })
     })
 
     describe('kitIsLoaded', () => {
         it('returns true when kit sounds are loaded', () => {
-            MfGlobals.sounds = { s1: { kit_name: 'real' } }
+            Globals.sounds = { s1: { kit_name: 'real' } }
             expect(cmd.kitIsLoaded({ name: 'real' })).toBe(true)
             expect(cmd.kitIsLoaded({ name: 'electro' })).toBe(false)
         })

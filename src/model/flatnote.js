@@ -1,6 +1,6 @@
 
-export default class MfFlatNote {
-    static TAG = "MFFLATNOTE"
+export default class FlatNote {
+    static TAG = "FlatNote"
 
     constructor(tick, track, note) {
         this.tick = tick

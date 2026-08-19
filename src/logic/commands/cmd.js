@@ -1,6 +1,6 @@
 import { NOT_FOUND } from '../../core/constants.js'
 import Utils from '../../core/utils.js'
-import MfDefaults from '../../patterns/defaults.js'
+import Defaults from '../../patterns/defaults.js'
 import { appState } from '../../state/app_state.js'
 import { getAutoAssignService, serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
@@ -9,8 +9,8 @@ import { normalizeTrack, TRACK_DEFAULTS, TRACK_VALUE_RANGES, recalcLoopDerived }
 import { importPatternFromJson } from './pattern_import.js'
 import { logger } from "../../core/logger.js"
 
-export default class MfCmd {
-    static TAG = "MFCMD"
+export default class Commander {
+    static TAG = "Commander"
     static #DERIVED_KEYS = new Set(['loopPointBeat', 'loopPointStep'])
     static #TRACK_KEY_SET = new Set(Object.keys(TRACK_DEFAULTS))
 
@@ -29,7 +29,7 @@ export default class MfCmd {
         let changed = false
         // Derived properties are handled separately
         for (const [k, v] of Object.entries(updates)) {
-            if (MfCmd.#DERIVED_KEYS.has(k) || !MfCmd.#TRACK_KEY_SET.has(k)) continue
+            if (Commander.#DERIVED_KEYS.has(k) || !Commander.#TRACK_KEY_SET.has(k)) continue
             let clamped = v
             const range = TRACK_VALUE_RANGES[k]
             if (range && typeof v === 'number' && Number.isFinite(v)) {
@@ -149,7 +149,7 @@ export default class MfCmd {
         const bpmNum = Number(bpm)
         pattern.bpm = Number.isFinite(bpmNum) && bpmNum !== 0
             ? bpmNum
-            : (logger.warn('Command', 'bpm NaN/0', bpm), MfDefaults.getPatternProp({}, 'bpm'))
+            : (logger.warn('Command', 'bpm NaN/0', bpm), Defaults.getPatternProp({}, 'bpm'))
         return pattern
     }
 
@@ -183,7 +183,7 @@ export default class MfCmd {
             await this.autoAssignSoundsForNewDrumkit()
             playbackEvents.emit("drumkitChange")
         } catch (err) {
-            logger.error('MfCmd', 'cmd::setSelectedDrumkitNum failed', err)
+            logger.error('Commander', 'cmd::setSelectedDrumkitNum failed', err)
         }
     }
 
@@ -196,7 +196,7 @@ export default class MfCmd {
             serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
             serviceRegistry.audioEngine?.invalidateCache()
         } catch (err) {
-            logger.error('MfCmd', 'cmd::autoAssignSoundsForNewDrumkit failed', err)
+            logger.error('Commander', 'cmd::autoAssignSoundsForNewDrumkit failed', err)
         }
     }
 
@@ -215,7 +215,7 @@ export default class MfCmd {
                 // console.log(flatnotes)
             }
         } catch (err) {
-            logger.error('MfCmd', 'cmd::setSelectedPatternNum failed', err)
+            logger.error('Commander', 'cmd::setSelectedPatternNum failed', err)
         }
     }
 

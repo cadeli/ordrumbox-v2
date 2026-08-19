@@ -1,6 +1,6 @@
 import BaseGenerator from './base_generator.js'
 
-export default class MfCowbellGenerate extends BaseGenerator {
+export default class CowbellGenerate extends BaseGenerator {
     static COWBELL_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
@@ -55,7 +55,7 @@ export default class MfCowbellGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('COWBELL', MfCowbellGenerate.COWBELL_GENERATION_CONFIGS)
+        super('COWBELL', CowbellGenerate.COWBELL_GENERATION_CONFIGS)
     }
 
     generateNewCowbell = async (track, variantName = null, density = 1) => {

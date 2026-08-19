@@ -9,8 +9,8 @@ import { getAutoAssignService, getAutoGenerateService, serviceRegistry } from '.
 import { soundRegistry } from '../state/sound_registry.js'
 import { logger } from '../core/logger.js'
 
-export default class MfSeq {
-    static TAG = "MFSEQ"
+export default class Sequencer {
+    static TAG = "Sequencer"
 
     constructor(options = {}) {
         this.serviceRegistry = options.serviceRegistry ?? serviceRegistry
@@ -83,14 +83,14 @@ export default class MfSeq {
 
     start = async () => {
         if (this._starting) {
-            logger.warn('MfSeq', "MfSeq::start: already starting, skipping")
+            logger.warn('Sequencer', "Sequencer::start: already starting, skipping")
             return
         }
         this._starting = true
         try {
             await this._startInner()
         } catch (error) {
-            logger.error('MfSeq', "MfSeq::start: unexpected error", error)
+            logger.error('Sequencer', "Sequencer::start: unexpected error", error)
         } finally {
             this._starting = false
         }
@@ -101,19 +101,19 @@ export default class MfSeq {
             await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
             this.playbackEvents.emit("drumkitChange")
         } catch (error) {
-            logger.error('MfSeq', "MfSeq::start: Failed to load resources", error)
+            logger.error('Sequencer', "Sequencer::start: Failed to load resources", error)
             return
         }
 
         let selPattern = this.appState.patterns[this.appState.selectedPatternNum]
         if (!selPattern) {
-            logger.warn('MfSeq', "MfSeq::start: No selected pattern")
+            logger.warn('Sequencer', "Sequencer::start: No selected pattern")
             return
         }
 
         // Ensure transport has the current audioCtx (created in toggleStartStop)
         if (!this.serviceRegistry.audioCtx) {
-            logger.warn('MfSeq', "MfSeq::start: No audioCtx available")
+            logger.warn('Sequencer', "Sequencer::start: No audioCtx available")
             return
         }
         this.ensureTransport()
@@ -150,7 +150,7 @@ export default class MfSeq {
             try {
                 this.serviceRegistry.audioCtx = this.serviceRegistry.resourcesLoader.audioCtx
             } catch (err) {
-                logger.error('MfSeq', "MfSeq::toggleStartStop: Failed to create AudioContext", err)
+                logger.error('Sequencer', "Sequencer::toggleStartStop: Failed to create AudioContext", err)
                 return
             }
         }
@@ -158,7 +158,7 @@ export default class MfSeq {
         // Resume audio context on user interaction (spacebar/click)
         if (this.serviceRegistry.audioCtx && this.serviceRegistry.audioCtx.state === 'suspended') {
             this.serviceRegistry.audioCtx.resume().catch(err => {
-                logger.error('MfSeq', "MfSeq::toggleStartStop: Failed to resume AudioContext", err);
+                logger.error('Sequencer', "Sequencer::toggleStartStop: Failed to resume AudioContext", err);
             });
         }
 
@@ -194,7 +194,7 @@ export default class MfSeq {
             try {
                 await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
             } catch (e) {
-                logger.error('MfSeq', "simpleBeep: resources not loaded", e)
+                logger.error('Sequencer', "simpleBeep: resources not loaded", e)
                 return
             }
             const autoAssign = await getAutoAssignService()

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MfGlobals } from '../src/core/globals.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import { Globals } from '../src/core/globals.js'
+import Commander from '../src/logic/commands/cmd.js'
 import BaseGenerator from '../src/logic/generators/base_generator.js'
 
 describe('BaseGenerator', () => {
@@ -41,9 +41,9 @@ describe('BaseGenerator', () => {
     }
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
-        MfGlobals.cmd = cmd
+        Globals.resetAll()
+        cmd = new Commander()
+        Globals.cmd = cmd
         generator = new BaseGenerator('TEST', testConfigs)
     })
 

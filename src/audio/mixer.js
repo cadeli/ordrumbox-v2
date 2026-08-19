@@ -1,4 +1,4 @@
-import MfStrip from './strip.js';
+import Strip from './strip.js';
 import WorkletLoader from './worklets/loader.js';
 import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js';
 import { logger } from '../core/logger.js';
@@ -6,8 +6,8 @@ import { logger } from '../core/logger.js';
 // Register master bus processor at module load (idempotent)
 WorkletLoader.register('master-bus', MASTER_BUS_SOURCE);
 
-export default class MfMixer {
-    static TAG = "MFMIXER";
+export default class Mixer {
+    static TAG = "Mixer";
 
     constructor(audioCtx) {
         this.audioCtx = audioCtx;
@@ -24,13 +24,13 @@ export default class MfMixer {
      */
     static async create(audioCtx) {
         try {
-            const mixer = new MfMixer(audioCtx);
+            const mixer = new Mixer(audioCtx);
             await WorkletLoader.ensureLoaded(audioCtx);
             mixer.start();
             return mixer;
         } catch (err) {
-            logger.error('MfMixer', 'MfMixer::create failed', err)
-            return new MfMixer(audioCtx);
+            logger.error('Mixer', 'Mixer::create failed', err)
+            return new Mixer(audioCtx);
         }
     }
 
@@ -85,7 +85,7 @@ export default class MfMixer {
         const nodes = [this.busWorklet, this.busInput, this.analyser, this.transportClock];
         for (const node of nodes) {
             if (!node) continue;
-            try { node.disconnect(); } catch (e) { logger.error('MfMixer', e); }
+            try { node.disconnect(); } catch (e) { logger.error('Mixer', e); }
             if (node === this.transportClock) {
                 try { node.stop(); } catch (_) {}
             }
@@ -102,7 +102,7 @@ export default class MfMixer {
     // ─── Strip management ────────────────────────────────────────────────────────
 
     /**
-     * Adds a strip asynchronously. Returns a Promise<MfStrip>.
+     * Adds a strip asynchronously. Returns a Promise<Strip>.
      */
     addStrip = async (name) => {
         if (this.strips[name]) return this.strips[name];
@@ -110,7 +110,7 @@ export default class MfMixer {
         // Re-initialise bus nodes if they were torn down by stop().
         if (!this.busInput) this.start();
 
-        const strip = await MfStrip.create(name, this.audioCtx, this);
+        const strip = await Strip.create(name, this.audioCtx, this);
         this.strips[name] = strip;
 
         if (strip.pan && this.busInput) {

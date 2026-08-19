@@ -1,6 +1,6 @@
 import BaseGenerator from './base_generator.js'
 
-export default class MfClapGenerate extends BaseGenerator {
+export default class ClapGenerate extends BaseGenerator {
     static CLAP_GENERATION_CONFIGS = Object.freeze({
         backbeat: {
             mode: 'phrases',
@@ -101,7 +101,7 @@ export default class MfClapGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('CLAP', MfClapGenerate.CLAP_GENERATION_CONFIGS)
+        super('CLAP', ClapGenerate.CLAP_GENERATION_CONFIGS)
     }
 
     generateNewClap = (clapTrack, variantName = null, density = 1) => {

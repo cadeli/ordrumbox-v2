@@ -93,7 +93,7 @@ describe('simpleBeep — real audio rendering', () => {
     })
 
     it('wav_exporter renders non-silent audio with kick buffer', async () => {
-        const { default: MfWavExporter } = await import('../src/audio/export/wav_exporter.js')
+        const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
         const patternsManager = await import('../src/patterns/manager.js')
@@ -122,7 +122,7 @@ describe('simpleBeep — real audio rendering', () => {
             }],
         }
 
-        const exporter = new MfWavExporter()
+        const exporter = new WavExporter()
         const blob = await exporter.exportPatternToWav(pattern, 1)
         expect(blob).toBeDefined()
 
@@ -149,7 +149,7 @@ describe('simpleBeep — real audio rendering', () => {
     })
 
     it('silent pattern produces near-silence', async () => {
-        const { default: MfWavExporter } = await import('../src/audio/export/wav_exporter.js')
+        const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
         const patternsManager = await import('../src/patterns/manager.js')
@@ -176,7 +176,7 @@ describe('simpleBeep — real audio rendering', () => {
             }],
         }
 
-        const exporter = new MfWavExporter()
+        const exporter = new WavExporter()
         const blob = await exporter.exportPatternToWav(pattern, 1)
         const ab = await blob.arrayBuffer()
         const wavBytes = new Uint8Array(ab)
@@ -200,8 +200,8 @@ describe('simpleBeep — real audio rendering', () => {
 
 describe('simpleBeep — mixer graph reconnection', () => {
     it('after stop(), addStrip re-creates busInput and connects strip', async () => {
-        const { default: MfMixer } = await import('../src/audio/mixer.js')
-        const { default: MfStrip } = await import('../src/audio/strip.js')
+        const { default: Mixer } = await import('../src/audio/mixer.js')
+        const { default: Strip } = await import('../src/audio/strip.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
         const patternsManager = await import('../src/patterns/manager.js')
@@ -211,7 +211,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
         serviceRegistry.patterns = patternsManager
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
-        const mixer = await MfMixer.create(ctx)
+        const mixer = await Mixer.create(ctx)
 
         expect(mixer.busInput).toBeTruthy()
         expect(mixer.analyser).toBeTruthy()
@@ -232,7 +232,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
     })
 
     it('signal reaches destination after stop → addStrip → render', async () => {
-        const { default: MfMixer } = await import('../src/audio/mixer.js')
+        const { default: Mixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
         const patternsManager = await import('../src/patterns/manager.js')
@@ -242,7 +242,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
         serviceRegistry.patterns = patternsManager
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
-        const mixer = await MfMixer.create(ctx)
+        const mixer = await Mixer.create(ctx)
 
         mixer.start()
 
@@ -278,7 +278,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
     })
 
     it('signal is silent when busInput is null (the pre-fix behavior)', async () => {
-        const { default: MfMixer } = await import('../src/audio/mixer.js')
+        const { default: Mixer } = await import('../src/audio/mixer.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
         const patternsManager = await import('../src/patterns/manager.js')
@@ -288,7 +288,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
         serviceRegistry.patterns = patternsManager
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
-        const mixer = await MfMixer.create(ctx)
+        const mixer = await Mixer.create(ctx)
 
         mixer.stop()
 
@@ -325,12 +325,12 @@ describe('simpleBeep — SampleVoice through real mixer chain', () => {
     })
 
     it('SampleVoice → strip.voicesInput → mixer → destination is audible', async () => {
-        const { default: MfMixer } = await import('../src/audio/mixer.js')
+        const { default: Mixer } = await import('../src/audio/mixer.js')
         const { default: SampleVoice } = await import('../src/audio/voices/sample_voice.js')
-        const { default: MfFlatNote } = await import('../src/model/flatnote.js')
+        const { default: FlatNote } = await import('../src/model/flatnote.js')
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
-        const mixer = await MfMixer.create(ctx)
+        const mixer = await Mixer.create(ctx)
         mixer.start()
 
         if (mixer.transportClock) {
@@ -343,7 +343,7 @@ describe('simpleBeep — SampleVoice through real mixer chain', () => {
 
         const track = { name: 'KICK', soundId: 'kick.wav', pitchLfo: null }
         const note = { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, fpitch: 1, name: 'test' }
-        const flatNote = new MfFlatNote(0, track, note)
+        const flatNote = new FlatNote(0, track, note)
 
         const voice = new SampleVoice(ctx, strip, kickBuffer)
         voice.setup(flatNote, 0)
@@ -356,12 +356,12 @@ describe('simpleBeep — SampleVoice through real mixer chain', () => {
     })
 
     it('SampleVoice → strip → mixer is audible AFTER stop + re-init', async () => {
-        const { default: MfMixer } = await import('../src/audio/mixer.js')
+        const { default: Mixer } = await import('../src/audio/mixer.js')
         const { default: SampleVoice } = await import('../src/audio/voices/sample_voice.js')
-        const { default: MfFlatNote } = await import('../src/model/flatnote.js')
+        const { default: FlatNote } = await import('../src/model/flatnote.js')
 
         const ctx = new OfflineAudioContext(2, SAMPLE_RATE, SAMPLE_RATE)
-        const mixer = await MfMixer.create(ctx)
+        const mixer = await Mixer.create(ctx)
         mixer.start()
 
         if (mixer.transportClock) {
@@ -380,7 +380,7 @@ describe('simpleBeep — SampleVoice through real mixer chain', () => {
 
         const track = { name: 'KICK2', soundId: 'kick.wav', pitchLfo: null, sampleDecay: 0.3 }
         const note = { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, fpitch: 1, name: 'test' }
-        const flatNote = new MfFlatNote(0, track, note)
+        const flatNote = new FlatNote(0, track, note)
 
         const voice = new SampleVoice(ctx, strip2, kickBuffer)
         voice.setup(flatNote, 0)

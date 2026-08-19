@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { logger } from '../src/core/logger.js'
-import MfSound from '../src/audio/sound.js'
+import Sound from '../src/audio/sound.js'
 import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 
@@ -100,7 +100,7 @@ function makeFlatNote(overrides = {}) {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe('MfSound', () => {
+describe('Sound', () => {
     let ctx, mixer, sounds, generatedSounds, sound
 
     beforeEach(() => {
@@ -108,7 +108,7 @@ describe('MfSound', () => {
         mixer  = makeMixer()
         sounds = { snd_kick: { buffer: ctx.createBuffer(1, 1024, 44100) } }
         generatedSounds = { BASS1: { vco1: { wave: 'sine', octave: 0, detune: 0, gain: 1 }, masterVolume: 0.8 } }
-        sound  = new MfSound(ctx, mixer, sounds, generatedSounds)
+        sound  = new Sound(ctx, mixer, sounds, generatedSounds)
         sound.voiceFactory = makeVoiceFactory()
         serviceRegistry.resourcesLoader.loadGeneratedSounds.mockClear()
     })

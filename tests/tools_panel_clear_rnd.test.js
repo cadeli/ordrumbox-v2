@@ -7,7 +7,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import Commander from '../src/logic/commands/cmd.js'
 
 describe('ToolsPanel — Clear / Rnd buttons', () => {
     let toolsPanel
@@ -31,7 +31,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
         appState.patterns = [structuredClone(TEST_PATTERN)]
         appState.selectedPatternNum = 0
 
-        serviceRegistry.cmd = new MfCmd()
+        serviceRegistry.cmd = new Commander()
 
         document.body.innerHTML = ''
 

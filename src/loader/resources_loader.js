@@ -7,8 +7,8 @@ import { cachePatterns, getCachedPatterns, cacheDrumkits, getCachedDrumkits, cac
 import Utils from '../core/utils.js'
 import { logger } from '../core/logger.js'
 
-export default class MfResourcesLoader {
-    static TAG = "MFResourcesLoader"
+export default class ResourcesLoader {
+    static TAG = "ResourcesLoader"
     static get KITS_PATH() { return "assets/kits/" }
     static get SCALES_URL() { return "assets/data/scales.json" }
     static get DRUMKITS_URL() { return "assets/data/drumkits.json" }
@@ -48,7 +48,7 @@ export default class MfResourcesLoader {
             if (this.isPatternsLoading || this.patternsLoadFailed) return
             this.isPatternsLoading = true
             try {
-                await this.loadSong(MfResourcesLoader.SONG_URL)
+                await this.loadSong(ResourcesLoader.SONG_URL)
                 this.isPatternsLoading = false
             } catch (error) {
                 this.isPatternsLoading = false
@@ -65,7 +65,7 @@ export default class MfResourcesLoader {
 
         // 2. Load Drumkit List if missing (needed for samples)
         if (soundRegistry.drumkitList.length === 0) {
-            await this.loadDrumkitList(MfResourcesLoader.DRUMKITS_URL)
+            await this.loadDrumkitList(ResourcesLoader.DRUMKITS_URL)
         }
 
         // 3. Load Samples if missing
@@ -96,7 +96,7 @@ export default class MfResourcesLoader {
             }
             return await response.json()
         } catch (error) {
-            logger.error('MfResourcesLoader', `MfResourcesLoader::loadJsonResource: ${file}`, error)
+            logger.error('ResourcesLoader', `ResourcesLoader::loadJsonResource: ${file}`, error)
             throw error
         }
     }
@@ -107,7 +107,7 @@ export default class MfResourcesLoader {
             jsonDrumkits = await this.loadJsonResource(file)
             await cacheDrumkits(jsonDrumkits)
         } else {
-            logger.debug('MfResourcesLoader', 'Drumkit list loaded from IDB cache')
+            logger.debug('ResourcesLoader', 'Drumkit list loaded from IDB cache')
         }
         soundRegistry.drumkitList.length = 0
         Object.values(jsonDrumkits).forEach((drumkit) => {
@@ -129,14 +129,14 @@ export default class MfResourcesLoader {
     async loadSettings() {
         const defaults = { version: 1, sampleDirs: [], maxSampleDirs: 10 }
         try {
-            const raw = await idbGet('settings', MfResourcesLoader.SETTINGS_KEY)
+            const raw = await idbGet('settings', ResourcesLoader.SETTINGS_KEY)
             if (raw) {
                 Object.assign(soundRegistry.settings, defaults, raw)
                 return
             }
         } catch { /* IndexedDB unavailable or empty */ }
         try {
-            const settings = await this.loadJsonResource(MfResourcesLoader.SETTINGS_URL)
+            const settings = await this.loadJsonResource(ResourcesLoader.SETTINGS_URL)
             Object.assign(soundRegistry.settings, defaults, settings)
         } catch { /* file not found — use defaults */ }
     }
@@ -144,7 +144,7 @@ export default class MfResourcesLoader {
     async saveSettings() {
         const { version, sampleDirs, maxSampleDirs } = soundRegistry.settings
         try {
-            await idbPut('settings', MfResourcesLoader.SETTINGS_KEY, { version, sampleDirs, maxSampleDirs })
+            await idbPut('settings', ResourcesLoader.SETTINGS_KEY, { version, sampleDirs, maxSampleDirs })
         } catch { /* IndexedDB unavailable */ }
     }
 
@@ -155,7 +155,7 @@ export default class MfResourcesLoader {
             json = await this.loadJsonResource(file)
             await cachePatterns(json)
         } else {
-            logger.debug('MfResourcesLoader', 'Patterns loaded from IDB cache')
+            logger.debug('ResourcesLoader', 'Patterns loaded from IDB cache')
         }
         const patterns = json.patterns ?? json
         appState.songInfos = {
@@ -211,7 +211,7 @@ export default class MfResourcesLoader {
             try {
                 return await this.loadSample(sample, kitName)
             } catch (error) {
-                logger.error('MfResourcesLoader', "MfResourcesLoader::loadSample error " + sample.url, error)
+                logger.error('ResourcesLoader', "ResourcesLoader::loadSample error " + sample.url, error)
                 return null
             } finally {
                 nbLoad++
@@ -228,14 +228,14 @@ export default class MfResourcesLoader {
     loadSample = async (sample, kit_name) => {
         let arrayBuffer = await getCachedSample(sample.url)
         if (!arrayBuffer) {
-            const response = await fetch(MfResourcesLoader.KITS_PATH + sample.url)
+            const response = await fetch(ResourcesLoader.KITS_PATH + sample.url)
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`)
             }
             arrayBuffer = await response.arrayBuffer()
             await cacheSample(sample.url, arrayBuffer)
         } else {
-            logger.debug('MfResourcesLoader', `Sample "${sample.url}" loaded from IDB cache`)
+            logger.debug('ResourcesLoader', `Sample "${sample.url}" loaded from IDB cache`)
         }
         const buffer = await this.audioCtx.decodeAudioData(arrayBuffer)
         const sound = {

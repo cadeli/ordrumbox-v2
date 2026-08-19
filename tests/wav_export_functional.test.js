@@ -3,7 +3,7 @@
  *
  * Strategy:
  *  1. Mock OfflineAudioContext returns buffers filled with a known sine pattern
- *  2. Export a pattern through MfWavExporter.exportPatternToWav()
+ *  2. Export a pattern through WavExporter.exportPatternToWav()
  *  3. Parse the WAV blob binary and verify header + encoded samples
  *  4. Extended: verify scheduling via createBufferSource spy — ticks, velocity,
  *     pitch, every, retrigger, arp, multi-loop
@@ -12,7 +12,7 @@
  * faithfully convert those float samples to 16-bit PCM.
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import MfWavExporter from '../src/audio/export/wav_exporter.js'
+import WavExporter from '../src/audio/export/wav_exporter.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import * as patternsManager from '../src/patterns/manager.js'
@@ -242,7 +242,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'HeaderTest', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -258,7 +258,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'FmtTest', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -274,7 +274,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'BlockAlign', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -287,7 +287,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'ByteRate', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -304,7 +304,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'Dur1Bar', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -318,7 +318,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'Dur4Bar', bpm: 120, nbBeats: 4,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -332,7 +332,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'Dur2Loop', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob1 = await exporter.exportPatternToWav(pattern, 1)
             const blob2 = await exporter.exportPatternToWav(pattern, 2)
 
@@ -349,7 +349,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'BpmScale', bpm, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             })
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
 
             const blob60 = await exporter.exportPatternToWav(make(60), 1)
             const blob120 = await exporter.exportPatternToWav(make(120), 1)
@@ -369,7 +369,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'ContentTest', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -386,7 +386,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'PeakTest', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -404,7 +404,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'StereoTest', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -425,7 +425,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'StereoPeak', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -447,7 +447,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'SizeTest', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -462,7 +462,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'DataChunk', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -477,7 +477,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'RiffSize', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -494,7 +494,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'Compare', bpm: 120, nbBeats,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             })
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
 
             const wav1 = parseWav(await (await exporter.exportPatternToWav(make(1), 1)).arrayBuffer())
             const wav2 = parseWav(await (await exporter.exportPatternToWav(make(2), 1)).arrayBuffer())
@@ -507,7 +507,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'EmptyTracks', bpm: 120, nbBeats: 1,
                 tracks: []
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -522,7 +522,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'MimeTest', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             expect(blob.type).toBe('audio/wav')
         })
@@ -538,7 +538,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0), makeNote(0, 16),
                 ])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const spy = vi.spyOn(MockOfflineAudioContext.prototype, 'createBufferSource')
             spy.mockClear()
 
@@ -557,7 +557,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'QuantTest', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
@@ -575,7 +575,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'QuantPrecision', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
 
@@ -602,7 +602,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'MultiLoop', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             const wav1 = parseWav(await (await exporter.exportPatternToWav(pattern, 1)).arrayBuffer())
             const wav3 = parseWav(await (await exporter.exportPatternToWav(pattern, 3)).arrayBuffer())
 
@@ -618,7 +618,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'Tick0', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             const ticks = startTimesToTicks(getStartTimes(), pattern.bpm)
             expect(ticks).toContain(0)
@@ -629,7 +629,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'Tick16', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 2)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             const ticks = startTimesToTicks(getStartTimes(), pattern.bpm)
             expect(ticks).toContain(16)
@@ -640,7 +640,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'Tick32', bpm: 120, nbBeats: 2,
                 tracks: [makeTrack('KICK', 'kick.wav', [makeNote(1, 0)])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             const ticks = startTimesToTicks(getStartTimes(), pattern.bpm)
             expect(ticks).toContain(32)
@@ -654,7 +654,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(1, 0), makeNote(1, 2),
                 ], { nbBeats: 2 })]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             const ticks = startTimesToTicks(getStartTimes(), pattern.bpm)
             expect(ticks).toContain(0)
@@ -671,7 +671,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeTrack('SNARE', 'kick.wav', [makeNote(0, 1), makeNote(0, 3)]),
                 ]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             const startTimes = getStartTimes()
             expect(startTimes.length).toBe(5)
@@ -689,7 +689,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(1, 0), makeNote(1, 2),
                 ], { nbBeats: 2 })]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             expect(getStartTimes().length).toBe(5)
         })
@@ -707,7 +707,7 @@ describe('WAV Export — functional end-to-end', () => {
                     ], { nbBeats: 2 }),
                 ]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             expect(getStartTimes().length).toBe(7)
         })
@@ -889,7 +889,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { retriggerNum: 1, rate: 1 }),
                 ])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             expect(getStartTimes().length).toBe(2)
         })
@@ -901,7 +901,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { retriggerNum: 3, rate: 1 }),
                 ])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             expect(getStartTimes().length).toBe(4)
         })
@@ -913,7 +913,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { retriggerNum: 4, rate: 2 }),
                 ])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             expect(getStartTimes().length).toBe(5)
         })
@@ -925,7 +925,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { retriggerNum: 3, rate: 1 }),
                 ])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             const times = getStartTimes()
             const noteTimes = times.filter(t => t > 0)
@@ -940,7 +940,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { retriggerNum: 4, rate: 1 }),
                 ])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             expect(getStartTimes().length).toBe(5)
         })
@@ -1039,7 +1039,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
                 ])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             const times = getStartTimes()
             const noteTimes = times.filter(t => t > 0)
@@ -1059,7 +1059,7 @@ describe('WAV Export — functional end-to-end', () => {
                     }),
                 ])]
             }
-            const exporter = new MfWavExporter()
+            const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             expect(getStartTimes().length).toBe(5)
         })

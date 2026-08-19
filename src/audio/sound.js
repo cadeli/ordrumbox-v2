@@ -3,13 +3,13 @@ import NodePool from './node_pool.js'
 import { applyTrackToStrip } from './strip_sync.js'
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import MfResourcesLoader from '../loader/resources_loader.js'
+import ResourcesLoader from '../loader/resources_loader.js'
 import { logger } from '../core/logger.js'
 import { TICK } from '../core/constants.js'
 
 const MAX_POLYPHONY = 16
 
-export default class MfSound {
+export default class Sound {
     constructor(audioCtx, mixer, sounds, generatedSounds) {
         this.audioCtx = audioCtx
         this.mixer = mixer
@@ -131,7 +131,7 @@ export default class MfSound {
             }
             return voice
         } catch (e) {
-            logger.error('MfSound', 'Error in _playVoice:', e)
+            logger.error('Sound', 'Error in _playVoice:', e)
             return null
         }
     }
@@ -153,16 +153,16 @@ export default class MfSound {
     loadGeneratedsounds = () => {
         if (this.generatedSoundsLoading || this.generatedSoundsLoadFailed) return
         this.generatedSoundsLoading = true
-        serviceRegistry.resourcesLoader?.loadGeneratedSounds(MfResourcesLoader.GENERATED_SOUNDS_URL).then(() => {
+        serviceRegistry.resourcesLoader?.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL).then(() => {
             this.generatedSoundsLoading = false
             if (Object.keys(this.generatedSounds).length === 0) {
                 this.generatedSoundsLoadFailed = true
-                logger.warn('MfSound', 'loadGeneratedsounds loaded no generated sounds')
+                logger.warn('Sound', 'loadGeneratedsounds loaded no generated sounds')
             }
         }).catch((error) => {
             this.generatedSoundsLoading = false
             this.generatedSoundsLoadFailed = true
-            logger.error('MfSound', 'loadGeneratedsounds failed', error)
+            logger.error('Sound', 'loadGeneratedsounds failed', error)
         })
     }
 

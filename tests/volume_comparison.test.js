@@ -7,12 +7,12 @@
 import { describe, it, expect } from 'vitest'
 import { writeFileSync, mkdirSync } from 'fs'
 import nodeWaa from 'node-web-audio-api'
-import MfAudioAnalyze from '../src/audio/analyze.js'
+import AudioAnalyzer from '../src/audio/analyze.js'
 import { bufferToWav } from '../src/audio/export/wav_encoder.js'
 
 const { OfflineAudioContext, AudioWorkletNode } = nodeWaa
 const SAMPLE_RATE = 44100
-const analyzer = new MfAudioAnalyze()
+const analyzer = new AudioAnalyzer()
 
 globalThis.OfflineAudioContext = OfflineAudioContext
 globalThis.AudioWorkletNode = AudioWorkletNode
@@ -79,7 +79,7 @@ function decodeWavBlob(blob) {
 }
 
 async function renderPattern(pattern, sounds, generatedSounds) {
-    const { default: MfWavExporter } = await import('../src/audio/export/wav_exporter.js')
+    const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
     const { soundRegistry } = await import('../src/state/sound_registry.js')
     const { serviceRegistry } = await import('../src/state/service_registry.js')
     const patternsManager = await import('../src/patterns/manager.js')
@@ -91,7 +91,7 @@ async function renderPattern(pattern, sounds, generatedSounds) {
     Object.assign(soundRegistry.sounds, sounds)
     Object.assign(soundRegistry.generatedSounds, generatedSounds)
 
-    const exporter = new MfWavExporter()
+    const exporter = new WavExporter()
     const blob = await exporter.exportPatternToWav(pattern, 1)
 
     const ab = await blob.arrayBuffer()

@@ -1,6 +1,6 @@
 import { logger } from "../core/logger.js"
-export default class MfAudioAnalyze {
-    static TAG = "MFAUDIOANALYZE"
+export default class AudioAnalyzer {
+    static TAG = "AudioAnalyzer"
     static DEFAULTS = Object.freeze({
         envelopePoints: 128,
         fftSize: 1024,
@@ -31,7 +31,7 @@ export default class MfAudioAnalyze {
             throw new TypeError('sampleRate must be a positive number')
         }
 
-        const config = { ...MfAudioAnalyze.DEFAULTS, ...options }
+        const config = { ...AudioAnalyzer.DEFAULTS, ...options }
         const samples = channelData instanceof Float32Array ? channelData : Float32Array.from(channelData)
 
         if (samples.length === 0) {

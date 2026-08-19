@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import MfStrip from '../src/audio/strip.js'
-import MfSound from '../src/audio/sound.js'
-import { MfGlobals } from '../src/core/globals.js'
+import Strip from '../src/audio/strip.js'
+import Sound from '../src/audio/sound.js'
+import { Globals } from '../src/core/globals.js'
 import * as AudioMath from '../src/audio/math.js'
 import { makeParam, makeNode, installWorkletMocks } from './helpers/worklet_mocks.js'
 
@@ -39,13 +39,13 @@ describe('Audio Graph Validity', () => {
 
     beforeEach(() => {
         mockCtx = makeAudioCtx()
-        MfGlobals.resetAll()
+        Globals.resetAll()
         installWorkletMocks()
     })
 
-    describe('MfStrip Robustness (unified worklet API)', () => {
+    describe('Strip Robustness (unified worklet API)', () => {
         it('updateSaturation handles extreme and invalid amounts without NaN', async () => {
-            const strip = await MfStrip.create('TEST', mockCtx)
+            const strip = await Strip.create('TEST', mockCtx)
 
             strip.updateSaturation('soft', 999)
             expect(strip.stripNode.parameters.get('satDrive').setTargetAtTime)
@@ -60,7 +60,7 @@ describe('Audio Graph Validity', () => {
         })
 
         it('updateSaturation clamps internal drive to finite values for any amount', async () => {
-            const strip = await MfStrip.create('TEST', mockCtx)
+            const strip = await Strip.create('TEST', mockCtx)
             strip.updateSaturation('soft', 999)
             const driveCalls = strip.stripNode.parameters.get('satDrive').setTargetAtTime.mock.calls
             const last = driveCalls[driveCalls.length - 1][0]
@@ -68,7 +68,7 @@ describe('Audio Graph Validity', () => {
         })
 
         it('updateFilter handles extreme frequency values without producing NaN', async () => {
-            const strip = await MfStrip.create('TEST', mockCtx)
+            const strip = await Strip.create('TEST', mockCtx)
             strip.updateFilter('lowpass', 1_000_000, 1)
             const cutoff = strip.stripNode.parameters.get('cutoff')
             const last = cutoff.setTargetAtTime.mock.calls.at(-1)[0]
@@ -76,7 +76,7 @@ describe('Audio Graph Validity', () => {
         })
 
         it('updateFilter handles NaN frequency without producing NaN', async () => {
-            const strip = await MfStrip.create('TEST', mockCtx)
+            const strip = await Strip.create('TEST', mockCtx)
             expect(() => strip.updateFilter('lowpass', NaN, 0.5)).not.toThrow()
             const cutoff = strip.stripNode.parameters.get('cutoff')
             const last = cutoff.setTargetAtTime.mock.calls.at(-1)[0]
@@ -84,7 +84,7 @@ describe('Audio Graph Validity', () => {
         })
 
         it('every saturation type produces a finite drive value', async () => {
-            const strip = await MfStrip.create('TEST', mockCtx)
+            const strip = await Strip.create('TEST', mockCtx)
             for (const type of ['soft', 'hard', 'tape']) {
                 strip.updateSaturation(type, 0.8)
                 const last = strip.stripNode.parameters.get('satDrive').setTargetAtTime.mock.calls.at(-1)[0]
@@ -100,11 +100,11 @@ describe('Audio Graph Validity', () => {
         })
     })
 
-    describe('MfSound Bypass Behaviour', () => {
+    describe('Sound Bypass Behaviour', () => {
         it('track effect bypass flags mute effects without clearing stored amounts', async () => {
-            const strip = await MfStrip.create('TEST', mockCtx)
+            const strip = await Strip.create('TEST', mockCtx)
             const mixer = makeMockMixer()
-            const sound = new MfSound(mockCtx, mixer, {}, {})
+            const sound = new Sound(mockCtx, mixer, {}, {})
 
             sound.updateStripFromTrack(strip, {
                 name: 'TEST',

@@ -3,16 +3,16 @@
  * the correct time positions for a given BPM.
  *
  * Uses node-web-audio-api for real OfflineAudioContext rendering,
- * then analyzes the output buffer with MfAudioAnalyze + onset detection.
+ * then analyzes the output buffer with AudioAnalyzer + onset detection.
  */
 import { describe, it, expect } from 'vitest'
 import nodeWaa from 'node-web-audio-api'
-import MfAudioAnalyze from '../src/audio/analyze.js'
+import AudioAnalyzer from '../src/audio/analyze.js'
 import { detectOnsets, matchOnsets } from './helpers/onset_detector.js'
 
 const { OfflineAudioContext, AudioWorkletNode } = nodeWaa
 const SAMPLE_RATE = 44100
-const analyzer = new MfAudioAnalyze()
+const analyzer = new AudioAnalyzer()
 
 // Set globals that orDrumbox engine expects
 globalThis.OfflineAudioContext = OfflineAudioContext
@@ -277,7 +277,7 @@ describe('real render — output quality', () => {
 
 describe('real render — orDrumbox pattern', () => {
     it('renders a simple pattern via wav_exporter with real OfflineAudioContext', async () => {
-        const { default: MfWavExporter } = await import('../src/audio/export/wav_exporter.js')
+        const { default: WavExporter } = await import('../src/audio/export/wav_exporter.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
         const patternsManager = await import('../src/patterns/manager.js')
@@ -323,7 +323,7 @@ describe('real render — orDrumbox pattern', () => {
             ],
         }
 
-        const exporter = new MfWavExporter()
+        const exporter = new WavExporter()
         const blob = await exporter.exportPatternToWav(pattern, 1)
         expect(blob.type).toBe('audio/wav')
 

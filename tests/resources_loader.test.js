@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { logger } from '../src/core/logger.js'
-import MfResourcesLoader from '../src/loader/resources_loader.js'
+import ResourcesLoader from '../src/loader/resources_loader.js'
 
 vi.mock('../src/state/app_state.js', () => {
     const state = { patterns: [] }
@@ -40,12 +40,12 @@ function makeErrorResponse(status = 404) {
     return { ok: false, status }
 }
 
-describe('MfResourcesLoader', () => {
+describe('ResourcesLoader', () => {
     let loader
     let fetchSpy
 
     beforeEach(async () => {
-        loader = new MfResourcesLoader()
+        loader = new ResourcesLoader()
         fetchSpy = vi.fn()
         globalThis.fetch = fetchSpy
         function makeIdbRequest(result) {
@@ -269,7 +269,7 @@ describe('MfResourcesLoader', () => {
             const mockCtx = { createGain: vi.fn() }
             globalThis.AudioContext = class { constructor() { return mockCtx } }
 
-            const l = new MfResourcesLoader()
+            const l = new ResourcesLoader()
             const ctx = l.audioCtx
 
             expect(ctx).toBe(mockCtx)
@@ -279,13 +279,13 @@ describe('MfResourcesLoader', () => {
             delete globalThis.AudioContext
             delete globalThis.webkitAudioContext
 
-            const l = new MfResourcesLoader()
+            const l = new ResourcesLoader()
             expect(() => l.audioCtx).toThrow('AudioContext is not available')
         })
 
         it('reuses provided audioCtx', () => {
             const mockCtx = { test: true }
-            const l = new MfResourcesLoader(mockCtx)
+            const l = new ResourcesLoader(mockCtx)
             expect(l.audioCtx).toBe(mockCtx)
         })
     })
@@ -297,7 +297,7 @@ describe('MfResourcesLoader', () => {
             const mockCtx = {
                 decodeAudioData: vi.fn().mockResolvedValue(mockBuffer)
             }
-            loader = new MfResourcesLoader(mockCtx)
+            loader = new ResourcesLoader(mockCtx)
             fetchSpy.mockResolvedValue({
                 ok: true,
                 arrayBuffer: () => Promise.resolve(mockArrayBuffer)
@@ -316,7 +316,7 @@ describe('MfResourcesLoader', () => {
 
         it('throws on HTTP error', async () => {
             const mockCtx = { decodeAudioData: vi.fn() }
-            loader = new MfResourcesLoader(mockCtx)
+            loader = new ResourcesLoader(mockCtx)
             fetchSpy.mockResolvedValue({ ok: false, status: 404 })
 
             await expect(loader.loadSample({ url: 'missing.wav' }, 'real'))

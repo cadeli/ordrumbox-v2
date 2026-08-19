@@ -1,7 +1,7 @@
-import MfPlayer from './player.js'
-import MfMixer from './mixer.js'
-import MfSound from './sound.js'
-import MfNoteParams from '../patterns/note_params.js'
+import Player from './player.js'
+import Mixer from './mixer.js'
+import Sound from './sound.js'
+import NoteParams from '../patterns/note_params.js'
 import { computeFlatNotesFromPattern as computeFlatNotesPure } from '../patterns/engine.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { appState } from '../state/app_state.js'
@@ -31,17 +31,17 @@ export default class AudioEngine {
         this._cachedPatternRef = null
         this._cachedLoop = 0
         this._midiMappingCache = new Map()
-        this.mixer = new MfMixer(this.audioCtx)
+        this.mixer = new Mixer(this.audioCtx)
         this.player = null
         this.sound = null
 
         // Worklet initialisation happens asynchronously. The player/sound are
         // constructed AFTER the worklet mixer is ready so they hold the correct
         // (worklet-based) mixer reference — not the legacy placeholder above.
-        this._workletReady = MfMixer.create(this.audioCtx).then(mixer => {
+        this._workletReady = Mixer.create(this.audioCtx).then(mixer => {
             this.mixer = mixer
 
-            this.player = new MfPlayer({
+            this.player = new Player({
                 audioCtx: this.audioCtx,
                 mixer: this.mixer,
                 sounds: this.sounds,
@@ -336,7 +336,7 @@ export default class AudioEngine {
 
     // ─── Offline export ─────────────────────────────────────────────────────────
 
-    exportOffline = async (pattern, numLoops, OfflineAudioContextClass, _unusedMfStripClass, bufferToWavFn) => {
+    exportOffline = async (pattern, numLoops, OfflineAudioContextClass, _unusedStripClass, bufferToWavFn) => {
         try {
             const bpm              = pattern.bpm
             const nbBeats           = pattern.nbBeats
@@ -351,8 +351,8 @@ export default class AudioEngine {
 
             // Build a full worklet-based mixer for the offline context. AudioWorklet
             // is supported in OfflineAudioContext, so the same code path works.
-            const offlineMixer  = await MfMixer.create(offlineCtx)
-            const offlineSound  = new MfSound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds)
+            const offlineMixer  = await Mixer.create(offlineCtx)
+            const offlineSound  = new Sound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds)
 
             for (const track of Object.values(pattern.tracks)) {
                 const strip = await offlineMixer.getOrCreateStrip(track.name)
@@ -378,9 +378,9 @@ export default class AudioEngine {
                 for (const [tick, notesAtTick] of this.flatNotes.entries()) {
                     for (const flatNote of notesAtTick) {
                         const nbTickForPattern = this.TICK * nbBeats
-                        const noteTime         = MfNoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
+                        const noteTime         = NoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
                         const absoluteTime     = loopStartTime + noteTime
-                        MfNoteParams.applyNoteParams(flatNote, secondsPerBeat)
+                        NoteParams.applyNoteParams(flatNote, secondsPerBeat)
 
                         if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
                             await offlineSound.play(flatNote, absoluteTime + flatNote.swingTime)

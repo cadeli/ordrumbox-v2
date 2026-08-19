@@ -1,5 +1,5 @@
 import Utils from '../core/utils.js';
-import MfDefaults from '../patterns/defaults.js';
+import Defaults from '../patterns/defaults.js';
 import { RAMP_TIME } from '../core/constants.js';
 import WorkletLoader from './worklets/loader.js';
 import STRIP_SOURCE from './worklets/processors/strip_source.js';
@@ -20,14 +20,14 @@ const SATURATION_TYPES_IDX = { soft: 0, hard: 1, tape: 2 };
 const FILTER_MODES = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 };
 const DELAY_MODES  = { none: 0, slap: 0, tape: 1, pingpong: 2 };
 
-export default class MfStrip {
-    static TAG = "MFSTRIP";
+export default class Strip {
+    static TAG = "Strip";
 
     constructor(name, audioCtx, mixer) {
         this.name = name;
         this.audioCtx = audioCtx;
         this.mixer = mixer;
-        this.bpm = MfDefaults.getPatternProp({}, 'bpm');
+        this.bpm = Defaults.getPatternProp({}, 'bpm');
 
         this.stripNode = null;
         this.voicesInput = audioCtx.createGain();
@@ -46,7 +46,7 @@ export default class MfStrip {
     }
 
     static async create(name, audioCtx, mixer) {
-        const strip = new MfStrip(name, audioCtx, mixer);
+        const strip = new Strip(name, audioCtx, mixer);
         await WorkletLoader.ensureLoaded(audioCtx);
         strip._initNode();
         return strip;

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MfGlobals } from '../src/core/globals.js'
-import MfCmd from '../src/logic/commands/cmd.js'
+import { Globals } from '../src/core/globals.js'
+import Commander from '../src/logic/commands/cmd.js'
 
 function ensureTrack(cmd, pattern, trackName, stepsPerBeat) {
     let track = pattern.tracks.find(t => t.name === trackName)
@@ -21,9 +21,9 @@ describe('Functional: MCP tools flow', () => {
     let cmd
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
-        MfGlobals.cmd = cmd
+        Globals.resetAll()
+        cmd = new Commander()
+        Globals.cmd = cmd
     })
 
     it('createNewPattern creates pattern with expected structure', () => {
@@ -33,7 +33,7 @@ describe('Functional: MCP tools flow', () => {
         expect(pattern.bpm).toBe(120)
         expect(pattern.nbBeats).toBe(4)
         expect(pattern.tracks).toEqual([])
-        expect(MfGlobals.patterns).toContain(pattern)
+        expect(Globals.patterns).toContain(pattern)
     })
 
     it('addNotesToPattern converts step to beat/beatStep correctly', () => {

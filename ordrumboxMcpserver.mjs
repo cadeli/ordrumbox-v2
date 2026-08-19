@@ -17,9 +17,9 @@ console.log = (...args) => mcpLogger.log(...args);
 console.warn = (...args) => mcpLogger.warn(...args);
 console.error = (...args) => mcpLogger.error(...args);
 
-import MfCmd from './src/logic/commands/cmd.js';
+import Commander from './src/logic/commands/cmd.js';
 import { appState } from './src/state/app_state.js';
-import MfAudioAnalyze from './src/audio/analyze.js';
+import AudioAnalyzer from './src/audio/analyze.js';
 import InstrumentsManager from './src/logic/services/instruments_manager.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -95,11 +95,11 @@ function findPatternByName(patternName) {
   );
 }
 
-function ensureTrack(mfCmd, pattern, trackName, stepsPerBeat = 4, loopAtStep = null) {
+function ensureTrack(cmd, pattern, trackName, stepsPerBeat = 4, loopAtStep = null) {
   const normalizedTrackName = String(trackName).trim().toUpperCase();
-  let track = mfCmd.getTrackFromType(pattern, normalizedTrackName);
+  let track = cmd.getTrackFromType(pattern, normalizedTrackName);
   if (!track) {
-    track = mfCmd.addTrack(pattern, normalizedTrackName, stepsPerBeat);
+    track = cmd.addTrack(pattern, normalizedTrackName, stepsPerBeat);
     if (loopAtStep !== null) {
       track.loopAtStep = loopAtStep;
     }
@@ -108,25 +108,25 @@ function ensureTrack(mfCmd, pattern, trackName, stepsPerBeat = 4, loopAtStep = n
   return track;
 }
 
-function ensurePatternHasEnoughBeats(mfCmd, pattern, noteBeat) {
+function ensurePatternHasEnoughBeats(cmd, pattern, noteBeat) {
   const requiredBeats = Number(noteBeat) + 1;
   if (Number.isNaN(requiredBeats) || requiredBeats < 1) {
     throw new Error(`Invalid beat value: ${noteBeat}`);
   }
   if (requiredBeats > pattern.nbBeats) {
-    mfCmd.setNbBeats(pattern, Math.ceil(requiredBeats / 4));
+    cmd.setNbBeats(pattern, Math.ceil(requiredBeats / 4));
   }
 }
 
-function upsertNoteOnTrack(mfCmd, track, noteInput) {
+function upsertNoteOnTrack(cmd, track, noteInput) {
   const beat = Number(noteInput.beat);
   const beatStep = Number(noteInput.beatStep ?? noteInput.step);
 
   if (!Number.isInteger(beat) || beat < 0) throw new Error(`Invalid beat value: ${noteInput.beat}`);
   if (!Number.isInteger(beatStep) || beatStep < 0) throw new Error(`Invalid step value: ${beatStep}`);
 
-  const existingNote = mfCmd.isNoteAt(track, beat, beatStep)[0];
-  const note = existingNote ?? mfCmd.addNote(track, beat, beatStep, Number(noteInput.pitch ?? 0));
+  const existingNote = cmd.isNoteAt(track, beat, beatStep)[0];
+  const note = existingNote ?? cmd.addNote(track, beat, beatStep, Number(noteInput.pitch ?? 0));
 
   note.name = noteInput.name ?? note.name;
   note.velocity = Number(noteInput.velocity ?? note.velocity ?? 0.8);
@@ -404,8 +404,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { patternName } = args;
       if (!patternName) throw new Error("patternName is required");
 
-      const mfCmd = new MfCmd();
-      const pattern = mfCmd.addPattern(String(patternName).trim());
+      const cmd = new Commander();
+      const pattern = cmd.addPattern(String(patternName).trim());
       const filePath = await savePatternToDisk(pattern);
 
       const patternsPath = resolve(__dirname, 'assets/data/song.json');
@@ -438,22 +438,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
         const sourcePattern = patterns.find(p => p.name === patternName);
         if (sourcePattern) {
-          const mfCmd = new MfCmd();
-          pattern = mfCmd.importPatternFromJson(sourcePattern);
+          const cmd = new Commander();
+          pattern = cmd.importPatternFromJson(sourcePattern);
         }
       }
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
-      const mfCmd = new MfCmd();
+      const cmd = new Commander();
       let cTracks = 0, cNotes = 0, uNotes = 0;
       const existingTrackNames = new Set(pattern.tracks.map(t => t.name));
 
       for (const n of notes) {
-        ensurePatternHasEnoughBeats(mfCmd, pattern, n.beat);
+        ensurePatternHasEnoughBeats(cmd, pattern, n.beat);
         const normName = String(n.trackName).trim().toUpperCase();
         if (!existingTrackNames.has(normName)) { existingTrackNames.add(normName); cTracks++; }
-        const track = ensureTrack(mfCmd, pattern, normName, bq, loopStep);
-        const status = upsertNoteOnTrack(mfCmd, track, n);
+        const track = ensureTrack(cmd, pattern, normName, bq, loopStep);
+        const status = upsertNoteOnTrack(cmd, track, n);
         status === 'created' ? cNotes++ : uNotes++;
       }
 
@@ -486,7 +486,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const pattern = await loadPatternFromJson(patternName);
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
-      const mfCmd = new MfCmd();
+      const cmd = new Commander();
       const stepsPerBeat = pattern.stepsPerBeat || 4;
       
       let cNotes = 0, uNotes = 0;
@@ -498,11 +498,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           existingTrackNames.add(trackName);
         }
         
-        const track = ensureTrack(mfCmd, pattern, trackName, stepsPerBeat);
+        const track = ensureTrack(cmd, pattern, trackName, stepsPerBeat);
         const beat = Math.floor(Number(n.step) / stepsPerBeat);
         const beatStep = Number(n.step) % stepsPerBeat;
 
-        ensurePatternHasEnoughBeats(mfCmd, pattern, beat);
+        ensurePatternHasEnoughBeats(cmd, pattern, beat);
 
         const noteInput = {
           trackName,
@@ -521,7 +521,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           euclidianFill: n.euclidianFill
         };
 
-        const status = upsertNoteOnTrack(mfCmd, track, noteInput);
+        const status = upsertNoteOnTrack(cmd, track, noteInput);
         status === 'created' ? cNotes++ : uNotes++;
       }
 
@@ -552,18 +552,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const inst = instrumentsManager.findInstrumentFromFileName(String(searchName).trim().toUpperCase());
       const normalizedTrackName = String(inst.id).trim().toUpperCase();
       
-      const mfCmd = new MfCmd();
-      let track = mfCmd.getTrackFromType(pattern, normalizedTrackName);
+      const cmd = new Commander();
+      let track = cmd.getTrackFromType(pattern, normalizedTrackName);
       let action = "updated";
 
       if (!track) {
-        track = mfCmd.addTrack(pattern, normalizedTrackName);
+        track = cmd.addTrack(pattern, normalizedTrackName);
         action = "added";
       }
 
       if (!track) throw new Error(`Could not create track: ${normalizedTrackName}`);
 
-      mfCmd.setTrackProps(track, updates);
+      cmd.setTrackProps(track, updates);
       
       let notesUpdated = 0;
       if (noteUpdates) {
@@ -701,7 +701,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (toolName === "analyzeSamples") {
       const { samples } = args;
-      const analyzer = new MfAudioAnalyze();
+      const analyzer = new AudioAnalyzer();
       const results = [];
       for (const s of samples) {
         try {
@@ -722,8 +722,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
     const sourcePattern = patterns.find(p => p.name === patternName);
     if (sourcePattern) {
-      const mfCmd = new MfCmd();
-      pattern = mfCmd.importPatternFromJson(sourcePattern);
+      const cmd = new Commander();
+      pattern = cmd.importPatternFromJson(sourcePattern);
     }
   }
   return pattern;
@@ -746,8 +746,8 @@ if (toolName === "setPatternBpm") {
   const pattern = await loadPatternFromJson(patternName);
   if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
-  const mfCmd = new MfCmd();
-  mfCmd.setPatternBpm(pattern, Number(bpm));
+  const cmd = new Commander();
+  cmd.setPatternBpm(pattern, Number(bpm));
   const filePath = await savePatternToDisk(pattern);
   await updatePatternInIndex(pattern);
 
@@ -781,8 +781,8 @@ if (toolName === "setPatternBpm") {
       const pattern = await loadPatternFromJson(patternName);
       if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
 
-      const mfCmd = new MfCmd();
-      mfCmd.setPatternNbBeats(pattern, Number(nbBeats));
+      const cmd = new Commander();
+      cmd.setPatternNbBeats(pattern, Number(nbBeats));
       const filePath = await savePatternToDisk(pattern);
       await updatePatternInIndex(pattern);
 

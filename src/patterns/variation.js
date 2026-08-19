@@ -1,5 +1,5 @@
 import Utils from '../core/utils.js'
-import MfFlatNote from '../model/flatnote.js'
+import FlatNote from '../model/flatnote.js'
 
 const COST_DELETE = 3
 const COST_ADD = 3
@@ -57,7 +57,7 @@ function applyOps(flatNotes, track, ops, budget) {
                     beat: op.target.beat,
                     beatStep: op.target.beatStep
                 }
-                const newFn = new MfFlatNote(op.target.t, track, note)
+                const newFn = new FlatNote(op.target.t, track, note)
                 if (!flatNotes.has(op.target.t)) flatNotes.set(op.target.t, [])
                 flatNotes.get(op.target.t).push(newFn)
                 remaining -= op.cost
@@ -72,7 +72,7 @@ function applyOps(flatNotes, track, ops, budget) {
                     beat: op.target.beat,
                     beatStep: op.target.beatStep
                 }
-                const newFn = new MfFlatNote(op.target.t, track, note)
+                const newFn = new FlatNote(op.target.t, track, note)
                 if (!flatNotes.has(op.target.t)) flatNotes.set(op.target.t, [])
                 flatNotes.get(op.target.t).push(newFn)
                 remaining -= op.cost
@@ -87,7 +87,7 @@ function applyOps(flatNotes, track, ops, budget) {
                     beat: op.target.beat,
                     beatStep: op.target.beatStep
                 }
-                const newFn = new MfFlatNote(op.target.t, track, note)
+                const newFn = new FlatNote(op.target.t, track, note)
                 if (!flatNotes.has(op.target.t)) flatNotes.set(op.target.t, [])
                 flatNotes.get(op.target.t).push(newFn)
                 remaining -= op.cost

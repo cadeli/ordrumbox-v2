@@ -1,6 +1,6 @@
 import BaseGenerator from './base_generator.js'
 
-export default class MfHatGenerate extends BaseGenerator {
+export default class HatGenerate extends BaseGenerator {
     static HAT_GENERATION_CONFIGS = Object.freeze({
         chh16thLocked: {
             mode: 'locked',
@@ -183,7 +183,7 @@ export default class MfHatGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('HAT', MfHatGenerate.HAT_GENERATION_CONFIGS)
+        super('HAT', HatGenerate.HAT_GENERATION_CONFIGS)
     }
 
     generateNewHat = (hatTrack, variantName = null, density = 1) => {

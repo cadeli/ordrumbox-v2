@@ -1,24 +1,24 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { logger } from '../src/core/logger.js'
-import { MfGlobals } from '../src/core/globals.js'
-import MfCmd from '../src/logic/commands/cmd.js'
-import MfAutoAssign from '../src/logic/services/auto_assign.js'
+import { Globals } from '../src/core/globals.js'
+import Commander from '../src/logic/commands/cmd.js'
+import AutoAssign from '../src/logic/services/auto_assign.js'
 
 describe('Functional: Auto-assign sounds', () => {
     let cmd, autoAssign
 
     beforeEach(() => {
-        MfGlobals.resetAll()
-        cmd = new MfCmd()
-        autoAssign = new MfAutoAssign()
-        MfGlobals.sounds = {
+        Globals.resetAll()
+        cmd = new Commander()
+        autoAssign = new AutoAssign()
+        Globals.sounds = {
             'snd_kick': { key: 'KICK', kit_name: 'real', url: 'kits/real/kick.wav' },
             'snd_snare': { key: 'SNARE', kit_name: 'real', url: 'kits/real/snare.wav' },
             'snd_chh': { key: 'CHH', kit_name: 'real', url: 'kits/real/chh.wav' },
             'snd_ohh': { key: 'OHH', kit_name: 'real', url: 'kits/real/ohh.wav' }
         }
-        MfGlobals.drumkitList = [{ name: 'real', instruments: [] }]
-        MfGlobals.selectedDrumkitNum = 0
+        Globals.drumkitList = [{ name: 'real', instruments: [] }]
+        Globals.selectedDrumkitNum = 0
     })
 
     it('autoAssignTrackSounds finds sound by track name', () => {
@@ -99,12 +99,12 @@ describe('Functional: Auto-assign sounds', () => {
 
     it('getSoundIdFromKitAndTrackname returns NOT_FOUND for unknown track', () => {
         const result = autoAssign.getSoundIdFromKitAndTrackname('real', 'TOM')
-        expect(result).toBe(MfAutoAssign.NOT_FOUND)
+        expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
     it('getSoundIdFromKitAndTrackname returns NOT_FOUND for unknown kit', () => {
         const result = autoAssign.getSoundIdFromKitAndTrackname('nonexistent', 'KICK')
-        expect(result).toBe(MfAutoAssign.NOT_FOUND)
+        expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
     it('getSoundIdFromTrackname finds sound by key match', () => {
@@ -114,7 +114,7 @@ describe('Functional: Auto-assign sounds', () => {
 
     it('getSoundIdFromTrackname returns NOT_FOUND for unknown name', () => {
         const result = autoAssign.getSoundIdFromTrackname('GUITAR')
-        expect(result).toBe(MfAutoAssign.NOT_FOUND)
+        expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
     it('getSoundIdByKeyContaining finds sound by partial key match', () => {
@@ -129,7 +129,7 @@ describe('Functional: Auto-assign sounds', () => {
 
     it('getSoundIdByKeyContaining returns NOT_FOUND for empty search', () => {
         const result = autoAssign.getSoundIdByKeyContaining('real', '')
-        expect(result).toBe(MfAutoAssign.NOT_FOUND)
+        expect(result).toBe(AutoAssign.NOT_FOUND)
     })
 
     it('autoAssignSounds with empty sounds does not crash', () => {

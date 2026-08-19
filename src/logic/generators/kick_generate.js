@@ -1,6 +1,6 @@
 import BaseGenerator from './base_generator.js'
 
-export default class MfKickGenerate extends BaseGenerator {
+export default class KickGenerate extends BaseGenerator {
     static KICK_GENERATION_CONFIGS = Object.freeze({
         basic: {
             mode: 'phrases',
@@ -67,7 +67,7 @@ export default class MfKickGenerate extends BaseGenerator {
     })
 
     constructor() {
-        super('KICK', MfKickGenerate.KICK_GENERATION_CONFIGS)
+        super('KICK', KickGenerate.KICK_GENERATION_CONFIGS)
     }
 
     generateNewKick = (kickTrack, variantName = null, density = 1) => {

@@ -3,19 +3,19 @@ import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry, getAutoAssignService } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { TICK } from './constants.js'
-import MfResourcesLoader from '../loader/resources_loader.js'
+import ResourcesLoader from '../loader/resources_loader.js'
 
 export { appState } from '../state/app_state.js'
 export { soundRegistry } from '../state/sound_registry.js'
 export { serviceRegistry } from '../state/service_registry.js'
 export { playbackEvents } from '../state/playback_events.js'
 
-export const MfGlobals = {
-    get urlkits() { return MfResourcesLoader.KITS_PATH },
-    get urlscales() { return MfResourcesLoader.SCALES_URL },
-    get urldrumkits() { return MfResourcesLoader.DRUMKITS_URL },
-    get urlsong() { return MfResourcesLoader.SONG_URL },
-    get urlgeneratedsounds() { return MfResourcesLoader.GENERATED_SOUNDS_URL },
+export const Globals = {
+    get urlkits() { return ResourcesLoader.KITS_PATH },
+    get urlscales() { return ResourcesLoader.SCALES_URL },
+    get urldrumkits() { return ResourcesLoader.DRUMKITS_URL },
+    get urlsong() { return ResourcesLoader.SONG_URL },
+    get urlgeneratedsounds() { return ResourcesLoader.GENERATED_SOUNDS_URL },
 
     get sounds() { return soundRegistry.sounds },
     set sounds(v) { soundRegistry.sounds = v },
@@ -71,28 +71,28 @@ export const MfGlobals = {
     get cmd() { return serviceRegistry.cmd },
     set cmd(v) { serviceRegistry.cmd = v },
 
-    get mfPatterns() { return serviceRegistry.patterns },
-    set mfPatterns(v) { serviceRegistry.patterns = v },
+    get patternManager() { return serviceRegistry.patterns },
+    set patternManager(v) { serviceRegistry.patterns = v },
 
     get midiManager() { return serviceRegistry.midiManager },
     set midiManager(v) { serviceRegistry.midiManager = v },
 
-    get mfResourcesLoader() { return serviceRegistry.resourcesLoader },
-    set mfResourcesLoader(v) { serviceRegistry.resourcesLoader = v },
+    get resourcesLoader() { return serviceRegistry.resourcesLoader },
+    set resourcesLoader(v) { serviceRegistry.resourcesLoader = v },
 
-    get mfSeq() { return serviceRegistry.seq },
-    set mfSeq(v) { serviceRegistry.seq = v },
+    get seq() { return serviceRegistry.seq },
+    set seq(v) { serviceRegistry.seq = v },
 
-    get mfAutoGenerate() { return serviceRegistry.autoGenerate },
-    set mfAutoGenerate(v) { serviceRegistry.autoGenerate = v },
+    get autoGenerate() { return serviceRegistry.autoGenerate },
+    set autoGenerate(v) { serviceRegistry.autoGenerate = v },
 
-    get mfAutoAssign() { return serviceRegistry.autoAssign },
-    set mfAutoAssign(v) { serviceRegistry.autoAssign = v },
+    get autoAssign() { return serviceRegistry.autoAssign },
+    set autoAssign(v) { serviceRegistry.autoAssign = v },
 
     getAutoAssign: () => getAutoAssignService(),
 
-    get mfWavExporter() { return serviceRegistry.wavExporter },
-    set mfWavExporter(v) { serviceRegistry.wavExporter = v },
+    get wavExporter() { return serviceRegistry.wavExporter },
+    set wavExporter(v) { serviceRegistry.wavExporter = v },
 
     get TICK() { return TICK },
 

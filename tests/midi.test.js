@@ -22,22 +22,22 @@ vi.mock('../src/state/app_state.js', () => ({
     __esModule: true,
 }))
 
-describe('MfMidi', () => {
-    let MfMidi
+describe('MidiManager', () => {
+    let MidiManager
 
     beforeEach(async () => {
         vi.restoreAllMocks()
         const mod = await import('../src/logic/midi/midi.js')
-        MfMidi = mod.default
+        MidiManager = mod.default
     })
 
     it('extends EventTarget', () => {
-        const midi = new MfMidi()
+        const midi = new MidiManager()
         expect(midi).toBeInstanceOf(EventTarget)
     })
 
     it('has getStatus() returning initial state', () => {
-        const midi = new MfMidi()
+        const midi = new MidiManager()
         const status = midi.getStatus()
         expect(status).toEqual({
             supported: expect.any(Boolean),
@@ -49,12 +49,12 @@ describe('MfMidi', () => {
     })
 
     it('has getButtonLabel() returning initial label', () => {
-        const midi = new MfMidi()
+        const midi = new MidiManager()
         expect(midi.getButtonLabel()).toBe('Enable MIDI')
     })
 
     it('emits statusChange on disable()', () => {
-        const midi = new MfMidi()
+        const midi = new MidiManager()
         const handler = vi.fn()
         midi.addEventListener('statusChange', handler)
 
@@ -63,7 +63,7 @@ describe('MfMidi', () => {
     })
 
     it('emits statusChange on toggleExternalSync()', () => {
-        const midi = new MfMidi()
+        const midi = new MidiManager()
         const handler = vi.fn()
         midi.addEventListener('statusChange', handler)
 
@@ -72,7 +72,7 @@ describe('MfMidi', () => {
     })
 
     it('emits statusChange on setExternalSyncEnabled()', () => {
-        const midi = new MfMidi()
+        const midi = new MidiManager()
         const handler = vi.fn()
         midi.addEventListener('statusChange', handler)
 
@@ -81,7 +81,7 @@ describe('MfMidi', () => {
     })
 
     it('emits activity on onMidiMessage with note-on channel 9', () => {
-        const midi = new MfMidi()
+        const midi = new MidiManager()
         const handler = vi.fn()
         midi.addEventListener('activity', handler)
 
@@ -90,7 +90,7 @@ describe('MfMidi', () => {
     })
 
     it('does not emit activity for non-channel-9 messages', () => {
-        const midi = new MfMidi()
+        const midi = new MidiManager()
         const handler = vi.fn()
         midi.addEventListener('activity', handler)
 
@@ -99,14 +99,14 @@ describe('MfMidi', () => {
     })
 
     it('no longer has renderIndicators, flashActivity, or setLedState', () => {
-        const midi = new MfMidi()
+        const midi = new MidiManager()
         expect(midi.renderIndicators).toBeUndefined()
         expect(midi.flashActivity).toBeUndefined()
         expect(midi.setLedState).toBeUndefined()
     })
 
     it('no longer references document', () => {
-        const src = MfMidi.toString()
+        const src = MidiManager.toString()
         expect(src).not.toContain('document.getElementById')
         expect(src).not.toContain('classList')
         expect(src).not.toContain('innerText')

@@ -1,7 +1,7 @@
 import { logger } from "../../core/logger.js"
 import Utils from "../../core/utils.js"
-export default class MfStructureSong {
-    static TAG = "MFSTRUCTURESONG"
+export default class StructureSong {
+    static TAG = "StructureSong"
 
     static GENRES = ['techno', 'house', 'drumandbass', 'hiphop', 'rock']
 
@@ -36,7 +36,7 @@ export default class MfStructureSong {
             ? tags.toLowerCase()
             : String(tags.style ?? tags.genre ?? '').toLowerCase().trim()
         if (!style) return null
-        return MfStructureSong.STYLE_TO_GENRE[style] ?? null
+        return StructureSong.STYLE_TO_GENRE[style] ?? null
     }
 
     static CHORD_PROGRESSIONS = Object.freeze({
@@ -57,8 +57,8 @@ export default class MfStructureSong {
     })
 
     resolveHarmony = (genre, sectionName, loopInElement = 0) => {
-        const base = MfStructureSong.HARMONIC_TABLE[sectionName] ?? { root: 0, scale: 'natural minor' }
-        const progression = MfStructureSong.CHORD_PROGRESSIONS[genre]
+        const base = StructureSong.HARMONIC_TABLE[sectionName] ?? { root: 0, scale: 'natural minor' }
+        const progression = StructureSong.CHORD_PROGRESSIONS[genre]
         let offset = 0
         if (progression && progression.length > 0 && sectionName !== 'break' && sectionName !== 'outro') {
             offset = progression[loopInElement % progression.length] ?? 0
@@ -75,7 +75,7 @@ export default class MfStructureSong {
     })
 
     getGenreSwing = (genre) => {
-        return MfStructureSong.SWING_BY_GENRE[genre] ?? { swingAmount: 0, swingResolution: 4 }
+        return StructureSong.SWING_BY_GENRE[genre] ?? { swingAmount: 0, swingResolution: 4 }
     }
 
     static STRUCTURES = {
@@ -164,12 +164,12 @@ export default class MfStructureSong {
     }
 
     getRandomGenre = () => {
-        const genres = MfStructureSong.GENRES
+        const genres = StructureSong.GENRES
         return genres[Math.floor(Math.random() * genres.length)]
     }
 
     generateStructure = (genre) => {
-        const structure = MfStructureSong.STRUCTURES[genre] ?? MfStructureSong.STRUCTURES.techno
+        const structure = StructureSong.STRUCTURES[genre] ?? StructureSong.STRUCTURES.techno
         return { ...structure }
     }
 

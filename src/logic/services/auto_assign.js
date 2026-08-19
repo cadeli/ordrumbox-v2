@@ -5,9 +5,9 @@ import Utils from '../../core/utils.js'
 import { NOT_FOUND } from '../../core/constants.js'
 import { logger } from '../../core/logger.js'
 
-const TAG = 'MFAUTOASSIGN'
+const TAG = 'AutoAssign'
 
-export default class MfAutoAssign {
+export default class AutoAssign {
     static TAG = TAG
     static NOT_FOUND = NOT_FOUND
     constructor({ appState, soundRegistry } = {}) {

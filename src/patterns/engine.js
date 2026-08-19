@@ -1,6 +1,6 @@
 import Utils from '../core/utils.js'
-import MfFlatNote from '../model/flatnote.js'
-import MfDefaults from './defaults.js'
+import FlatNote from '../model/flatnote.js'
+import Defaults from './defaults.js'
 import TrackVariation from './variation.js'
 import { MAX_LOOP_RETRY, TICK } from '../core/constants.js'
 
@@ -83,7 +83,7 @@ export function computeNbTickForPattern(nbBeats, tick = TICK) {
 
 export function computeNbTickForLoop(track, tick = TICK) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
-    const trackBeats = MfDefaults.getTrackProp(track, 'nbBeats')
+    const trackBeats = Defaults.getTrackProp(track, 'nbBeats')
     const loopPointStepPc = (track.loopPointStep ?? 0) / stepsPerBeat
     return Math.floor((loopPointStepPc + (track.loopPointBeat ?? trackBeats)) * tick)
 }
@@ -122,11 +122,11 @@ export function createArpFlatNote(tick, track, note, semitoneOffset) {
         ...note,
         pitch: (note.pitch ?? 0) + semitoneOffset
     }
-    return new MfFlatNote(tick, track, arpNote)
+    return new FlatNote(tick, track, arpNote)
 }
 
 export function createFlatNote(tick, track, note) {
-    return new MfFlatNote(tick, track, note)
+    return new FlatNote(tick, track, note)
 }
 
 function addFlatNote(flatNotes, tick, flatNote) {
