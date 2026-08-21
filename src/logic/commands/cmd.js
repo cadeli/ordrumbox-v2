@@ -2,7 +2,7 @@ import { NOT_FOUND } from '../../core/constants.js'
 import Utils from '../../core/utils.js'
 import Defaults from '../../patterns/defaults.js'
 import { appState } from '../../state/app_state.js'
-import { getAutoAssignService, serviceRegistry } from '../../state/service_registry.js'
+import { getAutoAssignService, serviceRegistry, getHistoryService } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { normalizeTrack, TRACK_DEFAULTS, TRACK_VALUE_RANGES, recalcLoopDerived } from '../../model/track_schema.js'
@@ -15,6 +15,29 @@ export default class Commander {
     static #TRACK_KEY_SET = new Set(Object.keys(TRACK_DEFAULTS))
 
     constructor() {
+        this._history = null
+    }
+
+    _getHistory() {
+        if (!this._history) {
+            this._history = serviceRegistry.history
+        }
+        return this._history
+    }
+
+    _record(undoFn, meta = {}) {
+        const history = this._getHistory()
+        if (history) {
+            history.record({ execute: () => {}, undo: undoFn, meta })
+        }
+    }
+
+    _recordExec(executeFn, undoFn, meta = {}) {
+        const history = this._getHistory()
+        if (history) {
+            return history.execute(executeFn, undoFn, meta)
+        }
+        return executeFn()
     }
 
     _persist = () => {
@@ -25,11 +48,12 @@ export default class Commander {
     // Accepts a track object and a updates object. Only whitelisted keys are applied.
     // Extra or unknown keys are ignored gracefully to avoid runtime errors when callers
     // pass a larger payload (beats, stepsPerBeat, pan, reverbAmount, etc.).
-    updateTrack = (track, updates) => {
+updateTrack = (track, updates) => {
         if (!track || !updates || typeof updates !== 'object') {
             return track
         }
-        
+
+        const oldValues = {}
         let changed = false
         // Derived properties are handled separately
         for (const [k, v] of Object.entries(updates)) {
@@ -40,6 +64,7 @@ export default class Commander {
                 clamped = Math.min(range.max, Math.max(range.min, v))
             }
             if (track[k] !== clamped) {
+                oldValues[k] = track[k]
                 track[k] = clamped
                 changed = true
             }
@@ -48,6 +73,13 @@ export default class Commander {
         if (changed) {
             this._incrementPatternVersionByTrack(track)
             this._persist()
+            this._record(() => {
+                for (const [k, v] of Object.entries(oldValues)) {
+                    track[k] = v
+                }
+                this._incrementPatternVersionByTrack(track)
+                this._persist()
+            }, { desc: 'Update track' })
         }
 
         if (typeof track.stepsPerBeat === 'number' && typeof track.loopAtStep === 'number') {
@@ -76,9 +108,16 @@ export default class Commander {
         for (let i = values.length - 1; i >= 0; i--) {
             const note = values[i]
             if (note.beatStep === selNote.beatStep && note.beat === selNote.beat && (note.pitch ?? 0) === (selNote.pitch ?? 0)) {
-                track.notes.splice(track.notes.indexOf(note), 1)
+                const deletedNote = { ...note }
+                const noteIndex = track.notes.indexOf(note)
+                track.notes.splice(noteIndex, 1)
                 this._incrementPatternVersionByTrack(track)
                 this._persist()
+                this._record(() => {
+                    track.notes.splice(noteIndex, 0, deletedNote)
+                    this._incrementPatternVersionByTrack(track)
+                    this._persist()
+                }, { desc: 'Delete note' })
                 return
             }
         }
@@ -102,9 +141,15 @@ export default class Commander {
             beat,
             pitch
         }
+        const noteIndex = track.notes.length
         track.notes.push(note)
         this._incrementPatternVersionByTrack(track)
         this._persist()
+        this._record(() => {
+            track.notes.splice(noteIndex, 1)
+            this._incrementPatternVersionByTrack(track)
+            this._persist()
+        }, { desc: 'Add note' })
         return note
     }
 
@@ -112,8 +157,13 @@ export default class Commander {
         // console.log("cmd::addTrack " + pattern.name + " = " + type)
 
         let track = this.createTrack(pattern.nbBeats, type, stepsPerBeat);
+        const trackIndex = pattern.tracks.length
         pattern.tracks.push(track)
         this._persist()
+        this._record(() => {
+            pattern.tracks.splice(trackIndex, 1)
+            this._persist()
+        }, { desc: 'Add track' })
         return track
     }
 
@@ -131,25 +181,41 @@ export default class Commander {
 
     addPattern = (name) => {
         let pattern = this.createPattern(name)
+        const patternIndex = appState.patterns.length
         appState.patterns.push(pattern)
         this._persist()
+        this._record(() => {
+            appState.patterns.splice(patternIndex, 1)
+            this._persist()
+        }, { desc: 'Add pattern' })
         return pattern
     }
 
     removePattern = (idx) => {
         if (appState.patterns.length <= 1) return false
+        const removedPattern = appState.patterns[idx]
         appState.patterns.splice(idx, 1)
         if (appState.selectedPatternNum >= appState.patterns.length) {
             appState.selectedPatternNum = appState.patterns.length - 1
         }
         this._persist()
+        this._record(() => {
+            appState.patterns.splice(idx, 0, removedPattern)
+            this._persist()
+        }, { desc: 'Remove pattern' })
         return true
     }
 
     renamePattern = (idx, newName) => {
         const pat = appState.patterns[idx]
-        if (pat) pat.name = String(newName ?? '').trim() || pat.name
+        if (!pat) return
+        const oldName = pat.name
+        pat.name = String(newName ?? '').trim() || pat.name
         this._persist()
+        this._record(() => {
+            pat.name = oldName
+            this._persist()
+        }, { desc: 'Rename pattern' })
     }
 
     getPatternByName = (name) => {
@@ -159,6 +225,7 @@ export default class Commander {
 
     setPatternBpm = (pattern, bpm) => {
         const bpmNum = Number(bpm)
+        const oldBpm = pattern.bpm
         if (!Number.isFinite(bpmNum) || bpmNum === 0) {
             logger.warn('Command', 'bpm NaN/0', bpm)
             pattern.bpm = Defaults.getPatternProp({}, 'bpm')
@@ -166,12 +233,21 @@ export default class Commander {
             pattern.bpm = bpmNum
         }
         this._persist()
+        this._record(() => {
+            pattern.bpm = oldBpm
+            this._persist()
+        }, { desc: 'Set BPM' })
         return pattern
     }
 
     setPatternDescription = (pattern, description) => {
+        const oldDescription = pattern.description
         pattern.description = String(description ?? '')
         this._persist()
+        this._record(() => {
+            pattern.description = oldDescription
+            this._persist()
+        }, { desc: 'Set description' })
         return pattern
     }
 
@@ -236,6 +312,11 @@ export default class Commander {
     }
 
     incrNbStepPerBar = (track) => {
+        const oldStepsPerBeat = track.stepsPerBeat
+        const oldLoopPointStep = track.loopPointStep
+        const oldLoopAtStep = track.loopAtStep
+        const oldNotes = track.notes.map(n => ({ ...n }))
+
         let loopStepPc = Math.round((track.loopPointStep * 100) / track.stepsPerBeat)
         track.stepsPerBeat++
         if (track.stepsPerBeat > 8) {
@@ -248,15 +329,32 @@ export default class Commander {
         track.loopPointStep = Math.floor((loopStepPc / 100) * track.stepsPerBeat)
         track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
         this._persist()
+        this._record(() => {
+            track.stepsPerBeat = oldStepsPerBeat
+            track.loopPointStep = oldLoopPointStep
+            track.loopAtStep = oldLoopAtStep
+            track.notes = oldNotes
+            this._persist()
+        }, { desc: 'Inc steps per bar' })
     }
 
     incrLoopPoint = (track) => {
+        const oldLoopAtStep = track.loopAtStep
+        const oldLoopPointBeat = track.loopPointBeat
+        const oldLoopPointStep = track.loopPointStep
+
         track.loopAtStep--
         if (track.loopAtStep < 1) {
             track.loopAtStep = track.stepsPerBeat * track.nbBeats
         }
         recalcLoopDerived(track)
         this._persist()
+        this._record(() => {
+            track.loopAtStep = oldLoopAtStep
+            track.loopPointBeat = oldLoopPointBeat
+            track.loopPointStep = oldLoopPointStep
+            this._persist()
+        }, { desc: 'Inc loop point' })
     }
 
     cleanPattern = (pattern) => { 
@@ -266,22 +364,47 @@ export default class Commander {
     }
 
     cleanTrack = (track)=> {
+        const oldNotes = track.notes.map(n => ({ ...n }))
+        const oldLoopPointStep = track.loopPointStep
+        const oldLoopPointBeat = track.loopPointBeat
+        const oldLoopAtStep = track.loopAtStep
         track.notes = []
         track.loopPointStep = 0
         track.loopPointBeat = track.nbBeats
         track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
+        this._record(() => {
+            track.notes = oldNotes
+            track.loopPointStep = oldLoopPointStep
+            track.loopPointBeat = oldLoopPointBeat
+            track.loopAtStep = oldLoopAtStep
+            this._persist()
+        }, { desc: 'Clean track' })
     }
 
     changeTrackSound = (track, soundId) => {
+        const oldSoundId = track.soundId
+        const oldUseAutoAssign = track.useAutoAssignSound
+        const oldUseSoftSynth = track.useSoftSynth
         track.soundId = soundId
         track.useAutoAssignSound = false
         track.useSoftSynth = false
         this._persist()
+        this._record(() => {
+            track.soundId = oldSoundId
+            track.useAutoAssignSound = oldUseAutoAssign
+            track.useSoftSynth = oldUseSoftSynth
+            this._persist()
+        }, { desc: 'Change track sound' })
     }
 
     changeTrackName = (track, newName) => {
+        const oldName = track.name
         track.name = newName
         this._persist()
+        this._record(() => {
+            track.name = oldName
+            this._persist()
+        }, { desc: 'Change track name' })
     }
 
     getSoundIdFromUrl = (url) => {
@@ -297,6 +420,15 @@ export default class Commander {
         Utils.getTracksArray(pattern).find(track => track.name === type) ?? null
 
     setNbBeats = (pattern, newBeats) => {
+        const oldNbBeats = pattern.nbBeats
+        const oldTrackStates = Utils.getTracksArray(pattern).map(track => ({
+            track,
+            nbBeats: track.nbBeats,
+            loopAtStep: track.loopAtStep,
+            loopPointBeat: track.loopPointBeat,
+            loopPointStep: track.loopPointStep
+        }))
+
         let oldBeats = pattern.nbBeats * (Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4)
         pattern.nbBeats = newBeats * 4
         Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
@@ -307,6 +439,16 @@ export default class Commander {
             track.nbBeats = pattern.nbBeats
         })
         this._persist()
+        this._record(() => {
+            pattern.nbBeats = oldNbBeats
+            for (const { track, nbBeats, loopAtStep, loopPointBeat, loopPointStep } of oldTrackStates) {
+                track.nbBeats = nbBeats
+                track.loopAtStep = loopAtStep
+                track.loopPointBeat = loopPointBeat
+                track.loopPointStep = loopPointStep
+            }
+            this._persist()
+        }, { desc: 'Set nb beats' })
     }
 
     getAllSoundsForType = (soundKey) =>

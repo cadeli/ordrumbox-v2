@@ -4,7 +4,7 @@ export class ServiceRegistry {
         resourcesLoader: null, seq: null, autoGenerate: null,
         autoAssign: null, wavExporter: null, audioCtx: null,
         audioEngine: null, transport: null, exportLoopsCount: 1,
-        viewManager: null,
+        viewManager: null, history: null,
     }
 
     constructor() { Object.assign(this, ServiceRegistry.DEFAULTS) }
@@ -30,3 +30,6 @@ export const getAutoAssignService = () =>
 
 export const getMidiManagerService = () =>
     lazyService('midiManager', () => import('../logic/midi/midi.js'))
+
+export const getHistoryService = () =>
+    lazyService('history', () => import('../logic/history_manager.js'))

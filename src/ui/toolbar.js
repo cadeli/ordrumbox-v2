@@ -33,6 +33,7 @@ export default class Toolbar {
         this.syncState()
         this.subscribeEvents()
         this._setupOverflowObserver()
+        document.addEventListener('keydown', (e) => this._handleKeyboard(e))
     }
 
     subscribeEvents() {
@@ -54,6 +55,9 @@ export default class Toolbar {
         playbackEvents.on("bpmChange", (bpm) => {
             this.syncBpmSlider(bpm)
         })
+        playbackEvents.on("historyChange", (state) => {
+            this.syncUndoRedoButtons(state)
+        })
     }
 
     refresh() {
@@ -61,6 +65,24 @@ export default class Toolbar {
         this.syncPatterns()
         this.syncDrumkits()
         this.syncPage()
+    }
+
+    syncUndoRedoButtons(state) {
+        if (!this.undoBtn || !this.redoBtn) return
+        this.undoBtn.disabled = !state?.canUndo
+        this.redoBtn.disabled = !state?.canRedo
+        this.undoBtn.title = state?.canUndo ? `Undo (Ctrl+Z) — ${state.pastLength} actions` : 'Undo (Ctrl+Z)'
+        this.redoBtn.title = state?.canRedo ? `Redo (Ctrl+Y) — ${state.futureLength} actions` : 'Redo (Ctrl+Y)'
+    }
+
+    _handleKeyboard(e) {
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
+            e.preventDefault()
+            serviceRegistry.history?.undo()
+        } else if ((e.ctrlKey || e.metaKey) && (e.shiftKey && e.key === 'z' || e.key === 'y')) {
+            e.preventDefault()
+            serviceRegistry.history?.redo()
+        }
     }
 
     createDOM() {
@@ -179,6 +201,30 @@ export default class Toolbar {
         genWrap.appendChild(genLabel)
         genWrap.appendChild(genRow)
 
+        // Undo/Redo buttons
+        const undoWrap = document.createElement('div')
+        undoWrap.className = 'tb-group tb-undo-group'
+        const undoLabel = document.createElement('span')
+        undoLabel.className = 'tb-label'
+        undoLabel.textContent = 'History'
+        const undoRow = document.createElement('div')
+        undoRow.className = 'tb-undo-row'
+        this.undoBtn = document.createElement('button')
+        this.undoBtn.className = 'tb-undo-btn'
+        this.undoBtn.textContent = '↶'
+        this.undoBtn.title = 'Undo (Ctrl+Z)'
+        this.undoBtn.disabled = true
+        this.redoBtn = document.createElement('button')
+        this.redoBtn.className = 'tb-undo-btn'
+        this.redoBtn.textContent = '↷'
+        this.redoBtn.title = 'Redo (Ctrl+Y)'
+        this.redoBtn.disabled = true
+        undoRow.appendChild(this.undoBtn)
+        undoRow.appendChild(this.redoBtn)
+        undoWrap.appendChild(undoLabel)
+        undoWrap.appendChild(undoRow)
+        this.container.appendChild(undoWrap)
+
         const viewWrap = document.createElement('div')
         viewWrap.className = 'tb-group tb-hide-mobile'
         const viewLabel = document.createElement('span')
@@ -288,6 +334,14 @@ export default class Toolbar {
         })
         this.prollBtn.addEventListener('click', () => {
             playbackEvents.emit("prollToggle")
+        })
+
+        this.undoBtn.addEventListener('click', () => {
+            serviceRegistry.history?.undo()
+        })
+
+        this.redoBtn.addEventListener('click', () => {
+            serviceRegistry.history?.redo()
         })
 
         this.patternSelect.addEventListener('change', () => {

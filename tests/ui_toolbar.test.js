@@ -48,7 +48,11 @@ describe('Toolbar UI Layout', () => {
         const classes = buttons.map(b => b.className)
         const textContents = buttons.map(b => b.textContent)
 
-        expect(textContents.some(t => t.includes('BPM')) || document.querySelector('.tb-label')?.textContent === 'BPM').toBe(true)
+        // Check BPM button (text is the BPM value, e.g. '120')
+        expect(textContents.some(t => t === '120' || t.includes('BPM'))).toBe(true)
+        // Check BPM label exists
+        const labels = Array.from(tb.querySelectorAll('.tb-label')).map(l => l.textContent)
+        expect(labels).toContain('BPM')
         expect(classes).toContain('tb-start')
         expect(classes).toContain('tb-tools')
         expect(classes.some(c => c.includes('tb-about'))).toBe(true)

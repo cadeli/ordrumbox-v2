@@ -20,6 +20,7 @@ import PatternSettingsPanel from './ui/pattern_settings_panel.js'
 import ResourcesLoader from './loader/resources_loader.js'
 import Utils from './core/utils.js'
 import { appState } from './state/app_state.js'
+import { getHistoryService } from './state/service_registry.js'
 import { serviceRegistry } from './state/service_registry.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
@@ -39,6 +40,7 @@ serviceRegistry.autoGenerate = null
 serviceRegistry.patterns = patternsManager
 serviceRegistry.autoAssign = null
 serviceRegistry.midiManager = null
+serviceRegistry.history = await getHistoryService()
 
 
 function scheduleAfterFirstPaint(callback) {
