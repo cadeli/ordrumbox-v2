@@ -20,6 +20,9 @@ export { normalizeArp, hasArp, getArpNoteCount, isTrigged, isProbabilityTrigged,
  * pure re-export from engine.js.
  */
 export function computeFlatNotesFromPattern(djtPattern, loop = 0) {
+    for (const track of djtPattern.tracks) {
+        track._occupiedSet = null
+    }
     const flatNotes = _computeFlatNotesFromPattern(djtPattern, loop, null, TICK)
     appState.flatNotes = flatNotes
     playbackEvents.emit("noteChange")
@@ -39,8 +42,9 @@ export function computeNextPatternStepNote(note, track) {
         const notes = track.notes
         const q = track.stepsPerBeat
         if (notes) {
-            for (let i = 0; i < notes.length; i++) {
-                set.add(notes[i].beat * q + notes[i].beatStep)
+            const noteList = Array.isArray(notes) ? notes : Object.values(notes)
+            for (let i = 0; i < noteList.length; i++) {
+                set.add(noteList[i].beat * q + noteList[i].beatStep)
             }
         }
         track._occupiedSet = set

@@ -42,7 +42,7 @@ export default class Mixer {
 
         if (!this.analyser) {
             this.analyser = ctx.createAnalyser();
-        this.analyser.fftSize = 4096;
+            this.analyser.fftSize = 4096;
             this.gFftData  = new Uint8Array(this.analyser.frequencyBinCount);
             this.dataArray = new Uint8Array(this.analyser.fftSize);
         }

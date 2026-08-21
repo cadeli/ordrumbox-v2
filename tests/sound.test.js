@@ -197,9 +197,9 @@ describe('Sound', () => {
 
     // ── playGenerated ─────────────────────────────────────────────────
 
-    it('playGenerated calls loadGeneratedsounds when generatedSounds is empty', async () => {
+    it('playGenerated calls loadGeneratedSounds when generatedSounds is empty', async () => {
         sound.generatedSounds = {}
-        const loadSpy = vi.spyOn(sound, 'loadGeneratedsounds')
+        const loadSpy = vi.spyOn(sound, 'loadGeneratedSounds')
         await sound.playGenerated(makeFlatNote(), 1.0)
         expect(loadSpy).toHaveBeenCalled()
     })
@@ -213,17 +213,17 @@ describe('Sound', () => {
         await expect(sound.playGenerated(makeFlatNote(), 1.0)).resolves.not.toThrow()
     })
 
-    // ── loadGeneratedsounds ───────────────────────────────────────────
+    // ── loadGeneratedSounds ───────────────────────────────────────────
 
-    it('loadGeneratedsounds is no-op when already loading', () => {
+    it('loadGeneratedSounds is no-op when already loading', () => {
         sound.generatedSoundsLoading = true
-        sound.loadGeneratedsounds()
+        sound.loadGeneratedSounds()
         expect(serviceRegistry.resourcesLoader.loadGeneratedSounds).not.toHaveBeenCalled()
     })
-    it('loadGeneratedsounds calls resourcesLoader.loadGeneratedSounds', () => {
+    it('loadGeneratedSounds calls resourcesLoader.loadGeneratedSounds', () => {
         sound.generatedSounds = {}
         serviceRegistry.resourcesLoader.loadGeneratedSounds.mockResolvedValue()
-        sound.loadGeneratedsounds()
+        sound.loadGeneratedSounds()
         expect(serviceRegistry.resourcesLoader.loadGeneratedSounds).toHaveBeenCalled()
     })
 

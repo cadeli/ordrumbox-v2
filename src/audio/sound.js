@@ -143,26 +143,26 @@ export default class Sound {
 
     playGenerated = async (flatNote, time) => {
         if (Object.keys(this.generatedSounds).length === 0) {
-            this.loadGeneratedsounds()
+            this.loadGeneratedSounds()
             return
         }
         if (!flatNote) return
         await this._playVoice(flatNote, time, { syncGeneratedSounds: true })
     }
 
-    loadGeneratedsounds = () => {
+    loadGeneratedSounds = () => {
         if (this.generatedSoundsLoading || this.generatedSoundsLoadFailed) return
         this.generatedSoundsLoading = true
         serviceRegistry.resourcesLoader?.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL).then(() => {
             this.generatedSoundsLoading = false
             if (Object.keys(this.generatedSounds).length === 0) {
                 this.generatedSoundsLoadFailed = true
-                logger.warn('Sound', 'loadGeneratedsounds loaded no generated sounds')
+                logger.warn('Sound', 'loadGeneratedSounds loaded no generated sounds')
             }
         }).catch((error) => {
             this.generatedSoundsLoading = false
             this.generatedSoundsLoadFailed = true
-            logger.error('Sound', 'loadGeneratedsounds failed', error)
+            logger.error('Sound', 'loadGeneratedSounds failed', error)
         })
     }
 

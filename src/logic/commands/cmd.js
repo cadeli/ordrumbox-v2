@@ -266,6 +266,7 @@ export default class Commander {
         })
         track.loopPointStep = Math.floor((loopStepPc / 100) * track.stepsPerBeat)
         track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
+        this._persist()
     }
 
     incrLoopPoint = (track) => {
@@ -274,6 +275,7 @@ export default class Commander {
             track.loopAtStep = track.stepsPerBeat * track.nbBeats
         }
         recalcLoopDerived(track)
+        this._persist()
     }
 
     cleanPattern = (pattern) => { 
