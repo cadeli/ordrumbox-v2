@@ -223,7 +223,6 @@ export default class Toolbar {
         undoRow.appendChild(this.redoBtn)
         undoWrap.appendChild(undoLabel)
         undoWrap.appendChild(undoRow)
-        this.container.appendChild(undoWrap)
 
         const viewWrap = document.createElement('div')
         viewWrap.className = 'tb-group tb-hide-mobile'
@@ -301,6 +300,8 @@ export default class Toolbar {
         const sep = document.createElement('div')
         sep.className = 'tb-sep'
         this.container.appendChild(sep)
+
+        this.container.appendChild(undoWrap)
 
         this.container.appendChild(viewWrap)
         this.container.appendChild(this.toolsBtn)
