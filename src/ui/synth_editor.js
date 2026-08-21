@@ -153,8 +153,8 @@ export default class SynthEditor {
         if (!this._draft || !this._editKey) return
 
         const knobConfigs = []
-        let html = this._groups.render(knobConfigs)
-        html += this._presets.renderFooter()
+        let html = this._presets.renderFooter()
+        html += this._groups.render(knobConfigs)
 
         this.panel.innerHTML = `<div class="ss-scroll">${html}</div>`
         this._syncKnobs(knobConfigs)

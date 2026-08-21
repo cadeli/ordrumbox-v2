@@ -24,6 +24,16 @@ export default class ResourcesLoader {
         playbackEvents.on('patternChange', () => {
             if (this._autoPersistEnabled) this.persistPatterns()
         })
+        playbackEvents.on('drumkitChange', () => this.saveSession())
+        playbackEvents.on('trackParamChange', () => this.saveSession())
+        playbackEvents.on('toolsToggle', () => this.saveSession())
+        playbackEvents.on('drumkitManagerToggle', () => this.saveSession())
+        playbackEvents.on('patternsToggle', () => this.saveSession())
+        playbackEvents.on('aboutToggle', () => this.saveSession())
+        playbackEvents.on('outputToggle', () => this.saveSession())
+        playbackEvents.on('synthToggle', () => this.saveSession())
+        playbackEvents.on('editToggle', () => this.saveSession())
+        playbackEvents.on('prollToggle', () => this.saveSession())
     }
 
     get audioCtx() {
@@ -141,11 +151,13 @@ export default class ResourcesLoader {
         const masterDefaults = { volume: 1, preGain: 0, lowcut: 35, hicut: 18500,
             compBypass: false, threshold: -18, ratio: 8, attack: 0.002,
             release: 0.08, knee: 3, makeup: 8 }
-        const defaults = { version: 1, sampleDirs: [], maxSampleDirs: 10, master: masterDefaults }
+        const sessionDefaults = { selectedDrumkitNum: 0, selectedPatternNum: 0, selectedTrackNum: 0, currentView: 'edit' }
+        const defaults = { version: 1, sampleDirs: [], maxSampleDirs: 10, master: masterDefaults, session: sessionDefaults }
         try {
             const raw = await idbGet('settings', ResourcesLoader.SETTINGS_KEY)
             if (raw) {
                 if (raw.master) raw.master = { ...masterDefaults, ...raw.master }
+                if (raw.session) raw.session = { ...sessionDefaults, ...raw.session }
                 Object.assign(soundRegistry.settings, defaults, raw)
                 return
             }
@@ -161,6 +173,26 @@ export default class ResourcesLoader {
         try {
             await idbPut('settings', ResourcesLoader.SETTINGS_KEY, structuredClone(soundRegistry.settings))
         } catch { /* IndexedDB unavailable */ }
+    }
+
+    _sessionTimer = null
+
+    saveSession = () => {
+        const s = soundRegistry.settings.session
+        s.selectedDrumkitNum = appState.selectedDrumkitNum
+        s.selectedPatternNum = appState.selectedPatternNum
+        s.selectedTrackNum = appState.selectedTrackNum
+        s.currentView = serviceRegistry.viewManager?.currentView ?? 'edit'
+        if (this._sessionTimer) clearTimeout(this._sessionTimer)
+        this._sessionTimer = setTimeout(() => this.saveSettings(), 500)
+    }
+
+    restoreSession = () => {
+        const s = soundRegistry.settings.session
+        if (!s) return
+        if (typeof s.selectedDrumkitNum === 'number') appState.selectedDrumkitNum = s.selectedDrumkitNum
+        if (typeof s.selectedPatternNum === 'number') appState.selectedPatternNum = s.selectedPatternNum
+        if (typeof s.selectedTrackNum === 'number') appState.selectedTrackNum = s.selectedTrackNum
     }
 
     _persistTimer = null

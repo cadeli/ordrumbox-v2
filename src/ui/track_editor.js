@@ -478,6 +478,8 @@ export default class TrackEditor extends BasePanel {
     _onLfoSelectBtn(k) {
         this._modSection.onSelectBtn(k)
         this.sync()
+        this._playbackEvents.emit("trackParamChange", this._track)
+        this._playbackEvents.emit("patternChange", [this._track])
     }
 
     _onLfoToggleBtn(k) {
@@ -491,11 +493,13 @@ export default class TrackEditor extends BasePanel {
         const needsSync = this._modSection.onSlider(input)
         if (needsSync) this.sync()
         this._playbackEvents.emit("trackParamChange", this._track)
+        this._playbackEvents.emit("patternChange", [this._track])
     }
 
     _onLfoSelect(sel) {
         this._modSection.onSelect(sel)
         this._playbackEvents.emit("trackParamChange", this._track)
+        this._playbackEvents.emit("patternChange", [this._track])
     }
 
     _toggleLfoForTarget(k) {
@@ -656,6 +660,7 @@ export default class TrackEditor extends BasePanel {
 
         if (key === 'swingAmount') {
             this._playbackEvents.emit("trackParamChange", this._track)
+            this._playbackEvents.emit("patternChange", [this._track])
         } else {
             this._playbackEvents.emit("trackParamChange", this._track)
             this._playbackEvents.emit("patternChange", [this._track])

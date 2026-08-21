@@ -262,8 +262,8 @@ describe('Mobile CSS: Track editor + note editor 3-column landscape layout', () 
 })
 
 describe('Mobile CSS: Synth modules fully visible', () => {
-    it('.ss-group: height auto, no internal scroll (base styles)', () => {
-        const re = /#soft-synth-panel\s+\.ss-group\s*\{[^}]*height:\s*auto[^}]*/s
+    it('.ss-group: uniform equal height via flexbox, no internal scroll (base styles)', () => {
+        const re = /#soft-synth-panel\s+\.ss-body\s*\{[^}]*align-items:\s*stretch[^}]*/s
         expect(re.test(css)).toBe(true)
         const reNoScroll = /#soft-synth-panel\s+\.ss-group\s*\{[^}]*/s
         const match = reNoScroll.exec(css)

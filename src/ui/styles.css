@@ -1232,7 +1232,7 @@ body {
 }
 #soft-synth-panel .ss-footer {
     display: flex; justify-content: flex-start; gap: 6px;
-    padding-top: 3px; border-top: 1px solid var(--border-subtle);
+    padding-bottom: 3px; border-bottom: 1px solid var(--border-subtle);
 }
 #soft-synth-panel .ss-preset-select {
     font-size: var(--fs-sm); padding: 2px 4px;
@@ -1402,7 +1402,7 @@ body {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 4px;
-    align-items: flex-start;
+    align-items: stretch;
     padding-bottom: 2px;
 }
 
@@ -1410,14 +1410,15 @@ body {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
     gap: 3px;
     padding: 3px 6px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(233, 69, 96, 0.3);
     border-radius: 6px;
     flex: 1 1 calc(20% - 4px);
+    min-width: 120px;
     max-width: calc(20% - 4px);
-    height: auto;
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 

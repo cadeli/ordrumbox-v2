@@ -125,6 +125,7 @@ export default class FxSection {
                             onChange: (v) => {
                                 co._track[ck] = v
                                 co._playbackEvents.emit("trackParamChange", co._track)
+                                co._playbackEvents.emit("patternChange", [co._track])
                             }
                         })
                     }

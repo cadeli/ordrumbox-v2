@@ -1,5 +1,6 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { appState } from '../state/app_state.js'
+import { serviceRegistry } from '../state/service_registry.js'
 import { setViewMode } from './components/panel_helpers.js'
 import { isMobileViewport } from '../core/constants.js'
 import { isMobileLandscape, removeLayout } from './mobile_track_layout.js'
@@ -88,6 +89,7 @@ export default class ViewManager {
         if (view === this._currentView) return
         const prev = this._currentView
         this._currentView = view
+        serviceRegistry.resourcesLoader?.saveSession?.()
 
         if (this._patternSettingsPanel?.hide) {
             this._patternSettingsPanel.hide()

@@ -9,6 +9,12 @@ export class SoundRegistry {
                 compBypass: false, threshold: -18, ratio: 8, attack: 0.002,
                 release: 0.08, knee: 3, makeup: 8,
             },
+            session: {
+                selectedDrumkitNum: 0,
+                selectedPatternNum: 0,
+                selectedTrackNum: 0,
+                currentView: 'edit',
+            },
         },
     }
 

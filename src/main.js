@@ -116,6 +116,7 @@ export function init() {
         patternsPanel: _patternsPanel,
         aboutPanel: _aboutPanel,
     })
+    serviceRegistry.viewManager = _viewManager
     _viewManager.init()
 
     playbackEvents.on("trackSelect", (data) => {
@@ -193,6 +194,8 @@ export function init() {
 
     scheduleAfterFirstPaint(async () => {
         try {
+            await serviceRegistry.resourcesLoader.loadSettings()
+            soundRegistry.settings._loaded = true
             await serviceRegistry.resourcesLoader.loadSong(ResourcesLoader.SONG_URL)
             if (soundRegistry.drumkitList.length === 0) {
                 await serviceRegistry.resourcesLoader.loadDrumkitList(ResourcesLoader.DRUMKITS_URL)
@@ -207,19 +210,28 @@ export function init() {
             playbackEvents.emit("patternStructureChange")
             playbackEvents.emit("patternChange")
             playbackEvents.emit("drumkitChange")
-            
-            // Set initial drumkit first to trigger sample loading
-            serviceRegistry.cmd.setSelectedDrumkitNum(0)
-            // Then select pattern (which will auto-assign once sounds are loaded)
-            serviceRegistry.cmd.setSelectedPatternNum(0)
 
-            if (isMobileViewport()) {
+            // Restore saved session state (dk, pattern, track, view)
+            serviceRegistry.resourcesLoader.restoreSession()
+
+            const dkNum = Math.min(appState.selectedDrumkitNum, soundRegistry.drumkitList.length - 1)
+            const patNum = Math.min(appState.selectedPatternNum, appState.patterns.length - 1)
+            appState.selectedDrumkitNum = dkNum
+            appState.selectedPatternNum = patNum
+
+            serviceRegistry.cmd.setSelectedDrumkitNum(dkNum)
+            serviceRegistry.cmd.setSelectedPatternNum(patNum)
+
+            const savedView = soundRegistry.settings.session?.currentView
+            if (savedView) {
+                playbackEvents.emit(savedView + 'Toggle', true)
+            } else if (isMobileViewport()) {
                 playbackEvents.emit("mobileSeqToggle")
             } else {
                 playbackEvents.emit("editToggle")
             }
 
-            if (!isMobileViewport()) {
+            if (!isMobileViewport() && savedView !== 'output') {
                 playbackEvents.emit("outputToggle", true)
             }
         }

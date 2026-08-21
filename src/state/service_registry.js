@@ -4,6 +4,7 @@ export class ServiceRegistry {
         resourcesLoader: null, seq: null, autoGenerate: null,
         autoAssign: null, wavExporter: null, audioCtx: null,
         audioEngine: null, transport: null, exportLoopsCount: 1,
+        viewManager: null,
     }
 
     constructor() { Object.assign(this, ServiceRegistry.DEFAULTS) }
