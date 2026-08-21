@@ -1,4 +1,3 @@
-
 import Sequencer from './core/seq.js'
 import Commander from './logic/commands/cmd.js'
 import * as patternsManager from './patterns/manager.js'
@@ -209,17 +208,22 @@ export function init() {
             logger.error('Main', 'Failed to load startup resources', e)
         }
         if (appState.patterns.length > 0) {
-            playbackEvents.emit("patternStructureChange")
-            playbackEvents.emit("patternChange")
-            playbackEvents.emit("drumkitChange")
-
-            // Restore saved session state (dk, pattern, track, view)
+            // Restore saved session state (dk, pattern, track, view) BEFORE
+            // emitting any event that could trigger a save (e.g. drumkitChange
+            // -> ResourcesLoader.saveSession()). emit() is synchronous, so
+            // emitting first would fire saveSession() while appState still
+            // holds its default values (0), clobbering the persisted session
+            // in memory *and* in IndexedDB before restoreSession() can read it.
             serviceRegistry.resourcesLoader.restoreSession()
 
             const dkNum = Math.min(appState.selectedDrumkitNum, soundRegistry.drumkitList.length - 1)
             const patNum = Math.min(appState.selectedPatternNum, appState.patterns.length - 1)
             appState.selectedDrumkitNum = dkNum
             appState.selectedPatternNum = patNum
+
+            playbackEvents.emit("patternStructureChange")
+            playbackEvents.emit("patternChange")
+            playbackEvents.emit("drumkitChange")
 
             serviceRegistry.cmd.setSelectedDrumkitNum(dkNum)
             serviceRegistry.cmd.setSelectedPatternNum(patNum)
