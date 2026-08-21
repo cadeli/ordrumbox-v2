@@ -1,6 +1,7 @@
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
+import { playbackEvents } from '../state/playback_events.js'
 import { fixPatterns, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
 import { idbGet, idbPut } from '../core/idb.js'
 import { cachePatterns, getCachedPatterns, cacheDrumkits, getCachedDrumkits, cacheSample, getCachedSample, cacheGeneratedSounds, getCachedGeneratedSounds } from '../cache/idb_cache.js'
@@ -19,6 +20,10 @@ export default class ResourcesLoader {
 
     constructor(audioCtx = null) {
         this._audioCtx = audioCtx
+        this._autoPersistEnabled = false
+        playbackEvents.on('patternChange', () => {
+            if (this._autoPersistEnabled) this.persistPatterns()
+        })
     }
 
     get audioCtx() {
@@ -202,6 +207,7 @@ export default class ResourcesLoader {
             }
             serviceRegistry.cmd.importPatternFromJson(pattern)
         })
+        this._autoPersistEnabled = true
     }
 
 
