@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import OutputPanel from '../src/ui/output_panel.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
 
 function fireKey(el, key) {
     el.focus()
@@ -16,6 +17,8 @@ describe('OutputPanel — master controls', () => {
         document.body.innerHTML = ''
         setMasterBusMock = vi.fn()
         serviceRegistry.audioEngine = { mixer: { setMasterBus: setMasterBusMock } }
+        serviceRegistry.resourcesLoader = { saveSettings: vi.fn() }
+        soundRegistry.reset()
         panel = new OutputPanel()
         panel.init()
     })
@@ -84,6 +87,8 @@ describe('OutputPanel — compressor (VST knobs)', () => {
         document.body.innerHTML = ''
         setMasterBusMock = vi.fn()
         serviceRegistry.audioEngine = { mixer: { setMasterBus: setMasterBusMock } }
+        serviceRegistry.resourcesLoader = { saveSettings: vi.fn() }
+        soundRegistry.reset()
         panel = new OutputPanel()
         panel.init()
     })

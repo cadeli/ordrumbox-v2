@@ -17,6 +17,10 @@ export default class Commander {
     constructor() {
     }
 
+    _persist = () => {
+        serviceRegistry.resourcesLoader?.persistPatterns?.()
+    }
+
     // Safe updater for track properties
     // Accepts a track object and a updates object. Only whitelisted keys are applied.
     // Extra or unknown keys are ignored gracefully to avoid runtime errors when callers
@@ -43,6 +47,7 @@ export default class Commander {
 
         if (changed) {
             this._incrementPatternVersionByTrack(track)
+            this._persist()
         }
 
         if (typeof track.stepsPerBeat === 'number' && typeof track.loopAtStep === 'number') {
@@ -76,6 +81,7 @@ export default class Commander {
             if (note.beatStep === selNote.beatStep && note.beat === selNote.beat && (note.pitch ?? 0) === (selNote.pitch ?? 0)) {
                 track.notes.splice(track.notes.indexOf(note), 1)
                 this._incrementPatternVersionByTrack(track)
+                this._persist()
                 return
             }
         }
@@ -97,6 +103,7 @@ export default class Commander {
         }
         track.notes.push(note)
         this._incrementPatternVersionByTrack(track)
+        this._persist()
         return note
     }
 
@@ -105,6 +112,7 @@ export default class Commander {
 
         let track = this.createTrack(pattern.nbBeats, type, stepsPerBeat);
         pattern.tracks.push(track)
+        this._persist()
         return track
     }
 
@@ -123,6 +131,7 @@ export default class Commander {
     addPattern = (name) => {
         let pattern = this.createPattern(name)
         appState.patterns.push(pattern)
+        this._persist()
         return pattern
     }
 
@@ -132,12 +141,14 @@ export default class Commander {
         if (appState.selectedPatternNum >= appState.patterns.length) {
             appState.selectedPatternNum = appState.patterns.length - 1
         }
+        this._persist()
         return true
     }
 
     renamePattern = (idx, newName) => {
         const pat = appState.patterns[idx]
         if (pat) pat.name = String(newName ?? '').trim() || pat.name
+        this._persist()
     }
 
     getPatternByName = (name) => {
@@ -150,21 +161,25 @@ export default class Commander {
         pattern.bpm = Number.isFinite(bpmNum) && bpmNum !== 0
             ? bpmNum
             : (logger.warn('Command', 'bpm NaN/0', bpm), Defaults.getPatternProp({}, 'bpm'))
+        this._persist()
         return pattern
     }
 
     setPatternDescription = (pattern, description) => {
         pattern.description = String(description ?? '')
+        this._persist()
         return pattern
     }
 
     importPatternFromJson = (sourcePattern) => {
-        return importPatternFromJson(
+        const result = importPatternFromJson(
             sourcePattern,
             (name) => this.addPattern(name),
             (pattern, name) => this.addTrack(pattern, name),
             (track, beat, beatStep, pitch) => this.addNote(track, beat, beatStep, pitch)
         )
+        this._persist()
+        return result
     }
 
     createPattern = (name) => {
@@ -236,6 +251,7 @@ export default class Commander {
             }
             track.nbBeats = pattern.nbBeats
         })
+        this._persist()
     }
 
     incrNbStepPerBar = (track) => {
@@ -281,10 +297,12 @@ export default class Commander {
         track.soundId = soundId
         track.useAutoAssignSound = false
         track.useSoftSynth = false
+        this._persist()
     }
 
     changeTrackName = (track, newName) => {
         track.name = newName
+        this._persist()
     }
 
     getSoundIdFromUrl = (url) => {

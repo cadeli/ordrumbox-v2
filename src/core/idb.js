@@ -1,7 +1,7 @@
 const DB_NAME = 'ordrumbox'
-const DB_VERSION = 3
+const DB_VERSION = 4
 
-const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples']
+const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds']
 
 export function openDb() {
     return new Promise((resolve, reject) => {

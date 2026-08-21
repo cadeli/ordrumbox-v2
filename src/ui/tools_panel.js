@@ -14,7 +14,9 @@ import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import MidiIndicatorView from './midi_indicator_view.js'
 import { logger, nameOr } from "../core/logger.js"
-import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, removeCacheEntry, formatBytes, formatDate } from '../cache/idb_cache.js'
+import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, removeCacheEntry, formatBytes, formatDate, cacheDrumkits, cacheGeneratedSounds } from '../cache/idb_cache.js'
+import { idbGet } from '../core/idb.js'
+import { isMobileViewport } from '../core/constants.js'
 import MidiExporter from '../logic/midi/midi_exporter.js'
 
 export default class ToolsPanel extends BasePanel {
@@ -51,7 +53,7 @@ export default class ToolsPanel extends BasePanel {
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="export">
                 <div class="ne-row">
-                    <button class="ne-btn" id="tp-export-json" title="Save the current pattern as a JSON file">Export JSON</button>
+                    <button class="ne-btn" id="tp-export-json" title="Save the current pattern as a JSON file">Export PATTERN</button>
                 </div>
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-export-midi" title="Export the current pattern to a Standard MIDI File (.mid)">Export MIDI</button>
@@ -60,10 +62,16 @@ export default class ToolsPanel extends BasePanel {
                     <button class="ne-btn" id="tp-export-wav" title="Render the pattern to an audio WAV file">Export WAV</button>
                 </div>
                 <div id="tp-wav-loops-slot"></div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-export-drumkit" title="Export the current drumkit list as a JSON file">Export DRUMKIT</button>
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-export-synth" title="Export generated synth sounds as a JSON file">Export SYNTH</button>
+                </div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="import">
                 <div class="ne-row">
-                    <button class="ne-btn" id="tp-import-json" title="Load a previously exported pattern from a JSON file">Import JSON</button>
+                    <button class="ne-btn" id="tp-import-json" title="Load a previously exported pattern from a JSON file">Import PATTERN</button>
                     <input type="file" id="tp-import-file" style="display: none" accept=".json">
                 </div>
                 <div class="ne-row">
@@ -73,6 +81,14 @@ export default class ToolsPanel extends BasePanel {
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
                     <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav,.flac" webkitdirectory directory multiple>
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-import-drumkit" title="Import a drumkit from a JSON file">Import DRUMKIT</button>
+                    <input type="file" id="tp-import-drumkit-file" style="display: none" accept=".json">
+                </div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-import-synth" title="Import generated synth sounds from a JSON file">Import SYNTH</button>
+                    <input type="file" id="tp-import-synth-file" style="display: none" accept=".json">
                 </div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="midi-status">
@@ -126,7 +142,7 @@ export default class ToolsPanel extends BasePanel {
                     <button class="ne-btn" id="tp-cache-clear-patterns" title="Clear cached patterns from IDB">Clear Patterns</button>
                     <button class="ne-btn" id="tp-cache-clear-drumkits" title="Clear cached drumkits from IDB">Clear Drumkits</button>
                     <button class="ne-btn" id="tp-cache-clear-samples" title="Clear cached samples from IDB">Clear Samples</button>
-                    <button class="ne-btn tp-cache-danger" id="tp-cache-clear-all" title="Clear all cached data from IDB">Clear All Cache</button>
+                    <button class="ne-btn tp-cache-danger" id="tp-cache-clear-all" title="Clear all cached data">Factory Reset</button>
                 </div>
             </div>
         `
@@ -163,6 +179,17 @@ export default class ToolsPanel extends BasePanel {
         const importDirFile = this.container.querySelector('#tp-import-dir-file')
         this.container.querySelector('#tp-import-dir').addEventListener('click', () => importDirFile.click())
         importDirFile.addEventListener('change', (e) => this._onImportDir(e))
+
+        this.container.querySelector('#tp-export-drumkit').addEventListener('click', () => this._exportDrumkit())
+        this.container.querySelector('#tp-export-synth').addEventListener('click', () => this._exportSynth())
+
+        const importDrumkitFile = this.container.querySelector('#tp-import-drumkit-file')
+        this.container.querySelector('#tp-import-drumkit').addEventListener('click', () => importDrumkitFile.click())
+        importDrumkitFile.addEventListener('change', (e) => this._onImportDrumkit(e))
+
+        const importSynthFile = this.container.querySelector('#tp-import-synth-file')
+        this.container.querySelector('#tp-import-synth').addEventListener('click', () => importSynthFile.click())
+        importSynthFile.addEventListener('change', (e) => this._onImportSynth(e))
 
         this.container.querySelector('#tp-midi-enable').addEventListener('click', async () => {
             const btn = this.container.querySelector('#tp-midi-enable')
@@ -219,9 +246,15 @@ export default class ToolsPanel extends BasePanel {
             this._refreshCacheStats()
         })
         this.container.querySelector('#tp-cache-list').addEventListener('click', async (e) => {
-            const btn = e.target.closest('.tp-cache-item-del')
-            if (!btn) return
-            const { cacheType, cacheKey } = btn.dataset
+            const viewBtn = e.target.closest('.tp-cache-item-view')
+            if (viewBtn) {
+                const { cacheType, cacheKey } = viewBtn.dataset
+                await this._showCacheJson(cacheType, cacheKey)
+                return
+            }
+            const delBtn = e.target.closest('.tp-cache-item-del')
+            if (!delBtn) return
+            const { cacheType, cacheKey } = delBtn.dataset
             if (!window.confirm(`Remove "${cacheKey}" from ${cacheType} cache?`)) return
             await removeCacheEntry(cacheType, cacheKey)
             this._refreshCacheStats()
@@ -301,7 +334,8 @@ export default class ToolsPanel extends BasePanel {
             }
 
             const sorted = [...stats.entries].sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
-            const TYPE_LABELS = { patterns: 'PAT', drumkits: 'DK', samples: 'SMP' }
+            const TYPE_LABELS = { patterns: 'PAT', drumkits: 'DK', samples: 'SMP', settings: 'SET', songs: 'SONG', generated_sounds: 'SYN' }
+            const isDesktop = !isMobileViewport()
 
             listEl.innerHTML = sorted.map(e => {
                 const label = TYPE_LABELS[e.type] ?? e.type
@@ -311,18 +345,85 @@ export default class ToolsPanel extends BasePanel {
                 const tooltip = e.type === 'samples' && kitName
                     ? `${e.key}\nDrumkit: ${kitName}`
                     : e.key
+                const canView = isDesktop && e.type !== 'samples'
                 return `<div class="tp-cache-item" title="${escapeHtml(tooltip)}">` +
                     `<span class="tp-cache-item-label">${label}</span>` +
                     `<span class="tp-cache-item-key">${escapeHtml(e.key)}</span>` +
                     (kitName ? `<span class="tp-cache-item-kit" title="${escapeHtml(kitName)}">${escapeHtml(kitName)}</span>` : `<span class="tp-cache-item-kit"></span>`) +
                     `<span class="tp-cache-item-size">${size}</span>` +
                     `<span class="tp-cache-item-date">${date}</span>` +
+                    (canView ? `<button class="tp-cache-item-view" data-cache-type="${e.type}" data-cache-key="${escapeHtml(e.key)}" title="View JSON">&#x1F441;</button>` : '') +
                     `<button class="tp-cache-item-del" data-cache-type="${e.type}" data-cache-key="${escapeHtml(e.key)}" title="Remove">&#x2715;</button>` +
                     `</div>`
             }).join('')
         } catch (e) {
             logger.error('ToolsPanel', 'Failed to refresh cache stats', e)
         }
+    }
+
+    async _showCacheJson(type, key) {
+        const storeMap = { patterns: 'patterns', drumkits: 'drumkits', settings: 'settings', songs: 'songs', generated_sounds: 'generated_sounds' }
+        const store = storeMap[type]
+        if (!store) return
+        try {
+            const raw = await idbGet(store, key)
+            if (!raw) {
+                showToast('Entry not found in cache', 'info')
+                return
+            }
+            const data = raw?.data ?? raw
+            const json = JSON.stringify(data, null, 2)
+            this._openJsonModal(key, json)
+        } catch (e) {
+            logger.error('ToolsPanel', 'Failed to read cache entry', e)
+            showToast('Failed to read cache entry', 'error')
+        }
+    }
+
+    _openJsonModal(title, json) {
+        this._closeJsonModal()
+        const overlay = document.createElement('div')
+        overlay.className = 'tp-json-modal-overlay'
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) this._closeJsonModal()
+        })
+
+        const modal = document.createElement('div')
+        modal.className = 'tp-json-modal'
+
+        const header = document.createElement('div')
+        header.className = 'tp-json-modal-header'
+        const titleSpan = document.createElement('span')
+        titleSpan.className = 'tp-json-modal-title'
+        titleSpan.textContent = title
+        const closeBtn = document.createElement('button')
+        closeBtn.className = 'tp-json-modal-close'
+        closeBtn.innerHTML = '&#x2715;'
+        closeBtn.addEventListener('click', () => this._closeJsonModal())
+        header.append(titleSpan, closeBtn)
+
+        const pre = document.createElement('pre')
+        pre.className = 'tp-json-modal-body'
+        pre.textContent = json
+
+        modal.append(header, pre)
+        overlay.appendChild(modal)
+        document.body.appendChild(overlay)
+
+        const onKey = (e) => {
+            if (e.key === 'Escape') {
+                this._closeJsonModal()
+                document.removeEventListener('keydown', onKey)
+            }
+        }
+        document.addEventListener('keydown', onKey)
+        this._jsonModalCleanup = () => document.removeEventListener('keydown', onKey)
+    }
+
+    _closeJsonModal() {
+        this._jsonModalCleanup?.()
+        this._jsonModalCleanup = null
+        document.querySelector('.tp-json-modal-overlay')?.remove()
     }
 
     _compactPattern() {
@@ -491,6 +592,87 @@ export default class ToolsPanel extends BasePanel {
             logger.error('ToolsPanel', 'Directory import failed', err)
             showToast('Import failed: ' + err.message, 'error')
         }
+        e.target.value = ''
+    }
+
+    _exportDrumkit() {
+        const drumkits = soundRegistry.drumkitList
+        if (!drumkits || drumkits.length === 0) {
+            showToast('No drumkits loaded', 'info')
+            return
+        }
+        downloadJson(drumkits, 'ordrumbox-drumkits.json')
+    }
+
+    _exportSynth() {
+        const sounds = soundRegistry.generatedSounds
+        if (!sounds || Object.keys(sounds).length === 0) {
+            showToast('No synth sounds loaded', 'info')
+            return
+        }
+        downloadJson(sounds, 'ordrumbox-synth-sounds.json')
+    }
+
+    _onImportDrumkit(e) {
+        const file = e.target.files[0]
+        if (!file) return
+
+        const reader = new FileReader()
+        reader.onload = async (event) => {
+            try {
+                const data = JSON.parse(event.target.result)
+                if (!Array.isArray(data)) {
+                    showToast('Invalid drumkit file: expected a JSON array', 'error')
+                    return
+                }
+                for (const kit of data) {
+                    if (!kit.name || !Array.isArray(kit.instruments)) {
+                        showToast('Invalid drumkit entry: missing name or instruments', 'error')
+                        return
+                    }
+                }
+                for (const kit of data) {
+                    const existing = soundRegistry.drumkitList.findIndex(k => k.name === kit.name)
+                    if (existing !== -1) {
+                        soundRegistry.drumkitList[existing] = kit
+                    } else {
+                        soundRegistry.drumkitList.push(kit)
+                    }
+                }
+                await cacheDrumkits(soundRegistry.drumkitList)
+                showToast(`Imported ${data.length} drumkit(s)`, 'success')
+            } catch (err) {
+                logger.error('ToolsPanel', 'Drumkit import failed', err)
+                showToast('Import failed: ' + err.message, 'error')
+            }
+        }
+        reader.readAsText(file)
+        e.target.value = ''
+    }
+
+    _onImportSynth(e) {
+        const file = e.target.files[0]
+        if (!file) return
+
+        const reader = new FileReader()
+        reader.onload = async (event) => {
+            try {
+                const data = JSON.parse(event.target.result)
+                if (!data || typeof data !== 'object' || Array.isArray(data)) {
+                    showToast('Invalid synth file: expected a JSON object', 'error')
+                    return
+                }
+                const count = Object.keys(data).length
+                Object.assign(soundRegistry.generatedSounds, data)
+                await cacheGeneratedSounds(soundRegistry.generatedSounds)
+                serviceRegistry.audioEngine?.updateGeneratedSounds?.(soundRegistry.generatedSounds)
+                showToast(`Imported ${count} synth sound(s)`, 'success')
+            } catch (err) {
+                logger.error('ToolsPanel', 'Synth import failed', err)
+                showToast('Import failed: ' + err.message, 'error')
+            }
+        }
+        reader.readAsText(file)
         e.target.value = ''
     }
 }

@@ -1,4 +1,5 @@
 import { serviceRegistry } from '../state/service_registry.js'
+import { soundRegistry } from '../state/sound_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
@@ -24,6 +25,7 @@ export default class OutputPanel extends BasePanel {
         this._lowcutVal = 35
         this._hicutVal  = 18500
         this._spectrumLut = null
+        this._saveTimer = null
     }
 
     createDOM() {
@@ -58,6 +60,7 @@ this.container.innerHTML = `
         this.canvas.height = 100
 
         bindTabToggles(this.container)
+        this._restoreMasterSettings()
     }
 
     _buildMasterSlider() {
@@ -69,7 +72,10 @@ this.container.innerHTML = `
             step:    0.01,
             value:   1,
             format:  v => v.toFixed(2),
-            onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: v }),
+            onChange: v => {
+                serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: v })
+                this._persistMaster('volume', v)
+            },
         })
         const el = this._masterVol.createElement()
         el.dataset.orSlider = 'op-master-vol'
@@ -86,7 +92,10 @@ this.container.innerHTML = `
             value:   0,
             format:  v => (v >= 0 ? '+' : '') + v.toFixed(1),
             unit:    'dB',
-            onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v }),
+            onChange: v => {
+                serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v })
+                this._persistMaster('preGain', v)
+            },
         })
         const el = this._preGain.createElement()
         el.classList.add('op-comp-pregain')
@@ -111,6 +120,7 @@ this.container.innerHTML = `
             this._compBypass = !this._compBypass
             this._compBypassBtn.classList.toggle('active', !this._compBypass)
             serviceRegistry.audioEngine?.mixer?.setMasterBus({ bypass: this._compBypass })
+            this._persistMaster('compBypass', this._compBypass)
         })
         header.append(title, this._compBypassBtn)
         panel.appendChild(header)
@@ -128,7 +138,10 @@ this.container.innerHTML = `
                 value:    p.default,
                 format:   v => p.step < 1 ? parseFloat(v.toFixed(3)) : Math.round(v),
                 unit:     p.unit ?? '',
-                onChange: v => serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v }),
+                onChange: v => {
+                    serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v })
+                    this._persistMaster(p.key, v)
+                },
             })
             this._compSliders[p.key] = knob
             knobsRow.appendChild(knob.createElement())
@@ -180,6 +193,39 @@ this.container.innerHTML = `
             lowcut: this._lowcutVal,
             hicut:  this._hicutVal,
         })
+        this._persistMaster('lowcut', this._lowcutVal)
+        this._persistMaster('hicut', this._hicutVal)
+    }
+
+    _persistMaster(key, value) {
+        soundRegistry.settings.master[key] = value
+        if (this._saveTimer) clearTimeout(this._saveTimer)
+        this._saveTimer = setTimeout(() => {
+            serviceRegistry.resourcesLoader?.saveSettings?.()
+        }, 500)
+    }
+
+    _restoreMasterSettings() {
+        const m = soundRegistry.settings.master
+        if (!m) return
+
+        this._masterVol?.setValue(m.volume)
+        this._preGain?.setValue(m.preGain)
+        this._lowcut?.setValue(m.lowcut)
+        this._hicut?.setValue(m.hicut)
+        this._lowcutVal = m.lowcut
+        this._hicutVal = m.hicut
+
+        if (m.compBypass) {
+            this._compBypass = true
+            this._compBypassBtn?.classList.remove('active')
+        }
+
+        for (const p of COMPRESSOR_PARAMS) {
+            if (p.key in m && this._compSliders?.[p.key]) {
+                this._compSliders[p.key].setValue(m[p.key])
+            }
+        }
     }
 
     subscribe() {

@@ -3,7 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { fixPatterns, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
 import { idbGet, idbPut } from '../core/idb.js'
-import { cachePatterns, getCachedPatterns, cacheDrumkits, getCachedDrumkits, cacheSample, getCachedSample } from '../cache/idb_cache.js'
+import { cachePatterns, getCachedPatterns, cacheDrumkits, getCachedDrumkits, cacheSample, getCachedSample, cacheGeneratedSounds, getCachedGeneratedSounds } from '../cache/idb_cache.js'
 import Utils from '../core/utils.js'
 import { logger } from '../core/logger.js'
 
@@ -122,30 +122,55 @@ export default class ResourcesLoader {
     }
 
     async loadGeneratedSounds(file) {
-        const generatedSounds = await this.loadJsonResource(file)
+        let generatedSounds = await getCachedGeneratedSounds()
+        if (!generatedSounds) {
+            generatedSounds = await this.loadJsonResource(file)
+            await cacheGeneratedSounds(generatedSounds)
+        } else {
+            logger.debug('ResourcesLoader', 'Generated sounds loaded from IDB cache')
+        }
         Object.assign(soundRegistry.generatedSounds, generatedSounds)
     }
 
     async loadSettings() {
-        const defaults = { version: 1, sampleDirs: [], maxSampleDirs: 10 }
+        const masterDefaults = { volume: 1, preGain: 0, lowcut: 35, hicut: 18500,
+            compBypass: false, threshold: -18, ratio: 8, attack: 0.002,
+            release: 0.08, knee: 3, makeup: 8 }
+        const defaults = { version: 1, sampleDirs: [], maxSampleDirs: 10, master: masterDefaults }
         try {
             const raw = await idbGet('settings', ResourcesLoader.SETTINGS_KEY)
             if (raw) {
+                if (raw.master) raw.master = { ...masterDefaults, ...raw.master }
                 Object.assign(soundRegistry.settings, defaults, raw)
                 return
             }
         } catch { /* IndexedDB unavailable or empty */ }
         try {
             const settings = await this.loadJsonResource(ResourcesLoader.SETTINGS_URL)
+            if (settings.master) settings.master = { ...masterDefaults, ...settings.master }
             Object.assign(soundRegistry.settings, defaults, settings)
         } catch { /* file not found — use defaults */ }
     }
 
     async saveSettings() {
-        const { version, sampleDirs, maxSampleDirs } = soundRegistry.settings
         try {
-            await idbPut('settings', ResourcesLoader.SETTINGS_KEY, { version, sampleDirs, maxSampleDirs })
+            await idbPut('settings', ResourcesLoader.SETTINGS_KEY, structuredClone(soundRegistry.settings))
         } catch { /* IndexedDB unavailable */ }
+    }
+
+    _persistTimer = null
+
+    persistPatterns = () => {
+        if (this._persistTimer) clearTimeout(this._persistTimer)
+        this._persistTimer = setTimeout(async () => {
+            try {
+                const data = {
+                    infos: appState.songInfos ?? {},
+                    patterns: structuredClone(appState.patterns),
+                }
+                await cachePatterns(data)
+            } catch { /* IndexedDB unavailable */ }
+        }, 500)
     }
 
     async loadSong(file) {

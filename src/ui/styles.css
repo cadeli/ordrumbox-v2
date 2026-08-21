@@ -1102,6 +1102,82 @@ body {
     color: var(--color-danger);
     opacity: 1;
 }
+.tp-cache-item-view {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 0 2px;
+    font-size: var(--fs-sm);
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0.5;
+    transition: color 0.15s, opacity 0.15s;
+}
+.tp-cache-item-view:hover {
+    color: var(--color-info);
+    opacity: 1;
+}
+.tp-json-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-toast);
+}
+.tp-json-modal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 80vw;
+    max-width: 800px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.tp-json-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+.tp-json-modal-title {
+    font-size: var(--fs-md);
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tp-json-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: var(--fs-md);
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.tp-json-modal-close:hover {
+    color: var(--color-danger);
+}
+.tp-json-modal-body {
+    margin: 0;
+    padding: 12px;
+    overflow: auto;
+    font-family: monospace;
+    font-size: var(--fs-sm);
+    color: var(--text-secondary);
+    line-height: 1.4;
+    white-space: pre;
+    flex: 1;
+    min-height: 0;
+}
 .tp-cache-empty {
     color: var(--text-tertiary);
     padding: 4px 0;

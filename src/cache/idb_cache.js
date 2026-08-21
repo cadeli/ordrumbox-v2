@@ -4,6 +4,9 @@ import { logger } from '../core/logger.js'
 const PATTERNS_STORE = 'patterns'
 const DRUMKITS_STORE = 'drumkits'
 const SAMPLES_STORE = 'samples'
+const SETTINGS_STORE = 'settings'
+const SONGS_STORE = 'songs'
+const GENERATED_SOUNDS_STORE = 'generated_sounds'
 
 const SONG_KEY = 'song_data'
 const DRUMKITS_KEY = 'drumkits_data'
@@ -80,6 +83,26 @@ export async function getCachedSample(url) {
     }
 }
 
+const GEN_SOUNDS_KEY = 'generated_sounds_data'
+
+export async function cacheGeneratedSounds(json) {
+    try {
+        await idbPut(GENERATED_SOUNDS_STORE, GEN_SOUNDS_KEY, wrapWithMeta(json))
+        logger.debug('IdbCache', 'Generated sounds cached')
+    } catch (e) {
+        logger.warn('IdbCache', 'Failed to cache generated sounds', e)
+    }
+}
+
+export async function getCachedGeneratedSounds() {
+    try {
+        const entry = await idbGet(GENERATED_SOUNDS_STORE, GEN_SOUNDS_KEY) ?? null
+        return unwrap(entry)
+    } catch {
+        return null
+    }
+}
+
 export async function removeCacheEntry(type, key) {
     const store = type === 'patterns' ? PATTERNS_STORE
         : type === 'drumkits' ? DRUMKITS_STORE
@@ -110,6 +133,9 @@ export async function clearAllCache() {
         idbClearStore(PATTERNS_STORE),
         idbClearStore(DRUMKITS_STORE),
         idbClearStore(SAMPLES_STORE),
+        idbClearStore(SETTINGS_STORE),
+        idbClearStore(SONGS_STORE),
+        idbClearStore(GENERATED_SOUNDS_STORE),
     ])
     logger.debug('IdbCache', 'All cache cleared')
 }
@@ -123,6 +149,9 @@ export async function getCacheStats() {
         patterns: { count: 0, bytes: 0 },
         drumkits: { count: 0, bytes: 0 },
         samples: { count: 0, bytes: 0 },
+        settings: { count: 0, bytes: 0 },
+        songs: { count: 0, bytes: 0 },
+        generated_sounds: { count: 0, bytes: 0 },
         totalBytes: 0,
         entries: [],
     }
@@ -135,10 +164,13 @@ export async function getCacheStats() {
     }
 
     try {
-        const [patternEntries, drumkitEntries, sampleEntries] = await Promise.all([
+        const [patternEntries, drumkitEntries, sampleEntries, settingsEntries, songEntries, genSoundEntries] = await Promise.all([
             idbGetAllEntries(PATTERNS_STORE).catch(() => []),
             idbGetAllEntries(DRUMKITS_STORE).catch(() => []),
             idbGetAllEntries(SAMPLES_STORE).catch(() => []),
+            idbGetAllEntries(SETTINGS_STORE).catch(() => []),
+            idbGetAllEntries(SONGS_STORE).catch(() => []),
+            idbGetAllEntries(GENERATED_SOUNDS_STORE).catch(() => []),
         ])
 
         for (const { key, value } of patternEntries) {
@@ -159,8 +191,27 @@ export async function getCacheStats() {
             stats.samples.bytes += size
             stats.entries.push({ key, type: 'samples', size, savedAt })
         }
+        for (const { key, value } of settingsEntries) {
+            const { size, savedAt } = extractMeta(value)
+            stats.settings.count++
+            stats.settings.bytes += size
+            stats.entries.push({ key, type: 'settings', size, savedAt })
+        }
+        for (const { key, value } of songEntries) {
+            const { size, savedAt } = extractMeta(value)
+            stats.songs.count++
+            stats.songs.bytes += size
+            stats.entries.push({ key, type: 'songs', size, savedAt })
+        }
+        for (const { key, value } of genSoundEntries) {
+            const { size, savedAt } = extractMeta(value)
+            stats.generated_sounds.count++
+            stats.generated_sounds.bytes += size
+            stats.entries.push({ key, type: 'generated_sounds', size, savedAt })
+        }
 
         stats.totalBytes = stats.patterns.bytes + stats.drumkits.bytes + stats.samples.bytes
+            + stats.settings.bytes + stats.songs.bytes + stats.generated_sounds.bytes
     } catch (e) {
         logger.warn('IdbCache', 'Failed to compute cache stats', e)
     }

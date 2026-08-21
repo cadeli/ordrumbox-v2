@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import OutputPanel from '../src/ui/output_panel.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
 
 describe('OutputPanel — compressor bypass button', () => {
     let panel
@@ -11,6 +12,8 @@ describe('OutputPanel — compressor bypass button', () => {
         document.body.innerHTML = ''
         setMasterBusMock = vi.fn()
         serviceRegistry.audioEngine = { mixer: { setMasterBus: setMasterBusMock } }
+        serviceRegistry.resourcesLoader = { saveSettings: vi.fn() }
+        soundRegistry.reset()
         panel = new OutputPanel()
         panel.init()
     })

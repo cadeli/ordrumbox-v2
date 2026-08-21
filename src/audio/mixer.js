@@ -2,6 +2,7 @@ import Strip from './strip.js';
 import WorkletLoader from './worklets/loader.js';
 import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js';
 import { logger } from '../core/logger.js';
+import { soundRegistry } from '../state/sound_registry.js';
 
 // Register master bus processor at module load (idempotent)
 WorkletLoader.register('master-bus', MASTER_BUS_SOURCE);
@@ -76,7 +77,22 @@ export default class Mixer {
             this.analyser.connect(ctx.destination);
 
             try { this.transportClock.start(); } catch (_) {}
+
+            this._applySavedMasterSettings()
         }
+    }
+
+    _applySavedMasterSettings = () => {
+        const m = soundRegistry.settings?.master
+        if (!m) return
+        this.setMasterBus({
+            master: m.volume, preGain: m.preGain,
+            lowcut: m.lowcut, hicut: m.hicut,
+            bypass: m.compBypass,
+            threshold: m.threshold, ratio: m.ratio,
+            attack: m.attack, release: m.release,
+            knee: m.knee, makeup: m.makeup,
+        })
     }
 
     stop = () => {

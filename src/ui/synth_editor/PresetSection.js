@@ -4,6 +4,7 @@
 import { escapeHtml, renderOptions } from '../components/panel_helpers.js'
 import { showToast } from '../toast.js'
 import { SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META } from './constants.js'
+import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
 
 export default class PresetSection {
     /** @param {import('./synth_editor.js').default} co */
@@ -59,6 +60,12 @@ export default class PresetSection {
         const co = this._co
         co._soundRegistry.generatedSounds[key] = structuredClone(sound)
         co._serviceRegistry.audioEngine?.updateGeneratedSounds(co._soundRegistry.generatedSounds)
+        this._persist()
+    }
+
+    _persist() {
+        const sr = this._co._soundRegistry
+        cacheGeneratedSounds(sr.generatedSounds).catch?.(() => {})
     }
 
     /** @returns {string} footer HTML with preset selector and action buttons. */
@@ -140,6 +147,7 @@ export default class PresetSection {
         const idx = keys.indexOf(co._editKey)
         delete co._soundRegistry.generatedSounds[co._editKey]
         co._serviceRegistry.audioEngine?.updateGeneratedSounds(co._soundRegistry.generatedSounds)
+        this._persist()
         const nextIdx = idx < keys.length - 1 ? idx : idx - 1
         const nextKey = keys[nextIdx] === deletedName
             ? keys[(idx + 1) % keys.length]
@@ -160,6 +168,7 @@ export default class PresetSection {
         this.commitSound(newName, co._draft)
         delete co._soundRegistry.generatedSounds[co._editKey]
         co._serviceRegistry.audioEngine?.updateGeneratedSounds(co._soundRegistry.generatedSounds)
+        this._persist()
         co._editKey = newName
         co._original = structuredClone(co._draft)
         co._renderEditor()
