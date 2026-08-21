@@ -13,15 +13,11 @@ static TAG = "UTILS"
 
     static delayTimeLabels = ['1/16', '1/8', '1/4', '1/2', '1', '2', '4']
 
-    static sanitizePatternFileName = (name) => {
-        return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
-    }
-
     static getDelayTimeInSeconds = (delayTimeValue, bpm) => {
         const num = Number(delayTimeValue)
         const multiplier = Number.isFinite(num) && num !== 0 ? num : 1
         if (multiplier === 1 && (Number.isNaN(num) || num === 0)) {
-            logger.warn('Fallback', 'num', 'delayTimeValue', 1)
+            logger.warn(Utils.TAG, 'num', 'delayTimeValue', 1)
         }
         return (60 / bpm) * multiplier;
     }
@@ -41,7 +37,7 @@ static TAG = "UTILS"
     static toFiniteNumber = (value, fallback = 0, label = null) => {
         const num = Number(value)
         if (!Number.isFinite(num)) {
-            if (label) logger.warn('Fallback', 'num', label, fallback)
+            if (label) logger.warn(Utils.TAG, 'num', label, fallback)
             return fallback
         }
         return num
@@ -147,6 +143,7 @@ static TAG = "UTILS"
         return Utils.getTrackStepLength(track)
     }
 
+    // TEST UTILITY — not used in production
     static getLoopCandidateSteps = (trackSteps, minLoopSteps = 1) => {
         const candidates = []
         for (let loopAtStep = minLoopSteps; loopAtStep < trackSteps; loopAtStep++) {
@@ -267,6 +264,8 @@ static TAG = "UTILS"
         KICK: 0, SNARE: 1, TOM: 2, CLAP: 3,
         COWBELL: 4, CHH: 5, OHH: 6, CRASH: 7
     }
+
+    static DRUM_TYPES = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
 
     static PAN_MAP = [0, 0.3, 0.5, -0.4, 0.4, -0.3, -0.2, 1]
 

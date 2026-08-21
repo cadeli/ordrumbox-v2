@@ -83,25 +83,21 @@ export default class BaseGenerator {
         if (phrase.source === 'reuse' && typeof phrase.reuseIndex === 'number') {
             return cachedPitches[phrase.reuseIndex] ?? pitchBias
         }
-        if (phrase.source === 'root') {
-            return pitchBias
+
+        const sourceOffsets = {
+            root: 0,
+            third: 4,
+            fifth: 7,
+            seventh: 11,
+            octave: 12,
+            approach: Math.random() < 0.5 ? -1 : -2,
         }
-        if (phrase.source === 'third') {
-            return 4 + pitchBias
+        if (sourceOffsets.hasOwnProperty(phrase.source)) {
+            return (typeof sourceOffsets[phrase.source] === 'function'
+                ? sourceOffsets[phrase.source]()
+                : sourceOffsets[phrase.source]) + pitchBias
         }
-        if (phrase.source === 'fifth') {
-            return 7 + pitchBias
-        }
-        if (phrase.source === 'seventh') {
-            return 11 + pitchBias
-        }
-        if (phrase.source === 'octave') {
-            return 12 + pitchBias
-        }
-        if (phrase.source === 'approach') {
-            const approachFrom = Math.random() < 0.5 ? -1 : -2
-            return approachFrom + pitchBias
-        }
+
         return this.getRndTone(tones) + pitchBias
     }
 

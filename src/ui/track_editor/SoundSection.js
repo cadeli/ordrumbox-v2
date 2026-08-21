@@ -169,8 +169,8 @@ export default class SoundSection {
             if (aSelected !== bSelected) return aSelected - bSelected
             const kitCompare = String(a.kitName ?? '').localeCompare(String(b.kitName ?? ''))
             if (kitCompare !== 0) return kitCompare
-            const sortKeyA = a.display_name || a.url || ''
-            const sortKeyB = b.display_name || b.url || ''
+            const sortKeyA = a.display_name ?? a.url ?? ''
+            const sortKeyB = b.display_name ?? b.url ?? ''
             return sortKeyA.localeCompare(sortKeyB)
         })
     }

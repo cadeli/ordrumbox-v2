@@ -29,6 +29,10 @@ export default class ModulationSection {
         return props.find(p => p.key === co._selectedLfoTarget) ?? props[0]
     }
 
+    _getDefaultLfo(prop, type = 'sine') {
+        return { type, freq: 1, min: prop.min, max: prop.max, phase: 0 }
+    }
+
     // ── Render ─────────────────────────────────────────────────────
 
     render() {
@@ -108,7 +112,7 @@ export default class ModulationSection {
         if (track[prop.lfo]) {
             delete track[prop.lfo]
         } else {
-            track[prop.lfo] = { type: 'sine', freq: 1, min: prop.min, max: prop.max, phase: 0 }
+            track[prop.lfo] = this._getDefaultLfo(prop)
         }
     }
 
@@ -121,7 +125,7 @@ export default class ModulationSection {
         let lfo = track[prop.lfo]
         let needsSync = false
         if (!lfo) {
-            lfo = track[prop.lfo] = { type: 'sine', freq: 1, min: prop.min, max: prop.max, phase: 0 }
+            lfo = track[prop.lfo] = this._getDefaultLfo(prop)
             needsSync = true
         }
         const key = input.dataset.lfoKey
@@ -146,7 +150,7 @@ export default class ModulationSection {
         if (!prop) return
         let lfo = track[prop.lfo]
         if (!lfo) {
-            lfo = track[prop.lfo] = { type: sel.value, freq: 1, min: prop.min, max: prop.max, phase: 0 }
+            lfo = track[prop.lfo] = this._getDefaultLfo(prop, sel.value)
         }
         lfo.type = sel.value
     }

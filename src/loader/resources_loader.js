@@ -25,6 +25,7 @@ export default class ResourcesLoader {
             if (this._autoPersistEnabled) this.persistPatterns()
         })
         playbackEvents.on('drumkitChange', () => this.saveSession())
+        playbackEvents.on('selectedPatternChange', () => this.saveSession())
         playbackEvents.on('trackParamChange', () => this.saveSession())
         playbackEvents.on('toolsToggle', () => this.saveSession())
         playbackEvents.on('drumkitManagerToggle', () => this.saveSession())
@@ -183,8 +184,7 @@ export default class ResourcesLoader {
         s.selectedPatternNum = appState.selectedPatternNum
         s.selectedTrackNum = appState.selectedTrackNum
         s.currentView = serviceRegistry.viewManager?.currentView ?? 'edit'
-        if (this._sessionTimer) clearTimeout(this._sessionTimer)
-        this._sessionTimer = setTimeout(() => this.saveSettings(), 500)
+        this.saveSettings()
     }
 
     restoreSession = () => {
@@ -211,7 +211,6 @@ export default class ResourcesLoader {
     }
 
     async loadSong(file) {
-        this.isPatternsComplete = false
         let json = await getCachedPatterns()
         if (!json) {
             json = await this.loadJsonResource(file)

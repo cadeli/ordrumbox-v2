@@ -337,19 +337,7 @@ export default class Toolbar {
         })
 
         this.drumBtn.addEventListener('click', async () => {
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            if (!pattern) return
-
-            const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
-            const hasDrumAuto = (pattern.tracks ?? []).some(t => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
-
-            if (hasDrumAuto) {
-                for (const track of pattern.tracks) {
-                    if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = false
-                }
-            } else {
-                const { getAutoGenerateService } = await import('../state/service_registry.js')
-                const autoGen = await getAutoGenerateService()
+            await this._toggleAutoGen(Utils.DRUM_TYPES, async (pattern, autoGen) => {
                 await autoGen.generatePattern()
 
                 if (pattern.tracks) {
@@ -360,29 +348,14 @@ export default class Toolbar {
                     })
                 }
                 for (const track of pattern.tracks) {
-                    if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = true
+                    if (Utils.DRUM_TYPES.has(Utils.detectTrackType(track.name))) track.auto = true
                 }
-            }
-            this.syncGenButtons()
-            this.syncPatterns()
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            })
         })
 
         this.bassBtn.addEventListener('click', async () => {
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            if (!pattern) return
-
-            const hasBassAuto = (pattern.tracks ?? []).some(t => t.auto && Utils.detectTrackType(t.name) === 'BASS')
-
-            if (hasBassAuto) {
-                for (const track of pattern.tracks) {
-                    if (Utils.detectTrackType(track.name) === 'BASS') track.auto = false
-                }
-            } else {
+            await this._toggleAutoGen('BASS', async (pattern, autoGen) => {
                 let bassTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'BASS')
-                const { getAutoGenerateService } = await import('../state/service_registry.js')
-                const autoGen = await getAutoGenerateService()
 
                 if (!bassTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
@@ -401,27 +374,12 @@ export default class Toolbar {
                     serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
                 }
                 bassTrack.auto = true
-            }
-            this.syncGenButtons()
-            this.syncPatterns()
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            })
         })
 
         this.chordsBtn.addEventListener('click', async () => {
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            if (!pattern) return
-
-            const hasPianoAuto = (pattern.tracks ?? []).some(t => t.auto && Utils.detectTrackType(t.name) === 'PIANO')
-
-            if (hasPianoAuto) {
-                for (const track of pattern.tracks) {
-                    if (Utils.detectTrackType(track.name) === 'PIANO') track.auto = false
-                }
-            } else {
+            await this._toggleAutoGen('PIANO', async (pattern, autoGen) => {
                 let pianoTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'PIANO')
-                const { getAutoGenerateService } = await import('../state/service_registry.js')
-                const autoGen = await getAutoGenerateService()
 
                 if (!pianoTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
@@ -440,11 +398,7 @@ export default class Toolbar {
                     serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
                 }
                 pianoTrack.auto = true
-            }
-            this.syncGenButtons()
-            this.syncPatterns()
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            })
         })
 
         this.prevPageBtn.addEventListener('click', () => {
@@ -578,6 +532,36 @@ export default class Toolbar {
     syncBeats = () => {
         const pattern = appState.patterns[appState.selectedPatternNum]
         this.beatsSelect.value = pattern?.nbBeats ?? 4
+    }
+
+    /**
+     * Toggle auto-generation for tracks of given type(s).
+     * @param {string|string[]} typeOrTypes - Track type(s) to toggle (e.g. 'BASS', 'PIANO', or ['KICK','SNARE',...])
+     * @param {Function} generateFn - Async function to generate track(s) when auto is off. Receives (pattern, autoGen).
+     */
+    async _toggleAutoGen(typeOrTypes, generateFn) {
+        const pattern = appState.patterns[appState.selectedPatternNum]
+        if (!pattern) return
+
+        const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes]
+        const hasAuto = (pattern.tracks ?? []).some(t =>
+            t.auto && types.includes(Utils.detectTrackType(t.name))
+        )
+
+        if (hasAuto) {
+            for (const track of pattern.tracks) {
+                if (types.includes(Utils.detectTrackType(track.name))) track.auto = false
+            }
+        } else {
+            const { getAutoGenerateService } = await import('../state/service_registry.js')
+            const autoGen = await getAutoGenerateService()
+            await generateFn(pattern, autoGen)
+        }
+
+        this.syncGenButtons()
+        this.syncPatterns()
+        playbackEvents.emit("noteChange")
+        playbackEvents.emit("patternChange")
     }
 
     _setupOverflowObserver() {

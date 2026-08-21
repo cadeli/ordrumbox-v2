@@ -12,7 +12,7 @@ import { isMobileViewport, BEATS_PER_PAGE } from '../core/constants.js'
 
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
-import { logger, nameOr } from "../core/logger.js"
+import { logger } from "../core/logger.js"
 import { downloadJson, pitchToNoteName, formatNoteTooltip } from './components/panel_helpers.js'
 
 import HeaderSection from './pattern_panel/HeaderSection.js'
@@ -28,7 +28,6 @@ export default class PatternPanel extends BasePanel {
 
         this._appState = deps.appState ?? appState
         this._serviceRegistry = deps.serviceRegistry ?? serviceRegistry
-        this._soundRegistry = deps.soundRegistry ?? soundRegistry
         this._playbackEvents = deps.playbackEvents ?? playbackEvents
 
         this._selNote = null
@@ -101,7 +100,6 @@ export default class PatternPanel extends BasePanel {
         const note = notesAtStep[Math.min(noteIdx, notesAtStep.length - 1)]
 
         const trackPitch = track.pitch ?? 0
-        const noteName = pitchToNoteName(trackPitch + (note.pitch ?? 0))
 
         this._ensureTooltip()
         this._tooltip.textContent = formatNoteTooltip(note, trackPitch)

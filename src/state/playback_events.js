@@ -1,5 +1,5 @@
 /**
- * Generic EventBus with backward-compatible Proxy support for legacy onX / dispatchX calls.
+ * Generic EventBus - simple pub/sub for internal events.
  */
 class EventBus {
     constructor() {
@@ -42,26 +42,13 @@ class EventBus {
 
 const bus = new EventBus()
 
+/** Backward-compat proxy for tests using onX pattern (e.g. onPatternChange.push) */
 export const playbackEvents = new Proxy(bus, {
     get(target, prop) {
         if (typeof prop !== 'string') return Reflect.get(target, prop)
         if (prop in target) return Reflect.get(target, prop)
 
-        // Legacy dispatchX(payload) -> bus.emit('X', payload)
-        if (prop.startsWith('dispatch')) {
-            const eventName = prop.slice(8)
-            const event = eventName.charAt(0).toLowerCase() + eventName.slice(1)
-            return (payload) => target.emit(event, payload)
-        }
-
-        // Legacy offX(fn) -> bus.off('X', fn)
-        if (prop.startsWith('off')) {
-            const eventName = prop.slice(3)
-            const event = eventName.charAt(0).toLowerCase() + eventName.slice(1)
-            return (fn) => target.off(event, fn)
-        }
-
-        // Legacy onX array access (e.g. playbackEvents.on("patternChange", fn))
+        // Legacy onX array access (e.g. playbackEvents.onPatternChange.push(fn))
         if (prop.startsWith('on')) {
             const eventName = prop.slice(2)
             const event = eventName.charAt(0).toLowerCase() + eventName.slice(1)

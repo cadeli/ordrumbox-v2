@@ -12,6 +12,7 @@ import {
 } from './engine.js'
 import { TICK } from '../core/constants.js'
 
+// Re-exports from engine.js for test compatibility
 export { normalizeArp, hasArp, getArpNoteCount, isTrigged, isProbabilityTrigged, generateSubNotes, createArpFlatNote }
 
 /**

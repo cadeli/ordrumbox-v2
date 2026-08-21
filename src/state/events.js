@@ -1,5 +1,7 @@
 // src/state/events.js
 // Centralised event name constants — no more magic strings on playbackEvents.
+// NOTE: EVENT constants are DEAD CODE - not used in production. Kept for documentation only.
+// If needed in future, re-add and import from this module.
 
 export const EVENT = Object.freeze({
     TRACK_SELECT:            'trackSelect',

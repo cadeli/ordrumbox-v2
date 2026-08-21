@@ -1,8 +1,6 @@
 import Utils from '../core/utils.js'
 import { recalcLoopDerived, normalizeTrack } from '../model/track_schema.js'
 import {
-    NOTE_DEFAULTS,
-    NOTE_KEY_ORDER,
     compactArrayToNote,
     isCompactFormat,
     normalizeNote
@@ -35,10 +33,7 @@ export function fixNoteStepBar(track, note) {
     return note
 }
 
-/**
- * @deprecated Use normalizeNote from note_schema.js instead
- * Kept for backward compatibility with tests
- */
+// TEST UTILITY — deprecated, use normalizeNote from note_schema.js instead
 export function fixNoteDefaults(note, track) {
     fixNoteStepBar(track, note)
     Object.assign(note, normalizeNote(note))

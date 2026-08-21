@@ -30,6 +30,23 @@ function unwrap(entry) {
     return entry
 }
 
+function extractMeta(entry) {
+    if (!entry) return { size: 0, savedAt: null }
+    if ('size' in entry && 'savedAt' in entry) {
+        return { size: entry.size, savedAt: entry.savedAt }
+    }
+    return { size: measureBytes(entry), savedAt: entry?.savedAt ?? null }
+}
+
+function accumulateStats(stats, entries, typeKey) {
+    for (const { key, value } of entries) {
+        const { size, savedAt } = extractMeta(value)
+        stats[typeKey].count++
+        stats[typeKey].bytes += size
+        stats.entries.push({ key, type: typeKey, size, savedAt })
+    }
+}
+
 export async function cachePatterns(json) {
     try {
         await idbPut(PATTERNS_STORE, SONG_KEY, wrapWithMeta(json))
@@ -173,42 +190,12 @@ export async function getCacheStats() {
             idbGetAllEntries(GENERATED_SOUNDS_STORE).catch(() => []),
         ])
 
-        for (const { key, value } of patternEntries) {
-            const { size, savedAt } = extractMeta(value)
-            stats.patterns.count++
-            stats.patterns.bytes += size
-            stats.entries.push({ key, type: 'patterns', size, savedAt })
-        }
-        for (const { key, value } of drumkitEntries) {
-            const { size, savedAt } = extractMeta(value)
-            stats.drumkits.count++
-            stats.drumkits.bytes += size
-            stats.entries.push({ key, type: 'drumkits', size, savedAt })
-        }
-        for (const { key, value } of sampleEntries) {
-            const { size, savedAt } = extractMeta(value)
-            stats.samples.count++
-            stats.samples.bytes += size
-            stats.entries.push({ key, type: 'samples', size, savedAt })
-        }
-        for (const { key, value } of settingsEntries) {
-            const { size, savedAt } = extractMeta(value)
-            stats.settings.count++
-            stats.settings.bytes += size
-            stats.entries.push({ key, type: 'settings', size, savedAt })
-        }
-        for (const { key, value } of songEntries) {
-            const { size, savedAt } = extractMeta(value)
-            stats.songs.count++
-            stats.songs.bytes += size
-            stats.entries.push({ key, type: 'songs', size, savedAt })
-        }
-        for (const { key, value } of genSoundEntries) {
-            const { size, savedAt } = extractMeta(value)
-            stats.generated_sounds.count++
-            stats.generated_sounds.bytes += size
-            stats.entries.push({ key, type: 'generated_sounds', size, savedAt })
-        }
+        accumulateStats(stats, patternEntries, 'patterns')
+        accumulateStats(stats, drumkitEntries, 'drumkits')
+        accumulateStats(stats, sampleEntries, 'samples')
+        accumulateStats(stats, settingsEntries, 'settings')
+        accumulateStats(stats, songEntries, 'songs')
+        accumulateStats(stats, genSoundEntries, 'generated_sounds')
 
         stats.totalBytes = stats.patterns.bytes + stats.drumkits.bytes + stats.samples.bytes
             + stats.settings.bytes + stats.songs.bytes + stats.generated_sounds.bytes

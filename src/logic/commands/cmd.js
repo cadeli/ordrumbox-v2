@@ -71,9 +71,6 @@ export default class Commander {
         }
     }
 
-    isNoteAt = (track, beat, beatStep) =>
-        Object.values(track.notes).filter(n => n.beatStep === beatStep && n.beat === beat)
-
     deleteNote = (track, selNote) => {
         const values = Object.values(track.notes)
         for (let i = values.length - 1; i >= 0; i--) {
@@ -86,6 +83,10 @@ export default class Commander {
             }
         }
     }
+
+    // TEST UTILITIES — not used in production
+    isNoteAt = (track, beat, beatStep) =>
+        Object.values(track.notes).filter(n => n.beatStep === beatStep && n.beat === beat)
 
     addNote = (track, beat, beatStep, pitch = 0) => {
         let steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
@@ -158,9 +159,12 @@ export default class Commander {
 
     setPatternBpm = (pattern, bpm) => {
         const bpmNum = Number(bpm)
-        pattern.bpm = Number.isFinite(bpmNum) && bpmNum !== 0
-            ? bpmNum
-            : (logger.warn('Command', 'bpm NaN/0', bpm), Defaults.getPatternProp({}, 'bpm'))
+        if (!Number.isFinite(bpmNum) || bpmNum === 0) {
+            logger.warn('Command', 'bpm NaN/0', bpm)
+            pattern.bpm = Defaults.getPatternProp({}, 'bpm')
+        } else {
+            pattern.bpm = bpmNum
+        }
         this._persist()
         return pattern
     }
@@ -185,10 +189,6 @@ export default class Commander {
     createPattern = (name) => {
         name ??= `NewPat_${appState.patterns.length}`
         return { name, description: "", tracks: [], bpm: 120, nbBeats: 4 }
-    }
-
-    kitIsLoaded = (drumkit) => {
-        return Object.values(soundRegistry.sounds).some(sound => sound.kit_name === drumkit.name);
     }
 
     setSelectedDrumkitNum = async (num) => {
@@ -228,30 +228,11 @@ export default class Commander {
                 }
                 serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
                 // console.log(flatnotes)
+                playbackEvents.emit("selectedPatternChange")
             }
         } catch (err) {
             logger.error('Commander', 'cmd::setSelectedPatternNum failed', err)
         }
-    }
-
-
-    getTrackFromType = (pattern, type) => {
-        return Utils.getTracksArray(pattern).find(track => track.name === type) ?? null
-    }
-
-
-
-    setNbBeats = (pattern, newBeats) => {
-        let oldBeats = pattern.nbBeats * (Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4)
-        pattern.nbBeats = newBeats * 4
-        Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
-            if (track.loopAtStep >= oldBeats) {
-                track.loopAtStep = pattern.nbBeats * track.stepsPerBeat
-                recalcLoopDerived(track)
-            }
-            track.nbBeats = pattern.nbBeats
-        })
-        this._persist()
     }
 
     incrNbStepPerBar = (track) => {
@@ -291,10 +272,6 @@ export default class Commander {
         track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
     }
 
-    getAllSoundsForType(soundKey) {
-        return Object.values(soundRegistry.sounds).filter(s => s.key === soundKey)
-    }
-
     changeTrackSound = (track, soundId) => {
         track.soundId = soundId
         track.useAutoAssignSound = false
@@ -311,5 +288,28 @@ export default class Commander {
         const entry = Object.entries(soundRegistry.sounds).find(([, s]) => s.url === url)
         return entry?.[0] ?? NOT_FOUND
     }
+
+    // TEST UTILITIES — not used in production
+    kitIsLoaded = (drumkit) =>
+        Object.values(soundRegistry.sounds).some(sound => sound.kit_name === drumkit.name)
+
+    getTrackFromType = (pattern, type) =>
+        Utils.getTracksArray(pattern).find(track => track.name === type) ?? null
+
+    setNbBeats = (pattern, newBeats) => {
+        let oldBeats = pattern.nbBeats * (Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4)
+        pattern.nbBeats = newBeats * 4
+        Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
+            if (track.loopAtStep >= oldBeats) {
+                track.loopAtStep = pattern.nbBeats * track.stepsPerBeat
+                recalcLoopDerived(track)
+            }
+            track.nbBeats = pattern.nbBeats
+        })
+        this._persist()
+    }
+
+    getAllSoundsForType = (soundKey) =>
+        Object.values(soundRegistry.sounds).filter(s => s.key === soundKey)
 
 }

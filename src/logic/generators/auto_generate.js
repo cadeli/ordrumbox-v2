@@ -36,6 +36,26 @@ export default class AutoGenerate {
         this.structureGen = new StructureSong()
     }
 
+    /**
+     * Find matching config from structure for a given track type.
+     * Prefers exact name match, falls back to first config of same type.
+     */
+    _findTrackConfig(structure, track) {
+        const type = Utils.detectTrackType(track.name)
+        const trackNameUpper = track.name.toUpperCase()
+        let config = null
+
+        for (const [name, cfg] of Object.entries(structure)) {
+            if (Utils.detectTrackType(name) === type) {
+                config = cfg
+                if (trackNameUpper.includes(name.toUpperCase())) {
+                    break
+                }
+            }
+        }
+        return config
+    }
+
     generatePattern = async (options = {}) => {
         try {
             let pattern = appState.patterns[appState.selectedPatternNum]
@@ -63,19 +83,7 @@ export default class AutoGenerate {
                 }
             } else {
                 for (const track of pattern.tracks) {
-                    const type = Utils.detectTrackType(track.name)
-
-                    let config = null
-                    const trackNameUpper = track.name.toUpperCase()
-                    for (const [name, cfg] of Object.entries(structure)) {
-                        if (Utils.detectTrackType(name) === type) {
-                            config = cfg
-                            if (trackNameUpper.includes(name.toUpperCase())) {
-                                break
-                            }
-                        }
-                    }
-
+                    const config = this._findTrackConfig(structure, track)
                     if (config) {
                         logger.info(AutoGenerate.TAG, `  track=${track.name}, variant=${config}`)
                         await this.generateTrack(track, config, 1, pattern, harmony)
@@ -160,20 +168,9 @@ export default class AutoGenerate {
                 ? this._cachedStructure
                 : (this._cachedGenre = genre, this._cachedStructure = this.structureGen.generateStructure(genre))
 
-            const type = Utils.detectTrackType(track.name)
-            let config = null
-            const trackNameUpper = track.name.toUpperCase()
+            const config = this._findTrackConfig(structure, track)
 
-            for (const [name, cfg] of Object.entries(structure)) {
-                if (Utils.detectTrackType(name) === type) {
-                    config = cfg
-                    if (trackNameUpper.includes(name.toUpperCase())) {
-                        break
-                    }
-                }
-            }
-
-            if (config ) {
+            if (config) {
                 if (isBreak && type === 'SNARE') {
                     logger.info(AutoGenerate.TAG, `  -> breakCrescendo mode`)
                     await this.snareGen.generateNewSnare(track, 'breakCrescendo', density)

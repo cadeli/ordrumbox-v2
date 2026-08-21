@@ -10,7 +10,6 @@ import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_r
 import { playbackEvents as _playbackEventsSingleton } from '../state/playback_events.js'
 import { OrKnob } from './components/or_knob.js'
 import { fmt, escapeHtml } from './components/panel_helpers.js'
-import { logger } from '../core/logger.js'
 
 import GroupsSection from './synth_editor/GroupsSection.js'
 import WaveformSection from './synth_editor/WaveformSection.js'
