@@ -114,6 +114,7 @@ export function init() {
         outputPanel: _outputPanel,
         drumkitManager: _drumkitManager,
         patternsPanel: _patternsPanel,
+        aboutPanel: _aboutPanel,
     })
     _viewManager.init()
 

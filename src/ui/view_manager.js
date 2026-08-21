@@ -9,52 +9,80 @@ import { isMobileLandscape, removeLayout } from './mobile_track_layout.js'
  * Listens to toolbar and tab toggle events and calls panel.show() / panel.hide()
  * without touching another panel's DOM.
  *
- * Bottom-left slot panels (tools, dm, pp, about) are not views — they replace
- * the output panel in the same DOM slot without changing the main view.
+ * Slot panels (tools, dm, pp, about, output) are mutually exclusive —
+ * showing one hides all others and replaces the output panel in the same DOM slot.
  */
 export default class ViewManager {
-    constructor({ trackEditor, synthEditor, pianoRollPanel, noteEditor, toolsPanel, patternSettingsPanel, outputPanel, drumkitManager, patternsPanel }) {
+    constructor({ trackEditor, synthEditor, pianoRollPanel, noteEditor, toolsPanel, patternSettingsPanel, outputPanel, drumkitManager, patternsPanel, aboutPanel }) {
         this._trackEditor = trackEditor
         this._synthEditor = synthEditor
         this._pianoRollPanel = pianoRollPanel
         this._noteEditor = noteEditor
-        this._toolsPanel = toolsPanel
         this._patternSettingsPanel = patternSettingsPanel
         this._outputPanel = outputPanel
-        this._drumkitManager = drumkitManager
-        this._patternsPanel = patternsPanel
         this._currentView = null
+
+        // ── Slot panel registry: short name → { event, panel } ─────────────
+        this._slots = new Map([
+            ['tools', { event: 'toolsToggle',           panel: toolsPanel }],
+            ['dm',    { event: 'drumkitManagerToggle',  panel: drumkitManager }],
+            ['pp',    { event: 'patternsToggle',         panel: patternsPanel }],
+            ['about', { event: 'aboutToggle',            panel: aboutPanel }],
+            ['output',{ event: 'outputToggle',           panel: outputPanel }],
+        ])
+        // Reverse lookup: event name → short name
+        this._eventToSlot = new Map(
+            [...this._slots].map(([name, { event }]) => [event, name])
+        )
     }
 
     init() {
+        // View switches (synth, edit, proll, mobile)
         playbackEvents.on("synthToggle", () => this._switchTo('synth'))
         playbackEvents.on("editToggle", () => this._switchTo('edit'))
         playbackEvents.on("prollToggle", () => this._switchTo('proll'))
         playbackEvents.on("mobileSeqToggle", () => this._switchTo('mobileSeq'))
         playbackEvents.on("mobileTrackToggle", () => this._switchTo('mobileTrack'))
-        playbackEvents.on("toolsToggle", (show) => this._toggleSlotPanel(show, 'tools'))
-        playbackEvents.on("drumkitManagerToggle", (show) => this._toggleSlotPanel(show, 'dm'))
-        playbackEvents.on("patternsToggle", (show) => this._toggleSlotPanel(show, 'pp'))
+
+        // Slot panels — one listener per event, all routed through _toggleSlotPanel
+        for (const [name, { event, panel }] of this._slots) {
+            playbackEvents.on(event, (show) => this._toggleSlotPanel(show, name, panel))
+        }
     }
 
     get currentView() {
         return this._currentView
     }
 
-    _ensureTrackEditorVisible() {
-        if (!this._trackEditor.isVisible) {
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            const idx = appState.selectedTrackNum
-            const track = pattern?.tracks?.[idx]
-            if (track) {
-                this._trackEditor._track = track
-                this._trackEditor._trackIdx = idx
-                this._trackEditor.sync()
+    // ── Slot panel logic ──────────────────────────────────────────────────
+
+    _toggleSlotPanel(show, name, panel) {
+        if (!panel) return
+        if (show) {
+            if (isMobileViewport()) {
+                this._currentView = name
             }
+            this._hideOtherSlotPanels(name)
+            this._ensureTrackEditorVisible()
+            this._ensureNoteEditorVisible()
+            panel.show()
+            if (this._outputPanel?.isVisible && name !== 'output') this._outputPanel.hide()
+        } else {
+            panel.hide()
+            if (isMobileViewport() && this._currentView === name) {
+                this._currentView = 'mobileSeq'
+            }
+            if (name !== 'output') this._outputPanel?.show()
         }
-        this._trackEditor.container?.style.setProperty('display', 'block')
-        this._trackEditor.container?.classList.add('pp-split')
     }
+
+    _hideOtherSlotPanels(exceptName) {
+        for (const [name, { panel }] of this._slots) {
+            if (name !== exceptName && panel?.isVisible) panel.hide()
+        }
+    }
+
+    // ── View switching ────────────────────────────────────────────────────
 
     _switchTo(view) {
         if (view === this._currentView) return
@@ -74,7 +102,7 @@ export default class ViewManager {
             this._noteEditor?.hide()
             removeLayout(this._trackEditor.container)
         }
-        if (isMobileViewport() && (prev === 'tools' || prev === 'dm' || prev === 'pp')) {
+        if (isMobileViewport() && this._slots.has(prev)) {
             this._hideOtherSlotPanels(null)
         }
 
@@ -87,34 +115,21 @@ export default class ViewManager {
         setViewMode(view)
     }
 
-    _toggleSlotPanel(show, kind) {
-        const panel = kind === 'tools' ? this._toolsPanel
-            : kind === 'dm' ? this._drumkitManager
-            : kind === 'pp' ? this._patternsPanel
-            : null
-        if (!panel) return
-        if (show) {
-            if (isMobileViewport()) {
-                this._currentView = kind
-            }
-            this._hideOtherSlotPanels(kind)
-            this._ensureTrackEditorVisible()
-            this._ensureNoteEditorVisible()
-            panel.show()
-            if (this._outputPanel?.isVisible) this._outputPanel.hide()
-        } else {
-            panel.hide()
-            if (isMobileViewport() && this._currentView === kind) {
-                this._currentView = 'mobileSeq'
-            }
-            this._outputPanel?.show()
-        }
-    }
+    // ── Helpers ───────────────────────────────────────────────────────────
 
-    _hideOtherSlotPanels(except) {
-        if (except !== 'tools' && this._toolsPanel?.isVisible) this._toolsPanel.hide()
-        if (except !== 'dm' && this._drumkitManager?.isVisible) this._drumkitManager.hide()
-        if (except !== 'pp' && this._patternsPanel?.isVisible) this._patternsPanel.hide()
+    _ensureTrackEditorVisible() {
+        if (!this._trackEditor.isVisible) {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            const idx = appState.selectedTrackNum
+            const track = pattern?.tracks?.[idx]
+            if (track) {
+                this._trackEditor._track = track
+                this._trackEditor._trackIdx = idx
+                this._trackEditor.sync()
+            }
+        }
+        this._trackEditor.container?.style.setProperty('display', 'block')
+        this._trackEditor.container?.classList.add('pp-split')
     }
 
     _ensureNoteEditorVisible() {
