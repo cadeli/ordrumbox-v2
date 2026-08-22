@@ -344,6 +344,7 @@ function toggleTrackMute(trackIndex) {
     const track = getSelectedPattern()?.tracks?.[trackIndex]
     if (track) {
         track.mute = !track.mute;
+        playbackEvents.emit('patternChange')
     }
 }
 
@@ -413,6 +414,7 @@ async function convertToGeneratedSounds() {
 
     serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0)
     serviceRegistry.audioEngine?.invalidateCache()
+    playbackEvents.emit('patternChange')
     logger.info('Main', 'All tracks converted to generated sounds')
 }
 

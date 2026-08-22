@@ -42,6 +42,8 @@ export default class PianoRollPanel extends BasePanel {
         this._cursorRow = -1
         this._prevLitTick = -1
         this._litNoteEls = []
+        this._keysDirty = true
+        this._gridDirty = true
     }
 
     createDOM() {
@@ -66,15 +68,17 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on("noteChange", () => this._sync())
-        playbackEvents.on("trackParamChange", () => this._sync())
-        playbackEvents.on("patternStructureChange", () => this._sync())
+        playbackEvents.on("noteChange", () => this._syncNotes())
+        playbackEvents.on("trackParamChange", () => this._syncNotes())
+        playbackEvents.on("patternStructureChange", () => { this._keysDirty = true; this._gridDirty = true; this._sync() })
         playbackEvents.on("trackSelect", (data) => {
             if (!data) return
             this._track = data.track
             this._trackIdx = data.trackIdx
             if (this.isVisible) {
                 this._firstShow = true
+                this._keysDirty = true
+                this._gridDirty = true
                 this._sync()
             }
         })
@@ -101,6 +105,8 @@ export default class PianoRollPanel extends BasePanel {
 
     show() {
         this._firstShow = true
+        this._keysDirty = true
+        this._gridDirty = true
         this._pageStartBeat = 0
         this._clearSelection()
         super.show()
@@ -139,7 +145,10 @@ export default class PianoRollPanel extends BasePanel {
     _onResize() {
         const prev = this._cellWidth
         this._measureCellWidth()
-        if (this._cellWidth !== prev) this._sync()
+        if (this._cellWidth !== prev) {
+            this._gridDirty = true
+            this._sync()
+        }
     }
 
     _pageInfo() {
@@ -157,8 +166,9 @@ export default class PianoRollPanel extends BasePanel {
         if (!this.container) return
         this._clampPage()
         this._measureCellWidth()
-        this._renderKeys()
-        this._renderGrid()
+        if (this._keysDirty) { this._renderKeys(); this._keysDirty = false }
+        if (this._gridDirty) { this._renderGrid(); this._gridDirty = false }
+        this._renderLoopPoint()
         this._renderNotes()
         this._updateTrackName()
         this._updatePageInfo()
@@ -168,6 +178,16 @@ export default class PianoRollPanel extends BasePanel {
         if (this._firstShow) {
             this._scrollToTrackCenter()
             this._firstShow = false
+        }
+    }
+
+    _syncNotes() {
+        if (!this.container || !this.isVisible) return
+        this._clampPage()
+        this._renderLoopPoint()
+        this._renderNotes()
+        if (this._playhead) {
+            this.container.querySelector('#pp-piano-grid')?.appendChild(this._playhead)
         }
     }
 
@@ -248,7 +268,16 @@ export default class PianoRollPanel extends BasePanel {
         }
         gridEl.innerHTML = html
 
+        this._renderLoopPoint(gridEl)
+    }
+
+    _renderLoopPoint(gridEl) {
+        if (!gridEl) gridEl = this.container?.querySelector('#pp-piano-grid')
+        if (!gridEl) return
+        gridEl.querySelectorAll('.pp-pr-loop-point').forEach(el => el.remove())
         const track = this._track
+        if (!track) return
+        const { pageStartStep, visibleSteps } = this._pageInfo()
         const loopAtStep = track.loopAtStep ?? (this._pageInfo().totalSteps)
         if (loopAtStep > pageStartStep && loopAtStep <= pageStartStep + visibleSteps) {
             const lpEl = document.createElement('div')
@@ -465,6 +494,7 @@ export default class PianoRollPanel extends BasePanel {
         if (this._pageStartBeat <= 0) return
         this._pageStartBeat -= PAGE_BEATS
         this._clampPage()
+        this._gridDirty = true
         this._sync()
     }
 
@@ -473,6 +503,7 @@ export default class PianoRollPanel extends BasePanel {
         if (this._pageStartBeat >= maxStart) return
         this._pageStartBeat += PAGE_BEATS
         this._clampPage()
+        this._gridDirty = true
         this._sync()
     }
 
@@ -543,6 +574,7 @@ export default class PianoRollPanel extends BasePanel {
         const pageEndStep = pageStartStep + PAGE_BEATS * stepsPerBeat
         if (this._cursorStep < pageStartStep || this._cursorStep >= pageEndStep) {
             this._pageStartBeat = Math.floor(this._cursorStep / stepsPerBeat / PAGE_BEATS) * PAGE_BEATS
+            this._gridDirty = true
         }
         const track = this._track
         if (!track) return
@@ -617,6 +649,7 @@ export default class PianoRollPanel extends BasePanel {
             if (newPage !== this._pageStartBeat) {
                 this._pageStartBeat = newPage
                 this._clampPage()
+                this._gridDirty = true
                 this._sync()
                 this._illuminateStep(absStep, transport.tick)
             }

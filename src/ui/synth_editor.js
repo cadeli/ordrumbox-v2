@@ -60,6 +60,9 @@ export default class SynthEditor {
         this.panel = document.createElement('div')
         this.panel.id = 'soft-synth-panel'
         this.panel.style.display = 'none'
+        this._scrollEl = document.createElement('div')
+        this._scrollEl.className = 'ss-scroll'
+        this.panel.appendChild(this._scrollEl)
         document.body.appendChild(this.panel)
     }
 
@@ -109,9 +112,7 @@ export default class SynthEditor {
                 this._presets.loadPreset(keys[0])
                 this._renderEditor()
             } else {
-                this.panel.innerHTML = `<div class="ss-header">
-                    <span class="ss-title">Soft Synth</span>
-                </div>
+                this._scrollEl.innerHTML = `
                 <div class="ss-body ss-body-empty">
                     No synth presets loaded.
                 </div>`
@@ -155,7 +156,7 @@ export default class SynthEditor {
         let html = this._presets.renderFooter()
         html += this._groups.render(knobConfigs)
 
-        this.panel.innerHTML = `<div class="ss-scroll">${html}</div>`
+        this._scrollEl.innerHTML = html
         this._syncKnobs(knobConfigs)
         this._bindEvents()
         this._waveform.draw()

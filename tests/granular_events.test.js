@@ -294,7 +294,7 @@ describe('Granular patternChange events', () => {
         it('piano_roll responds to noteChange', () => {
             const prp = new PianoRollPanel()
             prp.init()
-            const spy = vi.spyOn(prp, '_sync')
+            const spy = vi.spyOn(prp, '_syncNotes')
             playbackEvents.emit('noteChange')
             expect(spy).toHaveBeenCalled()
         })

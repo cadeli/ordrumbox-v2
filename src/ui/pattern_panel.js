@@ -47,12 +47,18 @@ export default class PatternPanel extends BasePanel {
         this._header = new HeaderSection(this)
         this._grid = new GridSection(this)
         this._overlay = new PlaybackOverlaySection(this)
+        this._headerDirty = true
     }
 
     createDOM() {
         super.createDOM()
         this.container.style.display = 'block'
         this.container.setAttribute('tabindex', '0')
+        this._headerEl = document.createElement('div')
+        this._headerEl.className = 'pp-header-container'
+        this._tracksEl = document.createElement('div')
+        this._tracksEl.className = 'pp-tracks'
+        this.container.append(this._headerEl, this._tracksEl)
         this.container.addEventListener('focus', () => this._onFocus())
         this.container.addEventListener('click', (e) => {
             this.container.focus()
@@ -118,14 +124,21 @@ export default class PatternPanel extends BasePanel {
     }
 
     subscribe() {
-        const onPatternDirty = () => {
+        const onNoteChange = () => {
             this._overlay.resetPrevLoopTick()
             this._trackDataDirty = true
             this.requestSync()
         }
-        this._playbackEvents.on('noteChange', onPatternDirty)
-        this._playbackEvents.on('trackParamChange', onPatternDirty)
-        this._playbackEvents.on('patternStructureChange', onPatternDirty)
+        const onStructureChange = () => {
+            this._overlay.resetPrevLoopTick()
+            this._trackDataDirty = true
+            this._headerDirty = true
+            this.requestSync()
+        }
+        this._playbackEvents.on('noteChange', onNoteChange)
+        this._playbackEvents.on('trackParamChange', onNoteChange)
+        this._playbackEvents.on('patternStructureChange', onStructureChange)
+        this._playbackEvents.on('patternMetaChange', onStructureChange)
         this._playbackEvents.on('loopPointChange', (data) => {
             if (data && typeof data.trackIdx === 'number' && typeof data.loopAtStep === 'number') {
                 this.updateLoopPoint(data.trackIdx, data.loopAtStep)
@@ -616,9 +629,8 @@ export default class PatternPanel extends BasePanel {
 
         const pattern = this._appState.patterns[this._appState.selectedPatternNum]
         if (!pattern) {
-            if (!this.container.querySelector('.pp-waiting')) {
-                this.container.innerHTML = '<div class="pp-header pp-waiting">Waiting for patterns...</div>'
-            }
+            this._headerEl.innerHTML = '<div class="pp-header pp-waiting">Waiting for patterns...</div>'
+            this._tracksEl.innerHTML = ''
             return
         }
 
@@ -627,11 +639,11 @@ export default class PatternPanel extends BasePanel {
         const startBeat = this._appState.currentPage * BEATS_PER_PAGE
         const endBeatPage = startBeat + BEATS_PER_PAGE
 
-        const headerHtml = this._header.render(pattern, this._appState.currentPage)
-
         if (tracks.length === 0) {
             const prevHeight = this.container.offsetHeight
-            this.container.innerHTML = headerHtml + '<div class="pp-empty">Empty Pattern</div>'
+            this._headerEl.innerHTML = this._header.render(pattern, this._appState.currentPage)
+            this._tracksEl.innerHTML = '<div class="pp-empty">Empty Pattern</div>'
+            this._headerDirty = false
             if (prevHeight > 0) {
                 this.container.style.minHeight = prevHeight + 'px'
                 requestAnimationFrame(() => { this.container.style.minHeight = '' })
@@ -650,6 +662,11 @@ export default class PatternPanel extends BasePanel {
             this._trackDataDirty = false
         }
 
+        if (this._headerDirty) {
+            this._headerEl.innerHTML = this._header.render(pattern, this._appState.currentPage)
+            this._headerDirty = false
+        }
+
         const tracksHtml = this._grid.render(tracks, pattern, {
             startBeat,
             endBeatPage,
@@ -661,19 +678,21 @@ export default class PatternPanel extends BasePanel {
             trackDataCache: this._trackDataCache
         })
 
-        const prevHeight = this.container.offsetHeight
-        this.container.innerHTML = headerHtml + tracksHtml
+        const tmp = document.createElement('div')
+        tmp.innerHTML = tracksHtml
+        const newTracksInner = tmp.querySelector('.pp-tracks')?.innerHTML
 
-        const tracksEl = this.container.querySelector('.pp-tracks')
-        if (tracksEl) {
-            this._grid.applyScrollConstraints(tracksEl, tracks)
+        if (newTracksInner != null) {
+            const prevHeight = this.container.offsetHeight
+            this._tracksEl.innerHTML = newTracksInner
+            if (prevHeight > 0) {
+                this.container.style.minHeight = prevHeight + 'px'
+                requestAnimationFrame(() => { this.container.style.minHeight = '' })
+            }
         }
-        if (prevHeight > 0) {
-            this.container.style.minHeight = prevHeight + 'px'
-            requestAnimationFrame(() => {
-                this.container.style.minHeight = ''
-            })
-        }
+
+        this._grid.applyScrollConstraints(this._tracksEl, tracks)
+
         this._overlay.ensurePlayhead()
         this._cellMap = this._grid.buildCellMap(this.container)
         this._applySelection()
