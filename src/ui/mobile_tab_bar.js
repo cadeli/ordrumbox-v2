@@ -25,7 +25,7 @@ export default class MobileTabBar {
             { id: 'seq', label: 'Sequencer' },
             { id: 'track', label: 'Track' },
             { id: 'synth', label: 'Synth' },
-            { id: 'tools', label: 'Tools' },
+            { id: 'master', label: 'Master' },
         ]
 
         tabs.forEach(tab => {
@@ -54,13 +54,13 @@ export default class MobileTabBar {
             mobileTrackToggle: 'track',
             synthToggle: 'synth',
             editToggle: 'track',
-            toolsToggle: 'tools',
+            masterToggle: 'master',
         }
         for (const [event, tab] of Object.entries(tabMap)) {
             const onKey = 'on' + event.charAt(0).toUpperCase() + event.slice(1)
             playbackEvents[onKey].push((arg) => {
                 if (!this._isSwitching) {
-                    if (event === 'toolsToggle' && arg === false) return
+                    if (event === 'masterToggle' && arg === false) return
                     this._currentTab = tab
                     this._updateActive()
                 }
@@ -79,7 +79,7 @@ export default class MobileTabBar {
                 seq: () => playbackEvents.emit("mobileSeqToggle"),
                 track: () => playbackEvents.emit("mobileTrackToggle"),
                 synth: () => playbackEvents.emit("synthToggle"),
-                tools: () => playbackEvents.emit("toolsToggle", true),
+                master: () => playbackEvents.emit("masterToggle", true),
             }
             dispatchMap[tab]?.()
         } finally {

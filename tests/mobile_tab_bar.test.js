@@ -144,10 +144,10 @@ describe('Mobile tab bar', () => {
             expect(spy).toHaveBeenCalled()
         })
 
-        it('clicking Tools tab dispatches toolsToggle(true)', () => {
+        it('clicking Master tab dispatches masterToggle(true)', () => {
             const spy = vi.fn()
-            playbackEvents.on("toolsToggle", spy)
-            mobileTabBar.container.querySelector('[data-tab="tools"]').click()
+            playbackEvents.on("masterToggle", spy)
+            mobileTabBar.container.querySelector('[data-tab="master"]').click()
             expect(spy).toHaveBeenCalledWith(true)
         })
 
@@ -170,7 +170,7 @@ describe('Mobile tab bar', () => {
             const seqBtn = mobileTabBar.container.querySelector('[data-tab="seq"]')
             const trackBtn = mobileTabBar.container.querySelector('[data-tab="track"]')
             const synthBtn = mobileTabBar.container.querySelector('[data-tab="synth"]')
-            const toolsBtn = mobileTabBar.container.querySelector('[data-tab="tools"]')
+            const masterBtn = mobileTabBar.container.querySelector('[data-tab="master"]')
 
             trackBtn.click()
             expect(trackBtn.classList.contains('active')).toBe(true)
@@ -180,8 +180,8 @@ describe('Mobile tab bar', () => {
             expect(synthBtn.classList.contains('active')).toBe(true)
             expect(trackBtn.classList.contains('active')).toBe(false)
 
-            toolsBtn.click()
-            expect(toolsBtn.classList.contains('active')).toBe(true)
+            masterBtn.click()
+            expect(masterBtn.classList.contains('active')).toBe(true)
             expect(synthBtn.classList.contains('active')).toBe(false)
         })
 

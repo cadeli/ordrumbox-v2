@@ -203,7 +203,7 @@ export default class Toolbar {
 
         // Undo/Redo buttons
         const undoWrap = document.createElement('div')
-        undoWrap.className = 'tb-group tb-undo-group'
+        undoWrap.className = 'tb-group tb-undo-group tb-hide-mobile'
         const undoLabel = document.createElement('span')
         undoLabel.className = 'tb-label'
         undoLabel.textContent = 'History'
@@ -268,12 +268,12 @@ export default class Toolbar {
         beatsWrap.appendChild(this.beatsSelect)
 
         this.toolsBtn = document.createElement('button')
-        this.toolsBtn.className = 'tb-tools'
+        this.toolsBtn.className = 'tb-tools tb-hide-mobile'
         this.toolsBtn.textContent = '⚙'
         this.toolsBtn.title = 'Tools'
 
         this.aboutBtn = document.createElement('button')
-        this.aboutBtn.className = 'tb-about tb-hide-mobile'
+        this.aboutBtn.className = 'tb-about'
         this.aboutBtn.textContent = '⋮'
         this.aboutBtn.title = 'About'
 

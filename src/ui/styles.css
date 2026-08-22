@@ -2036,6 +2036,10 @@ body {
         white-space: nowrap;
     }
 
+    /* Mobile: hide pattern header action buttons */
+    #pattern-panel .pp-header .pp-actions { display: none !important; }
+    #pattern-panel .pp-header { gap: 0; }
+
     /* Mobile: pattern panel takes full width */
     .pp-container {
         width: 100%;

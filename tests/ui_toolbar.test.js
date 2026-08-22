@@ -54,7 +54,7 @@ describe('Toolbar UI Layout', () => {
         const labels = Array.from(tb.querySelectorAll('.tb-label')).map(l => l.textContent)
         expect(labels).toContain('BPM')
         expect(classes).toContain('tb-start')
-        expect(classes).toContain('tb-tools')
+        expect(classes.some(c => c.includes('tb-tools'))).toBe(true)
         expect(classes.some(c => c.includes('tb-about'))).toBe(true)
 
         // Check pagination arrows

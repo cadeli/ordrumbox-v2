@@ -26,6 +26,7 @@ export default class ViewManager {
         // ── Slot panel registry: short name → { event, panel } ─────────────
         this._slots = new Map([
             ['tools', { event: 'toolsToggle',           panel: toolsPanel }],
+            ['master',{ event: 'masterToggle',          panel: outputPanel }],
             ['dm',    { event: 'drumkitManagerToggle',  panel: drumkitManager }],
             ['pp',    { event: 'patternsToggle',         panel: patternsPanel }],
             ['about', { event: 'aboutToggle',            panel: aboutPanel }],
