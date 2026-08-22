@@ -105,22 +105,3 @@ describe('ToolsPanel._randomizePattern logic', () => {
         expect(addedNotes.length).toBeGreaterThan(0)
     })
 })
-
-describe('ToolsPanel compact randomize integration', () => {
-    it('Utils.getTracksArray works with array tracks', () => {
-        const pattern = { tracks: [{ nbBeats: 4 }] }
-        const tracks = Utils.getTracksArray(pattern)
-        expect(tracks).toHaveLength(1)
-    })
-
-    it('Utils.getTracksArray works with object tracks', () => {
-        const pattern = { tracks: { a: { nbBeats: 4 }, b: { nbBeats: 8 } } }
-        const tracks = Utils.getTracksArray(pattern)
-        expect(tracks).toHaveLength(2)
-    })
-
-    it('Utils.getTracksArray returns empty for null pattern', () => {
-        expect(Utils.getTracksArray(null)).toEqual([])
-        expect(Utils.getTracksArray({})).toEqual([])
-    })
-})

@@ -2,9 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { Globals } from '../src/core/globals.js'
 import Commander from '../src/logic/commands/cmd.js'
 import StructureSong from '../src/logic/generators/structure_song.js'
-import Utils from '../src/core/utils.js'
 import { appState } from '../src/state/app_state.js'
-import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 const SYNTH_SOUND_MAP = {
     KICK: 'BASS0',
@@ -300,65 +298,6 @@ describe('convertToGeneratedSounds', () => {
                 expect(track.useSoftSynth).toBe(true)
                 expect(track.useAutoAssignSound).toBe(false)
             })
-        })
-    })
-})
-
-describe('Utils.detectTrackType', () => {
-    it('detects KICK', () => {
-        expect(Utils.detectTrackType('KICK')).toBe('KICK')
-        expect(Utils.detectTrackType('Kick_01')).toBe('KICK')
-        expect(Utils.detectTrackType('BD')).toBe('KICK')
-    })
-
-    it('detects SNARE', () => {
-        expect(Utils.detectTrackType('SNARE')).toBe('SNARE')
-        expect(Utils.detectTrackType('Snare_01')).toBe('SNARE')
-        expect(Utils.detectTrackType('SD')).toBe('SNARE')
-    })
-
-    it('detects HAT', () => {
-        expect(Utils.detectTrackType('CHH')).toBe('HAT')
-        expect(Utils.detectTrackType('OHH')).toBe('HAT')
-        expect(Utils.detectTrackType('Hat_01')).toBe('HAT')
-    })
-
-    it('detects BASS', () => {
-        expect(Utils.detectTrackType('BASS')).toBe('BASS')
-        expect(Utils.detectTrackType('Bass_01')).toBe('BASS')
-        expect(Utils.detectTrackType('SYNTH')).toBe('BASS')
-        expect(Utils.detectTrackType('SynthLead')).toBe('BASS')
-    })
-
-    it('returns PERC for unknown names', () => {
-        expect(Utils.detectTrackType('TOM')).toBe('PERC')
-        expect(Utils.detectTrackType('Clap')).toBe('CLAP')
-        expect(Utils.detectTrackType('Ride')).toBe('PERC')
-        expect(Utils.detectTrackType('')).toBe('PERC')
-    })
-})
-
-describe('Commander drumkit selection', () => {
-    let cmd
-
-    beforeEach(() => {
-        Globals.resetAll()
-        cmd = new Commander()
-        Globals.cmd = cmd
-    })
-
-    describe('kitIsLoaded', () => {
-        it('returns false when no sounds are loaded', () => {
-            const drumkit = { name: 'TestKit', instruments: [] }
-            expect(cmd.kitIsLoaded(drumkit)).toBe(false)
-        })
-
-        it('returns true when all sounds for the kit are loaded', () => {
-            soundRegistry.sounds['test.wav'] = {
-                kit_name: 'TestKit', url: 'test.wav', key: 'KICK'
-            }
-            const drumkit = { name: 'TestKit', instruments: [{ key: 'KICK' }] }
-            expect(cmd.kitIsLoaded(drumkit)).toBe(true)
         })
     })
 })

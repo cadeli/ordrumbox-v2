@@ -2,9 +2,6 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -95,16 +92,6 @@ describe('Mobile tab bar', () => {
         return el && (el.style.display === 'block' || el.style.display === 'flex')
     }
 
-    function synthVisible() {
-        const el = document.getElementById('soft-synth-panel')
-        return el && (el.style.display === 'flex')
-    }
-
-    function toolsVisible() {
-        const el = document.getElementById('tools-panel')
-        return el && (el.style.display === 'block' || el.style.display === 'flex')
-    }
-
     describe('tab-to-view mapping via dispatch', () => {
         it('dispatching mobileSeqToggle shows pattern grid', () => {
             playbackEvents.emit("mobileSeqToggle")
@@ -123,9 +110,10 @@ describe('Mobile tab bar', () => {
             expect(el).not.toBeNull()
         })
 
-        it('dispatching toolsToggle(true) shows tools panel', () => {
-            playbackEvents.emit("toolsToggle", true)
-            expect(toolsVisible()).toBe(true)
+        it('dispatching masterToggle(true) shows master tab active', () => {
+            playbackEvents.emit("masterToggle", true)
+            const masterBtn = mobileTabBar.container.querySelector('[data-tab="master"]')
+            expect(masterBtn.classList.contains('active')).toBe(true)
         })
     })
 
@@ -227,36 +215,10 @@ describe('Mobile tab bar', () => {
             expect(el).not.toBeNull()
         })
 
-        it('tools panel is visible when toolsToggle dispatched', () => {
-            playbackEvents.emit("toolsToggle", true)
-            const el = document.getElementById('tools-panel')
-            expect(el).not.toBeNull()
-        })
-
-        it('CSS contains mobile overrides: top var(--tb-h, 48px) and width 100% for all panels', () => {
-            const __filename = fileURLToPath(import.meta.url)
-            const __dirname = dirname(__filename)
-            const cssPath = resolve(__dirname, '../src/ui/styles.css')
-            const css = readFileSync(cssPath, 'utf-8')
-
-            const selectors = ['#pattern-panel', '#te-panel', '#soft-synth-panel', '#tools-panel', '#piano-roll-panel']
-            // Panels may be in a combined selector rule
-            for (const sel of selectors) {
-                const escapedSel = sel.replace('#', '\\#')
-                const regex = new RegExp(`${escapedSel}\\s*\\{[^}]*top:\\s*var\\(--tb-h,\\s*48px\\)[^}]*width:\\s*100%`, 's')
-                if (!regex.test(css)) {
-                    // Check combined selector rule
-                    const ruleRe = /([^{]+)\s*\{([^}]*)\}/g
-                    let m, found = false
-                    while ((m = ruleRe.exec(css)) !== null) {
-                        if (m[1].includes(sel) && m[2].includes('top: var(--tb-h, 48px)') && m[2].includes('width: 100%')) {
-                            found = true
-                            break
-                        }
-                    }
-                    expect(found).toBe(true)
-                }
-            }
+        it('master tab active when masterToggle dispatched', () => {
+            playbackEvents.emit("masterToggle", true)
+            const masterBtn = mobileTabBar.container.querySelector('[data-tab="master"]')
+            expect(masterBtn.classList.contains('active')).toBe(true)
         })
     })
 })

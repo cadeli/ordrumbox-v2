@@ -38,7 +38,7 @@ describe('AboutPanel (PWA)', () => {
         expect(panel.style.display).toBe('none')
     })
 
-    it('hides when another modal (Tools/Output) is shown', () => {
+    it('does not self-hide when other slot panels open (ViewManager handles mutual exclusion)', () => {
         playbackEvents.emit("aboutToggle", true)
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
@@ -49,22 +49,6 @@ describe('AboutPanel (PWA)', () => {
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
         playbackEvents.emit("outputToggle", true)
-        expect(document.getElementById('about-panel').style.display).toBe('block')
-    })
-
-    it('persists when the track editor is shown (onTrackSelect)', () => {
-        playbackEvents.emit("aboutToggle", true)
-        expect(document.getElementById('about-panel').style.display).toBe('block')
-
-        playbackEvents.emit("trackSelect", { track: {}, trackIdx: 0 })
-        expect(document.getElementById('about-panel').style.display).toBe('block')
-    })
-
-    it('persists when the note editor is shown (onNoteSelect)', () => {
-        playbackEvents.emit("aboutToggle", true)
-        expect(document.getElementById('about-panel').style.display).toBe('block')
-
-        playbackEvents.emit("noteSelect", { note: {}, track: {} })
         expect(document.getElementById('about-panel').style.display).toBe('block')
     })
 
