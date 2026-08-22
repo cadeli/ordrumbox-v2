@@ -2046,24 +2046,22 @@ body {
         box-sizing: border-box;
     }
 
-    /* Mobile: all panels full width, positioned below toolbar and above tab bar (60px) */
-    #pattern-panel {
+    /* Mobile: all overlay panels full width between toolbar and tab bar */
+    #pattern-panel,
+    #te-panel,
+    #soft-synth-panel,
+    #tools-panel,
+    #piano-roll-panel,
+    #about-panel,
+    #output-panel,
+    #dm-panel {
+        position: fixed !important;
         top: var(--tb-h, 48px) !important;
         left: 0 !important;
         width: 100% !important;
         height: auto !important;
         bottom: 60px !important;
         overflow-y: auto !important;
-    }
-
-    #te-panel {
-        position: fixed !important;
-        top: var(--tb-h, 48px) !important;
-        left: 0 !important;
-        width: 100% !important;
-        bottom: 60px !important;
-        overflow: hidden !important;
-        padding: 0 !important;
     }
 
     #te-panel.pp-split {
@@ -2250,59 +2248,6 @@ body {
         width: auto !important;
     }
 
-    #soft-synth-panel {
-        top: var(--tb-h, 48px) !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        bottom: 60px !important;
-        overflow-y: auto !important;
-    }
-
-    #tools-panel {
-        top: var(--tb-h, 48px) !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        bottom: 60px !important;
-        overflow-y: auto !important;
-    }
-
-    #piano-roll-panel {
-        top: var(--tb-h, 48px) !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        bottom: 60px !important;
-        overflow-y: auto !important;
-    }
-
-    #about-panel {
-        top: var(--tb-h, 48px) !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        bottom: 60px !important;
-        overflow-y: auto !important;
-    }
-
-    #output-panel {
-        top: var(--tb-h, 48px) !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        bottom: 60px !important;
-        overflow-y: auto !important;
-    }
-
-    #dm-panel {
-        top: var(--tb-h, 48px) !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        bottom: 60px !important;
-        overflow-y: auto !important;
-    }
 }
 
 /* ---- Mobile Tab Bar (always visible on mobile, hidden on desktop) ---- */

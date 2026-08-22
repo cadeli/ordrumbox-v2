@@ -63,12 +63,18 @@ export default class ViewManager {
         if (show) {
             if (isMobileViewport()) {
                 this._currentView = name
+                this._synthEditor.hidePanel()
+                this._trackEditor.hide()
+                document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+                this._hideOtherSlotPanels(name)
+                panel.show()
+            } else {
+                this._hideOtherSlotPanels(name)
+                this._ensureTrackEditorVisible()
+                this._ensureNoteEditorVisible()
+                panel.show()
+                if (this._outputPanel?.isVisible && name !== 'output') this._outputPanel.hide()
             }
-            this._hideOtherSlotPanels(name)
-            this._ensureTrackEditorVisible()
-            this._ensureNoteEditorVisible()
-            panel.show()
-            if (this._outputPanel?.isVisible && name !== 'output') this._outputPanel.hide()
         } else {
             panel.hide()
             if (isMobileViewport() && this._currentView === name) {
@@ -97,6 +103,7 @@ export default class ViewManager {
         }
 
         if (prev === 'proll') this._pianoRollPanel?.hide()
+        if (prev === 'synth') this._synthEditor?.hidePanel()
         if (prev === 'mobileSeq') {
             this._pianoRollPanel?.hide()
             document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
@@ -145,10 +152,15 @@ export default class ViewManager {
     }
 
     _showSynth() {
-        this._ensureTrackEditorVisible()
-        this._ensureNoteEditorVisible()
+        if (isMobileViewport()) {
+            this._trackEditor.hide()
+            document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+        } else {
+            this._ensureTrackEditorVisible()
+            this._ensureNoteEditorVisible()
+            document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+        }
         void this._synthEditor.showPanel()
-        document.getElementById('pattern-panel')?.classList.add('ui-hidden')
     }
 
     _showEdit() {

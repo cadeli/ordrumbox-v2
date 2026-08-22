@@ -31,7 +31,32 @@ function hasRule(block, selector, prop, value) {
     const escapedSel = escapeRegex(selector)
     const escapedVal = escapeRegex(value)
     const re = new RegExp(`${escapedSel}\\s*\\{[^}]*${prop}\\s*:\\s*${escapedVal}[^}]*\\}`, 's')
-    return re.test(block)
+    if (re.test(block)) return true
+    // Also match combined selectors: "#a, #b, #c { ... }"
+    const selParts = selector.split(',').map(s => s.trim())
+    for (const part of selParts) {
+        const ep = escapeRegex(part)
+        const re2 = new RegExp(`${ep}\\s*\\{[^}]*${prop}\\s*:\\s*${escapedVal}[^}]*\\}`, 's')
+        if (re2.test(block)) return true
+    }
+    return false
+}
+
+/** Check if any combined rule block includes the given selector and has the prop/value */
+function hasCombinedRule(block, selector, prop, value) {
+    const escapedVal = escapeRegex(value)
+    const ruleRe = /([^{]+)\s*\{([^}]*)\}/g
+    let m
+    while ((m = ruleRe.exec(block)) !== null) {
+        // Strip CSS comments from selector text
+        const cleanSelector = m[1].replace(/\/\*[\s\S]*?\*\//g, '')
+        const selectors = cleanSelector.split(',').map(s => s.trim())
+        if (selectors.includes(selector)) {
+            const re = new RegExp(`${prop}\\s*:\\s*${escapedVal}`)
+            if (re.test(m[2])) return true
+        }
+    }
+    return false
 }
 
 function hasRuleAnywhere(selector, prop, value) {
@@ -118,10 +143,10 @@ describe('Mobile CSS: Desktop base hides mobile-only elements', () => {
 describe('Mobile CSS: Panel full-width positioning', () => {
     for (const sel of MOBILE_PANELS) {
         it(`${sel}: top: var(--tb-h, 48px), left: 0, width: 100%, bottom: 60px`, () => {
-            expect(hasRule(MOBILE_MEDIA, sel, 'top', 'var(--tb-h, 48px) !important')).toBe(true)
-            expect(hasRule(MOBILE_MEDIA, sel, 'left', '0 !important')).toBe(true)
-            expect(hasRule(MOBILE_MEDIA, sel, 'width', '100% !important')).toBe(true)
-            expect(hasRule(MOBILE_MEDIA, sel, 'bottom', '60px !important')).toBe(true)
+            expect(hasCombinedRule(MOBILE_MEDIA, sel, 'top', 'var(--tb-h, 48px) !important')).toBe(true)
+            expect(hasCombinedRule(MOBILE_MEDIA, sel, 'left', '0 !important')).toBe(true)
+            expect(hasCombinedRule(MOBILE_MEDIA, sel, 'width', '100% !important')).toBe(true)
+            expect(hasCombinedRule(MOBILE_MEDIA, sel, 'bottom', '60px !important')).toBe(true)
         })
     }
 
@@ -331,8 +356,8 @@ describe('isMobileViewport() function', () => {
 describe('Mobile CSS: Complete panel coverage check', () => {
     it('all panels in MOBILE_PANELS array have mobile overrides in CSS', () => {
         for (const sel of MOBILE_PANELS) {
-            const re = new RegExp(`${escapeRegex(sel)}\\s*\\{[^}]*width:\\s*100%`, 's')
-            expect(re.test(MOBILE_MEDIA)).toBe(true)
+            const found = hasCombinedRule(MOBILE_MEDIA, sel, 'width', '100% !important')
+            expect(found).toBe(true)
         }
     })
 

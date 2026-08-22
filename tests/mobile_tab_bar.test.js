@@ -240,10 +240,22 @@ describe('Mobile tab bar', () => {
             const css = readFileSync(cssPath, 'utf-8')
 
             const selectors = ['#pattern-panel', '#te-panel', '#soft-synth-panel', '#tools-panel', '#piano-roll-panel']
+            // Panels may be in a combined selector rule
             for (const sel of selectors) {
                 const escapedSel = sel.replace('#', '\\#')
                 const regex = new RegExp(`${escapedSel}\\s*\\{[^}]*top:\\s*var\\(--tb-h,\\s*48px\\)[^}]*width:\\s*100%`, 's')
-                expect(css).toMatch(regex)
+                if (!regex.test(css)) {
+                    // Check combined selector rule
+                    const ruleRe = /([^{]+)\s*\{([^}]*)\}/g
+                    let m, found = false
+                    while ((m = ruleRe.exec(css)) !== null) {
+                        if (m[1].includes(sel) && m[2].includes('top: var(--tb-h, 48px)') && m[2].includes('width: 100%')) {
+                            found = true
+                            break
+                        }
+                    }
+                    expect(found).toBe(true)
+                }
             }
         })
     })

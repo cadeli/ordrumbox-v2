@@ -229,10 +229,10 @@ export function init() {
             serviceRegistry.cmd.setSelectedPatternNum(patNum)
 
             const savedView = soundRegistry.settings.session?.currentView
-            if (savedView) {
-                playbackEvents.emit(savedView + 'Toggle', true)
-            } else if (isMobileViewport()) {
+            if (isMobileViewport()) {
                 playbackEvents.emit("mobileSeqToggle")
+            } else if (savedView) {
+                playbackEvents.emit(savedView + 'Toggle', true)
             } else {
                 playbackEvents.emit("editToggle")
             }
