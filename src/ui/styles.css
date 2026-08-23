@@ -1404,30 +1404,7 @@ body {
 }
 
 /* ---- Waiting Screen ---- */
-#waiting-screen {
-    position: fixed; top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    display: flex; justify-content: center; align-items: center;
-    padding: 24px; box-sizing: border-box;
-    background-color: var(--bg-surface);
-    z-index: var(--z-toast);
-}
-#waiting-screen img {
-    max-width: 100%;
-    height: auto;
-    pointer-events: none;
-}
-#waiting-screen-start-btn {
-    position: absolute;
-    top: 66.67%; left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px 40px; font-size: 18px; font-weight: bold;
-    border: 3px solid var(--text); border-radius: 8px;
-    cursor: pointer; background-color: var(--color-warning); color: var(--text);
-    touch-action: manipulation;
-    z-index: 1;
-}
-#waiting-screen-start-btn.ready { background-color: var(--color-info); color: var(--text); }
+/* Waiting screen styles are inlined in index.html to prevent CLS */
 
 /* ---- Synth groups: fixed blocks with bypass ---- */
 .ne-body,
