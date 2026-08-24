@@ -40,7 +40,7 @@ export const FILTER_PROPS = [
 
 export const FX_DEFS = [
     { key: 'reverbAmount', label: 'Rev', controls: ['reverbAmount', 'reverbType'] },
-    { key: 'delayDepth', label: 'Delay', controls: ['delayDepth', 'delayTime', 'delayType'] },
+    { key: 'delayDepth', label: 'Dly', controls: ['delayDepth', 'delayTime', 'delayType'] },
     { key: 'saturationAmount', label: 'Sat', controls: ['saturationAmount', 'saturationType'] },
     { key: 'filterFreq', label: 'fltr', controls: ['filterType', 'filterFreq', 'filterQ'] }
 ]
@@ -59,9 +59,9 @@ export const KNOB_PROPS = [
 export const TAB_DEFS = [
     { id: 'fx',   label: 'fx' },
     { id: 'snd',  label: 'sound' },
-    { id: 'mod',  label: 'modulation' },
+    { id: 'mod',  label: 'mod' },
     { id: 'loop', label: 'loop' },
-    { id: 'gen',  label: 'generation' }
+    { id: 'gen',  label: 'gen' }
 ]
 
 // ── Generation groups ─────────────────────────────────────────────────
