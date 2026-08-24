@@ -854,6 +854,7 @@ body {
        between short tabs (reverb/saturation) and the filter controls. */
     min-height: 140px;
 }
+.gen-tab-panel-hidden { display: none !important; }
 .ss-body-empty { padding: 20px; color: var(--text-disabled); text-align: center; }
 .ss-tb-btn-boolean { font-size: var(--fs-xs); height: 22px; padding: 0 8px; }
 /* Track editor: highlight the row currently selected for LFO editing, and
@@ -961,7 +962,7 @@ body {
     grid-column: 1 / -1;
 }
 .te-mod-btn {
-    display: flex; align-items: center; gap: 4px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
     flex: 1; padding: 3px 6px; font-size: var(--fs-xs); font-weight: bold;
     background: transparent; color: var(--text-dim);
     border: 1px solid var(--border); border-radius: 3px;

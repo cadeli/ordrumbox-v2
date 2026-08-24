@@ -98,6 +98,32 @@ export const GROUPS = [
     }
 ]
 
+// ── Generation sub-tabs (Groove / Engine) ────────────────────────────
+
+export const GEN_SUBTAB_DEFS = [
+    { id: 'groove', label: 'Groove' },
+    { id: 'engine', label: 'Engine' }
+]
+
+export const GEN_GROOVE_PROPS = [
+    { key: 'prob_pitch', label: 'Pitch', min: 0, max: 100, step: 1 },
+    { key: 'prob_velocity', label: 'Velocity', min: 0, max: 100, step: 1 },
+    { key: 'prob_silence', label: 'Silence', min: 0, max: 100, step: 1 },
+    { key: 'prob_fill', label: 'Fill', min: 0, max: 100, step: 1 },
+    { key: 'prob_ghost', label: 'Ghost', min: 0, max: 100, step: 1 },
+    { key: 'pitch_range', label: 'Pitch Rng', min: 1, max: 24, step: 1 },
+    { key: 'pitch_scale_lock', label: 'Scale Lock', type: 'boolean' },
+]
+
+export const GEN_ENGINE_PROPS = [
+    { key: 'prob_retrig', label: 'Retrig', min: 0, max: 100, step: 1 },
+    { key: 'prob_euclid', label: 'Euclid', min: 0, max: 100, step: 1 },
+    { key: 'prob_note', label: 'Note Prob', min: 0, max: 100, step: 1 },
+    { key: 'prob_arp', label: 'Arp', min: 0, max: 100, step: 1 },
+    { key: 'auto_variant', label: 'Variant', type: 'select', options: ['', 'basic', 'fill', 'roll', 'sparse', 'dense'] },
+    { key: 'auto_density', label: 'Density', min: -1, max: 1, step: 0.01, format: (v) => v < 0 ? 'Auto' : v.toFixed(2) },
+]
+
 // ── Derived ───────────────────────────────────────────────────────────
 
 export const ALL_TRACK_PROPS = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS]

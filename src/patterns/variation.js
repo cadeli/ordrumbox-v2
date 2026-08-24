@@ -1,10 +1,13 @@
 import Utils from '../core/utils.js'
 import FlatNote from '../model/flatnote.js'
+import { soundRegistry } from '../state/sound_registry.js'
 
 const COST_DELETE = 3
 const COST_ADD = 3
 const COST_VELOCITY = 1
 const COST_PITCH = 1
+
+const DEFAULT_MAJOR_SCALE = [0, 2, 4, 5, 7, 9, 11]
 
 function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -12,6 +15,13 @@ function shuffle(arr) {
         ;[arr[i], arr[j]] = [arr[j], arr[i]]
     }
     return arr
+}
+
+function weightedShuffle(ops, weightFn) {
+    const scored = ops.map(op => ({ op, score: Math.random() * (weightFn(op) ?? 50) }))
+    scored.sort((a, b) => b.score - a.score)
+    for (let i = 0; i < ops.length; i++) ops[i] = scored[i].op
+    return ops
 }
 
 function tickForStep(step, stepsPerBeat, nbTickForLoop, tick) {
@@ -28,8 +38,37 @@ function removeNote(flatNotes, fn) {
     if (notes.length === 0) flatNotes.delete(fn.tick)
 }
 
+function pickPitch(track) {
+    const range = track.pitch_range ?? 12
+    const raw = Math.floor(Math.random() * (2 * range + 1)) - range
+    if (!track.pitch_scale_lock) return raw
+    const scaleSteps = soundRegistry.scales?.[track.scaleName]?.scaleSteps ?? DEFAULT_MAJOR_SCALE
+    const abs = Math.abs(raw)
+    const sign = raw < 0 ? -1 : 1
+    const octave = Math.floor(abs / 12)
+    const degree = abs % 12
+    let best = 0
+    let bestDist = 999
+    for (const s of scaleSteps) {
+        const dist = Math.abs(degree - s)
+        if (dist < bestDist) { bestDist = dist; best = s }
+    }
+    return sign * (octave * 12 + best)
+}
+
 function applyOps(flatNotes, track, ops, budget) {
-    shuffle(ops)
+    const weightFn = (op) => {
+        switch (op.type) {
+            case 'silence':     return track.prob_silence ?? 50
+            case 'velocity':    return track.prob_velocity ?? 50
+            case 'pitch':       return track.prob_pitch ?? 50
+            case 'anticipation':
+            case 'double':      return track.prob_fill ?? 50
+            case 'ghost':       return track.prob_ghost ?? 50
+            default:            return 50
+        }
+    }
+    weightedShuffle(ops, weightFn)
     let remaining = budget
 
     for (const op of ops) {
@@ -45,7 +84,7 @@ function applyOps(flatNotes, track, ops, budget) {
                 remaining -= op.cost
                 break
             case 'pitch':
-                op.fn.note = { ...op.fn.note, pitch: Math.floor(Math.random() * 25) - 12 }
+                op.fn.note = { ...op.fn.note, pitch: pickPitch(track) }
                 remaining -= op.cost
                 break
             case 'anticipation': {
@@ -102,7 +141,7 @@ const COST_RATE = 1
 const COST_ARP_RANGE = 1
 const COST_PROB = 1
 
-function applyNoteVariation(sourceNotes, budget) {
+function applyNoteVariation(sourceNotes, budget, track) {
     if (budget <= 0 || !sourceNotes || sourceNotes.length === 0) return
 
     const ops = []
@@ -124,7 +163,16 @@ function applyNoteVariation(sourceNotes, budget) {
         }
     }
 
-    shuffle(ops)
+    const weightFn = (op) => {
+        switch (op.type) {
+            case 'retrigRate':    return track.prob_retrig ?? 50
+            case 'euclidianFill': return track.prob_euclid ?? 50
+            case 'prob':          return track.prob_note ?? 50
+            case 'arpRange':      return track.prob_arp ?? 50
+            default:              return 50
+        }
+    }
+    weightedShuffle(ops, weightFn)
     let remaining = budget
 
     for (const op of ops) {
@@ -247,6 +295,6 @@ export default class TrackVariation {
 
         const budget = Math.round(variation2 * 16 / 100)
         const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? {})
-        applyNoteVariation(notes, budget)
+        applyNoteVariation(notes, budget, track)
     }
 }

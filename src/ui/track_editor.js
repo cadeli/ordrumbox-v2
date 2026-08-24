@@ -471,6 +471,12 @@ export default class TrackEditor extends BasePanel {
 
     _onFxTab(btn)                 { this._fxSection.onFxTab(btn) }
 
+    _onGenTab(genTabId) {
+        if (!genTabId) return
+        this._genSection._genSubTab.setActive(genTabId)
+        this.sync()
+    }
+
     _onLfoSelectBtn(k) {
         this._modSection.onSelectBtn(k)
         this.sync()
@@ -568,6 +574,11 @@ export default class TrackEditor extends BasePanel {
             if (target.dataset.lfoSelectBtn)  { this._onLfoSelectBtn(target.dataset.lfoSelectBtn); return }
             if (target.dataset.fxToggleBtn)   { this._toggleFxByKey(target.dataset.fxToggleBtn); return }
             if (target.dataset.fxTab)         { this._onFxTab({ dataset: { fxTab: target.dataset.fxTab } }); return }
+            if (target.dataset.genTab)        { this._onGenTab(target.dataset.genTab); return }
+            {
+                const genTabEl = target.closest?.('[data-gen-tab]')
+                if (genTabEl) { this._onGenTab(genTabEl.dataset.genTab); return }
+            }
             if (target.dataset.fxIconVal)     { this._onFxIcon(target); return }
 
             const btn = target.closest('button')

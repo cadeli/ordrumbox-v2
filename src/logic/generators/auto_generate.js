@@ -159,7 +159,9 @@ export default class AutoGenerate {
             const element = this.structureGen.getElement(loop)
             const isSectionEnd = element.isLastLoopBeforeChange
             const isBreak = element.name === 'break'
-            const density = isSectionEnd ? 0.2 : (SECTION_DENSITY[element.name] ?? 0.7)
+            const density = track.auto_density >= 0
+                ? track.auto_density
+                : (isSectionEnd ? 0.2 : (SECTION_DENSITY[element.name] ?? 0.7))
             const harmony = this.structureGen.resolveHarmony(genre, element.name, element.loopInElement)
 
             logger.info(AutoGenerate.TAG, `changeTrack: loop=${loop}, section=${element.name}#${element.number}, track=${track.name}, harmony=${JSON.stringify(harmony)}, sectionEnd=${isSectionEnd}, break=${isBreak}, density=${density}`)
@@ -168,7 +170,7 @@ export default class AutoGenerate {
                 ? this._cachedStructure
                 : (this._cachedGenre = genre, this._cachedStructure = this.structureGen.generateStructure(genre))
 
-            const config = this._findTrackConfig(structure, track)
+            const config = track.auto_variant || this._findTrackConfig(structure, track)
 
             if (config) {
                 if (isBreak && type === 'SNARE') {
