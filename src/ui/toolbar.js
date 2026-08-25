@@ -603,14 +603,16 @@ export default class Toolbar {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
 
-        const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes]
+        const types = typeOrTypes instanceof Set
+            ? typeOrTypes
+            : new Set(Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes])
         const hasAuto = (pattern.tracks ?? []).some(t =>
-            t._toolbarAuto && types.includes(Utils.detectTrackType(t.name))
+            t._toolbarAuto && types.has(Utils.detectTrackType(t.name))
         )
 
         if (hasAuto) {
             for (const track of pattern.tracks) {
-                if (types.includes(Utils.detectTrackType(track.name))) {
+                if (types.has(Utils.detectTrackType(track.name))) {
                     track.auto = false
                     track._toolbarAuto = false
                 }
