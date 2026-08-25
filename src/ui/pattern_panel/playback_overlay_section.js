@@ -28,8 +28,10 @@ export default class PlaybackOverlaySection {
             this._playhead.style.left = '0'
             this._playhead.style.top = '0'
             this._playhead.style.bottom = '0'
+            this._playhead.style.width = '2px'
             this._playhead.style.zIndex = '10'
             this._playhead.style.pointerEvents = 'none'
+            this._playhead.style.willChange = 'transform'
             const header = editor.container.querySelector('.pp-header')
             if (header) {
                 header.appendChild(this._playhead)
@@ -93,7 +95,8 @@ export default class PlaybackOverlaySection {
         const vuEls = this._vuElCache
         const currentPattern = appState.patterns[appState.selectedPatternNum]
         const tracks = Utils.getTracksArray(currentPattern)
-        for (const vuEl of vuEls) {
+        for (let i = 0; i < vuEls.length; i++) {
+            const vuEl = vuEls[i]
             let tIdx = vuEl._tIdx
             if (tIdx === undefined) {
                 tIdx = vuEl._tIdx = parseInt(vuEl.dataset.track, 10)
@@ -106,8 +109,11 @@ export default class PlaybackOverlaySection {
             if (!fill) fill = vuEl._fill = vuEl.querySelector('.pp-vu-fill')
 
             if (fill) {
-                const pct = Math.min(level * 10, 1) * 100
-                fill.style.height = pct + '%'
+                const roundedPct = Math.round(Math.min(level * 10, 1) * 100)
+                if (vuEl._lastPct !== roundedPct) {
+                    vuEl._lastPct = roundedPct
+                    fill.style.height = roundedPct + '%'
+                }
             }
         }
     }
@@ -149,7 +155,7 @@ export default class PlaybackOverlaySection {
         if (canvas.style.display !== 'block') canvas.style.display = 'block'
 
         const canvasLeft = (visibleLeft - tracksLeft) + 'px'
-        const canvasTop = tracksEl.scrollTop + 'px'
+        const canvasTop = (tracksEl.scrollTop ?? 0) + 'px'
         const canvasWidth = vW + 'px'
         const canvasHeight = vH + 'px'
 
@@ -185,14 +191,22 @@ export default class PlaybackOverlaySection {
         ctx.lineWidth = 2 * dpr
         ctx.beginPath()
 
-        const sliceW = w / data.dataArray.length
+        const len = data.dataArray.length
+        const sliceW = w / len
         const mid = h * 0.5
+        const step = len > w && w > 0 ? Math.max(1, Math.floor(len / w)) : 1
 
-        for (let i = 0; i < data.dataArray.length; i++) {
+        let first = true
+        for (let i = 0; i < len; i += step) {
             const v = (data.dataArray[i] - 128) / 128
             const x = i * sliceW
             const y = v * h * 0.45 + mid
-            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+            if (first) {
+                ctx.moveTo(x, y)
+                first = false
+            } else {
+                ctx.lineTo(x, y)
+            }
         }
         ctx.stroke()
     }
@@ -213,6 +227,7 @@ export default class PlaybackOverlaySection {
         if (!editor.container) return
         const vuEls = this._vuElCache ?? editor.container.querySelectorAll('.pp-vu')
         for (const vuEl of vuEls) {
+            vuEl._lastPct = 0
             const fill = vuEl.querySelector('.pp-vu-fill')
             if (fill) {
                 fill.style.height = '0%'
@@ -273,8 +288,7 @@ export default class PlaybackOverlaySection {
         if (this._playhead.style.display !== 'block') this._playhead.style.display = 'block'
         const x = beatCache.left + normInBar * beatCache.width
 
-        this._playhead.style.transform = `translateX(${x}px)`
-        if (this._playhead.style.width !== '2px') this._playhead.style.width = `2px`
+        this._playhead.style.transform = `translate3d(${x}px, 0, 0)`
     }
 
     /** Clear loop element caches (called after full sync). */

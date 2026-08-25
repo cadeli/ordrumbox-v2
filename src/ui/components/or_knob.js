@@ -183,8 +183,10 @@ export class OrKnob {
             const sensitivity = isFine ? baseSensitivity * 0.1 : baseSensitivity
             const stepSize = isFine ? this._step * 0.1 : this._step
             const clamped = this._clampStep(this._dragStartVal + deltaY * sensitivity, stepSize)
-            this.setValue(clamped)
-            this._onChange?.(clamped, this._key)
+            if (clamped !== this._value) {
+                this.setValue(clamped)
+                this._onChange?.(clamped, this._key)
+            }
         }
         const onUp = () => {
             window.removeEventListener('mousemove', onMove)
@@ -211,8 +213,10 @@ export class OrKnob {
         const delta = (isUp ? 1 : -1) * this._step * mult
         const stepSize = isFine ? this._step * 0.1 : this._step
         const clamped = this._clampStep(this._value + delta, stepSize)
-        this.setValue(clamped)
-        this._onChange?.(clamped, this._key)
+        if (clamped !== this._value) {
+            this.setValue(clamped)
+            this._onChange?.(clamped, this._key)
+        }
     }
 
     /** Reset value to default on double-click */
@@ -249,6 +253,7 @@ export class OrKnob {
      * @param {boolean} [triggerCallback=false]
      */
     setValue(val, triggerCallback = false) {
+        if (this._value === val && !triggerCallback) return
         this._value = val
         if (this._knobEl) this._knobEl.style.setProperty('--arc-deg', `${this._arcDeg()}deg`)
         if (this._valSpan) this._valSpan.textContent = this._fmt(val)

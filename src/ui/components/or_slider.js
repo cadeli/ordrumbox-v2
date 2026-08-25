@@ -246,6 +246,7 @@ export class OrSlider {
     handleInput(e) {
         const norm    = parseFloat(this._input.value)
         const denorm  = this._toDenorm(norm)
+        if (this._value === denorm) return
         this._value   = denorm
         if (this._valSpan) this._valSpan.textContent = this._fmt(denorm)
         this._onChange?.(denorm, this._key)
@@ -277,10 +278,12 @@ export class OrSlider {
         const newNorm  = Math.min(this._max, Math.max(this._min, norm + delta))
         const denorm   = this._toDenorm(newNorm)
 
-        this._input.value         = newNorm
-        this._value               = denorm
-        this._valSpan.textContent = this._fmt(denorm)
-        this._onChange?.(denorm, this._key)
+        if (this._value !== denorm) {
+            this._input.value         = newNorm
+            this._value               = denorm
+            if (this._valSpan) this._valSpan.textContent = this._fmt(denorm)
+            this._onChange?.(denorm, this._key)
+        }
         return true
     }
 
@@ -296,8 +299,12 @@ export class OrSlider {
      * @param {boolean} [triggerCallback=false]  If true, calls onChange callback
      */
     setValue(val, triggerCallback = false) {
+        if (this._value === val && !triggerCallback) return
         this._value = val
-        if (this._input)   this._input.value         = this._toNorm(val)
+        const norm = this._toNorm(val)
+        if (this._input && parseFloat(this._input.value) !== norm) {
+            this._input.value = norm
+        }
         if (this._valSpan) this._valSpan.textContent = this._fmt(val)
         if (triggerCallback && this._onChange) {
             this._onChange(val, this._key)
