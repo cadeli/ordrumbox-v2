@@ -403,7 +403,10 @@ export default class Toolbar {
                     })
                 }
                 for (const track of pattern.tracks) {
-                    if (Utils.DRUM_TYPES.has(Utils.detectTrackType(track.name))) track.auto = true
+                    if (Utils.DRUM_TYPES.has(Utils.detectTrackType(track.name))) {
+                        track.auto = true
+                        track._toolbarAuto = true
+                    }
                 }
             })
         })
@@ -429,6 +432,7 @@ export default class Toolbar {
                     serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
                 }
                 bassTrack.auto = true
+                bassTrack._toolbarAuto = true
             })
         })
 
@@ -453,6 +457,7 @@ export default class Toolbar {
                     serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
                 }
                 pianoTrack.auto = true
+                pianoTrack._toolbarAuto = true
             })
         })
 
@@ -531,9 +536,9 @@ export default class Toolbar {
         const pattern = appState.patterns[appState.selectedPatternNum]
         const tracks = pattern?.tracks ?? []
         const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
-        const hasDrumAuto = tracks.some(t => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
-        const hasBassAuto = tracks.some(t => t.auto && Utils.detectTrackType(t.name) === 'BASS')
-        const hasPianoAuto = tracks.some(t => t.auto && Utils.detectTrackType(t.name) === 'PIANO')
+        const hasDrumAuto = tracks.some(t => t._toolbarAuto && drumTypes.has(Utils.detectTrackType(t.name)))
+        const hasBassAuto = tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'BASS')
+        const hasPianoAuto = tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO')
         this.drumBtn.classList.toggle('active', hasDrumAuto)
         this.bassBtn.classList.toggle('active', hasBassAuto)
         this.chordsBtn.classList.toggle('active', hasPianoAuto)
@@ -600,12 +605,15 @@ export default class Toolbar {
 
         const types = Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes]
         const hasAuto = (pattern.tracks ?? []).some(t =>
-            t.auto && types.includes(Utils.detectTrackType(t.name))
+            t._toolbarAuto && types.includes(Utils.detectTrackType(t.name))
         )
 
         if (hasAuto) {
             for (const track of pattern.tracks) {
-                if (types.includes(Utils.detectTrackType(track.name))) track.auto = false
+                if (types.includes(Utils.detectTrackType(track.name))) {
+                    track.auto = false
+                    track._toolbarAuto = false
+                }
             }
         } else {
             const { getAutoGenerateService } = await import('../state/service_registry.js')
