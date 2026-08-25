@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { Globals } from '../src/core/globals.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { PatternExporter } from '../src/patterns/exporter.js'
 import { computeFlatNotesFromPattern, computeNbTickForPattern } from '../src/patterns/engine.js'
@@ -15,9 +15,9 @@ describe('Multiple notes at the same step', () => {
     let cmd
 
     beforeEach(() => {
-        Globals.resetAll()
+        serviceRegistry.reset()
         cmd = new Commander()
-        Globals.cmd = cmd
+        serviceRegistry.cmd = cmd
     })
 
     // ── FlatNotes engine ────────────────────────────────────────────────────

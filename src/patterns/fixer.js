@@ -33,13 +33,6 @@ export function fixNoteStepBar(track, note) {
     return note
 }
 
-// TEST UTILITY — deprecated, use normalizeNote from note_schema.js instead
-export function fixNoteDefaults(note, track) {
-    fixNoteStepBar(track, note)
-    Object.assign(note, normalizeNote(note))
-    return note
-}
-
 export function fixTrackDefaults(track, indexTrack) {
     expandCompactNotes(track);
 

@@ -30,31 +30,6 @@ class EventBus {
             arr.forEach(fn => fn(payload))
         }
     }
-
-    /** Get array of listeners for backward compatibility */
-    getListeners(event) {
-        if (!this._listeners.has(event)) {
-            this._listeners.set(event, [])
-        }
-        return this._listeners.get(event)
-    }
 }
 
-const bus = new EventBus()
-
-/** Backward-compat proxy for tests using onX pattern (e.g. onPatternChange.push) */
-export const playbackEvents = new Proxy(bus, {
-    get(target, prop) {
-        if (typeof prop !== 'string') return Reflect.get(target, prop)
-        if (prop in target) return Reflect.get(target, prop)
-
-        // Legacy onX array access (e.g. playbackEvents.onPatternChange.push(fn))
-        if (prop.startsWith('on')) {
-            const eventName = prop.slice(2)
-            const event = eventName.charAt(0).toLowerCase() + eventName.slice(1)
-            return target.getListeners(event)
-        }
-
-        return Reflect.get(target, prop)
-    }
-})
+export const playbackEvents = new EventBus()

@@ -56,8 +56,8 @@ describe('TrackEditor — OrSlider integration', () => {
         setup()
         editor = new TrackEditor()
         editor.init()
-        editor._activeTab = 'fx'
-        editor._activeFxTab = 3
+        editor._tab.setActive('fx')
+        editor._fxTab.setActive('3')
     })
 
     it('renders GROUPS sliders as OrSlider rows (ne-row + data-key)', () => {
@@ -176,8 +176,8 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         setup()
         editor = new TrackEditor()
         editor.init()
-        editor._activeTab = 'fx'
-        editor._activeFxTab = 3
+        editor._tab.setActive('fx')
+        editor._fxTab.setActive('3')
     })
 
     it('row with an LFO prop gets the "has-lfo" class', () => {
@@ -603,8 +603,8 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
         setup()
         editor = new TrackEditor()
         editor.init()
-        editor._activeTab = 'fx'
-        editor._activeFxTab = 3
+        editor._tab.setActive('fx')
+        editor._fxTab.setActive('3')
     })
 
     it('LFO live update: replace semantics via setValue (Hz display)', () => {

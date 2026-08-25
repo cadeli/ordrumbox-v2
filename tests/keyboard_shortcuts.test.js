@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { Globals } from '../src/core/globals.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import StructureSong from '../src/logic/generators/structure_song.js'
 import { appState } from '../src/state/app_state.js'
@@ -138,10 +138,10 @@ describe('convertToGeneratedSounds', () => {
     let pattern
 
     beforeEach(() => {
-        Globals.resetAll()
+        serviceRegistry.reset()
         cmd = new Commander()
-        Globals.cmd = cmd
-        Globals.patternManager = { computeFlatNotesFromPattern: () => {} }
+        serviceRegistry.cmd = cmd
+        serviceRegistry.patterns = { computeFlatNotesFromPattern: () => {} }
         serviceRegistry.seq = { setBpm: () => {} }
         pattern = cmd.addPattern('Test')
         cmd.setSelectedPatternNum(0)

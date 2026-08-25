@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES } from '../src/model/track_schema.js'
-import { Globals } from '../src/core/globals.js'
+import { appState } from '../src/state/app_state.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import TrackVariation from '../src/patterns/variation.js'
 import FlatNote from '../src/model/flatnote.js'
@@ -9,9 +11,11 @@ describe('Track variation2', () => {
     let cmd
 
     beforeEach(() => {
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
         cmd = new Commander()
-        Globals.cmd = cmd
+        serviceRegistry.cmd = cmd
     })
 
     it('has default value of 0', () => {
@@ -146,9 +150,11 @@ describe('TrackVariation.apply (position-based)', () => {
     let cmd
 
     beforeEach(() => {
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
         cmd = new Commander()
-        Globals.cmd = cmd
+        serviceRegistry.cmd = cmd
     })
 
     function makeTrack(name = 'KICK', nbBeats = 4, stepsPerBeat = 4) {

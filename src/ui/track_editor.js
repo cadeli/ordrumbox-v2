@@ -29,9 +29,8 @@ import SoundSection from './track_editor/sound_section.js'
 import ModulationSection from './track_editor/modulation_section.js'
 import LoopSection from './track_editor/loop_section.js'
 
-// ── Constants (import for local use + re-export for backward compat) ──
+// ── Constants ────────────────────────────────────────────────────────
 import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/constants.js'
-export { FX_DEFS, FILTER_TYPE_ICONS, FILTER_PROPS, KNOB_PROPS, TAB_DEFS, ALL_TRACK_PROPS, PROP_BY_KEY } from './track_editor/constants.js'
 
 export default class TrackEditor extends BasePanel {
     /**
@@ -90,10 +89,6 @@ export default class TrackEditor extends BasePanel {
         this._modSection = new ModulationSection(this)
         this._loopSection = new LoopSection(this)
     }
-
-    // Backward-compat setters for tests that set _activeTab / _activeFxTab
-    set _activeTab(id) { /* noop — kept for test compat */ }
-    set _activeFxTab(idx) { /* noop — kept for test compat */ }
 
     // ── Lifecycle ──────────────────────────────────────────────────
 
@@ -449,14 +444,6 @@ export default class TrackEditor extends BasePanel {
         e.target.value = ''
     }
 
-    // ── Backward-compat delegations to sections ────────────────────
-
-    _renderFxGroup()              { return this._fxSection.render() }
-    _renderSoundPanel()           { return this._sndSection.render() }
-    _renderLfoGroup()             { return this._modSection.render() }
-    _renderLoopPanel()            { return this._loopSection.render() }
-    _isFxOn(fx)                   { return this._fxSection.isFxOn(fx) }
-
     _toggleFxByKey(key) {
         this._fxSection.toggleFxByKey(key)
         this.sync()
@@ -510,15 +497,6 @@ export default class TrackEditor extends BasePanel {
     _toggleLfo() {
         this._toggleLfoForTarget(this._selectedLfoTarget)
     }
-
-    _getPreferredSampleForInstrument(id) { return this._sndSection._getPreferredSampleForInstrument(id) }
-    _getCurrentInstrumentName(ids, keys) { return this._sndSection._getCurrentInstrumentName(ids, keys) }
-    _getSoundInfo()                       { return this._sndSection._getSoundInfo() }
-    _getSelectedDrumkitName()             { return this._sndSection._getSelectedDrumkitName() }
-    _getAllKitSamples()                   { return this._sndSection._getAllKitSamples() }
-    _sortSamplesForCurrentKit(samples)    { return this._sndSection._sortSamplesForCurrentKit(samples) }
-    _getSamplesForInstrument(id)          { return this._sndSection._getSamplesForInstrument(id) }
-    _getCurrentSoundUrl()                 { return this._sndSection._getCurrentSoundUrl() }
 
     // ── Event delegation ───────────────────────────────────────────
 

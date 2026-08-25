@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { Globals } from '../src/core/globals.js'
+import { appState } from '../src/state/app_state.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import BaseGenerator from '../src/logic/generators/base_generator.js'
 
@@ -41,9 +43,11 @@ describe('BaseGenerator', () => {
     }
 
     beforeEach(() => {
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
         cmd = new Commander()
-        Globals.cmd = cmd
+        serviceRegistry.cmd = cmd
         generator = new BaseGenerator('TEST', testConfigs)
     })
 

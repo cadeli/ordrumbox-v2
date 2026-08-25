@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import * as patternsManager from '../src/patterns/manager.js'
+import {
+    normalizeArp,
+    hasArp,
+    getArpNoteCount,
+    isTrigged,
+    isProbabilityTrigged,
+    generateSubNotes,
+    createArpFlatNote,
+} from '../src/patterns/engine.js'
 
 vi.mock('../src/state/app_state.js', () => {
     const state = { flatNotes: null }
@@ -146,37 +155,37 @@ describe('PatternManager', () => {
 
     describe('delegate methods', () => {
         it('isTrigged delegates to engine', () => {
-            expect(mgr.isTrigged(0, 1, 0)).toBe(true)
-            expect(mgr.isTrigged(0, 2, 0)).toBe(true)
-            expect(mgr.isTrigged(0, 2, 1)).toBe(false)
+            expect(isTrigged(0, 1, 0)).toBe(true)
+            expect(isTrigged(0, 2, 0)).toBe(true)
+            expect(isTrigged(0, 2, 1)).toBe(false)
         })
 
         it('isProbabilityTrigged delegates to engine', () => {
-            expect(mgr.isProbabilityTrigged(1)).toBe(true)
-            expect(mgr.isProbabilityTrigged(0)).toBe(false)
+            expect(isProbabilityTrigged(1)).toBe(true)
+            expect(isProbabilityTrigged(0)).toBe(false)
         })
 
         it('hasArp delegates to engine', () => {
-            expect(mgr.hasArp(null)).toBe(false)
-            expect(mgr.hasArp({ type: 'up', notes: 4 })).toBe(true)
+            expect(hasArp(null)).toBe(false)
+            expect(hasArp({ type: 'up', notes: 4 })).toBe(true)
         })
 
         it('normalizeArp returns null for empty intervals', () => {
-            expect(mgr.normalizeArp({ mode: 'up' })).toBeNull()
+            expect(normalizeArp({ mode: 'up' })).toBeNull()
         })
 
         it('normalizeArp returns sequence for valid intervals', () => {
-            const result = mgr.normalizeArp({ mode: 'up', intervals: [0, 3, 7] })
+            const result = normalizeArp({ mode: 'up', intervals: [0, 3, 7] })
             expect(result).toEqual({ sequence: [0, 3, 7] })
         })
 
         it('getArpNoteCount reads retriggerNum from note', () => {
             const note = { retriggerNum: 4 }
-            expect(mgr.getArpNoteCount(note)).toBe(4)
+            expect(getArpNoteCount(note)).toBe(4)
         })
 
         it('getArpNoteCount defaults to 1 when retriggerNum is missing', () => {
-            expect(mgr.getArpNoteCount({})).toBe(1)
+            expect(getArpNoteCount({})).toBe(1)
         })
     })
 
@@ -184,7 +193,7 @@ describe('PatternManager', () => {
         it('returns a flatNote with pitch offset by semitoneOffset', () => {
             const track = makeTrack()
             const note = makeNote(0, 0, { pitch: 0 })
-            const result = mgr.createArpFlatNote(0, track, note, 3)
+            const result = createArpFlatNote(0, track, note, 3)
             expect(result.tick).toBe(0)
             expect(result.note.pitch).toBe(3)
         })
@@ -192,7 +201,7 @@ describe('PatternManager', () => {
         it('combines note pitch with semitoneOffset', () => {
             const track = makeTrack()
             const note = makeNote(0, 0, { pitch: 5 })
-            const result = mgr.createArpFlatNote(10, track, note, -2)
+            const result = createArpFlatNote(10, track, note, -2)
             expect(result.tick).toBe(10)
             expect(result.note.pitch).toBe(3)
         })
@@ -203,7 +212,7 @@ describe('PatternManager', () => {
             const flatNotes = new Map()
             const track = makeTrack()
             const note = makeNote(0, 0, { retriggerNum: 1 })
-            mgr.generateSubNotes(flatNotes, 0, track, note, 16, 32)
+            generateSubNotes(flatNotes, 0, track, note, 16, 32)
             expect(flatNotes.has(0)).toBe(true)
             expect(flatNotes.get(0)).toHaveLength(1)
         })
@@ -212,7 +221,7 @@ describe('PatternManager', () => {
             const flatNotes = new Map()
             const track = makeTrack({ stepsPerBeat: 4 })
             const note = makeNote(0, 0, { retriggerNum: 3, rate: 1 })
-            mgr.generateSubNotes(flatNotes, 0, track, note, 32, 32)
+            generateSubNotes(flatNotes, 0, track, note, 32, 32)
             expect(flatNotes.size).toBeGreaterThan(1)
         })
 
@@ -223,7 +232,7 @@ describe('PatternManager', () => {
                 retriggerNum: 4,
                 arp: { mode: 'up', intervals: [0, 3, 7] }
             })
-            mgr.generateSubNotes(flatNotes, 0, track, note, 32, 32)
+            generateSubNotes(flatNotes, 0, track, note, 32, 32)
             expect(flatNotes.size).toBeGreaterThan(0)
             const notes = Array.from(flatNotes.values()).flat()
             expect(notes.length).toBeGreaterThan(1)
@@ -233,7 +242,7 @@ describe('PatternManager', () => {
             const flatNotes = new Map()
             const track = makeTrack({ stepsPerBeat: 4 })
             const note = makeNote(0, 0, { retriggerNum: 8, rate: 1 })
-            mgr.generateSubNotes(flatNotes, 0, track, note, 8, 32)
+            generateSubNotes(flatNotes, 0, track, note, 8, 32)
             for (const tick of flatNotes.keys()) {
                 expect(tick).toBeLessThan(8)
             }

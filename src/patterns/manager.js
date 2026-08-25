@@ -2,23 +2,11 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import {
     computeFlatNotesFromPattern as _computeFlatNotesFromPattern,
-    normalizeArp,
-    hasArp,
-    getArpNoteCount,
-    isTrigged,
-    isProbabilityTrigged,
-    generateSubNotes,
-    createArpFlatNote,
 } from './engine.js'
 import { TICK } from '../core/constants.js'
 
-// Re-exports from engine.js for test compatibility
-export { normalizeArp, hasArp, getArpNoteCount, isTrigged, isProbabilityTrigged, generateSubNotes, createArpFlatNote }
-
 /**
  * Recompute flat notes from a pattern and dispatch a pattern change event.
- * This is the only method that mutates appState — everything else is a
- * pure re-export from engine.js.
  */
 export function computeFlatNotesFromPattern(djtPattern, loop = 0) {
     for (const track of djtPattern.tracks) {

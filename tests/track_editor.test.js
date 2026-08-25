@@ -28,7 +28,7 @@ describe('TrackEditor sound panel', () => {
     it('prefers the sample from the selected drumkit when an instrument is chosen', () => {
         const editor = new TrackEditor()
 
-        expect(editor._getPreferredSampleForInstrument('KICK').url).toBe('real/kick.wav')
+        expect(editor._sndSection._getPreferredSampleForInstrument('KICK').url).toBe('real/kick.wav')
     })
 
     function renderSoundPanelHtml(track) {
@@ -36,7 +36,7 @@ describe('TrackEditor sound panel', () => {
         editor._track = track
         vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
         const wrapper = document.createElement('div')
-        wrapper.innerHTML = editor._renderSoundPanel()
+        wrapper.innerHTML = editor._sndSection.render()
         return wrapper
     }
 
@@ -75,8 +75,8 @@ describe('TrackEditor filterFreq display', () => {
         const editor = new TrackEditor()
         editor.init()
         editor._track = track
-        editor._activeTab = 'fx'
-        editor._activeFxTab = 3
+        editor._tab.setActive('fx')
+        editor._fxTab.setActive('3')
         editor.sync()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         return valEl?.textContent
@@ -102,8 +102,8 @@ describe('TrackEditor filterFreq display', () => {
         const editor = new TrackEditor()
         editor.init()
         editor._track = { name: 'KICK', filterFreq: 20 }
-        editor._activeTab = 'fx'
-        editor._activeFxTab = 3
+        editor._tab.setActive('fx')
+        editor._fxTab.setActive('3')
         editor.sync()
         const knob = editor._fxKnobs.find(k => k._key === 'filterFreq')
         knob.setValue(632)
@@ -123,8 +123,8 @@ describe('TrackEditor filterFreq display', () => {
             filterFreq: 632,
             filterFreqLfo: { freq: 0, min: 158, max: 158, phase: 0 },
         }
-        editor._activeTab = 'fx'
-        editor._activeFxTab = 3
+        editor._tab.setActive('fx')
+        editor._fxTab.setActive('3')
         appState.patterns = [{ tracks: [editor._track], nbBeats: 4 }]
         appState.selectedPatternNum = 0
         editor.sync()
@@ -143,7 +143,7 @@ describe('TrackEditor loop panel', () => {
             loopAtStep: 16
         }
 
-        const html = editor._renderLoopPanel()
+        const html = editor._loopSection.render()
         const wrapper = document.createElement('div')
         wrapper.innerHTML = html
 
@@ -255,8 +255,8 @@ describe('TrackEditor LFO row highlight', () => {
         editor.init()
         editor._track = { name: 'KICK', filterFreq: 0.5, filterFreqLfo: null }
         editor._selectedPropKey = 'filterFreq'
-        editor._activeTab = 'fx'
-        editor._activeFxTab = 3
+        editor._tab.setActive('fx')
+        editor._fxTab.setActive('3')
         editor.sync()
 
         const selectedRow = editor.container.querySelector('.ne-row.selected')
@@ -273,8 +273,8 @@ describe('TrackEditor LFO row highlight', () => {
             filterFreqLfo: { freq: 1, min: 0, max: 0.5 },
         }
         editor._selectedPropKey = null
-        editor._activeTab = 'fx'
-        editor._activeFxTab = 3
+        editor._tab.setActive('fx')
+        editor._fxTab.setActive('3')
         editor.sync()
 
         const lfoRows = editor.container.querySelectorAll('.ne-row.has-lfo')

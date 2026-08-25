@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { Globals } from '../src/core/globals.js'
+import { appState } from '../src/state/app_state.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import Utils from '../src/core/utils.js'
 
@@ -7,9 +9,11 @@ describe('Functional: Commander operations', () => {
     let cmd
 
     beforeEach(() => {
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
         cmd = new Commander()
-        Globals.cmd = cmd
+        serviceRegistry.cmd = cmd
     })
 
     describe('Pattern CRUD', () => {
@@ -24,7 +28,7 @@ describe('Functional: Commander operations', () => {
         })
 
         it('auto-generates name when null', () => {
-            Globals.patterns = [{ name: 'a' }, { name: 'b' }]
+            appState.patterns = [{ name: 'a' }, { name: 'b' }]
             const pattern = cmd.addPattern(null)
 
             expect(pattern.name).toBe('NewPat_2')
@@ -503,7 +507,7 @@ describe('Functional: Commander operations', () => {
 
     describe('getAllSoundsForType', () => {
         it('finds sounds by key', () => {
-            Globals.sounds = {
+            soundRegistry.sounds = {
                 s1: { key: 'kd', kit_name: 'real' },
                 s2: { key: 'sd', kit_name: 'real' },
                 s3: { key: 'kd', kit_name: 'electro' }
@@ -516,14 +520,14 @@ describe('Functional: Commander operations', () => {
         })
 
         it('returns empty array when no match', () => {
-            Globals.sounds = { s1: { key: 'kd' } }
+            soundRegistry.sounds = { s1: { key: 'kd' } }
             expect(cmd.getAllSoundsForType('xx')).toEqual([])
         })
     })
 
     describe('getSoundIdFromUrl', () => {
         it('finds soundId by url', () => {
-            Globals.sounds = {
+            soundRegistry.sounds = {
                 snd_1: { url: 'kits/real/kick.wav' },
                 snd_2: { url: 'kits/real/snare.wav' }
             }
@@ -533,14 +537,14 @@ describe('Functional: Commander operations', () => {
         })
 
         it('returns NOT_FOUND when no match', () => {
-            Globals.sounds = { snd_1: { url: 'a.wav' } }
+            soundRegistry.sounds = { snd_1: { url: 'a.wav' } }
             expect(cmd.getSoundIdFromUrl('b.wav')).toBe('NOT_FOUND')
         })
     })
 
     describe('kitIsLoaded', () => {
         it('returns true when kit sounds are loaded', () => {
-            Globals.sounds = { s1: { kit_name: 'real' } }
+            soundRegistry.sounds = { s1: { kit_name: 'real' } }
             expect(cmd.kitIsLoaded({ name: 'real' })).toBe(true)
             expect(cmd.kitIsLoaded({ name: 'electro' })).toBe(false)
         })

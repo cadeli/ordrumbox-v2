@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { logger } from '../src/core/logger.js'
-import { Globals } from '../src/core/globals.js'
+import { appState } from '../src/state/app_state.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import AutoAssign from '../src/logic/services/auto_assign.js'
 
@@ -8,17 +9,18 @@ describe('Functional: Auto-assign sounds', () => {
     let cmd, autoAssign
 
     beforeEach(() => {
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
         cmd = new Commander()
         autoAssign = new AutoAssign()
-        Globals.sounds = {
+        soundRegistry.sounds = {
             'snd_kick': { key: 'KICK', kit_name: 'real', url: 'kits/real/kick.wav' },
             'snd_snare': { key: 'SNARE', kit_name: 'real', url: 'kits/real/snare.wav' },
             'snd_chh': { key: 'CHH', kit_name: 'real', url: 'kits/real/chh.wav' },
             'snd_ohh': { key: 'OHH', kit_name: 'real', url: 'kits/real/ohh.wav' }
         }
-        Globals.drumkitList = [{ name: 'real', instruments: [] }]
-        Globals.selectedDrumkitNum = 0
+        soundRegistry.drumkitList = [{ name: 'real', instruments: [] }]
+        appState.selectedDrumkitNum = 0
     })
 
     it('autoAssignTrackSounds finds sound by track name', () => {

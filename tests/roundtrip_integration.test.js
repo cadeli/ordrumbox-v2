@@ -335,7 +335,6 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
 
         playbackEvents.off('drumkitChange', spy1)
         playbackEvents.off('drumkitChange', spy2)
-        expect(playbackEvents.onDrumkitChange).toHaveLength(0)
 
         playbackEvents.emit("drumkitChange")
         expect(spy1).toHaveBeenCalledTimes(1)

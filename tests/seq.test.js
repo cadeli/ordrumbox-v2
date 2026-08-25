@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { Globals } from '../src/core/globals.js'
-import { serviceRegistry } from '../src/state/service_registry.js'
 import { appState } from '../src/state/app_state.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 
 vi.mock('../src/audio/engine.js', () => ({ default: vi.fn() }))
 vi.mock('../src/audio/stall_detector.js', () => ({ default: vi.fn() }))
@@ -36,7 +36,9 @@ describe('Sequencer', () => {
     let Sequencer
 
     beforeEach(async () => {
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
         serviceRegistry.audioCtx = {
             currentTime: 0,
             state: 'running',

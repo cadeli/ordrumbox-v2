@@ -39,31 +39,34 @@ export default class AudioEngine {
         // Worklet initialisation happens asynchronously. The player/sound are
         // constructed AFTER the worklet mixer is ready so they hold the correct
         // (worklet-based) mixer reference — not the legacy placeholder above.
-        this._workletReady = Mixer.create(this.audioCtx).then(mixer => {
-            this.mixer = mixer
+        this._workletReady = (async () => {
+            try {
+                const mixer = await Mixer.create(this.audioCtx)
+                this.mixer = mixer
 
-            this.player = new Player({
-                audioCtx: this.audioCtx,
-                mixer: this.mixer,
-                sounds: this.sounds,
-                generatedSounds: this.generatedSounds,
-                patterns: this.patterns,
-                getSelectedPatternNum: this.getSelectedPatternNum,
-                computeFlatNotes: this.computeFlatNotes.bind(this),
-                getAutoGenerate: this.getAutoGenerate,
-                getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
-                TICK: this.TICK,
-                secondsPerBeat: this.secondsPerBeat,
-            })
-            this.sound = this.player.sound
+                this.player = new Player({
+                    audioCtx: this.audioCtx,
+                    mixer: this.mixer,
+                    sounds: this.sounds,
+                    generatedSounds: this.generatedSounds,
+                    patterns: this.patterns,
+                    getSelectedPatternNum: this.getSelectedPatternNum,
+                    computeFlatNotes: this.computeFlatNotes.bind(this),
+                    getAutoGenerate: this.getAutoGenerate,
+                    getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
+                    TICK: this.TICK,
+                    secondsPerBeat: this.secondsPerBeat,
+                })
+                this.sound = this.player.sound
 
-            appState.workletStatus = 'active'
-            playbackEvents.emit("workletStatusChange", 'active')
-        }).catch(err => {
-            logger.warn('AudioEngine: worklet init failed, audio unavailable', err)
-            appState.workletStatus = 'unavailable'
-            playbackEvents.emit("workletStatusChange", 'unavailable')
-        })
+                appState.workletStatus = 'active'
+                playbackEvents.emit("workletStatusChange", 'active')
+            } catch (err) {
+                logger.warn('AudioEngine: worklet init failed, audio unavailable', err)
+                appState.workletStatus = 'unavailable'
+                playbackEvents.emit("workletStatusChange", 'unavailable')
+            }
+        })()
 
         this.isRunning = false
         this.unlocked = false

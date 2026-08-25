@@ -1,8 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import * as patternsManager from '../src/patterns/manager.js'
+import {
+    hasArp,
+    normalizeArp,
+    isTrigged,
+    isProbabilityTrigged,
+    getArpNoteCount,
+    generateSubNotes,
+} from '../src/patterns/engine.js'
 import AutoGenerate from '../src/logic/generators/auto_generate.js'
 import PercGenerate from '../src/logic/generators/perc_generate.js'
-import { Globals } from '../src/core/globals.js'
 import Utils from '../src/core/utils.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { appState } from '../src/state/app_state.js'
@@ -12,7 +19,9 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function makePatternWithTrack(name = 'KICK', stepsPerBeat = 4, beats = 4) {
-    Globals.resetAll()
+    appState.reset()
+    soundRegistry.reset()
+    serviceRegistry.reset()
     const cmd = new Commander()
     serviceRegistry.cmd = cmd
     const pattern = cmd.addPattern('Test')
@@ -46,7 +55,9 @@ describe('PatternManager', () => {
     let patternsMgr, cmd, pattern
 
     beforeEach(() => {
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
         cmd = new Commander()
         serviceRegistry.cmd = cmd
         patternsMgr = patternsManager
@@ -118,41 +129,41 @@ describe('PatternManager', () => {
     // ── proxy methods (hasArp, normalizeArp, isTrigged, etc.) ─────────
 
     it('hasArp([0,4,7]) returns true', () => {
-        expect(patternsMgr.hasArp([0, 4, 7])).toBe(true)
+        expect(hasArp([0, 4, 7])).toBe(true)
     })
 
     it('hasArp(null) returns false', () => {
-        expect(patternsMgr.hasArp(null)).toBe(false)
+        expect(hasArp(null)).toBe(false)
     })
 
     it('normalizeArp([0,4,7]) returns sequence [0,4,7]', () => {
-        expect(patternsMgr.normalizeArp([0, 4, 7]).sequence).toEqual([0, 4, 7])
+        expect(normalizeArp([0, 4, 7]).sequence).toEqual([0, 4, 7])
     })
 
     it('isTrigged(0, 2, 0) returns true', () => {
-        expect(patternsMgr.isTrigged(0, 2, 0)).toBe(true)
+        expect(isTrigged(0, 2, 0)).toBe(true)
     })
 
     it('isTrigged(0, 2, 1) returns false', () => {
-        expect(patternsMgr.isTrigged(0, 2, 1)).toBe(false)
+        expect(isTrigged(0, 2, 1)).toBe(false)
     })
 
     it('isProbabilityTrigged(1) always returns true', () => {
-        for (let i = 0; i < 20; i++) expect(patternsMgr.isProbabilityTrigged(1)).toBe(true)
+        for (let i = 0; i < 20; i++) expect(isProbabilityTrigged(1)).toBe(true)
     })
 
     it('isProbabilityTrigged(0) always returns false', () => {
-        for (let i = 0; i < 20; i++) expect(patternsMgr.isProbabilityTrigged(0)).toBe(false)
+        for (let i = 0; i < 20; i++) expect(isProbabilityTrigged(0)).toBe(false)
     })
 
     it('getArpNoteCount returns note count from retriggerNum', () => {
         const note = { retriggerNum: 4, arp: [0, 4, 7] }
-        expect(patternsMgr.getArpNoteCount(note)).toBeGreaterThan(0)
+        expect(getArpNoteCount(note)).toBeGreaterThan(0)
     })
 
     it('generateSubNotes mutates the flatNotes map (no return value)', () => {
         const flatNotes = new Map()
-        patternsMgr.generateSubNotes(flatNotes, 0, { stepsPerBeat: 4, nbBeats: 4, loopAtStep: 16, notes: [] }, { retriggerNum: 1, rate: 1, arp: null }, 32)
+        generateSubNotes(flatNotes, 0, { stepsPerBeat: 4, nbBeats: 4, loopAtStep: 16, notes: [] }, { retriggerNum: 1, rate: 1, arp: null }, 32)
         // generateSubNotes mutates flatNotes in-place; it does not return a value
         expect(flatNotes).toBeInstanceOf(Map)
     })
@@ -166,7 +177,9 @@ describe('AutoGenerate', () => {
     let autoGen
 
     beforeEach(() => {
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
         const cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.patterns = patternsManager

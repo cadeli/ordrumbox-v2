@@ -6,7 +6,6 @@ import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { EVENT } from '../src/state/events.js'
 import Commander from '../src/logic/commands/cmd.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 import PatternPanel from '../src/ui/pattern_panel.js'
@@ -188,20 +187,6 @@ describe('Granular patternChange events', () => {
             playbackEvents.emit('trackParamChange')
             playbackEvents.emit('patternChange')
             expect(spy).toHaveBeenCalledTimes(1)
-        })
-    })
-
-    describe('EVENT constants', () => {
-        it('has correct string values', () => {
-            expect(EVENT.NOTE_CHANGE).toBe('noteChange')
-            expect(EVENT.TRACK_PARAM_CHANGE).toBe('trackParamChange')
-            expect(EVENT.PATTERN_STRUCTURE_CHANGE).toBe('patternStructureChange')
-            expect(EVENT.PATTERN_META_CHANGE).toBe('patternMetaChange')
-            expect(EVENT.PATTERN_CHANGE).toBe('patternChange')
-        })
-
-        it('events are frozen', () => {
-            expect(Object.isFrozen(EVENT)).toBe(true)
         })
     })
 

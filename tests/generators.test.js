@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { Globals } from '../src/core/globals.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import AutoGenerate from '../src/logic/generators/auto_generate.js'
 import KickGenerate from '../src/logic/generators/kick_generate.js'
@@ -15,9 +15,9 @@ describe('Generators', () => {
     let originalRandom
 
     beforeEach(() => {
-        Globals.resetAll()
+        serviceRegistry.reset()
         cmd = new Commander()
-        Globals.cmd = cmd
+        serviceRegistry.cmd = cmd
         seed = 42
         originalRandom = Math.random
         Math.random = () => {

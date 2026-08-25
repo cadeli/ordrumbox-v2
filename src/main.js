@@ -245,14 +245,15 @@ export function init() {
             }
         }
 
-        idbReport().then(report => {
+        ;(async () => {
+            const report = await idbReport()
             console.group('%c IndexedDB Report', 'color: #e94560; font-weight: bold')
             logger.info('Main', 'Usage:', report.usagePct ?? 'N/A', `(${(report.usageBytes ?? 0).toLocaleString()} / ${(report.quotaBytes ?? 0).toLocaleString()} bytes)`)
             for (const [store, keys] of Object.entries(report.stores ?? {})) {
                 logger.info('Main', `Store "${store}":`, keys.length, 'entries', keys)
             }
             console.groupEnd()
-        })
+        })()
     })
 }
 

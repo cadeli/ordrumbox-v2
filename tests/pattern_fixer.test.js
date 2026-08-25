@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest'
 import {
     fixTrackPanning,
     fixNoteStepBar,
-    fixNoteDefaults,
     fixTrackDefaults,
     fixPattern,
     fixPatterns,
     getUnloadedSamplesFromDrumkits
 } from '../src/patterns/fixer.js'
+import { normalizeNote } from '../src/core/note_schema.js'
 
 describe('patternFixer - fixTrackPanning', () => {
     it('assigns pan from index map', () => {
@@ -48,23 +48,21 @@ describe('patternFixer - fixNoteStepBar', () => {
 
 describe('patternFixer - fixNoteDefaults', () => {
     it('applies note defaults', () => {
-        const track = { stepsPerBeat: 4 }
         const note = { beat: 0, beatStep: 0 }
-        fixNoteDefaults(note, track)
-        expect(note.retriggerNum).toBe(1)
-        expect(note.every).toBe(1)
-        expect(note.pos).toBe(0)
-        expect(note.prob).toBe(1)
-        expect(note.arpTriggerProbability).toBe(1)
-        expect(note.euclidianFill).toBe(0)
+        const result = { ...note, ...normalizeNote(note) }
+        expect(result.retriggerNum).toBe(1)
+        expect(result.every).toBe(1)
+        expect(result.pos).toBe(0)
+        expect(result.prob).toBe(1)
+        expect(result.arpTriggerProbability).toBe(1)
+        expect(result.euclidianFill).toBe(0)
     })
 
     it('preserves existing non-null values', () => {
-        const track = { stepsPerBeat: 4 }
         const note = { beat: 0, beatStep: 0, every: 3, velocity: 0.9 }
-        fixNoteDefaults(note, track)
-        expect(note.every).toBe(3)
-        expect(note.velocity).toBe(0.9)
+        const result = { ...note, ...normalizeNote(note) }
+        expect(result.every).toBe(3)
+        expect(result.velocity).toBe(0.9)
     })
 })
 

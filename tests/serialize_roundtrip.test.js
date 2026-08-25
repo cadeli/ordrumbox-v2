@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { Globals } from '../src/core/globals.js'
+import { appState } from '../src/state/app_state.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { PatternExporter } from '../src/patterns/exporter.js'
 
@@ -7,9 +9,11 @@ describe('Functional: Pattern serialization round-trip', () => {
     let cmd
 
     beforeEach(() => {
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
         cmd = new Commander()
-        Globals.cmd = cmd
+        serviceRegistry.cmd = cmd
     })
 
     it('full pattern round-trip preserves all properties', () => {

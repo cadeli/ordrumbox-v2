@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import Strip from '../src/audio/strip.js'
 import Sound from '../src/audio/sound.js'
-import { Globals } from '../src/core/globals.js'
+import { appState } from '../src/state/app_state.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
+import { serviceRegistry } from '../src/state/service_registry.js'
 import * as AudioMath from '../src/audio/math.js'
 import { makeParam, makeNode, installWorkletMocks } from './helpers/worklet_mocks.js'
 
@@ -39,7 +41,9 @@ describe('Audio Graph Validity', () => {
 
     beforeEach(() => {
         mockCtx = makeAudioCtx()
-        Globals.resetAll()
+        appState.reset()
+        soundRegistry.reset()
+        serviceRegistry.reset()
         installWorkletMocks()
     })
 
