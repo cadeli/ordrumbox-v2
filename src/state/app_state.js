@@ -1,4 +1,5 @@
 import { isMobileViewport } from '../core/constants.js'
+import { reactive } from '../core/signals.js'
 
 function buildDefaultVisibility() {
     const isMobile = isMobileViewport()
@@ -32,9 +33,14 @@ export class AppState {
         songInfos: { name: '', description: '', date: '' },
     }
 
-    constructor() { Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility()) }
+    constructor() {
+        Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility())
+        return reactive(this)
+    }
 
-    reset() { Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility()) }
+    reset() {
+        Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility())
+    }
 }
 
 export const appState = new AppState()

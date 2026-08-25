@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createSignal, effect, batch } from '../src/core/signals.js'
+import { createSignal, effect, batch, computed, reactive } from '../src/core/signals.js'
 
 describe('createSignal', () => {
     it('returns initial value', () => {
@@ -111,5 +111,70 @@ describe('batch', () => {
             expect(fn).toHaveBeenCalledTimes(1)
         })
         expect(fn).toHaveBeenCalledTimes(2)
+    })
+})
+
+describe('computed', () => {
+    it('computes derived value reactively', () => {
+        const [getA, setA] = createSignal(2)
+        const [getB, setB] = createSignal(3)
+        const sum = computed(() => getA() + getB())
+
+        expect(sum()).toBe(5)
+        setA(10)
+        expect(sum()).toBe(13)
+        setB(20)
+        expect(sum()).toBe(30)
+    })
+
+    it('triggers effects when computed value changes', () => {
+        const [getCount, setCount] = createSignal(1)
+        const isEven = computed(() => getCount() % 2 === 0)
+        const fn = vi.fn()
+
+        effect(() => { fn(isEven()) })
+        expect(fn).toHaveBeenCalledWith(false)
+
+        setCount(2)
+        expect(fn).toHaveBeenCalledWith(true)
+
+        // Setting to 4 keeps isEven as true, should not re-trigger effect
+        setCount(4)
+        expect(fn).toHaveBeenCalledTimes(2)
+    })
+})
+
+describe('reactive', () => {
+    it('tracks property access and updates reactively', () => {
+        const state = reactive({ count: 0, name: 'Drumbox' })
+        const fn = vi.fn()
+
+        effect(() => { fn(state.count) })
+        expect(fn).toHaveBeenCalledWith(0)
+
+        state.count = 5
+        expect(fn).toHaveBeenCalledWith(5)
+        expect(fn).toHaveBeenCalledTimes(2)
+
+        // Unrelated property modification does not re-trigger
+        state.name = 'orDrumbox v2'
+        expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it('handles multiple reactive properties', () => {
+        const state = reactive({ bpm: 120, page: 0 })
+        const values = []
+
+        effect(() => {
+            values.push(`${state.bpm} BPM, P${state.page}`)
+        })
+
+        expect(values).toEqual(['120 BPM, P0'])
+
+        state.bpm = 128
+        expect(values).toEqual(['120 BPM, P0', '128 BPM, P0'])
+
+        state.page = 1
+        expect(values).toEqual(['120 BPM, P0', '128 BPM, P0', '128 BPM, P1'])
     })
 })

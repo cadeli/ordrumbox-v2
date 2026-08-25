@@ -79,6 +79,62 @@ export function batch(fn) {
     }
 }
 
+/**
+ * Creates a memoized computed signal.
+ * @param {Function} fn
+ * @returns {() => *} getter
+ */
+export function computed(fn) {
+    const [get, set] = createSignal(undefined)
+    effect(() => {
+        set(fn())
+    })
+    return get
+}
+
+/**
+ * Wraps an object in a reactive proxy where property reads/writes auto-track and trigger signals.
+ * @template {object} T
+ * @param {T} target
+ * @returns {T}
+ */
+export function reactive(target) {
+    if (!target || typeof target !== 'object') return target
+    const signals = new Map()
+
+    const getSignal = (prop, initial) => {
+        let sig = signals.get(prop)
+        if (!sig) {
+            sig = createSignal(initial)
+            signals.set(prop, sig)
+        }
+        return sig
+    }
+
+    return new Proxy(target, {
+        get(obj, prop, receiver) {
+            if (prop === '_raw') return obj
+            if (prop === '_signals') return signals
+            if (typeof prop === 'symbol' || prop in Object.prototype) {
+                return Reflect.get(obj, prop, receiver)
+            }
+            const val = Reflect.get(obj, prop, receiver)
+            if (typeof val === 'function') return val
+            const [get] = getSignal(prop, val)
+            return get()
+        },
+        set(obj, prop, value, receiver) {
+            const oldVal = Reflect.get(obj, prop, receiver)
+            const result = Reflect.set(obj, prop, value, receiver)
+            if (typeof prop !== 'symbol') {
+                const [, set] = getSignal(prop, oldVal)
+                set(value)
+            }
+            return result
+        }
+    })
+}
+
 /** @private */
 function _flush() {
     if (_batchDepth > 0) return
