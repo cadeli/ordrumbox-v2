@@ -925,9 +925,10 @@ body {
     padding: 6px 10px; margin: 0 4px 4px;
     background: var(--bg-input); border: 1px solid var(--border-subtle);
     border-radius: 6px 6px 0 0;
+    justify-content: flex-start;
 }
 .ne-tab-btn {
-    flex: 1; padding: 4px 2px; font-size: var(--fs-xs); font-weight: bold;
+    flex: 1; min-width: 58px; padding: 4px 2px; font-size: var(--fs-xs); font-weight: bold;
     text-transform: uppercase; letter-spacing: 0;
     background: transparent; color: var(--text-dim);
     border: 1px solid transparent; border-radius: 3px;
