@@ -1,7 +1,7 @@
 import Sound from './sound.js'
 import FlatNote from '../model/flatnote.js'
 import NoteParams from '../patterns/note_params.js'
-import { getAutoGenerateService } from '../state/service_registry.js'
+import { getAutoGenerateService } from '../state/service_loader.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { logger, nameOr } from "../core/logger.js"
 import Utils from '../core/utils.js'

@@ -702,7 +702,7 @@ export default class Toolbar {
                 }
             }
         } else {
-            const { getAutoGenerateService } = await import('../state/service_registry.js')
+            const { getAutoGenerateService } = await import('../state/service_loader.js')
             const autoGen = await getAutoGenerateService()
             await generateFn(pattern, autoGen)
         }

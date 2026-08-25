@@ -79,7 +79,7 @@ export default class WavImportService {
             return
         }
 
-        const { getAutoAssignService } = await import('../../state/service_registry.js')
+        const { getAutoAssignService } = await import('../../state/service_loader.js')
         const autoAssign = await getAutoAssignService()
 
         autoAssign.autoAssignSounds(pattern)

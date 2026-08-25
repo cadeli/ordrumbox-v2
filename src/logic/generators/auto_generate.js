@@ -1,5 +1,5 @@
 import { appState } from '../../state/app_state.js'
-import { getAutoAssignService, serviceRegistry } from '../../state/service_registry.js'
+import { serviceRegistry } from '../../state/service_registry.js'
 import Utils from '../../core/utils.js'
 import CowbellGenerate from './cowbell_generate.js'
 import BassGenerate from './bass_generate.js'
@@ -100,7 +100,11 @@ export default class AutoGenerate {
                 bassTrack.velocity = 0.5
             }
 
-            const autoAssign = await getAutoAssignService()
+            if (!serviceRegistry.autoAssign) {
+                const { default: AutoAssign } = await import('../services/auto_assign.js')
+                serviceRegistry.autoAssign = new AutoAssign()
+            }
+            const autoAssign = serviceRegistry.autoAssign
             await autoAssign.autoAssignSounds(pattern)
             serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
 

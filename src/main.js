@@ -19,7 +19,7 @@ import PatternSettingsPanel from './ui/pattern_settings_panel.js'
 import ResourcesLoader from './loader/resources_loader.js'
 import Utils from './core/utils.js'
 import { appState } from './state/app_state.js'
-import { getHistoryService } from './state/service_registry.js'
+import { getHistoryService } from './state/service_loader.js'
 import { serviceRegistry } from './state/service_registry.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
@@ -357,7 +357,7 @@ function previewTrack(trackIndex) {
 }
 
 async function generatePattern() {
-    const { getAutoGenerateService } = await import('./state/service_registry.js')
+    const { getAutoGenerateService } = await import('./state/service_loader.js')
     const autoGen = await getAutoGenerateService()
     await autoGen.generatePattern()
 }

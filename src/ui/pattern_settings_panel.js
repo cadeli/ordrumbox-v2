@@ -175,7 +175,7 @@ export default class PatternSettingsPanel {
                     if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = false
                 }
             } else {
-                const { getAutoGenerateService } = await import('../state/service_registry.js')
+                const { getAutoGenerateService } = await import('../state/service_loader.js')
                 const autoGen = await getAutoGenerateService()
                 await autoGen.generatePattern()
                 if (pattern.tracks) {
@@ -203,7 +203,7 @@ export default class PatternSettingsPanel {
                 }
             } else {
                 let bassTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'BASS')
-                const { getAutoGenerateService } = await import('../state/service_registry.js')
+                const { getAutoGenerateService } = await import('../state/service_loader.js')
                 const autoGen = await getAutoGenerateService()
                 if (!bassTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
@@ -236,7 +236,7 @@ export default class PatternSettingsPanel {
                 }
             } else {
                 let pianoTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'PIANO')
-                const { getAutoGenerateService } = await import('../state/service_registry.js')
+                const { getAutoGenerateService } = await import('../state/service_loader.js')
                 const autoGen = await getAutoGenerateService()
                 if (!pianoTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()

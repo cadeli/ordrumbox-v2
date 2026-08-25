@@ -1,6 +1,7 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
+import { getAutoAssignService } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'

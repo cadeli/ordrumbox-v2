@@ -194,7 +194,7 @@ export default class ToolsPanel extends BasePanel {
         this.container.querySelector('#tp-midi-enable').addEventListener('click', async () => {
             const btn = this.container.querySelector('#tp-midi-enable')
             if (!serviceRegistry.midiManager) {
-                const { getMidiManagerService } = await import('../state/service_registry.js')
+                const { getMidiManagerService } = await import('../state/service_loader.js')
                 await getMidiManagerService()
             }
             

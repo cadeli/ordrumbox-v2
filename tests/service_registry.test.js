@@ -106,21 +106,21 @@ describe('lazyService', () => {
     })
 
     it('getAutoAssignService creates instance once', async () => {
-        const { getAutoAssignService } = await import('../src/state/service_registry.js')
+        const { getAutoAssignService } = await import('../src/state/service_loader.js')
         const s1 = await getAutoAssignService()
         expect(s1).toBeDefined()
         expect(serviceRegistry.autoAssign).toBe(s1)
     })
 
     it('getAutoGenerateService creates instance once', async () => {
-        const { getAutoGenerateService } = await import('../src/state/service_registry.js')
+        const { getAutoGenerateService } = await import('../src/state/service_loader.js')
         const s1 = await getAutoGenerateService()
         expect(s1).toBeDefined()
         expect(serviceRegistry.autoGenerate).toBe(s1)
     })
 
     it('lazyService reuses existing instance', async () => {
-        const { getAutoAssignService } = await import('../src/state/service_registry.js')
+        const { getAutoAssignService } = await import('../src/state/service_loader.js')
         serviceRegistry.autoAssign = { reused: true }
         const s = await getAutoAssignService()
         expect(s).toEqual({ reused: true })

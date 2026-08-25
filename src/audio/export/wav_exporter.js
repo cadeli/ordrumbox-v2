@@ -2,7 +2,8 @@ import AudioEngine from '../engine.js'
 import { MAX_EXPORT_LOOPS, TICK } from '../../core/constants.js'
 import { bufferToWav } from './wav_encoder.js'
 import { appState } from '../../state/app_state.js'
-import { getAutoGenerateService, serviceRegistry } from '../../state/service_registry.js'
+import { serviceRegistry } from '../../state/service_registry.js'
+import { getAutoGenerateService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { logger, nameOr } from "../../core/logger.js"
 
