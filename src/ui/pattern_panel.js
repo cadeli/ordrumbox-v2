@@ -297,38 +297,9 @@ export default class PatternPanel extends BasePanel {
                 {
                     const track = tracks[this._cursorTrackIdx]
                     if (!track) return
-
-                    const cell = this._cellMap.get(`${this._cursorTrackIdx}:${this._cursorBeat}:${this._cursorBeatStep}`)
-                    if (cell) {
-                        const notesAtStep = (track.notes ?? []).filter(n => n.beat === this._cursorBeat && n.beatStep === this._cursorBeatStep)
-                        if (notesAtStep.length > 0) {
-                            const note = notesAtStep[0]
-                            if (this._selNote === note && this._selTrackIdx === this._cursorTrackIdx) {
-                                this._serviceRegistry.cmd.deleteNote(track, note)
-                                this._clearSelection()
-                                this._updateTrackCellsInPlace(this._cursorTrackIdx, track, pattern)
-                            } else {
-                                this._selNote = note
-                                this._selTrackIdx = this._cursorTrackIdx
-                                this._applySelection()
-                                const pos = this._cursorBeat * (track.stepsPerBeat ?? 4) + this._cursorBeatStep
-                                this._playbackEvents.emit('noteSelect', { track, trackIdx: this._cursorTrackIdx, note, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
-                                this._serviceRegistry.seq?.simpleBeep(this._cursorTrackIdx, note)
-                            }
-                        } else {
-                            const newNote = this._serviceRegistry.cmd.addNote(track, this._cursorBeat, this._cursorBeatStep)
-                            this._selNote = newNote
-                            this._selTrackIdx = this._cursorTrackIdx
-                            this._updateTrackCellsInPlace(this._cursorTrackIdx, track, pattern)
-                            this._applySelection()
-
-                            const pos = this._cursorBeat * (track.stepsPerBeat ?? 4) + this._cursorBeatStep
-                            this._playbackEvents.emit('noteSelect', { track, trackIdx: this._cursorTrackIdx, note: newNote, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
-                            this._serviceRegistry.seq?.simpleBeep(this._cursorTrackIdx, newNote)
-                        }
-                    }
+                    this._handleNoteEnter(track)
+                    break
                 }
-                break
             default:
                 return
         }
@@ -400,6 +371,40 @@ export default class PatternPanel extends BasePanel {
         }
         this._playbackEvents.emit('trackParamChange', track)
         this._playbackEvents.emit('patternChange')
+    }
+
+    _handleNoteEnter(track) {
+        if (!track) return
+
+        const cell = this._cellMap.get(`${this._cursorTrackIdx}:${this._cursorBeat}:${this._cursorBeatStep}`)
+        if (cell) {
+            const notesAtStep = (track.notes ?? []).filter(n => n.beat === this._cursorBeat && n.beatStep === this._cursorBeatStep)
+            if (notesAtStep.length > 0) {
+                const note = notesAtStep[0]
+                if (this._selNote === note && this._selTrackIdx === this._cursorTrackIdx) {
+                    this._serviceRegistry.cmd.deleteNote(track, note)
+                    this._clearSelection()
+                    this._updateTrackCellsInPlace(this._cursorTrackIdx, track, pattern)
+                } else {
+                    this._selNote = note
+                    this._selTrackIdx = this._cursorTrackIdx
+                    this._applySelection()
+                    const pos = this._cursorBeat * (track.stepsPerBeat ?? 4) + this._cursorBeatStep
+                    this._playbackEvents.emit('noteSelect', { track, trackIdx: this._cursorTrackIdx, note, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
+                    this._serviceRegistry.seq?.simpleBeep(this._cursorTrackIdx, note)
+                }
+            } else {
+                const newNote = this._serviceRegistry.cmd.addNote(track, this._cursorBeat, this._cursorBeatStep)
+                this._selNote = newNote
+                this._selTrackIdx = this._cursorTrackIdx
+                this._updateTrackCellsInPlace(this._cursorTrackIdx, track, pattern)
+                this._applySelection()
+
+                const pos = this._cursorBeat * (track.stepsPerBeat ?? 4) + this._cursorBeatStep
+                this._playbackEvents.emit('noteSelect', { track, trackIdx: this._cursorTrackIdx, note: newNote, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
+                this._serviceRegistry.seq?.simpleBeep(this._cursorTrackIdx, newNote)
+            }
+        }
     }
 
     _onClick(e) {
