@@ -2,7 +2,7 @@
 //
 // Thin coordinator that delegates rendering to section modules.
 // Dependencies are injected via the constructor (DI) with fallback to
-// module-level singletons for backward compatibility.
+// module-level singletons.
 
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'

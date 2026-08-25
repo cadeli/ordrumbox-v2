@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import MidiExporter, {
     encodeVLQ,
     resolveTrackMidi,
-    buildInstrumentTrack,
 } from '../src/logic/midi/midi_exporter.js'
+import { buildInstrumentTrack } from './helpers/midi_test_helpers.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
 import { readUint32BE, readUint16BE, decodeVLQ } from './helpers/midi_reader.js'
 

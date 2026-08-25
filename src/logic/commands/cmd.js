@@ -123,10 +123,6 @@ updateTrack = (track, updates) => {
         }
     }
 
-    // TEST UTILITIES — not used in production
-    isNoteAt = (track, beat, beatStep) =>
-        Object.values(track.notes).filter(n => n.beatStep === beatStep && n.beat === beat)
-
     addNote = (track, beat, beatStep, pitch = 0) => {
         let steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
         if (steppc > 100) {
@@ -411,47 +407,5 @@ updateTrack = (track, updates) => {
         const entry = Object.entries(soundRegistry.sounds).find(([, s]) => s.url === url)
         return entry?.[0] ?? NOT_FOUND
     }
-
-    // TEST UTILITIES — not used in production
-    kitIsLoaded = (drumkit) =>
-        Object.values(soundRegistry.sounds).some(sound => sound.kit_name === drumkit.name)
-
-    getTrackFromType = (pattern, type) =>
-        Utils.getTracksArray(pattern).find(track => track.name === type) ?? null
-
-    setNbBeats = (pattern, newBeats) => {
-        const oldNbBeats = pattern.nbBeats
-        const oldTrackStates = Utils.getTracksArray(pattern).map(track => ({
-            track,
-            nbBeats: track.nbBeats,
-            loopAtStep: track.loopAtStep,
-            loopPointBeat: track.loopPointBeat,
-            loopPointStep: track.loopPointStep
-        }))
-
-        let oldBeats = pattern.nbBeats * (Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4)
-        pattern.nbBeats = newBeats * 4
-        Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
-            if (track.loopAtStep >= oldBeats) {
-                track.loopAtStep = pattern.nbBeats * track.stepsPerBeat
-                recalcLoopDerived(track)
-            }
-            track.nbBeats = pattern.nbBeats
-        })
-        this._persist()
-        this._record(() => {
-            pattern.nbBeats = oldNbBeats
-            for (const { track, nbBeats, loopAtStep, loopPointBeat, loopPointStep } of oldTrackStates) {
-                track.nbBeats = nbBeats
-                track.loopAtStep = loopAtStep
-                track.loopPointBeat = loopPointBeat
-                track.loopPointStep = loopPointStep
-            }
-            this._persist()
-        }, { desc: 'Set nb beats' })
-    }
-
-    getAllSoundsForType = (soundKey) =>
-        Object.values(soundRegistry.sounds).filter(s => s.key === soundKey)
 
 }

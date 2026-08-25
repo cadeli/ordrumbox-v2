@@ -2,7 +2,7 @@
 //
 // Thin coordinator that delegates tab rendering to section modules.
 // Dependencies are injected via the constructor (DI) with fallback to
-// module-level singletons for backward compatibility.
+// module-level singletons.
 
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
@@ -41,7 +41,7 @@ export default class TrackEditor extends BasePanel {
     constructor(deps = {}) {
         super('te-panel')
 
-        // ── DI'd dependencies (with backward-compatible defaults) ────
+        // ── DI'd dependencies with fallback to module singletons ────
         this._appState = deps.appState ?? appState
         this._serviceRegistry = deps.serviceRegistry ?? serviceRegistry
         this._soundRegistry = deps.soundRegistry ?? soundRegistry
@@ -491,11 +491,6 @@ export default class TrackEditor extends BasePanel {
         this._modSection._toggleLfoForTarget(k)
         this.sync()
         this._emitTrackChange()
-    }
-
-    // TEST UTILITY — not used in production
-    _toggleLfo() {
-        this._toggleLfoForTarget(this._selectedLfoTarget)
     }
 
     // ── Event delegation ───────────────────────────────────────────

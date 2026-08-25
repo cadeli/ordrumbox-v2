@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
+import { isNoteAt } from './helpers/cmd_test_helpers.js'
 
 function ensureTrack(cmd, pattern, trackName, stepsPerBeat) {
     let track = pattern.tracks.find(t => t.name === trackName)
@@ -57,9 +58,9 @@ describe('Functional: MCP tools flow', () => {
             cmd.addNote(track, beat, beatStep)
         }
 
-        expect(cmd.isNoteAt(kick, 0, 0).length).toBe(1)
-        expect(cmd.isNoteAt(kick, 1, 0).length).toBe(1)
-        expect(cmd.isNoteAt(snare, 1, 2).length).toBe(1)
+        expect(isNoteAt(kick, 0, 0).length).toBe(1)
+        expect(isNoteAt(kick, 1, 0).length).toBe(1)
+        expect(isNoteAt(snare, 1, 2).length).toBe(1)
     })
 
     it('ensureTrack creates track only if not exists', () => {
@@ -95,8 +96,8 @@ describe('Functional: MCP tools flow', () => {
         expect(kick.velocity).toBe(0.9)
         expect(kick.notes.length).toBe(2)
         expect(snare.notes.length).toBe(1)
-        expect(cmd.isNoteAt(kick, 0, 0).length).toBe(1)
-        expect(cmd.isNoteAt(kick, 0, 2).length).toBe(1)
-        expect(cmd.isNoteAt(snare, 0, 1).length).toBe(1)
+        expect(isNoteAt(kick, 0, 0).length).toBe(1)
+        expect(isNoteAt(kick, 0, 2).length).toBe(1)
+        expect(isNoteAt(snare, 0, 1).length).toBe(1)
     })
 })

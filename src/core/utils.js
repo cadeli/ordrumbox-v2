@@ -143,17 +143,6 @@ static TAG = "UTILS"
         return Utils.getTrackStepLength(track)
     }
 
-    // TEST UTILITY — not used in production
-    static getLoopCandidateSteps = (trackSteps, minLoopSteps = 1) => {
-        const candidates = []
-        for (let loopAtStep = minLoopSteps; loopAtStep < trackSteps; loopAtStep++) {
-            if (trackSteps % loopAtStep === 0) {
-                candidates.push(loopAtStep)
-            }
-        }
-        return candidates
-    }
-
     static trackNotesMatchLoop = (track, loopAtStep, trackSteps = Utils.getTrackStepLength(track)) => {
         const stepsPerBeat = Number(track.stepsPerBeat)
         const original = Utils.createStepSignatureMap(track.notes, stepsPerBeat, (step) => step)

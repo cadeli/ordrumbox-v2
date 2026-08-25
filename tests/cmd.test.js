@@ -4,6 +4,7 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import Utils from '../src/core/utils.js'
+import { isNoteAt, kitIsLoaded, getTrackFromType, setNbBeats, getAllSoundsForType } from './helpers/cmd_test_helpers.js'
 
 describe('Functional: Commander operations', () => {
     let cmd
@@ -104,9 +105,9 @@ describe('Functional: Commander operations', () => {
             cmd.deleteNote(track, { beat: 1, beatStep: 0, pitch: 0 })
 
             expect(track.notes.length).toBe(2)
-            expect(cmd.isNoteAt(track, 1, 0).length).toBe(0)
-            expect(cmd.isNoteAt(track, 0, 0).length).toBe(1)
-            expect(cmd.isNoteAt(track, 2, 0).length).toBe(1)
+            expect(isNoteAt(track, 1, 0).length).toBe(0)
+            expect(isNoteAt(track, 0, 0).length).toBe(1)
+            expect(isNoteAt(track, 2, 0).length).toBe(1)
         })
 
         it('isNoteAt returns array of notes at position', () => {
@@ -114,8 +115,8 @@ describe('Functional: Commander operations', () => {
             cmd.addNote(track, 0, 0)
             cmd.addNote(track, 0, 0)
 
-            expect(cmd.isNoteAt(track, 0, 0).length).toBe(2)
-            expect(cmd.isNoteAt(track, 99, 99).length).toBe(0)
+            expect(isNoteAt(track, 0, 0).length).toBe(2)
+            expect(isNoteAt(track, 99, 99).length).toBe(0)
         })
 
         it('updateTrack applies whitelisted properties only', () => {
@@ -443,9 +444,9 @@ describe('Functional: Commander operations', () => {
             cmd.addTrack(pattern, 'KICK')
             cmd.addTrack(pattern, 'SNARE')
 
-            expect(cmd.getTrackFromType(pattern, 'KICK').name).toBe('KICK')
-            expect(cmd.getTrackFromType(pattern, 'SNARE').name).toBe('SNARE')
-            expect(cmd.getTrackFromType(pattern, 'MISSING')).toBeNull()
+            expect(getTrackFromType(pattern, 'KICK').name).toBe('KICK')
+            expect(getTrackFromType(pattern, 'SNARE').name).toBe('SNARE')
+            expect(getTrackFromType(pattern, 'MISSING')).toBeNull()
         })
     })
 
@@ -453,7 +454,7 @@ describe('Functional: Commander operations', () => {
         it('changes pattern nbBeats and updates tracks', () => {
             const pattern = cmd.addPattern('Test')
             cmd.addTrack(pattern, 'KICK')
-            cmd.setNbBeats(pattern, 2)
+            setNbBeats(cmd, pattern, 2)
 
             expect(pattern.nbBeats).toBe(8)
             expect(pattern.tracks[0].nbBeats).toBe(8)
@@ -464,7 +465,7 @@ describe('Functional: Commander operations', () => {
             cmd.addTrack(pattern, 'KICK')
             pattern.tracks[0].loopAtStep = 32
 
-            cmd.setNbBeats(pattern, 1)
+            setNbBeats(cmd, pattern, 1)
             expect(pattern.tracks[0].loopAtStep).toBe(16)
             expect(pattern.tracks[0].nbBeats).toBe(4)
         })
@@ -513,7 +514,7 @@ describe('Functional: Commander operations', () => {
                 s3: { key: 'kd', kit_name: 'electro' }
             }
 
-            const sounds = cmd.getAllSoundsForType('kd')
+            const sounds = getAllSoundsForType('kd')
             expect(sounds.length).toBe(2)
             expect(sounds[0].kit_name).toBe('real')
             expect(sounds[1].kit_name).toBe('electro')
@@ -521,7 +522,7 @@ describe('Functional: Commander operations', () => {
 
         it('returns empty array when no match', () => {
             soundRegistry.sounds = { s1: { key: 'kd' } }
-            expect(cmd.getAllSoundsForType('xx')).toEqual([])
+            expect(getAllSoundsForType('xx')).toEqual([])
         })
     })
 
@@ -545,8 +546,8 @@ describe('Functional: Commander operations', () => {
     describe('kitIsLoaded', () => {
         it('returns true when kit sounds are loaded', () => {
             soundRegistry.sounds = { s1: { kit_name: 'real' } }
-            expect(cmd.kitIsLoaded({ name: 'real' })).toBe(true)
-            expect(cmd.kitIsLoaded({ name: 'electro' })).toBe(false)
+            expect(kitIsLoaded({ name: 'real' })).toBe(true)
+            expect(kitIsLoaded({ name: 'electro' })).toBe(false)
         })
     })
 })

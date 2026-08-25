@@ -16,6 +16,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
+import { isNoteAt } from './helpers/cmd_test_helpers.js'
 import { TICK } from '../src/core/constants.js'
 
 // ─── Shared state cleanup ────────────────────────────────────────────────
@@ -60,7 +61,7 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
         expect(note1.beatStep).toBe(0)
         expect(note2.pitch).toBe(3)
 
-        const found = cmd.isNoteAt(track, 0, 0)
+        const found = isNoteAt(track, 0, 0)
         expect(found).toHaveLength(1)
         expect(found[0]).toBe(note1)
     })

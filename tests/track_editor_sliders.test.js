@@ -208,13 +208,13 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         let freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
 
-        editor._toggleLfo()
+        editor._toggleLfoForTarget(editor._selectedLfoTarget)
         freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
         expect(freqRow).not.toBeNull()
         expect(freqRow.classList.contains('has-lfo')).toBe(true)
         expect(editor._track.filterFreqLfo).toBeDefined()
 
-        editor._toggleLfo()
+        editor._toggleLfoForTarget(editor._selectedLfoTarget)
         freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
         expect(editor._track.filterFreqLfo).toBeUndefined()

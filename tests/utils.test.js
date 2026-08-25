@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import Utils from '../src/core/utils.js'
 import { recalcLoopDerived } from '../src/model/track_schema.js'
+import { getLoopCandidateSteps } from './helpers/loop_candidate_steps.js'
 
 describe('Utils', () => {
     describe('getDelayTimeInSeconds', () => {
@@ -147,15 +148,15 @@ describe('Utils', () => {
 
     describe('getLoopCandidateSteps', () => {
         it('finds divisors of trackSteps', () => {
-            expect(Utils.getLoopCandidateSteps(16, 1)).toEqual([1, 2, 4, 8])
+            expect(getLoopCandidateSteps(16, 1)).toEqual([1, 2, 4, 8])
         })
 
         it('respects minLoopSteps', () => {
-            expect(Utils.getLoopCandidateSteps(16, 3)).toEqual([4, 8])
+            expect(getLoopCandidateSteps(16, 3)).toEqual([4, 8])
         })
 
         it('only 1 for prime number', () => {
-            expect(Utils.getLoopCandidateSteps(7, 1)).toEqual([1])
+            expect(getLoopCandidateSteps(7, 1)).toEqual([1])
         })
     })
 

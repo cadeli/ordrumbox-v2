@@ -149,7 +149,7 @@ export default class SoundSection {
         editor._playbackEvents.emit("patternChange", [track])
     }
 
-    // ── Helpers (also exposed on coordinator for backward compat) ──
+    // ── Helpers ──
 
     _getSelectedDrumkitName() {
         return this._editor._soundRegistry.drumkitList[this._editor._appState.selectedDrumkitNum]?.name ?? ''

@@ -2,7 +2,7 @@
 //
 // Thin coordinator that delegates rendering to section modules.
 // Dependencies are injected via the constructor (DI) with fallback to
-// module-level singletons for backward compatibility.
+// module-level singletons.
 // Knob instances are kept alive between renders via setValue().
 
 import { soundRegistry as _soundRegistrySingleton } from '../state/sound_registry.js'
@@ -51,7 +51,7 @@ export default class SynthEditor {
         this._presets = new PresetSection(this)
     }
 
-    /** @returns {OrKnob[]} flat array of current knob instances (backward-compat for tests). */
+    /** @returns {OrKnob[]} flat array of current knob instances. */
     get _knobs() {
         return [...this._knobMap.values()]
     }
