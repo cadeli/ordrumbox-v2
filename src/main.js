@@ -27,6 +27,7 @@ import { logger } from "./core/logger.js"
 import { showToast } from './ui/toast.js'
 import { idbReport } from './core/idb.js'
 import { isMobileViewport } from './core/constants.js'
+import { initSignals } from './state/signals.js'
 
 logger.suppressTags(['Instrument', 'Fallback', 'PatternImport'])
 logger.setLevel(logger.LEVELS?.INFO ?? 1)
@@ -40,6 +41,8 @@ serviceRegistry.patterns = patternsManager
 serviceRegistry.autoAssign = null
 serviceRegistry.midiManager = null
 serviceRegistry.history = await getHistoryService()
+
+initSignals(serviceRegistry)
 
 
 function scheduleAfterFirstPaint(callback) {

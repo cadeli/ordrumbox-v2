@@ -6,6 +6,7 @@ import { computeFlatNotesFromPattern as computeFlatNotesPure } from '../patterns
 import { serviceRegistry } from '../state/service_registry.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
+import { _setAudioUnlocked } from '../state/signals.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { applyParamsToStrip } from './strip_sync.js'
@@ -294,6 +295,7 @@ export default class AudioEngine {
         node.connect(this.audioCtx.destination)
         node.start(0)
         this.unlocked = true
+        _setAudioUnlocked(true)
     }
 
     // ─── Strip / track control ──────────────────────────────────────────────────

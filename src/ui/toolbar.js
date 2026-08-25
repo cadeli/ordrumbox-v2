@@ -2,6 +2,11 @@ import { appState } from '../state/app_state.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
+import { effect } from '../core/signals.js'
+import {
+    isPlaying, currentBpm, currentPattern, currentTracks, trackVersion,
+    canPrevPage, canNextPage, canUndo, canRedo, historyStats,
+} from '../state/signals.js'
 import { injectUiCss } from './components/panel_helpers.js'
 import { isMobileViewport } from '../core/constants.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
@@ -32,6 +37,7 @@ export default class Toolbar {
         this.bindEvents()
         this.syncState()
         this.subscribeEvents()
+        this.initSignals()
         this._setupOverflowObserver()
         document.addEventListener('keydown', (e) => this._handleKeyboard(e))
     }
@@ -57,6 +63,84 @@ export default class Toolbar {
         })
         playbackEvents.on("historyChange", (state) => {
             this.syncUndoRedoButtons(state)
+        })
+    }
+
+    initSignals() {
+        // ── Transport ────────────────────────────────────────────────
+        effect(() => {
+            const running = isPlaying()
+            this.startBtn.textContent = running ? '■' : '▶'
+            this.startBtn.classList.toggle('running', running)
+        })
+
+        // ── BPM ─────────────────────────────────────────────────────
+        effect(() => {
+            const bpm = currentBpm()
+            this.bpmSlider.value = bpm
+            this.bpmValue.textContent = bpm
+            this.bpmToggle.textContent = bpm
+        })
+
+        // ── Beats ───────────────────────────────────────────────────
+        effect(() => {
+            const pat = currentPattern()
+            this.beatsSelect.value = pat?.nbBeats ?? 4
+        })
+
+        // ── Page label ──────────────────────────────────────────────
+        effect(() => {
+            trackVersion()
+            const pat = currentPattern()
+            if (pat) {
+                const stepsPerBeat = Utils.getTracksArray(pat)[0]?.stepsPerBeat ?? 4
+                const totalSteps = (pat.nbBeats ?? 4) * stepsPerBeat
+                const maxPage = Math.ceil(totalSteps / 16) - 1
+                this.pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
+            } else {
+                this.pageLabel.textContent = '1/1'
+            }
+        })
+
+        // ── Page buttons ────────────────────────────────────────────
+        effect(() => {
+            this.prevPageBtn.disabled = !canPrevPage()
+        })
+
+        effect(() => {
+            this.nextPageBtn.disabled = !canNextPage()
+        })
+
+        // ── Undo / Redo ─────────────────────────────────────────────
+        effect(() => {
+            const undo = canUndo()
+            this.undoBtn.disabled = !undo
+            const stats = historyStats()
+            this.undoBtn.title = undo
+                ? `Undo (Ctrl+Z) — ${stats.past} actions`
+                : 'Undo (Ctrl+Z)'
+        })
+
+        effect(() => {
+            const redo = canRedo()
+            this.redoBtn.disabled = !redo
+            const stats = historyStats()
+            this.redoBtn.title = redo
+                ? `Redo (Ctrl+Y) — ${stats.future} actions`
+                : 'Redo (Ctrl+Y)'
+        })
+
+        // ── Gen buttons (drum / bass / chords) ──────────────────────
+        effect(() => {
+            trackVersion()
+            const tracks = currentTracks()
+            const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
+            this.drumBtn.classList.toggle('active',
+                tracks.some(t => t._toolbarAuto && drumTypes.has(Utils.detectTrackType(t.name))))
+            this.bassBtn.classList.toggle('active',
+                tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'BASS'))
+            this.chordsBtn.classList.toggle('active',
+                tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO'))
         })
     }
 

@@ -1,6 +1,7 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
+import { _setActiveView, _setActiveSlotPanel } from '../state/signals.js'
 import { setViewMode, setPatternPanelHidden } from './components/panel_helpers.js'
 import { isMobileViewport } from '../core/constants.js'
 import { isMobileLandscape, removeLayout } from './mobile_track_layout.js'
@@ -73,8 +74,10 @@ export default class ViewManager {
         if (!panel) return
         if (show) {
             this._hideOtherSlotPanels(name)
+            _setActiveSlotPanel(name)
             if (isMobileViewport()) {
                 this._currentView = name
+                _setActiveView(name)
                 this._synthEditor.hidePanel()
                 this._trackEditor.hide()
                 setPatternPanelHidden(true)
@@ -85,8 +88,10 @@ export default class ViewManager {
             panel.show()
         } else {
             panel.hide()
+            _setActiveSlotPanel(null)
             if (isMobileViewport() && this._currentView === name) {
                 this._currentView = 'mobileSeq'
+                _setActiveView('mobileSeq')
             }
             if (name !== 'output') this._outputPanel?.show()
         }
@@ -104,6 +109,7 @@ export default class ViewManager {
         if (view === this._currentView) return
         const prev = this._currentView
         this._currentView = view
+        _setActiveView(view)
         serviceRegistry.resourcesLoader?.saveSession?.()
 
         this._patternSettingsPanel?.hide?.()
