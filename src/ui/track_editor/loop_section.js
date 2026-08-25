@@ -6,14 +6,14 @@ import { fmt } from '../components/panel_helpers.js'
 import { recalcLoopDerived } from '../../model/track_schema.js'
 
 export default class LoopSection {
-    /** @param {import('./track_editor.js').default} co */
-    constructor(co) { this._co = co }
+    /** @param {import('./track_editor.js').default} editor */
+    constructor(editor) { this._editor = editor }
 
     // ── Render ─────────────────────────────────────────────────────
 
     render() {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         if (!track) return ''
 
         const beats = track.nbBeats ?? 4
@@ -36,7 +36,7 @@ export default class LoopSection {
         ]
 
         loopProps.forEach(p => {
-            let s = co._sliders.get(p.key)
+            let s = editor._sliders.get(p.key)
             if (s) {
                 s.setValue(p.val)
                 if (p.key === 'loopAtStep') s.setMax?.(maxSteps)
@@ -50,9 +50,9 @@ export default class LoopSection {
                     value: p.val,
                     format: p.format,
                     dataAttr: 'data-loop',
-                    onChange: (v, key) => co._onLoopSlider({ dataset: { loop: key }, value: v })
+                    onChange: (v, key) => editor._onLoopSlider({ dataset: { loop: key }, value: v })
                 })
-                co._sliders.set(p.key, s)
+                editor._sliders.set(p.key, s)
             }
             s._isDelegated = true
             content += s.toHTML()

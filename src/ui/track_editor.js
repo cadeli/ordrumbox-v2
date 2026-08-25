@@ -23,11 +23,11 @@ import { logger } from '../core/logger.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 
 // ── Section imports ───────────────────────────────────────────────────
-import GenerationSection from './track_editor/GenerationSection.js'
-import FxSection from './track_editor/FxSection.js'
-import SoundSection from './track_editor/SoundSection.js'
-import ModulationSection from './track_editor/ModulationSection.js'
-import LoopSection from './track_editor/LoopSection.js'
+import GenerationSection from './track_editor/generation_section.js'
+import FxSection from './track_editor/fx_section.js'
+import SoundSection from './track_editor/sound_section.js'
+import ModulationSection from './track_editor/modulation_section.js'
+import LoopSection from './track_editor/loop_section.js'
 
 // ── Constants (import for local use + re-export for backward compat) ──
 import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/constants.js'

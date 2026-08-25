@@ -11,9 +11,9 @@ import { playbackEvents as _playbackEventsSingleton } from '../state/playback_ev
 import { OrKnob } from './components/or_knob.js'
 import { fmt, escapeHtml } from './components/panel_helpers.js'
 
-import GroupsSection from './synth_editor/GroupsSection.js'
-import WaveformSection from './synth_editor/WaveformSection.js'
-import PresetSection from './synth_editor/PresetSection.js'
+import GroupsSection from './synth_editor/groups_section.js'
+import WaveformSection from './synth_editor/waveform_section.js'
+import PresetSection from './synth_editor/preset_section.js'
 import { SYNTH_PARAM_META, SYNTH_GROUP_DEFAULTS } from './synth_editor/constants.js'
 
 /**

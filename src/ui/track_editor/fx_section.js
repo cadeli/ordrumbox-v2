@@ -6,14 +6,14 @@ import { renderOptions, renderIconChoices } from '../components/panel_helpers.js
 import { FX_DEFS, FILTER_TYPE_ICONS, FILTER_PROPS, PROP_BY_KEY, fmtVal } from './constants.js'
 
 export default class FxSection {
-    /** @param {import('./track_editor.js').default} co */
-    constructor(co) {
-        this._co = co
+    /** @param {import('./track_editor.js').default} editor */
+    constructor(editor) {
+        this._editor = editor
     }
 
     /** Returns true if the given FX definition is "on". */
     isFxOn(fx) {
-        const track = this._co._track
+        const track = this._editor._track
         if (fx.key === 'filterFreq') {
             const ft = track.filterType
             return ft != null && ft !== 'allpass'
@@ -24,16 +24,16 @@ export default class FxSection {
 
     /** Toggle an FX on/off. */
     toggleFxByKey(key) {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         if (key === 'filterFreq') {
             const cur = track.filterType
             const isOn = cur != null && cur !== 'allpass'
             if (isOn) {
-                co._prevFilterType = cur
+                editor._prevFilterType = cur
                 track.filterType = 'allpass'
             } else {
-                track.filterType = co._prevFilterType ?? 'lowpass'
+                track.filterType = editor._prevFilterType ?? 'lowpass'
             }
         } else {
             const isOn = Number(track[key] ?? 0) > 0
@@ -43,26 +43,26 @@ export default class FxSection {
 
     /** Render FX icon (filter type) selector. */
     onFxIcon(target) {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         const val = target.dataset.fxIconVal
         if (!val) return
         if (target.closest('[data-prop="filterType"]')) {
             const cur = track.filterType
             track.filterType = (cur === val) ? 'allpass' : val
-            co._prevFilterType = (cur === val) ? undefined : cur
+            editor._prevFilterType = (cur === val) ? undefined : cur
         }
     }
 
     /** Switch the active FX sub-tab. */
     onFxTab(btn) {
-        const co = this._co
+        const editor = this._editor
         const tabIdx = parseInt(btn.dataset.fxTab, 10)
         if (Number.isNaN(tabIdx)) return
         const activeTab = String(tabIdx)
-        co._fxTab.setActive(activeTab)
-        co._fxTab.togglePanels(co.container)
-        co.container.querySelectorAll('.te-mod-btn').forEach(tab => {
+        editor._fxTab.setActive(activeTab)
+        editor._fxTab.togglePanels(editor.container)
+        editor.container.querySelectorAll('.te-mod-btn').forEach(tab => {
             const tabButton = tab.querySelector('[data-fx-tab]')
             tab.classList.toggle('active', tabButton?.dataset.fxTab === activeTab)
         })
@@ -70,15 +70,15 @@ export default class FxSection {
 
     /** Generate the full FX tab HTML. */
     render() {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         if (!track) return ''
 
         let tabsHtml = '<div class="te-mod-targets">'
         FX_DEFS.forEach((fx, i) => {
             const on = this.isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
-            const activeClass = co._fxTab.isHidden(String(i)) ? '' : ' active'
+            const activeClass = editor._fxTab.isHidden(String(i)) ? '' : ' active'
             tabsHtml += `<div class="te-mod-btn${activeClass}">
                 <span class="${ledClass}" data-fx-toggle-btn="${fx.key}"></span>
                 <span data-fx-tab="${i}">${fx.label}</span></div>`
@@ -87,7 +87,7 @@ export default class FxSection {
 
         let content = tabsHtml
         FX_DEFS.forEach((fx, idx) => {
-            const isHidden = co._fxTab.isHidden(String(idx))
+            const isHidden = editor._fxTab.isHidden(String(idx))
             const on = this.isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
 
@@ -108,8 +108,8 @@ export default class FxSection {
                         <select data-key="${ck}">${renderOptions(prop.options, val, { labels: prop.labels })}</select></div>`
                 } else {
                     const hasLfo = prop.lfo && track[prop.lfo] ? 'has-lfo' : ''
-                    const isSelected = co._selectedPropKey === ck ? 'selected' : ''
-                    let knob = co._fxKnobs.find(k => k._key === ck)
+                    const isSelected = editor._selectedPropKey === ck ? 'selected' : ''
+                    let knob = editor._fxKnobs.find(k => k._key === ck)
                     if (knob) {
                         knob.setValue(val ?? prop.min)
                     } else {
@@ -123,13 +123,13 @@ export default class FxSection {
                             extraClass: `${isSelected} ${hasLfo}`.trim(),
                             format: (v) => fmtVal(ck, v),
                             onChange: (v) => {
-                                co._track[ck] = v
-                                co._playbackEvents.emit("trackParamChange", co._track)
-                                co._playbackEvents.emit("patternChange", [co._track])
+                                editor._track[ck] = v
+                                editor._playbackEvents.emit("trackParamChange", editor._track)
+                                editor._playbackEvents.emit("patternChange", [editor._track])
                             }
                         })
                     }
-                    co._fxKnobs.push(knob)
+                    editor._fxKnobs.push(knob)
                     content += knob.toHTML()
                 }
             })

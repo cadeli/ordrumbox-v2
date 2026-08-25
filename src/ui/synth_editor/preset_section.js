@@ -7,37 +7,37 @@ import { SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META } from './constants.js'
 import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
 
 export default class PresetSection {
-    /** @param {import('./synth_editor.js').default} co */
-    constructor(co) { this._co = co }
+    /** @param {import('./synth_editor.js').default} editor */
+    constructor(editor) { this._editor = editor }
 
     /** @returns {string[]} sorted keys of loaded synth presets. */
     getGeneratedSoundKeys() {
-        const sr = this._co._soundRegistry
+        const sr = this._editor._soundRegistry
         return Object.keys(sr.generatedSounds ?? {}).sort((a, b) => a.localeCompare(b))
     }
 
     /** Loads generated sounds from disk if not already loaded. */
     async ensureGeneratedSoundsLoaded() {
-        const co = this._co
-        if (co._loadFailed) return
+        const editor = this._editor
+        if (editor._loadFailed) return
         if (this.getGeneratedSoundKeys().length > 0) return
-        if (co._loadPromise) return co._loadPromise
+        if (editor._loadPromise) return editor._loadPromise
 
-        co._loading = true
-        co._loadPromise = (async () => {
+        editor._loading = true
+        editor._loadPromise = (async () => {
             try {
-                await co._serviceRegistry.resourcesLoader?.loadGeneratedSounds(
+                await editor._serviceRegistry.resourcesLoader?.loadGeneratedSounds(
                     (await import('../../loader/resources_loader.js')).default.GENERATED_SOUNDS_URL
                 )
-                co._serviceRegistry.audioEngine?.updateGeneratedSounds(co._soundRegistry.generatedSounds)
+                editor._serviceRegistry.audioEngine?.updateGeneratedSounds(editor._soundRegistry.generatedSounds)
             } catch (error) {
-                co._loadFailed = true
+                editor._loadFailed = true
             } finally {
-                co._loading = false
-                co._loadPromise = null
+                editor._loading = false
+                editor._loadPromise = null
             }
         })()
-        return co._loadPromise
+        return editor._loadPromise
     }
 
     /**
@@ -45,34 +45,34 @@ export default class PresetSection {
      * @returns {boolean} whether the preset was loaded
      */
     loadPreset(key) {
-        const co = this._co
-        const sound = co._soundRegistry.generatedSounds?.[key]
+        const editor = this._editor
+        const sound = editor._soundRegistry.generatedSounds?.[key]
         if (!sound) return false
-        co._editKey = key
-        co._original = structuredClone(sound)
-        co._draft = structuredClone(sound)
-        co._hydrateDraft()
+        editor._editKey = key
+        editor._original = structuredClone(sound)
+        editor._draft = structuredClone(sound)
+        editor._hydrateDraft()
         return true
     }
 
     /** Commits a sound to the registry and notifies the audio engine. */
     commitSound(key, sound) {
-        const co = this._co
-        co._soundRegistry.generatedSounds[key] = structuredClone(sound)
-        co._serviceRegistry.audioEngine?.updateGeneratedSounds(co._soundRegistry.generatedSounds)
+        const editor = this._editor
+        editor._soundRegistry.generatedSounds[key] = structuredClone(sound)
+        editor._serviceRegistry.audioEngine?.updateGeneratedSounds(editor._soundRegistry.generatedSounds)
         this._persist()
     }
 
     _persist() {
-        const sr = this._co._soundRegistry
+        const sr = this._editor._soundRegistry
         cacheGeneratedSounds(sr.generatedSounds).catch?.(() => {})
     }
 
     /** @returns {string} footer HTML with preset selector and action buttons. */
     renderFooter() {
-        const co = this._co
+        const editor = this._editor
         const keys = this.getGeneratedSoundKeys()
-        const currentKey = co._editKey ?? ''
+        const currentKey = editor._editKey ?? ''
         const options = renderOptions(keys, currentKey, { escape: escapeHtml })
         return `<div class="ss-footer">
              <select class="ss-preset-select" data-action="synth-preset">
@@ -91,34 +91,34 @@ export default class PresetSection {
     // ─── Preset actions ────────────────────────────────────────────────
 
     navigatePreset(dir) {
-        const co = this._co
+        const editor = this._editor
         const keys = this.getGeneratedSoundKeys()
         if (keys.length === 0) return
-        const idx = keys.indexOf(co._editKey)
+        const idx = keys.indexOf(editor._editKey)
         const next = (idx + dir + keys.length) % keys.length
         if (!this.loadPreset(keys[next])) return
-        co._renderEditor()
+        editor._renderEditor()
     }
 
     selectPreset(key) {
-        const co = this._co
-        if (!key || key === co._editKey) return
+        const editor = this._editor
+        if (!key || key === editor._editKey) return
         if (!this.loadPreset(key)) return
-        co._renderEditor()
+        editor._renderEditor()
     }
 
     duplicatePreset() {
-        const co = this._co
-        if (!co._draft || !co._editKey) return
-        const newKey = `${co._editKey}_copy`
-        this.commitSound(newKey, co._draft)
-        co._editKey = newKey
-        co._original = structuredClone(co._draft)
-        co._renderEditor()
+        const editor = this._editor
+        if (!editor._draft || !editor._editKey) return
+        const newKey = `${editor._editKey}_copy`
+        this.commitSound(newKey, editor._draft)
+        editor._editKey = newKey
+        editor._original = structuredClone(editor._draft)
+        editor._renderEditor()
     }
 
     newPreset() {
-        const co = this._co
+        const editor = this._editor
         const keys = this.getGeneratedSoundKeys()
         let base = 1
         let name = 'new_preset'
@@ -127,56 +127,56 @@ export default class PresetSection {
         }
         const sound = structuredClone(SYNTH_GROUP_DEFAULTS)
         this.commitSound(name, sound)
-        co._editKey = name
-        co._original = structuredClone(sound)
-        co._draft = structuredClone(sound)
-        co._hydrateDraft()
-        co._renderEditor()
+        editor._editKey = name
+        editor._original = structuredClone(sound)
+        editor._draft = structuredClone(sound)
+        editor._hydrateDraft()
+        editor._renderEditor()
         showToast(`Preset "${name}" created`, 'success')
     }
 
     deletePreset() {
-        const co = this._co
-        if (!co._editKey) return
+        const editor = this._editor
+        if (!editor._editKey) return
         const keys = this.getGeneratedSoundKeys()
         if (keys.length <= 1) {
             showToast('Cannot delete the last preset', 'warning')
             return
         }
-        const deletedName = co._editKey
-        const idx = keys.indexOf(co._editKey)
-        delete co._soundRegistry.generatedSounds[co._editKey]
-        co._serviceRegistry.audioEngine?.updateGeneratedSounds(co._soundRegistry.generatedSounds)
+        const deletedName = editor._editKey
+        const idx = keys.indexOf(editor._editKey)
+        delete editor._soundRegistry.generatedSounds[editor._editKey]
+        editor._serviceRegistry.audioEngine?.updateGeneratedSounds(editor._soundRegistry.generatedSounds)
         this._persist()
         const nextIdx = idx < keys.length - 1 ? idx : idx - 1
         const nextKey = keys[nextIdx] === deletedName
             ? keys[(idx + 1) % keys.length]
             : keys[nextIdx]
-        co._editKey = null
-        co._original = null
-        co._draft = null
+        editor._editKey = null
+        editor._original = null
+        editor._draft = null
         this.loadPreset(nextKey)
-        co._renderEditor()
+        editor._renderEditor()
         showToast(`Deleted "${deletedName}"`, 'success')
     }
 
     renamePreset() {
-        const co = this._co
-        if (!co._editKey) return
-        const newName = prompt('Rename preset:', co._editKey)
-        if (!newName || newName === co._editKey) return
-        this.commitSound(newName, co._draft)
-        delete co._soundRegistry.generatedSounds[co._editKey]
-        co._serviceRegistry.audioEngine?.updateGeneratedSounds(co._soundRegistry.generatedSounds)
+        const editor = this._editor
+        if (!editor._editKey) return
+        const newName = prompt('Rename preset:', editor._editKey)
+        if (!newName || newName === editor._editKey) return
+        this.commitSound(newName, editor._draft)
+        delete editor._soundRegistry.generatedSounds[editor._editKey]
+        editor._serviceRegistry.audioEngine?.updateGeneratedSounds(editor._soundRegistry.generatedSounds)
         this._persist()
-        co._editKey = newName
-        co._original = structuredClone(co._draft)
-        co._renderEditor()
+        editor._editKey = newName
+        editor._original = structuredClone(editor._draft)
+        editor._renderEditor()
     }
 
     randomizePreset() {
-        const co = this._co
-        if (!co._draft) return
+        const editor = this._editor
+        if (!editor._draft) return
         const randomize = (obj, prefix = '') => {
             for (const [key, val] of Object.entries(obj)) {
                 const path = prefix ? `${prefix}.${key}` : key
@@ -190,8 +190,8 @@ export default class PresetSection {
                 }
             }
         }
-        randomize(co._draft)
-        co._hydrateDraft()
-        co._renderEditor()
+        randomize(editor._draft)
+        editor._hydrateDraft()
+        editor._renderEditor()
     }
 }

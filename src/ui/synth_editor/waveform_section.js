@@ -4,8 +4,8 @@
 import { WAVE_BUFFER } from './constants.js'
 
 export default class WaveformSection {
-    /** @param {import('./synth_editor.js').default} co */
-    constructor(co) { this._co = co }
+    /** @param {import('./synth_editor.js').default} editor */
+    constructor(editor) { this._editor = editor }
 
     /** Draw all canvases (waveform + ADSR). */
     draw() {
@@ -14,9 +14,9 @@ export default class WaveformSection {
     }
 
     _drawWaveform() {
-        const co = this._co
-        const canvas = co.panel.querySelector('.ss-waveform')
-        if (!canvas || !co._draft) return
+        const editor = this._editor
+        const canvas = editor.panel.querySelector('.ss-waveform')
+        if (!canvas || !editor._draft) return
         const ctx = canvas.getContext('2d')
         if (!ctx) return
         const w = canvas.width
@@ -32,7 +32,7 @@ export default class WaveformSection {
         ctx.lineTo(w, mid)
         ctx.stroke()
 
-        if (co._waveTab === 'wave') {
+        if (editor._waveTab === 'wave') {
             this._drawOscillators(ctx, w, mid)
         }
         this._drawEnvCanvas()
@@ -51,7 +51,7 @@ export default class WaveformSection {
 
     _drawOscillators(ctx, w, mid) {
         const vcos = this._buildVcoArray()
-        const draft = this._co._draft
+        const draft = this._editor._draft
         const masterVol = draft.masterVolume ?? 1.0
         const fmAmount = draft.fm?.amount ?? 0
         const fmAlgo = draft.fm?.algo ?? 0
@@ -132,7 +132,7 @@ export default class WaveformSection {
     }
 
     _buildVcoArray() {
-        const draft = this._co._draft
+        const draft = this._editor._draft
         return [1, 2, 3].map(n => {
             const v = draft[`vco${n}`] ?? {}
             return {
@@ -145,9 +145,9 @@ export default class WaveformSection {
     }
 
     _drawEnvCanvas() {
-        const co = this._co
-        const canvas = co.panel.querySelector('.ss-env-canvas')
-        if (!canvas || !co._draft) return
+        const editor = this._editor
+        const canvas = editor.panel.querySelector('.ss-env-canvas')
+        if (!canvas || !editor._draft) return
         const ctx = canvas.getContext('2d')
         if (!ctx) return
         const w = canvas.width
@@ -174,7 +174,7 @@ export default class WaveformSection {
     }
 
     _drawAdsrEnvelope(ctx, w, mid) {
-        const { attack = 0, decay = 0.12, sustain = 1, release = 0.05 } = this._co._draft.enveloppe ?? {}
+        const { attack = 0, decay = 0.12, sustain = 1, release = 0.05 } = this._editor._draft.enveloppe ?? {}
         const totalTime = Math.max(attack + decay + 0.3 + release, 0.5)
 
         const scaleX = (t) => (t / totalTime) * w

@@ -7,9 +7,9 @@ import { renderOptions } from '../components/panel_helpers.js'
 import { GROUPS, GEN_SUBTAB_DEFS, GEN_GROOVE_PROPS, GEN_ENGINE_PROPS, fmtVal } from './constants.js'
 
 export default class GenerationSection {
-    /** @param {import('./track_editor.js').default} co */
-    constructor(co) {
-        this._co = co
+    /** @param {import('./track_editor.js').default} editor */
+    constructor(editor) {
+        this._editor = editor
         this._genSubTab = new OrTab({
             tabs: GEN_SUBTAB_DEFS,
             defaultTab: 'groove',
@@ -26,12 +26,12 @@ export default class GenerationSection {
 
     /** Render a group of props as slider/boolean/select rows. */
     #renderProps(props, track) {
-        const co = this._co
+        const editor = this._editor
         let html = ''
 
         props.forEach(p => {
             const val = track[p.key]
-            const isSelected = co._selectedPropKey === p.key ? 'selected' : ''
+            const isSelected = editor._selectedPropKey === p.key ? 'selected' : ''
             const hasLfo = p.lfo && track[p.lfo] ? 'has-lfo' : ''
 
             if (p.type === 'boolean') {
@@ -45,7 +45,7 @@ export default class GenerationSection {
                     <label>${p.label}</label>
                     <select data-key="${p.key}">${renderOptions(p.options, val, { labels: p.labels })}</select></div>`
             } else {
-                let s = co._sliders.get(p.key)
+                let s = editor._sliders.get(p.key)
                 if (s) {
                     s.setValue(val ?? p.min)
                     s._hasLfo = !!(p.lfo && track[p.lfo])
@@ -63,13 +63,13 @@ export default class GenerationSection {
                         normalize: p.normalize ?? ((v) => v),
                         denormalize: p.denormalize ?? ((v) => v),
                         onChange: (v, key) => {
-                            co._isDragging = true
-                            co._track[key] = v
-                            co._playbackEvents.emit("trackParamChange", co._track)
-                            co._playbackEvents.emit("patternChange", [co._track])
+                            editor._isDragging = true
+                            editor._track[key] = v
+                            editor._playbackEvents.emit("trackParamChange", editor._track)
+                            editor._playbackEvents.emit("patternChange", [editor._track])
                         }
                     })
-                    co._sliders.set(p.key, s)
+                    editor._sliders.set(p.key, s)
                 }
                 s._isDelegated = true
                 html += s.toHTML()
@@ -81,8 +81,8 @@ export default class GenerationSection {
 
     /** Generate HTML for the generation tab. */
     render() {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         if (!track) return ''
 
         const group = GROUPS[0]

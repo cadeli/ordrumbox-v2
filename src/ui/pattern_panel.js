@@ -15,9 +15,9 @@ import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
 import { downloadJson, pitchToNoteName, formatNoteTooltip } from './components/panel_helpers.js'
 
-import HeaderSection from './pattern_panel/HeaderSection.js'
-import GridSection from './pattern_panel/GridSection.js'
-import PlaybackOverlaySection from './pattern_panel/PlaybackOverlaySection.js'
+import HeaderSection from './pattern_panel/header_section.js'
+import GridSection from './pattern_panel/grid_section.js'
+import PlaybackOverlaySection from './pattern_panel/playback_overlay_section.js'
 
 export default class PatternPanel extends BasePanel {
     /**

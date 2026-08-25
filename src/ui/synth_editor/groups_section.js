@@ -12,12 +12,12 @@ import {
 } from './constants.js'
 
 export default class GroupsSection {
-    /** @param {import('./synth_editor.js').default} co */
-    constructor(co) { this._co = co }
+    /** @param {import('./synth_editor.js').default} editor */
+    constructor(editor) { this._editor = editor }
 
     /** Ordered group names derived from draft keys. */
     getOrderedGroupNames() {
-        const draft = this._co._draft
+        const draft = this._editor._draft
         if (!draft) return SYNTH_GROUP_ORDER.slice()
 
         const mergedKeys = new Set(Object.values(SYNTH_GROUP_MERGE).flat())
@@ -52,8 +52,8 @@ export default class GroupsSection {
      * @returns {string} HTML
      */
     render(knobConfigs) {
-        const co = this._co
-        const draft = co._draft
+        const editor = this._editor
+        const draft = editor._draft
         if (!draft) return ''
 
         const groupNames = this.getOrderedGroupNames()
@@ -62,7 +62,7 @@ export default class GroupsSection {
         for (const groupName of groupNames) {
             const content = this._buildGroupContent(groupName, knobConfigs)
             const label = this.getGroupLabel(groupName)
-            const isBypassed = co._cardBypassed[groupName] ?? false
+            const isBypassed = editor._cardBypassed[groupName] ?? false
 
             const isVco = VCO_RE.test(groupName)
             const isLfo = LFO_RE.test(groupName)
@@ -114,8 +114,8 @@ export default class GroupsSection {
 
     /** Builds inner content for a single group. */
     _buildGroupContent(groupName, knobConfigs) {
-        const co = this._co
-        const draft = co._draft
+        const editor = this._editor
+        const draft = editor._draft
         const merged = SYNTH_GROUP_MERGE[groupName]
         const fields = merged
             ? merged.map(key => ({ path: [key], key, val: draft[key] }))

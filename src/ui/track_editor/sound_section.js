@@ -6,20 +6,20 @@ import InstrumentsManager from '../../logic/services/instruments_manager.js'
 import AutoAssign from '../../logic/services/auto_assign.js'
 
 export default class SoundSection {
-    /** @param {import('./track_editor.js').default} co */
-    constructor(co) { this._co = co }
+    /** @param {import('./track_editor.js').default} editor */
+    constructor(editor) { this._editor = editor }
 
     // ── Render ─────────────────────────────────────────────────────
 
     render() {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         if (!track) return ''
 
-        const sr = co._soundRegistry
+        const sr = editor._soundRegistry
         const auto = track.useAutoAssignSound !== false
         const ledClass = auto ? 'lfo-led on' : 'lfo-led'
-        const generatedSoundKeys = co.synthEditor.getGeneratedSoundKeys()
+        const generatedSoundKeys = editor.synthEditor.getGeneratedSoundKeys()
         const currentGeneratedSound = track.useSoftSynth === true
             ? (track.synthSoundKey ?? 'BASS1')
             : 'none'
@@ -69,7 +69,7 @@ export default class SoundSection {
         content += `</select></div>
                 <div class="ne-row ne-row-separator">
                     <label>Synth</label>
-                    <select data-sound="generated">${renderOptions(synthOpts, currentGeneratedSound, { escape: co.esc })}</select></div>`
+                    <select data-sound="generated">${renderOptions(synthOpts, currentGeneratedSound, { escape: editor.esc })}</select></div>`
 
         const monoActive = track.mono ? 'active' : ''
         const monoLabel = track.mono ? 'ON' : 'OFF'
@@ -80,63 +80,63 @@ export default class SoundSection {
     // ── Event handlers ─────────────────────────────────────────────
 
     async onInstrumentChange(target) {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         const newName = target.value
-        co._serviceRegistry.cmd.changeTrackName(track, newName)
+        editor._serviceRegistry.cmd.changeTrackName(track, newName)
         const firstSample = this._getPreferredSampleForInstrument(newName)
         if (firstSample) {
-            if (!co._soundRegistry.sounds[firstSample.url]?.buffer) {
-                await co._serviceRegistry.resourcesLoader.loadSample(firstSample, firstSample.kitName)
+            if (!editor._soundRegistry.sounds[firstSample.url]?.buffer) {
+                await editor._serviceRegistry.resourcesLoader.loadSample(firstSample, firstSample.kitName)
             }
-            co._serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
+            editor._serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
         }
-        co.sync()
-        co._playbackEvents.emit("trackParamChange", track)
-        co._playbackEvents.emit("patternChange", [track])
+        editor.sync()
+        editor._playbackEvents.emit("trackParamChange", track)
+        editor._playbackEvents.emit("patternChange", [track])
     }
 
     async onSampleChange(target) {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         const url = target.value
-        if (!co._soundRegistry.sounds[url]?.buffer) {
+        if (!editor._soundRegistry.sounds[url]?.buffer) {
             let foundKit, foundSample
-            for (const kit of co._soundRegistry.drumkitList) {
+            for (const kit of editor._soundRegistry.drumkitList) {
                 const s = kit.instruments.find(i => i.url === url)
                 if (s) { foundKit = kit; foundSample = s; break }
             }
             if (foundSample && foundKit) {
-                await co._serviceRegistry.resourcesLoader.loadSample(foundSample, foundKit.name)
+                await editor._serviceRegistry.resourcesLoader.loadSample(foundSample, foundKit.name)
             }
         }
-        co._serviceRegistry.cmd.changeTrackSound(track, url)
-        co._playbackEvents.emit("trackParamChange", track)
-        co._playbackEvents.emit("patternChange", [track])
+        editor._serviceRegistry.cmd.changeTrackSound(track, url)
+        editor._playbackEvents.emit("trackParamChange", track)
+        editor._playbackEvents.emit("patternChange", [track])
     }
 
     async onGeneratedChange(target) {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         const key = target.value
         if (key === 'none') {
             track.useSoftSynth = false
         } else {
-            if (!co._soundRegistry.generatedSounds[key]) {
-                await co.synthEditor.ensureGeneratedSoundsLoaded()
+            if (!editor._soundRegistry.generatedSounds[key]) {
+                await editor.synthEditor.ensureGeneratedSoundsLoaded()
             }
             track.useSoftSynth = true
             track.useAutoAssignSound = false
             track.synthSoundKey = key
         }
-        co.sync()
-        co._playbackEvents.emit("trackParamChange", track)
-        co._playbackEvents.emit("patternChange", [track])
+        editor.sync()
+        editor._playbackEvents.emit("trackParamChange", track)
+        editor._playbackEvents.emit("patternChange", [track])
     }
 
     toggleAuto() {
-        const co = this._co
-        const track = co._track
+        const editor = this._editor
+        const track = editor._track
         track.useAutoAssignSound = track.useAutoAssignSound === false
         if (track.useAutoAssignSound) {
             track.useSoftSynth = false
@@ -144,19 +144,19 @@ export default class SoundSection {
             const aa = new AutoAssign()
             aa.autoAssignTrackSounds(track)
         }
-        co.sync()
-        co._playbackEvents.emit("trackParamChange", track)
-        co._playbackEvents.emit("patternChange", [track])
+        editor.sync()
+        editor._playbackEvents.emit("trackParamChange", track)
+        editor._playbackEvents.emit("patternChange", [track])
     }
 
     // ── Helpers (also exposed on coordinator for backward compat) ──
 
     _getSelectedDrumkitName() {
-        return this._co._soundRegistry.drumkitList[this._co._appState.selectedDrumkitNum]?.name ?? ''
+        return this._editor._soundRegistry.drumkitList[this._editor._appState.selectedDrumkitNum]?.name ?? ''
     }
 
     _getAllKitSamples() {
-        return this._co._soundRegistry.drumkitList.flatMap(kit =>
+        return this._editor._soundRegistry.drumkitList.flatMap(kit =>
             kit.instruments.map(s => ({ ...s, kitName: kit.name }))
         )
     }
@@ -186,17 +186,17 @@ export default class SoundSection {
     }
 
     _getCurrentSoundUrl() {
-        const track = this._co._track
+        const track = this._editor._track
         const soundId = track.soundId ?? ''
-        return this._co._soundRegistry.sounds[soundId]?.url ?? soundId
+        return this._editor._soundRegistry.sounds[soundId]?.url ?? soundId
     }
 
     _getSoundInfo() {
-        const track = this._co._track
+        const track = this._editor._track
         if (track.useSoftSynth === true) {
             return track.synthSoundKey ?? null
         }
-        const sound = this._co._soundRegistry.sounds[track.soundId]
+        const sound = this._editor._soundRegistry.sounds[track.soundId]
         if (!sound) return null
         const kit = sound.kit_name ?? ''
         const name = sound.display_name ?? sound.key ?? sound.url ?? ''
@@ -204,8 +204,8 @@ export default class SoundSection {
     }
 
     _getCurrentInstrumentName(instrumentIds, keysWithSamples) {
-        const track = this._co._track
-        const sr = this._co._soundRegistry
+        const track = this._editor._track
+        const sr = this._editor._soundRegistry
         if (keysWithSamples.has(track.name)) return track.name
         const soundKey = sr.sounds[this._getCurrentSoundUrl()]?.key
         if (soundKey && keysWithSamples.has(soundKey)) return soundKey
