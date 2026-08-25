@@ -58,12 +58,12 @@ export const GM_PROGRAM_NAMES = {
 }
 
 /** Reverse map: drum GM name → MIDI note number */
-export const GM_DRUM_KEY_BY_NAME = Object.fromEntries(
+const GM_DRUM_KEY_BY_NAME = Object.fromEntries(
     Object.entries(GM_DRUM_NAMES).map(([k, v]) => [v, Number(k)])
 )
 
 /** Reverse map: melodic GM name → 0-indexed program number */
-export const GM_PROGRAM_NUM_BY_NAME = Object.fromEntries(
+const GM_PROGRAM_NUM_BY_NAME = Object.fromEntries(
     Object.entries(GM_PROGRAM_NAMES).map(([k, v]) => [v, Number(k)])
 )
 

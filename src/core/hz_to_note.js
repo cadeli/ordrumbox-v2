@@ -28,16 +28,6 @@ export function hzToNote(hz) {
 }
 
 /**
- * Convert semitones offset to Hz relative to a base frequency.
- * @param {number} semitones
- * @param {number} baseHz
- * @returns {number}
- */
-export function semitonesToHz(semitones, baseHz = A4_HZ) {
-    return baseHz * Math.pow(2, semitones / 12)
-}
-
-/**
  * Format a note result as a readable string.
  * @param {{ note: string, octave: number, cents: number }} noteResult
  * @returns {string}

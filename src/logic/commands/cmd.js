@@ -150,7 +150,6 @@ updateTrack = (track, updates) => {
     }
 
     addTrack = (pattern, type, stepsPerBeat = 4) => {
-        // console.log("cmd::addTrack " + pattern.name + " = " + type)
 
         let track = this.createTrack(pattern.nbBeats, type, stepsPerBeat);
         const trackIndex = pattern.tracks.length
@@ -290,7 +289,6 @@ updateTrack = (track, updates) => {
     setSelectedPatternNum = async (num) => {
         try {
             if (appState.patterns.length > 0) {
-                //console.log("cmd::setSelectedPatternNum " + num + " = " + appState.patterns[num].name)
                 appState.selectedPatternNum = num
                 let selPattern = appState.patterns[appState.selectedPatternNum]
                 serviceRegistry.seq.setBpm(selPattern.bpm)
@@ -299,7 +297,6 @@ updateTrack = (track, updates) => {
                     autoAssign.autoAssignSounds(selPattern)
                 }
                 serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
-                // console.log(flatnotes)
                 playbackEvents.emit("selectedPatternChange")
             }
         } catch (err) {

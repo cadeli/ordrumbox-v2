@@ -35,8 +35,7 @@ import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/c
 export default class TrackEditor extends BasePanel {
     /**
      * @param {object} [deps]  Optional dependency overrides (DI).
-     *   When omitted the module-level singletons are used — identical to
-     *   the pre-refactor behaviour, so existing callers and tests keep working.
+     *   When omitted the module-level singletons are used.
      */
     constructor(deps = {}) {
         super('te-panel')
