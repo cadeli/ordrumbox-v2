@@ -1,7 +1,7 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { setViewMode } from './components/panel_helpers.js'
+import { setViewMode, setPatternPanelHidden } from './components/panel_helpers.js'
 import { isMobileViewport } from '../core/constants.js'
 import { isMobileLandscape, removeLayout } from './mobile_track_layout.js'
 
@@ -36,6 +36,17 @@ export default class ViewManager {
         this._eventToSlot = new Map(
             [...this._slots].map(([name, { event }]) => [event, name])
         )
+
+        // ── View registry: view name → { enter, exit } ──────────────────
+        // `exit` runs cleanup for the view being left (only views that need
+        // teardown define one); `enter` renders the view being switched to.
+        this._viewHandlers = new Map([
+            ['synth',       { enter: () => this._showSynth(),      exit: () => this._synthEditor?.hidePanel() }],
+            ['edit',        { enter: () => this._showEdit() }],
+            ['proll',       { enter: () => this._showProll(),      exit: () => this._pianoRollPanel?.hide() }],
+            ['mobileSeq',   { enter: () => this._showMobileSeq(),  exit: () => this._exitMobileSeq() }],
+            ['mobileTrack', { enter: () => this._showMobileTrack(),exit: () => this._exitMobileTrack() }],
+        ])
     }
 
     init() {
@@ -61,20 +72,17 @@ export default class ViewManager {
     _toggleSlotPanel(show, name, panel) {
         if (!panel) return
         if (show) {
+            this._hideOtherSlotPanels(name)
             if (isMobileViewport()) {
                 this._currentView = name
                 this._synthEditor.hidePanel()
                 this._trackEditor.hide()
-                document.getElementById('pattern-panel')?.classList.add('ui-hidden')
-                this._hideOtherSlotPanels(name)
-                panel.show()
+                setPatternPanelHidden(true)
             } else {
-                this._hideOtherSlotPanels(name)
-                this._ensureTrackEditorVisible()
-                this._ensureNoteEditorVisible()
-                panel.show()
+                this._ensureEditorsVisible()
                 if (this._outputPanel?.isVisible && name !== 'output') this._outputPanel.hide()
             }
+            panel.show()
         } else {
             panel.hide()
             if (isMobileViewport() && this._currentView === name) {
@@ -98,29 +106,14 @@ export default class ViewManager {
         this._currentView = view
         serviceRegistry.resourcesLoader?.saveSession?.()
 
-        if (this._patternSettingsPanel?.hide) {
-            this._patternSettingsPanel.hide()
-        }
+        this._patternSettingsPanel?.hide?.()
 
-        if (prev === 'proll') this._pianoRollPanel?.hide()
-        if (prev === 'synth') this._synthEditor?.hidePanel()
-        if (prev === 'mobileSeq') {
-            this._pianoRollPanel?.hide()
-            document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-        }
-        if (prev === 'mobileTrack') {
-            this._noteEditor?.hide()
-            removeLayout(this._trackEditor.container)
-        }
+        this._viewHandlers.get(prev)?.exit?.()
         if (isMobileViewport() && this._slots.has(prev)) {
             this._hideOtherSlotPanels(null)
         }
 
-        if (view === 'synth') this._showSynth()
-        if (view === 'proll') this._showProll()
-        if (view === 'edit') this._showEdit()
-        if (view === 'mobileSeq') this._showMobileSeq()
-        if (view === 'mobileTrack') this._showMobileTrack()
+        this._viewHandlers.get(view)?.enter?.()
 
         setViewMode(view)
     }
@@ -151,32 +144,48 @@ export default class ViewManager {
         }
     }
 
+    /** Ensures both the track editor and its note editor are visible/synced. */
+    _ensureEditorsVisible() {
+        this._ensureTrackEditorVisible()
+        this._ensureNoteEditorVisible()
+    }
+
+    // ── Per-view exit handlers (cleanup when leaving a view) ────────────────
+
+    _exitMobileSeq() {
+        this._pianoRollPanel?.hide()
+        setPatternPanelHidden(false)
+    }
+
+    _exitMobileTrack() {
+        this._noteEditor?.hide()
+        removeLayout(this._trackEditor.container)
+    }
+
+    // ── Per-view enter handlers (render the view being switched to) ─────────
+
     _showSynth() {
         if (isMobileViewport()) {
             this._trackEditor.hide()
-            document.getElementById('pattern-panel')?.classList.add('ui-hidden')
         } else {
-            this._ensureTrackEditorVisible()
-            this._ensureNoteEditorVisible()
-            document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+            this._ensureEditorsVisible()
         }
+        setPatternPanelHidden(true)
         void this._synthEditor.showPanel()
     }
 
     _showEdit() {
         this._synthEditor.hidePanel()
         this._pianoRollPanel.hide()
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
-        this._ensureTrackEditorVisible()
-        this._ensureNoteEditorVisible()
+        setPatternPanelHidden(false)
+        this._ensureEditorsVisible()
     }
 
     _showProll() {
         this._synthEditor.hidePanel()
-        this._ensureTrackEditorVisible()
-        this._ensureNoteEditorVisible()
+        this._ensureEditorsVisible()
         this._pianoRollPanel.show()
-        document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+        setPatternPanelHidden(true)
     }
 
     _showMobileSeq() {
@@ -184,17 +193,15 @@ export default class ViewManager {
         if (isMobileLandscape()) {
             this._trackEditor.hide()
         } else {
-            this._ensureTrackEditorVisible()
-            this._ensureNoteEditorVisible()
+            this._ensureEditorsVisible()
         }
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        setPatternPanelHidden(false)
     }
 
     _showMobileTrack() {
         this._synthEditor.hidePanel()
         this._pianoRollPanel.hide()
-        this._ensureTrackEditorVisible()
-        this._ensureNoteEditorVisible()
-        document.getElementById('pattern-panel')?.classList.add('ui-hidden')
+        this._ensureEditorsVisible()
+        setPatternPanelHidden(true)
     }
 }

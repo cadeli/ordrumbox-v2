@@ -13,7 +13,7 @@ import Utils from '../core/utils.js'
 import SynthEditor from './synth_editor.js'
 import { OrKnob } from './components/or_knob.js'
 import { OrTab } from './components/or_tab.js'
-import { fmt, setViewBtn, knobFormat, renderIconChoices } from './components/panel_helpers.js'
+import { fmt, setViewBtn, knobFormat, renderIconChoices, setPatternPanelHidden } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
@@ -675,7 +675,7 @@ export default class TrackEditor extends BasePanel {
         if (this.container) removeLayout(this.container)
         super.hide()
         this.synthEditor.reset()
-        document.getElementById('pattern-panel')?.classList.remove('ui-hidden')
+        setPatternPanelHidden(false)
         this.container?.classList.remove('pp-split')
 
         this._track = null
@@ -691,5 +691,3 @@ export default class TrackEditor extends BasePanel {
         setViewBtn('edit', false)
     }
 }
-
-

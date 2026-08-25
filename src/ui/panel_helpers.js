@@ -54,6 +54,15 @@ export function syncWidthWithPatternPanel(container) {
     container.style.width = rect.width + 'px'
 }
 
+/**
+ * Shows/hides the main pattern panel via its `ui-hidden` class.
+ * Centralises the 'pattern-panel' DOM id so it isn't repeated across callers.
+ * @param {boolean} hidden
+ */
+export function setPatternPanelHidden(hidden) {
+    document.getElementById('pattern-panel')?.classList.toggle('ui-hidden', hidden)
+}
+
 export function bindCloseButton(container, onClose) {
     container.querySelector('.ne-close')?.addEventListener('click', onClose)
 }
@@ -165,11 +174,4 @@ export function renderIconChoices(options, currentValue, iconMap, { cssClass, va
         const extra = extraAttrs ? extraAttrs(value) : ''
         return `<button class="${cssClass}${sel}" ${valueDataAttr}="${dVal}" title="${dVal}"${extra}>${icon}</button>`
     }).join('')
-}
-
-/**
- * @param {boolean} hidden
- */
-export function setPatternPanelHidden(hidden) {
-    document.getElementById('pattern-panel')?.classList.toggle('ui-hidden', hidden)
 }
