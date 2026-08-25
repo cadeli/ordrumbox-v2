@@ -3,6 +3,7 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest'
 import DrumkitManager from '../src/ui/drumkit_manager.js'
+import drumkitService from '../src/logic/services/drumkit_service.js'
 import AutoAssign from '../src/logic/services/auto_assign.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
@@ -87,7 +88,7 @@ describe('DrumkitManager instrument mapping', () => {
         const manager = new DrumkitManager()
         manager.init()
 
-        const exported = manager._exportCurrentKit()
+        const exported = drumkitService.exportCurrentKit()
         expect(exported).toMatchObject({
             version: 1,
             name: 'custom',
@@ -98,7 +99,7 @@ describe('DrumkitManager instrument mapping', () => {
         soundRegistry.sounds[SOUND_ID].gainDb = 0
         soundRegistry.sounds[SOUND_ID].tune = 0
         soundRegistry.sounds[SOUND_ID].decay = null
-        await manager._restoreDrumkit(exported)
+        await drumkitService.restoreDrumkit(exported)
 
         expect(appState.selectedDrumkit).toBe('custom')
         expect(soundRegistry.sounds[SOUND_ID]).toMatchObject({

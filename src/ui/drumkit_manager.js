@@ -1,10 +1,9 @@
-import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { getAutoAssignService } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import InstrumentsManager from '../logic/services/instruments_manager.js'
-import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
+import drumkitService from '../logic/services/drumkit_service.js'
+import { drawEnvelope } from '../audio/sample_analyzer.js'
 import { hzToNote, formatNote } from '../core/hz_to_note.js'
 import { showToast } from './toast.js'
 import { downloadJson } from './components/panel_helpers.js'
@@ -96,37 +95,8 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
-    _getCurrentKitSounds() {
-        return Object.entries(soundRegistry.sounds)
-            .map(([url, s]) => ({ url, ...s }))
-    }
-
-    _currentKitName() {
-        return soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? null
-    }
-
-    _exportCurrentKit() {
-        const name = this._currentKitName()
-        if (!name) return null
-
-        const instruments = Object.values(soundRegistry.sounds)
-            .filter(sound => sound.kit_name === name)
-            .map(sound => ({
-                url: sound.url,
-                display_name: sound.display_name,
-                key: sound.key,
-                rootMidi: sound.rootMidi ?? null,
-                peakDb: sound.peakDb ?? null,
-                decay: sound.decay ?? null,
-                gainDb: sound.gainDb ?? 0,
-                tune: sound.tune ?? 0,
-            }))
-
-        return { version: 1, name, instruments }
-    }
-
     _saveCurrentKit() {
-        const kit = this._exportCurrentKit()
+        const kit = drumkitService.exportCurrentKit()
         if (!kit) {
             showToast('No drumkit selected', 'warning')
             return
@@ -142,7 +112,10 @@ export default class DrumkitManager extends BasePanel {
 
         try {
             const data = JSON.parse(await file.text())
-            await this._restoreDrumkit(data)
+            const kitName = await drumkitService.restoreDrumkit(data)
+            showToast(`Loaded drumkit "${kitName}"`, 'success')
+            this._selectedSoundKey = null
+            this.sync()
         } catch (err) {
             logger.warn(TAG, `Drumkit load failed: ${err.message}`)
             showToast('Invalid drumkit JSON', 'error')
@@ -151,57 +124,8 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
-    /** Restore a drumkit mapping and the editable per-sample settings. */
-    async _restoreDrumkit(data) {
-        if (!data || typeof data.name !== 'string' || !Array.isArray(data.instruments)) {
-            throw new Error('Missing drumkit name or instruments')
-        }
-
-        const instruments = data.instruments
-            .filter(sample => typeof sample?.url === 'string' && typeof sample?.key === 'string')
-            .map(sample => ({
-                url: sample.url,
-                display_name: sample.display_name ?? sample.url,
-                key: sample.key,
-                rootMidi: sample.rootMidi ?? null,
-                peakDb: sample.peakDb ?? null,
-                decay: sample.decay ?? null,
-                gainDb: sample.gainDb ?? 0,
-                tune: sample.tune ?? 0,
-            }))
-        if (!instruments.length) throw new Error('No valid instruments')
-
-        const kit = { name: data.name, instruments: structuredClone(instruments) }
-        const existingIndex = soundRegistry.drumkitList.findIndex(entry => entry.name === kit.name)
-        if (existingIndex === -1) soundRegistry.drumkitList.push(kit)
-        else soundRegistry.drumkitList.splice(existingIndex, 1, kit)
-        soundRegistry.drumkits[kit.name] = { name: kit.name, instruments: structuredClone(instruments) }
-
-        for (const sample of instruments) {
-            const sound = soundRegistry.sounds[sample.url]
-            if (!sound) continue
-            Object.assign(sound, sample, { kit_name: kit.name })
-        }
-
-        const kitIndex = soundRegistry.drumkitList.findIndex(entry => entry.name === kit.name)
-        appState.selectedDrumkitNum = kitIndex
-        appState.selectedDrumkit = kit.name
-        try {
-            await serviceRegistry.resourcesLoader?.loadMissingSamplesFromDrumkits([kit])
-            await serviceRegistry.cmd?.autoAssignSoundsForNewDrumkit?.()
-        } catch (err) {
-            logger.warn(TAG, `Some samples could not be loaded for "${kit.name}": ${err.message}`)
-            showToast(`Loaded mapping for "${kit.name}"; some samples are unavailable`, 'warning')
-        }
-
-        playbackEvents.emit("drumkitChange")
-        this._selectedSoundKey = null
-        this.sync()
-        showToast(`Loaded drumkit "${kit.name}"`, 'success')
-    }
-
     _renderList() {
-        const sounds = this._getCurrentKitSounds()
+        const sounds = drumkitService.getCurrentKitSounds()
         if (!sounds.length) {
             this._listEl.innerHTML = '<div class="dm-list-empty">No samples in this kit</div>'
             return
@@ -248,7 +172,7 @@ export default class DrumkitManager extends BasePanel {
             return
         }
 
-        const analysis = sound.buffer ? analyzeSample(sound.buffer) : null
+        const analysis = drumkitService.getAnalysisInfo(sound)
         const im = new InstrumentsManager()
         const detected = im.findInstrumentFromFileName(sound.display_name ?? sound.url)
         const noteStr = analysis?.noteInfo ? formatNote(analysis.noteInfo) : '—'
@@ -339,11 +263,15 @@ export default class DrumkitManager extends BasePanel {
         })
 
         this._detailEl.querySelector('#dm-kit-select')?.addEventListener('change', (e) => {
-            this._moveToKit(key, e.target.value)
+            const displayName = drumkitService.moveToKit(key, e.target.value)
+            if (displayName) showToast(`Moved "${displayName}" to kit "${e.target.value}"`, 'success')
+            this.sync()
         })
 
         this._detailEl.querySelector('#dm-inst-select')?.addEventListener('change', (e) => {
-            this._setInstrument(key, e.target.value)
+            const displayName = drumkitService.setInstrument(key, e.target.value)
+            if (displayName) showToast(`Set "${displayName}" to instrument "${e.target.value}"`, 'success')
+            this.sync()
         })
 
         this._detailEl.querySelector('#dm-gain')?.addEventListener('input', (e) => {
@@ -398,89 +326,13 @@ export default class DrumkitManager extends BasePanel {
         source.start()
     }
 
-    _moveToKit(soundKey, newKitName) {
-        const sound = soundRegistry.sounds[soundKey]
-        if (!sound) return
-        const oldKitName = sound.kit_name
-
-        if (oldKitName === newKitName) return
-
-        sound.kit_name = newKitName
-
-        const oldKit = soundRegistry.drumkits[oldKitName]
-        if (oldKit?.instruments) {
-            oldKit.instruments = oldKit.instruments.filter(i => i.url !== soundKey)
-        }
-        const oldListEntry = soundRegistry.drumkitList.find(d => d.name === oldKitName)
-        if (oldListEntry?.instruments) {
-            oldListEntry.instruments = oldListEntry.instruments.filter(i => i.url !== soundKey)
-        }
-
-        let newKit = soundRegistry.drumkits[newKitName]
-        if (!newKit) {
-            newKit = { name: newKitName, instruments: [] }
-            soundRegistry.drumkits[newKitName] = newKit
-        }
-        const instEntry = { display_name: sound.display_name, key: sound.key, url: soundKey }
-        newKit.instruments.push(instEntry)
-
-        let newListEntry = soundRegistry.drumkitList.find(d => d.name === newKitName)
-        if (!newListEntry) {
-            newListEntry = { name: newKitName, instruments: [] }
-            soundRegistry.drumkitList.push(newListEntry)
-        }
-        newListEntry.instruments.push(instEntry)
-
-        showToast(`Moved "${sound.display_name}" to kit "${newKitName}"`, 'success')
-        playbackEvents.emit("drumkitChange")
-        this.sync()
-    }
-
-    /**
-     * Persist a manually chosen instrument in every representation of a sample.
-     * Auto-assign resolves samples from `soundRegistry.sounds`, while kit lists
-     * are used by the rest of the UI and loaders; they must remain in sync.
-     */
-    _setInstrument(soundKey, instrumentKey) {
-        const sound = soundRegistry.sounds[soundKey]
-        if (!sound || !instrumentKey || sound.key === instrumentKey) return
-
-        sound.key = instrumentKey
-        const kitName = sound.kit_name
-        const updateInstrumentEntry = (kit) => {
-            kit?.instruments?.forEach(entry => {
-                if (entry.url === soundKey) entry.key = instrumentKey
-            })
-        }
-
-        updateInstrumentEntry(soundRegistry.drumkits[kitName])
-        updateInstrumentEntry(soundRegistry.drumkitList.find(kit => kit.name === kitName))
-
-        showToast(`Set "${sound.display_name}" to instrument "${instrumentKey}"`, 'success')
-        playbackEvents.emit("drumkitChange")
-        this.sync()
-    }
-
     _removeSample(soundKey) {
-        const sound = soundRegistry.sounds[soundKey]
-        if (!sound) return
-
-        const kitName = sound.kit_name
-        delete soundRegistry.sounds[soundKey]
-
-        const kit = soundRegistry.drumkits[kitName]
-        if (kit?.instruments) {
-            kit.instruments = kit.instruments.filter(i => i.url !== soundKey)
+        const displayName = drumkitService.removeSample(soundKey)
+        if (displayName) {
+            this._selectedSoundKey = null
+            showToast(`Removed "${displayName}"`, 'success')
+            this.sync()
         }
-        const listEntry = soundRegistry.drumkitList.find(d => d.name === kitName)
-        if (listEntry?.instruments) {
-            listEntry.instruments = listEntry.instruments.filter(i => i.url !== soundKey)
-        }
-
-        this._selectedSoundKey = null
-        showToast(`Removed "${sound.display_name}"`, 'success')
-        playbackEvents.emit("drumkitChange")
-        this.sync()
     }
 
     async _onReplaceSample(soundKey, e) {
@@ -493,14 +345,7 @@ export default class DrumkitManager extends BasePanel {
         try {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = await ctx.decodeAudioData(arrayBuffer)
-            const oldSound = soundRegistry.sounds[soundKey]
-            if (!oldSound) return
-
-            clearAnalysisCache(oldSound.buffer)
-            oldSound.buffer = buffer
-            oldSound.display_name = file.name
-            oldSound.duration = Math.floor(buffer.duration * 1000)
-
+            await drumkitService.replaceSampleBuffer(soundKey, buffer, file.name)
             showToast(`Replaced with "${file.name}"`, 'success')
             this.sync()
         } catch (err) {
@@ -520,35 +365,8 @@ export default class DrumkitManager extends BasePanel {
         try {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = await ctx.decodeAudioData(arrayBuffer)
-            const fileName = file.name
-            const im = new InstrumentsManager()
-            const instrument = im.findInstrumentFromFileName(fileName)
-            const key = instrument.id
-            const kitName = soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? 'imported'
-
-            soundRegistry.sounds[fileName] = {
-                kit_name: kitName,
-                url: fileName,
-                key,
-                index: Object.keys(soundRegistry.sounds).length + 1,
-                display_name: fileName,
-                buffer,
-                duration: Math.floor(buffer.duration * 1000),
-                isLoad: true,
-                playStatus: false
-            }
-
-            const kit = soundRegistry.drumkits[kitName] ?? { instruments: [] }
-            kit.instruments.push({ display_name: fileName, key, url: fileName })
-            soundRegistry.drumkits[kitName] = kit
-
-            const listEntry = soundRegistry.drumkitList.find(d => d.name === kitName)
-            if (listEntry) {
-                listEntry.instruments.push({ display_name: fileName, key, url: fileName })
-            }
-
+            const { fileName, kitName } = await drumkitService.addSample(file, buffer)
             showToast(`Added "${fileName}" to kit "${kitName}"`, 'success')
-            playbackEvents.emit("drumkitChange")
             this.sync()
         } catch (err) {
             logger.warn(TAG, `Add sample failed: ${err.message}`)
@@ -558,48 +376,13 @@ export default class DrumkitManager extends BasePanel {
     }
 
     async _onAutoDetectAll() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern) {
-            showToast('No pattern selected', 'warning')
-            return
-        }
-        const autoAssign = await getAutoAssignService()
-        autoAssign.autoAssignSounds(pattern)
-        showToast('Auto-detect complete', 'success')
+        const ok = await drumkitService.autoDetectAll()
+        if (ok) showToast('Auto-detect complete', 'success')
+        else showToast('No pattern selected', 'warning')
     }
 
     _onNormalizeAll() {
-        const sounds = this._getCurrentKitSounds()
-        let count = 0
-        for (const s of sounds) {
-            if (!s.buffer) continue
-            const analysis = analyzeSample(s.buffer)
-            if (!analysis?.peakLinear || analysis.peakLinear <= 0) continue
-
-            const gainDb = -analysis.peakDb
-            const gainLinear = Math.pow(10, gainDb / 20)
-
-            const ctx = serviceRegistry.audioCtx
-            if (!ctx) continue
-
-            const newBuffer = ctx.createBuffer(
-                s.buffer.numberOfChannels,
-                s.buffer.length,
-                s.buffer.sampleRate
-            )
-            for (let ch = 0; ch < s.buffer.numberOfChannels; ch++) {
-                const input = s.buffer.getChannelData(ch)
-                const output = newBuffer.getChannelData(ch)
-                for (let i = 0; i < input.length; i++) {
-                    output[i] = input[i] * gainLinear
-                }
-            }
-
-            clearAnalysisCache(s.buffer)
-            soundRegistry.sounds[s.url].buffer = newBuffer
-            count++
-        }
-
+        const count = drumkitService.normalizeAll()
         if (count > 0) {
             showToast(`Normalized ${count} sample(s)`, 'success')
             this.sync()
