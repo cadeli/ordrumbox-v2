@@ -39,6 +39,87 @@ export default class GridSection {
         return { noteMap, ghostMap }
     }
 
+    /** Render the inner HTML of a cell (ghosts + note slices) */
+    renderCellContent(notesAtStep = [], ghostsAtStep = []) {
+        let noteSlicesHtml = ''
+        if (notesAtStep && notesAtStep.length > 0) {
+            const slicePct = (100 / notesAtStep.length).toFixed(2)
+            noteSlicesHtml = notesAtStep.map((note, ni) => {
+                const vel = note.velocity ?? 0.8
+                const alpha = 0.25 + vel * 0.75
+                const pitch = note.pitch ?? 0
+                const pct = ((pitch + 24) / 48) * 100
+                return `<div class="pp-note-slice" data-note-idx="${ni}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"><div class="pp-pitch-beat" style="bottom:${pct.toFixed(1)}%"></div></div>`
+            }).join('')
+        }
+
+        const ghosts = (ghostsAtStep ?? []).map(({ type }) => {
+            const ghostCls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
+            return `<div class="${ghostCls}"></div>`
+        }).join('')
+
+        return `${ghosts}${noteSlicesHtml}`
+    }
+
+    /** Surgically update a single cell DOM element in-place */
+    updateCell(cellEl, track, b, s, cached, pattern) {
+        if (!cellEl) return
+        const stepsPerBeat = track.stepsPerBeat ?? 4
+        const absPos = b * stepsPerBeat + s
+        const isBeyondTrack = b >= (track.nbBeats ?? 4)
+        const totalSteps = (track.nbBeats ?? 4) * stepsPerBeat
+        const loopAt = track.loopAtStep ?? totalSteps
+
+        const notesAtStep = cached.noteMap.get(`${b}:${s}`) ?? []
+        const ghostsAtStep = cached.ghostMap.get(absPos) ?? []
+
+        cellEl.classList.toggle('pp-cell-out', isBeyondTrack)
+        cellEl.classList.toggle('filled', notesAtStep.length > 0)
+        cellEl.classList.toggle('pp-cell-multi', notesAtStep.length > 1)
+        cellEl.classList.toggle('pp-loop', loopAt > 0 && absPos === loopAt - 1)
+
+        let trig = ''
+        let isRand = false
+        let isFixed = false
+        if (notesAtStep.length > 0) {
+            const firstNote = notesAtStep[0]
+            if ((firstNote.prob ?? 1) < 1) {
+                isRand = true
+                trig = String(Math.round(firstNote.prob * 10))
+            } else if ((firstNote.every ?? 1) > 1) {
+                isFixed = true
+                trig = String(firstNote.every)
+            }
+        }
+        cellEl.classList.toggle('pp-trig-rand', isRand)
+        cellEl.classList.toggle('pp-trig-fixed', isFixed)
+        if (trig) {
+            cellEl.dataset.trig = trig
+        } else {
+            delete cellEl.dataset.trig
+        }
+
+        cellEl.innerHTML = this.renderCellContent(notesAtStep, ghostsAtStep)
+    }
+
+    /** Surgically update all cells for a given track in-place */
+    updateTrackCells(trackIdx, track, pattern, startBeat, endBeatPage, trackDataCache, cellMap) {
+        const cached = this.buildTrackData(track, startBeat, endBeatPage, pattern)
+        trackDataCache.set(trackIdx, cached)
+
+        const stepsPerBeat = track.stepsPerBeat ?? 4
+        for (let b = startBeat; b < endBeatPage; b++) {
+            if (b < (pattern.nbBeats ?? 4)) {
+                for (let s = 0; s < stepsPerBeat; s++) {
+                    const cell = cellMap.get(`${trackIdx}:${b}:${s}`)
+                    if (cell) {
+                        this.updateCell(cell, track, b, s, cached, pattern)
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * @param {Array} tracks
      * @param {object} pattern
@@ -76,20 +157,9 @@ export default class GridSection {
                         if (isBeyondTrack) cls.push('pp-cell-out')
 
                         let trig = ''
-                        let noteSlicesHtml = ''
-
                         if (notesAtStep && notesAtStep.length > 0) {
                             cls.push('filled')
                             if (notesAtStep.length > 1) cls.push('pp-cell-multi')
-
-                            const slicePct = (100 / notesAtStep.length).toFixed(2)
-                            noteSlicesHtml = notesAtStep.map((note, ni) => {
-                                const vel = note.velocity ?? 0.8
-                                const alpha = 0.25 + vel * 0.75
-                                const pitch = note.pitch ?? 0
-                                const pct = ((pitch + 24) / 48) * 100
-                                return `<div class="pp-note-slice" data-note-idx="${ni}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"><div class="pp-pitch-beat" style="bottom:${pct.toFixed(1)}%"></div></div>`
-                            }).join('')
 
                             const firstNote = notesAtStep[0]
                             if ((firstNote.prob ?? 1) < 1) {
@@ -104,12 +174,10 @@ export default class GridSection {
                         const loopAt = track.loopAtStep ?? totalSteps(track)
                         if (loopAt > 0 && absPos === loopAt - 1) cls.push('pp-loop')
 
-                        const ghosts = (cached.ghostMap.get(absPos) ?? []).map(({ type }) => {
-                            const ghostCls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
-                            return `<div class="${ghostCls}"></div>`
-                        }).join('')
+                        const ghostsAtStep = cached.ghostMap.get(absPos) ?? []
+                        const innerHtml = this.renderCellContent(notesAtStep, ghostsAtStep)
 
-                        const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}>${ghosts}${noteSlicesHtml}</div>`
+                        const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}>${innerHtml}</div>`
                         cellsHtml += cellHtml
                     }
                 }

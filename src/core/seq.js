@@ -178,19 +178,29 @@ export default class Sequencer {
         }
     }
 
-    simpleBeep = async (indexTrack) => {
+    simpleBeep = async (indexTrack, note = null) => {
         if (!this.serviceRegistry.audioCtx) {
-            this.serviceRegistry.audioCtx = this.serviceRegistry.resourcesLoader.audioCtx
+            this.serviceRegistry.audioCtx = this.serviceRegistry.resourcesLoader?.audioCtx ?? null
+        }
+        if (!this.serviceRegistry.audioCtx && typeof window !== 'undefined') {
+            try {
+                this.serviceRegistry.audioCtx = new (window.AudioContext ?? window.webkitAudioContext)()
+            } catch (_) {}
         }
         if (!this.serviceRegistry.audioCtx) return
         if (this.serviceRegistry.audioCtx.state === 'suspended') {
-            await this.serviceRegistry.audioCtx.resume()
+            try {
+                await this.serviceRegistry.audioCtx.resume()
+            } catch (_) {}
         }
+        this.ensureTransport()
         this.ensureAudioEngine()
         const pat = this.appState.patterns[this.appState.selectedPatternNum]
-        const track = pat?.tracks?.[indexTrack]
+        if (!pat) return
+        const tracks = Utils.getTracksArray(pat)
+        const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]
         if (!track) return
-        if (track.soundId === "NOT_DEFINED" || !track.soundId) {
+        if ((track.soundId === "NOT_DEFINED" || !track.soundId) && !track.useSoftSynth) {
             try {
                 await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
             } catch (e) {
@@ -201,7 +211,7 @@ export default class Sequencer {
             autoAssign.autoAssignTrackSounds(track)
         }
         if (this.serviceRegistry.audioEngine?.mixer) {
-            await this.serviceRegistry.audioEngine.simpleBeep(indexTrack)
+            await this.serviceRegistry.audioEngine.simpleBeep(indexTrack, note)
         }
     }
 }

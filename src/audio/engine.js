@@ -255,7 +255,7 @@ export default class AudioEngine {
         return mapping
     }
 
-    simpleBeep = async (indexTrack) => {
+    simpleBeep = async (indexTrack, note = null) => {
         // Wait for the worklet mixer and player to be ready before triggering.
         await this._workletReady
         if (!this.player) return
@@ -263,24 +263,26 @@ export default class AudioEngine {
             await this.audioCtx.resume()
         }
 
-        await this.player.simpleBeep(indexTrack)
+        await this.player.simpleBeep(indexTrack, note)
 
         const midi = serviceRegistry.midiManager
         if (midi && midi.isReady && midi.selectedOutputId) {
             const pat   = this.patterns[this.getSelectedPatternNum()]
-            const track = pat?.tracks?.[indexTrack]
+            const tracks = Utils.getTracksArray(pat)
+            const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat?.tracks?.[indexTrack]
             if (track) {
                 const mapping = this._resolveMidiMapping(track.id)
                 if (mapping) {
                     const rawCh = parseInt(mapping.ch, 10)
                     const rawNote = parseInt(mapping.key, 10)
                     const channel = Number.isFinite(rawCh) ? rawCh : 9
-                    const note = Number.isFinite(rawNote) ? rawNote : 60
+                    const noteNum = Number.isFinite(rawNote) ? rawNote : 60
                     if (!Number.isFinite(rawCh) || !Number.isFinite(rawNote)) {
                         logger.warn('Engine', 'MIDI mapping NaN fallback', { ch: mapping.ch, key: mapping.key })
                     }
-                    midi.sendNoteOn(channel, note, 100)
-                    setTimeout(() => midi.sendNoteOff(channel, note), 100)
+                    const vel = Math.floor((note?.velocity ?? track.velocity ?? 0.8) * 127)
+                    midi.sendNoteOn(channel, noteNum, vel)
+                    setTimeout(() => midi.sendNoteOff(channel, noteNum), 100)
                 }
             }
         }

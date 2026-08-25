@@ -135,4 +135,76 @@ describe('Pattern Panel UI Grid', () => {
         document.querySelector('.pp-divider').click()
         expect(document.querySelector('.pp-divider').classList.contains('muted')).toBe(false)
     })
+
+    it('clicking an empty cell adds a note surgically and previews audio', () => {
+        const simpleBeepSpy = vi.fn()
+        serviceRegistry.seq = { simpleBeep: simpleBeepSpy }
+        serviceRegistry.cmd = {
+            addNote: vi.fn((track, beat, step) => {
+                const note = { beat, beatStep: step, pitch: 0, velocity: 0.8 }
+                track.notes.push(note)
+                return note
+            })
+        }
+
+        const initialTrackEl = document.querySelector('.pp-track')
+        const emptyCell = document.querySelector('.pp-cell[data-pos="3"]')
+        expect(emptyCell.classList.contains('filled')).toBe(false)
+
+        emptyCell.click()
+
+        // Verify note was added and cell was updated in-place
+        expect(emptyCell.classList.contains('filled')).toBe(true)
+        expect(serviceRegistry.cmd.addNote).toHaveBeenCalledWith(
+            appState.patterns[0].tracks['T1'], 0, 3
+        )
+        // Verify audio preview was called
+        expect(simpleBeepSpy).toHaveBeenCalledWith(0, expect.objectContaining({ beat: 0, beatStep: 3 }))
+        // Verify DOM elements were preserved in-place (not destroyed and recreated)
+        expect(document.querySelector('.pp-track')).toBe(initialTrackEl)
+    })
+
+    it('clicking an existing note selects it and triggers audio preview', () => {
+        const simpleBeepSpy = vi.fn()
+        serviceRegistry.seq = { simpleBeep: simpleBeepSpy }
+
+        const filledCell = document.querySelector('.pp-cell[data-pos="0"]')
+        expect(filledCell.classList.contains('filled')).toBe(true)
+
+        filledCell.click()
+
+        expect(filledCell.classList.contains('selected')).toBe(true)
+        expect(simpleBeepSpy).toHaveBeenCalledWith(0, expect.objectContaining({ beat: 0, beatStep: 0 }))
+    })
+
+    it('clicking an already-selected note deletes it surgically', () => {
+        const deleteNoteSpy = vi.fn((track, note) => {
+            const idx = track.notes.indexOf(note)
+            if (idx >= 0) track.notes.splice(idx, 1)
+        })
+        serviceRegistry.cmd = { deleteNote: deleteNoteSpy }
+        serviceRegistry.seq = { simpleBeep: vi.fn() }
+
+        const filledCell = document.querySelector('.pp-cell[data-pos="0"]')
+        // First click selects
+        filledCell.click()
+        expect(filledCell.classList.contains('selected')).toBe(true)
+
+        // Second click deletes
+        filledCell.click()
+        expect(deleteNoteSpy).toHaveBeenCalled()
+        expect(filledCell.classList.contains('filled')).toBe(false)
+        expect(filledCell.classList.contains('selected')).toBe(false)
+    })
+
+    it('clicking a track name selects track and previews track audio', () => {
+        const simpleBeepSpy = vi.fn()
+        serviceRegistry.seq = { simpleBeep: simpleBeepSpy }
+
+        const trackName = document.querySelector('.pp-track-name')
+        trackName.click()
+
+        expect(trackName.classList.contains('selected')).toBe(true)
+        expect(simpleBeepSpy).toHaveBeenCalledWith(0)
+    })
 })

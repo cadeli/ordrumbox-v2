@@ -145,36 +145,36 @@ export default class Player {
      */
     getCurrentFlatNotesMap = () => this._lastFlatNotesMap
 
-    simpleBeep = async (indexTrack) => {
+    simpleBeep = async (indexTrack, note = null) => {
         if (this.audioCtx == null) return
         const pat = this.patterns[this.getSelectedPatternNum()]
-        const track = pat.tracks[indexTrack]
+        if (!pat) return
+        const tracks = Utils.getTracksArray(pat)
+        const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]
         if (!track) return
 
-        const note = {
-            name: "N_" + indexTrack + "_0_0",
+        const previewNote = {
+            name: "N_" + (track.name ?? indexTrack) + "_preview",
             soundId: track.soundId,
-            beatStep: 0,
+            beatStep: note?.beatStep ?? 0,
             steppc: 0,
-            beat: 0,
-            velocity: 0.8,
-            pan: 0,
-            pitch: 0,
-            arp: null,
-            every: 1,
+            beat: note?.beat ?? 0,
+            velocity: note?.velocity ?? track.velocity ?? 0.8,
+            pan: note?.pan ?? track.pan ?? 0,
+            pitch: note?.pitch ?? track.pitch ?? 0,
+            arp: note?.arp ?? null,
+            every: note?.every ?? 1,
             pos: 0,
             prob: 1,
             arpTriggerProbability: 1,
-            retriggerNum: 1,
-            rate: 1,
-            euclidianFill: 0
+            retriggerNum: note?.retriggerNum ?? 1,
+            rate: note?.rate ?? 1,
+            euclidianFill: note?.euclidianFill ?? 0
         }
-        const flatNote = new FlatNote(0, track, note)
-
-        // Worklet mixer is always initialised by the engine before play;
-        // legacy `mixer.compressor` check removed.
-        await this.sound.playSample(flatNote, this.audioCtx.currentTime)
-        logger.info('Player', "Play :" + track.name + "=" + this.sounds[track.soundId].url)
+        const flatNote = new FlatNote(0, track, previewNote)
+        NoteParams.applyNoteParams(flatNote, this.secondsPerBeat ?? (60 / 120))
+        await this.sound.play(flatNote, this.audioCtx.currentTime)
+        logger.info('Player', "Play :" + track.name + "=" + (this.sounds[track.soundId]?.url ?? track.synthSoundKey ?? 'synth'))
     }
 
     updateGeneratedSounds = (generatedSounds) => {

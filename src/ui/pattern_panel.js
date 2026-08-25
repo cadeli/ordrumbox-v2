@@ -48,6 +48,7 @@ export default class PatternPanel extends BasePanel {
         this._grid = new GridSection(this)
         this._overlay = new PlaybackOverlaySection(this)
         this._headerDirty = true
+        this._forceFullRender = false
     }
 
     createDOM() {
@@ -133,6 +134,7 @@ export default class PatternPanel extends BasePanel {
             this._overlay.resetPrevLoopTick()
             this._trackDataDirty = true
             this._headerDirty = true
+            this._forceFullRender = true
             this.requestSync()
         }
         this._playbackEvents.on('noteChange', onNoteChange)
@@ -220,6 +222,7 @@ export default class PatternPanel extends BasePanel {
     }
 
     forceSync() {
+        this._forceFullRender = true
         if (this._syncRafId) cancelAnimationFrame(this._syncRafId)
         this._syncPending = false
         this._syncRafId = requestAnimationFrame(() => {
@@ -239,7 +242,6 @@ export default class PatternPanel extends BasePanel {
             this._cursorTrackIdx = 0
             this._cursorBeat = 0
             this._cursorBeatStep = 0
-            this._selTrackIdx = 0
             this._applySelection()
         }
     }
@@ -304,23 +306,26 @@ export default class PatternPanel extends BasePanel {
                             if (this._selNote === note && this._selTrackIdx === this._cursorTrackIdx) {
                                 this._serviceRegistry.cmd.deleteNote(track, note)
                                 this._clearSelection()
+                                this._updateTrackCellsInPlace(this._cursorTrackIdx, track, pattern)
                             } else {
                                 this._selNote = note
                                 this._selTrackIdx = this._cursorTrackIdx
                                 this._applySelection()
                                 const pos = this._cursorBeat * (track.stepsPerBeat ?? 4) + this._cursorBeatStep
                                 this._playbackEvents.emit('noteSelect', { track, trackIdx: this._cursorTrackIdx, note, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
+                                this._serviceRegistry.seq?.simpleBeep(this._cursorTrackIdx, note)
                             }
                         } else {
                             const newNote = this._serviceRegistry.cmd.addNote(track, this._cursorBeat, this._cursorBeatStep)
                             this._selNote = newNote
                             this._selTrackIdx = this._cursorTrackIdx
+                            this._updateTrackCellsInPlace(this._cursorTrackIdx, track, pattern)
                             this._applySelection()
 
                             const pos = this._cursorBeat * (track.stepsPerBeat ?? 4) + this._cursorBeatStep
                             this._playbackEvents.emit('noteSelect', { track, trackIdx: this._cursorTrackIdx, note: newNote, pos, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
+                            this._serviceRegistry.seq?.simpleBeep(this._cursorTrackIdx, newNote)
                         }
-                        this.sync()
                     }
                 }
                 break
@@ -334,14 +339,16 @@ export default class PatternPanel extends BasePanel {
         const startBeat = this._appState.currentPage * BEATS_PER_PAGE
         if (this._cursorBeat < startBeat || this._cursorBeat >= startBeat + BEATS_PER_PAGE) {
             this._appState.currentPage = Math.floor(this._cursorBeat / BEATS_PER_PAGE)
+            this.sync()
         }
 
         const note = (track.notes ?? []).find(n => n.beat === this._cursorBeat && n.beatStep === this._cursorBeatStep)
         this._selNote = note ?? null
         this._selTrackIdx = this._cursorTrackIdx
-        this.sync()
+        this._applySelection()
         if (note) {
             this._playbackEvents.emit('noteSelect', { track, trackIdx: this._cursorTrackIdx, note, pos: this._cursorBeat * stepsPerBeat + this._cursorBeatStep, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
+            this._serviceRegistry.seq?.simpleBeep(this._cursorTrackIdx, note)
         } else {
             this._playbackEvents.emit('noteSelect', { track, trackIdx: this._cursorTrackIdx, note: null, beat: this._cursorBeat, beatStep: this._cursorBeatStep })
         }
@@ -369,6 +376,7 @@ export default class PatternPanel extends BasePanel {
             this._selTrackIdx = trackIdx
             this._applySelection()
             this._playbackEvents.emit('trackSelect', { track, trackIdx })
+            this._serviceRegistry.seq?.simpleBeep(trackIdx)
         }
     }
 
@@ -376,7 +384,22 @@ export default class PatternPanel extends BasePanel {
         const track = this._resolveTrack(idx)
         if (!track) return
         track[prop] = track[prop] !== true
-        this.sync()
+
+        const trackEl = this.container.querySelector(`.pp-track-name[data-track="${idx}"]`)?.closest('.pp-track')
+        if (trackEl) {
+            if (prop === 'mute') {
+                const isMuted = track.mute === true
+                trackEl.classList.toggle('pp-muted', isMuted)
+                const divider = trackEl.querySelector('.pp-divider')
+                divider?.classList.toggle('muted', isMuted)
+            } else if (prop === 'solo') {
+                const isSolo = track.solo === true
+                const solo = trackEl.querySelector('.pp-solo')
+                solo?.classList.toggle('active', isSolo)
+            }
+        }
+        this._playbackEvents.emit('trackParamChange', track)
+        this._playbackEvents.emit('patternChange')
     }
 
     _onClick(e) {
@@ -460,8 +483,7 @@ export default class PatternPanel extends BasePanel {
             if (this._selNote === note && this._selTrackIdx === trackIdx) {
                 this._serviceRegistry.cmd.deleteNote(track, note)
                 this._clearSelection()
-
-                requestAnimationFrame(() => this.sync())
+                this._updateTrackCellsInPlace(trackIdx, track, pattern)
             } else {
                 this._selNote = note
                 this._selTrackIdx = trackIdx
@@ -469,6 +491,7 @@ export default class PatternPanel extends BasePanel {
                 const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
                 this._playbackEvents.emit('trackSelect', { track, trackIdx })
                 this._playbackEvents.emit('noteSelect', { track, trackIdx, note, pos, beat, beatStep })
+                this._serviceRegistry.seq?.simpleBeep(trackIdx, note)
             }
             return
         }
@@ -476,13 +499,14 @@ export default class PatternPanel extends BasePanel {
         const newNote = this._serviceRegistry.cmd.addNote(track, beat, beatStep)
         this._selNote = newNote
         this._selTrackIdx = trackIdx
+        this._updateTrackCellsInPlace(trackIdx, track, pattern)
         this._applySelection()
 
         const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
         this._playbackEvents.emit('trackSelect', { track, trackIdx })
         this._playbackEvents.emit('noteSelect', { track, trackIdx, note: newNote, pos, beat, beatStep })
 
-        requestAnimationFrame(() => this.sync())
+        this._serviceRegistry.seq?.simpleBeep(trackIdx, newNote)
     }
 
     _clearSelection() {
@@ -624,6 +648,69 @@ export default class PatternPanel extends BasePanel {
         }
     }
 
+    _updateTrackCellsInPlace(trackIdx, track, pattern) {
+        if (!this.container || !track || this._cellMap.size === 0) {
+            this.sync()
+            return
+        }
+        const startBeat = this._appState.currentPage * BEATS_PER_PAGE
+        const endBeatPage = startBeat + BEATS_PER_PAGE
+
+        this._grid.updateTrackCells(
+            trackIdx,
+            track,
+            pattern,
+            startBeat,
+            endBeatPage,
+            this._trackDataCache,
+            this._cellMap
+        )
+    }
+
+    _syncCellsInPlace(pattern, tracks) {
+        const startBeat = this._appState.currentPage * BEATS_PER_PAGE
+        const endBeatPage = startBeat + BEATS_PER_PAGE
+
+        tracks.forEach((track, tIdx) => {
+            if (!track) return
+            this._grid.updateTrackCells(
+                tIdx,
+                track,
+                pattern,
+                startBeat,
+                endBeatPage,
+                this._trackDataCache,
+                this._cellMap
+            )
+
+            // Update track-level row classes and properties
+            const trackEl = this._tracksEl?.querySelectorAll('.pp-track:not(.pp-master-track)')?.[tIdx]
+            if (trackEl) {
+                const isMuted = track.mute === true
+                const isSolo = track.solo === true
+                trackEl.classList.toggle('pp-muted', isMuted)
+
+                const divider = trackEl.querySelector('.pp-divider')
+                divider?.classList.toggle('muted', isMuted)
+
+                const solo = trackEl.querySelector('.pp-solo')
+                solo?.classList.toggle('active', isSolo)
+
+                const volInput = trackEl.querySelector('.pp-volume')
+                if (volInput && document.activeElement !== volInput) {
+                    volInput.value = track.velocity ?? 1
+                }
+
+                const nameEl = trackEl.querySelector('.pp-track-name')
+                if (nameEl && track.name && nameEl.textContent !== track.name) {
+                    nameEl.textContent = track.name
+                }
+            }
+        })
+
+        this._applySelection()
+    }
+
     sync() {
         if (!this.container) return
 
@@ -631,6 +718,7 @@ export default class PatternPanel extends BasePanel {
         if (!pattern) {
             this._headerEl.innerHTML = '<div class="pp-header pp-waiting">Waiting for patterns...</div>'
             this._tracksEl.innerHTML = ''
+            this._cellMap.clear()
             return
         }
 
@@ -643,6 +731,7 @@ export default class PatternPanel extends BasePanel {
             const prevHeight = this.container.offsetHeight
             this._headerEl.innerHTML = this._header.render(pattern, this._appState.currentPage)
             this._tracksEl.innerHTML = '<div class="pp-empty">Empty Pattern</div>'
+            this._cellMap.clear()
             this._headerDirty = false
             if (prevHeight > 0) {
                 this.container.style.minHeight = prevHeight + 'px'
@@ -651,16 +740,31 @@ export default class PatternPanel extends BasePanel {
             return
         }
 
+        const existingTrackEls = this._tracksEl?.querySelectorAll('.pp-track:not(.pp-master-track)')
+        const canUpdateInPlace =
+            !this._forceFullRender &&
+            existingTrackEls &&
+            existingTrackEls.length === tracks.length &&
+            this._cachedPage === startBeat &&
+            this._cellMap.size > 0
+
+        if (canUpdateInPlace) {
+            if (this._headerDirty) {
+                this._headerEl.innerHTML = this._header.render(pattern, this._appState.currentPage)
+                this._headerDirty = false
+            }
+            this._syncCellsInPlace(pattern, tracks)
+            return
+        }
+
+        this._forceFullRender = false
         this._cellMap.clear()
 
         const patternVersion = pattern._version ?? 0
-        const pageChanged = startBeat !== this._cachedPage
-        if (this._trackDataDirty || this._cachedVersion !== patternVersion || pageChanged) {
-            this._trackDataCache.clear()
-            this._cachedVersion = patternVersion
-            this._cachedPage = startBeat
-            this._trackDataDirty = false
-        }
+        this._trackDataCache.clear()
+        this._cachedVersion = patternVersion
+        this._cachedPage = startBeat
+        this._trackDataDirty = false
 
         if (this._headerDirty) {
             this._headerEl.innerHTML = this._header.render(pattern, this._appState.currentPage)
@@ -702,6 +806,13 @@ export default class PatternPanel extends BasePanel {
     }
 
     updateLoopPoint(trackIdx, loopAtStep) {
-        this.forceSync()
+        const pattern = this._appState.patterns[this._appState.selectedPatternNum]
+        const tracks = Utils.getTracksArray(pattern)
+        const track = tracks[trackIdx]
+        if (track && this._cellMap.size > 0) {
+            this._updateTrackCellsInPlace(trackIdx, track, pattern)
+        } else {
+            this.forceSync()
+        }
     }
 }
