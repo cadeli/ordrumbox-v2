@@ -134,9 +134,8 @@ describe('Mobile Landscape View Switching & Tab Order Consistency', () => {
         expect(document.getElementById('soft-synth-panel')?.style.display).toBe('none')
         expect(trackEditor.isVisible).toBe(true)
 
-        // Verify 3-column layout structure created in mobile landscape
-        const layout3col = trackEditor.container.querySelector('.mobile-track-3col')
-        expect(layout3col).not.toBeNull()
+        // Verify CSS Grid layout class applied in mobile landscape
+        expect(trackEditor.container.classList.contains('te-mobile-landscape')).toBe(true)
 
         // 4. Switch back to seq
         playbackEvents.emit("mobileSeqToggle")
@@ -145,26 +144,25 @@ describe('Mobile Landscape View Switching & Tab Order Consistency', () => {
         expect(mockPatternPanel.classList.contains('ui-hidden')).toBe(false)
     })
 
-    it('cleans up 3-column layout when track editor is hidden', () => {
+    it('cleans up landscape class when track editor is hidden', () => {
         playbackEvents.emit("mobileTrackToggle")
-        expect(trackEditor.container.querySelector('.mobile-track-3col')).not.toBeNull()
+        expect(trackEditor.container.classList.contains('te-mobile-landscape')).toBe(true)
 
         playbackEvents.emit("mobileSeqToggle")
-        expect(trackEditor.container.querySelector('.mobile-track-3col')).toBeNull()
+        expect(trackEditor.container.classList.contains('te-mobile-landscape')).toBe(false)
     })
 
-    it('re-renders note editor in col3 when TrackEditor syncs in mobile landscape', () => {
+    it('re-renders note editor in #ne-container when TrackEditor syncs in mobile landscape', () => {
         playbackEvents.emit("mobileTrackToggle")
 
         // Trigger track editor sync
         trackEditor.sync()
 
-        const layout3col = trackEditor.container.querySelector('.mobile-track-3col')
-        expect(layout3col).not.toBeNull()
+        expect(trackEditor.container.classList.contains('te-mobile-landscape')).toBe(true)
 
-        const colNoteTabs = layout3col.querySelector('.mtl-note-tabs')
-        expect(colNoteTabs).not.toBeNull()
-        expect(colNoteTabs.querySelector('#ne-container')).not.toBeNull()
+        // ne-container is a direct child of #te-panel and rendered inline
+        const neContainer = trackEditor.container.querySelector('#ne-container')
+        expect(neContainer).not.toBeNull()
     })
 
     it('hides patternSettingsPanel when switching tabs', () => {

@@ -2049,36 +2049,28 @@ body {
         border-left: none !important;
     }
 
-    /* Mobile landscape 3-column layout */
-    .mobile-track-3col {
-        display: flex;
-        flex-direction: row;
-        gap: 2px;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
+    /* Mobile landscape 3-column layout (CSS Grid, no DOM reparenting) */
+    #te-panel.te-mobile-landscape {
+        display: grid !important;
+        grid-template-columns: 170px 1fr 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+            "knobs  tabs   notes"
+            "knobs  panels notes";
+        top: 0 !important;
+        height: 100vh !important;
+        border-left: none !important;
+        overflow: visible !important;
     }
 
-    .mtl-col {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-        position: relative;
+    /* Promote .track-editor children as grid items of #te-panel */
+    #te-panel.te-mobile-landscape .track-editor {
+        display: contents;
     }
 
-    .mtl-knobs {
-        flex: 0 0 170px;
-        width: 170px;
-        min-width: 140px;
-        max-width: 180px;
-        padding: 4px;
-        box-sizing: border-box;
-        border-right: 1px solid var(--border-subtle);
-    }
-
-    .mtl-knobs .ne-header {
+    /* Grid area assignments */
+    #te-panel.te-mobile-landscape .ne-header {
+        grid-area: knobs;
         font-size: var(--fs-xs);
         padding: 2px;
         margin-bottom: 2px;
@@ -2087,7 +2079,8 @@ body {
         text-overflow: ellipsis;
     }
 
-    .mtl-knobs .te-sample-bar {
+    #te-panel.te-mobile-landscape .te-sample-bar {
+        grid-area: knobs;
         padding: 4px;
         margin-bottom: 4px;
         gap: 4px;
@@ -2095,7 +2088,8 @@ body {
         align-items: stretch;
     }
 
-    .mtl-knobs .te-knob-bar {
+    #te-panel.te-mobile-landscape .te-knob-bar {
+        grid-area: knobs;
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
@@ -2107,34 +2101,24 @@ body {
         box-sizing: border-box;
     }
 
-    .mtl-knobs .te-knob-bar .ne-row-knob {
+    #te-panel.te-mobile-landscape .te-knob-bar .ne-row-knob {
         width: 46px;
         padding: 0;
         gap: 1px;
     }
 
-    .mtl-knobs .te-knob-bar .or-knob {
+    #te-panel.te-mobile-landscape .te-knob-bar .or-knob {
         width: 32px;
         height: 32px;
     }
 
-    .mtl-knobs .te-knob-bar .or-knob-label,
-    .mtl-knobs .te-knob-bar .ne-val {
+    #te-panel.te-mobile-landscape .te-knob-bar .or-knob-label,
+    #te-panel.te-mobile-landscape .te-knob-bar .ne-val {
         font-size: 8px;
     }
 
-    .mtl-track-tabs {
-        flex: 1 1 50%;
-    }
-
-    .mtl-note-tabs {
-        flex: 1 1 50%;
-        border-left: 1px solid var(--border-subtle);
-    }
-
-    /* Make tab bars sticky at top of column during scrolling */
-    .mtl-track-tabs > .ne-tab-bar,
-    .mtl-note-tabs .ne-tab-bar {
+    #te-panel.te-mobile-landscape .ne-tab-bar {
+        grid-area: tabs;
         position: sticky;
         top: 0;
         z-index: 10;
@@ -2145,19 +2129,19 @@ body {
         flex-shrink: 0;
     }
 
-    .mtl-col .te-scroll {
-        flex: 1;
+    #te-panel.te-mobile-landscape .te-scroll {
+        grid-area: panels;
         overflow: visible;
     }
 
-    .mtl-col .ne-tab-panel:not(.ne-tab-panel-hidden) {
+    #te-panel.te-mobile-landscape .ne-tab-panel:not(.ne-tab-panel-hidden) {
         column-count: 2;
         column-gap: 8px;
         padding: 4px;
         box-sizing: border-box;
     }
 
-    .mtl-col .ne-row {
+    #te-panel.te-mobile-landscape .ne-row {
         break-inside: avoid;
         page-break-inside: avoid;
         display: flex;
@@ -2168,7 +2152,7 @@ body {
         margin-bottom: 4px;
     }
 
-    .mtl-col .ne-row label {
+    #te-panel.te-mobile-landscape .ne-row label {
         font-size: var(--fs-xs);
         min-width: 45px;
         white-space: nowrap;
@@ -2176,11 +2160,29 @@ body {
         text-overflow: ellipsis;
     }
 
-    .mtl-col .ne-row input[type="range"],
-    .mtl-col .ne-row select,
-    .mtl-col .ne-row .ne-btn {
+    #te-panel.te-mobile-landscape .ne-row input[type="range"],
+    #te-panel.te-mobile-landscape .ne-row select,
+    #te-panel.te-mobile-landscape .ne-row .ne-btn {
         min-width: 0;
         flex: 1;
+    }
+
+    /* Note editor: grid area in landscape, block in portrait */
+    #te-panel.te-mobile-landscape #ne-container {
+        grid-area: notes;
+        display: block !important;
+        position: static !important;
+        height: auto !important;
+        width: auto !important;
+        top: auto !important;
+        left: auto !important;
+        border-top: none !important;
+        border-left: 1px solid var(--border-subtle) !important;
+        border-left-width: 1px !important;
+        padding: 2px 4px;
+        overflow-y: auto;
+        box-sizing: border-box;
+        z-index: auto !important;
     }
 
     #ne-container {
@@ -2189,7 +2191,6 @@ body {
         border-top: none !important;
         margin-top: 0 !important;
         padding: 2px 4px;
-        align-self: stretch;
         box-sizing: border-box;
     }
 

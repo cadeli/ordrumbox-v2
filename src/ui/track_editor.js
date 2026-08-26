@@ -98,7 +98,7 @@ export default class TrackEditor extends BasePanel {
         this._neContainer = document.createElement('div')
         this._neContainer.id = 'ne-container'
         this._neContainer.style.display = 'none'
-        document.body.appendChild(this._neContainer)
+        this.container.appendChild(this._neContainer)
         this.synthEditor.createDOM()
     }
 
@@ -261,11 +261,15 @@ export default class TrackEditor extends BasePanel {
             panelsHtml += `<div class="ne-tab-panel ${isHidden ? 'ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${content}</div>`
         }
 
-        if (this._neContainer && this._neContainer.parentElement && this._neContainer.parentElement !== document.body) {
-            document.body.appendChild(this._neContainer)
-        }
+        // Detach ne-container before innerHTML wipe (it lives in #te-panel,
+        // not inside .track-editor, but innerHTML on #te-panel would destroy it)
+        const neC = this._neContainer
+        if (neC?.parentNode) neC.parentNode.removeChild(neC)
 
         this.container.innerHTML = `<div class="track-editor">${headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + `<div class="te-scroll">${panelsHtml}</div>`}</div>`
+
+        // Re-attach ne-container to #te-panel
+        if (neC) this.container.appendChild(neC)
         const teElement = this.container.querySelector('.track-editor') ?? this.container
         this._tab.bindTo(teElement)
 
@@ -346,7 +350,7 @@ export default class TrackEditor extends BasePanel {
         this._drawSampleWaveform()
 
         if (isMobileLandscape()) {
-            applyLayout(this.container, this._neContainer)
+            applyLayout(this.container)
             if (this._track) this._showNoteEditorForTrack(this._track, this._trackIdx)
         } else {
             removeLayout(this.container)

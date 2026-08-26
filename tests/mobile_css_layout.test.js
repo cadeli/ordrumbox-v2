@@ -258,31 +258,37 @@ describe('Mobile CSS: pp-container full width', () => {
 })
 
 describe('Mobile CSS: Track editor + note editor 3-column landscape layout', () => {
-    it('.mobile-track-3col: flex row layout', () => {
-        expect(hasRuleAnywhere('.mobile-track-3col', 'display', 'flex')).toBe(true)
-        expect(hasRuleAnywhere('.mobile-track-3col', 'flex-direction', 'row')).toBe(true)
+    it('#te-panel.te-mobile-landscape: CSS Grid layout', () => {
+        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape', 'display', 'grid')).toBe(true)
     })
 
-    it('.mtl-col: flex column with overflow-y auto', () => {
-        expect(hasRuleAnywhere('.mtl-col', 'display', 'flex')).toBe(true)
-        expect(hasRuleAnywhere('.mtl-col', 'flex-direction', 'column')).toBe(true)
-        expect(hasRuleAnywhere('.mtl-col', 'overflow-y', 'auto')).toBe(true)
+    it('grid-template-columns defines 3-column layout', () => {
+        const re = /#te-panel\.te-mobile-landscape\s*\{[^}]*grid-template-columns:\s*170px\s+1fr\s+1fr/s
+        expect(re.test(css)).toBe(true)
     })
 
-    it('.mtl-knobs: fixed-width column with border-right', () => {
-        expect(hasRuleAnywhere('.mtl-knobs', 'border-right', '1px solid var(--border-subtle)')).toBe(true)
+    it('.track-editor uses display:contents to promote children', () => {
+        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape .track-editor', 'display', 'contents')).toBe(true)
     })
 
-    it('.mtl-note-tabs: border-left separator', () => {
-        expect(hasRuleAnywhere('.mtl-note-tabs', 'border-left', '1px solid var(--border-subtle)')).toBe(true)
+    it('.ne-tab-bar is assigned to grid area tabs', () => {
+        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape .ne-tab-bar', 'grid-area', 'tabs')).toBe(true)
     })
 
-    it('visible tab panel in mtl-col gets column-count: 2', () => {
-        expect(hasRuleAnywhere('.mtl-col .ne-tab-panel:not(.ne-tab-panel-hidden)', 'column-count', '2')).toBe(true)
+    it('.te-scroll is assigned to grid area panels', () => {
+        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape .te-scroll', 'grid-area', 'panels')).toBe(true)
     })
 
-    it('.mtl-col .ne-row gets break-inside: avoid', () => {
-        expect(hasRuleAnywhere('.mtl-col .ne-row', 'break-inside', 'avoid')).toBe(true)
+    it('#ne-container is assigned to grid area notes in landscape', () => {
+        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape #ne-container', 'grid-area', 'notes')).toBe(true)
+    })
+
+    it('visible tab panel gets column-count: 2', () => {
+        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape .ne-tab-panel:not(.ne-tab-panel-hidden)', 'column-count', '2')).toBe(true)
+    })
+
+    it('.ne-row gets break-inside: avoid in landscape', () => {
+        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape .ne-row', 'break-inside', 'avoid')).toBe(true)
     })
 })
 
