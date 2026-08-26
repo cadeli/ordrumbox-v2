@@ -145,7 +145,7 @@ describe('Sub-panel toggle toolbars', () => {
 
     describe('Output Panel', () => {
         it('renders all 3 tab buttons (Master, Comp, Flt)', () => {
-            playbackEvents.emit("outputToggle", true)
+            outputPanel.show()
 
             const tabs = document.getElementById('output-panel').querySelectorAll('.ne-tab-btn[data-ne-tab]')
             const keys = Array.from(tabs).map(b => b.dataset.neTab)
@@ -153,7 +153,7 @@ describe('Sub-panel toggle toolbars', () => {
         })
 
         it('switches active tab when a button is clicked', () => {
-            playbackEvents.emit("outputToggle", true)
+            outputPanel.show()
 
             const op = document.getElementById('output-panel')
             op.querySelector('.ne-tab-btn[data-ne-tab="compressor"]').click()

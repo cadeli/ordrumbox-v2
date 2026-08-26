@@ -416,7 +416,7 @@ export default class PatternPanel extends BasePanel {
 
         const masterTrackEl = e.target.closest('.pp-master-track')
         if (masterTrackEl) {
-            this._playbackEvents.emit('outputToggle', true)
+            this._playbackEvents.emit('masterToggle', true)
             return
         }
 

@@ -11,8 +11,8 @@ import { isMobileLandscape, removeLayout } from './mobile_track_layout.js'
  * Listens to toolbar and tab toggle events and calls panel.show() / panel.hide()
  * without touching another panel's DOM.
  *
- * Slot panels (tools, dm, pp, about, output) are mutually exclusive —
- * showing one hides all others and replaces the output panel in the same DOM slot.
+ * Slot panels (tools, master, dm, pp, about) are mutually exclusive —
+ * showing one hides all others and replaces the master panel in the same DOM slot.
  */
 export default class ViewManager {
     constructor({ trackEditor, synthEditor, pianoRollPanel, noteEditor, toolsPanel, patternSettingsPanel, outputPanel, drumkitManager, patternsPanel, aboutPanel }) {
@@ -31,7 +31,6 @@ export default class ViewManager {
             ['dm',    { event: 'drumkitManagerToggle',  panel: drumkitManager }],
             ['pp',    { event: 'patternsToggle',         panel: patternsPanel }],
             ['about', { event: 'aboutToggle',            panel: aboutPanel }],
-            ['output',{ event: 'outputToggle',           panel: outputPanel }],
         ])
         // Reverse lookup: event name → short name
         this._eventToSlot = new Map(
@@ -83,7 +82,7 @@ export default class ViewManager {
                 setPatternPanelHidden(true)
             } else {
                 this._ensureEditorsVisible()
-                if (this._outputPanel?.isVisible && name !== 'output') this._outputPanel.hide()
+                if (this._outputPanel?.isVisible && name !== 'master') this._outputPanel.hide()
             }
             panel.show()
         } else {
@@ -93,7 +92,7 @@ export default class ViewManager {
                 this._currentView = 'mobileSeq'
                 _setActiveView('mobileSeq')
             }
-            if (name !== 'output') this._outputPanel?.show()
+            if (name !== 'master') this._outputPanel?.show()
         }
     }
 

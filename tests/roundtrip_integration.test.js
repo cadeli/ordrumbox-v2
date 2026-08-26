@@ -283,21 +283,21 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
 
     it('panel toggle events carry boolean payload', () => {
         const spyTools = vi.fn()
-        const spyOutput = vi.fn()
+        const spyMaster = vi.fn()
         const spyAbout = vi.fn()
         const spyDM = vi.fn()
         playbackEvents.on("toolsToggle", spyTools)
-        playbackEvents.on("outputToggle", spyOutput)
+        playbackEvents.on("masterToggle", spyMaster)
         playbackEvents.on("aboutToggle", spyAbout)
         playbackEvents.on("drumkitManagerToggle", spyDM)
 
         playbackEvents.emit("toolsToggle", true)
-        playbackEvents.emit("outputToggle", false)
+        playbackEvents.emit("masterToggle", false)
         playbackEvents.emit("aboutToggle", true)
         playbackEvents.emit("drumkitManagerToggle", false)
 
         expect(spyTools).toHaveBeenCalledWith(true)
-        expect(spyOutput).toHaveBeenCalledWith(false)
+        expect(spyMaster).toHaveBeenCalledWith(false)
         expect(spyAbout).toHaveBeenCalledWith(true)
         expect(spyDM).toHaveBeenCalledWith(false)
     })

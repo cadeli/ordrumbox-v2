@@ -31,7 +31,7 @@ export default class ResourcesLoader {
         playbackEvents.on('drumkitManagerToggle', () => this.saveSession())
         playbackEvents.on('patternsToggle', () => this.saveSession())
         playbackEvents.on('aboutToggle', () => this.saveSession())
-        playbackEvents.on('outputToggle', () => this.saveSession())
+        playbackEvents.on('masterToggle', () => this.saveSession())
         playbackEvents.on('synthToggle', () => this.saveSession())
         playbackEvents.on('editToggle', () => this.saveSession())
         playbackEvents.on('prollToggle', () => this.saveSession())
