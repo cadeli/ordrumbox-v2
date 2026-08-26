@@ -52,25 +52,24 @@ export default class ResourcesLoader {
     }
 
     isDrumkitListLoaded = false
-    isPatternsLoading = false
     patternsLoadFailed = false
-    isSamplesLoading = false
     samplesLoadFailed = false
+    /** @type {Promise<void> | null} In-flight single-flight promise for pattern loading */
+    _patternsLoadingPromise = null
+    /** @type {Promise<void> | null} In-flight single-flight promise for sample loading */
+    _samplesLoadingPromise = null
 
     async ensureResourcesLoaded() {
 
         // 1. Load Patterns if missing
         if (appState.patterns.length === 0) {
-            if (this.isPatternsLoading || this.patternsLoadFailed) return
-            this.isPatternsLoading = true
-            try {
-                await this.loadSong(ResourcesLoader.SONG_URL)
-                this.isPatternsLoading = false
-            } catch (error) {
-                this.isPatternsLoading = false
-                this.patternsLoadFailed = true
-                throw error
+            if (this.patternsLoadFailed) return
+            if (!this._patternsLoadingPromise) {
+                this._patternsLoadingPromise = this.loadSong(ResourcesLoader.SONG_URL)
+                    .catch(err => { this.patternsLoadFailed = true; throw err })
+                    .finally(() => { this._patternsLoadingPromise = null })
             }
+            await this._patternsLoadingPromise
         }
 
         // 1b. Load Settings from localStorage (or fallback to JSON file)
@@ -86,21 +85,18 @@ export default class ResourcesLoader {
 
         // 3. Load Samples if missing
         if (Object.keys(soundRegistry.sounds).length === 0) {
-            if (this.isSamplesLoading || this.samplesLoadFailed) return
+            if (this.samplesLoadFailed) return
             const drumkit = soundRegistry.drumkitList[0]
             if (!drumkit) {
                 this.samplesLoadFailed = true
                 return
             }
-            this.isSamplesLoading = true
-            try {
-                await this.loadSamplesFromDrumkit(drumkit)
-                this.isSamplesLoading = false
-            } catch (error) {
-                this.isSamplesLoading = false
-                this.samplesLoadFailed = true
-                throw error
+            if (!this._samplesLoadingPromise) {
+                this._samplesLoadingPromise = this.loadSamplesFromDrumkit(drumkit)
+                    .catch(err => { this.samplesLoadFailed = true; throw err })
+                    .finally(() => { this._samplesLoadingPromise = null })
             }
+            await this._samplesLoadingPromise
         }
     }
 

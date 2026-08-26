@@ -224,16 +224,20 @@ describe('ResourcesLoader', () => {
 
             await loader.ensureResourcesLoaded()
 
-            expect(loader.isPatternsLoading).toBe(false)
+            expect(loader._patternsLoadingPromise).toBe(null)
         })
 
         it('skips loading if already loading', async () => {
             const { appState } = await import('../src/state/app_state.js')
             appState.patterns.length = 0
-            loader.isPatternsLoading = true
+            const pending = new Promise(() => {})
+            loader._patternsLoadingPromise = pending
 
-            await loader.ensureResourcesLoaded()
+            let settled = false
+            loader.ensureResourcesLoaded().then(() => { settled = true })
 
+            await new Promise(r => setTimeout(r, 10))
+            expect(settled).toBe(false)
             expect(fetchSpy).not.toHaveBeenCalled()
         })
 
@@ -256,11 +260,32 @@ describe('ResourcesLoader', () => {
             soundRegistry.drumkitList = [{ name: 'real', samples: [] }]
             soundRegistry.settings._loaded = true
             Object.keys(soundRegistry.sounds).forEach(k => delete soundRegistry.sounds[k])
-            loader.isSamplesLoading = true
+            loader._samplesLoadingPromise = Promise.resolve()
 
             await loader.ensureResourcesLoaded()
 
-            expect(loader.isSamplesLoading).toBe(true)
+            expect(fetchSpy).not.toHaveBeenCalled()
+        })
+
+        it('second caller awaits the same in-flight pattern load', async () => {
+            const { appState } = await import('../src/state/app_state.js')
+            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
+            appState.patterns.length = 0
+
+            let resolveLoad
+            const loadPromise = new Promise(r => { resolveLoad = r })
+            loader._patternsLoadingPromise = loadPromise
+
+            let settled = false
+            loader.ensureResourcesLoaded().then(() => { settled = true })
+
+            await new Promise(r => setTimeout(r, 10))
+            expect(settled).toBe(false)
+
+            resolveLoad()
+            await new Promise(r => setTimeout(r, 10))
+            expect(settled).toBe(true)
         })
     })
 
