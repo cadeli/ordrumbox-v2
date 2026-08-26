@@ -72,9 +72,6 @@ export default class PatternsPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on("patternsToggle", (show) => {
-            if (show) this.show(); else this.hide()
-        })
         playbackEvents.on("patternStructureChange", () => { if (this.isVisible) this.sync() })
         playbackEvents.on("drumkitChange", () => { if (this.isVisible) this.sync() })
     }

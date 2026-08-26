@@ -262,16 +262,11 @@ export default class ToolsPanel extends BasePanel {
 
         this._midiView = new MidiIndicatorView(this.container)
 
-        bindCloseButton(this.container, () => this.hide())
+        bindCloseButton(this.container, () => playbackEvents.emit("toolsToggle", false))
         bindTabToggles(this.container)
     }
 
-    subscribe() {
-        playbackEvents.on("toolsToggle", (show) => {
-            if (show) this.show()
-            else this.hide()
-        })
-    }
+    subscribe() {}
 
     sync() {
         const pattern = appState.patterns[appState.selectedPatternNum]
@@ -553,7 +548,7 @@ export default class ToolsPanel extends BasePanel {
                     await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
                     playbackEvents.emit("patternStructureChange")
                     playbackEvents.emit("patternChange")
-                    this.hide()
+                    playbackEvents.emit("toolsToggle", false)
                 }
             } catch (err) {
                 logger.error('ToolsPanel', 'Import failed', err)

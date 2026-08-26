@@ -25,34 +25,28 @@ describe('AboutPanel (PWA)', () => {
         expect(panel.style.display).toBe('none')
     })
 
-    it('opens when onAboutToggle(true) is fired', () => {
-        playbackEvents.emit("aboutToggle", true)
+    it('opens when show() is called', () => {
+        aboutPanel.show()
         const panel = document.getElementById('about-panel')
         expect(panel.style.display).toBe('block')
     })
 
-    it('closes when onAboutToggle(false) is fired', () => {
-        playbackEvents.emit("aboutToggle", true)
-        playbackEvents.emit("aboutToggle", false)
+    it('closes when hide() is called', () => {
+        aboutPanel.show()
+        aboutPanel.hide()
         const panel = document.getElementById('about-panel')
         expect(panel.style.display).toBe('none')
     })
 
     it('does not self-hide when other slot panels open (ViewManager handles mutual exclusion)', () => {
-        playbackEvents.emit("aboutToggle", true)
+        aboutPanel.show()
         expect(document.getElementById('about-panel').style.display).toBe('block')
 
-        playbackEvents.emit("toolsToggle", true)
-        expect(document.getElementById('about-panel').style.display).toBe('block')
-
-        playbackEvents.emit("aboutToggle", true)
-        expect(document.getElementById('about-panel').style.display).toBe('block')
-
-        playbackEvents.emit("outputToggle", true)
+        aboutPanel.show()
         expect(document.getElementById('about-panel').style.display).toBe('block')
     })
 
-    it('hides the other modals (tools/output) when it opens, keeps te-panel visible', () => {
+    it('hides other modals is handled by ViewManager', () => {
         for (const id of ['te-panel', 'tools-panel', 'output-panel']) {
             const el = document.createElement('div')
             el.id = id
@@ -60,14 +54,14 @@ describe('AboutPanel (PWA)', () => {
             document.body.appendChild(el)
         }
 
-        playbackEvents.emit("aboutToggle", true)
+        aboutPanel.show()
 
         expect(document.getElementById('about-panel').style.display).toBe('block')
         expect(document.getElementById('te-panel').style.display).toBe('block')
     })
 
     it('renders app info (name, version, license)', () => {
-        playbackEvents.emit("aboutToggle", true)
+        aboutPanel.show()
         const html = document.getElementById('about-panel').innerHTML
         expect(html).toContain('OrDrumbox')
         expect(html).toContain('2.0.0')
@@ -76,14 +70,14 @@ describe('AboutPanel (PWA)', () => {
     })
 
     it('renders the PWA section with install button (hidden by default)', () => {
-        playbackEvents.emit("aboutToggle", true)
+        aboutPanel.show()
         const installRow = document.getElementById('about-panel').querySelector('#about-pwa-install-row')
         expect(installRow).not.toBeNull()
         expect(installRow.style.display).toBe('none')
     })
 
     it('renders external links to website and source', () => {
-        playbackEvents.emit("aboutToggle", true)
+        aboutPanel.show()
         const html = document.getElementById('about-panel').innerHTML
         expect(html).toContain('https://www.ordrumbox.com')
         expect(html).toContain('github.com/cadeli/ordrumbox-v2')
@@ -95,10 +89,10 @@ describe('AboutPanel (PWA)', () => {
         expect(keys).toEqual(['info', 'pwa'])
     })
 
-    it('can be toggled via dispatchAboutToggle', () => {
-        playbackEvents.emit("aboutToggle", true)
+    it('can be toggled via show/hide', () => {
+        aboutPanel.show()
         expect(document.getElementById('about-panel').style.display).toBe('block')
-        playbackEvents.emit("aboutToggle", false)
+        aboutPanel.hide()
         expect(document.getElementById('about-panel').style.display).toBe('none')
     })
 })

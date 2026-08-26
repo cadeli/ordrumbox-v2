@@ -1,6 +1,5 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { playbackEvents } from '../state/playback_events.js'
 import { bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
@@ -228,9 +227,7 @@ this.container.innerHTML = `
         }
     }
 
-    subscribe() {
-        playbackEvents.on("outputToggle", (show) => { if (show) this.show(); else this.hide() })
-    }
+    subscribe() {}
 
     show() {
         super.show()

@@ -98,12 +98,12 @@ describe('Modal Interaction Flow (Mobile Landscape)', () => {
     })
 
     it('opens and closes the Tools Panel', () => {
-        playbackEvents.emit("toolsToggle", true)
+        toolsPanel.show()
         
         const tp = document.getElementById('tools-panel')
         expect(tp.style.display).toBe('block')
 
-        playbackEvents.emit("toolsToggle", false)
+        toolsPanel.hide()
 
         expect(tp.style.display).toBe('none')
     })

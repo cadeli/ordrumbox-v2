@@ -77,9 +77,6 @@ export default class DrumkitManager extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on("drumkitManagerToggle", (show) => {
-            if (show) this.show(); else this.hide()
-        })
         playbackEvents.on("drumkitChange", () => { if (this.isVisible) this.sync() })
     }
 

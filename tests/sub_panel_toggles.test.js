@@ -133,12 +133,12 @@ describe('Sub-panel toggle toolbars', () => {
             expect(patternPanel.classList.contains('ne-tab-panel-hidden')).toBe(true)
         })
 
-        it('can be toggled via dispatchToolsToggle', () => {
-            playbackEvents.emit("toolsToggle", true)
+        it('can be toggled via show/hide', () => {
+            toolsPanel.show()
 
             const tp = document.getElementById('tools-panel')
             expect(tp.style.display).toBe('block')
-            playbackEvents.emit("toolsToggle", false)
+            toolsPanel.hide()
             expect(tp.style.display).toBe('none')
         })
     })
