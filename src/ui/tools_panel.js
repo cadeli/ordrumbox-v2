@@ -7,7 +7,8 @@ import { escapeHtml, downloadJson, renderOptions } from './components/panel_help
 import MidiImportService from '../logic/services/midi_import_service.js'
 import WavImportService from '../logic/services/wav_import_service.js'
 import Utils from '../core/utils.js'
-import { MAX_IMPORT_SIZE, MAX_IMPORT_TRACKS, MAX_IMPORT_NOTES } from '../core/constants.js'
+import { MAX_IMPORT_SIZE } from '../core/constants.js'
+import { validatePatternJson } from '../logic/commands/pattern_import.js'
 import { showToast } from './toast.js'
 import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
@@ -520,26 +521,10 @@ export default class ToolsPanel extends BasePanel {
             try {
                 const data = JSON.parse(event.target.result)
 
-                if (!data || typeof data !== 'object' || Array.isArray(data)) {
-                    showToast('Invalid pattern: expected a JSON object', 'error')
+                const validation = validatePatternJson(data)
+                if (!validation.ok) {
+                    showToast(`Invalid pattern: ${validation.error}`, 'error')
                     return
-                }
-                const tracks = data.tracks
-                if (tracks != null && (typeof tracks !== 'object' || Array.isArray(tracks) === false)) {
-                    // tracks can be object or array, both are fine
-                }
-                const trackEntries = Object.values(tracks ?? {})
-                if (trackEntries.length > MAX_IMPORT_TRACKS) {
-                    showToast(`Too many tracks (max ${MAX_IMPORT_TRACKS})`, 'error')
-                    return
-                }
-                let totalNotes = 0
-                for (const t of trackEntries) {
-                    totalNotes += Object.values(t?.notes ?? {}).length
-                    if (totalNotes > MAX_IMPORT_NOTES) {
-                        showToast(`Too many notes (max ${MAX_IMPORT_NOTES})`, 'error')
-                        return
-                    }
                 }
 
                 const newPattern = serviceRegistry.cmd.importPatternFromJson(data)

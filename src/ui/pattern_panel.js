@@ -9,10 +9,12 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { isMobileViewport, BEATS_PER_PAGE } from '../core/constants.js'
+import { validatePatternJson } from '../logic/commands/pattern_import.js'
 
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
+import { showToast } from './toast.js'
 import { downloadJson, pitchToNoteName, formatNoteTooltip } from './components/panel_helpers.js'
 
 import HeaderSection from './pattern_panel/header_section.js'
@@ -579,11 +581,21 @@ export default class PatternPanel extends BasePanel {
                 input.onchange = async (e) => {
                     const file = e.target.files?.[0]
                     if (!file) return
-                    const text = await file.text()
-                    const data = JSON.parse(text)
-                    cmd.importPatternFromJson(data)
-                    this._playbackEvents.emit('patternStructureChange')
-                    this._playbackEvents.emit('patternChange')
+                    try {
+                        const text = await file.text()
+                        const data = JSON.parse(text)
+                        const validation = validatePatternJson(data)
+                        if (!validation.ok) {
+                            showToast(`Invalid pattern: ${validation.error}`, 'error')
+                            return
+                        }
+                        cmd.importPatternFromJson(data)
+                        this._playbackEvents.emit('patternStructureChange')
+                        this._playbackEvents.emit('patternChange')
+                    } catch (err) {
+                        logger.error('PatternPanel', 'Import failed', err)
+                        showToast('Import failed: ' + err.message, 'error')
+                    }
                 }
                 input.click()
                 break

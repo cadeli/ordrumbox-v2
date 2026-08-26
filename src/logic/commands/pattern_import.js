@@ -8,6 +8,52 @@ import {
 } from '../../core/note_schema.js'
 import Utils from '../../core/utils.js'
 import { logger } from "../../core/logger.js"
+import { MAX_IMPORT_TRACKS, MAX_IMPORT_NOTES } from '../../core/constants.js'
+
+/**
+ * Validate a parsed JSON object as a candidate for pattern import.
+ * Returns { ok: true } or { ok: false, error: string }.
+ *
+ * Checks:
+ *  - top-level is a non-null, non-array object
+ *  - tracks (if present) is an object or array
+ *  - track count ≤ MAX_IMPORT_TRACKS
+ *  - total note count ≤ MAX_IMPORT_NOTES
+ *  - each track (if present) is a non-null object
+ */
+export function validatePatternJson(data) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        return { ok: false, error: 'Expected a JSON object' }
+    }
+
+    const tracks = data.tracks
+    if (tracks != null) {
+        if (typeof tracks !== 'object') {
+            return { ok: false, error: '"tracks" must be an object or array' }
+        }
+
+        const entries = Object.values(tracks)
+        if (entries.length > MAX_IMPORT_TRACKS) {
+            return { ok: false, error: `Too many tracks (max ${MAX_IMPORT_TRACKS})` }
+        }
+
+        let totalNotes = 0
+        for (const t of entries) {
+            if (!t || typeof t !== 'object' || Array.isArray(t)) {
+                return { ok: false, error: 'Each track must be a JSON object' }
+            }
+            const notes = t.notes
+            if (notes != null && typeof notes === 'object') {
+                totalNotes += Array.isArray(notes) ? notes.length : Object.keys(notes).length
+                if (totalNotes > MAX_IMPORT_NOTES) {
+                    return { ok: false, error: `Too many notes (max ${MAX_IMPORT_NOTES})` }
+                }
+            }
+        }
+    }
+
+    return { ok: true }
+}
 
 /**
  * Create a new track from a source track's properties.
