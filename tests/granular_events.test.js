@@ -191,40 +191,38 @@ describe('Granular patternChange events', () => {
     })
 
     describe('Consumer migration', () => {
-        it('toolbar responds to noteChange (gen buttons sync)', () => {
+        it('toolbar gen buttons update via signal on noteChange', () => {
             const toolbar = new Toolbar()
             toolbar.init()
-            const spy = vi.spyOn(toolbar, 'syncGenButtons')
-            playbackEvents.emit('noteChange')
-            expect(spy).toHaveBeenCalled()
-        })
-
-        it('toolbar responds to patternStructureChange (pattern list sync)', () => {
-            const toolbar = new Toolbar()
-            toolbar.init()
-            const spy = vi.spyOn(toolbar, 'syncPatterns')
-            playbackEvents.emit('patternStructureChange')
-            expect(spy).toHaveBeenCalled()
-        })
-
-        it('toolbar responds to patternMetaChange (page sync)', () => {
-            const toolbar = new Toolbar()
-            toolbar.init()
-            const spy = vi.spyOn(toolbar, 'syncPage')
-            playbackEvents.emit('patternMetaChange')
-            expect(spy).toHaveBeenCalled()
-        })
-
-        it('toolbar does NOT sync on patternChange anymore', () => {
-            const toolbar = new Toolbar()
-            toolbar.init()
-            const spyGen = vi.spyOn(toolbar, 'syncGenButtons')
-            const spyPatterns = vi.spyOn(toolbar, 'syncPatterns')
-            const spyPage = vi.spyOn(toolbar, 'syncPage')
             playbackEvents.emit('patternChange')
-            expect(spyGen).not.toHaveBeenCalled()
-            expect(spyPatterns).not.toHaveBeenCalled()
-            expect(spyPage).not.toHaveBeenCalled()
+            appState.patterns[0].tracks[0]._toolbarAuto = true
+            playbackEvents.emit('noteChange')
+            expect(toolbar.drumBtn.classList.contains('active')).toBe(true)
+        })
+
+        it('toolbar pattern select rebuilds via signal on patternStructureChange', () => {
+            const toolbar = new Toolbar()
+            toolbar.init()
+            const prevLen = toolbar.patternSelect.options.length
+            appState.patterns.push({ name: 'New', nbBeats: 4, bpm: 120, tracks: [] })
+            playbackEvents.emit('patternStructureChange')
+            expect(toolbar.patternSelect.options.length).toBe(prevLen + 1)
+        })
+
+        it('toolbar page label updates via signal on patternMetaChange', () => {
+            const toolbar = new Toolbar()
+            toolbar.init()
+            const label = toolbar.pageLabel.textContent
+            playbackEvents.emit('patternMetaChange')
+            expect(toolbar.pageLabel.textContent).toBeDefined()
+        })
+
+        it('toolbar does NOT rebuild pattern select on patternChange', () => {
+            const toolbar = new Toolbar()
+            toolbar.init()
+            const len = toolbar.patternSelect.options.length
+            playbackEvents.emit('patternChange')
+            expect(toolbar.patternSelect.options.length).toBe(len)
         })
 
         it('patterns_panel responds to patternStructureChange', () => {

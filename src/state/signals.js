@@ -89,18 +89,35 @@ export const selectedTrack = computed(() => {
     return tracks[appState.selectedTrackNum] ?? null
 })
 
+/** Bumps when the pattern list changes (add/remove/rename) */
+export const [patternVersion, _bumpPatternVersion] = createSignal(0)
+
+playbackEvents.on('patternStructureChange', () => _bumpPatternVersion(v => v + 1))
+playbackEvents.on('drumkitChange', () => _bumpPatternVersion(v => v + 1))
+
+/** Bumps when page-relevant metadata changes (beats, page navigation) */
+export const [pageVersion, _bumpPageVersion] = createSignal(0)
+
+playbackEvents.on('patternMetaChange', () => _bumpPageVersion(v => v + 1))
+
 export const totalPages = computed(() => {
+    trackVersion()
     const pat = currentPattern()
-    return Math.ceil((pat?.nbBeats ?? 4))
+    if (!pat) return 1
+    const stepsPerBeat = Utils.getTracksArray(pat)[0]?.stepsPerBeat ?? 4
+    const totalSteps = (pat.nbBeats ?? 4) * stepsPerBeat
+    return Math.ceil(totalSteps / 16)
 })
 
-export const canPrevPage = computed(() =>
-    appState.currentPage > 0
-)
+export const canPrevPage = computed(() => {
+    pageVersion()
+    return appState.currentPage > 0
+})
 
-export const canNextPage = computed(() =>
-    appState.currentPage < totalPages() - 1
-)
+export const canNextPage = computed(() => {
+    pageVersion()
+    return appState.currentPage < totalPages() - 1
+})
 
 // ═══════════════════════════════════════════════════════
 // 3. History (Undo / Redo)

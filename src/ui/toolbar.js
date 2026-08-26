@@ -6,6 +6,7 @@ import { effect } from '../core/signals.js'
 import {
     isPlaying, currentBpm, currentPattern, currentTracks, trackVersion,
     canPrevPage, canNextPage, canUndo, canRedo, historyStats,
+    patternVersion, drumkitList, pageVersion,
 } from '../state/signals.js'
 import { injectUiCss } from './components/panel_helpers.js'
 import { isMobileViewport } from '../core/constants.js'
@@ -35,35 +36,9 @@ export default class Toolbar {
         this.injectCSS()
         this.createDOM()
         this.bindEvents()
-        this.syncState()
-        this.subscribeEvents()
         this.initSignals()
         this._setupOverflowObserver()
         document.addEventListener('keydown', (e) => this._handleKeyboard(e))
-    }
-
-    subscribeEvents() {
-        playbackEvents.on("playbackStart", () => this.syncPlayButton())
-        playbackEvents.on("playbackStop", () => this.syncPlayButton())
-        playbackEvents.on("noteChange", () => {
-            this.syncGenButtons()
-        })
-        playbackEvents.on("patternStructureChange", () => {
-            this.syncPatterns()
-        })
-        playbackEvents.on("patternMetaChange", () => {
-            this.syncPage()
-        })
-        playbackEvents.on("drumkitChange", () => {
-            this.syncDrumkits()
-            this.syncPatterns()
-        })
-        playbackEvents.on("bpmChange", (bpm) => {
-            this.syncBpmSlider(bpm)
-        })
-        playbackEvents.on("historyChange", (state) => {
-            this.syncUndoRedoButtons(state)
-        })
     }
 
     initSignals() {
@@ -88,8 +63,9 @@ export default class Toolbar {
             this.beatsSelect.value = pat?.nbBeats ?? 4
         })
 
-        // ── Page label ──────────────────────────────────────────────
+        // ── Page label + navigation ─────────────────────────────────
         effect(() => {
+            pageVersion()
             trackVersion()
             const pat = currentPattern()
             if (pat) {
@@ -97,18 +73,12 @@ export default class Toolbar {
                 const totalSteps = (pat.nbBeats ?? 4) * stepsPerBeat
                 const maxPage = Math.ceil(totalSteps / 16) - 1
                 this.pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
+                this.nextPageBtn.disabled = appState.currentPage >= maxPage
             } else {
                 this.pageLabel.textContent = '1/1'
+                this.nextPageBtn.disabled = true
             }
-        })
-
-        // ── Page buttons ────────────────────────────────────────────
-        effect(() => {
-            this.prevPageBtn.disabled = !canPrevPage()
-        })
-
-        effect(() => {
-            this.nextPageBtn.disabled = !canNextPage()
+            this.prevPageBtn.disabled = appState.currentPage === 0
         })
 
         // ── Undo / Redo ─────────────────────────────────────────────
@@ -142,21 +112,26 @@ export default class Toolbar {
             this.chordsBtn.classList.toggle('active',
                 tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO'))
         })
-    }
 
-    refresh() {
-        this.syncPlayButton()
-        this.syncPatterns()
-        this.syncDrumkits()
-        this.syncPage()
-    }
+        // ── Pattern select ──────────────────────────────────────────
+        effect(() => {
+            patternVersion()
+            this._rebuildPatternSelect()
+        })
 
-    syncUndoRedoButtons(state) {
-        if (!this.undoBtn || !this.redoBtn) return
-        this.undoBtn.disabled = !state?.canUndo
-        this.redoBtn.disabled = !state?.canRedo
-        this.undoBtn.title = state?.canUndo ? `Undo (Ctrl+Z) — ${state.pastLength} actions` : 'Undo (Ctrl+Z)'
-        this.redoBtn.title = state?.canRedo ? `Redo (Ctrl+Y) — ${state.futureLength} actions` : 'Redo (Ctrl+Y)'
+        // ── Drumkit select ──────────────────────────────────────────
+        effect(() => {
+            drumkitList()
+            this._rebuildDrumkitSelect()
+        })
+
+        // ── Pattern name mobile ─────────────────────────────────────
+        effect(() => {
+            const pat = currentPattern()
+            if (pat && this.patternNameMobile) {
+                this.patternNameMobile.textContent = pat.name ?? `Pattern ${appState.selectedPatternNum + 1}`
+            }
+        })
     }
 
     _handleKeyboard(e) {
@@ -434,7 +409,7 @@ export default class Toolbar {
             if (!isNaN(num)) {
                 serviceRegistry.cmd.setSelectedPatternNum(num)
                 appState.currentPage = 0
-                this.syncPage()
+                playbackEvents.emit("patternMetaChange")
             }
         })
 
@@ -466,7 +441,6 @@ export default class Toolbar {
                 }
             })
             appState.currentPage = 0
-            this.syncPage()
             playbackEvents.emit("patternMetaChange")
             playbackEvents.emit("patternChange")
         })
@@ -548,7 +522,6 @@ export default class Toolbar {
         this.prevPageBtn.addEventListener('click', () => {
             if (appState.currentPage > 0) {
                 appState.currentPage--
-                this.syncPage()
                 playbackEvents.emit("patternMetaChange")
                 playbackEvents.emit("patternChange")
             }
@@ -562,7 +535,6 @@ export default class Toolbar {
             const maxPage = Math.ceil(totalSteps / 16) - 1
             if (appState.currentPage < maxPage) {
                 appState.currentPage++
-                this.syncPage()
                 playbackEvents.emit("patternMetaChange")
                 playbackEvents.emit("patternChange")
             }
@@ -580,55 +552,7 @@ export default class Toolbar {
         })
     }
 
-    syncState() {
-        this.syncPlayButton()
-        this.syncPatterns()
-        this.syncDrumkits()
-        this.syncBeats()
-        this.syncPage()
-        this.syncGenButtons()
-    }
-
-    syncPage() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (pattern) {
-            const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4
-            const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
-            const maxPage = Math.ceil(totalSteps / 16) - 1
-            this.pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
-            this.nextPageBtn.disabled = appState.currentPage >= maxPage
-        } else {
-            this.pageLabel.textContent = '1/1'
-            this.nextPageBtn.disabled = true
-        }
-        this.prevPageBtn.disabled = appState.currentPage === 0
-    }
-
-    syncBpmSlider = (bpm) => {
-        this.bpmSlider.value = bpm
-        this.bpmValue.textContent = bpm
-        this.bpmToggle.textContent = bpm
-    }
-
-    syncPlayButton = () => {
-        const running = serviceRegistry.transport?.isRunning ?? false
-        this.startBtn.textContent = running ? '■' : '▶'
-        this.startBtn.classList.toggle('running', running)
-    }
-
-    syncGenButtons = () => {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        const tracks = pattern?.tracks ?? []
-        const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
-        const hasDrumAuto = tracks.some(t => t._toolbarAuto && drumTypes.has(Utils.detectTrackType(t.name)))
-        const hasBassAuto = tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'BASS')
-        const hasPianoAuto = tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO')
-        this.drumBtn.classList.toggle('active', hasDrumAuto)
-        this.bassBtn.classList.toggle('active', hasBassAuto)
-        this.chordsBtn.classList.toggle('active', hasPianoAuto)
-    }
-
-    syncPatterns = () => {
+    _rebuildPatternSelect() {
         this.patternSelect.innerHTML = ''
         appState.patterns.forEach((pat, i) => {
             const opt = document.createElement('option')
@@ -640,26 +564,9 @@ export default class Toolbar {
             const idx = Math.min(appState.selectedPatternNum, this.patternSelect.options.length - 1)
             this.patternSelect.selectedIndex = idx
         }
-        this.syncBpmFromPattern()
-        this.syncBeats()
-        this.syncPatternNameMobile()
     }
 
-    syncPatternNameMobile = () => {
-        const pat = appState.patterns[appState.selectedPatternNum]
-        if (pat && this.patternNameMobile) {
-            this.patternNameMobile.textContent = pat.name ?? `Pattern ${appState.selectedPatternNum + 1}`
-        }
-    }
-
-    syncBpmFromPattern = () => {
-        const pat = appState.patterns[appState.selectedPatternNum]
-        if (pat) {
-            this.syncBpmSlider(pat.bpm ?? 120)
-        }
-    }
-
-    syncDrumkits = () => {
+    _rebuildDrumkitSelect() {
         this.drumkitSelect.innerHTML = ''
         soundRegistry.drumkitList.forEach((kit, i) => {
             const opt = document.createElement('option')
@@ -671,11 +578,6 @@ export default class Toolbar {
             const idx = Math.min(appState.selectedDrumkitNum, this.drumkitSelect.options.length - 1)
             this.drumkitSelect.selectedIndex = idx
         }
-    }
-
-    syncBeats = () => {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        this.beatsSelect.value = pattern?.nbBeats ?? 4
     }
 
     /**
@@ -707,8 +609,6 @@ export default class Toolbar {
             await generateFn(pattern, autoGen)
         }
 
-        this.syncGenButtons()
-        this.syncPatterns()
         playbackEvents.emit("noteChange")
         playbackEvents.emit("patternChange")
     }
