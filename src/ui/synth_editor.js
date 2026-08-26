@@ -59,6 +59,7 @@ export default class SynthEditor {
     createDOM() {
         this.panel = document.createElement('div')
         this.panel.id = 'soft-synth-panel'
+        this.panel.classList.add('workspace-panel')
         this.panel.style.display = 'none'
         this._scrollEl = document.createElement('div')
         this._scrollEl.className = 'ss-scroll'

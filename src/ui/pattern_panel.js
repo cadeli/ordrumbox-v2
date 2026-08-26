@@ -53,6 +53,7 @@ export default class PatternPanel extends BasePanel {
 
     createDOM() {
         super.createDOM()
+        this.container.classList.add('workspace-panel')
         this.container.style.display = 'block'
         this.container.setAttribute('tabindex', '0')
         this._headerEl = document.createElement('div')

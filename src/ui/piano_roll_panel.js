@@ -48,6 +48,7 @@ export default class PianoRollPanel extends BasePanel {
 
     createDOM() {
         super.createDOM()
+        this.container.classList.add('workspace-panel')
         this.container.style.display = 'none'
         this.container.innerHTML = `
             <div class="ne-header">

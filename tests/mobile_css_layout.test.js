@@ -68,14 +68,18 @@ const DESKTOP_MEDIA = extractMediaBlock('@media\\s*\\(min-width:\\s*769px\\)\\s*
 
 // Panels that must get mobile full-width treatment
 const MOBILE_PANELS = [
-    '#pattern-panel',
     '#te-panel',
-    '#soft-synth-panel',
     '#tools-panel',
-    '#piano-roll-panel',
     '#about-panel',
     '#output-panel',
     '#dm-panel',
+]
+
+// Workspace panels now use the .workspace-panel class for mobile overrides
+const WORKSPACE_PANELS = [
+    '#pattern-panel',
+    '#soft-synth-panel',
+    '#piano-roll-panel',
 ]
 
 describe('Mobile CSS: Media query existence', () => {
@@ -149,6 +153,13 @@ describe('Mobile CSS: Panel full-width positioning', () => {
             expect(hasCombinedRule(MOBILE_MEDIA, sel, 'bottom', '60px !important')).toBe(true)
         })
     }
+
+    it('.workspace-panel: top via --workspace-top, width via --workspace-width, bottom: 60px', () => {
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', '--workspace-top', 'var(--tb-h, 48px)')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', '--workspace-width', '100%')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'bottom', '60px')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'overflow-y', 'auto')).toBe(true)
+    })
 
     it('#te-panel.pp-split: border-left: none', () => {
         expect(hasRule(MOBILE_MEDIA, '#te-panel.pp-split', 'border-left', 'none !important')).toBe(true)
@@ -365,6 +376,10 @@ describe('Mobile CSS: Complete panel coverage check', () => {
             const found = hasCombinedRule(MOBILE_MEDIA, sel, 'width', '100% !important')
             expect(found).toBe(true)
         }
+    })
+
+    it('workspace panels have .workspace-panel class rule in mobile CSS', () => {
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', '--workspace-width', '100%')).toBe(true)
     })
 
     it('no unexpected extra panels missing from mobile overrides', () => {

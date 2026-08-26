@@ -71,6 +71,12 @@
   /* ── Layout ── */
   --panel-height: 300px;
 
+  /* ── Workspace Panel ── */
+  --workspace-top: 64px;
+  --workspace-left: 0;
+  --workspace-width: 80%;
+  --workspace-height: 450px;
+
   /* ── VU Meter ── */
   --vu-green: #4ade80;
   --vu-red: #ef4444;
@@ -245,22 +251,7 @@ body {
 
 /* ---- Pattern Panel ---- */
 #pattern-panel {
-    position: fixed !important;
-    top: 64px !important;
-    left: 0 !important;
-    right: auto !important;
-    background: var(--bg);
-    border-bottom: 2px solid var(--border-subtle);
     padding: 6px 12px;
-    overflow-x: auto;
-    font-family: monospace;
-    font-size: var(--fs-base);
-    color: var(--text-secondary);
-    z-index: var(--z-panel);
-    height: 450px;
-    display: flex;
-    flex-direction: column;
-    width: 80%;
     overflow-x: hidden;
 }
 .ne-panel.pp-split {
@@ -589,23 +580,9 @@ body {
 
 /* ---- Piano Roll Panel ---- */
 #piano-roll-panel {
-    position: fixed !important;
-    top: 64px !important;
-    left: 0 !important;
-    right: auto !important;
-    width: 80% !important;
-    background: var(--bg);
-    border-bottom: 2px solid var(--border-subtle);
     padding: 0;
     overflow: hidden;
-    font-family: monospace;
-    font-size: var(--fs-base);
-    color: var(--text-secondary);
-    z-index: var(--z-panel);
-    height: 450px;
     min-height: 320px;
-    display: flex;
-    flex-direction: column;
 }
 #pp-piano-roll {
     display: flex;
@@ -806,6 +783,23 @@ body {
     color: var(--text-secondary);
 }
 .ui-hidden { display: none !important; }
+
+/* ---- Workspace Panel (shared layout for main panels) ---- */
+.workspace-panel {
+    position: fixed;
+    top: var(--workspace-top);
+    left: var(--workspace-left);
+    width: var(--workspace-width);
+    height: var(--workspace-height);
+    background: var(--bg);
+    border-bottom: 2px solid var(--border-subtle);
+    font-family: monospace;
+    font-size: var(--fs-base);
+    color: var(--text-secondary);
+    z-index: var(--z-panel);
+    display: flex;
+    flex-direction: column;
+}
 .ne-header {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 8px; font-size: var(--fs-md); border-bottom: 1px solid var(--border-subtle);
@@ -1236,24 +1230,10 @@ body {
 /* ---- Soft Synth Editor ---- */
 #soft-synth-panel {
     display: none;
-    position: fixed !important;
-    top: 64px !important;
-    left: 0 !important;
-    right: auto !important;
-    width: 80% !important;
-    height: 450px;
-    min-height: 320px;
-    background: var(--bg);
-    border-bottom: 2px solid var(--border-subtle);
     padding: 6px 12px;
     overflow: hidden;
-    font-family: monospace;
-    font-size: var(--fs-base);
-    color: var(--text-secondary);
-    z-index: var(--z-panel);
+    min-height: 320px;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
     gap: 3px;
 }
 #soft-synth-panel .ss-scroll {
@@ -2025,12 +2005,18 @@ body {
         box-sizing: border-box;
     }
 
-    /* Mobile: all overlay panels full width between toolbar and tab bar */
-    #pattern-panel,
+    /* Mobile: workspace panels — override custom properties (no !important needed) */
+    .workspace-panel {
+        --workspace-top: var(--tb-h, 48px);
+        --workspace-width: 100%;
+        --workspace-height: auto;
+        bottom: 60px;
+        overflow-y: auto;
+    }
+
+    /* Mobile: other overlay panels */
     #te-panel,
-    #soft-synth-panel,
     #tools-panel,
-    #piano-roll-panel,
     #about-panel,
     #output-panel,
     #dm-panel {
