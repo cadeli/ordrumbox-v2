@@ -192,9 +192,6 @@ export class OrKnob {
             window.removeEventListener('mousemove', onMove)
             window.removeEventListener('mouseup', onUp)
             this._knobEl?.classList.remove('dragging')
-            if (this._dragging) {
-                this._onChange?.(this._value, this._key)
-            }
             setTimeout(() => { this._dragging = false }, 50)
         }
         window.addEventListener('mousemove', onMove)

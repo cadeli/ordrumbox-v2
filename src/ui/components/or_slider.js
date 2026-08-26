@@ -182,7 +182,7 @@ export class OrSlider {
 
     _bind() {
         this._unbind()
-        if (this._input && !this._isDelegated) {
+        if (this._input) {
             this._input.addEventListener('input',   this._boundOnInput)
             this._input.addEventListener('keydown', this._boundOnKeydown)
         }
@@ -240,8 +240,7 @@ export class OrSlider {
     }
 
     /**
-     * Internal logic for handling 'input' events. 
-     * Can be called by an external delegated handler.
+     * Handles 'input' events from the range element.
      */
     handleInput(e) {
         const norm    = parseFloat(this._input.value)
@@ -257,8 +256,7 @@ export class OrSlider {
     }
 
     /**
-     * Internal logic for handling 'keydown' events.
-     * Can be called by an external delegated handler.
+     * Handles 'keydown' events (ArrowUp/Down).
      */
     handleKeydown(e) {
         const isUp   = e.key === 'ArrowUp'   || e.key === 'ArrowRight'

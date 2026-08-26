@@ -501,26 +501,12 @@ export default class TrackEditor extends BasePanel {
     _bindEvents() {
         if (this._delegationBound) return
 
+        // LFO sliders are plain <input> elements (not OrSlider instances)
+        // and require delegated input handling.
         this.container.addEventListener('input', (e) => {
             const target = e.target
-            const key = target.dataset.key ?? target.dataset.lfoKey ?? target.dataset.loop
-            if (!key) return
-            const slider = Array.from(this._sliders.values()).find(s => s._input === target)
-            if (slider) {
-                slider.handleInput(e)
-                if (key === 'decay') this._drawSampleWaveform()
-            } else if (target.dataset.lfoKey) {
+            if (target.dataset.lfoKey) {
                 this._onLfoSlider(target)
-            } else if (target.dataset.loop) {
-                this._onLoopSlider(target)
-            }
-        })
-
-        this.container.addEventListener('keydown', (e) => {
-            const target = e.target
-            if (target.type === 'range') {
-                const slider = Array.from(this._sliders.values()).find(s => s._input === target)
-                slider?.handleKeydown(e)
             }
         })
 
@@ -538,9 +524,6 @@ export default class TrackEditor extends BasePanel {
                     else if (target.dataset.sound === 'sample') this._sndSection.onSampleChange(target)
                     else if (target.dataset.sound === 'generated') this._sndSection.onGeneratedChange(target)
                 }
-            } else if (target.type === 'range') {
-                this._isDragging = false
-                this._emitTrackChange()
             }
         })
 

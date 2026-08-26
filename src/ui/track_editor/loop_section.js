@@ -54,7 +54,6 @@ export default class LoopSection {
                 })
                 editor._sliders.set(p.key, s)
             }
-            s._isDelegated = true
             content += s.toHTML()
         })
 

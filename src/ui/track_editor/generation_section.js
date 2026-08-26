@@ -71,7 +71,6 @@ export default class GenerationSection {
                     })
                     editor._sliders.set(p.key, s)
                 }
-                s._isDelegated = true
                 html += s.toHTML()
             }
         })
