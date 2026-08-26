@@ -2,6 +2,7 @@
 // Waveform canvas drawing: oscillators + ADSR envelope preview.
 
 import { WAVE_BUFFER } from './constants.js'
+import { color, rgba } from '../theme.js'
 
 export default class WaveformSection {
     /** @param {import('./synth_editor.js').default} editor */
@@ -23,9 +24,9 @@ export default class WaveformSection {
         const h = canvas.height
         const mid = h / 2
 
-        ctx.fillStyle = '#0d0d1a'
+        ctx.fillStyle = color('bg-canvas')
         ctx.fillRect(0, 0, w, h)
-        ctx.strokeStyle = '#2D3438'
+        ctx.strokeStyle = color('canvas-grid')
         ctx.lineWidth = 1
         ctx.beginPath()
         ctx.moveTo(0, mid)
@@ -120,7 +121,7 @@ export default class WaveformSection {
         }
 
         ctx.beginPath()
-        ctx.strokeStyle = '#8EEA3B'
+        ctx.strokeStyle = color('waveform-green')
         ctx.lineWidth = 1.5
         for (let i = 0; i < sampleRate; i++) {
             const x = (i / sampleRate) * w
@@ -154,9 +155,9 @@ export default class WaveformSection {
         const h = canvas.height
         const mid = h / 2
 
-        ctx.fillStyle = '#0d0d1a'
+        ctx.fillStyle = color('bg-canvas')
         ctx.fillRect(0, 0, w, h)
-        ctx.strokeStyle = '#2D3438'
+        ctx.strokeStyle = color('canvas-grid')
         ctx.lineWidth = 1
         ctx.beginPath()
         ctx.moveTo(0, mid)
@@ -188,14 +189,14 @@ export default class WaveformSection {
         ]
 
         ctx.beginPath()
-        ctx.strokeStyle = '#F24C4C'
+        ctx.strokeStyle = color('waveform-red')
         ctx.lineWidth = 1.5
         ctx.setLineDash([4, 4])
         this._drawAdsrPath(ctx, pts, scaleX, scaleY)
         ctx.stroke()
         ctx.setLineDash([])
 
-        ctx.fillStyle = 'rgba(242, 76, 76, 0.15)'
+        ctx.fillStyle = rgba('waveform-red', 0.15)
         ctx.beginPath()
         this._drawAdsrPath(ctx, pts, scaleX, scaleY)
         ctx.closePath()

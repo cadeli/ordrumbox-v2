@@ -81,6 +81,16 @@
   --vu-green: #4ade80;
   --vu-red: #ef4444;
   --vu-yellow: #eab308;
+
+  /* ── Canvas / Waveform ── */
+  --canvas-bg: #0d0d1a;
+  --canvas-grid: #2D3438;
+  --waveform-cyan: #00fff5;
+  --waveform-green: #8EEA3B;
+  --waveform-red: #F24C4C;
+  --waveform-yellow: #f5e642;
+  --canvas-shadow: rgba(0, 0, 0, 0.3);
+  --toast-shadow: rgba(0, 0, 0, 0.5);
 }
 
 /* ---- Global ---- */

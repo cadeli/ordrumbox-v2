@@ -18,6 +18,7 @@ import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
 import LfoUiBridge from '../logic/lfo_ui_bridge.js'
+import { color } from './theme.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
 import { logger } from '../core/logger.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
@@ -398,13 +399,13 @@ export default class TrackEditor extends BasePanel {
         const analysis = analyzeSample(sound.buffer)
         if (!analysis?.envelope?.length) return
         const ctx = canvas.getContext('2d')
-        drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, '#00fff5')
+        drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, color('waveform-cyan'))
         const decaySec = (sound.decay ?? 0) / 1000
         const totalSec = sound.buffer.duration
         if (totalSec > 0) {
             const ratio = Math.min(decaySec / totalSec, 1)
             const x = ratio * canvas.width
-            ctx.strokeStyle = '#f5e642'
+            ctx.strokeStyle = color('waveform-yellow')
             ctx.lineWidth = 2
             ctx.beginPath()
             ctx.moveTo(x, 0)

@@ -48,7 +48,7 @@ export function showToast(message, type = 'info', { actions, dismissible } = {})
     el.style.cssText = `
         background:${bg}; color:var(--text); padding:12px 20px;
         border-radius:8px; border:1px solid ${border};
-        box-shadow:0 4px 12px rgba(0,0,0,0.5);
+        box-shadow:0 4px 12px var(--toast-shadow);
         pointer-events:auto; max-width:400px; word-break:break-word;
         display:flex; align-items:center; gap:12px;
         animation:odbox-toast-in 0.3s ease-out;

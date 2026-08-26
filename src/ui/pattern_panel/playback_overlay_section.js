@@ -4,6 +4,7 @@
 import { TICK, BEATS_PER_PAGE } from '../../core/constants.js'
 import { appState } from '../../state/app_state.js'
 import Utils from '../../core/utils.js'
+import { color } from '../theme.js'
 
 export default class PlaybackOverlaySection {
     /** @param {import('./pattern_panel.js').default} editor */
@@ -177,17 +178,17 @@ export default class PlaybackOverlaySection {
 
         const data = editor._serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {
-            ctx.fillStyle = '#000'
+            ctx.fillStyle = color('bg-canvas')
             ctx.fillRect(0, 0, w, h)
             return
         }
 
         data.analyser.getByteTimeDomainData(data.dataArray)
 
-        ctx.fillStyle = '#000'
+        ctx.fillStyle = color('bg-canvas')
         ctx.fillRect(0, 0, w, h)
 
-        ctx.strokeStyle = '#4ade80'
+        ctx.strokeStyle = color('color-success')
         ctx.lineWidth = 2 * dpr
         ctx.beginPath()
 
@@ -237,7 +238,7 @@ export default class PlaybackOverlaySection {
         if (canvas) {
             const ctx = canvas.getContext('2d')
             if (ctx) {
-                ctx.fillStyle = '#000'
+                ctx.fillStyle = color('bg-canvas')
                 ctx.fillRect(0, 0, canvas.width, canvas.height)
             }
         }

@@ -4,6 +4,7 @@ import { bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
 import BasePanel from './base_panel.js'
+import { color } from './theme.js'
 
 const COMPRESSOR_PARAMS = [
     { key: 'threshold', label: 'Threshold', min: -40, max: 0,     step: 1,     default: -18,   unit: 'dB' },
@@ -267,7 +268,7 @@ this.container.innerHTML = `
         const w = canvas.width
         const h = canvas.height
         if (!this._bgColor) {
-            this._bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas').trim() || '#0d0d1a'
+            this._bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas').trim() || color('bg-canvas')
         }
         const data = serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {

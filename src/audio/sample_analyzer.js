@@ -1,5 +1,6 @@
 import AudioAnalyzer from './analyze.js'
 import { hzToNote } from '../core/hz_to_note.js'
+import { color, rgba } from '../ui/theme.js'
 
 const _analyzer = new AudioAnalyzer()
 const _cache = new Map()
@@ -44,17 +45,18 @@ export function clearAnalysisCache(audioBuffer) {
  * @param {number[]} envelope – array of amplitude values (0..1)
  * @param {number} width
  * @param {number} height
- * @param {string} [color='#4fc3f7']
+ * @param {string} [strokeColor] – defaults to 'color-info' token
  */
-export function drawEnvelope(ctx, envelope, width, height, color = '#4fc3f7') {
+export function drawEnvelope(ctx, envelope, width, height, strokeColor) {
     if (!envelope?.length) return
 
+    const stroke = strokeColor ?? color('color-info')
     ctx.clearRect(0, 0, width, height)
-    ctx.fillStyle = 'rgba(0,0,0,0.3)'
+    ctx.fillStyle = rgba('canvas-shadow', 0.3)
     ctx.fillRect(0, 0, width, height)
 
     ctx.beginPath()
-    ctx.strokeStyle = color
+    ctx.strokeStyle = stroke
     ctx.lineWidth = 1.5
 
     const step = width / (envelope.length - 1)
@@ -69,6 +71,6 @@ export function drawEnvelope(ctx, envelope, width, height, color = '#4fc3f7') {
     ctx.lineTo(width, height)
     ctx.lineTo(0, height)
     ctx.closePath()
-    ctx.fillStyle = 'rgba(79,195,247,0.15)'
+    ctx.fillStyle = rgba('color-info', 0.15)
     ctx.fill()
 }
