@@ -174,6 +174,7 @@ export default class AutoGenerate {
                 ? this._cachedStructure
                 : (this._cachedGenre = genre, this._cachedStructure = this.structureGen.generateStructure(genre))
 
+            const type = Utils.detectTrackType(track.name)
             const config = track.auto_variant || this._findTrackConfig(structure, track)
 
             if (config) {
