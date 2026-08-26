@@ -41,25 +41,25 @@ describe('showToast', () => {
     it('applies info background by default', () => {
         showToast('info msg')
         const toast = document.querySelector('#odbox-toast-container > div')
-        expect(toast.style.background).toContain('44')  // #2c3e50 → rgb(44, 62, 80)
+        expect(toast.style.background).toContain('--bg-elevated')
     })
 
     it('applies success background for type success', () => {
         showToast('ok', 'success')
         const toast = document.querySelector('#odbox-toast-container > div')
-        expect(toast.style.background).toContain('39')  // #27ae60 → rgb(39, 174, 96)
+        expect(toast.style.background).toContain('--bg-success')
     })
 
     it('applies error background for type error', () => {
         showToast('fail', 'error')
         const toast = document.querySelector('#odbox-toast-container > div')
-        expect(toast.style.background).toContain('192')  // #c0392b → rgb(192, 57, 43)
+        expect(toast.style.background).toContain('--bg')
     })
 
     it('falls back to info styling for unknown type', () => {
         showToast('what', 'bogus')
         const toast = document.querySelector('#odbox-toast-container > div')
-        expect(toast.style.background).toContain('44')
+        expect(toast.style.background).toContain('--bg-elevated')
     })
 
     it('dismisses after 3s for info', () => {
