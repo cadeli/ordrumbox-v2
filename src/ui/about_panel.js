@@ -1,8 +1,8 @@
 import { playbackEvents } from '../state/playback_events.js'
+import { APP_VERSION } from '../core/constants.js'
 import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 
-const APP_VERSION = '2.0.0'
 const APP_NAME = 'OrDrumbox'
 const APP_LICENSE = 'GPL-3.0-only'
 const APP_REPO = 'https://github.com/cadeli/ordrumbox-v2'

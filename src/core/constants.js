@@ -1,5 +1,8 @@
 export const NOT_FOUND = 'NOT_FOUND'
 
+// ── App version (bump to invalidate IndexedDB cache) ───────────────
+export const APP_VERSION = '2.0.0'
+
 // ── Timing constants ───────────────────────────────────────────────
 export const TICK = 32
 

@@ -16,42 +16,51 @@ function createMockIDB() {
             },
             transaction: (storeName, mode) => {
                 const store = ensureStore(storeName)
-                return {
+                let pendingOps = 0
+                const tx = {
+                    oncomplete: null,
                     objectStore: () => ({
                         get: (key) => {
                             const req = { result: undefined, onsuccess: null, onerror: null }
-                            queueMicrotask(() => { req.result = store[key]; req.onsuccess?.() })
+                            pendingOps++
+                            queueMicrotask(() => { req.result = store[key]; req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
                             return req
                         },
                         put: (value, key) => {
                             const req = { onsuccess: null, onerror: null }
-                            queueMicrotask(() => { store[key] = value; req.onsuccess?.() })
+                            pendingOps++
+                            queueMicrotask(() => { store[key] = value; req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
                             return req
                         },
                         delete: (key) => {
                             const req = { onsuccess: null, onerror: null }
-                            queueMicrotask(() => { delete store[key]; req.onsuccess?.() })
+                            pendingOps++
+                            queueMicrotask(() => { delete store[key]; req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
                             return req
                         },
                         getAllKeys: () => {
                             const req = { result: [], onsuccess: null, onerror: null }
-                            queueMicrotask(() => { req.result = Object.keys(store); req.onsuccess?.() })
+                            pendingOps++
+                            queueMicrotask(() => { req.result = Object.keys(store); req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
                             return req
                         },
                         getAll: () => {
                             const req = { result: [], onsuccess: null, onerror: null }
-                            queueMicrotask(() => { req.result = Object.values(store); req.onsuccess?.() })
+                            pendingOps++
+                            queueMicrotask(() => { req.result = Object.values(store); req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
                             return req
                         },
                         clear: () => {
                             const req = { onsuccess: null, onerror: null }
-                            queueMicrotask(() => { for (const k in store) delete store[k]; req.onsuccess?.() })
+                            pendingOps++
+                            queueMicrotask(() => { for (const k in store) delete store[k]; req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
                             return req
                         },
                         openCursor: () => {
                             const req = { result: null, onsuccess: null, onerror: null }
                             const keys = Object.keys(store)
                             let idx = 0
+                            pendingOps++
                             const fire = () => {
                                 if (idx < keys.length) {
                                     const key = keys[idx]
@@ -67,12 +76,14 @@ function createMockIDB() {
                                     req.result = null
                                 }
                                 req.onsuccess?.()
+                                if (!keys.length) { if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) }
                             }
                             queueMicrotask(fire)
                             return req
                         },
                     }),
                 }
+                return tx
             },
         }
         return db
@@ -221,5 +232,135 @@ describe('IDB Cache', () => {
         expect(cache.formatDate(0)).toMatch(/^\d{4}-\d{2}-\d{2}/)
         const ts = new Date(2025, 5, 15, 14, 30).getTime()
         expect(cache.formatDate(ts)).toBe('2025-06-15 14:30')
+    })
+
+    // ── Version validation ──────────────────────────────────────────
+
+    it('getCachedPatterns returns null when stored version differs', async () => {
+        const db = await new Promise((resolve) => {
+            const req = globalThis.indexedDB.open('ordrumbox')
+            req.onsuccess = () => resolve(req.result)
+        })
+        const tx = db.transaction('patterns', 'readwrite')
+        tx.objectStore('patterns').put(
+            { data: { old: true }, savedAt: Date.now(), size: 10, version: '0.0.1', store: 'patterns' },
+            'song_data'
+        )
+        await new Promise(r => { tx.oncomplete = r })
+        db.close()
+
+        const result = await cache.getCachedPatterns()
+        expect(result).toBeNull()
+    })
+
+    it('getCachedDrumkits returns null when stored version differs', async () => {
+        const db = await new Promise((resolve) => {
+            const req = globalThis.indexedDB.open('ordrumbox')
+            req.onsuccess = () => resolve(req.result)
+        })
+        const tx = db.transaction('drumkits', 'readwrite')
+        tx.objectStore('drumkits').put(
+            { data: { old: true }, savedAt: Date.now(), size: 10, version: '0.0.1', store: 'drumkits' },
+            'drumkits_data'
+        )
+        await new Promise(r => { tx.oncomplete = r })
+        db.close()
+
+        const result = await cache.getCachedDrumkits()
+        expect(result).toBeNull()
+    })
+
+    it('getCachedSample returns null when stored version differs', async () => {
+        const db = await new Promise((resolve) => {
+            const req = globalThis.indexedDB.open('ordrumbox')
+            req.onsuccess = () => resolve(req.result)
+        })
+        const tx = db.transaction('samples', 'readwrite')
+        tx.objectStore('samples').put(
+            { data: new ArrayBuffer(64), savedAt: Date.now(), size: 64, version: '0.0.1', store: 'samples' },
+            'stale.wav'
+        )
+        await new Promise(r => { tx.oncomplete = r })
+        db.close()
+
+        const result = await cache.getCachedSample('stale.wav')
+        expect(result).toBeNull()
+    })
+
+    // ── TTL expiry ──────────────────────────────────────────────────
+
+    it('getCachedPatterns returns null when TTL expired (8 days old)', async () => {
+        const db = await new Promise((resolve) => {
+            const req = globalThis.indexedDB.open('ordrumbox')
+            req.onsuccess = () => resolve(req.result)
+        })
+        const eightDaysAgo = Date.now() - 8 * 24 * 60 * 60 * 1000
+        const tx = db.transaction('patterns', 'readwrite')
+        tx.objectStore('patterns').put(
+            { data: { expired: true }, savedAt: eightDaysAgo, size: 10, version: '2.0.0', store: 'patterns' },
+            'song_data'
+        )
+        await new Promise(r => { tx.oncomplete = r })
+        db.close()
+
+        const result = await cache.getCachedPatterns()
+        expect(result).toBeNull()
+    })
+
+    it('getCachedSample accepts entries within TTL (15 days old, 30-day TTL)', async () => {
+        const buf = new ArrayBuffer(256)
+        await cache.cacheSample('recent.wav', buf)
+        const db = await new Promise((resolve) => {
+            const req = globalThis.indexedDB.open('ordrumbox')
+            req.onsuccess = () => resolve(req.result)
+        })
+        const fifteenDaysAgo = Date.now() - 15 * 24 * 60 * 60 * 1000
+        const tx = db.transaction('samples', 'readwrite')
+        tx.objectStore('samples').put(
+            { data: buf, savedAt: fifteenDaysAgo, size: 256, version: '2.0.0', store: 'samples' },
+            'fresh.wav'
+        )
+        await new Promise(r => { tx.oncomplete = r })
+        db.close()
+
+        const result = await cache.getCachedSample('fresh.wav')
+        expect(result).toBe(buf)
+    })
+
+    it('getCachedSample returns null when TTL expired (31 days old)', async () => {
+        const db = await new Promise((resolve) => {
+            const req = globalThis.indexedDB.open('ordrumbox')
+            req.onsuccess = () => resolve(req.result)
+        })
+        const thirtyOneDaysAgo = Date.now() - 31 * 24 * 60 * 60 * 1000
+        const tx = db.transaction('samples', 'readwrite')
+        tx.objectStore('samples').put(
+            { data: new ArrayBuffer(64), savedAt: thirtyOneDaysAgo, size: 64, version: '2.0.0', store: 'samples' },
+            'old.wav'
+        )
+        await new Promise(r => { tx.oncomplete = r })
+        db.close()
+
+        const result = await cache.getCachedSample('old.wav')
+        expect(result).toBeNull()
+    })
+
+    it('wrapWithMeta includes version field', async () => {
+        await cache.cachePatterns({ versioned: true })
+        const db = await new Promise((resolve) => {
+            const req = globalThis.indexedDB.open('ordrumbox')
+            req.onsuccess = () => resolve(req.result)
+        })
+        const tx = db.transaction('patterns', 'readonly')
+        const raw = await new Promise((resolve) => {
+            const req = tx.objectStore('patterns').get('song_data')
+            req.onsuccess = () => resolve(req.result)
+        })
+        db.close()
+
+        expect(raw).toHaveProperty('version')
+        expect(raw).toHaveProperty('store', 'patterns')
+        expect(typeof raw.size).toBe('number')
+        expect(typeof raw.savedAt).toBe('number')
     })
 })
