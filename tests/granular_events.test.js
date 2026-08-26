@@ -274,6 +274,109 @@ describe('Granular patternChange events', () => {
             expect(spy).toHaveBeenCalled()
         })
 
+        it('pattern_panel responds to drumkitChange', () => {
+            const pp = new PatternPanel()
+            pp.init()
+            const spy = vi.spyOn(pp, 'requestSync')
+            playbackEvents.emit('drumkitChange')
+            expect(spy).toHaveBeenCalled()
+        })
+
+        it('drumkitChange refreshes track-url labels in pattern panel', async () => {
+            appState.patterns = [{
+                name: 'Test', nbBeats: 4, bpm: 120,
+                tracks: [{ name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, soundId: 'kick_old' }]
+            }]
+            const pp = new PatternPanel()
+            pp.init()
+            pp.show()
+
+            const urlEl = pp._tracksEl.querySelector('.pp-track-url')
+            expect(urlEl).toBeTruthy()
+            expect(urlEl.textContent).toBe('kick_old')
+
+            appState.patterns[0].tracks[0].soundId = 'kick_new'
+            playbackEvents.emit('drumkitChange')
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+
+            const urlElAfter = pp._tracksEl.querySelector('.pp-track-url')
+            expect(urlElAfter.textContent).toBe('kick_new')
+        })
+
+        it('drumkitChange refreshes synth track-url labels', async () => {
+            appState.patterns = [{
+                name: 'Test', nbBeats: 4, bpm: 120,
+                tracks: [{ name: 'SYNTH', notes: [], nbBeats: 4, stepsPerBeat: 4, useSoftSynth: true, synthSoundKey: 'SAW1' }]
+            }]
+            const pp = new PatternPanel()
+            pp.init()
+            pp.show()
+
+            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SAW1')
+
+            appState.patterns[0].tracks[0].synthSoundKey = 'SQUARE2'
+            playbackEvents.emit('drumkitChange')
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+
+            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SQUARE2')
+        })
+
+        it('trackParamChange updates track-url label in-place', async () => {
+            appState.patterns = [{
+                name: 'Test', nbBeats: 4, bpm: 120,
+                tracks: [{ name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, soundId: 'old_sound' }]
+            }]
+            const pp = new PatternPanel()
+            pp.init()
+            pp.show()
+
+            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('old_sound')
+
+            appState.patterns[0].tracks[0].soundId = 'new_sound'
+            playbackEvents.emit('trackParamChange', appState.patterns[0].tracks[0])
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+
+            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('new_sound')
+        })
+
+        it('trackParamChange updates synth track-url label in-place', async () => {
+            appState.patterns = [{
+                name: 'Test', nbBeats: 4, bpm: 120,
+                tracks: [{ name: 'SYNTH', notes: [], nbBeats: 4, stepsPerBeat: 4, useSoftSynth: true, synthSoundKey: 'SAW1' }]
+            }]
+            const pp = new PatternPanel()
+            pp.init()
+            pp.show()
+
+            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SAW1')
+
+            appState.patterns[0].tracks[0].synthSoundKey = 'SQUARE2'
+            playbackEvents.emit('trackParamChange', appState.patterns[0].tracks[0])
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+
+            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SQUARE2')
+        })
+
+        it('trackParamChange resolves sound URL from soundRegistry', async () => {
+            appState.patterns = [{
+                name: 'Test', nbBeats: 4, bpm: 120,
+                tracks: [{ name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, soundId: 'samples/kick.wav' }]
+            }]
+            soundRegistry.sounds['samples/kick.wav'] = { url: 'assets/sounds/kick_heavy.wav' }
+
+            const pp = new PatternPanel()
+            pp.init()
+            pp.show()
+
+            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('assets/sounds/kick_heavy.wav')
+
+            soundRegistry.sounds['samples/kick.wav'] = { url: 'assets/sounds/kick_v2.wav' }
+            playbackEvents.emit('trackParamChange', appState.patterns[0].tracks[0])
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+
+            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('assets/sounds/kick_v2.wav')
+        })
+
         it('piano_roll responds to noteChange', () => {
             const prp = new PianoRollPanel()
             prp.init()

@@ -144,6 +144,7 @@ export default class PatternPanel extends BasePanel {
         this._playbackEvents.on('trackParamChange', onNoteChange)
         this._playbackEvents.on('patternStructureChange', onStructureChange)
         this._playbackEvents.on('patternMetaChange', onStructureChange)
+        this._playbackEvents.on('drumkitChange', onStructureChange)
         this._playbackEvents.on('loopPointChange', (data) => {
             if (data && typeof data.trackIdx === 'number' && typeof data.loopAtStep === 'number') {
                 this.updateLoopPoint(data.trackIdx, data.loopAtStep)
@@ -722,6 +723,18 @@ export default class PatternPanel extends BasePanel {
                 const nameEl = trackEl.querySelector('.pp-track-name')
                 if (nameEl && track.name && nameEl.textContent !== track.name) {
                     nameEl.textContent = track.name
+                }
+
+                const urlEl = trackEl.querySelector('.pp-track-url')
+                if (urlEl) {
+                    const newLabel = track.useSoftSynth && track.synthSoundKey
+                        ? `SYNTH: ${track.synthSoundKey}`
+                        : (track.soundId && track.soundId !== 'NOT_DEFINED'
+                            ? (soundRegistry.sounds[track.soundId]?.url ?? track.soundId)
+                            : '')
+                    if (urlEl.textContent !== newLabel) {
+                        urlEl.textContent = newLabel
+                    }
                 }
             }
         })
