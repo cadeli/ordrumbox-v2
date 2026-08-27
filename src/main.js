@@ -129,16 +129,6 @@ export function init() {
         }
     })
 
-    window.addEventListener('resize', () => {
-        const repositionable = [
-            _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel,
-            _trackEditor.synthEditor
-        ]
-        repositionable.forEach(p => {
-            if (p?.reposition) p.reposition()
-        })
-    })
-
     const tbEl = document.getElementById('tb')
     if (tbEl && typeof ResizeObserver !== 'undefined') {
         const ro = new ResizeObserver(entries => {

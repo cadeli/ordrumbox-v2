@@ -1,9 +1,8 @@
-import { fmt as _fmt, escapeHtml as _escapeHtml, pitchToNoteName as _pitchToNoteName, formatNoteTooltip as _formatNoteTooltip } from './ui_utils.js'
-import { isMobileViewport } from '../../core/constants.js'
+import { fmt as _fmt, escapeHtml as _escapeHtml, pitchToNoteName as _pitchToName, formatNoteTooltip as _fmtNote } from './ui_utils.js'
 export const fmt = _fmt
 export const escapeHtml = _escapeHtml
-export const pitchToNoteName = _pitchToNoteName
-export const formatNoteTooltip = _formatNoteTooltip
+export const pitchToNoteName = _pitchToName
+export const formatNoteTooltip = _fmtNote
 
 export function injectUiCss() {
     if (document.getElementById('ui-styles')) return
@@ -12,46 +11,6 @@ export function injectUiCss() {
     link.rel = 'stylesheet'
     link.href = new URL('../styles.css', import.meta.url).href
     document.head.appendChild(link)
-}
-
-const PANEL_GAP_PX = 4
-
-/**
- * Returns the active main-panel anchor for secondary panel positioning.
- * On desktop: pattern-panel (edit), piano-roll-panel (proll), soft-synth-panel (synth).
- * On mobile: returns null (secondary panels are not used).
- */
-function _getMainAnchor() {
-    const pp = document.getElementById('pattern-panel')
-    if (pp && !pp.classList.contains('ui-hidden')) return pp
-    for (const id of ['piano-roll-panel', 'soft-synth-panel']) {
-        const el = document.getElementById(id)
-        if (el?.style.display !== 'none') return el
-    }
-    return pp
-}
-
-export function positionBelowPatternPanel(container) {
-    if (isMobileViewport()) return
-    const anchor = _getMainAnchor()
-    if (!anchor) return
-    const savedMinHeight = anchor.style.minHeight
-    anchor.style.minHeight = ''
-    const offsetHeight = anchor.offsetHeight
-    anchor.style.minHeight = savedMinHeight
-    container.style.top = (anchor.offsetTop + offsetHeight + PANEL_GAP_PX) + 'px'
-}
-
-const SYNC_WIDTH_SKIP_IDS = ['pattern-panel', 'te-panel', 'piano-roll-panel']
-
-export function syncWidthWithPatternPanel(container) {
-    if (isMobileViewport()) return
-    if (SYNC_WIDTH_SKIP_IDS.includes(container.id)) return
-    const anchor = _getMainAnchor()
-    if (!anchor) return
-    const rect = anchor.getBoundingClientRect()
-    container.style.left = rect.left + 'px'
-    container.style.width = rect.width + 'px'
 }
 
 export function bindCloseButton(container, onClose) {

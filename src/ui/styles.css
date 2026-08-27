@@ -774,7 +774,7 @@ body {
     z-index: var(--z-toolbar);
     min-height: auto;
 }
-#about-panel, #tools-panel, #output-panel, #pp-panel, #dm-panel { position: fixed; height: var(--panel-height); }
+#about-panel, #tools-panel, #output-panel, #pp-panel, #dm-panel { position: fixed; top: 518px; height: var(--panel-height); }
 #ne-container {
     display: none;
     position: fixed;

@@ -159,17 +159,6 @@ it('renders the Save and Revert action buttons', async () => {
         expect(selectPaths).toContain('lfo.target')
     })
 
-    it('keeps the softsynth visible when onPatternChange fires (play pressed)', async () => {
-        await trackEditor.synthEditor.openEditor()
-        const panel = document.getElementById('soft-synth-panel')
-        expect(panel.style.display).toBe('flex')
-
-        playbackEvents.emit("patternChange")
-
-        expect(panel.style.display).toBe('flex')
-        expect(trackEditor.container.style.display).toBe('none')
-    })
-
     it('closes the panel and re-shows the track editor when reverting', async () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')

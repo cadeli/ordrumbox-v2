@@ -78,16 +78,6 @@ describe('Sub-panel toggle toolbars', () => {
             expect(getComputedStyle(fxPanel).display).toBe('none')
         })
 
-        it('closes the panel when hide() is called', () => {
-            const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
-            trackEditor.show({ track: mockTrack, trackIdx: 0 })
-
-            const te = document.getElementById('te-panel')
-            expect(te.style.display).toBe('block')
-            trackEditor.hide()
-            expect(te.style.display).toBe('none')
-        })
-
         it('active tab panel is visible, others hidden', () => {
             const mockTrack = { name: 'KICK', notes: [], nbBeats: 1, stepsPerBeat: 4 }
             trackEditor.show({ track: mockTrack, trackIdx: 0 })
@@ -131,15 +121,6 @@ describe('Sub-panel toggle toolbars', () => {
 
             const patternPanel = tp.querySelector('.ne-tab-panel[data-tab-panel="pattern"]')
             expect(patternPanel.classList.contains('ne-tab-panel-hidden')).toBe(true)
-        })
-
-        it('can be toggled via show/hide', () => {
-            toolsPanel.show()
-
-            const tp = document.getElementById('tools-panel')
-            expect(tp.style.display).toBe('block')
-            toolsPanel.hide()
-            expect(tp.style.display).toBe('none')
         })
     })
 

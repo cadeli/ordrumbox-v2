@@ -1,4 +1,4 @@
-import { injectUiCss, positionBelowPatternPanel, syncWidthWithPatternPanel, escapeHtml } from './components/panel_helpers.js'
+import { injectUiCss, escapeHtml } from './components/panel_helpers.js'
 
 /**
  * BasePanel - Base class for all UI panels.
@@ -46,7 +46,6 @@ export default class BasePanel {
     show() {
         this.container.style.display = 'block'
         this.sync()
-        this.reposition()
     }
 
     /** Standard hide logic. */
@@ -55,13 +54,9 @@ export default class BasePanel {
     }
 
     /**
-     * Positions the panel below the pattern panel and syncs its width.
+     * No-op — all panel positioning is now handled by CSS.
      */
-    reposition() {
-        if (!this.container) return
-        positionBelowPatternPanel(this.container)
-        syncWidthWithPatternPanel(this.container)
-    }
+    reposition() {}
 
     /** Helper to escape HTML. */
     esc(str) {
