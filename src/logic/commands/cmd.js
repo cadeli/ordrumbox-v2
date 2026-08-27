@@ -17,6 +17,7 @@ export default class Commander {
 
     constructor() {
         this._history = null
+        this._suppressRecord = false
     }
 
     _getHistory() {
@@ -27,6 +28,7 @@ export default class Commander {
     }
 
     _record(undoFn, meta = {}) {
+        if (this._suppressRecord) return
         const history = this._getHistory()
         if (history) {
             history.record({ execute: () => {}, undo: undoFn, meta })
@@ -43,6 +45,41 @@ export default class Commander {
 
     _persist = () => {
         serviceRegistry.resourcesLoader?.persistPatterns?.()
+    }
+
+    beginGenerationUndo = (pattern) => {
+        this._genSnapshot = {
+            pattern,
+            savedTracksLength: (pattern.tracks ?? []).length,
+            trackSnapshots: (pattern.tracks ?? []).map(t => ({
+                ref: t,
+                notes: t.notes.map(n => ({ ...n })),
+                loopPointStep: t.loopPointStep,
+                loopPointBeat: t.loopPointBeat,
+                loopAtStep: t.loopAtStep,
+            })),
+        }
+        this._suppressRecord = true
+    }
+
+    commitGenerationUndo = (desc = 'Generate pattern') => {
+        const snap = this._genSnapshot
+        if (!snap) return
+        this._suppressRecord = false
+        this._record(() => {
+            for (const ts of snap.trackSnapshots) {
+                ts.ref.notes = ts.notes
+                ts.ref.loopPointStep = ts.loopPointStep
+                ts.ref.loopPointBeat = ts.loopPointBeat
+                ts.ref.loopAtStep = ts.loopAtStep
+            }
+            if (snap.pattern.tracks && snap.pattern.tracks.length > snap.savedTracksLength) {
+                snap.pattern.tracks.length = snap.savedTracksLength
+            }
+            this._incrementPatternVersionByTrack(snap.pattern.tracks[0])
+            this._persist()
+        }, { desc })
+        this._genSnapshot = null
     }
 
     // Safe updater for track properties
@@ -373,6 +410,56 @@ updateTrack = (track, updates) => {
             track.loopAtStep = oldLoopAtStep
             this._persist()
         }, { desc: 'Clean track' })
+    }
+
+    compactTrack = (track) => {
+        const oldNotes = track.notes.map(n => ({ ...n }))
+        const oldLoopPointStep = track.loopPointStep
+        const oldLoopPointBeat = track.loopPointBeat
+        const oldLoopAtStep = track.loopAtStep
+        const result = Utils.addLoopToTrackIfPossible(track)
+        if (result.changed) {
+            this._record(() => {
+                track.notes = oldNotes
+                track.loopPointStep = oldLoopPointStep
+                track.loopPointBeat = oldLoopPointBeat
+                track.loopAtStep = oldLoopAtStep
+                this._persist()
+            }, { desc: 'Compact tracks' })
+        }
+        return result
+    }
+
+    randomizeTrack = (track, pattern) => {
+        const oldNotes = track.notes.map(n => ({ ...n }))
+        const oldLoopPointStep = track.loopPointStep
+        const oldLoopPointBeat = track.loopPointBeat
+        const oldLoopAtStep = track.loopAtStep
+        track.notes = []
+        track.loopPointStep = 0
+        track.loopPointBeat = track.nbBeats ?? pattern.nbBeats ?? 4
+        track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
+        const beats = track.nbBeats ?? pattern.nbBeats ?? 4
+        const stepsPerBeat = track.stepsPerBeat ?? 4
+        const totalSteps = beats * stepsPerBeat
+        const noteCount = Math.max(1, Math.floor(totalSteps * (0.15 + Math.random() * 0.2)))
+        const used = new Set()
+        for (let i = 0; i < noteCount; i++) {
+            let step
+            do { step = Math.floor(Math.random() * totalSteps) } while (used.has(step))
+            used.add(step)
+            const beat = Math.floor(step / stepsPerBeat)
+            const beatStep = step % stepsPerBeat
+            const pitch = Math.floor(Math.random() * 13) - 6
+            track.notes.push({ ...Utils.NOTE_DEFAULTS, beat, beatStep, pitch, velocity: 0.5 + Math.random() * 0.5 })
+        }
+        this._record(() => {
+            track.notes = oldNotes
+            track.loopPointStep = oldLoopPointStep
+            track.loopPointBeat = oldLoopPointBeat
+            track.loopAtStep = oldLoopAtStep
+            this._persist()
+        }, { desc: 'Randomize track' })
     }
 
     changeTrackSound = (track, soundId) => {

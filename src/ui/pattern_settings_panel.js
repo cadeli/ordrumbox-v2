@@ -177,6 +177,7 @@ export default class PatternSettingsPanel {
             } else {
                 const { getAutoGenerateService } = await import('../state/service_loader.js')
                 const autoGen = await getAutoGenerateService()
+                serviceRegistry.cmd.beginGenerationUndo(pattern)
                 await autoGen.generatePattern()
                 if (pattern.tracks) {
                     pattern.tracks = pattern.tracks.filter(t => {
@@ -188,6 +189,7 @@ export default class PatternSettingsPanel {
                 for (const track of pattern.tracks) {
                     if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = true
                 }
+                serviceRegistry.cmd.commitGenerationUndo()
             }
             playbackEvents.emit("noteChange")
             playbackEvents.emit("patternChange")
@@ -205,6 +207,7 @@ export default class PatternSettingsPanel {
                 let bassTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'BASS')
                 const { getAutoGenerateService } = await import('../state/service_loader.js')
                 const autoGen = await getAutoGenerateService()
+                serviceRegistry.cmd.beginGenerationUndo(pattern)
                 if (!bassTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre
@@ -221,6 +224,7 @@ export default class PatternSettingsPanel {
                     serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
                 }
                 bassTrack.auto = true
+                serviceRegistry.cmd.commitGenerationUndo()
             }
             playbackEvents.emit("noteChange")
             playbackEvents.emit("patternChange")
@@ -238,6 +242,7 @@ export default class PatternSettingsPanel {
                 let pianoTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'PIANO')
                 const { getAutoGenerateService } = await import('../state/service_loader.js')
                 const autoGen = await getAutoGenerateService()
+                serviceRegistry.cmd.beginGenerationUndo(pattern)
                 if (!pianoTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre
@@ -254,6 +259,7 @@ export default class PatternSettingsPanel {
                     serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
                 }
                 pianoTrack.auto = true
+                serviceRegistry.cmd.commitGenerationUndo()
             }
             playbackEvents.emit("noteChange")
             playbackEvents.emit("patternChange")

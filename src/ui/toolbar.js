@@ -451,6 +451,7 @@ export default class Toolbar {
 
         this.drumBtn.addEventListener('click', async () => {
             await this._toggleAutoGen(Utils.DRUM_TYPES, async (pattern, autoGen) => {
+                serviceRegistry.cmd.beginGenerationUndo(pattern)
                 await autoGen.generatePattern()
 
                 if (pattern.tracks) {
@@ -466,6 +467,7 @@ export default class Toolbar {
                         track._toolbarAuto = true
                     }
                 }
+                serviceRegistry.cmd.commitGenerationUndo()
             })
         })
 
@@ -473,6 +475,7 @@ export default class Toolbar {
             await this._toggleAutoGen('BASS', async (pattern, autoGen) => {
                 let bassTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'BASS')
 
+                serviceRegistry.cmd.beginGenerationUndo(pattern)
                 if (!bassTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre
@@ -491,6 +494,7 @@ export default class Toolbar {
                 }
                 bassTrack.auto = true
                 bassTrack._toolbarAuto = true
+                serviceRegistry.cmd.commitGenerationUndo()
             })
         })
 
@@ -498,6 +502,7 @@ export default class Toolbar {
             await this._toggleAutoGen('PIANO', async (pattern, autoGen) => {
                 let pianoTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'PIANO')
 
+                serviceRegistry.cmd.beginGenerationUndo(pattern)
                 if (!pianoTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre
@@ -516,6 +521,7 @@ export default class Toolbar {
                 }
                 pianoTrack.auto = true
                 pianoTrack._toolbarAuto = true
+                serviceRegistry.cmd.commitGenerationUndo()
             })
         })
 

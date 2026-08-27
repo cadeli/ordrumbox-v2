@@ -6,6 +6,7 @@ import FlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
 import { pitchToNoteName, formatNoteTooltip } from './components/ui_utils.js'
+import NoteParams from '../patterns/note_params.js'
 
 const NOTE_HEIGHT = 14
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -133,6 +134,7 @@ export default class PianoRollPanel extends BasePanel {
         }
         document.addEventListener('keydown', this._onKeyDown)
         this.container?.addEventListener('wheel', this._onWheel, { passive: false })
+        if (serviceRegistry.transport?.isRunning) this._startRafLoop()
     }
 
     hide() {
@@ -456,6 +458,7 @@ export default class PianoRollPanel extends BasePanel {
                 this._applySelection()
                 playbackEvents.emit("trackSelect", { track, trackIdx: this._trackIdx })
                 playbackEvents.emit("noteSelect", { track, trackIdx: this._trackIdx, note: hit, beat, beatStep })
+                serviceRegistry.seq?.simpleBeep(this._trackIdx, hit)
             }
         } else {
             const newNote = cmd.addNote(track, beat, beatStep, relativePitch)
@@ -467,6 +470,7 @@ export default class PianoRollPanel extends BasePanel {
             playbackEvents.emit("patternChange", [track])
             playbackEvents.emit("trackSelect", { track, trackIdx: this._trackIdx })
             playbackEvents.emit("noteSelect", { track, trackIdx: this._trackIdx, note: newNote, beat, beatStep })
+            serviceRegistry.seq?.simpleBeep(this._trackIdx, newNote)
         }
     }
 
@@ -482,6 +486,8 @@ export default class PianoRollPanel extends BasePanel {
         if (!track || Number.isNaN(midi)) return
         const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
         const flatNote = new FlatNote(0, track, { ...Utils.NOTE_DEFAULTS, pitch: relativePitch })
+        const secondsPerBeat = serviceRegistry.seq?.secondsPerBeat ?? 0.5
+        NoteParams.applyNoteParams(flatNote, secondsPerBeat)
         serviceRegistry.audioEngine?.sound?.play(flatNote, serviceRegistry.audioEngine.audioCtx.currentTime)
     }
 

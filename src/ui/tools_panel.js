@@ -428,8 +428,8 @@ export default class ToolsPanel extends BasePanel {
 
         let totalRemoved = 0
         Utils.getTracksArray(pattern).forEach(track => {
-            const result = Utils.addLoopToTrackIfPossible(track)
-            if (result.changed) {
+            const result = serviceRegistry.cmd?.compactTrack(track)
+            if (result?.changed) {
                 totalRemoved += result.removedNotes
             }
         })
@@ -445,21 +445,7 @@ export default class ToolsPanel extends BasePanel {
         if (!pattern) return
         const tracks = Utils.getTracksArray(pattern)
         for (const track of tracks) {
-            const beats = track.nbBeats ?? pattern.nbBeats ?? 4
-            const stepsPerBeat = track.stepsPerBeat ?? 4
-            const totalSteps = beats * stepsPerBeat
-            const noteCount = Math.max(1, Math.floor(totalSteps * (0.15 + Math.random() * 0.2)))
-            const used = new Set()
-            for (let i = 0; i < noteCount; i++) {
-                let step
-                do { step = Math.floor(Math.random() * totalSteps) } while (used.has(step))
-                used.add(step)
-                const beat = Math.floor(step / stepsPerBeat)
-                const beatStep = step % stepsPerBeat
-                const pitch = Math.floor(Math.random() * 13) - 6
-                const note = serviceRegistry.cmd?.addNote(track, beat, beatStep, pitch)
-                if (note) note.velocity = 0.5 + Math.random() * 0.5
-            }
+            serviceRegistry.cmd?.randomizeTrack(track, pattern)
         }
         serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.emit("noteChange")
