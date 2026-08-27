@@ -264,18 +264,34 @@ body {
     padding: 6px 12px;
     overflow-x: hidden;
 }
+
+/* ---- Track Editor (desktop) ---- */
 .ne-panel.pp-split {
     position: fixed;
     left: 80%;
     right: 0;
     width: 20%;
     top: 64px !important;
-    height: 450px;
+    height: 750px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     border-bottom: none;
     border-left: 2px solid var(--border-subtle);
+}
+
+#ne-container {
+    display: none;
+    flex-shrink: 0;
+    height: var(--panel-height);
+    border-top: 2px solid var(--border-subtle);
+    padding: 4px 6px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    background: var(--bg);
+    font-family: monospace;
+    font-size: var(--fs-base);
+    color: var(--text-secondary);
 }
 .track-editor {
     height: 450px;
@@ -781,26 +797,18 @@ body {
     scrollbar-gutter: stable;
     font-family: monospace; font-size: var(--fs-base); color: var(--text-secondary);
     z-index: var(--z-toolbar);
-    min-height: auto;
+min-height: auto;
 }
-#about-panel, #tools-panel, #output-panel, #pp-panel, #dm-panel { position: fixed; top: 518px; height: var(--panel-height); }
-#ne-container {
-    display: none;
+
+/* ---- Slot Panels (desktop: below workspace, 80% width) ---- */
+#about-panel, #tools-panel, #output-panel, #pp-panel, #dm-panel {
     position: fixed;
     top: 518px;
-    left: 80%;
-    width: 20%;
+    left: 0;
+    width: 80%;
     height: var(--panel-height);
-    border-left: 2px solid var(--border-subtle);
-    padding: 4px 6px;
-    overflow-y: auto;
-    z-index: var(--z-panel);
-    box-sizing: border-box;
-    background: var(--bg);
-    font-family: monospace;
-    font-size: var(--fs-base);
-    color: var(--text-secondary);
 }
+
 .ui-hidden { display: none !important; }
 
 /* ---- Workspace Panel (shared layout for main panels) ---- */

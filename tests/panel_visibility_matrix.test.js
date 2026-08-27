@@ -302,6 +302,52 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
         it('NE does not overlap TE', () => {
             expect(TOP_SECONDARY).toBeGreaterThan(TOOLBAR_H + MAIN_H)
         })
+
+        it('Slot panels only cover workspace width (80%), not track editor column', () => {
+            const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
+            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#pp-panel,\s*#dm-panel\s*\{([^}]*)\}/
+            const m = css.match(slotRe)
+            expect(m).not.toBeNull()
+            const widthMatch = m[1].match(/width:\s*(\d+)%/)
+            expect(widthMatch).not.toBeNull()
+            const width = parseInt(widthMatch[1], 10)
+            expect(width).toBe(80)
+        })
+
+        it('Slot panels positioned at workspace left (0%)', () => {
+            const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
+            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#pp-panel,\s*#dm-panel\s*\{([^}]*)\}/
+            const m = css.match(slotRe)
+            expect(m).not.toBeNull()
+            const leftMatch = m[1].match(/left:\s*(\d+)%?/)
+            expect(leftMatch).not.toBeNull()
+            const left = parseInt(leftMatch[1], 10)
+            expect(left).toBe(0)
+        })
+
+        it('Track editor height accommodates track editor + note editor (750px)', () => {
+            const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
+            const teRe = /\.ne-panel\.pp-split\s*\{([^}]*)\}/
+            const m = css.match(teRe)
+            expect(m).not.toBeNull()
+            const heightMatch = m[1].match(/height:\s*(\d+)px/)
+            expect(heightMatch).not.toBeNull()
+            const height = parseInt(heightMatch[1], 10)
+            expect(height).toBe(750)
+        })
+
+        it('NE container is flex child inside track editor (no fixed positioning)', () => {
+            const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
+            const neRe = /#ne-container\s*\{([^}]*)\}/
+            const m = css.match(neRe)
+            expect(m).not.toBeNull()
+            // Should NOT have fixed positioning
+            expect(m[1]).not.toContain('position: fixed')
+            // Should be flex item
+            expect(m[1]).toContain('flex-shrink: 0')
+            // Should have panel height
+            expect(m[1]).toContain('height: var(--panel-height)')
+        })
     })
 
     describe('Panel persistence across view cycles', () => {
