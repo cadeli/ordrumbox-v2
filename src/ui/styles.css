@@ -255,8 +255,22 @@ body {
 
 /* ---- Pattern Panel ---- */
 #pattern-panel {
+    position: fixed;
+    left: 0;
+    width: 80%;
+    top: 64px;
+    height: 450px;
     padding: 6px 12px;
-    overflow-x: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: var(--bg);
+    border-bottom: 2px solid var(--border-subtle);
+    font-family: monospace;
+    font-size: var(--fs-base);
+    color: var(--text-secondary);
+    z-index: var(--z-panel);
+    display: flex;
+    flex-direction: column;
 }
 
 /* ---- Track Editor (desktop) ---- */
@@ -358,8 +372,7 @@ body {
     min-height: 0;
     overflow-y: auto;
     position: relative;
-    min-width: 100%;
-    width: fit-content;
+    width: 100%;
 }
 #pattern-panel .pp-track {
     display: flex; align-items: stretch; gap: 4px;
@@ -623,9 +636,21 @@ body {
 
 /* ---- Piano Roll Panel ---- */
 #piano-roll-panel {
+    position: fixed;
+    left: 0;
+    width: 80%;
+    top: 64px;
+    height: 450px;
     padding: 0;
     overflow: hidden;
-    min-height: 320px;
+    background: var(--bg);
+    border-bottom: 2px solid var(--border-subtle);
+    font-family: monospace;
+    font-size: var(--fs-base);
+    color: var(--text-secondary);
+    z-index: var(--z-panel);
+    display: flex;
+    flex-direction: column;
 }
 #pp-piano-roll {
     display: flex;
@@ -633,7 +658,8 @@ body {
     height: calc(100% - 36px);
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 #pp-piano-scroll {
     display: flex;
@@ -1261,17 +1287,29 @@ min-height: auto;
 
 /* ---- Soft Synth Editor ---- */
 #soft-synth-panel {
+    position: fixed;
+    left: 0;
+    width: 80%;
+    top: 64px;
+    height: 450px;
     display: none;
     padding: 6px 12px;
     overflow: hidden;
-    min-height: 320px;
     box-sizing: border-box;
     gap: 3px;
+    background: var(--bg);
+    border-bottom: 2px solid var(--border-subtle);
+    font-family: monospace;
+    font-size: var(--fs-base);
+    color: var(--text-secondary);
+    z-index: var(--z-panel);
+    display: flex;
+    flex-direction: column;
 }
 #soft-synth-panel .ss-scroll {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
 }
 #soft-synth-panel .ss-title {
     color: var(--accent); font-weight: bold; font-size: var(--fs-md);
