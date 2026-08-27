@@ -2,7 +2,7 @@ import { injectUiCss, escapeHtml } from './components/panel_helpers.js'
 
 /**
  * BasePanel - Base class for all UI panels.
- * Encapsulates common logic: DOM creation, CSS injection, show/hide, repositioning.
+ * Encapsulates common logic: DOM creation, CSS injection, show/hide.
  */
 export default class BasePanel {
     constructor(id) {
@@ -52,11 +52,6 @@ export default class BasePanel {
     hide() {
         this.container?.style.setProperty('display', 'none')
     }
-
-    /**
-     * No-op — all panel positioning is now handled by CSS.
-     */
-    reposition() {}
 
     /** Helper to escape HTML. */
     esc(str) {

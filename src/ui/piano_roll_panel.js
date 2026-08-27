@@ -146,8 +146,6 @@ export default class PianoRollPanel extends BasePanel {
         this.container?.removeEventListener('wheel', this._onWheel)
     }
 
-    reposition() {}
-
     sync() { this._sync() }
 
     _onResize() {
