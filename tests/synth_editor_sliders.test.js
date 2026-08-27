@@ -47,6 +47,9 @@ describe('SynthEditor — OrKnob integration', () => {
         serviceRegistry.cmd = { changeTrackSound: vi.fn() }
 
         document.body.innerHTML = ''
+        const appContent = document.createElement('div')
+        appContent.id = 'app-content'
+        document.body.appendChild(appContent)
 
         global.fetch = vi.fn().mockResolvedValue({
             json: () => Promise.resolve({ major: { scaleSteps: [0, 2, 4, 5, 7, 9, 11] } })
@@ -79,6 +82,8 @@ describe('SynthEditor — OrKnob integration', () => {
 
         trackEditor = new TrackEditor()
         trackEditor.init()
+        // Attach synth panel to app-content
+        document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
         trackEditor._track = mockTrack
     })
 

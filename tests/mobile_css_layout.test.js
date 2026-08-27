@@ -154,9 +154,7 @@ describe('Mobile CSS: Panel full-width positioning', () => {
         })
     }
 
-    it('.workspace-panel: top via --workspace-top, width via --workspace-width, bottom: 60px', () => {
-        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', '--workspace-top', 'var(--tb-h, 48px)')).toBe(true)
-        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', '--workspace-width', '100%')).toBe(true)
+    it('.workspace-panel: bottom: 60px, overflow-y: auto', () => {
         expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'bottom', '60px')).toBe(true)
         expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'overflow-y', 'auto')).toBe(true)
     })
@@ -379,7 +377,8 @@ describe('Mobile CSS: Complete panel coverage check', () => {
     })
 
     it('workspace panels have .workspace-panel class rule in mobile CSS', () => {
-        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', '--workspace-width', '100%')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'bottom', '60px')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'overflow-y', 'auto')).toBe(true)
     })
 
     it('no unexpected extra panels missing from mobile overrides', () => {

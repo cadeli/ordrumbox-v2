@@ -71,12 +71,6 @@
   /* ── Layout ── */
   --panel-height: 300px;
 
-  /* ── Workspace Panel ── */
-  --workspace-top: 64px;
-  --workspace-left: 0;
-  --workspace-width: 80%;
-  --workspace-height: 450px;
-
   /* ── VU Meter ── */
   --vu-green: #4ade80;
   --vu-red: #ef4444;
@@ -278,6 +272,20 @@ body {
     flex-direction: column;
     border-bottom: none;
     border-left: 2px solid var(--border-subtle);
+}
+
+/* ---- App Content flex layout (desktop) ---- */
+#app-content {
+    display: flex;
+    height: calc(100vh - 64px);
+    width: 100%;
+}
+
+#app-content>
+.workspace-panel {
+    width: 80%;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 #ne-container {
@@ -813,19 +821,16 @@ min-height: auto;
 
 /* ---- Workspace Panel (shared layout for main panels) ---- */
 .workspace-panel {
-    position: fixed;
-    top: var(--workspace-top);
-    left: var(--workspace-left);
-    width: var(--workspace-width);
-    height: var(--workspace-height);
     background: var(--bg);
     border-bottom: 2px solid var(--border-subtle);
     font-family: monospace;
     font-size: var(--fs-base);
     color: var(--text-secondary);
-    z-index: var(--z-panel);
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
 }
 .ne-header {
     display: flex; align-items: center; gap: 12px;
@@ -2032,11 +2037,8 @@ min-height: auto;
         box-sizing: border-box;
     }
 
-    /* Mobile: workspace panels — override custom properties (no !important needed) */
+    /* Mobile: workspace panels */
     .workspace-panel {
-        --workspace-top: var(--tb-h, 48px);
-        --workspace-width: 100%;
-        --workspace-height: auto;
         bottom: 60px;
         overflow-y: auto;
     }

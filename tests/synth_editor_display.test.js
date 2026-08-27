@@ -49,6 +49,9 @@ describe('Soft Synth Editor display', () => {
         serviceRegistry.cmd = { changeTrackSound: vi.fn() }
 
         document.body.innerHTML = ''
+        const appContent = document.createElement('div')
+        appContent.id = 'app-content'
+        document.body.appendChild(appContent)
 
         global.fetch = vi.fn().mockResolvedValue({
             json: () => Promise.resolve({ major: { scaleSteps: [0, 2, 4, 5, 7, 9, 11] } })
@@ -85,14 +88,19 @@ describe('Soft Synth Editor display', () => {
 
         trackEditor = new TrackEditor()
         trackEditor.init()
+        // Attach synth panel to app-content (like main.js does)
+        const appContentEl = document.getElementById('app-content')
+        if (appContentEl && trackEditor.synthEditor.panel) {
+            appContentEl.appendChild(trackEditor.synthEditor.panel)
+        }
         trackEditor._track = mockTrack
     })
 
-    it('creates the soft-synth-panel in document.body (hidden by default)', () => {
+    it('creates the soft-synth-panel in app-content (hidden by default)', () => {
         const panel = document.getElementById('soft-synth-panel')
         expect(panel).not.toBeNull()
         expect(panel.style.display).toBe('none')
-        expect(panel.parentElement).toBe(document.body)
+        expect(panel.parentElement?.id).toBe('app-content')
     })
 
     it('opens the editor, shows the panel, and hides the track editor', async () => {

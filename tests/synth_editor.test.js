@@ -19,7 +19,7 @@ describe('SynthEditor sub-panel toolbar', () => {
     let audioEngine
 
     beforeEach(() => {
-        document.body.innerHTML = '<div id="pattern-panel"></div><div id="te-panel"></div>'
+        document.body.innerHTML = '<div id="app-content"><div id="pattern-panel"></div><div id="te-panel"></div></div>'
         serviceRegistry.reset()
         soundRegistry.reset()
         soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
@@ -50,6 +50,8 @@ describe('SynthEditor sub-panel toolbar', () => {
         }
         editor = new SynthEditor(host)
         editor.createDOM()
+        // Attach panel to app-content
+        document.getElementById('app-content').appendChild(editor.panel)
     })
 
     it('renders one block per synth group with bypass button', async () => {

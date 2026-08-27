@@ -64,7 +64,6 @@ export default class SynthEditor {
         this._scrollEl = document.createElement('div')
         this._scrollEl.className = 'ss-scroll'
         this.panel.appendChild(this._scrollEl)
-        document.body.appendChild(this.panel)
     }
 
     dispose() {

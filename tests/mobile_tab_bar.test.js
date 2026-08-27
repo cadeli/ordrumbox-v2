@@ -46,6 +46,9 @@ describe('Mobile tab bar', () => {
         appState.selectedTrackNum = 0
 
         document.body.innerHTML = ''
+        const appContent = document.createElement('div')
+        appContent.id = 'app-content'
+        document.body.appendChild(appContent)
 
         HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
             fillRect: vi.fn(), clearRect: vi.fn(), getImageData: vi.fn(),
@@ -61,6 +64,8 @@ describe('Mobile tab bar', () => {
         patternPanel.init()
         trackEditor = new TrackEditor()
         trackEditor.init()
+        // Attach synth panel to app-content
+        document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
         noteEditor = new NoteEditor()
         noteEditor.setContainer(trackEditor._neContainer)
         noteEditor.init()
