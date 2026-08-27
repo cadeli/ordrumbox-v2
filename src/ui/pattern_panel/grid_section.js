@@ -213,6 +213,7 @@ export default class GridSection {
                 <input type="range" class="pp-master-volume" min="0" max="2" step="0.01" value="1" title="Master Gain">
             </div>
             <div class="pp-add-track" id="pp-add-track">+ new track</div>
+            <div class="pp-delete-track" id="pp-delete-track">− delete track</div>
         </div>`
         html += `<canvas class="pp-waveform-overlay"></canvas></div>`
 

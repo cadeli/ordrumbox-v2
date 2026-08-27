@@ -465,6 +465,19 @@ export default class PatternPanel extends BasePanel {
             return
         }
 
+        if (e.target.closest('#pp-delete-track')) {
+            const pattern = this._appState.patterns[this._appState.selectedPatternNum]
+            if (!pattern) return
+            const tracks = Utils.getTracksArray(pattern)
+            if (tracks.length <= 1) return
+            const trackIdx = this._selTrackIdx !== -1 ? this._selTrackIdx : (this._appState.selectedTrackNum ?? -1)
+            if (trackIdx < 0 || trackIdx >= tracks.length) return
+            this._serviceRegistry.cmd?.removeTrack(pattern, trackIdx)
+            this._selTrackIdx = -1
+            this.sync()
+            return
+        }
+
         const cell = e.target.closest('.pp-cell')
         if (!cell) return
         const trackIdx = parseInt(cell.dataset.track, 10)

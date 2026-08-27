@@ -200,6 +200,20 @@ updateTrack = (track, updates) => {
         return track
     }
 
+    removeTrack = (pattern, trackIdx) => {
+        const tracks = pattern.tracks
+        if (trackIdx < 0 || trackIdx >= tracks.length) return
+        const removed = tracks[trackIdx]
+        const removedNotes = removed.notes.map(n => ({ ...n }))
+        tracks.splice(trackIdx, 1)
+        this._persist()
+        this._record(() => {
+            tracks.splice(trackIdx, 0, removed)
+            removed.notes = removedNotes
+            this._persist()
+        }, { desc: 'Remove track' })
+    }
+
     createTrack = (nbBeats, name, stepsPerBeat = 4) => {
         const newTrack = normalizeTrack({
             name,

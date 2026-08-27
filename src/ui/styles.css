@@ -386,6 +386,15 @@ body {
     width: 100%;
 }
 #pattern-panel .pp-add-track:hover { color: var(--accent); border-color: var(--accent); }
+#pattern-panel .pp-delete-track {
+    flex-shrink: 0; text-align: center; padding: 6px 0;
+    font-size: var(--fs-md); color: var(--text-tertiary); cursor: pointer;
+    border: 1px dashed rgba(255,255,255,0.15); border-radius: 4px;
+    margin: auto 8px;
+    max-width: 200px;
+    width: 100%;
+}
+#pattern-panel .pp-delete-track:hover { color: var(--color-danger); border-color: var(--color-danger); }
 #pattern-panel .pp-track.pp-muted .pp-cell { opacity: 0.25; }
 #pattern-panel .pp-track.pp-muted .pp-track-name { opacity: 0.4; }
 #pattern-panel .pp-track.pp-selected {
