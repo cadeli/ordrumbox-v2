@@ -75,7 +75,7 @@ src/
 - **Pattern data paths**: MCP server writes to `public/assets/data/patterns/`
 - **Worklet DSP performance**: All three worklets (strip, synth-voice, master-bus) use optimized per-sample loops. Key patterns: sine LUT (4096 entries) for LFO, `Math.exp(x * LN2_OVER_1200)` for detune, xorshift32 for noise, incremental ADSR state machine. Avoid introducing `Math.sin`, `Math.pow`, or per-sample object allocation in the audio thread.
 - **Shared noise buffer**: `SynthVoice` uses xorshift32 PRNG for noise — no shared Float32Array allocation per instance.
-- **`NOTE_VELO_BALANCE` (1/8)**: Synth voice velocity is scaled by this constant to compensate volume difference between synth and sample voices. Factor in when computing expected velocity values in tests.
+- **`NOTE_VELO_BALANCE` (1/4)**: Synth voice velocity is scaled by this constant to compensate volume difference between synth and sample voices. Factor in when computing expected velocity values in tests.
 - **Compressor DSP chain**: `preGain → compressor → HPF → LPF → master gain → output`. Pre-gain is k-rate; filters and master gain are a-rate.
 - **Track Variation** (`src/patterns/variation.js`): Budget-based randomization applied per loop iteration in `computeFlatNotesFromPattern`. Budget = `variation * 16 / 100`. Operations: anticipation (3pts), double (3pts), ghost (3pts), silence (3pts), velocity (1pt), pitch (1pt).
 - **`serviceRegistry` property names**: Services are referenced without `mf` prefix (e.g. `serviceRegistry.cmd`, `serviceRegistry.seq`, `serviceRegistry.patterns`). The `mf` prefix was removed.
