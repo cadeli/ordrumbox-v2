@@ -932,12 +932,12 @@ body {
     justify-content: flex-start;
 }
 .ne-tab-btn {
-    flex: 1; min-width: 58px; padding: 4px 2px; font-size: var(--fs-xs); font-weight: bold;
+    flex: 0 0 auto; width: 70px; padding: 4px 2px; font-size: var(--fs-xs); font-weight: bold;
     text-transform: uppercase; letter-spacing: 0;
     background: transparent; color: var(--text-dim);
     border: 1px solid transparent; border-radius: 3px;
     cursor: pointer; transition: all 0.15s;
-    white-space: nowrap;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .ne-tab-btn:hover {
     color: var(--text); background: rgba(255,255,255,0.05);
@@ -968,7 +968,7 @@ body {
 }
 .te-mod-btn {
     display: flex; align-items: center; justify-content: center; gap: 4px;
-    flex: 1; padding: 3px 6px; font-size: var(--fs-xs); font-weight: bold;
+    flex: 1 1 0; min-width: 0; padding: 3px 6px; font-size: var(--fs-xs); font-weight: bold;
     background: transparent; color: var(--text-dim);
     border: 1px solid var(--border); border-radius: 3px;
     cursor: pointer; transition: all 0.15s;

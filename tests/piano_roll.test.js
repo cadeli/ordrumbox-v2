@@ -673,4 +673,41 @@ describe('PianoRollPanel', () => {
             expect(parseFloat(lp.style.height)).toBe(expectedHeight)
         })
     })
+
+    describe('async pattern load (grid populates after patternStructureChange)', () => {
+        it('re-resolves track and renders grid when patterns load after show()', () => {
+            appState.patterns = []
+            appState.selectedPatternNum = 0
+            appState.selectedTrackNum = 0
+
+            panel.hide()
+            panel._track = null
+            panel._trackIdx = -1
+            panel.show()
+
+            expect(panel._track).toBeNull()
+            expect(panel._gridDirty).toBe(false)
+
+            appState.patterns = [structuredClone(TEST_PATTERN)]
+            appState.selectedPatternNum = 0
+            appState.selectedTrackNum = 0
+            playbackEvents.emit("patternStructureChange")
+
+            expect(panel._track).not.toBeNull()
+            expect(panel._trackIdx).toBe(0)
+            const notes = panel.container.querySelectorAll('.pp-pr-note')
+            expect(notes.length).toBeGreaterThan(0)
+        })
+
+        it('show() resolves track immediately so grid renders on first sync()', () => {
+            expect(panel._track).not.toBeNull()
+            expect(panel.container.querySelectorAll('.pp-pr-col').length).toBeGreaterThan(0)
+            expect(panel.container.querySelectorAll('.pp-pr-note').length).toBeGreaterThan(0)
+        })
+
+        it('does not override CSS position with secondary-slot top', () => {
+            expect(panel.container.classList.contains('workspace-panel')).toBe(true)
+            expect(panel.container.style.top || '').not.toBe('518px')
+        })
+    })
 })

@@ -71,7 +71,7 @@ export default class PianoRollPanel extends BasePanel {
     subscribe() {
         playbackEvents.on("noteChange", () => this._syncNotes())
         playbackEvents.on("trackParamChange", () => this._syncNotes())
-        playbackEvents.on("patternStructureChange", () => { this._keysDirty = true; this._gridDirty = true; this._sync() })
+        playbackEvents.on("patternStructureChange", () => { this._resolveTrack(); this._keysDirty = true; this._gridDirty = true; this._sync() })
         playbackEvents.on("trackSelect", (data) => {
             if (!data) return
             this._track = data.track
@@ -104,23 +104,28 @@ export default class PianoRollPanel extends BasePanel {
         this.container?.querySelector('#pp-pr-next')?.addEventListener('click', () => this._nextPage())
     }
 
-    show() {
-        this._firstShow = true
-        this._keysDirty = true
-        this._gridDirty = true
-        this._pageStartBeat = 0
-        this._clearSelection()
-        super.show()
-        this.reposition()
+    _resolveTrack() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         const idx = appState.selectedTrackNum
         const track = Utils.getTracksArray(pattern)?.[idx]
         if (track) {
             this._track = track
             this._trackIdx = idx
-            playbackEvents.emit("trackSelect", { track, trackIdx: idx })
         }
-        this._sync()
+    }
+
+    show() {
+        this._firstShow = true
+        this._keysDirty = true
+        this._gridDirty = true
+        this._pageStartBeat = 0
+        this._clearSelection()
+        this._resolveTrack()
+        this.container.style.display = 'flex'
+        this.sync()
+        if (this._track) {
+            playbackEvents.emit("trackSelect", { track: this._track, trackIdx: this._trackIdx })
+        }
         const scrollEl = this.container.querySelector('#pp-piano-scroll')
         if (scrollEl && this._resizeObserver) {
             this._resizeObserver.disconnect()
@@ -140,6 +145,8 @@ export default class PianoRollPanel extends BasePanel {
         document.removeEventListener('keydown', this._onKeyDown)
         this.container?.removeEventListener('wheel', this._onWheel)
     }
+
+    reposition() {}
 
     sync() { this._sync() }
 
