@@ -2,7 +2,7 @@ import { appState } from '../../state/app_state.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import InstrumentsManager from './instruments_manager.js'
+import { instrumentsManager } from './instruments_manager.js'
 import { logger } from '../../core/logger.js'
 import { showToast } from '../../ui/toast.js'
 import { cacheSample, cacheDrumkits } from '../../cache/idb_cache.js'
@@ -23,13 +23,12 @@ export default class WavImportService {
         const firstPath = files[0].webkitRelativePath ?? ''
         const kitName = firstPath.split('/')[0] ?? 'imported'
 
-        const im = new InstrumentsManager()
         const audioCtx = serviceRegistry.audioCtx
         const instruments = []
 
         for (const file of wavFiles) {
             const fileName = file.name
-            const instrument = im.findInstrumentFromFileName(fileName)
+            const instrument = instrumentsManager.findInstrumentFromFileName(fileName)
             const key = instrument.id
 
             const rawBuffer = await file.arrayBuffer()

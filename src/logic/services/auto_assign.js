@@ -1,6 +1,6 @@
 import { appState as _appState } from '../../state/app_state.js'
 import { soundRegistry as _soundRegistry } from '../../state/sound_registry.js'
-import InstrumentsManager from './instruments_manager.js'
+import InstrumentsManager, { instrumentsManager } from './instruments_manager.js'
 import Utils from '../../core/utils.js'
 import { NOT_FOUND } from '../../core/constants.js'
 import { logger } from '../../core/logger.js'
@@ -34,7 +34,6 @@ export default class AutoAssign {
 
         const validInstrumentIds = InstrumentsManager.DATA?.instruments?.map(i => i.id) ?? []
         if (!validInstrumentIds.includes(track.name)) {
-            const instrumentsManager = new InstrumentsManager()
             const foundInstrument = instrumentsManager.findInstrumentFromFileName(track.name)
             const newName = foundInstrument?.id
             if (newName && validInstrumentIds.includes(newName)) {

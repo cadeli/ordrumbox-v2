@@ -1,7 +1,7 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import InstrumentsManager from '../logic/services/instruments_manager.js'
+import InstrumentsManager, { instrumentsManager } from '../logic/services/instruments_manager.js'
 import drumkitService from '../logic/services/drumkit_service.js'
 import { drawEnvelope } from '../audio/sample_analyzer.js'
 import { hzToNote, formatNote } from '../core/hz_to_note.js'
@@ -170,8 +170,7 @@ export default class DrumkitManager extends BasePanel {
         }
 
         const analysis = drumkitService.getAnalysisInfo(sound)
-        const im = new InstrumentsManager()
-        const detected = im.findInstrumentFromFileName(sound.display_name ?? sound.url)
+        const detected = instrumentsManager.findInstrumentFromFileName(sound.display_name ?? sound.url)
         const noteStr = analysis?.noteInfo ? formatNote(analysis.noteInfo) : '—'
         const peakDb = analysis?.peakDb != null ? analysis.peakDb.toFixed(1) : '—'
         const rmsDb = analysis?.rmsDb != null ? analysis.rmsDb.toFixed(1) : '—'

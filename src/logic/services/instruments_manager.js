@@ -369,3 +369,6 @@ export default class InstrumentsManager {
         return common;
     }
 }
+
+/** Shared singleton — avoids regex re-compilation on every instantiation. */
+export const instrumentsManager = new InstrumentsManager()

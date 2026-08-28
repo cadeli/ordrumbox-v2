@@ -3,7 +3,7 @@ import { playbackEvents } from '../../state/playback_events.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { getAutoAssignService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import InstrumentsManager from './instruments_manager.js'
+import { instrumentsManager } from './instruments_manager.js'
 import { analyzeSample, clearAnalysisCache } from '../../audio/sample_analyzer.js'
 import { logger } from '../../core/logger.js'
 
@@ -175,8 +175,7 @@ class DrumkitService {
     }
 
     async addSample(file, buffer) {
-        const im = new InstrumentsManager()
-        const instrument = im.findInstrumentFromFileName(file.name)
+        const instrument = instrumentsManager.findInstrumentFromFileName(file.name)
         const key = instrument.id
         const kitName = soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? 'imported'
 

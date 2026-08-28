@@ -3,11 +3,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { showToast } from './toast.js'
 import BasePanel from './base_panel.js'
-import { idbGet, idbPut, idbKeys } from '../core/idb.js'
-import { downloadJson } from './components/panel_helpers.js'
-
-const SONGS_STORE = 'songs'
-const SONG_VERSION = 1
+import songService from '../logic/services/song_service.js'
 
 export default class SongPanel extends BasePanel {
     constructor() {
@@ -222,17 +218,8 @@ export default class SongPanel extends BasePanel {
     }
 
     async _saveSong() {
-        const data = {
-            version: SONG_VERSION,
-            name: this._songName,
-            description: appState.songInfos?.description ?? '',
-            date: appState.songInfos?.date ?? '',
-            patterns: JSON.parse(JSON.stringify(appState.patterns)),
-            selectedPatternNum: appState.selectedPatternNum,
-            savedAt: Date.now()
-        }
         try {
-            await idbPut(SONGS_STORE, this._songName, data)
+            await songService.save(this._songName)
             showToast(`Song "${this._songName}" saved`, 'success')
         } catch (err) {
             showToast('Save failed: ' + err.message, 'error')
@@ -241,7 +228,7 @@ export default class SongPanel extends BasePanel {
 
     async _loadSong() {
         try {
-            const keys = await idbKeys(SONGS_STORE)
+            const keys = await songService.listKeys()
             if (!keys.length) {
                 showToast('No saved songs found', 'warning')
                 return
@@ -271,20 +258,13 @@ export default class SongPanel extends BasePanel {
                 const choice = overlay.querySelector('#sg-load-select').value
                 close()
 
-                const data = await idbGet(SONGS_STORE, choice)
-                if (!data?.patterns) {
+                const data = await songService.load(choice)
+                if (!data) {
                     showToast('Song not found', 'warning')
                     return
                 }
 
-                appState.patterns.length = 0
-                for (const pat of data.patterns) appState.patterns.push(pat)
-                this._songName = data.name ?? choice
-                appState.songInfos.name = this._songName
-                appState.songInfos.description = data.description ?? ''
-                appState.songInfos.date = data.date ?? ''
-                serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
-                appState.currentPage = 0
+                this._songName = songService.applyToAppState(data, choice)
                 playbackEvents.emit("patternStructureChange")
                 playbackEvents.emit("patternChange")
                 this.sync()
@@ -296,17 +276,7 @@ export default class SongPanel extends BasePanel {
     }
 
     _exportSong() {
-        const data = {
-            version: SONG_VERSION,
-            name: this._songName,
-            description: appState.songInfos?.description ?? '',
-            date: appState.songInfos?.date ?? '',
-            patterns: JSON.parse(JSON.stringify(appState.patterns)),
-            selectedPatternNum: appState.selectedPatternNum,
-            exportedAt: Date.now()
-        }
-        const safeName = this._songName.replace(/[^a-zA-Z0-9_-]/g, '_')
-        downloadJson(data, `${safeName}.odbox`)
+        songService.exportToFile(this._songName)
         showToast(`Song "${this._songName}" exported`, 'success')
     }
 
@@ -320,20 +290,14 @@ export default class SongPanel extends BasePanel {
 
             try {
                 const text = await file.text()
-                const data = JSON.parse(text)
-                if (!data?.patterns || !Array.isArray(data.patterns)) {
+                const data = songService.parseImportedFile(text)
+                if (!data) {
                     showToast('Invalid song file', 'error')
                     return
                 }
 
-                appState.patterns.length = 0
-                for (const pat of data.patterns) appState.patterns.push(pat)
-                this._songName = data.name ?? file.name.replace(/\.\w+$/, '')
-                appState.songInfos.name = this._songName
-                appState.songInfos.description = data.description ?? ''
-                appState.songInfos.date = data.date ?? ''
-                serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
-                appState.currentPage = 0
+                const fallbackName = file.name.replace(/\.\w+$/, '')
+                this._songName = songService.applyToAppState(data, fallbackName)
                 playbackEvents.emit("patternStructureChange")
                 playbackEvents.emit("patternChange")
                 this.sync()

@@ -7,7 +7,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { _setAudioUnlocked } from '../state/signals.js'
-import InstrumentsManager from '../logic/services/instruments_manager.js'
+import { instrumentsManager } from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { applyParamsToStrip } from './strip_sync.js'
 import { computeTrackLfoValues } from '../logic/lfo_engine.js'
@@ -26,7 +26,7 @@ export default class AudioEngine {
         this.TICK = config.TICK
         this.secondsPerBeat = config.secondsPerBeat
         this.computeNextStep = config.computeNextStep
-        this.instrumentsManager = new InstrumentsManager()
+        this.instrumentsManager = instrumentsManager
 
         this.flatNotes = new Map()
         this._cachedPatternRef = null
