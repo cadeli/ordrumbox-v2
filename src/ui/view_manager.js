@@ -29,7 +29,7 @@ export default class ViewManager {
             ['tools', { event: 'toolsToggle',           panel: toolsPanel }],
             ['master',{ event: 'masterToggle',          panel: outputPanel }],
             ['dm',    { event: 'drumkitManagerToggle',  panel: drumkitManager }],
-            ['pp',    { event: 'patternsToggle',         panel: patternsPanel }],
+            ['pp',    { event: 'songToggle',            panel: patternsPanel }],
             ['about', { event: 'aboutToggle',            panel: aboutPanel }],
         ])
         // Reverse lookup: event name → short name

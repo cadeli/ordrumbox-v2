@@ -34,7 +34,7 @@ import NoteEditor from '../src/ui/note_editor.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 import OutputPanel from '../src/ui/output_panel.js'
 import AboutPanel from '../src/ui/about_panel.js'
-import PatternsPanel from '../src/ui/patterns_panel.js'
+import SongPanel from '../src/ui/song_panel.js'
 import DrumkitManager from '../src/ui/drumkit_manager.js'
 import PatternPanel from '../src/ui/pattern_panel.js'
 import PatternSettingsPanel from '../src/ui/pattern_settings_panel.js'
@@ -155,8 +155,8 @@ function setupApp(viewport) {
     const aboutPanel = new AboutPanel()
     aboutPanel.init()
 
-    const patternsPanel = new PatternsPanel()
-    patternsPanel.init()
+    const songPanel = new SongPanel()
+    songPanel.init()
 
     const drumkitManager = new DrumkitManager()
     drumkitManager.init()
@@ -165,7 +165,7 @@ function setupApp(viewport) {
         trackEditor, synthEditor: mockSynthEditor,
         pianoRollPanel: mockPianoRollPanel, noteEditor,
         toolsPanel, patternSettingsPanel,
-        outputPanel, drumkitManager, patternsPanel, aboutPanel
+        outputPanel, drumkitManager, patternsPanel: songPanel, aboutPanel
     })
     viewManager.init()
 
@@ -173,7 +173,7 @@ function setupApp(viewport) {
     mockAnchor(document.getElementById('piano-roll-panel'), TOOLBAR_H, MAIN_H)
     mockAnchor(document.getElementById('soft-synth-panel'), TOOLBAR_H, MAIN_H)
 
-    return { viewManager, trackEditor, noteEditor, toolsPanel, outputPanel, aboutPanel, patternsPanel, drumkitManager, patternSettingsPanel }
+    return { viewManager, trackEditor, noteEditor, toolsPanel, outputPanel, aboutPanel, songPanel, drumkitManager, patternSettingsPanel }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -270,7 +270,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
     describe('Secondary panel positioning (CSS-driven)', () => {
         it('CSS rule sets top:518px on slot panels', () => {
             const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
-            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#pp-panel,\s*#dm-panel\s*\{([^}]*)\}/
+            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#song-panel,\s*#dm-panel\s*\{([^}]*)\}/
             const m = css.match(slotRe)
             expect(m).not.toBeNull()
             expect(m[1]).toContain('top: 518px')
@@ -278,7 +278,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
         it('CSS rule sets height:var(--panel-height) on slot panels', () => {
             const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
-            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#pp-panel,\s*#dm-panel\s*\{([^}]*)\}/
+            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#song-panel,\s*#dm-panel\s*\{([^}]*)\}/
             const m = css.match(slotRe)
             expect(m).not.toBeNull()
             expect(m[1]).toContain('height: var(--panel-height)')
@@ -292,7 +292,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
         it('CSS places slot panels below workspace area (top > 64+450)', () => {
             const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
-            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#pp-panel,\s*#dm-panel\s*\{([^}]*)\}/
+            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#song-panel,\s*#dm-panel\s*\{([^}]*)\}/
             const m = css.match(slotRe)
             expect(m).not.toBeNull()
             const topVal = parseInt(m[1].match(/top:\s*(\d+)px/)?.[1], 10)
@@ -305,7 +305,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
         it('Slot panels only cover workspace width (80%), not track editor column', () => {
             const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
-            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#pp-panel,\s*#dm-panel\s*\{([^}]*)\}/
+            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#song-panel,\s*#dm-panel\s*\{([^}]*)\}/
             const m = css.match(slotRe)
             expect(m).not.toBeNull()
             const widthMatch = m[1].match(/width:\s*(\d+)%/)
@@ -316,7 +316,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
         it('Slot panels positioned at workspace left (0%)', () => {
             const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
-            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#pp-panel,\s*#dm-panel\s*\{([^}]*)\}/
+            const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#song-panel,\s*#dm-panel\s*\{([^}]*)\}/
             const m = css.match(slotRe)
             expect(m).not.toBeNull()
             const leftMatch = m[1].match(/left:\s*(\d+)%?/)
@@ -379,7 +379,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
         for (const [name, id] of [
             ['about',    'about-panel'],
             ['dm',       'dm-panel'],
-            ['patterns', 'pp-panel'],
+            ['song',      'song-panel'],
             ['output',   'output-panel'],
         ]) {
             it(`${name} persists across view switches`, () => {

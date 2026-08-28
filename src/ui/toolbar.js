@@ -446,7 +446,7 @@ export default class Toolbar {
         })
 
         this.patLabel.addEventListener('click', () => {
-            playbackEvents.emit("patternsToggle", true)
+            playbackEvents.emit("songToggle", true)
         })
 
         this.drumBtn.addEventListener('click', async () => {

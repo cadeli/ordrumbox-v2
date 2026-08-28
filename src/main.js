@@ -11,7 +11,7 @@ import ToolsPanel from './ui/tools_panel.js'
 import OutputPanel from './ui/output_panel.js'
 import AboutPanel from './ui/about_panel.js'
 import DrumkitManager from './ui/drumkit_manager.js'
-import PatternsPanel from './ui/patterns_panel.js'
+import SongPanel from './ui/song_panel.js'
 import ViewManager from './ui/view_manager.js'
 import MobileTabBar from './ui/mobile_tab_bar.js'
 import PatternSettingsPanel from './ui/pattern_settings_panel.js'
@@ -53,7 +53,7 @@ function scheduleAfterFirstPaint(callback) {
 }
 
 
-let _toolbar, _patternPanel, _pianoRollPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _patternsPanel, _viewManager, _mobileTabBar, _patternSettingsPanel
+let _toolbar, _patternPanel, _pianoRollPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _songPanel, _viewManager, _mobileTabBar, _patternSettingsPanel
 
 export function init() {
     if (window.orientation > 1) {
@@ -79,7 +79,7 @@ export function init() {
     _outputPanel = new OutputPanel()
     _aboutPanel = new AboutPanel()
     _drumkitManager = new DrumkitManager()
-    _patternsPanel = new PatternsPanel()
+    _songPanel = new SongPanel()
     _toolbar.init()
     _patternPanel.init()
     _pianoRollPanel.init()
@@ -91,7 +91,7 @@ export function init() {
     _outputPanel.init()
     _aboutPanel.init()
     _drumkitManager.init()
-    _patternsPanel.init()
+    _songPanel.init()
 
     _mobileTabBar = new MobileTabBar()
     _mobileTabBar.init()
@@ -118,7 +118,7 @@ export function init() {
         patternSettingsPanel: _patternSettingsPanel,
         outputPanel: _outputPanel,
         drumkitManager: _drumkitManager,
-        patternsPanel: _patternsPanel,
+        patternsPanel: _songPanel,
         aboutPanel: _aboutPanel,
     })
     serviceRegistry.viewManager = _viewManager

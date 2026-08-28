@@ -25,7 +25,7 @@ export default class HeaderSection {
                 <button class="pp-action-btn" data-pp-action="clean" title="Clear all notes">⌫</button>
                 <button class="pp-action-btn" data-pp-action="duplicate" title="Duplicate pattern">⧉</button>
                 <button class="pp-action-btn" data-pp-action="rename" title="Rename pattern">✎</button>
-                <button class="pp-action-btn" data-pp-action="save" title="Save as JSON">↓</button>
+                <button class="pp-action-btn" data-pp-action="save" title="Export Pattern">↓</button>
                 <button class="pp-action-btn" data-pp-action="replace" title="Load / replace pattern">↑</button>
             </div>
             <span class="pp-name">${this._editor.esc(nameOr(pattern.name, 'Unnamed', 'PatternPanel', 'name fallback'))}</span>

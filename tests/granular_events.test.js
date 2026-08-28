@@ -12,7 +12,7 @@ import PatternPanel from '../src/ui/pattern_panel.js'
 import NoteEditor from '../src/ui/note_editor.js'
 import TrackEditor from '../src/ui/track_editor.js'
 import PianoRollPanel from '../src/ui/piano_roll_panel.js'
-import PatternsPanel from '../src/ui/patterns_panel.js'
+import SongPanel from '../src/ui/song_panel.js'
 import Toolbar from '../src/ui/toolbar.js'
 import PatternSettingsPanel from '../src/ui/pattern_settings_panel.js'
 import { computeFlatNotesFromPattern } from '../src/patterns/manager.js'
@@ -117,12 +117,12 @@ describe('Granular patternChange events', () => {
     })
 
     describe('patternStructureChange', () => {
-        it('emitted by patterns_panel add pattern', () => {
+        it('emitted by song_panel add pattern', () => {
             const cap = captureGranular()
-            const pp = new PatternsPanel()
+            const pp = new SongPanel()
             pp.init()
-            playbackEvents.emit("patternsToggle", true)
-            pp.container.querySelector('#pp-add').click()
+            playbackEvents.emit("songToggle", true)
+            pp.container.querySelector('#sg-add').click()
             expect(cap.patternStructureChange).toHaveBeenCalled()
         })
 
@@ -225,8 +225,8 @@ describe('Granular patternChange events', () => {
             expect(toolbar.patternSelect.options.length).toBe(len)
         })
 
-        it('patterns_panel responds to patternStructureChange', () => {
-            const pp = new PatternsPanel()
+        it('song_panel responds to patternStructureChange', () => {
+            const pp = new SongPanel()
             pp.init()
             pp.show()
             const spy = vi.spyOn(pp, 'sync')

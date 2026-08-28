@@ -9,9 +9,9 @@ import { downloadJson } from './components/panel_helpers.js'
 const SONGS_STORE = 'songs'
 const SONG_VERSION = 1
 
-export default class PatternsPanel extends BasePanel {
+export default class SongPanel extends BasePanel {
     constructor() {
-        super('pp-panel')
+        super('song-panel')
         this._selectedIdx = null
         this._songName = 'Untitled'
     }
@@ -21,36 +21,50 @@ export default class PatternsPanel extends BasePanel {
 
         this.container.innerHTML = `
             <div class="ne-header">
-                <span class="ne-track">Patterns</span>
+                <span class="ne-track">Song</span>
             </div>
-            <div class="pp-body">
-                <div class="pp-list" id="pp-list"></div>
-                <div class="pp-actions-col" id="pp-actions-col">
-                    <div class="pp-song-row">
-                        <span class="pp-song-label">Song:</span>
-                        <span class="pp-song-name" id="pp-song-name" title="Double-click to rename">Untitled</span>
+            <div class="sg-body">
+                <div class="sg-list" id="sg-list"></div>
+                <div class="sg-actions-col" id="sg-actions-col">
+                    <div class="sg-song-row">
+                        <span class="sg-song-label">Song:</span>
+                        <span class="sg-song-name" id="sg-song-name" title="Double-click to rename">Untitled</span>
                     </div>
-                    <div class="pp-btn-group">
-                        <button class="ne-btn" id="pp-add" title="Add a new empty pattern">+ Pattern</button>
-                        <button class="ne-btn" id="pp-rename" title="Rename selected pattern">Rename</button>
-                        <button class="ne-btn pp-danger" id="pp-delete" title="Delete selected pattern">Delete</button>
+                    <div class="sg-song-row">
+                        <span class="sg-song-label">Date:</span>
+                        <span class="sg-song-date" id="sg-song-date"></span>
                     </div>
-                    <div class="pp-btn-group">
-                        <button class="ne-btn" id="pp-save" title="Save song to IndexedDB">Save Song</button>
-                        <button class="ne-btn" id="pp-load" title="Load song from IndexedDB">Load Song</button>
+                    <div class="sg-song-desc" id="sg-song-desc" contenteditable="true" spellcheck="false" title="Double-click to edit description"></div>
+                    <div class="sg-btn-group">
+                        <button class="ne-btn" id="sg-add" title="Add a new empty pattern">+ Pattern</button>
+                        <button class="ne-btn" id="sg-rename" title="Rename selected pattern">Rename</button>
+                        <button class="ne-btn sg-danger" id="sg-delete" title="Delete selected pattern">Delete</button>
                     </div>
-                    <div class="pp-btn-group">
-                        <button class="ne-btn" id="pp-export" title="Export song as JSON file">Export Song</button>
-                        <button class="ne-btn" id="pp-import" title="Import song from JSON file">Import Song</button>
+                    <div class="sg-btn-group">
+                        <button class="ne-btn" id="sg-save" title="Save song to IndexedDB">Save Song</button>
+                        <button class="ne-btn" id="sg-load" title="Load song from IndexedDB">Load Song</button>
+                    </div>
+                    <div class="sg-btn-group">
+                        <button class="ne-btn" id="sg-export" title="Export song as JSON file">Export Song</button>
+                        <button class="ne-btn" id="sg-import" title="Import song from JSON file">Import Song</button>
                     </div>
                 </div>
             </div>
         `
 
-        this._listEl = this.container.querySelector('#pp-list')
-        this._songNameEl = this.container.querySelector('#pp-song-name')
+        this._listEl = this.container.querySelector('#sg-list')
+        this._songNameEl = this.container.querySelector('#sg-song-name')
+        this._songDateEl = this.container.querySelector('#sg-song-date')
+        this._songDescEl = this.container.querySelector('#sg-song-desc')
 
-        this.container.querySelector('#pp-add').addEventListener('click', () => {
+        this._songDescEl.addEventListener('blur', () => {
+            appState.songInfos.description = this._songDescEl.textContent.trim()
+        })
+        this._songDescEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); this._songDescEl.blur() }
+        })
+
+        this.container.querySelector('#sg-add').addEventListener('click', () => {
             const newIdx = appState.patterns.length
             serviceRegistry.cmd.addPattern()
             serviceRegistry.cmd.setSelectedPatternNum(newIdx)
@@ -62,20 +76,20 @@ export default class PatternsPanel extends BasePanel {
             showToast('Pattern added', 'success')
         })
 
-        this.container.querySelector('#pp-rename').addEventListener('click', () => {
+        this.container.querySelector('#sg-rename').addEventListener('click', () => {
             this._renameSelected()
         })
 
-        this.container.querySelector('#pp-delete').addEventListener('click', () => {
+        this.container.querySelector('#sg-delete').addEventListener('click', () => {
             if (this._selectedIdx != null) this._deletePattern(this._selectedIdx)
         })
 
         this._songNameEl.addEventListener('dblclick', () => this._renameSong())
 
-        this.container.querySelector('#pp-save').addEventListener('click', () => this._saveSong())
-        this.container.querySelector('#pp-load').addEventListener('click', () => this._loadSong())
-        this.container.querySelector('#pp-export').addEventListener('click', () => this._exportSong())
-        this.container.querySelector('#pp-import').addEventListener('click', () => this._importSong())
+        this.container.querySelector('#sg-save').addEventListener('click', () => this._saveSong())
+        this.container.querySelector('#sg-load').addEventListener('click', () => this._loadSong())
+        this.container.querySelector('#sg-export').addEventListener('click', () => this._exportSong())
+        this.container.querySelector('#sg-import').addEventListener('click', () => this._importSong())
     }
 
     subscribe() {
@@ -85,7 +99,13 @@ export default class PatternsPanel extends BasePanel {
 
     sync() {
         this._selectedIdx = appState.selectedPatternNum
+        if (appState.songInfos?.name) this._songName = appState.songInfos.name
         this._songNameEl.textContent = this._songName
+        this._songDateEl.textContent = appState.songInfos?.date ?? ''
+        const desc = appState.songInfos?.description ?? ''
+        if (this._songDescEl.textContent.trim() !== desc) {
+            this._songDescEl.textContent = desc
+        }
         this._renderList()
     }
 
@@ -102,14 +122,14 @@ export default class PatternsPanel extends BasePanel {
             const isSelected = i === this._selectedIdx
 
             const item = document.createElement('div')
-            item.className = 'pp-item' + (isSelected ? ' pp-selected' : '')
+            item.className = 'sg-item' + (isSelected ? ' sg-selected' : '')
 
             const num = document.createElement('span')
-            num.className = 'pp-num'
+            num.className = 'sg-num'
             num.textContent = `${i + 1}.`
 
             const name = document.createElement('span')
-            name.className = 'pp-name'
+            name.className = 'sg-name'
             name.textContent = pat.name ?? `Pattern ${i}`
             name.title = 'Double-click to rename'
 
@@ -131,7 +151,7 @@ export default class PatternsPanel extends BasePanel {
 
         const input = document.createElement('input')
         input.type = 'text'
-        input.className = 'pp-rename-input'
+        input.className = 'sg-rename-input'
         input.value = currentName
 
         nameEl.replaceWith(input)
@@ -157,7 +177,7 @@ export default class PatternsPanel extends BasePanel {
 
     _renameSelected() {
         if (this._selectedIdx == null) return
-        const item = this._listEl.querySelector('.pp-selected .pp-name')
+        const item = this._listEl.querySelector('.sg-selected .sg-name')
         if (item) {
             this._startRename(item, this._selectedIdx)
         }
@@ -167,7 +187,7 @@ export default class PatternsPanel extends BasePanel {
         const current = this._songName
         const input = document.createElement('input')
         input.type = 'text'
-        input.className = 'pp-rename-input'
+        input.className = 'sg-rename-input'
         input.value = current
 
         this._songNameEl.replaceWith(input)
@@ -177,6 +197,7 @@ export default class PatternsPanel extends BasePanel {
         const commit = () => {
             const val = input.value.trim()
             if (val) this._songName = val
+            appState.songInfos.name = this._songName
             this._songNameEl.textContent = this._songName
             input.replaceWith(this._songNameEl)
         }
@@ -217,6 +238,8 @@ export default class PatternsPanel extends BasePanel {
         const data = {
             version: SONG_VERSION,
             name: this._songName,
+            description: appState.songInfos?.description ?? '',
+            date: appState.songInfos?.date ?? '',
             patterns: JSON.parse(JSON.stringify(appState.patterns)),
             selectedPatternNum: appState.selectedPatternNum,
             savedAt: Date.now()
@@ -238,27 +261,27 @@ export default class PatternsPanel extends BasePanel {
             }
 
             const overlay = document.createElement('div')
-            overlay.className = 'pp-modal-overlay'
+            overlay.className = 'sg-modal-overlay'
             overlay.innerHTML = `
-                <div class="pp-modal">
-                    <div class="pp-modal-title">Load Song</div>
-                    <select class="pp-modal-select" id="pp-load-select">
+                <div class="sg-modal">
+                    <div class="sg-modal-title">Load Song</div>
+                    <select class="sg-modal-select" id="sg-load-select">
                         ${keys.map(k => `<option value="${k}">${k}</option>`).join('')}
                     </select>
-                    <div class="pp-modal-actions">
-                        <button class="ne-btn" id="pp-load-ok">Load</button>
-                        <button class="ne-btn" id="pp-load-cancel">Cancel</button>
+                    <div class="sg-modal-actions">
+                        <button class="ne-btn" id="sg-load-ok">Load</button>
+                        <button class="ne-btn" id="sg-load-cancel">Cancel</button>
                     </div>
                 </div>
             `
             document.body.appendChild(overlay)
 
             const close = () => overlay.remove()
-            overlay.querySelector('#pp-load-cancel').addEventListener('click', close)
+            overlay.querySelector('#sg-load-cancel').addEventListener('click', close)
             overlay.addEventListener('click', (e) => { if (e.target === overlay) close() })
 
-            overlay.querySelector('#pp-load-ok').addEventListener('click', async () => {
-                const choice = overlay.querySelector('#pp-load-select').value
+            overlay.querySelector('#sg-load-ok').addEventListener('click', async () => {
+                const choice = overlay.querySelector('#sg-load-select').value
                 close()
 
                 const data = await idbGet(SONGS_STORE, choice)
@@ -270,6 +293,9 @@ export default class PatternsPanel extends BasePanel {
                 appState.patterns.length = 0
                 for (const pat of data.patterns) appState.patterns.push(pat)
                 this._songName = data.name ?? choice
+                appState.songInfos.name = this._songName
+                appState.songInfos.description = data.description ?? ''
+                appState.songInfos.date = data.date ?? ''
                 serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
                 appState.currentPage = 0
                 playbackEvents.emit("patternStructureChange")
@@ -286,6 +312,8 @@ export default class PatternsPanel extends BasePanel {
         const data = {
             version: SONG_VERSION,
             name: this._songName,
+            description: appState.songInfos?.description ?? '',
+            date: appState.songInfos?.date ?? '',
             patterns: JSON.parse(JSON.stringify(appState.patterns)),
             selectedPatternNum: appState.selectedPatternNum,
             exportedAt: Date.now()
@@ -314,6 +342,9 @@ export default class PatternsPanel extends BasePanel {
                 appState.patterns.length = 0
                 for (const pat of data.patterns) appState.patterns.push(pat)
                 this._songName = data.name ?? file.name.replace(/\.\w+$/, '')
+                appState.songInfos.name = this._songName
+                appState.songInfos.description = data.description ?? ''
+                appState.songInfos.date = data.date ?? ''
                 serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
                 appState.currentPage = 0
                 playbackEvents.emit("patternStructureChange")
