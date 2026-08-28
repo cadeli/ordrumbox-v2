@@ -4,6 +4,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { showToast } from './toast.js'
 import BasePanel from './base_panel.js'
 import { idbGet, idbPut, idbKeys } from '../core/idb.js'
+import { downloadJson } from './components/panel_helpers.js'
 
 const SONGS_STORE = 'songs'
 const SONG_VERSION = 1
@@ -38,6 +39,10 @@ export default class PatternsPanel extends BasePanel {
                         <button class="ne-btn" id="pp-save" title="Save song to IndexedDB">Save Song</button>
                         <button class="ne-btn" id="pp-load" title="Load song from IndexedDB">Load Song</button>
                     </div>
+                    <div class="pp-btn-group">
+                        <button class="ne-btn" id="pp-export" title="Export song as JSON file">Export Song</button>
+                        <button class="ne-btn" id="pp-import" title="Import song from JSON file">Import Song</button>
+                    </div>
                 </div>
             </div>
         `
@@ -69,6 +74,8 @@ export default class PatternsPanel extends BasePanel {
 
         this.container.querySelector('#pp-save').addEventListener('click', () => this._saveSong())
         this.container.querySelector('#pp-load').addEventListener('click', () => this._loadSong())
+        this.container.querySelector('#pp-export').addEventListener('click', () => this._exportSong())
+        this.container.querySelector('#pp-import').addEventListener('click', () => this._importSong())
     }
 
     subscribe() {
@@ -229,32 +236,94 @@ export default class PatternsPanel extends BasePanel {
                 showToast('No saved songs found', 'warning')
                 return
             }
-            const choice = prompt(
-                'Load which song?\n\nSaved songs:\n' +
-                keys.map((k, i) => `${i + 1}. ${k}`).join('\n') +
-                '\n\nEnter the song name:'
-            )
-            if (!choice) return
 
-            const data = await idbGet(SONGS_STORE, choice.trim())
-            if (!data?.patterns) {
-                showToast('Song not found', 'warning')
-                return
-            }
+            const overlay = document.createElement('div')
+            overlay.className = 'pp-modal-overlay'
+            overlay.innerHTML = `
+                <div class="pp-modal">
+                    <div class="pp-modal-title">Load Song</div>
+                    <select class="pp-modal-select" id="pp-load-select">
+                        ${keys.map(k => `<option value="${k}">${k}</option>`).join('')}
+                    </select>
+                    <div class="pp-modal-actions">
+                        <button class="ne-btn" id="pp-load-ok">Load</button>
+                        <button class="ne-btn" id="pp-load-cancel">Cancel</button>
+                    </div>
+                </div>
+            `
+            document.body.appendChild(overlay)
 
-            appState.patterns.length = 0
-            for (const pat of data.patterns) {
-                appState.patterns.push(pat)
-            }
-            this._songName = data.name ?? choice.trim()
-            serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
-            appState.currentPage = 0
-            playbackEvents.emit("patternStructureChange")
-            playbackEvents.emit("patternChange")
-            this.sync()
-            showToast(`Song "${this._songName}" loaded`, 'success')
+            const close = () => overlay.remove()
+            overlay.querySelector('#pp-load-cancel').addEventListener('click', close)
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) close() })
+
+            overlay.querySelector('#pp-load-ok').addEventListener('click', async () => {
+                const choice = overlay.querySelector('#pp-load-select').value
+                close()
+
+                const data = await idbGet(SONGS_STORE, choice)
+                if (!data?.patterns) {
+                    showToast('Song not found', 'warning')
+                    return
+                }
+
+                appState.patterns.length = 0
+                for (const pat of data.patterns) appState.patterns.push(pat)
+                this._songName = data.name ?? choice
+                serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
+                appState.currentPage = 0
+                playbackEvents.emit("patternStructureChange")
+                playbackEvents.emit("patternChange")
+                this.sync()
+                showToast(`Song "${this._songName}" loaded`, 'success')
+            })
         } catch (err) {
             showToast('Load failed: ' + err.message, 'error')
         }
+    }
+
+    _exportSong() {
+        const data = {
+            version: SONG_VERSION,
+            name: this._songName,
+            patterns: JSON.parse(JSON.stringify(appState.patterns)),
+            selectedPatternNum: appState.selectedPatternNum,
+            exportedAt: Date.now()
+        }
+        const safeName = this._songName.replace(/[^a-zA-Z0-9_-]/g, '_')
+        downloadJson(data, `${safeName}.odbox`)
+        showToast(`Song "${this._songName}" exported`, 'success')
+    }
+
+    _importSong() {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = '.odbox,.json'
+        input.addEventListener('change', async () => {
+            const file = input.files?.[0]
+            if (!file) return
+
+            try {
+                const text = await file.text()
+                const data = JSON.parse(text)
+                if (!data?.patterns || !Array.isArray(data.patterns)) {
+                    showToast('Invalid song file', 'error')
+                    return
+                }
+
+                appState.patterns.length = 0
+                for (const pat of data.patterns) appState.patterns.push(pat)
+                this._songName = data.name ?? file.name.replace(/\.\w+$/, '')
+                serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
+                appState.currentPage = 0
+                playbackEvents.emit("patternStructureChange")
+                playbackEvents.emit("patternChange")
+                this.sync()
+                showToast(`Song "${this._songName}" imported`, 'success')
+            } catch (err) {
+                showToast('Import failed: ' + err.message, 'error')
+            }
+        })
+        input.click()
     }
 }

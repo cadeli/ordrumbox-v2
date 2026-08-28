@@ -1868,6 +1868,9 @@ min-height: auto;
 .pp-btn-group {
     display: flex; gap: 6px; flex-wrap: wrap;
 }
+#pp-panel .pp-btn-group .ne-btn {
+    max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .pp-del-btn {
     background: none; border: none; color: var(--text-disabled); cursor: pointer;
     font-size: var(--fs-md); padding: 2px 4px; border-radius: 3px;
@@ -1880,6 +1883,29 @@ min-height: auto;
     display: flex; gap: 8px;
     margin-top: 8px; padding-top: 8px;
     border-top: 1px solid var(--border-subtle);
+}
+.pp-modal-overlay {
+    position: fixed; inset: 0; z-index: var(--z-toast);
+    background: rgba(0,0,0,0.6); display: flex;
+    align-items: center; justify-content: center;
+}
+.pp-modal {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; min-width: 220px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.pp-modal-title {
+    color: var(--text); font-weight: bold; font-size: var(--fs-md);
+    margin-bottom: 10px;
+}
+.pp-modal-select {
+    width: 100%; padding: 4px 6px; margin-bottom: 12px;
+    background: var(--bg-input); color: var(--text-dim);
+    border: 1px solid var(--border); border-radius: 4px;
+    font-family: monospace; font-size: var(--fs-base);
+}
+.pp-modal-actions {
+    display: flex; gap: 8px; justify-content: flex-end;
 }
 
 /* ========================================
