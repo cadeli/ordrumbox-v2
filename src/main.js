@@ -24,10 +24,11 @@ import { serviceRegistry } from './state/service_registry.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
 import { logger } from "./core/logger.js"
-import { showToast } from './ui/toast.js'
 import { idbReport } from './core/idb.js'
 import { isMobileViewport } from './core/constants.js'
 import { initSignals } from './state/signals.js'
+import { initKeyboardShortcuts } from './keyboard_shortcuts.js'
+import { initServiceWorker } from './service_worker.js'
 
 logger.suppressTags(['Instrument', 'Fallback', 'PatternImport'])
 logger.setLevel(logger.LEVELS?.INFO ?? 1)
@@ -141,10 +142,6 @@ export function init() {
         document.documentElement.style.setProperty('--tb-h', `${tbEl.getBoundingClientRect().height}px`)
     }
 
-    // Ensure all <input type="range"> sliders respond to Arrow Left/Right
-    // when focused, regardless of native browser quirks or CSS that might
-    // block the default behavior (e.g. the LFO dual-range container uses
-    // pointer-events:none on the track).
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
         const el = e.target
@@ -157,7 +154,6 @@ export function init() {
         const cur = parseFloat(el.value)
         const dir = e.key === 'ArrowRight' ? 1 : -1
         let next = cur + dir * step
-        // Snap to step grid
         next = Math.round((next - min) / step) * step + min
         next = Math.min(max, Math.max(min, next))
 
@@ -171,10 +167,6 @@ export function init() {
         e.preventDefault()
     })
 
-    // When the user clicks on a slider's <label> (title) or <span.ne-val>
-    // (value display), focus the associated range input. The LFO dual-range
-    // container uses pointer-events:none on the track, so clicking on the
-    // label/value is the natural way to focus that slider.
     document.addEventListener('click', (e) => {
         const t = e.target
         if (!(t instanceof HTMLElement)) return
@@ -186,6 +178,9 @@ export function init() {
         const slider = row.querySelector('input[type="range"]')
         if (slider && !slider.disabled) slider.focus()
     })
+
+    initKeyboardShortcuts()
+    initServiceWorker()
 
     scheduleAfterFirstPaint(async () => {
         try {
@@ -202,12 +197,6 @@ export function init() {
             logger.error('Main', 'Failed to load startup resources', e)
         }
         if (appState.patterns.length > 0) {
-            // Restore saved session state (dk, pattern, track, view) BEFORE
-            // emitting any event that could trigger a save (e.g. drumkitChange
-            // -> ResourcesLoader.saveSession()). emit() is synchronous, so
-            // emitting first would fire saveSession() while appState still
-            // holds its default values (0), clobbering the persisted session
-            // in memory *and* in IndexedDB before restoreSession() can read it.
             serviceRegistry.resourcesLoader.restoreSession()
 
             const dkNum = Math.min(appState.selectedDrumkitNum, soundRegistry.drumkitList.length - 1)
@@ -246,253 +235,5 @@ export function init() {
             }
             console.groupEnd()
         })()
-    })
-}
-
-
-const PHYSICAL_TRACK_MUTE_KEYS = [
-    'Digit1',
-    'Digit2',
-    'Digit3',
-    'Digit4',
-    'Digit5',
-    'Digit6',
-    'Digit7',
-    'Digit8',
-    'Digit9'
-]
-
-const PHYSICAL_TRACK_PREVIEW_KEYS = [
-    'KeyQ',
-    'KeyW',
-    'KeyE',
-    'KeyR',
-    'KeyT',
-    'KeyY',
-    'KeyU',
-    'KeyI'
-]
-
-const PHYSICAL_KEYS_PREVENTING_BROWSER_DEFAULT = new Set(['Space'])
-
-const PHYSICAL_KEYBOARD_SHORTCUTS = {
-    KeyB: generatePattern,
-    KeyS: logPatterns,
-    KeyF: selectRandomPattern,
-    KeyG: selectRandomDrumkit,
-    KeyH: convertToGeneratedSounds,
-    KeyD: exportCurrentTrackSound,
-    KeyV: toggleVus,
-    Space: toggleStartStop
-}
-
-document.addEventListener('keydown', (event) => {
-    void handleKeyboardShortcut(event)
-}, false)
-
-async function handleKeyboardShortcut(event) {
-    const target = event.target
-
-    // Ignore shortcuts when typing in text fields
-    if (target && (target.tagName === 'TEXTAREA' || target.isContentEditable ||
-        (target.tagName === 'INPUT' && /^(text|search|password|email|url|tel)$/i.test(target.type ?? 'text')))) {
-        return
-    }
-
-    const shortcut = getKeyboardShortcut(event.code, event.key)
-    if (!shortcut) {
-        return
-    }
-
-    // Space should prevent default (scrolling) even if handled via event.key
-    if (PHYSICAL_KEYS_PREVENTING_BROWSER_DEFAULT.has(event.code) || event.key === ' ') {
-        event.preventDefault()
-    }
-
-    await shortcut()
-}
-
-
-function getKeyboardShortcut(code, key) {
-    const muteTrackIndex = PHYSICAL_TRACK_MUTE_KEYS.indexOf(code)
-    if (muteTrackIndex !== -1) {
-        return () => toggleTrackMute(muteTrackIndex)
-    }
-
-    const previewTrackIndex = PHYSICAL_TRACK_PREVIEW_KEYS.indexOf(code)
-    if (previewTrackIndex !== -1) {
-        return () => previewTrack(previewTrackIndex)
-    }
-
-    // Fallback for Space using event.key
-    if (code === 'Space' || key === ' ') {
-        return PHYSICAL_KEYBOARD_SHORTCUTS.Space
-    }
-
-    return PHYSICAL_KEYBOARD_SHORTCUTS[code]
-}
-
-function getSelectedPattern() {
-    return appState.patterns[appState.selectedPatternNum]
-}
-
-function toggleTrackMute(trackIndex) {
-    const track = getSelectedPattern()?.tracks?.[trackIndex]
-    if (track) {
-        track.mute = !track.mute;
-        playbackEvents.emit('patternChange')
-    }
-}
-
-function previewTrack(trackIndex) {
-    serviceRegistry.seq.simpleBeep(trackIndex)
-}
-
-async function generatePattern() {
-    const { getAutoGenerateService } = await import('./state/service_loader.js')
-    const autoGen = await getAutoGenerateService()
-    await autoGen.generatePattern()
-}
-
-function toggleVus() {
-    appState.showVus = !appState.showVus
-    playbackEvents.emit("trackParamChange", null)
-}
-
-function logPatterns() {
-    logger.info('Main', JSON.stringify(appState.patterns))
-    logger.info('Main', JSON.stringify(soundRegistry.generatedSounds))
-}
-
-function selectRandomPattern() {
-    const num = Math.floor(Math.random() * appState.patterns.length)
-    serviceRegistry.cmd.setSelectedPatternNum(num)
-}
-
-function selectRandomDrumkit() {
-    const num = Math.floor(Math.random() * soundRegistry.drumkitList.length)
-    serviceRegistry.cmd.setSelectedDrumkitNum(num)
-}
-
-function toggleStartStop() {
-    serviceRegistry.seq.toggleStartStop()
-}
-
-const SYNTH_SOUND_MAP = {
-    KICK: 'BASS0',
-    SNARE: 'SN',
-    HAT: 'CHH_SYNTH',
-    OHH: 'OHH_SYNTH',
-    BASS: 'BASS2',
-    PERC: 'SYNTH2',
-    PIANO: 'PIANO',
-    TOM: 'TOM'
-}
-
-async function convertToGeneratedSounds() {
-    const selPattern = getSelectedPattern()
-    if (!selPattern) return
-
-    if (Object.keys(soundRegistry.generatedSounds).length === 0) {
-        try {
-            await serviceRegistry.resourcesLoader.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
-        } catch (e) {
-            logger.error('Main', 'Failed to load generated sounds', e)
-        }
-    }
-
-    Object.values(selPattern.tracks).forEach(track => {
-        const type = Utils.detectTrackType(track.name)
-        track.useSoftSynth = true
-        track.useAutoAssignSound = false
-        track.synthSoundKey = SYNTH_SOUND_MAP[type] ?? 'BASS1'
-    })
-
-    serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0)
-    serviceRegistry.audioEngine?.invalidateCache()
-    playbackEvents.emit('patternChange')
-    logger.info('Main', 'All tracks converted to generated sounds')
-}
-
-async function exportCurrentTrackSound() {
-    const selPattern = getSelectedPattern()
-    if (!selPattern) return
-
-    const trackIdx = appState.selectedTrackNum
-    const track = selPattern.tracks[trackIdx]
-    if (!track) {
-        showToast('No track selected', 'info')
-        return
-    }
-
-    if (!track.useSoftSynth || !track.synthSoundKey) {
-        showToast('Current track does not use a generated sound', 'info')
-        return
-    }
-
-    const generatedSound = soundRegistry.generatedSounds[track.synthSoundKey]
-    if (!generatedSound) {
-        showToast('Generated sound not found', 'error')
-        return
-    }
-
-    try {
-        // const sampleRate = 44100
-        logger.info('Main', JSON.stringify(generatedSound, null, 2))
-    } catch (e) {
-        logger.error('Main', 'Export failed', e)
-        showToast('Export failed: ' + e.message, 'error')
-    }
-}
-
-// Service Worker Registration for PWA with Update Notification
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', async () => {
-        const swPath = './sw.js';
-        
-        try {
-            const registration = await navigator.serviceWorker.register(swPath)
-            logger.info('Main', 'orDrumbox SW registered with scope:', registration.scope);
-
-            // Check for updates periodically (every hour)
-            setInterval(() => {
-                registration.update();
-            }, 1000 * 60 * 60);
-
-            // Handle the case where an update is already waiting
-            if (registration.waiting) {
-                showUpdateNotification(registration.waiting);
-            }
-
-            // Listen for new updates
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        showUpdateNotification(newWorker);
-                    }
-                });
-            })
-        } catch (error) {
-            logger.error('Main', 'orDrumbox SW registration failed:', error);
-        }
-    });
-
-    // Reload the page when the new Service Worker takes control
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-            window.location.reload();
-            refreshing = true;
-        }
-    });
-}
-
-function showUpdateNotification(worker) {
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
-    const label = isPWA ? 'Nouvelle version disponible !' : 'Mise à jour disponible !'
-    showToast(label, 'info', {
-        actions: [{ label: 'Installer', onClick: () => worker.postMessage('SKIP_WAITING') }],
-        dismissible: true,
     })
 }
