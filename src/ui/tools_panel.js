@@ -12,7 +12,7 @@ import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import MidiIndicatorView from './midi_indicator_view.js'
 import { logger, nameOr } from "../core/logger.js"
-import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, removeCacheEntry, formatBytes, formatDate, cacheDrumkits, cacheGeneratedSounds } from '../cache/idb_cache.js'
+import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, removeCacheEntry, formatBytes, formatDate, cacheGeneratedSounds } from '../cache/idb_cache.js'
 import { idbGet } from '../core/idb.js'
 import { isMobileViewport } from '../core/constants.js'
 import MidiExporter from '../logic/midi/midi_exporter.js'
@@ -58,9 +58,6 @@ export default class ToolsPanel extends BasePanel {
                 </div>
                 <div id="tp-wav-loops-slot"></div>
                 <div class="ne-row">
-                    <button class="ne-btn" id="tp-export-drumkit" title="Export the current drumkit list as a JSON file">Export DRUMKIT</button>
-                </div>
-                <div class="ne-row">
                     <button class="ne-btn" id="tp-export-synth" title="Export generated synth sounds as a JSON file">Export SYNTH</button>
                 </div>
             </div>
@@ -72,10 +69,6 @@ export default class ToolsPanel extends BasePanel {
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
                     <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav,.flac" webkitdirectory directory multiple>
-                </div>
-                <div class="ne-row">
-                    <button class="ne-btn" id="tp-import-drumkit" title="Import a drumkit from a JSON file">Import DRUMKIT</button>
-                    <input type="file" id="tp-import-drumkit-file" style="display: none" accept=".json">
                 </div>
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-import-synth" title="Import generated synth sounds from a JSON file">Import SYNTH</button>
@@ -165,12 +158,7 @@ export default class ToolsPanel extends BasePanel {
         this.container.querySelector('#tp-import-dir').addEventListener('click', () => importDirFile.click())
         importDirFile.addEventListener('change', (e) => this._onImportDir(e))
 
-        this.container.querySelector('#tp-export-drumkit').addEventListener('click', () => this._exportDrumkit())
         this.container.querySelector('#tp-export-synth').addEventListener('click', () => this._exportSynth())
-
-        const importDrumkitFile = this.container.querySelector('#tp-import-drumkit-file')
-        this.container.querySelector('#tp-import-drumkit').addEventListener('click', () => importDrumkitFile.click())
-        importDrumkitFile.addEventListener('change', (e) => this._onImportDrumkit(e))
 
         const importSynthFile = this.container.querySelector('#tp-import-synth-file')
         this.container.querySelector('#tp-import-synth').addEventListener('click', () => importSynthFile.click())
@@ -501,15 +489,6 @@ export default class ToolsPanel extends BasePanel {
         e.target.value = ''
     }
 
-    _exportDrumkit() {
-        const drumkits = soundRegistry.drumkitList
-        if (!drumkits || drumkits.length === 0) {
-            showToast('No drumkits loaded', 'info')
-            return
-        }
-        downloadJson(drumkits, 'ordrumbox-drumkits.json')
-    }
-
     _exportSynth() {
         const sounds = soundRegistry.generatedSounds
         if (!sounds || Object.keys(sounds).length === 0) {
@@ -517,43 +496,6 @@ export default class ToolsPanel extends BasePanel {
             return
         }
         downloadJson(sounds, 'ordrumbox-synth-sounds.json')
-    }
-
-    _onImportDrumkit(e) {
-        const file = e.target.files[0]
-        if (!file) return
-
-        const reader = new FileReader()
-        reader.onload = async (event) => {
-            try {
-                const data = JSON.parse(event.target.result)
-                if (!Array.isArray(data)) {
-                    showToast('Invalid drumkit file: expected a JSON array', 'error')
-                    return
-                }
-                for (const kit of data) {
-                    if (!kit.name || !Array.isArray(kit.instruments)) {
-                        showToast('Invalid drumkit entry: missing name or instruments', 'error')
-                        return
-                    }
-                }
-                for (const kit of data) {
-                    const existing = soundRegistry.drumkitList.findIndex(k => k.name === kit.name)
-                    if (existing !== -1) {
-                        soundRegistry.drumkitList[existing] = kit
-                    } else {
-                        soundRegistry.drumkitList.push(kit)
-                    }
-                }
-                await cacheDrumkits(soundRegistry.drumkitList)
-                showToast(`Imported ${data.length} drumkit(s)`, 'success')
-            } catch (err) {
-                logger.error('ToolsPanel', 'Drumkit import failed', err)
-                showToast('Import failed: ' + err.message, 'error')
-            }
-        }
-        reader.readAsText(file)
-        e.target.value = ''
     }
 
     _onImportSynth(e) {
