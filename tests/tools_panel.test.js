@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Utils from '../src/core/utils.js'
+import Commander from '../src/logic/commands/cmd.js'
 
 describe('ToolsPanel._compactPattern logic', () => {
     beforeEach(() => {
@@ -58,50 +59,29 @@ describe('ToolsPanel._compactPattern logic', () => {
 })
 
 describe('ToolsPanel._randomizePattern logic', () => {
+    let cmd
+
     beforeEach(() => {
         serviceRegistry.reset()
         appState.reset()
+        cmd = new Commander()
+        serviceRegistry.cmd = cmd
+        serviceRegistry.seq = { setBpm: vi.fn() }
+        serviceRegistry.patterns = { computeFlatNotesFromPattern: () => {} }
     })
 
-    it('randomize adds notes to tracks', () => {
-        const addedNotes = []
-        serviceRegistry.cmd = {
-            addNote: vi.fn((track, beat, beatStep, pitch) => {
-                const note = { beat, beatStep, pitch, velocity: 0.8 }
-                addedNotes.push(note)
-                return note
-            }),
-        }
-        serviceRegistry.audioEngine = { invalidateCache: vi.fn() }
+    it('randomize adds notes to every track via cmd.randomizeTrack', () => {
+        const pattern = cmd.addPattern('Test')
+        cmd.addTrack(pattern, 'KICK')
+        cmd.addTrack(pattern, 'SNARE')
+        cmd.setSelectedPatternNum(0)
 
-        const track = {
-            nbBeats: 4,
-            stepsPerBeat: 4,
-            notes: [],
-        }
-        const pattern = { tracks: [track], nbBeats: 4 }
-        appState.patterns = [pattern]
-        appState.selectedPatternNum = 0
-
-        const tracks = Utils.getTracksArray(pattern)
-        for (const t of tracks) {
-            const beats = t.nbBeats ?? pattern.nbBeats ?? 4
-            const stepsPerBeat = t.stepsPerBeat ?? 4
-            const totalSteps = beats * stepsPerBeat
-            const noteCount = Math.max(1, Math.floor(totalSteps * 0.2))
-            const used = new Set()
-            for (let i = 0; i < noteCount; i++) {
-                let step = i % totalSteps
-                while (used.has(step)) { step = (step + 1) % totalSteps }
-                used.add(step)
-                const beat = Math.floor(step / stepsPerBeat)
-                const beatStep = step % stepsPerBeat
-                const pitch = i % 12
-                const note = serviceRegistry.cmd.addNote(t, beat, beatStep, pitch)
-                if (note) note.velocity = 0.8
-            }
+        for (const track of pattern.tracks) {
+            cmd.randomizeTrack(track, pattern)
         }
 
-        expect(addedNotes.length).toBeGreaterThan(0)
+        for (const track of pattern.tracks) {
+            expect(track.notes.length).toBeGreaterThan(0)
+        }
     })
 })

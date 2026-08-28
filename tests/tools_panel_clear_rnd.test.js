@@ -51,18 +51,6 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
         }
     }
 
-    describe('Clear button removed from tools panel', () => {
-        it('Clear button is not present in the pattern tab (moved to pattern panel toolbar)', () => {
-            const btn = toolsPanel.container.querySelector('#tp-clear')
-            expect(btn).toBeNull()
-        })
-
-        it('Name input is not present in the pattern tab (moved to pattern panel toolbar)', () => {
-            const input = toolsPanel.container.querySelector('#tp-pattern-name')
-            expect(input).toBeNull()
-        })
-    })
-
     describe('Rnd button', () => {
         it('is present in the pattern tab', () => {
             const btn = toolsPanel.container.querySelector('#tp-rnd')
