@@ -4,7 +4,6 @@ import Sound from './sound.js'
 import NoteParams from '../patterns/note_params.js'
 import { computeFlatNotesFromPattern as computeFlatNotesPure } from '../patterns/engine.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { _setAudioUnlocked } from '../state/signals.js'
 import { instrumentsManager } from '../logic/services/instruments_manager.js'
@@ -59,11 +58,9 @@ export default class AudioEngine {
                 })
                 this.sound = this.player.sound
 
-                appState.workletStatus = 'active'
                 playbackEvents.emit("workletStatusChange", 'active')
             } catch (err) {
                 logger.warn('AudioEngine: worklet init failed, audio unavailable', err)
-                appState.workletStatus = 'unavailable'
                 playbackEvents.emit("workletStatusChange", 'unavailable')
             }
         })()
@@ -172,7 +169,7 @@ export default class AudioEngine {
         const pattern = this.patterns[this.getSelectedPatternNum()]
         if (!pattern?.tracks) return
         const nbTicks = this.TICK * pattern.nbBeats
-        const bpm = appState.bpm
+        const bpm = pattern.bpm
         const tracks = pattern.tracks
         const t = 0.005
 

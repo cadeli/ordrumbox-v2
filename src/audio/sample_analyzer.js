@@ -1,6 +1,5 @@
 import AudioAnalyzer from './analyze.js'
 import { hzToNote } from '../core/hz_to_note.js'
-import { color, rgba } from '../ui/theme.js'
 
 const _analyzer = new AudioAnalyzer()
 const _cache = new Map()
@@ -45,14 +44,21 @@ export function clearAnalysisCache(audioBuffer) {
  * @param {number[]} envelope – array of amplitude values (0..1)
  * @param {number} width
  * @param {number} height
- * @param {string} [strokeColor] – defaults to 'color-info' token
+ * @param {string|object} [strokeOrColors] – CSS color string (legacy) or { stroke, background, fill }
  */
-export function drawEnvelope(ctx, envelope, width, height, strokeColor) {
+export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
     if (!envelope?.length) return
 
-    const stroke = strokeColor ?? color('color-info')
+    const colors = typeof strokeOrColors === 'string'
+        ? { stroke: strokeOrColors }
+        : (strokeOrColors ?? {})
+
+    const stroke = colors.stroke ?? '#4fc3f7'
+    const background = colors.background ?? 'rgba(13,13,26,0.3)'
+    const fill = colors.fill ?? 'rgba(79,195,247,0.15)'
+
     ctx.clearRect(0, 0, width, height)
-    ctx.fillStyle = rgba('canvas-shadow', 0.3)
+    ctx.fillStyle = background
     ctx.fillRect(0, 0, width, height)
 
     ctx.beginPath()
@@ -71,6 +77,6 @@ export function drawEnvelope(ctx, envelope, width, height, strokeColor) {
     ctx.lineTo(width, height)
     ctx.lineTo(0, height)
     ctx.closePath()
-    ctx.fillStyle = rgba('color-info', 0.15)
+    ctx.fillStyle = fill
     ctx.fill()
 }

@@ -1,6 +1,6 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import InstrumentsManager from '../services/instruments_manager.js'
+import { instrumentsManager } from '../services/instruments_manager.js'
 import { logger } from '../../core/logger.js'
 import {
     parseMidiNoteOn,
@@ -20,7 +20,7 @@ export default class MidiManager extends EventTarget {
         this.outputs = []
         this.selectedOutputId = null
         this.inputHandlers = new Map()
-        this.instrumentsManager = new InstrumentsManager()
+        this.instrumentsManager = instrumentsManager
         this.isReady = false
         this.isInitializing = false
         this.initPromise = null

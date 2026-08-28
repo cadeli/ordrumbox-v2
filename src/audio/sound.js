@@ -1,7 +1,6 @@
 import VoiceFactory from './voices/voice_factory.js'
 import NodePool from './node_pool.js'
 import { applyTrackToStrip } from './strip_sync.js'
-import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import ResourcesLoader from '../loader/resources_loader.js'
 import { logger } from '../core/logger.js'
@@ -120,8 +119,7 @@ export default class Sound {
                 let lfoContext = null
                 if (flatNote.track.pitchLfo) {
                     const tick = serviceRegistry.transport?.tick ?? 0
-                    const pattern = appState.patterns?.[appState.selectedPatternNum]
-                    const nbTicks = TICK * (pattern?.nbBeats ?? 4)
+                    const nbTicks = TICK * (flatNote.track.nbBeats ?? 4)
                     lfoContext = { tick, nbTicks }
                 }
                 await voice.setup(flatNote, time, lfoContext)

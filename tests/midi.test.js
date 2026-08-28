@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('../src/logic/services/instruments_manager.js', () => ({
-    default: class MockInstrumentsManager {
-        findTrackIndexFromMidi = vi.fn().mockReturnValue(-1)
-    },
-}))
+vi.mock('../src/logic/services/instruments_manager.js', () => {
+    const mock = { findTrackIndexFromMidi: vi.fn().mockReturnValue(-1) }
+    return {
+        default: class MockInstrumentsManager { findTrackIndexFromMidi = vi.fn().mockReturnValue(-1) },
+        instrumentsManager: mock,
+    }
+})
 
 vi.mock('../src/state/service_registry.js', () => ({
     serviceRegistry: {
