@@ -1,7 +1,7 @@
 // src/ui/synth_editor/PresetSection.js
 // Preset CRUD operations and footer rendering.
 
-import { escapeHtml, renderOptions } from '../components/panel_helpers.js'
+import { escapeHtml, renderOptions, downloadJson } from '../components/panel_helpers.js'
 import { showToast } from '../toast.js'
 import { SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META } from './constants.js'
 import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
@@ -83,8 +83,10 @@ export default class PresetSection {
              <span class="ss-footer-sep"></span>
              <button class="ss-tb-btn" data-action="synth-new" title="New preset">+</button>
              <button class="ss-tb-btn" data-action="synth-duplicate" title="Duplicate preset">⧉</button>
-             <button class="ss-tb-btn" data-action="synth-ok" title="Save">Save</button>
              <button class="ss-tb-btn" data-action="synth-revert" title="Revert to original settings">Revert</button>
+             <span class="ss-footer-sep"></span>
+             <button class="ss-tb-btn" data-action="synth-export" title="Export synth sounds as JSON">Export</button>
+             <button class="ss-tb-btn" data-action="synth-import" title="Import synth sounds from JSON">Import</button>
          </div>`
     }
 

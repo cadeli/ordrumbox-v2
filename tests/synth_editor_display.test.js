@@ -125,12 +125,9 @@ describe('Soft Synth Editor display', () => {
         expect(bypassBtns.length).toBe(blocks.length)
     })
 
-it('renders the Save and Revert action buttons', async () => {
+it('renders the Revert action button', async () => {
          await trackEditor.synthEditor.openEditor()
-         const saveBtn = document.querySelector('#soft-synth-panel [data-action="synth-ok"]')
          const revertBtn = document.querySelector('#soft-synth-panel [data-action="synth-revert"]')
-         expect(saveBtn).not.toBeNull()
-         expect(saveBtn.textContent.trim()).toBe('Save')
          expect(revertBtn).not.toBeNull()
          expect(revertBtn.textContent.trim()).toBe('Revert')
      })

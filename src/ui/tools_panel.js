@@ -1,7 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { soundRegistry } from '../state/sound_registry.js'
 import { escapeHtml, downloadJson, renderOptions } from './components/panel_helpers.js'
 import MidiImportService from '../logic/services/midi_import_service.js'
 import WavImportService from '../logic/services/wav_import_service.js'
@@ -12,7 +11,7 @@ import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import MidiIndicatorView from './midi_indicator_view.js'
 import { logger, nameOr } from "../core/logger.js"
-import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, removeCacheEntry, formatBytes, formatDate, cacheGeneratedSounds } from '../cache/idb_cache.js'
+import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, removeCacheEntry, formatBytes, formatDate } from '../cache/idb_cache.js'
 import { idbGet } from '../core/idb.js'
 import { isMobileViewport } from '../core/constants.js'
 import MidiExporter from '../logic/midi/midi_exporter.js'
@@ -57,9 +56,6 @@ export default class ToolsPanel extends BasePanel {
                     <button class="ne-btn" id="tp-export-wav" title="Render the pattern to an audio WAV file">Export WAV</button>
                 </div>
                 <div id="tp-wav-loops-slot"></div>
-                <div class="ne-row">
-                    <button class="ne-btn" id="tp-export-synth" title="Export generated synth sounds as a JSON file">Export SYNTH</button>
-                </div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="import">
                 <div class="ne-row">
@@ -69,10 +65,6 @@ export default class ToolsPanel extends BasePanel {
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
                     <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav,.flac" webkitdirectory directory multiple>
-                </div>
-                <div class="ne-row">
-                    <button class="ne-btn" id="tp-import-synth" title="Import generated synth sounds from a JSON file">Import SYNTH</button>
-                    <input type="file" id="tp-import-synth-file" style="display: none" accept=".json">
                 </div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="midi-status">
@@ -157,12 +149,6 @@ export default class ToolsPanel extends BasePanel {
         const importDirFile = this.container.querySelector('#tp-import-dir-file')
         this.container.querySelector('#tp-import-dir').addEventListener('click', () => importDirFile.click())
         importDirFile.addEventListener('change', (e) => this._onImportDir(e))
-
-        this.container.querySelector('#tp-export-synth').addEventListener('click', () => this._exportSynth())
-
-        const importSynthFile = this.container.querySelector('#tp-import-synth-file')
-        this.container.querySelector('#tp-import-synth').addEventListener('click', () => importSynthFile.click())
-        importSynthFile.addEventListener('change', (e) => this._onImportSynth(e))
 
         this.container.querySelector('#tp-midi-enable').addEventListener('click', async () => {
             const btn = this.container.querySelector('#tp-midi-enable')
@@ -486,41 +472,6 @@ export default class ToolsPanel extends BasePanel {
             logger.error('ToolsPanel', 'Directory import failed', err)
             showToast('Import failed: ' + err.message, 'error')
         }
-        e.target.value = ''
-    }
-
-    _exportSynth() {
-        const sounds = soundRegistry.generatedSounds
-        if (!sounds || Object.keys(sounds).length === 0) {
-            showToast('No synth sounds loaded', 'info')
-            return
-        }
-        downloadJson(sounds, 'ordrumbox-synth-sounds.json')
-    }
-
-    _onImportSynth(e) {
-        const file = e.target.files[0]
-        if (!file) return
-
-        const reader = new FileReader()
-        reader.onload = async (event) => {
-            try {
-                const data = JSON.parse(event.target.result)
-                if (!data || typeof data !== 'object' || Array.isArray(data)) {
-                    showToast('Invalid synth file: expected a JSON object', 'error')
-                    return
-                }
-                const count = Object.keys(data).length
-                Object.assign(soundRegistry.generatedSounds, data)
-                await cacheGeneratedSounds(soundRegistry.generatedSounds)
-                serviceRegistry.audioEngine?.updateGeneratedSounds?.(soundRegistry.generatedSounds)
-                showToast(`Imported ${count} synth sound(s)`, 'success')
-            } catch (err) {
-                logger.error('ToolsPanel', 'Synth import failed', err)
-                showToast('Import failed: ' + err.message, 'error')
-            }
-        }
-        reader.readAsText(file)
         e.target.value = ''
     }
 }

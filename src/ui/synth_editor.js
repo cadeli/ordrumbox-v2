@@ -9,7 +9,8 @@ import { soundRegistry as _soundRegistrySingleton } from '../state/sound_registr
 import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_registry.js'
 import { playbackEvents as _playbackEventsSingleton } from '../state/playback_events.js'
 import { OrKnob } from './components/or_knob.js'
-import { fmt, escapeHtml } from './components/panel_helpers.js'
+import { fmt, escapeHtml, downloadJson } from './components/panel_helpers.js'
+import { showToast } from './toast.js'
 
 import GroupsSection from './synth_editor/groups_section.js'
 import WaveformSection from './synth_editor/waveform_section.js'
@@ -123,11 +124,11 @@ export default class SynthEditor {
         this._showSynthPanel()
     }
 
-    /** Hides the panel, optionally committing changes. */
+    /** Hides the panel, committing live-previewed changes. */
     hidePanel() {
         if (this.panel.style.display !== 'flex') return
         if (this._editKey && this._draft) {
-            this._closeEditor(false)
+            this._closeEditor(true)
         } else {
             this._hideSynthPanel()
             if (this.host._track) {
@@ -329,13 +330,14 @@ export default class SynthEditor {
 
     _handleAction(target) {
         const action = target.dataset.action
-        if (action === 'synth-ok') this._savePreset()
-        else if (action === 'synth-revert') this._revertPreset()
+        if (action === 'synth-revert') this._revertPreset()
         else if (action === 'synth-duplicate') this._presets.duplicatePreset()
         else if (action === 'synth-rename') this._presets.renamePreset()
         else if (action === 'synth-randomize') this._presets.randomizePreset()
         else if (action === 'synth-new') this._presets.newPreset()
         else if (action === 'synth-delete') this._presets.deletePreset()
+        else if (action === 'synth-export') this._exportSynth()
+        else if (action === 'synth-import') this._importSynth()
         else return false
         return true
     }
@@ -345,6 +347,16 @@ export default class SynthEditor {
         if (!nav) return
         const dir = parseInt(nav.dataset.presetNav, 10)
         this._presets.navigatePreset(dir)
+    }
+
+    _revertPreset() {
+        if (!this._editKey || !this._original) return
+        this._presets.commitSound(this._editKey, this._original)
+        this._draft = structuredClone(this._original)
+        this._renderEditor()
+        this._serviceRegistry.audioEngine?.invalidateCache?.()
+        this._playbackEvents.emit('trackParamChange', this.host._track)
+        this._playbackEvents.emit('patternChange', [this.host._track])
     }
 
     // ─── Value access ──────────────────────────────────────────────────
@@ -372,15 +384,6 @@ export default class SynthEditor {
 
     // ─── Close / save / revert ─────────────────────────────────────────
 
-    _savePreset() {
-        if (!this._editKey || !this._draft) return
-        this._presets.commitSound(this._editKey, this._draft)
-        this._serviceRegistry.audioEngine?.invalidateCache?.()
-        this._playbackEvents.emit('trackParamChange', this.host._track)
-        this._playbackEvents.emit('patternChange', [this.host._track])
-        this._renderEditor()
-    }
-
     _revertPreset() {
         if (!this._editKey || !this._original) return
         this._presets.commitSound(this._editKey, this._original)
@@ -389,6 +392,52 @@ export default class SynthEditor {
         this._serviceRegistry.audioEngine?.invalidateCache?.()
         this._playbackEvents.emit('trackParamChange', this.host._track)
         this._playbackEvents.emit('patternChange', [this.host._track])
+    }
+
+    // ─── Value access ──────────────────────────────────────────────────
+
+    _exportSynth() {
+        const sounds = this._soundRegistry.generatedSounds
+        if (!sounds || Object.keys(sounds).length === 0) {
+            showToast('No synth sounds loaded', 'info')
+            return
+        }
+        downloadJson(sounds, 'ordrumbox-synth-sounds.json')
+        showToast('Synth sounds exported', 'success')
+    }
+
+    _importSynth() {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = '.json'
+        input.addEventListener('change', async () => {
+            const file = input.files?.[0]
+            if (!file) return
+            try {
+                const text = await file.text()
+                const data = JSON.parse(text)
+                if (!data || typeof data !== 'object' || Array.isArray(data)) {
+                    showToast('Invalid synth file: expected a JSON object', 'error')
+                    return
+                }
+                const sr = this._soundRegistry
+                let count = 0
+                for (const [key, val] of Object.entries(data)) {
+                    if (val && typeof val === 'object') {
+                        sr.generatedSounds[key] = val
+                        count++
+                    }
+                }
+                this._serviceRegistry.audioEngine?.updateGeneratedSounds(sr.generatedSounds)
+                this._presets._persist()
+                this._presets.ensureGeneratedSoundsLoaded()
+                this._renderEditor()
+                showToast(`Imported ${count} synth sound(s)`, 'success')
+            } catch (err) {
+                showToast('Import failed: ' + err.message, 'error')
+            }
+        })
+        input.click()
     }
 
     _closeEditor(shouldSave) {
