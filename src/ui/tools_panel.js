@@ -2,13 +2,10 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { PatternExporter } from '../patterns/exporter.js'
 import { escapeHtml, downloadJson, renderOptions } from './components/panel_helpers.js'
 import MidiImportService from '../logic/services/midi_import_service.js'
 import WavImportService from '../logic/services/wav_import_service.js'
 import Utils from '../core/utils.js'
-import { MAX_IMPORT_SIZE } from '../core/constants.js'
-import { validatePatternJson } from '../logic/commands/pattern_import.js'
 import { showToast } from './toast.js'
 import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
@@ -54,9 +51,6 @@ export default class ToolsPanel extends BasePanel {
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="export">
                 <div class="ne-row">
-                    <button class="ne-btn" id="tp-export-json" title="Save the current pattern as a JSON file">Export PATTERN</button>
-                </div>
-                <div class="ne-row">
                     <button class="ne-btn" id="tp-export-midi" title="Export the current pattern to a Standard MIDI File (.mid)">Export MIDI</button>
                 </div>
                 <div class="ne-row">
@@ -71,10 +65,6 @@ export default class ToolsPanel extends BasePanel {
                 </div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="import">
-                <div class="ne-row">
-                    <button class="ne-btn" id="tp-import-json" title="Load a previously exported pattern from a JSON file">Import PATTERN</button>
-                    <input type="file" id="tp-import-file" style="display: none" accept=".json">
-                </div>
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-import-midi" title="Import a Standard MIDI File (.mid) into a new pattern">Import MIDI</button>
                     <input type="file" id="tp-import-midi-file" style="display: none" accept=".mid,.midi">
@@ -150,9 +140,7 @@ export default class ToolsPanel extends BasePanel {
         
         this.container.querySelector('#tp-compact').addEventListener('click', () => this._compactPattern())
         this.container.querySelector('#tp-rnd').addEventListener('click', () => this._randomizePattern())
-        
-        this.container.querySelector('#tp-export-json').addEventListener('click', () => this._exportJson())
-        
+
         this._wavLoops = new OrSlider({
             key:    'tp-wav-loops',
             label:  'Loops',
@@ -168,10 +156,6 @@ export default class ToolsPanel extends BasePanel {
         this.exportWavBtn.addEventListener('click', () => this._exportWav())
         
         this.container.querySelector('#tp-export-midi').addEventListener('click', () => this._exportMidi())
-        
-        const importFile = this.container.querySelector('#tp-import-file')
-        this.container.querySelector('#tp-import-json').addEventListener('click', () => importFile.click())
-        importFile.addEventListener('change', (e) => this._onImportFile(e))
 
         const importMidiFile = this.container.querySelector('#tp-import-midi-file')
         this.container.querySelector('#tp-import-midi').addEventListener('click', () => importMidiFile.click())
@@ -452,12 +436,6 @@ export default class ToolsPanel extends BasePanel {
         playbackEvents.emit("patternChange")
     }
 
-    _exportJson() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern) return
-        downloadJson(PatternExporter.export(pattern), `ordrumbox-${pattern.name ?? 'pattern'}.json`)
-    }
-
     async _exportMidi() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
@@ -490,44 +468,6 @@ export default class ToolsPanel extends BasePanel {
             this.exportWavBtn.disabled = false
             this.exportWavBtn.textContent = originalText
         }
-    }
-
-    _onImportFile(e) {
-        const file = e.target.files[0]
-        if (!file) return
-
-        if (file.size > MAX_IMPORT_SIZE) {
-            showToast('File too large (max 10 MB)', 'error')
-            e.target.value = ''
-            return
-        }
-
-        const reader = new FileReader()
-        reader.onload = async (event) => {
-            try {
-                const data = JSON.parse(event.target.result)
-
-                const validation = validatePatternJson(data)
-                if (!validation.ok) {
-                    showToast(`Invalid pattern: ${validation.error}`, 'error')
-                    return
-                }
-
-                const newPattern = serviceRegistry.cmd.importPatternFromJson(data)
-                const newIdx = appState.patterns.indexOf(newPattern)
-                if (newIdx !== -1) {
-                    await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
-                    playbackEvents.emit("patternStructureChange")
-                    playbackEvents.emit("patternChange")
-                    playbackEvents.emit("toolsToggle", false)
-                }
-            } catch (err) {
-                logger.error('ToolsPanel', 'Import failed', err)
-                showToast('Import failed: ' + err.message, 'error')
-            }
-        }
-        reader.readAsText(file)
-        e.target.value = '' // Reset for next time
     }
 
     async _onImportMidiFile(e) {
