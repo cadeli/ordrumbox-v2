@@ -124,7 +124,7 @@ body {
 #tb .tb-brand {
     font-size: 15px; font-weight: bold; color: var(--accent);
     letter-spacing: 0.5px; flex-shrink: 0; user-select: none;
-    min-width: 246px; max-width: 246px; text-align: center;
+    min-width: 140px; max-width: 180px; text-align: center;
 }
 #tb .tb-group {
     display: flex; flex-direction: column; align-items: center; gap: 1px;
@@ -980,12 +980,13 @@ min-height: auto;
     justify-content: flex-start;
 }
 .ne-tab-btn {
-    flex: 0 0 auto; width: 70px; padding: 4px 2px; font-size: var(--fs-xs); font-weight: bold;
+    flex: 1 1 0; min-width: 0; padding: 4px 2px; font-size: var(--fs-xs); font-weight: bold;
     text-transform: uppercase; letter-spacing: 0;
     background: transparent; color: var(--text-dim);
     border: 1px solid transparent; border-radius: 3px;
     cursor: pointer; transition: all 0.15s;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: center;
 }
 .ne-tab-btn:hover {
     color: var(--text); background: rgba(255,255,255,0.05);
