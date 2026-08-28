@@ -117,12 +117,11 @@ describe('Granular patternChange events', () => {
     })
 
     describe('patternStructureChange', () => {
-        it('emitted by song_panel add pattern', () => {
+        it('emitted by pattern_panel new action', () => {
             const cap = captureGranular()
-            const pp = new SongPanel()
+            const pp = new PatternPanel()
             pp.init()
-            playbackEvents.emit("songToggle", true)
-            pp.container.querySelector('#sg-add').click()
+            pp._onAction('new')
             expect(cap.patternStructureChange).toHaveBeenCalled()
         })
 

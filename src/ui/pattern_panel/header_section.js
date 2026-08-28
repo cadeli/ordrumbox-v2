@@ -21,6 +21,7 @@ export default class HeaderSection {
 
         return `<div class="pp-header">
             <div class="pp-actions">
+                <button class="pp-action-btn" data-pp-action="new" title="New pattern">+</button>
                 <button class="pp-action-btn" data-pp-action="delete" title="Delete pattern">✕</button>
                 <button class="pp-action-btn" data-pp-action="clean" title="Clear all notes">⌫</button>
                 <button class="pp-action-btn" data-pp-action="duplicate" title="Duplicate pattern">⧉</button>

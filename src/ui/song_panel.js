@@ -36,7 +36,6 @@ export default class SongPanel extends BasePanel {
                     </div>
                     <div class="sg-song-desc" id="sg-song-desc" contenteditable="true" spellcheck="false" title="Double-click to edit description"></div>
                     <div class="sg-btn-group">
-                        <button class="ne-btn" id="sg-add" title="Add a new empty pattern">+ Pattern</button>
                         <button class="ne-btn" id="sg-rename" title="Rename selected pattern">Rename</button>
                         <button class="ne-btn sg-danger" id="sg-delete" title="Delete selected pattern">Delete</button>
                     </div>
@@ -62,18 +61,6 @@ export default class SongPanel extends BasePanel {
         })
         this._songDescEl.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); this._songDescEl.blur() }
-        })
-
-        this.container.querySelector('#sg-add').addEventListener('click', () => {
-            const newIdx = appState.patterns.length
-            serviceRegistry.cmd.addPattern()
-            serviceRegistry.cmd.setSelectedPatternNum(newIdx)
-            appState.currentPage = 0
-            playbackEvents.emit("patternStructureChange")
-            playbackEvents.emit("patternChange")
-            this._selectedIdx = newIdx
-            this.sync()
-            showToast('Pattern added', 'success')
         })
 
         this.container.querySelector('#sg-rename').addEventListener('click', () => {

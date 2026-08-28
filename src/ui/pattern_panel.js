@@ -543,11 +543,21 @@ export default class PatternPanel extends BasePanel {
     async _onAction(action) {
         const idx = this._appState.selectedPatternNum
         const pattern = this._appState.patterns[idx]
-        if (!pattern && action !== 'replace') return
+        if (!pattern && action !== 'replace' && action !== 'new') return
         const cmd = this._serviceRegistry.cmd
         const patterns = this._serviceRegistry.patterns
 
         switch (action) {
+            case 'new': {
+                const newIdx = this._appState.patterns.length
+                cmd.addPattern()
+                cmd.setSelectedPatternNum(newIdx)
+                this._appState.currentPage = 0
+                this._playbackEvents.emit('patternStructureChange')
+                this._playbackEvents.emit('patternChange')
+                showToast('Pattern added', 'success')
+                break
+            }
             case 'delete': {
                 if (this._appState.patterns.length <= 1) return
                 if (!confirm('Delete pattern "' + (pattern.name ?? '') + '"?')) return
