@@ -784,7 +784,15 @@ export default class PatternPanel extends BasePanel {
         if (tracks.length === 0) {
             const prevHeight = this.container.offsetHeight
             this._headerEl.innerHTML = this._header.render(pattern, this._appState.currentPage)
-            this._tracksEl.innerHTML = '<div class="pp-empty">Empty Pattern</div>'
+            this._tracksEl.innerHTML = `<div class="pp-tracks">
+                <div class="pp-toolbar-row">
+                    <div class="pp-master-track" id="pp-master-btn">
+                        <span class="pp-track-name">Master</span>
+                        <input type="range" class="pp-master-volume" min="0" max="2" step="0.01" value="1" title="Master Gain">
+                    </div>
+                    <div class="pp-add-track" id="pp-add-track">+ new track</div>
+                </div>
+            </div>`
             this._cellMap.clear()
             this._headerDirty = false
             if (prevHeight > 0) {

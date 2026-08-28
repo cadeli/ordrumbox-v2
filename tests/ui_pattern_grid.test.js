@@ -89,9 +89,11 @@ describe('Pattern Panel UI Grid', () => {
     it('handles empty tracks gracefully', () => {
         appState.patterns[0].tracks = {}
         panel.sync()
-        const emptyMsg = document.querySelector('.pp-empty')
-        expect(emptyMsg).not.toBeNull()
-        expect(emptyMsg.textContent).toContain('Empty Pattern')
+        const masterBtn = document.querySelector('#pp-master-btn')
+        expect(masterBtn).not.toBeNull()
+        const addTrack = document.querySelector('#pp-add-track')
+        expect(addTrack).not.toBeNull()
+        expect(addTrack.textContent).toContain('new track')
     })
 
     it('renders a mute divider for each track', () => {
