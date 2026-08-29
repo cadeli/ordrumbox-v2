@@ -16,7 +16,7 @@ export function createTrackMethods(cmd) {
             cmd._record(() => {
                 pattern.tracks.splice(trackIndex, 1)
                 cmd._persist()
-            }, { desc: 'Add track' })
+            }, { desc: `Add track ${track.name}` })
             return track
         },
 
@@ -31,7 +31,7 @@ export function createTrackMethods(cmd) {
                 tracks.splice(trackIdx, 0, removed)
                 removed.notes = removedNotes
                 cmd._persist()
-            }, { desc: 'Remove track' })
+            }, { desc: `Remove track ${removed.name}` })
         },
 
         createTrack(nbBeats, name, stepsPerBeat = 4) {
@@ -70,7 +70,7 @@ export function createTrackMethods(cmd) {
                 track.loopAtStep = oldLoopAtStep
                 track.notes = oldNotes
                 cmd._persist()
-            }, { desc: 'Inc steps per bar' })
+            }, { desc: `Steps per bar on ${track.name}` })
         },
 
         incrLoopPoint(track) {
@@ -89,7 +89,7 @@ export function createTrackMethods(cmd) {
                 track.loopPointBeat = oldLoopPointBeat
                 track.loopPointStep = oldLoopPointStep
                 cmd._persist()
-            }, { desc: 'Inc loop point' })
+            }, { desc: `Loop point on ${track.name}` })
         },
 
         cleanPattern(pattern) {
@@ -113,7 +113,7 @@ export function createTrackMethods(cmd) {
                 track.loopPointBeat = oldLoopPointBeat
                 track.loopAtStep = oldLoopAtStep
                 cmd._persist()
-            }, { desc: 'Clean track' })
+            }, { desc: `Clean ${track.name}` })
         },
 
         compactTrack(track) {
@@ -129,7 +129,7 @@ export function createTrackMethods(cmd) {
                     track.loopPointBeat = oldLoopPointBeat
                     track.loopAtStep = oldLoopAtStep
                     cmd._persist()
-                }, { desc: 'Compact tracks' })
+                }, { desc: `Compact ${track.name}` })
             }
             return result
         },
@@ -163,7 +163,7 @@ export function createTrackMethods(cmd) {
                 track.loopPointBeat = oldLoopPointBeat
                 track.loopAtStep = oldLoopAtStep
                 cmd._persist()
-            }, { desc: 'Randomize track' })
+            }, { desc: `Randomize ${track.name}` })
         },
 
         changeTrackSound(track, soundId) {
@@ -179,7 +179,7 @@ export function createTrackMethods(cmd) {
                 track.useAutoAssignSound = oldUseAutoAssign
                 track.useSoftSynth = oldUseSoftSynth
                 cmd._persist()
-            }, { desc: 'Change track sound' })
+            }, { desc: `Sound on ${track.name}` })
         },
 
         changeTrackName(track, newName) {
@@ -189,7 +189,7 @@ export function createTrackMethods(cmd) {
             cmd._record(() => {
                 track.name = oldName
                 cmd._persist()
-            }, { desc: 'Change track name' })
+            }, { desc: `Rename track → ${newName}` })
         },
 
         getSoundIdFromUrl(url) {

@@ -1,5 +1,10 @@
 import Utils from '../../../core/utils.js'
+import { appState } from '../../../state/app_state.js'
 import { logger } from '../../../core/logger.js'
+
+function _findPatternForTrack(track) {
+    return appState.patterns.find(p => Utils.getTracksArray(p).includes(track))
+}
 
 /**
  * Note CRUD commands — returns an object of methods bound to the Commander instance.
@@ -16,11 +21,12 @@ export function createNoteMethods(cmd) {
                     track.notes.splice(noteIndex, 1)
                     cmd._incrementPatternVersionByTrack(track)
                     cmd._persist()
+                    const patName = _findPatternForTrack(track)?.name ?? ''
                     cmd._record(() => {
                         track.notes.splice(noteIndex, 0, deletedNote)
                         cmd._incrementPatternVersionByTrack(track)
                         cmd._persist()
-                    }, { desc: 'Delete note' })
+                    }, { desc: `Delete note on ${track.name} in "${patName}"` })
                     return
                 }
             }
@@ -44,11 +50,12 @@ export function createNoteMethods(cmd) {
             track.notes.push(note)
             cmd._incrementPatternVersionByTrack(track)
             cmd._persist()
+            const patName = _findPatternForTrack(track)?.name ?? ''
             cmd._record(() => {
                 track.notes.splice(noteIndex, 1)
                 cmd._incrementPatternVersionByTrack(track)
                 cmd._persist()
-            }, { desc: 'Add note' })
+            }, { desc: `Add note on ${track.name} in "${patName}"` })
             return note
         }
     }

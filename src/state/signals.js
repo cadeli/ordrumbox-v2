@@ -132,10 +132,18 @@ export const [canRedo, _setCanRedo] = createSignal(false)
 /** @type {[() => { past: number, future: number }, (v: object) => void]} */
 export const [historyStats, _setHistoryStats] = createSignal({ past: 0, future: 0 })
 
+/** @type {[() => string | null, (v: string | null) => void]} */
+export const [nextUndoDesc, _setNextUndoDesc] = createSignal(null)
+
+/** @type {[() => string | null, (v: string | null) => void]} */
+export const [nextRedoDesc, _setNextRedoDesc] = createSignal(null)
+
 playbackEvents.on('historyChange', (state) => {
     _setCanUndo(state?.canUndo ?? false)
     _setCanRedo(state?.canRedo ?? false)
     _setHistoryStats({ past: state?.pastLength ?? 0, future: state?.futureLength ?? 0 })
+    _setNextUndoDesc(state?.nextUndoDesc ?? null)
+    _setNextRedoDesc(state?.nextRedoDesc ?? null)
 })
 
 // ═══════════════════════════════════════════════════════

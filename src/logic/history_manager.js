@@ -120,7 +120,9 @@ export default class HistoryManager {
             canUndo: this.canUndo,
             canRedo: this.canRedo,
             pastLength: this.pastLength,
-            futureLength: this.futureLength
+            futureLength: this.futureLength,
+            nextUndoDesc: this._past.at(-1)?.meta?.desc ?? null,
+            nextRedoDesc: this._future.at(-1)?.meta?.desc ?? null,
         })
     }
 }

@@ -6,6 +6,7 @@ import { effect } from '../core/signals.js'
 import {
     isPlaying, currentBpm, currentPattern, currentTracks, trackVersion,
     canPrevPage, canNextPage, canUndo, canRedo, historyStats,
+    nextUndoDesc, nextRedoDesc,
     patternVersion, drumkitList, pageVersion,
 } from '../state/signals.js'
 import { injectUiCss } from './components/panel_helpers.js'
@@ -85,18 +86,18 @@ export default class Toolbar {
         effect(() => {
             const undo = canUndo()
             this.undoBtn.disabled = !undo
-            const stats = historyStats()
+            const desc = nextUndoDesc()
             this.undoBtn.title = undo
-                ? `Undo (Ctrl+Z) — ${stats.past} actions`
+                ? `Undo: ${desc} (Ctrl+Z)`
                 : 'Undo (Ctrl+Z)'
         })
 
         effect(() => {
             const redo = canRedo()
             this.redoBtn.disabled = !redo
-            const stats = historyStats()
+            const desc = nextRedoDesc()
             this.redoBtn.title = redo
-                ? `Redo (Ctrl+Y) — ${stats.future} actions`
+                ? `Redo: ${desc} (Ctrl+Y)`
                 : 'Redo (Ctrl+Y)'
         })
 

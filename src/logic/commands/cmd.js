@@ -91,7 +91,7 @@ export default class Commander {
                 }
                 this._incrementPatternVersionByTrack(track)
                 this._persist()
-            }, { desc: 'Update track' })
+            }, { desc: `Update ${track.name}` })
         }
 
         if (typeof track.stepsPerBeat === 'number' && typeof track.loopAtStep === 'number') {

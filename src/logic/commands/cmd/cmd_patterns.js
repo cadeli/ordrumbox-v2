@@ -16,7 +16,7 @@ export function createPatternMethods(cmd) {
             cmd._record(() => {
                 appState.patterns.splice(patternIndex, 1)
                 cmd._persist()
-            }, { desc: 'Add pattern' })
+            }, { desc: `Add pattern "${pattern.name}"` })
             return pattern
         },
 
@@ -31,7 +31,7 @@ export function createPatternMethods(cmd) {
             cmd._record(() => {
                 appState.patterns.splice(idx, 0, removedPattern)
                 cmd._persist()
-            }, { desc: 'Remove pattern' })
+            }, { desc: `Remove pattern "${removedPattern.name}"` })
             return true
         },
 
@@ -44,7 +44,7 @@ export function createPatternMethods(cmd) {
             cmd._record(() => {
                 pat.name = oldName
                 cmd._persist()
-            }, { desc: 'Rename pattern' })
+            }, { desc: `Rename pattern → "${pat.name}"` })
         },
 
         getPatternByName(name) {
@@ -65,7 +65,7 @@ export function createPatternMethods(cmd) {
             cmd._record(() => {
                 pattern.bpm = oldBpm
                 cmd._persist()
-            }, { desc: 'Set BPM' })
+            }, { desc: `Set BPM → ${pattern.bpm}` })
             return pattern
         },
 
@@ -76,7 +76,7 @@ export function createPatternMethods(cmd) {
             cmd._record(() => {
                 pattern.description = oldDescription
                 cmd._persist()
-            }, { desc: 'Set description' })
+            }, { desc: `Set description on "${pattern.name}"` })
             return pattern
         },
 
