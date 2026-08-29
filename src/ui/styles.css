@@ -264,7 +264,6 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     background: var(--bg);
-    border-bottom: 2px solid var(--border-subtle);
     font-family: monospace;
     font-size: var(--fs-base);
     color: var(--text-secondary);
@@ -280,11 +279,10 @@ body {
     right: 0;
     width: 20%;
     top: 64px !important;
-    height: 750px;
+    height: 754px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    border-bottom: none;
     border-left: 2px solid var(--border-subtle);
 }
 
@@ -2265,6 +2263,7 @@ min-height: auto;
         border-top: none !important;
         border-left: 1px solid var(--border-subtle) !important;
         border-left-width: 1px !important;
+        border-bottom: 2px solid var(--accent);
         padding: 2px 4px;
         overflow-y: auto;
         box-sizing: border-box;
