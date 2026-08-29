@@ -20,10 +20,22 @@ vi.mock('../src/state/app_state.js', () => {
 
 vi.mock('../src/state/playback_events.js', () => {
     const callbacks = []
+    let batchDepth = 0
+    const pending = []
     const bus = {
         on: (ev, fn) => { callbacks.push(fn) },
         off: (ev, fn) => { const i = callbacks.indexOf(fn); if (i >= 0) callbacks.splice(i, 1) },
-        emit: (ev) => callbacks.forEach(fn => fn()),
+        emit: (ev) => {
+            if (batchDepth > 0) { pending.push(ev); return }
+            callbacks.forEach(fn => fn())
+        },
+        batch: (fn) => {
+            batchDepth++
+            try { fn() } finally {
+                batchDepth--
+                if (batchDepth === 0) { while (pending.length) { pending.shift(); callbacks.forEach(fn => fn()) } }
+            }
+        },
         _clearCallbacks: () => { callbacks.length = 0 },
     }
     return {

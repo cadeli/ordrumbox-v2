@@ -7,12 +7,24 @@ import { playbackEvents } from '../src/state/playback_events.js'
 vi.mock('../src/state/playback_events.js', async () => {
     const { EventEmitter } = await import('events')
     const emitter = new EventEmitter()
+    let batchDepth = 0
+    const pending = []
     return {
         playbackEvents: {
-            emit: vi.fn((...a) => emitter.emit(...a)),
+            emit: vi.fn((...a) => {
+                if (batchDepth > 0) { pending.push(a); return }
+                emitter.emit(...a)
+            }),
             on: vi.fn((...a) => emitter.on(...a)),
             off: vi.fn((...a) => emitter.off(...a)),
             removeAllListeners: vi.fn((...a) => emitter.removeAllListeners(...a)),
+            batch: vi.fn((fn) => {
+                batchDepth++
+                try { fn() } finally {
+                    batchDepth--
+                    if (batchDepth === 0) { while (pending.length) emitter.emit(...pending.shift()) }
+                }
+            }),
         },
     }
 })

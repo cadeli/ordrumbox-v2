@@ -615,17 +615,22 @@ export default class TrackEditor extends BasePanel {
         }
 
         if (key === 'loopAtStep') {
-            this._playbackEvents.emit('loopPointChange', {
-                trackIdx: this._trackIdx, loopAtStep: this._track.loopAtStep
+            this._playbackEvents.batch(() => {
+                this._playbackEvents.emit('loopPointChange', {
+                    trackIdx: this._trackIdx, loopAtStep: this._track.loopAtStep
+                })
+                this._emitTrackChange()
             })
+        } else {
+            this._emitTrackChange()
         }
-
-        this._emitTrackChange()
     }
 
     _emitTrackChange() {
-        this._playbackEvents.emit("trackParamChange", this._track)
-        this._playbackEvents.emit("patternChange", [this._track])
+        this._playbackEvents.batch(() => {
+            this._playbackEvents.emit("trackParamChange", this._track)
+            this._playbackEvents.emit("patternChange", [this._track])
+        })
     }
 
     // ── Hide ───────────────────────────────────────────────────────

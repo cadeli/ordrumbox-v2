@@ -74,8 +74,7 @@ export default class HistoryManager {
             return false
         }
         this._isUndoing = false
-        this._emitChange()
-        this._emitPatternRefresh()
+        this._emitBatchedRefresh()
         return true
     }
 
@@ -97,15 +96,17 @@ export default class HistoryManager {
             return false
         }
         this._isRedoing = false
-        this._emitChange()
-        this._emitPatternRefresh()
+        this._emitBatchedRefresh()
         return true
     }
 
-    _emitPatternRefresh() {
-        playbackEvents.emit('patternChange')
-        playbackEvents.emit('noteChange')
-        playbackEvents.emit('patternStructureChange')
+    _emitBatchedRefresh() {
+        playbackEvents.batch(() => {
+            this._emitChange()
+            playbackEvents.emit('patternChange')
+            playbackEvents.emit('noteChange')
+            playbackEvents.emit('patternStructureChange')
+        })
     }
 
     clear() {

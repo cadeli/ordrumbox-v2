@@ -43,7 +43,7 @@ describe('Granular patternChange events', () => {
         cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn() }
-        serviceRegistry.patterns = { computeFlatNotesFromPattern: vi.fn() }
+        serviceRegistry.patterns = { computeFlatNotesFromPattern: (pat) => computeFlatNotesFromPattern(pat) }
         serviceRegistry.audioEngine = { invalidateCache: vi.fn(), syncAllTracks: vi.fn(), syncTrack: vi.fn() }
 
         document.body.innerHTML = ''

@@ -406,15 +406,19 @@ export default class NoteEditor extends BasePanel {
         if (!this._note || !this._track) return
         this._note[key] = val
         if (key === 'arpRange') this._composeArp()
-        playbackEvents.emit("noteChange", [this._track])
-        playbackEvents.emit("patternChange", [this._track])
+        playbackEvents.batch(() => {
+            playbackEvents.emit("noteChange", [this._track])
+            playbackEvents.emit("patternChange", [this._track])
+        })
     }
 
     _onSelect(sel) {
         if (!this._note || !this._track) return
         this._note['_' + sel.dataset.key] = sel.value
         this._composeArp()
-        playbackEvents.emit("noteChange", [this._track])
-        playbackEvents.emit("patternChange", [this._track])
+        playbackEvents.batch(() => {
+            playbackEvents.emit("noteChange", [this._track])
+            playbackEvents.emit("patternChange", [this._track])
+        })
     }
 }

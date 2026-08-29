@@ -441,8 +441,10 @@ export default class Toolbar {
                 }
             })
             appState.currentPage = 0
-            playbackEvents.emit("patternMetaChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.batch(() => {
+                playbackEvents.emit("patternMetaChange")
+                playbackEvents.emit("patternChange")
+            })
         })
 
         this.patLabel.addEventListener('click', () => {
@@ -528,8 +530,10 @@ export default class Toolbar {
         this.prevPageBtn.addEventListener('click', () => {
             if (appState.currentPage > 0) {
                 appState.currentPage--
-                playbackEvents.emit("patternMetaChange")
-                playbackEvents.emit("patternChange")
+                playbackEvents.batch(() => {
+                    playbackEvents.emit("patternMetaChange")
+                    playbackEvents.emit("patternChange")
+                })
             }
         })
 
@@ -541,8 +545,10 @@ export default class Toolbar {
             const maxPage = Math.ceil(totalSteps / 16) - 1
             if (appState.currentPage < maxPage) {
                 appState.currentPage++
-                playbackEvents.emit("patternMetaChange")
-                playbackEvents.emit("patternChange")
+                playbackEvents.batch(() => {
+                    playbackEvents.emit("patternMetaChange")
+                    playbackEvents.emit("patternChange")
+                })
             }
         })
 
@@ -615,8 +621,10 @@ export default class Toolbar {
             await generateFn(pattern, autoGen)
         }
 
-        playbackEvents.emit("noteChange")
-        playbackEvents.emit("patternChange")
+        playbackEvents.batch(() => {
+            playbackEvents.emit("noteChange")
+            playbackEvents.emit("patternChange")
+        })
     }
 
     _setupOverflowObserver() {

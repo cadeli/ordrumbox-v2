@@ -109,8 +109,10 @@ export default class PatternSettingsPanel {
         this._prevPageBtn.addEventListener('click', () => {
             if (appState.currentPage > 0) {
                 appState.currentPage--
-                playbackEvents.emit("patternMetaChange")
-                playbackEvents.emit("patternChange")
+                playbackEvents.batch(() => {
+                    playbackEvents.emit("patternMetaChange")
+                    playbackEvents.emit("patternChange")
+                })
             }
         })
 
@@ -122,8 +124,10 @@ export default class PatternSettingsPanel {
             const maxPage = Math.ceil(totalSteps / 16) - 1
             if (appState.currentPage < maxPage) {
                 appState.currentPage++
-                playbackEvents.emit("patternMetaChange")
-                playbackEvents.emit("patternChange")
+                playbackEvents.batch(() => {
+                    playbackEvents.emit("patternMetaChange")
+                    playbackEvents.emit("patternChange")
+                })
             }
         })
 
@@ -144,8 +148,10 @@ export default class PatternSettingsPanel {
                 }
             })
             appState.currentPage = 0
-            playbackEvents.emit("patternMetaChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.batch(() => {
+                playbackEvents.emit("patternMetaChange")
+                playbackEvents.emit("patternChange")
+            })
         })
 
         this._drumkitSelect.addEventListener('change', () => {
@@ -160,8 +166,10 @@ export default class PatternSettingsPanel {
             if (!isNaN(num)) {
                 serviceRegistry.cmd.setSelectedPatternNum(num)
                 appState.currentPage = 0
-                playbackEvents.emit("patternStructureChange")
-                playbackEvents.emit("patternChange")
+                playbackEvents.batch(() => {
+                    playbackEvents.emit("patternStructureChange")
+                    playbackEvents.emit("patternChange")
+                })
             }
         })
 
@@ -191,8 +199,10 @@ export default class PatternSettingsPanel {
                 }
                 serviceRegistry.cmd.commitGenerationUndo()
             }
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.batch(() => {
+                playbackEvents.emit("noteChange")
+                playbackEvents.emit("patternChange")
+            })
         })
 
         this._bassBtn.addEventListener('click', async () => {
@@ -226,8 +236,10 @@ export default class PatternSettingsPanel {
                 bassTrack.auto = true
                 serviceRegistry.cmd.commitGenerationUndo()
             }
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.batch(() => {
+                playbackEvents.emit("noteChange")
+                playbackEvents.emit("patternChange")
+            })
         })
 
         this._chordsBtn.addEventListener('click', async () => {
@@ -261,8 +273,10 @@ export default class PatternSettingsPanel {
                 pianoTrack.auto = true
                 serviceRegistry.cmd.commitGenerationUndo()
             }
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.batch(() => {
+                playbackEvents.emit("noteChange")
+                playbackEvents.emit("patternChange")
+            })
         })
     }
 

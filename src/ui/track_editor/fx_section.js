@@ -124,8 +124,10 @@ export default class FxSection {
                             format: (v) => fmtVal(ck, v),
                             onChange: (v) => {
                                 editor._track[ck] = v
-                                editor._playbackEvents.emit("trackParamChange", editor._track)
-                                editor._playbackEvents.emit("patternChange", [editor._track])
+                                editor._playbackEvents.batch(() => {
+                                    editor._playbackEvents.emit("trackParamChange", editor._track)
+                                    editor._playbackEvents.emit("patternChange", [editor._track])
+                                })
                             }
                         })
                     }

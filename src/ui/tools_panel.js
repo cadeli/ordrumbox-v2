@@ -393,8 +393,10 @@ export default class ToolsPanel extends BasePanel {
         })
 
         serviceRegistry.audioEngine?.invalidateCache()
-        playbackEvents.emit("noteChange")
-        playbackEvents.emit("patternChange")
+        playbackEvents.batch(() => {
+            playbackEvents.emit("noteChange")
+            playbackEvents.emit("patternChange")
+        })
 
     }
 
@@ -406,8 +408,10 @@ export default class ToolsPanel extends BasePanel {
             serviceRegistry.cmd?.randomizeTrack(track, pattern)
         }
         serviceRegistry.audioEngine?.invalidateCache()
-        playbackEvents.emit("noteChange")
-        playbackEvents.emit("patternChange")
+        playbackEvents.batch(() => {
+            playbackEvents.emit("noteChange")
+            playbackEvents.emit("patternChange")
+        })
     }
 
     async _exportMidi() {

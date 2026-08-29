@@ -204,9 +204,11 @@ export function init() {
             appState.selectedDrumkitNum = dkNum
             appState.selectedPatternNum = patNum
 
-            playbackEvents.emit("patternStructureChange")
-            playbackEvents.emit("patternChange")
-            playbackEvents.emit("drumkitChange")
+            playbackEvents.batch(() => {
+                playbackEvents.emit("patternStructureChange")
+                playbackEvents.emit("patternChange")
+                playbackEvents.emit("drumkitChange")
+            })
 
             serviceRegistry.cmd.setSelectedDrumkitNum(dkNum)
             serviceRegistry.cmd.setSelectedPatternNum(patNum)

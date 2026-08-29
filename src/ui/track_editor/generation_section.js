@@ -65,8 +65,10 @@ export default class GenerationSection {
                         onChange: (v, key) => {
                             editor._isDragging = true
                             editor._track[key] = v
-                            editor._playbackEvents.emit("trackParamChange", editor._track)
-                            editor._playbackEvents.emit("patternChange", [editor._track])
+                            editor._playbackEvents.batch(() => {
+                                editor._playbackEvents.emit("trackParamChange", editor._track)
+                                editor._playbackEvents.emit("patternChange", [editor._track])
+                            })
                         }
                     })
                     editor._sliders.set(p.key, s)

@@ -270,8 +270,10 @@ export default class PlaybackOverlaySection {
             if (newPage !== appState.currentPage) {
                 appState.currentPage = newPage
                 editor.requestSync()
-                editor._playbackEvents.emit("patternMetaChange")
-                editor._playbackEvents.emit("patternChange")
+                editor._playbackEvents.batch(() => {
+                    editor._playbackEvents.emit("patternMetaChange")
+                    editor._playbackEvents.emit("patternChange")
+                })
             }
             if (this._playhead.style.display !== 'none') this._playhead.style.display = 'none'
             return

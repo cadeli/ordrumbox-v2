@@ -373,8 +373,10 @@ export default class PatternPanel extends BasePanel {
                 solo?.classList.toggle('active', isSolo)
             }
         }
-        this._playbackEvents.emit('trackParamChange', track)
-        this._playbackEvents.emit('patternChange')
+        this._playbackEvents.batch(() => {
+            this._playbackEvents.emit('trackParamChange', track)
+            this._playbackEvents.emit('patternChange')
+        })
     }
 
     _handleNoteEnter(track) {
@@ -511,8 +513,10 @@ export default class PatternPanel extends BasePanel {
                 this._selTrackIdx = trackIdx
                 this._applySelection()
                 const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
-                this._playbackEvents.emit('trackSelect', { track, trackIdx })
-                this._playbackEvents.emit('noteSelect', { track, trackIdx, note, pos, beat, beatStep })
+                this._playbackEvents.batch(() => {
+                    this._playbackEvents.emit('trackSelect', { track, trackIdx })
+                    this._playbackEvents.emit('noteSelect', { track, trackIdx, note, pos, beat, beatStep })
+                })
                 this._serviceRegistry.seq?.simpleBeep(trackIdx, note)
             }
             return
@@ -525,8 +529,10 @@ export default class PatternPanel extends BasePanel {
         this._applySelection()
 
         const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
-        this._playbackEvents.emit('trackSelect', { track, trackIdx })
-        this._playbackEvents.emit('noteSelect', { track, trackIdx, note: newNote, pos, beat, beatStep })
+        this._playbackEvents.batch(() => {
+            this._playbackEvents.emit('trackSelect', { track, trackIdx })
+            this._playbackEvents.emit('noteSelect', { track, trackIdx, note: newNote, pos, beat, beatStep })
+        })
 
         this._serviceRegistry.seq?.simpleBeep(trackIdx, newNote)
     }
@@ -536,8 +542,10 @@ export default class PatternPanel extends BasePanel {
         this._selTrackIdx = -1
         const selected = this.container.querySelectorAll('.pp-cell.selected, .pp-track-name.selected, .pp-track.pp-selected')
         selected.forEach(el => el.classList.remove('selected', 'pp-selected'))
-        this._playbackEvents.emit('noteSelect', null)
-        this._playbackEvents.emit('trackSelect', null)
+        this._playbackEvents.batch(() => {
+            this._playbackEvents.emit('noteSelect', null)
+            this._playbackEvents.emit('trackSelect', null)
+        })
     }
 
     async _onAction(action) {
@@ -553,8 +561,10 @@ export default class PatternPanel extends BasePanel {
                 cmd.addPattern()
                 cmd.setSelectedPatternNum(newIdx)
                 this._appState.currentPage = 0
-                this._playbackEvents.emit('patternStructureChange')
-                this._playbackEvents.emit('patternChange')
+                this._playbackEvents.batch(() => {
+                    this._playbackEvents.emit('patternStructureChange')
+                    this._playbackEvents.emit('patternChange')
+                })
                 showToast('Pattern added', 'success')
                 break
             }
@@ -562,16 +572,16 @@ export default class PatternPanel extends BasePanel {
                 if (this._appState.patterns.length <= 1) return
                 if (!confirm('Delete pattern "' + (pattern.name ?? '') + '"?')) return
                 cmd.removePattern(idx)
-                this._playbackEvents.emit('patternStructureChange')
-                this._playbackEvents.emit('patternChange')
+                this._playbackEvents.batch(() => {
+                    this._playbackEvents.emit('patternStructureChange')
+                    this._playbackEvents.emit('patternChange')
+                })
                 break
             }
             case 'clean': {
                 if (!confirm('Clear all notes in "' + (pattern.name ?? '') + '"?')) return
                 cmd.cleanPattern(pattern)
                 patterns?.computeFlatNotesFromPattern(pattern)
-                this._playbackEvents.emit('noteChange')
-                this._playbackEvents.emit('patternChange')
                 break
             }
             case 'duplicate': {
@@ -580,16 +590,20 @@ export default class PatternPanel extends BasePanel {
                 clone.name = (pattern.name ?? 'Pattern') + ' copy'
                 const newIdx = this._appState.patterns.length - 1
                 await cmd.setSelectedPatternNum(newIdx)
-                this._playbackEvents.emit('patternStructureChange')
-                this._playbackEvents.emit('patternChange')
+                this._playbackEvents.batch(() => {
+                    this._playbackEvents.emit('patternStructureChange')
+                    this._playbackEvents.emit('patternChange')
+                })
                 break
             }
             case 'rename': {
                 const newName = prompt('Rename pattern:', pattern.name ?? '')
                 if (newName === null || newName.trim() === '') return
                 cmd.renamePattern(idx, newName.trim())
-                this._playbackEvents.emit('patternStructureChange')
-                this._playbackEvents.emit('patternChange')
+                this._playbackEvents.batch(() => {
+                    this._playbackEvents.emit('patternStructureChange')
+                    this._playbackEvents.emit('patternChange')
+                })
                 break
             }
             case 'save': {
@@ -614,8 +628,10 @@ export default class PatternPanel extends BasePanel {
                             return
                         }
                         cmd.importPatternFromJson(data)
-                        this._playbackEvents.emit('patternStructureChange')
-                        this._playbackEvents.emit('patternChange')
+                        this._playbackEvents.batch(() => {
+                            this._playbackEvents.emit('patternStructureChange')
+                            this._playbackEvents.emit('patternChange')
+                        })
                     } catch (err) {
                         logger.error('PatternPanel', 'Import failed', err)
                         showToast('Import failed: ' + err.message, 'error')

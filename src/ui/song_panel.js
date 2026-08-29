@@ -145,8 +145,10 @@ export default class SongPanel extends BasePanel {
             const newName = input.value.trim()
             if (newName && newName !== currentName) {
                 serviceRegistry.cmd.renamePattern(idx, newName)
-                playbackEvents.emit("patternStructureChange")
-                playbackEvents.emit("patternChange")
+                playbackEvents.batch(() => {
+                    playbackEvents.emit("patternStructureChange")
+                    playbackEvents.emit("patternChange")
+                })
             }
             this.sync()
         }
@@ -195,8 +197,10 @@ export default class SongPanel extends BasePanel {
     _selectPattern(idx) {
         serviceRegistry.cmd.setSelectedPatternNum(idx)
         appState.currentPage = 0
-        playbackEvents.emit("patternStructureChange")
-        playbackEvents.emit("patternChange")
+        playbackEvents.batch(() => {
+            playbackEvents.emit("patternStructureChange")
+            playbackEvents.emit("patternChange")
+        })
         this._selectedIdx = idx
         this._renderList()
     }
@@ -211,8 +215,10 @@ export default class SongPanel extends BasePanel {
 
         serviceRegistry.cmd.removePattern(idx)
         this._selectedIdx = appState.selectedPatternNum
-        playbackEvents.emit("patternStructureChange")
-        playbackEvents.emit("patternChange")
+        playbackEvents.batch(() => {
+            playbackEvents.emit("patternStructureChange")
+            playbackEvents.emit("patternChange")
+        })
         this.sync()
         showToast(`Deleted "${name}"`, 'success')
     }
@@ -265,8 +271,10 @@ export default class SongPanel extends BasePanel {
                 }
 
                 this._songName = songService.applyToAppState(data, choice)
-                playbackEvents.emit("patternStructureChange")
-                playbackEvents.emit("patternChange")
+                playbackEvents.batch(() => {
+                    playbackEvents.emit("patternStructureChange")
+                    playbackEvents.emit("patternChange")
+                })
                 this.sync()
                 showToast(`Song "${this._songName}" loaded`, 'success')
             })
@@ -298,8 +306,10 @@ export default class SongPanel extends BasePanel {
 
                 const fallbackName = file.name.replace(/\.\w+$/, '')
                 this._songName = songService.applyToAppState(data, fallbackName)
-                playbackEvents.emit("patternStructureChange")
-                playbackEvents.emit("patternChange")
+                playbackEvents.batch(() => {
+                    playbackEvents.emit("patternStructureChange")
+                    playbackEvents.emit("patternChange")
+                })
                 this.sync()
                 showToast(`Song "${this._songName}" imported`, 'success')
             } catch (err) {

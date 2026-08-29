@@ -92,8 +92,10 @@ export default class SoundSection {
             editor._serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
         }
         editor.sync()
-        editor._playbackEvents.emit("trackParamChange", track)
-        editor._playbackEvents.emit("patternChange", [track])
+        editor._playbackEvents.batch(() => {
+            editor._playbackEvents.emit("trackParamChange", track)
+            editor._playbackEvents.emit("patternChange", [track])
+        })
     }
 
     async onSampleChange(target) {
@@ -111,8 +113,10 @@ export default class SoundSection {
             }
         }
         editor._serviceRegistry.cmd.changeTrackSound(track, url)
-        editor._playbackEvents.emit("trackParamChange", track)
-        editor._playbackEvents.emit("patternChange", [track])
+        editor._playbackEvents.batch(() => {
+            editor._playbackEvents.emit("trackParamChange", track)
+            editor._playbackEvents.emit("patternChange", [track])
+        })
     }
 
     async onGeneratedChange(target) {
@@ -130,8 +134,10 @@ export default class SoundSection {
             track.synthSoundKey = key
         }
         editor.sync()
-        editor._playbackEvents.emit("trackParamChange", track)
-        editor._playbackEvents.emit("patternChange", [track])
+        editor._playbackEvents.batch(() => {
+            editor._playbackEvents.emit("trackParamChange", track)
+            editor._playbackEvents.emit("patternChange", [track])
+        })
     }
 
     toggleAuto() {
@@ -145,8 +151,10 @@ export default class SoundSection {
             aa.autoAssignTrackSounds(track)
         }
         editor.sync()
-        editor._playbackEvents.emit("trackParamChange", track)
-        editor._playbackEvents.emit("patternChange", [track])
+        editor._playbackEvents.batch(() => {
+            editor._playbackEvents.emit("trackParamChange", track)
+            editor._playbackEvents.emit("patternChange", [track])
+        })
     }
 
     // ── Helpers ──
