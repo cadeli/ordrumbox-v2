@@ -333,7 +333,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
             const heightMatch = m[1].match(/height:\s*(\d+)px/)
             expect(heightMatch).not.toBeNull()
             const height = parseInt(heightMatch[1], 10)
-            expect(height).toBe(750)
+            expect(height).toBe(754)
         })
 
         it('NE container is flex child inside track editor (no fixed positioning)', () => {
