@@ -27,7 +27,7 @@ export default class ToolsPanel extends BasePanel {
 
     createDOM() {
         super.createDOM()
-        
+
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Tools</span>
@@ -40,6 +40,30 @@ export default class ToolsPanel extends BasePanel {
                 <button class="ne-tab-btn" data-ne-tab="midi">MIDI</button>
                 <button class="ne-tab-btn" data-ne-tab="cache">Cache</button>
             </div>
+            ${this._patternTabHtml()}
+            ${this._exportTabHtml()}
+            ${this._importTabHtml()}
+            ${this._midiStatusTabHtml()}
+            ${this._midiTabHtml()}
+            ${this._cacheTabHtml()}
+        `
+
+        this._bindPatternTabEvents()
+        this._bindExportTabEvents()
+        this._bindImportTabEvents()
+        this._bindMidiTabEvents()
+        this._bindCacheTabEvents()
+
+        this._midiView = new MidiIndicatorView(this.container)
+
+        bindCloseButton(this.container, () => playbackEvents.emit("toolsToggle", false))
+        bindTabToggles(this.container)
+    }
+
+    // ── Tab templates ─────────────────────────────────────────────
+
+    _patternTabHtml() {
+        return `
             <div class="ne-tab-panel" data-tab-panel="pattern">
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-compact" title="Detect repeating note patterns and add loop points to minimize notes">Compact Tracks</button>
@@ -48,6 +72,11 @@ export default class ToolsPanel extends BasePanel {
                     <button class="ne-btn" id="tp-rnd" title="Write random notes into each track of the current pattern">Rnd</button>
                 </div>
             </div>
+        `
+    }
+
+    _exportTabHtml() {
+        return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="export">
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-export-midi" title="Export the current pattern to a Standard MIDI File (.mid)">Export MIDI</button>
@@ -57,6 +86,11 @@ export default class ToolsPanel extends BasePanel {
                 </div>
                 <div id="tp-wav-loops-slot"></div>
             </div>
+        `
+    }
+
+    _importTabHtml() {
+        return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="import">
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-import-midi" title="Import a Standard MIDI File (.mid) into a new pattern">Import MIDI</button>
@@ -67,6 +101,11 @@ export default class ToolsPanel extends BasePanel {
                     <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav,.flac" webkitdirectory directory multiple>
                 </div>
             </div>
+        `
+    }
+
+    _midiStatusTabHtml() {
+        return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="midi-status">
                 <div class="ne-row no-cursor">
                     <button class="lfo-led" id="midiSupportLed"></button>
@@ -94,6 +133,11 @@ export default class ToolsPanel extends BasePanel {
                     <span class="ne-val" id="midiActivityLabel">Idle</span>
                 </div>
             </div>
+        `
+    }
+
+    _midiTabHtml() {
+        return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="midi">
                 <div class="ne-row">
                     <label>Output:</label>
@@ -106,6 +150,11 @@ export default class ToolsPanel extends BasePanel {
                     <button class="ne-btn" id="tp-midi-sync" title="Toggle between internal clock and external MIDI clock sync">Toggle Sync</button>
                 </div>
             </div>
+        `
+    }
+
+    _cacheTabHtml() {
+        return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="cache">
                 <div class="ne-row no-cursor tp-cache-header">
                     <label>Total:</label>
@@ -122,10 +171,16 @@ export default class ToolsPanel extends BasePanel {
                 </div>
             </div>
         `
-        
+    }
+
+    // ── Tab event bindings ───────────────────────────────────────────
+
+    _bindPatternTabEvents() {
         this.container.querySelector('#tp-compact').addEventListener('click', () => this._compactPattern())
         this.container.querySelector('#tp-rnd').addEventListener('click', () => this._randomizePattern())
+    }
 
+    _bindExportTabEvents() {
         this._wavLoops = new OrSlider({
             key:    'tp-wav-loops',
             label:  'Loops',
@@ -136,12 +191,14 @@ export default class ToolsPanel extends BasePanel {
             format: v => String(Math.round(v)),
         })
         this.container.querySelector('#tp-wav-loops-slot').replaceWith(this._wavLoops.createElement())
-        
+
         this.exportWavBtn = this.container.querySelector('#tp-export-wav')
         this.exportWavBtn.addEventListener('click', () => this._exportWav())
-        
-        this.container.querySelector('#tp-export-midi').addEventListener('click', () => this._exportMidi())
 
+        this.container.querySelector('#tp-export-midi').addEventListener('click', () => this._exportMidi())
+    }
+
+    _bindImportTabEvents() {
         const importMidiFile = this.container.querySelector('#tp-import-midi-file')
         this.container.querySelector('#tp-import-midi').addEventListener('click', () => importMidiFile.click())
         importMidiFile.addEventListener('change', (e) => this._onImportMidiFile(e))
@@ -149,14 +206,16 @@ export default class ToolsPanel extends BasePanel {
         const importDirFile = this.container.querySelector('#tp-import-dir-file')
         this.container.querySelector('#tp-import-dir').addEventListener('click', () => importDirFile.click())
         importDirFile.addEventListener('change', (e) => this._onImportDir(e))
+    }
 
+    _bindMidiTabEvents() {
         this.container.querySelector('#tp-midi-enable').addEventListener('click', async () => {
             const btn = this.container.querySelector('#tp-midi-enable')
             if (!serviceRegistry.midiManager) {
                 const { getMidiManagerService } = await import('../state/service_loader.js')
                 await getMidiManagerService()
             }
-            
+
             if (serviceRegistry.midiManager.isReady) {
                 serviceRegistry.midiManager.disable()
                 btn.textContent = 'Enable MIDI'
@@ -182,7 +241,9 @@ export default class ToolsPanel extends BasePanel {
                 serviceRegistry.midiManager.setSelectedOutput(outputSelect.value)
             }
         })
+    }
 
+    _bindCacheTabEvents() {
         this.container.querySelector('#tp-cache-refresh').addEventListener('click', () => this._refreshCacheStats())
         this.container.querySelector('#tp-cache-clear-patterns').addEventListener('click', async () => {
             await clearPatternsCache()
@@ -218,11 +279,6 @@ export default class ToolsPanel extends BasePanel {
             await removeCacheEntry(cacheType, cacheKey)
             this._refreshCacheStats()
         })
-
-        this._midiView = new MidiIndicatorView(this.container)
-
-        bindCloseButton(this.container, () => playbackEvents.emit("toolsToggle", false))
-        bindTabToggles(this.container)
     }
 
     subscribe() {}
@@ -241,7 +297,7 @@ export default class ToolsPanel extends BasePanel {
             // Sync output list
             const outputs = serviceRegistry.midiManager.outputs
             const currentOutputId = serviceRegistry.midiManager.selectedOutputId
-            
+
             // Only update if list changed or empty
             if (outputSelect.options.length !== outputs.length) {
                 const values = outputs.map(o => o.id)
@@ -425,17 +481,17 @@ export default class ToolsPanel extends BasePanel {
     async _exportWav() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
-        
+
         const originalText = this.exportWavBtn.textContent
         this.exportWavBtn.disabled = true
         this.exportWavBtn.textContent = 'Exporting...'
-        
+
         try {
             if (!serviceRegistry.wavExporter) {
                 const { default: WavExporter } = await import('../audio/export/wav_exporter.js')
                 serviceRegistry.wavExporter = new WavExporter()
             }
-            
+
             const loops = Math.round(this._wavLoops.getValue())
             const blob = await serviceRegistry.wavExporter.exportPatternToWav(pattern, loops)
             serviceRegistry.wavExporter.downloadWav(blob, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`)
