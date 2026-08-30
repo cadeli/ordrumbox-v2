@@ -692,4 +692,35 @@ export default class TrackEditor extends BasePanel {
 
     /** @returns {OrKnob[]} FX knob instances */
     get fxKnobs() { return this._fxKnobs }
+
+    /** @returns {OrTab} FX tab controller */
+    get fxTab() { return this._fxTab }
+
+    /** @returns {string|null} currently selected FX property key */
+    get selectedPropKey() { return this._selectedPropKey }
+    set selectedPropKey(k) { this._selectedPropKey = k }
+
+    /** @returns {string|null} currently selected LFO target key */
+    get selectedLfoTarget() { return this._selectedLfoTarget }
+    set selectedLfoTarget(k) { this._selectedLfoTarget = k }
+
+    /** @returns {boolean} true while user is dragging a knob/slider */
+    get isDragging() { return this._isDragging }
+    set isDragging(v) { this._isDragging = v }
+
+    /** @returns {string|undefined} previous filter type before bypass */
+    get prevFilterType() { return this._prevFilterType }
+    set prevFilterType(v) { this._prevFilterType = v }
+
+    /** @returns {object} event bus */
+    get playbackEvents() { return this._playbackEvents }
+
+    /** @returns {object} service registry */
+    get serviceRegistry() { return this._serviceRegistry }
+
+    /** @returns {object} sound registry */
+    get soundRegistry() { return this._soundRegistry }
+
+    /** @returns {object} app state */
+    get appState() { return this._appState }
 }

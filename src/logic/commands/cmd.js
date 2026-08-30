@@ -25,34 +25,34 @@ export default class Commander {
         Object.assign(this, createSelectionMethods(this))
     }
 
-    _getHistory() {
+    getHistory() {
         if (!this._history) {
             this._history = serviceRegistry.history
         }
         return this._history
     }
 
-    _record(undoFn, meta = {}) {
+    record(undoFn, meta = {}) {
         if (this._suppressRecord) return
-        const history = this._getHistory()
+        const history = this.getHistory()
         if (history) {
             history.record({ execute: () => {}, undo: undoFn, meta })
         }
     }
 
-    _recordExec(executeFn, undoFn, meta = {}) {
-        const history = this._getHistory()
+    recordExec(executeFn, undoFn, meta = {}) {
+        const history = this.getHistory()
         if (history) {
             return history.execute(executeFn, undoFn, meta)
         }
         return executeFn()
     }
 
-    _persist = () => {
+    persist = () => {
         serviceRegistry.resourcesLoader?.persistPatterns?.()
     }
 
-    _incrementPatternVersionByTrack(track) {
+    incrementPatternVersionByTrack(track) {
         for (const pattern of appState.patterns) {
             if (Utils.getTracksArray(pattern).includes(track)) {
                 pattern._version = (pattern._version ?? 0) + 1
@@ -83,14 +83,14 @@ export default class Commander {
         }
 
         if (changed) {
-            this._incrementPatternVersionByTrack(track)
-            this._persist()
-            this._record(() => {
+            this.incrementPatternVersionByTrack(track)
+            this.persist()
+            this.record(() => {
                 for (const [k, v] of Object.entries(oldValues)) {
                     track[k] = v
                 }
-                this._incrementPatternVersionByTrack(track)
-                this._persist()
+                this.incrementPatternVersionByTrack(track)
+                this.persist()
             }, { desc: `Update ${track.name}` })
         }
 
@@ -124,7 +124,7 @@ export default class Commander {
         const snap = this._genSnapshot
         if (!snap) return
         this._suppressRecord = false
-        this._record(() => {
+        this.record(() => {
             for (const ts of snap.trackSnapshots) {
                 ts.ref.notes = ts.notes
                 ts.ref.loopPointStep = ts.loopPointStep
@@ -134,8 +134,8 @@ export default class Commander {
             if (snap.pattern.tracks && snap.pattern.tracks.length > snap.savedTracksLength) {
                 snap.pattern.tracks.length = snap.savedTracksLength
             }
-            this._incrementPatternVersionByTrack(snap.pattern.tracks[0])
-            this._persist()
+            this.incrementPatternVersionByTrack(snap.pattern.tracks[0])
+            this.persist()
         }, { desc })
         this._genSnapshot = null
     }

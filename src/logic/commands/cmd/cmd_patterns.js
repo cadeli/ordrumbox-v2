@@ -12,10 +12,10 @@ export function createPatternMethods(cmd) {
             let pattern = this.createPattern(name)
             const patternIndex = appState.patterns.length
             appState.patterns.push(pattern)
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 appState.patterns.splice(patternIndex, 1)
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Add pattern "${pattern.name}"` })
             return pattern
         },
@@ -27,10 +27,10 @@ export function createPatternMethods(cmd) {
             if (appState.selectedPatternNum >= appState.patterns.length) {
                 appState.selectedPatternNum = appState.patterns.length - 1
             }
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 appState.patterns.splice(idx, 0, removedPattern)
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Remove pattern "${removedPattern.name}"` })
             return true
         },
@@ -40,10 +40,10 @@ export function createPatternMethods(cmd) {
             if (!pat) return
             const oldName = pat.name
             pat.name = String(newName ?? '').trim() || pat.name
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 pat.name = oldName
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Rename pattern → "${pat.name}"` })
         },
 
@@ -61,10 +61,10 @@ export function createPatternMethods(cmd) {
             } else {
                 pattern.bpm = bpmNum
             }
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 pattern.bpm = oldBpm
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Set BPM → ${pattern.bpm}` })
             return pattern
         },
@@ -72,10 +72,10 @@ export function createPatternMethods(cmd) {
         setPatternDescription(pattern, description) {
             const oldDescription = pattern.description
             pattern.description = String(description ?? '')
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 pattern.description = oldDescription
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Set description on "${pattern.name}"` })
             return pattern
         },
@@ -87,7 +87,7 @@ export function createPatternMethods(cmd) {
                 (pattern, name) => this.addTrack(pattern, name),
                 (track, beat, beatStep, pitch) => this.addNote(track, beat, beatStep, pitch)
             )
-            cmd._persist()
+            cmd.persist()
             return result
         },
 

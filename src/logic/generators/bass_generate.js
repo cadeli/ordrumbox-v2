@@ -156,7 +156,7 @@ export default class BassGenerate extends BaseGenerator {
 
     constructor() {
         super('BASS', BassGenerate.BASS_GENERATION_CONFIGS)
-        this._toneThreshold = 5
+        this.setToneThreshold(5)
         this.isScalesLoading = false
     }
 

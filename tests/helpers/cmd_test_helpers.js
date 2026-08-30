@@ -40,8 +40,8 @@ export function setNbBeats(cmd, pattern, newBeats) {
         }
         track.nbBeats = pattern.nbBeats
     })
-    cmd._persist()
-    cmd._record(() => {
+    cmd.persist()
+    cmd.record(() => {
         pattern.nbBeats = oldNbBeats
         for (const { track, nbBeats, loopAtStep, loopPointBeat, loopPointStep } of oldTrackStates) {
             track.nbBeats = nbBeats
@@ -49,7 +49,7 @@ export function setNbBeats(cmd, pattern, newBeats) {
             track.loopPointBeat = loopPointBeat
             track.loopPointStep = loopPointStep
         }
-        cmd._persist()
+        cmd.persist()
     }, { desc: 'Set nb beats' })
 }
 

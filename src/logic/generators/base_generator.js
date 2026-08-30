@@ -3,11 +3,16 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { TRACK_VALUE_RANGES } from '../../model/track_schema.js'
 
 export default class BaseGenerator {
+    #toneThreshold = 6
+
     constructor(instrumentName, configs, addNoteFn) {
         this.instrumentName = instrumentName
         this.configs = configs
         this.addNoteFn = addNoteFn ?? ((track, beat, beatStep, pitch) => serviceRegistry.cmd.addNote(track, beat, beatStep, pitch))
     }
+
+    /** Protected setter — subclasses call this in their constructor. */
+    setToneThreshold(value) { this.#toneThreshold = value }
 
     addNote = (track, beat, beatStep, pitch = 0, velocity = 0.8, isGhost = false) => {
         const note = this.addNoteFn(track, beat, beatStep, pitch)
@@ -69,7 +74,7 @@ export default class BaseGenerator {
      */
     getRndTone = (tones) => {
         const tone = tones[Math.floor(Math.random() * tones.length)] ?? 0
-        return tone > (this._toneThreshold ?? 6) ? tone - 12 : tone
+        return tone > this.#toneThreshold ? tone - 12 : tone
     }
 
     /**

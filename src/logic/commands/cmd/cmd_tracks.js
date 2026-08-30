@@ -12,10 +12,10 @@ export function createTrackMethods(cmd) {
             let track = this.createTrack(pattern.nbBeats, type, stepsPerBeat)
             const trackIndex = pattern.tracks.length
             pattern.tracks.push(track)
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 pattern.tracks.splice(trackIndex, 1)
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Add track ${track.name}` })
             return track
         },
@@ -26,11 +26,11 @@ export function createTrackMethods(cmd) {
             const removed = tracks[trackIdx]
             const removedNotes = removed.notes.map(n => ({ ...n }))
             tracks.splice(trackIdx, 1)
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 tracks.splice(trackIdx, 0, removed)
                 removed.notes = removedNotes
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Remove track ${removed.name}` })
         },
 
@@ -63,13 +63,13 @@ export function createTrackMethods(cmd) {
             })
             track.loopPointStep = Math.floor((loopStepPc / 100) * track.stepsPerBeat)
             track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 track.stepsPerBeat = oldStepsPerBeat
                 track.loopPointStep = oldLoopPointStep
                 track.loopAtStep = oldLoopAtStep
                 track.notes = oldNotes
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Steps per bar on ${track.name}` })
         },
 
@@ -83,12 +83,12 @@ export function createTrackMethods(cmd) {
                 track.loopAtStep = track.stepsPerBeat * track.nbBeats
             }
             recalcLoopDerived(track)
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 track.loopAtStep = oldLoopAtStep
                 track.loopPointBeat = oldLoopPointBeat
                 track.loopPointStep = oldLoopPointStep
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Loop point on ${track.name}` })
         },
 
@@ -107,12 +107,12 @@ export function createTrackMethods(cmd) {
             track.loopPointStep = 0
             track.loopPointBeat = track.nbBeats
             track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
-            cmd._record(() => {
+            cmd.record(() => {
                 track.notes = oldNotes
                 track.loopPointStep = oldLoopPointStep
                 track.loopPointBeat = oldLoopPointBeat
                 track.loopAtStep = oldLoopAtStep
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Clean ${track.name}` })
         },
 
@@ -123,12 +123,12 @@ export function createTrackMethods(cmd) {
             const oldLoopAtStep = track.loopAtStep
             const result = Utils.addLoopToTrackIfPossible(track)
             if (result.changed) {
-                cmd._record(() => {
+                cmd.record(() => {
                     track.notes = oldNotes
                     track.loopPointStep = oldLoopPointStep
                     track.loopPointBeat = oldLoopPointBeat
                     track.loopAtStep = oldLoopAtStep
-                    cmd._persist()
+                    cmd.persist()
                 }, { desc: `Compact ${track.name}` })
             }
             return result
@@ -157,12 +157,12 @@ export function createTrackMethods(cmd) {
                 const pitch = Math.floor(Math.random() * 13) - 6
                 track.notes.push({ ...Utils.NOTE_DEFAULTS, beat, beatStep, pitch, velocity: 0.5 + Math.random() * 0.5 })
             }
-            cmd._record(() => {
+            cmd.record(() => {
                 track.notes = oldNotes
                 track.loopPointStep = oldLoopPointStep
                 track.loopPointBeat = oldLoopPointBeat
                 track.loopAtStep = oldLoopAtStep
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Randomize ${track.name}` })
         },
 
@@ -173,22 +173,22 @@ export function createTrackMethods(cmd) {
             track.soundId = soundId
             track.useAutoAssignSound = false
             track.useSoftSynth = false
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 track.soundId = oldSoundId
                 track.useAutoAssignSound = oldUseAutoAssign
                 track.useSoftSynth = oldUseSoftSynth
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Sound on ${track.name}` })
         },
 
         changeTrackName(track, newName) {
             const oldName = track.name
             track.name = newName
-            cmd._persist()
-            cmd._record(() => {
+            cmd.persist()
+            cmd.record(() => {
                 track.name = oldName
-                cmd._persist()
+                cmd.persist()
             }, { desc: `Rename track → ${newName}` })
         },
 
