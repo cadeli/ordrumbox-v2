@@ -222,7 +222,7 @@ describe('OrSlider does not double-fire with the main.js fallback handler', () =
             onChange,
         })
         document.body.appendChild(s.createElement())
-        return { slider: s, input: s._input }
+        return { slider: s, input: s.input }
     }
 
     it('ArrowRight on an OrSlider moves by exactly ONE step (not two)', () => {
@@ -242,8 +242,8 @@ describe('OrSlider does not double-fire with the main.js fallback handler', () =
             onChange: counted,
         })
         document.body.appendChild(s.createElement())
-        s._input.focus()
-        s._input.dispatchEvent(new KeyboardEvent('keydown', {
+        s.input.focus()
+        s.input.dispatchEvent(new KeyboardEvent('keydown', {
             key: 'ArrowRight', bubbles: true, cancelable: true,
         }))
         expect(counted).toHaveBeenCalledTimes(1)

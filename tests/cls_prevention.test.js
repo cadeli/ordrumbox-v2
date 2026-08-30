@@ -200,7 +200,7 @@ describe('CLS prevention — width stability', () => {
             value: 0, format: v => v.toFixed(12),
         })
         for (const v of values) {
-            const result = k._fmt(v)
+            const result = k.formatValue(v)
             expect(result.length).toBeLessThanOrEqual(8)
         }
     })
@@ -217,7 +217,7 @@ describe('CLS prevention — width stability', () => {
             value: 0, format: v => v.toFixed(12), unit: 'Hz',
         })
         for (const v of values) {
-            const result = s._fmt(v)
+            const result = s.formatValue(v)
             const valuePart = result.replace(' Hz', '').trim()
             expect(valuePart.length).toBeLessThanOrEqual(8)
         }

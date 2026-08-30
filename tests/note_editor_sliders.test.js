@@ -128,7 +128,7 @@ describe('NoteEditor — OrSlider integration', () => {
         const fn = vi.fn()
         playbackEvents.on("patternChange", fn)
 
-        const velocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
+        const velocityKnob = noteEditor._knobs.find(k => k.key === 'velocity')
         velocityKnob.setValue(0.42, true)
 
         expect(note.velocity).toBeCloseTo(0.42, 5)
@@ -164,10 +164,10 @@ describe('NoteEditor — OrSlider integration', () => {
 
     it('re-sync keeps alive OrKnobs/OrSliders via setValue (no leaked listeners)', async () => {
         await showNote(noteEditor, { velocity: 0.5 })
-        const firstVelocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
+        const firstVelocityKnob = noteEditor._knobs.find(k => k.key === 'velocity')
 
         await showNote(noteEditor, { velocity: 0.9 })
-        const secondVelocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
+        const secondVelocityKnob = noteEditor._knobs.find(k => k.key === 'velocity')
 
         // Same instance kept alive via setValue
         expect(secondVelocityKnob).toBe(firstVelocityKnob)
@@ -178,7 +178,7 @@ describe('NoteEditor — OrSlider integration', () => {
     it('keyboard arrow on a knob updates its value (OrKnob _onKeydown)', async () => {
         const { note } = await showNote(noteEditor, { velocity: 0.5 })
 
-        const velocityKnob = noteEditor._knobs.find(k => k._key === 'velocity')
+        const velocityKnob = noteEditor._knobs.find(k => k.key === 'velocity')
         const knobEl = velocityKnob.el.querySelector('.or-knob')
         knobEl.focus()
         knobEl.dispatchEvent(new KeyboardEvent('keydown', {

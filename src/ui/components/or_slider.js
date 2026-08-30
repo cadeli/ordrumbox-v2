@@ -33,6 +33,29 @@
 import { fmt as _defaultFmt, escapeHtml as _escHtml } from './ui_utils.js'
 
 export class OrSlider {
+    #key
+    #label
+    #min
+    #max
+    #step
+    #unit
+    #format
+    #normalize
+    #denormalize
+    #hasLfo
+    #noCursor
+    #dataAttr
+    #extraClass
+    #onChange
+    #value
+    #defaultValue
+    #input
+    #valSpan
+    #boundOnInput
+    #boundOnKeydown
+    #boundOnDblClick
+    #boundOnContextMenu
+
     /**
      * @param {Object}   cfg
      * @param {string}   cfg.key            Identifier (data-key on the input)
@@ -52,60 +75,60 @@ export class OrSlider {
      * @param {Function} [cfg.onChange]     (valDenorm, key) => void
      */
     constructor(cfg) {
-        this._key        = cfg.key
-        this._label      = cfg.label
-        this._min        = cfg.min
-        this._max        = cfg.max
-        this._step       = cfg.step
-        this._unit       = cfg.unit      ?? ''
-        this._format     = cfg.format    ?? _defaultFmt
-        this._normalize  = cfg.normalize   ?? null
-        this._denormalize = cfg.denormalize ?? null
-        this._hasLfo     = cfg.hasLfo    ?? false
-        this._noCursor   = cfg.noCursor  ?? false
-        this._dataAttr   = cfg.dataAttr  ?? 'data-key'
-        this._extraClass = cfg.extraClass ?? ''
-        this._onChange   = cfg.onChange  ?? null
+        this.#key        = cfg.key
+        this.#label      = cfg.label
+        this.#min        = cfg.min
+        this.#max        = cfg.max
+        this.#step       = cfg.step
+        this.#unit       = cfg.unit      ?? ''
+        this.#format     = cfg.format    ?? _defaultFmt
+        this.#normalize  = cfg.normalize   ?? null
+        this.#denormalize = cfg.denormalize ?? null
+        this.#hasLfo     = cfg.hasLfo    ?? false
+        this.#noCursor   = cfg.noCursor  ?? false
+        this.#dataAttr   = cfg.dataAttr  ?? 'data-key'
+        this.#extraClass = cfg.extraClass ?? ''
+        this.#onChange   = cfg.onChange  ?? null
 
         // Current value in denormalized space
-        this._value = cfg.value ?? cfg.min
-        this._defaultValue = cfg.defaultValue ?? cfg.value ?? cfg.min
+        this.#value = cfg.value ?? cfg.min
+        this.#defaultValue = cfg.defaultValue ?? cfg.value ?? cfg.min
 
         this.el       = null   // div.ne-row — available after mount() / createElement()
-        this._input   = null
-        this._valSpan = null
+        this.#input   = null
+        this.#valSpan = null
 
-        this._boundOnInput   = this._onInput.bind(this)
-        this._boundOnKeydown = this._onKeydown.bind(this)
-        this._boundOnDblClick = this._onDblClick.bind(this)
-        this._boundOnContextMenu = this._onContextMenu.bind(this)
+        this.#boundOnInput   = this.#onInput.bind(this)
+        this.#boundOnKeydown = this.#onKeydown.bind(this)
+        this.#boundOnDblClick = this.#onDblClick.bind(this)
+        this.#boundOnContextMenu = this.#onContextMenu.bind(this)
     }
 
     // ─── Internal helpers ───────────────────────────────────────────────────
 
     /** Converts a denormalized value to an input range value */
-    _toNorm(v) {
-        return this._normalize ? this._normalize(v) : v
+    #toNorm(v) {
+        return this.#normalize ? this.#normalize(v) : v
     }
 
     /** Converts an input range value to an application value */
-    _toDenorm(v) {
-        return this._denormalize ? this._denormalize(v) : v
+    #toDenorm(v) {
+        return this.#denormalize ? this.#denormalize(v) : v
     }
 
     /** Formats the denormalized value for display, truncated to prevent CLS. */
-    _fmt(v) {
-        const raw = String(this._format(v))
+    #fmt(v) {
+        const raw = String(this.#format(v))
         const str = raw.length > 8 ? raw.slice(0, 8) : raw
-        return this._unit ? `${str} ${this._unit}` : str
+        return this.#unit ? `${str} ${this.#unit}` : str
     }
 
     /** Row CSS classes */
-    _rowClasses() {
+    #rowClasses() {
         const classes = ['ne-row']
-        if (this._hasLfo)   classes.push('has-lfo')
-        if (this._noCursor) classes.push('no-cursor')
-        if (this._extraClass) classes.push(this._extraClass)
+        if (this.#hasLfo)   classes.push('has-lfo')
+        if (this.#noCursor) classes.push('no-cursor')
+        if (this.#extraClass) classes.push(this.#extraClass)
         return classes.join(' ')
     }
 
@@ -116,15 +139,15 @@ export class OrSlider {
      * Then call mount(rowEl) to bind events.
      */
     toHTML() {
-        const normVal    = this._toNorm(this._value)
-        const displayVal = this._fmt(this._value)
-        return `<div class="${this._rowClasses()}" data-or-slider="${this._key}" data-prop="${this._key}">
-            <label>${_escHtml(this._label)}</label>
+        const normVal    = this.#toNorm(this.#value)
+        const displayVal = this.#fmt(this.#value)
+        return `<div class="${this.#rowClasses()}" data-or-slider="${this.#key}" data-prop="${this.#key}">
+            <label>${_escHtml(this.#label)}</label>
             <input type="range"
-                   min="${this._min}" max="${this._max}" step="${this._step}"
+                   min="${this.#min}" max="${this.#max}" step="${this.#step}"
                    value="${normVal}"
-                   ${this._dataAttr}="${this._key}">
-            <span class="ne-val" ${this._dataAttr}="${this._key}">${displayVal}</span>
+                   ${this.#dataAttr}="${this.#key}">
+            <span class="ne-val" ${this.#dataAttr}="${this.#key}">${displayVal}</span>
         </div>`
     }
 
@@ -134,9 +157,9 @@ export class OrSlider {
      */
     mount(rowEl) {
         this.el       = rowEl
-        this._input   = rowEl.querySelector(`input[type=range]`)
-        this._valSpan = rowEl.querySelector(`.ne-val`)
-        this._bind()
+        this.#input   = rowEl.querySelector(`input[type=range]`)
+        this.#valSpan = rowEl.querySelector(`.ne-val`)
+        this.#bind()
     }
 
     // ─── Imperative DOM creation ────────────────────────────────────────────
@@ -147,94 +170,94 @@ export class OrSlider {
      */
     createElement() {
         const div = document.createElement('div')
-        div.className = this._rowClasses()
-        div.dataset.orSlider = this._key
+        div.className = this.#rowClasses()
+        div.dataset.orSlider = this.#key
 
         const label = document.createElement('label')
-        label.textContent = this._label
+        label.textContent = this.#label
 
         const input = document.createElement('input')
         input.type  = 'range'
-        input.min   = this._min
-        input.max   = this._max
-        input.step  = this._step
-        input.value = this._toNorm(this._value)
-        input.setAttribute(this._dataAttr, this._key)
+        input.min   = this.#min
+        input.max   = this.#max
+        input.step  = this.#step
+        input.value = this.#toNorm(this.#value)
+        input.setAttribute(this.#dataAttr, this.#key)
 
         const span = document.createElement('span')
         span.className = 'ne-val'
-        span.setAttribute(this._dataAttr, this._key)
-        span.textContent = this._fmt(this._value)
+        span.setAttribute(this.#dataAttr, this.#key)
+        span.textContent = this.#fmt(this.#value)
 
         div.appendChild(label)
         div.appendChild(input)
         div.appendChild(span)
 
         this.el       = div
-        this._input   = input
-        this._valSpan = span
+        this.#input   = input
+        this.#valSpan = span
 
-        this._bind()
+        this.#bind()
         return div
     }
 
     // ─── Event binding ──────────────────────────────────────────────────────
 
-    _bind() {
-        this._unbind()
-        if (this._input) {
-            this._input.addEventListener('input',   this._boundOnInput)
-            this._input.addEventListener('keydown', this._boundOnKeydown)
+    #bind() {
+        this.#unbind()
+        if (this.#input) {
+            this.#input.addEventListener('input',   this.#boundOnInput)
+            this.#input.addEventListener('keydown', this.#boundOnKeydown)
         }
         if (this.el) {
-            this.el.addEventListener('dblclick', this._boundOnDblClick)
-            this.el.addEventListener('contextmenu', this._boundOnContextMenu)
-        } else if (this._input) {
-            this._input.addEventListener('dblclick', this._boundOnDblClick)
-            this._input.addEventListener('contextmenu', this._boundOnContextMenu)
+            this.el.addEventListener('dblclick', this.#boundOnDblClick)
+            this.el.addEventListener('contextmenu', this.#boundOnContextMenu)
+        } else if (this.#input) {
+            this.#input.addEventListener('dblclick', this.#boundOnDblClick)
+            this.#input.addEventListener('contextmenu', this.#boundOnContextMenu)
         }
-        if (this._valSpan) {
-            this._valSpan.addEventListener('dblclick', this._boundOnDblClick)
-            this._valSpan.addEventListener('contextmenu', this._boundOnContextMenu)
+        if (this.#valSpan) {
+            this.#valSpan.addEventListener('dblclick', this.#boundOnDblClick)
+            this.#valSpan.addEventListener('contextmenu', this.#boundOnContextMenu)
         }
     }
 
-    _unbind() {
-        this._input?.removeEventListener('input',   this._boundOnInput)
-        this._input?.removeEventListener('keydown', this._boundOnKeydown)
+    #unbind() {
+        this.#input?.removeEventListener('input',   this.#boundOnInput)
+        this.#input?.removeEventListener('keydown', this.#boundOnKeydown)
         if (this.el) {
-            this.el.removeEventListener('dblclick', this._boundOnDblClick)
-            this.el.removeEventListener('contextmenu', this._boundOnContextMenu)
-        } else if (this._input) {
-            this._input.removeEventListener('dblclick', this._boundOnDblClick)
-            this._input.removeEventListener('contextmenu', this._boundOnContextMenu)
+            this.el.removeEventListener('dblclick', this.#boundOnDblClick)
+            this.el.removeEventListener('contextmenu', this.#boundOnContextMenu)
+        } else if (this.#input) {
+            this.#input.removeEventListener('dblclick', this.#boundOnDblClick)
+            this.#input.removeEventListener('contextmenu', this.#boundOnContextMenu)
         }
-        if (this._valSpan) {
-            this._valSpan.removeEventListener('dblclick', this._boundOnDblClick)
-            this._valSpan.removeEventListener('contextmenu', this._boundOnContextMenu)
+        if (this.#valSpan) {
+            this.#valSpan.removeEventListener('dblclick', this.#boundOnDblClick)
+            this.#valSpan.removeEventListener('contextmenu', this.#boundOnContextMenu)
         }
     }
 
-    _onDblClick(e) {
+    #onDblClick(e) {
         e.preventDefault()
         e.stopPropagation()
-        this.setValue(this._defaultValue, true)
+        this.setValue(this.#defaultValue, true)
     }
 
-    _onContextMenu(e) {
+    #onContextMenu(e) {
         e.preventDefault()
         e.stopPropagation()
         this.promptDirectInput()
     }
 
     promptDirectInput() {
-        const title = `Enter value for ${this._label} (${this._min}–${this._max}${this._unit ? ' ' + this._unit : ''}):`
-        const raw = window.prompt(title, this._value)
+        const title = `Enter value for ${this.#label} (${this.#min}–${this.#max}${this.#unit ? ' ' + this.#unit : ''}):`
+        const raw = window.prompt(title, this.#value)
         if (raw === null || raw.trim() === '') return
         const num = parseFloat(raw)
         if (!Number.isNaN(num)) {
-            const denorm = this._toDenorm(num)
-            const clamped = Math.min(this._max, Math.max(this._min, denorm))
+            const denorm = this.#toDenorm(num)
+            const clamped = Math.min(this.#max, Math.max(this.#min, denorm))
             this.setValue(clamped, true)
         }
     }
@@ -243,15 +266,15 @@ export class OrSlider {
      * Handles 'input' events from the range element.
      */
     handleInput(e) {
-        const norm    = parseFloat(this._input.value)
-        const denorm  = this._toDenorm(norm)
-        if (this._value === denorm) return
-        this._value   = denorm
-        if (this._valSpan) this._valSpan.textContent = this._fmt(denorm)
-        this._onChange?.(denorm, this._key)
+        const norm    = parseFloat(this.#input.value)
+        const denorm  = this.#toDenorm(norm)
+        if (this.#value === denorm) return
+        this.#value   = denorm
+        if (this.#valSpan) this.#valSpan.textContent = this.#fmt(denorm)
+        this.#onChange?.(denorm, this.#key)
     }
 
-    _onInput(e) {
+    #onInput(e) {
         this.handleInput(e)
     }
 
@@ -271,25 +294,39 @@ export class OrSlider {
         if (isFine) multiplier = 0.1
         else if (e.ctrlKey || e.metaKey) multiplier = 10
 
-        const delta    = (isUp ? 1 : -1) * this._step * multiplier
-        const norm     = parseFloat(this._input.value)
-        const newNorm  = Math.min(this._max, Math.max(this._min, norm + delta))
-        const denorm   = this._toDenorm(newNorm)
+        const delta    = (isUp ? 1 : -1) * this.#step * multiplier
+        const norm     = parseFloat(this.#input.value)
+        const newNorm  = Math.min(this.#max, Math.max(this.#min, norm + delta))
+        const denorm   = this.#toDenorm(newNorm)
 
-        if (this._value !== denorm) {
-            this._input.value         = newNorm
-            this._value               = denorm
-            if (this._valSpan) this._valSpan.textContent = this._fmt(denorm)
-            this._onChange?.(denorm, this._key)
+        if (this.#value !== denorm) {
+            this.#input.value         = newNorm
+            this.#value               = denorm
+            if (this.#valSpan) this.#valSpan.textContent = this.#fmt(denorm)
+            this.#onChange?.(denorm, this.#key)
         }
         return true
     }
 
-    _onKeydown(e) {
+    #onKeydown(e) {
         this.handleKeydown(e)
     }
 
     // ─── Public API ─────────────────────────────────────────────────────────
+
+    /** @returns {string} slider identifier */
+    get key() { return this.#key }
+
+    /** @returns {HTMLInputElement|null} the range input element */
+    get input() { return this.#input }
+
+    /** @returns {Function|null} current onChange callback */
+    get onChange() { return this.#onChange }
+    /** @param {Function|null} fn — rebind the onChange callback */
+    set onChange(fn) { this.#onChange = fn }
+
+    /** Formats denormalized value for display (exposed for testing). */
+    formatValue(v) { return this.#fmt(v) }
 
     /**
      * Updates the slider and display.
@@ -297,21 +334,21 @@ export class OrSlider {
      * @param {boolean} [triggerCallback=false]  If true, calls onChange callback
      */
     setValue(val, triggerCallback = false) {
-        if (this._value === val && !triggerCallback) return
-        this._value = val
-        const norm = this._toNorm(val)
-        if (this._input && parseFloat(this._input.value) !== norm) {
-            this._input.value = norm
+        if (this.#value === val && !triggerCallback) return
+        this.#value = val
+        const norm = this.#toNorm(val)
+        if (this.#input && parseFloat(this.#input.value) !== norm) {
+            this.#input.value = norm
         }
-        if (this._valSpan) this._valSpan.textContent = this._fmt(val)
-        if (triggerCallback && this._onChange) {
-            this._onChange(val, this._key)
+        if (this.#valSpan) this.#valSpan.textContent = this.#fmt(val)
+        if (triggerCallback && this.#onChange) {
+            this.#onChange(val, this.#key)
         }
     }
 
     /** Returns the current denormalized value */
     getValue() {
-        return this._value
+        return this.#value
     }
 
     /**
@@ -319,7 +356,7 @@ export class OrSlider {
      * @param {boolean} bool
      */
     setHasLfo(bool) {
-        this._hasLfo = bool
+        this.#hasLfo = bool
         this.el?.classList.toggle('has-lfo', bool)
     }
 
@@ -328,7 +365,7 @@ export class OrSlider {
      * @param {boolean} bool
      */
     setDisabled(bool) {
-        if (this._input) this._input.disabled = bool
+        if (this.#input) this.#input.disabled = bool
     }
 
     /**
@@ -336,15 +373,15 @@ export class OrSlider {
      * @param {number} max  New max value
      */
     setMax(max) {
-        this._max = max
-        if (this._input) this._input.max = max
+        this.#max = max
+        if (this.#input) this.#input.max = max
     }
 
     /** Removes event listeners. Call before removing the element from the DOM. */
     destroy() {
-        this._unbind()
+        this.#unbind()
         this.el       = null
-        this._input   = null
-        this._valSpan = null
+        this.#input   = null
+        this.#valSpan = null
     }
 }

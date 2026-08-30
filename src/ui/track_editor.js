@@ -190,14 +190,14 @@ export default class TrackEditor extends BasePanel {
         if (!lfoValues || !this._track) return
         ALL_TRACK_PROPS.forEach(p => {
             if (!p.lfo || !this._track[p.lfo]) return
-            const ctrl = this._sliders.get(p.key) ?? this._fxKnobs.find(kn => kn._key === p.key)
+            const ctrl = this._sliders.get(p.key) ?? this._fxKnobs.find(kn => kn.key === p.key)
             if (!ctrl) return
             const raw = lfoValues[p.key] ?? 0
             ctrl.setValue(p.denormalize ? p.denormalize(raw) : raw)
         })
         KNOB_PROPS.forEach(p => {
             if (p.lfo && this._track[p.lfo]) {
-                const knob = this._knobs.find(k => k._key === p.key)
+                const knob = this._knobs.find(k => k.key === p.key)
                 if (knob) knob.setValue(lfoValues[p.key] ?? 0)
             }
         })
@@ -240,9 +240,8 @@ export default class TrackEditor extends BasePanel {
         // ── Snapshot existing instances for reuse ──────────────────
         const prevSliders = new Map(this._sliders)
         this._sliders.clear()
-        const prevFxKnobs = new Map(this._fxKnobs.map(k => [k._key, k]))
+        const prevFxKnobs = new Map(this._fxKnobs.map(k => [k.key, k]))
         this._fxKnobs = []
-        const prevKnobs = new Map(this._knobs.map(k => [k._key, k]))
 
         let tabBarHtml = this._tab.renderBar()
 
@@ -265,19 +264,17 @@ export default class TrackEditor extends BasePanel {
 
         // Detach ne-container before innerHTML wipe (it lives in #te-panel,
         // not inside .track-editor, but innerHTML on #te-panel would destroy it)
-        const neC = this._neContainer
-        if (neC?.parentNode) neC.parentNode.removeChild(neC)
+        const neC = this._preserveNeContainer()
 
         this.container.innerHTML = `<div class="track-editor">${headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + `<div class="te-scroll">${panelsHtml}</div>`}</div>`
 
-        // Re-attach ne-container to #te-panel
-        if (neC) this.container.appendChild(neC)
+        this._restoreNeContainer(neC)
         const teElement = this.container.querySelector('.track-editor') ?? this.container
         this._tab.bindTo(teElement)
 
         // Mount main sliders
         this._sliders.forEach(s => {
-            const row = this.container.querySelector(`.ne-row[data-or-slider="${s._key}"]`)
+            const row = this.container.querySelector(`.ne-row[data-or-slider="${s.key}"]`)
             if (row) {
                 s.mount(row)
                 const input = row.querySelector('input')
@@ -292,11 +289,55 @@ export default class TrackEditor extends BasePanel {
 
         // Mount FX knobs
         this._fxKnobs.forEach(k => {
-            const row = this.container.querySelector(`.ne-row[data-or-slider="${k._key}"]`)
+            const row = this.container.querySelector(`.ne-row[data-or-slider="${k.key}"]`)
             if (row) k.mount(row)
         })
 
         // ── Knob bar (keep-alive: reuse OrKnob instances) ───────────
+        this._syncKnobs()
+
+        // ── Destroy orphaned slider/fxKnob instances ──────────────
+        for (const [key, slider] of prevSliders) {
+            if (!this._sliders.has(key)) slider.destroy()
+        }
+        for (const [key, knob] of prevFxKnobs) {
+            if (!this._fxKnobs.some(k => k.key === key)) knob.destroy()
+        }
+
+        if (this.synthEditor?.panel?.style?.display !== 'block') {
+            this.container.style.display = 'block'
+        }
+        this._bindEvents()
+        this._drawSampleWaveform()
+
+        this._syncMobileLayout()
+    }
+
+    /** Detach ne-container from DOM so innerHTML wipe doesn't destroy it. */
+    _preserveNeContainer() {
+        const neC = this._neContainer
+        if (neC?.parentNode) neC.parentNode.removeChild(neC)
+        return neC
+    }
+
+    /** Re-attach previously preserved ne-container after innerHTML wipe. */
+    _restoreNeContainer(neC) {
+        if (neC) this.container.appendChild(neC)
+    }
+
+    /** Apply mobile-specific layout if on a mobile viewport. */
+    _syncMobileLayout() {
+        if (isMobileLandscape()) {
+            applyLayout(this.container)
+            if (this._track) this._showNoteEditorForTrack(this._track, this._trackIdx)
+        } else {
+            removeLayout(this.container)
+        }
+    }
+
+    /** Sync knob bar: reuse OrKnob instances, create new ones, destroy orphans. */
+    _syncKnobs() {
+        const prevKnobs = new Map(this._knobs.map(k => [k.key, k]))
         const knobConfigs = KNOB_PROPS.map(def => {
             const isDecay = def.key === 'decay'
             const sound = isDecay ? this._soundRegistry.sounds[this._track?.soundId] : null
@@ -327,31 +368,11 @@ export default class TrackEditor extends BasePanel {
                 onChange: cfg.onChange,
             }),
             update: (inst, cfg) => {
-                inst._onChange = cfg.onChange
+                inst.onChange = cfg.onChange
                 inst.setValue(cfg.value)
             },
             postMount: (el) => el.removeAttribute('data-prop'),
         }).values()]
-        // ── Destroy orphaned slider/fxKnob instances ──────────────
-        for (const [key, slider] of prevSliders) {
-            if (!this._sliders.has(key)) slider.destroy()
-        }
-        for (const [key, knob] of prevFxKnobs) {
-            if (!this._fxKnobs.some(k => k._key === key)) knob.destroy()
-        }
-
-        if (this.synthEditor?.panel?.style?.display !== 'block') {
-            this.container.style.display = 'block'
-        }
-        this._bindEvents()
-        this._drawSampleWaveform()
-
-        if (isMobileLandscape()) {
-            applyLayout(this.container)
-            if (this._track) this._showNoteEditorForTrack(this._track, this._trackIdx)
-        } else {
-            removeLayout(this.container)
-        }
     }
 
     // ── Sample bar ─────────────────────────────────────────────────

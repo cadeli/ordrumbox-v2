@@ -109,7 +109,7 @@ export default class FxSection {
                 } else {
                     const hasLfo = prop.lfo && track[prop.lfo] ? 'has-lfo' : ''
                     const isSelected = editor._selectedPropKey === ck ? 'selected' : ''
-                    let knob = editor._fxKnobs.find(k => k._key === ck)
+                    let knob = editor._fxKnobs.find(k => k.key === ck)
                     if (knob) {
                         knob.setValue(val ?? prop.min)
                     } else {

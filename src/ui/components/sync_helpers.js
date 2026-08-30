@@ -1,3 +1,6 @@
+import { OrKnob } from './or_knob.js'
+import { fmt } from './panel_helpers.js'
+
 /**
  * syncComponentMap — keep-alive helper for Knob / Slider / etc.
  *
@@ -39,4 +42,51 @@ export function syncComponentMap({ container, configs, selector, prev, create, u
     }
 
     return next
+}
+
+/**
+ * syncKnobs — keep-alive pattern for OrKnob instances.
+ *
+ * Reference implementation of the diff-by-key / reuse / destroy-orphans pattern.
+ * Looks up metadata from `paramMeta` when provided, falls back to auto-derived
+ * min/max/step from the config value.
+ *
+ * @param {Object}   opts
+ * @param {HTMLElement} opts.container     DOM root to query placeholders from
+ * @param {Array}    opts.configs          Array of { key, val, label, ... } objects
+ * @param {string}   opts.selector         Data-attribute name for placeholders
+ * @param {Map}      opts.prev             Snapshot of previous OrKnob instances
+ * @param {Function} opts.onChange         (key, value) => void — value change callback
+ * @param {Object}   [opts.paramMeta]      Map of key → { min, max, step, unit } metadata
+ * @param {string}   [opts.defaultUnit]    Unit string for knobs without metadata
+ * @returns {Map<string, OrKnob>}          Map of live OrKnob instances
+ */
+export function syncKnobs({ container, configs, selector, prev, onChange, paramMeta, defaultUnit = '' }) {
+    return syncComponentMap({
+        container,
+        configs,
+        selector,
+        prev,
+        create: (cfg) => {
+            const meta = paramMeta?.[cfg.key] ?? {
+                min: 0, max: Math.max(1, Math.ceil(cfg.val ?? 1)),
+                step: Number.isInteger(cfg.val) ? 1 : 0.001,
+            }
+            return new OrKnob({
+                key:      cfg.key,
+                label:    cfg.label,
+                min:      meta.min,
+                max:      meta.max,
+                step:     meta.step,
+                value:    cfg.val,
+                format:   fmt,
+                unit:     meta.unit ?? defaultUnit,
+                onChange: v => onChange(cfg.key, v),
+            })
+        },
+        update: (inst, cfg) => {
+            inst.onChange = v => onChange(cfg.key, v)
+            inst.setValue(cfg.val)
+        },
+    })
 }

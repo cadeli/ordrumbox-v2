@@ -90,7 +90,7 @@ it('keeps Revert in the toolbar and preserves revert behavior', async () => {
          const revertButton = panel.querySelector('[data-action="synth-revert"]')
          expect(revertButton).not.toBeNull()
 
-         const masterKnob = editor._knobs.find(k => k._key === 'masterVolume')
+         const masterKnob = editor._knobs.find(k => k.key === 'masterVolume')
          masterKnob.setValue(0.25, true)
          expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.25)
 

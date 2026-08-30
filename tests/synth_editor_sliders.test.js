@@ -133,7 +133,7 @@ describe('SynthEditor — OrKnob integration', () => {
 
     it('changing a knob updates the draft and calls updateGeneratedSounds', async () => {
         await trackEditor.synthEditor.openEditor()
-        const knob = trackEditor.synthEditor._knobs.find(k => k._key === 'masterVolume')
+        const knob = trackEditor.synthEditor._knobs.find(k => k.key === 'masterVolume')
         expect(knob).not.toBeNull()
 
         knob.setValue(0.42, true)
@@ -146,7 +146,7 @@ describe('SynthEditor — OrKnob integration', () => {
 
     it('changing a deep path knob (filter.freq) updates the nested draft value', async () => {
         await trackEditor.synthEditor.openEditor()
-        const knob = trackEditor.synthEditor._knobs.find(k => k._key === 'filter.freq')
+        const knob = trackEditor.synthEditor._knobs.find(k => k.key === 'filter.freq')
         expect(knob).not.toBeNull()
 
         knob.setValue(2500, true)
@@ -176,7 +176,7 @@ describe('SynthEditor — OrKnob integration', () => {
             key: 'ArrowRight', bubbles: true, cancelable: true,
         }))
 
-        const knob = trackEditor.synthEditor._knobs.find(k => k._key === 'filter.Q')
+        const knob = trackEditor.synthEditor._knobs.find(k => k.key === 'filter.Q')
         expect(knob.getValue()).toBeCloseTo(2.1, 5)
     })
 

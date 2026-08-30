@@ -296,7 +296,7 @@ export default class NoteEditor extends BasePanel {
             container: this.container,
             configs: KNOB_PROPS,
             selector: 'ne-knob',
-            prev: new Map(this._knobs.map(k => [k._key, k])),
+            prev: new Map(this._knobs.map(k => [k.key, k])),
             create: (def) => new OrKnob({
                 key:    def.key,
                 label:  def.label,
@@ -309,7 +309,7 @@ export default class NoteEditor extends BasePanel {
                 onChange: (v) => this._onSlider(def.key, v),
             }),
             update: (inst, def) => {
-                inst._onChange = (v) => this._onSlider(def.key, v)
+                inst.onChange = (v) => this._onSlider(def.key, v)
                 inst.setValue(this._note[def.key] ?? def.min)
             },
             postMount: (el) => el.removeAttribute('data-prop'),
@@ -328,7 +328,7 @@ export default class NoteEditor extends BasePanel {
             container: this.container,
             configs,
             selector: 'ne-slider',
-            prev: new Map(this._sliders.map(s => [s._key, s])),
+            prev: new Map(this._sliders.map(s => [s.key, s])),
             create: (cfg) => new OrSlider({
                 key:    cfg.key,
                 label:  cfg.label,
@@ -342,7 +342,7 @@ export default class NoteEditor extends BasePanel {
                 onChange: v => this._onSlider(cfg.key, v),
             }),
             update: (inst, cfg) => {
-                inst._onChange = (v) => this._onSlider(cfg.key, v)
+                inst.onChange = (v) => this._onSlider(cfg.key, v)
                 inst.setValue(cfg.value)
             },
             postMount: (el) => el.removeAttribute('data-prop'),

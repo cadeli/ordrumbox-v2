@@ -23,7 +23,7 @@ describe('LFO Velocity Sync Verification', () => {
         let editor, track
         const lfoConfig = { freq: 2, phase: 0, min: 0, max: 1, waveform: 0 }
 
-        const knobOf = (key) => editor._knobs.find(k => k._key === key)
+        const knobOf = (key) => editor._knobs.find(k => k.key === key)
 
         beforeEach(() => {
             document.body.innerHTML = ''
@@ -118,7 +118,7 @@ describe('LFO Pitch Replacement Semantics', () => {
     describe('TrackEditor Integration', () => {
         let editor, track
 
-        const knobOf = (key) => editor._knobs.find(k => k._key === key)
+        const knobOf = (key) => editor._knobs.find(k => k.key === key)
 
         beforeEach(() => {
             document.body.innerHTML = ''

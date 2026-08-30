@@ -561,10 +561,7 @@ export default class PatternPanel extends BasePanel {
                 cmd.addPattern()
                 cmd.setSelectedPatternNum(newIdx)
                 this._appState.currentPage = 0
-                this._playbackEvents.batch(() => {
-                    this._playbackEvents.emit('patternStructureChange')
-                    this._playbackEvents.emit('patternChange')
-                })
+                this._emitStructureChange()
                 showToast('Pattern added', 'success')
                 break
             }
@@ -572,10 +569,7 @@ export default class PatternPanel extends BasePanel {
                 if (this._appState.patterns.length <= 1) return
                 if (!confirm('Delete pattern "' + (pattern.name ?? '') + '"?')) return
                 cmd.removePattern(idx)
-                this._playbackEvents.batch(() => {
-                    this._playbackEvents.emit('patternStructureChange')
-                    this._playbackEvents.emit('patternChange')
-                })
+                this._emitStructureChange()
                 break
             }
             case 'clean': {
@@ -590,20 +584,14 @@ export default class PatternPanel extends BasePanel {
                 clone.name = (pattern.name ?? 'Pattern') + ' copy'
                 const newIdx = this._appState.patterns.length - 1
                 await cmd.setSelectedPatternNum(newIdx)
-                this._playbackEvents.batch(() => {
-                    this._playbackEvents.emit('patternStructureChange')
-                    this._playbackEvents.emit('patternChange')
-                })
+                this._emitStructureChange()
                 break
             }
             case 'rename': {
                 const newName = prompt('Rename pattern:', pattern.name ?? '')
                 if (newName === null || newName.trim() === '') return
                 cmd.renamePattern(idx, newName.trim())
-                this._playbackEvents.batch(() => {
-                    this._playbackEvents.emit('patternStructureChange')
-                    this._playbackEvents.emit('patternChange')
-                })
+                this._emitStructureChange()
                 break
             }
             case 'save': {
@@ -628,10 +616,7 @@ export default class PatternPanel extends BasePanel {
                             return
                         }
                         cmd.importPatternFromJson(data)
-                        this._playbackEvents.batch(() => {
-                            this._playbackEvents.emit('patternStructureChange')
-                            this._playbackEvents.emit('patternChange')
-                        })
+                        this._emitStructureChange()
                     } catch (err) {
                         logger.error('PatternPanel', 'Import failed', err)
                         showToast('Import failed: ' + err.message, 'error')
@@ -641,6 +626,13 @@ export default class PatternPanel extends BasePanel {
                 break
             }
         }
+    }
+
+    _emitStructureChange() {
+        this._playbackEvents.batch(() => {
+            this._playbackEvents.emit('patternStructureChange')
+            this._playbackEvents.emit('patternChange')
+        })
     }
 
     _applySelection() {

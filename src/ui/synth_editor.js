@@ -8,9 +8,7 @@
 import { soundRegistry as _soundRegistrySingleton } from '../state/sound_registry.js'
 import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_registry.js'
 import { playbackEvents as _playbackEventsSingleton } from '../state/playback_events.js'
-import { OrKnob } from './components/or_knob.js'
-import { fmt, escapeHtml, downloadJson } from './components/panel_helpers.js'
-import { syncComponentMap } from './components/sync_helpers.js'
+import { syncKnobs } from './components/sync_helpers.js'
 import { showToast } from './toast.js'
 
 import GroupsSection from './synth_editor/groups_section.js'
@@ -169,32 +167,13 @@ export default class SynthEditor {
      * destroy orphaned knobs. Keeps instances alive between renders.
      */
     _syncKnobs(configs) {
-        this._knobMap = syncComponentMap({
+        this._knobMap = syncKnobs({
             container: this.panel,
             configs,
             selector: 'ss-knob-placeholder',
             prev: this._knobMap,
-            create: (cfg) => {
-                const meta = SYNTH_PARAM_META[cfg.key] ?? {
-                    min: 0, max: Math.max(1, Math.ceil(cfg.val ?? 1)),
-                    step: Number.isInteger(cfg.val) ? 1 : 0.001,
-                }
-                return new OrKnob({
-                    key:      cfg.key,
-                    label:    cfg.label,
-                    min:      meta.min,
-                    max:      meta.max,
-                    step:     meta.step,
-                    value:    cfg.val,
-                    format:   fmt,
-                    unit:     meta.unit ?? '',
-                    onChange: v => this._onKnobChange(cfg.key, v),
-                })
-            },
-            update: (inst, cfg) => {
-                inst._onChange = v => this._onKnobChange(cfg.key, v)
-                inst.setValue(cfg.val)
-            },
+            paramMeta: SYNTH_PARAM_META,
+            onChange: (key, val) => this._onKnobChange(key, val),
         })
     }
 
