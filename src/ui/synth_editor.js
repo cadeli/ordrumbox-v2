@@ -442,6 +442,43 @@ export default class SynthEditor {
     /** @returns {Object|null} current draft state */
     get draft() { return this._draft }
 
+    /** @returns {object} sound registry */
+    get soundRegistry() { return this._soundRegistry }
+
+    /** @returns {object} service registry */
+    get serviceRegistry() { return this._serviceRegistry }
+
+    /** @returns {object} playback events */
+    get playbackEvents() { return this._playbackEvents }
+
+    /** @returns {string|null} current edit key */
+    get editKey() { return this._editKey }
+    set editKey(k) { this._editKey = k }
+
+    /** @returns {Object|null} original draft (before edits) */
+    get original() { return this._original }
+
+    /** @returns {boolean} true if loading */
+    get loading() { return this._loading }
+
+    /** @returns {boolean} true if load failed */
+    get loadFailed() { return this._loadFailed }
+
+    /** @returns {Promise|null} load promise */
+    get loadPromise() { return this._loadPromise }
+
+    /** @returns {string} current wave tab ('wave' or 'custom') */
+    get waveTab() { return this._waveTab }
+
+    /** @returns {Object} card bypassed state { [groupName]: boolean } */
+    get cardBypassed() { return this._cardBypassed }
+
     /** @returns {OrKnob[]} current knob instances */
     get knobs() { return [...this._knobMap.values()] }
+
+    /** Render the editor with current draft. */
+    renderEditor() { this._renderEditor() }
+
+    /** Hydrate draft from a sound object. */
+    hydrateDraft() { this._hydrateDraft() }
 }

@@ -31,7 +31,7 @@ export default class GenerationSection {
 
         props.forEach(p => {
             const val = track[p.key]
-            const isSelected = editor._selectedPropKey === p.key ? 'selected' : ''
+            const isSelected = editor.selectedPropKey === p.key ? 'selected' : ''
             const hasLfo = p.lfo && track[p.lfo] ? 'has-lfo' : ''
 
             if (p.type === 'boolean') {
@@ -63,15 +63,15 @@ export default class GenerationSection {
                         normalize: p.normalize ?? ((v) => v),
                         denormalize: p.denormalize ?? ((v) => v),
                         onChange: (v, key) => {
-                            editor._isDragging = true
-                            editor._track[key] = v
-                            editor._playbackEvents.batch(() => {
-                                editor._playbackEvents.emit("trackParamChange", editor._track)
-                                editor._playbackEvents.emit("patternChange", [editor._track])
+                            editor.isDragging = true
+                            editor.track[key] = v
+                            editor.playbackEvents.batch(() => {
+                                editor.playbackEvents.emit("trackParamChange", editor.track)
+                                editor.playbackEvents.emit("patternChange", [editor.track])
                             })
                         }
                     })
-                    editor._sliders.set(p.key, s)
+                    editor.sliders.set(p.key, s)
                 }
                 html += s.toHTML()
             }
@@ -83,7 +83,7 @@ export default class GenerationSection {
     /** Generate HTML for the generation tab. */
     render() {
         const editor = this._editor
-        const track = editor._track
+        const track = editor.track
         if (!track) return ''
 
         const group = GROUPS[0]

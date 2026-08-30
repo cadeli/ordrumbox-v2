@@ -13,7 +13,7 @@ export default class FxSection {
 
     /** Returns true if the given FX definition is "on". */
     isFxOn(fx) {
-        const track = this._editor._track
+        const track = this._editor.track
         if (fx.key === 'filterFreq') {
             const ft = track.filterType
             return ft != null && ft !== 'allpass'
@@ -30,10 +30,10 @@ export default class FxSection {
             const cur = track.filterType
             const isOn = cur != null && cur !== 'allpass'
             if (isOn) {
-                editor._prevFilterType = cur
+                editor.prevFilterType = cur
                 track.filterType = 'allpass'
             } else {
-                track.filterType = editor._prevFilterType ?? 'lowpass'
+                track.filterType = editor.prevFilterType ?? 'lowpass'
             }
         } else {
             const isOn = Number(track[key] ?? 0) > 0
@@ -50,7 +50,7 @@ export default class FxSection {
         if (target.closest('[data-prop="filterType"]')) {
             const cur = track.filterType
             track.filterType = (cur === val) ? 'allpass' : val
-            editor._prevFilterType = (cur === val) ? undefined : cur
+            editor.prevFilterType = (cur === val) ? undefined : cur
         }
     }
 
@@ -60,8 +60,8 @@ export default class FxSection {
         const tabIdx = parseInt(btn.dataset.fxTab, 10)
         if (Number.isNaN(tabIdx)) return
         const activeTab = String(tabIdx)
-        editor._fxTab.setActive(activeTab)
-        editor._fxTab.togglePanels(editor.container)
+        editor.fxTab.setActive(activeTab)
+        editor.fxTab.togglePanels(editor.container)
         editor.container.querySelectorAll('.te-mod-btn').forEach(tab => {
             const tabButton = tab.querySelector('[data-fx-tab]')
             tab.classList.toggle('active', tabButton?.dataset.fxTab === activeTab)
@@ -108,8 +108,8 @@ export default class FxSection {
                         <select data-key="${ck}">${renderOptions(prop.options, val, { labels: prop.labels })}</select></div>`
                 } else {
                     const hasLfo = prop.lfo && track[prop.lfo] ? 'has-lfo' : ''
-                    const isSelected = editor._selectedPropKey === ck ? 'selected' : ''
-                    let knob = editor._fxKnobs.find(k => k.key === ck)
+                    const isSelected = editor.selectedPropKey === ck ? 'selected' : ''
+                    let knob = editor.fxKnobs.find(k => k.key === ck)
                     if (knob) {
                         knob.setValue(val ?? prop.min)
                     } else {
@@ -123,15 +123,15 @@ export default class FxSection {
                             extraClass: `${isSelected} ${hasLfo}`.trim(),
                             format: (v) => fmtVal(ck, v),
                             onChange: (v) => {
-                                editor._track[ck] = v
-                                editor._playbackEvents.batch(() => {
-                                    editor._playbackEvents.emit("trackParamChange", editor._track)
-                                    editor._playbackEvents.emit("patternChange", [editor._track])
+                                editor.track[ck] = v
+                                editor.playbackEvents.batch(() => {
+                                    editor.playbackEvents.emit("trackParamChange", editor.track)
+                                    editor.playbackEvents.emit("patternChange", [editor.track])
                                 })
                             }
                         })
                     }
-                    editor._fxKnobs.push(knob)
+                    editor.fxKnobs.push(knob)
                     content += knob.toHTML()
                 }
             })

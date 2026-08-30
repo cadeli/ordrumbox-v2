@@ -10,7 +10,7 @@ export default class ModulationSection {
     /** @param {import('./track_editor.js').default} editor */
     constructor(editor) {
         this._editor = editor
-        editor._selectedLfoTarget = null
+        editor.selectedLfoTarget = null
     }
 
     /** All props that support LFO. */
@@ -23,10 +23,10 @@ export default class ModulationSection {
         const editor = this._editor
         const props = this._lfoProps()
         if (!props.length) return null
-        if (!editor._selectedLfoTarget || !props.find(p => p.key === editor._selectedLfoTarget)) {
-            editor._selectedLfoTarget = props[0].key
+        if (!editor.selectedLfoTarget || !props.find(p => p.key === editor.selectedLfoTarget)) {
+            editor.selectedLfoTarget = props[0].key
         }
-        return props.find(p => p.key === editor._selectedLfoTarget) ?? props[0]
+        return props.find(p => p.key === editor.selectedLfoTarget) ?? props[0]
     }
 
     _getDefaultLfo(prop, type = 'sine') {
@@ -54,7 +54,7 @@ export default class ModulationSection {
 
         let content = `<div class="te-mod-targets">`
         this._lfoProps().forEach(p => {
-            const isActive = p.key === editor._selectedLfoTarget
+            const isActive = p.key === editor.selectedLfoTarget
             const lfoOn = !!track[p.lfo]
             const ledCls = lfoOn ? 'lfo-led on' : 'lfo-led'
             const activeClass = isActive ? ' active' : ''
@@ -96,11 +96,11 @@ export default class ModulationSection {
     // ── Event handlers ─────────────────────────────────────────────
 
     onSelectBtn(targetKey) {
-        this._editor._selectedLfoTarget = targetKey
+        this._editor.selectedLfoTarget = targetKey
     }
 
     onToggleBtn(targetKey) {
-        this._editor._selectedLfoTarget = targetKey
+        this._editor.selectedLfoTarget = targetKey
         this._toggleLfoForTarget(targetKey)
     }
 
@@ -118,9 +118,9 @@ export default class ModulationSection {
 
     onSlider(input) {
         const editor = this._editor
-        editor._isDragging = true
+        editor.isDragging = true
         const track = editor._track
-        const prop = this._lfoProps().find(p => p.key === editor._selectedLfoTarget)
+        const prop = this._lfoProps().find(p => p.key === editor.selectedLfoTarget)
         if (!prop) return false
         let lfo = track[prop.lfo]
         let needsSync = false

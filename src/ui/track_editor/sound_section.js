@@ -13,7 +13,7 @@ export default class SoundSection {
 
     render() {
         const editor = this._editor
-        const track = editor._track
+        const track = editor.track
         if (!track) return ''
 
         const sr = editor._soundRegistry
@@ -81,18 +81,18 @@ export default class SoundSection {
 
     async onInstrumentChange(target) {
         const editor = this._editor
-        const track = editor._track
+        const track = editor.track
         const newName = target.value
-        editor._serviceRegistry.cmd.changeTrackName(track, newName)
+        editor.serviceRegistry.cmd.changeTrackName(track, newName)
         const firstSample = this._getPreferredSampleForInstrument(newName)
         if (firstSample) {
-            if (!editor._soundRegistry.sounds[firstSample.url]?.buffer) {
-                await editor._serviceRegistry.resourcesLoader.loadSample(firstSample, firstSample.kitName)
+            if (!editor.soundRegistry.sounds[firstSample.url]?.buffer) {
+                await editor.resourcesLoader.loadSample(firstSample, firstSample.kitName)
             }
-            editor._serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
+            editor.serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
         }
         editor.sync()
-        editor._playbackEvents.batch(() => {
+        editor.playbackEvents.batch(() => {
             editor._playbackEvents.emit("trackParamChange", track)
             editor._playbackEvents.emit("patternChange", [track])
         })
@@ -160,11 +160,13 @@ export default class SoundSection {
     // ── Helpers ──
 
     _getSelectedDrumkitName() {
-        return this._editor._soundRegistry.drumkitList[this._editor._appState.selectedDrumkitNum]?.name ?? ''
+        const editor = this._editor
+        return editor.soundRegistry.drumkitList[editor.appState.selectedDrumkitNum]?.name ?? ''
     }
 
     _getAllKitSamples() {
-        return this._editor._soundRegistry.drumkitList.flatMap(kit =>
+        const editor = this._editor
+        return editor.soundRegistry.drumkitList.flatMap(kit =>
             kit.instruments.map(s => ({ ...s, kitName: kit.name }))
         )
     }
@@ -194,9 +196,10 @@ export default class SoundSection {
     }
 
     _getCurrentSoundUrl() {
-        const track = this._editor._track
+        const editor = this._editor
+        const track = editor.track
         const soundId = track.soundId ?? ''
-        return this._editor._soundRegistry.sounds[soundId]?.url ?? soundId
+        return editor.soundRegistry.sounds[soundId]?.url ?? soundId
     }
 
     _getSoundInfo() {
@@ -212,8 +215,9 @@ export default class SoundSection {
     }
 
     _getCurrentInstrumentName(instrumentIds, keysWithSamples) {
-        const track = this._editor._track
-        const sr = this._editor._soundRegistry
+        const editor = this._editor
+        const track = editor.track
+        const sr = editor.soundRegistry
         if (keysWithSamples.has(track.name)) return track.name
         const soundKey = sr.sounds[this._getCurrentSoundUrl()]?.key
         if (soundKey && keysWithSamples.has(soundKey)) return soundKey
