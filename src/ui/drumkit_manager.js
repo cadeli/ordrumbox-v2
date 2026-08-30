@@ -1,6 +1,7 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
+import { color } from './theme.js'
 import InstrumentsManager, { instrumentsManager } from '../logic/services/instruments_manager.js'
 import drumkitService from '../logic/services/drumkit_service.js'
 import { drawEnvelope } from '../audio/sample_analyzer.js'
@@ -136,7 +137,7 @@ export default class DrumkitManager extends BasePanel {
 
             const playBtn = document.createElement('span')
             playBtn.className = 'dm-play-btn'
-            playBtn.textContent = '\u25B6'
+            playBtn.textContent = '▶'
             playBtn.title = 'Audition'
             playBtn.addEventListener('click', (e) => {
                 e.stopPropagation()
@@ -162,6 +163,11 @@ export default class DrumkitManager extends BasePanel {
         this._renderDetail(key)
     }
 
+    /**
+     * Render the detail panel for a selected sound.
+     * @param {string} key - The sound key
+     * @private
+     */
     _renderDetail(key) {
         const sound = soundRegistry.sounds[key]
         if (!sound) {
@@ -169,6 +175,17 @@ export default class DrumkitManager extends BasePanel {
             return
         }
 
+        const analysis = drumkitService.getAnalysisInfo(sound)
+        this._buildDetailHTML(sound)
+        this._bindDetailEvents(sound, analysis, key)
+    }
+
+    /**
+     * Build the detail panel HTML structure.
+     * @param {object} sound - The sound object
+     * @private
+     */
+    _buildDetailHTML(sound) {
         const analysis = drumkitService.getAnalysisInfo(sound)
         const detected = instrumentsManager.findInstrumentFromFileName(sound.display_name ?? sound.url)
         const noteStr = analysis?.noteInfo ? formatNote(analysis.noteInfo) : '—'
@@ -195,7 +212,7 @@ export default class DrumkitManager extends BasePanel {
 
         this._detailEl.innerHTML = `
             <div class="dm-detail-header">
-                <button class="dm-play-btn dm-play-large" id="dm-detail-play" title="Audition">\u25B6</button>
+                <button class="dm-play-btn dm-play-large" id="dm-detail-play" title="Audition">▶</button>
                 <span class="dm-detail-filename">${this.esc(sound.display_name ?? sound.url)}</span>
             </div>
             <div class="dm-detail-columns">
@@ -239,42 +256,57 @@ export default class DrumkitManager extends BasePanel {
                 </div>
             </div>
         `
+    }
 
+    /**
+     * Bind event listeners to detail panel controls.
+     * @param {object} sound - The sound object
+     * @param {object} analysis - The analysis object
+     * @param {string} key - The sound key
+     * @private
+     */
+    _bindDetailEvents(sound, analysis, key) {
+        // Waveform rendering
         if (analysis?.envelope) {
             const canvas = this._detailEl.querySelector('#dm-waveform')
             const ctx = canvas?.getContext('2d')
             if (ctx) {
+                const w = (canvas.clientWidth && canvas.clientWidth > 0) ? canvas.clientWidth : 300
+                const h = (canvas.clientHeight && canvas.clientHeight > 0) ? canvas.clientHeight : 80
+                canvas.width = w
+                canvas.height = h
                 requestAnimationFrame(() => {
-                    const w = (canvas.clientWidth && canvas.clientWidth > 0) ? canvas.clientWidth : 300
-                    const h = (canvas.clientHeight && canvas.clientHeight > 0) ? canvas.clientHeight : 80
-                    canvas.width = w
-                    canvas.height = h
-                    drawEnvelope(ctx, analysis.envelope, w, h)
+                    drawEnvelope(ctx, analysis.envelope, w, h, color('waveform-cyan'))
                 })
             }
         }
 
+        // Play button
         this._detailEl.querySelector('#dm-detail-play')?.addEventListener('click', () => {
             this._audition(sound.url)
         })
 
+        // Kit selector
         this._detailEl.querySelector('#dm-kit-select')?.addEventListener('change', (e) => {
             const displayName = drumkitService.moveToKit(key, e.target.value)
             if (displayName) showToast(`Moved "${displayName}" to kit "${e.target.value}"`, 'success')
             this.sync()
         })
 
+        // Instrument selector
         this._detailEl.querySelector('#dm-inst-select')?.addEventListener('change', (e) => {
             const displayName = drumkitService.setInstrument(key, e.target.value)
             if (displayName) showToast(`Set "${displayName}" to instrument "${e.target.value}"`, 'success')
             this.sync()
         })
 
+        // Gain control
         this._detailEl.querySelector('#dm-gain')?.addEventListener('input', (e) => {
             sound.gainDb = Number(e.target.value)
             this._detailEl.querySelector('#dm-gain-val').textContent = `${sound.gainDb.toFixed(1)} dB`
         })
 
+        // Tune control
         this._detailEl.querySelector('#dm-tune')?.addEventListener('input', (e) => {
             sound.tune = Number(e.target.value)
             const baseHz = analysis?.fundamentalHz ?? 440
@@ -282,17 +314,20 @@ export default class DrumkitManager extends BasePanel {
             this._detailEl.querySelector('#dm-tune-val').textContent = formatNote(hzToNote(tunedHz))
         })
 
+        // Decay control
         this._detailEl.querySelector('#dm-decay')?.addEventListener('input', (e) => {
             sound.decay = Number(e.target.value)
             this._detailEl.querySelector('#dm-decay-val').textContent = `${sound.decay} ms`
         })
 
+        // Emit drumkitChange on slider change
         for (const controlId of ['dm-gain', 'dm-tune', 'dm-decay']) {
             this._detailEl.querySelector(`#${controlId}`)?.addEventListener('change', () => {
                 playbackEvents.emit("drumkitChange")
             })
         }
 
+        // Replace sample
         this._detailEl.querySelector('#dm-replace')?.addEventListener('click', () => {
             this._detailEl.querySelector('#dm-replace-file').click()
         })
@@ -301,9 +336,19 @@ export default class DrumkitManager extends BasePanel {
             this._onReplaceSample(key, e)
         })
 
+        // Remove sample
         this._detailEl.querySelector('#dm-remove')?.addEventListener('click', () => {
             this._removeSample(key)
         })
+    }
+
+    _removeSample(key) {
+        const displayName = drumkitService.removeSample(key)
+        if (displayName) {
+            this._selectedSoundKey = null
+            showToast(`Removed "${displayName}"`, 'success')
+            this.sync()
+        }
     }
 
     _audition(url) {
@@ -322,16 +367,7 @@ export default class DrumkitManager extends BasePanel {
         source.start()
     }
 
-    _removeSample(soundKey) {
-        const displayName = drumkitService.removeSample(soundKey)
-        if (displayName) {
-            this._selectedSoundKey = null
-            showToast(`Removed "${displayName}"`, 'success')
-            this.sync()
-        }
-    }
-
-    async _onReplaceSample(soundKey, e) {
+    async _onReplaceSample(key, e) {
         const file = e.target.files?.[0]
         if (!file) return
 
@@ -341,7 +377,7 @@ export default class DrumkitManager extends BasePanel {
         try {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = await ctx.decodeAudioData(arrayBuffer)
-            await drumkitService.replaceSampleBuffer(soundKey, buffer, file.name)
+            await drumkitService.replaceSampleBuffer(key, buffer, file.name)
             showToast(`Replaced with "${file.name}"`, 'success')
             this.sync()
         } catch (err) {
