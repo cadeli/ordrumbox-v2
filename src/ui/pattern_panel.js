@@ -885,4 +885,11 @@ export default class PatternPanel extends BasePanel {
             this.forceSync()
         }
     }
+
+    // ─── Public API ───────────────────────────────────────────────────────
+    /** @returns {HTMLElement} tracks container element */
+    get tracksEl() { return this._tracksEl }
+
+    /** Execute a panel action (new, delete, duplicate, etc.) */
+    onAction(action) { return this._onAction(action) }
 }

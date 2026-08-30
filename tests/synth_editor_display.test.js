@@ -93,7 +93,7 @@ describe('Soft Synth Editor display', () => {
         if (appContentEl && trackEditor.synthEditor.panel) {
             appContentEl.appendChild(trackEditor.synthEditor.panel)
         }
-        trackEditor._track = mockTrack
+        trackEditor.track = mockTrack
     })
 
     it('creates the soft-synth-panel in app-content (hidden by default)', () => {

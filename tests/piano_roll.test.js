@@ -121,11 +121,11 @@ describe('PianoRollPanel', () => {
     function clickNoteAtStepPitch(step, pitch) {
         const track = getTrack()
         const row = noteRow({ pitch }, track.pitch ?? 0)
-        clickGrid(stepToClickX(step, panel._cellWidth), rowToClickY(row))
+        clickGrid(stepToClickX(step, panel.cellWidth), rowToClickY(row))
     }
 
     function pressKey(key) {
-        panel._onKeyDown(new KeyboardEvent('keydown', {
+        panel.onKeyDown(new KeyboardEvent('keydown', {
             key, bubbles: true, cancelable: true
         }))
     }
@@ -135,16 +135,16 @@ describe('PianoRollPanel', () => {
             const grid = getGrid()
             const track = getTrack()
             const pageSteps = 4 * track.stepsPerBeat
-            const expected = pageSteps * panel._cellWidth
+            const expected = pageSteps * panel.cellWidth
             expect(parseFloat(grid.style.width)).toBeCloseTo(expected, 0)
         })
 
         it('cell width fills available space', () => {
             const scrollEl = panel.container.querySelector('#pp-piano-scroll')
             Object.defineProperty(scrollEl, 'clientWidth', { value: 800, configurable: true })
-            panel._measureCellWidth()
+            panel.measureCellWidth()
             const available = 800 - 80
-            expect(panel._cellWidth).toBe(Math.max(16, available / (4 * 4)))
+            expect(panel.cellWidth).toBe(Math.max(16, available / (4 * 4)))
         })
     })
 
@@ -160,27 +160,27 @@ describe('PianoRollPanel', () => {
         })
 
         it('navigates to next page', () => {
-            panel._nextPage()
+            panel.nextPage()
             const info = panel.container.querySelector('#pp-pr-page-info')
             expect(info.textContent).toBe('2/2')
         })
 
         it('does not go past last page', () => {
-            panel._nextPage()
-            panel._nextPage()
+            panel.nextPage()
+            panel.nextPage()
             const info = panel.container.querySelector('#pp-pr-page-info')
             expect(info.textContent).toBe('2/2')
         })
 
         it('navigates to previous page', () => {
-            panel._nextPage()
-            panel._prevPage()
+            panel.nextPage()
+            panel.prevPage()
             const info = panel.container.querySelector('#pp-pr-page-info')
             expect(info.textContent).toBe('1/2')
         })
 
         it('does not go before first page', () => {
-            panel._prevPage()
+            panel.prevPage()
             const info = panel.container.querySelector('#pp-pr-page-info')
             expect(info.textContent).toBe('1/2')
         })
@@ -198,7 +198,7 @@ describe('PianoRollPanel', () => {
         })
 
         it('shows different notes after page switch', () => {
-            panel._nextPage()
+            panel.nextPage()
             const notes = getNotes()
             const track = getTrack()
             const stepsPerBeat = track.stepsPerBeat
@@ -217,7 +217,7 @@ describe('PianoRollPanel', () => {
             const note = track.notes[0]
             const step = note.beat * track.stepsPerBeat + note.beatStep
             clickNoteAtStepPitch(step, note.pitch ?? 0)
-            expect(panel._selNote).toBe(note)
+            expect(panel.selNote).toBe(note)
         })
 
         it('applies selected class to clicked note', () => {
@@ -234,19 +234,19 @@ describe('PianoRollPanel', () => {
             const note = track.notes[0]
             const step = note.beat * track.stepsPerBeat + note.beatStep
             clickNoteAtStepPitch(step, note.pitch ?? 0)
-            expect(panel._selNote).toBe(note)
+            expect(panel.selNote).toBe(note)
 
             clickNoteAtStepPitch(step, note.pitch ?? 0)
-            expect(panel._selNote).toBeNull()
+            expect(panel.selNote).toBeNull()
             expect(track.notes).not.toContain(note)
         })
 
         it('clears selection on hide', () => {
             const track = getTrack()
             const note = track.notes[0]
-            panel._selNote = note
+            panel.selNote = note
             panel.hide()
-            expect(panel._selNote).toBeNull()
+            expect(panel.selNote).toBeNull()
         })
     })
 
@@ -368,47 +368,47 @@ describe('PianoRollPanel', () => {
 
     describe('keyboard navigation', () => {
         it('ArrowRight moves cursor step forward', () => {
-            panel._cursorStep = 0
-            panel._cursorRow = 48
+            panel.cursorStep = 0
+            panel.cursorRow = 48
             pressKey('ArrowRight')
-            expect(panel._cursorStep).toBe(1)
+            expect(panel.cursorStep).toBe(1)
         })
 
         it('ArrowLeft moves cursor step backward', () => {
-            panel._cursorStep = 5
-            panel._cursorRow = 48
+            panel.cursorStep = 5
+            panel.cursorRow = 48
             pressKey('ArrowLeft')
-            expect(panel._cursorStep).toBe(4)
+            expect(panel.cursorStep).toBe(4)
         })
 
         it('ArrowUp moves cursor pitch up', () => {
-            panel._cursorStep = 0
-            panel._cursorRow = 48
+            panel.cursorStep = 0
+            panel.cursorRow = 48
             pressKey('ArrowUp')
-            expect(panel._cursorRow).toBe(49)
+            expect(panel.cursorRow).toBe(49)
         })
 
         it('ArrowDown moves cursor pitch down', () => {
-            panel._cursorStep = 0
-            panel._cursorRow = 48
+            panel.cursorStep = 0
+            panel.cursorRow = 48
             pressKey('ArrowDown')
-            expect(panel._cursorRow).toBe(47)
+            expect(panel.cursorRow).toBe(47)
         })
 
         it('ArrowRight wraps to start at end of pattern', () => {
             const track = getTrack()
             const totalSteps = track.nbBeats * track.stepsPerBeat
-            panel._cursorStep = totalSteps - 1
-            panel._cursorRow = 48
+            panel.cursorStep = totalSteps - 1
+            panel.cursorRow = 48
             pressKey('ArrowRight')
-            expect(panel._cursorStep).toBe(0)
+            expect(panel.cursorStep).toBe(0)
         })
 
         it('Enter creates a note at cursor on empty step', () => {
             const track = getTrack()
             const initialCount = track.notes.length
-            panel._cursorStep = 3
-            panel._cursorRow = 60 - MIDI_MIN
+            panel.cursorStep = 3
+            panel.cursorRow = 60 - MIDI_MIN
             pressKey('Enter')
             expect(track.notes.length).toBe(initialCount + 1)
         })
@@ -417,42 +417,42 @@ describe('PianoRollPanel', () => {
             const track = getTrack()
             const note = track.notes[0]
             const spb = track.stepsPerBeat
-            panel._cursorStep = note.beat * spb + note.beatStep
-            panel._cursorRow = noteRow(note, track.pitch ?? 0)
+            panel.cursorStep = note.beat * spb + note.beatStep
+            panel.cursorRow = noteRow(note, track.pitch ?? 0)
             pressKey('Enter')
-            expect(panel._selNote).toBe(note)
+            expect(panel.selNote).toBe(note)
         })
 
         it('Enter deletes note when cursor is on already selected note', () => {
             const track = getTrack()
             const note = track.notes[0]
             const spb = track.stepsPerBeat
-            panel._cursorStep = note.beat * spb + note.beatStep
-            panel._cursorRow = noteRow(note, track.pitch ?? 0)
+            panel.cursorStep = note.beat * spb + note.beatStep
+            panel.cursorRow = noteRow(note, track.pitch ?? 0)
 
             pressKey('Enter')
-            expect(panel._selNote).toBe(note)
+            expect(panel.selNote).toBe(note)
 
             pressKey('Enter')
-            expect(panel._selNote).toBeNull()
+            expect(panel.selNote).toBeNull()
             expect(track.notes).not.toContain(note)
         })
 
         it('Delete removes selected note', () => {
             const track = getTrack()
             const note = track.notes[0]
-            panel._selNote = note
+            panel.selNote = note
             pressKey('Delete')
-            expect(panel._selNote).toBeNull()
+            expect(panel.selNote).toBeNull()
             expect(track.notes).not.toContain(note)
         })
 
         it('Backspace removes selected note', () => {
             const track = getTrack()
             const note = track.notes[0]
-            panel._selNote = note
+            panel.selNote = note
             pressKey('Backspace')
-            expect(panel._selNote).toBeNull()
+            expect(panel.selNote).toBeNull()
             expect(track.notes).not.toContain(note)
         })
     })
@@ -659,7 +659,7 @@ describe('PianoRollPanel', () => {
             panel._sync()
             const lp = getGrid()?.querySelector('.pp-pr-loop-point')
             expect(lp).not.toBeNull()
-            const expectedX = loopStep * panel._cellWidth
+            const expectedX = loopStep * panel.cellWidth
             expect(parseFloat(lp.style.left)).toBeCloseTo(expectedX, 0)
         })
 

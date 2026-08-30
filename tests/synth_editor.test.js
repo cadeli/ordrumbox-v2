@@ -90,7 +90,7 @@ it('keeps Revert in the toolbar and preserves revert behavior', async () => {
          const revertButton = panel.querySelector('[data-action="synth-revert"]')
          expect(revertButton).not.toBeNull()
 
-         const masterKnob = editor._knobs.find(k => k.key === 'masterVolume')
+         const masterKnob = editor.knobs.find(k => k.key === 'masterVolume')
          masterKnob.setValue(0.25, true)
          expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.25)
 
@@ -105,13 +105,13 @@ it('keeps Revert in the toolbar and preserves revert behavior', async () => {
         const filterCard = document.querySelector('#soft-synth-panel [data-ss-card="filter"]')
         const filterBtn = filterCard.querySelector('.ss-bypass-btn')
 
-        expect(editor._draft.bypassFilter).toBeFalsy()
+        expect(editor.draft.bypassFilter).toBeFalsy()
         filterBtn.click()
-        expect(editor._draft.bypassFilter).toBe(true)
+        expect(editor.draft.bypassFilter).toBe(true)
         expect(filterCard.classList.contains('bypassed')).toBe(true)
 
         filterBtn.click()
-        expect(editor._draft.bypassFilter).toBe(false)
+        expect(editor.draft.bypassFilter).toBe(false)
         expect(filterCard.classList.contains('bypassed')).toBe(false)
     })
 
@@ -121,12 +121,12 @@ it('keeps Revert in the toolbar and preserves revert behavior', async () => {
         const envCard = document.querySelector('#soft-synth-panel [data-ss-card="enveloppe"]')
         const envBtn = envCard.querySelector('.ss-bypass-btn')
 
-        expect(editor._draft.bypassEnv).toBeFalsy()
+        expect(editor.draft.bypassEnv).toBeFalsy()
         envBtn.click()
-        expect(editor._draft.bypassEnv).toBe(true)
+        expect(editor.draft.bypassEnv).toBe(true)
 
         envBtn.click()
-        expect(editor._draft.bypassEnv).toBe(false)
+        expect(editor.draft.bypassEnv).toBe(false)
     })
 
     it('sets bypassNoise flag on draft when toggling noise bypass', async () => {
@@ -135,12 +135,12 @@ it('keeps Revert in the toolbar and preserves revert behavior', async () => {
         const noiseCard = document.querySelector('#soft-synth-panel [data-ss-card="noise"]')
         const noiseBtn = noiseCard.querySelector('.ss-bypass-btn')
 
-        expect(editor._draft.bypassNoise).toBeFalsy()
+        expect(editor.draft.bypassNoise).toBeFalsy()
         noiseBtn.click()
-        expect(editor._draft.bypassNoise).toBe(true)
+        expect(editor.draft.bypassNoise).toBe(true)
 
         noiseBtn.click()
-        expect(editor._draft.bypassNoise).toBe(false)
+        expect(editor.draft.bypassNoise).toBe(false)
     })
 
     it('sets bypassLfo1 flag on draft when toggling lfo bypass', async () => {
@@ -149,12 +149,12 @@ it('keeps Revert in the toolbar and preserves revert behavior', async () => {
         const lfoCard = document.querySelector('#soft-synth-panel [data-ss-card="lfo"]')
         const lfoBtn = lfoCard.querySelector('.ss-bypass-btn')
 
-        expect(editor._draft.bypassLfo1).toBeFalsy()
+        expect(editor.draft.bypassLfo1).toBeFalsy()
         lfoBtn.click()
-        expect(editor._draft.bypassLfo1).toBe(true)
+        expect(editor.draft.bypassLfo1).toBe(true)
 
         lfoBtn.click()
-        expect(editor._draft.bypassLfo1).toBe(false)
+        expect(editor.draft.bypassLfo1).toBe(false)
     })
 
     it('sets bypassFm flag on draft when toggling fm bypass', async () => {
@@ -163,27 +163,27 @@ it('keeps Revert in the toolbar and preserves revert behavior', async () => {
         const fmCard = document.querySelector('#soft-synth-panel [data-ss-card="fm"]')
         const fmBtn = fmCard.querySelector('.ss-bypass-btn')
 
-        expect(editor._draft.bypassFm).toBeFalsy()
+        expect(editor.draft.bypassFm).toBeFalsy()
         fmBtn.click()
-        expect(editor._draft.bypassFm).toBe(true)
+        expect(editor.draft.bypassFm).toBe(true)
 
         fmBtn.click()
-        expect(editor._draft.bypassFm).toBe(false)
+        expect(editor.draft.bypassFm).toBe(false)
     })
 
     it('VCO bypass saves/restores gain (not a bypass flag)', async () => {
         await editor.openEditor()
 
-        expect(editor._draft.vco1.gain).toBe(1)
+        expect(editor.draft.vco1.gain).toBe(1)
         const vco1Card = document.querySelector('#soft-synth-panel [data-ss-card="vco1"]')
         const vco1Btn = vco1Card.querySelector('.ss-bypass-btn')
 
         vco1Btn.click()
-        expect(editor._draft.vco1.gain).toBe(0)
-        expect(editor._draft.bypassVco1).toBeUndefined()
+        expect(editor.draft.vco1.gain).toBe(0)
+        expect(editor.draft.bypassVco1).toBeUndefined()
 
         vco1Btn.click()
-        expect(editor._draft.vco1.gain).toBe(1)
+        expect(editor.draft.vco1.gain).toBe(1)
     })
 
     it('propagates bypass flags to audioEngine via updateGeneratedSounds', async () => {

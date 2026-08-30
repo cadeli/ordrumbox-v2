@@ -672,4 +672,24 @@ export default class TrackEditor extends BasePanel {
         if (this._noteEditor) this._noteEditor.hide()
         setViewBtn('edit', false)
     }
+
+    // ─── Public API ───────────────────────────────────────────────────────
+    /** @returns {Object|null} current track */
+    get track() { return this._track }
+    /** @param {Object} t */
+    set track(t) { this._track = t }
+
+    /** @returns {number} current track index */
+    get trackIdx() { return this._trackIdx }
+    /** @param {number} idx */
+    set trackIdx(idx) { this._trackIdx = idx }
+
+    /** @returns {Map} slider instances keyed by key */
+    get sliders() { return this._sliders }
+
+    /** @returns {OrKnob[]} knob bar instances */
+    get knobs() { return this._knobs }
+
+    /** @returns {OrKnob[]} FX knob instances */
+    get fxKnobs() { return this._fxKnobs }
 }

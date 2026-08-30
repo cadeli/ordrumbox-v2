@@ -33,7 +33,7 @@ describe('TrackEditor sound panel', () => {
 
     function renderSoundPanelHtml(track) {
         const editor = new TrackEditor()
-        editor._track = track
+        editor.track = track
         vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
         const wrapper = document.createElement('div')
         wrapper.innerHTML = editor._sndSection.render()
@@ -74,7 +74,7 @@ describe('TrackEditor filterFreq display', () => {
     function getFreqDisplay(track) {
         const editor = new TrackEditor()
         editor.init()
-        editor._track = track
+        editor.track = track
         editor._tab.setActive('fx')
         editor._fxTab.setActive('3')
         editor.sync()
@@ -101,14 +101,14 @@ describe('TrackEditor filterFreq display', () => {
     it('_onSlider formats the display in Hz while dragging', () => {
         const editor = new TrackEditor()
         editor.init()
-        editor._track = { name: 'KICK', filterFreq: 20 }
+        editor.track = { name: 'KICK', filterFreq: 20 }
         editor._tab.setActive('fx')
         editor._fxTab.setActive('3')
         editor.sync()
-        const knob = editor._fxKnobs.find(k => k.key === 'filterFreq')
+        const knob = editor.fxKnobs.find(k => k.key === 'filterFreq')
         knob.setValue(632)
         knob.onChange?.(632, 'filterFreq')
-        expect(editor._track.filterFreq).toBe(632)
+        expect(editor.track.filterFreq).toBe(632)
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         expect(valEl.textContent).toBe('632Hz')
     })
@@ -118,14 +118,14 @@ describe('TrackEditor filterFreq display', () => {
         const editor = new TrackEditor()
         editor.init()
         // LFO with freq=0 → fixed output = min value = 158 Hz
-        editor._track = {
+        editor.track = {
             name: 'KICK',
             filterFreq: 632,
             filterFreqLfo: { freq: 0, min: 158, max: 158, phase: 0 },
         }
         editor._tab.setActive('fx')
         editor._fxTab.setActive('3')
-        appState.patterns = [{ tracks: [editor._track], nbBeats: 4 }]
+        appState.patterns = [{ tracks: [editor.track], nbBeats: 4 }]
         appState.selectedPatternNum = 0
         editor.sync()
         editor._updateLfoSliders()
@@ -137,7 +137,7 @@ describe('TrackEditor filterFreq display', () => {
 describe('TrackEditor loop panel', () => {
     it('renders loop properties correctly', () => {
         const editor = new TrackEditor()
-        editor._track = {
+        editor.track = {
             nbBeats: 8,
             stepsPerBeat: 4,
             loopAtStep: 16
@@ -165,8 +165,8 @@ describe('TrackEditor onPatternChange', () => {
         editor.init()
         const oldTrack = { name: 'KICK', velocity: 0.7 }
         const newTrack = { name: 'KICK', velocity: 0.3 }
-        editor._track = oldTrack
-        editor._trackIdx = 0
+        editor.track = oldTrack
+        editor.trackIdx = 0
         appState.patterns = [{ tracks: [newTrack] }]
         appState.selectedPatternNum = 0
         editor.show({ track: oldTrack, trackIdx: 0 })
@@ -175,26 +175,26 @@ describe('TrackEditor onPatternChange', () => {
 
         playbackEvents.emit("patternChange")
 
-        expect(editor._track).toBe(newTrack)
-        expect(editor._trackIdx).toBe(0)
+        expect(editor.track).toBe(newTrack)
+        expect(editor.trackIdx).toBe(0)
         expect(syncSpy).toHaveBeenCalled()
     })
 
     it('clears the track and re-syncs when the track no longer exists in the new pattern (does not auto-hide)', () => {
         const editor = new TrackEditor()
         editor.init()
-        editor._track = { name: 'KICK', velocity: 0.7 }
-        editor._trackIdx = 0
+        editor.track = { name: 'KICK', velocity: 0.7 }
+        editor.trackIdx = 0
         appState.patterns = [{ tracks: [{ name: 'SNARE' }] }]
         appState.selectedPatternNum = 0
-        editor.show({ track: editor._track, trackIdx: 0 })
+        editor.show({ track: editor.track, trackIdx: 0 })
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
         playbackEvents.emit("patternChange")
 
-        expect(editor._track).toBeNull()
-        expect(editor._trackIdx).toBe(-1)
+        expect(editor.track).toBeNull()
+        expect(editor.trackIdx).toBe(-1)
         expect(syncSpy).toHaveBeenCalled()
     })
 
@@ -253,7 +253,7 @@ describe('TrackEditor LFO row highlight', () => {
     it('marks the selected prop row with the "selected" class', () => {
         const editor = new TrackEditor()
         editor.init()
-        editor._track = { name: 'KICK', filterFreq: 0.5, filterFreqLfo: null }
+        editor.track = { name: 'KICK', filterFreq: 0.5, filterFreqLfo: null }
         editor._selectedPropKey = 'filterFreq'
         editor._tab.setActive('fx')
         editor._fxTab.setActive('3')
@@ -267,7 +267,7 @@ describe('TrackEditor LFO row highlight', () => {
     it('marks rows whose prop has an LFO configured with the "has-lfo" class', () => {
         const editor = new TrackEditor()
         editor.init()
-        editor._track = {
+        editor.track = {
             name: 'KICK',
             filterFreq: 0.5,
             filterFreqLfo: { freq: 1, min: 0, max: 0.5 },

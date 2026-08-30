@@ -84,7 +84,7 @@ describe('SynthEditor — OrKnob integration', () => {
         trackEditor.init()
         // Attach synth panel to app-content
         document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
-        trackEditor._track = mockTrack
+        trackEditor.track = mockTrack
     })
 
     it('renders each numeric parameter as an OrKnob row', async () => {
@@ -133,7 +133,7 @@ describe('SynthEditor — OrKnob integration', () => {
 
     it('changing a knob updates the draft and calls updateGeneratedSounds', async () => {
         await trackEditor.synthEditor.openEditor()
-        const knob = trackEditor.synthEditor._knobs.find(k => k.key === 'masterVolume')
+        const knob = trackEditor.synthEditor.knobs.find(k => k.key === 'masterVolume')
         expect(knob).not.toBeNull()
 
         knob.setValue(0.42, true)
@@ -146,7 +146,7 @@ describe('SynthEditor — OrKnob integration', () => {
 
     it('changing a deep path knob (filter.freq) updates the nested draft value', async () => {
         await trackEditor.synthEditor.openEditor()
-        const knob = trackEditor.synthEditor._knobs.find(k => k.key === 'filter.freq')
+        const knob = trackEditor.synthEditor.knobs.find(k => k.key === 'filter.freq')
         expect(knob).not.toBeNull()
 
         knob.setValue(2500, true)
@@ -176,7 +176,7 @@ describe('SynthEditor — OrKnob integration', () => {
             key: 'ArrowRight', bubbles: true, cancelable: true,
         }))
 
-        const knob = trackEditor.synthEditor._knobs.find(k => k.key === 'filter.Q')
+        const knob = trackEditor.synthEditor.knobs.find(k => k.key === 'filter.Q')
         expect(knob.getValue()).toBeCloseTo(2.1, 5)
     })
 
@@ -195,7 +195,7 @@ describe('SynthEditor — OrKnob integration', () => {
 
     it('boolean buttons still work (toggle on click)', async () => {
         await trackEditor.synthEditor.openEditor()
-        trackEditor.synthEditor._draft.someFlag = false
+        trackEditor.synthEditor.draft.someFlag = false
         soundRegistry.generatedSounds.BASS1.someFlag = false
         trackEditor.synthEditor._renderEditor()
 
@@ -205,7 +205,7 @@ describe('SynthEditor — OrKnob integration', () => {
         expect(btn.textContent).toBe('OFF')
 
         btn.click()
-        expect(trackEditor.synthEditor._draft.someFlag).toBe(true)
+        expect(trackEditor.synthEditor.draft.someFlag).toBe(true)
         expect(btn.textContent).toBe('ON')
     })
 })

@@ -400,4 +400,8 @@ export default class NoteEditor extends BasePanel {
             playbackEvents.emit("patternChange", [this._track])
         })
     }
+
+    // ─── Public API ───────────────────────────────────────────────────────
+    /** @returns {OrKnob[]} current knob instances */
+    get knobs() { return this._knobs }
 }

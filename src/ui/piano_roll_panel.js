@@ -707,4 +707,35 @@ export default class PianoRollPanel extends BasePanel {
         this._prevLitTick = -1
     }
 
+    // ─── Public API ───────────────────────────────────────────────────────
+    /** @returns {number} cell width in pixels */
+    get cellWidth() { return this._cellWidth }
+
+    /** @returns {Object|null} currently selected note */
+    get selNote() { return this._selNote }
+    /** @param {Object|null} n */
+    set selNote(n) { this._selNote = n }
+
+    /** @returns {number} cursor column step */
+    get cursorStep() { return this._cursorStep }
+    /** @param {number} s */
+    set cursorStep(s) { this._cursorStep = s }
+
+    /** @returns {number} cursor row */
+    get cursorRow() { return this._cursorRow }
+    /** @param {number} r */
+    set cursorRow(r) { this._cursorRow = r }
+
+    /** Advance to next page of steps. */
+    nextPage() { this._nextPage() }
+
+    /** Go back to previous page of steps. */
+    prevPage() { this._prevPage() }
+
+    /** Recalculate cell width from container. */
+    measureCellWidth() { this._measureCellWidth() }
+
+    /** Handle keyboard event. */
+    onKeyDown(e) { this._onKeyDown(e) }
+
 }

@@ -103,8 +103,8 @@ describe('Granular patternChange events', () => {
             const te = new TrackEditor()
             te.init()
             const track = appState.patterns[0].tracks[0]
-            te._track = track
-            te._trackIdx = 0
+            te.track = track
+            te.trackIdx = 0
             playbackEvents.emit('trackParamChange', track)
             expect(cap.trackParamChange).toHaveBeenCalled()
         })
@@ -121,7 +121,7 @@ describe('Granular patternChange events', () => {
             const cap = captureGranular()
             const pp = new PatternPanel()
             pp.init()
-            pp._onAction('new')
+            pp.onAction('new')
             expect(cap.patternStructureChange).toHaveBeenCalled()
         })
 
@@ -134,7 +134,7 @@ describe('Granular patternChange events', () => {
             const pp = new PatternPanel()
             pp.init()
             vi.spyOn(window, 'confirm').mockReturnValue(true)
-            pp._onAction('delete', 1, appState.patterns[1])
+            pp.onAction('delete', 1, appState.patterns[1])
             expect(cap.patternStructureChange).toHaveBeenCalled()
         })
 
@@ -142,7 +142,7 @@ describe('Granular patternChange events', () => {
             const cap = captureGranular()
             const pp = new PatternPanel()
             pp.init()
-            await pp._onAction('duplicate', 0, appState.patterns[0])
+            await pp.onAction('duplicate', 0, appState.patterns[0])
             expect(cap.patternStructureChange).toHaveBeenCalled()
         })
 
@@ -151,7 +151,7 @@ describe('Granular patternChange events', () => {
             const pp = new PatternPanel()
             pp.init()
             vi.spyOn(window, 'confirm').mockReturnValue(true)
-            pp._onAction('clean', 0, appState.patterns[0])
+            pp.onAction('clean', 0, appState.patterns[0])
             expect(cap.noteChange).toHaveBeenCalled()
         })
     })
@@ -290,7 +290,7 @@ describe('Granular patternChange events', () => {
             pp.init()
             pp.show()
 
-            const urlEl = pp._tracksEl.querySelector('.pp-track-url')
+            const urlEl = pp.tracksEl.querySelector('.pp-track-url')
             expect(urlEl).toBeTruthy()
             expect(urlEl.textContent).toBe('kick_old')
 
@@ -298,7 +298,7 @@ describe('Granular patternChange events', () => {
             playbackEvents.emit('drumkitChange')
             await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
 
-            const urlElAfter = pp._tracksEl.querySelector('.pp-track-url')
+            const urlElAfter = pp.tracksEl.querySelector('.pp-track-url')
             expect(urlElAfter.textContent).toBe('kick_new')
         })
 
@@ -311,13 +311,13 @@ describe('Granular patternChange events', () => {
             pp.init()
             pp.show()
 
-            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SAW1')
+            expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SAW1')
 
             appState.patterns[0].tracks[0].synthSoundKey = 'SQUARE2'
             playbackEvents.emit('drumkitChange')
             await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
 
-            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SQUARE2')
+            expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SQUARE2')
         })
 
         it('trackParamChange updates track-url label in-place', async () => {
@@ -329,13 +329,13 @@ describe('Granular patternChange events', () => {
             pp.init()
             pp.show()
 
-            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('old_sound')
+            expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('old_sound')
 
             appState.patterns[0].tracks[0].soundId = 'new_sound'
             playbackEvents.emit('trackParamChange', appState.patterns[0].tracks[0])
             await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
 
-            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('new_sound')
+            expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('new_sound')
         })
 
         it('trackParamChange updates synth track-url label in-place', async () => {
@@ -347,13 +347,13 @@ describe('Granular patternChange events', () => {
             pp.init()
             pp.show()
 
-            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SAW1')
+            expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SAW1')
 
             appState.patterns[0].tracks[0].synthSoundKey = 'SQUARE2'
             playbackEvents.emit('trackParamChange', appState.patterns[0].tracks[0])
             await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
 
-            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SQUARE2')
+            expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SQUARE2')
         })
 
         it('trackParamChange resolves sound URL from soundRegistry', async () => {
@@ -367,13 +367,13 @@ describe('Granular patternChange events', () => {
             pp.init()
             pp.show()
 
-            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('assets/sounds/kick_heavy.wav')
+            expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('assets/sounds/kick_heavy.wav')
 
             soundRegistry.sounds['samples/kick.wav'] = { url: 'assets/sounds/kick_v2.wav' }
             playbackEvents.emit('trackParamChange', appState.patterns[0].tracks[0])
             await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
 
-            expect(pp._tracksEl.querySelector('.pp-track-url').textContent).toBe('assets/sounds/kick_v2.wav')
+            expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('assets/sounds/kick_v2.wav')
         })
 
         it('piano_roll responds to noteChange', () => {

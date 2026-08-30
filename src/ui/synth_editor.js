@@ -437,4 +437,11 @@ export default class SynthEditor {
     _isPlainObject(val) {
         return val != null && typeof val === 'object' && !Array.isArray(val)
     }
+
+    // ─── Public API ───────────────────────────────────────────────────────
+    /** @returns {Object|null} current draft state */
+    get draft() { return this._draft }
+
+    /** @returns {OrKnob[]} current knob instances */
+    get knobs() { return [...this._knobMap.values()] }
 }
