@@ -13,6 +13,7 @@ import Utils from '../core/utils.js'
 import SynthEditor from './synth_editor.js'
 import { OrKnob } from './components/or_knob.js'
 import { OrTab } from './components/or_tab.js'
+import { syncComponentMap } from './components/sync_helpers.js'
 import { fmt, setViewBtn, knobFormat, renderIconChoices, setPatternPanelHidden } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
@@ -296,52 +297,47 @@ export default class TrackEditor extends BasePanel {
         })
 
         // ── Knob bar (keep-alive: reuse OrKnob instances) ───────────
-        KNOB_PROPS.forEach(def => {
-            const placeholder = this.container.querySelector(`[data-or-knob="${def.key}"]`)
-            if (!placeholder) return
+        const knobConfigs = KNOB_PROPS.map(def => {
             const isDecay = def.key === 'decay'
             const sound = isDecay ? this._soundRegistry.sounds[this._track?.soundId] : null
-            const initialVal = isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min)
-
+            const value = isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min)
             const onChange = (v) => {
                 if (isDecay) { if (sound) sound.decay = v }
                 else { this._track[def.key] = v }
                 this._emitTrackChange()
                 if (isDecay) this._drawSampleWaveform()
             }
-
-            let knob = prevKnobs.get(def.key)
-            if (knob) {
-                knob._onChange = onChange
-                knob.setValue(initialVal)
-            } else {
-                knob = new OrKnob({
-                    key: def.key,
-                    label: def.label,
-                    min: def.min,
-                    max: def.max,
-                    step: def.step,
-                    value: initialVal,
-                    format: knobFormat(def),
-                    unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : isDecay ? 'ms' : '',
-                    onChange
-                })
-            }
-            const el = knob.createElement()
-            el.removeAttribute('data-prop')
-            placeholder.replaceWith(el)
-            this._knobs.push(knob)
+            return { key: def.key, def, value, onChange }
         })
 
-        // ── Destroy orphaned instances that weren't reused ────────
+        this._knobs = [...syncComponentMap({
+            container: this.container,
+            configs: knobConfigs,
+            selector: 'or-knob',
+            prev: prevKnobs,
+            create: (cfg) => new OrKnob({
+                key:    cfg.def.key,
+                label:  cfg.def.label,
+                min:    cfg.def.min,
+                max:    cfg.def.max,
+                step:   cfg.def.step,
+                value:  cfg.value,
+                format: knobFormat(cfg.def),
+                unit:   cfg.def.key === 'velocity' ? '%' : cfg.def.key === 'pitch' ? 'st' : cfg.def.key === 'decay' ? 'ms' : '',
+                onChange: cfg.onChange,
+            }),
+            update: (inst, cfg) => {
+                inst._onChange = cfg.onChange
+                inst.setValue(cfg.value)
+            },
+            postMount: (el) => el.removeAttribute('data-prop'),
+        }).values()]
+        // ── Destroy orphaned slider/fxKnob instances ──────────────
         for (const [key, slider] of prevSliders) {
             if (!this._sliders.has(key)) slider.destroy()
         }
         for (const [key, knob] of prevFxKnobs) {
             if (!this._fxKnobs.some(k => k._key === key)) knob.destroy()
-        }
-        for (const [key, knob] of prevKnobs) {
-            if (!this._knobs.some(k => k._key === key)) knob.destroy()
         }
 
         if (this.synthEditor?.panel?.style?.display !== 'block') {

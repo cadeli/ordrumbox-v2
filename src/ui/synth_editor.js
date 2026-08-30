@@ -10,6 +10,7 @@ import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_r
 import { playbackEvents as _playbackEventsSingleton } from '../state/playback_events.js'
 import { OrKnob } from './components/or_knob.js'
 import { fmt, escapeHtml, downloadJson } from './components/panel_helpers.js'
+import { syncComponentMap } from './components/sync_helpers.js'
 import { showToast } from './toast.js'
 
 import GroupsSection from './synth_editor/groups_section.js'
@@ -168,46 +169,33 @@ export default class SynthEditor {
      * destroy orphaned knobs. Keeps instances alive between renders.
      */
     _syncKnobs(configs) {
-        const newPathSet = new Set(configs.map(c => c.key))
-        const existingByPath = new Map(this._knobMap)
-
-        for (const [path, knob] of existingByPath) {
-            if (!newPathSet.has(path)) {
-                knob.destroy()
-                existingByPath.delete(path)
-            }
-        }
-
-        this._knobMap.clear()
-
-        for (const { path, val, key: pathStr, label } of configs) {
-            const placeholder = this.panel.querySelector(`[data-ss-knob-placeholder="${escapeHtml(pathStr)}"]`)
-            if (!placeholder) continue
-
-            const existing = existingByPath.get(pathStr)
-            if (existing) {
-                existing._onChange = v => this._onKnobChange(pathStr, v)
-                existing.setValue(val)
-                this._knobMap.set(pathStr, existing)
-            } else {
-                const meta = SYNTH_PARAM_META[pathStr] ?? {
-                    min: 0, max: Math.max(1, Math.ceil(val ?? 1)),
-                    step: Number.isInteger(val) ? 1 : 0.001,
+        this._knobMap = syncComponentMap({
+            container: this.panel,
+            configs,
+            selector: 'ss-knob-placeholder',
+            prev: this._knobMap,
+            create: (cfg) => {
+                const meta = SYNTH_PARAM_META[cfg.key] ?? {
+                    min: 0, max: Math.max(1, Math.ceil(cfg.val ?? 1)),
+                    step: Number.isInteger(cfg.val) ? 1 : 0.001,
                 }
-                this._knobMap.set(pathStr, new OrKnob({
-                    key:      pathStr,
-                    label:    label,
+                return new OrKnob({
+                    key:      cfg.key,
+                    label:    cfg.label,
                     min:      meta.min,
                     max:      meta.max,
                     step:     meta.step,
-                    value:    val,
+                    value:    cfg.val,
                     format:   fmt,
                     unit:     meta.unit ?? '',
-                    onChange: v => this._onKnobChange(pathStr, v),
-                }))
-            }
-            placeholder.replaceWith(this._knobMap.get(pathStr).createElement())
-        }
+                    onChange: v => this._onKnobChange(cfg.key, v),
+                })
+            },
+            update: (inst, cfg) => {
+                inst._onChange = v => this._onKnobChange(cfg.key, v)
+                inst.setValue(cfg.val)
+            },
+        })
     }
 
     _onKnobChange(pathStr, value) {

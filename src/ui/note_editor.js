@@ -3,6 +3,7 @@ import { fmt, pitchToNoteName, knobFormat } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
 import { OrTab } from './components/or_tab.js'
+import { syncComponentMap } from './components/sync_helpers.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 
@@ -291,83 +292,61 @@ export default class NoteEditor extends BasePanel {
 
     /** @private Keep-alive: reuse existing knobs via setValue, create only new ones. */
     _syncKnobs() {
-        const prevKnobs = new Map(this._knobs.map(k => [k._key, k]))
-        this._knobs = []
-
-        for (const def of KNOB_PROPS) {
-            const placeholder = this.container.querySelector(`[data-ne-knob="${def.key}"]`)
-            if (!placeholder) continue
-
-            let knob = prevKnobs.get(def.key)
-            if (knob) {
-                knob._onChange = (v) => this._onSlider(def.key, v)
-                knob.setValue(this._note[def.key] ?? def.min)
-            } else {
-                knob = new OrKnob({
-                    key: def.key,
-                    label: def.label,
-                    min: def.min,
-                    max: def.max,
-                    step: def.step,
-                    value: this._note[def.key] ?? def.min,
-                    format: knobFormat(def),
-                    unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
-                    onChange: (v) => this._onSlider(def.key, v)
-                })
-            }
-            const el = knob.createElement()
-            el.removeAttribute('data-prop')
-            placeholder.replaceWith(el)
-            this._knobs.push(knob)
-        }
-
-        for (const [key, knob] of prevKnobs) {
-            if (!this._knobs.some(k => k._key === key)) knob.destroy()
-        }
+        this._knobs = [...syncComponentMap({
+            container: this.container,
+            configs: KNOB_PROPS,
+            selector: 'ne-knob',
+            prev: new Map(this._knobs.map(k => [k._key, k])),
+            create: (def) => new OrKnob({
+                key:    def.key,
+                label:  def.label,
+                min:    def.min,
+                max:    def.max,
+                step:   def.step,
+                value:  this._note[def.key] ?? def.min,
+                format: knobFormat(def),
+                unit:   def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
+                onChange: (v) => this._onSlider(def.key, v),
+            }),
+            update: (inst, def) => {
+                inst._onChange = (v) => this._onSlider(def.key, v)
+                inst.setValue(this._note[def.key] ?? def.min)
+            },
+            postMount: (el) => el.removeAttribute('data-prop'),
+        }).values()]
     }
 
     /** @private Keep-alive: reuse existing sliders via setValue, create only new ones. */
     _syncSliders(arpState) {
-        const prevSliders = new Map(this._sliders.map(s => [s._key, s]))
-        this._sliders = []
+        const sliderProps = GROUPS.flatMap(g => g.props.filter(p => p.type !== 'select'))
+        const configs = sliderProps.map(p => ({
+            ...p,
+            value: p.key === 'arpRange' ? arpState.range : (this._note[p.key] ?? p.min),
+        }))
 
-        for (const g of GROUPS) {
-            for (const p of g.props) {
-                if (p.type === 'select') continue
-                const placeholder = this.container.querySelector(`[data-ne-slider="${p.key}"]`)
-                if (!placeholder) continue
-
-                let val = this._note[p.key] ?? p.min
-                if (p.key === 'arpRange') val = arpState.range
-
-                let slider = prevSliders.get(p.key)
-                if (slider) {
-                    slider._onChange = (v) => this._onSlider(p.key, v)
-                    slider.setValue(val)
-                } else {
-                    slider = new OrSlider({
-                        key: p.key,
-                        label: p.label,
-                        min: p.min,
-                        max: p.max,
-                        step: p.step,
-                        value: val,
-                        format: p.key === 'pitch'
-                            ? v => `${fmt(v)} ${pitchToNoteName(v, this._track?.pitch ?? 0)}`
-                            : fmt,
-                        onChange: v => this._onSlider(p.key, v),
-                    })
-                }
-                const el = slider.createElement()
-                el.removeAttribute('data-prop')
-                placeholder.replaceWith(el)
-                this._sliders.push(slider)
-            }
-        }
-
-        for (const [key, slider] of prevSliders) {
-            if (!this._sliders.some(s => s._key === key)) slider.destroy()
-        }
+        this._sliders = [...syncComponentMap({
+            container: this.container,
+            configs,
+            selector: 'ne-slider',
+            prev: new Map(this._sliders.map(s => [s._key, s])),
+            create: (cfg) => new OrSlider({
+                key:    cfg.key,
+                label:  cfg.label,
+                min:    cfg.min,
+                max:    cfg.max,
+                step:   cfg.step,
+                value:  cfg.value,
+                format: cfg.key === 'pitch'
+                    ? v => `${fmt(v)} ${pitchToNoteName(v, this._track?.pitch ?? 0)}`
+                    : fmt,
+                onChange: v => this._onSlider(cfg.key, v),
+            }),
+            update: (inst, cfg) => {
+                inst._onChange = (v) => this._onSlider(cfg.key, v)
+                inst.setValue(cfg.value)
+            },
+            postMount: (el) => el.removeAttribute('data-prop'),
+        }).values()]
     }
 
     /** @private */
