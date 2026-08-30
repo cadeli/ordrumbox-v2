@@ -11,94 +11,102 @@ import { logger } from '../core/logger.js'
  * Fires playbackEvents.onStall / onStallResume when state changes.
  */
 export default class AudioStallDetector {
+    #audioCtx
+    #transport
+    #checkIntervalMs
+    #timerId
+    #lastTick
+    #stalled
+    #onCtxStateChangeBound
+
     constructor({ audioCtx, transport, checkIntervalMs = 500 } = {}) {
-        this._audioCtx = audioCtx
-        this._transport = transport
-        this._checkIntervalMs = checkIntervalMs
-        this._timerId = null
-        this._lastTick = -1
-        this._stalled = false
-        this._onCtxStateChangeBound = this._onCtxStateChange.bind(this)
+        this.#audioCtx = audioCtx
+        this.#transport = transport
+        this.#checkIntervalMs = checkIntervalMs
+        this.#timerId = null
+        this.#lastTick = -1
+        this.#stalled = false
+        this.#onCtxStateChangeBound = this.#onCtxStateChange.bind(this)
     }
 
     start() {
-        if (this._timerId) return
+        if (this.#timerId) return
 
-        this._lastTick = this._transport?.tick ?? -1
-        this._stalled = false
+        this.#lastTick = this.#transport?.tick ?? -1
+        this.#stalled = false
 
-        if (typeof this._audioCtx?.addEventListener === 'function') {
-            this._audioCtx.addEventListener('statechange', this._onCtxStateChangeBound)
-        } else if (this._audioCtx) {
-            this._audioCtx.onstatechange = this._onCtxStateChangeBound
+        if (typeof this.#audioCtx?.addEventListener === 'function') {
+            this.#audioCtx.addEventListener('statechange', this.#onCtxStateChangeBound)
+        } else if (this.#audioCtx) {
+            this.#audioCtx.onstatechange = this.#onCtxStateChangeBound
         }
 
-        this._timerId = setInterval(() => this._check(), this._checkIntervalMs)
+        this.#timerId = setInterval(() => this.#check(), this.#checkIntervalMs)
     }
 
     stop() {
-        if (this._timerId) {
-            clearInterval(this._timerId)
-            this._timerId = null
+        if (this.#timerId) {
+            clearInterval(this.#timerId)
+            this.#timerId = null
         }
 
-        if (this._audioCtx) {
-            if (typeof this._audioCtx.removeEventListener === 'function') {
-                this._audioCtx.removeEventListener('statechange', this._onCtxStateChangeBound)
+        if (this.#audioCtx) {
+            if (typeof this.#audioCtx.removeEventListener === 'function') {
+                this.#audioCtx.removeEventListener('statechange', this.#onCtxStateChangeBound)
             } else {
-                this._audioCtx.onstatechange = null
+                this.#audioCtx.onstatechange = null
             }
         }
 
-        if (this._stalled) {
-            this._stalled = false
+        if (this.#stalled) {
+            this.#stalled = false
             playbackEvents.emit("stallResume")
         }
     }
 
     get isStalled() {
-        return this._stalled
+        return this.#stalled
     }
 
-    _onCtxStateChange() {
-        const state = this._audioCtx?.state
-        if (state === 'suspended' && this._transport?.isRunning && !this._stalled) {
-            this._stalled = true
+    #onCtxStateChange() {
+        const state = this.#audioCtx?.state
+        if (state === 'suspended' && this.#transport?.isRunning && !this.#stalled) {
+            this.#stalled = true
             logger.warn('StallDetector', 'AudioContext suspended during playback')
             playbackEvents.emit("stall", { reason: 'context-suspended' })
-            this._tryResume()
-        } else if (state === 'running' && this._stalled) {
-            this._stalled = false
+            this.#tryResume()
+        } else if (state === 'running' && this.#stalled) {
+            this.#stalled = false
             logger.warn('StallDetector', 'AudioContext resumed')
             playbackEvents.emit("stallResume")
         }
     }
 
-    _check() {
-        if (!this._transport?.isRunning) return
+    #check() {
+        if (!this.#transport?.isRunning) return
 
-        const currentTick = this._transport.tick
-        const tickAdvanced = currentTick !== this._lastTick
-        this._lastTick = currentTick
+        const currentTick = this.#transport.tick
+        const tickAdvanced = currentTick !== this.#lastTick
+        this.#lastTick = currentTick
 
         if (!tickAdvanced) {
-            if (!this._stalled) {
-                this._stalled = true
+            if (!this.#stalled) {
+                this.#stalled = true
                 logger.warn('StallDetector', 'Scheduler stalled — tick not advancing')
                 playbackEvents.emit("stall", { reason: 'scheduler-silent' })
-                this._tryResume()
+                this.#tryResume()
             }
-        } else if (this._stalled) {
-            this._stalled = false
+        } else if (this.#stalled) {
+            this.#stalled = false
             playbackEvents.emit("stallResume")
         }
     }
 
-    async _tryResume() {
-        if (this._audioCtx?.state === 'suspended') {
+    async #tryResume() {
+        if (this.#audioCtx?.state === 'suspended') {
             try {
-                await this._audioCtx.resume()
-                if (this._audioCtx?.state === 'running') {
+                await this.#audioCtx.resume()
+                if (this.#audioCtx?.state === 'running') {
                     logger.warn('StallDetector', 'AudioContext resumed via .resume()')
                 }
             } catch {

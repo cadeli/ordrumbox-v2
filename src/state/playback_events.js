@@ -2,36 +2,40 @@
  * Generic EventBus - simple pub/sub for internal events.
  */
 class EventBus {
+    #listeners;
+    #batchDepth;
+    #pending;
+
     constructor() {
-        this._listeners = new Map()
-        this._batchDepth = 0
-        this._pending = []
+        this.#listeners = new Map()
+        this.#batchDepth = 0
+        this.#pending = []
     }
 
     /** Subscribe to an event */
     on(event, fn) {
         if (typeof fn !== 'function') return () => {}
-        if (!this._listeners.has(event)) {
-            this._listeners.set(event, [])
+        if (!this.#listeners.has(event)) {
+            this.#listeners.set(event, [])
         }
-        this._listeners.get(event).push(fn)
+        this.#listeners.get(event).push(fn)
         return () => this.off(event, fn)
     }
 
     /** Unsubscribe from an event */
     off(event, fn) {
-        const arr = this._listeners.get(event)
+        const arr = this.#listeners.get(event)
         if (!arr) return
-        this._listeners.set(event, arr.filter(f => f !== fn))
+        this.#listeners.set(event, arr.filter(f => f !== fn))
     }
 
     /** Emit an event with payload. Deferred if inside batch(). */
     emit(event, payload) {
-        if (this._batchDepth > 0) {
-            this._pending.push({ event, payload })
+        if (this.#batchDepth > 0) {
+            this.#pending.push({ event, payload })
             return
         }
-        const arr = this._listeners.get(event)
+        const arr = this.#listeners.get(event)
         if (arr) {
             arr.forEach(fn => fn(payload))
         }
@@ -39,17 +43,17 @@ class EventBus {
 
     /** Batch multiple emits — listeners run once at the end, not per emit. */
     batch(fn) {
-        this._batchDepth++
+        this.#batchDepth++
         try { fn() } finally {
-            this._batchDepth--
-            if (this._batchDepth === 0) this._flushPending()
+            this.#batchDepth--
+            if (this.#batchDepth === 0) this.#flushPending()
         }
     }
 
-    _flushPending() {
-        const pending = this._pending.splice(0)
+    #flushPending() {
+        const pending = this.#pending.splice(0)
         for (const { event, payload } of pending) {
-            const arr = this._listeners.get(event)
+            const arr = this.#listeners.get(event)
             if (arr) arr.forEach(fn => fn(payload))
         }
     }

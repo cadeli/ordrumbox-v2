@@ -78,11 +78,11 @@ export default class Mixer {
 
             try { this.transportClock.start(); } catch (_) {}
 
-            this._applySavedMasterSettings()
+            this.#applySavedMasterSettings()
         }
     }
 
-    _applySavedMasterSettings = () => {
+    #applySavedMasterSettings = () => {
         const m = soundRegistry.settings?.master
         if (!m) return
         this.setMasterBus({

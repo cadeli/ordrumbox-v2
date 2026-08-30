@@ -56,6 +56,19 @@ class _DelayLine {
 }
 
 class StripProcessor extends AudioWorkletProcessor {
+    #z1L;
+    #z2L;
+    #z1R;
+    #z2R;
+    #combsL;
+    #combsR;
+    #apL;
+    #apR;
+    #dlyL;
+    #dlyR;
+    #dlyFiltL;
+    #dlyFiltR;
+
     static get parameterDescriptors() {
         return [
             // Filter (expecting physical Hz / Q values)
@@ -89,18 +102,18 @@ class StripProcessor extends AudioWorkletProcessor {
 
     constructor() {
         super();
-        this.z1L = 0; this.z2L = 0; 
-        this.z1R = 0; this.z2R = 0; 
-        this.combsL = COMB_TUNINGS_L.map(l => new _Comb(l));
-        this.combsR = COMB_TUNINGS_R.map(l => new _Comb(l));
-        this.apL = ALLPASS_TUNINGS_L.map(l => new _Allpass(l));
-        this.apR = ALLPASS_TUNINGS_R.map(l => new _Allpass(l));
-        this.dlyL = new _DelayLine(2.1);
-        this.dlyR = new _DelayLine(2.1);
-        this.dlyFiltL = 0; this.dlyFiltR = 0;
+        this.#z1L = 0; this.#z2L = 0; 
+        this.#z1R = 0; this.#z2R = 0; 
+        this.#combsL = COMB_TUNINGS_L.map(l => new _Comb(l));
+        this.#combsR = COMB_TUNINGS_R.map(l => new _Comb(l));
+        this.#apL = ALLPASS_TUNINGS_L.map(l => new _Allpass(l));
+        this.#apR = ALLPASS_TUNINGS_R.map(l => new _Allpass(l));
+        this.#dlyL = new _DelayLine(2.1);
+        this.#dlyR = new _DelayLine(2.1);
+        this.#dlyFiltL = 0; this.#dlyFiltR = 0;
     }
 
-    _shape(x, drive, type, mix, out) {
+    #shape(x, drive, type, mix, out) {
         if (mix <= 0) return x;
         const d = x * drive;
         let s;
@@ -152,13 +165,13 @@ class StripProcessor extends AudioWorkletProcessor {
             const g = Math.tan(PI * fHz / sr), k = 1 / Q;
             const a1 = 1 / (1 + g * (g + k)), a2 = g * a1, a3 = g * a2;
             
-            const v3L = inL[i] - this.z2L, v1L = a1 * this.z1L + a2 * v3L, v2L = this.z2L + a2 * this.z1L + a3 * v3L;
-            this.z1L = 2 * v1L - this.z1L; this.z2L = 2 * v2L - this.z2L;
-            const v3R = inR[i] - this.z2R, v1R = a1 * this.z1R + a2 * v3R, v2R = this.z2R + a2 * this.z1R + a3 * v3R;
-            this.z1R = 2 * v1R - this.z1R; this.z2R = 2 * v2R - this.z2R;
+            const v3L = inL[i] - this.#z2L, v1L = a1 * this.#z1L + a2 * v3L, v2L = this.#z2L + a2 * this.#z1L + a3 * v3L;
+            this.#z1L = 2 * v1L - this.#z1L; this.#z2L = 2 * v2L - this.#z2L;
+            const v3R = inR[i] - this.#z2R, v1R = a1 * this.#z1R + a2 * v3R, v2R = this.#z2R + a2 * this.#z1R + a3 * v3R;
+            this.#z1R = 2 * v1R - this.#z1R; this.#z2R = 2 * v2R - this.#z2R;
             
-            if (Math.abs(this.z1L) < 1e-15) this.z1L = 0; if (Math.abs(this.z2L) < 1e-15) this.z2L = 0;
-            if (Math.abs(this.z1R) < 1e-15) this.z1R = 0; if (Math.abs(this.z2R) < 1e-15) this.z2R = 0;
+            if (Math.abs(this.#z1L) < 1e-15) this.#z1L = 0; if (Math.abs(this.#z2L) < 1e-15) this.#z2L = 0;
+            if (Math.abs(this.#z1R) < 1e-15) this.#z1R = 0; if (Math.abs(this.#z2R) < 1e-15) this.#z2R = 0;
 
             let dryL, dryR;
             if (fMode < 0.5)      { dryL = v2L; dryR = v2R; }
@@ -167,16 +180,16 @@ class StripProcessor extends AudioWorkletProcessor {
             else                { dryL = v3L - v1L * k + v2L; dryR = v3R - v1R * k + v2R; }
 
             // --- 2. Saturation (skip when mix=0) ---
-            const satL = hasSat ? this._shape(dryL, satDrive, satType, satMix, satOut) : dryL;
-            const satR = hasSat ? this._shape(dryR, satDrive, satType, satMix, satOut) : dryR;
+            const satL = hasSat ? this.#shape(dryL, satDrive, satType, satMix, satOut) : dryL;
+            const satR = hasSat ? this.#shape(dryR, satDrive, satType, satMix, satOut) : dryR;
 
             // --- 3. Reverb (skip when mix=0) ---
             let rL = 0, rR = 0;
             if (hasReverb) {
                 const rIn = (satL + satR) * 0.0075;
                 let oLC = 0, oRC = 0;
-                for(let c=0; c<8; c++) { oLC += this.combsL[c].process(rIn, damp1, damp2, rm); oRC += this.combsR[c].process(rIn, damp1, damp2, rm); }
-                for(let a=0; a<4; a++) { oLC = this.apL[a].process(oLC); oRC = this.apR[a].process(oRC); }
+                for(let c=0; c<8; c++) { oLC += this.#combsL[c].process(rIn, damp1, damp2, rm); oRC += this.#combsR[c].process(rIn, damp1, damp2, rm); }
+                for(let a=0; a<4; a++) { oLC = this.#apL[a].process(oLC); oRC = this.#apR[a].process(oRC); }
                 rL = (oLC * rW1 + oRC * rW2) * revMix;
                 rR = (oRC * rW1 + oLC * rW2) * revMix;
             }
@@ -184,16 +197,16 @@ class StripProcessor extends AudioWorkletProcessor {
             // --- 4. Delay (skip when mix=0) ---
             let dWetL = 0, dWetR = 0;
             if (hasDelay) {
-                const dL = this.dlyL.read(dlyTimeL * sr), dR = this.dlyR.read(dlyTimeR * sr);
-                this.dlyFiltL += 0.5 * (dL - this.dlyFiltL); this.dlyFiltR += 0.5 * (dR - this.dlyFiltR);
-                const dSL = this._shape(this.dlyFiltL * dlyFb, 1.5, 0, 0.5, 1), dSR = this._shape(this.dlyFiltR * dlyFb, 1.5, 0, 0.5, 1);
-                if (isPP) { this.dlyL.write(satL + dSR); this.dlyR.write(satR + dSL); } 
-                else { this.dlyL.write(satL + dSL); this.dlyR.write(satR + dSR); }
+                const dL = this.#dlyL.read(dlyTimeL * sr), dR = this.#dlyR.read(dlyTimeR * sr);
+                this.#dlyFiltL += 0.5 * (dL - this.#dlyFiltL); this.#dlyFiltR += 0.5 * (dR - this.#dlyFiltR);
+                const dSL = this.#shape(this.#dlyFiltL * dlyFb, 1.5, 0, 0.5, 1), dSR = this.#shape(this.#dlyFiltR * dlyFb, 1.5, 0, 0.5, 1);
+                if (isPP) { this.#dlyL.write(satL + dSR); this.#dlyR.write(satR + dSL); } 
+                else { this.#dlyL.write(satL + dSL); this.#dlyR.write(satR + dSR); }
                 dWetL = dL * dlyMix;
                 dWetR = dR * dlyMix;
             } else {
-                this.dlyL.write(satL);
-                this.dlyR.write(satR);
+                this.#dlyL.write(satL);
+                this.#dlyR.write(satR);
             }
 
             // --- 5. Final Mix & Pan ---

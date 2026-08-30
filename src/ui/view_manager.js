@@ -15,17 +15,28 @@ import { isMobileLandscape, removeLayout } from './mobile_track_layout.js'
  * showing one hides all others and replaces the master panel in the same DOM slot.
  */
 export default class ViewManager {
+    #trackEditor
+    #synthEditor
+    #pianoRollPanel
+    #noteEditor
+    #patternSettingsPanel
+    #outputPanel
+    #currentView
+    #slots
+    #eventToSlot
+    #viewHandlers
+
     constructor({ trackEditor, synthEditor, pianoRollPanel, noteEditor, toolsPanel, patternSettingsPanel, outputPanel, drumkitManager, patternsPanel, aboutPanel }) {
-        this._trackEditor = trackEditor
-        this._synthEditor = synthEditor
-        this._pianoRollPanel = pianoRollPanel
-        this._noteEditor = noteEditor
-        this._patternSettingsPanel = patternSettingsPanel
-        this._outputPanel = outputPanel
-        this._currentView = null
+        this.#trackEditor = trackEditor
+        this.#synthEditor = synthEditor
+        this.#pianoRollPanel = pianoRollPanel
+        this.#noteEditor = noteEditor
+        this.#patternSettingsPanel = patternSettingsPanel
+        this.#outputPanel = outputPanel
+        this.#currentView = null
 
         // ── Slot panel registry: short name → { event, panel } ─────────────
-        this._slots = new Map([
+        this.#slots = new Map([
             ['tools', { event: 'toolsToggle',           panel: toolsPanel }],
             ['master',{ event: 'masterToggle',          panel: outputPanel }],
             ['dm',    { event: 'drumkitManagerToggle',  panel: drumkitManager }],
@@ -33,180 +44,180 @@ export default class ViewManager {
             ['about', { event: 'aboutToggle',            panel: aboutPanel }],
         ])
         // Reverse lookup: event name → short name
-        this._eventToSlot = new Map(
-            [...this._slots].map(([name, { event }]) => [event, name])
+        this.#eventToSlot = new Map(
+            [...this.#slots].map(([name, { event }]) => [event, name])
         )
 
         // ── View registry: view name → { enter, exit } ──────────────────
         // `exit` runs cleanup for the view being left (only views that need
         // teardown define one); `enter` renders the view being switched to.
-        this._viewHandlers = new Map([
-            ['synth',       { enter: () => this._showSynth(),      exit: () => this._synthEditor?.hidePanel() }],
-            ['edit',        { enter: () => this._showEdit() }],
-            ['proll',       { enter: () => this._showProll(),      exit: () => this._pianoRollPanel?.hide() }],
-            ['mobileSeq',   { enter: () => this._showMobileSeq(),  exit: () => this._exitMobileSeq() }],
-            ['mobileTrack', { enter: () => this._showMobileTrack(),exit: () => this._exitMobileTrack() }],
+        this.#viewHandlers = new Map([
+            ['synth',       { enter: () => this.#showSynth(),      exit: () => this.#synthEditor?.hidePanel() }],
+            ['edit',        { enter: () => this.#showEdit() }],
+            ['proll',       { enter: () => this.#showProll(),      exit: () => this.#pianoRollPanel?.hide() }],
+            ['mobileSeq',   { enter: () => this.#showMobileSeq(),  exit: () => this.#exitMobileSeq() }],
+            ['mobileTrack', { enter: () => this.#showMobileTrack(),exit: () => this.#exitMobileTrack() }],
         ])
     }
 
     init() {
         // View switches (synth, edit, proll, mobile)
-        playbackEvents.on("synthToggle", () => this._switchTo('synth'))
-        playbackEvents.on("editToggle", () => this._switchTo('edit'))
-        playbackEvents.on("prollToggle", () => this._switchTo('proll'))
-        playbackEvents.on("mobileSeqToggle", () => this._switchTo('mobileSeq'))
-        playbackEvents.on("mobileTrackToggle", () => this._switchTo('mobileTrack'))
+        playbackEvents.on("synthToggle", () => this.#switchTo('synth'))
+        playbackEvents.on("editToggle", () => this.#switchTo('edit'))
+        playbackEvents.on("prollToggle", () => this.#switchTo('proll'))
+        playbackEvents.on("mobileSeqToggle", () => this.#switchTo('mobileSeq'))
+        playbackEvents.on("mobileTrackToggle", () => this.#switchTo('mobileTrack'))
 
-        // Slot panels — one listener per event, all routed through _toggleSlotPanel
-        for (const [name, { event, panel }] of this._slots) {
-            playbackEvents.on(event, (show) => this._toggleSlotPanel(show, name, panel))
+        // Slot panels — one listener per event, all routed through #toggleSlotPanel
+        for (const [name, { event, panel }] of this.#slots) {
+            playbackEvents.on(event, (show) => this.#toggleSlotPanel(show, name, panel))
         }
     }
 
     get currentView() {
-        return this._currentView
+        return this.#currentView
     }
 
     // ── Slot panel logic ──────────────────────────────────────────────────
 
-    _toggleSlotPanel(show, name, panel) {
+    #toggleSlotPanel(show, name, panel) {
         if (!panel) return
         if (show) {
-            this._hideOtherSlotPanels(name)
+            this.#hideOtherSlotPanels(name)
             _setActiveSlotPanel(name)
             if (isMobileViewport()) {
-                this._currentView = name
+                this.#currentView = name
                 _setActiveView(name)
-                this._synthEditor.hidePanel()
-                this._trackEditor.hide()
+                this.#synthEditor.hidePanel()
+                this.#trackEditor.hide()
                 setPatternPanelHidden(true)
             } else {
-                this._ensureEditorsVisible()
-                if (this._outputPanel?.isVisible && name !== 'master') this._outputPanel.hide()
+                this.#ensureEditorsVisible()
+                if (this.#outputPanel?.isVisible && name !== 'master') this.#outputPanel.hide()
             }
             panel.show()
         } else {
             panel.hide()
             _setActiveSlotPanel(null)
-            if (isMobileViewport() && this._currentView === name) {
-                this._currentView = 'mobileSeq'
+            if (isMobileViewport() && this.#currentView === name) {
+                this.#currentView = 'mobileSeq'
                 _setActiveView('mobileSeq')
             }
-            if (name !== 'master') this._outputPanel?.show()
+            if (name !== 'master') this.#outputPanel?.show()
         }
     }
 
-    _hideOtherSlotPanels(exceptName) {
-        for (const [name, { panel }] of this._slots) {
+    #hideOtherSlotPanels(exceptName) {
+        for (const [name, { panel }] of this.#slots) {
             if (name !== exceptName && panel?.isVisible) panel.hide()
         }
     }
 
     // ── View switching ────────────────────────────────────────────────────
 
-    _switchTo(view) {
-        if (view === this._currentView) return
-        const prev = this._currentView
-        this._currentView = view
+    #switchTo(view) {
+        if (view === this.#currentView) return
+        const prev = this.#currentView
+        this.#currentView = view
         _setActiveView(view)
         serviceRegistry.resourcesLoader?.saveSession?.()
 
-        this._patternSettingsPanel?.hide?.()
+        this.#patternSettingsPanel?.hide?.()
 
-        this._viewHandlers.get(prev)?.exit?.()
-        if (isMobileViewport() && this._slots.has(prev)) {
-            this._hideOtherSlotPanels(null)
+        this.#viewHandlers.get(prev)?.exit?.()
+        if (isMobileViewport() && this.#slots.has(prev)) {
+            this.#hideOtherSlotPanels(null)
         }
 
-        this._viewHandlers.get(view)?.enter?.()
+        this.#viewHandlers.get(view)?.enter?.()
 
         setViewMode(view)
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
 
-    _ensureTrackEditorVisible() {
-        if (!this._trackEditor.isVisible) {
+    #ensureTrackEditorVisible() {
+        if (!this.#trackEditor.isVisible) {
             const pattern = appState.patterns[appState.selectedPatternNum]
             const idx = appState.selectedTrackNum
             const track = pattern?.tracks?.[idx]
             if (track) {
-                this._trackEditor._track = track
-                this._trackEditor._trackIdx = idx
-                this._trackEditor.sync()
+                this.#trackEditor._track = track
+                this.#trackEditor._trackIdx = idx
+                this.#trackEditor.sync()
             }
         }
-        this._trackEditor.container?.style.setProperty('display', 'block')
-        this._trackEditor.container?.classList.add('pp-split')
+        this.#trackEditor.container?.style.setProperty('display', 'block')
+        this.#trackEditor.container?.classList.add('pp-split')
     }
 
-    _ensureNoteEditorVisible() {
+    #ensureNoteEditorVisible() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         const idx = appState.selectedTrackNum
         const track = pattern?.tracks?.[idx]
-        if (track && this._trackEditor.isVisible) {
-            this._trackEditor._showNoteEditorForTrack(track, idx)
+        if (track && this.#trackEditor.isVisible) {
+            this.#trackEditor._showNoteEditorForTrack(track, idx)
         }
     }
 
     /** Ensures both the track editor and its note editor are visible/synced. */
-    _ensureEditorsVisible() {
-        this._ensureTrackEditorVisible()
-        this._ensureNoteEditorVisible()
+    #ensureEditorsVisible() {
+        this.#ensureTrackEditorVisible()
+        this.#ensureNoteEditorVisible()
     }
 
     // ── Per-view exit handlers (cleanup when leaving a view) ────────────────
 
-    _exitMobileSeq() {
-        this._pianoRollPanel?.hide()
+    #exitMobileSeq() {
+        this.#pianoRollPanel?.hide()
         setPatternPanelHidden(false)
     }
 
-    _exitMobileTrack() {
-        this._noteEditor?.hide()
-        removeLayout(this._trackEditor.container)
+    #exitMobileTrack() {
+        this.#noteEditor?.hide()
+        removeLayout(this.#trackEditor.container)
     }
 
     // ── Per-view enter handlers (render the view being switched to) ─────────
 
-    _showSynth() {
+    #showSynth() {
         if (isMobileViewport()) {
-            this._trackEditor.hide()
+            this.#trackEditor.hide()
         } else {
-            this._ensureEditorsVisible()
+            this.#ensureEditorsVisible()
         }
         setPatternPanelHidden(true)
-        void this._synthEditor.showPanel()
+        void this.#synthEditor.showPanel()
     }
 
-    _showEdit() {
-        this._synthEditor.hidePanel()
-        this._pianoRollPanel.hide()
+    #showEdit() {
+        this.#synthEditor.hidePanel()
+        this.#pianoRollPanel.hide()
         setPatternPanelHidden(false)
-        this._ensureEditorsVisible()
+        this.#ensureEditorsVisible()
     }
 
-    _showProll() {
-        this._synthEditor.hidePanel()
-        this._ensureEditorsVisible()
-        this._pianoRollPanel.show()
+    #showProll() {
+        this.#synthEditor.hidePanel()
+        this.#ensureEditorsVisible()
+        this.#pianoRollPanel.show()
         setPatternPanelHidden(true)
     }
 
-    _showMobileSeq() {
-        this._synthEditor.hidePanel()
+    #showMobileSeq() {
+        this.#synthEditor.hidePanel()
         if (isMobileLandscape()) {
-            this._trackEditor.hide()
+            this.#trackEditor.hide()
         } else {
-            this._ensureEditorsVisible()
+            this.#ensureEditorsVisible()
         }
         setPatternPanelHidden(false)
     }
 
-    _showMobileTrack() {
-        this._synthEditor.hidePanel()
-        this._pianoRollPanel.hide()
-        this._ensureEditorsVisible()
+    #showMobileTrack() {
+        this.#synthEditor.hidePanel()
+        this.#pianoRollPanel.hide()
+        this.#ensureEditorsVisible()
         setPatternPanelHidden(true)
     }
 }

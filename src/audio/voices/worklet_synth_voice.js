@@ -46,6 +46,9 @@ function postUpdate(node, params) {
  * Features: 3 VCOs, 2 LFOs, filter envelope, noise sub-filter.
  */
 export default class WorkletSynthVoice extends BaseVoice {
+    #cleanupTimer
+    #autoReleaseTimer
+
     constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null) {
         super(audioCtx, strip, nodePool)
         this.generatedSound = generatedSound
@@ -54,8 +57,8 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.noteVelo = 0.8
         this.noteRatio = 1
         this.masterVolume = 0.8
-        this._cleanupTimer = null
-        this._autoReleaseTimer = null
+        this.#cleanupTimer = null
+        this.#autoReleaseTimer = null
     }
 
     async setup(flatNote, time) {
@@ -69,7 +72,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.noteVelo = (flatNote.note?.velocity ?? 0.8) * vcoNorm
 
         this.workletNode = this.registerNode(await createSynthVoiceNode(ctx))
-        this._sendUpdate(gs, flatNote.pan ?? 0)
+        this.#sendUpdate(gs, flatNote.pan ?? 0)
         this.connectToStripInput(this.workletNode)
     }
 
@@ -91,7 +94,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         // relying on setTimeout. The processor checks `releaseTime` against
         // `currentTime` in its per-sample loop, so this works correctly in
         // both real-time and OfflineAudioContext (export).
-        if (this._autoReleaseTimer) clearTimeout(this._autoReleaseTimer)
+        if (this.#autoReleaseTimer) clearTimeout(this.#autoReleaseTimer)
         const bpm = serviceRegistry.transport?.bpm ?? 120
         const stepDuration = 0.25 * (60 / bpm)
         const autoReleaseTime = time + stepDuration
@@ -103,26 +106,26 @@ export default class WorkletSynthVoice extends BaseVoice {
         const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
         const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
         const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
-        this._autoReleaseTimer = setTimeout(() => {
+        this.#autoReleaseTimer = setTimeout(() => {
             if (!this.stopped) {
                 this.stopped = true
                 this.cleanup()
                 if (this.onEnded) this.onEnded()
             }
-            this._autoReleaseTimer = null
+            this.#autoReleaseTimer = null
         }, cleanupDelay * 1000)
     }
 
     stop(time) {
         if (this.stopped) return
         super.stop(time)
-        if (this._cleanupTimer) {
-            clearTimeout(this._cleanupTimer)
-            this._cleanupTimer = null
+        if (this.#cleanupTimer) {
+            clearTimeout(this.#cleanupTimer)
+            this.#cleanupTimer = null
         }
-        if (this._autoReleaseTimer) {
-            clearTimeout(this._autoReleaseTimer)
-            this._autoReleaseTimer = null
+        if (this.#autoReleaseTimer) {
+            clearTimeout(this.#autoReleaseTimer)
+            this.#autoReleaseTimer = null
         }
         if (this.workletNode) {
             postRelease(this.workletNode, time)
@@ -133,10 +136,10 @@ export default class WorkletSynthVoice extends BaseVoice {
         const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
         const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
         if (typeof setTimeout === 'function') {
-            this._cleanupTimer = setTimeout(() => {
+            this.#cleanupTimer = setTimeout(() => {
                 this.cleanup()
                 if (this.onEnded) this.onEnded()
-                this._cleanupTimer = null
+                this.#cleanupTimer = null
             }, cleanupDelay * 1000)
         }
     }
@@ -144,7 +147,7 @@ export default class WorkletSynthVoice extends BaseVoice {
     updateGeneratedSound(generatedSound) {
         this.generatedSound = generatedSound
         if (!this.workletNode) return
-        this._sendUpdate(generatedSound, 0)
+        this.#sendUpdate(generatedSound, 0)
     }
 
     // Note: do not override cleanup() — BaseVoice's cleanup iterates
@@ -152,7 +155,7 @@ export default class WorkletSynthVoice extends BaseVoice {
     // registered via registerNode() in setup(), so the parent handles
     // disconnect automatically. We only need to null the local ref.
 
-    _sendUpdate(gs, pan) {
+    #sendUpdate(gs, pan) {
         const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
         const noiseCfg = gs.noise ?? {}
         const filterCfg = gs.filter ?? {}

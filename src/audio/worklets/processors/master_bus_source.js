@@ -28,6 +28,13 @@ const MASTER_BUS_PROCESSOR_SOURCE = `
 const LOG10_OVER_20 = 0.11512925464970229; // Math.LN10 / 20
 
 class MasterBusProcessor extends AudioWorkletProcessor {
+    #hpYL = 0;
+    #hpXPrevL = 0;
+    #hpYR = 0;
+    #hpXPrevR = 0;
+    #lpYL = 0;
+    #lpYR = 0;
+
     static get parameterDescriptors() {
         return [
             { name: 'compThreshold', defaultValue: -18,  minValue: -60, maxValue: 0,    automationRate: 'k-rate' },
@@ -47,15 +54,9 @@ class MasterBusProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
         this.envDb = 0;
-        // HP filter state (flat properties, no object lookups)
-        this._hpYL = 0; this._hpXPrevL = 0;
-        this._hpYR = 0; this._hpXPrevR = 0;
-        // LP filter state
-        this._lpYL = 0;
-        this._lpYR = 0;
     }
 
-    _computeGainReduction(inputDb, threshold, ratio, knee) {
+    #computeGainReduction(inputDb, threshold, ratio, knee) {
         const overDb = inputDb - threshold;
         if (overDb <= -knee / 2) return 0;
         if (knee > 0 && overDb < knee / 2) {
@@ -117,7 +118,7 @@ class MasterBusProcessor extends AudioWorkletProcessor {
                 const peak = Math.abs(xL) > Math.abs(xR) ? Math.abs(xL) : Math.abs(xR);
                 const peakDb = peak > 1e-10 ? 20 * (Math.log(peak) / Math.LN10) : -100;
 
-                const gainRedDb = this._computeGainReduction(peakDb, threshold, ratio, knee);
+                const gainRedDb = this.#computeGainReduction(peakDb, threshold, ratio, knee);
                 const targetEnv = -gainRedDb;
 
                 const coeff = (targetEnv < this.envDb) ? attCoeff : relCoeff;
@@ -128,25 +129,25 @@ class MasterBusProcessor extends AudioWorkletProcessor {
                 xR *= compLin * makeUpLin;
 
                 // HPF (lowcut)
-                this._hpYL = hpA * (this._hpYL + xL - this._hpXPrevL);
-                this._hpXPrevL = xL;
-                xL = this._hpYL;
+                this.#hpYL = hpA * (this.#hpYL + xL - this.#hpXPrevL);
+                this.#hpXPrevL = xL;
+                xL = this.#hpYL;
 
-                this._hpYR = hpA * (this._hpYR + xR - this._hpXPrevR);
-                this._hpXPrevR = xR;
-                xR = this._hpYR;
+                this.#hpYR = hpA * (this.#hpYR + xR - this.#hpXPrevR);
+                this.#hpXPrevR = xR;
+                xR = this.#hpYR;
 
                 // LPF (hicut)
-                this._lpYL = lpA * xL + (1 - lpA) * this._lpYL;
-                xL = this._lpYL;
+                this.#lpYL = lpA * xL + (1 - lpA) * this.#lpYL;
+                xL = this.#lpYL;
 
-                this._lpYR = lpA * xR + (1 - lpA) * this._lpYR;
-                xR = this._lpYR;
+                this.#lpYR = lpA * xR + (1 - lpA) * this.#lpYR;
+                xR = this.#lpYR;
             }
 
             // Denormal protection & Master gain
-            if (Math.abs(xL) < 1e-15) { xL = 0; this._hpYL = 0; this._lpYL = 0; }
-            if (Math.abs(xR) < 1e-15) { xR = 0; this._hpYR = 0; this._lpYR = 0; }
+            if (Math.abs(xL) < 1e-15) { xL = 0; this.#hpYL = 0; this.#lpYL = 0; }
+            if (Math.abs(xR) < 1e-15) { xR = 0; this.#hpYR = 0; this.#lpYR = 0; }
 
             let finalL = xL * masterV;
             let finalR = xR * masterV;

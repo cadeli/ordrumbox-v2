@@ -1,6 +1,8 @@
 export default class BaseVoice {
-    static _activeNodeCount = 0
-    static get activeNodeCount() { return BaseVoice._activeNodeCount }
+    static #activeNodeCount = 0
+    static get activeNodeCount() { return BaseVoice.#activeNodeCount }
+
+    #pooledNodes
 
     constructor(audioCtx, strip, nodePool = null) {
         this.audioCtx = audioCtx
@@ -8,7 +10,7 @@ export default class BaseVoice {
         this.nodePool = nodePool
         this.stopped = false
         this.nodes = []
-        this._pooledNodes = []
+        this.#pooledNodes = []
     }
 
     setup(flatNote, time) {
@@ -29,33 +31,33 @@ export default class BaseVoice {
             try { node.disconnect() } catch (e) {}
         })
         if (this.nodePool) {
-            for (const node of this._pooledNodes) {
+            for (const node of this.#pooledNodes) {
                 this.nodePool.release(node)
             }
         }
-        this._pooledNodes.length = 0
+        this.#pooledNodes.length = 0
         this.nodes.length = 0
-        BaseVoice._activeNodeCount = Math.max(0, BaseVoice._activeNodeCount - count)
+        BaseVoice.#activeNodeCount = Math.max(0, BaseVoice.#activeNodeCount - count)
     }
 
     registerNode(node) {
         this.nodes.push(node)
-        BaseVoice._activeNodeCount++
+        BaseVoice.#activeNodeCount++
         return node
     }
 
     acquireNode(type) {
         if (this.nodePool) {
             const node = this.nodePool.acquire(type)
-            this._pooledNodes.push(node)
+            this.#pooledNodes.push(node)
             this.nodes.push(node)
-            BaseVoice._activeNodeCount++
+            BaseVoice.#activeNodeCount++
             return node
         }
-        return this.registerNode(this._createNode(type))
+        return this.registerNode(this.#createNode(type))
     }
 
-    _createNode(type) {
+    #createNode(type) {
         switch (type) {
             case 'GainNode':          return this.audioCtx.createGain()
             case 'BiquadFilterNode':  return this.audioCtx.createBiquadFilter()

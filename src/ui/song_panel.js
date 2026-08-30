@@ -6,10 +6,15 @@ import BasePanel from './base_panel.js'
 import songService from '../logic/services/song_service.js'
 
 export default class SongPanel extends BasePanel {
+    #selectedIdx = null
+    #songName = 'Untitled'
+    #listEl
+    #songNameEl
+    #songDateEl
+    #songDescEl
+
     constructor() {
         super('song-panel')
-        this._selectedIdx = null
-        this._songName = 'Untitled'
     }
 
     createDOM() {
@@ -47,32 +52,32 @@ export default class SongPanel extends BasePanel {
             </div>
         `
 
-        this._listEl = this.container.querySelector('#sg-list')
-        this._songNameEl = this.container.querySelector('#sg-song-name')
-        this._songDateEl = this.container.querySelector('#sg-song-date')
-        this._songDescEl = this.container.querySelector('#sg-song-desc')
+        this.#listEl = this.container.querySelector('#sg-list')
+        this.#songNameEl = this.container.querySelector('#sg-song-name')
+        this.#songDateEl = this.container.querySelector('#sg-song-date')
+        this.#songDescEl = this.container.querySelector('#sg-song-desc')
 
-        this._songDescEl.addEventListener('blur', () => {
-            appState.songInfos.description = this._songDescEl.textContent.trim()
+        this.#songDescEl.addEventListener('blur', () => {
+            appState.songInfos.description = this.#songDescEl.textContent.trim()
         })
-        this._songDescEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); this._songDescEl.blur() }
+        this.#songDescEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); this.#songDescEl.blur() }
         })
 
         this.container.querySelector('#sg-rename').addEventListener('click', () => {
-            this._renameSelected()
+            this.#renameSelected()
         })
 
         this.container.querySelector('#sg-delete').addEventListener('click', () => {
-            if (this._selectedIdx != null) this._deletePattern(this._selectedIdx)
+            if (this.#selectedIdx != null) this.#deletePattern(this.#selectedIdx)
         })
 
-        this._songNameEl.addEventListener('dblclick', () => this._renameSong())
+        this.#songNameEl.addEventListener('dblclick', () => this.#renameSong())
 
-        this.container.querySelector('#sg-save').addEventListener('click', () => this._saveSong())
-        this.container.querySelector('#sg-load').addEventListener('click', () => this._loadSong())
-        this.container.querySelector('#sg-export').addEventListener('click', () => this._exportSong())
-        this.container.querySelector('#sg-import').addEventListener('click', () => this._importSong())
+        this.container.querySelector('#sg-save').addEventListener('click', () => this.#saveSong())
+        this.container.querySelector('#sg-load').addEventListener('click', () => this.#loadSong())
+        this.container.querySelector('#sg-export').addEventListener('click', () => this.#exportSong())
+        this.container.querySelector('#sg-import').addEventListener('click', () => this.#importSong())
     }
 
     subscribe() {
@@ -81,28 +86,28 @@ export default class SongPanel extends BasePanel {
     }
 
     sync() {
-        this._selectedIdx = appState.selectedPatternNum
-        if (appState.songInfos?.name) this._songName = appState.songInfos.name
-        this._songNameEl.textContent = this._songName
-        this._songDateEl.textContent = appState.songInfos?.date ?? ''
+        this.#selectedIdx = appState.selectedPatternNum
+        if (appState.songInfos?.name) this.#songName = appState.songInfos.name
+        this.#songNameEl.textContent = this.#songName
+        this.#songDateEl.textContent = appState.songInfos?.date ?? ''
         const desc = appState.songInfos?.description ?? ''
-        if (this._songDescEl.textContent.trim() !== desc) {
-            this._songDescEl.textContent = desc
+        if (this.#songDescEl.textContent.trim() !== desc) {
+            this.#songDescEl.textContent = desc
         }
-        this._renderList()
+        this.#renderList()
     }
 
-    _renderList() {
+    #renderList() {
         const patterns = appState.patterns
         if (!patterns.length) {
-            this._listEl.innerHTML = '<div class="pp-empty">No patterns</div>'
+            this.#listEl.innerHTML = '<div class="pp-empty">No patterns</div>'
             return
         }
 
-        this._listEl.innerHTML = ''
+        this.#listEl.innerHTML = ''
         for (let i = 0; i < patterns.length; i++) {
             const pat = patterns[i]
-            const isSelected = i === this._selectedIdx
+            const isSelected = i === this.#selectedIdx
 
             const item = document.createElement('div')
             item.className = 'sg-item' + (isSelected ? ' sg-selected' : '')
@@ -118,17 +123,17 @@ export default class SongPanel extends BasePanel {
 
             name.addEventListener('dblclick', (e) => {
                 e.stopPropagation()
-                this._startRename(name, i)
+                this.#startRename(name, i)
             })
 
             item.appendChild(num)
             item.appendChild(name)
-            item.addEventListener('click', () => this._selectPattern(i))
-            this._listEl.appendChild(item)
+            item.addEventListener('click', () => this.#selectPattern(i))
+            this.#listEl.appendChild(item)
         }
     }
 
-    _startRename(nameEl, idx) {
+    #startRename(nameEl, idx) {
         const pat = appState.patterns[idx]
         const currentName = pat.name ?? `Pattern ${idx}`
 
@@ -160,31 +165,31 @@ export default class SongPanel extends BasePanel {
         })
     }
 
-    _renameSelected() {
-        if (this._selectedIdx == null) return
-        const item = this._listEl.querySelector('.sg-selected .sg-name')
+    #renameSelected() {
+        if (this.#selectedIdx == null) return
+        const item = this.#listEl.querySelector('.sg-selected .sg-name')
         if (item) {
-            this._startRename(item, this._selectedIdx)
+            this.#startRename(item, this.#selectedIdx)
         }
     }
 
-    _renameSong() {
-        const current = this._songName
+    #renameSong() {
+        const current = this.#songName
         const input = document.createElement('input')
         input.type = 'text'
         input.className = 'sg-rename-input'
         input.value = current
 
-        this._songNameEl.replaceWith(input)
+        this.#songNameEl.replaceWith(input)
         input.focus()
         input.select()
 
         const commit = () => {
             const val = input.value.trim()
-            if (val) this._songName = val
-            appState.songInfos.name = this._songName
-            this._songNameEl.textContent = this._songName
-            input.replaceWith(this._songNameEl)
+            if (val) this.#songName = val
+            appState.songInfos.name = this.#songName
+            this.#songNameEl.textContent = this.#songName
+            input.replaceWith(this.#songNameEl)
         }
 
         input.addEventListener('blur', commit)
@@ -194,18 +199,18 @@ export default class SongPanel extends BasePanel {
         })
     }
 
-    _selectPattern(idx) {
+    #selectPattern(idx) {
         serviceRegistry.cmd.setSelectedPatternNum(idx)
         appState.currentPage = 0
         playbackEvents.batch(() => {
             playbackEvents.emit("patternStructureChange")
             playbackEvents.emit("patternChange")
         })
-        this._selectedIdx = idx
-        this._renderList()
+        this.#selectedIdx = idx
+        this.#renderList()
     }
 
-    _deletePattern(idx) {
+    #deletePattern(idx) {
         if (appState.patterns.length <= 1) {
             showToast('Cannot delete the last pattern', 'warning')
             return
@@ -214,7 +219,7 @@ export default class SongPanel extends BasePanel {
         if (!confirm(`Delete "${name}"?`)) return
 
         serviceRegistry.cmd.removePattern(idx)
-        this._selectedIdx = appState.selectedPatternNum
+        this.#selectedIdx = appState.selectedPatternNum
         playbackEvents.batch(() => {
             playbackEvents.emit("patternStructureChange")
             playbackEvents.emit("patternChange")
@@ -223,16 +228,16 @@ export default class SongPanel extends BasePanel {
         showToast(`Deleted "${name}"`, 'success')
     }
 
-    async _saveSong() {
+    async #saveSong() {
         try {
-            await songService.save(this._songName)
-            showToast(`Song "${this._songName}" saved`, 'success')
+            await songService.save(this.#songName)
+            showToast(`Song "${this.#songName}" saved`, 'success')
         } catch (err) {
             showToast('Save failed: ' + err.message, 'error')
         }
     }
 
-    async _loadSong() {
+    async #loadSong() {
         try {
             const keys = await songService.listKeys()
             if (!keys.length) {
@@ -270,25 +275,25 @@ export default class SongPanel extends BasePanel {
                     return
                 }
 
-                this._songName = songService.applyToAppState(data, choice)
+                this.#songName = songService.applyToAppState(data, choice)
                 playbackEvents.batch(() => {
                     playbackEvents.emit("patternStructureChange")
                     playbackEvents.emit("patternChange")
                 })
                 this.sync()
-                showToast(`Song "${this._songName}" loaded`, 'success')
+                showToast(`Song "${this.#songName}" loaded`, 'success')
             })
         } catch (err) {
             showToast('Load failed: ' + err.message, 'error')
         }
     }
 
-    _exportSong() {
-        songService.exportToFile(this._songName)
-        showToast(`Song "${this._songName}" exported`, 'success')
+    #exportSong() {
+        songService.exportToFile(this.#songName)
+        showToast(`Song "${this.#songName}" exported`, 'success')
     }
 
-    _importSong() {
+    #importSong() {
         const input = document.createElement('input')
         input.type = 'file'
         input.accept = '.odbox,.json'
@@ -305,13 +310,13 @@ export default class SongPanel extends BasePanel {
                 }
 
                 const fallbackName = file.name.replace(/\.\w+$/, '')
-                this._songName = songService.applyToAppState(data, fallbackName)
+                this.#songName = songService.applyToAppState(data, fallbackName)
                 playbackEvents.batch(() => {
                     playbackEvents.emit("patternStructureChange")
                     playbackEvents.emit("patternChange")
                 })
                 this.sync()
-                showToast(`Song "${this._songName}" imported`, 'success')
+                showToast(`Song "${this.#songName}" imported`, 'success')
             } catch (err) {
                 showToast('Import failed: ' + err.message, 'error')
             }

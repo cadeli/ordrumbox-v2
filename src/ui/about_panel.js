@@ -9,29 +9,30 @@ const APP_REPO = 'https://github.com/cadeli/ordrumbox-v2'
 const APP_WEBSITE = 'https://www.ordrumbox.com'
 
 export default class AboutPanel extends BasePanel {
+    #deferredPrompt = null
+    #installBtn = null
+
     constructor() {
         super('about-panel')
-        this._deferredPrompt = null
-        this._installBtn = null
     }
 
     init() {
         super.init()
-        this._registerInstallPrompt()
+        this.#registerInstallPrompt()
     }
 
-    _registerInstallPrompt() {
+    #registerInstallPrompt() {
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault()
-            this._deferredPrompt = e
-            if (this._installBtn) {
-                this._installBtn.style.display = ''
+            this.#deferredPrompt = e
+            if (this.#installBtn) {
+                this.#installBtn.style.display = ''
             }
         })
         window.addEventListener('appinstalled', () => {
-            this._deferredPrompt = null
-            if (this._installBtn) {
-                this._installBtn.style.display = 'none'
+            this.#deferredPrompt = null
+            if (this.#installBtn) {
+                this.#installBtn.style.display = 'none'
             }
         })
     }
@@ -79,23 +80,23 @@ export default class AboutPanel extends BasePanel {
         bindCloseButton(this.container, () => playbackEvents.emit("aboutToggle", false))
         bindTabToggles(this.container)
 
-        this._installBtn = this.container.querySelector('#about-pwa-install')
-        this._installBtn?.addEventListener('click', () => this._installPwa())
+        this.#installBtn = this.container.querySelector('#about-pwa-install')
+        this.#installBtn?.addEventListener('click', () => this.#installPwa())
     }
 
-    _installPwa() {
-        if (!this._deferredPrompt) return
-        this._deferredPrompt.prompt()
-        this._deferredPrompt.userChoice.finally(() => {
-            this._deferredPrompt = null
-            if (this._installBtn) this._installBtn.style.display = 'none'
+    #installPwa() {
+        if (!this.#deferredPrompt) return
+        this.#deferredPrompt.prompt()
+        this.#deferredPrompt.userChoice.finally(() => {
+            this.#deferredPrompt = null
+            if (this.#installBtn) this.#installBtn.style.display = 'none'
         })
     }
 
-    _detectPwaStatus() {
+    #detectPwaStatus() {
         const installRow = this.container.querySelector('#about-pwa-install-row')
 
-        if (installRow && this._deferredPrompt) {
+        if (installRow && this.#deferredPrompt) {
             installRow.style.display = ''
         } else if (installRow) {
             installRow.style.display = 'none'
@@ -106,6 +107,6 @@ export default class AboutPanel extends BasePanel {
 
     show() {
         super.show()
-        this._detectPwaStatus()
+        this.#detectPwaStatus()
     }
 }

@@ -16,16 +16,24 @@ const COMPRESSOR_PARAMS = [
 ]
 
 export default class OutputPanel extends BasePanel {
+    #animId = null
+    #visible = false
+    #lowcutVal = 35
+    #hicutVal = 18500
+    #spectrumLut = null
+    #saveTimer = null
+    #masterVol = null
+    #preGain = null
+    #compSliders = null
+    #compBypass = false
+    #compBypassBtn = null
+    #lowcut = null
+    #hicut = null
+    #bgColor = null
+
     constructor() {
         super('output-panel')
         this.canvas    = null
-        this._animId   = null
-        this._visible  = false
-
-        this._lowcutVal = 35
-        this._hicutVal  = 18500
-        this._spectrumLut = null
-        this._saveTimer = null
     }
 
     createDOM() {
@@ -50,21 +58,21 @@ this.container.innerHTML = `
                 <div class="ne-grid" id="op-filters-grid"></div>
             </div>`
 
-        this._buildMasterSlider()
-        this._buildPreGainSlider()
-        this._buildCompressorSliders()
-        this._buildFilterSliders()
+        this.#buildMasterSlider()
+        this.#buildPreGainSlider()
+        this.#buildCompressorSliders()
+        this.#buildFilterSliders()
 
         this.canvas = this.container.querySelector('#op-spectrum')
         this.canvas.width  = 256
         this.canvas.height = 100
 
         bindTabToggles(this.container)
-        this._restoreMasterSettings()
+        this.#restoreMasterSettings()
     }
 
-    _buildMasterSlider() {
-        this._masterVol = new OrKnob({
+    #buildMasterSlider() {
+        this.#masterVol = new OrKnob({
             key:     'op-master-vol',
             label:   'Volume',
             min:     0,
@@ -74,16 +82,16 @@ this.container.innerHTML = `
             format:  v => v.toFixed(2),
             onChange: v => {
                 serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: v })
-                this._persistMaster('volume', v)
+                this.#persistMaster('volume', v)
             },
         })
-        const el = this._masterVol.createElement()
+        const el = this.#masterVol.createElement()
         el.dataset.orSlider = 'op-master-vol'
         this.container.querySelector('#op-master-grid').appendChild(el)
     }
 
-    _buildPreGainSlider() {
-        this._preGain = new OrKnob({
+    #buildPreGainSlider() {
+        this.#preGain = new OrKnob({
             key:     'op-pregain',
             label:   'Pre-Gain',
             min:     -20,
@@ -94,35 +102,35 @@ this.container.innerHTML = `
             unit:    'dB',
             onChange: v => {
                 serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v })
-                this._persistMaster('preGain', v)
+                this.#persistMaster('preGain', v)
             },
         })
-        const el = this._preGain.createElement()
+        const el = this.#preGain.createElement()
         el.classList.add('op-comp-pregain')
         this.container.querySelector('#op-comp-panel').appendChild(el)
     }
 
-    _buildCompressorSliders() {
-        this._compSliders = {}
+    #buildCompressorSliders() {
+        this.#compSliders = {}
         const panel = this.container.querySelector('#op-comp-panel')
 
-        this._compBypass = false
+        this.#compBypass = false
         const header = document.createElement('div')
         header.className = 'op-comp-header'
         const title = document.createElement('span')
         title.className = 'op-comp-title'
         title.textContent = 'COMPRESSOR'
-        this._compBypassBtn = document.createElement('button')
-        this._compBypassBtn.className = 'op-comp-bypass active'
-        this._compBypassBtn.innerHTML = '&#9889;'
-        this._compBypassBtn.title = 'Compressor on/off'
-        this._compBypassBtn.addEventListener('click', () => {
-            this._compBypass = !this._compBypass
-            this._compBypassBtn.classList.toggle('active', !this._compBypass)
-            serviceRegistry.audioEngine?.mixer?.setMasterBus({ bypass: this._compBypass })
-            this._persistMaster('compBypass', this._compBypass)
+        this.#compBypassBtn = document.createElement('button')
+        this.#compBypassBtn.className = 'op-comp-bypass active'
+        this.#compBypassBtn.innerHTML = '&#9889;'
+        this.#compBypassBtn.title = 'Compressor on/off'
+        this.#compBypassBtn.addEventListener('click', () => {
+            this.#compBypass = !this.#compBypass
+            this.#compBypassBtn.classList.toggle('active', !this.#compBypass)
+            serviceRegistry.audioEngine?.mixer?.setMasterBus({ bypass: this.#compBypass })
+            this.#persistMaster('compBypass', this.#compBypass)
         })
-        header.append(title, this._compBypassBtn)
+        header.append(title, this.#compBypassBtn)
         panel.appendChild(header)
 
         const knobsRow = document.createElement('div')
@@ -140,20 +148,20 @@ this.container.innerHTML = `
                 unit:     p.unit ?? '',
                 onChange: v => {
                     serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v })
-                    this._persistMaster(p.key, v)
+                    this.#persistMaster(p.key, v)
                 },
             })
-            this._compSliders[p.key] = knob
+            this.#compSliders[p.key] = knob
             knobsRow.appendChild(knob.createElement())
         })
 
         panel.appendChild(knobsRow)
     }
 
-    _buildFilterSliders() {
+    #buildFilterSliders() {
         const grid = this.container.querySelector('#op-filters-grid')
 
-        this._lowcut = new OrSlider({
+        this.#lowcut = new OrSlider({
             key:     'op-lowcut',
             label:   'Low Cut',
             min:     10,
@@ -164,13 +172,13 @@ this.container.innerHTML = `
             format:  v => Math.round(v),
             unit:    'Hz',
             onChange: v => {
-                this._lowcutVal = v
-                this._pushFilters()
+                this.#lowcutVal = v
+                this.#pushFilters()
             },
         })
-        grid.appendChild(this._lowcut.createElement())
+        grid.appendChild(this.#lowcut.createElement())
 
-        this._hicut = new OrSlider({
+        this.#hicut = new OrSlider({
             key:     'op-hicut',
             label:   'High Cut',
             min:     1000,
@@ -181,49 +189,49 @@ this.container.innerHTML = `
             format:  v => Math.round(v),
             unit:    'Hz',
             onChange: v => {
-                this._hicutVal = v
-                this._pushFilters()
+                this.#hicutVal = v
+                this.#pushFilters()
             },
         })
-        grid.appendChild(this._hicut.createElement())
+        grid.appendChild(this.#hicut.createElement())
     }
 
-    _pushFilters() {
+    #pushFilters() {
         serviceRegistry.audioEngine?.mixer?.setMasterBus({
-            lowcut: this._lowcutVal,
-            hicut:  this._hicutVal,
+            lowcut: this.#lowcutVal,
+            hicut:  this.#hicutVal,
         })
-        this._persistMaster('lowcut', this._lowcutVal)
-        this._persistMaster('hicut', this._hicutVal)
+        this.#persistMaster('lowcut', this.#lowcutVal)
+        this.#persistMaster('hicut', this.#hicutVal)
     }
 
-    _persistMaster(key, value) {
+    #persistMaster(key, value) {
         soundRegistry.settings.master[key] = value
-        if (this._saveTimer) clearTimeout(this._saveTimer)
-        this._saveTimer = setTimeout(() => {
+        if (this.#saveTimer) clearTimeout(this.#saveTimer)
+        this.#saveTimer = setTimeout(() => {
             serviceRegistry.resourcesLoader?.saveSettings?.()
         }, 500)
     }
 
-    _restoreMasterSettings() {
+    #restoreMasterSettings() {
         const m = soundRegistry.settings.master
         if (!m) return
 
-        this._masterVol?.setValue(m.volume)
-        this._preGain?.setValue(m.preGain)
-        this._lowcut?.setValue(m.lowcut)
-        this._hicut?.setValue(m.hicut)
-        this._lowcutVal = m.lowcut
-        this._hicutVal = m.hicut
+        this.#masterVol?.setValue(m.volume)
+        this.#preGain?.setValue(m.preGain)
+        this.#lowcut?.setValue(m.lowcut)
+        this.#hicut?.setValue(m.hicut)
+        this.#lowcutVal = m.lowcut
+        this.#hicutVal = m.hicut
 
         if (m.compBypass) {
-            this._compBypass = true
-            this._compBypassBtn?.classList.remove('active')
+            this.#compBypass = true
+            this.#compBypassBtn?.classList.remove('active')
         }
 
         for (const p of COMPRESSOR_PARAMS) {
-            if (p.key in m && this._compSliders?.[p.key]) {
-                this._compSliders[p.key].setValue(m[p.key])
+            if (p.key in m && this.#compSliders?.[p.key]) {
+                this.#compSliders[p.key].setValue(m[p.key])
             }
         }
     }
@@ -232,47 +240,47 @@ this.container.innerHTML = `
 
     show() {
         super.show()
-        this._visible = true
-        this._startAnimation()
+        this.#visible = true
+        this.#startAnimation()
     }
 
     hide() {
         super.hide()
-        this._visible = false
-        this._stopAnimation()
+        this.#visible = false
+        this.#stopAnimation()
     }
 
     // ─── Internal ─────────────────────────────────────────────────────────────
 
-    _startAnimation() {
-        this._stopAnimation()
+    #startAnimation() {
+        this.#stopAnimation()
         const draw = () => {
-            if (!this._visible) return
-            this._drawSpectrum()
-            this._animId = requestAnimationFrame(draw)
+            if (!this.#visible) return
+            this.#drawSpectrum()
+            this.#animId = requestAnimationFrame(draw)
         }
         draw()
     }
 
-    _stopAnimation() {
-        if (this._animId) {
-            cancelAnimationFrame(this._animId)
-            this._animId = null
+    #stopAnimation() {
+        if (this.#animId) {
+            cancelAnimationFrame(this.#animId)
+            this.#animId = null
         }
     }
 
-    _drawSpectrum() {
+    #drawSpectrum() {
         const canvas = this.canvas
         if (!canvas) return
         const ctx = canvas.getContext('2d')
         const w = canvas.width
         const h = canvas.height
-        if (!this._bgColor) {
-            this._bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas').trim() || color('bg-canvas')
+        if (!this.#bgColor) {
+            this.#bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas').trim() || color('bg-canvas')
         }
         const data = serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {
-            ctx.fillStyle = this._bgColor
+            ctx.fillStyle = this.#bgColor
             ctx.fillRect(0, 0, w, h)
             return
         }
@@ -281,24 +289,24 @@ this.container.innerHTML = `
         const beatCount = Math.min(bins.length, w)
         const beatW     = w / beatCount
 
-        if (!this._spectrumLut || this._spectrumLut.length < beatCount) {
-            this._spectrumLut = new Array(beatCount)
+        if (!this.#spectrumLut || this.#spectrumLut.length < beatCount) {
+            this.#spectrumLut = new Array(beatCount)
             for (let i = 0; i < beatCount; i++) {
                 const val = i / beatCount
                 const r = Math.floor(200 + 55 * val)
                 const g = Math.floor(69 * (1 - val * 0.5))
                 const b = Math.floor(96 * (1 - val * 0.7))
-                this._spectrumLut[i] = `rgb(${r},${g},${b})`
+                this.#spectrumLut[i] = `rgb(${r},${g},${b})`
             }
         }
 
-        ctx.fillStyle = this._bgColor
+        ctx.fillStyle = this.#bgColor
         ctx.fillRect(0, 0, w, h)
 
         for (let i = 0; i < beatCount; i++) {
             const val  = bins[i] / 255
             const beatH = val * h
-            ctx.fillStyle = this._spectrumLut[i]
+            ctx.fillStyle = this.#spectrumLut[i]
             ctx.fillRect(i * beatW, h - beatH, Math.max(1, beatW - 0.5), beatH)
         }
     }

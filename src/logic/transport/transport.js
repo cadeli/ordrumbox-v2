@@ -4,6 +4,8 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 
 export default class Transport {
+    #tickInFlight;
+
     constructor(audioCtx) {
         this.audioCtx = audioCtx
         this.isRunning = false
@@ -16,7 +18,7 @@ export default class Transport {
         this.clockInterval = 60 / (this.bpm * 24)
         this.timerWorker = null
         this.onSchedule = null // Callback(tick, time)
-        this._tickInFlight = null // single-flight guard for async onSchedule
+        this.#tickInFlight = null // single-flight guard for async onSchedule
     }
 
     ensureTimerWorker = () => {
@@ -84,12 +86,12 @@ export default class Transport {
 
         // Schedule Ticks
         while (this.nextStepTime < audioNow + this.scheduleAheadTime) {
-            if (this.isRunning && this.onSchedule && !this._tickInFlight) {
+            if (this.isRunning && this.onSchedule && !this.#tickInFlight) {
                 const result = this.onSchedule(this.tick, this.nextStepTime)
                 if (result && typeof result.catch === 'function') {
-                    this._tickInFlight = result
+                    this.#tickInFlight = result
                         .catch(err => logger.error('Transport', 'onSchedule error', err))
-                        .finally(() => { this._tickInFlight = null })
+                        .finally(() => { this.#tickInFlight = null })
                 }
             }
             this.nextNote()

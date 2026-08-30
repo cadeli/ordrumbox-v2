@@ -137,6 +137,7 @@ The codebase intentionally runs different style regimes per zone. Applying the w
 
 ### Conventions
 
+- **Private fields use `#`**: ES native private fields (`#field`) are mandatory for class-internal state. Never use the `this._field` soft-private convention for new code. If a property is only accessed within the class body, it must be `#field`. If it needs external access, expose a public getter/setter (e.g. `get track()`, `setOnChange(fn)`). Exception: audio zone classes that inherit via `class X extends Y` where subclasses override the parent field — use a protected setter instead.
 - **Explicit fallbacks with `??`**: never use `||` for default values when `??` is more appropriate. Never rely on truthy/falsy coercion. Example:
   ```js
   // Good — explicit fallback

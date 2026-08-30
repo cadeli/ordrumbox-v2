@@ -3,20 +3,23 @@ import { safeDisconnect } from './math.js'
 const DISPOSABLE = new Set(['OscillatorNode', 'BufferSourceNode'])
 
 export default class NodePool {
+    #pools
+    #activeCount
+
     constructor(audioCtx) {
         this.audioCtx = audioCtx
-        this._pools = {}
-        this._activeCount = 0
+        this.#pools = {}
+        this.#activeCount = 0
     }
 
-    get activeCount() { return this._activeCount }
+    get activeCount() { return this.#activeCount }
 
     acquire(type) {
-        let pool = this._pools[type]
-        if (!pool) pool = this._pools[type] = []
-        const node = pool.pop() ?? this._create(type)
+        let pool = this.#pools[type]
+        if (!pool) pool = this.#pools[type] = []
+        const node = pool.pop() ?? this.#create(type)
         this.resetNode(node, type)
-        this._activeCount++
+        this.#activeCount++
         return node
     }
 
@@ -24,10 +27,10 @@ export default class NodePool {
         if (!node) return
         safeDisconnect(node)
         const type = node.constructor.name
-        this._activeCount = Math.max(0, this._activeCount - 1)
+        this.#activeCount = Math.max(0, this.#activeCount - 1)
         if (DISPOSABLE.has(type)) return
-        let pool = this._pools[type]
-        if (!pool) pool = this._pools[type] = []
+        let pool = this.#pools[type]
+        if (!pool) pool = this.#pools[type] = []
         pool.push(node)
     }
 
@@ -58,13 +61,13 @@ export default class NodePool {
 
     get stats() {
         const result = {}
-        for (const [type, pool] of Object.entries(this._pools)) {
+        for (const [type, pool] of Object.entries(this.#pools)) {
             result[type] = pool.length
         }
         return result
     }
 
-    _create(type) {
+    #create(type) {
         switch (type) {
             case 'GainNode':          return this.audioCtx.createGain()
             case 'BiquadFilterNode':  return this.audioCtx.createBiquadFilter()

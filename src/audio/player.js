@@ -9,6 +9,11 @@ import Utils from '../core/utils.js'
 export default class Player {
     static TAG = "Player"
 
+    #lastFlatNotesMap = null
+    #lastFlatNotesLoop = -1
+    #trackIdxMap = null
+    #trackIdxMapRef = null
+
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.mixer = config.mixer
@@ -24,77 +29,10 @@ export default class Player {
         this.sound = new Sound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds)
         this.loop = 0
         this.lastDisplayBeats = 0
-
-        // Cache to avoid recomputing flatNotes every tick when nothing changed
-        this._lastFlatNotesMap = null
-        this._lastFlatNotesLoop = -1
-        this._trackIdxMap = null
-        this._trackIdxMapRef = null
     }
 
-    playNotes = async (tick, atTime) => {
-        try {
-            const selPat = this.patterns[this.getSelectedPatternNum()]
-            const nbTickForPattern = this.TICK * (selPat.nbBeats ?? 4)
-            const loopStep = tick % nbTickForPattern
-
-            if (loopStep === 0) {
-                await this._handleLoopStart(selPat)
-            }
-
-            // Use cached flatNotes map when loop hasn't changed
-            let flatNotesMap
-            if (this._lastFlatNotesLoop === this.loop && this._lastFlatNotesMap !== null) {
-                flatNotesMap = this._lastFlatNotesMap
-            } else {
-                flatNotesMap = this.getFlatNotes(this.loop)
-                this._lastFlatNotesLoop = this.loop
-                this._lastFlatNotesMap = flatNotesMap
-            }
-
-            if (loopStep === nbTickForPattern - 1) {
-                this.loop++
-            }
-
-            if (!(flatNotesMap instanceof Map)) return
-
-            const notesToPlay = flatNotesMap.get(loopStep)
-            if (!notesToPlay) return
-
-            const secondsPerBeat = this.secondsPerBeat
-            const sound = this.sound
-
-            // Cache trackIdxMap (only rebuild when tracks object changes)
-            if (this._trackIdxMapRef !== selPat.tracks) {
-                const trackKeys = Object.keys(selPat.tracks)
-                this._trackIdxMap = new Map(trackKeys.map((k, i) => [selPat.tracks[k], i]))
-                this._trackIdxMapRef = selPat.tracks
-            }
-            const trackIdxMap = this._trackIdxMap
-
-            // Trigger all notes at the same tick concurrently
-            const promises = []
-            const anySolo = Utils.hasAnySolo(selPat.tracks)
-            for (let i = 0; i < notesToPlay.length; i++) {
-                const flatNote = notesToPlay[i]
-                if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
-                    NoteParams.applyNoteParams(flatNote, secondsPerBeat)
-                    promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
-                    playbackEvents.emit('noteTrigger', {
-                        trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
-                        beat: flatNote.note.beat,
-                        beatStep: flatNote.note.beatStep
-                    })
-                }
-            }
-            await Promise.all(promises)
-        } catch (e) {
-            logger.error('Player', e)
-        }
-    }
-
-    _handleLoopStart = async (selPat) => {
-        this._lastFlatNotesLoop = -1
+    #handleLoopStart = async (selPat) => {
+        this.#lastFlatNotesLoop = -1
 
         const tracks = selPat.tracks
         const trackKeys = Object.keys(tracks)
@@ -140,10 +78,71 @@ export default class Player {
         this.computeFlatNotes(selPat, this.loop)
     }
 
+    playNotes = async (tick, atTime) => {
+        try {
+            const selPat = this.patterns[this.getSelectedPatternNum()]
+            const nbTickForPattern = this.TICK * (selPat.nbBeats ?? 4)
+            const loopStep = tick % nbTickForPattern
+
+            if (loopStep === 0) {
+                await this.#handleLoopStart(selPat)
+            }
+
+            // Use cached flatNotes map when loop hasn't changed
+            let flatNotesMap
+            if (this.#lastFlatNotesLoop === this.loop && this.#lastFlatNotesMap !== null) {
+                flatNotesMap = this.#lastFlatNotesMap
+            } else {
+                flatNotesMap = this.getFlatNotes(this.loop)
+                this.#lastFlatNotesLoop = this.loop
+                this.#lastFlatNotesMap = flatNotesMap
+            }
+
+            if (loopStep === nbTickForPattern - 1) {
+                this.loop++
+            }
+
+            if (!(flatNotesMap instanceof Map)) return
+
+            const notesToPlay = flatNotesMap.get(loopStep)
+            if (!notesToPlay) return
+
+            const secondsPerBeat = this.secondsPerBeat
+            const sound = this.sound
+
+            // Cache trackIdxMap (only rebuild when tracks object changes)
+            if (this.#trackIdxMapRef !== selPat.tracks) {
+                const trackKeys = Object.keys(selPat.tracks)
+                this.#trackIdxMap = new Map(trackKeys.map((k, i) => [selPat.tracks[k], i]))
+                this.#trackIdxMapRef = selPat.tracks
+            }
+            const trackIdxMap = this.#trackIdxMap
+
+            // Trigger all notes at the same tick concurrently
+            const promises = []
+            const anySolo = Utils.hasAnySolo(selPat.tracks)
+            for (let i = 0; i < notesToPlay.length; i++) {
+                const flatNote = notesToPlay[i]
+                if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
+                    NoteParams.applyNoteParams(flatNote, secondsPerBeat)
+                    promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
+                    playbackEvents.emit('noteTrigger', {
+                        trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
+                        beat: flatNote.note.beat,
+                        beatStep: flatNote.note.beatStep
+                    })
+                }
+            }
+            await Promise.all(promises)
+        } catch (e) {
+            logger.error('Player', e)
+        }
+    }
+
     /**
      * Return the current flat notes map (used by engine to avoid double lookup)
      */
-    getCurrentFlatNotesMap = () => this._lastFlatNotesMap
+    getCurrentFlatNotesMap = () => this.#lastFlatNotesMap
 
     simpleBeep = async (indexTrack, note = null) => {
         if (this.audioCtx == null) return

@@ -7,93 +7,108 @@ import Utils from '../../core/utils.js'
 import { color } from '../theme.js'
 
 export default class PlaybackOverlaySection {
+    /** @type {import('./pattern_panel.js').default} */
+    #editor;
+    /** @type {number | null} */
+    #rafId;
+    /** @type {HTMLDivElement | null} */
+    #playhead;
+    /** @type {number} */
+    #prevLoopTick;
+    /** @type {HTMLCanvasElement | null} */
+    #waveformCanvas;
+    /** @type {HTMLElement | null} */
+    #tracksEl;
+    /** @type {NodeListOf<HTMLElement> | null} */
+    #vuElCache;
+
     /** @param {import('./pattern_panel.js').default} editor */
     constructor(editor) {
-        this._editor = editor
-        this._rafId = null
-        this._playhead = null
-        this._prevLoopTick = -1
-        this._waveformCanvas = null
-        this._tracksEl = null
-        this._vuElCache = null
+        this.#editor = editor
+        this.#rafId = null
+        this.#playhead = null
+        this.#prevLoopTick = -1
+        this.#waveformCanvas = null
+        this.#tracksEl = null
+        this.#vuElCache = null
     }
 
     ensurePlayhead() {
-        const editor = this._editor
-        if (!this._playhead || !editor.container.contains(this._playhead)) {
-            if (this._playhead) this._playhead.remove()
-            this._playhead = document.createElement('div')
-            this._playhead.className = 'pp-playhead'
-            this._playhead.style.display = 'none'
-            this._playhead.style.position = 'absolute'
-            this._playhead.style.left = '0'
-            this._playhead.style.top = '0'
-            this._playhead.style.bottom = '0'
-            this._playhead.style.width = '2px'
-            this._playhead.style.zIndex = '10'
-            this._playhead.style.pointerEvents = 'none'
-            this._playhead.style.willChange = 'transform'
+        const editor = this.#editor
+        if (!this.#playhead || !editor.container.contains(this.#playhead)) {
+            if (this.#playhead) this.#playhead.remove()
+            this.#playhead = document.createElement('div')
+            this.#playhead.className = 'pp-playhead'
+            this.#playhead.style.display = 'none'
+            this.#playhead.style.position = 'absolute'
+            this.#playhead.style.left = '0'
+            this.#playhead.style.top = '0'
+            this.#playhead.style.bottom = '0'
+            this.#playhead.style.width = '2px'
+            this.#playhead.style.zIndex = '10'
+            this.#playhead.style.pointerEvents = 'none'
+            this.#playhead.style.willChange = 'transform'
             const header = editor.container.querySelector('.pp-header')
             if (header) {
-                header.appendChild(this._playhead)
+                header.appendChild(this.#playhead)
             } else {
-                editor.container.appendChild(this._playhead)
+                editor.container.appendChild(this.#playhead)
             }
         }
     }
 
     hidePlayhead() {
-        if (this._playhead) this._playhead.style.display = 'none'
+        if (this.#playhead) this.#playhead.style.display = 'none'
     }
 
     resetPrevLoopTick() {
-        this._prevLoopTick = -1
+        this.#prevLoopTick = -1
     }
 
     startRafLoop() {
-        if (this._rafId) return
-        const editor = this._editor
-        this._waveformCanvas = editor.container?.querySelector('.pp-waveform-overlay')
-        this._tracksEl = editor.container?.querySelector('.pp-tracks')
-        this._vuElCache = editor.container?.querySelectorAll('.pp-vu')
+        if (this.#rafId) return
+        const editor = this.#editor
+        this.#waveformCanvas = editor.container?.querySelector('.pp-waveform-overlay')
+        this.#tracksEl = editor.container?.querySelector('.pp-tracks')
+        this.#vuElCache = editor.container?.querySelectorAll('.pp-vu')
 
         const loop = () => {
             const transport = editor._serviceRegistry.transport
             const mixer = editor._serviceRegistry.audioEngine?.mixer
             if (!transport?.isRunning || !mixer || !editor.container) {
-                this._rafId = null
+                this.#rafId = null
                 this.hidePlayhead()
-                this._resetVuAndWaveform()
+                this.#resetVuAndWaveform()
                 return
             }
 
-            this._updateVus(mixer)
-            this._drawWaveform(mixer)
-            this._updatePlayhead()
+            this.#updateVus(mixer)
+            this.#drawWaveform(mixer)
+            this.#updatePlayhead()
 
-            this._rafId = requestAnimationFrame(loop)
+            this.#rafId = requestAnimationFrame(loop)
         }
-        this._rafId = requestAnimationFrame(loop)
+        this.#rafId = requestAnimationFrame(loop)
     }
 
     stopRafLoop() {
-        if (this._rafId) {
-            cancelAnimationFrame(this._rafId)
-            this._rafId = null
+        if (this.#rafId) {
+            cancelAnimationFrame(this.#rafId)
+            this.#rafId = null
         }
-        this._waveformCanvas = null
-        this._tracksEl = null
-        this._vuElCache = null
+        this.#waveformCanvas = null
+        this.#tracksEl = null
+        this.#vuElCache = null
     }
 
-    _updateVus(mixer) {
+    #updateVus(mixer) {
         if (appState.showVus === false) return
-        if (!this._vuElCache) {
-            this._vuElCache = this._editor.container?.querySelectorAll('.pp-vu')
-            if (!this._vuElCache) return
+        if (!this.#vuElCache) {
+            this.#vuElCache = this.#editor.container?.querySelectorAll('.pp-vu')
+            if (!this.#vuElCache) return
         }
         const strips = mixer.strips
-        const vuEls = this._vuElCache
+        const vuEls = this.#vuElCache
         const currentPattern = appState.patterns[appState.selectedPatternNum]
         const tracks = Utils.getTracksArray(currentPattern)
         for (let i = 0; i < vuEls.length; i++) {
@@ -119,19 +134,19 @@ export default class PlaybackOverlaySection {
         }
     }
 
-    _drawWaveform(mixer) {
+    #drawWaveform(mixer) {
         if (appState.showVus === false) return
-        const editor = this._editor
-        if (!this._waveformCanvas) {
-            this._waveformCanvas = editor.container?.querySelector('.pp-waveform-overlay')
+        const editor = this.#editor
+        if (!this.#waveformCanvas) {
+            this.#waveformCanvas = editor.container?.querySelector('.pp-waveform-overlay')
         }
-        const canvas = this._waveformCanvas
+        const canvas = this.#waveformCanvas
         if (!canvas || !editor._layoutCache) return
 
-        if (!this._tracksEl) {
-            this._tracksEl = editor.container?.querySelector('.pp-tracks')
+        if (!this.#tracksEl) {
+            this.#tracksEl = editor.container?.querySelector('.pp-tracks')
         }
-        const tracksEl = this._tracksEl
+        const tracksEl = this.#tracksEl
         if (!tracksEl) return
 
         const dpr = window.devicePixelRatio ?? 1
@@ -213,20 +228,20 @@ export default class PlaybackOverlaySection {
     }
 
     syncVusVisibility() {
-        const editor = this._editor
+        const editor = this.#editor
         if (!editor.container) return
         const hidden = appState.showVus === false
         editor.container.classList.toggle('pp-vus-hidden', hidden)
 
-        if (hidden && this._waveformCanvas) {
-            this._waveformCanvas.style.display = ''
+        if (hidden && this.#waveformCanvas) {
+            this.#waveformCanvas.style.display = ''
         }
     }
 
-    _resetVuAndWaveform() {
-        const editor = this._editor
+    #resetVuAndWaveform() {
+        const editor = this.#editor
         if (!editor.container) return
-        const vuEls = this._vuElCache ?? editor.container.querySelectorAll('.pp-vu')
+        const vuEls = this.#vuElCache ?? editor.container.querySelectorAll('.pp-vu')
         for (const vuEl of vuEls) {
             vuEl._lastPct = 0
             const fill = vuEl.querySelector('.pp-vu-fill')
@@ -244,8 +259,8 @@ export default class PlaybackOverlaySection {
         }
     }
 
-    _updatePlayhead() {
-        const editor = this._editor
+    #updatePlayhead() {
+        const editor = this.#editor
         const transport = editor._serviceRegistry.transport
         if (!transport?.isRunning) return
 
@@ -258,8 +273,8 @@ export default class PlaybackOverlaySection {
 
         const loopTick = (transport.tick ?? 0) % nbTicks
 
-        if (loopTick === this._prevLoopTick && this._playhead.style.display !== 'none') return
-        this._prevLoopTick = loopTick
+        if (loopTick === this.#prevLoopTick && this.#playhead.style.display !== 'none') return
+        this.#prevLoopTick = loopTick
 
         const currentPatternBeat = Math.floor(loopTick / TICK)
         const startBeat = appState.currentPage * BEATS_PER_PAGE
@@ -275,29 +290,29 @@ export default class PlaybackOverlaySection {
                     editor._playbackEvents.emit("patternChange")
                 })
             }
-            if (this._playhead.style.display !== 'none') this._playhead.style.display = 'none'
+            if (this.#playhead.style.display !== 'none') this.#playhead.style.display = 'none'
             return
         }
 
         const beatCache = editor._beatRectsCache[currentPatternBeat]
         if (!beatCache) {
-            if (this._playhead.style.display !== 'none') this._playhead.style.display = 'none'
+            if (this.#playhead.style.display !== 'none') this.#playhead.style.display = 'none'
             return
         }
 
         const tickInBar = loopTick % TICK
         const normInBar = tickInBar / TICK
 
-        if (this._playhead.style.display !== 'block') this._playhead.style.display = 'block'
+        if (this.#playhead.style.display !== 'block') this.#playhead.style.display = 'block'
         const x = beatCache.left + normInBar * beatCache.width
 
-        this._playhead.style.transform = `translate3d(${x}px, 0, 0)`
+        this.#playhead.style.transform = `translate3d(${x}px, 0, 0)`
     }
 
     /** Clear loop element caches (called after full sync). */
     clearCaches() {
-        this._waveformCanvas = null
-        this._tracksEl = null
-        this._vuElCache = null
+        this.#waveformCanvas = null
+        this.#tracksEl = null
+        this.#vuElCache = null
     }
 }

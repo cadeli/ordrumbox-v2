@@ -15,6 +15,13 @@ import { logger, nameOr } from "../core/logger.js"
 export default class AudioEngine {
     static TAG = "AUDIOENGINE"
 
+    #cachedPatternRef
+    #cachedLoop
+    #cachedVersion
+    #midiMappingCache
+    #workletReady
+    #silentBuffer
+
     constructor(config) {
         this.audioCtx = config.audioCtx
         this.sounds = config.sounds
@@ -28,9 +35,9 @@ export default class AudioEngine {
         this.instrumentsManager = instrumentsManager
 
         this.flatNotes = new Map()
-        this._cachedPatternRef = null
-        this._cachedLoop = 0
-        this._midiMappingCache = new Map()
+        this.#cachedPatternRef = null
+        this.#cachedLoop = 0
+        this.#midiMappingCache = new Map()
         this.mixer = new Mixer(this.audioCtx)
         this.player = null
         this.sound = null
@@ -38,7 +45,7 @@ export default class AudioEngine {
         // Worklet initialisation happens asynchronously. The player/sound are
         // constructed AFTER the worklet mixer is ready so they hold the correct
         // (worklet-based) mixer reference — not the legacy placeholder above.
-        this._workletReady = (async () => {
+        this.#workletReady = (async () => {
             try {
                 const mixer = await Mixer.create(this.audioCtx)
                 this.mixer = mixer
@@ -70,14 +77,14 @@ export default class AudioEngine {
         this.nextStepTime = 0
 
         // Pre-allocate silent buffer for unlock (reused across calls)
-        this._silentBuffer = this.audioCtx.createBuffer(1, 1, 22050)
+        this.#silentBuffer = this.audioCtx.createBuffer(1, 1, 22050)
     }
 
     /**
      * Resolves when the worklet mixer is ready to accept strips and play audio.
      */
     get ready() {
-        return this._workletReady
+        return this.#workletReady
     }
 
     // ─── Pattern / flat-note helpers ────────────────────────────────────────────
@@ -93,23 +100,23 @@ export default class AudioEngine {
 
         const patternVersion = pattern._version ?? 0
         if (
-            this._cachedPatternRef === pattern &&
-            this._cachedLoop === loop &&
-            this._cachedVersion === patternVersion
+            this.#cachedPatternRef === pattern &&
+            this.#cachedLoop === loop &&
+            this.#cachedVersion === patternVersion
         ) {
             return this.flatNotes
         }
 
-        this._cachedPatternRef = pattern
-        this._cachedLoop = loop
-        this._cachedVersion = patternVersion
+        this.#cachedPatternRef = pattern
+        this.#cachedLoop = loop
+        this.#cachedVersion = patternVersion
         this.flatNotes = computeFlatNotesPure(pattern, loop, this.computeNextStep, this.TICK)
         return this.flatNotes
     }
 
     invalidateCache = () => {
-        this._cachedPatternRef = null
-        this._cachedVersion = -1
+        this.#cachedPatternRef = null
+        this.#cachedVersion = -1
         if (this.player) {
             this.player._lastFlatNotesLoop = -1
         }
@@ -121,7 +128,7 @@ export default class AudioEngine {
         try {
             if (!this.unlocked) this.playSilentBuffer()
             // Wait for worklet mixer to be ready before starting
-            await this._workletReady
+            await this.#workletReady
             this.isRunning = true
             this.nextStepTime = this.audioCtx.currentTime
             this.mixer.start()
@@ -160,12 +167,12 @@ export default class AudioEngine {
     playNotes = async (tick, atTime) => {
         if (!this.isRunning) return
         if (!this.player) return
-        await this._pushStepLfo(tick, atTime)
+        await this.#pushStepLfo(tick, atTime)
         await this.player.playNotes(tick, atTime)
         this.sendMidiNotes(tick, atTime)
     }
 
-    _pushStepLfo = async (tick, atTime) => {
+    #pushStepLfo = async (tick, atTime) => {
         const pattern = this.patterns[this.getSelectedPatternNum()]
         if (!pattern?.tracks) return
         const nbTicks = this.TICK * pattern.nbBeats
@@ -232,7 +239,7 @@ export default class AudioEngine {
         const anySolo = Utils.hasAnySolo(selPat.tracks)
         notesToPlay.forEach(flatNote => {
             if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
-                const mapping = this._resolveMidiMapping(flatNote.track.id)
+                const mapping = this.#resolveMidiMapping(flatNote.track.id)
                 if (mapping) {
                     const channel   = Number.isFinite(parseInt(mapping.ch, 10)) ? parseInt(mapping.ch, 10) : (logger.warn('Fallback','pi',mapping.ch,9), 9)
                     const note      = Number.isFinite(parseInt(mapping.key, 10)) ? parseInt(mapping.key, 10) : (logger.warn('Fallback','pi',mapping.key,60), 60)
@@ -247,18 +254,18 @@ export default class AudioEngine {
         })
     }
 
-    _resolveMidiMapping = (trackId) => {
-        if (this._midiMappingCache.has(trackId)) {
-            return this._midiMappingCache.get(trackId)
+    #resolveMidiMapping = (trackId) => {
+        if (this.#midiMappingCache.has(trackId)) {
+            return this.#midiMappingCache.get(trackId)
         }
-        const mapping = InstrumentsManager.DATA.instruments.find(i => i.id === trackId)?.midi?.[0] ?? null
-        this._midiMappingCache.set(trackId, mapping)
+        const mapping = instrumentsManager.DATA.instruments.find(i => i.id === trackId)?.midi?.[0] ?? null
+        this.#midiMappingCache.set(trackId, mapping)
         return mapping
     }
 
     simpleBeep = async (indexTrack, note = null) => {
         // Wait for the worklet mixer and player to be ready before triggering.
-        await this._workletReady
+        await this.#workletReady
         if (!this.player) return
         if (this.audioCtx?.state === 'suspended') {
             await this.audioCtx.resume()
@@ -272,7 +279,7 @@ export default class AudioEngine {
             const tracks = Utils.getTracksArray(pat)
             const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat?.tracks?.[indexTrack]
             if (track) {
-                const mapping = this._resolveMidiMapping(track.id)
+                const mapping = this.#resolveMidiMapping(track.id)
                 if (mapping) {
                     const rawCh = parseInt(mapping.ch, 10)
                     const rawNote = parseInt(mapping.key, 10)
@@ -291,7 +298,7 @@ export default class AudioEngine {
 
     playSilentBuffer = () => {
         const node = this.audioCtx.createBufferSource()
-        node.buffer = this._silentBuffer
+        node.buffer = this.#silentBuffer
         node.connect(this.audioCtx.destination)
         node.start(0)
         this.unlocked = true

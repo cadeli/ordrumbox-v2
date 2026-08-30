@@ -45,9 +45,9 @@ export default class MidiImportService {
         }
         logger.debug('MidiImport', `channels with notes: ${[...channelNotes.keys()].join(', ')} (${[...channelNotes.values()].map(n => n.length).join('+')} notes)`)
 
-        const { trackDefs } = this._resolveTrackDefs(channelNotes, channelTrackNames, channelPrograms, im)
+        const { trackDefs } = this.#resolveTrackDefs(channelNotes, channelTrackNames, channelPrograms, im)
 
-        this._logImportSummary(trackDefs)
+        this.#logImportSummary(trackDefs)
 
         if (trackDefs.length === 0) {
             logger.warn('MidiImport', 'no matching instruments — dumping channel/note summary:')
@@ -62,7 +62,7 @@ export default class MidiImportService {
         const baseName = file.name.replace(/\.midi?$/i, '')
         const bpm = midiData.header.tempo ? Math.round(60000000 / midiData.header.tempo) : 120
         const PPQN = midiData.header.division ?? 96
-        const patternCount = this._createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN)
+        const patternCount = this.#createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN)
 
         const newIdx = appState.patterns.length - 1
         await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
@@ -76,7 +76,7 @@ export default class MidiImportService {
         return { trackCount: trackDefs.length, patternCount }
     }
 
-    _resolveTrackDefs(channelNotes, channelTrackNames, channelPrograms, im) {
+    #resolveTrackDefs(channelNotes, channelTrackNames, channelPrograms, im) {
         const resolveRootMidi = (trackName) => {
             const upper = trackName?.trim().toUpperCase() ?? ''
             for (const sound of Object.values(soundRegistry.sounds ?? {})) {
@@ -113,7 +113,7 @@ export default class MidiImportService {
                 }
             }
 
-            const drumResult = this._resolveDrumTrack(chNotes, channel, program, midiTrackName, im)
+            const drumResult = this.#resolveDrumTrack(chNotes, channel, program, midiTrackName, im)
             if (drumResult) {
                 for (const def of drumResult) trackDefs.push(def)
                 continue
@@ -161,7 +161,7 @@ export default class MidiImportService {
         return { trackDefs, skippedChannels }
     }
 
-    _resolveDrumTrack(chNotes, channel, program, midiTrackName, im) {
+    #resolveDrumTrack(chNotes, channel, program, midiTrackName, im) {
         const noteGroups = new Map()
         for (const note of chNotes) {
             if (!noteGroups.has(note.note)) noteGroups.set(note.note, [])
@@ -196,7 +196,7 @@ export default class MidiImportService {
         return drumFound ? results : null
     }
 
-    _logImportSummary(trackDefs) {
+    #logImportSummary(trackDefs) {
         const drumkitList = soundRegistry.drumkitList
         const selDrumkitName = drumkitList?.[appState.selectedDrumkitNum]?.name ?? ''
 
@@ -228,7 +228,7 @@ export default class MidiImportService {
         logger.warn('MidiImport', `═══════════════════════════════════════════`)
     }
 
-    _createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN) {
+    #createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN) {
         const cmd = serviceRegistry.cmd
         const TICK_RATIO = PPQN / TICK
 
