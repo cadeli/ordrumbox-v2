@@ -337,18 +337,6 @@ export default class SynthEditor {
         this._presets.navigatePreset(dir)
     }
 
-    _revertPreset() {
-        if (!this._editKey || !this._original) return
-        this._presets.commitSound(this._editKey, this._original)
-        this._draft = structuredClone(this._original)
-        this._renderEditor()
-        this._serviceRegistry.audioEngine?.invalidateCache?.()
-        this._playbackEvents.batch(() => {
-            this._playbackEvents.emit('trackParamChange', this.host._track)
-            this._playbackEvents.emit('patternChange', [this.host._track])
-        })
-    }
-
     // ─── Value access ──────────────────────────────────────────────────
 
     /** @param {string} pathString dot-separated path */
