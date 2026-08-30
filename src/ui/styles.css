@@ -1838,18 +1838,6 @@ min-height: auto;
     min-width: 0;
 }
 
-.dm-detail-row input[type="range"] {
-    flex: 1;
-    min-width: 0;
-}
-
-.dm-detail-row .ne-val {
-    flex: 0 0 60px;
-    text-align: right;
-    color: var(--color-info);
-    font-size: var(--fs-base);
-}
-
 .dm-detail-info {
     color: var(--text-disabled);
     font-size: var(--fs-sm);

@@ -63,16 +63,13 @@ describe('DrumkitManager instrument mapping', () => {
         manager.init()
         manager._selectSound(SOUND_ID)
 
-        const updateControl = (id, value) => {
-            const control = manager.container.querySelector(id)
-            control.value = value
-            control.dispatchEvent(new Event('input'))
-            control.dispatchEvent(new Event('change'))
+        const setKnob = (key, value) => {
+            manager._knobs.find(k => k.key === key).setValue(value, true)
         }
 
-        updateControl('#dm-gain', '-3.5')
-        updateControl('#dm-tune', '2')
-        updateControl('#dm-decay', '750')
+        setKnob('gain', -3.5)
+        setKnob('tune', 2)
+        setKnob('decay', 750)
 
         expect(soundRegistry.sounds[SOUND_ID]).toMatchObject({
             gainDb: -3.5,
