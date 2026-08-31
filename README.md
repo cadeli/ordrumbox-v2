@@ -149,6 +149,9 @@ MasterGain: 1.0
 - GitHub Repository: https://github.com/cadeli/ordrumbox-v2
 - Official Website: https://www.ordrumbox.com
 
+## Screenshot
+![ordrumbox-v2-online-screenshot ](https://www.ordrumbox.com/assets/images/ordrumbox-online-screenshot-small.png "ordrumbox v2 online screenshot")
+
 ## License
 
 orDrumbox is maintained by the community under the GPL V3 License.
