@@ -238,6 +238,10 @@ export default class PlaybackOverlaySection {
         }
     }
 
+    resetVuAndWaveform() {
+        this.#resetVuAndWaveform()
+    }
+
     #resetVuAndWaveform() {
         const editor = this.#editor
         if (!editor.container) return

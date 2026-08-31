@@ -154,7 +154,7 @@ export default class PatternPanel extends BasePanel {
             this._overlay.resetPrevLoopTick()
             this._overlay.stopRafLoop()
             this._overlay.hidePlayhead()
-            this._overlay._resetVuAndWaveform()
+            this._overlay.resetVuAndWaveform()
         })
         this._playbackEvents.on('playbackStart', () => {
             this._updateBarCache()
