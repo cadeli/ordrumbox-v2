@@ -13,6 +13,7 @@ import { knobFormat } from './components/panel_helpers.js'
 import { color } from './theme.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
+import WavImportService from '../logic/services/wav_import_service.js'
 
 const TAG = 'DrumkitManager'
 
@@ -33,6 +34,7 @@ export default class DrumkitManager extends BasePanel {
         this._detailEl = null
         this._knobs = []
         this._drumkitChangeDebounce = null
+        this._wavImportService = new WavImportService()
     }
 
     createDOM() {
@@ -55,9 +57,11 @@ export default class DrumkitManager extends BasePanel {
             </div>
             <div class="dm-actions">
                 <button class="ne-btn" id="dm-add-sample" title="Add a WAV file to the current kit">Add sample</button>
+                <button class="ne-btn" id="dm-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
                 <button class="ne-btn" id="dm-auto-detect" title="Auto-detect instruments for all tracks">Auto-detect all</button>
                 <button class="ne-btn" id="dm-normalize-all" title="Normalize all samples to 0 dB peak">Normalize all</button>
                 <input type="file" id="dm-add-file" style="display:none" accept=".wav,.flac,.mp3,.aac">
+                <input type="file" id="dm-import-dir-file" style="display:none" accept=".wav,.flac" webkitdirectory directory multiple>
             </div>
         `
 
@@ -80,6 +84,13 @@ export default class DrumkitManager extends BasePanel {
             this._onNormalizeAll()
         })
 
+        this.container.querySelector('#dm-import-dir').addEventListener('click', () => {
+            this.container.querySelector('#dm-import-dir-file').click()
+        })
+        this.container.querySelector('#dm-import-dir-file').addEventListener('change', (e) => {
+            this._onImportDir(e)
+        })
+
         this.container.querySelector('#dm-save-kit').addEventListener('click', () => {
             this._saveCurrentKit()
         })
@@ -96,10 +107,16 @@ export default class DrumkitManager extends BasePanel {
     }
 
     sync() {
-        this._renderList()
         if (this._selectedSoundKey && !soundRegistry.sounds[this._selectedSoundKey]) {
             this._selectedSoundKey = null
         }
+        if (!this._selectedSoundKey) {
+            const sounds = drumkitService.getCurrentKitSounds()
+            if (sounds.length) {
+                this._selectedSoundKey = sounds[0].url
+            }
+        }
+        this._renderList()
         if (this._selectedSoundKey) {
             this._renderDetail(this._selectedSoundKey)
         } else {
@@ -136,6 +153,27 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
+    async _onImportDir(e) {
+        const files = e.target.files
+        if (!files || files.length === 0) return
+
+        try {
+            const { kitName, fileCount } = await this._wavImportService.importDirectory(files)
+            if (fileCount > 0) {
+                await this._wavImportService.autoAssignSounds()
+                serviceRegistry.audioEngine?.invalidateCache()
+                playbackEvents.emit('patternChange')
+                showToast(`Imported ${fileCount} files into kit "${kitName}"`, 'success')
+                this._selectedSoundKey = null
+                this.sync()
+            }
+        } catch (err) {
+            logger.error(TAG, 'Directory import failed', err)
+            showToast('Import failed: ' + err.message, 'error')
+        }
+        e.target.value = ''
+    }
+
     _renderList() {
         const sounds = drumkitService.getCurrentKitSounds()
         if (!sounds.length) {
@@ -149,20 +187,10 @@ export default class DrumkitManager extends BasePanel {
             item.className = 'dm-list-item' + (s.url === this._selectedSoundKey ? ' dm-selected' : '')
             item.dataset.key = s.url
 
-            const playBtn = document.createElement('span')
-            playBtn.className = 'dm-play-btn'
-            playBtn.textContent = '\u25B6'
-            playBtn.title = 'Audition'
-            playBtn.addEventListener('click', (e) => {
-                e.stopPropagation()
-                this._audition(s.url)
-            })
-
             const name = document.createElement('span')
             name.className = 'dm-list-name'
             name.textContent = `${s.display_name ?? s.url} [${s.kit_name}]`
 
-            item.appendChild(playBtn)
             item.appendChild(name)
             item.addEventListener('click', () => this._selectSound(s.url))
             this._listEl.appendChild(item)
@@ -225,13 +253,15 @@ export default class DrumkitManager extends BasePanel {
                     </div>
                 </div>
                 <div class="dm-detail-right">
-                    <div class="dm-detail-row">
-                        <label>Kit:</label>
-                        <select id="dm-kit-select" class="ne-input">${kitOptions}</select>
-                    </div>
-                    <div class="dm-detail-row" title="${this.esc(tooltipText)}">
-                        <label>Instrument:</label>
-                        <select id="dm-inst-select" class="ne-input">${instOptions}</select>
+                    <div class="dm-select-row">
+                        <div class="ne-row no-cursor">
+                            <label>Kit:</label>
+                            <select id="dm-kit-select">${kitOptions}</select>
+                        </div>
+                        <div class="ne-row no-cursor" title="${this.esc(tooltipText)}">
+                            <label>Instrument:</label>
+                            <select id="dm-inst-select">${instOptions}</select>
+                        </div>
                     </div>
                     <div class="ne-knob-bar">
                         <div data-ne-knob="gain"></div>

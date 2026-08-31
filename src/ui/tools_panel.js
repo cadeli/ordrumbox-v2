@@ -3,7 +3,6 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { escapeHtml, downloadJson, renderOptions } from './components/panel_helpers.js'
 import MidiImportService from '../logic/services/midi_import_service.js'
-import WavImportService from '../logic/services/wav_import_service.js'
 import Utils from '../core/utils.js'
 import { showToast } from './toast.js'
 import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
@@ -22,7 +21,6 @@ export default class ToolsPanel extends BasePanel {
         this._wavLoops = null
         this.exportWavBtn = null
         this._midiImportService = new MidiImportService()
-        this._wavImportService = new WavImportService()
     }
 
     createDOM() {
@@ -95,10 +93,6 @@ export default class ToolsPanel extends BasePanel {
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-import-midi" title="Import a Standard MIDI File (.mid) into a new pattern">Import MIDI</button>
                     <input type="file" id="tp-import-midi-file" style="display: none" accept=".mid,.midi">
-                </div>
-                <div class="ne-row">
-                    <button class="ne-btn" id="tp-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
-                    <input type="file" id="tp-import-dir-file" style="display: none" accept=".wav,.flac" webkitdirectory directory multiple>
                 </div>
             </div>
         `
@@ -202,10 +196,6 @@ export default class ToolsPanel extends BasePanel {
         const importMidiFile = this.container.querySelector('#tp-import-midi-file')
         this.container.querySelector('#tp-import-midi').addEventListener('click', () => importMidiFile.click())
         importMidiFile.addEventListener('change', (e) => this._onImportMidiFile(e))
-
-        const importDirFile = this.container.querySelector('#tp-import-dir-file')
-        this.container.querySelector('#tp-import-dir').addEventListener('click', () => importDirFile.click())
-        importDirFile.addEventListener('change', (e) => this._onImportDir(e))
     }
 
     _bindMidiTabEvents() {
@@ -513,24 +503,6 @@ export default class ToolsPanel extends BasePanel {
         } catch (err) {
             logger.error('ToolsPanel', 'MIDI Import failed', err)
             showToast('MIDI Import failed: ' + err.message, 'error')
-        }
-        e.target.value = ''
-    }
-
-    async _onImportDir(e) {
-        const files = e.target.files
-        if (!files || files.length === 0) return
-
-        try {
-            const { kitName, fileCount } = await this._wavImportService.importDirectory(files)
-            if (fileCount > 0) {
-                await this._wavImportService.autoAssignSounds()
-                serviceRegistry.audioEngine?.invalidateCache()
-                playbackEvents.emit("patternChange")
-            }
-        } catch (err) {
-            logger.error('ToolsPanel', 'Directory import failed', err)
-            showToast('Import failed: ' + err.message, 'error')
         }
         e.target.value = ''
     }

@@ -1735,17 +1735,18 @@ min-height: auto;
     color: var(--text);
 }
 
-.dm-play-btn {
-    cursor: pointer;
-    color: var(--color-info);
-    font-size: var(--fs-sm);
-    flex-shrink: 0;
-    width: 16px;
-    text-align: center;
+.dm-play-btn, .dm-icon-btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    font-size: var(--fs-sm); line-height: 1;
+    background: var(--border-subtle); border: 1px solid var(--border); border-radius: 3px;
+    color: var(--text-secondary); cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
 }
 
-.dm-play-btn:hover {
-    color: var(--color-info);
+.dm-play-btn:hover, .dm-icon-btn:hover {
+    background: var(--accent); color: var(--text); border-color: var(--accent);
 }
 
 .dm-list-name {
@@ -1780,24 +1781,10 @@ min-height: auto;
     margin-left: auto;
 }
 
-.dm-icon-btn {
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    font-size: var(--fs-md); line-height: 1;
-    background: var(--border-subtle); border: 1px solid var(--border); border-radius: 3px;
-    color: var(--text-secondary); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-}
-
-.dm-icon-btn:hover {
-    background: var(--accent); color: var(--text); border-color: var(--accent);
-}
-
 .dm-play-large {
-    font-size: 16px;
-    width: 24px;
-    text-align: center;
+    width: 28px;
+    height: 28px;
+    font-size: var(--fs-md);
 }
 
 .dm-detail-filename {
@@ -1818,24 +1805,6 @@ min-height: auto;
     border-radius: 4px;
     background: var(--bg-deep);
     display: block;
-}
-
-.dm-detail-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-}
-
-.dm-detail-row label {
-    flex: 0 0 70px;
-    color: var(--text-tertiary);
-    font-size: var(--fs-base);
-}
-
-.dm-detail-row .ne-input {
-    flex: 1;
-    min-width: 0;
 }
 
 .dm-detail-info {
@@ -1863,6 +1832,16 @@ min-height: auto;
 }
 
 .dm-detail-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.dm-select-row {
+    display: flex;
+    gap: 8px;
+}
+
+.dm-select-row .ne-row {
     flex: 1;
     min-width: 0;
 }
