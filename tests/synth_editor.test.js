@@ -59,15 +59,16 @@ describe('SynthEditor sub-panel toolbar', () => {
 
         const blocks = Array.from(document.querySelectorAll('#soft-synth-panel [data-ss-card]'))
         expect(blocks.map(b => b.dataset.ssCard)).toEqual([
-            'master',
             'vco1',
             'vco2',
             'vco3',
-            'filter',
             'fm',
+            'filter',
+            'modEnvelope',
             'lfo',
             'lfo2',
             'noise',
+            'master',
             'enveloppe'
         ])
 

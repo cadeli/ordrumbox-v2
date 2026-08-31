@@ -425,6 +425,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             'lfo1Target', 'lfo1Wave', 'lfo1Freq', 'lfo1Depth',
             'lfo2Target', 'lfo2Wave', 'lfo2Freq', 'lfo2Depth',
             'filterEnvAmt', 'fmAmount', 'fmAlgo',
+            'modEnvAttack', 'modEnvDecay', 'modEnvSustain', 'modEnvRelease', 'modEnvTarget', 'modEnvDepth',
             'bypassNoise', 'bypassFilter', 'bypassEnv', 'bypassLfo1', 'bypassLfo2', 'bypassFm',
         ]
         for (const key of expectedKeys) {

@@ -10,6 +10,7 @@ import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_r
 import { playbackEvents as _playbackEventsSingleton } from '../state/playback_events.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { showToast } from './toast.js'
+import { bindTabToggles } from './components/panel_helpers.js'
 
 import GroupsSection from './synth_editor/groups_section.js'
 import WaveformSection from './synth_editor/waveform_section.js'
@@ -157,6 +158,7 @@ export default class SynthEditor {
         html += this._groups.render(knobConfigs)
 
         this._scrollEl.innerHTML = html
+        bindTabToggles(this._scrollEl)
         this._syncKnobs(knobConfigs)
         this._bindEvents()
         this._waveform.draw()

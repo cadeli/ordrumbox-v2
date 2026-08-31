@@ -11,6 +11,7 @@ WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
 const WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3, random: 4 }
 const FILTER_TO_INT = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
 const LFO_TARGET_TO_INT = { NOT: 0, FLT: 1, VCO1: 2, VCO2: 3, VCO3: 4, masterVolume: 5, 'vco1.gain': 6, 'vco1.detune': 7, 'vco1.octave': 8, 'vco2.gain': 9, 'vco2.detune': 10, 'vco2.octave': 11, 'vco3.gain': 12, 'vco3.detune': 13, 'vco3.octave': 14, 'filter.freq': 15, 'filter.filterEnvelopeAmount': 16, 'filter.Q': 17, 'noise.mix': 18 }
+const MOD_ENV_TARGET_TO_INT = { off: 0, filter: 1, pitch: 2, fm: 3, shape: 4 }
 
 const SYNTH_VOICE_OPTIONS = Object.freeze({
     numberOfInputs: 0,
@@ -201,6 +202,12 @@ export default class WorkletSynthVoice extends BaseVoice {
             filterEnvAmt: clamp(toFiniteNumber(filterCfg.filterEnvelopeAmount, 0), 0, 1),
             fmAmount: clamp(toFiniteNumber(gs.fm?.amount, 0), 0, 1),
             fmAlgo: clamp(Math.round(toFiniteNumber(gs.fm?.algo, 0)), 0, 4),
+            modEnvAttack: Math.min(0.5, Math.max(0.003, toFiniteNumber(gs.modEnvelope?.attack, 0.01))),
+            modEnvDecay: Math.min(1.0, toFiniteNumber(gs.modEnvelope?.decay, 0.1)),
+            modEnvSustain: toFiniteNumber(gs.modEnvelope?.sustain, 0),
+            modEnvRelease: Math.min(0.5, Math.max(0.008, toFiniteNumber(gs.modEnvelope?.release, 0.1))),
+            modEnvTarget: MOD_ENV_TARGET_TO_INT[gs.modEnvelope?.target] ?? 0,
+            modEnvDepth: gs.modEnvelope?.target && gs.modEnvelope.target !== 'off' ? 1 : 0,
             bypassNoise:  !!gs.bypassNoise,
             bypassFilter: !!gs.bypassFilter,
             bypassEnv:    !!gs.bypassEnv,

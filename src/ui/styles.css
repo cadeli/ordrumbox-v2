@@ -1540,6 +1540,22 @@ min-height: auto;
     padding-bottom: 2px;
 }
 
+#soft-synth-panel .ss-tab-bar {
+    width: 100%;
+    margin: 0 0 4px;
+}
+
+#soft-synth-panel .ss-body > .ne-tab-panel {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    align-items: stretch;
+    gap: 6px;
+    background: none;
+    border: none;
+    padding: 4px;
+}
+
 #soft-synth-panel .ss-group {
     display: flex;
     flex-wrap: wrap;
@@ -1550,9 +1566,7 @@ min-height: auto;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(233, 69, 96, 0.3);
     border-radius: 6px;
-    flex: 1 1 calc(20% - 4px);
-    min-width: 120px;
-    max-width: calc(20% - 4px);
+    width: 100%;
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 

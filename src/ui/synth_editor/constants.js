@@ -35,8 +35,17 @@ export const SYNTH_GROUP_DEFAULTS = {
     lfo: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     lfo2: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     noise: { mix: 0, filterType: 'highpass', filterFreq: 1000, filterQ: 1 },
-    enveloppe: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 }
+    enveloppe: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 },
+    modEnvelope: { attack: 0, decay: 0.12, sustain: 0, release: 0.1, target: 'off' },
 }
+
+export const MOD_ENV_TARGETS = [
+    { value: 'off',   label: 'Off' },
+    { value: 'filter', label: 'Filter' },
+    { value: 'pitch',  label: 'Pitch' },
+    { value: 'fm',     label: 'FM' },
+    { value: 'shape',  label: 'Shape' },
+]
 
 const VCO_PARAM_DEFS = { gain: { min: 0, max: 1, step: 0.01 }, octave: { min: -4, max: 4, step: 1 }, detune: { min: -100, max: 100, step: 1 } }
 export const SYNTH_PARAM_META = Object.fromEntries([
@@ -60,6 +69,10 @@ export const SYNTH_PARAM_META = Object.fromEntries([
     ['enveloppe.decay', { min: 0, max: 1.0, step: 0.001, unit: 's' }],
     ['enveloppe.sustain', { min: 0, max: 1, step: 0.01, unit: '' }],
     ['enveloppe.release', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
+    ['modEnvelope.attack', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
+    ['modEnvelope.decay', { min: 0, max: 1.0, step: 0.001, unit: 's' }],
+    ['modEnvelope.sustain', { min: 0, max: 1, step: 0.01, unit: '' }],
+    ['modEnvelope.release', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
 ])
 
 export const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_PARAM_META).filter(k => !k.startsWith('lfo.') && !k.startsWith('lfo2.'))]
@@ -71,9 +84,10 @@ export const SYNTH_GROUP_LABELS = {
     filter: 'Flt',
     fm: 'FM',
     lfo: 'LFO1',
-    enveloppe: 'Env'
+    enveloppe: 'Env',
+    modEnvelope: 'ModEnv',
 }
-export const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'fm', 'lfo', 'lfo2', 'noise', 'enveloppe']
+export const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'fm', 'lfo', 'lfo2', 'noise', 'enveloppe', 'modEnvelope']
 export const VCO_RE = /^vco\d+$/i
 export const LFO_RE = /^lfo\d*$/i
 

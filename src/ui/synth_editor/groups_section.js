@@ -8,8 +8,22 @@ import {
     WAVE_ICONS, FILTER_ICONS, FM_ALGO_ICONS,
     SYNTH_PARAM_META, SYNTH_LFO_TARGETS, SYNTH_GROUP_MERGE,
     SYNTH_GROUP_LABELS, SYNTH_GROUP_ORDER, VCO_RE, LFO_RE,
-    LFO_SYNC_OPTIONS,
+    LFO_SYNC_OPTIONS, MOD_ENV_TARGETS,
 } from './constants.js'
+
+const TAB_DEFS = [
+    { id: 'osc',  label: 'OSC' },
+    { id: 'flt',  label: 'FLT' },
+    { id: 'mod',  label: 'MOD' },
+    { id: 'env',  label: 'ENV' },
+]
+
+const GROUP_TAB = {
+    vco1: 'osc', vco2: 'osc', vco3: 'osc', fm: 'osc',
+    filter: 'flt', modEnvelope: 'flt',
+    lfo: 'mod', lfo2: 'mod', noise: 'mod',
+    enveloppe: 'env', master: 'env',
+}
 
 export default class GroupsSection {
     /** @param {import('./synth_editor.js').default} editor */
@@ -57,59 +71,86 @@ export default class GroupsSection {
         if (!draft) return ''
 
         const groupNames = this.getOrderedGroupNames()
-        let html = '<div class="ss-body">'
 
+        const tabGroups = new Map(TAB_DEFS.map(t => [t.id, []]))
         for (const groupName of groupNames) {
-            const content = this._buildGroupContent(groupName, knobConfigs)
-            const label = this.getGroupLabel(groupName)
-            const isBypassed = editor._cardBypassed[groupName] ?? false
-
-            const isVco = VCO_RE.test(groupName)
-            const isLfo = LFO_RE.test(groupName)
-            const isFilter = groupName === 'filter'
-            const isNoise = groupName === 'noise'
-            let waveRowHtml = ''
-            if (isVco || isLfo) {
-                const waveVal = draft?.[groupName]?.wave ?? 'sine'
-                const pathStr = `${groupName}.wave`
-                waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.waveList, waveVal, WAVE_ICONS, {
-                    cssClass: 'ss-wave-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
-                    extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
-                })}</span>`
-            } else if (isFilter || isNoise) {
-                const filterKey = isFilter ? 'type' : 'filterType'
-                const filterVal = draft?.[groupName]?.[filterKey] ?? 'lowpass'
-                const pathStr = `${groupName}.${filterKey}`
-                waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.filterTypeList, filterVal, FILTER_ICONS, {
-                    cssClass: 'ss-ft-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
-                    extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
-                })}</span>`
-            } else if (groupName === 'fm') {
-                const algoVal = draft?.fm?.algo ?? 0
-                const algoOpts = Object.keys(FM_ALGO_ICONS).map(Number)
-                waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(algoOpts, algoVal, FM_ALGO_ICONS, {
-                    cssClass: 'ss-fm-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
-                    extraAttrs: (v) => ` data-synth-path="fm.algo"`
-                })}</span>`
-            }
-
-            let extraHtml = ''
-            if (groupName === 'master') {
-                extraHtml = `<canvas class="ss-waveform" width="320" height="64"></canvas>`
-            }
-
-            html += `<div class="ss-group${isBypassed ? ' bypassed' : ''}" data-ss-card="${groupName}">
-                <span class="ss-group-label">${escapeHtml(label)}</span>
-                ${waveRowHtml}
-                <button class="ss-bypass-btn${isBypassed ? '' : ' active'}" data-power-card="${groupName}" title="Bypass">
-                    <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>
-                </button>
-                ${extraHtml}
-                <div class="ss-card-body">${content}</div>
-            </div>`
+            const tabId = GROUP_TAB[groupName] ?? TAB_DEFS[0].id
+            tabGroups.get(tabId)?.push(groupName)
         }
 
-        return `${html}</div>`
+        let tabBar = '<div class="ne-tab-bar ss-tab-bar">'
+        for (let i = 0; i < TAB_DEFS.length; i++) {
+            const t = TAB_DEFS[i]
+            tabBar += `<button class="ne-tab-btn${i === 0 ? ' active' : ''}" data-ne-tab="${t.id}">${t.label}</button>`
+        }
+        tabBar += '</div>'
+
+        let body = '<div class="ss-body">'
+        let first = true
+        for (const t of TAB_DEFS) {
+            const names = tabGroups.get(t.id)
+            if (!names?.length) continue
+            const hidden = first ? '' : ' ne-tab-panel-hidden'
+            body += `<div class="ne-tab-panel${hidden}" data-tab-panel="${t.id}">`
+            for (const groupName of names) {
+                body += this._renderGroupCard(groupName, knobConfigs, draft, editor)
+            }
+            body += '</div>'
+            first = false
+        }
+        body += '</div>'
+
+        return tabBar + body
+    }
+
+    _renderGroupCard(groupName, knobConfigs, draft, editor) {
+        const content = this._buildGroupContent(groupName, knobConfigs)
+        const label = this.getGroupLabel(groupName)
+        const isBypassed = editor._cardBypassed[groupName] ?? false
+
+        const isVco = VCO_RE.test(groupName)
+        const isLfo = LFO_RE.test(groupName)
+        const isFilter = groupName === 'filter'
+        const isNoise = groupName === 'noise'
+        let waveRowHtml = ''
+        if (isVco || isLfo) {
+            const waveVal = draft?.[groupName]?.wave ?? 'sine'
+            const pathStr = `${groupName}.wave`
+            waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.waveList, waveVal, WAVE_ICONS, {
+                cssClass: 'ss-wave-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
+                extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
+            })}</span>`
+        } else if (isFilter || isNoise) {
+            const filterKey = isFilter ? 'type' : 'filterType'
+            const filterVal = draft?.[groupName]?.[filterKey] ?? 'lowpass'
+            const pathStr = `${groupName}.${filterKey}`
+            waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.filterTypeList, filterVal, FILTER_ICONS, {
+                cssClass: 'ss-ft-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
+                extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
+            })}</span>`
+        } else if (groupName === 'fm') {
+            const algoVal = draft?.fm?.algo ?? 0
+            const algoOpts = Object.keys(FM_ALGO_ICONS).map(Number)
+            waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(algoOpts, algoVal, FM_ALGO_ICONS, {
+                cssClass: 'ss-fm-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
+                extraAttrs: (v) => ` data-synth-path="fm.algo"`
+            })}</span>`
+        }
+
+        let extraHtml = ''
+        if (groupName === 'master') {
+            extraHtml = `<canvas class="ss-waveform" width="320" height="64"></canvas>`
+        }
+
+        return `<div class="ss-group${isBypassed ? ' bypassed' : ''}" data-ss-card="${groupName}">
+            <span class="ss-group-label">${escapeHtml(label)}</span>
+            ${waveRowHtml}
+            <button class="ss-bypass-btn${isBypassed ? '' : ' active'}" data-power-card="${groupName}" title="Bypass">
+                <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>
+            </button>
+            ${extraHtml}
+            <div class="ss-card-body">${content}</div>
+        </div>`
     }
 
     /** Builds inner content for a single group. */
@@ -209,6 +250,7 @@ export default class GroupsSection {
         if (pathArr[0] === 'filter' && key === 'type') return Utils.filterTypeList
         if (pathArr[0] === 'noise' && key === 'filterType') return Utils.filterTypeList
         if (pathArr[0] === 'fm' && key === 'algo') return [0, 1, 2, 3, 4]
+        if (pathArr[0] === 'modEnvelope' && key === 'target') return MOD_ENV_TARGETS
         if (isLfo && key === 'target') {
             return SYNTH_LFO_TARGETS.map(target => ({ value: target, label: target === 'NOT' ? 'off' : target }))
         }
