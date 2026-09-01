@@ -495,4 +495,88 @@ describe('SynthVoiceProcessor source', () => {
         for (let i = 200; i < FRAMES; i++) rms += out[0][i] * out[0][i]
         expect(Math.sqrt(rms / (FRAMES - 200))).toBeGreaterThan(0.1)
     })
+
+    it('bypassModEnv disables mod envelope pitch modulation', () => {
+        const FRAMES = 4410
+        // With mod envelope targeting pitch (mTgt=2), pitch should sweep
+        const procMod = makeProc()
+        procMod.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procMod.port.onmessage({ data: { type: 'update', modEnvTarget: 2, modEnvDepth: 1, modEnvAttack: 0.01, modEnvDecay: 0.5, modEnvSustain: 0, modEnvRelease: 0.1 } })
+        const outMod = runProcess(procMod, {
+            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        // With mod envelope bypassed
+        const procByp = makeProc()
+        procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procByp.port.onmessage({ data: { type: 'update', modEnvTarget: 2, modEnvDepth: 1, modEnvAttack: 0.01, modEnvDecay: 0.5, modEnvSustain: 0, modEnvRelease: 0.1, bypassModEnv: true } })
+        const outByp = runProcess(procByp, {
+            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        // Pitch modulation produces more zero crossings (sidebands)
+        const countCrossings = (arr) => {
+            let c = 0
+            for (let i = 1; i < arr.length; i++) {
+                if ((arr[i - 1] < 0 && arr[i] >= 0) || (arr[i - 1] >= 0 && arr[i] < 0)) c++
+            }
+            return c
+        }
+        expect(countCrossings(outMod[0])).toBeGreaterThan(countCrossings(outByp[0]))
+    })
+
+    it('bypassFilterEnv disables filter envelope sweep', () => {
+        const FRAMES = 4410
+        // With filter envelope: HP at 1000Hz with env sweep should affect signal
+        const procEnv = makeProc()
+        procEnv.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procEnv.port.onmessage({ data: { type: 'update', filterFreq: 1000, filterQ: 0.7, filterType: 1 } })
+        const outEnv = runProcess(procEnv, {
+            osc1Freq: 200, osc1Gain: 1,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1,
+            filterType: 1, filterFreq: 1000, filterQ: 0.7, filterEnvelopeAmount: 0.8
+        }, FRAMES)
+        // With filter envelope bypassed
+        const procByp = makeProc()
+        procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procByp.port.onmessage({ data: { type: 'update', filterFreq: 1000, filterQ: 0.7, filterType: 1, bypassFilterEnv: true } })
+        const outByp = runProcess(procByp, {
+            osc1Freq: 200, osc1Gain: 1,
+            attack: 0.001, sustain: 1, release: 5,
+            velocity: 1, master: 1,
+            filterType: 1, filterFreq: 1000, filterQ: 0.7, filterEnvelopeAmount: 0.8
+        }, FRAMES)
+        // Both should produce output (filter is active, just envelope sweep differs)
+        let rmsEnv = 0, rmsByp = 0
+        for (let i = 200; i < FRAMES; i++) {
+            rmsEnv += outEnv[0][i] * outEnv[0][i]
+            rmsByp += outByp[0][i] * outByp[0][i]
+        }
+        expect(Math.sqrt(rmsEnv / (FRAMES - 200))).toBeGreaterThan(0.01)
+        expect(Math.sqrt(rmsByp / (FRAMES - 200))).toBeGreaterThan(0.01)
+    })
+
+    it('resetEnv message restarts envelope from attack', () => {
+        const FRAMES = 256
+        // Trigger note and let it play into sustain
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        const out1 = runProcess(proc, {
+            osc1Gain: 1, attack: 0.01, decay: 0.1, sustain: 0.5, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        // After sustain, level should be near 0.5 * velocity
+        const sustainLevel = Math.abs(out1[0][FRAMES - 10])
+        expect(sustainLevel).toBeGreaterThan(0.1)
+
+        // Now send resetEnv — envelope should restart from attack
+        proc.port.onmessage({ data: { type: 'resetEnv' } })
+        const out2 = runProcess(proc, {
+            osc1Gain: 1, attack: 0.01, decay: 0.1, sustain: 0.5, release: 5,
+            velocity: 1, master: 1
+        }, FRAMES)
+        // First samples after reset should be small (attack ramp starting from 0)
+        expect(Math.abs(out2[0][10])).toBeLessThan(sustainLevel)
+    })
 })

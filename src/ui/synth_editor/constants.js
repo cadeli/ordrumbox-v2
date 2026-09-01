@@ -30,7 +30,8 @@ export const SYNTH_GROUP_DEFAULTS = {
     vco1: { gain: 1, octave: 0, detune: 0, wave: 'sine' },
     vco2: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     vco3: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
-    filter: { type: 'lowpass', freq: 400, Q: 1, filterEnvelopeAmount: 0 },
+    filter: { type: 'lowpass', freq: 400, Q: 1 },
+    filterEnv: { filterEnvelopeAmount: 0 },
     fm: { amount: 0, algo: 0 },
     lfo: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     lfo2: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
@@ -55,7 +56,7 @@ export const SYNTH_PARAM_META = Object.fromEntries([
     ),
     ['filter.freq', { min: 20, max: 20000, step: 1, unit: 'Hz' }],
     ['filter.Q', { min: 0.1, max: 24, step: 0.1, unit: '' }],
-    ['filter.filterEnvelopeAmount', { min: 0, max: 1, step: 0.01, label: 'Env', unit: '' }],
+    ['filterEnv.filterEnvelopeAmount', { min: 0, max: 1, step: 0.01, label: 'Env', unit: '' }],
     ['lfo.freq', { min: 0, max: 20, step: 0.01, unit: 'Hz' }],
     ['lfo.depth', { min: 0, max: 1, step: 0.01, unit: '' }],
     ['lfo2.freq', { min: 0, max: 20, step: 0.01, unit: 'Hz' }],
@@ -82,12 +83,13 @@ export const SYNTH_GROUP_MERGE = {
 export const SYNTH_GROUP_LABELS = {
     master: 'Master',
     filter: 'Flt',
+    filterEnv: 'FltEnv',
     fm: 'FM',
     lfo: 'LFO1',
     enveloppe: 'Env',
     modEnvelope: 'ModEnv',
 }
-export const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'fm', 'lfo', 'lfo2', 'noise', 'enveloppe', 'modEnvelope']
+export const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'filterEnv', 'fm', 'lfo', 'lfo2', 'noise', 'enveloppe', 'modEnvelope']
 export const VCO_RE = /^vco\d+$/i
 export const LFO_RE = /^lfo\d*$/i
 

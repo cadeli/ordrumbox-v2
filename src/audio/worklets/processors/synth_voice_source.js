@@ -247,6 +247,12 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.#modEnvReleaseStartLevel = 0;
         } else if (msg.type === 'release') {
             this.releaseTime = msg.releaseTime ?? 0;
+        } else if (msg.type === 'resetEnv') {
+            this.#envSegment = 1;
+            this.#envSegmentStart = 0;
+            this.#envLevel = 0;
+            this.#lastEnvTime = -1;
+            this.releaseTime = -1;
         } else if (msg.type === 'update') {
             for (const k of Object.keys(msg)) {
                 if (k === 'type') continue;
@@ -461,6 +467,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const bypassLfo1   = !!this.#param('bypassLfo1',   [0]);
         const bypassLfo2   = !!this.#param('bypassLfo2',   [0]);
         const bypassFm     = !!this.#param('bypassFm',     [0]);
+        const bypassModEnv = !!this.#param('bypassModEnv', [0]);
+        const bypassFilterEnv = !!this.#param('bypassFilterEnv', [0]);
 
         const oscMix = 1 - noiseMix;
 
@@ -536,7 +544,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
 
             // Modulation envelope — compute level early for filter/pitch/FM/shape routing
             let mEnv = 0;
-            if (mTgt > 0 && mDepth > 0.001) {
+            if (!bypassModEnv && mTgt > 0 && mDepth > 0.001) {
                 if (this.#modEnvSeg > 0 && this.#modEnvSeg < 4 && this.releaseTime > 0 && currentTime >= this.releaseTime) {
                     this.#modEnvReleaseStartLevel = this.#modEnvLevel;
                     this.#modEnvSeg = 4;
@@ -546,7 +554,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             }
 
             // Filter envelope: ramp filter freq up during attack, back during decay
-            if (filterEnvAmt > 0.001 && this.#filtEnvSeg > 0) {
+            if (!bypassFilterEnv && filterEnvAmt > 0.001 && this.#filtEnvSeg > 0) {
                 if (this.#filtEnvSeg === 1) {
                     // Attack phase: ramp from base to peak
                     const dt = t;
@@ -641,7 +649,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                     f1fm *= pitchRatio;
                     f2fm *= pitchRatio;
                     f3d *= pitchRatio;
-                } else if (mTgt === 3) {
+                } else if (mTgt === 3 && !bypassFm) {
                     const fmMod = fmAmount * mDepth * mEnv;
                     if (fmMod > 0.001) {
                         const rawO2 = this.#v(w2, this.phase2, f2d / sr);

@@ -20,7 +20,7 @@ const TAB_DEFS = [
 
 const GROUP_TAB = {
     vco1: 'osc', vco2: 'osc', vco3: 'osc', fm: 'osc',
-    filter: 'flt', modEnvelope: 'flt',
+    filter: 'flt', filterEnv: 'flt', modEnvelope: 'flt',
     lfo: 'mod', lfo2: 'mod', noise: 'mod',
     enveloppe: 'env', master: 'env',
 }

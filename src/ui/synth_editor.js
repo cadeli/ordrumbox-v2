@@ -255,9 +255,14 @@ export default class SynthEditor {
                 delete draftGroup._savedGain
             }
         } else {
-            const flagMap = { noise: 'bypassNoise', filter: 'bypassFilter', enveloppe: 'bypassEnv', lfo: 'bypassLfo1', lfo2: 'bypassLfo2', fm: 'bypassFm' }
+            const flagMap = { noise: 'bypassNoise', filter: 'bypassFilter', filterEnv: 'bypassFilterEnv', enveloppe: 'bypassEnv', lfo: 'bypassLfo1', lfo2: 'bypassLfo2', fm: 'bypassFm', modEnvelope: 'bypassModEnv' }
             const flag = flagMap[groupName]
-            if (flag) this._draft[flag] = this._cardBypassed[groupName]
+            if (flag) {
+                this._draft[flag] = this._cardBypassed[groupName]
+                if (groupName === 'enveloppe' && !this._cardBypassed[groupName]) {
+                    this._draft._resetEnv = true
+                }
+            }
         }
 
         this._waveform.draw()

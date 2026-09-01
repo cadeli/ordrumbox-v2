@@ -427,6 +427,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             'filterEnvAmt', 'fmAmount', 'fmAlgo',
             'modEnvAttack', 'modEnvDecay', 'modEnvSustain', 'modEnvRelease', 'modEnvTarget', 'modEnvDepth',
             'bypassNoise', 'bypassFilter', 'bypassEnv', 'bypassLfo1', 'bypassLfo2', 'bypassFm',
+            'bypassModEnv', 'bypassFilterEnv',
         ]
         for (const key of expectedKeys) {
             expect(msg).toHaveProperty(key)

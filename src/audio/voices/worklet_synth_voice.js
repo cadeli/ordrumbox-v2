@@ -199,7 +199,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             lfo2Wave: WAVE_TO_INT[gs.lfo2?.wave] ?? 0,
             lfo2Freq: syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo2?.freq, 0),
             lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
-            filterEnvAmt: clamp(toFiniteNumber(filterCfg.filterEnvelopeAmount, 0), 0, 1),
+            filterEnvAmt: clamp(toFiniteNumber((gs.filterEnv ?? gs.filter)?.filterEnvelopeAmount, 0), 0, 1),
             fmAmount: clamp(toFiniteNumber(gs.fm?.amount, 0), 0, 1),
             fmAlgo: clamp(Math.round(toFiniteNumber(gs.fm?.algo, 0)), 0, 4),
             modEnvAttack: Math.min(0.5, Math.max(0.003, toFiniteNumber(gs.modEnvelope?.attack, 0.01))),
@@ -214,6 +214,11 @@ export default class WorkletSynthVoice extends BaseVoice {
             bypassLfo1:   !!gs.bypassLfo1,
             bypassLfo2:   !!gs.bypassLfo2,
             bypassFm:     !!gs.bypassFm,
+            bypassModEnv: !!gs.bypassModEnv,
+            bypassFilterEnv: !!gs.bypassFilterEnv,
         })
+        if (gs._resetEnv) {
+            this.workletNode.port.postMessage({ type: 'resetEnv' })
+        }
     }
 }
