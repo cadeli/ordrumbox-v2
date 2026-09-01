@@ -596,17 +596,33 @@ describe('SynthVoiceProcessor source', () => {
         expect(maxAmp).toBe(0)
     })
 
-    it('remains active (returns true) after release so node lifecycle is cleanly managed by host', () => {
+    it('returns true after the amp envelope is idle so the processor stays alive for pool reuse', () => {
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         runProcess(proc, { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 }, 4410)
         proc.port.onmessage({ data: { type: 'release', releaseTime: 0.05 } })
         runProcess(proc, { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 }, 8820)
-        // Check process return value
         const parameters = {}
         for (const desc of proc.constructor.parameterDescriptors) {
             parameters[desc.name] = new Float32Array(128).fill(desc.defaultValue)
         }
+        const outputs = [[new Float32Array(128), new Float32Array(128)]]
+        const alive = proc.process([], outputs, parameters)
+        expect(alive).toBe(true)
+    })
+
+    it('keeps returning true while triggered/releasing so audio is not cut early', () => {
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        // Mid-attack: still alive
+        const parameters = {}
+        for (const desc of proc.constructor.parameterDescriptors) {
+            parameters[desc.name] = new Float32Array(128).fill(desc.defaultValue)
+        }
+        parameters.attack = new Float32Array(128).fill(0.5)
+        parameters.decay = new Float32Array(128).fill(0.1)
+        parameters.sustain = new Float32Array(128).fill(0.7)
+        parameters.release = new Float32Array(128).fill(0.3)
         const outputs = [[new Float32Array(128), new Float32Array(128)]]
         const alive = proc.process([], outputs, parameters)
         expect(alive).toBe(true)
@@ -627,5 +643,47 @@ describe('SynthVoiceProcessor source', () => {
             expect(Number.isFinite(out[0][i])).toBe(true)
             expect(Number.isFinite(out[1][i])).toBe(true)
         }
+    })
+
+    it('reset message returns processor to idle (startTime=-1, outputs silence, process returns true)', () => {
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        const out = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, master: 1 }, 256)
+        let rms = 0
+        for (let i = 0; i < 256; i++) rms += out[0][i] * out[0][i]
+        expect(Math.sqrt(rms / 256)).toBeGreaterThan(0.1)
+
+        proc.port.onmessage({ data: { type: 'reset' } })
+        const out2 = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, master: 1 }, 256)
+        for (let i = 0; i < 256; i++) {
+            expect(out2[0][i]).toBe(0)
+            expect(out2[1][i]).toBe(0)
+        }
+
+        const parameters = {}
+        for (const desc of proc.constructor.parameterDescriptors) {
+            parameters[desc.name] = new Float32Array(128).fill(desc.defaultValue)
+        }
+        const outputs = [[new Float32Array(128), new Float32Array(128)]]
+        const alive = proc.process([], outputs, parameters)
+        expect(alive).toBe(true)
+    })
+
+    it('reset clears overrides so fresh update takes effect', () => {
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', master: 0.05 } })
+        const out1 = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, master: 1 }, 256)
+        let peak1 = 0
+        for (let i = 0; i < 256; i++) peak1 = Math.max(peak1, Math.abs(out1[0][i]))
+
+        proc.port.onmessage({ data: { type: 'reset' } })
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', master: 0.9 } })
+        const out2 = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, master: 1 }, 256)
+        let peak2 = 0
+        for (let i = 0; i < 256; i++) peak2 = Math.max(peak2, Math.abs(out2[0][i]))
+
+        expect(peak2).toBeGreaterThan(peak1 * 5)
     })
 })

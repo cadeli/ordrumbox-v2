@@ -25,7 +25,7 @@ export default class BaseVoice {
         this.stopped = true
     }
 
-    cleanup = () => {
+    cleanup() {
         const count = this.nodes.length
         this.nodes.forEach(node => {
             try { node.disconnect() } catch (e) {}

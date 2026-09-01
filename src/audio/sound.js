@@ -1,5 +1,6 @@
 import VoiceFactory from './voices/voice_factory.js'
 import NodePool from './node_pool.js'
+import SynthVoiceNodePool from './voices/synth_voice_pool.js'
 import { applyTrackToStrip } from './strip_sync.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import ResourcesLoader from '../loader/resources_loader.js'
@@ -18,7 +19,8 @@ export default class Sound {
         this.activeSynthVoices = new Set()
         this._activeVoiceSet = new Set()
         this.nodePool = new NodePool(audioCtx)
-        this.voiceFactory = new VoiceFactory(audioCtx, mixer, sounds, this.generatedSounds, this.nodePool)
+        this.synthNodePool = new SynthVoiceNodePool(audioCtx)
+        this.voiceFactory = new VoiceFactory(audioCtx, mixer, sounds, this.generatedSounds, this.nodePool, this.synthNodePool)
         this.generatedSoundsLoading = false
         this.generatedSoundsLoadFailed = false
 

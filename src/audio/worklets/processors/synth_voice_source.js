@@ -255,6 +255,30 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.#envLevel = 0;
             this.#lastEnvTime = -1;
             this.releaseTime = -1;
+        } else if (msg.type === 'reset') {
+            this.startTime = -1;
+            this.releaseTime = -1;
+            this.releaseStartLevel = 0;
+            this.#envSegment = 0;
+            this.#envLevel = 0;
+            this.#envSegmentStart = 0;
+            this.#lastEnvTime = -1;
+            this.#modEnvSeg = 0;
+            this.#modEnvLevel = 0;
+            this.#modEnvSegStart = 0;
+            this.#modEnvReleaseStartLevel = 0;
+            this.#filtEnvSeg = 0;
+            this.#filtEnvLevel = 0;
+            this.#filtEnvStart = 0;
+            this.phase1 = 0;
+            this.phase2 = 0;
+            this.phase3 = 0;
+            this.lfoPhase1 = 0;
+            this.lfoPhase2 = 0;
+            this.#rngState = 54321;
+            this.filt.z1 = 0;
+            this.filt.z2 = 0;
+            this.#overrides = undefined;
         } else if (msg.type === 'update') {
             for (const k of Object.keys(msg)) {
                 if (k === 'type') continue;
@@ -762,6 +786,13 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 output[1][i] = y * panR;
             }
         }
+
+        // When using the synth voice pool, process() must always return true
+        // so the processor stays alive and can handle reset/trigger messages
+        // on reuse. Without pooling the host would disconnect() after release
+        // and the browser would GC this processor — but the pool keeps nodes
+        // connected (to a silent gain) and reuses them, so returning false
+        // here would make reused nodes permanently silent.
         return true;
     }
 }

@@ -3,12 +3,13 @@ import WorkletSynthVoice from './worklet_synth_voice.js'
 import { logger, nameOr } from "../../core/logger.js"
 
 export default class VoiceFactory {
-    constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null) {
+    constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null, synthNodePool = null) {
         this.audioCtx = audioCtx
         this.mixer = mixer
         this.sounds = sounds
         this.generatedSounds = generatedSounds
         this.nodePool = nodePool
+        this.synthNodePool = synthNodePool
     }
 
     async createVoice(flatNote) {
@@ -21,7 +22,7 @@ export default class VoiceFactory {
             const generatedSound = this.generatedSounds?.[soundKey]
             if (!generatedSound) return null
 
-            return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool)
+            return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool, this.synthNodePool)
         }
 
         let sound = this.sounds[flatNote.soundId]

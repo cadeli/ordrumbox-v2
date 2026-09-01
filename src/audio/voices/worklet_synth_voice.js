@@ -49,8 +49,9 @@ function postUpdate(node, params) {
 export default class WorkletSynthVoice extends BaseVoice {
     #cleanupTimer
     #autoReleaseTimer
+    #synthNodePool
 
-    constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null) {
+    constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null, synthNodePool = null) {
         super(audioCtx, strip, nodePool)
         this.generatedSound = generatedSound
         this.soundKey = soundKey
@@ -60,6 +61,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.masterVolume = 0.8
         this.#cleanupTimer = null
         this.#autoReleaseTimer = null
+        this.#synthNodePool = synthNodePool
     }
 
     async setup(flatNote, time) {
@@ -72,7 +74,11 @@ export default class WorkletSynthVoice extends BaseVoice {
         const vcoNorm = totalVcoGain > 0.001 ? 1 / totalVcoGain : 1
         this.noteVelo = (flatNote.note?.velocity ?? 0.8) * vcoNorm
 
-        this.workletNode = this.registerNode(await createSynthVoiceNode(ctx))
+        if (this.#synthNodePool) {
+            this.workletNode = await this.#synthNodePool.acquire()
+        } else {
+            this.workletNode = this.registerNode(await createSynthVoiceNode(ctx))
+        }
         this.#sendUpdate(gs, flatNote.pan ?? 0)
         this.connectToStripInput(this.workletNode)
     }
@@ -151,10 +157,23 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.#sendUpdate(generatedSound, 0)
     }
 
-    // Note: do not override cleanup() — BaseVoice's cleanup iterates
-    // `this.nodes` and disconnects each one. The workletNode is
-    // registered via registerNode() in setup(), so the parent handles
-    // disconnect automatically. We only need to null the local ref.
+    cleanup = () => {
+        if (this.#cleanupTimer) {
+            clearTimeout(this.#cleanupTimer)
+            this.#cleanupTimer = null
+        }
+        if (this.#autoReleaseTimer) {
+            clearTimeout(this.#autoReleaseTimer)
+            this.#autoReleaseTimer = null
+        }
+        if (this.workletNode && this.#synthNodePool) {
+            this.#synthNodePool.release(this.workletNode)
+            this.workletNode = null
+            return
+        }
+        super.cleanup()
+        this.workletNode = null
+    }
 
     #sendUpdate(gs, pan) {
         const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
