@@ -99,6 +99,7 @@ export default class SynthEditor {
     /** Shows the panel (standalone or for current track). */
     async showPanel() {
         await this.ensureGeneratedSoundsLoaded()
+        this._showSynthPanel()
 
         const track = this.host._track
         const key = track?.synthSoundKey
@@ -120,8 +121,6 @@ export default class SynthEditor {
                 this._bindEvents()
             }
         }
-
-        this._showSynthPanel()
     }
 
     /** Hides the panel, committing live-previewed changes. */
@@ -158,7 +157,9 @@ export default class SynthEditor {
         html += this._groups.render(knobConfigs)
 
         this._scrollEl.innerHTML = html
-        bindTabToggles(this._scrollEl)
+        bindTabToggles(this._scrollEl, () => {
+            requestAnimationFrame(() => this._waveform.draw())
+        })
         this._syncKnobs(knobConfigs)
         this._bindEvents()
         this._waveform.draw()

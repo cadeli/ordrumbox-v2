@@ -1558,7 +1558,7 @@ min-height: auto;
 
 #soft-synth-panel .ss-group {
     display: flex;
-    flex-wrap: wrap;
+     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 3px;
@@ -1566,7 +1566,6 @@ min-height: auto;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(233, 69, 96, 0.3);
     border-radius: 6px;
-    width: 100%;
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 

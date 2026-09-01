@@ -36,7 +36,6 @@ export default class WaveformSection {
         if (editor._waveTab === 'wave') {
             this._drawOscillators(ctx, w, mid)
         }
-        this._drawEnvCanvas()
     }
 
     /** Returns wave value [-1,1] for a given normalized phase [0,1). */

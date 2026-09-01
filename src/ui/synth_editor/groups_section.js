@@ -139,7 +139,7 @@ export default class GroupsSection {
 
         let extraHtml = ''
         if (groupName === 'master') {
-            extraHtml = `<canvas class="ss-waveform" width="320" height="64"></canvas>`
+            extraHtml = `<canvas class="ss-waveform" width="320" height="40"></canvas>`
         }
 
         return `<div class="ss-group${isBypassed ? ' bypassed' : ''}" data-ss-card="${groupName}">
@@ -171,7 +171,7 @@ export default class GroupsSection {
         }).join('')
 
         if (groupName === 'enveloppe') {
-            return `<canvas class="ss-env-canvas" width="320" height="64"></canvas>${fieldsHtml}`
+            return `<canvas class="ss-env-canvas" width="320" height="40"></canvas>${fieldsHtml}`
         }
         return fieldsHtml
     }
