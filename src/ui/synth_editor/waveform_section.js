@@ -36,6 +36,7 @@ export default class WaveformSection {
         if (editor._waveTab === 'wave') {
             this._drawOscillators(ctx, w, mid)
         }
+        this._updateModuleTrace()
     }
 
     /** Returns wave value [-1,1] for a given normalized phase [0,1). */
@@ -57,54 +58,46 @@ export default class WaveformSection {
         const fmAlgo = draft.fm?.algo ?? 0
         const cycles = 4
         const sampleRate = WAVE_BUFFER.length
-        const samplesPerCycle = Math.floor(sampleRate / cycles)
 
         const freqMult = vcos.map(v =>
             Math.pow(2, v.octave) * Math.pow(2, v.detune / 1200)
         )
 
-        const modDepth = fmAmount * 0.25
+        const baseInc = cycles / sampleRate
+        const inc = freqMult.map(fm => baseInc * fm)
+        const fmDepth = fmAmount * 0.08
         const phase = [0, 0, 0]
-        const modAccum = [0, 0, 0]
 
         for (let i = 0; i < sampleRate; i++) {
-            const t = i / sampleRate
+            const rawO2 = this._waveAtPhase(vcos[1].wave, phase[1])
+            const rawO3 = this._waveAtPhase(vcos[2].wave, phase[2])
 
-            const modPhases = [0, 0, 0]
-            for (let v = 0; v < 3; v++) {
-                modPhases[v] = ((t * cycles * freqMult[v] * samplesPerCycle) % samplesPerCycle) / samplesPerCycle
-            }
-
-            let mod1 = 0, mod2 = 0, mod3 = 0
-            if (fmAmount > 0) {
+            let f1 = inc[0], f2 = inc[1], f3 = inc[2]
+            if (fmAmount > 0.001) {
                 switch (fmAlgo) {
-                    case 0:
-                        mod1 = this._waveAtPhase(vcos[1].wave, modPhases[1]) * modDepth
+                    case 0: f1 += rawO2 * fmDepth; break
+                    case 1: f1 += rawO3 * fmDepth; break
+                    case 2: f1 += rawO2 * fmDepth; f2 += rawO3 * fmDepth; break
+                    case 3: f1 += (rawO2 + rawO3) * fmDepth; break
+                    case 4: {
+                        const rawO1 = this._waveAtPhase(vcos[0].wave, phase[0])
+                        f1 += rawO2 * fmDepth
+                        f2 += rawO1 * fmDepth
                         break
-                    case 1:
-                        mod1 = this._waveAtPhase(vcos[2].wave, modPhases[2]) * modDepth
-                        break
-                    case 2:
-                        mod3 = this._waveAtPhase(vcos[2].wave, modPhases[2]) * modDepth
-                        mod2 = this._waveAtPhase(vcos[1].wave, modPhases[1] + mod3) * modDepth
-                        mod1 = mod2
-                        break
-                    case 3:
-                        mod1 = (this._waveAtPhase(vcos[1].wave, modPhases[1])
-                              + this._waveAtPhase(vcos[2].wave, modPhases[2])) * modDepth
-                        break
-                    case 4:
-                        modAccum[1] += this._waveAtPhase(vcos[0].wave, modPhases[0]) * modDepth
-                        modAccum[0] += this._waveAtPhase(vcos[1].wave, modPhases[1]) * modDepth
-                        mod1 = modAccum[0]
-                        mod2 = modAccum[1]
-                        break
+                    }
                 }
             }
 
-            const val0 = this._waveAtPhase(vcos[0].wave, modPhases[0] + mod1)
-            const val1 = this._waveAtPhase(vcos[1].wave, modPhases[1] + mod2)
-            const val2 = this._waveAtPhase(vcos[2].wave, modPhases[2] + mod3)
+            phase[0] += f1
+            phase[1] += f2
+            phase[2] += f3
+            phase[0] -= Math.floor(phase[0])
+            phase[1] -= Math.floor(phase[1])
+            phase[2] -= Math.floor(phase[2])
+
+            const val0 = this._waveAtPhase(vcos[0].wave, phase[0])
+            const val1 = this._waveAtPhase(vcos[1].wave, phase[1])
+            const val2 = this._waveAtPhase(vcos[2].wave, phase[2])
 
             WAVE_BUFFER[i] = val0 * vcos[0].gain + val1 * vcos[1].gain + val2 * vcos[2].gain
         }
@@ -142,6 +135,39 @@ export default class WaveformSection {
                 detune: v.detune ?? 0
             }
         })
+    }
+
+    _getActiveModules() {
+        const d = this._editor._draft
+        if (!d) return []
+        const vcos = this._buildVcoArray()
+        const lfo1Target = d.lfo?.target ?? 'NOT'
+        const lfo2Target = d.lfo2?.target ?? 'NOT'
+        const modTgt = d.modEnvelope?.target ?? 'off'
+        const filtEnvAmt = d.filterEnv?.filterEnvelopeAmount ?? d.filter?.filterEnvelopeAmount ?? 0
+        const mods = [
+            { label: 'VCO1', active: vcos[0].gain > 0.01 },
+            { label: 'VCO2', active: vcos[1].gain > 0.01 },
+            { label: 'VCO3', active: vcos[2].gain > 0.01 },
+            { label: 'Flt',  active: !d.bypassFilter },
+            { label: 'Env',  active: !d.bypassEnv },
+            { label: 'LFO1', active: !d.bypassLfo1 && lfo1Target !== 'NOT' && (d.lfo?.depth ?? 0) > 0 },
+            { label: 'LFO2', active: !d.bypassLfo2 && lfo2Target !== 'NOT' && (d.lfo2?.depth ?? 0) > 0 },
+            { label: 'FM',   active: !d.bypassFm && (d.fm?.amount ?? 0) > 0.001 },
+            { label: 'Mod',  active: !d.bypassModEnv && modTgt !== 'off' },
+            { label: 'Ns',   active: !d.bypassNoise && (d.noise?.mix ?? 0) > 0.001 },
+            { label: 'FltEnv', active: !d.bypassFilterEnv && filtEnvAmt > 0.001 },
+        ]
+        return mods
+    }
+
+    _updateModuleTrace() {
+        const el = this._editor.panel?.querySelector('[data-ss-module-trace]')
+        if (!el) return
+        const mods = this._getActiveModules()
+        el.innerHTML = mods.map(m =>
+            `<span class="ss-mod-pill${m.active ? ' active' : ''}">${m.label}</span>`
+        ).join('')
     }
 
     _drawEnvCanvas() {

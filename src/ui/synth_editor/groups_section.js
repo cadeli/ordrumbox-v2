@@ -6,7 +6,7 @@ import Utils from '../../core/utils.js'
 import { escapeHtml, renderOptions, renderIconChoices } from '../components/panel_helpers.js'
 import {
     WAVE_ICONS, FILTER_ICONS, FM_ALGO_ICONS,
-    SYNTH_PARAM_META, SYNTH_LFO_TARGETS, SYNTH_GROUP_MERGE,
+    SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META, SYNTH_LFO_TARGETS, SYNTH_GROUP_MERGE,
     SYNTH_GROUP_LABELS, SYNTH_GROUP_ORDER, VCO_RE, LFO_RE,
     LFO_SYNC_OPTIONS, MOD_ENV_TARGETS,
 } from './constants.js'
@@ -19,6 +19,7 @@ const TAB_DEFS = [
 ]
 
 const GROUP_TAB = {
+    scope: 'osc',
     vco1: 'osc', vco2: 'osc', vco3: 'osc', fm: 'osc',
     filter: 'flt', filterEnv: 'flt', modEnvelope: 'flt',
     lfo: 'mod', lfo2: 'mod', noise: 'mod',
@@ -100,7 +101,7 @@ export default class GroupsSection {
         }
         body += '</div>'
 
-        return tabBar + body
+        return tabBar + body + '<div class="ss-module-trace" data-ss-module-trace></div>'
     }
 
     _renderGroupCard(groupName, knobConfigs, draft, editor) {
@@ -138,8 +139,8 @@ export default class GroupsSection {
         }
 
         let extraHtml = ''
-        if (groupName === 'master') {
-            extraHtml = `<canvas class="ss-waveform" width="320" height="40"></canvas>`
+        if (groupName === 'scope') {
+            extraHtml = `<canvas class="ss-waveform" width="320" height="60"></canvas>`
         }
 
         return `<div class="ss-group${isBypassed ? ' bypassed' : ''}" data-ss-card="${groupName}">
@@ -158,10 +159,11 @@ export default class GroupsSection {
         const editor = this._editor
         const draft = editor._draft
         const merged = SYNTH_GROUP_MERGE[groupName]
+        const groupDefaults = SYNTH_GROUP_DEFAULTS[groupName]
         const fields = merged
             ? merged.map(key => ({ path: [key], key, val: draft[key] }))
             : this._isPlainObject(draft[groupName])
-                ? Object.entries(draft[groupName]).map(([key, val]) => ({ path: [groupName, key], key, val }))
+                ? Object.entries(draft[groupName]).filter(([key]) => !this._isPlainObject(groupDefaults) || key in groupDefaults).map(([key, val]) => ({ path: [groupName, key], key, val }))
                 : [{ path: [groupName], key: groupName, val: draft[groupName] }]
 
         const fieldsHtml = fields.map(({ path, key, val }) => {

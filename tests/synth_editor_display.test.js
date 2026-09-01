@@ -138,7 +138,7 @@ it('renders the Revert action button', async () => {
         expect(canvas).not.toBeNull()
         expect(canvas.tagName).toBe('CANVAS')
         expect(canvas.width).toBe(320)
-        expect(canvas.height).toBe(40)
+        expect(canvas.height).toBe(60)
     })
 
     it('renders one group block per draft key', async () => {

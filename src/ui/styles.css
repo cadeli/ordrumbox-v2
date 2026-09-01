@@ -1438,9 +1438,22 @@ min-height: auto;
     background: var(--bg-canvas); box-sizing: border-box;
 }
 #soft-synth-panel .ss-waveform {
-    display: block; width: 100%; height: 40px;
+    display: block; width: 100%; height: 137px;
     border: 1px solid var(--border-subtle); border-radius: 4px;
     background: var(--bg-canvas); box-sizing: border-box;
+}
+#soft-synth-panel .ss-module-trace {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    padding: 4px 6px; width: 100%; box-sizing: border-box;
+    background: var(--bg-surface); border-top: 1px solid var(--border-subtle);
+}
+#soft-synth-panel .ss-mod-pill {
+    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    font-size: var(--fs-xs); font-family: monospace;
+    background: rgba(80,80,80,0.25); color: var(--text-disabled);
+}
+#soft-synth-panel .ss-mod-pill.active {
+    background: rgba(74,222,128,0.2); color: var(--color-success);
 }
 /* Shared row styles for selects, booleans, icon rows */
 #soft-synth-panel .ne-row {

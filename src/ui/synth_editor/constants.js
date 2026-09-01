@@ -81,6 +81,7 @@ export const SYNTH_GROUP_MERGE = {
     master: ['masterVolume']
 }
 export const SYNTH_GROUP_LABELS = {
+    scope: 'Scope',
     master: 'Master',
     filter: 'Flt',
     filterEnv: 'FltEnv',
@@ -89,7 +90,7 @@ export const SYNTH_GROUP_LABELS = {
     enveloppe: 'Env',
     modEnvelope: 'ModEnv',
 }
-export const SYNTH_GROUP_ORDER = ['master', 'vco1', 'vco2', 'vco3', 'filter', 'filterEnv', 'fm', 'lfo', 'lfo2', 'noise', 'enveloppe', 'modEnvelope']
+export const SYNTH_GROUP_ORDER = ['scope', 'vco1', 'vco2', 'vco3', 'fm', 'filter', 'filterEnv', 'lfo', 'lfo2', 'noise', 'master', 'enveloppe', 'modEnvelope']
 export const VCO_RE = /^vco\d+$/i
 export const LFO_RE = /^lfo\d*$/i
 
