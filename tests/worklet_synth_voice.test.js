@@ -579,4 +579,53 @@ describe('SynthVoiceProcessor source', () => {
         // First samples after reset should be small (attack ramp starting from 0)
         expect(Math.abs(out2[0][10])).toBeLessThan(sustainLevel)
     })
+
+    it('outputs silence when startTime is scheduled in the future (lookahead)', () => {
+        const proc = makeProc()
+        // Schedule note 100ms in the future (at 4410 frames)
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0.1 } })
+        const out = runProcess(proc, {
+            osc1Gain: 1, attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1,
+            velocity: 1, master: 1
+        }, 2205) // 50ms (before startTime)
+
+        let maxAmp = 0
+        for (let i = 0; i < 2205; i++) {
+            maxAmp = Math.max(maxAmp, Math.abs(out[0][i]), Math.abs(out[1][i]))
+        }
+        expect(maxAmp).toBe(0)
+    })
+
+    it('remains active (returns true) after release so node lifecycle is cleanly managed by host', () => {
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        runProcess(proc, { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 }, 4410)
+        proc.port.onmessage({ data: { type: 'release', releaseTime: 0.05 } })
+        runProcess(proc, { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 }, 8820)
+        // Check process return value
+        const parameters = {}
+        for (const desc of proc.constructor.parameterDescriptors) {
+            parameters[desc.name] = new Float32Array(128).fill(desc.defaultValue)
+        }
+        const outputs = [[new Float32Array(128), new Float32Array(128)]]
+        const alive = proc.process([], outputs, parameters)
+        expect(alive).toBe(true)
+    })
+
+    it('does not produce NaN or Infinity even with extreme FM and resonance', () => {
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 4, filterFreq: 18000, filterQ: 20 } })
+        const out = runProcess(proc, {
+            osc1Freq: 10000, osc2Freq: 9000, osc3Freq: 8000,
+            osc1Gain: 1, osc2Gain: 1, osc3Gain: 1,
+            attack: 0.001, decay: 0.1, sustain: 0.8, release: 0.5,
+            velocity: 1, master: 1
+        }, 4410)
+
+        for (let i = 0; i < 4410; i++) {
+            expect(Number.isFinite(out[0][i])).toBe(true)
+            expect(Number.isFinite(out[1][i])).toBe(true)
+        }
+    })
 })

@@ -136,16 +136,15 @@ export default class Sound {
 
     playSample = async (flatNote, time) => {
         if (!flatNote) return
-        return await this._playVoice(flatNote, time, { registerSynth: true })
+        return await this._playVoice(flatNote, time)
     }
 
     playGenerated = async (flatNote, time) => {
         if (Object.keys(this.generatedSounds).length === 0) {
-            this.loadGeneratedSounds()
-            return
+            await this.loadGeneratedSounds()
         }
-        if (!flatNote) return
-        await this._playVoice(flatNote, time, { syncGeneratedSounds: true })
+        if (!flatNote || Object.keys(this.generatedSounds).length === 0) return null
+        return await this._playVoice(flatNote, time, { syncGeneratedSounds: true, registerSynth: true })
     }
 
     loadGeneratedSounds = async () => {

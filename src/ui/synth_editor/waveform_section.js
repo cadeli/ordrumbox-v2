@@ -98,8 +98,15 @@ export default class WaveformSection {
             const val0 = this._waveAtPhase(vcos[0].wave, phase[0])
             const val1 = this._waveAtPhase(vcos[1].wave, phase[1])
             const val2 = this._waveAtPhase(vcos[2].wave, phase[2])
+            const sub = (draft.subGain ?? 0) > 0 ? this._waveAtPhase('sine', (phase[0] * 0.5) % 1) * draft.subGain : 0
 
-            WAVE_BUFFER[i] = val0 * vcos[0].gain + val1 * vcos[1].gain + val2 * vcos[2].gain
+            let sample = val0 * vcos[0].gain + val1 * vcos[1].gain + val2 * vcos[2].gain + sub
+            const drive = draft.filter?.drive ?? draft.drive ?? 0
+            if (drive > 0) {
+                const driven = sample * (1 + drive * 3)
+                sample = driven / (1 + Math.abs(driven) * 0.5)
+            }
+            WAVE_BUFFER[i] = sample
         }
 
         let maxVal = 0

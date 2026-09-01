@@ -81,7 +81,8 @@ for (let i = 0; i < SINE_TABLE_SIZE; i++) {
     _sineTable[i] = Math.sin(TWO_PI * i / SINE_TABLE_SIZE);
 }
 function _sinLookup(phase) {
-    const idx = ((phase % 1) + 1) % 1 * SINE_TABLE_SIZE;
+    const p = ((phase % 1) + 1) % 1;
+    const idx = p * SINE_TABLE_SIZE;
     const i = idx | 0;
     const f = idx - i;
     return _sineTable[i & (SINE_TABLE_SIZE - 1)] * (1 - f) + _sineTable[(i + 1) & (SINE_TABLE_SIZE - 1)] * f;
@@ -90,13 +91,14 @@ function _sinLookup(phase) {
 // PolyBLEP anti-aliasing: smooths discontinuities at waveform transition points
 // t = current phase [0,1), dt = phase increment (freq / sampleRate)
 function _polyBLEP(t, dt) {
+    if (dt <= 0.00001 || dt >= 0.5) return 0.0;
     if (t < dt) {
-        t /= dt;
-        return t + t - t * t - 1.0;
+        const n = t / dt;
+        return n + n - n * n - 1.0;
     }
     if (t > 1.0 - dt) {
-        t = (t - 1.0) / dt;
-        return t * t + t + t + 1.0;
+        const n = (t - 1.0) / dt;
+        return n * n + n + n + 1.0;
     }
     return 0.0;
 }
@@ -303,30 +305,37 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         if (target === 18) { out[3] = raw; return; }
     }
 
-    #param(name, arr) {
+    #param(name, arr, fallback = 0) {
         if (this.#overrides && name in this.#overrides) {
             return this.#overrides[name];
         }
-        return arr[0];
+        return arr ? arr[0] : fallback;
     }
 
     // Inline filter computation — writes results to pre-allocated members
     #tptFilt(x, g, k) {
-        const a1 = 1 / (1 + g * (g + k));
-        const a2 = g * a1;
-        const a3 = g * a2;
+        if (!Number.isFinite(this.filt.z1)) this.filt.z1 = 0;
+        if (!Number.isFinite(this.filt.z2)) this.filt.z2 = 0;
+        const gClamped = Math.max(0.0001, Math.min(10.0, g));
+        const kClamped = Math.max(0.05, Math.min(10.0, k));
+        const a1 = 1 / (1 + gClamped * (gClamped + kClamped));
+        const a2 = gClamped * a1;
+        const a3 = gClamped * a2;
         const v3 = x - this.filt.z2;
         const v1 = a1 * this.filt.z1 + a2 * v3;
         const v2 = this.filt.z2 + a2 * this.filt.z1 + a3 * v3;
         this.filt.z1 = 2 * v1 - this.filt.z1;
         this.filt.z2 = 2 * v2 - this.filt.z2;
+        if (Math.abs(this.filt.z1) < 1e-15 || !Number.isFinite(this.filt.z1)) this.filt.z1 = 0;
+        if (Math.abs(this.filt.z2) < 1e-15 || !Number.isFinite(this.filt.z2)) this.filt.z2 = 0;
         this.#filtLP = v2;
-        this.#filtHP = v3 - v1 * k;
+        this.#filtHP = v3 - v1 * kClamped;
         this.#filtBP = v1;
     }
 
     // Incremental envelope (state machine, no per-sample re-evaluation)
     #envelopeStep(t, A, D, S, R, V) {
+        if (t < 0) return 0;
         if (this.#envA !== A || this.#envD !== D || this.#envS !== S || this.#envR !== R || this.#envPeak !== V) {
             this.#envA = A; this.#envD = D; this.#envS = S; this.#envR = R; this.#envPeak = V;
         }
@@ -334,7 +343,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const seg = this.#envSegment;
         if (seg === 0) return 0;
         if (seg === 1) {
-            // Attack — quadratic ease-in: t²
+            // Attack — quadratic ease-in
             if (A <= 0.0001) {
                 this.#envLevel = peak;
                 this.#envSegment = 2;
@@ -346,19 +355,19 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                     this.#envSegment = 2;
                     this.#envSegmentStart = t;
                 } else {
-                    const norm = dt / A;
+                    const norm = Math.max(0, dt / A);
                     this.#envLevel = peak * norm * norm;
                 }
             }
         }
         if (this.#envSegment === 2) {
-            // Decay — cubic ease-out: (1-t)^3
+            // Decay — cubic ease-out
             const dt = t - this.#envSegmentStart;
             if (D <= 0.0001 || dt >= D) {
                 this.#envLevel = peak * S;
                 this.#envSegment = 3;
             } else {
-                const norm = 1 - dt / D;
+                const norm = Math.max(0, Math.min(1, 1 - dt / D));
                 const curve = norm * norm * norm;
                 this.#envLevel = peak * (S + (1 - S) * curve);
             }
@@ -368,22 +377,23 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.#envLevel = peak * S;
         }
         if (this.#envSegment === 4) {
-            // Release — cubic ease-out: (1-t)^3
+            // Release — cubic ease-out
             const rt = t - this.#envSegmentStart;
             if (R <= 0.0001 || rt >= R) {
                 this.#envLevel = 0;
                 this.#envSegment = 0;
             } else {
-                const norm = 1 - rt / R;
+                const norm = Math.max(0, Math.min(1, 1 - rt / R));
                 const curve = norm * norm * norm;
                 this.#envLevel = this.releaseStartLevel * curve;
             }
         }
-        return this.#envLevel > 0 ? this.#envLevel : 0;
+        return Number.isFinite(this.#envLevel) && this.#envLevel > 0 ? this.#envLevel : 0;
     }
 
     // Modulation envelope — full ADSR, independent target routing
     #modEnvStep(t, A, D, S, R) {
+        if (t < 0) return 0;
         const seg = this.#modEnvSeg;
         if (seg === 0) return 0;
         if (seg === 1) {
@@ -391,21 +401,27 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             else {
                 const dt = t - this.#modEnvSegStart;
                 if (dt >= A) { this.#modEnvLevel = 1; this.#modEnvSeg = 2; this.#modEnvSegStart = t; }
-                else { this.#modEnvLevel = dt / A; }
+                else { this.#modEnvLevel = Math.max(0, dt / A); }
             }
         }
         if (this.#modEnvSeg === 2) {
             const dt = t - this.#modEnvSegStart;
             if (D <= 0.0001 || dt >= D) { this.#modEnvLevel = S; this.#modEnvSeg = 3; }
-            else { this.#modEnvLevel = S + (1 - S) * Math.pow(1 - dt / D, 3); }
+            else {
+                const norm = Math.max(0, Math.min(1, 1 - dt / D));
+                this.#modEnvLevel = S + (1 - S) * (norm * norm * norm);
+            }
         }
         if (this.#modEnvSeg === 3) { this.#modEnvLevel = S; }
         if (this.#modEnvSeg === 4) {
             const rt = t - this.#modEnvSegStart;
             if (R <= 0.0001 || rt >= R) { this.#modEnvLevel = 0; this.#modEnvSeg = 0; }
-            else { this.#modEnvLevel = this.#modEnvReleaseStartLevel * Math.pow(1 - rt / R, 3); }
+            else {
+                const norm = Math.max(0, Math.min(1, 1 - rt / R));
+                this.#modEnvLevel = this.#modEnvReleaseStartLevel * (norm * norm * norm);
+            }
         }
-        return this.#modEnvLevel > 0 ? this.#modEnvLevel : 0;
+        return Number.isFinite(this.#modEnvLevel) && this.#modEnvLevel > 0 ? this.#modEnvLevel : 0;
     }
 
     process(inputs, outputs, parameters) {
@@ -459,6 +475,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const mR  = this.#param('modEnvRelease', parameters.modEnvRelease);
         const mTgt = Math.round(this.#param('modEnvTarget', parameters.modEnvTarget));
         const mDepth = this.#param('modEnvDepth', parameters.modEnvDepth);
+        const drive = this.#param('drive', parameters.drive);
+        const pitchPunch = this.#param('pitchPunch', parameters.pitchPunch);
+        const subGain = this.#param('subGain', parameters.subGain);
 
         // Bypass flags (set via update message from host)
         const bypassNoise  = !!this.#param('bypassNoise',  [0]);
@@ -481,7 +500,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             return true;
         }
 
-        // Stereo pan gains (equal-power) — computed once
+        // Stereo pan gains (equal-power)
         const panClamp = Math.max(-1, Math.min(1, pan));
         const panL = Math.cos((panClamp + 1) * PI / 4);
         const panR = Math.sin((panClamp + 1) * PI / 4);
@@ -499,18 +518,11 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const R = this.#param('release', this.#releaseParam);
         const V = this.#param('velocity', this.#velocityParam);
 
-        // Pre-compute filter coefficients (hoisted when LFO depth=0 on filter)
-        const fFreqMod = fFreq; // LFO applied per-sample below if needed
-        const fQval = fQ;
-        const gCoeff = Math.tan( PI* Math.min(fFreqMod, sr * 0.25)/sr)
+        // Pre-compute filter coefficients
+        const fFreqMod = Math.max(20, Math.min(20000, fFreq));
+        const fQval = Math.max(0.1, Math.min(20, fQ));
+        const gCoeff = Math.tan(PI * Math.min(fFreqMod, sr * 0.25) / sr);
         const kCoeff = 1 / fQval;
-
-        // Pre-compute detune ratios (skip Math.pow when detune=0 and no LFO)
-        const hasLfoDet1 = lfo1Target >= 2 && lfo1Target <= 4;
-        const hasLfoDet2 = lfo2Target >= 2 && lfo2Target <= 4;
-        const baseDet1 = (d1 === 0 && !hasLfoDet1 && !hasLfoDet2) ? 1 : Math.exp(d1 * LN2_OVER_1200);
-        const baseDet2 = (d2 === 0 && !hasLfoDet1 && !hasLfoDet2) ? 1 : Math.exp(d2 * LN2_OVER_1200);
-        const baseDet3 = (d3 === 0 && !hasLfoDet1 && !hasLfoDet2) ? 1 : Math.exp(d3 * LN2_OVER_1200);
 
         const lfo1Inc = lfo1Freq / sr;
         const lfo2Inc = lfo2Freq / sr;
@@ -519,21 +531,23 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const currentTime = (currentFrame + i) / sr;
             const t = currentTime - this.startTime;
 
-            // Advance LFO phases (use simple subtract instead of Math.floor)
-            this.lfoPhase1 += lfo1Inc;
-            this.lfoPhase2 += lfo2Inc;
-            if (this.lfoPhase1 >= 1) this.lfoPhase1 -= 1;
-            if (this.lfoPhase2 >= 1) this.lfoPhase2 -= 1;
+            if (t < 0) {
+                output[0][i] = 0;
+                if (output.length > 1) output[1][i] = 0;
+                continue;
+            }
 
-            // Compute LFO modulations (short-circuit when depth=0 or bypassed)
-            const actualLfo1Depth = lfo1Depth;
-            const actualLfo2Depth = lfo2Depth;
-            this.#lfoValue(bypassLfo1 ? 0 : lfo1Target, actualLfo1Depth, this.lfoPhase1, this.#lfo1Det, this.#lfo1Gain, this.#lfoScratch);
+            // Advance LFO phases safely
+            this.lfoPhase1 = (this.lfoPhase1 + lfo1Inc) % 1.0;
+            this.lfoPhase2 = (this.lfoPhase2 + lfo2Inc) % 1.0;
+
+            // Compute LFO modulations
+            this.#lfoValue(bypassLfo1 ? 0 : lfo1Target, lfo1Depth, this.lfoPhase1, this.#lfo1Det, this.#lfo1Gain, this.#lfoScratch);
             const lfo1Filt = this.#lfoScratch[0];
             const lfo1Master = this.#lfoScratch[1];
             const lfo1Q = this.#lfoScratch[2];
             const lfo1Noise = this.#lfoScratch[3];
-            this.#lfoValue(bypassLfo2 ? 0 : lfo2Target, actualLfo2Depth, this.lfoPhase2, this.#lfo2Det, this.#lfo2Gain, this.#lfoScratch);
+            this.#lfoValue(bypassLfo2 ? 0 : lfo2Target, lfo2Depth, this.lfoPhase2, this.#lfo2Det, this.#lfo2Gain, this.#lfoScratch);
             const lfo2Filt = this.#lfoScratch[0];
             const lfo2Master = this.#lfoScratch[1];
             const lfo2Q = this.#lfoScratch[2];
@@ -542,7 +556,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             // Apply LFO to filter frequency
             let fFreqSample = fFreq + lfo1Filt + lfo2Filt;
 
-            // Modulation envelope — compute level early for filter/pitch/FM/shape routing
+            // Modulation envelope
             let mEnv = 0;
             if (!bypassModEnv && mTgt > 0 && mDepth > 0.001) {
                 if (this.#modEnvSeg > 0 && this.#modEnvSeg < 4 && this.releaseTime > 0 && currentTime >= this.releaseTime) {
@@ -553,20 +567,17 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 mEnv = this.#modEnvStep(t, mA, mD, mS, mR);
             }
 
-            // Filter envelope: ramp filter freq up during attack, back during decay
+            // Filter envelope
             if (!bypassFilterEnv && filterEnvAmt > 0.001 && this.#filtEnvSeg > 0) {
                 if (this.#filtEnvSeg === 1) {
-                    // Attack phase: ramp from base to peak
-                    const dt = t;
                     const attack = A;
-                    if (attack > 0.0001 && dt < attack) {
-                        this.#filtEnvLevel = dt / attack;
+                    if (attack > 0.0001 && t < attack) {
+                        this.#filtEnvLevel = t / attack;
                     } else {
                         this.#filtEnvLevel = 1;
                         this.#filtEnvSeg = 2;
                     }
                 } else if (this.#filtEnvSeg === 2) {
-                    // Decay phase: ramp from peak back to base
                     const dt = t - A;
                     const decay = D;
                     if (decay > 0.0001 && dt < decay) {
@@ -576,10 +587,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                         this.#filtEnvSeg = 0;
                     }
                 }
-                // Modulate filter frequency: sweep from base toward FILTER_FREQ_MAX (20000 Hz)
-                // Matches native SynthVoice: peakFreq = mFreq + (FILTER_FREQ_MAX - mFreq) * envAmt
                 const filtEnvMod = (20000 - fFreqSample) * filterEnvAmt * this.#filtEnvLevel;
-                fFreqSample = fFreqSample + filtEnvMod;
+                fFreqSample += filtEnvMod;
             }
 
             // Mod envelope → filter freq target
@@ -604,24 +613,28 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const masterMod = master + lfo1Master + lfo2Master;
             const masterClamped = masterMod > 0 ? masterMod : 0;
 
-            // Apply detune (use Math.exp — faster than Math.pow; skip when no change)
+            // Apply detune
             const det1 = d1Mod === 0 ? 1 : Math.exp(d1Mod * LN2_OVER_1200);
             const det2 = d2Mod === 0 ? 1 : Math.exp(d2Mod * LN2_OVER_1200);
             const det3 = d3Mod === 0 ? 1 : Math.exp(d3Mod * LN2_OVER_1200);
-            const f1d = f1 * det1;
-            const f2d = f2 * det2;
+            let f1d = f1 * det1;
+            let f2d = f2 * det2;
             let f3d = f3 * det3;
 
+            // Pitch Punch transient envelope (fast 60ms pitch drop for punchy bass attack)
+            if (pitchPunch > 0.001 && t < 0.06) {
+                const punchEnv = 1 - (t / 0.06);
+                const punchRatio = Math.exp(punchEnv * pitchPunch * 24 * LN2_OVER_1200);
+                f1d *= punchRatio;
+                f2d *= punchRatio;
+                f3d *= punchRatio;
+            }
+
             // FM algorithm routing
-            //  0: 2→1     (osc2 mod osc1)
-            //  1: 3→1     (osc3 mod osc1)
-            //  2: 3→2→1   (cascade — default)
-            //  3: 2+3→1   (both mod osc1)
-            //  4: 2↔1     (cross: osc2→osc1, osc1→osc2)
             let f1fm = f1d, f2fm = f2d;
             if (!bypassFm && fmAmount > 0.001) {
-                const rawO2 = this.#v(w2, this.phase2, f2d / sr);
-                const rawO3 = this.#v(w3, this.phase3, f3d / sr);
+                const rawO2 = this.#v(w2, this.phase2, Math.min(0.49, f2d / sr));
+                const rawO3 = this.#v(w3, this.phase3, Math.min(0.49, f3d / sr));
                 const fmDepth = fmAmount * 1000;
                 if (fmAlgo === 0) {
                     f1fm = f1d + rawO2 * fmDepth;
@@ -633,7 +646,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 } else if (fmAlgo === 3) {
                     f1fm = f1d + (rawO2 + rawO3) * fmDepth;
                 } else if (fmAlgo === 4) {
-                    const rawO1 = this.#v(w1, this.phase1, f1d / sr);
+                    const rawO1 = this.#v(w1, this.phase1, Math.min(0.49, f1d / sr));
                     f1fm = f1d + rawO2 * fmDepth;
                     f2fm = f2d + rawO1 * fmDepth;
                 }
@@ -641,7 +654,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 if (f2fm < 0) f2fm = 0;
             }
 
-            // Mod envelope → pitch/FM/shape targets (must be before oscillator advance)
+            // Mod envelope → pitch/FM/shape targets
             if (mTgt > 0 && mEnv > 0.001) {
                 if (mTgt === 2) {
                     const pitchCt = mDepth * mEnv * 1200;
@@ -652,15 +665,15 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 } else if (mTgt === 3 && !bypassFm) {
                     const fmMod = fmAmount * mDepth * mEnv;
                     if (fmMod > 0.001) {
-                        const rawO2 = this.#v(w2, this.phase2, f2d / sr);
-                        const rawO3 = this.#v(w3, this.phase3, f3d / sr);
+                        const rawO2 = this.#v(w2, this.phase2, Math.min(0.49, f2d / sr));
+                        const rawO3 = this.#v(w3, this.phase3, Math.min(0.49, f3d / sr));
                         const fmDepthM = fmMod * 1000;
                         if (fmAlgo === 0) { f1fm += rawO2 * fmDepthM; }
                         else if (fmAlgo === 1) { f1fm += rawO3 * fmDepthM; }
                         else if (fmAlgo === 2) { f1fm += rawO2 * fmDepthM; f2fm += rawO3 * fmDepthM; }
                         else if (fmAlgo === 3) { f1fm += (rawO2 + rawO3) * fmDepthM; }
                         else if (fmAlgo === 4) {
-                            const rawO1 = this.#v(w1, this.phase1, f1d / sr);
+                            const rawO1 = this.#v(w1, this.phase1, Math.min(0.49, f1d / sr));
                             f1fm += rawO2 * fmDepthM;
                             f2fm += rawO1 * fmDepthM;
                         }
@@ -672,20 +685,29 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 }
             }
 
-            // Advance oscillators (use simple subtract)
-            this.phase1 += f1fm / sr;
-            this.phase2 += f2fm / sr;
-            this.phase3 += f3d / sr;
-            if (this.phase1 >= 1) this.phase1 -= 1;
-            if (this.phase2 >= 1) this.phase2 -= 1;
-            if (this.phase3 >= 1) this.phase3 -= 1;
+            // Phase increments with Nyquist bounding & modulo
+            const dt1 = Math.min(0.49, Math.max(0, f1fm / sr));
+            const dt2 = Math.min(0.49, Math.max(0, f2fm / sr));
+            const dt3 = Math.min(0.49, Math.max(0, f3d / sr));
 
-            const o1 = this.#v(w1, this.phase1, f1fm / sr) * g1c;
-            const o2 = this.#v(w2, this.phase2, f2fm / sr) * g2c;
-            const o3 = this.#v(w3, this.phase3, f3d / sr) * g3c;
-            const oscSum = (o1 + o2 + o3) * oscMix;
+            this.phase1 = (this.phase1 + dt1) % 1.0;
+            this.phase2 = (this.phase2 + dt2) % 1.0;
+            this.phase3 = (this.phase3 + dt3) % 1.0;
 
-            // Noise (cheap PRNG) — apply LFO to noise mix
+            const o1 = this.#v(w1, this.phase1, dt1) * g1c;
+            const o2 = this.#v(w2, this.phase2, dt2) * g2c;
+            const o3 = this.#v(w3, this.phase3, dt3) * g3c;
+
+            // Optional sub-oscillator (pure sine 1 octave below osc1)
+            let sub = 0;
+            if (subGain > 0.001) {
+                const subPhase = (this.phase1 * 0.5) % 1.0;
+                sub = _sinLookup(subPhase) * subGain;
+            }
+
+            const oscSum = (o1 + o2 + o3 + sub) * oscMix;
+
+            // Noise (cheap PRNG)
             this.#rngState = _xorshift32(this.#rngState);
             let noise = 0;
             if (!bypassNoise) {
@@ -694,21 +716,27 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 noise = (this.#rngState / 2147483648) * noiseClamped;
             }
 
-            const dry = oscSum + noise;
+            let dry = oscSum + noise;
 
-            // Compute modulated Q for filter
+            // Analog-style warm drive / saturation for bass
+            if (drive > 0.001) {
+                const driveFactor = 1 + drive * 3.5;
+                const driven = dry * driveFactor;
+                dry = driven / (1 + Math.abs(driven) * 0.6);
+            }
+
+            // Filter
             const qMod = fQval + lfo1Q + lfo2Q;
             const kMod = 1 / (qMod < 0.1 ? 0.1 : (qMod > 20 ? 20 : qMod));
             const needsFiltRecomp = lfo1Filt !== 0 || lfo2Filt !== 0 || (filterEnvAmt > 0.001 && this.#filtEnvSeg > 0) || lfo1Q !== 0 || lfo2Q !== 0 || (mTgt === 1 && mEnv > 0.001);
 
-            // Filter: recompute coefficients when LFO or filter envelope modulates freq or Q
             let y;
             if (bypassFilter) {
                 y = dry;
             } else {
                 if (needsFiltRecomp) {
                     const fClamped = fFreqSample < 20 ? 20 : (fFreqSample > sr * 0.25 ? sr * 0.25 : fFreqSample);
-                    const gLfo = Math.tan(PI* fClamped/sr);
+                    const gLfo = Math.tan(PI * fClamped / sr);
                     this.#tptFilt(dry, gLfo, kMod);
                 } else {
                     this.#tptFilt(dry, gCoeff, kCoeff);
@@ -720,8 +748,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 else y = this.#filtLP + this.#filtHP;
             }
 
-            // Envelope (incremental state machine)
-            // Check if release time reached: transition from attack/decay/sustain to release
+            // Amplitude envelope
             if (this.#envSegment > 0 && this.#envSegment < 4 && this.releaseTime > 0 && currentTime >= this.releaseTime) {
                 this.releaseStartLevel = this.#envLevel;
                 this.#envSegment = 4;
@@ -735,8 +762,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 output[1][i] = y * panR;
             }
         }
-        // Return false when both envelopes are idle to let the AudioWorkletNode be GC'd
-        return this.#envSegment !== 0 || this.#modEnvSeg !== 0;
+        return true;
     }
 }
 
