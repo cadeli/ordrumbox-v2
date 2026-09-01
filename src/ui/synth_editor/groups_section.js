@@ -42,7 +42,7 @@ export default class GroupsSection {
             if (keys.some(k => draftKeys.includes(k))) allGroups.add(group)
         }
         for (const name of draftKeys) {
-            if (!mergedKeys.has(name)) allGroups.add(name)
+            if (!mergedKeys.has(name) && !name.startsWith('bypass')) allGroups.add(name)
         }
 
         return [...allGroups].sort((a, b) => {

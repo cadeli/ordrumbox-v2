@@ -1548,7 +1548,7 @@ min-height: auto;
 #soft-synth-panel .ss-body > .ne-tab-panel {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(182px, 1fr));
     align-items: stretch;
     gap: 6px;
     background: none;
