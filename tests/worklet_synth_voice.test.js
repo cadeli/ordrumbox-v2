@@ -596,8 +596,24 @@ describe('SynthVoiceProcessor source', () => {
         expect(maxAmp).toBe(0)
     })
 
-    it('returns true after the amp envelope is idle so the processor stays alive for pool reuse', () => {
+    it('returns false when idle without pool (GC-eligible for offline export)', () => {
         const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        runProcess(proc, { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 }, 4410)
+        proc.port.onmessage({ data: { type: 'release', releaseTime: 0.05 } })
+        runProcess(proc, { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 }, 8820)
+        const parameters = {}
+        for (const desc of proc.constructor.parameterDescriptors) {
+            parameters[desc.name] = new Float32Array(128).fill(desc.defaultValue)
+        }
+        const outputs = [[new Float32Array(128), new Float32Array(128)]]
+        const alive = proc.process([], outputs, parameters)
+        expect(alive).toBe(false)
+    })
+
+    it('returns true when idle with pooled flag (kept alive for pool reuse)', () => {
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'setPooled', value: true } })
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         runProcess(proc, { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 }, 4410)
         proc.port.onmessage({ data: { type: 'release', releaseTime: 0.05 } })

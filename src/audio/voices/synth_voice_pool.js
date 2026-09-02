@@ -53,6 +53,7 @@ export default class SynthVoiceNodePool {
         }
         await WorkletLoader.ensureLoaded(this.#audioCtx)
         const node = WorkletLoader.createNode(this.#audioCtx, 'synth-voice', SYNTH_VOICE_OPTIONS)
+        node.port.postMessage({ type: 'setPooled', value: true })
         this.#activeCount++
         return node
     }
@@ -64,6 +65,7 @@ export default class SynthVoiceNodePool {
         try {
             node.connect(this.#silent)
         } catch (_) {}
+        node.port.postMessage({ type: 'setPooled', value: true })
         node.port.postMessage({ type: 'reset' })
         if (this.#pool.length < this.#maxSize) {
             this.#pool.push(node)

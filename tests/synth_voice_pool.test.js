@@ -61,9 +61,10 @@ describe('SynthVoiceNodePool', () => {
         expect(WorkletLoader.createNode).toHaveBeenCalledTimes(1)
     })
 
-    it('release sends reset message to processor', async () => {
+    it('release sends setPooled and reset messages to processor', async () => {
         const node = await pool.acquire()
         pool.release(node)
+        expect(node.port.postMessage).toHaveBeenCalledWith({ type: 'setPooled', value: true })
         expect(node.port.postMessage).toHaveBeenCalledWith({ type: 'reset' })
     })
 

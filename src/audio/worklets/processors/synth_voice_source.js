@@ -144,6 +144,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     #sustainParam;
     #releaseParam;
     #velocityParam;
+    #pooled;
 
     static get parameterDescriptors() {
         return [
@@ -226,6 +227,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this.#modEnvSeg = 0; // 0=idle, 1=attack, 2=decay, 3=sustain, 4=release
         this.#modEnvSegStart = 0;
         this.#modEnvReleaseStartLevel = 0;
+        this.#overrides = undefined;
+        this.#pooled = false;
         this.port.onmessage = (e) => this.#onMessage(e.data);
     }
 
@@ -279,6 +282,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.filt.z1 = 0;
             this.filt.z2 = 0;
             this.#overrides = undefined;
+        } else if (msg.type === 'setPooled') {
+            this.#pooled = !!msg.value;
         } else if (msg.type === 'update') {
             for (const k of Object.keys(msg)) {
                 if (k === 'type') continue;
@@ -787,12 +792,12 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             }
         }
 
-        // When using the synth voice pool, process() must always return true
-        // so the processor stays alive and can handle reset/trigger messages
-        // on reuse. Without pooling the host would disconnect() after release
-        // and the browser would GC this processor — but the pool keeps nodes
-        // connected (to a silent gain) and reuses them, so returning false
-        // here would make reused nodes permanently silent.
+        // When pooled (real-time reuse), keep the processor alive so it can
+        // handle reset/trigger messages on reuse. When not pooled (offline
+        // export), return false when idle so the browser can GC the processor.
+        if (!this.#pooled && this.startTime >= 0 && this.#envSegment === 0) {
+            return false;
+        }
         return true;
     }
 }

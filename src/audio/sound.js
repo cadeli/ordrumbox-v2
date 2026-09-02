@@ -128,8 +128,10 @@ export default class Sound {
                 this._activeVoiceSet.add(voice)
                 const prevOnEnded = voice.onEnded
                 voice.onEnded = () => {
-                    this._activeNoteCount = Math.max(0, this._activeNoteCount - 1)
-                    this._activeVoiceSet.delete(voice)
+                    if (this._activeVoiceSet.has(voice)) {
+                        this._activeNoteCount = Math.max(0, this._activeNoteCount - 1)
+                        this._activeVoiceSet.delete(voice)
+                    }
                     prevOnEnded?.()
                 }
                 let lfoContext = null
