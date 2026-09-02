@@ -26,7 +26,8 @@ export default class Player {
         this.getFlatNotes = config.getFlatNotes
         this.TICK = config.TICK
         this.secondsPerBeat = config.secondsPerBeat
-        this.sound = new Sound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds)
+        this.isOffline = !!config.isOffline
+        this.sound = new Sound(config.audioCtx, config.mixer, this.sounds, this.generatedSounds, this.isOffline)
         this.loop = 0
         this.lastDisplayBeats = 0
     }

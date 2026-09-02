@@ -10,7 +10,7 @@ import { TICK } from '../core/constants.js'
 const MAX_POLYPHONY = 16
 
 export default class Sound {
-    constructor(audioCtx, mixer, sounds, generatedSounds) {
+    constructor(audioCtx, mixer, sounds, generatedSounds, isOffline = false) {
         this.audioCtx = audioCtx
         this.mixer = mixer
         this.sounds = sounds
@@ -19,7 +19,21 @@ export default class Sound {
         this.activeSynthVoices = new Set()
         this._activeVoiceSet = new Set()
         this.nodePool = new NodePool(audioCtx)
-        this.synthNodePool = new SynthVoiceNodePool(audioCtx)
+        // The synth-voice pool releases nodes on a JS `setTimeout` keyed to
+        // wall-clock time (see synth_voice_pool.js / worklet_synth_voice.js).
+        // That's fine for real-time playback, where wall-clock time tracks
+        // audio-context time. During an offline export the whole pattern is
+        // scheduled synchronously in a tight loop before `startRendering()`
+        // ever runs, so wall-clock time stays near zero while audio-context
+        // time spans the whole song. A `setTimeout` can then fire (or fail
+        // to fire) completely out of sync with the note's real schedule,
+        // causing a pooled node to be released and reassigned to an
+        // unrelated later note while the original note's trigger/release
+        // messages are still pending — corrupting both notes. Offline
+        // rendering must not use the pool; it falls back to one fresh
+        // (non-pooled) AudioWorkletNode per note, same as before pooling
+        // was introduced.
+        this.synthNodePool = isOffline ? null : new SynthVoiceNodePool(audioCtx)
         this.voiceFactory = new VoiceFactory(audioCtx, mixer, sounds, this.generatedSounds, this.nodePool, this.synthNodePool)
         this.generatedSoundsLoading = false
         this.generatedSoundsLoadFailed = false

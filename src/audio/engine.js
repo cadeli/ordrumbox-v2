@@ -33,6 +33,7 @@ export default class AudioEngine {
         this.secondsPerBeat = config.secondsPerBeat
         this.computeNextStep = config.computeNextStep
         this.instrumentsManager = instrumentsManager
+        this.isOffline = !!config.isOffline
 
         this.flatNotes = new Map()
         this.#cachedPatternRef = null
@@ -62,6 +63,7 @@ export default class AudioEngine {
                     getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
                     TICK: this.TICK,
                     secondsPerBeat: this.secondsPerBeat,
+                    isOffline: this.isOffline,
                 })
                 this.sound = this.player.sound
 
@@ -363,7 +365,7 @@ export default class AudioEngine {
             // Build a full worklet-based mixer for the offline context. AudioWorklet
             // is supported in OfflineAudioContext, so the same code path works.
             const offlineMixer  = await Mixer.create(offlineCtx)
-            const offlineSound  = new Sound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds)
+            const offlineSound  = new Sound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds, true)
 
             for (const track of Object.values(pattern.tracks)) {
                 const strip = await offlineMixer.getOrCreateStrip(track.name)

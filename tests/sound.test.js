@@ -113,6 +113,28 @@ describe('Sound', () => {
         serviceRegistry.resourcesLoader.loadGeneratedSounds.mockClear()
     })
 
+    // ── offline export must not use the synth-voice pool ────────────────
+    // Pool release is driven by setTimeout (wall-clock), while an offline
+    // export schedules the whole pattern synchronously before
+    // startRendering() runs (audio-context time far outruns wall-clock
+    // time). A pooled node released "too early" in wall-clock terms can be
+    // reassigned mid-flight to an unrelated note, corrupting both. Offline
+    // renders must always fall back to one fresh node per note.
+
+    it('creates a synthNodePool for real-time (online) playback', () => {
+        expect(sound.synthNodePool).not.toBeNull()
+    })
+
+    it('does not create a synthNodePool when isOffline is true', () => {
+        const offlineSound = new Sound(ctx, mixer, sounds, generatedSounds, true)
+        expect(offlineSound.synthNodePool).toBeNull()
+    })
+
+    it('passes a null synthNodePool to the VoiceFactory when offline', () => {
+        const offlineSound = new Sound(ctx, mixer, sounds, generatedSounds, true)
+        expect(offlineSound.voiceFactory.synthNodePool).toBeNull()
+    })
+
     // ── getStrip ──────────────────────────────────────────────────────
 
     it('getStrip returns null when track has no name', async () => {
