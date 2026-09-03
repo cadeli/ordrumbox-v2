@@ -6,6 +6,7 @@ import Toolbar from '../src/ui/toolbar.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import { playbackEvents } from '../src/state/playback_events.js'
 
 describe('Toolbar UI Layout', () => {
     let toolbar
@@ -109,5 +110,37 @@ describe('Toolbar UI Layout', () => {
         const label = document.querySelector('.tb-page-label')
         expect(label).not.toBeNull()
         expect(label.textContent).toBe('1/1')
+    })
+
+    it('updates pattern.nbBeats and emits events when beats select changes', () => {
+        const track = { name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 }
+        appState.patterns = [{ name: 'Test', bpm: 120, nbBeats: 4, tracks: [track] }]
+        appState.selectedPatternNum = 0
+
+        const beatsSelect = document.querySelector('.tb-beats-group select')
+        expect(beatsSelect).not.toBeNull()
+
+        const emitSpy = vi.spyOn(playbackEvents, 'emit')
+        beatsSelect.value = '6'
+        beatsSelect.dispatchEvent(new Event('change'))
+
+        expect(appState.patterns[0].nbBeats).toBe(6)
+        expect(track.nbBeats).toBe(6)
+        expect(appState.currentPage).toBe(0)
+        expect(emitSpy).toHaveBeenCalledWith('patternMetaChange')
+        expect(emitSpy).toHaveBeenCalledWith('patternChange')
+    })
+
+    it('clamps track.loopAtStep when beats decrease', () => {
+        const track = { name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 }
+        appState.patterns = [{ name: 'Test', bpm: 120, nbBeats: 4, tracks: [track] }]
+        appState.selectedPatternNum = 0
+
+        const beatsSelect = document.querySelector('.tb-beats-group select')
+        beatsSelect.value = '2'
+        beatsSelect.dispatchEvent(new Event('change'))
+
+        // 2 beats * 4 stepsPerBeat = 8 max → loopAtStep clamped
+        expect(track.loopAtStep).toBe(8)
     })
 })
