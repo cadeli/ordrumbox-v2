@@ -3,6 +3,9 @@
 
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
+import { appState } from '../../state/app_state.js'
+import Utils from '../../core/utils.js'
+import { recalcLoopDerived } from '../../model/track_schema.js'
 
 export default class TransportControls {
     /** @param {import('../toolbar.js').default} toolbar */
@@ -76,6 +79,27 @@ export default class TransportControls {
             tb.bpmValue.textContent = bpm
             serviceRegistry.seq?.setBpm(bpm)
             playbackEvents.emit('bpmChange', bpm)
+        })
+
+        tb.beatsSelect.addEventListener('change', () => {
+            const val = parseInt(tb.beatsSelect.value, 10)
+            if (isNaN(val)) return
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern) return
+            pattern.nbBeats = val
+            Utils.getTracksArray(pattern).forEach(track => {
+                track.nbBeats = val
+                const maxSteps = val * (track.stepsPerBeat ?? 4)
+                if (track.loopAtStep > maxSteps) {
+                    track.loopAtStep = maxSteps
+                    recalcLoopDerived(track)
+                }
+            })
+            appState.currentPage = 0
+            playbackEvents.batch(() => {
+                playbackEvents.emit('patternMetaChange')
+                playbackEvents.emit('patternChange')
+            })
         })
     }
 }
