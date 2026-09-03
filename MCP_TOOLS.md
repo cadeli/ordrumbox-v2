@@ -527,7 +527,7 @@ The engine uses an internal resolution of **TICK = 32 ticks per beat**.
 - **Arpeggio (arp):** Sequences through multiple pitches within a single step
   - Values: "up", "down", "upDown", "random", or note indices like "0,1,2,3"
   - Example: `arp: "0,1,2"` cycles through 3 pitches
-- These properties can be set via `addNotesToPattern`, `addExtendedNotesToPattern`, or `updateTrack` with `noteUpdates`
+- These properties can be set via `addNotesToPattern` or `updateTrack` with `noteUpdates`
 
 ### Use LFOs for Evolving Sounds
 - Add Low Frequency Oscillators to track parameters for movement and evolution

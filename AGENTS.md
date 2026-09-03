@@ -21,7 +21,7 @@ No lint or typecheck commands are configured (eslint is in devDeps but has no co
 
 ## Test Setup
 
-- 89 test files in `tests/*.test.js` (1694 tests)
+- 93 test files in `tests/*.test.js` (1818 tests)
 - Vitest uses `vite.config.js` defaults (no separate vitest config)
 - Audio tests use `node-web-audio-api` for `OfflineAudioContext` — must set globals:
   ```js
@@ -67,16 +67,17 @@ src/
 ## Gotchas
 
 - **Production build strips `console.log`** (terser `drop_console: true`). Don't add debugging that relies on console output in prod code.
-- **Worklet processors register at module import time** (top-level `WorkletLoader.register()` calls in `mixer.js`, `strip.js`). Import order matters.
+- **Worklet processors register at module import time** (top-level `WorkletLoader.register()` calls in `mixer.js`, `strip.js`, `synth_voice_pool.js`, `worklet_synth_voice.js`, `lfo_ui_bridge.js`). Import order matters.
 - **MCP server**: logs to stderr to preserve JSON-RPC on stdout. `console.log` is overridden to stderr.
 - **`publicDir: false`** in Vite config — static assets are in `assets/`, not `public/`.
 - **No ESLint config** despite eslint being a dependency. Code style is enforced manually.
 - **CSP header** in index.html: `script-src 'self' blob:` (needed for AudioWorklet blob URLs)
 - **Pattern data paths**: MCP server writes to `public/assets/data/patterns/`
-- **Worklet DSP performance**: All three worklets (strip, synth-voice, master-bus) use optimized per-sample loops. Key patterns: sine LUT (4096 entries) for LFO, `Math.exp(x * LN2_OVER_1200)` for detune, xorshift32 for noise, incremental ADSR state machine. Avoid introducing `Math.sin`, `Math.pow`, or per-sample object allocation in the audio thread.
-- **Shared noise buffer**: `SynthVoice` uses xorshift32 PRNG for noise — no shared Float32Array allocation per instance.
+- **Worklet DSP performance**: All four worklets (strip, synth-voice, master-bus, lfo-ui) use optimized per-sample loops. Key patterns: sine LUT (4096 entries) for LFO, `Math.exp(x * LN2_OVER_1200)` for detune, xorshift32 for noise, incremental ADSR state machine. Avoid introducing `Math.sin`, `Math.pow`, or per-sample object allocation in the audio thread.
+- **Shared noise buffer**: `WorkletSynthVoice` uses xorshift32 PRNG for noise — no shared Float32Array allocation per instance.
 - **`NOTE_VELO_BALANCE` (1/4)**: Synth voice velocity is scaled by this constant to compensate volume difference between synth and sample voices. Factor in when computing expected velocity values in tests.
 - **Compressor DSP chain**: `preGain → compressor → HPF → LPF → master gain → output`. Pre-gain is k-rate; filters and master gain are a-rate.
+- **SynthVoiceNodePool release is wall-clock (`setTimeout`), not audio-time**: `WorkletSynthVoice`'s auto-release/stop schedule the JS-side pool release via `setTimeout`, timed off the note's own audio-context time. Fine in real-time (wall-clock ≈ audio-context time). Unsafe for offline export, which schedules the whole pattern synchronously before `startRendering()` — `Sound`'s `isOffline` flag disables pooling entirely for exports; don't drop it when touching `Engine`/`Player`/`Sound` construction.
 - **Track Variation** (`src/patterns/variation.js`): Budget-based randomization applied per loop iteration in `computeFlatNotesFromPattern`. Budget = `variation * 16 / 100`. Operations: anticipation (3pts), double (3pts), ghost (3pts), silence (3pts), velocity (1pt), pitch (1pt).
 - **`serviceRegistry` property names**: Services are referenced without `mf` prefix (e.g. `serviceRegistry.cmd`, `serviceRegistry.seq`, `serviceRegistry.patterns`). The `mf` prefix was removed.
 - **Granular events**: The event bus emits both `patternChange` (legacy, backward-compat) and granular events (`noteChange`, `patternStructureChange`, `patternMetaChange`). Consumers should prefer the granular event for their specific concern. `track_editor.js` keeps `patternChange` because it does structural track reference re-validation, not data changes.

@@ -23,7 +23,7 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 - Glide (slide) between notes for portamento effects
 - 2 LFOs with target routing: filter freq, per-VCO detune/octave/gain, master volume, noise mix, filter Q, filter envelope amount
 - LFO sync to tempo (1/1, 1/2, 1/4, 1/8, 1/16, triplet variants)
-- AudioWorklet mode for low-latency synthesis when supported
+- AudioWorklet-based synthesis (requires AudioWorklet support)
 - Per-track effects: Reverb, Delay, and Saturation
 
 ### Audio & Export
@@ -39,7 +39,7 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 ### MCP Server
 - Programmatic control via Model Context Protocol (MCP)
 - Create and modify patterns via JSON-RPC
-- Tools: createNewPattern, addExtendedNotesToPattern, addNotesToPattern, updateTrack, setPatternBpm, setPatternTags, and more
+- Tools: createNewPattern, addNotesToPattern, updateTrack, setPatternBpm, setPatternTags, and more
 - Access to instruments, samples, and pattern management
 
 ### MIDI Support
@@ -116,13 +116,14 @@ npm run test:watch   # Watch mode
 npm run test:coverage # Test coverage
 npm run build        # Production build
 npm run electron:dev # Desktop app (Electron)
+npm run electron:build # Build Electron installer (release/)
 ```
 
 ## Technical Details
 
 - Framework: Vanilla JavaScript with ES6 modules
 - Build Tool: Vite
-- Test Framework: Vitest (89 test files, 1694 tests)
+- Test Framework: Vitest (93 test files, 1818 tests)
 - Audio: Web Audio API with AudioWorklet support
 - Node Pool: Recycling of GainNode, BiquadFilterNode, and StereoPannerNode for reduced GC pressure
 - Storage: LocalStorage for persistence, JSON for import/export

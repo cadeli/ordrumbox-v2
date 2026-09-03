@@ -166,46 +166,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["patternName"]
       },
     },
-    //{
-    //   name: "addExtendedNotesToPattern",
-    //   description: "Adds notes to a pattern using beat/beatStep coordinates. Creates missing tracks automatically. (Experimental)",
-    //   inputSchema: {
-    //     type: "object",
-    //     properties: {
-    //       patternName: { type: "string" },
-    //       stepsPerBeat: {
-    //         type: "integer",
-    //         minimum: 1,
-    //         maximum: 16,
-    //         description: "Steps per beat for new tracks. Default: 4"
-    //       },
-    //       notes: {
-    //         type: "array",
-    //         items: {
-    //           type: "object",
-    //           properties: {
-    //             trackName: { type: "string" },
-    //             beat: { type: "integer", minimum: 0 },
-    //             beatStep: { type: "integer", minimum: 0 },
-    //             pitch: { type: "number" },
-    //             velocity: { type: "number", minimum: 0, maximum: 1 },
-    //             pan: { type: "number", minimum: -1, maximum: 1 },
-    //             arp: { type: "string" },
-    //             every: { type: "integer", minimum: 1, maximum: 16 },
-    //             pos: { type: "integer", minimum: 0, maximum: 15 },
-    //             prob: { type: "number", minimum: 0, maximum: 1 },
-    //             arpTriggerProbability: { type: "number", minimum: 0, maximum: 1 },
-    //             retriggerNum: { type: "integer", minimum: 1, maximum: 16 },
-    //             rate: { type: "integer", minimum: 1, maximum: 16 },
-    //             euclidianFill: { type: "integer", minimum: 0, maximum: 100 }
-    //           },
-    //           required: ["trackName", "beat", "beatStep"]
-    //         }
-    //       }
-    //     },
-    //     required: ["patternName", "notes"]
-    //   },
-    // },
     {
       name: "addNotesToPattern",
       description: "Adds multiple notes to a pattern using absolute step numbers. Converts step to beat/beatStep internally.",
@@ -417,60 +377,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       return {
         content: [{ type: "text", text: JSON.stringify({ message: "Pattern created", pattern, filePath }) }]
-      };
-    }
-
-    if (toolName === "addExtendedNotesToPattern") {
-      const { patternName, notes: notesArg, stepsPerBeat } = args;
-      let notes;
-      try {
-        notes = typeof notesArg === 'string' ? JSON.parse(notesArg) : notesArg;
-      } catch (e) {
-        throw new Error(`Invalid JSON in 'notes' argument: ${e.message}`);
-      }
-      const bq = Number(stepsPerBeat) || 4;
-      const loopStep = bq;
-      let pattern = findPatternByName(patternName);
-      if (!pattern) {
-        const patternsPath = resolve(__dirname, 'assets/data/song.json');
-        const data = await readFile(patternsPath, 'utf-8');
-        let patterns;
-        try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
-        const sourcePattern = patterns.find(p => p.name === patternName);
-        if (sourcePattern) {
-          const cmd = new Commander();
-          pattern = cmd.importPatternFromJson(sourcePattern);
-        }
-      }
-      if (!pattern) throw new Error(`Pattern '${patternName}' not found.`);
-
-      const cmd = new Commander();
-      let cTracks = 0, cNotes = 0, uNotes = 0;
-      const existingTrackNames = new Set(pattern.tracks.map(t => t.name));
-
-      for (const n of notes) {
-        ensurePatternHasEnoughBeats(cmd, pattern, n.beat);
-        const normName = String(n.trackName).trim().toUpperCase();
-        if (!existingTrackNames.has(normName)) { existingTrackNames.add(normName); cTracks++; }
-        const track = ensureTrack(cmd, pattern, normName, bq, loopStep);
-        const status = upsertNoteOnTrack(cmd, track, n);
-        status === 'created' ? cNotes++ : uNotes++;
-      }
-
-      const filePath = await savePatternToDisk(pattern);
-
-      const patternsPath = resolve(__dirname, 'assets/data/song.json');
-      const data = await readFile(patternsPath, 'utf-8');
-      let patterns;
-      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
-      const idx = patterns.findIndex(p => p.name === patternName);
-      if (idx >= 0) {
-        patterns[idx] = pattern;
-      }
-      await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns));
-
-      return {
-        content: [{ type: "text", text: JSON.stringify({ message: "Notes processed", cTracks, cNotes, uNotes, filePath }) }]
       };
     }
 
