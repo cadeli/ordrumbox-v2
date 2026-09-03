@@ -123,7 +123,7 @@ npm run electron:build # Build Electron installer (release/)
 
 - Framework: Vanilla JavaScript with ES6 modules
 - Build Tool: Vite
-- Test Framework: Vitest (93 test files, 1818 tests)
+- Test Framework: Vitest (about 100 test files, more than 1000 tests)
 - Audio: Web Audio API with AudioWorklet support
 - Node Pool: Recycling of GainNode, BiquadFilterNode, and StereoPannerNode for reduced GC pressure
 - Storage: LocalStorage for persistence, JSON for import/export
