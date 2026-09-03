@@ -85,6 +85,10 @@ export default class Transport {
         }
 
         // Schedule Ticks
+        // Only advance the tick when onSchedule was actually called.
+        // If #tickInFlight is true, the previous async onSchedule has not
+        // completed — skipping the call here and NOT advancing ensures the
+        // tick is retried next time instead of being permanently lost.
         while (this.nextStepTime < audioNow + this.scheduleAheadTime) {
             if (this.isRunning && this.onSchedule && !this.#tickInFlight) {
                 const result = this.onSchedule(this.tick, this.nextStepTime)
@@ -93,8 +97,10 @@ export default class Transport {
                         .catch(err => logger.error('Transport', 'onSchedule error', err))
                         .finally(() => { this.#tickInFlight = null })
                 }
+                this.nextNote()
+            } else {
+                break
             }
-            this.nextNote()
         }
     }
 

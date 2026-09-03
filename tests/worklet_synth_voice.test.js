@@ -702,4 +702,108 @@ describe('SynthVoiceProcessor source', () => {
 
         expect(peak2).toBeGreaterThan(peak1 * 5)
     })
+
+    // ── pool reuse / zombie node tests ─────────────────────────────────
+
+    it('pool reuse: reset → trigger → audio produces correct output', () => {
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'setPooled', value: true } })
+
+        // First note: trigger, play, release, finish
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', master: 0.8, osc1Gain: 1 } })
+        const out1 = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 0.01, master: 1 }, 4410)
+        let rms1 = 0
+        for (let i = 100; i < 4410; i++) rms1 += out1[0][i] * out1[0][i]
+        expect(Math.sqrt(rms1 / 4310)).toBeGreaterThan(0.1)
+
+        // Release and let envelope finish
+        proc.port.onmessage({ data: { type: 'release', releaseTime: 0.05 } })
+        runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 0.01, master: 1 }, 8820)
+
+        // Simulate pool release
+        proc.port.onmessage({ data: { type: 'reset' } })
+
+        // Verify idle (silence)
+        const idleOut = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, master: 1 }, 256)
+        for (let i = 0; i < 256; i++) {
+            expect(idleOut[0][i]).toBe(0)
+        }
+
+        // Re-trigger with different params
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', master: 0.9, osc1Gain: 1 } })
+        const out2 = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 0.01, master: 1 }, 4410)
+        let rms2 = 0
+        for (let i = 100; i < 4410; i++) rms2 += out2[0][i] * out2[0][i]
+        expect(Math.sqrt(rms2 / 4310)).toBeGreaterThan(0.1)
+    })
+
+    it('pool reuse: processor stays alive (returns true) throughout', () => {
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'setPooled', value: true } })
+
+        // Trigger
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', osc1Gain: 1, master: 0.8 } })
+        const parameters = {}
+        for (const desc of proc.constructor.parameterDescriptors) {
+            parameters[desc.name] = new Float32Array(128).fill(desc.defaultValue)
+        }
+        parameters.attack = new Float32Array(128).fill(0.001)
+        parameters.sustain = new Float32Array(128).fill(1)
+        parameters.master = new Float32Array(128).fill(1)
+
+        // Play
+        const outputs1 = [[new Float32Array(128), new Float32Array(128)]]
+        expect(proc.process([], outputs1, parameters)).toBe(true)
+
+        // Release
+        proc.port.onmessage({ data: { type: 'release', releaseTime: 0.01 } })
+        const outputs2 = [[new Float32Array(128), new Float32Array(128)]]
+        proc.process([], outputs2, parameters)
+
+        // Run until envelope finishes
+        for (let i = 0; i < 5; i++) {
+            const outputs = [[new Float32Array(128), new Float32Array(128)]]
+            proc.process([], outputs, parameters)
+        }
+
+        // Idle but pooled → should return true
+        const outputsIdle = [[new Float32Array(128), new Float32Array(128)]]
+        expect(proc.process([], outputsIdle, parameters)).toBe(true)
+
+        // Reset and re-trigger
+        proc.port.onmessage({ data: { type: 'reset' } })
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        const outputs3 = [[new Float32Array(128), new Float32Array(128)]]
+        expect(proc.process([], outputs3, parameters)).toBe(true)
+    })
+
+    it('pool reuse: reset clears all DSP state (filter, phases, envelope)', () => {
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'setPooled', value: true } })
+
+        // Trigger with heavy filter and modulation
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', filterFreq: 200, filterQ: 10, filterType: 0, lfo1Target: 1, lfo1Depth: 1, lfo1Freq: 10 } })
+        runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, master: 1 }, 4410)
+
+        // Reset
+        proc.port.onmessage({ data: { type: 'reset' } })
+
+        // Verify silence
+        const out = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, master: 1 }, 256)
+        let rms = 0
+        for (let i = 0; i < 256; i++) rms += out[0][i] * out[0][i]
+        expect(Math.sqrt(rms / 256)).toBe(0)
+
+        // Re-trigger with clean params — should produce clean output
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: { type: 'update', filterFreq: 20000, filterQ: 0.7, filterType: 0, lfo1Target: 0 } })
+        const out2 = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, master: 1 }, 4410)
+        let rms2 = 0
+        for (let i = 100; i < 4410; i++) rms2 += out2[0][i] * out2[0][i]
+        expect(Math.sqrt(rms2 / 4310)).toBeGreaterThan(0.1)
+    })
 })

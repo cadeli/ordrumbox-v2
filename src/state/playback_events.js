@@ -37,7 +37,9 @@ class EventBus {
         }
         const arr = this.#listeners.get(event)
         if (arr) {
-            arr.forEach(fn => fn(payload))
+            // Snapshot the array so listeners registered during emit are
+            // deferred to the next emit cycle (prevents re-entrancy).
+            arr.slice().forEach(fn => fn(payload))
         }
     }
 

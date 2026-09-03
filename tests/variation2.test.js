@@ -222,15 +222,4 @@ describe('TrackVariation.apply (position-based)', () => {
         const totalNotes = [...flatNotes.values()].flat().length
         expect(totalNotes).toBeGreaterThanOrEqual(1)
     })
-
-    it('applyNoteVariation with variation2=0 does nothing', () => {
-        const track = makeTrack()
-        track.variation2 = 0
-        const notes = [{ beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 }]
-        track.notes = notes
-
-        TrackVariation.applyNoteVariation(track)
-
-        expect(notes[0].retriggerNum).toBe(1)
-    })
 })

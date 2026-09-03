@@ -120,4 +120,59 @@ describe('SynthVoiceNodePool', () => {
         expect(() => pool.release(null)).not.toThrow()
         expect(() => pool.release(undefined)).not.toThrow()
     })
+
+    // ── zombie node / lifecycle tests ──────────────────────────────────
+
+    it('fresh node created by acquire gets setPooled(true) immediately', async () => {
+        const node = await pool.acquire()
+        expect(node.port.postMessage).toHaveBeenCalledWith({ type: 'setPooled', value: true })
+    })
+
+    it('reused node receives setPooled+reset on release, then can be re-acquired', async () => {
+        const node1 = await pool.acquire()
+        node1.port.postMessage.mockClear()
+
+        pool.release(node1)
+        expect(node1.port.postMessage).toHaveBeenCalledWith({ type: 'setPooled', value: true })
+        expect(node1.port.postMessage).toHaveBeenCalledWith({ type: 'reset' })
+
+        const node2 = await pool.acquire()
+        expect(node2).toBe(node1)
+    })
+
+    it('full lifecycle: acquire → release → acquire works without losing the node', async () => {
+        const nodes = []
+        for (let i = 0; i < 3; i++) {
+            const n = await pool.acquire()
+            nodes.push(n)
+        }
+        expect(pool.stats.active).toBe(3)
+
+        for (const n of nodes) pool.release(n)
+        expect(pool.stats.active).toBe(0)
+        expect(pool.stats.available).toBe(3)
+
+        const reacquired = []
+        for (let i = 0; i < 3; i++) {
+            reacquired.push(await pool.acquire())
+        }
+        expect(pool.stats.active).toBe(3)
+        // Pool is LIFO (pop), so reacquired order is reversed
+        expect(reacquired[0]).toBe(nodes[2])
+        expect(reacquired[1]).toBe(nodes[1])
+        expect(reacquired[2]).toBe(nodes[0])
+    })
+
+    it('release-to-pool then acquire clears disconnect count (fresh connection state)', async () => {
+        const node = await pool.acquire()
+        const disconnectCountBefore = node.disconnect.mock.calls.length
+
+        pool.release(node)
+        expect(node.disconnect.mock.calls.length).toBeGreaterThan(disconnectCountBefore)
+
+        const reacquired = await pool.acquire()
+        expect(reacquired).toBe(node)
+        // After acquire, safeDisconnect is called again (from silent gain)
+        expect(node.disconnect.mock.calls.length).toBeGreaterThan(disconnectCountBefore + 1)
+    })
 })

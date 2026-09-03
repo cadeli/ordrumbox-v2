@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import Strip from '../src/audio/strip.js'
 import Sound from '../src/audio/sound.js'
+import Mixer from '../src/audio/mixer.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -128,6 +129,71 @@ describe('Audio Graph Validity', () => {
             expect(strip.currentReverbAmount).toBe(0)
             expect(strip.currentDelayAmount).toBe(0)
             expect(strip.currentSaturationAmount).toBe(0)
+        })
+    })
+
+    // ── race condition: Mixer.addStrip duplicate creation ──────────────
+
+    describe('Mixer.addStrip dedup', () => {
+        it('concurrent addStrip calls for same name return same strip', async () => {
+            const ctx = makeAudioCtx()
+            const mixer = new Mixer(ctx)
+            // Fake busInput so pan.connect works
+            mixer.busInput = { connect: vi.fn() }
+
+            // Make Strip.create slow so the race is visible
+            let callCount = 0
+            const origCreate = Strip.create
+            const stripA = { pan: { connect: vi.fn() }, delete: vi.fn() }
+            const stripB = { pan: { connect: vi.fn() }, delete: vi.fn() }
+
+            let resolveFirst
+            const firstPromise = new Promise(r => { resolveFirst = r })
+            vi.spyOn(Strip, 'create').mockImplementation(async (name, ctx, mixer) => {
+                callCount++
+                if (callCount === 1) {
+                    await firstPromise
+                    return stripA
+                }
+                return stripB
+            })
+
+            // Fire two concurrent addStrip calls
+            const p1 = mixer.addStrip('KICK')
+            const p2 = mixer.addStrip('KICK')
+
+            // Both should be in-flight, resolve the first one
+            resolveFirst()
+            const [r1, r2] = await Promise.all([p1, p2])
+
+            // Both should return the same strip (dedup), not two different ones
+            expect(r1).toBe(r2)
+            expect(r1).toBe(stripA)
+            // Strip.create should have been called only once
+            expect(callCount).toBe(1)
+
+            vi.restoreAllMocks()
+        })
+
+        it('addStrip for different names creates separate strips', async () => {
+            const ctx = makeAudioCtx()
+            const mixer = new Mixer(ctx)
+            mixer.busInput = { connect: vi.fn() }
+
+            const stripA = { pan: { connect: vi.fn() }, delete: vi.fn() }
+            const stripB = { pan: { connect: vi.fn() }, delete: vi.fn() }
+            vi.spyOn(Strip, 'create').mockImplementation(async (name) => {
+                return name === 'KICK' ? stripA : stripB
+            })
+
+            const r1 = await mixer.addStrip('KICK')
+            const r2 = await mixer.addStrip('SNARE')
+
+            expect(r1).toBe(stripA)
+            expect(r2).toBe(stripB)
+            expect(r1).not.toBe(r2)
+
+            vi.restoreAllMocks()
         })
     })
 })

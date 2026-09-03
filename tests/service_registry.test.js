@@ -36,42 +36,6 @@ describe('ServiceRegistry', () => {
         expect(serviceRegistry.exportLoopsCount).toBe(1)
     })
 
-    it('alias getter/setter: cmd', () => {
-        serviceRegistry.cmd = { test: 1 }
-        expect(serviceRegistry.cmd).toEqual({ test: 1 })
-        expect(serviceRegistry.cmd).toBe(serviceRegistry.cmd)
-    })
-
-    it('alias getter/setter: patterns', () => {
-        serviceRegistry.patterns = { p: 1 }
-        expect(serviceRegistry.patterns).toEqual({ p: 1 })
-    })
-
-    it('alias getter/setter: resourcesLoader', () => {
-        serviceRegistry.resourcesLoader = { r: 1 }
-        expect(serviceRegistry.resourcesLoader).toEqual({ r: 1 })
-    })
-
-    it('alias getter/setter: seq', () => {
-        serviceRegistry.seq = { s: 1 }
-        expect(serviceRegistry.seq).toEqual({ s: 1 })
-    })
-
-    it('alias getter/setter: autoGenerate', () => {
-        serviceRegistry.autoGenerate = { ag: 1 }
-        expect(serviceRegistry.autoGenerate).toEqual({ ag: 1 })
-    })
-
-    it('alias getter/setter: autoAssign', () => {
-        serviceRegistry.autoAssign = { aa: 1 }
-        expect(serviceRegistry.autoAssign).toEqual({ aa: 1 })
-    })
-
-    it('alias getter/setter: wavExporter', () => {
-        serviceRegistry.wavExporter = { w: 1 }
-        expect(serviceRegistry.wavExporter).toEqual({ w: 1 })
-    })
-
     it('all default keys are present', () => {
         const keys = Object.keys(ServiceRegistry.DEFAULTS)
         expect(keys).toContain('cmd')

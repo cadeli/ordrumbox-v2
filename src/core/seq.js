@@ -19,6 +19,7 @@ export default class Sequencer {
         this.soundRegistry = options.soundRegistry ?? soundRegistry
         this.playbackEvents = options.playbackEvents ?? playbackEvents
         this._starting = false
+        this._pendingStop = false
 
         this.ensureTransport()
     }
@@ -84,12 +85,19 @@ export default class Sequencer {
 
     start = async () => {
         if (this._starting) {
-            logger.warn('Sequencer', "Sequencer::start: already starting, skipping")
+            // If stop() was requested while start() was in-flight, honor it.
+            this._pendingStop = true
             return
         }
+        this._pendingStop = false
         this._starting = true
         try {
             await this._startInner()
+            // If the user clicked stop while we were starting, honor it now.
+            if (this._pendingStop) {
+                this._pendingStop = false
+                this.stop()
+            }
         } catch (error) {
             logger.error('Sequencer', "Sequencer::start: unexpected error", error)
         } finally {

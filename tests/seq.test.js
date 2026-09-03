@@ -180,4 +180,41 @@ describe('Sequencer', () => {
         seq.toggleStartStop()
         // No crash = pass
     })
+
+    // ── race condition: start/stop TOCTOU ─────────────────────────────
+
+    it('start() sets _pendingStop when called while already starting', async () => {
+        const seq = new Sequencer()
+        // Make _startInner take time
+        seq._startInner = vi.fn(() => new Promise(() => {})) // never resolves
+        const startPromise = seq.start()
+        expect(seq._starting).toBe(true)
+
+        // Call start() again while _starting — should set _pendingStop
+        seq.start()
+        expect(seq._pendingStop).toBe(true)
+
+        // Abort the never-resolving promise to unblock
+        seq._starting = false
+        seq._pendingStop = false
+    })
+
+    it('start() calls stop() after _startInner if _pendingStop was set', async () => {
+        const seq = new Sequencer()
+        seq._startInner = vi.fn(async () => {
+            // Simulate user clicking stop during async init
+            seq._pendingStop = true
+        })
+        seq.stop = vi.fn()
+        await seq.start()
+        expect(seq.stop).toHaveBeenCalledOnce()
+    })
+
+    it('start() does not call stop() when _pendingStop is false', async () => {
+        const seq = new Sequencer()
+        seq._startInner = vi.fn(async () => {})
+        seq.stop = vi.fn()
+        await seq.start()
+        expect(seq.stop).not.toHaveBeenCalled()
+    })
 })

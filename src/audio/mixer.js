@@ -10,6 +10,8 @@ WorkletLoader.register('master-bus', MASTER_BUS_SOURCE);
 export default class Mixer {
     static TAG = "Mixer";
 
+    #pendingStrips = new Map();
+
     constructor(audioCtx) {
         this.audioCtx = audioCtx;
         this.trackName = "all";
@@ -119,21 +121,32 @@ export default class Mixer {
 
     /**
      * Adds a strip asynchronously. Returns a Promise<Strip>.
+     * Deduplicates concurrent calls for the same name via a pending
+     * promise cache — prevents orphaned strips from double-creation races.
      */
     addStrip = async (name) => {
         if (this.strips[name]) return this.strips[name];
 
+        if (this.#pendingStrips.has(name)) return this.#pendingStrips.get(name);
+
         // Re-initialise bus nodes if they were torn down by stop().
         if (!this.busInput) this.start();
 
-        const strip = await Strip.create(name, this.audioCtx, this);
-        this.strips[name] = strip;
+        const p = (async () => {
+            try {
+                const strip = await Strip.create(name, this.audioCtx, this);
+                this.strips[name] = strip;
+                if (strip.pan && this.busInput) {
+                    strip.pan.connect(this.busInput);
+                }
+                return strip;
+            } finally {
+                this.#pendingStrips.delete(name);
+            }
+        })();
 
-        if (strip.pan && this.busInput) {
-            strip.pan.connect(this.busInput);
-        }
-
-        return strip;
+        this.#pendingStrips.set(name, p);
+        return p;
     }
 
     getOrCreateStrip = async (name) => {

@@ -109,7 +109,6 @@ export default class Sound {
             const strip = await this.mixer.getOrCreateStrip(flatNote.track.name)
             if (!strip) return null
             this.updateStripFromTrack(strip, flatNote.track, time)
-            this.stopPreviousVoice(flatNote.track, time)
 
             // Polyphony limit: steal oldest voice when at capacity
             if (this._activeVoiceSet.size >= MAX_POLYPHONY) {
@@ -124,6 +123,13 @@ export default class Sound {
             }
             const voice = await this.voiceFactory.createVoice(flatNote)
             if (voice) {
+                // Re-check polyphony after await — concurrent play() calls
+                // may have added voices while createVoice() was pending.
+                while (this._activeVoiceSet.size >= MAX_POLYPHONY) {
+                    const oldest = this._activeVoiceSet.values().next().value
+                    if (oldest) this.stopVoice(oldest, time)
+                    else break
+                }
                 this._activeNoteCount++
                 this._activeVoiceSet.add(voice)
                 const prevOnEnded = voice.onEnded
@@ -141,8 +147,24 @@ export default class Sound {
                     lfoContext = { tick, nbTicks }
                 }
                 await voice.setup(flatNote, time, lfoContext)
-                if (flatNote.track.mono) this.registerVoice(flatNote.track, voice)
+                // For mono tracks, stop the previous voice AFTER setup()
+                // completes. This eliminates the interleaving window where
+                // two concurrent play() calls could orphan a voice: by the
+                // time stopPreviousVoice runs, registerVoice follows
+                // immediately (no await in between).
+                if (flatNote.track.mono) {
+                    this.stopPreviousVoice(flatNote.track, time)
+                    this.registerVoice(flatNote.track, voice)
+                }
                 if (opts.registerSynth) this.registerSynthVoice(voice)
+                // Extra guard: if another play() call registered a different
+                // voice for this track while we were awaiting setup(), skip.
+                if (flatNote.track.mono && this.activeVoices.get(flatNote.track) !== voice) {
+                    this._activeVoiceSet.delete(voice)
+                    this._activeNoteCount = Math.max(0, this._activeNoteCount - 1)
+                    voice.cleanup()
+                    return null
+                }
                 voice.start(time)
             }
             return voice

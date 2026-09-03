@@ -84,7 +84,7 @@ export default class WorkletSynthVoice extends BaseVoice {
     }
 
     start(time) {
-        if (!this.workletNode) return
+        if (!this.workletNode || this.stopped) return
 
         const gs = this.generatedSound
 
