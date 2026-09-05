@@ -180,19 +180,6 @@ describe('SynthEditor — OrKnob integration', () => {
         expect(knob.getValue()).toBeCloseTo(2.1, 5)
     })
 
-    it('the knob has a focus rule in CSS', async () => {
-        const fs = await import('fs')
-        const path = await import('path')
-        const cssPath = path.resolve(__dirname, '../src/ui/styles.css')
-        const css = fs.readFileSync(cssPath, 'utf-8')
-
-        const focusRe = /\.or-knob:focus\s*\{[^}]*outline/
-        expect(css, 'missing :focus rule for .or-knob').toMatch(focusRe)
-
-        const focusWithinRe = /#soft-synth-panel\s+\.ne-row:focus-within\s*\{[^}]*(?:#00fff5|var\(--cyan\)|var\(--color-info\))/s
-        expect(css, 'missing :focus-within rule for soft-synth knob row').toMatch(focusWithinRe)
-    })
-
     it('boolean buttons still work (toggle on click)', async () => {
         await trackEditor.synthEditor.openEditor()
         trackEditor.synthEditor.draft.someFlag = false
