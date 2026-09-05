@@ -469,8 +469,7 @@ body {
     white-space: nowrap; font-size: var(--fs-base); letter-spacing: 0.3px;
     cursor: pointer; padding: 0 6px; border-radius: 3px;
     overflow: hidden; text-overflow: ellipsis;
-    background: rgba(233, 69, 96, 0.1);
-    border: 1px solid rgba(233, 69, 96, 0.2);
+    background: transparent; border: 1px solid transparent;
     display: flex; align-items: center;
     touch-action: manipulation;
 }
@@ -484,9 +483,9 @@ body {
     background: linear-gradient(to top, var(--vu-green), var(--vu-yellow) 50%, var(--vu-red));
     border-radius: 2px; transition: height 0.05s ease-out;
 }
-#pattern-panel .pp-vu.selected { background: rgba(233, 69, 96, 0.4); }
-#pattern-panel .pp-track-name:hover { background: rgba(233, 69, 96, 0.2); }
-#pattern-panel .pp-track-name.selected { background: var(--text); color: var(--bg); }
+#pattern-panel .pp-vu.selected { background: transparent; }
+#pattern-panel .pp-track-name:hover { color: var(--accent); }
+#pattern-panel .pp-track-name.selected { color: var(--accent); }
 #pattern-panel .pp-divider { width: 12px; background: rgba(255,255,255,0.12); flex-shrink: 0; cursor: pointer; border-radius: 2px; transition: background 0.15s; }
 #pattern-panel .pp-divider.muted { background: var(--accent); }
 #pattern-panel .pp-divider:hover { background: rgba(255,255,255,0.2); }
@@ -518,7 +517,7 @@ body {
 #pattern-panel .pp-track.pp-muted .pp-cell { opacity: 0.25; }
 #pattern-panel .pp-track.pp-muted .pp-track-name { opacity: 0.4; }
 #pattern-panel .pp-track.pp-selected {
-    background: rgba(233, 69, 96, 0.15);
+    background: transparent;
     border-radius: 4px;
 }
 #pattern-panel .pp-track.pp-selected .pp-track-name {
@@ -526,9 +525,8 @@ body {
     border-color: transparent;
 }
 #pattern-panel .pp-track.pp-selected .pp-track-name.selected {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
+    color: var(--accent);
+    border-color: transparent;
 }
 #pattern-panel .pp-track.pp-selected .pp-track-left {
     background: transparent;
