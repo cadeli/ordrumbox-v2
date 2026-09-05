@@ -47,9 +47,7 @@ export default class GridSection {
             noteSlicesHtml = notesAtStep.map((note, ni) => {
                 const vel = note.velocity ?? 0.8
                 const alpha = 0.25 + vel * 0.75
-                const pitch = note.pitch ?? 0
-                const pct = ((pitch + 24) / 48) * 100
-                return `<div class="pp-note-slice" data-note-idx="${ni}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"><div class="pp-pitch-beat" style="bottom:${pct.toFixed(1)}%"></div></div>`
+                return `<div class="pp-note-slice" data-note-idx="${ni}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"></div>`
             }).join('')
         }
 
@@ -78,26 +76,18 @@ export default class GridSection {
         cellEl.classList.toggle('pp-cell-multi', notesAtStep.length > 1)
         cellEl.classList.toggle('pp-loop', loopAt > 0 && absPos === loopAt - 1)
 
-        let trig = ''
         let isRand = false
         let isFixed = false
         if (notesAtStep.length > 0) {
             const firstNote = notesAtStep[0]
             if ((firstNote.prob ?? 1) < 1) {
                 isRand = true
-                trig = String(Math.round(firstNote.prob * 10))
             } else if ((firstNote.every ?? 1) > 1) {
                 isFixed = true
-                trig = String(firstNote.every)
             }
         }
         cellEl.classList.toggle('pp-trig-rand', isRand)
         cellEl.classList.toggle('pp-trig-fixed', isFixed)
-        if (trig) {
-            cellEl.dataset.trig = trig
-        } else {
-            delete cellEl.dataset.trig
-        }
 
         cellEl.innerHTML = this.renderCellContent(notesAtStep, ghostsAtStep)
     }
@@ -156,7 +146,6 @@ export default class GridSection {
                         const cls = ['pp-cell']
                         if (isBeyondTrack) cls.push('pp-cell-out')
 
-                        let trig = ''
                         if (notesAtStep && notesAtStep.length > 0) {
                             cls.push('filled')
                             if (notesAtStep.length > 1) cls.push('pp-cell-multi')
@@ -164,10 +153,8 @@ export default class GridSection {
                             const firstNote = notesAtStep[0]
                             if ((firstNote.prob ?? 1) < 1) {
                                 cls.push('pp-trig-rand')
-                                trig = String(Math.round(firstNote.prob * 10))
                             } else if ((firstNote.every ?? 1) > 1) {
                                 cls.push('pp-trig-fixed')
-                                trig = String(firstNote.every)
                             }
                         }
 
@@ -177,7 +164,7 @@ export default class GridSection {
                         const ghostsAtStep = cached.ghostMap.get(absPos) ?? []
                         const innerHtml = this.renderCellContent(notesAtStep, ghostsAtStep)
 
-                        const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}" ${trig ? `data-trig="${trig}"` : ''}>${innerHtml}</div>`
+                        const cellHtml = `<div class="${cls.join(' ')}" data-track="${tIdx}" data-beat="${b}" data-step="${s}" data-pos="${absPos}">${innerHtml}</div>`
                         cellsHtml += cellHtml
                     }
                 }

@@ -596,10 +596,18 @@ body {
     touch-action: manipulation;
 }
 #pattern-panel .pp-cell.filled { 
-    background: var(--accent-700); 
-    box-shadow: 0 0 10px rgba(255, 42, 109, 0.7), inset 0 0 5px rgba(255,255,255,0.5);
-    border: 1px solid transparent;
+    background: linear-gradient(160deg, var(--accent-400) 0%, var(--accent-700) 100%); 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 3px;
     z-index: var(--z-content);
+}
+#pattern-panel .pp-cell.pp-trig-rand,
+#pattern-panel .pp-cell.pp-trig-fixed {
+    background: linear-gradient(160deg, #5a3a5e 0%, #3d2640 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 3px;
 }
 #pattern-panel .pp-cell.pp-triggered {
     background: var(--text) !important;
@@ -614,10 +622,8 @@ body {
 #pattern-panel .pp-cell.selected.filled { outline: 5px solid var(--text); border-color: var(--text); }
 #pattern-panel .pp-note-slice.selected { outline: 2px solid var(--text); outline-offset: -1px; z-index: var(--z-content); filter: brightness(1.3); }
 #pattern-panel .pp-cell-multi { display: flex; padding: 0; border: none; }
-#pattern-panel .pp-cell-multi .pp-note-slice { height: 100%; background: var(--accent-700); box-shadow: 0 0 10px rgba(255, 42, 109, 0.7); border-right: 1px solid rgba(0,0,0,0.4); position: relative; flex-shrink: 0; }
-#pattern-panel .pp-cell-multi .pp-note-slice:last-child { border-right: none; }
-#pattern-panel .pp-note-slice .pp-pitch-beat,
-#pattern-panel .pp-cell > .pp-pitch-beat { position: absolute; left: 50%; width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.5); pointer-events: none; transform: translateX(-50%); z-index: var(--z-content); }
+#pattern-panel .pp-cell-multi .pp-note-slice { height: 100%; background: linear-gradient(160deg, var(--accent-400) 0%, var(--accent-700) 100%); box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2); border-right: 1px solid rgba(0,0,0,0.4); position: relative; flex-shrink: 0; border-radius: 3px 0 0 3px; }
+#pattern-panel .pp-cell-multi .pp-note-slice:last-child { border-right: none; border-radius: 0 3px 3px 0; }
 #pattern-panel .pp-pitch-bar {
     position: absolute; left: 0; width: 25%; height: 1px;
     background: rgba(255,255,255,0.35); border-radius: 1px; pointer-events: none;
@@ -675,10 +681,7 @@ body {
 
 #pattern-panel .pp-cell.pp-trig-fixed::after,
 #pattern-panel .pp-cell.pp-trig-rand::after {
-    content: attr(data-trig);
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: var(--fs-base); color: var(--text); font-weight: bold;
+    display: none;
 }
 
 #pattern-panel .pp-ghost {
@@ -829,16 +832,7 @@ body {
 }
 .pp-pr-note.pp-pr-trig-fixed::after,
 .pp-pr-note.pp-pr-trig-rand::after {
-    content: attr(data-trig);
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--fs-xs);
-    color: var(--text);
-    font-weight: bold;
-    pointer-events: none;
+    display: none;
 }
 .pp-pr-ghost {
     position: absolute;

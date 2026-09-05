@@ -559,19 +559,9 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
         expect(hasCloseTo(opacities, 0.7)).toBe(true)
     })
 
-    it('applies pitch-based vertical position to pitch-beat markers', () => {
+    it('does not render pitch-beat markers (removed for cleaner note look)', () => {
         const pitchBeats = panel.container.querySelectorAll('.pp-pitch-beat')
-        expect(pitchBeats.length).toBe(4)
-
-        const bottoms = [...pitchBeats].map(p => parseFloat(p.style.bottom))
-        const hasCloseTo = (arr, expected, digits = 0) =>
-            arr.some(v => Math.abs(v - expected) < Math.pow(10, -digits))
-        // pitch=0 → (0+24)/48*100 = 50%
-        expect(hasCloseTo(bottoms, 50)).toBe(true)
-        // pitch=2 → (2+24)/48*100 = 54.17%
-        expect(hasCloseTo(bottoms, 54, 0)).toBe(true)
-        // pitch=-1 → (-1+24)/48*100 = 47.92%
-        expect(hasCloseTo(bottoms, 48, 0)).toBe(true)
+        expect(pitchBeats.length).toBe(0)
     })
 
     it('does not mark empty cells as filled', () => {
