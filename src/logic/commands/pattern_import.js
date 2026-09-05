@@ -85,7 +85,7 @@ export function copyTrackProps(track, sourceTrack) {
         }
     }
 
-    const optionalProps = ['mono', 'filterLfoFreq', 'reverbType', 'reverbAmount',
+    const optionalProps = ['mono', 'reverbType', 'reverbAmount',
         'delayType', 'delayTime', 'delayDepth', 'fxSelected',
         'saturationType', 'saturationAmount', 'synthSoundKey',
         'reverbOn', 'delayOn', 'sat']
@@ -132,8 +132,7 @@ export function copyNoteProps(note, sourceNote, track) {
  * Import a pattern from a JSON object.
  * Pure function that returns the imported pattern — does not mutate appState.
  *
- * Supports both legacy format (notes as objects) and compact format (notes as arrays
- * with noteKeys header).
+ * Imports notes from both compact (arrays with noteKeys) and object formats.
  *
  * @param {object} sourcePattern – the JSON pattern to import
  * @param {Function} addPattern  – fn(name) => pattern  (creates + registers)
@@ -188,7 +187,7 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
                 const bs = Number(sourceNote.beatStep ?? 0)
                 const p = Number(sourceNote.pitch ?? 0)
                 if (!Number.isFinite(b) || !Number.isFinite(bs) || !Number.isFinite(p)) {
-                    logger.warn('PatternImport', 'NaN note values in legacy format', { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch })
+                    logger.warn('PatternImport', 'NaN note values in imported note', { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch })
                 }
                 const note = addNote(track, b || 0, bs || 0, p || 0)
                 copyNoteProps(note, sourceNote, track)

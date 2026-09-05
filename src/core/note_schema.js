@@ -20,11 +20,7 @@
  *     [0.35, 2, 2, -3]              → velocity=0.35, beat=2, beatStep=2, pitch=-3
  *   ]
  *
- * ## Backward Compatibility
- *
- * The loader accepts both:
- *   - Legacy format: notes as objects with named keys
- *   - Compact format: notes as arrays with noteKeys header
+ * ## Format Detection
  *
  * Detection: if `noteKeys` is present on the track → compact format.
  */
@@ -164,7 +160,7 @@ export function detectUsedKeys(notes) {
 }
 
 /**
- * Check if a track's notes are in compact array format.
+ * Check if a track uses compact array format (notes as arrays with noteKeys header).
  *
  * @param {Object} track - The track object
  * @returns {boolean} True if notes are arrays (compact format)

@@ -61,7 +61,6 @@ Source of truth files:
 | `filterQ` | `number` | `0.707` | 0.1–24 | Filter resonance (Q factor). |
 | `filterFreqLfo` | `Lfo \| null` | `null` | — | LFO modulating filter frequency. `null` = disabled. |
 | `filterQLfo` | `Lfo \| null` | `null` | — | LFO modulating filter Q. `null` = disabled. |
-| `filterLfoFreq` | `number` | `0` | — | Filter LFO frequency (legacy param). |
 | `reverbType` | `string` | `"none"` | — | Reverb algorithm. `"none"` = disabled. |
 | `reverbAmount` | `number` | `0` | 0–1 | Reverb wet/dry mix. |
 | `delayType` | `string` | `"tape"` | — | Delay algorithm. |

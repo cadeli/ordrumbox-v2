@@ -38,7 +38,6 @@ import { logger, nameOr } from "../core/logger.js"
  * @property {string}  filterType           - Filter type. Default: "allpass"
  * @property {Object|null} filterFreqLfo    - LFO modulating filter frequency. Default: null
  * @property {number}  filterFreq           - Filter frequency (Hz). Default: 20
- * @property {number}  filterLfoFreq        - Filter LFO frequency. Default: 0
  * @property {Object|null} filterQLfo       - LFO modulating filter Q. Default: null
  * @property {number}  filterQ              - Filter resonance (Q). Default: 0.707
  * @property {string}  reverbType           - Reverb algorithm. Default: "none"
@@ -94,7 +93,6 @@ export const TRACK_DEFAULTS = {
     filterType: "allpass",
     filterFreqLfo: null,
     filterFreq: 20,
-    filterLfoFreq: 0,
     filterQLfo: null,
     filterQ: 0.707,
     reverbType: "none",
