@@ -242,7 +242,24 @@ body {
 }
 #tb .tb-bpm-panel.open { display: flex; }
 #tb .tb-bpm-panel input[type=range] {
-    width: 100px; accent-color: var(--accent); cursor: pointer;
+    width: 100px; cursor: pointer;
+    -webkit-appearance: none; appearance: none;
+    background: none; outline: none; height: 16px;
+}
+#tb .tb-bpm-panel input[type=range]::-webkit-slider-runnable-track {
+    height: 2px; background: var(--color-success); border-radius: 1px;
+}
+#tb .tb-bpm-panel input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 10px; height: 14px; border-radius: 2px; margin-top: -6px;
+    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+}
+#tb .tb-bpm-panel input[type=range]::-moz-range-track {
+    height: 2px; background: var(--color-success); border-radius: 1px; border: none;
+}
+#tb .tb-bpm-panel input[type=range]::-moz-range-thumb {
+    width: 10px; height: 14px; border-radius: 2px;
+    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
 }
 #tb .tb-bpm-panel .tb-bpm-val {
     color: var(--text-dim); font-weight: bold; font-size: var(--fs-md); min-width: 28px; text-align: center;
@@ -531,13 +548,30 @@ body {
     overflow: hidden; text-overflow: ellipsis;
     padding: 0 8px; line-height: 1.1;
 }
-#pattern-panel .pp-volume {
-    width: 60px; height: 12px; flex-shrink: 0;
-    accent-color: var(--accent);
-}
+#pattern-panel .pp-volume,
 #pattern-panel .pp-master-volume {
     width: 60px; height: 12px; flex-shrink: 0;
-    accent-color: var(--accent);
+    -webkit-appearance: none; appearance: none;
+    background: none; outline: none; cursor: pointer;
+}
+#pattern-panel .pp-volume::-webkit-slider-runnable-track,
+#pattern-panel .pp-master-volume::-webkit-slider-runnable-track {
+    height: 2px; background: var(--color-success); border-radius: 1px;
+}
+#pattern-panel .pp-volume::-webkit-slider-thumb,
+#pattern-panel .pp-master-volume::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 10px; height: 14px; border-radius: 2px; margin-top: -6px;
+    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+}
+#pattern-panel .pp-volume::-moz-range-track,
+#pattern-panel .pp-master-volume::-moz-range-track {
+    height: 2px; background: var(--color-success); border-radius: 1px; border: none;
+}
+#pattern-panel .pp-volume::-moz-range-thumb,
+#pattern-panel .pp-master-volume::-moz-range-thumb {
+    width: 10px; height: 14px; border-radius: 2px;
+    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
 }
 #pattern-panel .pp-toolbar-row {
     display: flex;
@@ -987,7 +1021,24 @@ min-height: auto;
     min-width: 60px; color: var(--text-secondary); font-size: var(--fs-base);
 }
 .ne-row input[type=range] {
-    width: 80px; accent-color: var(--accent); cursor: pointer;
+    width: 80px; cursor: pointer;
+    -webkit-appearance: none; appearance: none;
+    background: none; outline: none; height: 16px;
+}
+.ne-row input[type=range]::-webkit-slider-runnable-track {
+    height: 2px; background: var(--color-success); border-radius: 1px;
+}
+.ne-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 10px; height: 14px; border-radius: 2px; margin-top: -6px;
+    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+}
+.ne-row input[type=range]::-moz-range-track {
+    height: 2px; background: var(--color-success); border-radius: 1px; border: none;
+}
+.ne-row input[type=range]::-moz-range-thumb {
+    width: 10px; height: 14px; border-radius: 2px;
+    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
 }
 .ne-row select {
     width: 80px; font-size: var(--fs-sm); padding: 2px;
@@ -1127,35 +1178,34 @@ min-height: auto;
     width: 100% !important;
     margin: 0 !important;
     pointer-events: none;
-    -webkit-appearance: none;
+    -webkit-appearance: none; appearance: none;
     background: none !important;
     z-index: var(--z-base);
+    height: 16px;
+}
+.ne-range-container input[type="range"]::-webkit-slider-runnable-track {
+    height: 2px; background: var(--color-success); border-radius: 1px;
 }
 .ne-range-container input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
+    -webkit-appearance: none; appearance: none;
     pointer-events: auto;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: 1px solid var(--text);
-    cursor: pointer;
+    width: 10px; height: 14px; border-radius: 2px; margin-top: -6px;
+    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+}
+.ne-range-container input[type="range"]::-moz-range-track {
+    height: 2px; background: var(--color-success); border-radius: 1px; border: none;
 }
 .ne-range-container input[type="range"]::-moz-range-thumb {
     pointer-events: auto;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: 1px solid var(--text);
-    cursor: pointer;
+    width: 10px; height: 14px; border-radius: 2px;
+    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
 }
 .ne-range-container::before {
     content: '';
     position: absolute;
     width: 100%;
     height: 2px;
-    background: var(--border-subtle);
+    background: var(--color-success);
     z-index: var(--z-base);
 }
 
@@ -1504,12 +1554,12 @@ min-height: auto;
     --arc-deg: 0deg;
     width: 40px; height: 40px; position: relative;
     border-radius: 50%; cursor: pointer;
-    background: var(--bg-input); border: 2px solid var(--border-subtle);
+    background: transparent; border: none;
     box-sizing: border-box; outline: none;
 }
-.or-knob.dragging { border-color: var( --gray-900); }
+.or-knob.dragging { outline: 1px solid #000; }
 .or-knob-arc {
-    position: absolute; inset: 2px; border-radius: 50%;
+    position: absolute; inset: 0; border-radius: 50%;
     background: conic-gradient(from -135deg,
         var(--color-success) 0deg, var(--color-success) var(--arc-deg),
         var(--border-subtle) var(--arc-deg), var(--border-subtle) 270deg);
@@ -1517,7 +1567,7 @@ min-height: auto;
     -webkit-mask: radial-gradient(circle, transparent 55%, black 56%, black 70%, transparent 71%);
 }
 .or-knob-disc {
-    position: absolute; inset: 6px; border-radius: 50%;
+    position: absolute; inset: 4px; border-radius: 50%;
     background: radial-gradient(circle at 40% 35%, var(--bg-elevated), var(--bg-input));
 }
 .or-knob-label {
