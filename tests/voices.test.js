@@ -384,7 +384,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
         expect(msg.master).toBe(1.0)
         expect(msg.pan).toBe(-0.3)
 
-        expect(msg.velocity).toBeCloseTo(0.2625 / 4, 4)
+        expect(msg.velocity).toBeCloseTo(0.2625, 4)
     })
 
     it('sends minimum attack and release when envelope values are near zero', async () => {
@@ -419,7 +419,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             'osc1Detune', 'osc2Detune', 'osc3Detune',
             'osc1Wave', 'osc2Wave', 'osc3Wave',
             'noiseMix',
-            'filterType', 'filterFreq', 'filterQ',
+            'filterType', 'filterFreq', 'filterQ', 'drive', 'pitchPunch', 'subGain',
             'attack', 'decay', 'sustain', 'release',
             'master', 'pan', 'velocity',
             'lfo1Target', 'lfo1Wave', 'lfo1Freq', 'lfo1Depth',
@@ -611,7 +611,7 @@ describe('VoiceFactory', () => {
             const voice = await factory.createVoice(note)
             await voice.setup(note, 0)
             const updateArg = lastPostByType('update')
-            expect(updateArg.velocity).toBeCloseTo(0.5 / 4, 5)
+            expect(updateArg.velocity).toBeCloseTo(0.5, 5)
         })
 
         it('enforces minimum attack/release (prevents audio discontinuities)', async () => {

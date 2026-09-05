@@ -4,6 +4,7 @@ import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
 import { computeOscFrequency, computeNoteRatio, computeAccent, toFiniteNumber, clamp, syncToHz } from '../math.js'
 import { RELEASE_TIME , NOTE_VELO_BALANCE } from '../../core/constants.js'
 import { serviceRegistry } from '../../state/service_registry.js'
+import { logger } from '../../core/logger.js'
 
 // Register the synth-voice processor (idempotent)
 WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
@@ -65,57 +66,65 @@ export default class WorkletSynthVoice extends BaseVoice {
     }
 
     async setup(flatNote, time) {
-        const ctx = this.audioCtx
-        const gs = this.generatedSound
-        this.noteRatio = computeNoteRatio(flatNote.fpitch)
+        try {
+            const ctx = this.audioCtx
+            const gs = this.generatedSound
+            this.noteRatio = computeNoteRatio(flatNote.fpitch)
 
-        // Normalize velocity by total VCO gain so output level matches SampleVoice
-        const totalVcoGain = toFiniteNumber(gs.vco1?.gain, 0) + toFiniteNumber(gs.vco2?.gain, 0) + toFiniteNumber(gs.vco3?.gain, 0)
-        const vcoNorm = totalVcoGain > 0.001 ? 1 / totalVcoGain : 1
-        this.noteVelo = (flatNote.note?.velocity ?? 0.8) * vcoNorm
+            // Normalize velocity by total VCO gain so output level matches SampleVoice
+            const totalVcoGain = toFiniteNumber(gs.vco1?.gain, 0) + toFiniteNumber(gs.vco2?.gain, 0) + toFiniteNumber(gs.vco3?.gain, 0)
+            const vcoNorm = totalVcoGain > 0.001 ? 1 / totalVcoGain : 1
+            this.noteVelo = (flatNote.note?.velocity ?? 0.8) * vcoNorm
 
-        if (this.#synthNodePool) {
-            this.workletNode = await this.#synthNodePool.acquire()
-        } else {
-            this.workletNode = this.registerNode(await createSynthVoiceNode(ctx))
+            if (this.#synthNodePool) {
+                this.workletNode = await this.#synthNodePool.acquire()
+            } else {
+                this.workletNode = this.registerNode(await createSynthVoiceNode(ctx))
+            }
+            this.#sendUpdate(gs, flatNote.pan ?? 0)
+            this.connectToStripInput(this.workletNode)
+        } catch (e) {
+            logger.error('WorkletSynthVoice', 'setup failed', e)
         }
-        this.#sendUpdate(gs, flatNote.pan ?? 0)
-        this.connectToStripInput(this.workletNode)
     }
 
     start(time) {
         if (!this.workletNode || this.stopped) return
 
-        const gs = this.generatedSound
+        try {
+            const gs = this.generatedSound
 
-        // Send trigger
-        this.workletNode.port.postMessage({ type: 'trigger', startTime: time })
+            // Send trigger
+            this.workletNode.port.postMessage({ type: 'trigger', startTime: time })
 
-        // Auto-release after one step (16th note = 0.25 * secondsPerBeat).
-        // Send a deferred release directly to the worklet processor instead of
-        // relying on setTimeout. The processor checks `releaseTime` against
-        // `currentTime` in its per-sample loop, so this works correctly in
-        // both real-time and OfflineAudioContext (export).
-        if (this.#autoReleaseTimer) clearTimeout(this.#autoReleaseTimer)
-        const bpm = serviceRegistry.transport?.bpm ?? 120
-        const stepDuration = 0.25 * (60 / bpm)
-        const autoReleaseTime = time + stepDuration
-        postRelease(this.workletNode, autoReleaseTime)
+            // Auto-release after one step (16th note = 0.25 * secondsPerBeat).
+            // Send a deferred release directly to the worklet processor instead of
+            // relying on setTimeout. The processor checks `releaseTime` against
+            // `currentTime` in its per-sample loop, so this works correctly in
+            // both real-time and OfflineAudioContext (export).
+            if (this.#autoReleaseTimer) clearTimeout(this.#autoReleaseTimer)
+            const bpm = serviceRegistry.transport?.bpm ?? 120
+            const stepDuration = 0.25 * (60 / bpm)
+            const autoReleaseTime = time + stepDuration
+            postRelease(this.workletNode, autoReleaseTime)
 
-        // Schedule JS-side cleanup (node disconnect + onEnded callback) after
-        // the release phase completes. This uses setTimeout which is fine for
-        // cleanup — it only affects memory, not audio output.
-        const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
-        const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
-        const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
-        this.#autoReleaseTimer = setTimeout(() => {
-            if (!this.stopped) {
-                this.stopped = true
-                this.cleanup()
-                if (this.onEnded) this.onEnded()
-            }
-            this.#autoReleaseTimer = null
-        }, cleanupDelay * 1000)
+            // Schedule JS-side cleanup (node disconnect + onEnded callback) after
+            // the release phase completes. This uses setTimeout which is fine for
+            // cleanup — it only affects memory, not audio output.
+            const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
+            const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
+            const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
+            this.#autoReleaseTimer = setTimeout(() => {
+                if (!this.stopped) {
+                    this.stopped = true
+                    this.cleanup()
+                    if (this.onEnded) this.onEnded()
+                }
+                this.#autoReleaseTimer = null
+            }, cleanupDelay * 1000)
+        } catch (e) {
+            logger.error('WorkletSynthVoice', 'start failed', e)
+        }
     }
 
     stop(time) {
@@ -161,78 +170,91 @@ export default class WorkletSynthVoice extends BaseVoice {
             clearTimeout(this.#autoReleaseTimer)
             this.#autoReleaseTimer = null
         }
-        if (this.workletNode && this.#synthNodePool) {
-            this.#synthNodePool.release(this.workletNode)
+        try {
+            if (this.workletNode && this.#synthNodePool) {
+                this.#synthNodePool.release(this.workletNode)
+                this.workletNode = null
+                return
+            }
+            super.cleanup()
             this.workletNode = null
-            return
+        } catch (e) {
+            logger.warn('WorkletSynthVoice', 'cleanup failed', e)
+            this.workletNode = null
         }
-        super.cleanup()
-        this.workletNode = null
     }
 
     #sendUpdate(gs, pan) {
-        const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
-        const noiseCfg = gs.noise ?? {}
-        const filterCfg = gs.filter ?? {}
+        if (!this.workletNode) return
+        try {
+            const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
+            const noiseCfg = gs.noise ?? {}
+            const filterCfg = gs.filter ?? {}
 
-        // Match native peakGain = noteVelo * masterVolume * accentMultiplier
-        const { accentMultiplier } = computeAccent(this.noteVelo)
-        const masterVolume = toFiniteNumber(gs.masterVolume, 0.8)
-        this.masterVolume = masterVolume
-        const peak = this.noteVelo * masterVolume * accentMultiplier * NOTE_VELO_BALANCE //ATT compensation volume synth vs sample
+            // Match native peakGain = noteVelo * masterVolume * accentMultiplier
+            const { accentMultiplier } = computeAccent(this.noteVelo)
+            const masterVolume = toFiniteNumber(gs.masterVolume, 0.8)
+            this.masterVolume = masterVolume
+            const peak = this.noteVelo * masterVolume * accentMultiplier * NOTE_VELO_BALANCE //ATT compensation volume synth vs sample
 
-        postUpdate(this.workletNode, {
-            osc1Freq: gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0,
-            osc2Freq: gs.vco2 ? computeOscFrequency(this.noteRatio, gs.vco2.octave, gs.vco2.detune) : 0,
-            osc3Freq: gs.vco3 ? computeOscFrequency(this.noteRatio, gs.vco3.octave, gs.vco3.detune) : 0,
-            osc1Gain: toFiniteNumber(gs.vco1?.gain, 0),
-            osc2Gain: toFiniteNumber(gs.vco2?.gain, 0),
-            osc3Gain: toFiniteNumber(gs.vco3?.gain, 0),
-            osc1Detune: toFiniteNumber(gs.vco1?.detune, 0),
-            osc2Detune: toFiniteNumber(gs.vco2?.detune, 0),
-            osc3Detune: toFiniteNumber(gs.vco3?.detune, 0),
-            osc1Wave: WAVE_TO_INT[gs.vco1?.wave] ?? 0,
-            osc2Wave: WAVE_TO_INT[gs.vco2?.wave] ?? 0,
-            osc3Wave: WAVE_TO_INT[gs.vco3?.wave] ?? 0,
-            noiseMix: toFiniteNumber(noiseCfg.mix, 0),
-            filterType: FILTER_TO_INT[filterCfg.type] ?? 0,
-            filterFreq: toFiniteNumber(filterCfg.freq, 1000),
-            filterQ: toFiniteNumber(filterCfg.Q, 0.7),
-            attack: Math.min(0.5, Math.max(0.003, toFiniteNumber(env.attack, 0.01))),
-            decay: Math.min(1.0, toFiniteNumber(env.decay, 0.1)),
-            sustain: toFiniteNumber(env.sustain, 0.7),
-            release: Math.min(0.5, Math.max(0.008, toFiniteNumber(env.release, 0.1))),
-            master: 1.0,
-            pan: toFiniteNumber(pan, 0),
-            velocity: peak,
-            lfo1Target: LFO_TARGET_TO_INT[gs.lfo?.target] ?? 0,
-            lfo1Wave: WAVE_TO_INT[gs.lfo?.wave] ?? 0,
-            lfo1Freq: syncToHz(gs.lfo?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo?.freq, 0),
-            lfo1Depth: toFiniteNumber(gs.lfo?.depth, 0),
-            lfo2Target: LFO_TARGET_TO_INT[gs.lfo2?.target] ?? 0,
-            lfo2Wave: WAVE_TO_INT[gs.lfo2?.wave] ?? 0,
-            lfo2Freq: syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo2?.freq, 0),
-            lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
-            filterEnvAmt: clamp(toFiniteNumber((gs.filterEnv ?? gs.filter)?.filterEnvelopeAmount, 0), 0, 1),
-            fmAmount: clamp(toFiniteNumber(gs.fm?.amount, 0), 0, 1),
-            fmAlgo: clamp(Math.round(toFiniteNumber(gs.fm?.algo, 0)), 0, 4),
-            modEnvAttack: Math.min(0.5, Math.max(0.003, toFiniteNumber(gs.modEnvelope?.attack, 0.01))),
-            modEnvDecay: Math.min(1.0, toFiniteNumber(gs.modEnvelope?.decay, 0.1)),
-            modEnvSustain: toFiniteNumber(gs.modEnvelope?.sustain, 0),
-            modEnvRelease: Math.min(0.5, Math.max(0.008, toFiniteNumber(gs.modEnvelope?.release, 0.1))),
-            modEnvTarget: MOD_ENV_TARGET_TO_INT[gs.modEnvelope?.target] ?? 0,
-            modEnvDepth: gs.modEnvelope?.target && gs.modEnvelope.target !== 'off' ? 1 : 0,
-            bypassNoise:  !!gs.bypassNoise,
-            bypassFilter: !!gs.bypassFilter,
-            bypassEnv:    !!gs.bypassEnv,
-            bypassLfo1:   !!gs.bypassLfo1,
-            bypassLfo2:   !!gs.bypassLfo2,
-            bypassFm:     !!gs.bypassFm,
-            bypassModEnv: !!gs.bypassModEnv,
-            bypassFilterEnv: !!gs.bypassFilterEnv,
-        })
-        if (gs._resetEnv) {
-            this.workletNode.port.postMessage({ type: 'resetEnv' })
+            postUpdate(this.workletNode, {
+                osc1Freq: gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0,
+                osc2Freq: gs.vco2 ? computeOscFrequency(this.noteRatio, gs.vco2.octave, gs.vco2.detune) : 0,
+                osc3Freq: gs.vco3 ? computeOscFrequency(this.noteRatio, gs.vco3.octave, gs.vco3.detune) : 0,
+                osc1Gain: toFiniteNumber(gs.vco1?.gain, 0),
+                osc2Gain: toFiniteNumber(gs.vco2?.gain, 0),
+                osc3Gain: toFiniteNumber(gs.vco3?.gain, 0),
+                osc1Detune: toFiniteNumber(gs.vco1?.detune, 0),
+                osc2Detune: toFiniteNumber(gs.vco2?.detune, 0),
+                osc3Detune: toFiniteNumber(gs.vco3?.detune, 0),
+                osc1Wave: WAVE_TO_INT[gs.vco1?.wave] ?? 0,
+                osc2Wave: WAVE_TO_INT[gs.vco2?.wave] ?? 0,
+                osc3Wave: WAVE_TO_INT[gs.vco3?.wave] ?? 0,
+                noiseMix: toFiniteNumber(noiseCfg.mix, 0),
+                filterType: FILTER_TO_INT[filterCfg.type] ?? 0,
+                filterFreq: toFiniteNumber(filterCfg.freq, 1000),
+                filterQ: toFiniteNumber(filterCfg.Q, 0.7),
+                drive: toFiniteNumber(filterCfg.drive, 0),
+                pitchPunch: toFiniteNumber(gs.pitchPunch, 0),
+                subGain: toFiniteNumber(gs.subGain, 0),
+                attack: Math.min(0.5, Math.max(0.003, toFiniteNumber(env.attack, 0.01))),
+                decay: Math.min(1.0, toFiniteNumber(env.decay, 0.1)),
+                sustain: toFiniteNumber(env.sustain, 0.7),
+                release: Math.min(0.5, Math.max(0.008, toFiniteNumber(env.release, 0.1))),
+                master: 1.0,
+                pan: toFiniteNumber(pan, 0),
+                velocity: peak,
+                lfo1Target: LFO_TARGET_TO_INT[gs.lfo?.target] ?? 0,
+                lfo1Wave: WAVE_TO_INT[gs.lfo?.wave] ?? 0,
+                lfo1Freq: syncToHz(gs.lfo?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo?.freq, 0),
+                lfo1Depth: toFiniteNumber(gs.lfo?.depth, 0),
+                lfo2Target: LFO_TARGET_TO_INT[gs.lfo2?.target] ?? 0,
+                lfo2Wave: WAVE_TO_INT[gs.lfo2?.wave] ?? 0,
+                lfo2Freq: syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo2?.freq, 0),
+                lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
+                filterEnvAmt: clamp(toFiniteNumber((gs.filterEnv ?? gs.filter)?.filterEnvelopeAmount, 0), 0, 1),
+                fmAmount: clamp(toFiniteNumber(gs.fm?.amount, 0), 0, 1),
+                fmAlgo: clamp(Math.round(toFiniteNumber(gs.fm?.algo, 0)), 0, 4),
+                modEnvAttack: Math.min(0.5, Math.max(0.003, toFiniteNumber(gs.modEnvelope?.attack, 0.01))),
+                modEnvDecay: Math.min(1.0, toFiniteNumber(gs.modEnvelope?.decay, 0.1)),
+                modEnvSustain: toFiniteNumber(gs.modEnvelope?.sustain, 0),
+                modEnvRelease: Math.min(0.5, Math.max(0.008, toFiniteNumber(gs.modEnvelope?.release, 0.1))),
+                modEnvTarget: MOD_ENV_TARGET_TO_INT[gs.modEnvelope?.target] ?? 0,
+                modEnvDepth: gs.modEnvelope?.target && gs.modEnvelope.target !== 'off' ? 1 : 0,
+                bypassNoise:  !!gs.bypassNoise,
+                bypassFilter: !!gs.bypassFilter,
+                bypassEnv:    !!gs.bypassEnv,
+                bypassLfo1:   !!gs.bypassLfo1,
+                bypassLfo2:   !!gs.bypassLfo2,
+                bypassFm:     !!gs.bypassFm,
+                bypassModEnv: !!gs.bypassModEnv,
+                bypassFilterEnv: !!gs.bypassFilterEnv,
+            })
+            if (gs._resetEnv) {
+                this.workletNode.port.postMessage({ type: 'resetEnv' })
+            }
+        } catch (e) {
+            logger.warn('WorkletSynthVoice', 'sendUpdate failed', e)
         }
     }
 }

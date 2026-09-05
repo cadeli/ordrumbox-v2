@@ -8,6 +8,7 @@
 import { soundRegistry as _soundRegistrySingleton } from '../state/sound_registry.js'
 import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_registry.js'
 import { playbackEvents as _playbackEventsSingleton } from '../state/playback_events.js'
+import { logger } from '../core/logger.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { showToast } from './toast.js'
 import { bindTabToggles } from './components/panel_helpers.js'
@@ -83,43 +84,51 @@ export default class SynthEditor {
 
     /** Opens the editor for the current track's synth sound. */
     async openEditor() {
-        const track = this.host._track
-        if (!track) return
-        await this.ensureGeneratedSoundsLoaded()
+        try {
+            const track = this.host._track
+            if (!track) return
+            await this.ensureGeneratedSoundsLoaded()
 
-        const key = track.synthSoundKey
-        const generatedSound = this._soundRegistry.generatedSounds?.[key]
-        if (!key || !generatedSound) return
+            const key = track.synthSoundKey
+            const generatedSound = this._soundRegistry.generatedSounds?.[key]
+            if (!key || !generatedSound) return
 
-        if (!this._presets.loadPreset(key)) return
-        this._showSynthPanel()
-        this._renderEditor()
+            if (!this._presets.loadPreset(key)) return
+            this._showSynthPanel()
+            this._renderEditor()
+        } catch (e) {
+            logger.error('SynthEditor', 'openEditor failed', e)
+        }
     }
 
     /** Shows the panel (standalone or for current track). */
     async showPanel() {
-        await this.ensureGeneratedSoundsLoaded()
-        this._showSynthPanel()
+        try {
+            await this.ensureGeneratedSoundsLoaded()
+            this._showSynthPanel()
 
-        const track = this.host._track
-        const key = track?.synthSoundKey
-        const generatedSound = key ? this._soundRegistry.generatedSounds?.[key] : null
+            const track = this.host._track
+            const key = track?.synthSoundKey
+            const generatedSound = key ? this._soundRegistry.generatedSounds?.[key] : null
 
-        if (key && generatedSound) {
-            this._presets.loadPreset(key)
-            this._renderEditor()
-        } else {
-            const keys = this.getGeneratedSoundKeys()
-            if (keys.length > 0) {
-                this._presets.loadPreset(keys[0])
+            if (key && generatedSound) {
+                this._presets.loadPreset(key)
                 this._renderEditor()
             } else {
-                this._scrollEl.innerHTML = `
-                <div class="ss-body ss-body-empty">
-                    No synth presets loaded.
-                </div>`
-                this._bindEvents()
+                const keys = this.getGeneratedSoundKeys()
+                if (keys.length > 0) {
+                    this._presets.loadPreset(keys[0])
+                    this._renderEditor()
+                } else {
+                    this._scrollEl.innerHTML = `
+                    <div class="ss-body ss-body-empty">
+                        No synth presets loaded.
+                    </div>`
+                    this._bindEvents()
+                }
             }
+        } catch (e) {
+            logger.error('SynthEditor', 'showPanel failed', e)
         }
     }
 

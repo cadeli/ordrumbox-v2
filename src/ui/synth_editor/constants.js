@@ -18,6 +18,14 @@ export const FILTER_ICONS = {
 }
 
 export const FM_ALGO_ICONS = {
+    0: '1',
+    1: '2',
+    2: '3',
+    3: '4',
+    4: '5',
+}
+
+export const FM_ALGO_LABELS = {
     0: '2→1',
     1: '3→1',
     2: '3→2→1',
@@ -27,10 +35,12 @@ export const FM_ALGO_ICONS = {
 
 export const SYNTH_GROUP_DEFAULTS = {
     masterVolume: 0.8,
+    subGain: 0,
+    pitchPunch: 0,
     vco1: { gain: 1, octave: 0, detune: 0, wave: 'sine' },
     vco2: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
     vco3: { gain: 0, octave: 0, detune: 0, wave: 'sine' },
-    filter: { type: 'lowpass', freq: 400, Q: 1 },
+    filter: { type: 'lowpass', freq: 400, Q: 1, drive: 0 },
     filterEnv: { filterEnvelopeAmount: 0 },
     fm: { amount: 0, algo: 0 },
     lfo: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
@@ -51,11 +61,14 @@ export const MOD_ENV_TARGETS = [
 const VCO_PARAM_DEFS = { gain: { min: 0, max: 1, step: 0.01 }, octave: { min: -4, max: 4, step: 1 }, detune: { min: -100, max: 100, step: 1 } }
 export const SYNTH_PARAM_META = Object.fromEntries([
     ['masterVolume', { min: 0, max: 1, step: 0.01, unit: '' }],
+    ['subGain', { min: 0, max: 1, step: 0.01, unit: '' }],
+    ['pitchPunch', { min: 0, max: 1, step: 0.01, unit: '' }],
     ...['vco1', 'vco2', 'vco3'].flatMap(vco =>
         Object.entries(VCO_PARAM_DEFS).map(([k, v]) => [`${vco}.${k}`, { ...v, unit: k === 'gain' ? '' : k === 'octave' ? 'oct' : 'ct' }])
     ),
     ['filter.freq', { min: 20, max: 20000, step: 1, unit: 'Hz' }],
     ['filter.Q', { min: 0.1, max: 24, step: 0.1, unit: '' }],
+    ['filter.drive', { min: 0, max: 1, step: 0.01, unit: '' }],
     ['filterEnv.filterEnvelopeAmount', { min: 0, max: 1, step: 0.01, label: 'Env', unit: '' }],
     ['lfo.freq', { min: 0, max: 20, step: 0.01, unit: 'Hz' }],
     ['lfo.depth', { min: 0, max: 1, step: 0.01, unit: '' }],
@@ -78,7 +91,7 @@ export const SYNTH_PARAM_META = Object.fromEntries([
 
 export const SYNTH_LFO_TARGETS = ['NOT', ...Object.keys(SYNTH_PARAM_META).filter(k => !k.startsWith('lfo.') && !k.startsWith('lfo2.'))]
 export const SYNTH_GROUP_MERGE = {
-    master: ['masterVolume']
+    master: ['masterVolume', 'subGain', 'pitchPunch']
 }
 export const SYNTH_GROUP_LABELS = {
     scope: 'Scope',

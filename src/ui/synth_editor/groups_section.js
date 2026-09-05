@@ -5,7 +5,7 @@
 import Utils from '../../core/utils.js'
 import { escapeHtml, renderOptions, renderIconChoices } from '../components/panel_helpers.js'
 import {
-    WAVE_ICONS, FILTER_ICONS, FM_ALGO_ICONS,
+    WAVE_ICONS, FILTER_ICONS, FM_ALGO_ICONS, FM_ALGO_LABELS,
     SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META, SYNTH_LFO_TARGETS, SYNTH_GROUP_MERGE,
     SYNTH_GROUP_LABELS, SYNTH_GROUP_ORDER, VCO_RE, LFO_RE,
     LFO_SYNC_OPTIONS, MOD_ENV_TARGETS,
@@ -134,7 +134,8 @@ export default class GroupsSection {
             const algoOpts = Object.keys(FM_ALGO_ICONS).map(Number)
             waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(algoOpts, algoVal, FM_ALGO_ICONS, {
                 cssClass: 'ss-fm-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
-                extraAttrs: (v) => ` data-synth-path="fm.algo"`
+                extraAttrs: (v) => ` data-synth-path="fm.algo"`,
+                titleMap: FM_ALGO_LABELS
             })}</span>`
         }
 

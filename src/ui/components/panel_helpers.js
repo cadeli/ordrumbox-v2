@@ -115,14 +115,15 @@ export function renderOptions(options, currentValue, { labels, escape: esc } = {
  * @param {function}[opts.extraAttrs]    (value) => string — extra HTML attributes per button
  * @returns {string} HTML
  */
-export function renderIconChoices(options, currentValue, iconMap, { cssClass, valueDataAttr, escape: esc, extraAttrs } = {}) {
+export function renderIconChoices(options, currentValue, iconMap, { cssClass, valueDataAttr, escape: esc, extraAttrs, titleMap } = {}) {
     return options.map(opt => {
         const value = typeof opt === 'object' ? opt.value : opt
         const sel = _eq(value, currentValue) ? ' selected' : ''
         const dVal = esc ? esc(value) : value
         const icon = iconMap[value] ?? value
         const extra = extraAttrs ? extraAttrs(value) : ''
-        return `<button class="${cssClass}${sel}" ${valueDataAttr}="${dVal}" title="${dVal}"${extra}>${icon}</button>`
+        const title = titleMap?.[value] ?? dVal
+        return `<button class="${cssClass}${sel}" ${valueDataAttr}="${dVal}" title="${title}"${extra}>${icon}</button>`
     }).join('')
 }
 

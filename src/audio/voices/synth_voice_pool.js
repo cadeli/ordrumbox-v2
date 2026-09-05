@@ -1,6 +1,7 @@
 import { safeDisconnect } from '../math.js'
 import WorkletLoader from '../worklets/loader.js'
 import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
+import { logger } from '../../core/logger.js'
 
 WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
 
@@ -51,11 +52,16 @@ export default class SynthVoiceNodePool {
                 return node
             }
         }
-        await WorkletLoader.ensureLoaded(this.#audioCtx)
-        const node = WorkletLoader.createNode(this.#audioCtx, 'synth-voice', SYNTH_VOICE_OPTIONS)
-        node.port.postMessage({ type: 'setPooled', value: true })
-        this.#activeCount++
-        return node
+        try {
+            await WorkletLoader.ensureLoaded(this.#audioCtx)
+            const node = WorkletLoader.createNode(this.#audioCtx, 'synth-voice', SYNTH_VOICE_OPTIONS)
+            node.port.postMessage({ type: 'setPooled', value: true })
+            this.#activeCount++
+            return node
+        } catch (e) {
+            logger.error('SynthVoiceNodePool', 'acquire: failed to create worklet node', e)
+            throw e
+        }
     }
 
     release(node) {
@@ -64,7 +70,9 @@ export default class SynthVoiceNodePool {
         safeDisconnect(node)
         try {
             node.connect(this.#silent)
-        } catch (_) {}
+        } catch (e) {
+            logger.warn('SynthVoiceNodePool', 'release: reconnect to silent failed', e)
+        }
         node.port.postMessage({ type: 'setPooled', value: true })
         node.port.postMessage({ type: 'reset' })
         if (this.#pool.length < this.#maxSize) {
