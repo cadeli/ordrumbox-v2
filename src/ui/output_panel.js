@@ -122,7 +122,7 @@ this.container.innerHTML = `
         title.textContent = 'COMPRESSOR'
         this.#compBypassBtn = document.createElement('button')
         this.#compBypassBtn.className = 'op-comp-bypass active'
-        this.#compBypassBtn.innerHTML = '&#9889;'
+        this.#compBypassBtn.innerHTML = '<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>'
         this.#compBypassBtn.title = 'Compressor on/off'
         this.#compBypassBtn.addEventListener('click', () => {
             this.#compBypass = !this.#compBypass
