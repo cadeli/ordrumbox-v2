@@ -418,7 +418,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             'osc1Gain', 'osc2Gain', 'osc3Gain',
             'osc1Detune', 'osc2Detune', 'osc3Detune',
             'osc1Wave', 'osc2Wave', 'osc3Wave',
-            'noiseMix',
+            'noiseMix', 'noiseFilterType', 'noiseFilterFreq', 'noiseFilterQ',
             'filterType', 'filterFreq', 'filterQ', 'drive', 'pitchPunch', 'subGain',
             'attack', 'decay', 'sustain', 'release',
             'master', 'pan', 'velocity',

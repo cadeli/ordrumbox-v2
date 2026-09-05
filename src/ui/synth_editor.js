@@ -11,7 +11,7 @@ import { playbackEvents as _playbackEventsSingleton } from '../state/playback_ev
 import { logger } from '../core/logger.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { showToast } from './toast.js'
-import { bindTabToggles } from './components/panel_helpers.js'
+import { bindTabToggles, downloadJson } from './components/panel_helpers.js'
 
 import GroupsSection from './synth_editor/groups_section.js'
 import WaveformSection from './synth_editor/waveform_section.js'
@@ -160,18 +160,21 @@ export default class SynthEditor {
     /** Renders the full editor: groups, footer, knobs, waveform. */
     _renderEditor() {
         if (!this._draft || !this._editKey) return
+        try {
+            const knobConfigs = []
+            let html = this._presets.renderFooter()
+            html += this._groups.render(knobConfigs)
 
-        const knobConfigs = []
-        let html = this._presets.renderFooter()
-        html += this._groups.render(knobConfigs)
-
-        this._scrollEl.innerHTML = html
-        bindTabToggles(this._scrollEl, () => {
-            requestAnimationFrame(() => this._waveform.draw())
-        })
-        this._syncKnobs(knobConfigs)
-        this._bindEvents()
-        this._waveform.draw()
+            this._scrollEl.innerHTML = html
+            bindTabToggles(this._scrollEl, () => {
+                requestAnimationFrame(() => this._waveform.draw())
+            })
+            this._syncKnobs(knobConfigs)
+            this._bindEvents()
+            this._waveform.draw()
+        } catch (e) {
+            logger.error('SynthEditor', '_renderEditor failed', e)
+        }
     }
 
     /**
@@ -199,18 +202,22 @@ export default class SynthEditor {
     /** Fills missing draft fields with defaults. */
     _hydrateDraft() {
         if (!this._draft) return
-        for (const [key, defaultValue] of Object.entries(SYNTH_GROUP_DEFAULTS)) {
-            if (this._isPlainObject(defaultValue)) {
-                if (!this._isPlainObject(this._draft[key])) {
-                    this._draft[key] = structuredClone(defaultValue)
-                    continue
+        try {
+            for (const [key, defaultValue] of Object.entries(SYNTH_GROUP_DEFAULTS)) {
+                if (this._isPlainObject(defaultValue)) {
+                    if (!this._isPlainObject(this._draft[key])) {
+                        this._draft[key] = structuredClone(defaultValue)
+                        continue
+                    }
+                    for (const [childKey, childDefault] of Object.entries(defaultValue)) {
+                        if (this._draft[key][childKey] === undefined) this._draft[key][childKey] = childDefault
+                    }
+                } else if (this._draft[key] === undefined) {
+                    this._draft[key] = defaultValue
                 }
-                for (const [childKey, childDefault] of Object.entries(defaultValue)) {
-                    if (this._draft[key][childKey] === undefined) this._draft[key][childKey] = childDefault
-                }
-            } else if (this._draft[key] === undefined) {
-                this._draft[key] = defaultValue
             }
+        } catch (e) {
+            logger.warn('SynthEditor', '_hydrateDraft failed', e)
         }
     }
 
@@ -235,13 +242,17 @@ export default class SynthEditor {
     }
 
     _handleClick(e) {
-        const { target } = e
-        if (this._handlePowerBtn(target, e)) return
-        if (this._handleWaveTab(target)) return
-        if (this._handleBooleanBtn(target)) return
-        if (this._handleIconBtn(target)) return
-        if (this._handleAction(target)) return
-        this._handlePresetNav(target)
+        try {
+            const { target } = e
+            if (this._handlePowerBtn(target, e)) return
+            if (this._handleWaveTab(target)) return
+            if (this._handleBooleanBtn(target)) return
+            if (this._handleIconBtn(target)) return
+            if (this._handleAction(target)) return
+            this._handlePresetNav(target)
+        } catch (err) {
+            logger.warn('SynthEditor', '_handleClick failed', err)
+        }
     }
 
     _handlePowerBtn(target, e) {
@@ -342,13 +353,18 @@ export default class SynthEditor {
 
     /** Sets a nested draft value and triggers preview. */
     _setValue(pathString, value) {
-        const path = pathString.split('.')
-        let target = this._draft
-        for (let i = 0; i < path.length - 1; i++) {
-            target = target[path[i]]
+        try {
+            const path = pathString.split('.')
+            let target = this._draft
+            for (let i = 0; i < path.length - 1; i++) {
+                target = target?.[path[i]]
+                if (target === undefined || target === null) return
+            }
+            target[path.at(-1)] = value
+            this._previewDraft()
+        } catch (e) {
+            logger.warn('SynthEditor', '_setValue failed', e)
         }
-        target[path.at(-1)] = value
-        this._previewDraft()
     }
 
     _previewDraft() {
@@ -360,26 +376,35 @@ export default class SynthEditor {
 
     _revertPreset() {
         if (!this._editKey || !this._original) return
-        this._presets.commitSound(this._editKey, this._original)
-        this._draft = structuredClone(this._original)
-        this._renderEditor()
-        this._serviceRegistry.audioEngine?.invalidateCache?.()
-        this._playbackEvents.batch(() => {
-            this._playbackEvents.emit('trackParamChange', this.host._track)
-            this._playbackEvents.emit('patternChange', [this.host._track])
-        })
+        try {
+            this._presets.commitSound(this._editKey, this._original)
+            this._draft = structuredClone(this._original)
+            this._renderEditor()
+            this._serviceRegistry.audioEngine?.invalidateCache?.()
+            this._playbackEvents.batch(() => {
+                this._playbackEvents.emit('trackParamChange', this.host._track)
+                this._playbackEvents.emit('patternChange', [this.host._track])
+            })
+        } catch (e) {
+            logger.error('SynthEditor', '_revertPreset failed', e)
+        }
     }
 
     // ─── Value access ──────────────────────────────────────────────────
 
     _exportSynth() {
-        const sounds = this._soundRegistry.generatedSounds
-        if (!sounds || Object.keys(sounds).length === 0) {
-            showToast('No synth sounds loaded', 'info')
-            return
+        try {
+            const sounds = this._soundRegistry.generatedSounds
+            if (!sounds || Object.keys(sounds).length === 0) {
+                showToast('No synth sounds loaded', 'info')
+                return
+            }
+            downloadJson(sounds, 'ordrumbox-synth-sounds.json')
+            showToast('Synth sounds exported', 'success')
+        } catch (e) {
+            logger.error('SynthEditor', '_exportSynth failed', e)
+            showToast('Export failed', 'error')
         }
-        downloadJson(sounds, 'ordrumbox-synth-sounds.json')
-        showToast('Synth sounds exported', 'success')
     }
 
     _importSynth() {
@@ -417,24 +442,29 @@ export default class SynthEditor {
     }
 
     _closeEditor(shouldSave) {
-        if (shouldSave && this._editKey && this._draft) {
-            this._presets.commitSound(this._editKey, this._draft)
-            this._serviceRegistry.audioEngine?.invalidateCache?.()
-            this._playbackEvents.batch(() => {
-                this._playbackEvents.emit('trackParamChange', this.host._track)
-                this._playbackEvents.emit('patternChange', [this.host._track])
-            })
-        } else if (!shouldSave && this._editKey && this._original) {
-            this._presets.commitSound(this._editKey, this._original)
-        }
+        try {
+            if (shouldSave && this._editKey && this._draft) {
+                this._presets.commitSound(this._editKey, this._draft)
+                this._serviceRegistry.audioEngine?.invalidateCache?.()
+                this._playbackEvents.batch(() => {
+                    this._playbackEvents.emit('trackParamChange', this.host._track)
+                    this._playbackEvents.emit('patternChange', [this.host._track])
+                })
+            } else if (!shouldSave && this._editKey && this._original) {
+                this._presets.commitSound(this._editKey, this._original)
+            }
 
-        this._hideSynthPanel()
-        if (this.host._track) {
-            this.host.sync()
+            this._hideSynthPanel()
+            if (this.host._track) {
+                this.host.sync()
+            }
+        } catch (e) {
+            logger.error('SynthEditor', '_closeEditor failed', e)
+        } finally {
+            this._editKey = null
+            this._original = null
+            this._draft = null
         }
-        this._editKey = null
-        this._original = null
-        this._draft = null
     }
 
     reset() {

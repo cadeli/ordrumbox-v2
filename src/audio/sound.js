@@ -97,10 +97,14 @@ export default class Sound {
 
     play = async (flatNote, time) => {
         if (!flatNote || !this.mixer?.analyser) return
-        if (flatNote.track.useSoftSynth === true) {
-            await this.playGenerated(flatNote, time)
-        } else {
-            await this.playSample(flatNote, time)
+        try {
+            if (flatNote.track?.useSoftSynth === true) {
+                await this.playGenerated(flatNote, time)
+            } else {
+                await this.playSample(flatNote, time)
+            }
+        } catch (e) {
+            logger.error('Sound', 'play failed', e)
         }
     }
 
@@ -250,8 +254,12 @@ export default class Sound {
     stopAllVoices = () => {
         const time = this.audioCtx?.currentTime ?? 0
         for (const voice of this._activeVoiceSet) {
-            if (voice && typeof voice.stop === "function") {
-                voice.stop(time)
+            try {
+                if (voice && typeof voice.stop === "function") {
+                    voice.stop(time)
+                }
+            } catch (e) {
+                logger.warn('Sound', 'stopAllVoices: voice.stop failed', e)
             }
         }
         this._activeVoiceSet.clear()
@@ -264,8 +272,12 @@ export default class Sound {
         Object.assign(this.generatedSounds, generatedSounds)
         const time = this.audioCtx?.currentTime ?? 0
         this.activeSynthVoices.forEach(voice => {
-            const generatedSound = this.generatedSounds?.[voice.soundKey]
-            if (generatedSound) voice.updateGeneratedSound(generatedSound, time)
+            try {
+                const generatedSound = this.generatedSounds?.[voice.soundKey]
+                if (generatedSound) voice.updateGeneratedSound(generatedSound, time)
+            } catch (e) {
+                logger.warn('Sound', 'updateGeneratedSounds: voice update failed', e)
+            }
         })
     }
 }

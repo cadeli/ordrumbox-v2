@@ -129,29 +129,33 @@ export default class WorkletSynthVoice extends BaseVoice {
 
     stop(time) {
         if (this.stopped) return
-        super.stop(time)
-        if (this.#cleanupTimer) {
-            clearTimeout(this.#cleanupTimer)
-            this.#cleanupTimer = null
-        }
-        if (this.#autoReleaseTimer) {
-            clearTimeout(this.#autoReleaseTimer)
-            this.#autoReleaseTimer = null
-        }
-        if (this.workletNode) {
-            postRelease(this.workletNode, time)
-        }
-
-        const gs = this.generatedSound
-        const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
-        const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
-        const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
-        if (typeof setTimeout === 'function') {
-            this.#cleanupTimer = setTimeout(() => {
-                this.cleanup()
-                if (this.onEnded) this.onEnded()
+        try {
+            super.stop(time)
+            if (this.#cleanupTimer) {
+                clearTimeout(this.#cleanupTimer)
                 this.#cleanupTimer = null
-            }, cleanupDelay * 1000)
+            }
+            if (this.#autoReleaseTimer) {
+                clearTimeout(this.#autoReleaseTimer)
+                this.#autoReleaseTimer = null
+            }
+            if (this.workletNode) {
+                postRelease(this.workletNode, time)
+            }
+
+            const gs = this.generatedSound
+            const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
+            const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
+            const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
+            if (typeof setTimeout === 'function') {
+                this.#cleanupTimer = setTimeout(() => {
+                    this.cleanup()
+                    if (this.onEnded) this.onEnded()
+                    this.#cleanupTimer = null
+                }, cleanupDelay * 1000)
+            }
+        } catch (e) {
+            logger.warn('WorkletSynthVoice', 'stop failed', e)
         }
     }
 
@@ -211,6 +215,9 @@ export default class WorkletSynthVoice extends BaseVoice {
                 osc2Wave: WAVE_TO_INT[gs.vco2?.wave] ?? 0,
                 osc3Wave: WAVE_TO_INT[gs.vco3?.wave] ?? 0,
                 noiseMix: toFiniteNumber(noiseCfg.mix, 0),
+                noiseFilterType: FILTER_TO_INT[noiseCfg.filterType] ?? 0,
+                noiseFilterFreq: toFiniteNumber(noiseCfg.filterFreq, 1000),
+                noiseFilterQ: toFiniteNumber(noiseCfg.filterQ, 0.7),
                 filterType: FILTER_TO_INT[filterCfg.type] ?? 0,
                 filterFreq: toFiniteNumber(filterCfg.freq, 1000),
                 filterQ: toFiniteNumber(filterCfg.Q, 0.7),

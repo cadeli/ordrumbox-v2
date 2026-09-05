@@ -145,6 +145,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     #releaseParam;
     #velocityParam;
     #pooled;
+    #noiseFilt;
 
     static get parameterDescriptors() {
         return [
@@ -161,6 +162,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             { name: 'osc2Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
             { name: 'osc3Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
             { name: 'noiseMix',   defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
+            { name: 'noiseFilterType', defaultValue: 0, minValue: 0, maxValue: 3, automationRate: 'k-rate' },
+            { name: 'noiseFilterFreq', defaultValue: 1000, minValue: 20, maxValue: 20000, automationRate: 'k-rate' },
+            { name: 'noiseFilterQ',  defaultValue: 0.7, minValue: 0.1, maxValue: 20, automationRate: 'k-rate' },
             { name: 'filterType', defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
             { name: 'filterFreq', defaultValue: 1000, minValue: 20,    maxValue: 20000, automationRate: 'k-rate' },
             { name: 'filterQ',    defaultValue: 0.7,  minValue: 0.1,   maxValue: 20,    automationRate: 'k-rate' },
@@ -229,6 +233,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this.#modEnvReleaseStartLevel = 0;
         this.#overrides = undefined;
         this.#pooled = false;
+        this.#noiseFilt = new _TptState();
         this.port.onmessage = (e) => this.#onMessage(e.data);
     }
 
@@ -281,6 +286,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.#rngState = 54321;
             this.filt.z1 = 0;
             this.filt.z2 = 0;
+            this.#noiseFilt.z1 = 0;
+            this.#noiseFilt.z2 = 0;
             this.#overrides = undefined;
         } else if (msg.type === 'setPooled') {
             this.#pooled = !!msg.value;
@@ -308,12 +315,12 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         return sq + _polyBLEP(phase, dt) - _polyBLEP((phase + 0.5) % 1, dt);
     }
 
-    #lfoValue(target, depth, phase, det, gain, out) {
+    #lfoValue(target, depth, phase, det, gain, out, wave, dt) {
         det[0] = 0; det[1] = 0; det[2] = 0;
         gain[0] = 0; gain[1] = 0; gain[2] = 0;
         out[0] = 0; out[1] = 0; out[2] = 0; out[3] = 0;
         if (target === 0) return;
-        const raw = _sinLookup(phase) * depth;
+        const raw = this.#v(wave, phase, dt) * depth;
         if (target === 1)  { out[0] = raw * 1000; return; }
         if (target === 2)  { det[0] = raw * 1000; return; }
         if (target === 3)  { det[1] = raw * 1000; return; }
@@ -482,6 +489,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const w2 = this.#param('osc2Wave', parameters.osc2Wave);
         const w3 = this.#param('osc3Wave', parameters.osc3Wave);
         const noiseMix = this.#param('noiseMix', parameters.noiseMix);
+        const nfType = this.#param('noiseFilterType', parameters.noiseFilterType);
+        const nfFreq = this.#param('noiseFilterFreq', parameters.noiseFilterFreq);
+        const nfQ    = this.#param('noiseFilterQ', parameters.noiseFilterQ);
         const fType = this.#param('filterType', parameters.filterType);
         const fFreq = this.#param('filterFreq', parameters.filterFreq);
         const fQ    = this.#param('filterQ', parameters.filterQ);
@@ -556,6 +566,16 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         const lfo1Inc = lfo1Freq / sr;
         const lfo2Inc = lfo2Freq / sr;
 
+        // Noise filter coefficients
+        let nfMode = 0;
+        if (nfType >= 0.5 && nfType < 1.5) nfMode = 1;
+        else if (nfType >= 1.5 && nfType < 2.5) nfMode = 2;
+        else if (nfType >= 2.5) nfMode = 3;
+        const nfFreqClamped = Math.max(20, Math.min(20000, nfFreq));
+        const nfQCllamped = Math.max(0.1, Math.min(20, nfQ));
+        const nfG = Math.tan(PI * Math.min(nfFreqClamped, sr * 0.25) / sr);
+        const nfK = 1 / nfQCllamped;
+
         for (let i = 0; i < frames; i++) {
             const currentTime = (currentFrame + i) / sr;
             const t = currentTime - this.startTime;
@@ -571,12 +591,12 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.lfoPhase2 = (this.lfoPhase2 + lfo2Inc) % 1.0;
 
             // Compute LFO modulations
-            this.#lfoValue(bypassLfo1 ? 0 : lfo1Target, lfo1Depth, this.lfoPhase1, this.#lfo1Det, this.#lfo1Gain, this.#lfoScratch);
+            this.#lfoValue(bypassLfo1 ? 0 : lfo1Target, lfo1Depth, this.lfoPhase1, this.#lfo1Det, this.#lfo1Gain, this.#lfoScratch, lfo1Wave, lfo1Inc);
             const lfo1Filt = this.#lfoScratch[0];
             const lfo1Master = this.#lfoScratch[1];
             const lfo1Q = this.#lfoScratch[2];
             const lfo1Noise = this.#lfoScratch[3];
-            this.#lfoValue(bypassLfo2 ? 0 : lfo2Target, lfo2Depth, this.lfoPhase2, this.#lfo2Det, this.#lfo2Gain, this.#lfoScratch);
+            this.#lfoValue(bypassLfo2 ? 0 : lfo2Target, lfo2Depth, this.lfoPhase2, this.#lfo2Det, this.#lfo2Gain, this.#lfoScratch, lfo2Wave, lfo2Inc);
             const lfo2Filt = this.#lfoScratch[0];
             const lfo2Master = this.#lfoScratch[1];
             const lfo2Q = this.#lfoScratch[2];
@@ -742,7 +762,23 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             if (!bypassNoise) {
                 const noiseMod = noiseMix + lfo1Noise + lfo2Noise;
                 const noiseClamped = noiseMod < 0 ? 0 : (noiseMod > 1 ? 1 : noiseMod);
-                noise = (this.#rngState / 2147483648) * noiseClamped;
+                const noiseRaw = (this.#rngState / 2147483648) * noiseClamped;
+                // Apply noise sub-filter (TPT SVF)
+                const a1 = 1 / (1 + nfG * (nfG + nfK));
+                const a2 = nfG * a1;
+                const a3 = nfG * a2;
+                const v3 = noiseRaw - this.#noiseFilt.z2;
+                const v1 = a1 * this.#noiseFilt.z1 + a2 * v3;
+                const v2 = this.#noiseFilt.z2 + a2 * this.#noiseFilt.z1 + a3 * v3;
+                this.#noiseFilt.z1 = 2 * v1 - this.#noiseFilt.z1;
+                this.#noiseFilt.z2 = 2 * v2 - this.#noiseFilt.z2;
+                if (Math.abs(this.#noiseFilt.z1) < 1e-15 || !Number.isFinite(this.#noiseFilt.z1)) this.#noiseFilt.z1 = 0;
+                if (Math.abs(this.#noiseFilt.z2) < 1e-15 || !Number.isFinite(this.#noiseFilt.z2)) this.#noiseFilt.z2 = 0;
+                // LP + HP = notch, BP = bandpass, raw = bypass
+                if (nfMode === 0) noise = v2;           // lowpass
+                else if (nfMode === 1) noise = noiseRaw - nfK * v1 - v2;  // highpass
+                else if (nfMode === 2) noise = v1;      // bandpass
+                else noise = (noiseRaw - nfK * v1 - v2) + v2;  // notch = HP + LP
             }
 
             let dry = oscSum + noise;

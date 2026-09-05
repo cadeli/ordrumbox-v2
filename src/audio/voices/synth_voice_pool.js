@@ -73,8 +73,12 @@ export default class SynthVoiceNodePool {
         } catch (e) {
             logger.warn('SynthVoiceNodePool', 'release: reconnect to silent failed', e)
         }
-        node.port.postMessage({ type: 'setPooled', value: true })
-        node.port.postMessage({ type: 'reset' })
+        try {
+            node.port.postMessage({ type: 'setPooled', value: true })
+            node.port.postMessage({ type: 'reset' })
+        } catch (e) {
+            logger.warn('SynthVoiceNodePool', 'release: postMessage failed', e)
+        }
         if (this.#pool.length < this.#maxSize) {
             this.#pool.push(node)
         }
