@@ -6,7 +6,7 @@ import drumkitService from '../logic/services/drumkit_service.js'
 import { drawEnvelope } from '../audio/sample_analyzer.js'
 import { formatNote } from '../core/hz_to_note.js'
 import { showToast } from './toast.js'
-import { downloadJson } from './components/panel_helpers.js'
+import { downloadJson, renderOptions } from './components/panel_helpers.js'
 import { OrKnob } from './components/or_knob.js'
 import { syncComponentMap } from './components/sync_helpers.js'
 import { knobFormat } from './components/panel_helpers.js'
@@ -46,7 +46,7 @@ export default class DrumkitManager extends BasePanel {
                 <div class="dm-file-actions">
                     <button class="dm-icon-btn" id="dm-save-kit" title="Export drumkit mapping">↓</button>
                     <button class="dm-icon-btn" id="dm-load-kit" title="Import drumkit mapping">↑</button>
-                    <input type="file" id="dm-load-kit-file" style="display:none" accept="application/json,.json">
+                    <input type="file" id="dm-load-kit-file" class="hidden-file-input" accept="application/json,.json">
                 </div>
             </div>
             <div class="dm-body">
@@ -60,8 +60,8 @@ export default class DrumkitManager extends BasePanel {
                 <button class="ne-btn" id="dm-import-dir" title="Import a folder of WAV files as a new drumkit (auto-matched to instruments)">Import Directory</button>
                 <button class="ne-btn" id="dm-auto-detect" title="Auto-detect instruments for all tracks">Auto-detect all</button>
                 <button class="ne-btn" id="dm-normalize-all" title="Normalize all samples to 0 dB peak">Normalize all</button>
-                <input type="file" id="dm-add-file" style="display:none" accept=".wav,.flac,.mp3,.aac">
-                <input type="file" id="dm-import-dir-file" style="display:none" accept=".wav,.flac" webkitdirectory directory multiple>
+                <input type="file" id="dm-add-file" class="hidden-file-input" accept=".wav,.flac,.mp3,.aac">
+                <input type="file" id="dm-import-dir-file" class="hidden-file-input" accept=".wav,.flac" webkitdirectory directory multiple>
             </div>
         `
 
@@ -225,13 +225,11 @@ export default class DrumkitManager extends BasePanel {
         if (sound.kit_name && !kitNames.includes(sound.kit_name)) {
             kitNames.unshift(sound.kit_name)
         }
-        const kitOptions = kitNames
-            .map(name => `<option value="${name}" ${name === sound.kit_name ? 'selected' : ''}>${name}</option>`)
-            .join('')
+        const kitOptions = renderOptions(kitNames, sound.kit_name)
 
         const instOptions = InstrumentsManager.DATA?.instruments
-            ?.map(i => `<option value="${i.id}" ${i.id === sound.key ? 'selected' : ''}>${i.id}</option>`)
-            .join('') ?? ''
+            ? renderOptions(InstrumentsManager.DATA.instruments.map(i => i.id), sound.key)
+            : ''
 
         this._detailEl.innerHTML = `
             <div class="dm-detail-header">
@@ -249,7 +247,7 @@ export default class DrumkitManager extends BasePanel {
                     <div class="dm-detail-actions">
                         <button class="ne-btn" id="dm-replace" title="Replace this sample with a WAV file">Replace</button>
                         <button class="ne-btn dm-danger" id="dm-remove" title="Remove this sample from the kit">Remove</button>
-                        <input type="file" id="dm-replace-file" style="display:none" accept=".wav,.flac,.mp3,.aac">
+                        <input type="file" id="dm-replace-file" class="hidden-file-input" accept=".wav,.flac,.mp3,.aac">
                     </div>
                 </div>
                 <div class="dm-detail-right">

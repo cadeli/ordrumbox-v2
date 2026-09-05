@@ -1,7 +1,7 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { escapeHtml, downloadJson, renderOptions } from './components/panel_helpers.js'
+import { escapeHtml, renderOptions } from './components/panel_helpers.js'
 import MidiImportService from '../logic/services/midi_import_service.js'
 import Utils from '../core/utils.js'
 import { showToast } from './toast.js'
@@ -92,7 +92,7 @@ export default class ToolsPanel extends BasePanel {
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="import">
                 <div class="ne-row">
                     <button class="ne-btn" id="tp-import-midi" title="Import a Standard MIDI File (.mid) into a new pattern">Import MIDI</button>
-                    <input type="file" id="tp-import-midi-file" style="display: none" accept=".mid,.midi">
+                    <input type="file" id="tp-import-midi-file" class="hidden-file-input" accept=".mid,.midi">
                 </div>
             </div>
         `

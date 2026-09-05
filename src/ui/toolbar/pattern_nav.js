@@ -5,7 +5,6 @@ import { appState } from '../../state/app_state.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
-import { recalcLoopDerived } from '../../model/track_schema.js'
 import Utils from '../../core/utils.js'
 
 export default class PatternNav {

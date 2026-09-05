@@ -217,18 +217,18 @@ export default class PatternPanel extends BasePanel {
     requestSync() {
         if (this._syncPending) return
         this._syncPending = true
-        this._syncRafId = requestAnimationFrame(() => {
-            this.sync()
-            this._syncPending = false
-            this._syncRafId = null
-            requestAnimationFrame(() => this._updateBarCache())
-        })
+        this.#scheduleSync()
     }
 
     forceSync() {
         this._forceFullRender = true
         if (this._syncRafId) cancelAnimationFrame(this._syncRafId)
         this._syncPending = false
+        this.#scheduleSync()
+    }
+
+    /** @private Shared requestAnimationFrame callback for sync + bar cache update. */
+    #scheduleSync() {
         this._syncRafId = requestAnimationFrame(() => {
             this.sync()
             this._syncPending = false

@@ -3,7 +3,6 @@
 
 import { OrSlider } from '../components/or_slider.js'
 import { fmt } from '../components/panel_helpers.js'
-import { recalcLoopDerived } from '../../model/track_schema.js'
 
 export default class LoopSection {
     /** @param {import('./track_editor.js').default} editor */

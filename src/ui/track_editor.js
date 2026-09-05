@@ -393,7 +393,7 @@ export default class TrackEditor extends BasePanel {
             <div class="te-sample-left">
                 <span class="te-sample-info" title="Pitch / Duration / Peak">${pitchStr} · ${durStr} · ${peakStr}</span>
                 <button class="te-load-btn" data-action="load-sample" title="Import sample to replace current">↑</button>
-                <input type="file" class="te-load-input" style="display:none" accept=".wav,.flac,.mp3,.aac">
+                <input type="file" class="te-load-input hidden-file-input" accept=".wav,.flac,.mp3,.aac">
             </div>
             <canvas class="te-waveform" width="500" height="48"></canvas>
         </div>`

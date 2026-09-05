@@ -1,5 +1,5 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { fmt, pitchToNoteName, knobFormat } from './components/panel_helpers.js'
+import { fmt, pitchToNoteName, knobFormat, renderOptions } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
 import { OrTab } from './components/or_tab.js'
@@ -275,9 +275,7 @@ export default class NoteEditor extends BasePanel {
         if (p.type === 'select') {
             const val = this._resolveSelectValue(p, arpState)
             const options = p.key === 'arpScale' ? scaleKeys : p.options
-            const opts = options.map(opt =>
-                `<option value="${opt}"${opt === val ? ' selected' : ''}>${opt}</option>`
-            ).join('')
+            const opts = renderOptions(options, val)
             return `<div class="ne-row"><label>${p.label}</label><select data-key="${p.key}">${opts}</select></div>`
         }
         return `<div data-ne-slider="${p.key}"></div>`
