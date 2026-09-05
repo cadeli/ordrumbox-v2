@@ -1539,8 +1539,6 @@ min-height: auto;
     text-overflow: ellipsis; white-space: nowrap;
 }
 
-/* ---- Waiting Screen ---- */
-/* Waiting screen styles are inlined in index.html to prevent CLS */
 
 /* ---- Synth groups: fixed blocks with bypass ---- */
 .ne-body,

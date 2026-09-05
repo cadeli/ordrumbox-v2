@@ -88,11 +88,6 @@ export default class WorkletSynthVoice extends BaseVoice {
 
         const gs = this.generatedSound
 
-        // Compute target frequencies
-        const f1 = gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0
-        const f2 = gs.vco2 ? computeOscFrequency(this.noteRatio, gs.vco2.octave, gs.vco2.detune) : 0
-        const f3 = gs.vco3 ? computeOscFrequency(this.noteRatio, gs.vco3.octave, gs.vco3.detune) : 0
-
         // Send trigger
         this.workletNode.port.postMessage({ type: 'trigger', startTime: time })
 
