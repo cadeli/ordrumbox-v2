@@ -483,7 +483,7 @@ body {
     background: linear-gradient(to top, var(--vu-green), var(--vu-yellow) 50%, var(--vu-red));
     border-radius: 2px; transition: height 0.05s ease-out;
 }
-#pattern-panel .pp-vu.selected { background: transparent; }
+#pattern-panel .pp-vu.selected { background: rgba(255,255,255,0.08); }
 #pattern-panel .pp-track-name:hover { color: var(--accent); }
 #pattern-panel .pp-track-name.selected { color: var(--accent); }
 #pattern-panel .pp-divider { width: 12px; background: rgba(255,255,255,0.12); flex-shrink: 0; cursor: pointer; border-radius: 2px; transition: background 0.15s; }
