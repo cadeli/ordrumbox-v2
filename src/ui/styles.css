@@ -500,7 +500,7 @@ body {
     flex-shrink: 0; text-align: center; padding: 6px 0;
     font-size: var(--fs-md); color: var(--text-tertiary); cursor: pointer;
     border: 1px dashed rgba(255,255,255,0.15); border-radius: 4px;
-    margin: auto 8px;
+    margin: auto 8px auto 204px;
     max-width: 200px;
     width: 100%;
 }
@@ -509,7 +509,7 @@ body {
     flex-shrink: 0; text-align: center; padding: 6px 0;
     font-size: var(--fs-md); color: var(--text-tertiary); cursor: pointer;
     border: 1px dashed rgba(255,255,255,0.15); border-radius: 4px;
-    margin: auto 8px;
+    margin: auto 8px auto 204px;
     max-width: 200px;
     width: 100%;
 }
