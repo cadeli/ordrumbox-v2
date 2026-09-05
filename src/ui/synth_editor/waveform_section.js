@@ -8,10 +8,11 @@ export default class WaveformSection {
     /** @param {import('./synth_editor.js').default} editor */
     constructor(editor) { this._editor = editor }
 
-    /** Draw all canvases (waveform + ADSR). */
+    /** Draw all canvases (waveform + ADSR + filter curve). */
     draw() {
         this._drawWaveform()
         this._drawEnvCanvas()
+        this._drawFilterResponse()
     }
 
     _drawWaveform() {
@@ -221,16 +222,84 @@ export default class WaveformSection {
         ]
 
         ctx.beginPath()
-        ctx.strokeStyle = color('waveform-red')
+        ctx.strokeStyle = color('waveform-green')
         ctx.lineWidth = 1.5
-        ctx.setLineDash([4, 4])
         this._drawAdsrPath(ctx, pts, scaleX, scaleY)
         ctx.stroke()
-        ctx.setLineDash([])
 
-        ctx.fillStyle = rgba('waveform-red', 0.15)
+        ctx.fillStyle = rgba('waveform-green', 0.15)
         ctx.beginPath()
         this._drawAdsrPath(ctx, pts, scaleX, scaleY)
+        ctx.closePath()
+        ctx.fill()
+    }
+
+    _drawFilterResponse() {
+        const editor = this._editor
+        const canvas = editor.panel.querySelector('.ss-filter-curve')
+        if (!canvas || !editor._draft) return
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+        const w = canvas.width
+        const h = canvas.height
+        const draft = editor._draft
+        const flt = draft.filter ?? {}
+        const type = flt.type ?? 'lowpass'
+        const fc = Math.max(20, Math.min(20000, flt.freq ?? 400))
+        const Q = Math.max(0.1, Math.min(24, flt.Q ?? 1))
+
+        ctx.fillStyle = color('bg-canvas')
+        ctx.fillRect(0, 0, w, h)
+
+        const fMin = 20
+        const fMax = 20000
+        const dbMin = -30
+        const dbMax = 12
+
+        const logFMin = Math.log10(fMin)
+        const logFMax = Math.log10(fMax)
+        const toX = (f) => ((Math.log10(f) - logFMin) / (logFMax - logFMin)) * w
+        const toY = (db) => h - ((db - dbMin) / (dbMax - dbMin)) * h
+
+        ctx.strokeStyle = color('canvas-grid')
+        ctx.lineWidth = 0.5
+        for (const gf of [100, 1000, 10000]) {
+            const x = toX(gf)
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke()
+        }
+        for (const gdb of [0, -20]) {
+            const y = toY(gdb)
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke()
+        }
+
+        const N = 200
+        ctx.beginPath()
+        ctx.strokeStyle = color('waveform-green')
+        ctx.lineWidth = 1.5
+        let first = true
+        for (let i = 0; i <= N; i++) {
+            const f = fMin * Math.pow(fMax / fMin, i / N)
+            let mag
+            const d = fc * fc - f * f
+            const denom = Math.sqrt(d * d + (fc * f / Q) * (fc * f / Q))
+            if (type === 'highpass') {
+                mag = (f * f) / denom
+            } else if (type === 'bandpass') {
+                mag = (fc * f / Q) / denom
+            } else {
+                mag = (fc * fc) / denom
+            }
+            const db = 20 * Math.log10(Math.max(mag, 1e-10))
+            const x = (i / N) * w
+            const y = toY(Math.max(dbMin, Math.min(dbMax, db)))
+            if (first) { ctx.moveTo(x, y); first = false }
+            else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        ctx.fillStyle = rgba('waveform-green', 0.12)
+        ctx.lineTo(w, toY(0))
+        ctx.lineTo(0, toY(0))
         ctx.closePath()
         ctx.fill()
     }

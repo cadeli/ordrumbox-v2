@@ -141,6 +141,8 @@ export default class GroupsSection {
         let extraHtml = ''
         if (groupName === 'scope') {
             extraHtml = `<canvas class="ss-waveform" width="320" height="60"></canvas>`
+        } else if (isFilter) {
+            extraHtml = `<canvas class="ss-filter-curve" width="320" height="50"></canvas>`
         }
 
         return `<div class="ss-group${isBypassed ? ' bypassed' : ''}" data-ss-card="${groupName}">
