@@ -11,10 +11,10 @@
  *           synth_editor_display.
  *
  * ── Desktop layout (1200×800) ──────────────────────────────────────
- *   Top-left     : 80% × 450px @ top:64  — pattern / piano-roll / synth
- *   Right-top    : 20% × 450px @ top:64  — track editor
- *   Right-bottom : 20% × 300px @ top:518 — note editor (inline in TE)
- *   Bottom-slot  : 80% × 300px @ top:≥518 — about / output / dm / pp / tools
+ *   Top-left     : 75% × 450px @ top:64  — pattern / piano-roll / synth
+ *   Right-top    : 25% × 450px @ top:64  — track editor
+ *   Right-bottom : 25% × 300px @ top:518 — note editor (inline in TE)
+ *   Bottom-slot  : 75% × 300px @ top:≥518 — about / output / dm / pp / tools
  *
  * ── Mobile layout (768×480) ────────────────────────────────────────
  *   Pattern panel: full width, below toolbar
@@ -303,7 +303,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
             expect(TOP_SECONDARY).toBeGreaterThan(TOOLBAR_H + MAIN_H)
         })
 
-        it('Slot panels only cover workspace width (80%), not track editor column', () => {
+        it('Slot panels only cover workspace width (75%), not track editor column', () => {
             const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
             const slotRe = /#about-panel,\s*#tools-panel,\s*#output-panel,\s*#song-panel,\s*#dm-panel\s*\{([^}]*)\}/
             const m = css.match(slotRe)
@@ -311,7 +311,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
             const widthMatch = m[1].match(/width:\s*(\d+)%/)
             expect(widthMatch).not.toBeNull()
             const width = parseInt(widthMatch[1], 10)
-            expect(width).toBe(80)
+            expect(width).toBe(75)
         })
 
         it('Slot panels positioned at workspace left (0%)', () => {

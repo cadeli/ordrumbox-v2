@@ -375,7 +375,7 @@ body {
 #pattern-panel {
     position: fixed;
     left: 0;
-    width: 80%;
+    width: 75%;
     top: 64px;
     height: 450px;
     padding: 6px 12px;
@@ -393,9 +393,9 @@ body {
 /* ---- Track Editor (desktop) ---- */
 .ne-panel.pp-split {
     position: fixed;
-    left: 80%;
+    left: 75%;
     right: 0;
-    width: 20%;
+    width: 25%;
     top: 64px !important;
     height: 754px;
     overflow: hidden;
@@ -413,7 +413,7 @@ body {
 
 #app-content>
 .workspace-panel {
-    width: 80%;
+    width: 75%;
     flex: 1 1 auto;
     min-height: 0;
 }
@@ -771,7 +771,7 @@ body {
 #piano-roll-panel {
     position: fixed;
     left: 0;
-    width: 80%;
+    width: 75%;
     top: 64px;
     height: 450px;
     padding: 0;
@@ -958,12 +958,12 @@ body {
 min-height: auto;
 }
 
-/* ---- Slot Panels (desktop: below workspace, 80% width) ---- */
+/* ---- Slot Panels (desktop: below workspace, 75% width) ---- */
 #about-panel, #tools-panel, #output-panel, #song-panel, #dm-panel {
     position: fixed;
     top: 518px;
     left: 0;
-    width: 80%;
+    width: 75%;
     height: var(--panel-height);
 }
 
@@ -1438,7 +1438,7 @@ min-height: auto;
 #soft-synth-panel {
     position: fixed;
     left: 0;
-    width: 80%;
+    width: 75%;
     top: 64px;
     height: 450px;
     display: none;
