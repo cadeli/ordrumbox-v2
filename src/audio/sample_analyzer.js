@@ -53,9 +53,9 @@ export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
         ? { stroke: strokeOrColors }
         : (strokeOrColors ?? {})
 
-    const stroke = colors.stroke ?? '#4fc3f7'
+    const stroke = colors.stroke ?? '#cccccc'
     const background = colors.background ?? 'rgba(13,13,26,0.3)'
-    const fill = colors.fill ?? 'rgba(79,195,247,0.15)'
+    const fill = colors.fill ?? 'rgba(200,200,200,0.15)'
 
     ctx.clearRect(0, 0, width, height)
     ctx.fillStyle = background

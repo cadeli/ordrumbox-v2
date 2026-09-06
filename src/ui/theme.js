@@ -19,8 +19,8 @@ const TOKENS = {
     'bg-elevated':     '#2a2a3e',
     'bg-input':        '#16213e',
     'bg-hover':        '#3a3a4e',
-    'bg-accent':       '#0f3460',
-    'bg-success':      '#0a2e0a',
+    'bg-accent':       '#222233',
+    'bg-success':      '#1a1a2e',
 
     // Text
     'text':            '#fff',
@@ -34,20 +34,20 @@ const TOKENS = {
     'border':          '#555',
     'border-strong':   '#888',
 
-    // Semantic
-    'accent':          '#e94560',
-    'color-success':   '#4ade80',
-    'color-warning':   '#f59e0b',
-    'color-danger':    '#c62828',
-    'color-info':      '#4fc3f7',
+    // Semantic (monochrome)
+    'accent':          '#ffffff',
+    'color-success':   '#ffffff',
+    'color-warning':   '#cccccc',
+    'color-danger':    '#999999',
+    'color-info':      '#dddddd',
 
-    // Canvas / Waveform
+    // Canvas / Waveform (monochrome)
     'canvas-bg':       '#0d0d1a',
     'canvas-grid':     '#2D3438',
-    'waveform-cyan':   '#00fff5',
-    'waveform-green':  '#8EEA3B',
-    'waveform-red':    '#F24C4C',
-    'waveform-yellow': '#f5e642',
+    'waveform-cyan':   '#cccccc',
+    'waveform-green':  '#aaaaaa',
+    'waveform-red':    '#888888',
+    'waveform-yellow': '#bbbbbb',
     'canvas-shadow':   '#000000',
     'toast-shadow':    '#000000',
 }
