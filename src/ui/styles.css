@@ -322,12 +322,11 @@ body {
     border-color: var(--line);
 }
 .tb-gen-btn:hover {
-    background: rgba(255,255,255,0.12); border-color: var(--color-warning);
+    background: var(--surface-2); border-color: var(--muted);
 }
 #tb .tb-gen-btn.active {
-    background: rgba(255,255,255,0.15); color: var(--color-warning);
-    border-color: var(--color-warning);
-    box-shadow: 0 0 6px rgba(255,255,255,0.2);
+    background: var(--black); color: var(--bg);
+    border-color: var(--black);
 }
 
 /* ---- Undo/Redo Buttons ---- */
