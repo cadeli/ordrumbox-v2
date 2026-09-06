@@ -1534,10 +1534,10 @@ min-height: auto;
 #soft-synth-panel .ss-mod-pill {
     display: inline-block; padding: 1px 6px; border-radius: 3px;
     font-size: var(--fs-xs); font-family: monospace;
-    background: rgba(80,80,80,0.25); color: var(--text-disabled);
+    background: var(--surface-2); color: var(--muted);
 }
 #soft-synth-panel .ss-mod-pill.active {
-    background: rgba(255,255,255,0.12); color: var(--color-success);
+    background: var(--black); color: var(--bg);
 }
 /* Shared row styles for selects, booleans, icon rows */
 #soft-synth-panel .ne-row {
