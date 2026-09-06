@@ -14,40 +14,40 @@
 // Fallback hex values — must stay in sync with styles.css :root
 const TOKENS = {
     // Backgrounds
-    'bg-canvas':       '#0d0d1a',
-    'bg':              '#1a1a2e',
-    'bg-elevated':     '#2a2a3e',
-    'bg-input':        '#16213e',
-    'bg-hover':        '#3a3a4e',
-    'bg-accent':       '#222233',
-    'bg-success':      '#1a1a2e',
+    'bg-canvas':       '#D1D2CE',
+    'bg':              '#E7E8E4',
+    'bg-elevated':     '#D9DAD6',
+    'bg-input':        '#CFD0CC',
+    'bg-hover':        '#CFD0CC',
+    'bg-accent':       '#596B61',
+    'bg-success':      '#596B61',
 
     // Text
-    'text':            '#fff',
-    'text-dim':        '#eee',
-    'text-secondary':  '#ccc',
-    'text-tertiary':   '#888',
-    'text-disabled':   '#555',
+    'text':            '#202321',
+    'text-dim':        '#202321',
+    'text-secondary':  '#686A67',
+    'text-tertiary':   '#686A67',
+    'text-disabled':   '#A9AAA6',
 
     // Borders
-    'border-subtle':   '#333',
-    'border':          '#555',
-    'border-strong':   '#888',
+    'border-subtle':   '#C1C2BE',
+    'border':          '#A9AAA6',
+    'border-strong':   '#151716',
 
-    // Semantic (monochrome)
-    'accent':          '#ffffff',
-    'color-success':   '#ffffff',
-    'color-warning':   '#cccccc',
-    'color-danger':    '#999999',
-    'color-info':      '#dddddd',
+    // Semantic (mapped to palette)
+    'accent':          '#596B61',
+    'color-success':   '#596B61',
+    'color-warning':   '#686A67',
+    'color-danger':    '#686A67',
+    'color-info':      '#596B61',
 
-    // Canvas / Waveform (monochrome)
-    'canvas-bg':       '#0d0d1a',
-    'canvas-grid':     '#2D3438',
-    'waveform-cyan':   '#cccccc',
-    'waveform-green':  '#aaaaaa',
-    'waveform-red':    '#888888',
-    'waveform-yellow': '#bbbbbb',
+    // Canvas / Waveform
+    'canvas-bg':       '#D1D2CE',
+    'canvas-grid':     '#C1C2BE',
+    'waveform-cyan':   '#202321',
+    'waveform-green':  '#596B61',
+    'waveform-red':    '#202321',
+    'waveform-yellow': '#686A67',
     'canvas-shadow':   '#000000',
     'toast-shadow':    '#000000',
 }

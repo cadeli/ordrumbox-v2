@@ -3,54 +3,60 @@
    ======================================== */
 
 :root {
-  /* ── Neutral Scale ── */
-  --gray-100: #eee;
-  --gray-200: #ccc;
-  --gray-300: #aaa;
-  --gray-400: #888;
-  --gray-500: #666;
-  --gray-600: #555;
-  --gray-700: #444;
-  --gray-800: #333;
-  --gray-900: #1a1a2e;
+  /* ── Colors ── */
+  --bg:        #E7E8E4;
+  --surface:   #D9DAD6;
+  --surface-2: #CFD0CC;
+  --line:      #A9AAA6;
+  --muted:     #686A67;
+  --text:      #202321;
+  --black:     #151716;
+  --accent:    #596B61;
 
-  /* ── Accent (monochrome) ── */
-  --accent: #ffffff;
-  --accent-400: #e0e0e0;
-  --accent-600: #cccccc;
-  --accent-700: #ffffff;
+  /* ── Derived backgrounds ── */
+  --bg-deep:     #D1D2CE;
+  --bg-canvas:   #D1D2CE;
+  --bg-surface:  #D9DAD6;
+  --bg-input:    #CFD0CC;
+  --bg-elevated: #D9DAD6;
+  --bg-hover:    #CFD0CC;
+  --bg-selected: #151716;
+  --bg-accent:   #596B61;
 
-  /* ── Semantic (monochrome) ── */
-  --color-success: #ffffff;
-  --color-success-dark: #aaaaaa;
-  --color-warning: #cccccc;
-  --color-danger: #999999;
-  --color-danger-light: #bbbbbb;
-  --color-info: #dddddd;
+  /* ── Derived text ── */
+  --text-dim:        #202321;
+  --text-secondary:  #686A67;
+  --text-tertiary:   #686A67;
+  --text-disabled:   #A9AAA6;
 
-  /* ── Backgrounds ── */
-  --bg-deep: #0a0a14;
-  --bg-canvas: #0d0d1a;
-  --bg: #1a1a2e;
-  --bg-surface: #12121e;
-  --bg-input: #16213e;
-  --bg-elevated: #2a2a3e;
-  --bg-hover: #3a3a4e;
-  --bg-accent: #222233;
-  --bg-selected: #2a2a3e;
-  --bg-success: #1a1a2e;
+  /* ── Derived borders ── */
+  --border-subtle: #C1C2BE;
+  --border:        #A9AAA6;
+  --border-strong: #151716;
 
-  /* ── Text ── */
-  --text: #fff;
-  --text-dim: #eee;
-  --text-secondary: #ccc;
-  --text-tertiary: #888;
-  --text-disabled: #555;
+  /* ── Accent variants ── */
+  --accent-400: #6a7d73;
+  --accent-600: #4a5c52;
+  --accent-700: #596B61;
 
-  /* ── Borders ── */
-  --border-subtle: #333;
-  --border: #555;
-  --border-strong: #888;
+  /* ── Semantic (mapped to palette) ── */
+  --color-success:      #596B61;
+  --color-success-dark: #4a5c52;
+  --color-warning:      #686A67;
+  --color-danger:       #686A67;
+  --color-danger-light: #A9AAA6;
+  --color-info:         #596B61;
+
+  /* ── Gray scale (mapped) ── */
+  --gray-100: #E7E8E4;
+  --gray-200: #D9DAD6;
+  --gray-300: #CFD0CC;
+  --gray-400: #A9AAA6;
+  --gray-500: #686A67;
+  --gray-600: #686A67;
+  --gray-700: #202321;
+  --gray-800: #151716;
+  --gray-900: #151716;
 
   /* ── Typography ── */
   --fs-xs: 9px;
@@ -69,32 +75,51 @@
 
   /* ── Layout ── */
   --panel-height: 300px;
+  --control-height: 32px;
+  --slider-height: 2px;
+  --slider-thumb: 9px;
 
-  /* ── VU Meter (monochrome) ── */
-  --vu-green: #cccccc;
-  --vu-red: #888888;
-  --vu-yellow: #aaaaaa;
+  /* ── Spacing ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
 
-  /* ── Canvas / Waveform (monochrome) ── */
-  --canvas-bg: #0d0d1a;
-  --canvas-grid: #2D3438;
-  --waveform-cyan: #cccccc;
-  --waveform-green: #aaaaaa;
-  --waveform-red: #888888;
-  --waveform-yellow: #bbbbbb;
-  --canvas-shadow: rgba(0, 0, 0, 0.3);
-  --toast-shadow: rgba(0, 0, 0, 0.5);
+  /* ── Radius ── */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* ── VU Meter ── */
+  --vu-green: #596B61;
+  --vu-yellow: #686A67;
+  --vu-red: #202321;
+
+  /* ── Canvas / Waveform ── */
+  --canvas-bg: #D1D2CE;
+  --canvas-grid: #C1C2BE;
+  --waveform-cyan: #202321;
+  --waveform-green: #596B61;
+  --waveform-red: #202321;
+  --waveform-yellow: #686A67;
+  --canvas-shadow: rgba(0, 0, 0, 0.1);
+  --toast-shadow: rgba(0, 0, 0, 0.15);
 }
 
 /* ---- Global ---- */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "IBM Plex Mono", monospace;
     line-height: 1.5;
     color: var(--text);
     background: var(--bg);
     margin: 0;
     padding: 0;
     overflow: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
 #app-main {
@@ -173,24 +198,26 @@ body {
     overflow: visible;
 }
 #tb button {
-    font-size: var(--fs-md); padding: 5px 8px; border: 1px solid var(--border);
-    border-radius: 4px; background: var(--bg-input); color: var(--text-dim);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--fs-md); padding: 5px 8px; border: 1px solid var(--line);
+    border-radius: var(--radius-sm); background: transparent; color: var(--text);
     cursor: pointer; box-sizing: border-box;
     text-transform: uppercase; white-space: nowrap;
     flex-shrink: 0;
     touch-action: manipulation;
 }
 #tb select {
-    font-size: var(--fs-md); padding: 5px 6px; border: 1px solid var(--border);
-    border-radius: 4px; background: var(--bg-input); color: var(--text-dim);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--fs-md); padding: 5px 6px; border: 1px solid var(--line);
+    border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text);
     cursor: pointer; box-sizing: border-box;
     flex-shrink: 0;
     touch-action: manipulation;
 }
-#tb button:hover, #tb select:hover { border-color: var(--accent); }
-#tb button:active { background: var(--accent); color: var(--text); }
+#tb button:hover { background: var(--surface-2); }
+#tb button:active { background: var(--black); color: var(--bg); }
 #tb .tb-brand {
-    font-size: 15px; font-weight: bold; color: var(--accent);
+    font-size: 15px; font-weight: bold; color: var(--text);
     letter-spacing: 0.5px; flex-shrink: 0; user-select: none;
     min-width: 140px; max-width: 180px; text-align: center;
 }
@@ -247,19 +274,25 @@ body {
     background: none; outline: none; height: 16px;
 }
 #tb .tb-bpm-panel input[type=range]::-webkit-slider-runnable-track {
-    height: 2px; background: var(--color-success); border-radius: 1px;
+    height: 2px; background: var(--line); border-radius: 0;
 }
 #tb .tb-bpm-panel input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
-    width: 10px; height: 14px; border-radius: 2px; margin-top: -6px;
-    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+    width: 9px; height: 9px; border-radius: 0; margin-top: -3.5px;
+    background: var(--black); border: none; cursor: pointer;
 }
 #tb .tb-bpm-panel input[type=range]::-moz-range-track {
-    height: 2px; background: var(--color-success); border-radius: 1px; border: none;
+    height: 2px; background: var(--line); border-radius: 0; border: none;
 }
 #tb .tb-bpm-panel input[type=range]::-moz-range-thumb {
-    width: 10px; height: 14px; border-radius: 2px;
-    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+    width: 9px; height: 9px; border-radius: 0;
+    background: var(--black); border: none; cursor: pointer;
+}
+#tb .tb-bpm-panel input[type=range]:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+#tb .tb-bpm-panel input[type=range]:focus::-moz-range-thumb {
+    box-shadow: 0 0 0 2px var(--accent);
 }
 #tb .tb-bpm-panel .tb-bpm-val {
     color: var(--text-dim); font-weight: bold; font-size: var(--fs-md); min-width: 28px; text-align: center;
@@ -270,23 +303,23 @@ body {
     display: flex; gap: 3px;
 }
 .tb-view-btn {
+    font-family: "IBM Plex Mono", monospace;
     font-size: var(--fs-sm); padding: 3px 6px;
-    border: 1px solid var(--border); border-radius: 3px;
-    background: var(--bg-input); color: var(--text-dim);
+    border: 1px solid var(--line); border-radius: var(--radius-sm);
+    background: transparent; color: var(--text);
     cursor: pointer; text-transform: uppercase; font-weight: bold;
     white-space: nowrap;
     touch-action: manipulation;
 }
-.tb-view-btn:hover { border-color: var(--accent); color: var(--text); }
+.tb-view-btn:hover { background: var(--surface-2); }
 #tb .tb-view-btn.active {
-    background: var(--accent-700); color: var(--text); border-color: var(--accent-700);
-    box-shadow: 0 0 8px rgba(255,255,255,0.3);
+    background: var(--black); color: var(--bg); border-color: var(--black);
 }
 
-/* ---- Generation Buttons (amber tint) ---- */
+/* ---- Generation Buttons ---- */
 .tb-gen-btn {
-    background: rgba(255,255,255,0.06); color: var(--color-warning);
-    border-color: rgba(255,255,255,0.15);
+    background: transparent; color: var(--text);
+    border-color: var(--line);
 }
 .tb-gen-btn:hover {
     background: rgba(255,255,255,0.12); border-color: var(--color-warning);
@@ -554,22 +587,22 @@ body {
 }
 #pattern-panel .pp-volume::-webkit-slider-runnable-track,
 #pattern-panel .pp-master-volume::-webkit-slider-runnable-track {
-    height: 2px; background: var(--color-success); border-radius: 1px;
+    height: 2px; background: var(--line); border-radius: 0;
 }
 #pattern-panel .pp-volume::-webkit-slider-thumb,
 #pattern-panel .pp-master-volume::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
-    width: 10px; height: 14px; border-radius: 2px; margin-top: -6px;
-    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+    width: 9px; height: 9px; border-radius: 0; margin-top: -3.5px;
+    background: var(--black); border: none; cursor: pointer;
 }
 #pattern-panel .pp-volume::-moz-range-track,
 #pattern-panel .pp-master-volume::-moz-range-track {
-    height: 2px; background: var(--color-success); border-radius: 1px; border: none;
+    height: 2px; background: var(--line); border-radius: 0; border: none;
 }
 #pattern-panel .pp-volume::-moz-range-thumb,
 #pattern-panel .pp-master-volume::-moz-range-thumb {
-    width: 10px; height: 14px; border-radius: 2px;
-    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+    width: 9px; height: 9px; border-radius: 0;
+    background: var(--black); border: none; cursor: pointer;
 }
 #pattern-panel .pp-toolbar-row {
     display: flex;
@@ -622,67 +655,64 @@ body {
 }
 #pattern-panel .pp-cell {
     flex: 1; height: 100%;
-    background: var(--bg); border-radius: 0;
+    background: #D1D2CE; border-radius: var(--radius-sm);
     cursor: default; min-width: 0; position: relative;
-    border: 1px solid var(--bg-elevated);
+    border: 1px solid #C1C2BE;
     touch-action: manipulation;
 }
 #pattern-panel .pp-cell.filled { 
-    background: transparent;
+    background: #202321; border-color: #202321;
     padding: 2px;
     z-index: var(--z-content);
 }
-#pattern-panel .pp-note-slice { height: 100%; border-radius: 2px; background: linear-gradient(160deg, var(--accent-400) 0%, var(--accent-700) 100%); box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.3); }
+#pattern-panel .pp-note-slice { height: 100%; border-radius: 2px; background: #202321; }
 #pattern-panel .pp-cell.pp-trig-rand,
 #pattern-panel .pp-cell.pp-trig-fixed {
-    background: transparent;
+    background: #D1D2CE;
     padding: 2px;
 }
 #pattern-panel .pp-cell.pp-trig-rand .pp-note-slice,
 #pattern-panel .pp-cell.pp-trig-fixed .pp-note-slice {
-    background: linear-gradient(160deg, #333344 0%, #222233 100%);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.3);
+    background: #686A67;
 }
 #pattern-panel .pp-cell.pp-triggered {
-    background: var(--text) !important;
-    box-shadow: 0 0 16px 4px rgba(255,255,255,0.9), 0 0 30px rgba(255,255,255,0.5) !important;
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
     transition: none;
 }
 #pattern-panel .pp-cell.pp-triggered .pp-note-slice {
-    background: var(--text) !important;
-    box-shadow: 0 0 16px 4px rgba(255,255,255,0.9), 0 0 30px rgba(255,255,255,0.5) !important;
+    background: var(--accent) !important;
 }
-#pattern-panel .pp-cell.selected { outline: 4px solid var(--text); outline-offset: -2px; z-index: var(--z-overlay); }
-#pattern-panel .pp-cell.selected.filled { outline: 5px solid var(--text); border-color: var(--text); }
-#pattern-panel .pp-note-slice.selected { outline: 2px solid var(--text); outline-offset: -1px; z-index: var(--z-content); filter: brightness(1.3); }
+#pattern-panel .pp-cell.selected { outline: 2px solid var(--black); outline-offset: -1px; z-index: var(--z-overlay); }
+#pattern-panel .pp-cell.selected.filled { outline: 2px solid var(--black); border-color: var(--black); }
+#pattern-panel .pp-note-slice.selected { outline: 2px solid var(--black); outline-offset: -1px; z-index: var(--z-content); }
 #pattern-panel .pp-cell-multi { display: flex; padding: 0; border: none; }
-#pattern-panel .pp-cell-multi .pp-note-slice { height: 100%; background: linear-gradient(160deg, var(--accent-400) 0%, var(--accent-700) 100%); box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2); border-right: 1px solid rgba(0,0,0,0.4); position: relative; flex-shrink: 0; border-radius: 2px; }
+#pattern-panel .pp-cell-multi .pp-note-slice { height: 100%; background: #202321; border-right: 1px solid #D1D2CE; position: relative; flex-shrink: 0; border-radius: 2px; }
 #pattern-panel .pp-cell-multi .pp-note-slice:last-child { border-right: none; }
 #pattern-panel .pp-pitch-bar {
     position: absolute; left: 0; width: 25%; height: 1px;
-    background: rgba(255,255,255,0.35); border-radius: 1px; pointer-events: none;
+    background: var(--accent); border-radius: 1px; pointer-events: none;
     z-index: var(--z-content);
 }
 #pattern-panel .pp-cell.pp-loop {
-    border-right: 4px solid var(--color-info);
-    box-shadow: inset -8px 0 0 rgba(255,255,255,0.15);
+    border-right: 4px solid var(--accent);
 }
 #pattern-panel .pp-cell-out { opacity: 0.1; background: var(--bg-canvas); }
 
 /* ---- Note Tooltip ---- */
 #pattern-panel .pp-tooltip {
     position: absolute;
-    background: rgba(0, 0, 0, 0.85);
+    background: var(--surface);
     color: var(--text);
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
+    font-family: "IBM Plex Mono", monospace;
     font-size: var(--fs-base);
-    font-family: monospace;
     white-space: pre-wrap;
     pointer-events: none;
     z-index: var(--z-panel);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--line);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* ---- LED Indicators ---- */
@@ -732,8 +762,8 @@ body {
 }
 
 #pattern-panel .pp-playhead {
-    position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
-    background: var(--color-info); pointer-events: none;
+    position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--accent); pointer-events: none;
     z-index: var(--z-toolbar);
 }
 
@@ -1024,19 +1054,25 @@ min-height: auto;
     background: none; outline: none; height: 16px;
 }
 .ne-row input[type=range]::-webkit-slider-runnable-track {
-    height: 2px; background: var(--color-success); border-radius: 1px;
+    height: 2px; background: var(--line); border-radius: 0;
 }
 .ne-row input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
-    width: 10px; height: 14px; border-radius: 2px; margin-top: -6px;
-    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+    width: 9px; height: 9px; border-radius: 0; margin-top: -3.5px;
+    background: var(--black); border: none; cursor: pointer;
 }
 .ne-row input[type=range]::-moz-range-track {
-    height: 2px; background: var(--color-success); border-radius: 1px; border: none;
+    height: 2px; background: var(--line); border-radius: 0; border: none;
 }
 .ne-row input[type=range]::-moz-range-thumb {
-    width: 10px; height: 14px; border-radius: 2px;
-    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+    width: 9px; height: 9px; border-radius: 0;
+    background: var(--black); border: none; cursor: pointer;
+}
+.ne-row input[type=range]:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+.ne-row input[type=range]:focus::-moz-range-thumb {
+    box-shadow: 0 0 0 2px var(--accent);
 }
 .ne-row select {
     width: 80px; font-size: var(--fs-sm); padding: 2px;
@@ -1090,8 +1126,8 @@ min-height: auto;
 .ne-tab-btn {
     flex: 0 0 auto; width: 70px; padding: 4px 2px; font-size: var(--fs-xs); font-weight: bold;
     text-transform: uppercase; letter-spacing: 0;
-    background: transparent; color: var(--text-dim);
-    border: 1px solid transparent; border-radius: 3px;
+    background: transparent; color: var(--muted);
+    border: none; border-bottom: 2px solid transparent; border-radius: 0;
     cursor: pointer; transition: all 0.15s;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -1099,11 +1135,10 @@ min-height: auto;
     flex: 1 1 0; min-width: 0; width: auto; text-align: center;
 }
 .ne-tab-btn:hover {
-    color: var(--text); background: rgba(255,255,255,0.05);
+    color: var(--text);
 }
 .ne-tab-btn.active {
-    color: var(--color-success); background: rgba(255,255,255,0.06);
-    border-color: var(--color-success);
+    color: var(--black); border-bottom-color: var(--black);
 }
 .ne-tab-panel {
     display: grid;
@@ -1182,16 +1217,16 @@ min-height: auto;
     height: 16px;
 }
 .ne-range-container input[type="range"]::-webkit-slider-runnable-track {
-    height: 2px; background: var(--color-success); border-radius: 1px;
+    height: 2px; background: var(--line); border-radius: 0;
 }
 .ne-range-container input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
     pointer-events: auto;
-    width: 10px; height: 14px; border-radius: 2px; margin-top: -6px;
-    background: transparent; border: 1.5px solid var(--color-success); cursor: pointer;
+    width: 9px; height: 9px; border-radius: 0; margin-top: -3.5px;
+    background: var(--black); border: none; cursor: pointer;
 }
 .ne-range-container input[type="range"]::-moz-range-track {
-    height: 2px; background: var(--color-success); border-radius: 1px; border: none;
+    height: 2px; background: var(--line); border-radius: 0; border: none;
 }
 .ne-range-container input[type="range"]::-moz-range-thumb {
     pointer-events: auto;
@@ -1209,13 +1244,15 @@ min-height: auto;
 
 /* ---- Buttons ---- */
 .ne-btn {
-    font-size: var(--fs-sm); padding: 2px 8px; border: 1px solid var(--border);
-    border-radius: 3px; background: var(--bg-input); color: var(--text-dim);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--fs-sm); padding: 2px 8px; border: 1px solid var(--line);
+    border-radius: var(--radius-sm); background: transparent; color: var(--text);
     cursor: pointer; min-width: 40px; text-align: center;
     text-transform: uppercase;
     width: 100%; box-sizing: border-box;
 }
-.ne-btn.active { background: var(--accent); border-color: var(--accent); color: var(--text); }
+.ne-btn:hover { background: var(--surface-2); }
+.ne-btn.active { background: var(--black); border-color: var(--black); color: var(--bg); }
 
 /* Tools actions are independent commands, not form fields.  Keeping their
    intrinsic width avoids oversized buttons when the fixed panel is wide. */
@@ -1448,14 +1485,15 @@ min-height: auto;
     vertical-align: middle;
 }
 #soft-synth-panel .ss-wave-tab {
-    font-size: var(--fs-xs); padding: 2px 6px; border: 1px solid var(--border);
-    border-radius: 3px; background: var(--bg-input); color: var(--text-secondary);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: var(--fs-xs); padding: 2px 6px; border: none;
+    border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--muted);
     cursor: pointer; text-transform: uppercase;
 }
-#soft-synth-panel .ss-wave-tab.active { background: var(--accent); color: var(--text); border-color: var(--accent); }
+#soft-synth-panel .ss-wave-tab.active { background: transparent; color: var(--black); border-bottom-color: var(--black); }
 /* Groups row */
 #soft-synth-panel .ss-group-label {
-    color: var(--accent); font-size: var(--fs-md); text-transform: uppercase;
+    color: var(--text); font-size: var(--fs-md); text-transform: uppercase;
     letter-spacing: 0.5px; font-weight: bold;
 }
 #soft-synth-panel .ss-group-wave-row {
@@ -1555,22 +1593,22 @@ min-height: auto;
     background: transparent; border: none;
     box-sizing: border-box; outline: none;
 }
-.or-knob.dragging { outline: 2px solid #000; }
+.or-knob.dragging { outline: 2px solid var(--black); }
 .or-knob-arc {
     position: absolute; inset: 0; border-radius: 50%;
     background: conic-gradient(from -135deg,
-        var(--color-success) 0deg, var(--color-success) var(--arc-deg),
+        var(--black) 0deg, var(--black) var(--arc-deg),
         transparent var(--arc-deg), transparent 270deg,
-        var(--border-subtle) 270deg, var(--border-subtle) 360deg);
-    mask: radial-gradient(circle, transparent 48%, black 52%, black 72%, transparent 76%);
-    -webkit-mask: radial-gradient(circle, transparent 48%, black 52%, black 72%, transparent 76%);
+        var(--line) 270deg, var(--line) 360deg);
+    mask: radial-gradient(circle, transparent 50%, black 52%, black 70%, transparent 72%);
+    -webkit-mask: radial-gradient(circle, transparent 50%, black 52%, black 70%, transparent 72%);
 }
 .or-knob-disc {
-    position: absolute; inset: 4px; border-radius: 50%;
-    background: radial-gradient(circle at 40% 35%, var(--bg-elevated), var(--bg-input));
+    position: absolute; inset: 6px; border-radius: 50%;
+    background: var(--surface);
 }
 .or-knob-label {
-    color: var(--text-secondary); font-size: var(--fs-sm); text-align: center;
+    color: var(--muted); font-size: var(--fs-sm); text-align: center;
     line-height: 1; white-space: nowrap; overflow: hidden;
     text-overflow: ellipsis; max-width: 72px;
 }
@@ -1661,6 +1699,19 @@ min-height: auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4px 12px;
+}
+
+/* ── Spectrum Analyzer ── */
+#op-analyzer-group {
+    padding: 8px;
+}
+#op-spectrum {
+    display: block;
+    width: 100%;
+    height: 80px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg-canvas);
 }
 
 /* ── Compressor Panel (VST style) ─────────────────────── */
@@ -1795,9 +1846,9 @@ min-height: auto;
 }
 
 .dm-list-item.dm-selected {
-    background: var(--bg-selected);
-    border: 1px solid var(--accent);
-    color: var(--text);
+    background: var(--black);
+    border: 1px solid var(--black);
+    color: var(--bg);
 }
 
 .dm-play-btn, .dm-icon-btn {

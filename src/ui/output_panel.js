@@ -20,7 +20,6 @@ export default class OutputPanel extends BasePanel {
     #visible = false
     #lowcutVal = 35
     #hicutVal = 18500
-    #spectrumLut = null
     #saveTimer = null
     #masterVol = null
     #preGain = null
@@ -287,27 +286,20 @@ this.container.innerHTML = `
         data.analyser.getByteFrequencyData(data.gFftData)
         const bins     = data.gFftData
         const beatCount = Math.min(bins.length, w)
-        const beatW     = w / beatCount
-
-        if (!this.#spectrumLut || this.#spectrumLut.length < beatCount) {
-            this.#spectrumLut = new Array(beatCount)
-            for (let i = 0; i < beatCount; i++) {
-                const val = i / beatCount
-                const r = Math.floor(200 + 55 * val)
-                const g = Math.floor(69 * (1 - val * 0.5))
-                const b = Math.floor(96 * (1 - val * 0.7))
-                this.#spectrumLut[i] = `rgb(${r},${g},${b})`
-            }
-        }
 
         ctx.fillStyle = this.#bgColor
         ctx.fillRect(0, 0, w, h)
 
+        ctx.beginPath()
+        ctx.strokeStyle = '#202321'
+        ctx.lineWidth = 1.5
         for (let i = 0; i < beatCount; i++) {
             const val  = bins[i] / 255
-            const beatH = val * h
-            ctx.fillStyle = this.#spectrumLut[i]
-            ctx.fillRect(i * beatW, h - beatH, Math.max(1, beatW - 0.5), beatH)
+            const x = (i / beatCount) * w
+            const y = h - val * h
+            if (i === 0) ctx.moveTo(x, y)
+            else ctx.lineTo(x, y)
         }
+        ctx.stroke()
     }
 }
