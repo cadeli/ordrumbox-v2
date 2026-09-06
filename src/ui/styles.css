@@ -375,7 +375,6 @@ body {
 #pattern-panel {
     position: fixed;
     left: 0;
-    width: 75%;
     top: 64px;
     height: 450px;
     padding: 6px 12px;
@@ -519,16 +518,17 @@ body {
 #pattern-panel .pp-vu.selected { background: rgba(255,255,255,0.08); }
 #pattern-panel .pp-track-name:hover { color: var(--accent); }
 #pattern-panel .pp-track-name.selected { color: var(--accent); }
-#pattern-panel .pp-divider { width: 12px; background: rgba(255,255,255,0.12); flex-shrink: 0; cursor: pointer; border-radius: 2px; transition: background 0.15s; }
-#pattern-panel .pp-divider.muted { background: var(--accent); }
-#pattern-panel .pp-divider:hover { background: rgba(255,255,255,0.2); }
-#pattern-panel .pp-divider.muted:hover { background: rgba(255,255,255,0.3); }
+#pattern-panel .pp-divider { width: 12px; background: var(--surface-2); border: 1px solid var(--line); flex-shrink: 0; cursor: pointer; border-radius: 2px; transition: background 0.15s; }
+#pattern-panel .pp-divider.muted { background: var(--accent); border-color: var(--accent); }
+#pattern-panel .pp-divider:hover { background: var(--surface); border-color: var(--muted); }
+#pattern-panel .pp-divider.muted:hover { background: var(--accent); border-color: var(--accent); }
 #pattern-panel .pp-solo {
     width: 12px; flex-shrink: 0; cursor: pointer; border-radius: 2px;
-    transition: background 0.15s; background: rgba(255,255,255,0.12);
+    transition: background 0.15s; background: var(--surface-2); border: 1px solid var(--line);
 }
-#pattern-panel .pp-solo.active { background: var(--color-warning); }
-#pattern-panel .pp-solo:hover { background: rgba(255,255,255,0.2); }
+#pattern-panel .pp-solo.active { background: var(--color-warning); border-color: var(--color-warning); }
+#pattern-panel .pp-solo.active:hover { background: var(--color-warning); border-color: var(--muted); }
+#pattern-panel .pp-solo:hover { background: var(--surface); border-color: var(--muted); }
 #pattern-panel .pp-add-track {
     flex-shrink: 0; text-align: center; padding: 6px 0;
     font-size: var(--fs-md); color: var(--text-tertiary); cursor: pointer;
@@ -771,7 +771,6 @@ body {
 #piano-roll-panel {
     position: fixed;
     left: 0;
-    width: 75%;
     top: 64px;
     height: 450px;
     padding: 0;
@@ -1438,7 +1437,6 @@ min-height: auto;
 #soft-synth-panel {
     position: fixed;
     left: 0;
-    width: 75%;
     top: 64px;
     height: 450px;
     display: none;
@@ -2261,6 +2259,7 @@ min-height: auto;
 
     /* Mobile: workspace panels */
     .workspace-panel {
+        width: 100%;
         bottom: 60px;
         overflow-y: auto;
     }
@@ -2278,6 +2277,21 @@ min-height: auto;
         height: auto !important;
         bottom: 60px !important;
         overflow-y: auto !important;
+    }
+
+    /* Mobile: track editor fills available space */
+    #te-panel .track-editor {
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #te-panel .te-scroll {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
     }
 
     #te-panel.pp-split {

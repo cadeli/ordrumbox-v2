@@ -66,7 +66,7 @@ function hasRuleAnywhere(selector, prop, value) {
 const MOBILE_MEDIA = extractMediaBlock('@media\\s*\\(max-width:\\s*768px\\),\\s*\\(max-height:\\s*480px\\)')
 const DESKTOP_MEDIA = extractMediaBlock('@media\\s*\\(min-width:\\s*769px\\)\\s*and\\s*\\(min-height:\\s*481px\\)')
 
-// Panels that must get mobile full-width treatment
+// Panels that must get mobile full-width treatment (position:fixed + !important)
 const MOBILE_PANELS = [
     '#te-panel',
     '#tools-panel',
@@ -377,6 +377,7 @@ describe('Mobile CSS: Complete panel coverage check', () => {
     })
 
     it('workspace panels have .workspace-panel class rule in mobile CSS', () => {
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'width', '100%')).toBe(true)
         expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'bottom', '60px')).toBe(true)
         expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'overflow-y', 'auto')).toBe(true)
     })
@@ -386,7 +387,7 @@ describe('Mobile CSS: Complete panel coverage check', () => {
             .map(m => '#' + m[1])
             .filter(sel => {
                 const re = new RegExp(`${escapeRegex(sel)}\\s*\\{[^}]*width:\\s*100%`, 's')
-                return re.test(MOBILE_MEDIA)
+                return re.test(MOBILE_MEDIA) || hasCombinedRule(MOBILE_MEDIA, sel, 'width', '100%')
             })
         for (const panel of allPanelsWithWidth) {
             expect(MOBILE_PANELS).toContain(panel)
