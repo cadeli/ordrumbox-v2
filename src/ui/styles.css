@@ -527,8 +527,6 @@ body {
     transition: background 0.15s; background: var(--surface-2); border: 1px solid var(--line);
 }
 #pattern-panel .pp-solo.active { background: var(--color-warning); border-color: var(--color-warning); }
-#pattern-panel .pp-solo.active:hover { background: var(--color-warning); border-color: var(--muted); }
-#pattern-panel .pp-solo:hover { background: var(--surface); border-color: var(--muted); }
 #pattern-panel .pp-add-track {
     flex-shrink: 0; text-align: center; padding: 6px 0;
     font-size: var(--fs-md); color: var(--text-tertiary); cursor: pointer;
