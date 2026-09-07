@@ -56,6 +56,7 @@ class WaitingScreen {
 
     async loadMainApp() {
         try {
+            const { logger } = await import('./core/logger.js')
             const mainModule = await import('./main.js')
 
             if (typeof mainModule.init === 'function') {

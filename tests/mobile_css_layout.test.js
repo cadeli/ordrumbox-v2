@@ -154,8 +154,10 @@ describe('Mobile CSS: Panel full-width positioning', () => {
         })
     }
 
-    it('.workspace-panel: bottom: 60px, overflow-y: auto', () => {
-        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'bottom', '60px')).toBe(true)
+    it('.workspace-panel: top, bottom, height, overflow-y for full-height scrollable layout', () => {
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'top', 'var(--tb-h, 48px) !important')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'bottom', '60px !important')).toBe(true)
+        expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'height', 'auto !important')).toBe(true)
         expect(hasRule(MOBILE_MEDIA, '.workspace-panel', 'overflow-y', 'auto')).toBe(true)
     })
 

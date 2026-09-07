@@ -147,7 +147,7 @@ export default class ViewManager {
                 this.#trackEditor.sync()
             }
         }
-        this.#trackEditor.container?.style.setProperty('display', 'block')
+        this.#trackEditor.container?.style.setProperty('display', isMobileViewport() ? 'flex' : 'block')
         this.#trackEditor.container?.classList.add('pp-split')
     }
 
@@ -174,8 +174,8 @@ export default class ViewManager {
     }
 
     #exitMobileTrack() {
-        this.#noteEditor?.hide()
         removeLayout(this.#trackEditor.container)
+        this.#noteEditor?.hide()
     }
 
     // ── Per-view enter handlers (render the view being switched to) ─────────
@@ -206,7 +206,7 @@ export default class ViewManager {
 
     #showMobileSeq() {
         this.#synthEditor.hidePanel()
-        if (isMobileLandscape()) {
+        if (isMobileViewport()) {
             this.#trackEditor.hide()
         } else {
             this.#ensureEditorsVisible()

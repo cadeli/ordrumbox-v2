@@ -16,7 +16,7 @@ import { OrTab } from './components/or_tab.js'
 import { syncComponentMap } from './components/sync_helpers.js'
 import { fmt, setViewBtn, knobFormat, renderIconChoices, setPatternPanelHidden } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
-import { TICK } from '../core/constants.js'
+import { TICK, isMobileViewport } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
 import LfoUiBridge from '../logic/lfo_ui_bridge.js'
 import { color } from './theme.js'
@@ -219,7 +219,8 @@ export default class TrackEditor extends BasePanel {
     show({ track, trackIdx }) {
         this._track = track
         this._trackIdx = trackIdx
-        super.show()
+        this.container.style.display = isMobileViewport() ? 'flex' : 'block'
+        this.sync()
         void this.synthEditor.ensureGeneratedSoundsLoaded()
         if (this._serviceRegistry.transport?.isRunning) this._startStepWatch()
         setViewBtn('edit', true)
@@ -305,7 +306,7 @@ export default class TrackEditor extends BasePanel {
         }
 
         if (this.synthEditor?.panel?.style?.display !== 'block') {
-            this.container.style.display = 'block'
+            this.container.style.display = isMobileViewport() ? 'flex' : 'block'
         }
         this._bindEvents()
         this._drawSampleWaveform()

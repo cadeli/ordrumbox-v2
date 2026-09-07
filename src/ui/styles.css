@@ -411,7 +411,6 @@ body {
 
 #app-content>
 .workspace-panel {
-    width: 75%;
     flex: 1 1 auto;
     min-height: 0;
 }
@@ -967,6 +966,7 @@ min-height: auto;
 
 /* ---- Workspace Panel (shared layout for main panels) ---- */
 .workspace-panel {
+    width: 75%;
     background: var(--bg);
     border-bottom: 2px solid var(--border-subtle);
     font-family: monospace;
@@ -2257,7 +2257,9 @@ min-height: auto;
     /* Mobile: workspace panels */
     .workspace-panel {
         width: 100%;
-        bottom: 60px;
+        top: var(--tb-h, 48px) !important;
+        bottom: 60px !important;
+        height: auto !important;
         overflow-y: auto;
     }
 
@@ -2276,9 +2278,17 @@ min-height: auto;
         overflow-y: auto !important;
     }
 
-    /* Mobile: track editor fills available space */
+    /* Mobile: te-panel stacks track-editor + note-editor as flex children
+       so they share vertical space in ratio instead of the note editor
+       being pushed below the fold behind the track editor's own scroll. */
+    #te-panel {
+        flex-direction: column;
+    }
+
+    /* Mobile: track editor takes the remaining space once the note
+       editor (if visible) has claimed its own bounded height below. */
     #te-panel .track-editor {
-        height: 100%;
+        flex: 1 1 auto;
         min-height: 0;
         overflow: hidden;
         display: flex;
@@ -2299,7 +2309,7 @@ min-height: auto;
 
     /* Mobile landscape 3-column layout (CSS Grid, no DOM reparenting) */
     #te-panel.te-mobile-landscape {
-        display: grid !important;
+        display: grid;
         grid-template-columns: 170px 1fr 1fr;
         grid-template-rows: auto 1fr;
         grid-template-areas:
@@ -2435,8 +2445,11 @@ min-height: auto;
     }
 
     #ne-container {
-        display: block !important;
+        display: block;
         height: auto !important;
+        max-height: 45vh;
+        flex-shrink: 0;
+        overflow-y: auto;
         border-top: none !important;
         margin-top: 0 !important;
         padding: 2px 4px;
