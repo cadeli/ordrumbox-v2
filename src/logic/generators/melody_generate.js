@@ -163,6 +163,8 @@ export default class MelodyGenerate extends BaseGenerator {
         const octaveShift = (config.octaveShift ?? 1) * 12
         const pitchBias = rootNote + octaveShift
 
+        const bassRootPitch = this._extractBassRootPitch(pattern)
+
         this.clearTrackNotes(melodyTrack)
 
         switch (config.mode) {
@@ -176,17 +178,49 @@ export default class MelodyGenerate extends BaseGenerator {
             default: {
                 const cachedPitches = []
                 this.generatePhraseVariant(melodyTrack, config,
-                    (phrase) => this.resolvePhrasePitch(phrase, tones, cachedPitches, pitchBias),
+                    (phrase) => this._resolveChordPitch(phrase, tones, cachedPitches, pitchBias, bassRootPitch),
                     (phrase, step) => step % 2 === 0,
                     null,
                     density,
-                    { cachedPitches }
+                    { cachedPitches, allowStacking: true }
                 )
                 break
             }
         }
 
         this.applyLoopPoint(melodyTrack, config)
+    }
+
+    _extractBassRootPitch = (pattern) => {
+        if (!pattern?.tracks) return null
+        const bassTrack = pattern.tracks.find(t => {
+            const name = (t.name ?? '').toUpperCase()
+            return name.includes('BASS')
+        })
+        if (!bassTrack?.notes?.length) return null
+        const pitches = bassTrack.notes.map(n => n.pitch)
+        const freq = new Map()
+        let maxCount = 0
+        let mostFrequent = pitches[0]
+        for (const p of pitches) {
+            const count = (freq.get(p) ?? 0) + 1
+            freq.set(p, count)
+            if (count > maxCount) { maxCount = count; mostFrequent = p }
+        }
+        return mostFrequent
+    }
+
+    _resolveChordPitch = (phrase, tones, cachedPitches, pitchBias = 0, bassRootPitch = null) => {
+        const basePitch = this.resolvePhrasePitch(phrase, tones, cachedPitches, 0)
+        if (bassRootPitch === null || typeof basePitch !== 'number') {
+            return basePitch + pitchBias
+        }
+        const chordPitchClass = ((basePitch % 12) + 12) % 12
+        const bassPitchClass = ((bassRootPitch % 12) + 12) % 12
+        if (chordPitchClass === bassPitchClass) {
+            return basePitch + 12 + pitchBias
+        }
+        return basePitch + pitchBias
     }
 
     generateMelodyGrooveVariant = (melodyTrack, scale, config, density = 1, pitchBias = 0) => {

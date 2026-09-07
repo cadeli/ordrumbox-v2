@@ -176,6 +176,7 @@ export default class BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(track, config, defaultBar)
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const cachedPitches = opts.cachedPitches ?? null
+        const allowStacking = opts.allowStacking ?? false
         const occupiedByBar = new Map()
 
         config.phrases.forEach((phrase) => {
@@ -196,8 +197,10 @@ export default class BaseGenerator {
                 step = phrase.step
             }
 
-            const absoluteStep = phrase.beat * stepsPerBeat + step
-            if (absoluteStep >= loopPointAbsolute) return
+            if (!allowStacking) {
+                const absoluteStep = phrase.beat * stepsPerBeat + step
+                if (absoluteStep >= loopPointAbsolute) return
+            }
 
             const pitch = getPitch?.(phrase, track) ?? config.pitch ?? 0
             const accent = getAccentContext?.(phrase, step) ?? phrase.accent === true
@@ -213,8 +216,10 @@ export default class BaseGenerator {
             this.applyNoteProperties(note, phrase)
             if (cachedPitches) cachedPitches.push(pitch)
 
-            if (!occupiedByBar.has(phrase.beat)) occupiedByBar.set(phrase.beat, new Set())
-            occupiedByBar.get(phrase.beat).add(step)
+            if (!allowStacking) {
+                if (!occupiedByBar.has(phrase.beat)) occupiedByBar.set(phrase.beat, new Set())
+                occupiedByBar.get(phrase.beat).add(step)
+            }
         })
     }
 
