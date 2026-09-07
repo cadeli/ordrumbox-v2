@@ -551,63 +551,83 @@ describe('Mobile scroll chain: #te-panel (track editor)', () => {
         expect(hasCombinedRule(block, '#te-panel', 'overflow-y', 'auto !important')).toBe(true)
     })
 
-    it('.track-editor has overflow: hidden (flex containment, not a scroll blocker)', () => {
-        expect(hasCombinedRule(block, '#te-panel .track-editor', 'overflow', 'hidden')).toBe(true)
-    })
-
-    it('.track-editor has flex: 1 1 auto (fills remaining space)', () => {
-        expect(hasCombinedRule(block, '#te-panel .track-editor', 'flex', '1 1 auto')).toBe(true)
-    })
-
-    it('.track-editor has min-height: 0 (allows flex shrink below content)', () => {
-        expect(hasCombinedRule(block, '#te-panel .track-editor', 'min-height', '0')).toBe(true)
-    })
-
-    it('.te-scroll has overflow-y: auto (scrolls tab content)', () => {
-        expect(hasCombinedRule(block, '#te-panel .te-scroll', 'overflow-y', 'auto')).toBe(true)
-    })
-
-    it('.te-scroll has flex: 1 (fills remaining space in .track-editor)', () => {
-        expect(hasCombinedRule(block, '#te-panel .te-scroll', 'flex', '1')).toBe(true)
-    })
-
-    it('.te-scroll has min-height: 0 (allows flex shrink)', () => {
-        expect(hasCombinedRule(block, '#te-panel .te-scroll', 'min-height', '0')).toBe(true)
-    })
-
-    it('.ne-tab-panel has overflow-y: auto (inner scroll for tab content)', () => {
-        expect(hasRuleAnywhere('.ne-tab-panel', 'overflow-y', 'auto')).toBe(true)
-    })
-
-    it('.ne-tab-panel has flex: 1 (fills .te-scroll)', () => {
-        expect(hasRuleAnywhere('.ne-tab-panel', 'flex', '1')).toBe(true)
-    })
-
-    it('.ne-tab-panel has min-height: 0', () => {
-        expect(hasRuleAnywhere('.ne-tab-panel', 'min-height', '0')).toBe(true)
-    })
-
-    it('#ne-container has overflow-y: auto (note editor scroll)', () => {
-        expect(hasCombinedRule(block, '#ne-container', 'overflow-y', 'auto')).toBe(true)
-    })
-
-    it('#ne-container has max-height: 45vh (bounded note editor)', () => {
-        expect(hasCombinedRule(block, '#ne-container', 'max-height', '45vh')).toBe(true)
-    })
-
-    it('#ne-container has flex-shrink: 0 (does not collapse)', () => {
-        expect(hasCombinedRule(block, '#ne-container', 'flex-shrink', '0')).toBe(true)
+    it('#te-panel has display: flex (single-column layout)', () => {
+        expect(hasCombinedRule(block, '#te-panel', 'display', 'flex')).toBe(true)
     })
 
     it('#te-panel uses flex-direction: column (stacks .track-editor + #ne-container)', () => {
         expect(hasCombinedRule(block, '#te-panel', 'flex-direction', 'column')).toBe(true)
     })
 
-    it('no overflow: hidden on .te-scroll that would block scrolling', () => {
-        const ruleRe = /#te-panel\s+\.te-scroll\s*\{([^}]*)\}/g
+    it('.track-editor has overflow: visible (no clipping, flows to #te-panel scroll)', () => {
+        expect(hasCombinedRule(block, '#te-panel .track-editor', 'overflow', 'visible')).toBe(true)
+    })
+
+    it('.track-editor has display: block (no nested flex)', () => {
+        expect(hasCombinedRule(block, '#te-panel .track-editor', 'display', 'block')).toBe(true)
+    })
+
+    it('.track-editor has height: auto !important (kills base 450px)', () => {
+        expect(hasCombinedRule(block, '#te-panel .track-editor', 'height', 'auto !important')).toBe(true)
+    })
+
+    it('.track-editor has NO overflow: hidden (would block scroll)', () => {
+        const ruleRe = /#te-panel\s+\.track-editor\s*\{([^}]*)\}/g
         let m
         while ((m = ruleRe.exec(block)) !== null) {
             expect(m[1]).not.toContain('overflow: hidden')
+        }
+    })
+
+    it('.te-scroll has overflow: visible (no nested scroll)', () => {
+        expect(hasCombinedRule(block, '#te-panel .te-scroll', 'overflow', 'visible')).toBe(true)
+    })
+
+    it('.te-scroll has flex: none (no flex squeeze)', () => {
+        expect(hasCombinedRule(block, '#te-panel .te-scroll', 'flex', 'none')).toBe(true)
+    })
+
+    it('.te-scroll has min-height: auto (content-adaptive)', () => {
+        expect(hasCombinedRule(block, '#te-panel .te-scroll', 'min-height', 'auto')).toBe(true)
+    })
+
+    it('.te-scroll has display: block (children flow naturally)', () => {
+        expect(hasCombinedRule(block, '#te-panel .te-scroll', 'display', 'block')).toBe(true)
+    })
+
+    it('.te-scroll has NO overflow-y: auto (would create nested scroll)', () => {
+        const ruleRe = /#te-panel\s+\.te-scroll\s*\{([^}]*)\}/g
+        let m
+        while ((m = ruleRe.exec(block)) !== null) {
+            expect(m[1]).not.toContain('overflow-y: auto')
+        }
+    })
+
+    it('.ne-tab-panel has overflow: visible on mobile (overridden from base auto)', () => {
+        expect(hasCombinedRule(block, '#te-panel .ne-tab-panel', 'overflow', 'visible')).toBe(true)
+    })
+
+    it('.ne-tab-panel has flex: none (content-adaptive, no squeeze)', () => {
+        expect(hasCombinedRule(block, '#te-panel .ne-tab-panel', 'flex', 'none')).toBe(true)
+    })
+
+    it('.ne-tab-panel has min-height: auto (content-adaptive)', () => {
+        expect(hasCombinedRule(block, '#te-panel .ne-tab-panel', 'min-height', 'auto')).toBe(true)
+    })
+
+    it('#ne-container has NO overflow-y: auto (would create nested scroll)', () => {
+        const ruleRe = /(?:^|\n)\s*#ne-container\s*\{([^}]*)\}/g
+        let m
+        while ((m = ruleRe.exec(block)) !== null) {
+            expect(m[1]).not.toContain('overflow-y: auto')
+        }
+    })
+
+    it('#ne-container has NO max-height (would constrain note editor)', () => {
+        const ruleRe = /(?:^|\n)\s*#ne-container\s*\{([^}]*)\}/g
+        let m
+        while ((m = ruleRe.exec(block)) !== null) {
+            expect(m[1]).not.toContain('max-height')
         }
     })
 })

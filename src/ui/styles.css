@@ -2278,27 +2278,31 @@ min-height: auto;
         overflow-y: auto !important;
     }
 
-    /* Mobile: te-panel stacks track-editor + note-editor as flex children
-       so they share vertical space in ratio instead of the note editor
-       being pushed below the fold behind the track editor's own scroll. */
+    /* Mobile: single-column layout — #te-panel is the sole scroll
+       container.  All inner elements flow naturally, height adapts
+       to content (no fixed heights, no nested scroll). */
     #te-panel {
-        flex-direction: column;
-    }
-
-    /* Mobile: track editor takes the remaining space once the note
-       editor (if visible) has claimed its own bounded height below. */
-    #te-panel .track-editor {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow: hidden;
         display: flex;
         flex-direction: column;
     }
 
+    #te-panel .track-editor {
+        height: auto !important;
+        overflow: visible;
+        display: block;
+    }
+
     #te-panel .te-scroll {
-        flex: 1;
-        overflow-y: auto;
-        min-height: 0;
+        overflow: visible;
+        flex: none;
+        min-height: auto;
+        display: block;
+    }
+
+    #te-panel .ne-tab-panel {
+        overflow: visible;
+        flex: none;
+        min-height: auto;
     }
 
     #te-panel.pp-split {
@@ -2446,10 +2450,6 @@ min-height: auto;
 
     #ne-container {
         display: block;
-        height: auto !important;
-        max-height: 45vh;
-        flex-shrink: 0;
-        overflow-y: auto;
         border-top: none !important;
         margin-top: 0 !important;
         padding: 2px 4px;
