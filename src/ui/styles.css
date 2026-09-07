@@ -546,7 +546,7 @@ body {
 #pattern-panel .pp-track.pp-muted .pp-cell { opacity: 0.25; }
 #pattern-panel .pp-track.pp-muted .pp-track-name { opacity: 0.4; }
 #pattern-panel .pp-track.pp-selected {
-    background: transparent;
+    background: rgba(255,150,150,100);
     border-radius: 4px;
 }
 #pattern-panel .pp-track.pp-selected .pp-track-name {
