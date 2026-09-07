@@ -69,16 +69,16 @@
     }
   },
   "BASS1": {
-    "masterVolume": 0.85,
+    "masterVolume": 0.31,
     "vco1": {
-      "gain": 0.8,
-      "octave": -1,
+      "gain": 0.67,
+      "octave": 0,
       "detune": 0,
       "wave": "square"
     },
     "vco2": {
-      "gain": 0.45,
-      "octave": -1,
+      "gain": 0.63,
+      "octave": -2,
       "detune": 8,
       "wave": "sawtooth"
     },
@@ -97,7 +97,7 @@
       "drive": 0.25
     },
     "filterEnv": {
-      "filterEnvelopeAmount": 0.45
+      "filterEnvelopeAmount": 0.17
     },
     "fm": {
       "amount": 0,
@@ -137,6 +137,7 @@
       "target": "off"
     }
   },
+
   "BASS2": {
     "masterVolume": 0.85,
     "vco1": {
@@ -620,39 +621,41 @@
       "target": "off"
     }
   },
-  "PIANO": {
+   "PIANO": {
     "masterVolume": 0.85,
     "vco1": {
       "gain": 0.7,
       "octave": 0,
       "detune": 0,
-      "wave": "triangle"
+      "wave": "sine"
     },
     "vco2": {
-      "gain": 0.5,
+      "gain": 0,
       "octave": 1,
-      "detune": 3,
-      "wave": "sine"
+      "detune": 0,
+      "wave": "sine",
+      "_savedGain": 0.5
     },
     "vco3": {
-      "gain": 0.2,
+      "gain": 0,
       "octave": 2,
       "detune": -4,
-      "wave": "sine"
+      "wave": "sine",
+      "_savedGain": 0.2
     },
     "subGain": 0,
     "pitchPunch": 0,
     "filter": {
       "type": "lowpass",
-      "freq": 2400,
-      "Q": 1.2,
+      "freq": 2700,
+      "Q": 3.4000000000000004,
       "drive": 0
     },
     "filterEnv": {
-      "filterEnvelopeAmount": 0.4
+      "filterEnvelopeAmount": 0.1
     },
     "fm": {
-      "amount": 0.15,
+      "amount": 0,
       "algo": 0
     },
     "noise": {
@@ -663,31 +666,38 @@
     },
     "enveloppe": {
       "attack": 0.003,
-      "decay": 0.55,
-      "sustain": 0.25,
-      "release": 0.25
+      "decay": 0.66,
+      "sustain": 0.18,
+      "release": 0.338
     },
     "lfo": {
       "target": "NOT",
-      "wave": "sine",
+      "wave": "square",
       "freq": 0,
       "depth": 0,
       "sync": "off"
     },
     "lfo2": {
       "target": "NOT",
-      "wave": "sine",
+      "wave": "square",
       "freq": 0,
       "depth": 0,
       "sync": "off"
     },
     "modEnvelope": {
       "attack": 0.005,
-      "decay": 0.12,
-      "sustain": 0,
-      "release": 0.1,
+      "decay": 0.45,
+      "sustain": 0.52,
+      "release": 0.248,
       "target": "off"
-    }
+    },
+    "bypassFm": true,
+    "bypassFilter": true,
+    "bypassFilterEnv": true,
+    "bypassModEnv": true,
+    "bypassLfo1": true,
+    "bypassLfo2": true,
+    "bypassNoise": true
   },
   "SN": {
     "masterVolume": 0.85,

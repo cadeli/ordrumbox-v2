@@ -10,9 +10,7 @@ export function isMobileLandscape() {
 }
 
 /**
- * Activate 3-column CSS Grid layout by adding a class to #te-panel.
- * No DOM nodes are moved — CSS Grid areas + display:contents handle placement.
- *
+  *
  * @param {HTMLElement} teContainer  — #te-panel
  */
 export function applyLayout(teContainer) {
@@ -20,7 +18,7 @@ export function applyLayout(teContainer) {
 }
 
 /**
- * Remove 3-column CSS Grid layout by removing the class from #te-panel.
+ * Remove CSS Grid layout by removing the class from #te-panel.
  *
  * @param {HTMLElement} teContainer
  */
