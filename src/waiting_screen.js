@@ -1,71 +1,48 @@
-class WaitingScreen {
-    MIN_LOAD_TIME_MS = 20
+// src/waiting_screen.js — Functional bootstrap without habitual class abstraction
 
-    state = {
-        minLoadTimeElapsed: false,
-        userHasClicked: false,
-        isStarted: false
+const screenEl = document.getElementById('waiting-screen')
+const startBtn = document.getElementById('waiting-screen-start-btn')
+
+let isStarted = false
+
+/**
+ * Boots the main application and hides the waiting screen.
+ */
+export async function startApp() {
+    if (isStarted) return
+    isStarted = true
+
+    if (screenEl) {
+        screenEl.style.display = 'none'
     }
 
-    init() {
-        this.screenElement = document.getElementById('waiting-screen')
-        this.buttonElement = document.getElementById('waiting-screen-start-btn')
-        this.startTimer()
-        this.bindEvents()
-    }
-
-    startTimer() {
-        setTimeout(() => {
-            this.state.minLoadTimeElapsed = true
-            if (this.buttonElement) {
-                this.buttonElement.classList.add('ready')
-            }
-        }, this.MIN_LOAD_TIME_MS)
-    }
-
-    bindEvents() {
-        this.buttonElement?.addEventListener('click', () => {
-            this.handleStartClick()
-        })
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && this.state.minLoadTimeElapsed && !this.state.isStarted) {
-                this.handleStartClick()
-            }
-        })
-    }
-
-    handleStartClick() {
-        if (this.state.isStarted || !this.state.minLoadTimeElapsed) {
-            this.state.userHasClicked = true
-            return
+    try {
+        const mainModule = await import('./main.js')
+        if (typeof mainModule.init === 'function') {
+            mainModule.init()
         }
-
-        this.state.isStarted = true
-        this.state.userHasClicked = true
-
-        this.hide()
-        this.loadMainApp()
-    }
-
-    hide() {
-        if (this.screenElement) {
-            this.screenElement.style.display = 'none'
-        }
-    }
-
-    async loadMainApp() {
-        try {
-            const { logger } = await import('./core/logger.js')
-            const mainModule = await import('./main.js')
-
-            if (typeof mainModule.init === 'function') {
-                mainModule.init()
-            }
-        } catch (error) {
-            console.error('WaitingScreen', 'Failed to load main application:', error)
-        }
+    } catch (error) {
+        const { logger } = await import('./core/logger.js')
+        logger.error('WaitingScreen', 'Failed to load main application:', error)
     }
 }
 
-new WaitingScreen().init()
+export function initWaitingScreen() {
+    if (startBtn) {
+        startBtn.classList.add('ready')
+        startBtn.addEventListener('click', () => {
+            startApp()
+        })
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !isStarted) {
+            startApp()
+        }
+    })
+}
+
+// Auto-initialize when loaded in browser
+if (typeof document !== 'undefined') {
+    initWaitingScreen()
+}
