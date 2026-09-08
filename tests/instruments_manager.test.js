@@ -282,8 +282,8 @@ describe('InstrumentsManager', () => {
             expect(manager.findInstrumentFromMidiProgramAnyChannel(1).id).toBe('PIANO')
         })
 
-        it('program=63 → BRASS (ignores channel)', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(63).id).toBe('BRASS')
+        it('program=63 → SHORTBRASS (Synth Brass 2 = GM 63)', () => {
+            expect(manager.findInstrumentFromMidiProgramAnyChannel(63).id).toBe('SHORTBRASS')
         })
 
         it('unknown program → NOT_FOUND', () => {
