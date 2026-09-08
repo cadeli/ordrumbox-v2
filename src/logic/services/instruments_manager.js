@@ -72,7 +72,7 @@ export default class InstrumentsManager {
         "instruments": [
             { "id": "BASS", "midi": [{ "name": "Acoustic Bass", "key_based": false }], "subst": { "id1": "HI_TOM" }, "name": { "syn": [".*BASS.*"] }, "drum": false, "pan": "0" },
             { "id": "BONGOS", "midi": [{ "name": "Hi Bongo", "key_based": true }], "subst": { "id1": "HI_CONGAS", "id2": "CONGAS", "id3": "RIMSHOT" }, "name": { "syn": [".*BNG.*", ".*BONG.*"] }, "drum": true, "pan": "0" },
-            { "id": "BRASS", "midi": [{ "name": "Synth Brass 1", "key_based": false }], "subst": { "id1": "SYNTH", "id2": "MELO", "id2": "ORGAN" }, "name": { "syn": [".*BRASS.*", ".*TRUMPET.*", ".*TROMBONE.*", ".*TUBA.*", ".*FRENCH.*HORN.*", ".*HORN.*"] }, "drum": false, "pan": "0" },
+            { "id": "BRASS", "midi": [{ "name": "Synth Brass 1", "key_based": false }], "subst": { "id1": "SYNTH", "id2": "MELO", "id3": "ORGAN" }, "name": { "syn": [".*BRASS.*", ".*TRUMPET.*", ".*TROMBONE.*", ".*TUBA.*", ".*FRENCH.*HORN.*", ".*HORN.*"] }, "drum": false, "pan": "0" },
             { "id": "CABA", "midi": [{ "name": "Cabasa", "key_based": true }], "subst": { "id1": "HI_CONGAS" }, "name": { "syn": ["CABASA"] }, "drum": true, "pan": "5" },
             { "id": "CASTENET", "midi": [{ "name": "Synth Drum", "key_based": false }], "subst": { "id1": "CLAP" }, "name": { "syn": ["CAST"] }, "drum": true, "pan": "8" },
             { "id": "CLAVES", "midi": [{ "name": "Claves", "key_based": true }], "subst": { "id1": "RIMSHOT", "id2": "CLAP" }, "name": { "syn": [".*CLAVE.*", ".*CLAV.*"] }, "drum": true, "pan": "5" },
