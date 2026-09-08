@@ -357,9 +357,9 @@ describe('WorkletSynthVoice parameter coverage', () => {
         expect(msg).toBeDefined()
 
         const nr = computeNoteRatio(1.5)
-        expect(msg.osc1Freq).toBeCloseTo(computeOscFrequency(nr, 1, 20), 1)
-        expect(msg.osc2Freq).toBeCloseTo(computeOscFrequency(nr, -1, -30), 1)
-        expect(msg.osc3Freq).toBeCloseTo(computeOscFrequency(nr, 0, 5), 1)
+        expect(msg.osc1Freq).toBeCloseTo(computeOscFrequency(nr, 1, 0), 1)
+        expect(msg.osc2Freq).toBeCloseTo(computeOscFrequency(nr, -1, 0), 1)
+        expect(msg.osc3Freq).toBeCloseTo(computeOscFrequency(nr, 0, 0), 1)
         expect(msg.osc1Gain).toBe(0.7)
         expect(msg.osc2Gain).toBe(0.4)
         expect(msg.osc3Gain).toBe(0.5)

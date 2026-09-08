@@ -202,9 +202,9 @@ export default class WorkletSynthVoice extends BaseVoice {
             const peak = this.noteVelo * masterVolume * accentMultiplier * NOTE_VELO_BALANCE //ATT compensation volume synth vs sample
 
             postUpdate(this.workletNode, {
-                osc1Freq: gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, gs.vco1.detune) : 0,
-                osc2Freq: gs.vco2 ? computeOscFrequency(this.noteRatio, gs.vco2.octave, gs.vco2.detune) : 0,
-                osc3Freq: gs.vco3 ? computeOscFrequency(this.noteRatio, gs.vco3.octave, gs.vco3.detune) : 0,
+                osc1Freq: gs.vco1 ? computeOscFrequency(this.noteRatio, gs.vco1.octave, 0) : 0,
+                osc2Freq: gs.vco2 ? computeOscFrequency(this.noteRatio, gs.vco2.octave, 0) : 0,
+                osc3Freq: gs.vco3 ? computeOscFrequency(this.noteRatio, gs.vco3.octave, 0) : 0,
                 osc1Gain: toFiniteNumber(gs.vco1?.gain, 0),
                 osc2Gain: toFiniteNumber(gs.vco2?.gain, 0),
                 osc3Gain: toFiniteNumber(gs.vco3?.gain, 0),

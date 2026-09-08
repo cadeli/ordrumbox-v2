@@ -1,5 +1,6 @@
 import { appState } from './state/app_state.js'
 import { serviceRegistry } from './state/service_registry.js'
+import { getAutoAssignService } from './state/service_loader.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
 import Utils from './core/utils.js'
@@ -114,6 +115,23 @@ async function convertToGeneratedSounds() {
     logger.info('KeyboardShortcuts', 'All tracks converted to generated sounds')
 }
 
+async function autoAssignAllTracks() {
+    const selPattern = getSelectedPattern()
+    if (!selPattern) return
+
+    Object.values(selPattern.tracks).forEach(track => {
+        track.useAutoAssignSound = true
+        track.useSoftSynth = false
+    })
+
+    const autoAssign = await getAutoAssignService()
+    autoAssign.autoAssignSounds(selPattern)
+    serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
+    serviceRegistry.audioEngine?.invalidateCache()
+    playbackEvents.emit('patternChange')
+    showToast('All tracks auto-assigned', 'success')
+}
+
 async function exportCurrentTrackSound() {
     const selPattern = getSelectedPattern()
     if (!selPattern) return
@@ -150,6 +168,7 @@ const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyF: selectRandomPattern,
     KeyG: selectRandomDrumkit,
     KeyH: convertToGeneratedSounds,
+    KeyJ: autoAssignAllTracks,
     KeyD: exportCurrentTrackSound,
     KeyV: toggleVus,
     Space: toggleStartStop
