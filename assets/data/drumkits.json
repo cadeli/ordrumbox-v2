@@ -85,9 +85,9 @@
                 "decay": 5000
             },
             {
-                "display_name": "bass-c3",
+                "display_name": "bass-c2",
                 "key": "BASS",
-                "url": "real/bass-c3.wav",
+                "url": "real/bass-c2.wav",
                 "peakDb": -3,
                 "rootMidi": 36,
                 "decay": 5000
