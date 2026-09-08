@@ -101,9 +101,9 @@
                 "decay": 5000
             },
             {
-                "display_name": "piano-c3",
+                "display_name": "piano-c4",
                 "key": "PIANO",
-                "url": "real/piano-c3.wav",
+                "url": "real/piano-c4.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
                 "decay": 5000
@@ -285,15 +285,15 @@
             {
                 "display_name": "BASS",
                 "key": "BASS",
-                "url": "electro/acid-bass-c3.wav",
+                "url": "electro/acid-bass-c2.wav",
                 "peakDb": -3,
                 "rootMidi": 36,
                 "decay": 5000
             },
             {
-                "display_name": "acid-synth-c3",
+                "display_name": "acid-synth-c4",
                 "key": "SYNTHLEAD",
-                "url": "electro/acid-synth-c3.wav",
+                "url": "electro/acid-synth-c4.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
                 "decay": 5000
@@ -301,7 +301,7 @@
             {
                 "display_name": "RHODES",
                 "key": "PIANO",
-                "url": "electro/rhodes-c3.wav",
+                "url": "electro/rhodes-c4.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
                 "decay": 5000
