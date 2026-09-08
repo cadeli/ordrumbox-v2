@@ -93,9 +93,9 @@
                 "decay": 5000
             },
             {
-                "display_name": "gtr-c3",
+                "display_name": "gtr-c4",
                 "key": "GUITAR",
-                "url": "real/gtr-c3.wav",
+                "url": "real/gtr-c4Ò.wav",
                 "peakDb": -3,
                 "rootMidi": 60,
                 "decay": 5000
