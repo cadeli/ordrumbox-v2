@@ -150,6 +150,18 @@ export default class PatternPanel extends BasePanel {
                 this.updateLoopPoint(data.trackIdx, data.loopAtStep)
             }
         })
+        this._playbackEvents.on('selectedPatternChange', () => {
+            const pattern = this._appState.patterns[this._appState.selectedPatternNum]
+            const nbBeats = pattern?.nbBeats ?? 4
+            const maxPage = Math.floor((nbBeats - 1) / BEATS_PER_PAGE)
+            if (this._appState.currentPage > maxPage) {
+                this._appState.currentPage = 0
+            }
+            this._forceFullRender = true
+            this._headerDirty = true
+            this._trackDataDirty = true
+            this.requestSync()
+        })
         this._playbackEvents.on('playbackStop', () => {
             this._overlay.resetPrevLoopTick()
             this._overlay.stopRafLoop()

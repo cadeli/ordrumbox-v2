@@ -34,7 +34,6 @@ export default class PianoRollPanel extends BasePanel {
         this._cellWidth = 24
         this._firstShow = true
         this._resizeObserver = null
-        this._pageStartBeat = 0
         this._playhead = null
         this._rafId = null
         this._prevLoopTick = -1
@@ -84,6 +83,13 @@ export default class PianoRollPanel extends BasePanel {
                 this._sync()
             }
         })
+        playbackEvents.on("patternMetaChange", () => {
+            if (!this.isVisible) return
+            this._clampPage()
+            this._gridDirty = true
+            this._keysDirty = true
+            this._sync()
+        })
         playbackEvents.on("playbackStart", () => this._startRafLoop())
         playbackEvents.on("playbackStop", () => {
             this._stopRafLoop()
@@ -119,7 +125,6 @@ export default class PianoRollPanel extends BasePanel {
         this._firstShow = true
         this._keysDirty = true
         this._gridDirty = true
-        this._pageStartBeat = 0
         this._clearSelection()
         this._resolveTrack()
         this.container.style.display = 'flex'
@@ -165,7 +170,7 @@ export default class PianoRollPanel extends BasePanel {
         const stepsPerBeat = track?.stepsPerBeat ?? 4
         const nbBeats = pattern?.nbBeats ?? 4
         const totalSteps = nbBeats * stepsPerBeat
-        const pageStartStep = this._pageStartBeat * stepsPerBeat
+        const pageStartStep = appState.currentPage * PAGE_BEATS * stepsPerBeat
         const pageEndStep = Math.min(pageStartStep + PAGE_BEATS * stepsPerBeat, totalSteps)
         return { stepsPerBeat, nbBeats, totalSteps, pageStartStep, pageEndStep, visibleSteps: pageEndStep - pageStartStep }
     }
@@ -211,11 +216,11 @@ export default class PianoRollPanel extends BasePanel {
         const total = this._totalPages()
         if (total <= 1) { nav.style.display = 'none'; return }
         nav.style.display = 'flex'
-        info.textContent = `${Math.floor(this._pageStartBeat / PAGE_BEATS) + 1}/${total}`
+        info.textContent = `${appState.currentPage + 1}/${total}`
         const prev = this.container.querySelector('#pp-pr-prev')
         const next = this.container.querySelector('#pp-pr-next')
-        if (prev) prev.disabled = this._pageStartBeat <= 0
-        if (next) next.disabled = this._pageStartBeat >= (total - 1) * PAGE_BEATS
+        if (prev) prev.disabled = appState.currentPage <= 0
+        if (next) next.disabled = appState.currentPage >= total - 1
     }
 
     _applySelection() {
@@ -498,25 +503,25 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     _clampPage() {
-        const max = (this._totalPages() - 1) * PAGE_BEATS
-        this._pageStartBeat = Math.max(0, Math.min(this._pageStartBeat, max))
+        appState.currentPage = Math.max(0, Math.min(appState.currentPage, this._totalPages() - 1))
     }
 
     _prevPage() {
-        if (this._pageStartBeat <= 0) return
-        this._pageStartBeat -= PAGE_BEATS
-        this._clampPage()
-        this._gridDirty = true
-        this._sync()
+        if (appState.currentPage <= 0) return
+        appState.currentPage--
+        playbackEvents.batch(() => {
+            playbackEvents.emit('patternMetaChange')
+            playbackEvents.emit('patternChange')
+        })
     }
 
     _nextPage() {
-        const maxStart = (this._totalPages() - 1) * PAGE_BEATS
-        if (this._pageStartBeat >= maxStart) return
-        this._pageStartBeat += PAGE_BEATS
-        this._clampPage()
-        this._gridDirty = true
-        this._sync()
+        if (appState.currentPage >= this._totalPages() - 1) return
+        appState.currentPage++
+        playbackEvents.batch(() => {
+            playbackEvents.emit('patternMetaChange')
+            playbackEvents.emit('patternChange')
+        })
     }
 
     _onKeyDown(e) {
@@ -582,10 +587,10 @@ export default class PianoRollPanel extends BasePanel {
 
     _syncCursor() {
         const stepsPerBeat = this._track?.stepsPerBeat ?? 4
-        const pageStartStep = this._pageStartBeat * stepsPerBeat
+        const pageStartStep = appState.currentPage * PAGE_BEATS * stepsPerBeat
         const pageEndStep = pageStartStep + PAGE_BEATS * stepsPerBeat
         if (this._cursorStep < pageStartStep || this._cursorStep >= pageEndStep) {
-            this._pageStartBeat = Math.floor(this._cursorStep / stepsPerBeat / PAGE_BEATS) * PAGE_BEATS
+            appState.currentPage = Math.floor(this._cursorStep / stepsPerBeat / PAGE_BEATS)
             this._gridDirty = true
         }
         const track = this._track
@@ -653,13 +658,13 @@ export default class PianoRollPanel extends BasePanel {
         this._prevLoopTick = loopTick
 
         const absStep = Math.floor(loopTick / TICK) * stepsPerBeat + Math.floor((loopTick % TICK) / (TICK / stepsPerBeat))
-        const pageStartStep = this._pageStartBeat * stepsPerBeat
+        const pageStartStep = appState.currentPage * PAGE_BEATS * stepsPerBeat
         const pageEndStep = pageStartStep + PAGE_BEATS * stepsPerBeat
 
         if (absStep < pageStartStep || absStep >= pageEndStep) {
-            const newPage = Math.floor(absStep / stepsPerBeat / PAGE_BEATS) * PAGE_BEATS
-            if (newPage !== this._pageStartBeat) {
-                this._pageStartBeat = newPage
+            const newPage = Math.floor(absStep / stepsPerBeat / PAGE_BEATS)
+            if (newPage !== appState.currentPage) {
+                appState.currentPage = newPage
                 this._clampPage()
                 this._gridDirty = true
                 this._sync()
