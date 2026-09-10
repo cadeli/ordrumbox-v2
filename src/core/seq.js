@@ -66,6 +66,20 @@ export default class Sequencer {
                 }
             }
         })
+        this.playbackEvents.on("selectedPatternChange", () => {
+            if (this.serviceRegistry.audioEngine) {
+                this.serviceRegistry.audioEngine.invalidateCache()
+                const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
+                if (selPattern) {
+                    this.serviceRegistry.audioEngine.syncAllTracks(selPattern)
+                    this.serviceRegistry.seq?.setBpm(selPattern.bpm)
+                }
+                if (this.serviceRegistry.transport?.isRunning) {
+                    this.serviceRegistry.transport.tick = 0
+                    this.serviceRegistry.transport.nextStepTime = this.serviceRegistry.audioCtx.currentTime
+                }
+            }
+        })
         this.playbackEvents.on("noteChange", () => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
