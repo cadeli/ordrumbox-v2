@@ -218,9 +218,9 @@ export default class SoundSection {
         const editor = this._editor
         const track = editor.track
         const sr = editor.soundRegistry
-        if (keysWithSamples.has(track.name)) return track.name
         const soundKey = sr.sounds[this._getCurrentSoundUrl()]?.key
         if (soundKey && keysWithSamples.has(soundKey)) return soundKey
+        if (keysWithSamples.has(track.name)) return track.name
         return instrumentIds[0] ?? 'KICK'
     }
 }
