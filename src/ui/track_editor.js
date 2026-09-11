@@ -145,11 +145,9 @@ export default class TrackEditor extends BasePanel {
                 if (this.isVisible) this.sync()
                 return
             }
-            if (pattern.tracks[newIdx] !== this._track) {
-                this._track = pattern.tracks[newIdx]
-                this._trackIdx = newIdx
-                if (this.isVisible) this.sync()
-            }
+            this._track = pattern.tracks[newIdx]
+            this._trackIdx = newIdx
+            if (this.isVisible) this.sync()
         })
     }
 

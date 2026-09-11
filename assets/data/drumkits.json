@@ -122,6 +122,13 @@
                 "peakDb": -3,
                 "rootMidi": 60,
                 "decay": 5000
+            },{
+                "display_name": "string-c3",
+                "key": "STRING",
+                "url": "real/string-c3.wav",
+                "peakDb": -3,
+                "rootMidi": 48,
+                "decay": 5000
             },
             {
                 "display_name": "tambourine.wav",

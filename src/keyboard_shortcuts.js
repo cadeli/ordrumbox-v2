@@ -115,6 +115,28 @@ async function convertToGeneratedSounds() {
     logger.info('KeyboardShortcuts', 'All tracks converted to generated sounds')
 }
 
+function assignRandomSampleAllTracks() {
+    const selPattern = getSelectedPattern()
+    if (!selPattern) return
+
+    const allSounds = Object.keys(soundRegistry.sounds)
+    if (allSounds.length === 0) {
+        showToast('No samples loaded', 'error')
+        return
+    }
+
+    Object.values(selPattern.tracks).forEach(track => {
+        track.useAutoAssignSound = false
+        track.useSoftSynth = false
+        track.soundId = allSounds[Math.floor(Math.random() * allSounds.length)]
+    })
+
+    serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
+    serviceRegistry.audioEngine?.invalidateCache()
+    playbackEvents.emit('patternChange')
+    showToast('Random samples assigned', 'success')
+}
+
 async function autoAssignAllTracks() {
     const selPattern = getSelectedPattern()
     if (!selPattern) return
@@ -169,6 +191,7 @@ const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyG: selectRandomDrumkit,
     KeyH: convertToGeneratedSounds,
     KeyJ: autoAssignAllTracks,
+    KeyK: assignRandomSampleAllTracks,
     KeyD: exportCurrentTrackSound,
     KeyV: toggleVus,
     Space: toggleStartStop
