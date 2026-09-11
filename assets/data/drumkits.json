@@ -22,7 +22,7 @@
             },
             {
                 "display_name": "tom",
-                "key": "TOM",
+                "key": "MTOM",
                 "url": "real/tom.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
@@ -126,6 +126,13 @@
                 "display_name": "string-c3",
                 "key": "STRING",
                 "url": "real/string-c3.wav",
+                "peakDb": -3,
+                "rootMidi": 48,
+                "decay": 5000
+            },{
+                "display_name": "organ-c3",
+                "key": "ORGAN",
+                "url": "real/organ-c3.wav",
                 "peakDb": -3,
                 "rootMidi": 48,
                 "decay": 5000
