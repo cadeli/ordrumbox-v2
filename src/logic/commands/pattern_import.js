@@ -1,8 +1,6 @@
 import { fixPattern } from '../../patterns/fixer.js'
 import { normalizeTrack, TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
 import {
-    NOTE_DEFAULTS,
-    NOTE_KEY_ORDER,
     compactArrayToNote,
     isCompactFormat
 } from '../../core/note_schema.js'
@@ -169,7 +167,7 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
         const notes = sourceTrack.notes ?? [];
         const noteKeys = sourceTrack.noteKeys;
 
-        if (Array.isArray(noteKeys) && Array.isArray(notes) && notes.length > 0 && Array.isArray(notes[0])) {
+        if (isCompactFormat(sourceTrack)) {
             for (const arr of notes) {
                 const sourceNote = compactArrayToNote(arr, noteKeys);
                 const b = Number(sourceNote.beat ?? 0)
