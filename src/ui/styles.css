@@ -142,51 +142,6 @@ body {
     }
 }
 
-/* ---- Waiting Screen ---- */
-#waiting-screen {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 24px;
-    box-sizing: border-box;
-    background-color: var(--bg-surface);
-    z-index: var(--z-toast);
-}
-#waiting-screen img {
-    max-width: 100%;
-    height: auto;
-    pointer-events: none;
-}
-#waiting-screen-start-btn {
-    position: absolute;
-    top: 66.67%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 16px 36px;
-    font-size: var(--fs-lg);
-    font-weight: bold;
-    border: 2px solid var(--text);
-    border-radius: 8px;
-    cursor: pointer;
-    background-color: var(--color-warning);
-    color: #1a1a2e;
-    touch-action: manipulation;
-    transition: background-color 0.2s, transform 0.1s;
-    z-index: 1;
-}
-#waiting-screen-start-btn:hover {
-    transform: translate(-50%, -50%) scale(1.02);
-}
-#waiting-screen-start-btn.ready {
-    background-color: var(--color-info);
-    color: #1a1a2e;
-    border-color: var(--accent);
-}
-
 /* ---- Toolbar ---- */
 #tb {
     position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-toolbar);

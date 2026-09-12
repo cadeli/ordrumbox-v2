@@ -53,6 +53,25 @@
  
   
 
+  <style>
+    #waiting-screen {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      display: flex; justify-content: center; align-items: center;
+      padding: 24px; box-sizing: border-box;
+      background-color: #12121e; z-index: 9999;
+    }
+    #waiting-screen-start-btn {
+      position: absolute; top: 66.67%; left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 16px 36px; font-size: 14px; font-weight: bold;
+      border: 2px solid #fff; border-radius: 8px;
+      cursor: pointer; background-color: #f59e0b; color: #1a1a2e;
+      touch-action: manipulation; transition: background-color 0.2s, transform 0.1s;
+      z-index: 1;
+    }
+    #waiting-screen-start-btn:hover { transform: translate(-50%, -50%) scale(1.02); }
+    #waiting-screen-start-btn.ready { background-color: #4fc3f7; color: #1a1a2e; border-color: #e94560; }
+  </style>
   <link rel="stylesheet" href="./src/ui/styles.css" id="ui-styles">
 
 </head>
