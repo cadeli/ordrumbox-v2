@@ -42,14 +42,6 @@ export default class PlaybackOverlaySection {
             this.#playhead = document.createElement('div')
             this.#playhead.className = 'pp-playhead'
             this.#playhead.style.display = 'none'
-            this.#playhead.style.position = 'absolute'
-            this.#playhead.style.left = '0'
-            this.#playhead.style.top = '0'
-            this.#playhead.style.bottom = '0'
-            this.#playhead.style.width = '2px'
-            this.#playhead.style.zIndex = 'var(--z-overlay)'
-            this.#playhead.style.pointerEvents = 'none'
-            this.#playhead.style.willChange = 'transform'
             const header = editor.container.querySelector('.pp-header')
             if (header) {
                 header.appendChild(this.#playhead)
