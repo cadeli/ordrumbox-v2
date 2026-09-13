@@ -102,7 +102,7 @@ export default class MidiImportService {
             logger.warn('MidiImport', `── Channel ${channel}, program=${program}, name="${midiTrackName}", notes=${chNotes.length} ──`)
 
             if (!isDrumChannel) {
-                const melodicInst = im.findInstrumentFromMidiProgram(channel, program)
+                const melodicInst = im.findInstrumentFromMidiProgram(program)
                 if (melodicInst.id !== 'NOT_FOUND' && !melodicInst.drum) {
                     const trackName = melodicInst.id
                     if (!trackDefs.some(d => d.trackName === trackName)) {

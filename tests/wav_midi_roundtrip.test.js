@@ -283,7 +283,7 @@ function importMidiToPattern(midiBytes, originalPattern) {
     for (const [channel, chNotes] of channelNotes) {
         const program = channelPrograms.has(channel) ? channelPrograms.get(channel) : null
 
-        const melodicInst = program !== null ? im.findInstrumentFromMidiProgram(channel, program) : { id: 'NOT_FOUND' }
+        const melodicInst = program !== null ? im.findInstrumentFromMidiProgram(program) : { id: 'NOT_FOUND' }
         if (melodicInst.id !== 'NOT_FOUND' && !melodicInst.drum) {
             const track = trackNoteMap.get(melodicInst.id)
             if (!track) continue
@@ -319,22 +319,6 @@ function importMidiToPattern(midiBytes, originalPattern) {
             }
         }
         if (drumFound) continue
-
-        if (program !== null) {
-            const programInst = im.findInstrumentFromMidiProgramAnyChannel(program)
-            if (programInst.id !== 'NOT_FOUND') {
-                const track = trackNoteMap.get(programInst.id)
-                if (track) {
-                    for (const note of chNotes) {
-                        const engineTicks = Math.round(note.absTick / MIDI_RATIO)
-                        const beat = Math.floor(engineTicks / TICK)
-                        const beatStep = Math.floor((engineTicks % TICK) / (TICK / (track.stepsPerBeat ?? 4)))
-                        const pitch = note.note - C3_MIDI_NOTE
-                        track.notes.push({ beat, beatStep, velocity: midiVelocityToNormalized(note.velocity), pitch })
-                    }
-                }
-            }
-        }
     }
 
     return importedPattern

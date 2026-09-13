@@ -256,64 +256,46 @@ describe('InstrumentsManager', () => {
     })
 
     describe('findInstrumentFromMidiProgram', () => {
-        it('ch=1, program=1 → PIANO', () => {
-            expect(manager.findInstrumentFromMidiProgram(1, 1).id).toBe('PIANO')
+        it('program=1 → PIANO', () => {
+            expect(manager.findInstrumentFromMidiProgram(1).id).toBe('PIANO')
         })
 
-        it('ch=2, program=33 → BASS', () => {
-            expect(manager.findInstrumentFromMidiProgram(2, 33).id).toBe('BASS')
+        it('program=33 → BASS', () => {
+            expect(manager.findInstrumentFromMidiProgram(33).id).toBe('BASS')
         })
 
-        it('wrong channel → falls back to GM name lookup', () => {
-            expect(manager.findInstrumentFromMidiProgram(99, 33).id).toBe('BASS')
+        it('program=33 via wrong channel → still BASS', () => {
+            expect(manager.findInstrumentFromMidiProgram(33).id).toBe('BASS')
         })
 
         it('unknown program → NOT_FOUND', () => {
-            expect(manager.findInstrumentFromMidiProgram(1, 999).id).toBe(Instrument.NOT_FOUND)
-        })
-    })
-
-    describe('findInstrumentFromMidiProgramAnyChannel', () => {
-        it('program=33 → BASS (ignores channel)', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(33).id).toBe('BASS')
-        })
-
-        it('program=1 → PIANO (ignores channel)', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(1).id).toBe('PIANO')
+            expect(manager.findInstrumentFromMidiProgram(999).id).toBe(Instrument.NOT_FOUND)
         })
 
         it('program=63 → SHORTBRASS (Synth Brass 2 = GM 63)', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(63).id).toBe('SHORTBRASS')
-        })
-
-        it('unknown program → NOT_FOUND', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(999).id).toBe(Instrument.NOT_FOUND)
+            expect(manager.findInstrumentFromMidiProgram(63).id).toBe('SHORTBRASS')
         })
 
         it('program=49 (String Ensemble 1) → ENSEMBLE via GM name fallback', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(49).id).toBe('ENSEMBLE')
+            expect(manager.findInstrumentFromMidiProgram(49).id).toBe('ENSEMBLE')
         })
     })
 
     describe('0-based program numbers', () => {
         it('program=0 → PIANO (Acoustic Grand Piano, 0-based)', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(0).id).toBe('PIANO')
-        })
-
-        it('ch=1, program=0 → PIANO (0-based, correct channel)', () => {
-            expect(manager.findInstrumentFromMidiProgram(1, 0).id).toBe('PIANO')
+            expect(manager.findInstrumentFromMidiProgram(0).id).toBe('PIANO')
         })
 
         it('program=32 → BASS (Acoustic Bass = GM 33, 0-based)', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(32).id).toBe('BASS')
+            expect(manager.findInstrumentFromMidiProgram(32).id).toBe('BASS')
         })
 
         it('program=48 → ENSEMBLE (String Ensemble 1 = GM 49, 0-based)', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(48).id).toBe('ENSEMBLE')
+            expect(manager.findInstrumentFromMidiProgram(48).id).toBe('ENSEMBLE')
         })
 
         it('program=62 → BRASS (Brass Section = GM 63, 0-based)', () => {
-            expect(manager.findInstrumentFromMidiProgramAnyChannel(62).id).toBe('BRASS')
+            expect(manager.findInstrumentFromMidiProgram(62).id).toBe('BRASS')
         })
     })
 

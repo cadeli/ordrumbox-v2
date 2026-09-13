@@ -98,7 +98,7 @@ function importMidiToPattern(midiBytes, cmd) {
         const program = channelPrograms.has(channel) ? channelPrograms.get(channel) : null
         const midiTrackName = channelTrackNames.get(channel) ?? ''
 
-        const melodicInst = program !== null ? im.findInstrumentFromMidiProgram(channel, program) : { id: 'NOT_FOUND' }
+        const melodicInst = program !== null ? im.findInstrumentFromMidiProgram(program) : { id: 'NOT_FOUND' }
         if (melodicInst.id !== 'NOT_FOUND' && !melodicInst.drum) {
             const trackName = melodicInst.id
             if (!trackDefs.some(d => d.trackName === trackName)) {
@@ -133,16 +133,6 @@ function importMidiToPattern(midiBytes, cmd) {
                     trackDefs.push({ trackName, groupNotes: chNotes, baseNote: C3_MIDI_NOTE })
                 }
                 continue
-            }
-        }
-
-        if (program !== null) {
-            const programInst = im.findInstrumentFromMidiProgramAnyChannel(program)
-            if (programInst.id !== 'NOT_FOUND') {
-                const trackName = programInst.id
-                if (!trackDefs.some(d => d.trackName === trackName)) {
-                    trackDefs.push({ trackName, groupNotes: chNotes, baseNote: C3_MIDI_NOTE })
-                }
             }
         }
     }

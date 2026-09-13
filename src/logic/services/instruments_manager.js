@@ -237,11 +237,10 @@ export default class InstrumentsManager {
         return new Instrument();
     }
 
-    findInstrumentFromMidiProgram = (channel, program) => {
-        const normalizedChannel = String(channel);
+    findInstrumentFromMidiProgram = (program) => {
         const normalizedProgram = String(program);
         const normalizedProgramShifted = String(Number(program) + 1);
-        logger.warn('Instrument', `findInstrumentFromMidiProgram: ch${channel} program=${program}`)
+        logger.warn('Instrument', `findInstrumentFromMidiProgram: program=${program}`)
 
         for (const instrument of this.byId.values()) {
             const midiMatch = instrument.midi.find((midi) => {
@@ -249,7 +248,7 @@ export default class InstrumentsManager {
                     (String(midi.programm) === normalizedProgramShifted);
             });
             if (midiMatch) {
-                logger.warn('Instrument', `findInstrumentFromMidiProgram: program match ch${channel} program=${program} (+1=${normalizedProgramShifted}) → "${instrument.id}"`)
+                logger.warn('Instrument', `findInstrumentFromMidiProgram: program match program=${program} (+1=${normalizedProgramShifted}) → "${instrument.id}"`)
                 return instrument;
             }
         }
@@ -260,43 +259,12 @@ export default class InstrumentsManager {
                     (String(midi.programm) === normalizedProgram);
             });
             if (midiMatch) {
-                logger.warn('Instrument', `findInstrumentFromMidiProgram: program match ch${channel} program=${program} (exact) → "${instrument.id}"`)
+                logger.warn('Instrument', `findInstrumentFromMidiProgram: program match program=${program} (exact) → "${instrument.id}"`)
                 return instrument;
             }
         }
 
         logger.warn('Instrument', `findInstrumentFromMidiProgram: no direct match, trying GM fallback`)
-        return this._findByProgramNumber(program);
-    }
-
-    findInstrumentFromMidiProgramAnyChannel = (program) => {
-        const normalizedProgram = String(program);
-        const normalizedProgramShifted = String(Number(program) + 1);
-        logger.warn('Instrument', `findInstrumentFromMidiProgramAnyChannel: program=${program}`)
-
-        for (const instrument of this.byId.values()) {
-            const midiMatch = instrument.midi.find((midi) => {
-                return midi.programm != null &&
-                    (String(midi.programm) === normalizedProgramShifted);
-            });
-            if (midiMatch) {
-                logger.warn('Instrument', `findInstrumentFromMidiProgramAnyChannel: direct match program=${program} (+1=${normalizedProgramShifted}) → "${instrument.id}"`)
-                return instrument;
-            }
-        }
-
-        for (const instrument of this.byId.values()) {
-            const midiMatch = instrument.midi.find((midi) => {
-                return midi.programm != null &&
-                    (String(midi.programm) === normalizedProgram);
-            });
-            if (midiMatch) {
-                logger.warn('Instrument', `findInstrumentFromMidiProgramAnyChannel: direct match program=${program} (exact) → "${instrument.id}"`)
-                return instrument;
-            }
-        }
-
-        logger.warn('Instrument', `findInstrumentFromMidiProgramAnyChannel: no direct match, trying GM fallback`)
         return this._findByProgramNumber(program);
     }
 
