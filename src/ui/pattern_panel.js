@@ -18,6 +18,8 @@ import { showToast } from './toast.js'
 import { downloadJson, formatNoteTooltip } from './components/panel_helpers.js'
 
 import HeaderSection from './pattern_panel/header_section.js'
+
+const TRIGGER_FLASH_MS = 120
 import GridSection from './pattern_panel/grid_section.js'
 import PlaybackOverlaySection from './pattern_panel/playback_overlay_section.js'
 
@@ -176,7 +178,7 @@ export default class PatternPanel extends BasePanel {
             if (!cell) return
             cell.classList.add('pp-triggered')
             clearTimeout(cell._triggerTimer)
-            cell._triggerTimer = setTimeout(() => cell.classList.remove('pp-triggered'), 120)
+            cell._triggerTimer = setTimeout(() => cell.classList.remove('pp-triggered'), TRIGGER_FLASH_MS)
         })
         this._playbackEvents.on('trackParamChange', () => {
             this._overlay.syncVusVisibility()

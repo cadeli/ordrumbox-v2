@@ -2,6 +2,8 @@
 // Playhead animation, VU meter updates, waveform canvas drawing, RAF loop.
 
 import { TICK, BEATS_PER_PAGE } from '../../core/constants.js'
+
+const WAVEFORM_AMPLITUDE_SCALE = 0.45
 import { appState } from '../../state/app_state.js'
 import Utils from '../../core/utils.js'
 import { color } from '../theme.js'
@@ -45,7 +47,7 @@ export default class PlaybackOverlaySection {
             this.#playhead.style.top = '0'
             this.#playhead.style.bottom = '0'
             this.#playhead.style.width = '2px'
-            this.#playhead.style.zIndex = '10'
+            this.#playhead.style.zIndex = 'var(--z-overlay)'
             this.#playhead.style.pointerEvents = 'none'
             this.#playhead.style.willChange = 'transform'
             const header = editor.container.querySelector('.pp-header')
@@ -216,7 +218,7 @@ export default class PlaybackOverlaySection {
         for (let i = 0; i < len; i += step) {
             const v = (data.dataArray[i] - 128) / 128
             const x = i * sliceW
-            const y = v * h * 0.45 + mid
+            const y = v * h * WAVEFORM_AMPLITUDE_SCALE + mid
             if (first) {
                 ctx.moveTo(x, y)
                 first = false

@@ -3,8 +3,8 @@ import * as patternsManager from '../src/patterns/manager.js'
 import {
     hasArp,
     normalizeArp,
-    isTrigged,
-    isProbabilityTrigged,
+    isTriggered,
+    isProbabilityTriggered,
     getArpNoteCount,
     generateSubNotes,
 } from '../src/patterns/engine.js'
@@ -126,7 +126,7 @@ describe('PatternManager', () => {
         expect(result).toBe(16)
     })
 
-    // ── proxy methods (hasArp, normalizeArp, isTrigged, etc.) ─────────
+    // ── proxy methods (hasArp, normalizeArp, isTriggered, etc.) ─────────
 
     it('hasArp([0,4,7]) returns true', () => {
         expect(hasArp([0, 4, 7])).toBe(true)
@@ -140,20 +140,20 @@ describe('PatternManager', () => {
         expect(normalizeArp([0, 4, 7]).sequence).toEqual([0, 4, 7])
     })
 
-    it('isTrigged(0, 2, 0) returns true', () => {
-        expect(isTrigged(0, 2, 0)).toBe(true)
+    it('isTriggered(0, 2, 0) returns true', () => {
+        expect(isTriggered(0, 2, 0)).toBe(true)
     })
 
-    it('isTrigged(0, 2, 1) returns false', () => {
-        expect(isTrigged(0, 2, 1)).toBe(false)
+    it('isTriggered(0, 2, 1) returns false', () => {
+        expect(isTriggered(0, 2, 1)).toBe(false)
     })
 
-    it('isProbabilityTrigged(1) always returns true', () => {
-        for (let i = 0; i < 20; i++) expect(isProbabilityTrigged(1)).toBe(true)
+    it('isProbabilityTriggered(1) always returns true', () => {
+        for (let i = 0; i < 20; i++) expect(isProbabilityTriggered(1)).toBe(true)
     })
 
-    it('isProbabilityTrigged(0) always returns false', () => {
-        for (let i = 0; i < 20; i++) expect(isProbabilityTrigged(0)).toBe(false)
+    it('isProbabilityTriggered(0) always returns false', () => {
+        for (let i = 0; i < 20; i++) expect(isProbabilityTriggered(0)).toBe(false)
     })
 
     it('getArpNoteCount returns note count from retriggerNum', () => {

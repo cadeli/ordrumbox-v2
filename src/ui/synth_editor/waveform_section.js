@@ -4,6 +4,8 @@
 import { WAVE_BUFFER } from './constants.js'
 import { color, rgba } from '../theme.js'
 
+const FM_DEPTH_SCALE = 0.08
+
 export default class WaveformSection {
     /** @param {import('./synth_editor.js').default} editor */
     constructor(editor) { this._editor = editor }
@@ -66,7 +68,7 @@ export default class WaveformSection {
 
         const baseInc = cycles / sampleRate
         const inc = freqMult.map(fm => baseInc * fm)
-        const fmDepth = fmAmount * 0.08
+        const fmDepth = fmAmount * FM_DEPTH_SCALE
         const phase = [0, 0, 0]
 
         for (let i = 0; i < sampleRate; i++) {

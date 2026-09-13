@@ -4,8 +4,12 @@
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { appState } from '../../state/app_state.js'
+import { MAX_BEATS } from '../../core/constants.js'
 import Utils from '../../core/utils.js'
 import { recalcLoopDerived } from '../../model/track_schema.js'
+
+const BPM_MIN = 20
+const BPM_MAX = 250
 
 export default class TransportControls {
     /** @param {import('../toolbar.js').default} toolbar */
@@ -36,8 +40,8 @@ export default class TransportControls {
         tb.bpmPanel.className = 'tb-bpm-panel'
         tb.bpmSlider = document.createElement('input')
         tb.bpmSlider.type = 'range'
-        tb.bpmSlider.min = 20
-        tb.bpmSlider.max = 250
+        tb.bpmSlider.min = BPM_MIN
+        tb.bpmSlider.max = BPM_MAX
         tb.bpmSlider.step = 1
         tb.bpmValue = document.createElement('span')
         tb.bpmValue.className = 'tb-bpm-val'
@@ -51,7 +55,7 @@ export default class TransportControls {
         beatsLabel.className = 'tb-label'
         beatsLabel.textContent = 'Beats'
         tb.beatsSelect = document.createElement('select')
-        for (let i = 1; i <= 16; i++) {
+        for (let i = 1; i <= MAX_BEATS; i++) {
             const opt = document.createElement('option')
             opt.value = i
             opt.textContent = i

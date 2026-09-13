@@ -4,8 +4,8 @@ import {
     normalizeArp,
     hasArp,
     getArpNoteCount,
-    isTrigged,
-    isProbabilityTrigged,
+    isTriggered,
+    isProbabilityTriggered,
     generateSubNotes,
     createArpFlatNote,
 } from '../src/patterns/engine.js'
@@ -166,15 +166,15 @@ describe('PatternManager', () => {
     })
 
     describe('delegate methods', () => {
-        it('isTrigged delegates to engine', () => {
-            expect(isTrigged(0, 1, 0)).toBe(true)
-            expect(isTrigged(0, 2, 0)).toBe(true)
-            expect(isTrigged(0, 2, 1)).toBe(false)
+        it('isTriggered delegates to engine', () => {
+            expect(isTriggered(0, 1, 0)).toBe(true)
+            expect(isTriggered(0, 2, 0)).toBe(true)
+            expect(isTriggered(0, 2, 1)).toBe(false)
         })
 
-        it('isProbabilityTrigged delegates to engine', () => {
-            expect(isProbabilityTrigged(1)).toBe(true)
-            expect(isProbabilityTrigged(0)).toBe(false)
+        it('isProbabilityTriggered delegates to engine', () => {
+            expect(isProbabilityTriggered(1)).toBe(true)
+            expect(isProbabilityTriggered(0)).toBe(false)
         })
 
         it('hasArp delegates to engine', () => {

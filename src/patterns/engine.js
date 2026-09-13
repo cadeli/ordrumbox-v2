@@ -4,12 +4,12 @@ import Defaults from './defaults.js'
 import TrackVariation from './variation.js'
 import { MAX_LOOP_RETRY, TICK } from '../core/constants.js'
 
-export function isTrigged(pos, every, loop) {
+export function isTriggered(pos, every, loop) {
     pos %= every
     return (loop + pos) % every === 0
 }
 
-export function isProbabilityTrigged(prob = 1, random = Math.random) {
+export function isProbabilityTriggered(prob = 1, random = Math.random) {
     const probability = Math.min(Math.max(Number(prob), 0), 1)
     return probability >= 1 || random() < probability
 }
@@ -148,7 +148,7 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
         const tickSpacing = computeTickSpacing(track, rate, tick)
 
         for (let i = 0; i < totalNotes; i++) {
-            if (isProbabilityTrigged(arpTriggerProb)) {
+            if (isProbabilityTriggered(arpTriggerProb)) {
                 const tickPos = baseTick + i * tickSpacing
                 if (tickPos < nbTickForPattern) {
                     const semitoneOffset = arpConfig.sequence[i % arpConfig.sequence.length]
@@ -163,7 +163,7 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
             const tickSpacing = computeTickSpacing(track, rate, tick)
             for (let i = 1; i < retriggerNum; i++) {
                 const tickPos = baseTick + i * tickSpacing
-                if (tickPos < nbTickForPattern && isProbabilityTrigged(arpTriggerProb)) {
+                if (tickPos < nbTickForPattern && isProbabilityTriggered(arpTriggerProb)) {
                     addFlatNote(flatNotes, tickPos, createFlatNote(tickPos, track, note))
                 }
             }
@@ -197,12 +197,12 @@ export function generateSubNotesWithEuclidean(flatNotes, baseTick, track, note, 
             if (arpConfig) {
                 const totalArpNotes = getArpNoteCount(note)
                 const arpIndex = totalArpNotes + i - 1
-                if (isProbabilityTrigged(arpTriggerProb)) {
+                if (isProbabilityTriggered(arpTriggerProb)) {
                     const semitoneOffset = arpConfig.sequence[arpIndex % arpConfig.sequence.length]
                     addFlatNote(flatNotes, tickPos, createArpFlatNote(tickPos, track, note, semitoneOffset))
                 }
             } else {
-                if (isProbabilityTrigged(arpTriggerProb)) {
+                if (isProbabilityTriggered(arpTriggerProb)) {
                     addFlatNote(flatNotes, tickPos, createFlatNote(tickPos, track, note))
                 }
             }
@@ -224,8 +224,8 @@ export function computeFlatNotesFromPattern(djtPattern, loop = 0, computeNextSte
         for (const note of Object.values(track.notes)) {
             const pos = note.pos ?? 0
             const every = note.every ?? 1
-            if (!isTrigged(pos, every, loop)
-                || !isProbabilityTrigged((track.probability ?? 1) * (note.prob ?? 1))) {
+            if (!isTriggered(pos, every, loop)
+                || !isProbabilityTriggered((track.probability ?? 1) * (note.prob ?? 1))) {
                 continue
             }
 

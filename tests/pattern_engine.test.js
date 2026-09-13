@@ -7,8 +7,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
     computeFlatNotesFromPattern,
-    isTrigged,
-    isProbabilityTrigged,
+    isTriggered,
+    isProbabilityTriggered,
     normalizeArp,
     generateSubNotes,
     generateSubNotesWithEuclidean,
@@ -55,38 +55,38 @@ function getAllNotes(pattern, loop = 0) {
 
 describe('every / pos', () => {
     it('every=1 fires on every loop', () => {
-        expect(isTrigged(0, 1, 0)).toBe(true)
-        expect(isTrigged(0, 1, 1)).toBe(true)
-        expect(isTrigged(0, 1, 5)).toBe(true)
+        expect(isTriggered(0, 1, 0)).toBe(true)
+        expect(isTriggered(0, 1, 1)).toBe(true)
+        expect(isTriggered(0, 1, 5)).toBe(true)
     })
 
     it('every=2, phase=0 fires on even loops', () => {
-        expect(isTrigged(0, 2, 0)).toBe(true)
-        expect(isTrigged(0, 2, 1)).toBe(false)
-        expect(isTrigged(0, 2, 2)).toBe(true)
-        expect(isTrigged(0, 2, 3)).toBe(false)
+        expect(isTriggered(0, 2, 0)).toBe(true)
+        expect(isTriggered(0, 2, 1)).toBe(false)
+        expect(isTriggered(0, 2, 2)).toBe(true)
+        expect(isTriggered(0, 2, 3)).toBe(false)
     })
 
     it('every=2, phase=1 fires on odd loops', () => {
-        expect(isTrigged(1, 2, 0)).toBe(false)
-        expect(isTrigged(1, 2, 1)).toBe(true)
-        expect(isTrigged(1, 2, 2)).toBe(false)
-        expect(isTrigged(1, 2, 3)).toBe(true)
+        expect(isTriggered(1, 2, 0)).toBe(false)
+        expect(isTriggered(1, 2, 1)).toBe(true)
+        expect(isTriggered(1, 2, 2)).toBe(false)
+        expect(isTriggered(1, 2, 3)).toBe(true)
     })
 
     it('every=4, phase=1 fires on loops 3,7,11,...', () => {
-        expect(isTrigged(1, 4, 0)).toBe(false)
-        expect(isTrigged(1, 4, 1)).toBe(false)
-        expect(isTrigged(1, 4, 2)).toBe(false)
-        expect(isTrigged(1, 4, 3)).toBe(true)
-        expect(isTrigged(1, 4, 7)).toBe(true)
+        expect(isTriggered(1, 4, 0)).toBe(false)
+        expect(isTriggered(1, 4, 1)).toBe(false)
+        expect(isTriggered(1, 4, 2)).toBe(false)
+        expect(isTriggered(1, 4, 3)).toBe(true)
+        expect(isTriggered(1, 4, 7)).toBe(true)
     })
 
     it('every=3, phase=0 fires on loops 0,3,6,...', () => {
-        expect(isTrigged(0, 3, 0)).toBe(true)
-        expect(isTrigged(0, 3, 1)).toBe(false)
-        expect(isTrigged(0, 3, 2)).toBe(false)
-        expect(isTrigged(0, 3, 3)).toBe(true)
+        expect(isTriggered(0, 3, 0)).toBe(true)
+        expect(isTriggered(0, 3, 1)).toBe(false)
+        expect(isTriggered(0, 3, 2)).toBe(false)
+        expect(isTriggered(0, 3, 3)).toBe(true)
     })
 
     it('pattern with every=2 produces notes only on matching loops', () => {
@@ -103,22 +103,22 @@ describe('every / pos', () => {
     })
 })
 
-// ─── isProbabilityTrigged ──────────────────────────────────────
+// ─── isProbabilityTriggered ──────────────────────────────────────
 
-describe('isProbabilityTrigged', () => {
+describe('isProbabilityTriggered', () => {
     it('always returns true for probability 1', () => {
-        expect(isProbabilityTrigged(1)).toBe(true)
+        expect(isProbabilityTriggered(1)).toBe(true)
     })
 
     it('always returns false for probability 0', () => {
-        expect(isProbabilityTrigged(0)).toBe(false)
+        expect(isProbabilityTriggered(0)).toBe(false)
     })
 
     it('uses random function', () => {
         const mockRandom = vi.fn()
         mockRandom.mockReturnValueOnce(0.1).mockReturnValueOnce(0.9)
-        expect(isProbabilityTrigged(0.5, mockRandom)).toBe(true)
-        expect(isProbabilityTrigged(0.5, mockRandom)).toBe(false)
+        expect(isProbabilityTriggered(0.5, mockRandom)).toBe(true)
+        expect(isProbabilityTriggered(0.5, mockRandom)).toBe(false)
     })
 })
 

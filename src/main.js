@@ -132,7 +132,7 @@ export function init() {
     })
 
     const tbEl = document.getElementById('tb')
-    if (tbEl && typeof ResizeObserver !== 'undefined') {
+    if (tbEl) {
         const ro = new ResizeObserver(entries => {
             for (const entry of entries) {
                 document.documentElement.style.setProperty('--tb-h', `${entry.contentRect.height}px`)

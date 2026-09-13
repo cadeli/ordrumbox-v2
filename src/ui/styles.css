@@ -1641,7 +1641,7 @@ min-height: auto;
     color: var(--color-success);
 }
 
-/* ne-grid: only used by output-panel (opt-in via gridId) */
+/* Grid layout utility used by output-panel and others */
 .ne-grid {
     display: flex; flex-direction: column; gap: 4px;
 }

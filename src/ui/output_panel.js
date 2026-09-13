@@ -3,6 +3,9 @@ import { soundRegistry } from '../state/sound_registry.js'
 import { bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
+
+const SPECTRUM_WIDTH = 256
+const SPECTRUM_HEIGHT = 100
 import BasePanel from './base_panel.js'
 import { color } from './theme.js'
 
@@ -63,8 +66,8 @@ this.container.innerHTML = `
         this.#buildFilterSliders()
 
         this.canvas = this.container.querySelector('#op-spectrum')
-        this.canvas.width  = 256
-        this.canvas.height = 100
+        this.canvas.width  = SPECTRUM_WIDTH
+        this.canvas.height = SPECTRUM_HEIGHT
 
         bindTabToggles(this.container)
         this.#restoreMasterSettings()

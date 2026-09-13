@@ -56,6 +56,7 @@ export default class TrackEditor extends BasePanel {
         this._isDragging = false
         this._sliders = new Map()
         this._lfoBridge = null
+        this._selectedLfoTarget = null
         this._delegationBound = false
         this._prevFilterType = undefined
         this._knobs = []

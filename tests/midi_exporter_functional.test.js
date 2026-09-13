@@ -28,7 +28,7 @@
 import { describe, it, expect } from 'vitest'
 import {
     computeFlatNotesFromPattern,
-    isTrigged,
+    isTriggered,
     normalizeArp,
     computeTickForNote,
     computeNbTickForLoop,
@@ -301,17 +301,17 @@ describe('MidiExporter — functional end-to-end', () => {
             ]
         }
 
-        it('isTrigged(phase=0, freq=2, loop=0) is true', () => {
-            expect(isTrigged(0, 2, 0)).toBe(true)
+        it('isTriggered(phase=0, freq=2, loop=0) is true', () => {
+            expect(isTriggered(0, 2, 0)).toBe(true)
         })
-        it('isTrigged(phase=0, freq=2, loop=1) is false', () => {
-            expect(isTrigged(0, 2, 1)).toBe(false)
+        it('isTriggered(phase=0, freq=2, loop=1) is false', () => {
+            expect(isTriggered(0, 2, 1)).toBe(false)
         })
-        it('isTrigged(phase=1, freq=2, loop=1) is true', () => {
-            expect(isTrigged(1, 2, 1)).toBe(true)
+        it('isTriggered(phase=1, freq=2, loop=1) is true', () => {
+            expect(isTriggered(1, 2, 1)).toBe(true)
         })
-        it('isTrigged(phase=1, freq=2, loop=0) is false', () => {
-            expect(isTrigged(1, 2, 0)).toBe(false)
+        it('isTriggered(phase=1, freq=2, loop=0) is false', () => {
+            expect(isTriggered(1, 2, 0)).toBe(false)
         })
 
         it('loop=0: engine produces 2 notes (always + phase0)', () => {

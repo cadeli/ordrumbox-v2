@@ -1,5 +1,7 @@
 import { fmt as _defaultFmt, escapeHtml as _escHtml } from './ui_utils.js'
 
+const DRAG_END_DEBOUNCE_MS = 50
+
 /**
  * OrKnob — rotary knob component for ordrumbox-v2.
  *
@@ -215,7 +217,7 @@ export class OrKnob {
             window.removeEventListener('mousemove', onMove)
             window.removeEventListener('mouseup', onUp)
             this.#knobEl?.classList.remove('dragging')
-            setTimeout(() => { this.#dragging = false }, 50)
+            setTimeout(() => { this.#dragging = false }, DRAG_END_DEBOUNCE_MS)
         }
         window.addEventListener('mousemove', onMove)
         window.addEventListener('mouseup', onUp)

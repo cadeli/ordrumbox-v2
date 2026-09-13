@@ -8,6 +8,7 @@ const TOAST_STYLES = {
 }
 
 const DURATIONS = { info: 3000, success: 3000, error: 4500, warning: 3500 }
+const DISMISS_FADE_MS = 250
 
 function ensureContainer() {
     let c = document.getElementById(CONTAINER_ID)
@@ -93,7 +94,7 @@ export function showToast(message, type = 'info', { actions, dismissible } = {})
     function dismiss() {
         el.style.transition = 'opacity 0.25s'
         el.style.opacity = '0'
-        setTimeout(() => el.remove(), 250)
+        setTimeout(() => el.remove(), DISMISS_FADE_MS)
     }
 
     if (!actions && !dismissible) {

@@ -4,6 +4,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
+import { MAX_BEATS } from '../core/constants.js'
 
 export default class PatternSettingsPanel {
     constructor() {
@@ -47,7 +48,7 @@ export default class PatternSettingsPanel {
         beatsRow.innerHTML = `
             <label class="ps-label">Beats</label>
             <select class="ps-beats-select">
-                ${Array.from({ length: 16 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
+                ${Array.from({ length: MAX_BEATS }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
             </select>
         `
 

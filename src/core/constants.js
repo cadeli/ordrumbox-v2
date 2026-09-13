@@ -21,6 +21,7 @@ export const STOP_BUFFER = 0.015
 export const STOP_EXTRA_BUFFER = 0.02
 // ── UI / Display ───────────────────────────────────────────────────
 export const BEATS_PER_PAGE = 4
+export const MAX_BEATS = 16
 
 // ── Import limits ──────────────────────────────────────────────────
 export const MAX_IMPORT_TRACKS = 64
