@@ -60,8 +60,6 @@ export const playbackClock = computed(() => {
 // 2. Pattern Computed
 // ═══════════════════════════════════════════════════════
 
-export const currentPatternIdx = computed(() => appState.selectedPatternNum)
-
 export const currentPattern = computed(() =>
     appState.patterns[appState.selectedPatternNum] ?? null
 )
@@ -84,11 +82,6 @@ playbackEvents.on('noteChange', () => _bumpTrackVersion(v => v + 1))
 playbackEvents.on('trackParamChange', () => _bumpTrackVersion(v => v + 1))
 playbackEvents.on('patternStructureChange', () => _bumpTrackVersion(v => v + 1))
 
-export const selectedTrack = computed(() => {
-    const tracks = currentTracks()
-    return tracks[appState.selectedTrackNum] ?? null
-})
-
 /** Bumps when the pattern list changes (add/remove/rename) */
 export const [patternVersion, _bumpPatternVersion] = createSignal(0)
 
@@ -99,25 +92,6 @@ playbackEvents.on('drumkitChange', () => _bumpPatternVersion(v => v + 1))
 export const [pageVersion, _bumpPageVersion] = createSignal(0)
 
 playbackEvents.on('patternMetaChange', () => _bumpPageVersion(v => v + 1))
-
-export const totalPages = computed(() => {
-    trackVersion()
-    const pat = currentPattern()
-    if (!pat) return 1
-    const stepsPerBeat = Utils.getTracksArray(pat)[0]?.stepsPerBeat ?? 4
-    const totalSteps = (pat.nbBeats ?? 4) * stepsPerBeat
-    return Math.ceil(totalSteps / 16)
-})
-
-export const canPrevPage = computed(() => {
-    pageVersion()
-    return appState.currentPage > 0
-})
-
-export const canNextPage = computed(() => {
-    pageVersion()
-    return appState.currentPage < totalPages() - 1
-})
 
 // ═══════════════════════════════════════════════════════
 // 3. History (Undo / Redo)

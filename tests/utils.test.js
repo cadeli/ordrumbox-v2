@@ -66,28 +66,6 @@ describe('Utils', () => {
         })
     })
 
-    describe('filter normalization', () => {
-        describe('normalizedSynthFilterFreqToHz', () => {
-            it('0 → 50Hz', () => {
-                expect(Utils.normalizedSynthFilterFreqToHz(0)).toBe(50)
-            })
-
-            it('1 → 2050Hz', () => {
-                expect(Utils.normalizedSynthFilterFreqToHz(1)).toBe(2050)
-            })
-        })
-
-        describe('normalizedSynthFilterQToValue', () => {
-            it('0 → 1', () => {
-                expect(Utils.normalizedSynthFilterQToValue(0)).toBe(1)
-            })
-
-            it('1 → 21', () => {
-                expect(Utils.normalizedSynthFilterQToValue(1)).toBe(21)
-            })
-        })
-    })
-
     describe('getRandomKey', () => {
         it('returns a key from the object', () => {
             const obj = { a: 1, b: 2, c: 3 }

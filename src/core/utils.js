@@ -218,21 +218,6 @@ static TAG = "UTILS"
 
     static semiToneToPitch = (semiTone) => Math.pow(2, semiTone / 12);
 
-    static normalizedSynthFilterFreqToHz = (value) => Math.floor((2000 * Utils.toFiniteNumber(value, 0, 'synthFilterFreq')) + 50)
-    static normalizedSynthFilterQToValue = (value) => (20 * Utils.toFiniteNumber(value, 0, 'synthFilterQ')) + 1
-
-    static normalizeSynthFilterFreqValue = (value) => {
-        const numericValue = Number(value)
-        if (!Number.isFinite(numericValue)) return 50
-        return numericValue <= 1 ? Utils.normalizedSynthFilterFreqToHz(numericValue) : numericValue
-    }
-
-    static normalizeSynthFilterQValue = (value) => {
-        const numericValue = Number(value)
-        if (!Number.isFinite(numericValue)) return 1
-        return numericValue <= 1 ? Utils.normalizedSynthFilterQToValue(numericValue) : numericValue
-    }
-
     static getStepSpacing = (value) => {
         if (value < 8) {
         return (value/8)

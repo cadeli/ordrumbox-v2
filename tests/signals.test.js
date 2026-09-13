@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createSignal, effect, batch, computed, reactive } from '../src/core/signals.js'
+import { createSignal, effect, computed, reactive } from '../src/core/signals.js'
 
 describe('createSignal', () => {
     it('returns initial value', () => {
@@ -81,36 +81,6 @@ describe('effect', () => {
         expect(cleanup).toHaveBeenCalledTimes(1)
         dispose()
         expect(cleanup).toHaveBeenCalledTimes(2)
-    })
-})
-
-describe('batch', () => {
-    it('defers effects until batch completes', () => {
-        const [getA, setA] = createSignal(0)
-        const [getB, setB] = createSignal(0)
-        const fn = vi.fn()
-        effect(() => { fn(getA(), getB()) })
-        expect(fn).toHaveBeenCalledTimes(1)
-
-        batch(() => {
-            setA(1)
-            setB(2)
-        })
-        expect(fn).toHaveBeenCalledTimes(2)
-        expect(fn).toHaveBeenLastCalledWith(1, 2)
-    })
-
-    it('nested batch only flushes once', () => {
-        const [get, set] = createSignal(0)
-        const fn = vi.fn()
-        effect(() => { fn(get()) })
-        batch(() => {
-            batch(() => {
-                set(5)
-            })
-            expect(fn).toHaveBeenCalledTimes(1)
-        })
-        expect(fn).toHaveBeenCalledTimes(2)
     })
 })
 

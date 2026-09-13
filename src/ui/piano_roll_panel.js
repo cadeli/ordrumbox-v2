@@ -102,9 +102,7 @@ export default class PianoRollPanel extends BasePanel {
             const gridEl = e.target.closest('#pp-piano-grid')
             if (gridEl) this._onGridClick(e, gridEl)
         })
-        if (typeof ResizeObserver !== 'undefined') {
-            this._resizeObserver = new ResizeObserver(() => this._onResize())
-        }
+        this._resizeObserver = new ResizeObserver(() => this._onResize())
         this._onKeyDown = this._onKeyDown.bind(this)
         this._onWheel = this._onWheel.bind(this)
         this.container?.querySelector('#pp-pr-prev')?.addEventListener('click', () => this._prevPage())

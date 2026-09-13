@@ -72,10 +72,8 @@ export default class PatternPanel extends BasePanel {
         this.container.addEventListener('keydown', (e) => this._onKeyDown(e))
         this.container.addEventListener('mouseover', (e) => this._onMouseOver(e))
         this.container.addEventListener('mouseout', (e) => this._onMouseOut(e))
-        if (typeof ResizeObserver !== 'undefined') {
-            this._resizeObserver = new ResizeObserver(() => this._updateBarCache())
-            this._resizeObserver.observe(this.container)
-        }
+        this._resizeObserver = new ResizeObserver(() => this._updateBarCache())
+        this._resizeObserver.observe(this.container)
     }
 
     _ensureTooltip() {

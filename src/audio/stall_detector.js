@@ -35,11 +35,7 @@ export default class AudioStallDetector {
         this.#lastTick = this.#transport?.tick ?? -1
         this.#stalled = false
 
-        if (typeof this.#audioCtx?.addEventListener === 'function') {
-            this.#audioCtx.addEventListener('statechange', this.#onCtxStateChangeBound)
-        } else if (this.#audioCtx) {
-            this.#audioCtx.onstatechange = this.#onCtxStateChangeBound
-        }
+        this.#audioCtx.addEventListener('statechange', this.#onCtxStateChangeBound)
 
         this.#timerId = setInterval(() => this.#check(), this.#checkIntervalMs)
     }
@@ -51,11 +47,7 @@ export default class AudioStallDetector {
         }
 
         if (this.#audioCtx) {
-            if (typeof this.#audioCtx.removeEventListener === 'function') {
-                this.#audioCtx.removeEventListener('statechange', this.#onCtxStateChangeBound)
-            } else {
-                this.#audioCtx.onstatechange = null
-            }
+            this.#audioCtx.removeEventListener('statechange', this.#onCtxStateChangeBound)
         }
 
         if (this.#stalled) {

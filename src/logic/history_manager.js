@@ -2,6 +2,7 @@
 // Undo/Redo history manager
 
 import { playbackEvents } from '../state/playback_events.js'
+import { logger } from '../core/logger.js'
 
 export default class HistoryManager {
     constructor(maxSize = 50) {
@@ -68,7 +69,7 @@ export default class HistoryManager {
             command.undo()
             this._future.push(command)
         } catch (err) {
-            console.error('HistoryManager: undo failed', err)
+            logger.error('HistoryManager', 'undo failed', err)
             this._past.push(command)
             this._isUndoing = false
             return false
@@ -90,7 +91,7 @@ export default class HistoryManager {
             command.execute()
             this._past.push(command)
         } catch (err) {
-            console.error('HistoryManager: redo failed', err)
+            logger.error('HistoryManager', 'redo failed', err)
             this._future.push(command)
             this._isRedoing = false
             return false

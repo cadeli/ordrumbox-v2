@@ -70,15 +70,6 @@ export function effect(fn) {
     }
 }
 
-/** Defers effect execution until the outermost batch() completes. */
-export function batch(fn) {
-    _batchDepth++
-    try { fn() } finally {
-        _batchDepth--
-        if (_batchDepth === 0) _flush()
-    }
-}
-
 /**
  * Creates a memoized computed signal.
  * @param {Function} fn

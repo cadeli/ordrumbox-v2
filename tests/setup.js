@@ -53,3 +53,12 @@ const stubContext = () => ({
 if (typeof HTMLCanvasElement !== 'undefined') {
     HTMLCanvasElement.prototype.getContext = stubContext
 }
+
+if (typeof ResizeObserver === 'undefined') {
+    globalThis.ResizeObserver = class ResizeObserver {
+        constructor() {}
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+    }
+}
