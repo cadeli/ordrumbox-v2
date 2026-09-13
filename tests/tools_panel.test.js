@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import { playbackEvents } from '../src/state/playback_events.js'
 import Utils from '../src/core/utils.js'
 import Commander from '../src/logic/commands/cmd.js'
 
@@ -83,5 +84,47 @@ describe('ToolsPanel._randomizePattern logic', () => {
         for (const track of pattern.tracks) {
             expect(track.notes.length).toBeGreaterThan(0)
         }
+    })
+})
+
+describe('ToolsPanel sync logic', () => {
+    let cmd
+
+    beforeEach(() => {
+        serviceRegistry.reset()
+        appState.reset()
+        cmd = new Commander()
+        serviceRegistry.cmd = cmd
+        serviceRegistry.seq = { setBpm: vi.fn(), simpleBeep: vi.fn() }
+        serviceRegistry.patterns = { computeFlatNotesFromPattern: () => {} }
+        appState.patterns = [{ name: 'P1', tracks: [{ name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 }] }]
+        appState.selectedPatternNum = 0
+    })
+
+    it('compactTrack returns unchanged for minimal track', () => {
+        const track = appState.patterns[0].tracks[0]
+        track.notes = [
+            { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+            { beat: 1, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+        ]
+        const result = Utils.addLoopToTrackIfPossible(track)
+        expect(result.changed).toBe(false)
+    })
+
+    it('compactTrack detects repeating loop', () => {
+        const track = appState.patterns[0].tracks[0]
+        track.notes = [
+            { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+            { beat: 1, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+            { beat: 2, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+            { beat: 3, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+            { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+            { beat: 1, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+            { beat: 2, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+            { beat: 3, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
+        ]
+        const result = Utils.addLoopToTrackIfPossible(track)
+        expect(result.changed).toBe(true)
+        expect(result.removedNotes).toBeGreaterThan(0)
     })
 })

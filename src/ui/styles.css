@@ -20,7 +20,6 @@
   --bg-input:    var(--surface-2);
   --bg-elevated: var(--surface);
   --bg-hover:    var(--surface-2);
-  --bg-selected: var(--black);
   --bg-accent:   var(--accent);
 
   /* ── Derived text ── */
@@ -32,7 +31,6 @@
   /* ── Derived borders ── */
   --border-subtle: #C1C2BE;
   --border:        var(--line);
-  --border-strong: var(--black);
 
   /* ── Accent variants ── */
   --accent-400: #6a7d73;
@@ -64,23 +62,9 @@
 
   /* ── Layout ── */
   --panel-height: 300px;
-  --control-height: 32px;
-  --slider-height: 2px;
-  --slider-thumb: 9px;
-
-  /* ── Spacing ── */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 32px;
 
   /* ── Radius ── */
-  --radius-xs: 3px;
   --radius-sm: 4px;
-  --radius-md: 6px;
   --radius-lg: 8px;
 
   /* ── VU Meter ── */

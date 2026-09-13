@@ -177,14 +177,17 @@ describe('computeLfoValue', () => {
 
     it('unknown waveform name falls back to 0 (sine)', () => {
         const lfo = { freq: 1, min: 0, max: 1, phase: 0, type: 'unknown' }
+        const sine = { freq: 1, min: 0, max: 1, phase: 0, type: 'sine' }
         const val = computeLfoValue(lfo, 0, TICK * 4)
-        expect(typeof val).toBe('number')
+        const ref = computeLfoValue(sine, 0, TICK * 4)
+        expect(val).toBeCloseTo(ref, 6)
     })
 
     it('uses waveform alias (waveform prop)', () => {
         const lfo = { freq: 1, min: 0, max: 1, phase: 0, waveform: 'square' }
         const val = computeLfoValue(lfo, 0, TICK * 4)
-        expect(typeof val).toBe('number')
+        expect(val).toBeGreaterThanOrEqual(0)
+        expect(val).toBeLessThanOrEqual(1)
     })
 })
 

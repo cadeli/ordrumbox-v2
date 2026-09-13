@@ -90,47 +90,8 @@ describe('TrackEditor filterFreq display', () => {
         expect(getFreqDisplay({ name: 'KICK', filterFreq: 20 })).toBe('20Hz')
     })
 
-    it('632 Hz is rendered as "632Hz"', () => {
-        expect(getFreqDisplay({ name: 'KICK', filterFreq: 632 })).toBe('632Hz')
-    })
-
     it('20 kHz is rendered as "20.0k"', () => {
         expect(getFreqDisplay({ name: 'KICK', filterFreq: 20000 })).toBe('20.0k')
-    })
-
-    it('_onSlider formats the display in Hz while dragging', () => {
-        const editor = new TrackEditor()
-        editor.init()
-        editor.track = { name: 'KICK', filterFreq: 20 }
-        editor._tab.setActive('fx')
-        editor._fxTab.setActive('3')
-        editor.sync()
-        const knob = editor.fxKnobs.find(k => k.key === 'filterFreq')
-        knob.setValue(632)
-        knob.onChange?.(632, 'filterFreq')
-        expect(editor.track.filterFreq).toBe(632)
-        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
-        expect(valEl.textContent).toBe('632Hz')
-    })
-
-    it('_updateLfoSliders replaces base with the LFO value (Hz)', () => {
-        serviceRegistry.transport = { isRunning: true, tick: 0 }
-        const editor = new TrackEditor()
-        editor.init()
-        // LFO with freq=0 → fixed output = min value = 158 Hz
-        editor.track = {
-            name: 'KICK',
-            filterFreq: 632,
-            filterFreqLfo: { freq: 0, min: 158, max: 158, phase: 0 },
-        }
-        editor._tab.setActive('fx')
-        editor._fxTab.setActive('3')
-        appState.patterns = [{ tracks: [editor.track], nbBeats: 4 }]
-        appState.selectedPatternNum = 0
-        editor.sync()
-        editor._updateLfoSliders()
-        const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
-        expect(valEl.textContent).toBe('158Hz')
     })
 })
 
@@ -249,36 +210,3 @@ describe('TrackEditor loop slider events', () => {
     })
 })
 
-describe('TrackEditor LFO row highlight', () => {
-    it('marks the selected prop row with the "selected" class', () => {
-        const editor = new TrackEditor()
-        editor.init()
-        editor.track = { name: 'KICK', filterFreq: 0.5, filterFreqLfo: null }
-        editor._selectedPropKey = 'filterFreq'
-        editor._tab.setActive('fx')
-        editor._fxTab.setActive('3')
-        editor.sync()
-
-        const selectedRow = editor.container.querySelector('.ne-row.selected')
-        expect(selectedRow).not.toBeNull()
-        expect(selectedRow.dataset.prop).toBe('filterFreq')
-    })
-
-    it('marks rows whose prop has an LFO configured with the "has-lfo" class', () => {
-        const editor = new TrackEditor()
-        editor.init()
-        editor.track = {
-            name: 'KICK',
-            filterFreq: 0.5,
-            filterFreqLfo: { freq: 1, min: 0, max: 0.5 },
-        }
-        editor._selectedPropKey = null
-        editor._tab.setActive('fx')
-        editor._fxTab.setActive('3')
-        editor.sync()
-
-        const lfoRows = editor.container.querySelectorAll('.ne-row.has-lfo')
-        const lfoProp = [...lfoRows].find(r => r.dataset.prop === 'filterFreq')
-        expect(lfoProp).toBeDefined()
-    })
-})

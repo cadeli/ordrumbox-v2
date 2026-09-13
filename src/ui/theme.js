@@ -20,7 +20,6 @@ const TOKENS = {
     'bg-input':        '#CFD0CC',
     'bg-hover':        '#CFD0CC',
     'bg-accent':       '#596B61',
-    'bg-success':      '#596B61',
 
     // Text
     'text':            '#202321',
@@ -32,7 +31,6 @@ const TOKENS = {
     // Borders
     'border-subtle':   '#C1C2BE',
     'border':          '#A9AAA6',
-    'border-strong':   '#151716',
 
     // Semantic (mapped to palette)
     'accent':          '#596B61',

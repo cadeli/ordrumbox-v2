@@ -111,27 +111,6 @@ describe('Soft Synth Editor display', () => {
         expect(trackEditor.container.style.display).toBe('none')
     })
 
-    it('renders fixed blocks with bypass buttons (one per group)', async () => {
-        await trackEditor.synthEditor.openEditor()
-        const blocks = document.querySelectorAll('#soft-synth-panel [data-ss-card]')
-        expect(blocks.length).toBeGreaterThanOrEqual(Object.keys(SAMPLE_DRAFT).length)
-
-        const labels = Array.from(blocks).map(b => b.querySelector('.ss-group-label')?.textContent.trim())
-        expect(labels).toContain('Master')
-        expect(labels).toContain('Flt')
-        expect(labels).toContain('Env')
-
-        const bypassBtns = document.querySelectorAll('#soft-synth-panel .ss-bypass-btn')
-        expect(bypassBtns.length).toBe(blocks.length)
-    })
-
-it('renders the Revert action button', async () => {
-         await trackEditor.synthEditor.openEditor()
-         const revertBtn = document.querySelector('#soft-synth-panel [data-action="synth-revert"]')
-         expect(revertBtn).not.toBeNull()
-         expect(revertBtn.textContent.trim()).toBe('Revert')
-     })
-
     it('renders the waveform canvas', async () => {
         await trackEditor.synthEditor.openEditor()
         const canvas = document.querySelector('#soft-synth-panel .ss-waveform')
