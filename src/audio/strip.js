@@ -3,7 +3,6 @@ import Defaults from '../patterns/defaults.js';
 import { RAMP_TIME } from '../core/constants.js';
 import WorkletLoader from './worklets/loader.js';
 import STRIP_SOURCE from './worklets/processors/strip_source.js';
-import { logger } from "../core/logger.js"
 
 WorkletLoader.register('strip', STRIP_SOURCE);
 

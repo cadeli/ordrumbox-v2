@@ -5,7 +5,7 @@ import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { getAutoGenerateService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import { logger, nameOr } from "../../core/logger.js"
+import { nameOr } from "../../core/logger.js"
 
 export default class WavExporter {
     constructor() {

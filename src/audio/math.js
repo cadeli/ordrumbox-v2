@@ -4,7 +4,6 @@ import {
     MIN_NOTE_RATIO,
 } from '../core/constants.js'
 import Utils from '../core/utils.js'
-import { logger } from "../core/logger.js"
 
 export function safeDisconnect(node) {
     if (!node || typeof node.disconnect !== 'function') return

@@ -5,7 +5,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import FlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
 import { TICK } from '../core/constants.js'
-import { pitchToNoteName, formatNoteTooltip } from './components/ui_utils.js'
+import { formatNoteTooltip } from './components/ui_utils.js'
 import NoteParams from '../patterns/note_params.js'
 
 const NOTE_HEIGHT = 14

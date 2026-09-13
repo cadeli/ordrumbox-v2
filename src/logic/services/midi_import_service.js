@@ -131,17 +131,8 @@ export default class MidiImportService {
                 }
             }
 
-            const programInst = im.findInstrumentFromMidiProgramAnyChannel(program)
-            if (programInst.id !== 'NOT_FOUND') {
-                const trackName = programInst.id
-                if (!trackDefs.some(d => d.trackName === trackName)) {
-                    trackDefs.push(makeDef(trackName, chNotes, { baseNote: resolveRootMidi(trackName), midiTrackName, program, channel, isDrum: false }))
-                    logger.warn('MidiImport', `  → ${trackName} (tier4: findInstrumentFromMidiProgramAnyChannel prog=${program})`)
-                }
-            } else {
-                skippedChannels.push(channel)
-                logger.warn('MidiImport', `  → SKIPPED (aucun instrument trouvé pour ch=${channel} prog=${program})`)
-            }
+            skippedChannels.push(channel)
+            logger.warn('MidiImport', `  → SKIPPED (aucun instrument trouvé pour ch=${channel} prog=${program})`)
         }
 
         for (const channel of skippedChannels) {

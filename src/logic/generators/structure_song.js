@@ -1,4 +1,3 @@
-import { logger } from "../../core/logger.js"
 import Utils from "../../core/utils.js"
 export default class StructureSong {
     static TAG = "StructureSong"

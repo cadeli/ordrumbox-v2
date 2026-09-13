@@ -15,7 +15,7 @@ import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 import { logger } from "../core/logger.js"
 import { showToast } from './toast.js'
-import { downloadJson, pitchToNoteName, formatNoteTooltip } from './components/panel_helpers.js'
+import { downloadJson, formatNoteTooltip } from './components/panel_helpers.js'
 
 import HeaderSection from './pattern_panel/header_section.js'
 import GridSection from './pattern_panel/grid_section.js'

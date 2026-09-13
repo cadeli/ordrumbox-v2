@@ -3,7 +3,6 @@ import { playbackEvents } from '../../state/playback_events.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { instrumentsManager } from './instruments_manager.js'
-import { logger } from '../../core/logger.js'
 import { showToast } from '../../ui/toast.js'
 import { cacheSample, cacheDrumkits } from '../../cache/idb_cache.js'
 

@@ -4,7 +4,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { effect } from '../core/signals.js'
 import {
     isPlaying, currentBpm, currentPattern, currentTracks, trackVersion,
-    canPrevPage, canNextPage, canUndo, canRedo,
+    canUndo, canRedo,
     nextUndoDesc, nextRedoDesc,
     patternVersion, drumkitList, pageVersion,
 } from '../state/signals.js'

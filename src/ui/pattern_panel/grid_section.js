@@ -2,7 +2,6 @@
 // Track grid: rows, beat cells, note slices, ghosts, dividers, solo,
 // volume sliders, vu meters, master track, add-track button.
 
-import Utils from '../../core/utils.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { nameOr } from '../../core/logger.js'
 

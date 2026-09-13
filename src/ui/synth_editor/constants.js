@@ -1,8 +1,6 @@
 // src/ui/synth_editor/constants.js
 // Shared constants for the SynthEditor sub-modules.
 
-import Utils from '../../core/utils.js'
-
 export const WAVE_ICONS = {
     sine:     '<svg viewBox="0 0 24 14"><path d="M0 7 C3 7,3 1,6 1 C9 1,9 13,12 13 C15 13,15 1,18 1 C21 1,21 7,24 7" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
     triangle: '<svg viewBox="0 0 24 14"><polyline points="0,12 6,2 12,12 18,2 24,12" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',

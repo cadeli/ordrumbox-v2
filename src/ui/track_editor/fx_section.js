@@ -3,7 +3,7 @@
 
 import { OrKnob } from '../components/or_knob.js'
 import { renderOptions, renderIconChoices } from '../components/panel_helpers.js'
-import { FX_DEFS, FILTER_TYPE_ICONS, FILTER_PROPS, PROP_BY_KEY, fmtVal } from './constants.js'
+import { FX_DEFS, FILTER_TYPE_ICONS, PROP_BY_KEY, fmtVal } from './constants.js'
 
 export default class FxSection {
     /** @param {import('./track_editor.js').default} editor */
