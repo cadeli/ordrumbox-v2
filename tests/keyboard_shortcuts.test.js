@@ -1,11 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
 import { initKeyboardShortcuts } from '../src/keyboard_shortcuts.js'
 
 function fireKeydown(code, key = '') {
@@ -34,7 +33,9 @@ describe('Keyboard shortcuts', () => {
             setSelectedDrumkitNum: vi.fn()
         }
         soundRegistry.drumkitList = [{ name: '8bits' }, { name: 'real' }]
+    })
 
+    beforeAll(() => {
         initKeyboardShortcuts()
     })
 
@@ -91,7 +92,7 @@ describe('Keyboard shortcuts', () => {
 
     it('Digit9 for out-of-bounds track does nothing', () => {
         fireKeydown('Digit9')
-        expect(playbackEvents.emit).not.toHaveBeenCalledWith('patternChange')
+        expect(serviceRegistry.seq.simpleBeep).not.toHaveBeenCalled()
     })
 
     it('Space works when key property is " "', () => {
