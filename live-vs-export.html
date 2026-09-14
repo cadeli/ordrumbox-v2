@@ -248,6 +248,19 @@
         log(`  ${Object.keys(soundRegistry.sounds).length} samples from "${firstKit.name}"`, 'ok')
         log(`  ${Object.keys(soundRegistry.generatedSounds).length} synth presets`, 'ok')
 
+        // ── Add LFO volume to SYNTH1 preset ────────────────────────────
+        if (soundRegistry.generatedSounds['SYNTH1']) {
+          const gs = soundRegistry.generatedSounds['SYNTH1']
+          gs.lfo = {
+            target: 'masterVolume',
+            wave: 'sine',
+            freq: 2,
+            depth: 0.6,
+            sync: 'off',
+          }
+          log('  LFO volume added to SYNTH1: sine 2Hz depth 0.6', 'ok')
+        }
+
         log('[3/6] Auto-assigning sounds...', 'info')
         appState.patterns.length = 0
         appState.patterns.push(testPattern)
