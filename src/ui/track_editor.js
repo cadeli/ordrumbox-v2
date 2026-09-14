@@ -54,6 +54,7 @@ export default class TrackEditor extends BasePanel {
         this._rafId = null
         this._lastTick = -1
         this._isDragging = false
+        this._isSelecting = false
         this._sliders = new Map()
         this._lfoBridge = null
         this._selectedLfoTarget = null
@@ -134,7 +135,7 @@ export default class TrackEditor extends BasePanel {
         this._playbackEvents.on("playbackStop", () => this._stopStepWatch())
         this._playbackEvents.on("drumkitChange", () => { if (this._track) this.sync() })
         this._playbackEvents.on("patternChange", () => {
-            if (this._isDragging) return
+            if (this._isDragging || this._isSelecting) return
             if (!this._track) return
             const pattern = this._appState.patterns[this._appState.selectedPatternNum]
             if (!pattern?.tracks) return
@@ -279,7 +280,8 @@ export default class TrackEditor extends BasePanel {
                 const input = row.querySelector('input')
                 if (input) {
                     input.addEventListener('change', () => {
-                        this._isDragging = false
+        this._isDragging = false
+        this._isSelecting = false
                         this._emitTrackChange()
                     })
                 }
@@ -527,6 +529,13 @@ export default class TrackEditor extends BasePanel {
             }
         })
 
+        this.container.addEventListener('focusin', (e) => {
+            if (e.target.tagName === 'SELECT') this._isSelecting = true
+        })
+        this.container.addEventListener('focusout', (e) => {
+            if (e.target.tagName === 'SELECT') this._isSelecting = false
+        })
+
         this.container.addEventListener('change', (e) => {
             const target = e.target
             if (target.classList.contains('te-load-input')) {
@@ -537,9 +546,13 @@ export default class TrackEditor extends BasePanel {
                 if (target.dataset.key) this._onSelect(target)
                 else if (target.dataset.lfoTypeSelect) this._onLfoSelect(target)
                 else if (target.dataset.sound) {
-                    if (target.dataset.sound === 'instrument') this._sndSection.onInstrumentChange(target)
-                    else if (target.dataset.sound === 'sample') this._sndSection.onSampleChange(target)
-                    else if (target.dataset.sound === 'generated') this._sndSection.onGeneratedChange(target)
+                    const soundType = target.dataset.sound
+                    const p =
+                        soundType === 'instrument' ? this._sndSection.onInstrumentChange(target)
+                        : soundType === 'sample' ? this._sndSection.onSampleChange(target)
+                        : soundType === 'generated' ? this._sndSection.onGeneratedChange(target)
+                        : null
+                    if (p) p.finally(() => { this._isSelecting = false })
                 }
             }
         })
