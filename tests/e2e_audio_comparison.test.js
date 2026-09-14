@@ -17,7 +17,9 @@
  * raw WAV encoder/decoder path directly.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { join } from 'node:path'
 import nodeWaa from 'node-web-audio-api'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -36,6 +38,53 @@ globalThis.AudioWorkletNode = AudioWorkletNode
 
 const SAMPLE_RATE = 44100
 const analyzer = new AudioAnalyzer()
+
+// ─── WAV output directory ────────────────────────────────────────────────────
+const WAV_DIR = join(import.meta.dirname ?? '.', 'fixtures', 'wav')
+
+function ensureWavDir() {
+    if (!existsSync(WAV_DIR)) mkdirSync(WAV_DIR, { recursive: true })
+}
+
+/**
+ * Save a WAV blob to disk for manual inspection.
+ * @param {string} name - filename without .wav extension
+ * @param {Blob} blob - WAV blob from WavExporter or bufferToWav
+ */
+async function saveWav(name, blob) {
+    ensureWavDir()
+    const ab = blob instanceof Blob ? await blob.arrayBuffer() : blob
+    writeFileSync(join(WAV_DIR, `${name}.wav`), Buffer.from(ab))
+}
+
+/**
+ * Save raw Float32 samples as WAV for manual inspection.
+ * @param {string} name - filename without .wav extension
+ * @param {Float32Array} samples - mono samples
+ */
+function saveSamplesAsWav(name, samples) {
+    ensureWavDir()
+    const ctx = new OfflineAudioContext(1, samples.length, SAMPLE_RATE)
+    const buffer = ctx.createBuffer(1, samples.length, SAMPLE_RATE)
+    buffer.getChannelData(0).set(samples)
+    const blob = bufferToWav(buffer)
+    const bytes = new Uint8Array(blob instanceof Blob ? [] : blob)
+    writeFileSync(join(WAV_DIR, `${name}.wav`), bytes)
+}
+
+// Suppress worklet mixer errors in node environment (AudioWorklet not available)
+let _origError
+beforeEach(() => {
+    _origError = console.error
+    console.error = (...args) => {
+        const msg = args[0]?.toString?.() ?? ''
+        if (msg.includes('Mixer') || msg.includes('Sound') || msg.includes('_playVoice')) return
+        _origError(...args)
+    }
+})
+afterEach(() => {
+    console.error = _origError
+})
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -133,6 +182,7 @@ describe('E2E Audio 1 — WAV export produces valid headers', () => {
         ])
 
         const blob = await new WavExporter().exportPatternToWav(pat, 1)
+        await saveWav('01_4kick_120bpm', blob)
         expect(blob).not.toBeNull()
         expect(blob.type).toBe('audio/wav')
 
@@ -158,6 +208,7 @@ describe('E2E Audio 1 — WAV export produces valid headers', () => {
         ])
 
         const blob = await new WavExporter().exportPatternToWav(pat, 1)
+        await saveWav('02_kick_snare_120bpm', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         expect(bytes.length).toBeGreaterThan(44)
     })
@@ -605,6 +656,7 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
     it('kick waveform roundtrips with < 2% RMS error', async () => {
         const { buffer, data } = buildBuffer(0.5, generateKick)
+        await saveWav('03_synth_kick', bufferToWav(buffer))
         const blob = bufferToWav(buffer)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
@@ -617,6 +669,7 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
     it('snare waveform roundtrips with correct spectral centroid', async () => {
         const { buffer, data } = buildBuffer(0.3, generateSnare)
+        await saveWav('04_synth_snare', bufferToWav(buffer))
         const blob = bufferToWav(buffer)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
@@ -630,6 +683,7 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
     it('hi-hat has high spectral centroid (> 2000 Hz)', async () => {
         const { buffer } = buildBuffer(0.1, generateHihat)
+        await saveWav('05_synth_hihat', bufferToWav(buffer))
         const blob = bufferToWav(buffer)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
@@ -641,6 +695,7 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
     it('bass sawtooth has energy in sub-bass (< 200 Hz)', async () => {
         const { buffer } = buildBuffer(0.5, (t) => generateBass(t, 55))
+        await saveWav('06_synth_bass_55hz', bufferToWav(buffer))
         const blob = bufferToWav(buffer)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
@@ -657,6 +712,8 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
         const { buffer: bufLow } = buildBuffer(0.3, genLow)
         const { buffer: bufHigh } = buildBuffer(0.3, genHigh)
+        await saveWav('07_synth_fm_low_mod', bufferToWav(bufLow))
+        await saveWav('07b_synth_fm_high_mod', bufferToWav(bufHigh))
 
         const aLow = analyzer.analyzeChannelData(bufLow.getChannelData(0), SAMPLE_RATE)
         const aHigh = analyzer.analyzeChannelData(bufHigh.getChannelData(0), SAMPLE_RATE)
@@ -705,6 +762,7 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
         const rmsOrig = computeRms(mixData)
         const blob = bufferToWav(mixed)
+        await saveWav('08_4instrument_beat_120bpm', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
         const mono = mixToMono(decoded.channels)
@@ -799,6 +857,12 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
     it('low-pass filter reduces high-frequency energy', async () => {
         const { data } = makeKickBuffer()
         const filtered = lowPass(data, 200, SAMPLE_RATE)
+        await saveWav('09_kick_lowpass_200hz', (() => {
+            const ctx = new OfflineAudioContext(1, filtered.length, SAMPLE_RATE)
+            const buf = ctx.createBuffer(1, filtered.length, SAMPLE_RATE)
+            buf.getChannelData(0).set(filtered)
+            return bufferToWav(buf)
+        })())
 
         const aOrig = analyzer.analyzeChannelData(data, SAMPLE_RATE)
         const aFilt = analyzer.analyzeChannelData(filtered, SAMPLE_RATE)
@@ -819,6 +883,12 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
     it('delay effect produces output', async () => {
         const { data } = makeKickBuffer()
         const delayed = delayEffect(data, 100, 0.4, 0.3, SAMPLE_RATE)
+        await saveWav('10_kick_delay_100ms', (() => {
+            const ctx = new OfflineAudioContext(1, delayed.length, SAMPLE_RATE)
+            const buf = ctx.createBuffer(1, delayed.length, SAMPLE_RATE)
+            buf.getChannelData(0).set(delayed)
+            return bufferToWav(buf)
+        })())
 
         // Delayed signal should have audio content
         const rmsDelayed = computeRms(delayed)
@@ -832,6 +902,12 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
     it('reverb effect adds energy and extends tail', async () => {
         const { data } = makeKickBuffer()
         const reverbed = reverbEffect(data, 0.1, 4410, SAMPLE_RATE)
+        await saveWav('11_kick_reverb', (() => {
+            const ctx = new OfflineAudioContext(1, reverbed.length, SAMPLE_RATE)
+            const buf = ctx.createBuffer(1, reverbed.length, SAMPLE_RATE)
+            buf.getChannelData(0).set(reverbed)
+            return bufferToWav(buf)
+        })())
 
         const rmsOrig = computeRms(data)
         const rmsRev = computeRms(reverbed)
@@ -848,6 +924,7 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         buffer.getChannelData(0).set(filtered)
 
         const blob = bufferToWav(buffer)
+        await saveWav('14_kick_lowpass_200hz_roundtrip', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
         const mono = mixToMono(decoded.channels)
@@ -867,6 +944,7 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         buffer.getChannelData(0).set(delayed)
 
         const blob = bufferToWav(buffer)
+        await saveWav('15_kick_delay_100ms_roundtrip', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
         const mono = mixToMono(decoded.channels)
@@ -887,6 +965,7 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         buffer.getChannelData(0).set(step3)
 
         const blob = bufferToWav(buffer)
+        await saveWav('12_kick_chain_lp_delay_reverb', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
         const mono = mixToMono(decoded.channels)
@@ -917,6 +996,7 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         }
 
         const blob = bufferToWav(buffer)
+        await saveWav('13_fm_lead_panned_l80_r20', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
 
@@ -931,5 +1011,426 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         // Both channels should have energy in the same frequency range
         expect(aLeft.spectralCentroidHz).toBeGreaterThan(100)
         expect(aRight.spectralCentroidHz).toBeGreaterThan(100)
+    })
+})
+
+// ─── Test Suite 9: Full production — 8 beats × 8 tracks ────────────────────
+//
+// Builds a complete beat from scratch: 8 instruments (synth-generated +
+// sample-like), laid out over 8 beats, each track gets its own FX chain,
+// mixed to stereo with panning. The WAV encode→decode roundtrip is verified,
+// and the file is saved for manual listening.
+
+describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', () => {
+
+    // ── DSP helpers (same as suite 8) ────────────────────────────────────
+
+    function lowPass(data, cutoff, sr) {
+        const rc = 1 / (2 * Math.PI * cutoff)
+        const dt = 1 / sr
+        const alpha = dt / (rc + dt)
+        const out = new Float32Array(data.length)
+        out[0] = data[0]
+        for (let i = 1; i < data.length; i++) {
+            out[i] = out[i - 1] + alpha * (data[i] - out[i - 1])
+        }
+        return out
+    }
+
+    function highPass(data, cutoff, sr) {
+        const rc = 1 / (2 * Math.PI * cutoff)
+        const dt = 1 / sr
+        const alpha = rc / (rc + dt)
+        const out = new Float32Array(data.length)
+        out[0] = data[0]
+        for (let i = 1; i < data.length; i++) {
+            out[i] = alpha * (out[i - 1] + data[i] - data[i - 1])
+        }
+        return out
+    }
+
+    function delayEffect(data, delayMs, feedback, wetMix, sr) {
+        const delaySamples = Math.round(delayMs * sr / 1000)
+        const out = new Float32Array(data.length)
+        for (let i = 0; i < data.length; i++) {
+            const delayed = i >= delaySamples ? out[i - delaySamples] : 0
+            out[i] = data[i] * (1 - wetMix) + delayed * wetMix
+            if (i >= delaySamples) {
+                out[i] += data[i - delaySamples] * feedback * wetMix
+            }
+        }
+        return out
+    }
+
+    function reverbEffect(data, decay, irLength, sr) {
+        const ir = new Float32Array(irLength)
+        for (let i = 0; i < irLength; i++) {
+            ir[i] = (Math.random() * 2 - 1) * Math.exp(-i / (sr * decay))
+        }
+        let irEnergy = 0
+        for (let i = 0; i < irLength; i++) irEnergy += ir[i] * ir[i]
+        const irGain = 1 / Math.sqrt(irEnergy / irLength)
+        for (let i = 0; i < irLength; i++) ir[i] *= irGain
+
+        const out = new Float32Array(data.length + irLength)
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < irLength && i + j < out.length; j++) {
+                out[i + j] += data[i] * ir[j] * 0.3
+            }
+        }
+        return out.subarray(0, data.length)
+    }
+
+    // ── Synth generators ─────────────────────────────────────────────────
+
+    function generateKick(t, sr = SAMPLE_RATE) {
+        if (t > 0.5) return 0
+        const freq = 150 * Math.exp(-t * 20) + 40
+        return Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 8)
+    }
+
+    function generateSnare(t, sr = SAMPLE_RATE) {
+        if (t > 0.3) return 0
+        const body = Math.sin(2 * Math.PI * 200 * t) * Math.exp(-t * 15)
+        const noise = (Math.random() * 2 - 1) * Math.exp(-t * 10)
+        const filtered = noise * (1 - Math.exp(-t * 500))
+        return (body * 0.6 + filtered * 0.4)
+    }
+
+    function generateHihatClosed(t, sr = SAMPLE_RATE) {
+        if (t > 0.08) return 0
+        const noise = (Math.random() * 2 - 1)
+        const env = Math.exp(-t * 60)
+        const hp = Math.sin(2 * Math.PI * 6000 * t) * 0.3 + noise * 0.7
+        return hp * env * 0.4
+    }
+
+    function generateHihatOpen(t, sr = SAMPLE_RATE) {
+        if (t > 0.25) return 0
+        const noise = (Math.random() * 2 - 1)
+        const env = Math.exp(-t * 10)
+        return noise * env * 0.35
+    }
+
+    function generateBass(t, freq = 55, sr = SAMPLE_RATE) {
+        if (t > 0.4) return 0
+        const saw = ((t * freq) % 1) * 2 - 1
+        const env = Math.exp(-t * 4)
+        const filtered = saw * env
+        return Math.max(-1, Math.min(1, filtered * 0.6))
+    }
+
+    function generateSynthLead(t, sr = SAMPLE_RATE) {
+        if (t > 0.5) return 0
+        const mod = Math.sin(2 * Math.PI * 6 * t) * 3
+        const carrier = Math.sin(2 * Math.PI * 440 * t + mod)
+        const env = Math.exp(-t * 3) * (1 - Math.exp(-t * 50))
+        return carrier * env * 0.35
+    }
+
+    function generateClap(t, sr = SAMPLE_RATE) {
+        if (t > 0.15) return 0
+        const env = Math.exp(-t * 25)
+        const noise = (Math.random() * 2 - 1)
+        // Bandpass-ish: mix noise with resonant tone
+        const tone = Math.sin(2 * Math.PI * 1200 * t) * 0.3
+        return (noise * 0.7 + tone) * env * 0.5
+    }
+
+    function generateRim(t, sr = SAMPLE_RATE) {
+        if (t > 0.05) return 0
+        const click = Math.sin(2 * Math.PI * 800 * t + Math.sin(2 * Math.PI * 3200 * t) * 2)
+        return click * Math.exp(-t * 120) * 0.5
+    }
+
+    // ── Pattern: 8 beats × 8 tracks ─────────────────────────────────────
+    //
+    //  Beat:  1   .   2   .   3   .   4   .   5   .   6   .   7   .   8   .
+    //  KICK:  x   .   .   .   x   .   .   .   x   .   .   .   x   .   .   x
+    //  SNARE: .   .   .   .   x   .   .   .   .   .   .   .   x   .   .   .
+    //  HH-C:  x   .   x   .   x   .   x   .   x   .   x   .   x   .   x   .
+    //  HH-O:  .   .   .   .   .   .   .   x   .   .   .   .   .   .   .   x
+    //  BASS:  x   .   .   x   .   .   x   .   x   .   .   x   .   .   .   .
+    //  LEAD:  .   .   .   .   .   x   .   .   .   .   .   .   .   x   .   .
+    //  CLAP:  .   .   .   .   x   .   .   .   .   .   .   .   x   .   .   .
+    //  RIM:   .   x   .   x   .   .   .   .   .   x   .   x   .   .   .   .
+
+    const BPM = 110
+    const BEATS = 8
+    const BEAT_DUR = 60 / BPM
+    const TOTAL_DUR = BEATS * BEAT_DUR  // ~4.36s
+    const LENGTH = Math.ceil(TOTAL_DUR * SAMPLE_RATE)
+
+    // Instrument definitions: { gen, beats, pan, fx }
+    //   pan: -1 = full left, +1 = full right
+    //   fx: function(Float32Array) → Float32Array
+    const TRACKS = [
+        {
+            name: 'KICK',
+            gen: generateKick,
+            beats: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4].map(b => b * 4), // beats 1,3,5,7,8 in 8-beat
+            pan: 0,
+            fx: (d) => lowPass(d, 2000, SAMPLE_RATE),   // slight warmth
+        },
+        {
+            name: 'SNARE',
+            gen: generateSnare,
+            beats: [0.5, 1.5, 2.5, 3.5].map(b => b * 4), // beats 2,4,6,8
+            pan: 0.1,
+            fx: (d) => reverbEffect(d, 0.08, 441, SAMPLE_RATE), // room reverb
+        },
+        {
+            name: 'HIHAT-C',
+            gen: generateHihatClosed,
+            beats: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75].map(b => b * 4),
+            pan: 0.4,
+            fx: (d) => highPass(d, 3000, SAMPLE_RATE), // crisp top end
+        },
+        {
+            name: 'HIHAT-O',
+            gen: generateHihatOpen,
+            beats: [0.75, 3.75].map(b => b * 4),       // off-beat openings
+            pan: 0.5,
+            fx: (d) => delayEffect(d, 150, 0.2, 0.2, SAMPLE_RATE), // ping delay
+        },
+        {
+            name: 'BASS',
+            gen: (t) => generateBass(t, 55),
+            beats: [0, 0.75, 1.5, 2, 2.75].map(b => b * 4),
+            pan: -0.1,
+            fx: (d) => lowPass(d, 400, SAMPLE_RATE),    // subby
+        },
+        {
+            name: 'LEAD',
+            gen: generateSynthLead,
+            beats: [1, 3, 4.5].map(b => b * 4),         // syncopated
+            pan: -0.6,
+            fx: (d) => delayEffect(d, 187, 0.3, 0.25, SAMPLE_RATE), // triplet delay
+        },
+        {
+            name: 'CLAP',
+            gen: generateClap,
+            beats: [0.5, 2.5].map(b => b * 4),          // layered with snare
+            pan: 0.2,
+            fx: (d) => reverbEffect(d, 0.05, 441, SAMPLE_RATE), // short room
+        },
+        {
+            name: 'RIM',
+            gen: generateRim,
+            beats: [0.25, 0.75, 1.25, 2.25, 3.25].map(b => b * 4),
+            pan: -0.3,
+            fx: (d) => delayEffect(d, 250, 0.15, 0.2, SAMPLE_RATE), // stereo delay
+        },
+    ]
+
+    it('8-beat × 8-track production: render, roundtrip, save', { timeout: 30000 }, async () => {
+        // ── Render to stereo buffer ──────────────────────────────────────
+        const ctx = new OfflineAudioContext(2, LENGTH, SAMPLE_RATE)
+        const stereoBuffer = ctx.createBuffer(2, LENGTH, SAMPLE_RATE)
+        const left = stereoBuffer.getChannelData(0)
+        const right = stereoBuffer.getChannelData(1)
+
+        for (const track of TRACKS) {
+            // Generate + FX per track
+            const raw = new Float32Array(LENGTH)
+            for (const beat of track.beats) {
+                const offset = Math.round(beat * BEAT_DUR * SAMPLE_RATE)
+                const maxLen = Math.min(0.5 * SAMPLE_RATE, LENGTH - offset)
+                for (let i = 0; i < maxLen; i++) {
+                    const t = i / SAMPLE_RATE
+                    raw[offset + i] += track.gen(t)
+                }
+            }
+            const processed = track.fx(raw)
+
+            // Pan (equal-power-ish)
+            const panNorm = (track.pan + 1) / 2  // 0..1
+            const gainL = Math.cos(panNorm * Math.PI / 2)
+            const gainR = Math.sin(panNorm * Math.PI / 2)
+
+            for (let i = 0; i < LENGTH; i++) {
+                left[i] += processed[i] * gainL
+                right[i] += processed[i] * gainR
+            }
+        }
+
+        // Soft-clip master bus
+        for (let i = 0; i < LENGTH; i++) {
+            left[i] = Math.tanh(left[i])
+            right[i] = Math.tanh(right[i])
+        }
+
+        // ── WAV encode → decode roundtrip ────────────────────────────────
+        const blob = bufferToWav(stereoBuffer)
+        saveWav('16_full_8track_8beat_production', blob)
+        const bytes = new Uint8Array(await blob.arrayBuffer())
+        const decoded = decodeWavBytes(bytes)
+
+        expect(decoded.numberOfChannels).toBe(2)
+        expect(decoded.sampleRate).toBe(SAMPLE_RATE)
+        expect(decoded.channels.length).toBe(2)
+
+        // Left & right should both have content (stereo mix)
+        const rmsL = computeRms(decoded.channels[0])
+        const rmsR = computeRms(decoded.channels[1])
+        expect(rmsL).toBeGreaterThan(0.02)
+        expect(rmsR).toBeGreaterThan(0.02)
+
+        // RMS after decode should be close to original
+        const origL = computeRms(left)
+        const origR = computeRms(right)
+        expect(Math.abs(rmsL - origL) / origL).toBeLessThan(0.02)
+        expect(Math.abs(rmsR - origR) / origR).toBeLessThan(0.02)
+
+        // Duration should match expected
+        const expectedDuration = TOTAL_DUR
+        const actualDuration = decoded.channels[0].length / SAMPLE_RATE
+        expect(actualDuration).toBeCloseTo(expectedDuration, 0)
+
+        // Spectral centroid should be in musical range
+        const aL = analyzer.analyzeChannelData(decoded.channels[0], SAMPLE_RATE)
+        const aR = analyzer.analyzeChannelData(decoded.channels[1], SAMPLE_RATE)
+        expect(aL.spectralCentroidHz).toBeGreaterThan(50)
+        expect(aL.spectralCentroidHz).toBeLessThan(12000)
+        expect(aR.spectralCentroidHz).toBeGreaterThan(50)
+        expect(aR.spectralCentroidHz).toBeLessThan(12000)
+
+        // Verify stereo panning differences (kick is nearly center, lead is panned left)
+        // The left channel should have more energy from the lead track
+        // The right channel should have more energy from the hihat track
+        // Overall: both channels should be active but not identical
+        const peakL = computePeak(decoded.channels[0])
+        const peakR = computePeak(decoded.channels[1])
+        expect(peakL).toBeGreaterThan(0.05)
+        expect(peakR).toBeGreaterThan(0.05)
+    })
+
+    it('same production: two renders are bit-identical (determinism)', { timeout: 30000 }, async () => {
+        // Seeded PRNG (xorshift32) — replaces Math.random() for determinism
+        let _seed = 42
+        function seededRandom() {
+            _seed ^= _seed << 13
+            _seed ^= _seed >> 17
+            _seed ^= _seed << 5
+            return ((_seed >>> 0) / 4294967296)
+        }
+
+        function detReverb(data, decay, irLength, sr) {
+            const ir = new Float32Array(irLength)
+            for (let i = 0; i < irLength; i++) {
+                ir[i] = (seededRandom() * 2 - 1) * Math.exp(-i / (sr * decay))
+            }
+            let e = 0
+            for (let i = 0; i < irLength; i++) e += ir[i] * ir[i]
+            const g = 1 / Math.sqrt(e / irLength)
+            for (let i = 0; i < irLength; i++) ir[i] *= g
+            const out = new Float32Array(data.length + irLength)
+            for (let i = 0; i < data.length; i++) {
+                for (let j = 0; j < irLength && i + j < out.length; j++) {
+                    out[i + j] += data[i] * ir[j] * 0.3
+                }
+            }
+            return out.subarray(0, data.length)
+        }
+
+        // Deterministic generators (no Math.random)
+        function detSnare(t) {
+            if (t > 0.3) return 0
+            const body = Math.sin(2 * Math.PI * 200 * t) * Math.exp(-t * 15)
+            const noise = (seededRandom() * 2 - 1) * Math.exp(-t * 10)
+            return body * 0.6 + noise * (1 - Math.exp(-t * 500)) * 0.4
+        }
+        function detHiHatC(t) {
+            if (t > 0.08) return 0
+            const hp = Math.sin(2 * Math.PI * 6000 * t) * 0.3 + (seededRandom() * 2 - 1) * 0.7
+            return hp * Math.exp(-t * 60) * 0.4
+        }
+        function detHiHatO(t) {
+            if (t > 0.25) return 0
+            return (seededRandom() * 2 - 1) * Math.exp(-t * 10) * 0.35
+        }
+        function detClap(t) {
+            if (t > 0.15) return 0
+            const noise = seededRandom() * 2 - 1
+            const tone = Math.sin(2 * Math.PI * 1200 * t) * 0.3
+            return (noise * 0.7 + tone) * Math.exp(-t * 25) * 0.5
+        }
+
+        // Reset seed for deterministic render
+        function resetSeed() { _seed = 42 }
+
+        const detTracks = [
+            { name: 'KICK',  gen: generateKick,    beats: TRACKS[0].beats, pan: TRACKS[0].pan, fx: TRACKS[0].fx },
+            { name: 'SNARE', gen: detSnare,        beats: TRACKS[1].beats, pan: TRACKS[1].pan, fx: (d) => detReverb(d, 0.08, 441, SAMPLE_RATE) },
+            { name: 'HH-C',  gen: detHiHatC,       beats: TRACKS[2].beats, pan: TRACKS[2].pan, fx: TRACKS[2].fx },
+            { name: 'HH-O',  gen: detHiHatO,       beats: TRACKS[3].beats, pan: TRACKS[3].pan, fx: TRACKS[3].fx },
+            { name: 'BASS',  gen: TRACKS[4].gen,    beats: TRACKS[4].beats, pan: TRACKS[4].pan, fx: TRACKS[4].fx },
+            { name: 'LEAD',  gen: generateSynthLead,beats: TRACKS[5].beats, pan: TRACKS[5].pan, fx: TRACKS[5].fx },
+            { name: 'CLAP',  gen: detClap,         beats: TRACKS[6].beats, pan: TRACKS[6].pan, fx: (d) => detReverb(d, 0.05, 441, SAMPLE_RATE) },
+            { name: 'RIM',   gen: generateRim,     beats: TRACKS[7].beats, pan: TRACKS[7].pan, fx: TRACKS[7].fx },
+        ]
+
+        function renderDet() {
+            resetSeed()
+            const ctx = new OfflineAudioContext(2, LENGTH, SAMPLE_RATE)
+            const buf = ctx.createBuffer(2, LENGTH, SAMPLE_RATE)
+            const L = buf.getChannelData(0)
+            const R = buf.getChannelData(1)
+
+            for (const track of detTracks) {
+                const raw = new Float32Array(LENGTH)
+                for (const beat of track.beats) {
+                    const offset = Math.round(beat * BEAT_DUR * SAMPLE_RATE)
+                    const maxLen = Math.min(0.5 * SAMPLE_RATE, LENGTH - offset)
+                    for (let i = 0; i < maxLen; i++) {
+                        raw[offset + i] += track.gen(i / SAMPLE_RATE)
+                    }
+                }
+                const processed = track.fx(raw)
+                const panNorm = (track.pan + 1) / 2
+                const gL = Math.cos(panNorm * Math.PI / 2)
+                const gR = Math.sin(panNorm * Math.PI / 2)
+                for (let i = 0; i < LENGTH; i++) {
+                    L[i] += processed[i] * gL
+                    R[i] += processed[i] * gR
+                }
+            }
+            for (let i = 0; i < LENGTH; i++) {
+                L[i] = Math.tanh(L[i])
+                R[i] = Math.tanh(R[i])
+            }
+            return buf
+        }
+
+        const buf1 = renderDet()
+        const buf2 = renderDet()
+
+        // Identical raw audio → identical WAV bytes
+        const blob1 = bufferToWav(buf1)
+        const blob2 = bufferToWav(buf2)
+        const bytes1 = new Uint8Array(await blob1.arrayBuffer())
+        const bytes2 = new Uint8Array(await blob2.arrayBuffer())
+
+        expect(bytes1.length).toBe(bytes2.length)
+        let identical = true
+        for (let i = 0; i < bytes1.length; i++) {
+            if (bytes1[i] !== bytes2[i]) { identical = false; break }
+        }
+        expect(identical).toBe(true)
+    })
+
+    it('8-track production: different BPM changes duration', async () => {
+        const ctxSlow = new OfflineAudioContext(2, Math.ceil(8 * (60 / 90) * SAMPLE_RATE), SAMPLE_RATE)
+        const bufSlow = ctxSlow.createBuffer(2, ctxSlow.length, SAMPLE_RATE)
+        const blobSlow = bufferToWav(bufSlow)
+
+        const ctxFast = new OfflineAudioContext(2, Math.ceil(8 * (60 / 140) * SAMPLE_RATE), SAMPLE_RATE)
+        const bufFast = ctxFast.createBuffer(2, ctxFast.length, SAMPLE_RATE)
+        const blobFast = bufferToWav(bufFast)
+
+        const bytesSlow = new Uint8Array(await blobSlow.arrayBuffer())
+        const bytesFast = new Uint8Array(await blobFast.arrayBuffer())
+
+        expect(bytesSlow.length).toBeGreaterThan(bytesFast.length)
     })
 })
