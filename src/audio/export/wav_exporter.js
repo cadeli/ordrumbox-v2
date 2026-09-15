@@ -44,12 +44,21 @@ export default class WavExporter {
         // engine.start() applies track effects but never calls mixer.setBpm().
         exporterAudioEngine.mixer.setBpm(pattern.bpm)
 
+        // Ensure serviceRegistry.transport has the correct BPM so synth voice
+        // auto-release timing matches the pattern tempo. WorkletSynthVoice.start()
+        // reads serviceRegistry.transport?.bpm for the step duration calculation.
+        const savedTransport = serviceRegistry.transport
+        serviceRegistry.transport = { bpm: pattern.bpm }
+
         // Simple offline scheduling
         const totalTicks = pattern.nbBeats * TICK * loopsCount
 
         for (let t = 0; t < totalTicks; t++) {
             await exporterAudioEngine.playNotes(t, t * TICK_TIME)
         }
+
+        // Restore original transport
+        serviceRegistry.transport = savedTransport
 
         const renderedBuffer = await offlineCtx.startRendering()
         const wavBlob = bufferToWav(renderedBuffer)

@@ -111,17 +111,28 @@ export default class WorkletSynthVoice extends BaseVoice {
             // Schedule JS-side cleanup (node disconnect + onEnded callback) after
             // the release phase completes. This uses setTimeout which is fine for
             // cleanup — it only affects memory, not audio output.
-            const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
-            const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
-            const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
-            this.#autoReleaseTimer = setTimeout(() => {
-                if (!this.stopped) {
-                    this.stopped = true
-                    this.cleanup()
-                    if (this.onEnded) this.onEnded()
-                }
-                this.#autoReleaseTimer = null
-            }, cleanupDelay * 1000)
+            //
+            // In offline mode (no synthNodePool), SKIP the setTimeout cleanup.
+            // During offline export, audioCtx.currentTime stays at 0 until
+            // startRendering(), so cleanupDelay is computed against wall-clock
+            // time while the scheduling loop runs synchronously between awaits.
+            // The setTimeout would fire mid-scheduling and disconnect the worklet
+            // node before startRendering() processes it — silencing the note.
+            // The processor self-terminates via `return false` when envSegment
+            // reaches idle, so no JS-side cleanup is needed for offline.
+            if (this.#synthNodePool) {
+                const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
+                const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
+                const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
+                this.#autoReleaseTimer = setTimeout(() => {
+                    if (!this.stopped) {
+                        this.stopped = true
+                        this.cleanup()
+                        if (this.onEnded) this.onEnded()
+                    }
+                    this.#autoReleaseTimer = null
+                }, cleanupDelay * 1000)
+            }
         } catch (e) {
             logger.error('WorkletSynthVoice', 'start failed', e)
         }
@@ -146,13 +157,21 @@ export default class WorkletSynthVoice extends BaseVoice {
             const gs = this.generatedSound
             const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
             const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
-            const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
-            if (typeof setTimeout === 'function') {
-                this.#cleanupTimer = setTimeout(() => {
-                    this.cleanup()
-                    if (this.onEnded) this.onEnded()
-                    this.#cleanupTimer = null
-                }, cleanupDelay * 1000)
+            if (this.#synthNodePool) {
+                const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
+                if (typeof setTimeout === 'function') {
+                    this.#cleanupTimer = setTimeout(() => {
+                        this.cleanup()
+                        if (this.onEnded) this.onEnded()
+                        this.#cleanupTimer = null
+                    }, cleanupDelay * 1000)
+                }
+            } else {
+                // Offline mode: don't disconnect the node — the processor needs it
+                // connected to output the release phase. The processor self-terminates
+                // via `return false` when envSegment reaches idle. Just fire onEnded
+                // immediately so polyphony tracking doesn't accumulate stale voices.
+                if (this.onEnded) this.onEnded()
             }
         } catch (e) {
             logger.warn('WorkletSynthVoice', 'stop failed', e)
