@@ -74,9 +74,10 @@ export default class PianoRollPanel extends BasePanel {
         playbackEvents.on("patternStructureChange", () => { this._resolveTrack(); this._keysDirty = true; this._gridDirty = true; this._sync() })
         playbackEvents.on("trackSelect", (data) => {
             if (!data) return
+            const trackChanged = data.track !== this._track || data.trackIdx !== this._trackIdx
             this._track = data.track
             this._trackIdx = data.trackIdx
-            if (this.isVisible) {
+            if (this.isVisible && trackChanged) {
                 this._firstShow = true
                 this._keysDirty = true
                 this._gridDirty = true
