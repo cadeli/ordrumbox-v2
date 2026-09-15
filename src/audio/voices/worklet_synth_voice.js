@@ -132,6 +132,13 @@ export default class WorkletSynthVoice extends BaseVoice {
                     }
                     this.#autoReleaseTimer = null
                 }, cleanupDelay * 1000)
+            } else {
+                // Offline: release message already sent to worklet (postRelease
+                // above) — the release audio will render correctly. But nothing
+                // triggers onEnded() during the synchronous scheduling loop, so
+                // the polyphony slot stays occupied. Fire onEnded immediately to
+                // free the slot right away, same as stop() does in offline mode.
+                if (this.onEnded) this.onEnded()
             }
         } catch (e) {
             logger.error('WorkletSynthVoice', 'start failed', e)
