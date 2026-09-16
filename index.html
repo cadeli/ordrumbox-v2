@@ -53,15 +53,65 @@
  
   
 
-  <link rel="stylesheet" href="./src/ui/styles.css" id="ui-styles">
 
 </head>
 <body>
   <main id="app-main" aria-label="orDrumbox Beat Maker" role="application">
+    <style>
+      #waiting-screen {
+        position: fixed; inset: 0; width: 100%; height: 100%;
+        display: flex; justify-content: center; align-items: center;
+        padding: 24px; box-sizing: border-box;
+        background-color: #E7E8E4; z-index: 9999;
+      }
+      #waiting-screen-start-btn {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 16px 36px; font-size: 14px; font-weight: bold;
+        border: 2px solid #202321; border-radius: 8px;
+        cursor: pointer; background-color: #686A67; color: #E7E8E4;
+        touch-action: manipulation; transition: background-color 0.2s, transform 0.1s;
+        z-index: 1;
+      }
+      #waiting-screen-start-btn:hover { transform: translate(-50%, -50%) scale(1.02); }
+      #waiting-screen-start-btn.ready {
+        background-color: #596B61; color: #E7E8E4; border-color: #596B61;
+      }
+    </style>
     <div id="waiting-screen">
       <button id="waiting-screen-start-btn">Start orDrumbox V2</button>
     </div>
   </main>
-  <script type="module" crossorigin src="./src/waiting_screen.js"></script>
+  <script type="module">
+    const screenEl = document.getElementById('waiting-screen')
+    const startBtn = document.getElementById('waiting-screen-start-btn')
+    let isStarted = false
+
+    async function startApp() {
+      if (isStarted) return
+      isStarted = true
+      if (screenEl) screenEl.style.display = 'none'
+      try {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = './src/ui/styles.css'
+        document.head.appendChild(link)
+        await new Promise((resolve, reject) => { link.onload = resolve; link.onerror = reject })
+        const mainModule = await import('./src/main.js')
+        if (typeof mainModule.init === 'function') mainModule.init()
+      } catch (error) {
+        const { logger } = await import('./src/core/logger.js')
+        logger.error('WaitingScreen', 'Failed to load main application:', error)
+      }
+    }
+
+    if (startBtn) {
+      startBtn.classList.add('ready')
+      startBtn.addEventListener('click', () => startApp())
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !isStarted) startApp()
+    })
+  </script>
 </body>
 </html>
