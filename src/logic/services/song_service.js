@@ -1,7 +1,6 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { idbGet, idbPut, idbKeys } from '../../core/idb.js'
-import { downloadJson } from '../../ui/components/panel_helpers.js'
 import { logger } from '../../core/logger.js'
 
 const SONGS_STORE = 'songs'
@@ -78,15 +77,16 @@ class SongService {
     }
 
     /**
-     * Export song as a downloadable .odbox JSON file.
+     * Build export data for a downloadable .odbox JSON file.
      * @param {string} songName
+     * @returns {{ data: object, filename: string }}
      */
     exportToFile(songName) {
         const data = this.buildSongData(songName)
         data.exportedAt = Date.now()
         const safeName = songName.replace(/[^a-zA-Z0-9_-]/g, '_')
-        downloadJson(data, `${safeName}.odbox`)
         logger.info('SongService', `Song "${songName}" exported`)
+        return { data, filename: `${safeName}.odbox` }
     }
 
     /**

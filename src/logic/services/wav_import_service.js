@@ -3,20 +3,18 @@ import { playbackEvents } from '../../state/playback_events.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { instrumentsManager } from './instruments_manager.js'
-import { showToast } from '../../ui/toast.js'
 import { cacheSample, cacheDrumkits } from '../../cache/idb_cache.js'
 
 export default class WavImportService {
     /**
      * Import a directory of audio files as a new drumkit.
      * @param {FileList} files - files from webkitdirectory input
-     * @returns {Promise<{kitName: string, fileCount: number}>}
+     * @returns {Promise<{kitName: string, fileCount: number, warning?: string}>}
      */
     async importDirectory(files) {
         const wavFiles = Array.from(files).filter(f => /\.(wav|flac|mp3|aac)$/i.test(f.name))
         if (wavFiles.length === 0) {
-            showToast('No audio files found in selected directory', 'warning')
-            return { kitName: '', fileCount: 0 }
+            return { kitName: '', fileCount: 0, warning: 'No audio files found in selected directory' }
         }
 
         const firstPath = files[0].webkitRelativePath ?? ''
@@ -65,22 +63,19 @@ export default class WavImportService {
 
         playbackEvents.emit("drumkitChange")
 
-        showToast(`Imported ${wavFiles.length} WAV files as drumkit "${kitName}"`, 'success')
-
         return { kitName, fileCount: wavFiles.length }
     }
 
     async autoAssignSounds() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) {
-            showToast('No pattern selected', 'warning')
-            return
+            return { warning: 'No pattern selected' }
         }
 
         const { getAutoAssignService } = await import('../../state/service_loader.js')
         const autoAssign = await getAutoAssignService()
 
         autoAssign.autoAssignSounds(pattern)
-        showToast('Auto-assign complete', 'success')
+        return { message: 'Auto-assign complete' }
     }
 }

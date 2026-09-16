@@ -499,7 +499,12 @@ export default class ToolsPanel extends BasePanel {
         if (!file) return
 
         try {
-            await this._midiImportService.importFile(file)
+            const result = await this._midiImportService.importFile(file)
+            if (result?.warning) {
+                showToast(result.warning, 'warning')
+            } else if (result?.message) {
+                showToast(result.message, 'success')
+            }
         } catch (err) {
             logger.error('ToolsPanel', 'MIDI Import failed', err)
             showToast('MIDI Import failed: ' + err.message, 'error')

@@ -156,9 +156,16 @@ export default class DrumkitManager extends BasePanel {
         if (!files || files.length === 0) return
 
         try {
-            const { kitName, fileCount } = await this._wavImportService.importDirectory(files)
+            const { kitName, fileCount, warning } = await this._wavImportService.importDirectory(files)
+            if (warning) {
+                showToast(warning, 'warning')
+                return
+            }
             if (fileCount > 0) {
-                await this._wavImportService.autoAssignSounds()
+                const assignResult = await this._wavImportService.autoAssignSounds()
+                if (assignResult?.warning) {
+                    showToast(assignResult.warning, 'warning')
+                }
                 serviceRegistry.audioEngine?.invalidateCache()
                 playbackEvents.emit('patternChange')
                 showToast(`Imported ${fileCount} files into kit "${kitName}"`, 'success')

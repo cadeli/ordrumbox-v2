@@ -6,7 +6,6 @@ import { parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalize
 import { C3_MIDI_NOTE } from '../midi/midi_exporter.js'
 import { instrumentsManager, GM_DRUM_NAMES, GM_PROGRAM_NAMES } from './instruments_manager.js'
 import { logger } from '../../core/logger.js'
-import { showToast } from '../../ui/toast.js'
 
 export default class MidiImportService {
     /**
@@ -24,8 +23,7 @@ export default class MidiImportService {
         const notes = findAllNotes(midiData)
         if (notes.length === 0) {
             logger.warn('MidiImport', 'no Note On events found — file may be type-0 with only track 0, or empty')
-            showToast('No MIDI notes found in file', 'warning')
-            return { trackCount: 0, patternCount: 0 }
+            return { trackCount: 0, patternCount: 0, warning: 'No MIDI notes found in file' }
         }
         logger.debug('MidiImport', `found ${notes.length} note-on events`)
 
@@ -55,8 +53,7 @@ export default class MidiImportService {
                 const noteNums = [...new Set(chNotes.map(n => n.note))].sort((a, b) => a - b)
                 logger.warn('MidiImport', `  ch${channel}: notes [${noteNums.join(', ')}], program=${channelPrograms.get(channel) ?? 'none'}, count=${chNotes.length}`)
             }
-            showToast('No matching instruments found in MIDI file', 'warning')
-            return { trackCount: 0, patternCount: 0 }
+            return { trackCount: 0, patternCount: 0, warning: 'No matching instruments found in MIDI file' }
         }
 
         const baseName = file.name.replace(/\.midi?$/i, '')
@@ -68,12 +65,11 @@ export default class MidiImportService {
         await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
 
         serviceRegistry.audioEngine?.invalidateCache()
-        const msg = patternCount > 1
+        const message = patternCount > 1
             ? `MIDI imported: ${trackDefs.length} track(s) into ${patternCount} patterns`
             : `MIDI imported: ${trackDefs.length} track(s)`
-        showToast(msg, 'success')
 
-        return { trackCount: trackDefs.length, patternCount }
+        return { trackCount: trackDefs.length, patternCount, message }
     }
 
     #resolveTrackDefs(channelNotes, channelTrackNames, channelPrograms, im) {

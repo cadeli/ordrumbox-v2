@@ -12,13 +12,8 @@ vi.mock('../src/core/idb.js', () => ({
     idbKeys: vi.fn().mockResolvedValue([]),
 }))
 
-vi.mock('../src/ui/components/panel_helpers.js', () => ({
-    downloadJson: vi.fn(),
-}))
-
 import songService from '../src/logic/services/song_service.js'
 import { idbPut, idbGet, idbKeys } from '../src/core/idb.js'
-import { downloadJson } from '../src/ui/components/panel_helpers.js'
 
 describe('SongService', () => {
     beforeEach(() => {
@@ -28,7 +23,6 @@ describe('SongService', () => {
         idbPut.mockClear()
         idbGet.mockClear()
         idbKeys.mockClear()
-        downloadJson.mockClear()
         serviceRegistry.cmd = { setSelectedPatternNum: vi.fn() }
     })
 
@@ -142,19 +136,17 @@ describe('SongService', () => {
     })
 
     describe('exportToFile', () => {
-        it('calls downloadJson with .odbox extension', () => {
+        it('returns data with .odbox filename', () => {
             appState.patterns = [{ name: 'P' }]
-            songService.exportToFile('My Song!')
-            expect(downloadJson).toHaveBeenCalledOnce()
-            const args = downloadJson.mock.calls[0]
-            expect(args[1]).toBe('My_Song_.odbox')
-            expect(args[0].exportedAt).toBeTypeOf('number')
-            expect(args[0].version).toBe(1)
+            const result = songService.exportToFile('My Song!')
+            expect(result.filename).toBe('My_Song_.odbox')
+            expect(result.data.exportedAt).toBeTypeOf('number')
+            expect(result.data.version).toBe(1)
         })
 
         it('sanitizes special characters in filename', () => {
-            songService.exportToFile('a/b:c*d?e')
-            expect(downloadJson.mock.calls[0][1]).toBe('a_b_c_d_e.odbox')
+            const result = songService.exportToFile('a/b:c*d?e')
+            expect(result.filename).toBe('a_b_c_d_e.odbox')
         })
     })
 

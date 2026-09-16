@@ -16,10 +16,6 @@ vi.mock('../src/cache/idb_cache.js', () => ({
     cacheDrumkits: (...a) => mockCacheDrumkits(...a),
 }))
 
-vi.mock('../src/ui/toast.js', () => ({
-    showToast: vi.fn(),
-}))
-
 const mockPlaybackEmit = vi.fn()
 vi.mock('../src/state/playback_events.js', () => ({
     playbackEvents: {
@@ -181,16 +177,14 @@ describe('WavImportService', () => {
         expect(mockPlaybackEmit).toHaveBeenCalledWith('drumkitChange')
     })
 
-    it('shows success toast after import', async () => {
-        const { showToast } = await import('../src/ui/toast.js')
+    it('returns successful result with kitName and fileCount', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
         const service = new WavImportService()
-        await service.importDirectory(files)
+        const result = await service.importDirectory(files)
 
-        expect(showToast).toHaveBeenCalledWith(
-            expect.stringContaining('Imported 1 WAV files'),
-            'success'
-        )
+        expect(result.kitName).toBe('my_drums')
+        expect(result.fileCount).toBe(1)
+        expect(result.warning).toBeUndefined()
     })
 
     it('returns 0 files for directory with no audio files', async () => {
@@ -202,16 +196,12 @@ describe('WavImportService', () => {
         expect(result.kitName).toBe('')
     })
 
-    it('shows warning for empty directory', async () => {
-        const { showToast } = await import('../src/ui/toast.js')
+    it('returns warning for empty directory', async () => {
         const files = [makeWavFile('readme.txt', 'my_drums/readme.txt')]
         const service = new WavImportService()
-        await service.importDirectory(files)
+        const result = await service.importDirectory(files)
 
-        expect(showToast).toHaveBeenCalledWith(
-            expect.stringContaining('No audio files found'),
-            'warning'
-        )
+        expect(result.warning).toContain('No audio files found')
     })
 
     it('updates existing drumkit if name matches', async () => {

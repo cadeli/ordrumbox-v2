@@ -29,9 +29,19 @@ describe('Decoupling boundaries', () => {
         expect(src).not.toMatch(/import.*ui\/theme/)
     })
 
-    it('song_service.js does not import any ui/ panel modules', () => {
+    it('song_service.js does not import any ui/ modules', () => {
         const src = readSrc('logic/services/song_service.js')
-        expect(src).not.toMatch(/import.*\.\.\/ui\/(?!components\/panel_helpers)/)
+        expect(src).not.toMatch(/import.*\.\.\/ui\//)
+    })
+
+    it('wav_import_service.js does not import any ui/ modules', () => {
+        const src = readSrc('logic/services/wav_import_service.js')
+        expect(src).not.toMatch(/import.*\.\.\/ui\//)
+    })
+
+    it('midi_import_service.js does not import any ui/ modules', () => {
+        const src = readSrc('logic/services/midi_import_service.js')
+        expect(src).not.toMatch(/import.*\.\.\/ui\//)
     })
 
     it('song_panel.js does not import idb directly', () => {

@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { buildMidi, buildDrumMidi, buildEmptyMidi } from './helpers/midi_builder.js'
 
-vi.mock('../src/ui/toast.js', () => ({
-    showToast: vi.fn(),
-}))
-
 const sharedState = {
     patterns: [],
     selectedPatternNum: 0,
@@ -70,7 +66,6 @@ function makeFile(name, bytes) {
 describe('MidiImportService', () => {
     let MidiImportService
     let appState
-    let showToast
 
     beforeEach(async () => {
         vi.restoreAllMocks()
@@ -86,9 +81,6 @@ describe('MidiImportService', () => {
         MidiImportService = mod.default
         const appMod = await import('../src/state/app_state.js')
         appState = appMod.appState
-
-        const toastMod = await import('../src/ui/toast.js')
-        showToast = toastMod.showToast
     })
 
     it('imports a simple drum MIDI file', async () => {
@@ -106,13 +98,10 @@ describe('MidiImportService', () => {
 
         expect(result.trackCount).toBeGreaterThanOrEqual(1)
         expect(result.patternCount).toBeGreaterThanOrEqual(1)
+        expect(result.message).toContain('MIDI imported')
         expect(mockAddPattern).toHaveBeenCalled()
         expect(mockAddTrack).toHaveBeenCalled()
         expect(mockAddNote).toHaveBeenCalled()
-        expect(showToast).toHaveBeenCalledWith(
-            expect.stringContaining('MIDI imported'),
-            'success'
-        )
     })
 
     it('returns 0 tracks for empty MIDI file', async () => {
@@ -123,10 +112,7 @@ describe('MidiImportService', () => {
 
         expect(result.trackCount).toBe(0)
         expect(result.patternCount).toBe(0)
-        expect(showToast).toHaveBeenCalledWith(
-            expect.stringContaining('No MIDI notes found'),
-            'warning'
-        )
+        expect(result.warning).toContain('No MIDI notes found')
     })
 
     it('returns 0 tracks for MIDI with no notes', async () => {

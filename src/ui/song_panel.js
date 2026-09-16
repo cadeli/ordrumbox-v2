@@ -4,6 +4,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { showToast } from './toast.js'
 import BasePanel from './base_panel.js'
 import songService from '../logic/services/song_service.js'
+import { downloadJson } from './components/ui_utils.js'
 
 export default class SongPanel extends BasePanel {
     #selectedIdx = null
@@ -289,7 +290,8 @@ export default class SongPanel extends BasePanel {
     }
 
     #exportSong() {
-        songService.exportToFile(this.#songName)
+        const { data, filename } = songService.exportToFile(this.#songName)
+        downloadJson(data, filename)
         showToast(`Song "${this.#songName}" exported`, 'success')
     }
 
