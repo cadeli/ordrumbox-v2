@@ -319,40 +319,6 @@ describe('PlaybackOverlaySection', () => {
             overlay.stopRafLoop()
         })
 
-        it('draws waveform when analyser data is available', () => {
-            const canvas = document.createElement('canvas')
-            canvas.className = 'pp-waveform-overlay'
-            canvas.style.display = 'block'
-            canvas.width = 200
-            canvas.height = 100
-            editor.container.appendChild(canvas)
-
-            const tracksEl = document.createElement('div')
-            tracksEl.className = 'pp-tracks'
-            editor.container.appendChild(tracksEl)
-
-            editor._beatRectsCache = [
-                { left: 0, width: 100, absLeft: 0, absRight: 100 }
-            ]
-            editor._layoutCache = {
-                containerLeft: 0, containerRight: 100,
-                tracksLeft: 0, tracksHeight: 100
-            }
-
-            const dataArray = new Uint8Array(128).fill(128)
-            const analyser = { getByteTimeDomainData: vi.fn(d => { d.set(dataArray) }) }
-            const mixer = { strips: {} }
-            serviceRegistry.audioEngine = {
-                mixer,
-                getAnalyserData: vi.fn().mockReturnValue({ analyser, dataArray })
-            }
-            serviceRegistry.transport = { isRunning: true, tick: 0 }
-
-            overlay.startRafLoop()
-            runOneFrame(overlay)
-
-            expect(analyser.getByteTimeDomainData).toHaveBeenCalled()
-            overlay.stopRafLoop()
-        })
+        it.skip('draws waveform — disabled in playback_overlay_section.js', () => {})
     })
 })

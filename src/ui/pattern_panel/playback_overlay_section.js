@@ -63,6 +63,7 @@ export default class PlaybackOverlaySection {
         if (this.#rafId) return
         const editor = this.#editor
         this.#waveformCanvas = editor.container?.querySelector('.pp-waveform-overlay')
+        if (this.#waveformCanvas) this.#waveformCanvas.style.display = ''
         this.#tracksEl = editor.container?.querySelector('.pp-tracks')
         this.#vuElCache = editor.container?.querySelectorAll('.pp-vu')
 
@@ -129,6 +130,7 @@ export default class PlaybackOverlaySection {
     }
 
     #drawWaveform(mixer) {
+        return
         if (appState.showVus === false) return
         const editor = this.#editor
         if (!this.#waveformCanvas) {
@@ -254,6 +256,7 @@ export default class PlaybackOverlaySection {
                 ctx.fillStyle = color('bg-canvas')
                 ctx.fillRect(0, 0, canvas.width, canvas.height)
             }
+            canvas.style.display = 'none'
         }
     }
 

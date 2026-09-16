@@ -111,7 +111,7 @@ body {
     background-color: var(--bg); z-index: var(--z-toast);
 }
 #waiting-screen-start-btn {
-    position: absolute; top: 66.67%; left: 50%;
+    position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     padding: 16px 36px; font-size: 14px; font-weight: bold;
     border: 2px solid var(--text); border-radius: var(--radius-lg);

@@ -209,7 +209,9 @@ describe('Functional: Pattern serialization round-trip', () => {
             }]
         }
         const imported = cmd.importPatternFromJson(source)
-        const note = imported.tracks[0].notes[0]
+        const exported = PatternExporter.export(imported)
+        const reimported = cmd.importPatternFromJson(exported)
+        const note = reimported.tracks[0].notes[0]
 
         expect(note.arp).toEqual([0, 4, 7])
         expect(note.retriggerNum).toBe(3)
@@ -299,7 +301,9 @@ describe('Functional: Pattern serialization round-trip', () => {
             }]
         }
         const imported = cmd.importPatternFromJson(source)
-        const track = imported.tracks[0]
+        const exported = PatternExporter.export(imported)
+        const reimported = cmd.importPatternFromJson(exported)
+        const track = reimported.tracks[0]
 
         expect(track.filterType).toBe('lowpass')
         expect(track.filterFreq).toBe(800)
