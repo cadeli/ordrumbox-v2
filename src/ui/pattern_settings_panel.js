@@ -268,7 +268,7 @@ export default class PatternSettingsPanel {
                 track.synthSoundKey = synthSoundKey
                 track.velocity = 0.8
                 await autoGen.generateTrack(track, variant, 1, pattern, harmony)
-                serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
+                serviceRegistry.patterns.applyFlatNotes(pattern)
             }
             track.auto = true
             serviceRegistry.cmd.commitGenerationUndo()
@@ -295,7 +295,7 @@ export default class PatternSettingsPanel {
 
         this._beatsSelect.value = pattern.nbBeats ?? 4
 
-        const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4
+        const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4 // we use only track 0 for the polyrythmes
         const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
         const maxPage = Math.ceil(totalSteps / 16) - 1
         this._pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`

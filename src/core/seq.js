@@ -143,7 +143,7 @@ export default class Sequencer {
         this.serviceRegistry.transport.setBpm(selPattern.bpm)
         const autoAssign = await getAutoAssignService()
         await autoAssign.autoAssignSounds(selPattern)
-        this.serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0)
+        this.serviceRegistry.patterns.applyFlatNotes(selPattern)
 
         this.ensureAudioEngine()
         await this.serviceRegistry.audioEngine.start(selPattern)

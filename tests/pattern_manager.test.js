@@ -125,7 +125,7 @@ describe('PatternManager', () => {
         })
     })
 
-    describe('computeFlatNotesFromPattern', () => {
+    describe('applyFlatNotes', () => {
         it('returns flatNotes and updates appState', async () => {
             const { appState } = await import('../src/state/app_state.js')
             const { playbackEvents } = await import('../src/state/playback_events.js')
@@ -141,7 +141,7 @@ describe('PatternManager', () => {
                 ]
             }
 
-            const result = mgr.computeFlatNotesFromPattern(pattern, 0)
+            const result = mgr.applyFlatNotes(pattern, 0)
             expect(result).toBeInstanceOf(Map)
             expect(appState.flatNotes).toBe(result)
         })
@@ -158,7 +158,7 @@ describe('PatternManager', () => {
                 tracks: [makeTrack({ notes: [makeNote(0, 0)] })]
             }
 
-            mgr.computeFlatNotesFromPattern(pattern, 0)
+            mgr.applyFlatNotes(pattern, 0)
             expect(cb).toHaveBeenCalled()
 
             playbackEvents._clearCallbacks()

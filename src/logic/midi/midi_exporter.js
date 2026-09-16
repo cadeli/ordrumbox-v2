@@ -5,7 +5,7 @@
  *   - Track 0  : tempo + time signature meta events
  *   - Track 1+ : one MIDI track per instrument
  *
- * The exporter uses computeFlatNotesFromPattern() — the real pattern engine —
+ * The exporter uses recomputeFlatNotes() — the real pattern engine —
  * so all features are faithfully reflected: track loops, every/Phase,
  * retrigger, arpeggio, and euclidian fill.
  *
@@ -27,7 +27,7 @@
 import InstrumentsManager from '../services/instruments_manager.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import {
-    computeFlatNotesFromPattern,
+    recomputeFlatNotes,
     computeNbTickForPattern,
 } from '../../patterns/engine.js'
 import { TICK } from '../../core/constants.js'
@@ -240,7 +240,7 @@ export default class MidiExporter {
 
         // Run engine for each loop iteration
         for (let loop = 0; loop < loops; loop++) {
-            const flatMap = computeFlatNotesFromPattern(pattern, loop)
+            const flatMap = recomputeFlatNotes(pattern, loop)
             const loopMidiOffset = loop * nbTickForPattern * MIDI_RATIO
 
             for (const [engineTick, flatNotes] of flatMap) {

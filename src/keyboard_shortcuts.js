@@ -109,7 +109,7 @@ async function convertToGeneratedSounds() {
         track.synthSoundKey = SYNTH_SOUND_MAP[type] ?? 'BASS1'
     })
 
-    serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0)
+    serviceRegistry.patterns.applyFlatNotes(selPattern)
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit('patternChange')
     logger.info('KeyboardShortcuts', 'All tracks converted to generated sounds')
@@ -131,7 +131,7 @@ function assignRandomSampleAllTracks() {
         track.soundId = allSounds[Math.floor(Math.random() * allSounds.length)]
     })
 
-    serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
+    serviceRegistry.patterns.applyFlatNotes(selPattern)
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit('patternChange')
     showToast('Random samples assigned', 'success')
@@ -148,7 +148,7 @@ async function autoAssignAllTracks() {
 
     const autoAssign = await getAutoAssignService()
     autoAssign.autoAssignSounds(selPattern)
-    serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
+    serviceRegistry.patterns.applyFlatNotes(selPattern)
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit('patternChange')
     showToast('All tracks auto-assigned', 'success')

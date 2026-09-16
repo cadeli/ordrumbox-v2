@@ -106,7 +106,7 @@ export default class AutoGenerate {
             }
             const autoAssign = serviceRegistry.autoAssign
             await autoAssign.autoAssignSounds(pattern)
-            serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
+            serviceRegistry.patterns.applyFlatNotes(pattern)
 
             logger.info(AutoGenerate.TAG, `generatePattern: done (${pattern.tracks.length} tracks)`)
             return pattern
@@ -200,7 +200,7 @@ export default class AutoGenerate {
                     track.notes = []
                     await this.generateTrack(track, config, density, pattern, harmony)
                 }
-                serviceRegistry.patterns.computeFlatNotesFromPattern(pattern)
+                serviceRegistry.patterns.applyFlatNotes(pattern)
             } else {
                 logger.warn(AutoGenerate.TAG, `  -> no config found for type=${type}`)
             }

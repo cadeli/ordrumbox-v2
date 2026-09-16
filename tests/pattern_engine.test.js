@@ -1,12 +1,12 @@
 /**
  * Pattern engine tests — triggers, retriggers, arpeggios, loop points,
- * probability, euclidean fill, and full computeFlatNotesFromPattern.
+ * probability, euclidean fill, and full recomputeFlatNotes.
  *
  * These are pure-logic tests (no audio rendering).
  */
 import { describe, it, expect, vi } from 'vitest'
 import {
-    computeFlatNotesFromPattern,
+    recomputeFlatNotes,
     isTriggered,
     isProbabilityTriggered,
     normalizeArp,
@@ -38,14 +38,14 @@ function buildPattern(noteOverrides = {}, trackOverrides = {}, nbBeats = 4) {
 }
 
 function countNotes(pattern, loop = 0) {
-    const flatNotes = computeFlatNotesFromPattern(pattern, loop)
+    const flatNotes = recomputeFlatNotes(pattern, loop)
     let count = 0
     for (const notes of flatNotes.values()) count += notes.length
     return count
 }
 
 function getAllNotes(pattern, loop = 0) {
-    const flatNotes = computeFlatNotesFromPattern(pattern, loop)
+    const flatNotes = recomputeFlatNotes(pattern, loop)
     const all = []
     for (const notes of flatNotes.values()) all.push(...notes)
     return all.sort((a, b) => a.tick - b.tick)
@@ -384,7 +384,7 @@ describe('Euclidean Fill (generateSubNotesWithEuclidean)', () => {
     })
 })
 
-describe('Euclidean Fill integration (computeFlatNotesFromPattern with real resolver)', () => {
+describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', () => {
     it('places euclidian fill notes between current and next note', () => {
         const pattern = {
             nbBeats: 4,
@@ -399,7 +399,7 @@ describe('Euclidean Fill integration (computeFlatNotesFromPattern with real reso
                 }
             }
         }
-        const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
 
         expect(result.has(0)).toBe(true)
         expect(result.has(8)).toBe(true)
@@ -423,7 +423,7 @@ describe('Euclidean Fill integration (computeFlatNotesFromPattern with real reso
                 }
             }
         }
-        const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
 
         expect(result.has(0)).toBe(true)
         expect(result.has(8)).toBe(true)
@@ -446,7 +446,7 @@ describe('Euclidean Fill integration (computeFlatNotesFromPattern with real reso
                 }
             }
         }
-        const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
 
         expect(result.has(0)).toBe(true)
         expect(result.has(21)).toBe(true)
@@ -468,7 +468,7 @@ describe('Euclidean Fill integration (computeFlatNotesFromPattern with real reso
                 }
             }
         }
-        const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
 
         expect(result.has(0)).toBe(true)
         expect(result.has(16)).toBe(true)
@@ -479,7 +479,7 @@ describe('Euclidean Fill integration (computeFlatNotesFromPattern with real reso
 
 // ─── Full Pattern to FlatNotes ───────────────────────────────────────────────
 
-describe('Full Pattern to FlatNotes (computeFlatNotesFromPattern)', () => {
+describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
     it('respects track loops and pattern boundaries', () => {
         const pattern = {
             nbBeats: 2,
@@ -494,7 +494,7 @@ describe('Full Pattern to FlatNotes (computeFlatNotesFromPattern)', () => {
                 }
             }
         }
-        const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
 
         expect(result.size).toBe(2)
         expect(result.has(0)).toBe(true)
@@ -516,7 +516,7 @@ describe('Full Pattern to FlatNotes (computeFlatNotesFromPattern)', () => {
                 }
             }
         }
-        const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
 
         expect(result.get(0)).toBeDefined()
         expect(result.get(32)).toBeDefined()
@@ -548,7 +548,7 @@ describe('Full Pattern to FlatNotes (computeFlatNotesFromPattern)', () => {
                 }
             }
         }
-        const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
 
         const ticks = [...result.keys()].sort((a, b) => a - b)
         expect(ticks).toEqual([8, 32, 56, 80, 104])
@@ -575,7 +575,7 @@ describe('Full Pattern to FlatNotes (computeFlatNotesFromPattern)', () => {
                 }
             }
         }
-        const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
         const ticks = [...result.keys()].sort((a, b) => a - b)
         expect(ticks).toEqual([32, 80])
     })
@@ -596,7 +596,7 @@ describe('Full Pattern to FlatNotes (computeFlatNotesFromPattern)', () => {
                 }
             }
         }
-        const result = computeFlatNotesFromPattern(pattern, 0, null, 32)
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
         const ticks = [...result.keys()].sort((a, b) => a - b)
         expect(ticks).toEqual([24])
     })

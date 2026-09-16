@@ -27,7 +27,7 @@ export function createSelectionMethods(cmd) {
                 serviceRegistry.seq.setBpm(selPattern.bpm)
                 const autoAssign = await getAutoAssignService()
                 autoAssign.autoAssignSounds(selPattern)
-                serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
+                serviceRegistry.patterns.applyFlatNotes(selPattern)
                 serviceRegistry.audioEngine?.invalidateCache()
             } catch (err) {
                 logger.error('Commander', 'cmd::autoAssignSoundsForNewDrumkit failed', err)
@@ -44,7 +44,7 @@ export function createSelectionMethods(cmd) {
                         const autoAssign = await getAutoAssignService()
                         autoAssign.autoAssignSounds(selPattern)
                     }
-                    serviceRegistry.patterns.computeFlatNotesFromPattern(selPattern, 0, serviceRegistry.audioCtx)
+                    serviceRegistry.patterns.applyFlatNotes(selPattern)
                     playbackEvents.emit("selectedPatternChange")
                 }
             } catch (err) {

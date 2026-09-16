@@ -3,7 +3,7 @@
  *
  * Strategy
  * ────────
- * 1. Build a pattern with the real pattern engine (computeFlatNotesFromPattern)
+ * 1. Build a pattern with the real pattern engine (recomputeFlatNotes)
  * 2. Export it to MIDI with MidiExporter.export()
  * 3. Parse the raw MIDI binary
  * 4. Assert that every note produced by the engine appears in the MIDI file
@@ -27,7 +27,7 @@
 
 import { describe, it, expect } from 'vitest'
 import {
-    computeFlatNotesFromPattern,
+    recomputeFlatNotes,
     isTriggered,
     normalizeArp,
     computeTickForNote,
@@ -65,14 +65,14 @@ function engineTickToMidi(engineTick, loopIndex, nbTickForPattern) {
 }
 
 /**
- * Run computeFlatNotesFromPattern for `loops` iterations and gather
+ * Run recomputeFlatNotes for `loops` iterations and gather
  * all (absMidiTick, midiNote, velocity) tuples.
  */
 function getAllExpectedNotes(pattern, loops, im) {
     const nbTickForPattern = computeNbTickForPattern(pattern.nbBeats, TICK)
     const expected = []
     for (let loop = 0; loop < loops; loop++) {
-        const flatMap = computeFlatNotesFromPattern(pattern, loop)
+        const flatMap = recomputeFlatNotes(pattern, loop)
         for (const [engineTick, flatNotes] of flatMap) {
             const midiTick = engineTick * MIDI_RATIO + loop * nbTickForPattern * MIDI_RATIO
             for (const fn of flatNotes) {
@@ -262,7 +262,7 @@ describe('MidiExporter — functional end-to-end', () => {
         }
 
         it('engine produces 4 notes (2 from loop×2)', () => {
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of flatMap.values()) total += v.length
             expect(total).toBe(4)
@@ -315,14 +315,14 @@ describe('MidiExporter — functional end-to-end', () => {
         })
 
         it('loop=0: engine produces 2 notes (always + phase0)', () => {
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of flatMap.values()) total += v.length
             expect(total).toBe(2)
         })
 
         it('loop=1: engine produces 2 notes (always + phase1)', () => {
-            const flatMap = computeFlatNotesFromPattern(pattern, 1)
+            const flatMap = recomputeFlatNotes(pattern, 1)
             let total = 0
             for (const v of flatMap.values()) total += v.length
             expect(total).toBe(2)
@@ -362,7 +362,7 @@ describe('MidiExporter — functional end-to-end', () => {
         }
 
         it('engine produces 4 notes from 1 beatStep', () => {
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of flatMap.values()) total += v.length
             expect(total).toBe(4)
@@ -417,7 +417,7 @@ describe('MidiExporter — functional end-to-end', () => {
         }
 
         it('engine generates 3 notes at positions 0, 4, 8 engine ticks', () => {
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const ticks = [...flatMap.keys()].sort((a,b)=>a-b)
             expect(ticks).toHaveLength(3)
             expect(ticks[0]).toBe(0)
@@ -462,7 +462,7 @@ describe('MidiExporter — functional end-to-end', () => {
         })
 
         it('engine produces 4 notes with different pitches', () => {
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allFlat = []
             for (const v of flatMap.values()) allFlat.push(...v)
             expect(allFlat).toHaveLength(4)
@@ -520,14 +520,14 @@ describe('MidiExporter — functional end-to-end', () => {
         })
 
         it('engine produces 3 notes', () => {
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of flatMap.values()) total += v.length
             expect(total).toBe(3)
         })
 
         it('notes are sorted descending by pitch offset', () => {
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allFlat = []
             for (const v of flatMap.values()) allFlat.push(...v)
             allFlat.sort((a,b) => a.tick - b.tick)
@@ -561,7 +561,7 @@ describe('MidiExporter — functional end-to-end', () => {
         })
 
         it('4 notes cycle through updown sequence', () => {
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allFlat = []
             for (const v of flatMap.values()) allFlat.push(...v)
             expect(allFlat).toHaveLength(4)
@@ -673,7 +673,7 @@ describe('MidiExporter — functional end-to-end', () => {
             // Compute expected from engine
             let engineTotal = 0
             for (let loop = 0; loop < LOOPS; loop++) {
-                const fm = computeFlatNotesFromPattern(complexPattern, loop)
+                const fm = recomputeFlatNotes(complexPattern, loop)
                 for (const v of fm.values()) engineTotal += v.length
             }
             expect(observed.length).toBe(engineTotal)
@@ -699,8 +699,8 @@ describe('MidiExporter — functional end-to-end', () => {
         })
 
         it('SNARE fill (every=2, phase=1): absent in loop0, present in loop1', () => {
-            const loop0 = computeFlatNotesFromPattern(complexPattern, 0)
-            const loop1 = computeFlatNotesFromPattern(complexPattern, 1)
+            const loop0 = recomputeFlatNotes(complexPattern, 0)
+            const loop1 = recomputeFlatNotes(complexPattern, 1)
 
             // Flat notes in loop0: find note at beat=3 step=2
             let fillInLoop0 = false, fillInLoop1 = false
@@ -720,8 +720,8 @@ describe('MidiExporter — functional end-to-end', () => {
 
         it('OHH arp fires only on loop 0 (every=4, phase=0)', () => {
             let ohhInLoop0 = 0, ohhInLoop1 = 0
-            const loop0 = computeFlatNotesFromPattern(complexPattern, 0)
-            const loop1 = computeFlatNotesFromPattern(complexPattern, 1)
+            const loop0 = recomputeFlatNotes(complexPattern, 0)
+            const loop1 = recomputeFlatNotes(complexPattern, 1)
             for (const v of loop0.values()) for (const fn of v) if (fn.track.name === 'OHH') ohhInLoop0++
             for (const v of loop1.values()) for (const fn of v) if (fn.track.name === 'OHH') ohhInLoop1++
             expect(ohhInLoop0).toBe(2)   // 2 arp notes (intervals [0,12])
@@ -732,7 +732,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const im = new InstrumentsManager()
             let fillCount = 0
             for (let loop = 0; loop < LOOPS; loop++) {
-                const fm = computeFlatNotesFromPattern(complexPattern, loop)
+                const fm = recomputeFlatNotes(complexPattern, loop)
                 for (const v of fm.values()) {
                     for (const fn of v) {
                         if (fn.track.name === 'SNARE' && fn.note.every === 2) fillCount++
@@ -745,7 +745,7 @@ describe('MidiExporter — functional end-to-end', () => {
         it('over 4 loops: OHH fires 2 arp notes exactly once (loop 0)', () => {
             let ohhTotal = 0
             for (let loop = 0; loop < LOOPS; loop++) {
-                const fm = computeFlatNotesFromPattern(complexPattern, loop)
+                const fm = recomputeFlatNotes(complexPattern, loop)
                 for (const v of fm.values()) for (const fn of v) if (fn.track.name === 'OHH') ohhTotal++
             }
             expect(ohhTotal).toBe(2)
@@ -758,7 +758,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const kicks = allNoteOns(midiBytes).filter(n => n.note === 36).sort((a,b)=>a.absTick-b.absTick)
 
             // Engine loop=0 for KICK track
-            const fm = computeFlatNotesFromPattern(complexPattern, 0)
+            const fm = recomputeFlatNotes(complexPattern, 0)
             const kickEngineTicks = []
             for (const [tick, flatList] of fm.entries()) {
                 for (const fn of flatList) {
@@ -779,7 +779,7 @@ describe('MidiExporter — functional end-to-end', () => {
                 name: 'Edge', bpm: 120, nbBeats: 4,
                 tracks: [track('KICK', 4, 4, 4, [note(3, 3, { velocity: 0.5 })])]
             }
-            const fm = computeFlatNotesFromPattern(pattern, 0)
+            const fm = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of fm.values()) total += v.length
             expect(total).toBe(1)
@@ -815,7 +815,7 @@ describe('MidiExporter — functional end-to-end', () => {
                     note(0, 3, { velocity: 0.8, retriggerNum: 10, rate: 2 }),
                 ])]
             }
-            const fm = computeFlatNotesFromPattern(pattern, 0)
+            const fm = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of fm.values()) total += v.length
             // rate=2 → spacing=4 engine ticks; start at tick=24; pattern=32 ticks
@@ -836,7 +836,7 @@ describe('MidiExporter — functional end-to-end', () => {
                 tracks: [track('KICK', 4, 4, 4, [note(0, 0, { prob: 1 })])]
             }
             for (let i = 0; i < 10; i++) {
-                const fm = computeFlatNotesFromPattern(pattern, 0)
+                const fm = recomputeFlatNotes(pattern, 0)
                 let total = 0
                 for (const v of fm.values()) total += v.length
                 expect(total).toBe(1)
@@ -849,7 +849,7 @@ describe('MidiExporter — functional end-to-end', () => {
                 tracks: [track('KICK', 4, 4, 4, [note(0, 0, { prob: 0 })])]
             }
             for (let i = 0; i < 10; i++) {
-                const fm = computeFlatNotesFromPattern(pattern, 0)
+                const fm = recomputeFlatNotes(pattern, 0)
                 expect(fm.size).toBe(0)
             }
         })
@@ -1139,8 +1139,8 @@ describe('MidiExporter — functional end-to-end', () => {
                     note(0, 3, { euclidianFill: 1 }),
                 ])]
             }
-            const fmBase = computeFlatNotesFromPattern(basePattern, 0)
-            const fmEucl = computeFlatNotesFromPattern(euclidPattern, 0)
+            const fmBase = recomputeFlatNotes(basePattern, 0)
+            const fmEucl = recomputeFlatNotes(euclidPattern, 0)
             let countBase = 0, countEucl = 0
             for (const v of fmBase.values()) countBase += v.length
             for (const v of fmEucl.values()) countEucl += v.length
@@ -1165,7 +1165,7 @@ describe('MidiExporter — functional end-to-end', () => {
                     }),
                 ])]
             }
-            const fm = computeFlatNotesFromPattern(pattern, 0)
+            const fm = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of fm.values()) total += v.length
             expect(total).toBe(0)
@@ -1183,7 +1183,7 @@ describe('MidiExporter — functional end-to-end', () => {
                     note(1, 0, { velocity: 0.8 }),
                 ], { loopPointStep: 4 })]
             }
-            const fm = computeFlatNotesFromPattern(pattern, 0)
+            const fm = recomputeFlatNotes(pattern, 0)
             let total = 0
             for (const v of fm.values()) total += v.length
             expect(total).toBeGreaterThanOrEqual(3)

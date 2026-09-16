@@ -79,7 +79,7 @@ function setupServices() {
         tick: 0
     }
     serviceRegistry.patterns = {
-        computeFlatNotesFromPattern: vi.fn()
+        applyFlatNotes: vi.fn()
     }
     serviceRegistry.resourcesLoader = {
         loadGeneratedSounds: vi.fn().mockResolvedValue(undefined)

@@ -56,7 +56,7 @@ describe('Sequencer', () => {
             addNote: vi.fn().mockReturnValue({ velocity: 0.8 }),
         }
         serviceRegistry.patterns = {
-            computeFlatNotesFromPattern: vi.fn(),
+            applyFlatNotes: vi.fn(),
             computeNextPatternStepNote: vi.fn().mockReturnValue([]),
         }
         serviceRegistry.autoAssign = {

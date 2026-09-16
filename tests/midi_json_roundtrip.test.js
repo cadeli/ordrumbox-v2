@@ -26,7 +26,7 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import * as patternsManager from '../src/patterns/manager.js'
-import { computeFlatNotesFromPattern } from '../src/patterns/engine.js'
+import { recomputeFlatNotes } from '../src/patterns/engine.js'
 
 const SIMPLE_JSON = {
     application: 'online-ordrumbox',
@@ -160,7 +160,7 @@ function importMidiToPattern(midiBytes, cmd) {
 
 function getNotePositions(pattern) {
     const positions = new Map()
-    const flatMap = computeFlatNotesFromPattern(pattern, 0)
+    const flatMap = recomputeFlatNotes(pattern, 0)
     for (const [, flatNotes] of flatMap) {
         for (const fn of flatNotes) {
             const name = fn.track.name

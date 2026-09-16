@@ -68,7 +68,7 @@ describe('ToolsPanel._randomizePattern logic', () => {
         cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn() }
-        serviceRegistry.patterns = { computeFlatNotesFromPattern: () => {} }
+        serviceRegistry.patterns = { applyFlatNotes: () => {} }
     })
 
     it('randomize adds notes to every track via cmd.randomizeTrack', () => {
@@ -96,7 +96,7 @@ describe('ToolsPanel sync logic', () => {
         cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn(), simpleBeep: vi.fn() }
-        serviceRegistry.patterns = { computeFlatNotesFromPattern: () => {} }
+        serviceRegistry.patterns = { applyFlatNotes: () => {} }
         appState.patterns = [{ name: 'P1', tracks: [{ name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 }] }]
         appState.selectedPatternNum = 0
     })

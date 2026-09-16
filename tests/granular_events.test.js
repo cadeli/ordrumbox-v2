@@ -15,7 +15,7 @@ import PianoRollPanel from '../src/ui/piano_roll_panel.js'
 import SongPanel from '../src/ui/song_panel.js'
 import Toolbar from '../src/ui/toolbar.js'
 import PatternSettingsPanel from '../src/ui/pattern_settings_panel.js'
-import { computeFlatNotesFromPattern } from '../src/patterns/manager.js'
+import { applyFlatNotes } from '../src/patterns/manager.js'
 
 describe('Granular patternChange events', () => {
     let cmd
@@ -43,7 +43,7 @@ describe('Granular patternChange events', () => {
         cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.seq = { setBpm: vi.fn() }
-        serviceRegistry.patterns = { computeFlatNotesFromPattern: (pat) => computeFlatNotesFromPattern(pat) }
+        serviceRegistry.patterns = { applyFlatNotes: (pat) => applyFlatNotes(pat) }
         serviceRegistry.audioEngine = { invalidateCache: vi.fn(), syncAllTracks: vi.fn(), syncTrack: vi.fn() }
 
         document.body.innerHTML = ''
@@ -68,10 +68,10 @@ describe('Granular patternChange events', () => {
     }
 
     describe('noteChange', () => {
-        it('emitted by computeFlatNotesFromPattern', () => {
+        it('emitted by applyFlatNotes', () => {
             const cap = captureGranular()
             const pattern = appState.patterns[0]
-            computeFlatNotesFromPattern(pattern)
+            applyFlatNotes(pattern)
             expect(cap.noteChange).toHaveBeenCalled()
             expect(cap.trackParamChange).not.toHaveBeenCalled()
             expect(cap.patternStructureChange).not.toHaveBeenCalled()

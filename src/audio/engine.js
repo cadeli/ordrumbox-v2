@@ -2,7 +2,7 @@ import Player from './player.js'
 import Mixer from './mixer.js'
 import Sound from './sound.js'
 import NoteParams from '../patterns/note_params.js'
-import { computeFlatNotesFromPattern as computeFlatNotesPure } from '../patterns/engine.js'
+import { recomputeFlatNotes } from '../patterns/engine.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { _setAudioUnlocked } from '../state/signals.js'
@@ -92,9 +92,9 @@ export default class AudioEngine {
     // ─── Pattern / flat-note helpers ────────────────────────────────────────────
 
     computeFlatNotes = (pattern, loop) => {
-        this.flatNotes = computeFlatNotesPure(pattern, loop, this.computeNextStep, this.TICK)
+        this.flatNotes = recomputeFlatNotes(pattern, loop, this.computeNextStep, this.TICK)
         // Update cache so getFlatNotesForCurrentPattern doesn't recompute.
-        // Without this, every loop start calls computeFlatNotesPure TWICE,
+        // Without this, every loop start calls recomputeFlatNotes TWICE,
         // causing double TrackVariation.applyNoteVariation mutations.
         this.#cachedPatternRef = pattern
         this.#cachedLoop = loop
@@ -118,7 +118,7 @@ export default class AudioEngine {
         this.#cachedPatternRef = pattern
         this.#cachedLoop = loop
         this.#cachedVersion = patternVersion
-        this.flatNotes = computeFlatNotesPure(pattern, loop, this.computeNextStep, this.TICK)
+        this.flatNotes = recomputeFlatNotes(pattern, loop, this.computeNextStep, this.TICK)
         return this.flatNotes
     }
 

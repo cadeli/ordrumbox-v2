@@ -210,7 +210,7 @@ export function generateSubNotesWithEuclidean(flatNotes, baseTick, track, note, 
     }
 }
 
-export function computeFlatNotesFromPattern(djtPattern, loop = 0, computeNextStep = null, tick = TICK) {
+export function recomputeFlatNotes(djtPattern, loop = 0, computeNextStep = null, tick = TICK) {
     const flatNotes = new Map()
     const nbTickForPattern = computeNbTickForPattern(djtPattern.nbBeats, tick)
 

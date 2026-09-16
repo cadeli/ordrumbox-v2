@@ -26,7 +26,7 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import * as patternsManager from '../src/patterns/manager.js'
 import { parseMidi, findAllNotes, midiVelocityToNormalized, extractProgramChanges } from '../src/logic/midi/midi_parser.js'
-import { computeFlatNotesFromPattern } from '../src/patterns/engine.js'
+import { recomputeFlatNotes } from '../src/patterns/engine.js'
 import { TICK } from '../src/core/constants.js'
 import Utils from '../src/core/utils.js'
 
@@ -333,7 +333,7 @@ function drumMidiNote(baseKey, pitch) {
 }
 
 function assertNotesMatch(importedPattern, expectedPattern) {
-    const expectedFlatNotes = computeFlatNotesFromPattern(expectedPattern, 0)
+    const expectedFlatNotes = recomputeFlatNotes(expectedPattern, 0)
     const im = new InstrumentsManager()
 
     for (const expectedTrack of expectedPattern.tracks) {
@@ -414,7 +414,7 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
         const midiBytes = await exportPatternToMidi(pattern)
         const importedPattern = importMidiToPattern(midiBytes, pattern)
 
-        const expectedNotes = computeFlatNotesFromPattern(pattern, 0)
+        const expectedNotes = recomputeFlatNotes(pattern, 0)
         const kickExpected = []
         for (const [, flatNotes] of expectedNotes) {
             for (const fn of flatNotes) {
@@ -440,7 +440,7 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
         const midiBytes = await exportPatternToMidi(pattern)
         const importedPattern = importMidiToPattern(midiBytes, pattern)
 
-        const expectedNotes = computeFlatNotesFromPattern(pattern, 0)
+        const expectedNotes = recomputeFlatNotes(pattern, 0)
         const snareExpected = []
         for (const [, flatNotes] of expectedNotes) {
             for (const fn of flatNotes) {
@@ -466,7 +466,7 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
         const midiBytes = await exportPatternToMidi(pattern)
         const importedPattern = importMidiToPattern(midiBytes, pattern)
 
-        const expectedNotes = computeFlatNotesFromPattern(pattern, 0)
+        const expectedNotes = recomputeFlatNotes(pattern, 0)
         const im = new InstrumentsManager()
         const chhInst = im.findByName('CHH')
         const drumKey = chhInst?.midi?.[0]?.key != null ? parseInt(chhInst.midi[0].key, 10) : null

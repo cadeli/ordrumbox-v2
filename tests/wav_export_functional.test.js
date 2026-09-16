@@ -17,7 +17,7 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import * as patternsManager from '../src/patterns/manager.js'
 import { TICK } from '../src/core/constants.js'
-import { computeFlatNotesFromPattern } from '../src/patterns/engine.js'
+import { recomputeFlatNotes } from '../src/patterns/engine.js'
 
 // ─── WAV parser ───────────────────────────────────────────────────────────────
 
@@ -724,7 +724,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 2, { velocity: 1.0 }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -741,7 +741,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 2, { velocity: 0.9 }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -760,7 +760,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(1, 0, { pitch: 5 }),
                 ], { nbBeats: 2 })]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -781,7 +781,7 @@ describe('WAV Export — functional end-to-end', () => {
                     ]
                 }]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -802,7 +802,7 @@ describe('WAV Export — functional end-to-end', () => {
                 ])]
             }
             for (let loop = 0; loop < 4; loop++) {
-                const flatMap = computeFlatNotesFromPattern(pattern, loop)
+                const flatMap = recomputeFlatNotes(pattern, loop)
                 let count = 0
                 for (const notes of flatMap.values()) count += notes.length
                 expect(count).toBe(1)
@@ -818,7 +818,7 @@ describe('WAV Export — functional end-to-end', () => {
             }
             const loopCounts = []
             for (let loop = 0; loop < 6; loop++) {
-                const flatMap = computeFlatNotesFromPattern(pattern, loop)
+                const flatMap = recomputeFlatNotes(pattern, loop)
                 let count = 0
                 for (const notes of flatMap.values()) count += notes.length
                 loopCounts.push(count)
@@ -835,7 +835,7 @@ describe('WAV Export — functional end-to-end', () => {
             }
             const loopCounts = []
             for (let loop = 0; loop < 6; loop++) {
-                const flatMap = computeFlatNotesFromPattern(pattern, loop)
+                const flatMap = recomputeFlatNotes(pattern, loop)
                 let count = 0
                 for (const notes of flatMap.values()) count += notes.length
                 loopCounts.push(count)
@@ -852,7 +852,7 @@ describe('WAV Export — functional end-to-end', () => {
             }
             const loopCounts = []
             for (let loop = 0; loop < 9; loop++) {
-                const flatMap = computeFlatNotesFromPattern(pattern, loop)
+                const flatMap = recomputeFlatNotes(pattern, loop)
                 let count = 0
                 for (const notes of flatMap.values()) count += notes.length
                 loopCounts.push(count)
@@ -870,7 +870,7 @@ describe('WAV Export — functional end-to-end', () => {
             }
             const loopCounts = []
             for (let loop = 0; loop < 4; loop++) {
-                const flatMap = computeFlatNotesFromPattern(pattern, loop)
+                const flatMap = recomputeFlatNotes(pattern, loop)
                 let count = 0
                 for (const notes of flatMap.values()) count += notes.length
                 loopCounts.push(count)
@@ -956,7 +956,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -973,7 +973,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'down' }, retriggerNum: 3 }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -990,7 +990,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'updown' }, retriggerNum: 5 }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -1006,7 +1006,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { pitch: 0, arp: [0, 5, 7], retriggerNum: 3 }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -1022,7 +1022,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { pitch: 12, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -1077,7 +1077,7 @@ describe('WAV Export — functional end-to-end', () => {
             }
             let totalNotes = 0
             for (let loop = 0; loop < 4; loop++) {
-                const flatMap = computeFlatNotesFromPattern(pattern, loop)
+                const flatMap = recomputeFlatNotes(pattern, loop)
                 for (const notes of flatMap.values()) totalNotes += notes.length
             }
             expect(totalNotes).toBe(2)
@@ -1093,7 +1093,7 @@ describe('WAV Export — functional end-to-end', () => {
             }
             let totalNotes = 0
             for (let loop = 0; loop < 4; loop++) {
-                const flatMap = computeFlatNotesFromPattern(pattern, loop)
+                const flatMap = recomputeFlatNotes(pattern, loop)
                 for (const notes of flatMap.values()) totalNotes += notes.length
             }
             expect(totalNotes).toBe(6)
@@ -1108,7 +1108,7 @@ describe('WAV Export — functional end-to-end', () => {
             }
             const loopCounts = []
             for (let loop = 0; loop < 6; loop++) {
-                const flatMap = computeFlatNotesFromPattern(pattern, loop)
+                const flatMap = recomputeFlatNotes(pattern, loop)
                 let count = 0
                 for (const notes of flatMap.values()) count += notes.length
                 loopCounts.push(count)
@@ -1128,7 +1128,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(1, 0, { velocity: 0.6 }),
                 ], { loopPointBeat: 2 })]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
             for (const notes of flatMap.values()) count += notes.length
             expect(count).toBe(4)
@@ -1141,7 +1141,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0),
                 ], { loopPointBeat: 1 })]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
             for (const notes of flatMap.values()) count += notes.length
             expect(count).toBe(4)
@@ -1158,7 +1158,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { velocity: 0.5, retriggerNum: 3, rate: 1 }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -1175,7 +1175,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0, { pitch: 5, retriggerNum: 2, rate: 1 }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
@@ -1196,7 +1196,7 @@ describe('WAV Export — functional end-to-end', () => {
                     }),
                 ])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
             for (const notes of flatMap.values()) count += notes.length
             expect(count).toBe(2)
@@ -1211,7 +1211,7 @@ describe('WAV Export — functional end-to-end', () => {
                 name: 'Silent', bpm: 120, nbBeats: 1,
                 tracks: [makeTrack('KICK', 'kick.wav', [])]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
             for (const notes of flatMap.values()) count += notes.length
             expect(count).toBe(0)
@@ -1224,7 +1224,7 @@ describe('WAV Export — functional end-to-end', () => {
                     makeNote(0, 0), makeNote(0, 2),
                 ], { mute: true })]
             }
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
             for (const notes of flatMap.values()) count += notes.length
             expect(count).toBe(2)

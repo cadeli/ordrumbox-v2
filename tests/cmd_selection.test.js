@@ -12,7 +12,7 @@ const { mocks } = vi.hoisted(() => ({
         setBpm: vi.fn(),
         loadMissingSamplesFromDrumkits: vi.fn().mockResolvedValue(undefined),
         autoAssignSounds: vi.fn(),
-        computeFlatNotesFromPattern: vi.fn(),
+        applyFlatNotes: vi.fn(),
         invalidateCache: vi.fn(),
     },
 }))
@@ -20,7 +20,7 @@ const { mocks } = vi.hoisted(() => ({
 vi.mock('../src/state/service_registry.js', () => ({
     serviceRegistry: {
         seq: { setBpm: mocks.setBpm },
-        patterns: { computeFlatNotesFromPattern: mocks.computeFlatNotesFromPattern },
+        patterns: { applyFlatNotes: mocks.applyFlatNotes },
         audioEngine: { invalidateCache: mocks.invalidateCache },
         resourcesLoader: { loadMissingSamplesFromDrumkits: mocks.loadMissingSamplesFromDrumkits },
     },
@@ -47,7 +47,7 @@ describe('cmd_selection', () => {
         Object.values(mocks).forEach(m => m.mockClear())
 
         serviceRegistry.seq = { setBpm: mocks.setBpm }
-        serviceRegistry.patterns = { computeFlatNotesFromPattern: mocks.computeFlatNotesFromPattern }
+        serviceRegistry.patterns = { applyFlatNotes: mocks.applyFlatNotes }
         serviceRegistry.audioEngine = { invalidateCache: mocks.invalidateCache }
         serviceRegistry.resourcesLoader = { loadMissingSamplesFromDrumkits: mocks.loadMissingSamplesFromDrumkits }
 
@@ -84,7 +84,7 @@ describe('cmd_selection', () => {
         it('computes flat notes after selection', async () => {
             appState.patterns = [{ name: 'A', bpm: 120 }]
             await cmd.setSelectedPatternNum(0)
-            expect(mocks.computeFlatNotesFromPattern).toHaveBeenCalled()
+            expect(mocks.applyFlatNotes).toHaveBeenCalled()
         })
 
         it('emits selectedPatternChange', async () => {

@@ -29,7 +29,7 @@ import Commander from '../src/logic/commands/cmd.js'
 import WavExporter from '../src/audio/export/wav_exporter.js'
 import AudioAnalyzer from '../src/audio/analyze.js'
 import { bufferToWav } from '../src/audio/export/wav_encoder.js'
-import { computeFlatNotesFromPattern } from '../src/patterns/engine.js'
+import { recomputeFlatNotes } from '../src/patterns/engine.js'
 import * as patternsManager from '../src/patterns/manager.js'
 
 const { OfflineAudioContext, AudioWorkletNode } = nodeWaa
@@ -262,8 +262,8 @@ describe('E2E Audio 2 — Two renders of same pattern are bit-identical', () => 
             { name: 'KICK', notes: [{ beat: 0 }, { beat: 1 }] },
         ])
 
-        const flat1 = computeFlatNotesFromPattern(pat1, 0)
-        const flat2 = computeFlatNotesFromPattern(pat2, 0)
+        const flat1 = recomputeFlatNotes(pat1, 0)
+        const flat2 = recomputeFlatNotes(pat2, 0)
 
         let count1 = 0, count2 = 0
         for (const notes of flat1.values()) count1 += notes.length
@@ -362,7 +362,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
             { name: 'KICK', notes: [{ beat: 0 }, { beat: 1 }, { beat: 2 }, { beat: 3 }] },
         ])
 
-        const flat = computeFlatNotesFromPattern(pat, 0)
+        const flat = recomputeFlatNotes(pat, 0)
         let count = 0
         for (const notes of flat.values()) count += notes.length
         expect(count).toBe(4)
@@ -377,7 +377,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
         note.retriggerNum = 4
         note.retriggerRate = 1
 
-        const flat = computeFlatNotesFromPattern(pat, 0)
+        const flat = recomputeFlatNotes(pat, 0)
         let count = 0
         for (const notes of flat.values()) count += notes.length
         expect(count).toBe(4)
@@ -392,7 +392,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
         note.arp = [0, 7, 12]
         note.retriggerNum = 3
 
-        const flat = computeFlatNotesFromPattern(pat, 0)
+        const flat = recomputeFlatNotes(pat, 0)
         let count = 0
         for (const notes of flat.values()) count += notes.length
         expect(count).toBeGreaterThanOrEqual(3)
@@ -405,7 +405,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
             { name: 'HIHAT', notes: [{ beat: 2 }] },
         ])
 
-        const flat = computeFlatNotesFromPattern(pat, 0)
+        const flat = recomputeFlatNotes(pat, 0)
         const allNotes = [...flat.values()].flat()
         const trackNames = new Set(allNotes.map(n => n.track?.name))
         expect(trackNames.has('KICK')).toBe(true)

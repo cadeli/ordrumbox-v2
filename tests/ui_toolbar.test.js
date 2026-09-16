@@ -27,7 +27,7 @@ describe('Toolbar UI Layout', () => {
             cleanPattern: vi.fn()
         }
         serviceRegistry.patterns = {
-            computeFlatNotesFromPattern: vi.fn()
+            applyFlatNotes: vi.fn()
         }
 
         // Clear body

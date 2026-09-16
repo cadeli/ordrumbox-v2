@@ -587,7 +587,7 @@ export default class PatternPanel extends BasePanel {
             case 'clean': {
                 if (!confirm('Clear all notes in "' + (pattern.name ?? '') + '"?')) return
                 cmd.cleanPattern(pattern)
-                patterns?.computeFlatNotesFromPattern(pattern)
+                patterns?.applyFlatNotes(pattern)
                 break
             }
             case 'duplicate': {

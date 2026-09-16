@@ -23,11 +23,11 @@ import Commander from '../src/logic/commands/cmd.js'
 import { PatternExporter } from '../src/patterns/exporter.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
 import {
-    computeFlatNotesFromPattern,
+    recomputeFlatNotes,
     isTriggered,
     normalizeArp,
 } from '../src/patterns/engine.js'
-import { computeFlatNotesFromPattern as managerComputeFlat } from '../src/patterns/manager.js'
+import { applyFlatNotes as managerApplyFlat } from '../src/patterns/manager.js'
 import { TICK } from '../src/core/constants.js'
 import { parseMidi, findAllNotes } from './helpers/midi_reader.js'
 import { getTrackFromType } from './helpers/cmd_test_helpers.js'
@@ -354,7 +354,7 @@ describe('E2E Flow 4 — Compute flat notes from pattern', () => {
         cmd.addNote(kick, 2, 0, 0)
         cmd.addNote(kick, 3, 0, 0)
 
-        const flatNotes = computeFlatNotesFromPattern(pat, 0)
+        const flatNotes = recomputeFlatNotes(pat, 0)
         expect(flatNotes).toBeInstanceOf(Map)
         expect(flatNotes.size).toBeGreaterThan(0)
     })
@@ -365,7 +365,7 @@ describe('E2E Flow 4 — Compute flat notes from pattern', () => {
         cmd.addNote(kick, 0, 0, 0)
         cmd.addNote(kick, 2, 0, 0)
 
-        const flatNotes = computeFlatNotesFromPattern(pat, 0)
+        const flatNotes = recomputeFlatNotes(pat, 0)
         const ticks = [...flatNotes.keys()].sort((a, b) => a - b)
         expect(ticks).toContain(0)
         expect(ticks).toContain(2 * TICK)
@@ -377,7 +377,7 @@ describe('E2E Flow 4 — Compute flat notes from pattern', () => {
         const note = cmd.addNote(bass, 0, 0, 5)
         note.velocity = 0.8
 
-        const flatNotes = computeFlatNotesFromPattern(pat, 0)
+        const flatNotes = recomputeFlatNotes(pat, 0)
         const allNotes = [...flatNotes.values()].flat()
         const bassNote = allNotes.find(n => n.track?.name === 'BASS')
         expect(bassNote).toBeDefined()
@@ -385,13 +385,13 @@ describe('E2E Flow 4 — Compute flat notes from pattern', () => {
         expect(bassNote.note.velocity).toBeCloseTo(0.8, 1)
     })
 
-    it('managerComputeFlat also works and stores in appState', () => {
+    it('managerApplyFlat also works and stores in appState', () => {
         const pat = cmd.addPattern('Mgr')
         const kick = cmd.addTrack(pat, 'KICK', 4)
         cmd.addNote(kick, 0, 0, 0)
         cmd.addNote(kick, 2, 0, 0)
 
-        const flat = managerComputeFlat(pat, 0)
+        const flat = managerApplyFlat(pat, 0)
         expect(flat).toBeInstanceOf(Map)
         expect(appState.flatNotes).toBe(flat)
     })
@@ -405,7 +405,7 @@ describe('E2E Flow 4 — Compute flat notes from pattern', () => {
         cmd.addNote(snare, 1, 0, 0)
         cmd.addNote(snare, 3, 0, 0)
 
-        const flat = computeFlatNotesFromPattern(pat, 0)
+        const flat = recomputeFlatNotes(pat, 0)
         const allNotes = [...flat.values()].flat()
         const kicks = allNotes.filter(n => n.track?.name === 'KICK')
         const snares = allNotes.filter(n => n.track?.name === 'SNARE')
@@ -844,7 +844,7 @@ describe('E2E Flow 9 — Full user session simulation', () => {
         bassNote.velocity = 0.8
 
         // Compute flat notes
-        const flat = computeFlatNotesFromPattern(pat, 0)
+        const flat = recomputeFlatNotes(pat, 0)
         const allFlat = [...flat.values()].flat()
 
         // KICK should have 4 notes

@@ -66,15 +66,15 @@ describe('PatternManager', () => {
         pattern.nbBeats = 4
     })
 
-    // ── computeFlatNotesFromPattern ───────────────────────────────────
+    // ── applyFlatNotes ───────────────────────────────────
 
     it('returns a Map', () => {
-        const result = patternsMgr.computeFlatNotesFromPattern(pattern, 0)
+        const result = patternsMgr.applyFlatNotes(pattern, 0)
         expect(result).toBeInstanceOf(Map)
     })
 
     it('stores result in appState.flatNotes', () => {
-        patternsMgr.computeFlatNotesFromPattern(pattern, 0)
+        patternsMgr.applyFlatNotes(pattern, 0)
         expect(appState.flatNotes).toBeInstanceOf(Map)
     })
 
@@ -82,7 +82,7 @@ describe('PatternManager', () => {
         const cb = vi.fn()
         const { playbackEvents } = await import('../src/state/playback_events.js')
         const unsub = playbackEvents.on("patternChange", cb)
-        patternsMgr.computeFlatNotesFromPattern(pattern, 0)
+        patternsMgr.applyFlatNotes(pattern, 0)
         expect(cb).toHaveBeenCalled()
         unsub()
     })
@@ -91,7 +91,7 @@ describe('PatternManager', () => {
         const track = cmd.addTrack(pattern, 'KICK', 4)
         cmd.addNote(track, 0, 0, 0)
         cmd.addNote(track, 1, 0, 0)
-        const result = patternsMgr.computeFlatNotesFromPattern(pattern, 0)
+        const result = patternsMgr.applyFlatNotes(pattern, 0)
         let total = 0
         for (const v of result.values()) total += v.length
         expect(total).toBe(2)

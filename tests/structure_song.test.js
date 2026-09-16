@@ -140,7 +140,7 @@ describe('convertToGeneratedSounds', () => {
         serviceRegistry.reset()
         cmd = new Commander()
         serviceRegistry.cmd = cmd
-        serviceRegistry.patterns = { computeFlatNotesFromPattern: () => {} }
+        serviceRegistry.patterns = { applyFlatNotes: () => {} }
         serviceRegistry.seq = { setBpm: () => {} }
         pattern = cmd.addPattern('Test')
         cmd.setSelectedPatternNum(0)

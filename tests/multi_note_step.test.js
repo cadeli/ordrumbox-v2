@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { PatternExporter } from '../src/patterns/exporter.js'
-import { computeFlatNotesFromPattern, computeNbTickForPattern } from '../src/patterns/engine.js'
+import { recomputeFlatNotes, computeNbTickForPattern } from '../src/patterns/engine.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
 import Utils from '../src/core/utils.js'
@@ -22,7 +22,7 @@ describe('Multiple notes at the same step', () => {
 
     // ── FlatNotes engine ────────────────────────────────────────────────────
 
-    describe('engine: computeFlatNotesFromPattern', () => {
+    describe('engine: recomputeFlatNotes', () => {
         it('two notes at beat 0 step 0 produce two flatnotes at the same tick', () => {
             const pattern = {
                 name: 'MultiNote', bpm: 120, nbBeats: 4,
@@ -36,7 +36,7 @@ describe('Multiple notes at the same step', () => {
                 }]
             }
 
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const tick0 = flatMap.get(0)
             expect(tick0).toBeDefined()
             expect(tick0.length).toBe(2)
@@ -60,7 +60,7 @@ describe('Multiple notes at the same step', () => {
                 }]
             }
 
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const tick = computeNbTickForPattern(4, TICK) / 4 + 2 * (TICK / 4)
             const flatNotes = flatMap.get(tick)
             expect(flatNotes).toBeDefined()
@@ -82,7 +82,7 @@ describe('Multiple notes at the same step', () => {
                 }]
             }
 
-            const flatMap = computeFlatNotesFromPattern(pattern, 0)
+            const flatMap = recomputeFlatNotes(pattern, 0)
             const tick0 = flatMap.get(0)
             expect(tick0.length).toBe(2)
 
