@@ -72,7 +72,7 @@ describe('Sequencer', () => {
         }]
         appState.selectedPatternNum = 0
 
-        Sequencer = (await import('../src/core/seq.js')).default
+        Sequencer = (await import('../src/logic/seq.js')).default
     })
 
     it('constructor creates transport if none exists', () => {

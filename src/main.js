@@ -1,4 +1,4 @@
-import Sequencer from './core/seq.js'
+import Sequencer from './logic/seq.js'
 import Commander from './logic/commands/cmd.js'
 import * as patternsManager from './patterns/manager.js'
 

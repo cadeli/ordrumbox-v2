@@ -105,7 +105,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const fakeCtx = makeFakeAudioCtx()
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
 
-        const { default: Sequencer } = await import('../src/core/seq.js')
+        const { default: Sequencer } = await import('../src/logic/seq.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: null,
@@ -124,7 +124,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const fakeCtx = makeFakeAudioCtx({ state: 'suspended' })
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
 
-        const { default: Sequencer } = await import('../src/core/seq.js')
+        const { default: Sequencer } = await import('../src/logic/seq.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: fakeCtx,
@@ -143,7 +143,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         const fakeCtx = makeFakeAudioCtx({ state: 'running' })
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
 
-        const { default: Sequencer } = await import('../src/core/seq.js')
+        const { default: Sequencer } = await import('../src/logic/seq.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: fakeCtx,
@@ -165,7 +165,7 @@ describe('toggleStartStop — audioCtx creation', () => {
             ensureResourcesLoaded: vi.fn(),
         }
 
-        const { default: Sequencer } = await import('../src/core/seq.js')
+        const { default: Sequencer } = await import('../src/logic/seq.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: null,
@@ -193,7 +193,7 @@ describe('toggleStartStop — start guard', () => {
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
         const fakeTransport = makeFakeTransport()
 
-        const { default: Sequencer } = await import('../src/core/seq.js')
+        const { default: Sequencer } = await import('../src/logic/seq.js')
         const seq = new Sequencer({
             serviceRegistry: {
                 audioCtx: fakeCtx,
