@@ -6,6 +6,7 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import Utils from '../../core/utils.js'
+import { prevPage, nextPage } from '../../core/page_nav.js'
 
 export default class PatternNav {
     /** @param {import('../toolbar.js').default} toolbar */
@@ -95,30 +96,8 @@ export default class PatternNav {
             playbackEvents.emit('songToggle', true)
         })
 
-        tb.prevPageBtn.addEventListener('click', () => {
-            if (appState.currentPage > 0) {
-                appState.currentPage--
-                playbackEvents.batch(() => {
-                    playbackEvents.emit('patternMetaChange')
-                    playbackEvents.emit('patternChange')
-                })
-            }
-        })
-
-        tb.nextPageBtn.addEventListener('click', () => {
-            const pattern = appState.patterns[appState.selectedPatternNum]
-            if (!pattern) return
-            const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4
-            const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
-            const maxPage = Math.ceil(totalSteps / 16) - 1
-            if (appState.currentPage < maxPage) {
-                appState.currentPage++
-                playbackEvents.batch(() => {
-                    playbackEvents.emit('patternMetaChange')
-                    playbackEvents.emit('patternChange')
-                })
-            }
-        })
+        tb.prevPageBtn.addEventListener('click', () => prevPage())
+        tb.nextPageBtn.addEventListener('click', () => nextPage())
     }
 
     rebuildPatternSelect() {

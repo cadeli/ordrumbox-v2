@@ -2,6 +2,7 @@ import Sequencer from './core/seq.js'
 import Commander from './logic/commands/cmd.js'
 import * as patternsManager from './patterns/manager.js'
 
+import { clamp } from './audio/math.js'
 import Toolbar from './ui/toolbar.js'
 import PatternPanel from './ui/pattern_panel.js'
 import PianoRollPanel from './ui/piano_roll_panel.js'
@@ -155,7 +156,7 @@ export function init() {
         const dir = e.key === 'ArrowRight' ? 1 : -1
         let next = cur + dir * step
         next = Math.round((next - min) / step) * step + min
-        next = Math.min(max, Math.max(min, next))
+        next = clamp(next, min, max)
 
         if (next === cur) {
             e.preventDefault()

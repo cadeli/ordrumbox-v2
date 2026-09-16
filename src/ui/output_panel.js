@@ -278,7 +278,7 @@ this.container.innerHTML = `
         const w = canvas.width
         const h = canvas.height
         if (!this.#bgColor) {
-            this.#bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-canvas').trim() || color('bg-canvas')
+            this.#bgColor = color('bg-canvas')
         }
         const data = serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {

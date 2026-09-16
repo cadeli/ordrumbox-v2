@@ -96,13 +96,9 @@ export default class PatternPanel extends BasePanel {
         const beatStep = parseInt(cell.dataset.step, 10)
         if (isNaN(trackIdx) || isNaN(beat) || isNaN(beatStep)) return
 
-        const pattern = this._appState.patterns[this._appState.selectedPatternNum]
-        if (!pattern) return
-        const tracks = Utils.getTracksArray(pattern)
-        const track = tracks[trackIdx]
-        if (!track) return
-
-        const notesAtStep = (track.notes ?? []).filter(n => n.beat === beat && n.beatStep === beatStep)
+        const resolved = this._resolveNotesAtStep(trackIdx, beat, beatStep)
+        if (!resolved) return
+        const { track, notesAtStep } = resolved
         if (notesAtStep.length === 0) return
 
         const sliceEl = e.target.closest('.pp-note-slice')
@@ -347,6 +343,16 @@ export default class PatternPanel extends BasePanel {
         return tracks[idx] ?? null
     }
 
+    _resolveNotesAtStep(trackIdx, beat, beatStep) {
+        const pattern = this._appState.patterns[this._appState.selectedPatternNum]
+        if (!pattern) return null
+        const tracks = Utils.getTracksArray(pattern)
+        const track = tracks[trackIdx]
+        if (!track) return null
+        const notesAtStep = (track.notes ?? []).filter(n => n.beat === beat && n.beatStep === beatStep)
+        return { track, notesAtStep, pattern }
+    }
+
     _selectTrack(trackIdx) {
         const track = this._resolveTrack(trackIdx)
         if (!track) return
@@ -503,13 +509,9 @@ export default class PatternPanel extends BasePanel {
         this._cursorBeat = beat
         this._cursorBeatStep = beatStep
 
-        const pattern = this._appState.patterns[this._appState.selectedPatternNum]
-        if (!pattern) return
-        const tracks = Utils.getTracksArray(pattern)
-        const track = tracks[trackIdx]
-        if (!track) return
-
-        const notesAtStep = (track.notes ?? []).filter(n => n.beat === beat && n.beatStep === beatStep)
+        const resolved = this._resolveNotesAtStep(trackIdx, beat, beatStep)
+        if (!resolved) return
+        const { track, notesAtStep, pattern } = resolved
 
         if (notesAtStep.length > 0) {
             const sliceEl = e.target.closest('.pp-note-slice')

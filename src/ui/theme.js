@@ -14,7 +14,7 @@
 // Fallback hex values — must stay in sync with styles.css :root
 const TOKENS = {
     // Backgrounds
-    'bg-canvas':       '#D1D2CE',
+    'bg-canvas':       '#CFD0CC',
     'bg':              '#E7E8E4',
     'bg-elevated':     '#D9DAD6',
     'bg-input':        '#CFD0CC',
@@ -40,7 +40,7 @@ const TOKENS = {
     'color-info':      '#596B61',
 
     // Canvas / Waveform
-    'canvas-bg':       '#D1D2CE',
+    'canvas-bg':       '#CFD0CC',
     'canvas-grid':     '#C1C2BE',
     'waveform-cyan':   '#202321',
     'waveform-green':  '#596B61',

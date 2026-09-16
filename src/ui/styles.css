@@ -121,6 +121,7 @@ body {
 #pattern-panel .pp-volume,
 #pattern-panel .pp-master-volume,
 .ne-row input[type=range] {
+    width: 80px;
     -webkit-appearance: none; appearance: none;
     background: none; outline: none; cursor: pointer;
     height: 16px;
@@ -1023,32 +1024,6 @@ min-height: auto;
 }
 .ne-row label {
     min-width: 60px; color: var(--text-secondary); font-size: var(--fs-base);
-}
-.ne-row input[type=range] {
-    width: 80px; cursor: pointer;
-    -webkit-appearance: none; appearance: none;
-    background: none; outline: none; height: 16px;
-}
-.ne-row input[type=range]::-webkit-slider-runnable-track {
-    height: 2px; background: var(--line); border-radius: 0;
-}
-.ne-row input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 9px; height: 9px; border-radius: 0; margin-top: -3.5px;
-    background: var(--black); border: none; cursor: pointer;
-}
-.ne-row input[type=range]::-moz-range-track {
-    height: 2px; background: var(--line); border-radius: 0; border: none;
-}
-.ne-row input[type=range]::-moz-range-thumb {
-    width: 9px; height: 9px; border-radius: 0;
-    background: var(--black); border: none; cursor: pointer;
-}
-.ne-row input[type=range]:focus::-webkit-slider-thumb {
-    box-shadow: 0 0 0 2px var(--accent);
-}
-.ne-row input[type=range]:focus::-moz-range-thumb {
-    box-shadow: 0 0 0 2px var(--accent);
 }
 .ne-row select {
     width: 80px; font-size: var(--fs-sm); padding: 2px;

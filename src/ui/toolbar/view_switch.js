@@ -123,11 +123,7 @@ export default class ViewSwitch {
                 await autoGen.generatePattern()
 
                 if (pattern.tracks) {
-                    pattern.tracks = pattern.tracks.filter(t => {
-                        const type = Utils.detectTrackType(t.name)
-                        const isMelodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
-                        return !isMelodic || (t.notes && t.notes.length > 0)
-                    })
+                    pattern.tracks = Utils.filterEmptyMelodicTracks(pattern.tracks)
                 }
                 for (const track of pattern.tracks) {
                     if (Utils.DRUM_TYPES.has(Utils.detectTrackType(track.name))) {

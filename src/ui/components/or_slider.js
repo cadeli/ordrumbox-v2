@@ -30,7 +30,8 @@
  *   s.el                  — reference to DOM element (after mount/createElement)
  */
 
-import { fmt as _defaultFmt, escapeHtml as _escHtml } from './ui_utils.js'
+import { fmt as _defaultFmt, escapeHtml as _escHtml, promptNumericInput } from './ui_utils.js'
+import { clamp } from '../../audio/math.js'
 
 export class OrSlider {
     #key
@@ -251,15 +252,11 @@ export class OrSlider {
     }
 
     promptDirectInput() {
-        const title = `Enter value for ${this.#label} (${this.#min}–${this.#max}${this.#unit ? ' ' + this.#unit : ''}):`
-        const raw = window.prompt(title, this.#value)
-        if (raw === null || raw.trim() === '') return
-        const num = parseFloat(raw)
-        if (!Number.isNaN(num)) {
-            const denorm = this.#toDenorm(num)
-            const clamped = Math.min(this.#max, Math.max(this.#min, denorm))
-            this.setValue(clamped, true)
-        }
+        const val = promptNumericInput(
+            this.#label, this.#min, this.#max, this.#value, this.#unit,
+            num => clamp(this.#toDenorm(num), this.#min, this.#max)
+        )
+        if (val !== null) this.setValue(val, true)
     }
 
     /**
@@ -296,7 +293,7 @@ export class OrSlider {
 
         const delta    = (isUp ? 1 : -1) * this.#step * multiplier
         const norm     = parseFloat(this.#input.value)
-        const newNorm  = Math.min(this.#max, Math.max(this.#min, norm + delta))
+        const newNorm = clamp(norm + delta, this.#min, this.#max)
         const denorm   = this.#toDenorm(newNorm)
 
         if (this.#value !== denorm) {

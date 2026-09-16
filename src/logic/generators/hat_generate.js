@@ -262,39 +262,14 @@ export default class HatGenerate extends BaseGenerator {
     }
 
     generateHatShakerVariant = (hatTrack, config, density = 1) => {
-        const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 2)
-        const stepsPerBeat = hatTrack.stepsPerBeat ?? 4
-        const velocityPattern = config.velocityPattern ?? []
-        const accentEvery = config.accentEvery ?? 4
-
-        for (let beat = 0; beat < (hatTrack.nbBeats ?? 1); beat++) {
-            for (let step = 0; step < stepsPerBeat; step++) {
-                const absoluteStep = beat * stepsPerBeat + step
-                if (absoluteStep >= loopPointAbsolute) continue
-
-                const patternIndex = absoluteStep % velocityPattern.length
-                const patternVelocity = velocityPattern[patternIndex] ?? 0.5
-                const isAccent = step % accentEvery === 0
-
-                if (Math.random() >= density) continue
-
-                this.addNote(
-                    hatTrack,
-                    beat,
-                    step,
-                    0,
-                    this.computeVelocity(config.velocity, {
-                        step,
-                        accent: isAccent,
-                        ghost: !isAccent,
-                        velocityBase: patternVelocity
-                    })
-                )
-            }
-        }
+        this.#generateHatVelocityVariant(hatTrack, config, density, { defaultPatternVelocity: 0.5 })
     }
 
     generateHatRideVariant = (hatTrack, config, density = 1) => {
+        this.#generateHatVelocityVariant(hatTrack, config, density, { defaultPatternVelocity: 0.55, hasBell: true })
+    }
+
+    #generateHatVelocityVariant(hatTrack, config, density, { defaultPatternVelocity, hasBell }) {
         const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 2)
         const stepsPerBeat = hatTrack.stepsPerBeat ?? 4
         const velocityPattern = config.velocityPattern ?? []
@@ -306,9 +281,9 @@ export default class HatGenerate extends BaseGenerator {
                 if (absoluteStep >= loopPointAbsolute) continue
 
                 const patternIndex = absoluteStep % velocityPattern.length
-                const patternVelocity = velocityPattern[patternIndex] ?? 0.55
+                const patternVelocity = velocityPattern[patternIndex] ?? defaultPatternVelocity
                 const isAccent = step % accentEvery === 0
-                const isBell = config.bell?.step === step
+                const isBell = hasBell && config.bell?.step === step
 
                 if (Math.random() >= density) continue
 

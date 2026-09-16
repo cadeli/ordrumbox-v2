@@ -7,6 +7,7 @@ import { createNoteMethods } from './cmd/cmd_notes.js'
 import { createTrackMethods } from './cmd/cmd_tracks.js'
 import { createPatternMethods } from './cmd/cmd_patterns.js'
 import { createSelectionMethods } from './cmd/cmd_selection.js'
+import { clamp } from '../../audio/math.js'
 
 export default class Commander {
     static TAG = "Commander"
@@ -73,7 +74,7 @@ export default class Commander {
             let clamped = v
             const range = TRACK_VALUE_RANGES[k]
             if (range && typeof v === 'number' && Number.isFinite(v)) {
-                clamped = Math.min(range.max, Math.max(range.min, v))
+                clamped = clamp(v, range.min, range.max)
             }
             if (track[k] !== clamped) {
                 oldValues[k] = track[k]

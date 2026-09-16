@@ -267,6 +267,19 @@ static TAG = "UTILS"
     }
 
     /**
+     * Remove melodic tracks (BASS, PIANO, ORGAN) that have no notes.
+     * @param {Array} tracks
+     * @returns {Array} filtered tracks array (mutated in place)
+     */
+    static filterEmptyMelodicTracks(tracks) {
+        return tracks.filter(t => {
+            const type = Utils.detectTrackType(t.name)
+            const isMelodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
+            return !isMelodic || (t.notes && t.notes.length > 0)
+        })
+    }
+
+    /**
      * Determine whether a track should produce sound given solo/mute state.
      * When any track has solo=true, only soloed tracks play.
      * Otherwise, all non-muted tracks play.

@@ -12,6 +12,7 @@
  *   // Toggle panels: tab.togglePanels(container)
  *   // Programmatic: tab.setActive('snd')
  */
+import { escapeHtml } from './ui_utils.js'
 export class OrTab {
     /** @type {string} */
     #activeTab
@@ -159,9 +160,4 @@ export class OrTab {
 /** Minimal HTML escaping for attribute values. */
 function escapeAttr(s) {
     return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-}
-
-/** Minimal HTML escaping for text content. */
-function escapeHtml(s) {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 }

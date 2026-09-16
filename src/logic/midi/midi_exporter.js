@@ -31,7 +31,7 @@ import {
     computeNbTickForPattern,
 } from '../../patterns/engine.js'
 import { TICK } from '../../core/constants.js'
-import { computeLfoValue } from '../../audio/math.js'
+import { computeLfoValue, clamp } from '../../audio/math.js'
 import Utils from '../../core/utils.js'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -254,7 +254,7 @@ export default class MidiExporter {
                     let velocity = fn.note.velocity ?? 0.8
                     if (fn.track.velocityLfo) {
                         const lfoVal = computeLfoValue(fn.track.velocityLfo, engineTick, nbTickForPattern)
-                        velocity = Math.min(1, Math.max(0, lfoVal))
+                        velocity = clamp(lfoVal, 0, 1)
                     }
 
                     let pitchOffset = fn.track.pitchLfo
@@ -264,7 +264,7 @@ export default class MidiExporter {
                     // Include track pitch (base pitch for the track)
                     pitchOffset += fn.track.pitch ?? 0
 
-                    const noteNum  = Math.min(127, Math.max(0, td.midiNote + pitchOffset))
+                    const noteNum = clamp(td.midiNote + pitchOffset, 0, 127)
                     const midiVel  = Math.round(velocity * 127)
                     td.events.push({ absMidiTick, noteNum, velocity: midiVel })
                 }

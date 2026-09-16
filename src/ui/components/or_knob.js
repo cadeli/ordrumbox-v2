@@ -1,4 +1,4 @@
-import { fmt as _defaultFmt, escapeHtml as _escHtml } from './ui_utils.js'
+import { fmt as _defaultFmt, escapeHtml as _escHtml, promptNumericInput } from './ui_utils.js'
 
 const DRAG_END_DEBOUNCE_MS = 50
 
@@ -257,14 +257,11 @@ export class OrKnob {
 
     /** Opens prompt for entering raw numeric value */
     promptDirectInput() {
-        const title = `Enter value for ${this.#label} (${this.#min}–${this.#max}${this.#unit ? ' ' + this.#unit : ''}):`
-        const raw = window.prompt(title, this.#value)
-        if (raw === null || raw.trim() === '') return
-        const num = parseFloat(raw)
-        if (!Number.isNaN(num)) {
-            const clamped = this.#clampStep(num)
-            this.setValue(clamped, true)
-        }
+        const val = promptNumericInput(
+            this.#label, this.#min, this.#max, this.#value, this.#unit,
+            num => this.#clampStep(num)
+        )
+        if (val !== null) this.setValue(val, true)
     }
 
     // ─── Public API ───────────────────────────────────────────────────────

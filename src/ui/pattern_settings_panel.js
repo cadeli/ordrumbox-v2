@@ -5,6 +5,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import { MAX_BEATS } from '../core/constants.js'
+import { prevPage, nextPage } from '../core/page_nav.js'
 
 export default class PatternSettingsPanel {
     constructor() {
@@ -114,33 +115,8 @@ export default class PatternSettingsPanel {
     }
 
     _bindPageControls() {
-        this._prevPageBtn.addEventListener('click', () => this._onPrevPage())
-        this._nextPageBtn.addEventListener('click', () => this._onNextPage())
-    }
-
-    _onPrevPage() {
-        if (appState.currentPage > 0) {
-            appState.currentPage--
-            playbackEvents.batch(() => {
-                playbackEvents.emit("patternMetaChange")
-                playbackEvents.emit("patternChange")
-            })
-        }
-    }
-
-    _onNextPage() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern) return
-        const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4
-        const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
-        const maxPage = Math.ceil(totalSteps / 16) - 1
-        if (appState.currentPage < maxPage) {
-            appState.currentPage++
-            playbackEvents.batch(() => {
-                playbackEvents.emit("patternMetaChange")
-                playbackEvents.emit("patternChange")
-            })
-        }
+        this._prevPageBtn.addEventListener('click', () => prevPage())
+        this._nextPageBtn.addEventListener('click', () => nextPage())
     }
 
     _bindBeatsSelect() {
@@ -222,11 +198,7 @@ export default class PatternSettingsPanel {
             serviceRegistry.cmd.beginGenerationUndo(pattern)
             await autoGen.generatePattern()
             if (pattern.tracks) {
-                pattern.tracks = pattern.tracks.filter(t => {
-                    const type = Utils.detectTrackType(t.name)
-                    const isMelodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
-                    return !isMelodic || (t.notes && t.notes.length > 0)
-                })
+                pattern.tracks = Utils.filterEmptyMelodicTracks(pattern.tracks)
             }
             for (const track of pattern.tracks) {
                 if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = true

@@ -1,6 +1,7 @@
 import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { TRACK_VALUE_RANGES } from '../../model/track_schema.js'
+import { clamp } from '../../audio/math.js'
 
 export default class BaseGenerator {
     #toneThreshold = 6
@@ -34,7 +35,7 @@ export default class BaseGenerator {
         const randomOffset = (Math.random() * 2 - 1) * randomSpread
         const min = velocityConfig.clampMin ?? 0.25
         const max = velocityConfig.clampMax ?? 1
-        const result = Math.min(max, Math.max(min, base + accent + ghost + variationBoost + randomOffset))
+        const result = clamp(base + accent + ghost + variationBoost + randomOffset, min, max)
         return context.toFixed !== false ? Number(result.toFixed(2)) : result
     }
 
@@ -301,7 +302,7 @@ export default class BaseGenerator {
      */
     withLockedBarQuantize = (track, targetQuantize, fn) => {
         const range = TRACK_VALUE_RANGES.stepsPerBeat
-        const clamped = Math.min(range.max, Math.max(range.min, targetQuantize))
+        const clamped = clamp(targetQuantize, range.min, range.max)
         const saved = track.stepsPerBeat
         track.stepsPerBeat = clamped
         try { fn() } finally { track.stepsPerBeat = saved }

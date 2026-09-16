@@ -6,6 +6,25 @@
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 /**
+ * Prompt the user for a numeric value, returning the clamped result or null if cancelled.
+ * @param {string} label  – display name for the input
+ * @param {number} min    – minimum allowed value
+ * @param {number} max    – maximum allowed value
+ * @param {number} current – default value to show
+ * @param {string} [unit] – optional unit suffix
+ * @param {(num: number) => number} [clampFn] – optional custom clamp; defaults to Math.min/max
+ * @returns {number|null}
+ */
+export function promptNumericInput(label, min, max, current, unit, clampFn) {
+    const title = `Enter value for ${label} (${min}–${max}${unit ? ' ' + unit : ''}):`
+    const raw = window.prompt(title, current)
+    if (raw === null || raw.trim() === '') return null
+    const num = parseFloat(raw)
+    if (Number.isNaN(num)) return null
+    return clampFn ? clampFn(num) : Math.min(max, Math.max(min, num))
+}
+
+/**
  * Format a number to at most 2 decimal places.
  * @param {number} v
  * @returns {number}
