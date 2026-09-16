@@ -111,7 +111,7 @@ export class OrKnob {
     /** Returns the row HTML string. Call mount() after injecting into DOM. */
     toHTML() {
         const deg = this.#arcDeg()
-        return `<div class="${this.#rowClasses()}" data-or-slider="${this.#key}" data-prop="${this.#key}">
+        return `<div class="${this.#rowClasses()}" data-or-slider="${this.#key}">
             <div class="or-knob" data-or-knob="${this.#key}" style="--arc-deg:${deg}deg" tabindex="0">
                 <div class="or-knob-arc"></div>
                 <div class="or-knob-disc"></div>
@@ -126,7 +126,6 @@ export class OrKnob {
         const div = document.createElement('div')
         div.className = this.#rowClasses()
         div.dataset.orSlider = this.#key
-        div.dataset.prop = this.#key
 
         const knob = document.createElement('div')
         knob.className = 'or-knob'

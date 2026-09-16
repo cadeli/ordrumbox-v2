@@ -299,7 +299,6 @@ export default class NoteEditor extends BasePanel {
                 onChange: (v) => this._onSlider(def.key, v),
             })),
             prev: new Map(this._knobs.map(k => [k.key, k])),
-            postMount: (el) => el.removeAttribute('data-prop'),
         }).values()]
     }
 

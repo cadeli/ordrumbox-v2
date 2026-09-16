@@ -69,7 +69,7 @@ describe('TrackEditor — OrSlider integration', () => {
             expect(knob, `missing knob for ${key}`).not.toBeNull()
             const row = knob.closest('.ne-row')
             expect(row).not.toBeNull()
-            expect(row.dataset.prop).toBe(key)
+            expect(row.dataset.orSlider).toBe(key)
         }
     })
 
@@ -183,7 +183,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     it('row with an LFO prop gets the "has-lfo" class', () => {
         editor._track = makeTrack({ filterFreq: 632, filterFreqLfo: { freq: 1, min: 0, max: 0.5 } })
         editor.sync()
-        const freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
+        const freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
         expect(freqRow).not.toBeNull()
         expect(freqRow.classList.contains('has-lfo')).toBe(true)
     })
@@ -191,7 +191,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     it('row without an LFO prop does NOT get "has-lfo"', () => {
         editor._track = makeTrack({ filterFreq: 632, filterQ: 1 })
         editor.sync()
-        const qRow = editor.container.querySelector('.ne-row[data-prop="filterQ"]')
+        const qRow = editor.container.querySelector('.ne-row[data-or-slider="filterQ"]')
         expect(qRow).not.toBeNull()
         expect(qRow.classList.contains('has-lfo')).toBe(false)
     })
@@ -205,17 +205,17 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         editor._selectedLfoTarget = 'filterFreq'
         editor.sync()
 
-        let freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
+        let freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
 
         editor._toggleLfoForTarget(editor._selectedLfoTarget)
-        freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
+        freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
         expect(freqRow).not.toBeNull()
         expect(freqRow.classList.contains('has-lfo')).toBe(true)
         expect(editor._track.filterFreqLfo).toBeDefined()
 
         editor._toggleLfoForTarget(editor._selectedLfoTarget)
-        freqRow = editor.container.querySelector('.ne-row[data-prop="filterFreq"]')
+        freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
         expect(editor._track.filterFreqLfo).toBeUndefined()
     })

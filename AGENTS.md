@@ -155,53 +155,39 @@ The codebase intentionally runs different style regimes per zone. Applying the w
 
 `src/ui/styles.css` uses a rationalized `:root` token system. Always use tokens instead of hardcoded values.
 
-### Backgrounds
+### Palette (canonical)
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--bg-deep` | `#0a0a14` | Deepest layer (canvas base) |
-| `--bg-canvas` | `#0d0d1a` | Canvas background |
-| `--bg` | `#1a1a2e` | Primary panel background |
-| `--bg-surface` | `#12121e` | Lists, cards |
-| `--bg-input` | `#16213e` | Input fields, selects |
-| `--bg-elevated` | `#2a2a3e` | Elevated surfaces (knobs, popups) |
-| `--bg-hover` | `#3a3a4e` | Hover states, beat markers |
-| `--bg-accent` | `#0f3460` | Accent background (active btn) |
-| `--bg-selected` | `#833295` | Selected state |
-| `--bg-success` | `#0a2e0a` | Success tint (velocity bars) |
+| `--bg` | `#E7E8E4` | Primary panel background |
+| `--surface` | `#D9DAD6` | Lists, cards, elevated surfaces |
+| `--surface-2` | `#CFD0CC` | Canvas, inputs, hover states |
+| `--line` | `#A9AAA6` | Borders, disabled text |
+| `--muted` | `#686A67` | Secondary labels, warnings, danger |
+| `--text` | `#202321` | Primary text |
+| `--black` | `#151716` | Deepest layer |
+| `--accent` | `#596B61` | Primary accent, success, info |
 
-### Text
+### Accent Variants
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--text` | `#fff` | Primary text |
-| `--text-dim` | `#eee` | Slightly dimmed (buttons, selects) |
-| `--text-secondary` | `#ccc` | Secondary labels |
-| `--text-tertiary` | `#888` | Hints, placeholders |
-| `--text-disabled` | `#555` | Disabled state |
+| `--accent-400` | `#6a7d73` | Light accent |
+| `--accent-600` | `#4a5c52` | Dark accent, success-dark |
 
-### Borders
+### Border
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--border-subtle` | `#333` | Subtle dividers |
-| `--border` | `#555` | Default borders |
-| `--border-strong` | `#888` | Emphasized borders |
+| `--border-subtle` | `#C1C2BE` | Subtle dividers |
 
-### Accent (Rose)
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--accent` | `#e94560` | Primary accent |
-| `--accent-400` | `#ff4d6d` | Light accent |
-| `--accent-600` | `#d63050` | Dark accent |
-| `--accent-700` | `#ff2a6d` | Bright accent (active grid btns) |
-
-### Semantic Colors
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--color-success` | `#4ade80` | Success, active states |
-| `--color-success-dark` | `#1a7f37` | Dark success (start btn) |
-| `--color-warning` | `#f59e0b` | Warning, amber |
-| `--color-danger` | `#c62828` | Danger, errors |
-| `--color-danger-light` | `#ef9a9a` | Light danger |
-| `--color-info` | `#4fc3f7` | Info, cyan/blue |
+### Semantic (alias to palette, for dark mode overrides)
+| Token | Resolves to | Usage |
+|-------|-------------|-------|
+| `--color-success` | `var(--accent)` | Success, active states |
+| `--color-success-dark` | `var(--accent-600)` | Dark success |
+| `--color-warning` | `var(--muted)` | Warning |
+| `--color-danger` | `var(--muted)` | Danger, errors |
+| `--color-danger-light` | `var(--line)` | Light danger |
+| `--color-info` | `var(--accent)` | Info |
+| `--bg-success` | `var(--accent)` | Success background (velocity bars) |
 
 ### Typography
 | Token | Value | Usage |

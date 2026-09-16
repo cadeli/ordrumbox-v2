@@ -315,7 +315,6 @@ export default class DrumkitManager extends BasePanel {
                 onChange: (v) => this._onKnobChange(sound, def.key, v),
             })),
             prev: new Map(this._knobs.map(k => [k.key, k])),
-            postMount: (el) => el.removeAttribute('data-prop'),
         }).values()]
     }
 
