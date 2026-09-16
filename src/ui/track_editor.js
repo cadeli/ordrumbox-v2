@@ -10,9 +10,8 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 
 import SynthEditor from './synth_editor.js'
-import { OrKnob } from './components/or_knob.js'
 import { OrTab } from './components/or_tab.js'
-import { syncComponentMap } from './components/sync_helpers.js'
+import { syncKnobs } from './components/sync_helpers.js'
 import { fmt, setViewBtn, knobFormat, setPatternPanelHidden } from './components/panel_helpers.js'
 import BasePanel from './base_panel.js'
 import { TICK, isMobileViewport } from '../core/constants.js'
@@ -338,40 +337,26 @@ export default class TrackEditor extends BasePanel {
 
     /** Sync knob bar: reuse OrKnob instances, create new ones, destroy orphans. */
     _syncKnobs() {
-        const prevKnobs = new Map(this._knobs.map(k => [k.key, k]))
-        const knobConfigs = KNOB_PROPS.map(def => {
-            const isDecay = def.key === 'decay'
-            const sound = isDecay ? this._soundRegistry.sounds[this._track?.soundId] : null
-            const value = isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min)
-            const onChange = (v) => {
-                if (isDecay) { if (sound) sound.decay = v }
-                else { this._track[def.key] = v }
-                this._emitTrackChange()
-                if (isDecay) this._drawSampleWaveform()
-            }
-            return { key: def.key, def, value, onChange }
-        })
-
-        this._knobs = [...syncComponentMap({
+        this._knobs = [...syncKnobs({
             container: this.container,
-            configs: knobConfigs,
-            selector: 'or-knob',
-            prev: prevKnobs,
-            create: (cfg) => new OrKnob({
-                key:    cfg.def.key,
-                label:  cfg.def.label,
-                min:    cfg.def.min,
-                max:    cfg.def.max,
-                step:   cfg.def.step,
-                value:  cfg.value,
-                format: knobFormat(cfg.def),
-                unit:   cfg.def.key === 'velocity' ? '%' : cfg.def.key === 'pitch' ? 'st' : cfg.def.key === 'decay' ? 'ms' : '',
-                onChange: cfg.onChange,
+            configs: KNOB_PROPS.map(def => {
+                const isDecay = def.key === 'decay'
+                const sound = isDecay ? this._soundRegistry.sounds[this._track?.soundId] : null
+                return {
+                    key: def.key, label: def.label,
+                    val: isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min),
+                    min: def.min, max: def.max, step: def.step,
+                    format: knobFormat(def),
+                    unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : def.key === 'decay' ? 'ms' : '',
+                    onChange: (v) => {
+                        if (isDecay) { if (sound) sound.decay = v }
+                        else { this._track[def.key] = v }
+                        this._emitTrackChange()
+                        if (isDecay) this._drawSampleWaveform()
+                    },
+                }
             }),
-            update: (inst, cfg) => {
-                inst.onChange = cfg.onChange
-                inst.setValue(cfg.value)
-            },
+            prev: new Map(this._knobs.map(k => [k.key, k])),
             postMount: (el) => el.removeAttribute('data-prop'),
         }).values()]
     }
@@ -417,13 +402,13 @@ export default class TrackEditor extends BasePanel {
         const analysis = analyzeSample(sound.buffer)
         if (!analysis?.envelope?.length) return
         const ctx = canvas.getContext('2d')
-        drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, color('waveform-cyan'))
+        drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, color('text'))
         const decaySec = (sound.decay ?? 0) / 1000
         const totalSec = sound.buffer.duration
         if (totalSec > 0) {
             const ratio = Math.min(decaySec / totalSec, 1)
             const x = ratio * canvas.width
-            ctx.strokeStyle = color('waveform-yellow')
+            ctx.strokeStyle = color('muted')
             ctx.lineWidth = 2
             ctx.beginPath()
             ctx.moveTo(x, 0)
@@ -684,55 +669,4 @@ export default class TrackEditor extends BasePanel {
         if (this._noteEditor) this._noteEditor.hide()
         setViewBtn('edit', false)
     }
-
-    // ─── Public API ───────────────────────────────────────────────────────
-    /** @returns {Object|null} current track */
-    get track() { return this._track }
-    /** @param {Object} t */
-    set track(t) { this._track = t }
-
-    /** @returns {number} current track index */
-    get trackIdx() { return this._trackIdx }
-    /** @param {number} idx */
-    set trackIdx(idx) { this._trackIdx = idx }
-
-    /** @returns {Map} slider instances keyed by key */
-    get sliders() { return this._sliders }
-
-    /** @returns {OrKnob[]} knob bar instances */
-    get knobs() { return this._knobs }
-
-    /** @returns {OrKnob[]} FX knob instances */
-    get fxKnobs() { return this._fxKnobs }
-
-    /** @returns {OrTab} FX tab controller */
-    get fxTab() { return this._fxTab }
-
-    /** @returns {string|null} currently selected FX property key */
-    get selectedPropKey() { return this._selectedPropKey }
-    set selectedPropKey(k) { this._selectedPropKey = k }
-
-    /** @returns {string|null} currently selected LFO target key */
-    get selectedLfoTarget() { return this._selectedLfoTarget }
-    set selectedLfoTarget(k) { this._selectedLfoTarget = k }
-
-    /** @returns {boolean} true while user is dragging a knob/slider */
-    get isDragging() { return this._isDragging }
-    set isDragging(v) { this._isDragging = v }
-
-    /** @returns {string|undefined} previous filter type before bypass */
-    get prevFilterType() { return this._prevFilterType }
-    set prevFilterType(v) { this._prevFilterType = v }
-
-    /** @returns {object} event bus */
-    get playbackEvents() { return this._playbackEvents }
-
-    /** @returns {object} service registry */
-    get serviceRegistry() { return this._serviceRegistry }
-
-    /** @returns {object} sound registry */
-    get soundRegistry() { return this._soundRegistry }
-
-    /** @returns {object} app state */
-    get appState() { return this._appState }
 }

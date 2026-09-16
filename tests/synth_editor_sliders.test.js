@@ -84,7 +84,7 @@ describe('SynthEditor — OrKnob integration', () => {
         trackEditor.init()
         // Attach synth panel to app-content
         document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
-        trackEditor.track = mockTrack
+        trackEditor._track = mockTrack
     })
 
     it('renders each numeric parameter as an OrKnob row', async () => {

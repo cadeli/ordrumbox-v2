@@ -27,9 +27,9 @@ export default class WaveformSection {
         const h = canvas.height
         const mid = h / 2
 
-        ctx.fillStyle = color('bg-canvas')
+        ctx.fillStyle = color('surface-2')
         ctx.fillRect(0, 0, w, h)
-        ctx.strokeStyle = color('canvas-grid')
+        ctx.strokeStyle = color('border-subtle')
         ctx.lineWidth = 1
         ctx.beginPath()
         ctx.moveTo(0, mid)
@@ -123,7 +123,7 @@ export default class WaveformSection {
         }
 
         ctx.beginPath()
-        ctx.strokeStyle = color('waveform-green')
+        ctx.strokeStyle = color('accent')
         ctx.lineWidth = 1.5
         for (let i = 0; i < sampleRate; i++) {
             const x = (i / sampleRate) * w
@@ -190,9 +190,9 @@ export default class WaveformSection {
         const h = canvas.height
         const mid = h / 2
 
-        ctx.fillStyle = color('bg-canvas')
+        ctx.fillStyle = color('surface-2')
         ctx.fillRect(0, 0, w, h)
-        ctx.strokeStyle = color('canvas-grid')
+        ctx.strokeStyle = color('border-subtle')
         ctx.lineWidth = 1
         ctx.beginPath()
         ctx.moveTo(0, mid)
@@ -224,12 +224,12 @@ export default class WaveformSection {
         ]
 
         ctx.beginPath()
-        ctx.strokeStyle = color('waveform-green')
+        ctx.strokeStyle = color('accent')
         ctx.lineWidth = 1.5
         this._drawAdsrPath(ctx, pts, scaleX, scaleY)
         ctx.stroke()
 
-        ctx.fillStyle = rgba('waveform-green', 0.15)
+        ctx.fillStyle = rgba('accent', 0.15)
         ctx.beginPath()
         this._drawAdsrPath(ctx, pts, scaleX, scaleY)
         ctx.closePath()
@@ -250,7 +250,7 @@ export default class WaveformSection {
         const fc = Math.max(20, Math.min(20000, flt.freq ?? 400))
         const Q = Math.max(0.1, Math.min(24, flt.Q ?? 1))
 
-        ctx.fillStyle = color('bg-canvas')
+        ctx.fillStyle = color('surface-2')
         ctx.fillRect(0, 0, w, h)
 
         const fMin = 20
@@ -263,7 +263,7 @@ export default class WaveformSection {
         const toX = (f) => ((Math.log10(f) - logFMin) / (logFMax - logFMin)) * w
         const toY = (db) => h - ((db - dbMin) / (dbMax - dbMin)) * h
 
-        ctx.strokeStyle = color('canvas-grid')
+        ctx.strokeStyle = color('border-subtle')
         ctx.lineWidth = 0.5
         for (const gf of [100, 1000, 10000]) {
             const x = toX(gf)
@@ -276,7 +276,7 @@ export default class WaveformSection {
 
         const N = 200
         ctx.beginPath()
-        ctx.strokeStyle = color('waveform-green')
+        ctx.strokeStyle = color('accent')
         ctx.lineWidth = 1.5
         let first = true
         for (let i = 0; i <= N; i++) {
@@ -299,7 +299,7 @@ export default class WaveformSection {
         }
         ctx.stroke()
 
-        ctx.fillStyle = rgba('waveform-green', 0.12)
+        ctx.fillStyle = rgba('accent', 0.12)
         ctx.lineTo(w, toY(0))
         ctx.lineTo(0, toY(0))
         ctx.closePath()

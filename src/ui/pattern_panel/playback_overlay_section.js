@@ -189,14 +189,14 @@ export default class PlaybackOverlaySection {
 
         const data = editor._serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {
-            ctx.fillStyle = color('bg-canvas')
+            ctx.fillStyle = color('surface-2')
             ctx.fillRect(0, 0, w, h)
             return
         }
 
         data.analyser.getByteTimeDomainData(data.dataArray)
 
-        ctx.fillStyle = color('bg-canvas')
+        ctx.fillStyle = color('surface-2')
         ctx.fillRect(0, 0, w, h)
 
         ctx.strokeStyle = color('color-success')
@@ -253,7 +253,7 @@ export default class PlaybackOverlaySection {
         if (canvas) {
             const ctx = canvas.getContext('2d')
             if (ctx) {
-                ctx.fillStyle = color('bg-canvas')
+                ctx.fillStyle = color('surface-2')
                 ctx.fillRect(0, 0, canvas.width, canvas.height)
             }
             canvas.style.display = 'none'

@@ -33,7 +33,7 @@ describe('TrackEditor sound panel', () => {
 
     function renderSoundPanelHtml(track) {
         const editor = new TrackEditor()
-        editor.track = track
+        editor._track = track
         vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
         const wrapper = document.createElement('div')
         wrapper.innerHTML = editor._sndSection.render()
@@ -74,7 +74,7 @@ describe('TrackEditor filterFreq display', () => {
     function getFreqDisplay(track) {
         const editor = new TrackEditor()
         editor.init()
-        editor.track = track
+        editor._track = track
         editor._tab.setActive('fx')
         editor._fxTab.setActive('3')
         editor.sync()
@@ -98,7 +98,7 @@ describe('TrackEditor filterFreq display', () => {
 describe('TrackEditor loop panel', () => {
     it('renders loop properties correctly', () => {
         const editor = new TrackEditor()
-        editor.track = {
+        editor._track = {
             nbBeats: 8,
             stepsPerBeat: 4,
             loopAtStep: 16
@@ -126,8 +126,8 @@ describe('TrackEditor onPatternChange', () => {
         editor.init()
         const oldTrack = { name: 'KICK', velocity: 0.7 }
         const newTrack = { name: 'KICK', velocity: 0.3 }
-        editor.track = oldTrack
-        editor.trackIdx = 0
+        editor._track = oldTrack
+        editor._trackIdx = 0
         appState.patterns = [{ tracks: [newTrack] }]
         appState.selectedPatternNum = 0
         editor.show({ track: oldTrack, trackIdx: 0 })
@@ -136,26 +136,26 @@ describe('TrackEditor onPatternChange', () => {
 
         playbackEvents.emit("patternChange")
 
-        expect(editor.track).toBe(newTrack)
-        expect(editor.trackIdx).toBe(0)
+        expect(editor._track).toBe(newTrack)
+        expect(editor._trackIdx).toBe(0)
         expect(syncSpy).toHaveBeenCalled()
     })
 
     it('clears the track and re-syncs when the track no longer exists in the new pattern (does not auto-hide)', () => {
         const editor = new TrackEditor()
         editor.init()
-        editor.track = { name: 'KICK', velocity: 0.7 }
-        editor.trackIdx = 0
+        editor._track = { name: 'KICK', velocity: 0.7 }
+        editor._trackIdx = 0
         appState.patterns = [{ tracks: [{ name: 'SNARE' }] }]
         appState.selectedPatternNum = 0
-        editor.show({ track: editor.track, trackIdx: 0 })
+        editor.show({ track: editor._track, trackIdx: 0 })
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
         playbackEvents.emit("patternChange")
 
-        expect(editor.track).toBeNull()
-        expect(editor.trackIdx).toBe(-1)
+        expect(editor._track).toBeNull()
+        expect(editor._trackIdx).toBe(-1)
         expect(syncSpy).toHaveBeenCalled()
     })
 

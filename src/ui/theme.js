@@ -7,45 +7,35 @@
  *
  * Usage:
  *   import { color, rgb, rgba } from './theme.js'
- *   ctx.fillStyle = color('bg-canvas')
+ *   ctx.fillStyle = color('surface-2')
  *   ctx.strokeStyle = rgba('color-info', 0.15)
  */
 
 // Fallback hex values — must stay in sync with styles.css :root
 const TOKENS = {
-    // Backgrounds
-    'bg-canvas':       '#CFD0CC',
+    // Palette
     'bg':              '#E7E8E4',
-    'bg-elevated':     '#D9DAD6',
-    'bg-input':        '#CFD0CC',
-    'bg-hover':        '#CFD0CC',
-    'bg-accent':       '#596B61',
-
-    // Text
+    'surface':         '#D9DAD6',
+    'surface-2':       '#CFD0CC',
+    'line':            '#A9AAA6',
+    'muted':           '#686A67',
     'text':            '#202321',
-    'text-dim':        '#202321',
-    'text-secondary':  '#686A67',
-    'text-tertiary':   '#686A67',
-    'text-disabled':   '#A9AAA6',
+    'accent':          '#596B61',
+
+    // Accent variants
+    'accent-400':      '#6a7d73',
+    'accent-600':      '#4a5c52',
 
     // Borders
     'border-subtle':   '#C1C2BE',
-    'border':          '#A9AAA6',
 
-    // Semantic (mapped to palette)
-    'accent':          '#596B61',
+    // Semantic (mapped to palette, for dark mode overrides)
     'color-success':   '#596B61',
     'color-warning':   '#686A67',
     'color-danger':    '#686A67',
     'color-info':      '#596B61',
 
-    // Canvas / Waveform
-    'canvas-bg':       '#CFD0CC',
-    'canvas-grid':     '#C1C2BE',
-    'waveform-cyan':   '#202321',
-    'waveform-green':  '#596B61',
-    'waveform-red':    '#202321',
-    'waveform-yellow': '#686A67',
+    // Shadows
     'canvas-shadow':   '#000000',
     'toast-shadow':    '#000000',
 }
@@ -54,7 +44,6 @@ const ALPHA = {
     'canvas-shadow': 0.3,
     'toast-shadow': 0.5,
     'color-info':    0.15,
-    'waveform-red':  0.15,
 }
 
 /** Read a CSS custom property from :root (browser only). */

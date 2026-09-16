@@ -6,10 +6,8 @@ import drumkitService from '../logic/services/drumkit_service.js'
 import { drawEnvelope } from '../audio/sample_analyzer.js'
 import { formatNote } from '../core/hz_to_note.js'
 import { showToast } from './toast.js'
-import { downloadJson, renderOptions } from './components/panel_helpers.js'
-import { OrKnob } from './components/or_knob.js'
-import { syncComponentMap } from './components/sync_helpers.js'
-import { knobFormat } from './components/panel_helpers.js'
+import { downloadJson, renderOptions, knobFormat } from './components/panel_helpers.js'
+import { syncKnobs } from './components/sync_helpers.js'
 import { color } from './theme.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
@@ -261,10 +259,10 @@ export default class DrumkitManager extends BasePanel {
                             <select id="dm-inst-select">${instOptions}</select>
                         </div>
                     </div>
-                    <div class="ne-knob-bar">
-                        <div data-ne-knob="gain"></div>
-                        <div data-ne-knob="tune"></div>
-                        <div data-ne-knob="decay"></div>
+                    <div class="or-knob-bar">
+                        <div data-or-knob="gain"></div>
+                        <div data-or-knob="tune"></div>
+                        <div data-or-knob="decay"></div>
                     </div>
                 </div>
             </div>
@@ -310,26 +308,13 @@ export default class DrumkitManager extends BasePanel {
 
     _syncKnobs(sound) {
         const values = { gain: sound.gainDb ?? 0, tune: sound.tune ?? 0, decay: sound.decay ?? 0 }
-        this._knobs = [...syncComponentMap({
+        this._knobs = [...syncKnobs({
             container: this._detailEl,
-            configs: SOUND_KNOB_DEFS,
-            selector: 'ne-knob',
-            prev: new Map(this._knobs.map(k => [k.key, k])),
-            create: (def) => new OrKnob({
-                key:      def.key,
-                label:    def.label,
-                min:      def.min,
-                max:      def.max,
-                step:     def.step,
-                value:    values[def.key],
-                format:   def.format,
-                unit:     def.unit,
+            configs: SOUND_KNOB_DEFS.map(def => ({
+                ...def, val: values[def.key],
                 onChange: (v) => this._onKnobChange(sound, def.key, v),
-            }),
-            update: (inst, def) => {
-                inst.onChange = (v) => this._onKnobChange(sound, def.key, v)
-                inst.setValue(values[def.key])
-            },
+            })),
+            prev: new Map(this._knobs.map(k => [k.key, k])),
             postMount: (el) => el.removeAttribute('data-prop'),
         }).values()]
     }
@@ -361,14 +346,14 @@ export default class DrumkitManager extends BasePanel {
         const draw = () => {
             const ctx = canvas.getContext('2d')
             if (!ctx) return
-            drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, color('waveform-cyan'))
+            drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, color('text'))
 
             const decaySec = (sound.decay ?? 0) / 1000
             const totalSec = sound.buffer?.duration ?? 0
             if (totalSec > 0) {
                 const ratio = Math.min(decaySec / totalSec, 1)
                 const x = ratio * canvas.width
-                ctx.strokeStyle = color('waveform-yellow')
+                ctx.strokeStyle = color('muted')
                 ctx.lineWidth = 2
                 ctx.beginPath()
                 ctx.moveTo(x, 0)

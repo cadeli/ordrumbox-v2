@@ -1,7 +1,7 @@
 const CONTAINER_ID = 'odbox-toast-container'
 
 const TOAST_STYLES = {
-    info:    { bg: 'var(--bg-elevated)', border: 'var(--border)' },
+    info:    { bg: 'var(--surface)', border: 'var(--line)' },
     success: { bg: 'var(--bg-success)', border: 'var(--color-success)' },
     error:   { bg: 'var(--bg)', border: 'var(--color-danger)' },
     warning: { bg: 'var(--bg)', border: 'var(--color-warning)' },
@@ -66,7 +66,7 @@ export function showToast(message, type = 'info', { actions, dismissible } = {})
             const btn = document.createElement('button')
             btn.textContent = label
             btn.style.cssText = `
-                background:var(--bg-accent); color:var(--text); border:1px solid var(--border);
+                background:var(--accent); color:var(--text); border:1px solid var(--line);
                 padding:6px 14px; border-radius:4px; cursor:pointer;
                 font-weight:600; font-size:var(--fs-sm); white-space:nowrap;
             `
@@ -82,7 +82,7 @@ export function showToast(message, type = 'info', { actions, dismissible } = {})
         const closeBtn = document.createElement('button')
         closeBtn.textContent = '\u00d7'
         closeBtn.style.cssText = `
-            background:transparent; color:var(--text-tertiary); border:none;
+                background:transparent; color:var(--muted); border:none;
             cursor:pointer; font-size:18px; padding:0 4px; line-height:1;
         `
         closeBtn.addEventListener('click', dismiss)

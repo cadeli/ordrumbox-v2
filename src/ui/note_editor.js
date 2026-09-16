@@ -1,9 +1,8 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { fmt, pitchToNoteName, knobFormat, renderOptions } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
-import { OrKnob } from './components/or_knob.js'
 import { OrTab } from './components/or_tab.js'
-import { syncComponentMap } from './components/sync_helpers.js'
+import { syncComponentMap, syncKnobs } from './components/sync_helpers.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 
@@ -248,8 +247,8 @@ export default class NoteEditor extends BasePanel {
             <span class="ne-track">${this.esc(this._track.name)} [beat ${this._beat + 1} step ${this._beatStep + 1}]</span>
         </div>`
 
-        const knobBarHtml = `<div class="ne-knob-bar">${
-            KNOB_PROPS.map(p => `<div data-ne-knob="${p.key}"></div>`).join('')
+        const knobBarHtml = `<div class="or-knob-bar">${
+            KNOB_PROPS.map(p => `<div data-or-knob="${p.key}"></div>`).join('')
         }</div>`
 
         const tabBarHtml = this._tab.renderBar()
@@ -278,7 +277,7 @@ export default class NoteEditor extends BasePanel {
             const opts = renderOptions(options, val)
             return `<div class="ne-row"><label>${p.label}</label><select data-key="${p.key}">${opts}</select></div>`
         }
-        return `<div data-ne-slider="${p.key}"></div>`
+        return `<div data-or-slider="${p.key}"></div>`
     }
 
     /** @private */
@@ -290,26 +289,16 @@ export default class NoteEditor extends BasePanel {
 
     /** @private Keep-alive: reuse existing knobs via setValue, create only new ones. */
     _syncKnobs() {
-        this._knobs = [...syncComponentMap({
+        this._knobs = [...syncKnobs({
             container: this.container,
-            configs: KNOB_PROPS,
-            selector: 'ne-knob',
-            prev: new Map(this._knobs.map(k => [k.key, k])),
-            create: (def) => new OrKnob({
-                key:    def.key,
-                label:  def.label,
-                min:    def.min,
-                max:    def.max,
-                step:   def.step,
-                value:  this._note[def.key] ?? def.min,
+            configs: KNOB_PROPS.map(def => ({
+                key: def.key, label: def.label, val: this._note[def.key] ?? def.min,
+                min: def.min, max: def.max, step: def.step,
                 format: knobFormat(def),
-                unit:   def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
+                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
                 onChange: (v) => this._onSlider(def.key, v),
-            }),
-            update: (inst, def) => {
-                inst.onChange = (v) => this._onSlider(def.key, v)
-                inst.setValue(this._note[def.key] ?? def.min)
-            },
+            })),
+            prev: new Map(this._knobs.map(k => [k.key, k])),
             postMount: (el) => el.removeAttribute('data-prop'),
         }).values()]
     }
@@ -325,7 +314,7 @@ export default class NoteEditor extends BasePanel {
         this._sliders = [...syncComponentMap({
             container: this.container,
             configs,
-            selector: 'ne-slider',
+            selector: 'or-slider',
             prev: new Map(this._sliders.map(s => [s.key, s])),
             create: (cfg) => new OrSlider({
                 key:    cfg.key,

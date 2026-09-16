@@ -41,7 +41,7 @@ describe('showToast', () => {
     it('applies info background by default', () => {
         showToast('info msg')
         const toast = document.querySelector('#odbox-toast-container > div')
-        expect(toast.style.background).toContain('--bg-elevated')
+        expect(toast.style.background).toContain('--surface')
     })
 
     it('applies success background for type success', () => {
@@ -59,7 +59,7 @@ describe('showToast', () => {
     it('falls back to info styling for unknown type', () => {
         showToast('what', 'bogus')
         const toast = document.querySelector('#odbox-toast-container > div')
-        expect(toast.style.background).toContain('--bg-elevated')
+        expect(toast.style.background).toContain('--surface')
     })
 
     it('dismisses after 3s for info', () => {
