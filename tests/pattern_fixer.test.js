@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { PARAM_SETS } from './helpers/make_pattern.js'
 import {
     fixTrackPanning,
     fixNoteStepBar,
@@ -189,5 +190,73 @@ describe('patternFixer - getUnloadedSamplesFromDrumkits', () => {
     it('handles empty/null input', () => {
         expect(getUnloadedSamplesFromDrumkits(null, {})).toEqual([])
         expect(getUnloadedSamplesFromDrumkits({}, {})).toEqual([])
+    })
+})
+
+// ── Parameterized: fixNoteStepBar across different subdivisions ───────────────
+
+describe.each(PARAM_SETS)('fixNoteStepBar — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat) => {
+    it('wraps beatStep >= stepsPerBeat into beat', () => {
+        const inputBeatStep = stepsPerBeat + 2
+        const track = { stepsPerBeat }
+        const note = { beatStep: inputBeatStep, beat: 0 }
+        fixNoteStepBar(track, note)
+        expect(note.beatStep).toBe(inputBeatStep % stepsPerBeat)
+        expect(note.beat).toBe(Math.floor(inputBeatStep / stepsPerBeat))
+    })
+
+    it('leaves beatStep unchanged when < stepsPerBeat', () => {
+        const track = { stepsPerBeat }
+        const note = { beatStep: Math.max(0, stepsPerBeat - 1), beat: 0 }
+        fixNoteStepBar(track, note)
+        expect(note.beatStep).toBe(Math.max(0, stepsPerBeat - 1))
+        expect(note.beat).toBe(0)
+    })
+
+    it('handles beatStep exactly equal to stepsPerBeat (wraps to next beat step 0)', () => {
+        const track = { stepsPerBeat }
+        const note = { beatStep: stepsPerBeat, beat: 0 }
+        fixNoteStepBar(track, note)
+        expect(note.beatStep).toBe(0)
+        expect(note.beat).toBe(1)
+    })
+})
+
+describe.each(PARAM_SETS)('fixTrackDefaults — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    it('sets loopPointBeat and loopPointStep from loopAtStep', () => {
+        const loopAtStep = nbBeats * stepsPerBeat
+        const track = { nbBeats, stepsPerBeat, loopAtStep }
+        const fixed = fixTrackDefaults(track, 0)
+        expect(fixed.loopPointBeat).toBe(nbBeats)
+        expect(fixed.loopPointStep).toBe(0)
+    })
+
+    it('derives non-zero loopPointStep when loopAtStep is not a multiple of stepsPerBeat', () => {
+        const loopAtStep = stepsPerBeat * 2 + 1
+        const track = { nbBeats, stepsPerBeat, loopAtStep }
+        const fixed = fixTrackDefaults(track, 0)
+        expect(fixed.loopPointBeat).toBe(Math.floor(loopAtStep / stepsPerBeat))
+        expect(fixed.loopPointStep).toBe(loopAtStep % stepsPerBeat)
+    })
+})
+
+describe.each(PARAM_SETS)('fixPattern — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    it('fixes a pattern with multiple tracks', () => {
+        const loopAtStep = nbBeats * stepsPerBeat
+        const inputBeatStep = stepsPerBeat + 1
+        const pattern = {
+            name: 'ParamFix', bpm, nbBeats,
+            tracks: [
+                { name: 'KICK', nbBeats, stepsPerBeat, loopAtStep, notes: [
+                    { beat: 0, beatStep: inputBeatStep, velocity: 0.8, pitch: 0 }
+                ]},
+                { name: 'SNARE', nbBeats, stepsPerBeat, loopAtStep, notes: [
+                    { beat: 1, beatStep: 0, velocity: 0.8, pitch: 0 }
+                ]},
+            ]
+        }
+        const fixed = fixPattern(pattern)
+        expect(fixed.tracks[0].notes[0].beat).toBe(Math.floor(inputBeatStep / stepsPerBeat))
+        expect(fixed.tracks[0].notes[0].beatStep).toBe(inputBeatStep % stepsPerBeat)
     })
 })

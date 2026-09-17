@@ -18,6 +18,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import * as patternsManager from '../src/patterns/manager.js'
 import { TICK } from '../src/core/constants.js'
 import { recomputeFlatNotes } from '../src/patterns/engine.js'
+import { makeNote, makeTrack as sharedMakeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 
 // ─── WAV parser ───────────────────────────────────────────────────────────────
 
@@ -189,32 +190,7 @@ function startTimesToTicks(startTimes, bpm) {
 }
 
 function makeTrack(name, soundId, notes, opts = {}) {
-    return {
-        name,
-        soundId,
-        nbBeats: opts.nbBeats ?? 1,
-        stepsPerBeat: opts.stepsPerBeat ?? 4,
-        mute: opts.mute ?? false,
-        loopPointBeat: opts.loopPointBeat ?? opts.nbBeats ?? 1,
-        loopPointStep: opts.loopPointStep ?? 0,
-        notes,
-    }
-}
-
-function makeNote(beat, beatStep, opts = {}) {
-    return {
-        beat, beatStep,
-        velocity: opts.velocity ?? 1,
-        pitch: opts.pitch ?? 0,
-        arp: opts.arp ?? null,
-        every: opts.every ?? 1,
-        pos: opts.pos ?? 0,
-        prob: opts.prob ?? 1,
-        arpTriggerProbability: opts.arpTriggerProbability ?? 1,
-        retriggerNum: opts.retriggerNum ?? 1,
-        rate: opts.rate ?? 1,
-        euclidianFill: opts.euclidianFill ?? 0,
-    }
+    return sharedMakeTrack(name, notes, { nbBeats: 1, ...opts, soundId })
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -1229,5 +1205,18 @@ describe('WAV Export — functional end-to-end', () => {
             for (const notes of flatMap.values()) count += notes.length
             expect(count).toBe(2)
         })
+    })
+})
+
+describe.each(PARAM_SETS)('WAV export — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    it('exports a valid WAV blob', async () => {
+        const pattern = makePattern({
+            bpm, nbBeats,
+            tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)], { stepsPerBeat, nbBeats })]
+        })
+        const exporter = new WavExporter()
+        const blob = await exporter.exportPatternToWav(pattern, 1)
+        expect(blob).not.toBeNull()
+        expect(blob.type).toBe('audio/wav')
     })
 })

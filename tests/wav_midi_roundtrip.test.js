@@ -29,6 +29,8 @@ import { parseMidi, findAllNotes, midiVelocityToNormalized, extractProgramChange
 import { recomputeFlatNotes } from '../src/patterns/engine.js'
 import { TICK } from '../src/core/constants.js'
 import Utils from '../src/core/utils.js'
+import Commander from '../src/logic/commands/cmd.js'
+import { PARAM_SETS } from './helpers/make_pattern.js'
 
 // Mock OfflineAudioContext
 class MockOfflineAudioContext {
@@ -381,12 +383,14 @@ function assertNotesMatch(importedPattern, expectedPattern) {
 }
 
 describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
-    let wavExporter, pattern
+    let wavExporter, pattern, cmd
 
     beforeEach(() => {
         soundRegistry.reset()
         serviceRegistry.reset()
         serviceRegistry.patterns = patternsManager
+        cmd = new Commander()
+        serviceRegistry.cmd = cmd
 
         soundRegistry.sounds = {
             'kick.wav': { url: 'kick.wav', buffer: { duration: 1, length: 44100, getChannelData: () => new Float32Array(44100) }, key: 'KICK' },
@@ -516,5 +520,51 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
         const wav2 = await wavExporter.exportPatternToWav(importedPattern, 1)
         expect(wav2).toBeDefined()
         expect(wav2.type).toBe('audio/wav')
+    })
+
+    // ── Parameterized: MIDI roundtrip across different subdivisions ───────────────
+
+    describe.each(PARAM_SETS)('MIDI roundtrip — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+        it('note positions survive MIDI export → import', () => {
+            const pat = cmd.addPattern('ParamRT')
+            pat.bpm = bpm
+            pat.nbBeats = nbBeats
+            const track = cmd.addTrack(pat, 'KICK', stepsPerBeat)
+
+            // Place notes at beat boundaries
+            const nBeats = Math.min(nbBeats, 4)
+            for (let b = 0; b < nBeats; b++) {
+                cmd.addNote(track, b, 0, 0)
+            }
+
+            const exporter = new MidiExporter(new InstrumentsManager())
+            const midiBytes = exporter.export(pat, { loops: 1 })
+            const midiNotes = findAllNotes(parseMidi(midiBytes))
+
+            // Each note should produce a MIDI Note On
+            expect(midiNotes.length).toBe(nBeats)
+
+            // Ticks should be monotonically increasing
+            for (let i = 1; i < midiNotes.length; i++) {
+                expect(midiNotes[i].absTick).toBeGreaterThan(midiNotes[i - 1].absTick)
+            }
+        })
+
+        it('retriggers produce correct note count', () => {
+            const pat = cmd.addPattern('ParamRetrig')
+            pat.bpm = bpm
+            pat.nbBeats = nbBeats
+            const track = cmd.addTrack(pat, 'SNARE', stepsPerBeat)
+            cmd.addNote(track, 0, 0, 0)
+            // Set retriggerNum on the note
+            track.notes[0].retriggerNum = 3
+            track.notes[0].rate = 1
+
+            const exporter = new MidiExporter(new InstrumentsManager())
+            const midiBytes = exporter.export(pat, { loops: 1 })
+            const midiNotes = findAllNotes(parseMidi(midiBytes))
+
+            expect(midiNotes.length).toBe(3)
+        })
     })
 })

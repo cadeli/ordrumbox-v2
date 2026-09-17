@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { appState } from '../src/state/app_state.js'
+import { makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 
@@ -64,12 +65,7 @@ describe('Sequencer', () => {
             autoAssignTrackSounds: vi.fn(),
         }
         serviceRegistry.autoGenerate = null
-        appState.patterns = [{
-            bpm: 120,
-            nbBeats: 4,
-            name: 'Test',
-            tracks: [],
-        }]
+        appState.patterns = [makePattern()]
         appState.selectedPatternNum = 0
 
         Sequencer = (await import('../src/logic/seq.js')).default
@@ -216,5 +212,14 @@ describe('Sequencer', () => {
         seq.stop = vi.fn()
         await seq.start()
         expect(seq.stop).not.toHaveBeenCalled()
+    })
+
+    describe.each(PARAM_SETS)('Sequencer — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+        it('creates transport and can set bpm', () => {
+            appState.patterns = [makePattern({ bpm, nbBeats })]
+            const seq = new Sequencer()
+            seq.setBpm(bpm + 10)
+            expect(serviceRegistry.transport.bpm).toBe(bpm + 10)
+        })
     })
 })

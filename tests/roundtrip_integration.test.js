@@ -17,6 +17,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { isNoteAt } from './helpers/cmd_test_helpers.js'
+import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 import { TICK } from '../src/core/constants.js'
 
 // ─── Shared state cleanup ────────────────────────────────────────────────
@@ -165,23 +166,17 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
     })
 
     it('importPatternFromJson creates a full pattern from JSON', () => {
-        const json = {
+        const json = makePattern({
             name: 'Imported',
-            tracks: [
-                {
-                    name: 'KICK',
-                    nbBeats: 4,
-                    stepsPerBeat: 4,
-                    loopAtStep: 16,
-                    notes: [
-                        { beat: 0, beatStep: 0, pitch: 0, velocity: 0.9 },
-                        { beat: 1, beatStep: 0, pitch: 0, velocity: 0.7 }
-                    ]
-                }
-            ],
             bpm: 128,
-            nbBeats: 4
-        }
+            nbBeats: 4,
+            tracks: [
+                makeTrack('KICK', [
+                    makeNote(0, 0, { pitch: 0, velocity: 0.9 }),
+                    makeNote(1, 0, { pitch: 0, velocity: 0.7 })
+                ], { nbBeats: 4, stepsPerBeat: 4 })
+            ]
+        })
         const pat = cmd.importPatternFromJson(json)
         expect(pat.name).toBe('Imported')
         expect(pat.tracks).toHaveLength(1)
@@ -484,33 +479,21 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
         serviceRegistry.reset()
         soundRegistry.reset()
 
-        const testPattern = {
+        const testPattern = makePattern({
             name: 'RenderTest',
             nbBeats: 2,
             bpm: 120,
             tracks: {
-                'KICK': {
-                    name: 'KICK',
-                    nbBeats: 2,
-                    stepsPerBeat: 4,
-                    loopAtStep: 8,
-                    notes: [
-                        { beat: 0, beatStep: 0, pitch: 0, velocity: 1 },
-                        { beat: 0, beatStep: 2, pitch: 2, velocity: 0.6 },
-                        { beat: 1, beatStep: 0, pitch: -1, velocity: 0.8 },
-                    ]
-                },
-                'SNARE': {
-                    name: 'SNARE',
-                    nbBeats: 2,
-                    stepsPerBeat: 4,
-                    loopAtStep: 8,
-                    notes: [
-                        { beat: 0, beatStep: 0, pitch: 0, velocity: 0.9 },
-                    ]
-                }
+                'KICK': makeTrack('KICK', [
+                    makeNote(0, 0, { pitch: 0, velocity: 1 }),
+                    makeNote(0, 2, { pitch: 2, velocity: 0.6 }),
+                    makeNote(1, 0, { pitch: -1, velocity: 0.8 }),
+                ], { nbBeats: 2, stepsPerBeat: 4 }),
+                'SNARE': makeTrack('SNARE', [
+                    makeNote(0, 0, { pitch: 0, velocity: 0.9 }),
+                ], { nbBeats: 2, stepsPerBeat: 4 })
             }
-        }
+        })
         appState.patterns = [testPattern]
         appState.selectedPatternNum = 0
         appState.currentPage = 0
@@ -586,5 +569,26 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
 
         const filled = panel.container.querySelectorAll('.pp-cell.filled')
         expect(filled.length).toBe(5)
+    })
+})
+
+describe.each(PARAM_SETS)('Lifecycle — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    let cmd
+
+    beforeEach(() => {
+        cleanState()
+        serviceRegistry.reset()
+        soundRegistry.reset()
+        cmd = new Commander()
+    })
+
+    it('creates pattern, adds track with correct stepsPerBeat', () => {
+        const pat = cmd.addPattern('ParamLife')
+        cmd.setPatternBpm(pat, bpm)
+        pat.nbBeats = nbBeats
+        const track = cmd.addTrack(pat, 'KICK', stepsPerBeat)
+        expect(track.stepsPerBeat).toBe(stepsPerBeat)
+        expect(pat.bpm).toBe(bpm)
+        expect(pat.nbBeats).toBe(nbBeats)
     })
 })

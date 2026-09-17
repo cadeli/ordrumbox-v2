@@ -15,6 +15,7 @@ import Commander from '../src/logic/commands/cmd.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
+import { makeTrack, makeNote, PARAM_SETS } from './helpers/make_pattern.js'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -28,23 +29,6 @@ function makePatternWithTrack(name = 'KICK', stepsPerBeat = 4, beats = 4) {
     pattern.nbBeats = beats
     const track = cmd.addTrack(pattern, name, stepsPerBeat)
     return { cmd, pattern, track }
-}
-
-function makePercTrack(overrides = {}) {
-    return {
-        name: 'PERC',
-        nbBeats: 4,
-        stepsPerBeat: 4,
-        loopPointBeat: 4,
-        loopPointStep: 0,
-        loopAtStep: 16,
-        notes: [],
-        ...overrides,
-    }
-}
-
-function addNoteToTrack(track, beat, beatStep) {
-    track.notes.push({ beat, beatStep, velocity: 0.8, pitch: 0 })
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -258,7 +242,7 @@ describe('PercGenerate – extra variants', () => {
     })
 
     it('basic: produces notes with pitch values', () => {
-        const track = makePercTrack()
+        const track = makeTrack('PERC')
         new PercGenerate().generateNewPerc(track, 'basic')
         if (track.notes.length > 0) {
             expect(track.notes.every(n => typeof n.pitch === 'number')).toBe(true)
@@ -266,7 +250,7 @@ describe('PercGenerate – extra variants', () => {
     })
 
     it('conversation: produces notes in both call and response beats', () => {
-        const track = makePercTrack({ nbBeats: 4 })
+        const track = makeTrack('PERC', [], { nbBeats: 4 })
         new PercGenerate().generateNewPerc(track, 'conversation')
         // Should have notes across beats 0..3
         const beats = new Set(track.notes.map(n => n.beat))
@@ -275,7 +259,7 @@ describe('PercGenerate – extra variants', () => {
 
     it('all variants produce notes with velocity in [0,1]', () => {
         for (const variant of ['basic', 'conversation']) {
-            const track = makePercTrack()
+            const track = makeTrack('PERC')
             new PercGenerate().generateNewPerc(track, variant)
             for (const note of track.notes) {
                 expect(note.velocity).toBeGreaterThanOrEqual(0)
@@ -312,7 +296,7 @@ describe('PercGenerate – extra variants', () => {
     })
 
     it('generatePercCallResponseVariant produces notes within loopPointAbsolute', () => {
-        const track = makePercTrack({ nbBeats: 4 })
+        const track = makeTrack('PERC', [], { nbBeats: 4 })
         const gen = new PercGenerate()
         const tones = [0, 4, 7]
         const config = {
@@ -329,7 +313,7 @@ describe('PercGenerate – extra variants', () => {
     })
 
     it('generatePercFillVariant places notes at startBar', () => {
-        const track = makePercTrack({ nbBeats: 4 })
+        const track = makeTrack('PERC', [], { nbBeats: 4 })
         const gen = new PercGenerate()
         const config = {
             loopPointBeat: 4, loopPointStep: 0,
@@ -344,7 +328,7 @@ describe('PercGenerate – extra variants', () => {
     })
 
     it('loop point is set after generation', () => {
-        const track = makePercTrack()
+        const track = makeTrack('PERC')
         new PercGenerate().generateNewPerc(track, 'basic')
         expect(track.loopPointBeat).toBeGreaterThan(0)
     })
@@ -392,5 +376,14 @@ describe('WavExporter – downloadWav', () => {
         expect(mockAnchor.download).toBe('pattern.wav')
 
         vi.unstubAllGlobals()
+    })
+})
+
+describe.each(PARAM_SETS)('Auto-assign — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    it('auto-assigns a track in the pattern', () => {
+        const { cmd, pattern } = makePatternWithTrack('KICK', stepsPerBeat, nbBeats)
+        expect(pattern.tracks.length).toBe(1)
+        expect(pattern.tracks[0].name).toBe('KICK')
+        expect(pattern.tracks[0].stepsPerBeat).toBe(stepsPerBeat)
     })
 })

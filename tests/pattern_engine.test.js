@@ -5,6 +5,7 @@
  * These are pure-logic tests (no audio rendering).
  */
 import { describe, it, expect, vi } from 'vitest'
+import { PARAM_SETS } from './helpers/make_pattern.js'
 import {
     recomputeFlatNotes,
     isTriggered,
@@ -638,5 +639,217 @@ describe('complex pattern combinations', () => {
         }
         expect(countNotes(pattern, 0)).toBe(2)
         expect(countNotes(pattern, 1)).toBe(1)
+    })
+})
+
+// ─── Parameterized: computeTickSpacing ────────────────────────────────────────
+
+describe.each(PARAM_SETS)('computeTickSpacing — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    it('rate=1 spacing uses getStepSpacing(1)=1/8', () => {
+        const expected = Math.round((32 / stepsPerBeat) * 0.125)
+        expect(computeTickSpacing({ stepsPerBeat }, 1)).toBe(expected)
+    })
+
+    it('rate=8 spacing equals TICK / stepsPerBeat', () => {
+        const expected = Math.round(32 / stepsPerBeat)
+        expect(computeTickSpacing({ stepsPerBeat }, 8)).toBe(expected)
+    })
+
+    it('rate=4 spacing equals TICK / stepsPerBeat / 2', () => {
+        const expected = Math.round((32 / stepsPerBeat) * 0.5)
+        expect(computeTickSpacing({ stepsPerBeat }, 4)).toBe(expected)
+    })
+
+    it('rate=2 spacing equals TICK / stepsPerBeat / 4', () => {
+        const expected = Math.round((32 / stepsPerBeat) * 0.25)
+        expect(computeTickSpacing({ stepsPerBeat }, 2)).toBe(expected)
+    })
+})
+
+// ─── Parameterized: computeNbTickForLoop ──────────────────────────────────────
+
+describe.each(PARAM_SETS)('computeNbTickForLoop — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    const TICK = 32
+
+    it('default loop equals nbBeats * TICK', () => {
+        const track = { nbBeats, stepsPerBeat }
+        expect(computeNbTickForLoop(track)).toBe(nbBeats * TICK)
+    })
+
+    it('loopPointBeat=1 loops every TICK', () => {
+        const track = { nbBeats, stepsPerBeat, loopPointBeat: 1 }
+        expect(computeNbTickForLoop(track)).toBe(TICK)
+    })
+
+    it('loopPointBeat=nbBeats/2 loops at half the pattern', () => {
+        const half = Math.floor(nbBeats / 2)
+        const track = { nbBeats, stepsPerBeat, loopPointBeat: half }
+        expect(computeNbTickForLoop(track)).toBe(half * TICK)
+    })
+})
+
+// ─── Parameterized: expandLoopOccurrences ─────────────────────────────────────
+
+describe.each(PARAM_SETS)('expandLoopOccurrences — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    const TICK = 32
+    const patternTicks = nbBeats * TICK
+
+    it('tiles at TICK intervals from base 0', () => {
+        const result = expandLoopOccurrences(0, TICK, patternTicks)
+        const expected = []
+        for (let t = 0; t < patternTicks; t += TICK) expected.push(t)
+        expect(result).toEqual(expected)
+    })
+
+    it('tiles from baseTick > 0 at TICK intervals', () => {
+        const base = 16
+        const result = expandLoopOccurrences(base, TICK, patternTicks)
+        const expected = []
+        for (let t = base; t < patternTicks; t += TICK) expected.push(t)
+        expect(result).toEqual(expected)
+    })
+
+    it('single occurrence when loop covers full pattern', () => {
+        expect(expandLoopOccurrences(0, patternTicks, patternTicks)).toEqual([0])
+    })
+
+    it('single occurrence when baseTick >= loop', () => {
+        const loop = TICK
+        const base = loop
+        expect(expandLoopOccurrences(base, loop, patternTicks)).toEqual([base])
+    })
+})
+
+// ─── Parameterized: recomputeFlatNotes tick positions ─────────────────────────
+
+describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    const TICK = 32
+
+    it('single note at beat 0 appears at tick 0', () => {
+        const pattern = buildPattern({}, { stepsPerBeat, nbBeats }, nbBeats)
+        const notes = getAllNotes(pattern)
+        expect(notes.length).toBe(1)
+        expect(notes[0].tick).toBe(0)
+    })
+
+    it('single note at beat 1 appears at tick TICK (when nbBeats > 1)', () => {
+        if (nbBeats <= 1) return
+        const pattern = buildPattern({ beat: 1 }, { stepsPerBeat, nbBeats }, nbBeats)
+        const notes = getAllNotes(pattern)
+        expect(notes.length).toBe(1)
+        expect(notes[0].tick).toBe(TICK)
+    })
+
+    it('four-on-the-floor produces nbBeats notes', () => {
+        const track = buildPattern({}, { stepsPerBeat, nbBeats }, nbBeats).tracks.T1
+        track.notes = {}
+        for (let b = 0; b < nbBeats; b++) {
+            track.notes[`N${b}`] = {
+                beat: b, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0,
+                arp: null, every: 1, pos: 0, prob: 1,
+                arpTriggerProbability: 1, retriggerNum: 1, rate: 1, euclidianFill: 0,
+            }
+        }
+        const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
+        expect(countNotes(pattern)).toBe(nbBeats)
+    })
+
+    it('four-on-the-floor ticks are b * TICK', () => {
+        const track = buildPattern({}, { stepsPerBeat, nbBeats }, nbBeats).tracks.T1
+        track.notes = {}
+        for (let b = 0; b < nbBeats; b++) {
+            track.notes[`N${b}`] = {
+                beat: b, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0,
+                arp: null, every: 1, pos: 0, prob: 1,
+                arpTriggerProbability: 1, retriggerNum: 1, rate: 1, euclidianFill: 0,
+            }
+        }
+        const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
+        const notes = getAllNotes(pattern)
+        const expected = []
+        for (let b = 0; b < nbBeats; b++) expected.push(b * TICK)
+        expect(notes.map(n => n.tick)).toEqual(expected)
+    })
+
+    it('retriggerNum=3 produces 3 notes per note occurrence', () => {
+        const track = buildPattern({}, { stepsPerBeat, nbBeats }, nbBeats).tracks.T1
+        track.notes = {}
+        for (let b = 0; b < nbBeats; b++) {
+            track.notes[`N${b}`] = {
+                beat: b, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0,
+                arp: null, every: 1, pos: 0, prob: 1,
+                arpTriggerProbability: 1, retriggerNum: 3, rate: 1, euclidianFill: 0,
+            }
+        }
+        const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
+        expect(countNotes(pattern)).toBe(nbBeats * 3)
+    })
+
+    it('retriggerNum=4 with rate=8 uses correct tick spacing', () => {
+        const pattern = buildPattern(
+            { retriggerNum: 4, rate: 8 },
+            { stepsPerBeat, nbBeats },
+            nbBeats
+        )
+        const notes = getAllNotes(pattern)
+        expect(notes.length).toBe(4)
+        const spacing = computeTickSpacing({ stepsPerBeat }, 8)
+        const expected = [0, spacing, spacing * 2, spacing * 3]
+        expect(notes.map(n => n.tick)).toEqual(expected)
+    })
+
+    it('retriggerNum=4 with rate=4 uses correct tick spacing', () => {
+        const pattern = buildPattern(
+            { retriggerNum: 4, rate: 4 },
+            { stepsPerBeat, nbBeats },
+            nbBeats
+        )
+        const notes = getAllNotes(pattern)
+        expect(notes.length).toBe(4)
+        const spacing = computeTickSpacing({ stepsPerBeat }, 4)
+        const expected = [0, spacing, spacing * 2, spacing * 3]
+        expect(notes.map(n => n.tick)).toEqual(expected)
+    })
+
+    it('note at beatStep positions reflects stepsPerBeat resolution', () => {
+        const track = buildPattern({}, { stepsPerBeat, nbBeats }, nbBeats).tracks.T1
+        track.notes = {}
+        for (let s = 0; s < stepsPerBeat; s++) {
+            track.notes[`N${s}`] = {
+                beat: 0, beatStep: s, velocity: 0.8, pitch: 0, pan: 0,
+                arp: null, every: 1, pos: 0, prob: 1,
+                arpTriggerProbability: 1, retriggerNum: 1, rate: 1, euclidianFill: 0,
+            }
+        }
+        const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
+        const notes = getAllNotes(pattern)
+        expect(notes.length).toBe(stepsPerBeat)
+        for (let s = 0; s < stepsPerBeat; s++) {
+            const expectedTick = Math.round((s * TICK) / stepsPerBeat)
+            expect(notes[s].tick).toBe(expectedTick)
+        }
+    })
+
+    it('loopPointBeat=1 tiles note at TICK intervals', () => {
+        const pattern = buildPattern(
+            {},
+            { stepsPerBeat, nbBeats, loopPointBeat: 1 },
+            nbBeats
+        )
+        const notes = getAllNotes(pattern)
+        const expected = []
+        for (let t = 0; t < nbBeats * TICK; t += TICK) expected.push(t)
+        expect(notes.map(n => n.tick)).toEqual(expected)
+    })
+
+    it('every=2 + retriggerNum=4 fires correctly per loop', () => {
+        const pattern = buildPattern(
+            { every: 2, pos: 0, retriggerNum: 4, rate: 1 },
+            { stepsPerBeat, nbBeats },
+            nbBeats
+        )
+        expect(countNotes(pattern, 0)).toBe(4)
+        expect(countNotes(pattern, 1)).toBe(0)
+        expect(countNotes(pattern, 2)).toBe(4)
     })
 })

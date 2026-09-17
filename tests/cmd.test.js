@@ -5,6 +5,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import Utils from '../src/core/utils.js'
 import { isNoteAt, kitIsLoaded, getTrackFromType, setNbBeats, getAllSoundsForType } from './helpers/cmd_test_helpers.js'
+import { makePattern, makeTrack } from './helpers/make_pattern.js'
 
 describe('Functional: Commander operations', () => {
     let cmd
@@ -29,7 +30,7 @@ describe('Functional: Commander operations', () => {
         })
 
         it('auto-generates name when null', () => {
-            appState.patterns = [{ name: 'a' }, { name: 'b' }]
+            appState.patterns = [makePattern({ name: 'a' }), makePattern({ name: 'b' })]
             const pattern = cmd.addPattern(null)
 
             expect(pattern.name).toBe('NewPat_2')
@@ -227,7 +228,8 @@ describe('Functional: Commander operations', () => {
         })
 
         it('computes loopAtStep from loopPointBeat/Step when loopAtStep undefined', () => {
-            const track = { stepsPerBeat: 4, loopPointBeat: 2, loopPointStep: 1 }
+            const track = makeTrack('KICK', [], { stepsPerBeat: 4, loopPointBeat: 2, loopPointStep: 1 })
+            delete track.loopAtStep
             cmd.updateTrack(track, {})
             expect(track.loopAtStep).toBe(9)
         })

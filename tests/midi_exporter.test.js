@@ -6,6 +6,7 @@ import MidiExporter, {
 import { buildInstrumentTrack } from './helpers/midi_test_helpers.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
 import { readUint32BE, readUint16BE, decodeVLQ } from './helpers/midi_reader.js'
+import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -51,31 +52,6 @@ function parseMTrkEvents(bytes, dataOffset, length) {
         }
     }
     return events
-}
-
-function makePattern(overrides = {}) {
-    return {
-        name: 'TestPat',
-        bpm: 120,
-        nbBeats: 4,
-        tracks: [],
-        ...overrides,
-    }
-}
-
-function makeTrack(name, notes = [], overrides = {}) {
-    return {
-        name,
-        nbBeats: 4,
-        stepsPerBeat: 4,
-        notes,
-        mute: false,
-        ...overrides,
-    }
-}
-
-function makeNote(beat, beatStep, velocity = 0.8, pitch = 0) {
-    return { beat, beatStep, velocity, pitch }
 }
 
 // ─── encodeVLQ ───────────────────────────────────────────────────────────────
@@ -212,7 +188,7 @@ describe('buildInstrumentTrack', () => {
     })
 
     it('contains Note On (0x90) and Note Off (0x80) for each note', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0, 1.0)])
+        const track = makeTrack('KICK', [makeNote(0, 0, { velocity: 1.0 })])
         const chunk = buildInstrumentTrack(track, 36, 9)
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const noteOns  = events.filter(e => e.type === 'midi' && e.status === 0x90)
@@ -230,7 +206,7 @@ describe('buildInstrumentTrack', () => {
     })
 
     it('Note On velocity is scaled from [0,1] to [0,127]', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0, 1.0)])
+        const track = makeTrack('KICK', [makeNote(0, 0, { velocity: 1.0 })])
         const chunk = buildInstrumentTrack(track, 36, 9)
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const on = events.find(e => e.type === 'midi' && e.status === 0x90)
@@ -238,7 +214,7 @@ describe('buildInstrumentTrack', () => {
     })
 
     it('Note On velocity 0.5 maps to 64', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0, 0.5)])
+        const track = makeTrack('KICK', [makeNote(0, 0, { velocity: 0.5 })])
         const chunk = buildInstrumentTrack(track, 36, 9)
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const on = events.find(e => e.type === 'midi' && e.status === 0x90)
@@ -246,7 +222,7 @@ describe('buildInstrumentTrack', () => {
     })
 
     it('second note in beat 1, beatStep 0 has correct absolute tick offset', () => {
-        const track = makeTrack('KICK', [makeNote(1, 0, 1.0)], { stepsPerBeat: 4 })
+        const track = makeTrack('KICK', [makeNote(1, 0, { velocity: 1.0 })], { stepsPerBeat: 4 })
         const chunk = buildInstrumentTrack(track, 36, 9)
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const on = events.find(e => e.type === 'midi' && e.status === 0x90)
@@ -256,7 +232,7 @@ describe('buildInstrumentTrack', () => {
     })
 
     it('beatStep subdivision is correct (stepsPerBeat=16 → 6 ticks/step)', () => {
-        const track = makeTrack('KICK', [makeNote(0, 1, 1.0)], { stepsPerBeat: 16 })
+        const track = makeTrack('KICK', [makeNote(0, 1, { velocity: 1.0 })], { stepsPerBeat: 16 })
         const chunk = buildInstrumentTrack(track, 36, 9)
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const on = events.find(e => e.type === 'midi' && e.status === 0x90)
@@ -273,7 +249,7 @@ describe('buildInstrumentTrack', () => {
     })
 
     it('pitch offset shifts MIDI note number', () => {
-        const track = makeTrack('MELO', [makeNote(0, 0, 0.8, 5)])
+        const track = makeTrack('MELO', [makeNote(0, 0, { velocity: 0.8, pitch: 5 })])
         const chunk = buildInstrumentTrack(track, 60, 3) // base=60, pitch=5
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const on = events.find(e => e.type === 'midi' && e.status === 0x90)
@@ -308,7 +284,7 @@ describe('buildInstrumentTrack', () => {
     })
 
     it('clamped velocity: >1 treated as 127', () => {
-        const track = makeTrack('KICK', [makeNote(0, 0, 2.0)])
+        const track = makeTrack('KICK', [makeNote(0, 0, { velocity: 2.0 })])
         const chunk = buildInstrumentTrack(track, 36, 9)
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const on = events.find(e => e.type === 'midi' && e.status === 0x90)
@@ -316,7 +292,7 @@ describe('buildInstrumentTrack', () => {
     })
 
     it('clamped note: pitch offset cannot exceed MIDI 127', () => {
-        const track = makeTrack('MELO', [makeNote(0, 0, 0.8, 200)])
+        const track = makeTrack('MELO', [makeNote(0, 0, { velocity: 0.8, pitch: 200 })])
         const chunk = buildInstrumentTrack(track, 60, 3)
         const events = parseMTrkEvents(chunk, 8, chunk.length - 8)
         const on = events.find(e => e.type === 'midi' && e.status === 0x90)
@@ -429,7 +405,7 @@ describe('MidiExporter', () => {
 
     it('correct notes appear on MIDI channel 10 (index 9) for KICK', () => {
         const pattern = makePattern({
-            tracks: [makeTrack('KICK', [makeNote(0, 0, 1.0)])]
+            tracks: [makeTrack('KICK', [makeNote(0, 0, { velocity: 1.0 })])]
         })
         const result = exporter.export(pattern)
         const chunks = parseChunks(Array.from(result))
@@ -490,5 +466,60 @@ describe('MidiExporter', () => {
         let total = 0
         for (const ch of chunks) total += 8 + ch.length
         expect(total).toBe(result.length)
+    })
+})
+
+// ── Parameterized: MIDI export across different subdivisions ──────────────────
+
+describe.each(PARAM_SETS)('MidiExporter — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    it('returns a valid Uint8Array', () => {
+        const exporter = new MidiExporter()
+        const pattern = makePattern({ bpm, nbBeats, tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, nbBeats })] })
+        const result = exporter.export(pattern)
+        expect(result).toBeInstanceOf(Uint8Array)
+    })
+
+    it('starts with MThd header', () => {
+        const exporter = new MidiExporter()
+        const pattern = makePattern({ bpm, nbBeats, tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, nbBeats })] })
+        const result = exporter.export(pattern)
+        expect(String.fromCharCode(result[0], result[1], result[2], result[3])).toBe('MThd')
+    })
+
+    it('tempo track encodes correct BPM', () => {
+        const exporter = new MidiExporter()
+        const pattern = makePattern({ bpm, nbBeats, tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, nbBeats })] })
+        const result = exporter.export(pattern)
+        const chunks = parseChunks(Array.from(result))
+        const tempoChunk = chunks[1]
+        const events = parseMTrkEvents(result, tempoChunk.dataOffset, tempoChunk.length)
+        const tempoEvt = events.find(e => e.type === 'meta' && e.metaType === 0x51)
+        const us = (tempoEvt.data[0] << 16) | (tempoEvt.data[1] << 8) | tempoEvt.data[2]
+        expect(us).toBe(Math.round(60_000_000 / bpm))
+    })
+
+    it('KICK note lands on correct MIDI tick', () => {
+        const exporter = new MidiExporter()
+        const pattern = makePattern({ bpm, nbBeats, tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, nbBeats })] })
+        const result = exporter.export(pattern)
+        const chunks = parseChunks(Array.from(result))
+        const kickChunk = chunks[2]
+        const events = parseMTrkEvents(result, kickChunk.dataOffset, kickChunk.length)
+        const on = events.find(e => e.type === 'midi' && e.status === 0x90)
+        expect(on.note).toBe(36)
+        expect(on.channel).toBe(9)
+    })
+
+    it('note count matches pattern', () => {
+        const exporter = new MidiExporter()
+        const notes = Array.from({ length: Math.min(4, nbBeats) }, (_, i) => makeNote(i, 0))
+        const nBeats = Math.max(notes.length, nbBeats)
+        const pattern = makePattern({ bpm, nbBeats: nBeats, tracks: [makeTrack('KICK', notes, { stepsPerBeat, nbBeats: nBeats })] })
+        const result = exporter.export(pattern)
+        const chunks = parseChunks(Array.from(result))
+        const kickChunk = chunks[2]
+        const events = parseMTrkEvents(result, kickChunk.dataOffset, kickChunk.length)
+        const noteOns = events.filter(e => e.type === 'midi' && e.status === 0x90)
+        expect(noteOns.length).toBe(notes.length)
     })
 })
