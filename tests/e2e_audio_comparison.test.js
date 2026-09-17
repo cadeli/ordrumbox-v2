@@ -18,8 +18,6 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
 import nodeWaa from 'node-web-audio-api'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -38,39 +36,6 @@ globalThis.AudioWorkletNode = AudioWorkletNode
 
 const SAMPLE_RATE = 44100
 const analyzer = new AudioAnalyzer()
-
-// ─── WAV output directory ────────────────────────────────────────────────────
-const WAV_DIR = join(import.meta.dirname ?? '.', 'fixtures', 'wav')
-
-function ensureWavDir() {
-    if (!existsSync(WAV_DIR)) mkdirSync(WAV_DIR, { recursive: true })
-}
-
-/**
- * Save a WAV blob to disk for manual inspection.
- * @param {string} name - filename without .wav extension
- * @param {Blob} blob - WAV blob from WavExporter or bufferToWav
- */
-async function saveWav(name, blob) {
-    ensureWavDir()
-    const ab = blob instanceof Blob ? await blob.arrayBuffer() : blob
-    writeFileSync(join(WAV_DIR, `${name}.wav`), Buffer.from(ab))
-}
-
-/**
- * Save raw Float32 samples as WAV for manual inspection.
- * @param {string} name - filename without .wav extension
- * @param {Float32Array} samples - mono samples
- */
-function saveSamplesAsWav(name, samples) {
-    ensureWavDir()
-    const ctx = new OfflineAudioContext(1, samples.length, SAMPLE_RATE)
-    const buffer = ctx.createBuffer(1, samples.length, SAMPLE_RATE)
-    buffer.getChannelData(0).set(samples)
-    const blob = bufferToWav(buffer)
-    const bytes = new Uint8Array(blob instanceof Blob ? [] : blob)
-    writeFileSync(join(WAV_DIR, `${name}.wav`), bytes)
-}
 
 // Suppress worklet mixer errors in node environment (AudioWorklet not available)
 let _origError
@@ -182,7 +147,6 @@ describe('E2E Audio 1 — WAV export produces valid headers', () => {
         ])
 
         const blob = await new WavExporter().exportPatternToWav(pat, 1)
-        await saveWav('01_4kick_120bpm', blob)
         expect(blob).not.toBeNull()
         expect(blob.type).toBe('audio/wav')
 
@@ -208,7 +172,6 @@ describe('E2E Audio 1 — WAV export produces valid headers', () => {
         ])
 
         const blob = await new WavExporter().exportPatternToWav(pat, 1)
-        await saveWav('02_kick_snare_120bpm', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         expect(bytes.length).toBeGreaterThan(44)
     })
@@ -656,7 +619,6 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
     it('kick waveform roundtrips with < 2% RMS error', async () => {
         const { buffer, data } = buildBuffer(0.5, generateKick)
-        await saveWav('03_synth_kick', bufferToWav(buffer))
         const blob = bufferToWav(buffer)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
@@ -669,7 +631,6 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
     it('snare waveform roundtrips with correct spectral centroid', async () => {
         const { buffer, data } = buildBuffer(0.3, generateSnare)
-        await saveWav('04_synth_snare', bufferToWav(buffer))
         const blob = bufferToWav(buffer)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
@@ -683,7 +644,6 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
     it('hi-hat has high spectral centroid (> 2000 Hz)', async () => {
         const { buffer } = buildBuffer(0.1, generateHihat)
-        await saveWav('05_synth_hihat', bufferToWav(buffer))
         const blob = bufferToWav(buffer)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
@@ -695,7 +655,6 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
     it('bass sawtooth has energy in sub-bass (< 200 Hz)', async () => {
         const { buffer } = buildBuffer(0.5, (t) => generateBass(t, 55))
-        await saveWav('06_synth_bass_55hz', bufferToWav(buffer))
         const blob = bufferToWav(buffer)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
@@ -712,8 +671,6 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
         const { buffer: bufLow } = buildBuffer(0.3, genLow)
         const { buffer: bufHigh } = buildBuffer(0.3, genHigh)
-        await saveWav('07_synth_fm_low_mod', bufferToWav(bufLow))
-        await saveWav('07b_synth_fm_high_mod', bufferToWav(bufHigh))
 
         const aLow = analyzer.analyzeChannelData(bufLow.getChannelData(0), SAMPLE_RATE)
         const aHigh = analyzer.analyzeChannelData(bufHigh.getChannelData(0), SAMPLE_RATE)
@@ -762,7 +719,6 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
 
         const rmsOrig = computeRms(mixData)
         const blob = bufferToWav(mixed)
-        await saveWav('08_4instrument_beat_120bpm', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
         const mono = mixToMono(decoded.channels)
@@ -857,12 +813,6 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
     it('low-pass filter reduces high-frequency energy', async () => {
         const { data } = makeKickBuffer()
         const filtered = lowPass(data, 200, SAMPLE_RATE)
-        await saveWav('09_kick_lowpass_200hz', (() => {
-            const ctx = new OfflineAudioContext(1, filtered.length, SAMPLE_RATE)
-            const buf = ctx.createBuffer(1, filtered.length, SAMPLE_RATE)
-            buf.getChannelData(0).set(filtered)
-            return bufferToWav(buf)
-        })())
 
         const aOrig = analyzer.analyzeChannelData(data, SAMPLE_RATE)
         const aFilt = analyzer.analyzeChannelData(filtered, SAMPLE_RATE)
@@ -883,12 +833,6 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
     it('delay effect produces output', async () => {
         const { data } = makeKickBuffer()
         const delayed = delayEffect(data, 100, 0.4, 0.3, SAMPLE_RATE)
-        await saveWav('10_kick_delay_100ms', (() => {
-            const ctx = new OfflineAudioContext(1, delayed.length, SAMPLE_RATE)
-            const buf = ctx.createBuffer(1, delayed.length, SAMPLE_RATE)
-            buf.getChannelData(0).set(delayed)
-            return bufferToWav(buf)
-        })())
 
         // Delayed signal should have audio content
         const rmsDelayed = computeRms(delayed)
@@ -902,12 +846,6 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
     it('reverb effect adds energy and extends tail', async () => {
         const { data } = makeKickBuffer()
         const reverbed = reverbEffect(data, 0.1, 4410, SAMPLE_RATE)
-        await saveWav('11_kick_reverb', (() => {
-            const ctx = new OfflineAudioContext(1, reverbed.length, SAMPLE_RATE)
-            const buf = ctx.createBuffer(1, reverbed.length, SAMPLE_RATE)
-            buf.getChannelData(0).set(reverbed)
-            return bufferToWav(buf)
-        })())
 
         const rmsOrig = computeRms(data)
         const rmsRev = computeRms(reverbed)
@@ -924,7 +862,6 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         buffer.getChannelData(0).set(filtered)
 
         const blob = bufferToWav(buffer)
-        await saveWav('14_kick_lowpass_200hz_roundtrip', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
         const mono = mixToMono(decoded.channels)
@@ -944,7 +881,6 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         buffer.getChannelData(0).set(delayed)
 
         const blob = bufferToWav(buffer)
-        await saveWav('15_kick_delay_100ms_roundtrip', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
         const mono = mixToMono(decoded.channels)
@@ -965,7 +901,6 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         buffer.getChannelData(0).set(step3)
 
         const blob = bufferToWav(buffer)
-        await saveWav('12_kick_chain_lp_delay_reverb', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
         const mono = mixToMono(decoded.channels)
@@ -996,7 +931,6 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         }
 
         const blob = bufferToWav(buffer)
-        await saveWav('13_fm_lead_panned_l80_r20', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
 
@@ -1262,7 +1196,6 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
 
         // ── WAV encode → decode roundtrip ────────────────────────────────
         const blob = bufferToWav(stereoBuffer)
-        saveWav('16_full_8track_8beat_production', blob)
         const bytes = new Uint8Array(await blob.arrayBuffer())
         const decoded = decodeWavBytes(bytes)
 
