@@ -122,6 +122,7 @@ npm run electron:build # Build Electron installer (release/)
 ### Dev Tools
 
 - **`tools/live-vs-export.html`** — Compares real-time engine playback (captured via AudioWorklet) against offline WAV export. Uses metric comparison (RMS, peak, envelope, onsets) to verify live and offline renders produce comparable audio. Open directly in browser via `http://localhost:3000/tools/live-vs-export.html`.
+- **`scripts/gm_to_ordrumbox_mapping.mjs`** — Diagnostic script that dumps the full GM→orDrumbox auto-assign mapping for all 128 drums + 128 programs against real drumkits. Prints tier info, matched instrument, and assigned sample URL. Run with `node scripts/gm_to_ordrumbox_mapping.mjs`.
 
 ## Technical Details
 
@@ -150,7 +151,6 @@ MasterGain: 1.0
 ## Resources
 
 - Detailed User Guide: https://www.ordrumbox.com/userguide-ordrumbox-v2.html
-- Video Tutorial: https://www.ordrumbox.com/video-tutorial-ordrumbox.html
 - GitHub Repository: https://github.com/cadeli/ordrumbox-v2
 - Official Website: https://www.ordrumbox.com
 
