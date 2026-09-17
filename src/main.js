@@ -1,3 +1,4 @@
+import './ui/styles.css'
 import Sequencer from './logic/seq.js'
 import Commander from './logic/commands/cmd.js'
 import * as patternsManager from './patterns/manager.js'
