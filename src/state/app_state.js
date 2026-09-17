@@ -33,11 +33,11 @@ export class AppState {
     }
 
     constructor() {
-        Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility())
+        Object.assign(this, structuredClone(AppState.DEFAULTS), buildDefaultVisibility())
     }
 
     reset() {
-        Object.assign(this, AppState.DEFAULTS, buildDefaultVisibility())
+        Object.assign(this, structuredClone(AppState.DEFAULTS), buildDefaultVisibility())
     }
 }
 
