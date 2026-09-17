@@ -99,8 +99,6 @@ The codebase intentionally runs different style regimes per zone. Applying the w
 
 - **Functional zone** — `ui/`, `state/`, `model/`, most of `patterns/`, `logic/services/`. No real-time constraint and no undo-reference constraint; functional style (pure functions, immutable updates, non-mutating array methods) is the default and should be followed per the MUST DO list below.
 
-**Reactivity note (`core/signals.js`)**: `set(next)` bails out on reference equality (`if (v === value) return`). Mutating an object in place and then calling `set(sameRef)` would **not** trigger dependent effects. As of this writing `createSignal`/`effect` aren't imported anywhere outside their own test (`tests/signals.test.js`) — `appState` is a plain mutated object notified via `playbackEvents`, not signals — so this isn't live today. If/when `signals.js` gets wired into `state/` or `ui/`, anything feeding a signal must pass a new reference on update, and it must not be handed objects coming out of the mutation-by-design zone without copying first.
-
 ### MUST DO *(functional zone)*
 
 - Use ES2023+ features exclusively

@@ -119,6 +119,10 @@ npm run electron:dev # Desktop app (Electron)
 npm run electron:build # Build Electron installer (release/)
 ```
 
+### Dev Tools
+
+- **`tools/live-vs-export.html`** — Compares real-time engine playback (captured via AudioWorklet) against offline WAV export. Uses metric comparison (RMS, peak, envelope, onsets) to verify live and offline renders produce comparable audio. Open directly in browser via `http://localhost:3000/tools/live-vs-export.html`.
+
 ## Technical Details
 
 - Framework: Vanilla JavaScript with ES6 modules
