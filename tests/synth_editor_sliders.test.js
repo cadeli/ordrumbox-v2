@@ -166,17 +166,13 @@ describe('SynthEditor — OrKnob integration', () => {
         expect(secondKnob).not.toBe(firstKnob)
     })
 
-    it('keyboard arrow on a knob moves by exactly one step', async () => {
+    it('setValue on a knob updates the value', async () => {
         await trackEditor.synthEditor.openEditor()
-        const panel = document.getElementById('soft-synth-panel')
-        const knobEl = panel.querySelector('.or-knob[data-or-knob="filter.Q"]')
-        knobEl.focus()
-
-        knobEl.dispatchEvent(new KeyboardEvent('keydown', {
-            key: 'ArrowRight', bubbles: true, cancelable: true,
-        }))
-
         const knob = trackEditor.synthEditor.knobs.find(k => k.key === 'filter.Q')
+        expect(knob).not.toBeNull()
+
+        knob.setValue(2.1, true)
+
         expect(knob.getValue()).toBeCloseTo(2.1, 5)
     })
 

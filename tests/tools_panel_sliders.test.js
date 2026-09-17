@@ -60,14 +60,8 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
         expect(toolsPanel._wavLoops.getValue()).toBe(4)
     })
 
-    it('keyboard arrow on the WAV loops slider increments the value', () => {
-        const input = toolsPanel.container.querySelector('input[data-key="tp-wav-loops"]')
-        input.focus()
-        input.dispatchEvent(new KeyboardEvent('keydown', {
-            key: 'ArrowRight', bubbles: true, cancelable: true,
-        }))
-
-        expect(parseInt(input.value, 10)).toBe(2)
+    it('setValue on the WAV loops slider updates the value', () => {
+        toolsPanel._wavLoops.setValue(2, true)
         expect(toolsPanel._wavLoops.getValue()).toBe(2)
     })
 

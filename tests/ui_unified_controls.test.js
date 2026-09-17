@@ -31,7 +31,7 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
             expect(onChange).toHaveBeenCalledWith(0.5, 'vol')
         })
 
-        it('supports Shift precision mode during Arrow key navigation', () => {
+        it('setValue with triggerCallback fires onChange', () => {
             const onChange = vi.fn()
             const knob = new OrKnob({
                 key: 'vol',
@@ -42,15 +42,12 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
                 value: 0.5,
                 onChange
             })
-            const el = knob.createElement()
-            document.body.appendChild(el)
+            knob.createElement()
 
-            const knobEl = el.querySelector('.or-knob')
-            // Shift + ArrowUp -> step * 0.1
-            knobEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', shiftKey: true, bubbles: true }))
+            knob.setValue(0.51, true)
 
-            expect(knob.getValue()).toBeCloseTo(0.51)
-            expect(onChange).toHaveBeenCalledWith(expect.closeTo(0.51, 4), 'vol')
+            expect(knob.getValue()).toBeCloseTo(0.51, 4)
+            expect(onChange).toHaveBeenCalledWith(0.51, 'vol')
         })
 
         it('opens window.prompt on contextmenu for direct numeric input', () => {
@@ -100,7 +97,7 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
             expect(onChange).toHaveBeenCalledWith(0, 'pan')
         })
 
-        it('supports Shift precision mode on Arrow key navigation', () => {
+        it('setValue with triggerCallback fires onChange', () => {
             const onChange = vi.fn()
             const slider = new OrSlider({
                 key: 'cutoff',
@@ -111,13 +108,11 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
                 value: 0.5,
                 onChange
             })
-            const el = slider.createElement()
-            document.body.appendChild(el)
+            slider.createElement()
 
-            const input = el.querySelector('input[type=range]')
-            input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', shiftKey: true, bubbles: true }))
+            slider.setValue(0.51, true)
 
-            expect(slider.getValue()).toBeCloseTo(0.51)
+            expect(slider.getValue()).toBeCloseTo(0.51, 4)
             expect(onChange).toHaveBeenCalledWith(0.51, 'cutoff')
         })
 

@@ -271,6 +271,13 @@ this.container.innerHTML = `
         }
     }
 
+    /** Returns the OrKnob instance for a given key (masterVol, preGain, or compressor param). */
+    getKnob(key) {
+        if (this.#masterVol?.key === key) return this.#masterVol
+        if (this.#preGain?.key === key) return this.#preGain
+        return this.#compSliders?.[key] ?? null
+    }
+
     #drawSpectrum() {
         const canvas = this.canvas
         if (!canvas) return

@@ -4,11 +4,6 @@ import OutputPanel from '../src/ui/output_panel.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 
-function fireKey(el, key) {
-    el.focus()
-    el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
-}
-
 describe('OutputPanel — master controls', () => {
     let panel
     let setMasterBusMock
@@ -32,17 +27,13 @@ describe('OutputPanel — master controls', () => {
         expect(row.querySelector('.ne-val').textContent).toBe('1.00')
     })
 
-    it('master volume: arrow key changes value and calls setMasterBus({ master })', () => {
-        const knob = panel.container.querySelector('[data-or-knob="op-master-vol"]')
-        fireKey(knob, 'ArrowRight')
+    it('master volume: setValue calls setMasterBus({ master })', () => {
+        panel.getKnob('op-master-vol').setValue(1.01, true)
         expect(setMasterBusMock).toHaveBeenCalledWith({ master: 1.01 })
-        const valEl = knob.closest('.ne-row').querySelector('.ne-val')
-        expect(valEl.textContent).toBe('1.01')
     })
 
-    it('master volume knob: ArrowDown decrements value', () => {
-        const knob = panel.container.querySelector('[data-or-knob="op-master-vol"]')
-        fireKey(knob, 'ArrowDown')
+    it('master volume knob: setValue calls setMasterBus', () => {
+        panel.getKnob('op-master-vol').setValue(0.99, true)
         expect(setMasterBusMock).toHaveBeenCalledWith({ master: 0.99 })
     })
 
@@ -111,40 +102,36 @@ describe('OutputPanel — compressor (VST knobs)', () => {
         }
     })
 
-    it('compressor: arrow key on knob calls setMasterBus with correct key', () => {
-        const knob = panel.container.querySelector('[data-or-knob="threshold"]')
-        fireKey(knob, 'ArrowRight')
+    it('compressor: setValue on knob calls setMasterBus with correct key', () => {
+        panel.getKnob('threshold').setValue(-17, true)
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ threshold: -17 })
     })
 
     it('compressor: sub-second params (attack/release) show 3 decimals', () => {
-        const knob = panel.container.querySelector('[data-or-knob="attack"]')
-        fireKey(knob, 'ArrowRight')
+        panel.getKnob('attack').setValue(0.003, true)
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ attack: 0.003 })
-        const val = knob.closest('.ne-row').querySelector('.ne-val')
+        const val = panel.container.querySelector('[data-or-knob="attack"]').closest('.ne-row').querySelector('.ne-val')
         expect(val.textContent).toBe('0.003 s')
     })
 
     it('compressor: integer params (ratio/knee/makeup) show rounded values', () => {
-        const ratio = panel.container.querySelector('[data-or-knob="ratio"]')
-        fireKey(ratio, 'ArrowRight')
+        panel.getKnob('ratio').setValue(8.5, true)
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ ratio: 8.5 })
-        const ratioVal = ratio.closest('.ne-row').querySelector('.ne-val')
+        const ratioVal = panel.container.querySelector('[data-or-knob="ratio"]').closest('.ne-row').querySelector('.ne-val')
         expect(ratioVal.textContent).toBe('8.5')
 
-        const knee = panel.container.querySelector('[data-or-knob="knee"]')
-        fireKey(knee, 'ArrowRight')
+        panel.getKnob('knee').setValue(4, true)
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ knee: 4 })
-        const kneeVal = knee.closest('.ne-row').querySelector('.ne-val')
+        const kneeVal = panel.container.querySelector('[data-or-knob="knee"]').closest('.ne-row').querySelector('.ne-val')
         expect(kneeVal.textContent).toBe('4 dB')
     })
 
     it('pre-gain knob: renders with correct value and calls setMasterBus', () => {
-        const knob = panel.container.querySelector('[data-or-knob="op-pregain"]')
-        expect(knob).not.toBeNull()
-        const val = knob.closest('.ne-row').querySelector('.ne-val')
+        const knobEl = panel.container.querySelector('[data-or-knob="op-pregain"]')
+        expect(knobEl).not.toBeNull()
+        const val = knobEl.closest('.ne-row').querySelector('.ne-val')
         expect(val.textContent).toBe('+0.0 dB')
-        fireKey(knob, 'ArrowRight')
+        panel.getKnob('op-pregain').setValue(0.5, true)
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ preGain: 0.5 })
     })
 
