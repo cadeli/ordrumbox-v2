@@ -81,6 +81,8 @@ export default class TransportControls {
         tb.bpmSlider.addEventListener('input', () => {
             const bpm = parseInt(tb.bpmSlider.value, 10)
             tb.bpmValue.textContent = bpm
+            tb.bpmToggle.textContent = bpm
+            tb._bpmOverride = bpm
             serviceRegistry.seq?.setBpm(bpm)
             playbackEvents.emit('bpmChange', bpm)
         })

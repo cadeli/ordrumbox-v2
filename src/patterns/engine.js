@@ -125,7 +125,7 @@ export function createArpFlatNote(tick, track, note, semitoneOffset) {
     return new FlatNote(tick, track, arpNote)
 }
 
-export function createFlatNote(tick, track, note) {
+function createFlatNote(tick, track, note) {
     return new FlatNote(tick, track, note)
 }
 

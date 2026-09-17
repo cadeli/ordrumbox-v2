@@ -61,7 +61,7 @@ export function pitchToNoteName(pitch, trackPitch = 0) {
  * @param {number} [trackPitch=0] – additional pitch offset from track
  * @returns {number}
  */
-export function pitchToMidi(pitch, trackPitch = 0) {
+function pitchToMidi(pitch, trackPitch = 0) {
     return 60 + trackPitch + pitch
 }
 

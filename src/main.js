@@ -27,7 +27,6 @@ import { playbackEvents } from './state/playback_events.js'
 import { logger } from "./core/logger.js"
 import { idbReport } from './core/idb.js'
 import { isMobileViewport } from './core/constants.js'
-import { initSignals } from './state/signals.js'
 import { initKeyboardShortcuts } from './keyboard_shortcuts.js'
 import { initServiceWorker } from './service_worker.js'
 
@@ -43,8 +42,6 @@ serviceRegistry.patterns = patternsManager
 serviceRegistry.autoAssign = null
 serviceRegistry.midiManager = null
 serviceRegistry.history = await getHistoryService()
-
-initSignals(serviceRegistry)
 
 
 function scheduleAfterFirstPaint(callback) {

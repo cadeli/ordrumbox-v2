@@ -2,7 +2,7 @@
 // New code should import from './ui_utils.js' directly.
 export {
     fmt, escapeHtml, pitchToNoteName, formatNoteTooltip,
-    promptNumericInput, pitchToMidi,
+    promptNumericInput,
     injectUiCss, bindCloseButton, bindTabToggles,
     setViewBtn, setViewMode, downloadJson,
     knobFormat, renderOptions, renderIconChoices, setPatternPanelHidden,

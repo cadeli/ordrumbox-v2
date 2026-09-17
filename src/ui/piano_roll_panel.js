@@ -668,6 +668,7 @@ export default class PianoRollPanel extends BasePanel {
                 this._gridDirty = true
                 this._sync()
                 this._illuminateStep(absStep, transport.tick)
+                playbackEvents.emit('patternMetaChange')
             }
             if (this._playhead.style.display !== 'none') this._playhead.style.display = 'none'
             return

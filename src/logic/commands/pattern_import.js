@@ -1,5 +1,5 @@
 import { fixPattern } from '../../patterns/fixer.js'
-import { normalizeTrack, TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
+import { TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
 import {
     compactArrayToNote,
     isCompactFormat
@@ -51,21 +51,6 @@ export function validatePatternJson(data) {
     }
 
     return { ok: true }
-}
-
-/**
- * Create a new track from a source track's properties.
- * Pure function — no side effects on global state.
- */
-export function createTrackFromSource(sourceTrack, nbBeats) {
-    const track = normalizeTrack({
-        name: sourceTrack.name,
-        nbBeats: nbBeats,
-        stepsPerBeat: sourceTrack.stepsPerBeat ?? 4,
-        loopAtStep: nbBeats * (sourceTrack.stepsPerBeat ?? 4),
-        pan: Utils.getPanFromTrackName(sourceTrack.name),
-    })
-    return track
 }
 
 /**

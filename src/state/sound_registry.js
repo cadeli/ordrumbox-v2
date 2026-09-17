@@ -1,4 +1,4 @@
-export class SoundRegistry {
+class SoundRegistry {
     static DEFAULTS = {
         sounds: {}, scales: {}, generatedSounds: {},
         drumkitList: [], drumkits: {}, leds: {},

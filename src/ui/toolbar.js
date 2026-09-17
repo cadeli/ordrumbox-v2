@@ -1,13 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { effect } from '../core/signals.js'
-import {
-    isPlaying, currentBpm, currentPattern, currentTracks, trackVersion,
-    canUndo, canRedo,
-    nextUndoDesc, nextRedoDesc,
-    patternVersion, drumkitList, pageVersion,
-} from '../state/signals.js'
 import { injectUiCss } from './components/panel_helpers.js'
 import { isMobileViewport } from '../core/constants.js'
 import Utils from '../core/utils.js'
@@ -35,6 +28,9 @@ export default class Toolbar {
         this._patternNav = new PatternNav(this)
         this._viewSwitch = new ViewSwitch(this)
         this._overflow = new OverflowMenu(this)
+        this._nextUndoDesc = null
+        this._nextRedoDesc = null
+        this._bpmOverride = null
     }
 
     injectCSS() {
@@ -45,102 +41,84 @@ export default class Toolbar {
         this.injectCSS()
         this.createDOM()
         this.bindEvents()
-        this.initSignals()
+        this.sync()
+        this._bindSyncEvents()
         this._setupOverflowObserver()
         document.addEventListener('keydown', (e) => this._handleKeyboard(e))
     }
 
-    initSignals() {
-        // ── Transport ────────────────────────────────────────────────
-        effect(() => {
-            const running = isPlaying()
-            this.startBtn.textContent = running ? '■' : '▶'
-            this.startBtn.classList.toggle('running', running)
+    _bindSyncEvents() {
+        const sync = () => this.sync()
+        playbackEvents.on('playbackStart', sync)
+        playbackEvents.on('playbackStop', sync)
+        playbackEvents.on('bpmChange', sync)
+        playbackEvents.on('patternChange', sync)
+        playbackEvents.on('patternStructureChange', sync)
+        playbackEvents.on('patternMetaChange', sync)
+        playbackEvents.on('noteChange', sync)
+        playbackEvents.on('trackParamChange', sync)
+        playbackEvents.on('drumkitChange', sync)
+        playbackEvents.on('historyChange', (state) => {
+            this._nextUndoDesc = state?.nextUndoDesc ?? null
+            this._nextRedoDesc = state?.nextRedoDesc ?? null
+            sync()
         })
+    }
 
-        // ── BPM ─────────────────────────────────────────────────────
-        effect(() => {
-            const bpm = currentBpm()
-            this.bpmSlider.value = bpm
-            this.bpmValue.textContent = bpm
-            this.bpmToggle.textContent = bpm
-        })
+    sync() {
+        const transport = serviceRegistry.transport
+        const running = transport?.isRunning ?? false
+        this.startBtn.textContent = running ? '■' : '▶'
+        this.startBtn.classList.toggle('running', running)
 
-        // ── Beats ───────────────────────────────────────────────────
-        effect(() => {
-            const pat = currentPattern()
-            this.beatsSelect.value = pat?.nbBeats ?? 4
-        })
+        const pat = appState.patterns[appState.selectedPatternNum]
+        const bpm = this._bpmOverride ?? pat?.bpm ?? 120
+        this._bpmOverride = null
+        this.bpmSlider.value = bpm
+        this.bpmValue.textContent = bpm
+        this.bpmToggle.textContent = bpm
 
-        // ── Page label + navigation ─────────────────────────────────
-        effect(() => {
-            pageVersion()
-            trackVersion()
-            const pat = currentPattern()
-            if (pat) {
-                const stepsPerBeat = Utils.getTracksArray(pat)[0]?.stepsPerBeat ?? 4
-                const totalSteps = (pat.nbBeats ?? 4) * stepsPerBeat
-                const maxPage = Math.ceil(totalSteps / 16) - 1
-                this.pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
-                this.nextPageBtn.disabled = appState.currentPage >= maxPage
-            } else {
-                this.pageLabel.textContent = '1/1'
-                this.nextPageBtn.disabled = true
-            }
-            this.prevPageBtn.disabled = appState.currentPage === 0
-        })
+        this.beatsSelect.value = pat?.nbBeats ?? 4
 
-        // ── Undo / Redo ─────────────────────────────────────────────
-        effect(() => {
-            const undo = canUndo()
-            this.undoBtn.disabled = !undo
-            const desc = nextUndoDesc()
-            this.undoBtn.title = undo
-                ? `Undo: ${desc} (Ctrl+Z)`
-                : 'Undo (Ctrl+Z)'
-        })
+        if (pat) {
+            const stepsPerBeat = Utils.getTracksArray(pat)[0]?.stepsPerBeat ?? 4
+            const totalSteps = (pat.nbBeats ?? 4) * stepsPerBeat
+            const maxPage = Math.ceil(totalSteps / 16) - 1
+            this.pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
+            this.nextPageBtn.disabled = appState.currentPage >= maxPage
+        } else {
+            this.pageLabel.textContent = '1/1'
+            this.nextPageBtn.disabled = true
+        }
+        this.prevPageBtn.disabled = appState.currentPage === 0
 
-        effect(() => {
-            const redo = canRedo()
-            this.redoBtn.disabled = !redo
-            const desc = nextRedoDesc()
-            this.redoBtn.title = redo
-                ? `Redo: ${desc} (Ctrl+Y)`
-                : 'Redo (Ctrl+Y)'
-        })
+        const history = serviceRegistry.history
+        const canUndo = history?.canUndo ?? false
+        const canRedo = history?.canRedo ?? false
+        this.undoBtn.disabled = !canUndo
+        this.redoBtn.disabled = !canRedo
+        this.undoBtn.title = canUndo
+            ? `Undo: ${this._nextUndoDesc ?? ''} (Ctrl+Z)`
+            : 'Undo (Ctrl+Z)'
+        this.redoBtn.title = canRedo
+            ? `Redo: ${this._nextRedoDesc ?? ''} (Ctrl+Y)`
+            : 'Redo (Ctrl+Y)'
 
-        // ── Gen buttons (drum / bass / chords) ──────────────────────
-        effect(() => {
-            trackVersion()
-            const tracks = currentTracks()
-            const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
-            this.drumBtn.classList.toggle('active',
-                tracks.some(t => t._toolbarAuto && drumTypes.has(Utils.detectTrackType(t.name))))
-            this.bassBtn.classList.toggle('active',
-                tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'BASS'))
-            this.chordsBtn.classList.toggle('active',
-                tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO'))
-        })
+        const tracks = pat ? Utils.getTracksArray(pat) : []
+        const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
+        this.drumBtn.classList.toggle('active',
+            tracks.some(t => t._toolbarAuto && drumTypes.has(Utils.detectTrackType(t.name))))
+        this.bassBtn.classList.toggle('active',
+            tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'BASS'))
+        this.chordsBtn.classList.toggle('active',
+            tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO'))
 
-        // ── Pattern select ──────────────────────────────────────────
-        effect(() => {
-            patternVersion()
-            this._patternNav.rebuildPatternSelect()
-        })
+        this._patternNav.rebuildPatternSelect()
+        this._patternNav.rebuildDrumkitSelect()
 
-        // ── Drumkit select ──────────────────────────────────────────
-        effect(() => {
-            drumkitList()
-            this._patternNav.rebuildDrumkitSelect()
-        })
-
-        // ── Pattern name mobile ─────────────────────────────────────
-        effect(() => {
-            const pat = currentPattern()
-            if (pat && this.patternNameMobile) {
-                this.patternNameMobile.textContent = pat.name ?? `Pattern ${appState.selectedPatternNum + 1}`
-            }
-        })
+        if (pat && this.patternNameMobile) {
+            this.patternNameMobile.textContent = pat.name ?? `Pattern ${appState.selectedPatternNum + 1}`
+        }
     }
 
     _handleKeyboard(e) {

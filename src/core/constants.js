@@ -36,8 +36,8 @@ export const MAX_LOOP_RETRY = 20
 export const MAX_EXPORT_LOOPS = 16
 
 // ── Mobile breakpoint thresholds ───────────────────────────────────
-export const MOBILE_MAX_WIDTH = 768
-export const MOBILE_MAX_HEIGHT = 480
+const MOBILE_MAX_WIDTH = 768
+const MOBILE_MAX_HEIGHT = 480
 
 /** True when viewport matches mobile criteria (portrait or landscape) */
 export function isMobileViewport() {

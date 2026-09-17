@@ -5,12 +5,12 @@ import Utils from '../../core/utils.js'
 
 // ── Format helpers ────────────────────────────────────────────────────
 
-export const fmtFreq = v => {
+const fmtFreq = v => {
     const hz = Math.round(Utils.toFiniteNumber(v, 20, 'filterFreq'))
     return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : hz + 'Hz'
 }
 
-export const fmtPitch = v => {
+const fmtPitch = v => {
     const n = Math.round(v)
     return (n >= 0 ? '+' : '') + String(Math.abs(n)).padStart(2, '0')
 }
@@ -30,7 +30,7 @@ export const FILTER_TYPE_ICONS = {
     bandpass: 'BP',
 }
 
-export const FILTER_PROPS = [
+const FILTER_PROPS = [
     { key: 'filterType', label: 'Type', type: 'icon', options: ['lowpass', 'highpass', 'bandpass'] },
     { key: 'filterFreq', label: 'Freq', min: 20, max: 20000, step: 1, lfo: 'filterFreqLfo' },
     { key: 'filterQ', label: 'Q', min: 0.707, max: 18.707, step: 0.01, lfo: 'filterQLfo' }

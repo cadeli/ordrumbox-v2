@@ -118,6 +118,3 @@ export const LFO_SYNC_OPTIONS = [
 
 /** Waveform drawing uses a fixed sample buffer, allocated once. */
 export const WAVE_BUFFER = new Float32Array(1024)
-
-/** Ordered list of group names for iteration. */
-export const ALL_GROUP_NAMES = Object.keys(SYNTH_GROUP_DEFAULTS)

@@ -126,26 +126,6 @@ export function findAllNotes(midi) {
 }
 
 /**
- * Get track names from parsed MIDI.
- */
-export function getTrackNames(midi) {
-    return midi.trackNames
-}
-
-/**
- * Convert MIDI ticks to orDrumbox engine ticks.
- * MIDI: PPQN=96 ticks/beat, orDrumbox: TICK=32 steps/beat
- * @param {number} midiTick - Absolute tick in MIDI file
- * @param {number} division - MIDI file division (ticks per quarter note)
- * @returns {number} Engine tick
- */
-export function midiTickToEngineTick(midiTick, division = 96) {
-    const TICK = 32
-    const ratio = TICK / division
-    return Math.round(midiTick * ratio)
-}
-
-/**
  * Convert velocity 0-127 to normalized 0-1.
  */
 export function midiVelocityToNormalized(velocity) {
