@@ -275,34 +275,57 @@ export default class WaveformSection {
         }
 
         const N = 200
-        ctx.beginPath()
-        ctx.strokeStyle = color('accent')
-        ctx.lineWidth = 1.5
-        let first = true
-        for (let i = 0; i <= N; i++) {
-            const f = fMin * Math.pow(fMax / fMin, i / N)
-            let mag
-            const d = fc * fc - f * f
-            const denom = Math.sqrt(d * d + (fc * f / Q) * (fc * f / Q))
-            if (type === 'highpass') {
-                mag = (f * f) / denom
-            } else if (type === 'bandpass') {
-                mag = (fc * f / Q) / denom
-            } else {
-                mag = (fc * fc) / denom
+        const drawCurve = (centerFreq, strokeStyle, fillAlpha, lineWidth) => {
+            ctx.beginPath()
+            ctx.strokeStyle = strokeStyle
+            ctx.lineWidth = lineWidth
+            let first = true
+            for (let i = 0; i <= N; i++) {
+                const f = fMin * Math.pow(fMax / fMin, i / N)
+                let mag
+                const d = centerFreq * centerFreq - f * f
+                const denom = Math.sqrt(d * d + (centerFreq * f / Q) * (centerFreq * f / Q))
+                if (type === 'highpass') {
+                    mag = (f * f) / denom
+                } else if (type === 'bandpass') {
+                    mag = (centerFreq * f / Q) / denom
+                } else {
+                    mag = (centerFreq * centerFreq) / denom
+                }
+                const db = 20 * Math.log10(Math.max(mag, 1e-10))
+                const x = (i / N) * w
+                const y = toY(Math.max(dbMin, Math.min(dbMax, db)))
+                if (first) { ctx.moveTo(x, y); first = false }
+                else ctx.lineTo(x, y)
             }
-            const db = 20 * Math.log10(Math.max(mag, 1e-10))
-            const x = (i / N) * w
-            const y = toY(Math.max(dbMin, Math.min(dbMax, db)))
-            if (first) { ctx.moveTo(x, y); first = false }
-            else ctx.lineTo(x, y)
+            ctx.stroke()
+            if (fillAlpha > 0) {
+                ctx.fillStyle = rgba('accent', fillAlpha)
+                ctx.lineTo(w, toY(0))
+                ctx.lineTo(0, toY(0))
+                ctx.closePath()
+                ctx.fill()
+            }
         }
-        ctx.stroke()
 
-        ctx.fillStyle = rgba('accent', 0.12)
-        ctx.lineTo(w, toY(0))
-        ctx.lineTo(0, toY(0))
-        ctx.closePath()
-        ctx.fill()
+        const lfo1 = draft.lfo ?? {}
+        const lfo2 = draft.lfo2 ?? {}
+        const isLfo1Filter = lfo1.target === 'filter.freq' && !draft.bypassLfo1 && (lfo1.depth ?? 0) > 0
+        const isLfo2Filter = lfo2.target === 'filter.freq' && !draft.bypassLfo2 && (lfo2.depth ?? 0) > 0
+
+        if (isLfo1Filter || isLfo2Filter) {
+            const lfoDepth = Math.max(
+                isLfo1Filter ? (lfo1.depth ?? 0) : 0,
+                isLfo2Filter ? (lfo2.depth ?? 0) : 0
+            )
+            const modHz = lfoDepth * 1000
+            const fcMin = Math.max(20, fc - modHz)
+            const fcMax = Math.min(20000, fc + modHz)
+
+            drawCurve(fcMin, rgba('accent', 0.3), 0, 1)
+            drawCurve(fcMax, rgba('accent', 0.3), 0, 1)
+        }
+
+        drawCurve(fc, color('accent'), 0.12, 1.5)
     }
 }

@@ -170,6 +170,7 @@ export default class SynthEditor {
                 requestAnimationFrame(() => this._waveform.draw())
             })
             this._syncKnobs(knobConfigs)
+            this._updateLfoIndicators()
             this._bindEvents()
             this._waveform.draw()
         } catch (e) {
@@ -194,7 +195,28 @@ export default class SynthEditor {
 
     _onKnobChange(pathStr, value) {
         this._setValue(pathStr, Number.isNaN(value) ? 0 : value)
+        this._updateLfoIndicators()
         this._waveform.draw()
+    }
+
+    /**
+     * Sets hasLfo on knobs whose path matches an active LFO target.
+     * An LFO is "active" when its target is not 'NOT', depth > 0, and not bypassed.
+     */
+    _updateLfoIndicators() {
+        if (!this._draft) return
+        const lfo1 = this._draft.lfo ?? {}
+        const lfo2 = this._draft.lfo2 ?? {}
+        const activeTargets = new Set()
+        if (lfo1.target && lfo1.target !== 'NOT' && (lfo1.depth ?? 0) > 0 && !this._draft.bypassLfo1) {
+            activeTargets.add(lfo1.target)
+        }
+        if (lfo2.target && lfo2.target !== 'NOT' && (lfo2.depth ?? 0) > 0 && !this._draft.bypassLfo2) {
+            activeTargets.add(lfo2.target)
+        }
+        for (const [path, knob] of this._knobMap) {
+            knob.setHasLfo?.(activeTargets.has(path))
+        }
     }
 
     // ─── Draft hydration ───────────────────────────────────────────────
@@ -231,6 +253,7 @@ export default class SynthEditor {
             const { target } = e
             if (target.tagName === 'SELECT' && target.dataset.synthPath) {
                 this._setValue(target.dataset.synthPath, target.value)
+                this._updateLfoIndicators()
                 this._waveform.draw()
             }
             if (target.tagName === 'SELECT' && target.dataset.action === 'synth-preset') {
@@ -286,6 +309,7 @@ export default class SynthEditor {
         }
 
         this._waveform.draw()
+        this._updateLfoIndicators()
         this._previewDraft()
         return true
     }
@@ -306,6 +330,7 @@ export default class SynthEditor {
         this._setValue(target.dataset.synthPath, next)
         target.textContent = next ? 'ON' : 'OFF'
         target.classList.toggle('active', next)
+        this._updateLfoIndicators()
         this._waveform.draw()
         return true
     }

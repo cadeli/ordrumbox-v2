@@ -247,7 +247,7 @@ export default class NoteEditor extends BasePanel {
             <span class="ne-track">${this.esc(this._track.name)} [beat ${this._beat + 1} step ${this._beatStep + 1}]</span>
         </div>`
 
-        const knobBarHtml = `<div class="or-knob-bar">${
+        const knobBarHtml = `<div class="ne-knob-bar">${
             KNOB_PROPS.map(p => `<div data-or-knob="${p.key}"></div>`).join('')
         }</div>`
 

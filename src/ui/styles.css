@@ -1466,6 +1466,10 @@ min-height: auto;
     display: flex; align-items: center; gap: 4px;
     padding: 1px 3px; border-radius: 3px;
 }
+#soft-synth-panel .ne-row.has-lfo {
+    box-shadow: inset 2px 0 0 var(--color-info);
+    padding-left: 6px;
+}
 #soft-synth-panel .ss-param-label {
     color: var(--muted); font-size: var(--fs-sm); min-width: 40px;
 }
