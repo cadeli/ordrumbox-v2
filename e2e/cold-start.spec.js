@@ -1,9 +1,9 @@
 // e2e/cold-start.spec.js
 //
-// E2E-A : Démarrage à froid → premier son.
-// Le chemin complet que 100 % des utilisateurs exécutent :
+// E2E-A: Cold start → first sound.
+// The complete path every user executes:
 //   waiting screen → init → loadSong → first tick → flatNotes computed → audio playing.
-// Vérifie via un hook window.__e2e exposé pendant le build, et via le bouton play.
+// Verified via the window.__e2e hook exposed during init, and via the play button.
 
 import { test, expect } from '@playwright/test';
 

@@ -1,8 +1,8 @@
 // e2e/kit-change.spec.js
 //
-// E2E-C : Changement de kit en cours de lecture.
-// Lecture en cours → drumkitChange → les pistes useAutoAssignSound se réassignent →
-// aucune note orpheline, aucun soundId pointant vers un son absent.
+// E2E-C: Kit change mid-playback.
+// Playback running → drumkitChange → useAutoAssignSound tracks reassigned →
+// no orphaned notes, no soundId pointing to an absent sound.
 
 import { test, expect } from '@playwright/test';
 

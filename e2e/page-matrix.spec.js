@@ -1,9 +1,9 @@
 // e2e/page-matrix.spec.js
 //
-// E2E-D : Matrice stepsPerBeat × navigation.
-// it.each sur stepsPerBeat ∈ {1,2,4,8} × nbBeats ∈ {1,3,4,8} :
-// le nombre de pages annoncé par la toolbar est égal au nombre de pages
-// effectivement rendues par la grille, et la dernière page contient le dernier beat.
+// E2E-D: stepsPerBeat × page navigation matrix.
+// it.each on stepsPerBeat ∈ {1,2,4,8} × nbBeats ∈ {1,3,4,8}:
+// toolbar announced page count equals actual rendered grid pages,
+// and the last page contains the last beat.
 
 import { test, expect } from '@playwright/test';
 

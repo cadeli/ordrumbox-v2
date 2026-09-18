@@ -1,11 +1,11 @@
 // e2e/track-editor.mobile.spec.js
 //
-// Exécuté uniquement sur le projet "mobile-chromium" (viewport Pixel 7).
-// Vérifie que le track editor et la note editor sont accessibles en mobile :
-// le panel est bien dans le viewport et cliquable.
+// Run only on the "mobile-chromium" project (Pixel 7 viewport).
+// Verifies track editor and note editor are accessible on mobile:
+// the panel is in the viewport and clickable.
 //
-// Sur mobile, la toolbar view-row est cachée (display:none) — on utilise
-// la mobile tab bar (.mtb-btn[data-tab="track"]) pour ouvrir le track editor.
+// On mobile, the toolbar view-row is hidden (display:none) — use
+// the mobile tab bar (.mtb-btn[data-tab="track"]) to open the track editor.
 
 import { test, expect } from '@playwright/test';
 

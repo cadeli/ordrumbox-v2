@@ -1,9 +1,9 @@
 // e2e/playback.spec.js
 //
-// Couvre les scénarios critiques non testables en jsdom :
-//   1. Déblocage de l'AudioContext sur le premier geste utilisateur.
-//   2. Lecture et avancement de la tête de lecture.
-//   3. Changement de drumkit sans erreurs réseau.
+// Covers critical scenarios untestable in jsdom:
+//   1. AudioContext unlock on first user gesture.
+//   2. Playback and playhead advancement.
+//   3. Drumkit change without network errors.
 
 import { test, expect } from '@playwright/test';
 

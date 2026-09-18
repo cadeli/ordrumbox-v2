@@ -1,8 +1,8 @@
 // e2e/persistence.spec.js
 //
-// E2E-B : Persistance entre sessions.
-// État → IndexedDB (idb_cache.js) → reset complet → rechargement → état identique.
-// Vérifie le cycle applicatif complet, y compris l'invalidation par APP_VERSION.
+// E2E-B: Persistence between sessions.
+// State → IndexedDB (idb_cache.js) → full reset → reload → identical state.
+// Tests the complete application cycle, including APP_VERSION cache invalidation.
 
 import { test, expect } from '@playwright/test';
 

@@ -1,7 +1,7 @@
 // e2e/canvas-rendering.spec.js
 //
-// Vérifie que le canvas spectrum analyzer produit réellement des pixels
-// pendant la lecture — impossible à mocker de façon utile (jsdom ne rasterise rien).
+// Verifies that the spectrum analyzer canvas actually produces non-empty pixels
+// during playback — impossible to mock usefully (jsdom doesn't rasterize).
 
 import { test, expect } from '@playwright/test';
 

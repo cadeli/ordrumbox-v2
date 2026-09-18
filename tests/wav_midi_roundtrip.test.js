@@ -12,9 +12,9 @@
  * - Retriggers (retriggerNum, retriggerStep, retriggerRate)
  * - Arpeggios (arp intervals, mode)
  * - Euclidian fills (euclidianFill)
- * - Variations (figée à l'export)
+ * - Variations (frozen at export)
  * - Note velocity / pitch
- * - Probability (prob, every) - figée à l'export
+ * - Probability (prob, every) - frozen at export
  * - Track patterns (stepsPerBeat, nbBeats, loopAtStep)
  */
 
