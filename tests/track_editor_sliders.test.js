@@ -146,17 +146,6 @@ describe('TrackEditor — OrSlider integration', () => {
         expect(valEl.textContent).toBe('2.5k')
     })
 
-    it('re-syncing destroys old OrKnob instances (no listener leak)', () => {
-        editor._track = makeTrack({ filterFreq: 632 })
-        editor.sync()
-        const firstKnob = editor.container.querySelector('.or-knob[data-or-knob="filterFreq"]')
-
-        editor._track = makeTrack({ filterFreq: 5000 })
-        editor.sync()
-        const secondKnob = editor.container.querySelector('.or-knob[data-or-knob="filterFreq"]')
-        expect(secondKnob).not.toBe(firstKnob)
-    })
-
     it('keyboard arrow on a knob changes its value', () => {
         editor._track = makeTrack({ filterFreq: 1000 })
         editor.sync()

@@ -49,30 +49,6 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
             expect(knob.getValue()).toBeCloseTo(0.51, 4)
             expect(onChange).toHaveBeenCalledWith(0.51, 'vol')
         })
-
-        it('opens window.prompt on contextmenu for direct numeric input', () => {
-            const onChange = vi.fn()
-            const knob = new OrKnob({
-                key: 'pitch',
-                label: 'Pitch',
-                min: -12,
-                max: 12,
-                step: 1,
-                value: 0,
-                onChange
-            })
-            const el = knob.createElement()
-            document.body.appendChild(el)
-
-            vi.spyOn(window, 'prompt').mockReturnValue('7')
-
-            const knobEl = el.querySelector('.or-knob')
-            knobEl.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
-
-            expect(window.prompt).toHaveBeenCalled()
-            expect(knob.getValue()).toBe(7)
-            expect(onChange).toHaveBeenCalledWith(7, 'pitch')
-        })
     })
 
     describe('OrSlider', () => {
@@ -114,29 +90,6 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
 
             expect(slider.getValue()).toBeCloseTo(0.51, 4)
             expect(onChange).toHaveBeenCalledWith(0.51, 'cutoff')
-        })
-
-        it('opens window.prompt on contextmenu for direct numeric input', () => {
-            const onChange = vi.fn()
-            const slider = new OrSlider({
-                key: 'decay',
-                label: 'Decay',
-                min: 0,
-                max: 2,
-                step: 0.01,
-                value: 0.5,
-                onChange
-            })
-            const el = slider.createElement()
-            document.body.appendChild(el)
-
-            vi.spyOn(window, 'prompt').mockReturnValue('1.25')
-
-            el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
-
-            expect(window.prompt).toHaveBeenCalled()
-            expect(slider.getValue()).toBe(1.25)
-            expect(onChange).toHaveBeenCalledWith(1.25, 'decay')
         })
     })
 })

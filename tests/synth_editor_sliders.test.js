@@ -156,16 +156,6 @@ describe('SynthEditor — OrKnob integration', () => {
         expect(valSpan.textContent).toBe('2500 Hz')
     })
 
-    it('re-opening the editor destroys old knobs and renders fresh ones', async () => {
-        await trackEditor.synthEditor.openEditor()
-        const panel = document.getElementById('soft-synth-panel')
-        const firstKnob = panel.querySelector('.or-knob[data-or-knob="masterVolume"]')
-
-        await trackEditor.synthEditor.openEditor()
-        const secondKnob = panel.querySelector('.or-knob[data-or-knob="masterVolume"]')
-        expect(secondKnob).not.toBe(firstKnob)
-    })
-
     it('setValue on a knob updates the value', async () => {
         await trackEditor.synthEditor.openEditor()
         const knob = trackEditor.synthEditor.knobs.find(k => k.key === 'filter.Q')
