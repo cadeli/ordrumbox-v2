@@ -12,11 +12,37 @@ import { logger } from '../core/logger.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { showToast } from './toast.js'
 import { bindTabToggles, downloadJson } from './components/panel_helpers.js'
+import { getLfoWaveformValue } from '../audio/math.js'
+import Utils from '../core/utils.js'
 
 import GroupsSection from './synth_editor/groups_section.js'
 import WaveformSection from './synth_editor/waveform_section.js'
 import PresetSection from './synth_editor/preset_section.js'
 import { SYNTH_PARAM_META, SYNTH_GROUP_DEFAULTS } from './synth_editor/constants.js'
+
+/**
+ * LFO target → scale factor applied to raw waveform value.
+ * raw * scale = the modulation amount in the target's display units.
+ * Matches the worklet synth_voice_source.js #lfoValue() mapping.
+ */
+const LFO_TARGET_SCALE = {
+    'vco1.octave': 1,
+    'vco1.detune': 100,
+    'vco1.gain': 1,
+    'vco2.octave': 1,
+    'vco2.detune': 100,
+    'vco2.gain': 1,
+    'vco3.octave': 1,
+    'vco3.detune': 100,
+    'vco3.gain': 1,
+    'filter.freq': 1000,
+    'filter.Q': 24,
+    'masterVolume': 1,
+    'noise.mix': 1,
+    'fm.amount': 1,
+    'subGain': 1,
+    'pitchPunch': 1,
+}
 
 /**
  * SynthEditor — soft-synth parameter editor sub-panel.
@@ -51,6 +77,9 @@ export default class SynthEditor {
         this._groups = new GroupsSection(this)
         this._waveform = new WaveformSection(this)
         this._presets = new PresetSection(this)
+
+        this._lfoRafId = null
+        this._lfoLastTime = -1
     }
 
     /** @returns {OrKnob[]} flat array of current knob instances. */
@@ -149,10 +178,12 @@ export default class SynthEditor {
 
     _showSynthPanel() {
         this.panel.style.display = 'flex'
+        this._startLfoWatch()
     }
 
     _hideSynthPanel() {
         this.panel.style.display = 'none'
+        this._stopLfoWatch()
     }
 
     // ─── Rendering ─────────────────────────────────────────────────────
@@ -217,6 +248,78 @@ export default class SynthEditor {
         for (const [path, knob] of this._knobMap) {
             knob.setHasLfo?.(activeTargets.has(path))
         }
+    }
+
+    // ── LFO animation (real-time knob display) ───────────────────────
+
+    _startLfoWatch() {
+        if (this._lfoRafId) return
+        this._lfoLastTime = -1
+        const tick = () => {
+            if (this.panel?.style.display !== 'flex') { this._lfoRafId = null; return }
+            this._lfoRafId = requestAnimationFrame(tick)
+            this._updateLfoKnobs()
+        }
+        this._lfoRafId = requestAnimationFrame(tick)
+    }
+
+    _stopLfoWatch() {
+        if (this._lfoRafId) { cancelAnimationFrame(this._lfoRafId); this._lfoRafId = null }
+        this._lfoLastTime = -1
+    }
+
+    /**
+     * Computes and applies LFO-modulated values to synth knobs in real time.
+     * Mirrors the worklet's #lfoValue() + getLfoWaveformValue() math.
+     */
+    _updateLfoKnobs() {
+        if (!this._draft || !this._knobMap.size) return
+        const audioCtx = this._serviceRegistry.audioCtx
+        if (!audioCtx) return
+        const now = audioCtx.currentTime
+
+        const lfo1 = this._draft.bypassLfo1 ? null : this._draft.lfo
+        const lfo2 = this._draft.bypassLfo2 ? null : this._draft.lfo2
+
+        for (const [path, knob] of this._knobMap) {
+            let totalMod = 0
+            if (lfo1?.target === path && (lfo1.depth ?? 0) > 0) {
+                totalMod += this._computeSynthLfoMod(lfo1, now)
+            }
+            if (lfo2?.target === path && (lfo2.depth ?? 0) > 0) {
+                totalMod += this._computeSynthLfoMod(lfo2, now)
+            }
+            if (totalMod !== 0) {
+                const base = this._getValue(path) ?? 0
+                const meta = SYNTH_PARAM_META[path]
+                const min = meta?.min ?? -Infinity
+                const max = meta?.max ?? Infinity
+                knob.setValue(Math.max(min, Math.min(max, base + totalMod)))
+            }
+        }
+    }
+
+    /**
+     * Computes the LFO modulation amount for a synth LFO config.
+     * @param {object} lfo  LFO config { target, wave, freq, depth, sync }
+     * @param {number} audioTime  AudioContext.currentTime
+     * @returns {number} modulation amount in the target's display units
+     */
+    _computeSynthLfoMod(lfo, audioTime) {
+        const target = lfo.target
+        const scale = LFO_TARGET_SCALE[target]
+        if (!scale) return 0
+
+        const freq = lfo.freq ?? 0
+        const depth = lfo.depth ?? 0
+        if (freq <= 0 || depth <= 0) return 0
+
+        const waveName = lfo.wave ?? 'sine'
+        const waveIdx = Utils.waveList.indexOf(waveName)
+        const phase = (audioTime * freq) % 1.0
+        const raw = getLfoWaveformValue(phase, waveIdx >= 0 ? waveIdx : 0)
+
+        return raw * depth * scale
     }
 
     // ─── Draft hydration ───────────────────────────────────────────────
@@ -494,6 +597,7 @@ export default class SynthEditor {
 
     reset() {
         this.panel.style.display = 'none'
+        this._stopLfoWatch()
         this._editKey = null
         this._original = null
         this._draft = null
