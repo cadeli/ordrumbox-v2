@@ -1,25 +1,33 @@
 // e2e/canvas-rendering.spec.js
 //
-// Aucun des 3 tests fragiles ne couvrait le rendu <canvas> réel — impossible à
-// mocker de façon utile (jsdom ne rasterise rien). On vérifie ici que le canvas
-// n'est pas juste "présent dans le DOM" mais produit réellement des pixels.
+// Vérifie que le canvas spectrum analyzer produit réellement des pixels
+// pendant la lecture — impossible à mocker de façon utile (jsdom ne rasterise rien).
 
 import { test, expect } from '@playwright/test';
 
-test('oscilloscope/FFT dessine des pixels non vides pendant la lecture', async ({ page }) => {
+async function dismissWaitingScreen(page) {
+  const btn = page.locator('#waiting-screen-start-btn');
+  if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await btn.click();
+  }
+  await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
+}
+
+test('le spectrum analyzer dessine des pixels non vides pendant la lecture', async ({ page }) => {
   await page.goto('/');
-  await page.waitForSelector('#loading-overlay', { state: 'hidden' });
-  await page.locator('#play-button').click(); // (?) TODO: confirmer sélecteur
+  await dismissWaitingScreen(page);
 
-  const canvas = page.locator('canvas.oscilloscope, canvas#fft'); // (?) TODO: confirmer sélecteur
-  await expect(canvas).toBeVisible();
+  await page.locator('button.tb-start').click();
 
-  await page.waitForTimeout(300); // laisser quelques frames de rendu s'écouler
+  const canvas = page.locator('#op-spectrum');
+  await expect(canvas).toBeVisible({ timeout: 5_000 });
+
+  await page.waitForTimeout(500);
 
   const hasNonBlankPixels = await canvas.evaluate((el) => {
     const ctx = el.getContext('2d');
+    if (!ctx) return false;
     const { data } = ctx.getImageData(0, 0, el.width, el.height);
-    // true si au moins un pixel diffère du fond (évite un canvas resté noir/vide)
     for (let i = 0; i < data.length; i += 4) {
       if (data[i] !== 0 || data[i + 1] !== 0 || data[i + 2] !== 0) return true;
     }
@@ -27,4 +35,6 @@ test('oscilloscope/FFT dessine des pixels non vides pendant la lecture', async (
   });
 
   expect(hasNonBlankPixels).toBe(true);
+
+  await page.locator('button.tb-start').click();
 });

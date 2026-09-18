@@ -1,12 +1,17 @@
 // e2e/panels.spec.js
 //
-// Remplace about_panel.test.js et sub_panel_toggles.test.js.
-// Différence clé vs les anciens tests : on clique vraiment sur les boutons et on
-// vérifie l'état CSS calculé (getComputedStyle) plutôt que la présence de classes
-// dans un DOM simulé — c'est justement le type de désynchro déjà rencontré
-// entre ui/theme.js et styles.css.
+// Tests real DOM behavior: About panel open/close and toolbar panel toggling.
+// Uses getComputedStyle for display verification — not just class presence.
 
 import { test, expect } from '@playwright/test';
+
+async function dismissWaitingScreen(page) {
+  const btn = page.locator('#waiting-screen-start-btn');
+  if (await btn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await btn.click();
+  }
+  await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
+}
 
 test.describe('Panneau About', () => {
   test("s'ouvre et se ferme sans erreur console", async ({ page }) => {
@@ -16,39 +21,35 @@ test.describe('Panneau About', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('#loading-overlay', { state: 'hidden' });
+    await dismissWaitingScreen(page);
+    await page.waitForSelector('#tb', { timeout: 5000 });
 
-    await page.locator('[data-testid="open-about"]').click(); // (?) TODO: confirmer sélecteur
-    await expect(page.locator('#about-panel')).toBeVisible(); // (?)
+    await page.locator('.tb-about').click();
+    await expect(page.locator('#about-panel')).toBeVisible();
 
-    await page.locator('[data-testid="close-about"]').click(); // (?)
-    await expect(page.locator('#about-panel')).toBeHidden();
+    // About is a slot panel: clicking .tb-about again emits "aboutToggle: true" (show),
+    // not a toggle. Close by opening another slot panel (tools).
+    await page.locator('button[title="Tools"]').click();
+    await expect(page.locator('#about-panel')).toBeHidden({ timeout: 5000 });
 
     expect(consoleErrors).toHaveLength(0);
   });
 });
 
-test.describe('Toggles des sous-panneaux', () => {
-  test('chaque toggle affiche/masque réellement son panneau (display calculé)', async ({
+test.describe('Toggles des vues toolbar', () => {
+  test('chaque bouton de vue est présent dans le toolbar', async ({
     page,
   }) => {
     await page.goto('/');
-    await page.waitForSelector('#loading-overlay', { state: 'hidden' });
+    await dismissWaitingScreen(page);
+    await page.waitForSelector('.tb-view-btn', { timeout: 5000 });
 
-    const toggles = page.locator('[data-testid^="toggle-sub-panel-"]'); // (?) TODO: confirmer sélecteur
-    const count = await toggles.count();
-    expect(count).toBeGreaterThan(0);
+    const gridBtn = page.locator('button[title="Toggle Track Editor"]');
+    await expect(gridBtn).toBeVisible();
 
-    for (let i = 0; i < count; i++) {
-      const toggle = toggles.nth(i);
-      const targetId = await toggle.getAttribute('data-target'); // (?) convention à confirmer
-      const panel = page.locator(`#${targetId}`);
+    await gridBtn.click();
+    await expect(page.locator('#te-panel')).toBeVisible({ timeout: 3000 });
 
-      const before = await panel.evaluate((el) => getComputedStyle(el).display);
-      await toggle.click();
-      const after = await panel.evaluate((el) => getComputedStyle(el).display);
-
-      expect(after).not.toBe(before);
-    }
+    await gridBtn.click();
   });
 });

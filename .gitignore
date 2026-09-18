@@ -9,3 +9,5 @@
 *node_modules/*
 dist
 profile_logs/
+playwright-report/
+test-results/
