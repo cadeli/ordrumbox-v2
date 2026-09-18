@@ -227,6 +227,14 @@ export function init() {
             }
         }
 
+        window.__e2e = {
+            ready: true,
+            appState,
+            serviceRegistry,
+            soundRegistry,
+            playbackEvents,
+        }
+
         ;(async () => {
             const report = await idbReport()
             console.group('%c IndexedDB Report', 'color: #e94560; font-weight: bold')

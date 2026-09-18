@@ -111,13 +111,39 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 ```bash
 npm install
 npm run dev          # Vite dev server (port 3000)
-npm test             # Run all tests (Vitest)
+npm test             # Run all unit/integration tests (Vitest, 97 files, 2522 tests)
 npm run test:watch   # Watch mode
 npm run test:coverage # Test coverage
 npm run build        # Production build
 npm run electron:dev # Desktop app (Electron)
 npm run electron:build # Build Electron installer (release/)
 ```
+
+### End-to-End Tests (Playwright)
+
+E2E tests run in real Chromium (desktop + mobile viewport) against the Vite dev server.
+
+```bash
+npx playwright test                         # Run all e2e tests (33 tests)
+npx playwright test --reporter=list         # With test names
+npx playwright test e2e/cold-start.spec.js  # Run a single spec
+npx playwright test -g "E2E-D"             # Run by test title pattern
+```
+
+The dev server (`npm run dev`) must be running on port 3000 before launching tests. Playwright starts it automatically via the `webServer` config in `playwright.config.js`.
+
+| Spec file | Tests | What it covers |
+|-----------|-------|----------------|
+| `e2e/cold-start.spec.js` | 3 | Full init chain: waiting screen → loadSong → flatNotes → audio running → soundIds |
+| `e2e/persistence.spec.js` | 3 | State → IndexedDB → reload → identical state + APP_VERSION stale cache + clearAllCache |
+| `e2e/kit-change.spec.js` | 2 | Kit change mid-playback: auto-assign, 0 orphaned soundIds, flatNotes rebuilt |
+| `e2e/page-matrix.spec.js` | 16 | stepsPerBeat × nbBeats: toolbar page count = rendered grid pages + nav buttons |
+| `e2e/playback.spec.js` | 5 | Waiting screen, play button, playhead, grid cell click, drumkit loading |
+| `e2e/panels.spec.js` | 2 | About panel open/close, toolbar view buttons |
+| `e2e/canvas-rendering.spec.js` | 1 | Spectrum analyzer draws non-empty pixels during playback |
+| `e2e/track-editor.mobile.spec.js` | 1 | Track/note editor accessible on mobile viewport |
+
+Tests use `window.__e2e` (exposed in `main.js` after init) to access `appState`, `serviceRegistry`, `soundRegistry`, and `playbackEvents` from `page.evaluate()`.
 
 ### Dev Tools
 
