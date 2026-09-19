@@ -62,9 +62,30 @@ export default class WaveformSection {
         const cycles = 4
         const sampleRate = WAVE_BUFFER.length
 
-        const freqMult = vcos.map(v =>
-            Math.pow(2, v.octave) * Math.pow(2, v.detune / 1200)
-        )
+        const now = this._editor._serviceRegistry?.audioCtx?.currentTime ?? 0
+        const lfo1 = draft.bypassLfo1 ? null : draft.lfo
+        const lfo2 = draft.bypassLfo2 ? null : draft.lfo2
+        const lfo1Mod = lfo1 ? this._editor._computeSynthLfoMod(lfo1, now) : 0
+        const lfo2Mod = lfo2 ? this._editor._computeSynthLfoMod(lfo2, now) : 0
+
+        const freqMult = vcos.map((v, i) => {
+            let octave = v.octave
+            let detune = v.detune
+            const vcoKey = `vco${i + 1}`
+            if (draft.lfo?.target === `${vcoKey}.octave`) octave += lfo1Mod
+            if (draft.lfo2?.target === `${vcoKey}.octave`) octave += lfo2Mod
+            if (draft.lfo?.target === `${vcoKey}.detune`) detune += lfo1Mod
+            if (draft.lfo2?.target === `${vcoKey}.detune`) detune += lfo2Mod
+            return Math.pow(2, octave) * Math.pow(2, detune / 1200)
+        })
+
+        const gainMod = vcos.map((v, i) => {
+            let g = v.gain
+            const vcoKey = `vco${i + 1}`
+            if (draft.lfo?.target === `${vcoKey}.gain`) g += lfo1Mod
+            if (draft.lfo2?.target === `${vcoKey}.gain`) g += lfo2Mod
+            return Math.max(0, Math.min(1, g))
+        })
 
         const baseInc = cycles / sampleRate
         const inc = freqMult.map(fm => baseInc * fm)
@@ -103,7 +124,7 @@ export default class WaveformSection {
             const val2 = this._waveAtPhase(vcos[2].wave, phase[2])
             const sub = (draft.subGain ?? 0) > 0 ? this._waveAtPhase('sine', (phase[0] * 0.5) % 1) * draft.subGain : 0
 
-            let sample = val0 * vcos[0].gain + val1 * vcos[1].gain + val2 * vcos[2].gain + sub
+            let sample = val0 * gainMod[0] + val1 * gainMod[1] + val2 * gainMod[2] + sub
             const drive = draft.filter?.drive ?? draft.drive ?? 0
             if (drive > 0) {
                 const driven = sample * (1 + drive * 3)

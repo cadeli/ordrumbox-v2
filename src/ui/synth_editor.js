@@ -272,6 +272,7 @@ export default class SynthEditor {
             if (this.panel?.style.display !== 'flex') { this._lfoRafId = null; return }
             this._lfoRafId = requestAnimationFrame(tick)
             this._updateLfoKnobs()
+            this._waveform.draw()
         }
         this._lfoRafId = requestAnimationFrame(tick)
     }
