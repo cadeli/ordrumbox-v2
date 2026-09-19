@@ -468,6 +468,13 @@
         autoAssign.autoAssignSounds(testPattern)
         for (const t of testPattern.tracks) log(`  ${t.name.padEnd(8)} → ${t.soundId}`, '')
 
+        // Add slow LFO1 modulation on VCO1 to the SYNTH_LEAD preset
+        const synthLead = soundRegistry.generatedSounds['SYNTH1']
+        if (synthLead) {
+          synthLead.lfo = { target: 'vco1.octave', wave: 'sine', freq: 0.5, depth: 0.6 }
+          log('  LFO1: SYNTH1 → vco1.octave, sine 0.5 Hz, depth 0.6', 'ok')
+        }
+
         // ── 4. Offline WAV export ───────────────────────────────────
         log('[4/5] Running offline WAV export...', 'info')
         const exporter = new WavExporter()
