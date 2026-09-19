@@ -258,9 +258,9 @@ describe('SynthEditor — LFO animation', () => {
 
         // At t=0, freq=1: phase=(0*1)%1=0
         // getLfoWaveformValue(0, 0=sine): p=(0-0.25)-floor(-0.25)=0.75, sin(2pi*0.75)=-1
-        // raw = -1 * 0.5 = -0.5, scale=5 (5x) -> -2.5
+        // raw = -1 * 0.5 = -0.5, scale=1 -> -0.5
         const mod = se._computeSynthLfoMod(lfo, 0)
-        expect(mod).toBeCloseTo(-2.5, 5)
+        expect(mod).toBeCloseTo(-0.5, 5)
     })
 
     it('_computeSynthLfoMod returns modulation scaled by depth and target scale', async () => {

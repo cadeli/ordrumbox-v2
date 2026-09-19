@@ -450,6 +450,22 @@ describe('WorkletSynthVoice parameter coverage', () => {
             { target: 'vco2.octave', expected: 11 },
             { target: 'vco3.gain', expected: 12 },
             { target: 'noise.mix', expected: 18 },
+            { target: 'subGain', expected: 19 },
+            { target: 'pitchPunch', expected: 20 },
+            { target: 'filter.drive', expected: 21 },
+            { target: 'noise.filterFreq', expected: 22 },
+            { target: 'noise.filterQ', expected: 23 },
+            { target: 'fm.amount', expected: 24 },
+            { target: 'fm.algo', expected: 25 },
+            { target: 'enveloppe.attack', expected: 26 },
+            { target: 'enveloppe.decay', expected: 27 },
+            { target: 'enveloppe.sustain', expected: 28 },
+            { target: 'enveloppe.release', expected: 29 },
+            { target: 'modEnvelope.attack', expected: 30 },
+            { target: 'modEnvelope.decay', expected: 31 },
+            { target: 'modEnvelope.sustain', expected: 32 },
+            { target: 'modEnvelope.release', expected: 33 },
+            { target: 'filterEnv.filterEnvelopeAmount', expected: 16 },
         ]
 
         for (const { target, expected } of cases) {
@@ -527,7 +543,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
         await voice.setup(flatNote, 1.0)
 
         const msg = lastPostByType('update')
-        expect(msg.lfo1Target).toBe(0) // subGain not in LFO_TARGET_TO_INT → NOT
+        expect(msg.lfo1Target).toBe(19) // subGain → target 19
     })
 })
 

@@ -237,7 +237,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this.#lfo1Gain = [0, 0, 0];
         this.#lfo2Det = [0, 0, 0];
         this.#lfo2Gain = [0, 0, 0];
-        this.#lfoScratch = [0, 0, 0, 0];
+        this.#lfoScratch = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         // Pre-allocated filter output (avoids object allocation per sample)
         this.#filtLP = 0;
         this.#filtHP = 0;
@@ -347,7 +347,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     #lfoValue(target, depth, phase, det, gain, out, wave) {
         det[0] = 0; det[1] = 0; det[2] = 0;
         gain[0] = 0; gain[1] = 0; gain[2] = 0;
-        out[0] = 0; out[1] = 0; out[2] = 0; out[3] = 0;
+        for (let i = 0; i < 20; i++) out[i] = 0;
         if (target === 0) return;
         const raw = _lfoWave(phase, wave) * depth;
         if (target === 1)  { out[0] = raw * 1000; return; }
@@ -365,9 +365,24 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         if (target === 13) { det[2] = raw * 100; return; }
         if (target === 14) { det[2] = raw * 1200; return; }
         if (target === 15) { out[0] = raw * 1000; return; }
-        if (target === 16) { out[0] = raw * 1000; return; }
+        if (target === 16) { out[4] = raw; return; }
         if (target === 17) { out[2] = raw * 24; return; }
         if (target === 18) { out[3] = raw; return; }
+        if (target === 19) { out[5] = raw; return; }
+        if (target === 20) { out[6] = raw; return; }
+        if (target === 21) { out[7] = raw; return; }
+        if (target === 22) { out[8] = raw * 10000; return; }
+        if (target === 23) { out[9] = raw * 24; return; }
+        if (target === 24) { out[10] = raw; return; }
+        if (target === 25) { out[11] = raw; return; }
+        if (target === 26) { out[12] = raw * 0.25; return; }
+        if (target === 27) { out[13] = raw * 0.5; return; }
+        if (target === 28) { out[14] = raw * 0.5; return; }
+        if (target === 29) { out[15] = raw * 0.25; return; }
+        if (target === 30) { out[16] = raw * 0.25; return; }
+        if (target === 31) { out[17] = raw * 0.5; return; }
+        if (target === 32) { out[18] = raw * 0.5; return; }
+        if (target === 33) { out[19] = raw * 0.25; return; }
     }
 
     #param(name, arr, fallback = 0) {
@@ -636,14 +651,62 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const lfo1Master = this.#lfoScratch[1];
             const lfo1Q = this.#lfoScratch[2];
             const lfo1Noise = this.#lfoScratch[3];
+            const lfo1FiltEnvAmt = this.#lfoScratch[4];
+            const lfo1SubGain = this.#lfoScratch[5];
+            const lfo1PitchPunch = this.#lfoScratch[6];
+            const lfo1Drive = this.#lfoScratch[7];
+            const lfo1NoiseFreq = this.#lfoScratch[8];
+            const lfo1NoiseQ = this.#lfoScratch[9];
+            const lfo1FmAmount = this.#lfoScratch[10];
+            const lfo1FmAlgo = this.#lfoScratch[11];
+            const lfo1EnvA = this.#lfoScratch[12];
+            const lfo1EnvD = this.#lfoScratch[13];
+            const lfo1EnvS = this.#lfoScratch[14];
+            const lfo1EnvR = this.#lfoScratch[15];
+            const lfo1ModA = this.#lfoScratch[16];
+            const lfo1ModD = this.#lfoScratch[17];
+            const lfo1ModS = this.#lfoScratch[18];
+            const lfo1ModR = this.#lfoScratch[19];
             this.#lfoValue(lfo2On ? lfo2Target : 0, lfo2Depth, this.lfoPhase2, this.#lfo2Det, this.#lfo2Gain, this.#lfoScratch, lfo2Wave);
             const lfo2Filt = this.#lfoScratch[0];
             const lfo2Master = this.#lfoScratch[1];
             const lfo2Q = this.#lfoScratch[2];
             const lfo2Noise = this.#lfoScratch[3];
+            const lfo2FiltEnvAmt = this.#lfoScratch[4];
+            const lfo2SubGain = this.#lfoScratch[5];
+            const lfo2PitchPunch = this.#lfoScratch[6];
+            const lfo2Drive = this.#lfoScratch[7];
+            const lfo2NoiseFreq = this.#lfoScratch[8];
+            const lfo2NoiseQ = this.#lfoScratch[9];
+            const lfo2FmAmount = this.#lfoScratch[10];
+            const lfo2FmAlgo = this.#lfoScratch[11];
+            const lfo2EnvA = this.#lfoScratch[12];
+            const lfo2EnvD = this.#lfoScratch[13];
+            const lfo2EnvS = this.#lfoScratch[14];
+            const lfo2EnvR = this.#lfoScratch[15];
+            const lfo2ModA = this.#lfoScratch[16];
+            const lfo2ModD = this.#lfoScratch[17];
+            const lfo2ModS = this.#lfoScratch[18];
+            const lfo2ModR = this.#lfoScratch[19];
 
             // Apply LFO to filter frequency
             let fFreqSample = fFreq + lfo1Filt + lfo2Filt;
+
+            // LFO-modulated scalar params (clamped to valid ranges)
+            const filterEnvAmtMod = Math.max(0, filterEnvAmt + lfo1FiltEnvAmt + lfo2FiltEnvAmt);
+            const subGainMod = Math.max(0, Math.min(1, subGain + lfo1SubGain + lfo2SubGain));
+            const pitchPunchMod = Math.max(0, Math.min(1, pitchPunch + lfo1PitchPunch + lfo2PitchPunch));
+            const driveMod = Math.max(0, Math.min(1, drive + lfo1Drive + lfo2Drive));
+            const fmAmountMod = Math.max(0, Math.min(1, fmAmount + lfo1FmAmount + lfo2FmAmount));
+            const fmAlgoMod = Math.max(0, Math.min(4, Math.round(fmAlgo + lfo1FmAlgo + lfo2FmAlgo)));
+            const Amod = Math.max(0, A + lfo1EnvA + lfo2EnvA);
+            const Dmod = Math.max(0, D + lfo1EnvD + lfo2EnvD);
+            const Smod = Math.max(0, Math.min(1, S + lfo1EnvS + lfo2EnvS));
+            const Rmod = Math.max(0, R + lfo1EnvR + lfo2EnvR);
+            const mAmod = Math.max(0, mA + lfo1ModA + lfo2ModA);
+            const mDmod = Math.max(0, mD + lfo1ModD + lfo2ModD);
+            const mSmod = Math.max(0, Math.min(1, mS + lfo1ModS + lfo2ModS));
+            const mRmod = Math.max(0, mR + lfo1ModR + lfo2ModR);
 
             // Modulation envelope
             let mEnv = 0;
@@ -653,13 +716,13 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                     this.#modEnvSeg = 4;
                     this.#modEnvSegStart = t;
                 }
-                mEnv = this.#modEnvStep(t, mA, mD, mS, mR);
+                mEnv = this.#modEnvStep(t, mAmod, mDmod, mSmod, mRmod);
             }
 
             // Filter envelope
-            if (!bypassFilterEnv && filterEnvAmt > 0.001 && this.#filtEnvSeg > 0) {
+            if (!bypassFilterEnv && filterEnvAmtMod > 0.001 && this.#filtEnvSeg > 0) {
                 if (this.#filtEnvSeg === 1) {
-                    const attack = A;
+                    const attack = Amod;
                     if (attack > 0.0001 && t < attack) {
                         this.#filtEnvLevel = t / attack;
                     } else {
@@ -667,8 +730,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                         this.#filtEnvSeg = 2;
                     }
                 } else if (this.#filtEnvSeg === 2) {
-                    const dt = t - A;
-                    const decay = D;
+                    const dt = t - Amod;
+                    const decay = Dmod;
                     if (decay > 0.0001 && dt < decay) {
                         this.#filtEnvLevel = 1 - (dt / decay);
                     } else {
@@ -676,7 +739,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                         this.#filtEnvSeg = 0;
                     }
                 }
-                const filtEnvMod = (20000 - fFreqSample) * filterEnvAmt * this.#filtEnvLevel;
+                const filtEnvMod = (20000 - fFreqSample) * filterEnvAmtMod * this.#filtEnvLevel;
                 fFreqSample += filtEnvMod;
             }
 
@@ -711,9 +774,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             let f3d = f3 * det3;
 
             // Pitch Punch transient envelope (fast 60ms pitch drop for punchy bass attack)
-            if (pitchPunch > 0.001 && t < 0.06) {
+            if (pitchPunchMod > 0.001 && t < 0.06) {
                 const punchEnv = 1 - (t / 0.06);
-                const punchRatio = Math.exp(punchEnv * pitchPunch * 24 * LN2_OVER_1200);
+                const punchRatio = Math.exp(punchEnv * pitchPunchMod * 24 * LN2_OVER_1200);
                 f1d *= punchRatio;
                 f2d *= punchRatio;
                 f3d *= punchRatio;
@@ -721,20 +784,20 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
 
             // FM algorithm routing
             let f1fm = f1d, f2fm = f2d;
-            if (!bypassFm && fmAmount > 0.001) {
+            if (!bypassFm && fmAmountMod > 0.001) {
                 const rawO2 = this.#v(w2, this.phase2, Math.min(0.49, f2d / sr));
                 const rawO3 = this.#v(w3, this.phase3, Math.min(0.49, f3d / sr));
-                const fmDepth = fmAmount * 1000;
-                if (fmAlgo === 0) {
+                const fmDepth = fmAmountMod * 1000;
+                if (fmAlgoMod === 0) {
                     f1fm = f1d + rawO2 * fmDepth;
-                } else if (fmAlgo === 1) {
+                } else if (fmAlgoMod === 1) {
                     f1fm = f1d + rawO3 * fmDepth;
-                } else if (fmAlgo === 2) {
+                } else if (fmAlgoMod === 2) {
                     f1fm = f1d + rawO2 * fmDepth;
                     f2fm = f2d + rawO3 * fmDepth;
-                } else if (fmAlgo === 3) {
+                } else if (fmAlgoMod === 3) {
                     f1fm = f1d + (rawO2 + rawO3) * fmDepth;
-                } else if (fmAlgo === 4) {
+                } else if (fmAlgoMod === 4) {
                     const rawO1 = this.#v(w1, this.phase1, Math.min(0.49, f1d / sr));
                     f1fm = f1d + rawO2 * fmDepth;
                     f2fm = f2d + rawO1 * fmDepth;
@@ -752,16 +815,16 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                     f2fm *= pitchRatio;
                     f3d *= pitchRatio;
                 } else if (mTgt === 3 && !bypassFm) {
-                    const fmMod = fmAmount * mDepth * mEnv;
+                    const fmMod = fmAmountMod * mDepth * mEnv;
                     if (fmMod > 0.001) {
                         const rawO2 = this.#v(w2, this.phase2, Math.min(0.49, f2d / sr));
                         const rawO3 = this.#v(w3, this.phase3, Math.min(0.49, f3d / sr));
                         const fmDepthM = fmMod * 1000;
-                        if (fmAlgo === 0) { f1fm += rawO2 * fmDepthM; }
-                        else if (fmAlgo === 1) { f1fm += rawO3 * fmDepthM; }
-                        else if (fmAlgo === 2) { f1fm += rawO2 * fmDepthM; f2fm += rawO3 * fmDepthM; }
-                        else if (fmAlgo === 3) { f1fm += (rawO2 + rawO3) * fmDepthM; }
-                        else if (fmAlgo === 4) {
+                        if (fmAlgoMod === 0) { f1fm += rawO2 * fmDepthM; }
+                        else if (fmAlgoMod === 1) { f1fm += rawO3 * fmDepthM; }
+                        else if (fmAlgoMod === 2) { f1fm += rawO2 * fmDepthM; f2fm += rawO3 * fmDepthM; }
+                        else if (fmAlgoMod === 3) { f1fm += (rawO2 + rawO3) * fmDepthM; }
+                        else if (fmAlgoMod === 4) {
                             const rawO1 = this.#v(w1, this.phase1, Math.min(0.49, f1d / sr));
                             f1fm += rawO2 * fmDepthM;
                             f2fm += rawO1 * fmDepthM;
@@ -789,9 +852,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
 
             // Optional sub-oscillator (pure sine 1 octave below osc1)
             let sub = 0;
-            if (subGain > 0.001) {
+            if (subGainMod > 0.001) {
                 const subPhase = (this.phase1 * 0.5) % 1.0;
-                sub = _sinLookup(subPhase) * subGain;
+                sub = _sinLookup(subPhase) * subGainMod;
             }
 
             const oscSum = (o1 + o2 + o3 + sub) * oscMix;
@@ -803,10 +866,20 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 const noiseMod = noiseMix + lfo1Noise + lfo2Noise;
                 const noiseClamped = noiseMod < 0 ? 0 : (noiseMod > 1 ? 1 : noiseMod);
                 const noiseRaw = (this.#rngState / 2147483648) * noiseClamped;
+                // Apply LFO to noise filter freq/Q
+                let nfGLocal = nfG;
+                let nfKLocal = nfK;
+                const nfFreqLfo = nfFreq + lfo1NoiseFreq + lfo2NoiseFreq;
+                const nfQLfo = Math.max(0.1, Math.min(20, nfQ + lfo1NoiseQ + lfo2NoiseQ));
+                if (nfFreqLfo !== nfFreq || nfQLfo !== nfQ) {
+                    const nfFClamped = Math.max(20, Math.min(20000, nfFreqLfo));
+                    nfGLocal = Math.tan(PI * Math.min(nfFClamped, sr * 0.25) / sr);
+                    nfKLocal = 1 / nfQLfo;
+                }
                 // Apply noise sub-filter (TPT SVF)
-                const a1 = 1 / (1 + nfG * (nfG + nfK));
-                const a2 = nfG * a1;
-                const a3 = nfG * a2;
+                const a1 = 1 / (1 + nfGLocal * (nfGLocal + nfKLocal));
+                const a2 = nfGLocal * a1;
+                const a3 = nfGLocal * a2;
                 const v3 = noiseRaw - this.#noiseFilt.z2;
                 const v1 = a1 * this.#noiseFilt.z1 + a2 * v3;
                 const v2 = this.#noiseFilt.z2 + a2 * this.#noiseFilt.z1 + a3 * v3;
@@ -816,16 +889,16 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 if (Math.abs(this.#noiseFilt.z2) < 1e-15 || !Number.isFinite(this.#noiseFilt.z2)) this.#noiseFilt.z2 = 0;
                 // LP + HP = notch, BP = bandpass, raw = bypass
                 if (nfMode === 0) noise = v2;           // lowpass
-                else if (nfMode === 1) noise = noiseRaw - nfK * v1 - v2;  // highpass
+                else if (nfMode === 1) noise = noiseRaw - nfKLocal * v1 - v2;  // highpass
                 else if (nfMode === 2) noise = v1;      // bandpass
-                else noise = (noiseRaw - nfK * v1 - v2) + v2;  // notch = HP + LP
+                else noise = (noiseRaw - nfKLocal * v1 - v2) + v2;  // notch = HP + LP
             }
 
             let dry = oscSum + noise;
 
             // Analog-style warm drive / saturation for bass
-            if (drive > 0.001) {
-                const driveFactor = 1 + drive * 3.5;
+            if (driveMod > 0.001) {
+                const driveFactor = 1 + driveMod * 3.5;
                 const driven = dry * driveFactor;
                 dry = driven / (1 + Math.abs(driven) * 0.6);
             }
@@ -833,7 +906,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             // Filter
             const qMod = fQval + lfo1Q + lfo2Q;
             const kMod = 1 / (qMod < 0.1 ? 0.1 : (qMod > 20 ? 20 : qMod));
-            const needsFiltRecomp = lfo1Filt !== 0 || lfo2Filt !== 0 || (filterEnvAmt > 0.001 && this.#filtEnvSeg > 0) || lfo1Q !== 0 || lfo2Q !== 0 || (mTgt === 1 && mEnv > 0.001);
+            const needsFiltRecomp = lfo1Filt !== 0 || lfo2Filt !== 0 || (filterEnvAmtMod > 0.001 && this.#filtEnvSeg > 0) || lfo1Q !== 0 || lfo2Q !== 0 || (mTgt === 1 && mEnv > 0.001);
 
             let y;
             if (bypassFilter) {
@@ -859,7 +932,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 this.#envSegment = 4;
                 this.#envSegmentStart = t;
             }
-            const env = this.#envelopeStep(t, A, D, S, R, V);
+            const env = this.#envelopeStep(t, Amod, Dmod, Smod, Rmod, V);
             y *= (bypassEnv ? 1 : env) * masterClamped;
 
             output[0][i] = y * panL;
