@@ -12,7 +12,7 @@ import { logger } from '../core/logger.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { showToast } from './toast.js'
 import { bindTabToggles, downloadJson } from './components/panel_helpers.js'
-import { getLfoWaveformValue } from '../audio/math.js'
+import { getLfoWaveformValue, syncToHz } from '../audio/math.js'
 import Utils from '../core/utils.js'
 
 import GroupsSection from './synth_editor/groups_section.js'
@@ -26,22 +26,22 @@ import { SYNTH_PARAM_META, SYNTH_GROUP_DEFAULTS } from './synth_editor/constants
  * Matches the worklet synth_voice_source.js #lfoValue() mapping.
  */
 const LFO_TARGET_SCALE = {
-    'vco1.octave': 5,
-    'vco1.detune': 500,
-    'vco1.gain': 5,
-    'vco2.octave': 5,
-    'vco2.detune': 500,
-    'vco2.gain': 5,
-    'vco3.octave': 5,
-    'vco3.detune': 500,
-    'vco3.gain': 5,
-    'filter.freq': 5000,
-    'filter.Q': 120,
-    'masterVolume': 5,
-    'noise.mix': 5,
-    'fm.amount': 5,
-    'subGain': 5,
-    'pitchPunch': 5,
+    'vco1.octave': 1,
+    'vco1.detune': 100,
+    'vco1.gain': 1,
+    'vco2.octave': 1,
+    'vco2.detune': 100,
+    'vco2.gain': 1,
+    'vco3.octave': 1,
+    'vco3.detune': 100,
+    'vco3.gain': 1,
+    'filter.freq': 1000,
+    'filter.Q': 24,
+    'masterVolume': 1,
+    'noise.mix': 1,
+    'fm.amount': 1,
+    'subGain': 1,
+    'pitchPunch': 1,
 }
 
 /**
@@ -282,21 +282,20 @@ export default class SynthEditor {
         const lfo2 = this._draft.bypassLfo2 ? null : this._draft.lfo2
 
         for (const [path, knob] of this._knobMap) {
-            const scale = LFO_TARGET_SCALE[path]
-            if (!scale) continue
-            const hasLfo1 = lfo1?.target === path && (lfo1.depth ?? 0) > 0
-            const hasLfo2 = lfo2?.target === path && (lfo2.depth ?? 0) > 0
-            if (!hasLfo1 && !hasLfo2) continue
-
             let totalMod = 0
-            if (hasLfo1) totalMod += this._computeSynthLfoMod(lfo1, now)
-            if (hasLfo2) totalMod += this._computeSynthLfoMod(lfo2, now)
-
-            const base = this._getValue(path) ?? 0
-            const meta = SYNTH_PARAM_META[path]
-            const min = meta?.min ?? -Infinity
-            const max = meta?.max ?? Infinity
-            knob.setValue(Math.max(min, Math.min(max, base + totalMod)))
+            if (lfo1?.target === path && (lfo1.depth ?? 0) > 0) {
+                totalMod += this._computeSynthLfoMod(lfo1, now)
+            }
+            if (lfo2?.target === path && (lfo2.depth ?? 0) > 0) {
+                totalMod += this._computeSynthLfoMod(lfo2, now)
+            }
+            if (totalMod !== 0) {
+                const base = this._getValue(path) ?? 0
+                const meta = SYNTH_PARAM_META[path]
+                const min = meta?.min ?? -Infinity
+                const max = meta?.max ?? Infinity
+                knob.setValue(Math.max(min, Math.min(max, base + totalMod)))
+            }
         }
     }
 
@@ -311,13 +310,15 @@ export default class SynthEditor {
         const scale = LFO_TARGET_SCALE[target]
         if (!scale) return 0
 
-        const freq = lfo.freq ?? 0
+        // Same frequency resolution as WorkletSynthVoice (tempo sync wins over freq)
+        const freq = syncToHz(lfo.sync, this._serviceRegistry.transport?.bpm) ?? lfo.freq ?? 0
         const depth = lfo.depth ?? 0
         if (freq <= 0 || depth <= 0) return 0
 
         const waveName = lfo.wave ?? 'sine'
         const waveIdx = Utils.waveList.indexOf(waveName)
-        const phase = (audioTime * freq) % 1.0
+        // Not wrapped: getLfoWaveformValue() wraps internally and S&H needs the cycle index.
+        const phase = audioTime * freq
         const raw = getLfoWaveformValue(phase, waveIdx >= 0 ? waveIdx : 0)
 
         return raw * depth * scale

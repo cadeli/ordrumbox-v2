@@ -33,6 +33,15 @@
  *  17 = filter.Q (filter Q, ×24)
  *  18 = noise.mix (noise gain, ×1)
  *
+ * LFO clock:
+ *   LFO phase is free-running on the AudioContext clock:
+ *   phase = currentTime * lfoFreq, seeded on the first audible sample of a
+ *   note and then accumulated. It is NOT restarted at each note, so
+ *   successive notes hear the LFO where it currently is, and the synth-editor
+ *   knob animation (audioCtx.currentTime * freq) shows exactly what is heard.
+ *   Waveforms come from getLfoWaveformValue() (src/audio/math.js): keep
+ *   _lfoWave() below in sync with it. An LFO with freq <= 0 is inactive.
+ *
  * Trigger model:
  *   The host sends messages via `port`:
  *     { type: 'trigger', startTime }
@@ -103,6 +112,22 @@ function _polyBLEP(t, dt) {
     return 0.0;
 }
 
+// LFO waveform in [-1, 1]. Inlined copy of getLfoWaveformValue() (src/audio/math.js),
+// the single source of truth also used by the synth-editor knob animation.
+// 'phase' is NOT wrapped: S&H (wave 4) needs the integer cycle index.
+function _lfoWave(phase, wave) {
+    const p = (phase - 0.25) - Math.floor(phase - 0.25);
+    if (wave < 0.5) return Math.sin(TWO_PI * p);
+    if (wave < 1.5) return p < 0.25 ? p * 4 - 1 : (p < 0.75 ? 3 - p * 4 : p * 4 - 5);
+    if (wave < 2.5) return p * 2 - 1;
+    if (wave < 3.5) return p < 0.5 ? 1 : -1;
+    let rng = ((Math.floor(phase) * 1234567 + 890123) | 0);
+    rng ^= rng << 13;
+    rng ^= rng >> 17;
+    rng ^= rng << 5;
+    return (rng | 0) / 2147483648;
+}
+
 // Cheap xorshift32 PRNG (replaces Math.random for noise)
 function _xorshift32(state) {
     state ^= state << 13;
@@ -122,6 +147,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     #lfo2Det;
     #lfo2Gain;
     #lfoScratch;
+    #lfoSeeded;
     #filtLP;
     #filtHP;
     #filtBP;
@@ -206,6 +232,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this.#rngState = 54321;
         this.lfoPhase1 = 0;
         this.lfoPhase2 = 0;
+        this.#lfoSeeded = false;
         this.#lfo1Det = [0, 0, 0];
         this.#lfo1Gain = [0, 0, 0];
         this.#lfo2Det = [0, 0, 0];
@@ -242,6 +269,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         if (msg.type === 'trigger') {
             this.startTime = msg.startTime ?? 0;
             this.releaseTime = -1;
+            this.#lfoSeeded = false;
             this.#envSegment = 1;
             this.#envSegmentStart = 0;
             this.#envLevel = 0;
@@ -283,6 +311,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.phase3 = 0;
             this.lfoPhase1 = 0;
             this.lfoPhase2 = 0;
+            this.#lfoSeeded = false;
             this.#rngState = 54321;
             this.filt.z1 = 0;
             this.filt.z2 = 0;
@@ -315,12 +344,12 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         return sq + _polyBLEP(phase, dt) - _polyBLEP((phase + 0.5) % 1, dt);
     }
 
-    #lfoValue(target, depth, phase, det, gain, out, wave, dt) {
+    #lfoValue(target, depth, phase, det, gain, out, wave) {
         det[0] = 0; det[1] = 0; det[2] = 0;
         gain[0] = 0; gain[1] = 0; gain[2] = 0;
         out[0] = 0; out[1] = 0; out[2] = 0; out[3] = 0;
         if (target === 0) return;
-        const raw = this.#v(wave, phase, dt) * depth;
+        const raw = _lfoWave(phase, wave) * depth;
         if (target === 1)  { out[0] = raw * 1000; return; }
         if (target === 2)  { det[0] = raw * 1000; return; }
         if (target === 3)  { det[1] = raw * 1000; return; }
@@ -565,6 +594,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
 
         const lfo1Inc = lfo1Freq / sr;
         const lfo2Inc = lfo2Freq / sr;
+        // An LFO with freq <= 0 is inactive (same rule as the synth-editor knob animation)
+        const lfo1On = !bypassLfo1 && lfo1Freq > 0;
+        const lfo2On = !bypassLfo2 && lfo2Freq > 0;
 
         // Noise filter coefficients
         let nfMode = 0;
@@ -586,17 +618,25 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 continue;
             }
 
-            // Advance LFO phases safely
-            this.lfoPhase1 = (this.lfoPhase1 + lfo1Inc) % 1.0;
-            this.lfoPhase2 = (this.lfoPhase2 + lfo2Inc) % 1.0;
+            // LFO phases: free-running on the AudioContext clock (phase = currentTime * freq),
+            // seeded on the first audible sample of the note, then accumulated. Not wrapped:
+            // _lfoWave() wraps internally and S&H needs the cycle index.
+            if (!this.#lfoSeeded) {
+                this.lfoPhase1 = currentTime * lfo1Freq;
+                this.lfoPhase2 = currentTime * lfo2Freq;
+                this.#lfoSeeded = true;
+            } else {
+                this.lfoPhase1 += lfo1Inc;
+                this.lfoPhase2 += lfo2Inc;
+            }
 
             // Compute LFO modulations
-            this.#lfoValue(bypassLfo1 ? 0 : lfo1Target, lfo1Depth, this.lfoPhase1, this.#lfo1Det, this.#lfo1Gain, this.#lfoScratch, lfo1Wave, lfo1Inc);
+            this.#lfoValue(lfo1On ? lfo1Target : 0, lfo1Depth, this.lfoPhase1, this.#lfo1Det, this.#lfo1Gain, this.#lfoScratch, lfo1Wave);
             const lfo1Filt = this.#lfoScratch[0];
             const lfo1Master = this.#lfoScratch[1];
             const lfo1Q = this.#lfoScratch[2];
             const lfo1Noise = this.#lfoScratch[3];
-            this.#lfoValue(bypassLfo2 ? 0 : lfo2Target, lfo2Depth, this.lfoPhase2, this.#lfo2Det, this.#lfo2Gain, this.#lfoScratch, lfo2Wave, lfo2Inc);
+            this.#lfoValue(lfo2On ? lfo2Target : 0, lfo2Depth, this.lfoPhase2, this.#lfo2Det, this.#lfo2Gain, this.#lfoScratch, lfo2Wave);
             const lfo2Filt = this.#lfoScratch[0];
             const lfo2Master = this.#lfoScratch[1];
             const lfo2Q = this.#lfoScratch[2];
