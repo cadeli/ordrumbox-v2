@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('E2E-A : Cold start → first sound', () => {
 
-  test('loadSong + init + premier tick déclenche au moins un flatNote', async ({ page }) => {
+  test('loadSong + init + first tick triggers at least one flatNote', async ({ page }) => {
     await page.goto('/');
 
     const startBtn = page.locator('#waiting-screen-start-btn');
@@ -34,7 +34,7 @@ test.describe('E2E-A : Cold start → first sound', () => {
     expect(state.flatNoteCount).toBeGreaterThan(0);
   });
 
-  test('le contexte audio passe en "running" après le clic Start', async ({ page }) => {
+  test('audio context transitions to "running" after Start click', async ({ page }) => {
     await page.goto('/');
 
     const startBtn = page.locator('#waiting-screen-start-btn');
@@ -61,7 +61,7 @@ test.describe('E2E-A : Cold start → first sound', () => {
       .toBe('running');
   });
 
-  test('les tracks ont des soundId assignés (auto-assign au premier start)', async ({ page }) => {
+  test('tracks have soundIds assigned (auto-assign on first start)', async ({ page }) => {
     await page.goto('/');
 
     await page.locator('#waiting-screen-start-btn').click();

@@ -1,14 +1,14 @@
 // playwright.config.js
-// Remplace about_panel.test.js / mobile_css_layout.test.js / sub_panel_toggles.test.js
-// par des tests exécutés dans un vrai Chromium (nécessaire pour AudioContext + Canvas réels).
+// Replaces about_panel.test.js / mobile_css_layout.test.js / sub_panel_toggles.test.js
+// with tests running in real Chromium (required for real AudioContext + Canvas).
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
   expect: { timeout: 5_000 },
-  // Les tests AudioContext/WebAudio sont sensibles au parallélisme
-  // (un seul contexte audio "réel" à la fois évite les faux négatifs de timing).
+  // AudioContext/WebAudio tests are sensitive to parallelism
+  // (a single real audio context at a time avoids false timing negatives).
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
@@ -19,14 +19,14 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    // Chrome bloque l'audio sans interaction : on laisse le test
-    // déclencher lui-même le premier geste utilisateur (voir playback.spec.js)
-    // plutôt que de désactiver la politique via --autoplay-policy, pour
-    // reproduire fidèlement le bug "AudioContext was not allowed to start".
+    // Chrome blocks audio without interaction: we let the test
+    // trigger the first user gesture itself (see playback.spec.js)
+    // rather than disabling the policy via --autoplay-policy, to
+    // faithfully reproduce the "AudioContext was not allowed to start" bug.
   },
 
   webServer: {
-    // TODO: adapter si la commande Vite du repo diffère (ex: "vite --port 3000")
+    // TODO: adapt if the Vite command in this repo differs (e.g. "vite --port 3000")
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
@@ -41,8 +41,8 @@ export default defineConfig({
     },
     {
       name: 'mobile-chromium',
-      // Remplace mobile_css_layout.test.js : vrai viewport + touch events,
-      // pas une simulation de media query.
+      // Replaces mobile_css_layout.test.js: real viewport + touch events,
+      // not a media query simulation.
       use: { ...devices['Pixel 7'] },
       testMatch: /.*\.mobile\.spec\.js/,
     },

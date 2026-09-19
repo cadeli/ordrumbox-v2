@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('E2E-B : Persistance entre sessions', () => {
 
-  test('état sauvegardé dans IndexedDB est restauré après rechargement', async ({ page }) => {
+  test('state saved in IndexedDB is restored after reload', async ({ page }) => {
     await page.goto('/');
     await page.locator('#waiting-screen-start-btn').click();
     await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
@@ -47,7 +47,7 @@ test.describe('E2E-B : Persistance entre sessions', () => {
     expect(restored.selectedDrumkit).toBe(snapshot.selectedDrumkit);
   });
 
-  test('une entrée IDB avec APP_VERSION différente est rejetée (cache stale)', async ({ page }) => {
+  test('IDB entry with different APP_VERSION is rejected (stale cache)', async ({ page }) => {
     await page.goto('/');
     await page.locator('#waiting-screen-start-btn').click();
     await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });

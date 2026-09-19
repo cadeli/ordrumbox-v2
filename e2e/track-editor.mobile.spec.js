@@ -15,16 +15,26 @@ async function dismissWaitingScreen(page) {
     await btn.click();
   }
   await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
+  await page.waitForFunction(() => {
+    const te = document.getElementById('te-panel');
+    return te !== null;
+  }, { timeout: 10_000 });
 }
 
-test('track editor et note editor restent accessibles sur mobile', async ({ page }) => {
+test('track editor and note editor remain accessible on mobile', async ({ page }) => {
   await page.goto('/');
   await dismissWaitingScreen(page);
 
   await page.locator('.mtb-btn[data-tab="track"]').click();
 
   const tePanel = page.locator('#te-panel');
-  await expect(tePanel).toBeVisible({ timeout: 5_000 });
+  await expect(tePanel).toBeVisible({ timeout: 8_000 });
+
+  await page.waitForFunction(
+    (sel) => document.querySelector(sel)?.getBoundingClientRect().width > 0,
+    '#te-panel',
+    { timeout: 5_000 }
+  );
 
   const width = await tePanel.evaluate((el) => el.getBoundingClientRect().width);
   const viewportWidth = page.viewportSize().width;

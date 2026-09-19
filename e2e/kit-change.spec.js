@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('E2E-C : Changement de kit en cours de lecture', () => {
 
-  test('changer de kit pendant la lecture réassigne les soundIds sans orphelins', async ({ page }) => {
+  test('changing kit during playback reassigns soundIds without orphans', async ({ page }) => {
     await page.goto('/');
     await page.locator('#waiting-screen-start-btn').click();
     await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
@@ -74,7 +74,7 @@ test.describe('E2E-C : Changement de kit en cours de lecture', () => {
     expect(isRunning).toBe(true);
   });
 
-  test('les flatNotes sont reconstruites après le changement de kit', async ({ page }) => {
+  test('flatNotes are rebuilt after kit change', async ({ page }) => {
     await page.goto('/');
     await page.locator('#waiting-screen-start-btn').click();
     await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });

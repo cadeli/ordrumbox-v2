@@ -21,7 +21,7 @@ test.describe('Lecture et AudioContext', () => {
     await dismissWaitingScreen(page);
   });
 
-  test("l'écran d'accueil disparaît après le clic Start", async ({ page }) => {
+  test("welcome screen disappears after Start click", async ({ page }) => {
     const screen = page.locator('#waiting-screen');
     await expect(screen).toBeHidden();
   });
@@ -35,7 +35,7 @@ test.describe('Lecture et AudioContext', () => {
     await expect(playBtn).not.toHaveClass(/running/, { timeout: 3_000 });
   });
 
-  test('la tête de lecture avance sur la grille de pas', async ({ page }) => {
+  test('playhead advances on the step grid', async ({ page }) => {
     const playBtn = page.locator('button.tb-start');
     await playBtn.click();
 
@@ -84,6 +84,6 @@ test.describe('Chargement des drumkits', () => {
       await page.waitForLoadState('networkidle');
     }
 
-    expect(failedRequests, `Samples en échec : ${failedRequests.join(', ')}`).toHaveLength(0);
+    expect(failedRequests, `Failed samples: ${failedRequests.join(', ')}`).toHaveLength(0);
   });
 });
