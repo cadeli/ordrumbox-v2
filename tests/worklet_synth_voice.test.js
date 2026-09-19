@@ -412,6 +412,120 @@ describe('SynthVoiceProcessor source', () => {
         expect(variance(outLfo[0])).toBeGreaterThan(variance(outByp[0]) + 0.05)
     })
 
+    it('LFO on filter.freq produces audible frequency modulation (sawtooth)', () => {
+        const FRAMES = 4410
+        // Sawtooth has rich harmonics — filter sweep will produce amplitude variation
+        const procLfo = makeProc()
+        procLfo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procLfo.port.onmessage({ data: {
+            type: 'update',
+            lfo1Target: 15, lfo1Depth: 1.0, lfo1Freq: 5, lfo1Wave: 0,
+            filterFreq: 400, filterQ: 8, filterType: 0,
+            osc1Gain: 1, osc1Wave: 2, // sawtooth
+        }})
+        const outLfo = runProcess(procLfo, {
+            osc1Gain: 1, osc1Wave: 2, attack: 0.001, sustain: 1, release: 5,
+            velocity: 0.8, master: 1,
+            filterFreq: 400, filterQ: 8, filterType: 0,
+        }, FRAMES)
+        // No LFO — static filter
+        const procNo = makeProc()
+        procNo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procNo.port.onmessage({ data: {
+            type: 'update',
+            lfo1Target: 15, lfo1Depth: 0, lfo1Freq: 5, lfo1Wave: 0,
+            filterFreq: 400, filterQ: 8, filterType: 0,
+            osc1Gain: 1, osc1Wave: 2,
+        }})
+        const outNo = runProcess(procNo, {
+            osc1Gain: 1, osc1Wave: 2, attack: 0.001, sustain: 1, release: 5,
+            velocity: 0.8, master: 1,
+            filterFreq: 400, filterQ: 8, filterType: 0,
+        }, FRAMES)
+        const rms = (arr) => {
+            let sum = 0
+            for (let i = 200; i < arr.length; i++) sum += arr[i] * arr[i]
+            return Math.sqrt(sum / (arr.length - 200))
+        }
+        const rmsLfo = rms(outLfo[0])
+        const rmsNo = rms(outNo[0])
+        // Both should produce output
+        expect(rmsLfo).toBeGreaterThan(0.01)
+        expect(rmsNo).toBeGreaterThan(0.01)
+        // LFO-modulated output should differ from static (different RMS due to filter sweep)
+        expect(Math.abs(rmsLfo - rmsNo)).toBeGreaterThan(0.001)
+    })
+
+    it('LFO on vco1.octave produces pitch modulation (vibrato)', () => {
+        const FRAMES = 4410
+        const procLfo = makeProc()
+        procLfo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procLfo.port.onmessage({ data: {
+            type: 'update',
+            lfo1Target: 8, lfo1Depth: 1.0, lfo1Freq: 5, lfo1Wave: 0,
+            filterFreq: 20000, filterType: 0,
+            osc1Gain: 1, osc1Wave: 0,
+        }})
+        const outLfo = runProcess(procLfo, {
+            osc1Gain: 1, osc1Wave: 0, attack: 0.001, sustain: 1, release: 5,
+            velocity: 0.8, master: 1,
+            filterFreq: 20000, filterType: 0,
+        }, FRAMES)
+        // No LFO
+        const procNo = makeProc()
+        procNo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        procNo.port.onmessage({ data: {
+            type: 'update',
+            lfo1Target: 8, lfo1Depth: 0, lfo1Freq: 5, lfo1Wave: 0,
+            filterFreq: 20000, filterType: 0,
+            osc1Gain: 1, osc1Wave: 0,
+        }})
+        const outNo = runProcess(procNo, {
+            osc1Gain: 1, osc1Wave: 0, attack: 0.001, sustain: 1, release: 5,
+            velocity: 0.8, master: 1,
+            filterFreq: 20000, filterType: 0,
+        }, FRAMES)
+        // Compare zero-crossings: vibrato shifts frequency → different zero-crossing rate
+        const countCrossings = (arr) => {
+            let c = 0
+            for (let i = 201; i < arr.length; i++) {
+                if ((arr[i - 1] >= 0 && arr[i] < 0) || (arr[i - 1] < 0 && arr[i] >= 0)) c++
+            }
+            return c
+        }
+        const crossingsLfo = countCrossings(outLfo[0])
+        const crossingsNo = countCrossings(outNo[0])
+        // Vibrato should produce different zero-crossing count than static
+        expect(crossingsLfo).not.toBe(crossingsNo)
+    })
+
+    it('trigger then re-send update: LFO params survive trigger', () => {
+        const FRAMES = 4410
+        // Scenario: send update, then trigger (clears), then re-send (restores)
+        const proc = makeProc()
+        proc.port.onmessage({ data: {
+            type: 'update',
+            lfo1Target: 5, lfo1Depth: 0.8, lfo1Freq: 5,
+            osc1Gain: 1, velocity: 0.5, master: 1,
+        }})
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        proc.port.onmessage({ data: {
+            type: 'update',
+            lfo1Target: 5, lfo1Depth: 0.8, lfo1Freq: 5,
+            osc1Gain: 1, velocity: 0.5, master: 1,
+        }})
+        const out = runProcess(proc, {
+            osc1Gain: 1, velocity: 0.5, master: 1,
+        }, FRAMES)
+        const variance = (arr) => {
+            let min = Infinity, max = -Infinity
+            for (let i = 200; i < arr.length; i++) { min = Math.min(min, arr[i]); max = Math.max(max, arr[i]) }
+            return max - min
+        }
+        // With LFO re-sent after trigger, output should vary (tremolo)
+        expect(variance(out[0])).toBeGreaterThan(0.05)
+    })
+
     it('bypassFm disables frequency modulation', () => {
         const FRAMES = 4410
         // With FM cascade (algo 2: 3→2→1, high amount should produce sidebands)

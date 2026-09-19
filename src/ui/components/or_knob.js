@@ -20,6 +20,7 @@ const DRAG_END_DEBOUNCE_MS = 50
  * @param {boolean}  [cfg.hasLfo]   Adds CSS class has-lfo
  * @param {string}   [cfg.extraClass] Additional CSS class on the row
  * @param {Function} [cfg.onChange]  (val, key) => void callback
+ * @param {string}   [cfg.scale]    'log' for logarithmic mapping (default: 'linear')
  */
 export class OrKnob {
     static #ID = 0
@@ -46,6 +47,9 @@ export class OrKnob {
     #boundOnMousedown
     #boundOnDblClick
     #boundOnContextMenu
+    #scale
+    #logMin
+    #logRange
 
     constructor(cfg) {
         this.#id = `or-knob-${OrKnob.#ID++}`
@@ -61,6 +65,9 @@ export class OrKnob {
         this.#value = cfg.value ?? cfg.min
         this.#defaultValue = cfg.defaultValue ?? cfg.value ?? cfg.min
         this.#unit = cfg.unit ?? ''
+        this.#scale = cfg.scale ?? 'linear'
+        this.#logMin = Math.log10(this.#min)
+        this.#logRange = Math.log10(this.#max) - this.#logMin
 
         this.el = null
         this.#valSpan = null
@@ -84,6 +91,10 @@ export class OrKnob {
 
     /** Returns 0–100 percentage of current value within range. */
     #pct() {
+        if (this.#scale === 'log' && this.#logRange > 0) {
+            const logPos = (Math.log10(Math.max(this.#min, this.#value)) - this.#logMin) / this.#logRange
+            return Math.max(0, Math.min(100, logPos * 100))
+        }
         return Math.max(0, Math.min(100, ((this.#value - this.#min) / (this.#max - this.#min)) * 100))
     }
 
@@ -198,7 +209,13 @@ export class OrKnob {
         this.#dragStartVal = this.#value
         this.#knobEl.classList.add('dragging')
 
-        const baseSensitivity = (this.#max - this.#min) / 200
+        const isLog = this.#scale === 'log' && this.#logRange > 0
+        const baseSensitivity = isLog
+            ? this.#logRange / 200
+            : (this.#max - this.#min) / 200
+        const startLogPos = isLog
+            ? (Math.log10(Math.max(this.#min, this.#dragStartVal)) - this.#logMin) / this.#logRange
+            : 0
 
         const onMove = (ev) => {
             const deltaY = this.#dragStartY - ev.clientY
@@ -206,7 +223,15 @@ export class OrKnob {
             const isFine = ev.shiftKey
             const sensitivity = isFine ? baseSensitivity * 0.1 : baseSensitivity
             const stepSize = isFine ? this.#step * 0.1 : this.#step
-            const clamped = this.#clampStep(this.#dragStartVal + deltaY * sensitivity, stepSize)
+
+            let clamped
+            if (isLog) {
+                const newLogPos = Math.max(0, Math.min(1, startLogPos + deltaY * sensitivity))
+                const raw = Math.pow(10, this.#logMin + newLogPos * this.#logRange)
+                clamped = this.#clampStep(raw, stepSize)
+            } else {
+                clamped = this.#clampStep(this.#dragStartVal + deltaY * sensitivity, stepSize)
+            }
             if (clamped !== this.#value) {
                 this.setValue(clamped)
                 this.#onChange?.(clamped, this.#key)

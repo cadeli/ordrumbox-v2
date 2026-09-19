@@ -434,6 +434,101 @@ describe('WorkletSynthVoice parameter coverage', () => {
         }
         expect(Object.keys(msg).filter(k => k !== 'type')).toHaveLength(expectedKeys.length)
     })
+
+    it('maps LFO target string to correct integer in worklet message', async () => {
+        const ctx = createMockAudioCtx()
+        const strip = createMockStrip()
+
+        const cases = [
+            { target: 'NOT', expected: 0 },
+            { target: 'filter.freq', expected: 15 },
+            { target: 'filter.Q', expected: 17 },
+            { target: 'masterVolume', expected: 5 },
+            { target: 'vco1.octave', expected: 8 },
+            { target: 'vco1.detune', expected: 7 },
+            { target: 'vco1.gain', expected: 6 },
+            { target: 'vco2.octave', expected: 11 },
+            { target: 'vco3.gain', expected: 12 },
+            { target: 'noise.mix', expected: 18 },
+        ]
+
+        for (const { target, expected } of cases) {
+            postMessageMock.mockClear()
+            const gs = makeGeneratedSound({
+                lfo: { target, wave: 'sine', freq: 2, depth: 0.8 },
+            })
+            const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
+            const flatNote = makeFlatNote()
+            flatNote.track.useSoftSynth = true
+            await voice.setup(flatNote, 1.0)
+
+            const msg = lastPostByType('update')
+            expect(msg.lfo1Target, `target '${target}' should map to ${expected}`).toBe(expected)
+            expect(msg.lfo1Freq).toBe(2)
+            expect(msg.lfo1Depth).toBe(0.8)
+            expect(msg.lfo1Wave).toBe(0) // sine
+        }
+    })
+
+    it('maps LFO wave string to correct integer', async () => {
+        const ctx = createMockAudioCtx()
+        const strip = createMockStrip()
+
+        const cases = [
+            { wave: 'sine', expected: 0 },
+            { wave: 'triangle', expected: 1 },
+            { wave: 'sawtooth', expected: 2 },
+            { wave: 'square', expected: 3 },
+            { wave: 'random', expected: 4 },
+        ]
+
+        for (const { wave, expected } of cases) {
+            postMessageMock.mockClear()
+            const gs = makeGeneratedSound({
+                lfo: { target: 'filter.freq', wave, freq: 1, depth: 0.5 },
+            })
+            const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
+            const flatNote = makeFlatNote()
+            flatNote.track.useSoftSynth = true
+            await voice.setup(flatNote, 1.0)
+
+            const msg = lastPostByType('update')
+            expect(msg.lfo1Wave, `wave '${wave}' should map to ${expected}`).toBe(expected)
+        }
+    })
+
+    it('LFO2 target and params are sent correctly', async () => {
+        const ctx = createMockAudioCtx()
+        const strip = createMockStrip()
+        const gs = makeGeneratedSound({
+            lfo2: { target: 'vco1.detune', wave: 'triangle', freq: 3, depth: 0.7 },
+        })
+        const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
+        const flatNote = makeFlatNote()
+        flatNote.track.useSoftSynth = true
+        await voice.setup(flatNote, 1.0)
+
+        const msg = lastPostByType('update')
+        expect(msg.lfo2Target).toBe(7) // vco1.detune
+        expect(msg.lfo2Wave).toBe(1)   // triangle
+        expect(msg.lfo2Freq).toBe(3)
+        expect(msg.lfo2Depth).toBe(0.7)
+    })
+
+    it('unknown LFO target falls back to NOT (0)', async () => {
+        const ctx = createMockAudioCtx()
+        const strip = createMockStrip()
+        const gs = makeGeneratedSound({
+            lfo: { target: 'subGain', wave: 'sine', freq: 1, depth: 0.5 },
+        })
+        const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
+        const flatNote = makeFlatNote()
+        flatNote.track.useSoftSynth = true
+        await voice.setup(flatNote, 1.0)
+
+        const msg = lastPostByType('update')
+        expect(msg.lfo1Target).toBe(0) // subGain not in LFO_TARGET_TO_INT → NOT
+    })
 })
 
 // ─── VoiceFactory ─────────────────────────────────────────────────────────────

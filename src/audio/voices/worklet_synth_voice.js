@@ -51,6 +51,7 @@ export default class WorkletSynthVoice extends BaseVoice {
     #cleanupTimer
     #autoReleaseTimer
     #synthNodePool
+    #lastPan
 
     constructor(audioCtx, strip, generatedSound, soundKey = null, nodePool = null, synthNodePool = null) {
         super(audioCtx, strip, nodePool)
@@ -60,6 +61,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.noteVelo = 0.8
         this.noteRatio = 1
         this.masterVolume = 0.8
+        this.#lastPan = 0
         this.#cleanupTimer = null
         this.#autoReleaseTimer = null
         this.#synthNodePool = synthNodePool
@@ -96,6 +98,11 @@ export default class WorkletSynthVoice extends BaseVoice {
 
             // Send trigger
             this.workletNode.port.postMessage({ type: 'trigger', startTime: time })
+
+            // Re-send all parameters after trigger because the processor clears
+            // #overrides on trigger (line 291 of synth_voice_source.js), which
+            // wipes out the LFO, filter, and other params sent during setup().
+            this.#sendUpdate(gs, this.#lastPan)
 
             // Auto-release after one step (16th note = 0.25 * secondsPerBeat).
             // Send a deferred release directly to the worklet processor instead of
@@ -216,6 +223,7 @@ export default class WorkletSynthVoice extends BaseVoice {
 
     #sendUpdate(gs, pan) {
         if (!this.workletNode) return
+        this.#lastPan = pan
         try {
             const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
             const noiseCfg = gs.noise ?? {}

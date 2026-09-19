@@ -86,6 +86,7 @@ export function syncKnobs({ container, configs, selector = 'or-knob', prev, onCh
                 value:    cfg.val,
                 format:   cfg.format ?? fmt,
                 unit:     cfg.unit ?? meta.unit ?? defaultUnit,
+                scale:    cfg.scale ?? meta.scale,
                 onChange: cfg.onChange ?? (v => onChange?.(cfg.key, v)),
             })
         },
