@@ -269,14 +269,17 @@ export default class WaveformSection {
         const flt = draft.filter ?? {}
         const type = flt.type ?? 'lowpass'
         let fc = Math.max(20, Math.min(20000, flt.freq ?? 400))
-        const Q = Math.max(0.1, Math.min(24, flt.Q ?? 1))
+        let Q = Math.max(0.1, Math.min(24, flt.Q ?? 1))
 
         const now = editor._serviceRegistry?.audioCtx?.currentTime ?? 0
         const lfo1 = draft.bypassLfo1 ? null : draft.lfo
         const lfo2 = draft.bypassLfo2 ? null : draft.lfo2
         if (lfo1?.target === 'filter.freq') fc += editor._computeSynthLfoMod(lfo1, now)
         if (lfo2?.target === 'filter.freq') fc += editor._computeSynthLfoMod(lfo2, now)
+        if (lfo1?.target === 'filter.Q') Q += editor._computeSynthLfoMod(lfo1, now)
+        if (lfo2?.target === 'filter.Q') Q += editor._computeSynthLfoMod(lfo2, now)
         fc = Math.max(20, Math.min(20000, fc))
+        Q = Math.max(0.1, Math.min(24, Q))
 
         ctx.fillStyle = color('surface-2')
         ctx.fillRect(0, 0, w, h)
