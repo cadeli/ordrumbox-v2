@@ -268,8 +268,15 @@ export default class WaveformSection {
         const draft = editor._draft
         const flt = draft.filter ?? {}
         const type = flt.type ?? 'lowpass'
-        const fc = Math.max(20, Math.min(20000, flt.freq ?? 400))
+        let fc = Math.max(20, Math.min(20000, flt.freq ?? 400))
         const Q = Math.max(0.1, Math.min(24, flt.Q ?? 1))
+
+        const now = editor._serviceRegistry?.audioCtx?.currentTime ?? 0
+        const lfo1 = draft.bypassLfo1 ? null : draft.lfo
+        const lfo2 = draft.bypassLfo2 ? null : draft.lfo2
+        if (lfo1?.target === 'filter.freq') fc += editor._computeSynthLfoMod(lfo1, now)
+        if (lfo2?.target === 'filter.freq') fc += editor._computeSynthLfoMod(lfo2, now)
+        fc = Math.max(20, Math.min(20000, fc))
 
         ctx.fillStyle = color('surface-2')
         ctx.fillRect(0, 0, w, h)
@@ -329,15 +336,15 @@ export default class WaveformSection {
             }
         }
 
-        const lfo1 = draft.lfo ?? {}
-        const lfo2 = draft.lfo2 ?? {}
-        const isLfo1Filter = lfo1.target === 'filter.freq' && !draft.bypassLfo1 && (lfo1.depth ?? 0) > 0
-        const isLfo2Filter = lfo2.target === 'filter.freq' && !draft.bypassLfo2 && (lfo2.depth ?? 0) > 0
+        const lfo1raw = draft.lfo ?? {}
+        const lfo2raw = draft.lfo2 ?? {}
+        const isLfo1Filter = lfo1raw.target === 'filter.freq' && !draft.bypassLfo1 && (lfo1raw.depth ?? 0) > 0
+        const isLfo2Filter = lfo2raw.target === 'filter.freq' && !draft.bypassLfo2 && (lfo2raw.depth ?? 0) > 0
 
         if (isLfo1Filter || isLfo2Filter) {
             const lfoDepth = Math.max(
-                isLfo1Filter ? (lfo1.depth ?? 0) : 0,
-                isLfo2Filter ? (lfo2.depth ?? 0) : 0
+                isLfo1Filter ? (lfo1raw.depth ?? 0) : 0,
+                isLfo2Filter ? (lfo2raw.depth ?? 0) : 0
             )
             const modHz = lfoDepth * 1000
             const fcMin = Math.max(20, fc - modHz)
