@@ -15,10 +15,7 @@ async function dismissWaitingScreen(page) {
     await btn.click();
   }
   await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
-  await page.waitForFunction(() => {
-    const te = document.getElementById('te-panel');
-    return te !== null;
-  }, { timeout: 10_000 });
+  await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 });
 }
 
 test('track editor and note editor remain accessible on mobile', async ({ page }) => {
