@@ -633,12 +633,15 @@ export default class SynthEditor {
     // ─── Public API ───────────────────────────────────────────────────────
     /** @returns {Object|null} current draft state */
     get draft() { return this._draft }
+    set draft(v) { this._draft = v }
 
     /** @returns {object} sound registry */
     get soundRegistry() { return this._soundRegistry }
+    set soundRegistry(v) { this._soundRegistry = v }
 
     /** @returns {object} service registry */
     get serviceRegistry() { return this._serviceRegistry }
+    set serviceRegistry(v) { this._serviceRegistry = v }
 
     /** @returns {object} playback events */
     get playbackEvents() { return this._playbackEvents }
@@ -649,6 +652,7 @@ export default class SynthEditor {
 
     /** @returns {Object|null} original draft (before edits) */
     get original() { return this._original }
+    set original(v) { this._original = v }
 
     /** @returns {boolean} true if loading */
     get loading() { return this._loading }
