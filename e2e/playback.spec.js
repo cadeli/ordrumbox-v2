@@ -15,7 +15,7 @@ async function dismissWaitingScreen(page) {
   await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
 }
 
-test.describe('Lecture et AudioContext', () => {
+test.describe('Playback and AudioContext', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await dismissWaitingScreen(page);
@@ -26,7 +26,7 @@ test.describe('Lecture et AudioContext', () => {
     await expect(screen).toBeHidden();
   });
 
-  test('le bouton Start obtient la classe "running" pendant la lecture', async ({ page }) => {
+  test('Start button gets the "running" class during playback', async ({ page }) => {
     const playBtn = page.locator('button.tb-start');
     await playBtn.click();
     await expect(playBtn).toHaveClass(/running/, { timeout: 3_000 });
@@ -51,7 +51,7 @@ test.describe('Lecture et AudioContext', () => {
     await playBtn.click();
   });
 
-  test('cliquer sur une cellule de la grille joue une note', async ({ page }) => {
+  test('clicking a grid cell plays a note', async ({ page }) => {
     const cell = page.locator('.pp-cell').first();
     if (await cell.isVisible({ timeout: 2000 }).catch(() => false)) {
       await cell.click();
@@ -62,8 +62,8 @@ test.describe('Lecture et AudioContext', () => {
   });
 });
 
-test.describe('Chargement des drumkits', () => {
-  test('changer de drumkit charge les nouveaux samples sans 404', async ({ page }) => {
+test.describe('Drumkit loading', () => {
+  test('changing drumkit loads new samples without 404', async ({ page }) => {
     await page.goto('/');
     await dismissWaitingScreen(page);
 

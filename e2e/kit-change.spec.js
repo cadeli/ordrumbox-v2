@@ -6,7 +6,7 @@
 
 import { test, expect } from '@playwright/test';
 
-test.describe('E2E-C : Changement de kit en cours de lecture', () => {
+test.describe('E2E-C: Kit change mid-playback', () => {
 
   test('changing kit during playback reassigns soundIds without orphans', async ({ page }) => {
     await page.goto('/');

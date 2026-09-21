@@ -13,7 +13,7 @@ async function dismissWaitingScreen(page) {
   await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
 }
 
-test('le spectrum analyzer dessine des pixels non vides pendant la lecture', async ({ page }) => {
+test('spectrum analyzer draws non-empty pixels during playback', async ({ page }) => {
   await page.goto('/');
   await dismissWaitingScreen(page);
 

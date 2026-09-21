@@ -25,7 +25,7 @@ import { SYNTH_PARAM_META, SYNTH_GROUP_DEFAULTS } from './synth_editor/constants
  * raw * scale = the modulation amount in the target's display units.
  * Matches the worklet synth_voice_source.js #lfoValue() mapping.
  */
-const LFO_TARGET_SCALE = {
+export const LFO_TARGET_SCALE = {
     'vco1.octave': 1,
     'vco1.detune': 100,
     'vco1.gain': 1,

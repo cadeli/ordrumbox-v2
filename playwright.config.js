@@ -37,7 +37,7 @@ export default defineConfig({
     {
       name: 'desktop-chromium',
       use: { ...devices['Desktop Chrome'] },
-      testMatch: /^(?!.*\.mobile\.)/,
+      testMatch: /^(?!.*\.mobile\.).*\.spec\.[jt]sx?$/,
     },
     {
       name: 'mobile-chromium',

@@ -6,7 +6,7 @@
 
 import { test, expect } from '@playwright/test';
 
-test.describe('E2E-B : Persistance entre sessions', () => {
+test.describe('E2E-B: Persistence between sessions', () => {
 
   test('state saved in IndexedDB is restored after reload', async ({ page }) => {
     await page.goto('/');
@@ -99,7 +99,7 @@ test.describe('E2E-B : Persistance entre sessions', () => {
     expect(after.patternCount).toBeGreaterThan(0);
   });
 
-  test('clearAllCache supprime tout le cache IDB', async ({ page }) => {
+  test('clearAllCache deletes all IDB cache', async ({ page }) => {
     await page.goto('/');
     await page.locator('#waiting-screen-start-btn').click();
     await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
