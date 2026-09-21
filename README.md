@@ -111,9 +111,9 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 ```bash
 npm install
 npm run dev          # Vite dev server (port 3000)
-npm test             # Run all unit/integration tests (Vitest, 97 files, 2522 tests)
+npm test             # Run all unit tests (Vitest, 102 files, 2730 tests)
 npm run test:watch   # Watch mode
-npm run test:coverage # Test coverage
+npm run test:coverage # Test coverage (v8)
 npm run build        # Production build
 npm run electron:dev # Desktop app (Electron)
 npm run electron:build # Build Electron installer (release/)
@@ -124,43 +124,36 @@ npm run electron:build # Build Electron installer (release/)
 E2E tests run in real Chromium (desktop + mobile viewport) against the Vite dev server.
 
 ```bash
-npx playwright test                         # Run all e2e tests (33 tests)
+npx playwright test                         # Run all e2e tests (43 tests)
 npx playwright test --reporter=list         # With test names
 npx playwright test e2e/cold-start.spec.js  # Run a single spec
 npx playwright test -g "E2E-D"             # Run by test title pattern
+npx playwright test --project=desktop-chromium   # Desktop only
+npx playwright test --project=mobile-chromium    # Mobile only (Pixel 7)
 ```
 
-The dev server (`npm run dev`) must be running on port 3000 before launching tests. Playwright starts it automatically via the `webServer` config in `playwright.config.js`.
+Playwright starts the dev server automatically via the `webServer` config in `playwright.config.js`. Workers: 1 (serial) — AudioContext tests are sensitive to parallelism.
 
-| Spec file | Tests | What it covers |
-|-----------|-------|----------------|
-| `e2e/cold-start.spec.js` | 3 | Full init chain: waiting screen → loadSong → flatNotes → audio running → soundIds |
-| `e2e/persistence.spec.js` | 3 | State → IndexedDB → reload → identical state + APP_VERSION stale cache + clearAllCache |
-| `e2e/kit-change.spec.js` | 2 | Kit change mid-playback: auto-assign, 0 orphaned soundIds, flatNotes rebuilt |
-| `e2e/page-matrix.spec.js` | 16 | stepsPerBeat × nbBeats: toolbar page count = rendered grid pages + nav buttons |
-| `e2e/playback.spec.js` | 5 | Waiting screen, play button, playhead, grid cell click, drumkit loading |
-| `e2e/panels.spec.js` | 2 | About panel open/close, toolbar view buttons |
-| `e2e/canvas-rendering.spec.js` | 1 | Spectrum analyzer draws non-empty pixels during playback |
-| `e2e/track-editor.mobile.spec.js` | 1 | Track/note editor accessible on mobile viewport |
+
 
 Tests use `window.__e2e` (exposed in `main.js` after init) to access `appState`, `serviceRegistry`, `soundRegistry`, and `playbackEvents` from `page.evaluate()`.
 
 ### Dev Tools
 
-- **`tools/live-vs-export.html`** — Compares real-time engine playback (captured via AudioWorklet) against offline WAV export. Uses metric comparison (RMS, peak, envelope, onsets) to verify live and offline renders produce comparable audio. Open directly in browser via `http://localhost:3000/tools/live-vs-export.html`.
-- **`scripts/gm_to_ordrumbox_mapping.mjs`** — Diagnostic script that dumps the full GM→orDrumbox auto-assign mapping for all 128 drums + 128 programs against real drumkits. Prints tier info, matched instrument, and assigned sample URL. Run with `node scripts/gm_to_ordrumbox_mapping.mjs`.
+- **`tools/live-vs-export.html`** — Compares real-time engine playback against offline WAV export. Open directly via `http://localhost:3000/tools/live-vs-export.html`.
+- **`scripts/gm_to_ordrumbox_mapping.mjs`** — Dumps the full GM→orDrumbox auto-assign mapping for all 128 drums + 128 programs. Run with `node scripts/gm_to_ordrumbox_mapping.mjs`.
 
 ## Technical Details
 
 - Framework: Vanilla JavaScript with ES6 modules
 - Build Tool: Vite
-- Test Framework: Vitest (about 100 test files, more than 1000 tests)
-- Audio: Web Audio API with AudioWorklet support
+- Test Framework: Vitest (102 test files, 2730 tests) + Playwright (12 e2e specs, 43 tests)
+- Audio: Web Audio API with AudioWorklet synthesis
 - Node Pool: Recycling of GainNode, BiquadFilterNode, and StereoPannerNode for reduced GC pressure
-- Storage: LocalStorage for persistence, JSON for import/export
+- Storage: IndexedDB for caching, LocalStorage for settings, JSON for import/export
 - Desktop: Electron wrapper
 - PWA: Service Worker for offline support
-- MCP Server: Standalone Node.js server for programmatic control
+- MCP Server: Model Context Protocol server for programmatic control
 
 
 

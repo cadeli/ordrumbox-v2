@@ -17,7 +17,7 @@ const SAMPLE_DRAFT = {
     filter: { type: 'lowpass', freq: 1200, Q: 2, filterEnvelopeAmount: 0.3 },
     lfo: { target: 'NOT', wave: 'sine', freq: 4, depth: 0.1 },
     noise: { mix: 0.05, filterType: 'highpass', filterFreq: 2000, filterQ: 1 },
-    enveloppe: { attack: 0.01, decay: 0.12, sustain: 0.7, release: 0.1 }
+    envelope: { attack: 0.01, decay: 0.12, sustain: 0.7, release: 0.1 }
 }
 
 describe('Soft Synth Editor display', () => {
@@ -137,7 +137,7 @@ describe('Soft Synth Editor display', () => {
         expect(knobKeys).toContain('masterVolume')
         expect(knobKeys).toContain('vco1.gain')
         expect(knobKeys).toContain('filter.freq')
-        expect(knobKeys).toContain('enveloppe.attack')
+        expect(knobKeys).toContain('envelope.attack')
 
         const selectPaths = Array.from(selects).map(s => s.dataset.synthPath)
         expect(selectPaths).toContain('lfo.target')

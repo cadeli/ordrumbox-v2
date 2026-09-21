@@ -35,10 +35,10 @@ const PREREQS = {
   'noise.filterQ':      { noise: { mix: 1 } },
   'noise.filterFreq':   { noise: { mix: 1 } },
   'fm.algo':            { fm: { amount: 0.5 } },
-  'modEnvelope.attack':  { modEnvelope: { target: 'filter', sustain: 0.5 }, enveloppe: { release: 1.0 } },
-  'modEnvelope.decay':   { modEnvelope: { target: 'filter', sustain: 0.2 }, enveloppe: { release: 1.0 } },
-  'modEnvelope.sustain': { modEnvelope: { target: 'filter', sustain: 0.5 }, enveloppe: { release: 1.0 } },
-  'modEnvelope.release': { modEnvelope: { target: 'filter', sustain: 1 }, enveloppe: { release: 1.0 } },
+  'modEnvelope.attack':  { modEnvelope: { target: 'filter', sustain: 0.5 }, envelope: { release: 1.0 } },
+  'modEnvelope.decay':   { modEnvelope: { target: 'filter', sustain: 0.2 }, envelope: { release: 1.0 } },
+  'modEnvelope.sustain': { modEnvelope: { target: 'filter', sustain: 0.5 }, envelope: { release: 1.0 } },
+  'modEnvelope.release': { modEnvelope: { target: 'filter', sustain: 1 }, envelope: { release: 1.0 } },
 }
 
 function buildOverride(path, value) {

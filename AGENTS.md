@@ -1,222 +1,141 @@
-# orDrumbox v2 — Agent Guide
+# AGENTS.md — orDrumbox v2
 
-## What This Is
+## Project overview
 
-Browser-based drum machine / step sequencer. Vanilla JS (ES6 modules), no framework. Audio via Web Audio API + AudioWorklets. Vite for dev/build. Vitest for tests. Electron wrapper for desktop.
+Browser-based beat maker and step sequencer. Vanilla JS (no framework), ES Modules, Vite-bundled SPA. Audio via Web Audio API + AudioWorklet DSP. Desktop wrapper via Electron.
 
-## Commands
+## Quick commands
 
-| Task | Command |
-|------|---------|
-| Dev server (port 3000) | `npm run dev` |
-| Run all tests | `npm test` |
-| Run tests in watch mode | `npm run test:watch` |
-| Test coverage | `npm run test:coverage` |
-| Production build | `npm run build` |
-| Electron dev | `npm run electron:dev` |
-| Electron build | `npm run electron:build` |
-| MCP server (standalone) | `node ordrumboxMcpserver.mjs` |
-
-No lint or typecheck commands are configured (eslint is in devDeps but has no config file).
-
-## Test Setup
-
-- 93 test files in `tests/*.test.js` (1818 tests)
-- Vitest uses `vite.config.js` defaults (no separate vitest config)
-- Audio tests use `node-web-audio-api` for `OfflineAudioContext` — must set globals:
-  ```js
-  import nodeWaa from 'node-web-audio-api'
-  globalThis.OfflineAudioContext = nodeWaa.OfflineAudioContext
-  globalThis.AudioWorkletNode = nodeWaa.AudioWorkletNode
-  ```
-- Tests that touch global state must reset it:
-  ```js
-  soundRegistry.reset()
-  serviceRegistry.reset()
-  ```
-- Mock pattern: create `makeParam()`, `makeNode()`, `makeStrip()`, `makeMixer()` helpers locally in each test file (no shared mock utility)
-- Canvas mock: `tests/setup.js` stubs `document.createElement('canvas')` returning a mock 2D context (used by spectrum analyzer and waveform overlay). Wired into `vite.config.js` as `setupFiles`.
-- Test helpers in `tests/helpers/`:
-  - `midi_builder.js` — Synthetic MIDI binary builder (`buildMidi()`, `buildDrumMidi()`, `buildEmptyMidi()`) for testing import pipelines
-  - `midi_reader.js` — MIDI binary reader for testing export pipelines
-  - `wav_builder.js` — Synthetic WAV builder for audio analysis tests
-  - `onset_detector.js` — Onset detection helper
-  - `worklet_mocks.js` — AudioWorklet node mocks
+```bash
+npm run dev            # Vite dev server (port 3000)
+npm test               # vitest run (all unit tests)
+npm run test:watch     # vitest watch mode
+npm run test:coverage  # vitest with v8 coverage report
+npx playwright test    # e2e tests (auto-starts dev server)
+npx playwright test --project=desktop-chromium   # desktop only
+npx playwright test --project=mobile-chromium    # mobile only
+npm run build          # vite build → dist/
+```
 
 ## Architecture
 
 ```
-src/
-  main.js              — App entry, creates all panels, wires events, keyboard shortcuts
-  core/                — Constants, utils, sequencer (seq.js), timer worker
-  audio/               — Engine, mixer, strip, sound, voices, worklets, export
-  patterns/            — Pattern manager, engine, exporter, defaults, fixer, variation
-  logic/               — Commands (cmd.js), generators, MIDI, services, transport
-  state/               — app_state.js, service_registry.js, sound_registry.js, playback_events.js, events.js
-  ui/                  — Panels: toolbar, pattern, note/track editors, tools, output, about, synth
-  loader/              — resources_loader.js (loads patterns, drumkits, sounds)
-  model/               — flatnote.js, instrument.js
+index.html → src/main.js (bootstrap after "Start" click)
+                ↓
+        state/app_state.js       ← global state singleton
+        state/service_registry.js ← manual dependency injection
+        state/service_loader.js  ← async service init
+        state/sound_registry.js  ← sample/instrument registry
+                ↓
+        audio/engine.js          ← core audio engine
+        audio/mixer.js           ← bus chain (master/compressor/limiter)
+        audio/player.js          ← playback controller
+        audio/strip.js           ← per-track audio strip
+        audio/voices/            ← voice classes (sample, synth worklet)
+        audio/worklets/          ← AudioWorklet processors (DSP)
+                ↓
+        logic/seq.js             ← sequencer (tick scheduling via Web Worker)
+        patterns/engine.js       ← pattern computation (flatNotes, variation)
+        patterns/manager.js      ← pattern CRUD
+                ↓
+        ui/                      ← vanilla JS panel components
+        ui/synth_editor/         ← soft synth UI
+        ui/track_editor/         ← track editor UI
+        ui/pattern_panel/        ← pattern grid
+        ui/toolbar/              ← transport + view switch
 ```
 
-**Key singletons** (state layer):
-- `appState` — current patterns, selected track/pattern, UI flags
-- `serviceRegistry` — audioCtx, cmd, seq, patterns, resourcesLoader, audioEngine, midiManager
-- `soundRegistry` — sounds, generatedSounds, drumkitList
-- `playbackEvents` — event bus for pattern/track/drumkit changes
+### Key constants
 
-## Gotchas
+- `TICK = 32` — ticks per step (`src/core/constants.js`)
+- `LFO_TARGET_TO_INT` — maps LFO target strings to integers for worklet processor (`src/audio/voices/worklet_synth_voice.js:14`)
+- `WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3, random: 4 }` — `random` (shape=4) falls through to square in DSP (production bug, not implemented)
+- `SYNTH_GROUP_DEFAULTS` — many params gated by other defaults: `vco3.gain=0`, `fm.amount=0`, `lfo.target='NOT'`, `noise.mix=0` (`src/ui/synth_editor/constants.js:34-49`)
 
-- **Production build strips `console.log`** (terser `drop_console: true`). Don't add debugging that relies on console output in prod code.
-- **Worklet processors register at module import time** (top-level `WorkletLoader.register()` calls in `mixer.js`, `strip.js`, `synth_voice_pool.js`, `worklet_synth_voice.js`, `lfo_ui_bridge.js`). Import order matters.
-- **MCP server**: logs to stderr to preserve JSON-RPC on stdout. `console.log` is overridden to stderr.
-- **`publicDir: false`** in Vite config — static assets are in `assets/`, not `public/`.
-- **No ESLint config** despite eslint being a dependency. Code style is enforced manually.
-- **CSP header** in index.html: `script-src 'self' blob:` (needed for AudioWorklet blob URLs)
-- **Pattern data paths**: MCP server writes to `public/assets/data/patterns/`
-- **Worklet DSP performance**: All four worklets (strip, synth-voice, master-bus, lfo-ui) use optimized per-sample loops. Key patterns: sine LUT (4096 entries) for LFO, `Math.exp(x * LN2_OVER_1200)` for detune, xorshift32 for noise, incremental ADSR state machine. Avoid introducing `Math.sin`, `Math.pow`, or per-sample object allocation in the audio thread.
-- **Shared noise buffer**: `WorkletSynthVoice` uses xorshift32 PRNG for noise — no shared Float32Array allocation per instance.
-- **`NOTE_VELO_BALANCE` (1/4)**: Synth voice velocity is scaled by this constant to compensate volume difference between synth and sample voices. Factor in when computing expected velocity values in tests.
-- **Compressor DSP chain**: `preGain → compressor → HPF → LPF → master gain → output`. Pre-gain is k-rate; filters and master gain are a-rate.
-- **SynthVoiceNodePool release is wall-clock (`setTimeout`), not audio-time**: `WorkletSynthVoice`'s auto-release/stop schedule the JS-side pool release via `setTimeout`, timed off the note's own audio-context time. Fine in real-time (wall-clock ≈ audio-context time). Unsafe for offline export, which schedules the whole pattern synchronously before `startRendering()` — `Sound`'s `isOffline` flag disables pooling entirely for exports; don't drop it when touching `Engine`/`Player`/`Sound` construction.
-- **Track Variation** (`src/patterns/variation.js`): Budget-based randomization applied per loop iteration in `computeFlatNotesFromPattern`. Budget = `variation * 16 / 100`. Operations: anticipation (3pts), double (3pts), ghost (3pts), silence (3pts), velocity (1pt), pitch (1pt).
-- **`serviceRegistry` property names**: Services are referenced without `mf` prefix (e.g. `serviceRegistry.cmd`, `serviceRegistry.seq`, `serviceRegistry.patterns`). The `mf` prefix was removed.
-- **Granular events**: The event bus emits both `patternChange` (legacy, backward-compat) and granular events (`noteChange`, `patternStructureChange`, `patternMetaChange`). Consumers should prefer the granular event for their specific concern. `track_editor.js` keeps `patternChange` because it does structural track reference re-validation, not data changes.
-- **Import services**: `MidiImportService` and `WavImportService` in `src/logic/services/` handle file import logic extracted from `tools_panel.js`. They depend on `serviceRegistry.cmd` for pattern/track/note creation.
 
-## Style
 
-### Three zones — this matters more than any single rule below
+## Testing
 
-The codebase intentionally runs different style regimes per zone. Applying the wrong zone's rules to a file is a bug, not a nitpick — check which zone a file is in before "fixing" its style.
+### Unit tests (vitest)
 
-- **Audio/DSP zone** — `src/audio/` (especially `AudioWorkletProcessor.process()` in `src/audio/worklets/processors/*.js`, and `src/audio/node_pool.js`). Real-time constraint: a GC pause or an allocation inside the audio callback causes audible dropouts. Mutation, object pooling (`NodePool.acquire()`/`release()`), and imperative per-sample loops are the correct, intentional design — **not** violations of "immutability" or "don't mutate parameters." Do not "fix" these into functional/immutable style.
+- **Config**: `vite.config.js` under `test` key (no separate vitest.config.js)
+- **Setup**: `tests/setup.js` — stubs canvas, ResizeObserver, injects CSS for jsdom
+- **101 test files**, ~2730 tests in `tests/`
+- **Run**: `npm test` or `npx vitest run`
 
-- **Mutation-by-design zone** — `src/logic/commands/cmd.js`, `src/logic/generators/*` (`base_generator.js`, `auto_generate.js`, `hat_generate.js`, `snare_generate.js`, `perc_generate.js`, `melody_generate.js`, etc.), and `src/patterns/fixer.js`. These operate directly on the live `track`/`pattern`/`note` objects held by reference inside `appState.patterns` (or on raw imported JSON), and mutate them in place — e.g. `cmd.js`'s `deleteNote`/`addNote`/`addTrack` mutate the `track`/`pattern` parameters they're given, then record the inverse mutation for undo. This is load-bearing, not incidental:
-  - `history_manager.js`'s undo/redo depends on `track`/`pattern` staying the *same reference* across a command — copy-on-write would break it.
-  - `fixer.js` and the generators avoid repeated deep copies of potentially large pattern/track trees on every import or regenerate.
-  - **Don't** apply "MUST NOT mutate function parameters" here, and don't refactor these into copy-and-return style without first checking the undo-system implication.
-  - This does **not** cover `logic/services/*` (`auto_assign.js`, `midi_import_service.js`): those typically build/return fresh objects (e.g. via `cmd.addPattern(...)`) rather than mutating an incoming parameter, so the functional rules below apply to them normally.
+Test helpers in `tests/helpers/`:
+- `cmd_test_helpers.js` — command test utilities
+- `make_pattern.js` — pattern fixture builder
+- `midi_test_helpers.js`, `midi_builder.js`, `midi_reader.js` — MIDI test utilities
+- `wav_builder.js` — WAV file builder for tests
+- `worklet_mocks.js` — AudioWorklet mocks
 
-- **Functional zone** — `ui/`, `state/`, `model/`, most of `patterns/`, `logic/services/`. No real-time constraint and no undo-reference constraint; functional style (pure functions, immutable updates, non-mutating array methods) is the default and should be followed per the MUST DO list below.
+### E2E tests (playwright)
 
-### MUST DO *(functional zone)*
+- **Config**: `playwright.config.js`
+- **12 spec files** in `e2e/`
+- **Workers: 1** (serial) — AudioContext tests are sensitive to parallelism
+- **Timeout**: 30s per test, 5s per expect
+- **Base URL**: `http://localhost:3000`
+- **Web server**: auto-starts `npm run dev`
 
-- Use ES2023+ features exclusively
-- Use `X | null` or `X | undefined` patterns for nullable types
-- Use optional chaining (`?.`) and nullish coalescing (`??`)
-- Use `async/await` for all asynchronous operations
-- Use ESM (`import/export`) — never CommonJS
-- Implement proper error handling with `try/catch`
-- Add JSDoc comments for complex functions
-- Follow functional programming principles (pure functions, immutability)
+Projects:
+- `desktop-chromium` — Desktop Chrome, matches non-`.mobile.` spec files
+- `mobile-chromium` — Pixel 7 viewport, matches `.mobile.spec.js` files
 
-### MUST NOT DO *(functional zone)*
+#### E2E boot sequence
 
-- Use `var` (always `const` or `let`)
-- Use callback-based patterns (prefer Promises)
-- Mix CommonJS and ESM in the same module
-- Ignore memory leaks or performance issues
-- Skip error handling in async functions
-- Use synchronous I/O in Node.js
-- Mutate function parameters
-- Create blocking operations in the browser
-
-### Audio zone — its own rules, not the list above
-
-- Prefer object pooling (`NodePool`) over allocation for anything created per-note or per-voice
-- No allocation inside `process()` — no `.map()`/`.filter()`/spread/new arrays or objects per audio quantum
-- Mutation of pre-allocated buffers/state is expected and correct
-- Still: `const`/`let` only, ESM only, `?.`/`??` where they don't add per-sample overhead — the ES2023/no-`var`/no-CJS rules apply everywhere, only the immutability/no-mutation rules are zone-scoped
-
-### Mutation-by-design zone — its own rules, not the functional list above
-
-- Mutating `track`/`pattern`/`note` parameters in place is expected in `cmd.js`, the generators, and `fixer.js`
-- Every mutating command in `cmd.js` must still record its inverse via `this._record(...)` for undo — mutation without an undo record is a bug here, even though mutation itself isn't
-- `const`/`let`, ESM, `?.`/`??`, async/await, and error handling rules still apply — only the immutability/no-parameter-mutation rules are zone-scoped
-
-### Conventions
-
-- **Private fields use `#`**: ES native private fields (`#field`) are mandatory for class-internal state. Never use the `this._field` soft-private convention for new code. If a property is only accessed within the class body, it must be `#field`. If it needs external access, expose a public getter/setter (e.g. `get track()`, `setOnChange(fn)`). Exception: audio zone classes that inherit via `class X extends Y` where subclasses override the parent field — use a protected setter instead.
-- **Explicit fallbacks with `??`**: never use `||` for default values when `??` is more appropriate. Never rely on truthy/falsy coercion. Example:
-  ```js
-  // Good — explicit fallback
-  const val = obj.prop ?? defaultValue
-  obj.method?.(arg)
-  const x = arr?.[i] ?? fallback
-
-  // Bad — implicit, breaks for valid falsy values (0, "", false)
-  const val = obj.prop || defaultValue
-  ```
-  This applies to property access, method calls, parameter defaults, and any form of optional chaining.
-
-## CSS Design Tokens
-
-`src/ui/styles.css` uses a rationalized `:root` token system. Always use tokens instead of hardcoded values.
-
-### Palette (canonical)
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--bg` | `#E7E8E4` | Primary panel background |
-| `--surface` | `#D9DAD6` | Lists, cards, elevated surfaces |
-| `--surface-2` | `#CFD0CC` | Canvas, inputs, hover states |
-| `--line` | `#A9AAA6` | Borders, disabled text |
-| `--muted` | `#686A67` | Secondary labels, warnings, danger |
-| `--text` | `#202321` | Primary text |
-| `--black` | `#151716` | Deepest layer |
-| `--accent` | `#596B61` | Primary accent, success, info |
-
-### Accent Variants
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--accent-400` | `#6a7d73` | Light accent |
-| `--accent-600` | `#4a5c52` | Dark accent, success-dark |
-
-### Border
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--border-subtle` | `#C1C2BE` | Subtle dividers |
-
-### Semantic (alias to palette, for dark mode overrides)
-| Token | Resolves to | Usage |
-|-------|-------------|-------|
-| `--color-success` | `var(--accent)` | Success, active states |
-| `--color-success-dark` | `var(--accent-600)` | Dark success |
-| `--color-warning` | `var(--muted)` | Warning |
-| `--color-danger` | `var(--muted)` | Danger, errors |
-| `--color-danger-light` | `var(--line)` | Light danger |
-| `--color-info` | `var(--accent)` | Info |
-| `--bg-success` | `var(--accent)` | Success background (velocity bars) |
-
-### Typography
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--fs-xs` | `9px` | Labels, tiny text |
-| `--fs-sm` | `10px` | Secondary text |
-| `--fs-base` | `11px` | Body text |
-| `--fs-md` | `12px` | Medium text |
-| `--fs-lg` | `14px` | Large text, headings |
-
-### Z-Index Layers
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--z-base` | `0` | Default layer |
-| `--z-content` | `2` | Content elements |
-| `--z-overlay` | `10` | Overlays, dropdowns |
-| `--z-panel` | `100` | Panels, modals |
-| `--z-toolbar` | `200` | Toolbars |
-| `--z-toast` | `9999` | Toasts, notifications |
-
-### Rules
-- Never use hardcoded colors, font-sizes, or z-index values
-- Use `var(--token-name)` for all values
-- Add new tokens to `:root` if needed (follow naming convention)
-- Prefer semantic tokens over raw scale tokens
-
-## Adding Tests
-
-Place test files in `tests/`. Import from `vitest` (`describe`, `it`, `expect`, `vi`, `beforeEach`). Use relative imports to `src/`. For audio worklet tests, mock `WorkletLoader`:
 ```js
-vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
-vi.spyOn(WorkletLoader, 'ensureLoaded').mockResolvedValue(true)
-vi.spyOn(WorkletLoader, 'createNode').mockImplementation(() => makeNode())
+// e2e/fixtures.js
+import { bootApp } from './fixtures.js'
+// clicks #waiting-screen-start-btn → waits for window.__e2e.ready
 ```
+
+`window.__e2e` exposes: `ready`, `appState`, `serviceRegistry`, `soundRegistry`, `playbackEvents`
+
+
+#### E2E helpers
+
+- `e2e/helpers/synth_render.js` — `renderSynthBatch(overrides, noteCount, options)` renders N notes in one OfflineAudioContext
+- `e2e/fixtures.js` — `bootApp(page)`, `audioContextState(page)`
+
+
+## Code conventions
+
+- **Language**: vanilla JS, ES Modules (`import`/`export`), no transpiler
+- **English only**: all code, comments, variable/function/class names must be exclusively in English. No other languages in source code. 
+- **Class pattern**: ES classes with private fields (`#field`)
+- **State**: centralized in `app_state.js`, accessed via `serviceRegistry`
+- **UI panels**: extend `BasePanel` or follow its pattern (no framework)
+- **Naming**: `snake_case` for files, `camelCase` for variables/functions, `PascalCase` for classes
+- **Generators**: imported dynamically via `service_loader.js`
+- **Worklet code**: processor source files in `src/audio/worklets/processors/` are template strings (not ES modules)
+
+## File structure reference
+
+```
+src/
+  audio/           — Web Audio API engine, voices, worklets, export
+  cache/           — IndexedDB caching
+  core/            — constants, utils, IDB wrapper, logger, timer worker
+  loader/          — asset/resource loading
+  logic/           — seq, LFO, history, commands, generators, MIDI, services
+  model/           — data models (flatnote, instrument, track schema)
+  patterns/        — pattern engine, manager, defaults, variation
+  state/           — app state, service registry/loader, sound registry
+  ui/              — all UI panels and components
+
+e2e/               — Playwright end-to-end specs
+  fixtures.js      — bootApp() helper
+  helpers/         — synth_render.js (batched OfflineAudioContext)
+  *.spec.js        — test files
+
+tests/             — Vitest unit tests
+  setup.js         — jsdom setup (canvas stub, CSS injection)
+  helpers/         — test utilities (MIDI, WAV, worklet mocks)
+  *.test.js        — test files
+
+assets/            — data/, images/, kits/
+tools/             — live-vs-export.html (manual browser tool)
+```
+

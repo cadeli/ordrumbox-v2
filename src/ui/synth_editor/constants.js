@@ -44,7 +44,7 @@ export const SYNTH_GROUP_DEFAULTS = {
     lfo: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     lfo2: { target: 'NOT', wave: 'sine', freq: 0, depth: 0, sync: 'off' },
     noise: { mix: 0, filterType: 'highpass', filterFreq: 1000, filterQ: 1 },
-    enveloppe: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 },
+    envelope: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 },
     modEnvelope: { attack: 0, decay: 0.12, sustain: 0, release: 0.1, target: 'off' },
 }
 
@@ -77,10 +77,10 @@ export const SYNTH_PARAM_META = Object.fromEntries([
     ['noise.filterQ', { min: 0.1, max: 24, step: 0.1, unit: '' }],
     ['fm.amount', { min: 0, max: 1, step: 0.01, label: 'FM', unit: '' }],
     ['fm.algo', { min: 0, max: 4, step: 1, label: 'Algo', unit: '' }],
-    ['enveloppe.attack', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
-    ['enveloppe.decay', { min: 0, max: 1.0, step: 0.001, unit: 's' }],
-    ['enveloppe.sustain', { min: 0, max: 1, step: 0.01, unit: '' }],
-    ['enveloppe.release', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
+    ['envelope.attack', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
+    ['envelope.decay', { min: 0, max: 1.0, step: 0.001, unit: 's' }],
+    ['envelope.sustain', { min: 0, max: 1, step: 0.01, unit: '' }],
+    ['envelope.release', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
     ['modEnvelope.attack', { min: 0, max: 0.5, step: 0.001, unit: 's' }],
     ['modEnvelope.decay', { min: 0, max: 1.0, step: 0.001, unit: 's' }],
     ['modEnvelope.sustain', { min: 0, max: 1, step: 0.01, unit: '' }],
@@ -98,10 +98,10 @@ export const SYNTH_GROUP_LABELS = {
     filterEnv: 'FltEnv',
     fm: 'FM',
     lfo: 'LFO1',
-    enveloppe: 'Env',
+    envelope: 'Env',
     modEnvelope: 'ModEnv',
 }
-export const SYNTH_GROUP_ORDER = ['scope', 'vco1', 'vco2', 'vco3', 'fm', 'filter', 'filterEnv', 'lfo', 'lfo2', 'noise', 'master', 'enveloppe', 'modEnvelope']
+export const SYNTH_GROUP_ORDER = ['scope', 'vco1', 'vco2', 'vco3', 'fm', 'filter', 'filterEnv', 'lfo', 'lfo2', 'noise', 'master', 'envelope', 'modEnvelope']
 export const VCO_RE = /^vco\d+$/i
 export const LFO_RE = /^lfo\d*$/i
 

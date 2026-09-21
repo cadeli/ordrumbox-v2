@@ -231,7 +231,7 @@ export default class WaveformSection {
     }
 
     _drawAdsrEnvelope(ctx, w, mid) {
-        const { attack = 0, decay = 0.12, sustain = 1, release = 0.05 } = this._editor._draft.enveloppe ?? {}
+        const { attack = 0, decay = 0.12, sustain = 1, release = 0.05 } = this._editor._draft.envelope ?? {}
         const totalTime = Math.max(attack + decay + 0.3 + release, 0.5)
 
         const scaleX = (t) => (t / totalTime) * w

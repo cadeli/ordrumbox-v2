@@ -71,7 +71,7 @@ function makeGeneratedSound(overrides = {}) {
         vco1: { wave: 'sine', octave: 0, detune: 0, gain: 1 },
         vco2: null,
         vco3: null,
-        enveloppe: { attack: 0.01, decay: 0.05, sustain: 0.7, release: 0.05 },
+        envelope: { attack: 0.01, decay: 0.05, sustain: 0.7, release: 0.05 },
         filter: { type: 'lowpass', freq: 1000, Q: 1, filterEnvelopeAmount: 0 },
         noise: { mix: 0 },
         lfo: { wave: 'sine', freq: 0, depth: 0, target: 'NOT' },

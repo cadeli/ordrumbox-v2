@@ -23,7 +23,7 @@ const GROUP_TAB = {
     vco1: 'osc', vco2: 'osc', vco3: 'osc', fm: 'osc',
     filter: 'flt', filterEnv: 'flt', modEnvelope: 'flt',
     lfo: 'mod', lfo2: 'mod', noise: 'mod',
-    enveloppe: 'env', master: 'env',
+    envelope: 'env', master: 'env',
 }
 
 export default class GroupsSection {
@@ -175,7 +175,7 @@ export default class GroupsSection {
             return this._buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName)
         }).join('')
 
-        if (groupName === 'enveloppe') {
+        if (groupName === 'envelope') {
             return `<canvas class="ss-env-canvas" width="320" height="40"></canvas>${fieldsHtml}`
         }
         return fieldsHtml

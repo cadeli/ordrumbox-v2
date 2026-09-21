@@ -40,7 +40,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.005,
       "decay": 0.28,
       "sustain": 0.4,
@@ -109,7 +109,7 @@
       "filterFreq": 1500,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.003,
       "decay": 0.22,
       "sustain": 0.35,
@@ -179,7 +179,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.005,
       "decay": 0.32,
       "sustain": 0.5,
@@ -248,7 +248,7 @@
       "filterFreq": 2500,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.002,
       "decay": 0.16,
       "sustain": 0.2,
@@ -317,7 +317,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.003,
       "decay": 0.22,
       "sustain": 0,
@@ -386,7 +386,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.004,
       "decay": 0.25,
       "sustain": 0.35,
@@ -455,7 +455,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.01,
       "decay": 0.3,
       "sustain": 0.6,
@@ -524,7 +524,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.005,
       "decay": 0.2,
       "sustain": 0.8,
@@ -593,7 +593,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.002,
       "decay": 0.18,
       "sustain": 0,
@@ -664,7 +664,7 @@
       "filterFreq": 2000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.003,
       "decay": 0.66,
       "sustain": 0.18,
@@ -740,7 +740,7 @@
       "filterFreq": 1500,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.001,
       "decay": 0.18,
       "sustain": 0,
@@ -809,7 +809,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.002,
       "decay": 0.35,
       "sustain": 0,
@@ -878,7 +878,7 @@
       "filterFreq": 5000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.001,
       "decay": 0.04,
       "sustain": 0,
@@ -947,7 +947,7 @@
       "filterFreq": 4500,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.001,
       "decay": 0.25,
       "sustain": 0.1,
@@ -1016,7 +1016,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.001,
       "decay": 0.7,
       "sustain": 0,
@@ -1085,7 +1085,7 @@
       "filterFreq": 1000,
       "filterQ": 1
     },
-    "enveloppe": {
+    "envelope": {
       "attack": 0.002,
       "decay": 0.9,
       "sustain": 0.05,

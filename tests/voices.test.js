@@ -112,7 +112,7 @@ function makeGeneratedSound(overrides = {}) {
         vco1: { wave: 'sine', octave: 0, detune: 0, gain: 1 },
         vco2: null,
         vco3: null,
-        enveloppe: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 },
+        envelope: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.2 },
         filter: { type: 'lowpass', freq: 50, Q: 1, filterEnvelopeAmount: 0 },
         noise: { mix: 0, filterType: 'highpass', filterFreq: 1000, filterQ: 1 },
         lfo: { wave: 'sine', freq: 1, depth: 0.5, target: 'NOT' },
@@ -345,7 +345,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
             vco3: { wave: 'sawtooth', gain: 0.5, octave: 0, detune: 5 },
             filter: { type: 'bandpass', freq: 800, Q: 2.5, filterEnvelopeAmount: 0 },
             noise: { mix: 0.15, filterType: 'highpass', filterFreq: 3000, filterQ: 0.8 },
-            enveloppe: { attack: 0.005, decay: 0.08, sustain: 0.4, release: 0.15 },
+            envelope: { attack: 0.005, decay: 0.08, sustain: 0.4, release: 0.15 },
             lfo: { wave: 'sine', freq: 0, depth: 0, target: 'NOT' },
         })
         const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
@@ -391,7 +391,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
         const ctx = createMockAudioCtx()
         const strip = createMockStrip()
         const gs = makeGeneratedSound({
-            enveloppe: { attack: 0.0005, decay: 0.01, sustain: 0.5, release: 0.0005 },
+            envelope: { attack: 0.0005, decay: 0.01, sustain: 0.5, release: 0.0005 },
         })
         const voice = new WorkletSynthVoice(ctx, strip, gs, 'test')
         const flatNote = makeFlatNote()
@@ -457,10 +457,10 @@ describe('WorkletSynthVoice parameter coverage', () => {
             { target: 'noise.filterQ', expected: 23 },
             { target: 'fm.amount', expected: 24 },
             { target: 'fm.algo', expected: 25 },
-            { target: 'enveloppe.attack', expected: 26 },
-            { target: 'enveloppe.decay', expected: 27 },
-            { target: 'enveloppe.sustain', expected: 28 },
-            { target: 'enveloppe.release', expected: 29 },
+            { target: 'envelope.attack', expected: 26 },
+            { target: 'envelope.decay', expected: 27 },
+            { target: 'envelope.sustain', expected: 28 },
+            { target: 'envelope.release', expected: 29 },
             { target: 'modEnvelope.attack', expected: 30 },
             { target: 'modEnvelope.decay', expected: 31 },
             { target: 'modEnvelope.sustain', expected: 32 },
@@ -726,8 +726,8 @@ describe('VoiceFactory', () => {
         })
 
         it('enforces minimum attack/release (prevents audio discontinuities)', async () => {
-            generatedSounds.BASS1.enveloppe.attack = 0.0001
-            generatedSounds.BASS1.enveloppe.release = 0.0001
+            generatedSounds.BASS1.envelope.attack = 0.0001
+            generatedSounds.BASS1.envelope.release = 0.0001
             const flatNote = makeFlatNote()
             flatNote.track.useSoftSynth = true
             flatNote.track.synthSoundKey = 'BASS1'

@@ -47,10 +47,10 @@ export const LFO_TARGET_SCALE = {
     'fm.algo': 1,
     'subGain': 1,
     'pitchPunch': 1,
-    'enveloppe.attack': 0.25,
-    'enveloppe.decay': 0.5,
-    'enveloppe.sustain': 0.5,
-    'enveloppe.release': 0.25,
+    'envelope.attack': 0.25,
+    'envelope.decay': 0.5,
+    'envelope.sustain': 0.5,
+    'envelope.release': 0.25,
     'modEnvelope.attack': 0.25,
     'modEnvelope.decay': 0.5,
     'modEnvelope.sustain': 0.5,
@@ -417,11 +417,11 @@ export default class SynthEditor {
                 delete draftGroup._savedGain
             }
         } else {
-            const flagMap = { noise: 'bypassNoise', filter: 'bypassFilter', filterEnv: 'bypassFilterEnv', enveloppe: 'bypassEnv', lfo: 'bypassLfo1', lfo2: 'bypassLfo2', fm: 'bypassFm', modEnvelope: 'bypassModEnv' }
+            const flagMap = { noise: 'bypassNoise', filter: 'bypassFilter', filterEnv: 'bypassFilterEnv', envelope: 'bypassEnv', lfo: 'bypassLfo1', lfo2: 'bypassLfo2', fm: 'bypassFm', modEnvelope: 'bypassModEnv' }
             const flag = flagMap[groupName]
             if (flag) {
                 this._draft[flag] = this._cardBypassed[groupName]
-                if (groupName === 'enveloppe' && !this._cardBypassed[groupName]) {
+                if (groupName === 'envelope' && !this._cardBypassed[groupName]) {
                     this._draft._resetEnv = true
                 }
             }

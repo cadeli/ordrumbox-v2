@@ -10,7 +10,7 @@ const makeGeneratedSound = () => ({
     masterVolume: 0.8,
     vco1: { gain: 1, octave: 0, detune: 0, wave: 'sine' },
     filter: { type: 'lowpass', freq: 400, Q: 1, filterEnvelopeAmount: 0 },
-    enveloppe: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 }
+    envelope: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 }
 })
 
 describe('SynthEditor sub-panel toolbar', () => {
@@ -71,7 +71,7 @@ describe('SynthEditor sub-panel toolbar', () => {
             'lfo2',
             'noise',
             'master',
-            'enveloppe'
+            'envelope'
         ])
 
         const bypassBtns = document.querySelectorAll('#soft-synth-panel .ss-bypass-btn[data-power-card]')
@@ -121,7 +121,7 @@ it('keeps Revert in the toolbar and preserves revert behavior', async () => {
     it('sets bypassEnv flag on draft when toggling envelope bypass', async () => {
         await editor.openEditor()
 
-        const envCard = document.querySelector('#soft-synth-panel [data-ss-card="enveloppe"]')
+        const envCard = document.querySelector('#soft-synth-panel [data-ss-card="envelope"]')
         const envBtn = envCard.querySelector('.ss-bypass-btn')
 
         expect(editor.draft.bypassEnv).toBeFalsy()
