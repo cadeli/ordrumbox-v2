@@ -440,7 +440,7 @@ describe('Page navigation E2E — playback auto-page (piano roll)', () => {
     it('simulating playback crossing page boundary updates piano roll page info', () => {
         serviceRegistry.transport.isRunning = true
         serviceRegistry.transport.tick = 0
-        pianoRoll._startRafLoop()
+        pianoRoll.startRafLoop()
         runOneFrame()
 
         expect(appState.currentPage).toBe(0)
@@ -459,7 +459,7 @@ describe('Page navigation E2E — playback auto-page (piano roll)', () => {
     it('playback wrap resets piano roll page info to 1/2', () => {
         serviceRegistry.transport.isRunning = true
         serviceRegistry.transport.tick = TICK * 4
-        pianoRoll._startRafLoop()
+        pianoRoll.startRafLoop()
         runOneFrame()
 
         expect(appState.currentPage).toBe(1)

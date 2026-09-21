@@ -4,20 +4,23 @@ import { isMobileViewport } from '../core/constants.js'
 import { logger } from '../core/logger.js'
 
 export default class MobileTabBar {
+    #currentTab
+    #isSwitching
+
     constructor() {
         this.container = null
-        this._currentTab = 'seq'
-        this._isSwitching = false
+        this.#currentTab = 'seq'
+        this.#isSwitching = false
     }
 
     init() {
-        this._createDOM()
-        this._bindEvents()
-        this._subscribeEvents()
-        this._updateActive()
+        this.#createDOM()
+        this.#bindEvents()
+        this.#subscribeEvents()
+        this.#updateActive()
     }
 
-    _createDOM() {
+    #createDOM() {
         this.container = document.createElement('div')
         this.container.id = 'mobile-tab-bar'
 
@@ -39,16 +42,16 @@ export default class MobileTabBar {
         document.body.appendChild(this.container)
     }
 
-    _bindEvents() {
+    #bindEvents() {
         this.container.addEventListener('click', (e) => {
             const btn = e.target.closest('.mtb-btn')
             if (!btn) return
             const tab = btn.dataset.tab
-            this._onTabClick(tab)
+            this.#onTabClick(tab)
         })
     }
 
-    _subscribeEvents() {
+    #subscribeEvents() {
         const tabMap = {
             mobileSeqToggle: 'seq',
             mobileTrackToggle: 'track',
@@ -58,20 +61,20 @@ export default class MobileTabBar {
         }
         for (const [event, tab] of Object.entries(tabMap)) {
             playbackEvents.on(event, (arg) => {
-                if (!this._isSwitching) {
+                if (!this.#isSwitching) {
                     if (event === 'masterToggle' && arg === false) return
-                    this._currentTab = tab
-                    this._updateActive()
+                    this.#currentTab = tab
+                    this.#updateActive()
                 }
             })
         }
     }
 
-    _onTabClick(tab) {
-        if (tab === this._currentTab) return
+    #onTabClick(tab) {
+        if (tab === this.#currentTab) return
 
-        this._isSwitching = true
-        this._currentTab = tab
+        this.#isSwitching = true
+        this.#currentTab = tab
 
         try {
             const dispatchMap = {
@@ -82,16 +85,16 @@ export default class MobileTabBar {
             }
             dispatchMap[tab]?.()
         } finally {
-            this._isSwitching = false
+            this.#isSwitching = false
         }
 
-        this._updateActive()
+        this.#updateActive()
         logger.debug('MobileTabBar', `Switched to tab: ${tab}`)
     }
 
-    _updateActive() {
+    #updateActive() {
         this.container?.querySelectorAll('.mtb-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === this._currentTab)
+            btn.classList.toggle('active', btn.dataset.tab === this.#currentTab)
         })
     }
 

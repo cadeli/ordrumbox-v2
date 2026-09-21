@@ -6,8 +6,10 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { nameOr } from '../../core/logger.js'
 
 export default class GridSection {
+    #editor
+
     /** @param {import('./pattern_panel.js').default} editor */
-    constructor(editor) { this._editor = editor }
+    constructor(editor) { this.#editor = editor }
 
     /** Build noteMap + ghostMap for a track (cached by coordinator). */
     buildTrackData(track, startBeat, endBeatPage, pattern) {
@@ -24,7 +26,7 @@ export default class GridSection {
         const ghostMap = new Map()
         noteMap.forEach(notes => {
             for (const note of notes) {
-                this._getSubPositions(note, track, pattern).forEach(({ pos, type }) => {
+                this.#getSubPositions(note, track, pattern).forEach(({ pos, type }) => {
                     const stepAbs = Math.floor(pos)
                     const beat = Math.floor(stepAbs / stepsPerBeat)
                     if (beat >= startBeat && beat < endBeatPage) {
@@ -116,7 +118,7 @@ export default class GridSection {
      * @returns {string} tracks HTML (including toolbar row + waveform canvas)
      */
     render(tracks, pattern, opts) {
-        const editor = this._editor
+        const editor = this.#editor
         const { startBeat, endBeatPage } = opts
         const totalSteps = (track) => (track.nbBeats ?? 4) * (track.stepsPerBeat ?? 4)
 
@@ -171,7 +173,7 @@ export default class GridSection {
             }
             beatsHtml += '</div>'
 
-            const currentTrackIdx = editor._selTrackIdx !== -1 ? editor._selTrackIdx : (editor._appState.selectedTrackNum ?? -1)
+            const currentTrackIdx = editor.selTrackIdx !== -1 ? editor.selTrackIdx : (editor.appState.selectedTrackNum ?? -1)
             const isSelected = currentTrackIdx === tIdx
             const isMuted = track.mute === true
             const isSolo = track.solo === true
@@ -232,7 +234,7 @@ export default class GridSection {
         return cellMap
     }
 
-    _getSubPositions(note, track, pattern) {
+    #getSubPositions(note, track, pattern) {
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const basePos = note.beat * stepsPerBeat + note.beatStep
         const retriggerNum = note.retriggerNum ?? 1

@@ -7,11 +7,13 @@ import { playbackEvents } from '../../state/playback_events.js'
 import Utils from '../../core/utils.js'
 
 export default class ViewSwitch {
+    #tb
+
     /** @param {import('../toolbar.js').default} toolbar */
-    constructor(toolbar) { this._tb = toolbar }
+    constructor(toolbar) { this.#tb = toolbar }
 
     createDOM() {
-        const tb = this._tb
+        const tb = this.#tb
 
         // ── Generation buttons ──────────────────────────────────
         const genWrap = document.createElement('div')
@@ -98,7 +100,7 @@ export default class ViewSwitch {
     }
 
     bindEvents() {
-        const tb = this._tb
+        const tb = this.#tb
 
         tb.synthBtn.addEventListener('click', () => {
             playbackEvents.emit('synthToggle')

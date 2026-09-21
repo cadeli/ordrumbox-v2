@@ -84,23 +84,35 @@ const GROUPS = [
 ]
 
 export default class NoteEditor extends BasePanel {
+    #externalContainer
+    #note
+    #track
+    #trackEditor
+    #trackIdx
+    #pos
+    #beat
+    #beatStep
+    #knobs
+    #sliders
+    #tab
+
     /**
      * @param {HTMLElement} [externalContainer] – If provided, renders into this
      *   element instead of creating a separate fixed-position div.
      */
     constructor() {
         super('ne-panel')
-        this._externalContainer = null
-        this._note = null
-        this._track = null
-        this._trackEditor = null
-        this._trackIdx = 0
-        this._pos = 0
-        this._beat = 0
-        this._beatStep = 0
-        this._knobs = []
-        this._sliders = []
-        this._tab = new OrTab({
+        this.#externalContainer = null
+        this.#note = null
+        this.#track = null
+        this.#trackEditor = null
+        this.#trackIdx = 0
+        this.#pos = 0
+        this.#beat = 0
+        this.#beatStep = 0
+        this.#knobs = []
+        this.#sliders = []
+        this.#tab = new OrTab({
             tabs: TAB_DEFS,
             defaultTab: 'triggers',
             onChange: () => this.sync()
@@ -109,13 +121,13 @@ export default class NoteEditor extends BasePanel {
 
     /** Provide the external container before init so the editor renders into it. */
     setContainer(el) {
-        this._externalContainer = el
+        this.#externalContainer = el
         this.container = el
     }
 
     init() {
         this.injectCSS()
-        if (!this._externalContainer) {
+        if (!this.#externalContainer) {
             this.createDOM()
             this.sync()
         } else {
@@ -125,15 +137,15 @@ export default class NoteEditor extends BasePanel {
     }
 
     createDOM() {
-        if (this._externalContainer) {
-            this.container = this._externalContainer
+        if (this.#externalContainer) {
+            this.container = this.#externalContainer
             return
         }
         super.createDOM()
     }
 
     setTrackEditor(te) {
-        this._trackEditor = te
+        this.#trackEditor = te
     }
 
     subscribe() {
@@ -142,10 +154,10 @@ export default class NoteEditor extends BasePanel {
             if (data.note) {
                 if (this.isVisible) this.show(data)
             } else {
-                this._track = data.track
-                this._beat = data.beat
-                this._beatStep = data.beatStep
-                this._note = null
+                this.#track = data.track
+                this.#beat = data.beat
+                this.#beatStep = data.beatStep
+                this.#note = null
                 if (this.isVisible) this.sync()
             }
         })
@@ -153,7 +165,7 @@ export default class NoteEditor extends BasePanel {
 
     /** @returns {boolean} */
     get isVisible() {
-        if (this._externalContainer) {
+        if (this.#externalContainer) {
             return this.container.style.display !== 'none'
         }
         return super.isVisible
@@ -164,7 +176,7 @@ export default class NoteEditor extends BasePanel {
      * @param {Object|null} note
      * @returns {{ scale: string, type: string, range: number }}
      */
-    _getArpState(note) {
+    #getArpState(note) {
         if (!note?.arp || typeof note.arp !== 'object' || Array.isArray(note.arp)) {
             return { scale: 'major', type: 'up', range: 0 }
         }
@@ -186,93 +198,93 @@ export default class NoteEditor extends BasePanel {
 
     /** Show as standalone popup (hides other panels). */
     async show(data) {
-        await this._initData(data)
+        await this.#initData(data)
         super.show()
     }
 
     /** Show inline inside track editor container. */
     async showInline(data) {
-        await this._initData(data)
+        await this.#initData(data)
         this.container.style.display = 'block'
         this.sync()
     }
 
     /** Show with default note values as standalone popup. */
     async showEmpty(data) {
-        await this._initEmptyData(data)
+        await this.#initEmptyData(data)
         super.show()
     }
 
     /** Show with default note values inline inside track editor container. */
     async showEmptyInline(data) {
-        await this._initEmptyData(data)
+        await this.#initEmptyData(data)
         this.container.style.display = 'block'
         this.sync()
     }
 
     /** @private */
-    async _initData(data) {
-        this._track = data.track
-        this._note = data.note
-        this._pos = data.pos
-        this._beat = data.beat
-        this._beatStep = data.beatStep
+    async #initData(data) {
+        this.#track = data.track
+        this.#note = data.note
+        this.#pos = data.pos
+        this.#beat = data.beat
+        this.#beatStep = data.beatStep
         await loadScales()
     }
 
     /** @private */
-    async _initEmptyData(data) {
-        this._track = data.track
-        this._trackIdx = data.trackIdx ?? 0
-        this._beat = data.beat ?? 0
-        this._beatStep = data.beatStep ?? 0
-        this._pos = data.pos ?? 0
-        this._note = { ...DEFAULT_NOTE }
+    async #initEmptyData(data) {
+        this.#track = data.track
+        this.#trackIdx = data.trackIdx ?? 0
+        this.#beat = data.beat ?? 0
+        this.#beatStep = data.beatStep ?? 0
+        this.#pos = data.pos ?? 0
+        this.#note = { ...DEFAULT_NOTE }
         await loadScales()
     }
 
     sync() {
-        if (!this._note) {
-            if (!this._track) return
+        if (!this.#note) {
+            if (!this.#track) return
             this.container.innerHTML = `<div class="ne-header">
-                <span class="ne-track">${this.esc(this._track.name)} [beat ${this._beat + 1} step ${this._beatStep + 1}] — no note</span>
+                <span class="ne-track">${this.esc(this.#track.name)} [beat ${this.#beat + 1} step ${this.#beatStep + 1}] — no note</span>
             </div>`
             return
         }
 
         const scaleKeys = Object.keys(_scalesCache ?? {})
-        const arpState = this._getArpState(this._note)
+        const arpState = this.#getArpState(this.#note)
 
         const headerHtml = `<div class="ne-header">
-            <span class="ne-track">${this.esc(this._track.name)} [beat ${this._beat + 1} step ${this._beatStep + 1}]</span>
+            <span class="ne-track">${this.esc(this.#track.name)} [beat ${this.#beat + 1} step ${this.#beatStep + 1}]</span>
         </div>`
 
         const knobBarHtml = `<div class="ne-knob-bar">${
             KNOB_PROPS.map(p => `<div data-or-knob="${p.key}"></div>`).join('')
         }</div>`
 
-        const tabBarHtml = this._tab.renderBar()
+        const tabBarHtml = this.#tab.renderBar()
 
         const panelsHtml = TAB_DEFS.map(tab => {
             const g = GROUPS.find(gr => gr.id === tab.id)
             if (!g) return ''
-            const isHidden = this._tab.isHidden(tab.id)
-            const groupContent = g.props.map(p => this._renderProp(p, arpState, scaleKeys)).join('')
+            const isHidden = this.#tab.isHidden(tab.id)
+            const groupContent = g.props.map(p => this.#renderProp(p, arpState, scaleKeys)).join('')
             return `<div class="ne-tab-panel${isHidden ? ' ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${groupContent}</div>`
         }).join('')
 
         this.container.innerHTML = headerHtml + knobBarHtml + tabBarHtml + panelsHtml
 
-        this._syncKnobs()
-        this._syncSliders(arpState)
-        this._tab.bindTo(this.container)
-        this._bindEvents()
+        this.#syncKnobs()
+        this.#syncSliders(arpState)
+        this.#tab.bindTo(this.container)
+        this.#bindEvents()
     }
 
     /** @private Renders a single prop as HTML (select or slider placeholder). */
-    _renderProp(p, arpState, scaleKeys) {
+    #renderProp(p, arpState, scaleKeys) {
         if (p.type === 'select') {
-            const val = this._resolveSelectValue(p, arpState)
+            const val = this.#resolveSelectValue(p, arpState)
             const options = p.key === 'arpScale' ? scaleKeys : p.options
             const opts = renderOptions(options, val)
             return `<div class="ne-row"><label>${p.label}</label><select data-key="${p.key}">${opts}</select></div>`
@@ -281,40 +293,40 @@ export default class NoteEditor extends BasePanel {
     }
 
     /** @private */
-    _resolveSelectValue(p, arpState) {
-        if (p.key === 'arpScale') return this._note._arpScale ?? arpState.scale
-        if (p.key === 'arpType') return this._note._arpType ?? arpState.type
-        return this._note['_' + p.key] ?? p.options[0]
+    #resolveSelectValue(p, arpState) {
+        if (p.key === 'arpScale') return this.#note._arpScale ?? arpState.scale
+        if (p.key === 'arpType') return this.#note._arpType ?? arpState.type
+        return this.#note['_' + p.key] ?? p.options[0]
     }
 
     /** @private Keep-alive: reuse existing knobs via setValue, create only new ones. */
-    _syncKnobs() {
-        this._knobs = [...syncKnobs({
+    #syncKnobs() {
+        this.#knobs = [...syncKnobs({
             container: this.container,
             configs: KNOB_PROPS.map(def => ({
-                key: def.key, label: def.label, val: this._note[def.key] ?? def.min,
+                key: def.key, label: def.label, val: this.#note[def.key] ?? def.min,
                 min: def.min, max: def.max, step: def.step,
                 format: knobFormat(def),
                 unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
-                onChange: (v) => this._onSlider(def.key, v),
+                onChange: (v) => this.#onSlider(def.key, v),
             })),
-            prev: new Map(this._knobs.map(k => [k.key, k])),
+            prev: new Map(this.#knobs.map(k => [k.key, k])),
         }).values()]
     }
 
     /** @private Keep-alive: reuse existing sliders via setValue, create only new ones. */
-    _syncSliders(arpState) {
+    #syncSliders(arpState) {
         const sliderProps = GROUPS.flatMap(g => g.props.filter(p => p.type !== 'select'))
         const configs = sliderProps.map(p => ({
             ...p,
-            value: p.key === 'arpRange' ? arpState.range : (this._note[p.key] ?? p.min),
+            value: p.key === 'arpRange' ? arpState.range : (this.#note[p.key] ?? p.min),
         }))
 
-        this._sliders = [...syncComponentMap({
+        this.#sliders = [...syncComponentMap({
             container: this.container,
             configs,
             selector: 'or-slider',
-            prev: new Map(this._sliders.map(s => [s.key, s])),
+            prev: new Map(this.#sliders.map(s => [s.key, s])),
             create: (cfg) => new OrSlider({
                 key:    cfg.key,
                 label:  cfg.label,
@@ -323,12 +335,12 @@ export default class NoteEditor extends BasePanel {
                 step:   cfg.step,
                 value:  cfg.value,
                 format: cfg.key === 'pitch'
-                    ? v => `${fmt(v)} ${pitchToNoteName(v, this._track?.pitch ?? 0)}`
+                    ? v => `${fmt(v)} ${pitchToNoteName(v, this.#track?.pitch ?? 0)}`
                     : fmt,
-                onChange: v => this._onSlider(cfg.key, v),
+                onChange: v => this.#onSlider(cfg.key, v),
             }),
             update: (inst, cfg) => {
-                inst.onChange = (v) => this._onSlider(cfg.key, v)
+                inst.onChange = (v) => this.#onSlider(cfg.key, v)
                 inst.setValue(cfg.value)
             },
             postMount: (el) => el.removeAttribute('data-prop'),
@@ -336,58 +348,58 @@ export default class NoteEditor extends BasePanel {
     }
 
     /** @private */
-    _bindEvents() {
+    #bindEvents() {
         this.container.querySelectorAll('select').forEach(sel => {
-            sel.addEventListener('change', () => this._onSelect(sel))
+            sel.addEventListener('change', () => this.#onSelect(sel))
         })
     }
 
     hide() {
-        if (this._externalContainer) {
+        if (this.#externalContainer) {
             this.container.style.display = 'none'
         } else {
             super.hide()
         }
-        this._knobs.forEach(k => k.destroy())
-        this._knobs = []
-        this._sliders.forEach(s => s.destroy())
-        this._sliders = []
-        this._note = null
-        this._track = null
+        this.#knobs.forEach(k => k.destroy())
+        this.#knobs = []
+        this.#sliders.forEach(s => s.destroy())
+        this.#sliders = []
+        this.#note = null
+        this.#track = null
     }
 
     /** Builds note.arp from scale intervals + mode, or nulls it if range <= 0. */
-    _composeArp() {
-        if (!this._note) return
-        const scale = this._note._arpScale ?? 'major'
-        const type = this._note._arpType ?? 'up'
-        const range = this._note.arpRange ?? this._getArpState(this._note).range
-        this._note.arp = range > 0
+    #composeArp() {
+        if (!this.#note) return
+        const scale = this.#note._arpScale ?? 'major'
+        const type = this.#note._arpType ?? 'up'
+        const range = this.#note.arpRange ?? this.#getArpState(this.#note).range
+        this.#note.arp = range > 0
             ? { intervals: getScaleIntervals(scale, range), mode: type }
             : null
     }
 
-    _onSlider(key, val) {
-        if (!this._note || !this._track) return
-        this._note[key] = val
-        if (key === 'arpRange') this._composeArp()
+    #onSlider(key, val) {
+        if (!this.#note || !this.#track) return
+        this.#note[key] = val
+        if (key === 'arpRange') this.#composeArp()
         playbackEvents.batch(() => {
-            playbackEvents.emit("noteChange", [this._track])
-            playbackEvents.emit("patternChange", [this._track])
+            playbackEvents.emit("noteChange", [this.#track])
+            playbackEvents.emit("patternChange", [this.#track])
         })
     }
 
-    _onSelect(sel) {
-        if (!this._note || !this._track) return
-        this._note['_' + sel.dataset.key] = sel.value
-        this._composeArp()
+    #onSelect(sel) {
+        if (!this.#note || !this.#track) return
+        this.#note['_' + sel.dataset.key] = sel.value
+        this.#composeArp()
         playbackEvents.batch(() => {
-            playbackEvents.emit("noteChange", [this._track])
-            playbackEvents.emit("patternChange", [this._track])
+            playbackEvents.emit("noteChange", [this.#track])
+            playbackEvents.emit("patternChange", [this.#track])
         })
     }
 
     // ─── Public API ───────────────────────────────────────────────────────
     /** @returns {OrKnob[]} current knob instances */
-    get knobs() { return this._knobs }
+    get knobs() { return this.#knobs }
 }

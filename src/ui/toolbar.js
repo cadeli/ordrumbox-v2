@@ -11,6 +11,16 @@ import ViewSwitch from './toolbar/view_switch.js'
 import OverflowMenu from './toolbar/overflow_menu.js'
 
 export default class Toolbar {
+    #transport
+    #patternNav
+    #viewSwitch
+    #overflow
+    #nextUndoDesc
+    #nextRedoDesc
+    #bpmOverride
+    #ro
+    #checkOverflow
+
     constructor() {
         this.container = null
         this.startBtn = null
@@ -24,13 +34,13 @@ export default class Toolbar {
         this.nextPageBtn = null
         this.pageLabel = null
 
-        this._transport = new TransportControls(this)
-        this._patternNav = new PatternNav(this)
-        this._viewSwitch = new ViewSwitch(this)
-        this._overflow = new OverflowMenu(this)
-        this._nextUndoDesc = null
-        this._nextRedoDesc = null
-        this._bpmOverride = null
+        this.#transport = new TransportControls(this)
+        this.#patternNav = new PatternNav(this)
+        this.#viewSwitch = new ViewSwitch(this)
+        this.#overflow = new OverflowMenu(this)
+        this.#nextUndoDesc = null
+        this.#nextRedoDesc = null
+        this.#bpmOverride = null
     }
 
     injectCSS() {
@@ -42,12 +52,12 @@ export default class Toolbar {
         this.createDOM()
         this.bindEvents()
         this.sync()
-        this._bindSyncEvents()
-        this._setupOverflowObserver()
-        document.addEventListener('keydown', (e) => this._handleKeyboard(e))
+        this.#bindSyncEvents()
+        this.#setupOverflowObserver()
+        document.addEventListener('keydown', (e) => this.#handleKeyboard(e))
     }
 
-    _bindSyncEvents() {
+    #bindSyncEvents() {
         const sync = () => this.sync()
         playbackEvents.on('playbackStart', sync)
         playbackEvents.on('playbackStop', sync)
@@ -59,8 +69,8 @@ export default class Toolbar {
         playbackEvents.on('trackParamChange', sync)
         playbackEvents.on('drumkitChange', sync)
         playbackEvents.on('historyChange', (state) => {
-            this._nextUndoDesc = state?.nextUndoDesc ?? null
-            this._nextRedoDesc = state?.nextRedoDesc ?? null
+            this.#nextUndoDesc = state?.nextUndoDesc ?? null
+            this.#nextRedoDesc = state?.nextRedoDesc ?? null
             sync()
         })
     }
@@ -72,8 +82,8 @@ export default class Toolbar {
         this.startBtn.classList.toggle('running', running)
 
         const pat = appState.patterns[appState.selectedPatternNum]
-        const bpm = this._bpmOverride ?? pat?.bpm ?? 120
-        this._bpmOverride = null
+        const bpm = this.#bpmOverride ?? pat?.bpm ?? 120
+        this.#bpmOverride = null
         this.bpmSlider.value = bpm
         this.bpmValue.textContent = bpm
         this.bpmToggle.textContent = bpm
@@ -98,10 +108,10 @@ export default class Toolbar {
         this.undoBtn.disabled = !canUndo
         this.redoBtn.disabled = !canRedo
         this.undoBtn.title = canUndo
-            ? `Undo: ${this._nextUndoDesc ?? ''} (Ctrl+Z)`
+            ? `Undo: ${this.#nextUndoDesc ?? ''} (Ctrl+Z)`
             : 'Undo (Ctrl+Z)'
         this.redoBtn.title = canRedo
-            ? `Redo: ${this._nextRedoDesc ?? ''} (Ctrl+Y)`
+            ? `Redo: ${this.#nextRedoDesc ?? ''} (Ctrl+Y)`
             : 'Redo (Ctrl+Y)'
 
         const tracks = pat ? Utils.getTracksArray(pat) : []
@@ -113,15 +123,15 @@ export default class Toolbar {
         this.chordsBtn.classList.toggle('active',
             tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO'))
 
-        this._patternNav.rebuildPatternSelect()
-        this._patternNav.rebuildDrumkitSelect()
+        this.#patternNav.rebuildPatternSelect()
+        this.#patternNav.rebuildDrumkitSelect()
 
         if (pat && this.patternNameMobile) {
             this.patternNameMobile.textContent = pat.name ?? `Pattern ${appState.selectedPatternNum + 1}`
         }
     }
 
-    _handleKeyboard(e) {
+    #handleKeyboard(e) {
         if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
             e.preventDefault()
             serviceRegistry.history?.undo()
@@ -139,10 +149,10 @@ export default class Toolbar {
         brand.className = 'tb-brand tb-hide-mobile'
         brand.textContent = 'orDrumbox'
 
-        const { startBtn, bpmWrap, beatsWrap } = this._transport.createDOM()
-        const { patWrap, pageWrap, kitWrap } = this._patternNav.createDOM()
-        const { genWrap, undoWrap, viewWrap } = this._viewSwitch.createDOM()
-        const { toolsBtn, aboutBtn, settingsBtn } = this._overflow.createDOM()
+        const { startBtn, bpmWrap, beatsWrap } = this.#transport.createDOM()
+        const { patWrap, pageWrap, kitWrap } = this.#patternNav.createDOM()
+        const { genWrap, undoWrap, viewWrap } = this.#viewSwitch.createDOM()
+        const { toolsBtn, aboutBtn, settingsBtn } = this.#overflow.createDOM()
 
         this.container.appendChild(brand)
         this.container.appendChild(startBtn)
@@ -167,21 +177,21 @@ export default class Toolbar {
     }
 
     bindEvents() {
-        this._transport.bindEvents()
-        this._patternNav.bindEvents()
-        this._viewSwitch.bindEvents()
-        this._overflow.bindEvents()
+        this.#transport.bindEvents()
+        this.#patternNav.bindEvents()
+        this.#viewSwitch.bindEvents()
+        this.#overflow.bindEvents()
     }
 
-    _rebuildPatternSelect() {
-        this._patternNav.rebuildPatternSelect()
+    #rebuildPatternSelect() {
+        this.#patternNav.rebuildPatternSelect()
     }
 
-    _rebuildDrumkitSelect() {
-        this._patternNav.rebuildDrumkitSelect()
+    #rebuildDrumkitSelect() {
+        this.#patternNav.rebuildDrumkitSelect()
     }
 
-    _setupOverflowObserver() {
+    #setupOverflowObserver() {
         const isMobile = () => isMobileViewport()
         const check = () => {
             if (!this.container) return
@@ -189,11 +199,16 @@ export default class Toolbar {
             this.container.classList.toggle('tb-overflow', overflowing)
         }
         if (typeof ResizeObserver !== 'undefined') {
-            this._ro = new ResizeObserver(check)
-            this._ro.observe(this.container)
+            this.#ro = new ResizeObserver(check)
+            this.#ro.observe(this.container)
         }
         window.addEventListener('resize', check)
-        this._checkOverflow = check
+        this.#checkOverflow = check
         setTimeout(check, 0)
     }
+
+    get bpmOverride() { return this.#bpmOverride }
+    set bpmOverride(v) { this.#bpmOverride = v }
+
+    checkOverflow() { this.#checkOverflow?.() }
 }

@@ -41,10 +41,10 @@ function makeMockEditor(pattern) {
     document.body.appendChild(container)
     return {
         container,
-        _serviceRegistry: serviceRegistry,
-        _playbackEvents: playbackEvents,
-        _beatRectsCache: [],
-        _layoutCache: null,
+        serviceRegistry: serviceRegistry,
+        playbackEvents: playbackEvents,
+        beatRectsCache: [],
+        layoutCache: null,
         requestSync: vi.fn()
     }
 }
@@ -171,10 +171,10 @@ describe('PlaybackOverlaySection', () => {
             appState.selectedPatternNum = 0
             appState.currentPage = 0
 
-            editor._beatRectsCache = Array.from({ length: 8 }, () => ({
+            editor.beatRectsCache = Array.from({ length: 8 }, () => ({
                 left: 0, width: 50, absLeft: 0, absRight: 400
             }))
-            editor._layoutCache = {
+            editor.layoutCache = {
                 containerLeft: 0, containerRight: 400,
                 tracksLeft: 0, tracksHeight: 200
             }
@@ -200,10 +200,10 @@ describe('PlaybackOverlaySection', () => {
             appState.selectedPatternNum = 0
             appState.currentPage = 0
 
-            editor._beatRectsCache = Array.from({ length: 8 }, () => ({
+            editor.beatRectsCache = Array.from({ length: 8 }, () => ({
                 left: 0, width: 50, absLeft: 0, absRight: 400
             }))
-            editor._layoutCache = {
+            editor.layoutCache = {
                 containerLeft: 0, containerRight: 400,
                 tracksLeft: 0, tracksHeight: 200
             }
@@ -231,10 +231,10 @@ describe('PlaybackOverlaySection', () => {
             appState.selectedPatternNum = 0
             appState.currentPage = 1
 
-            editor._beatRectsCache = Array.from({ length: 8 }, (_, i) => ({
+            editor.beatRectsCache = Array.from({ length: 8 }, (_, i) => ({
                 left: i * 100, width: 100, absLeft: i * 100, absRight: (i + 1) * 100
             }))
-            editor._layoutCache = {
+            editor.layoutCache = {
                 containerLeft: 0, containerRight: 800,
                 tracksLeft: 0, tracksHeight: 200
             }
@@ -303,8 +303,8 @@ describe('PlaybackOverlaySection', () => {
             canvas.style.display = 'block'
             editor.container.appendChild(canvas)
 
-            editor._beatRectsCache = [{ left: 0, width: 0, absLeft: 0, absRight: 0 }]
-            editor._layoutCache = {
+            editor.beatRectsCache = [{ left: 0, width: 0, absLeft: 0, absRight: 0 }]
+            editor.layoutCache = {
                 containerLeft: 0, containerRight: 0,
                 tracksLeft: 0, tracksHeight: 0
             }

@@ -476,20 +476,20 @@ describe('PianoRollPanel', () => {
         it('dispatches noteSelect(null) on clearSelection', () => {
             const listener = vi.fn()
             playbackEvents.on("noteSelect", listener)
-            panel._clearSelection()
+            panel.clearSelection()
             expect(listener).toHaveBeenCalledWith(null)
         })
     })
 
     describe('playhead', () => {
         it('creates playhead element', () => {
-            panel._ensurePlayhead()
+            panel.ensurePlayhead()
             const playhead = panel.container.querySelector('.pp-pr-playhead')
             expect(playhead).not.toBeNull()
         })
 
         it('playhead is hidden by default', () => {
-            panel._ensurePlayhead()
+            panel.ensurePlayhead()
             const playhead = panel.container.querySelector('.pp-pr-playhead')
             expect(playhead.style.display).toBe('none')
         })
@@ -504,12 +504,12 @@ describe('PianoRollPanel', () => {
             const track = getTrack()
             const note = track.notes[0]
             const step = (note.beat ?? 0) * track.stepsPerBeat + (note.beatStep ?? 0)
-            panel._illuminateStep(step, 1)
+            panel.illuminateStep(step, 1)
             expect(getPlayingNotes().length).toBeGreaterThan(0)
         })
 
         it('does not illuminate when absStep does not match any note', () => {
-            panel._illuminateStep(999, 1)
+            panel.illuminateStep(999, 1)
             expect(getPlayingNotes().length).toBe(0)
         })
 
@@ -517,10 +517,10 @@ describe('PianoRollPanel', () => {
             const track = getTrack()
             const note0 = track.notes[0]
             const step0 = (note0.beat ?? 0) * track.stepsPerBeat + (note0.beatStep ?? 0)
-            panel._illuminateStep(step0, 1)
+            panel.illuminateStep(step0, 1)
             expect(getPlayingNotes().length).toBeGreaterThan(0)
 
-            panel._illuminateStep(999, 2)
+            panel.illuminateStep(999, 2)
             expect(getPlayingNotes().length).toBe(0)
         })
 
@@ -532,19 +532,19 @@ describe('PianoRollPanel', () => {
             const basePos = (retrigNote.beat ?? 0) * spb + (retrigNote.beatStep ?? 0)
             if (basePos >= 4 * spb) return
 
-            const subs = panel._getSubPositions(retrigNote, track, (track.nbBeats ?? 4) * spb)
+            const subs = panel.getSubPositions(retrigNote, track, (track.nbBeats ?? 4) * spb)
             if (subs.length === 0) return
             const subPos = subs[0].pos
             if (subPos >= 4 * spb) return
 
-            panel._illuminateStep(subPos, 42)
+            panel.illuminateStep(subPos, 42)
             expect(getPlayingNotes().length).toBeGreaterThan(0)
         })
 
         it('does not illuminate notes beyond loopAtStep', () => {
             const track = getTrack()
             track.loopAtStep = 4
-            panel._sync()
+            panel.sync()
 
             const noteBeyond = track.notes.find(n => {
                 const step = (n.beat ?? 0) * track.stepsPerBeat + (n.beatStep ?? 0)
@@ -553,7 +553,7 @@ describe('PianoRollPanel', () => {
             if (!noteBeyond) return
 
             const step = (noteBeyond.beat ?? 0) * track.stepsPerBeat + (noteBeyond.beatStep ?? 0)
-            panel._illuminateStep(step, 10)
+            panel.illuminateStep(step, 10)
             const playing = Array.from(getPlayingNotes()).filter(el => {
                 const idx = parseInt(el.dataset.note, 10)
                 return track.notes[idx] === noteBeyond
@@ -566,10 +566,10 @@ describe('PianoRollPanel', () => {
             const note = track.notes[0]
             const step = (note.beat ?? 0) * track.stepsPerBeat + (note.beatStep ?? 0)
 
-            panel._illuminateStep(step, 100)
+            panel.illuminateStep(step, 100)
             expect(getPlayingNotes().length).toBeGreaterThan(0)
 
-            panel._illuminateStep(step, 200)
+            panel.illuminateStep(step, 200)
             expect(getPlayingNotes().length).toBeGreaterThan(0)
         })
 
@@ -578,10 +578,10 @@ describe('PianoRollPanel', () => {
             const note = track.notes[0]
             const step = (note.beat ?? 0) * track.stepsPerBeat + (note.beatStep ?? 0)
 
-            panel._illuminateStep(step, 50)
+            panel.illuminateStep(step, 50)
             const count1 = getPlayingNotes().length
 
-            panel._illuminateStep(step, 50)
+            panel.illuminateStep(step, 50)
             expect(getPlayingNotes().length).toBe(count1)
         })
 
@@ -589,10 +589,10 @@ describe('PianoRollPanel', () => {
             const track = getTrack()
             const note = track.notes[0]
             const step = (note.beat ?? 0) * track.stepsPerBeat + (note.beatStep ?? 0)
-            panel._illuminateStep(step, 1)
+            panel.illuminateStep(step, 1)
             expect(getPlayingNotes().length).toBeGreaterThan(0)
 
-            panel._clearIllumination()
+            panel.clearIllumination()
             expect(getPlayingNotes().length).toBe(0)
         })
 
@@ -600,13 +600,13 @@ describe('PianoRollPanel', () => {
             const track = getTrack()
             const spb = track.stepsPerBeat
             track.loopAtStep = 2 * spb
-            panel._sync()
+            panel.sync()
             const note = track.notes[0]
             const basePos = (note.beat ?? 0) * spb + (note.beatStep ?? 0)
             if (basePos >= track.loopAtStep) return
 
             const repeatedStep = basePos + track.loopAtStep
-            panel._illuminateStep(repeatedStep, 77)
+            panel.illuminateStep(repeatedStep, 77)
             const playing = Array.from(getPlayingNotes()).filter(el => {
                 const idx = parseInt(el.dataset.note, 10)
                 return track.notes[idx] === note
@@ -618,14 +618,14 @@ describe('PianoRollPanel', () => {
             const track = getTrack()
             const spb = track.stepsPerBeat
             track.loopAtStep = 2 * spb
-            panel._sync()
+            panel.sync()
             const noteOutside = track.notes.find(n => {
                 const step = (n.beat ?? 0) * spb + (n.beatStep ?? 0)
                 return step >= track.loopAtStep
             })
             if (!noteOutside) return
             const step = (noteOutside.beat ?? 0) * spb + (noteOutside.beatStep ?? 0)
-            panel._illuminateStep(step, 88)
+            panel.illuminateStep(step, 88)
             const playing = Array.from(getPlayingNotes()).filter(el => {
                 const idx = parseInt(el.dataset.note, 10)
                 return track.notes[idx] === noteOutside
@@ -638,7 +638,7 @@ describe('PianoRollPanel', () => {
         it('renders a loop point line when loopAtStep is on current page', () => {
             const track = getTrack()
             track.loopAtStep = 8
-            panel._sync()
+            panel.sync()
             const lp = getGrid()?.querySelector('.pp-pr-loop-point')
             expect(lp).not.toBeNull()
         })
@@ -646,7 +646,7 @@ describe('PianoRollPanel', () => {
         it('does not render loop point line when loopAtStep is off page', () => {
             const track = getTrack()
             track.loopAtStep = 32
-            panel._sync()
+            panel.sync()
             const lp = getGrid()?.querySelector('.pp-pr-loop-point')
             expect(lp).toBeNull()
         })
@@ -656,7 +656,7 @@ describe('PianoRollPanel', () => {
             const spb = track.stepsPerBeat
             const loopStep = 2 * spb
             track.loopAtStep = loopStep
-            panel._sync()
+            panel.sync()
             const lp = getGrid()?.querySelector('.pp-pr-loop-point')
             expect(lp).not.toBeNull()
             const expectedX = loopStep * panel.cellWidth
@@ -666,7 +666,7 @@ describe('PianoRollPanel', () => {
         it('loop point line spans full grid height', () => {
             const track = getTrack()
             track.loopAtStep = 8
-            panel._sync()
+            panel.sync()
             const lp = getGrid()?.querySelector('.pp-pr-loop-point')
             expect(lp).not.toBeNull()
             const expectedHeight = TOTAL_KEYS * NOTE_HEIGHT

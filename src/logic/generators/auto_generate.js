@@ -24,6 +24,9 @@ const SECTION_DENSITY = Object.freeze({
 export default class AutoGenerate {
     static TAG = "AutoGenerate"
 
+    #cachedGenre
+    #cachedStructure
+
     constructor() {
         this.kickGen = new KickGenerate()
         this.snareGen = new SnareGenerate()
@@ -40,7 +43,7 @@ export default class AutoGenerate {
      * Find matching config from structure for a given track type.
      * Prefers exact name match, falls back to first config of same type.
      */
-    _findTrackConfig(structure, track) {
+    #findTrackConfig(structure, track) {
         const type = Utils.detectTrackType(track.name)
         const trackNameUpper = track.name.toUpperCase()
         let config = null
@@ -83,7 +86,7 @@ export default class AutoGenerate {
                 }
             } else {
                 for (const track of pattern.tracks) {
-                    const config = this._findTrackConfig(structure, track)
+                    const config = this.#findTrackConfig(structure, track)
                     if (config) {
                         logger.info(AutoGenerate.TAG, `  track=${track.name}, variant=${config}`)
                         await this.generateTrack(track, config, 1, pattern, harmony)
@@ -118,7 +121,7 @@ export default class AutoGenerate {
 
     generateTrack = async (track, config, density = 1, pattern = null, harmony = { root: 0, scale: null }) => {
         const type = Utils.detectTrackType(track.name)
-        this._applyGenreSwing(track, pattern)
+        this.#applyGenreSwing(track, pattern)
         switch (type) {
             case 'KICK':
                 await this.kickGen.generateNewKick(track, config, density)
@@ -150,7 +153,7 @@ export default class AutoGenerate {
         }
     }
 
-    _applyGenreSwing = (track, pattern) => {
+    #applyGenreSwing = (track, pattern) => {
         const genre = pattern?._autoGenGenre ?? this.structureGen.getRandomGenre()
         const swing = this.structureGen.getGenreSwing(genre)
         track.swingAmount = swing.swingAmount
@@ -170,19 +173,19 @@ export default class AutoGenerate {
 
             logger.info(AutoGenerate.TAG, `changeTrack: loop=${loop}, section=${element.name}#${element.number}, track=${track.name}, harmony=${JSON.stringify(harmony)}, sectionEnd=${isSectionEnd}, break=${isBreak}, density=${density}`)
 
-            const structure = this._cachedGenre === genre
-                ? this._cachedStructure
-                : (this._cachedGenre = genre, this._cachedStructure = this.structureGen.generateStructure(genre))
+            const structure = this.#cachedGenre === genre
+                ? this.#cachedStructure
+                : (this.#cachedGenre = genre, this.#cachedStructure = this.structureGen.generateStructure(genre))
 
             const type = Utils.detectTrackType(track.name)
-            const config = track.auto_variant || this._findTrackConfig(structure, track)
+            const config = track.auto_variant || this.#findTrackConfig(structure, track)
 
             if (config) {
                 if (isBreak && type === 'SNARE') {
                     logger.info(AutoGenerate.TAG, `  -> breakCrescendo mode`)
                     await this.snareGen.generateNewSnare(track, 'breakCrescendo', density)
                 } else if (isSectionEnd) {
-                    const sectionEndVariant = this._resolveSectionEndVariant(track, type)
+                    const sectionEndVariant = this.#resolveSectionEndVariant(track, type)
                     const mergeVariant = sectionEndVariant ?? config
                     logger.info(AutoGenerate.TAG, `  -> section-end merge (variant=${mergeVariant})`)
                     const savedNotes = [...track.notes]
@@ -209,7 +212,7 @@ export default class AutoGenerate {
         }
     }
 
-    _resolveSectionEndVariant = (track, type) => {
+    #resolveSectionEndVariant = (track, type) => {
         const trackNameUpper = track.name.toUpperCase()
         switch (type) {
             case 'HAT':

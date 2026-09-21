@@ -5,8 +5,10 @@ import Utils from '../../core/utils.js'
 import { nameOr } from '../../core/logger.js'
 
 export default class HeaderSection {
+    #editor
+
     /** @param {import('./pattern_panel.js').default} editor */
-    constructor(editor) { this._editor = editor }
+    constructor(editor) { this.#editor = editor }
 
     /**
      * @param {object} pattern
@@ -29,7 +31,7 @@ export default class HeaderSection {
                 <button class="pp-action-btn" data-pp-action="save" title="Export Pattern">↓</button>
                 <button class="pp-action-btn" data-pp-action="replace" title="Load / replace pattern">↑</button>
             </div>
-            <span class="pp-name">${this._editor.esc(nameOr(pattern.name, 'Unnamed', 'PatternPanel', 'name fallback'))}</span>
+            <span class="pp-name">${this.#editor.esc(nameOr(pattern.name, 'Unnamed', 'PatternPanel', 'name fallback'))}</span>
             <span class="pp-meta">${pattern.bpm ?? 120} BPM · ${totalBeats} beats (${totalMeasures} measures) · Page ${currentPage + 1}</span>
         </div>`
     }

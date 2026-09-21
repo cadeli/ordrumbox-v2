@@ -47,11 +47,11 @@ export default class Strip {
     static async create(name, audioCtx, mixer) {
         const strip = new Strip(name, audioCtx, mixer);
         await WorkletLoader.ensureLoaded(audioCtx);
-        strip._initNode();
+        strip.#initNode();
         return strip;
     }
 
-    _initNode() {
+    #initNode() {
         const ctx = this.audioCtx;
         this.stripNode = WorkletLoader.createNode(ctx, 'strip', {
             numberOfInputs: 1,

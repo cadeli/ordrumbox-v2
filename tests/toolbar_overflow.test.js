@@ -28,7 +28,7 @@ describe('Toolbar overflow (mobile single-line)', () => {
     function simulateOverflow(toolbar, overflowing) {
         Object.defineProperty(toolbar.container, 'clientWidth', { value: 300, configurable: true })
         Object.defineProperty(toolbar.container, 'scrollWidth', { value: overflowing ? 400 : 280, configurable: true })
-        toolbar._checkOverflow()
+        toolbar.checkOverflow()
     }
 
     it('adds tb-overflow class on mobile when toolbar overflows', () => {

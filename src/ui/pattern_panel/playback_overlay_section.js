@@ -68,8 +68,8 @@ export default class PlaybackOverlaySection {
         this.#vuElCache = editor.container?.querySelectorAll('.pp-vu')
 
         const loop = () => {
-            const transport = editor._serviceRegistry.transport
-            const mixer = editor._serviceRegistry.audioEngine?.mixer
+            const transport = editor.serviceRegistry.transport
+            const mixer = editor.serviceRegistry.audioEngine?.mixer
             if (!transport?.isRunning || !mixer || !editor.container) {
                 this.#rafId = null
                 this.hidePlayhead()
@@ -137,7 +137,7 @@ export default class PlaybackOverlaySection {
             this.#waveformCanvas = editor.container?.querySelector('.pp-waveform-overlay')
         }
         const canvas = this.#waveformCanvas
-        if (!canvas || !editor._layoutCache) return
+        if (!canvas || !editor.layoutCache) return
 
         if (!this.#tracksEl) {
             this.#tracksEl = editor.container?.querySelector('.pp-tracks')
@@ -147,13 +147,13 @@ export default class PlaybackOverlaySection {
 
         const dpr = window.devicePixelRatio ?? 1
 
-        const firstBeatCache = editor._beatRectsCache[appState.currentPage * 4]
-        const lastBeatIdx = Math.min(editor._beatRectsCache.length - 1, (appState.currentPage + 1) * 4 - 1)
-        const lastBeatCache = editor._beatRectsCache[lastBeatIdx]
+        const firstBeatCache = editor.beatRectsCache[appState.currentPage * 4]
+        const lastBeatIdx = Math.min(editor.beatRectsCache.length - 1, (appState.currentPage + 1) * 4 - 1)
+        const lastBeatCache = editor.beatRectsCache[lastBeatIdx]
 
         if (!firstBeatCache || !lastBeatCache) return
 
-        const { containerLeft, containerRight, tracksLeft, tracksHeight } = editor._layoutCache
+        const { containerLeft, containerRight, tracksLeft, tracksHeight } = editor.layoutCache
 
         const visibleLeft = Math.max(firstBeatCache.absLeft, containerLeft)
         const visibleRight = Math.min(lastBeatCache.absRight, containerRight)
@@ -187,7 +187,7 @@ export default class PlaybackOverlaySection {
         const ctx = canvas.getContext('2d')
         if (!ctx) return
 
-        const data = editor._serviceRegistry.audioEngine?.getAnalyserData?.()
+        const data = editor.serviceRegistry.audioEngine?.getAnalyserData?.()
         if (!data) {
             ctx.fillStyle = color('surface-2')
             ctx.fillRect(0, 0, w, h)
@@ -262,11 +262,11 @@ export default class PlaybackOverlaySection {
 
     #updatePlayhead() {
         const editor = this.#editor
-        const transport = editor._serviceRegistry.transport
+        const transport = editor.serviceRegistry.transport
         if (!transport?.isRunning) return
 
         const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern || !editor.container || !editor._layoutCache) return
+        if (!pattern || !editor.container || !editor.layoutCache) return
         this.ensurePlayhead()
 
         const nbTicks = TICK * (pattern.nbBeats ?? 4)
@@ -286,16 +286,16 @@ export default class PlaybackOverlaySection {
             if (newPage !== appState.currentPage) {
                 appState.currentPage = newPage
                 editor.requestSync()
-                editor._playbackEvents.batch(() => {
-                    editor._playbackEvents.emit("patternMetaChange")
-                    editor._playbackEvents.emit("patternChange")
+                editor.playbackEvents.batch(() => {
+                    editor.playbackEvents.emit("patternMetaChange")
+                    editor.playbackEvents.emit("patternChange")
                 })
             }
             if (this.#playhead.style.display !== 'none') this.#playhead.style.display = 'none'
             return
         }
 
-        const beatCache = editor._beatRectsCache[currentPatternBeat]
+        const beatCache = editor.beatRectsCache[currentPatternBeat]
         if (!beatCache) {
             if (this.#playhead.style.display !== 'none') this.#playhead.style.display = 'none'
             return

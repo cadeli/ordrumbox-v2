@@ -15,9 +15,13 @@ export default class Commander {
     static #TRACK_KEY_SET = new Set(Object.keys(TRACK_DEFAULTS))
     static TRACK_VALUE_RANGES = TRACK_VALUE_RANGES
 
+    _history
+    #suppressRecord
+    #genSnapshot
+
     constructor() {
         this._history = null
-        this._suppressRecord = false
+        this.#suppressRecord = false
 
         // Bind methods from sub-modules
         Object.assign(this, createNoteMethods(this))
@@ -34,7 +38,7 @@ export default class Commander {
     }
 
     record(undoFn, meta = {}) {
-        if (this._suppressRecord) return
+        if (this.#suppressRecord) return
         const history = this.getHistory()
         if (history) {
             history.record({ execute: () => {}, undo: undoFn, meta })
@@ -107,7 +111,7 @@ export default class Commander {
     }
 
     beginGenerationUndo = (pattern) => {
-        this._genSnapshot = {
+        this.#genSnapshot = {
             pattern,
             savedTracksLength: (pattern.tracks ?? []).length,
             trackSnapshots: (pattern.tracks ?? []).map(t => ({
@@ -118,13 +122,13 @@ export default class Commander {
                 loopAtStep: t.loopAtStep,
             })),
         }
-        this._suppressRecord = true
+        this.#suppressRecord = true
     }
 
     commitGenerationUndo = (desc = 'Generate pattern') => {
-        const snap = this._genSnapshot
+        const snap = this.#genSnapshot
         if (!snap) return
-        this._suppressRecord = false
+        this.#suppressRecord = false
         this.record(() => {
             for (const ts of snap.trackSnapshots) {
                 ts.ref.notes = ts.notes
@@ -138,6 +142,6 @@ export default class Commander {
             this.incrementPatternVersionByTrack(snap.pattern.tracks[0])
             this.persist()
         }, { desc })
-        this._genSnapshot = null
+        this.#genSnapshot = null
     }
 }

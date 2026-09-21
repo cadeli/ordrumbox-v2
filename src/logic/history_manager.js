@@ -5,28 +5,34 @@ import { playbackEvents } from '../state/playback_events.js'
 import { logger } from '../core/logger.js'
 
 export default class HistoryManager {
+    #past
+    #future
+    #maxSize
+    _isUndoing
+    _isRedoing
+
     constructor(maxSize = 50) {
-        this._past = []
-        this._future = []
-        this._maxSize = maxSize
+        this.#past = []
+        this.#future = []
+        this.#maxSize = maxSize
         this._isUndoing = false
         this._isRedoing = false
     }
 
     get canUndo() {
-        return this._past.length > 0
+        return this.#past.length > 0
     }
 
     get canRedo() {
-        return this._future.length > 0
+        return this.#future.length > 0
     }
 
     get pastLength() {
-        return this._past.length
+        return this.#past.length
     }
 
     get futureLength() {
-        return this._future.length
+        return this.#future.length
     }
 
     /**
@@ -36,12 +42,12 @@ export default class HistoryManager {
     record(command) {
         if (this._isUndoing || this._isRedoing) return
 
-        this._past.push(command)
-        if (this._past.length > this._maxSize) {
-            this._past.shift()
+        this.#past.push(command)
+        if (this.#past.length > this.#maxSize) {
+            this.#past.shift()
         }
-        this._future = []
-        this._emitChange()
+        this.#future = []
+        this.#emitChange()
     }
 
     /**
@@ -64,18 +70,18 @@ export default class HistoryManager {
         if (!this.canUndo) return false
 
         this._isUndoing = true
-        const command = this._past.pop()
+        const command = this.#past.pop()
         try {
             command.undo()
-            this._future.push(command)
+            this.#future.push(command)
         } catch (err) {
             logger.error('HistoryManager', 'undo failed', err)
-            this._past.push(command)
+            this.#past.push(command)
             this._isUndoing = false
             return false
         }
         this._isUndoing = false
-        this._emitBatchedRefresh()
+        this.#emitBatchedRefresh()
         return true
     }
 
@@ -86,24 +92,24 @@ export default class HistoryManager {
         if (!this.canRedo) return false
 
         this._isRedoing = true
-        const command = this._future.pop()
+        const command = this.#future.pop()
         try {
             command.execute()
-            this._past.push(command)
+            this.#past.push(command)
         } catch (err) {
             logger.error('HistoryManager', 'redo failed', err)
-            this._future.push(command)
+            this.#future.push(command)
             this._isRedoing = false
             return false
         }
         this._isRedoing = false
-        this._emitBatchedRefresh()
+        this.#emitBatchedRefresh()
         return true
     }
 
-    _emitBatchedRefresh() {
+    #emitBatchedRefresh() {
         playbackEvents.batch(() => {
-            this._emitChange()
+            this.#emitChange()
             playbackEvents.emit('patternChange')
             playbackEvents.emit('noteChange')
             playbackEvents.emit('patternStructureChange')
@@ -111,19 +117,19 @@ export default class HistoryManager {
     }
 
     clear() {
-        this._past = []
-        this._future = []
-        this._emitChange()
+        this.#past = []
+        this.#future = []
+        this.#emitChange()
     }
 
-    _emitChange() {
+    #emitChange() {
         playbackEvents.emit('historyChange', {
             canUndo: this.canUndo,
             canRedo: this.canRedo,
             pastLength: this.pastLength,
             futureLength: this.futureLength,
-            nextUndoDesc: this._past.at(-1)?.meta?.desc ?? null,
-            nextRedoDesc: this._future.at(-1)?.meta?.desc ?? null,
+            nextUndoDesc: this.#past.at(-1)?.meta?.desc ?? null,
+            nextRedoDesc: this.#future.at(-1)?.meta?.desc ?? null,
         })
     }
 }

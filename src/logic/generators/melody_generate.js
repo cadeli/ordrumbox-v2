@@ -163,7 +163,7 @@ export default class MelodyGenerate extends BaseGenerator {
         const octaveShift = (config.octaveShift ?? 1) * 12
         const pitchBias = rootNote + octaveShift
 
-        const bassRootPitch = this._extractBassRootPitch(pattern)
+        const bassRootPitch = this.#extractBassRootPitch(pattern)
 
         this.clearTrackNotes(melodyTrack)
 
@@ -178,7 +178,7 @@ export default class MelodyGenerate extends BaseGenerator {
             default: {
                 const cachedPitches = []
                 this.generatePhraseVariant(melodyTrack, config,
-                    (phrase) => this._resolveChordPitch(phrase, tones, cachedPitches, pitchBias, bassRootPitch),
+                    (phrase) => this.#resolveChordPitch(phrase, tones, cachedPitches, pitchBias, bassRootPitch),
                     (phrase, step) => step % 2 === 0,
                     null,
                     density,
@@ -191,7 +191,7 @@ export default class MelodyGenerate extends BaseGenerator {
         this.applyLoopPoint(melodyTrack, config)
     }
 
-    _extractBassRootPitch = (pattern) => {
+    #extractBassRootPitch = (pattern) => {
         if (!pattern?.tracks) return null
         const bassTrack = pattern.tracks.find(t => {
             const name = (t.name ?? '').toUpperCase()
@@ -210,7 +210,7 @@ export default class MelodyGenerate extends BaseGenerator {
         return mostFrequent
     }
 
-    _resolveChordPitch = (phrase, tones, cachedPitches, pitchBias = 0, bassRootPitch = null) => {
+    #resolveChordPitch = (phrase, tones, cachedPitches, pitchBias = 0, bassRootPitch = null) => {
         const basePitch = this.resolvePhrasePitch(phrase, tones, cachedPitches, 0)
         if (bassRootPitch === null || typeof basePitch !== 'number') {
             return basePitch + pitchBias

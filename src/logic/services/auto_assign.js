@@ -10,15 +10,19 @@ const TAG = 'AutoAssign'
 export default class AutoAssign {
     static TAG = TAG
     static NOT_FOUND = NOT_FOUND
+
+    #appState
+    _soundRegistry
+
     constructor({ appState, soundRegistry } = {}) {
-        this._appState = appState ?? _appState
+        this.#appState = appState ?? _appState
         this._soundRegistry = soundRegistry ?? _soundRegistry
     }
 
     autoAssignSounds = (pattern) => {
         if (Object.keys(this._soundRegistry.sounds).length > 0) {
             const drumkitList = this._soundRegistry.drumkitList
-            const selectedIdx = this._appState.selectedDrumkitNum
+            const selectedIdx = this.#appState.selectedDrumkitNum
             const kitName = drumkitList?.[selectedIdx]?.name ?? '?'
             logger.warn(TAG, `── Auto-assign: kit="${kitName}", pattern="${pattern?.name ?? '?'}" ──`)
             Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
@@ -43,7 +47,7 @@ export default class AutoAssign {
         }
         
         const drumkitList = this._soundRegistry.drumkitList
-        const selectedIdx = this._appState.selectedDrumkitNum
+        const selectedIdx = this.#appState.selectedDrumkitNum
         if (!drumkitList || drumkitList.length <= selectedIdx) return
 
         const selDrumkitName = drumkitList[selectedIdx].name

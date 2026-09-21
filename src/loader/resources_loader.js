@@ -18,11 +18,14 @@ export default class ResourcesLoader {
     static get SETTINGS_URL() { return "assets/data/settings.json" }
     static get SETTINGS_KEY() { return 'ordrumbox_settings' }
 
+    #audioCtx
+    #autoPersistEnabled
+
     constructor(audioCtx = null) {
-        this._audioCtx = audioCtx
-        this._autoPersistEnabled = false
+        this.#audioCtx = audioCtx
+        this.#autoPersistEnabled = false
         playbackEvents.on('patternChange', () => {
-            if (this._autoPersistEnabled) this.persistPatterns()
+            if (this.#autoPersistEnabled) this.persistPatterns()
         })
         playbackEvents.on('drumkitChange', () => this.saveSession())
         playbackEvents.on('selectedPatternChange', () => this.saveSession())
@@ -38,17 +41,17 @@ export default class ResourcesLoader {
     }
 
     get audioCtx() {
-        if (!this._audioCtx) {
+        if (!this.#audioCtx) {
             const AudioContextCtor = globalThis.AudioContext ?? globalThis.webkitAudioContext
             if (!AudioContextCtor) {
                 throw new Error('AudioContext is not available in this runtime')
             }
-            this._audioCtx = new AudioContextCtor()
+            this.#audioCtx = new AudioContextCtor()
         }
-        if (serviceRegistry.audioCtx !== this._audioCtx) {
-            serviceRegistry.audioCtx = this._audioCtx
+        if (serviceRegistry.audioCtx !== this.#audioCtx) {
+            serviceRegistry.audioCtx = this.#audioCtx
         }
-        return this._audioCtx
+        return this.#audioCtx
     }
 
     isDrumkitListLoaded = false
@@ -172,7 +175,7 @@ export default class ResourcesLoader {
         } catch { /* IndexedDB unavailable */ }
     }
 
-    _sessionTimer = null
+    #sessionTimer = null
 
     saveSession = () => {
         const s = soundRegistry.settings.session
@@ -191,11 +194,11 @@ export default class ResourcesLoader {
         if (typeof s.selectedTrackNum === 'number') appState.selectedTrackNum = s.selectedTrackNum
     }
 
-    _persistTimer = null
+    #persistTimer = null
 
     persistPatterns = () => {
-        if (this._persistTimer) clearTimeout(this._persistTimer)
-        this._persistTimer = setTimeout(async () => {
+        if (this.#persistTimer) clearTimeout(this.#persistTimer)
+        this.#persistTimer = setTimeout(async () => {
             try {
                 const data = {
                     infos: appState.songInfos ?? {},
@@ -234,7 +237,7 @@ export default class ResourcesLoader {
             }
             serviceRegistry.cmd.importPatternFromJson(pattern)
         })
-        this._autoPersistEnabled = true
+        this.#autoPersistEnabled = true
     }
 
 

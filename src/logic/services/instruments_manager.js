@@ -265,10 +265,10 @@ export default class InstrumentsManager {
         }
 
         logger.warn('Instrument', `findInstrumentFromMidiProgram: no direct match, trying GM fallback`)
-        return this._findByProgramNumber(program);
+        return this.#findByProgramNumber(program);
     }
 
-    _findByProgramNumber = (program) => {
+    #findByProgramNumber = (program) => {
         const p = Number(program)
         const gmName = GM_PROGRAM_NAMES[p]
         logger.warn('Instrument', `findByProgramNumber: program ${program} → "${gmName ?? '(none)'}"`)

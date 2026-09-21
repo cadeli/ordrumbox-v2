@@ -12,11 +12,13 @@ const BPM_MIN = 20
 const BPM_MAX = 250
 
 export default class TransportControls {
+    #tb
+
     /** @param {import('../toolbar.js').default} toolbar */
-    constructor(toolbar) { this._tb = toolbar }
+    constructor(toolbar) { this.#tb = toolbar }
 
     createDOM() {
-        const tb = this._tb
+        const tb = this.#tb
 
         tb.startBtn = document.createElement('button')
         tb.startBtn.className = 'tb-start'
@@ -68,7 +70,7 @@ export default class TransportControls {
     }
 
     bindEvents() {
-        const tb = this._tb
+        const tb = this.#tb
 
         tb.startBtn.addEventListener('click', () => {
             serviceRegistry.seq.toggleStartStop()
@@ -82,7 +84,7 @@ export default class TransportControls {
             const bpm = parseInt(tb.bpmSlider.value, 10)
             tb.bpmValue.textContent = bpm
             tb.bpmToggle.textContent = bpm
-            tb._bpmOverride = bpm
+            tb.bpmOverride = bpm
             serviceRegistry.seq?.setBpm(bpm)
             playbackEvents.emit('bpmChange', bpm)
         })

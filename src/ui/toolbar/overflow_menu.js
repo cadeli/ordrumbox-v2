@@ -4,11 +4,13 @@
 import { playbackEvents } from '../../state/playback_events.js'
 
 export default class OverflowMenu {
+    #tb
+
     /** @param {import('../toolbar.js').default} toolbar */
-    constructor(toolbar) { this._tb = toolbar }
+    constructor(toolbar) { this.#tb = toolbar }
 
     createDOM() {
-        const tb = this._tb
+        const tb = this.#tb
 
         tb.toolsBtn = document.createElement('button')
         tb.toolsBtn.className = 'tb-tools tb-hide-mobile'
@@ -34,7 +36,7 @@ export default class OverflowMenu {
     }
 
     bindEvents() {
-        const tb = this._tb
+        const tb = this.#tb
 
         tb.toolsBtn.addEventListener('click', () => {
             playbackEvents.emit('toolsToggle', true)

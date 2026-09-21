@@ -13,6 +13,10 @@ import { logger } from '../core/logger.js'
 export default class Sequencer {
     static TAG = "Sequencer"
 
+    #stallDetector
+    _starting
+    _pendingStop
+
     constructor(options = {}) {
         this.serviceRegistry = options.serviceRegistry ?? serviceRegistry
         this.appState = options.appState ?? appState
@@ -148,17 +152,17 @@ export default class Sequencer {
         this.ensureAudioEngine()
         await this.serviceRegistry.audioEngine.start(selPattern)
         this.serviceRegistry.transport.start()
-        this._stallDetector = new AudioStallDetector({
+        this.#stallDetector = new AudioStallDetector({
             audioCtx: this.serviceRegistry.audioCtx,
             transport: this.serviceRegistry.transport
         })
-        this._stallDetector.start()
+        this.#stallDetector.start()
         this.playbackEvents.emit("playbackStart")
     }
 
     stop = () => {
-        this._stallDetector?.stop()
-        this._stallDetector = null
+        this.#stallDetector?.stop()
+        this.#stallDetector = null
         this.serviceRegistry.transport?.stop()
         this.playbackEvents.emit("playbackStop")
         if (this.serviceRegistry.audioEngine) {

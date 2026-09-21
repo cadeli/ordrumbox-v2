@@ -9,11 +9,13 @@ import Utils from '../../core/utils.js'
 import { prevPage, nextPage } from '../../core/page_nav.js'
 
 export default class PatternNav {
+    #tb
+
     /** @param {import('../toolbar.js').default} toolbar */
-    constructor(toolbar) { this._tb = toolbar }
+    constructor(toolbar) { this.#tb = toolbar }
 
     createDOM() {
-        const tb = this._tb
+        const tb = this.#tb
 
         // ── Pattern select ──────────────────────────────────────
         const patWrap = document.createElement('div')
@@ -70,7 +72,7 @@ export default class PatternNav {
     }
 
     bindEvents() {
-        const tb = this._tb
+        const tb = this.#tb
 
         tb.patternSelect.addEventListener('change', () => {
             const num = parseInt(tb.patternSelect.value, 10)
@@ -101,7 +103,7 @@ export default class PatternNav {
     }
 
     rebuildPatternSelect() {
-        const tb = this._tb
+        const tb = this.#tb
         tb.patternSelect.innerHTML = ''
         appState.patterns.forEach((pat, i) => {
             const opt = document.createElement('option')
@@ -116,7 +118,7 @@ export default class PatternNav {
     }
 
     rebuildDrumkitSelect() {
-        const tb = this._tb
+        const tb = this.#tb
         tb.drumkitSelect.innerHTML = ''
         soundRegistry.drumkitList.forEach((kit, i) => {
             const opt = document.createElement('option')

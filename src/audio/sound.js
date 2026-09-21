@@ -10,6 +10,10 @@ import { TICK } from '../core/constants.js'
 const MAX_POLYPHONY = 16
 
 export default class Sound {
+    _activeVoiceSet
+    _stripParamCache
+    _activeNoteCount
+
     constructor(audioCtx, mixer, sounds, generatedSounds, isOffline = false) {
         this.audioCtx = audioCtx
         this.mixer = mixer
