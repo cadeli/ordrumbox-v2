@@ -128,7 +128,7 @@ export default class MidiImportService {
             }
 
             skippedChannels.push(channel)
-            logger.warn('MidiImport', `  → SKIPPED (aucun instrument trouvé pour ch=${channel} prog=${program})`)
+            logger.warn('MidiImport', `  → SKIPPED (no instrument found for ch=${channel} prog=${program})`)
         }
 
         for (const channel of skippedChannels) {
@@ -167,7 +167,7 @@ export default class MidiImportService {
                     if (drumInst.id !== 'NOT_FOUND') matchMethod = `GM_DRUM_NAMES[${noteNum}]="${gmName}" → findInstrumentFromFileName`
                 }
                 if (drumInst.id === 'NOT_FOUND') {
-                    logger.warn('MidiImport', `  note ${noteNum}: aucun instrument trouvé`)
+                    logger.warn('MidiImport', `  note ${noteNum}: no instrument found`)
                     continue
                 }
             }

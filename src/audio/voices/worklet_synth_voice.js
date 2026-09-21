@@ -128,7 +128,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             // The processor self-terminates via `return false` when envSegment
             // reaches idle, so no JS-side cleanup is needed for offline.
             if (this.#synthNodePool) {
-                const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
+                const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }  // fallback: legacy French property name from v1 data
                 const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
                 const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
                 this.#autoReleaseTimer = setTimeout(() => {
@@ -169,7 +169,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             }
 
             const gs = this.generatedSound
-            const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }
+            const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }  // fallback: legacy French property name from v1 data
             const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
             if (this.#synthNodePool) {
                 const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
@@ -225,7 +225,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         if (!this.workletNode) return
         this.#lastPan = pan
         try {
-            const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
+            const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }  // fallback: legacy French property name from v1 data
             const noiseCfg = gs.noise ?? {}
             const filterCfg = gs.filter ?? {}
 

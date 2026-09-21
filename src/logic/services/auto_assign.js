@@ -37,7 +37,7 @@ export default class AutoAssign {
             const foundInstrument = instrumentsManager.findInstrumentFromFileName(track.name)
             const newName = foundInstrument?.id
             if (newName && validInstrumentIds.includes(newName)) {
-                logger.warn(TAG, `  renomme "${originalName}" → "${newName}" (findInstrumentFromFileName)`)
+                logger.warn(TAG, `  renamed "${originalName}" → "${newName}" (findInstrumentFromFileName)`)
                 track.name = newName
             } 
         }
@@ -53,9 +53,9 @@ export default class AutoAssign {
             const matchedKey = this._soundRegistry.sounds[soundId]?.key
             const url = this._soundRegistry.sounds[soundId]?.url
             const method = matchedKey === track.name
-                ? `nom exact`
+                ? `exact match`
                 : `contains (key="${matchedKey}")`
-            logger.warn(TAG, `  ${originalName} [${selDrumkitName}] => ${url}  (${method}, tier1: même kit)`)
+            logger.warn(TAG, `  ${originalName} [${selDrumkitName}] => ${url}  (${method}, tier1: same kit)`)
             track.soundId = soundId
             return
         }
@@ -66,9 +66,9 @@ export default class AutoAssign {
             const url = this._soundRegistry.sounds[soundId]?.url
             const matchedKit = this._soundRegistry.sounds[soundId]?.kit_name
             const method = matchedKey === track.name
-                ? `nom exact`
+                ? `exact match`
                 : `contains (key="${matchedKey}")`
-            logger.warn(TAG, `  ${originalName} [${selDrumkitName}] => ${url}  (${method}, tier2: autre kit "${matchedKit}")`)
+            logger.warn(TAG, `  ${originalName} [${selDrumkitName}] => ${url}  (${method}, tier2: other kit "${matchedKit}")`)
             track.soundId = soundId
             return
         }
@@ -79,7 +79,7 @@ export default class AutoAssign {
             const url = this._soundRegistry.sounds[eqResult]?.url
             const matchedKit = this._soundRegistry.sounds[eqResult]?.kit_name
             const inSameKit = matchedKit === selDrumkitName
-            logger.warn(TAG, `🟡 ${originalName} [${selDrumkitName}] => ${url}  (substitution vers key="${matchedKey}", ${inSameKit ? 'même kit' : `autre kit "${matchedKit}"`}, tier3)`)
+            logger.warn(TAG, `🟡 ${originalName} [${selDrumkitName}] => ${url}  (substitution to key="${matchedKey}", ${inSameKit ? 'same kit' : `other kit "${matchedKit}"`}, tier3)`)
             track.soundId = eqResult
             return
         }
@@ -87,10 +87,10 @@ export default class AutoAssign {
         soundId = Utils.getRandomKey(this._soundRegistry.sounds)
         if (soundId !== null && soundId !== "" && soundId !== NOT_FOUND) {
             const url = this._soundRegistry.sounds[soundId]?.url
-            logger.warn(TAG, `🔴 ${originalName} [${selDrumkitName}] => ${url}  (aléatoire, tier4)`)
+            logger.warn(TAG, `🔴 ${originalName} [${selDrumkitName}] => ${url}  (random, tier4)`)
             track.soundId = soundId
         } else {
-            logger.warn(TAG, `🔴 ${originalName} [${selDrumkitName}] => NOT_DEFINED  (aucun match)`)
+            logger.warn(TAG, `🔴 ${originalName} [${selDrumkitName}] => NOT_DEFINED  (no match)`)
             track.soundId = "NOT_DEFINED"
         }
     }
