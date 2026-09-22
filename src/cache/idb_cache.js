@@ -30,7 +30,8 @@ function measureBytes(value) {
     if (ArrayBuffer.isView(value)) return value.byteLength
     try {
         return new Blob([JSON.stringify(value)]).size
-    } catch {
+    } catch (e) {
+        logger.warn('IdbCache', 'measureBytes failed', e)
         return 0
     }
 }
@@ -94,7 +95,8 @@ export async function getCachedPatterns() {
     try {
         const entry = await idbGet(PATTERNS_STORE, SONG_KEY) ?? null
         return unwrap(entry, PATTERNS_STORE)
-    } catch {
+    } catch (e) {
+        logger.warn('IdbCache', 'Failed to read cached patterns', e)
         return null
     }
 }
@@ -112,7 +114,8 @@ export async function getCachedDrumkits() {
     try {
         const entry = await idbGet(DRUMKITS_STORE, DRUMKITS_KEY) ?? null
         return unwrap(entry, DRUMKITS_STORE)
-    } catch {
+    } catch (e) {
+        logger.warn('IdbCache', 'Failed to read cached drumkits', e)
         return null
     }
 }
@@ -129,7 +132,8 @@ export async function getCachedSample(url) {
     try {
         const entry = await idbGet(SAMPLES_STORE, url) ?? null
         return unwrap(entry, SAMPLES_STORE)
-    } catch {
+    } catch (e) {
+        logger.warn('IdbCache', `Failed to read cached sample "${url}"`, e)
         return null
     }
 }
@@ -147,7 +151,8 @@ export async function getCachedGeneratedSounds() {
     try {
         const entry = await idbGet(GENERATED_SOUNDS_STORE, GEN_SOUNDS_KEY) ?? null
         return unwrap(entry, GENERATED_SOUNDS_STORE)
-    } catch {
+    } catch (e) {
+        logger.warn('IdbCache', 'Failed to read cached generated sounds', e)
         return null
     }
 }
@@ -214,12 +219,12 @@ export async function getCacheStats() {
 
     try {
         const [patternEntries, drumkitEntries, sampleEntries, settingsEntries, songEntries, genSoundEntries] = await Promise.all([
-            idbGetAllEntries(PATTERNS_STORE).catch(() => []),
-            idbGetAllEntries(DRUMKITS_STORE).catch(() => []),
-            idbGetAllEntries(SAMPLES_STORE).catch(() => []),
-            idbGetAllEntries(SETTINGS_STORE).catch(() => []),
-            idbGetAllEntries(SONGS_STORE).catch(() => []),
-            idbGetAllEntries(GENERATED_SOUNDS_STORE).catch(() => []),
+            idbGetAllEntries(PATTERNS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read pattern entries', e); return [] }),
+            idbGetAllEntries(DRUMKITS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read drumkit entries', e); return [] }),
+            idbGetAllEntries(SAMPLES_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read sample entries', e); return [] }),
+            idbGetAllEntries(SETTINGS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read settings entries', e); return [] }),
+            idbGetAllEntries(SONGS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read song entries', e); return [] }),
+            idbGetAllEntries(GENERATED_SOUNDS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read generated sound entries', e); return [] }),
         ])
 
         accumulateStats(stats, patternEntries, 'patterns')
