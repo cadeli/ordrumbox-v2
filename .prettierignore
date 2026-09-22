@@ -1,0 +1,11 @@
+dist/
+release/
+coverage/
+bak/
+node_modules/
+playwright-report/
+test-results/
+package-lock.json
+*.min.js
+assets/data/
+assets/kits/

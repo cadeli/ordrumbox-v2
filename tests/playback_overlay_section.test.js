@@ -318,7 +318,5 @@ describe('PlaybackOverlaySection', () => {
 
             overlay.stopRafLoop()
         })
-
-        it.skip('draws waveform — disabled in playback_overlay_section.js', () => {})
     })
 })
