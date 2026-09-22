@@ -101,7 +101,9 @@ export default class Sound {
     }
 
     play = async (flatNote, time) => {
-        if (!flatNote || !this.mixer?.analyser) return
+        if (!flatNote || !this.mixer) return
+        // Re-initialise bus nodes if they were torn down by mixer.stop()
+        if (!this.mixer.analyser) this.mixer.start()
         try {
             if (flatNote.track?.useSoftSynth === true) {
                 await this.playGenerated(flatNote, time)

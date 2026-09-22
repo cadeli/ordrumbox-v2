@@ -180,10 +180,13 @@ describe('Sound', () => {
     })
     // ── play ──────────────────────────────────────────────────────────
 
-    it('play returns early when mixer has no analyser', async () => {
-        sound.mixer = { analyser: null, getOrCreateStrip: vi.fn() }
+    it('play reinitialises mixer when analyser is null after stop', async () => {
+        const startSpy = vi.fn()
+        sound.mixer = { analyser: null, start: startSpy, getOrCreateStrip: vi.fn(() => makeStrip()) }
+        const playSampleSpy = vi.spyOn(sound, 'playSample')
         await sound.play(makeFlatNote(), 1.0)
-        expect(sound.voiceFactory.createVoice).not.toHaveBeenCalled()
+        expect(startSpy).toHaveBeenCalled()
+        expect(playSampleSpy).toHaveBeenCalled()
     })
     it('play calls playSample for non-synth track', async () => {
         const playSampleSpy = vi.spyOn(sound, 'playSample')
