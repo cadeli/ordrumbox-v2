@@ -7,6 +7,7 @@ import { idbGet, idbPut } from '../core/idb.js'
 import { cachePatterns, getCachedPatterns, cacheDrumkits, getCachedDrumkits, cacheSample, getCachedSample, cacheGeneratedSounds, getCachedGeneratedSounds } from '../cache/idb_cache.js'
 import Utils from '../core/utils.js'
 import { logger } from '../core/logger.js'
+import { showToast } from '../ui/toast.js'
 
 export default class ResourcesLoader {
     static TAG = "ResourcesLoader"
@@ -172,7 +173,10 @@ export default class ResourcesLoader {
     async saveSettings() {
         try {
             await idbPut('settings', ResourcesLoader.SETTINGS_KEY, structuredClone(soundRegistry.settings))
-        } catch { /* IndexedDB unavailable */ }
+        } catch (e) {
+            logger.warn('ResourcesLoader', 'Failed to save settings', e)
+            showToast('Settings save failed', 'error')
+        }
     }
 
     #sessionTimer = null
@@ -205,7 +209,10 @@ export default class ResourcesLoader {
                     patterns: structuredClone(appState.patterns),
                 }
                 await cachePatterns(data)
-            } catch { /* IndexedDB unavailable */ }
+            } catch (e) {
+                logger.warn('ResourcesLoader', 'Failed to persist patterns', e)
+                showToast('Pattern save failed', 'error')
+            }
         }, 500)
     }
 

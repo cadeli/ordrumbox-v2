@@ -3,6 +3,7 @@
 
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
+import { showToast } from '../toast.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import Utils from '../../core/utils.js'
 
@@ -213,7 +214,11 @@ export default class ViewSwitch {
         } else {
             const { getAutoGenerateService } = await import('../../state/service_loader.js')
             const autoGen = await getAutoGenerateService()
-            await generateFn(pattern, autoGen)
+            try {
+                await generateFn(pattern, autoGen)
+            } catch (err) {
+                showToast('Auto-generation failed: ' + err.message, 'error')
+            }
         }
 
         playbackEvents.batch(() => {

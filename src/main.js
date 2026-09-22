@@ -1,4 +1,5 @@
 import './ui/styles.css'
+import { showToast } from './ui/toast.js'
 import Sequencer from './logic/seq.js'
 import Commander from './logic/commands/cmd.js'
 import * as patternsManager from './patterns/manager.js'
@@ -194,6 +195,7 @@ export function init() {
             }
         } catch (e) {
             logger.error('Main', 'Failed to load startup resources', e)
+            showToast('Failed to load resources: ' + e.message, 'error')
         }
         if (appState.patterns.length > 0) {
             serviceRegistry.resourcesLoader.restoreSession()

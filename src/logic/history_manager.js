@@ -3,6 +3,7 @@
 
 import { playbackEvents } from '../state/playback_events.js'
 import { logger } from '../core/logger.js'
+import { showToast } from '../ui/toast.js'
 
 export default class HistoryManager {
     #past
@@ -76,6 +77,7 @@ export default class HistoryManager {
             this.#future.push(command)
         } catch (err) {
             logger.error('HistoryManager', 'undo failed', err)
+            showToast('Undo failed', 'error')
             this.#past.push(command)
             this._isUndoing = false
             return false
@@ -98,6 +100,7 @@ export default class HistoryManager {
             this.#past.push(command)
         } catch (err) {
             logger.error('HistoryManager', 'redo failed', err)
+            showToast('Redo failed', 'error')
             this.#future.push(command)
             this._isRedoing = false
             return false

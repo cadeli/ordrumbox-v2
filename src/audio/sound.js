@@ -5,6 +5,7 @@ import { applyTrackToStrip } from './strip_sync.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import ResourcesLoader from '../loader/resources_loader.js'
 import { logger } from '../core/logger.js'
+import { showToast } from '../ui/toast.js'
 import { TICK } from '../core/constants.js'
 
 const MAX_POLYPHONY = 16
@@ -209,6 +210,7 @@ export default class Sound {
             if (Object.keys(this.generatedSounds).length === 0) {
                 this.generatedSoundsLoadFailed = true
                 logger.warn('Sound', 'loadGeneratedSounds loaded no generated sounds')
+                showToast('No synth sounds available', 'warning')
             }
         } catch (error) {
             this.generatedSoundsLoading = false

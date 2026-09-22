@@ -4,6 +4,7 @@ import { soundRegistry } from '../../../state/sound_registry.js'
 import { playbackEvents } from '../../../state/playback_events.js'
 import { getAutoAssignService } from '../../../state/service_loader.js'
 import { logger } from '../../../core/logger.js'
+import { showToast } from '../../../ui/toast.js'
 
 /**
  * Selection & state commands — returns an object of methods bound to the Commander instance.
@@ -18,6 +19,7 @@ export function createSelectionMethods(cmd) {
                 playbackEvents.emit("drumkitChange")
             } catch (err) {
                 logger.error('Commander', 'cmd::setSelectedDrumkitNum failed', err)
+                showToast('Drumkit switch failed', 'error')
             }
         },
 
@@ -31,6 +33,7 @@ export function createSelectionMethods(cmd) {
                 serviceRegistry.audioEngine?.invalidateCache()
             } catch (err) {
                 logger.error('Commander', 'cmd::autoAssignSoundsForNewDrumkit failed', err)
+                showToast('Sound assignment failed', 'error')
             }
         },
 
@@ -49,6 +52,7 @@ export function createSelectionMethods(cmd) {
                 }
             } catch (err) {
                 logger.error('Commander', 'cmd::setSelectedPatternNum failed', err)
+                showToast('Pattern switch failed', 'error')
             }
         }
     }

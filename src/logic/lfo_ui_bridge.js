@@ -1,3 +1,4 @@
+import { logger } from '../core/logger.js'
 import WorkletLoader from '../audio/worklets/loader.js'
 import LFO_UI_SOURCE from '../audio/worklets/processors/lfo_ui_source.js'
 import { LFO_MAP } from './lfo_engine.js'
@@ -16,7 +17,8 @@ export default class LfoUiBridge {
             this.#fallback = true
             return
         }
-        this.#init(audioCtx).catch(() => {
+        this.#init(audioCtx).catch((err) => {
+            logger.warn('LfoUiBridge', 'LFO worklet init failed, using JS fallback', err)
             this.#fallback = true
             this.#node = null
         })

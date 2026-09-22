@@ -42,6 +42,7 @@ function ensureStyles() {
  * @param {boolean} [opts.dismissible]  Show a × close button (disables auto-dismiss)
  */
 export function showToast(message, type = 'info', { actions, dismissible } = {}) {
+    if (typeof document === 'undefined') return
     const container = ensureContainer()
     const { bg, border } = TOAST_STYLES[type] ?? TOAST_STYLES.info
 

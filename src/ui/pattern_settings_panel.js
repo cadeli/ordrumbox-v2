@@ -6,6 +6,7 @@ import Utils from '../core/utils.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import { MAX_BEATS } from '../core/constants.js'
 import { prevPage, nextPage } from '../core/page_nav.js'
+import { showToast } from './toast.js'
 
 export default class PatternSettingsPanel {
     #isOpen;
@@ -218,7 +219,11 @@ export default class PatternSettingsPanel {
             const { getAutoGenerateService } = await import('../state/service_loader.js')
             const autoGen = await getAutoGenerateService()
             serviceRegistry.cmd.beginGenerationUndo(pattern)
-            await autoGen.generatePattern()
+            try {
+                await autoGen.generatePattern()
+            } catch (err) {
+                showToast('Auto-generation failed: ' + err.message, 'error')
+            }
             if (pattern.tracks) {
                 pattern.tracks = Utils.filterEmptyMelodicTracks(pattern.tracks)
             }
@@ -261,7 +266,11 @@ export default class PatternSettingsPanel {
                 track.useAutoAssignSound = false
                 track.synthSoundKey = synthSoundKey
                 track.velocity = 0.8
-                await autoGen.generateTrack(track, variant, 1, pattern, harmony)
+                try {
+                    await autoGen.generateTrack(track, variant, 1, pattern, harmony)
+                } catch (err) {
+                    showToast('Auto-generation failed: ' + err.message, 'error')
+                }
                 serviceRegistry.patterns.applyFlatNotes(pattern)
             }
             track.auto = true

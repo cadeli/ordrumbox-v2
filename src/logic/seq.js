@@ -9,6 +9,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { getAutoAssignService, getAutoGenerateService } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { logger } from '../core/logger.js'
+import { showToast } from '../ui/toast.js'
 
 export default class Sequencer {
     static TAG = "Sequencer"
@@ -129,18 +130,21 @@ export default class Sequencer {
             this.playbackEvents.emit("drumkitChange")
         } catch (error) {
             logger.error('Sequencer', "Sequencer::start: Failed to load resources", error)
+            showToast('Failed to load audio resources', 'error')
             return
         }
 
         let selPattern = this.appState.patterns[this.appState.selectedPatternNum]
         if (!selPattern) {
             logger.warn('Sequencer', "Sequencer::start: No selected pattern")
+            showToast('No pattern selected', 'warning')
             return
         }
 
         // Ensure transport has the current audioCtx (created in toggleStartStop)
         if (!this.serviceRegistry.audioCtx) {
             logger.warn('Sequencer', "Sequencer::start: No audioCtx available")
+            showToast('Audio not available', 'error')
             return
         }
         this.ensureTransport()
@@ -178,6 +182,7 @@ export default class Sequencer {
                 this.serviceRegistry.audioCtx = this.serviceRegistry.resourcesLoader.audioCtx
             } catch (err) {
                 logger.error('Sequencer', "Sequencer::toggleStartStop: Failed to create AudioContext", err)
+                showToast('Audio initialization failed', 'error')
                 return
             }
         }
