@@ -41,7 +41,10 @@ function toggleTrackMute(trackIndex) {
     const track = getSelectedPattern()?.tracks?.[trackIndex]
     if (track) {
         track.mute = !track.mute
-        playbackEvents.emit('patternChange')
+        playbackEvents.batch(() => {
+            playbackEvents.emit('trackParamChange', track)
+            playbackEvents.emit('patternChange')
+        })
     }
 }
 

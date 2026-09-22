@@ -49,6 +49,22 @@ describe('Keyboard shortcuts', () => {
         expect(appState.patterns[0].tracks[0].mute).toBe(true)
     })
 
+    it('Digit1 emits trackParamChange and patternChange to refresh mute UI', async () => {
+        const { playbackEvents } = await import('../src/state/playback_events.js')
+        const trackParamSpy = vi.fn()
+        const patternChangeSpy = vi.fn()
+        playbackEvents.on('trackParamChange', trackParamSpy)
+        playbackEvents.on('patternChange', patternChangeSpy)
+        try {
+            fireKeydown('Digit1')
+            expect(trackParamSpy).toHaveBeenCalledWith(appState.patterns[0].tracks[0])
+            expect(patternChangeSpy).toHaveBeenCalled()
+        } finally {
+            playbackEvents.off?.('trackParamChange', trackParamSpy)
+            playbackEvents.off?.('patternChange', patternChangeSpy)
+        }
+    })
+
     it('Digit2 toggles mute on track 1', () => {
         fireKeydown('Digit2')
         expect(appState.patterns[0].tracks[1].mute).toBe(true)
