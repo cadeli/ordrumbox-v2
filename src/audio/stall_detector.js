@@ -101,8 +101,8 @@ export default class AudioStallDetector {
                 if (this.#audioCtx?.state === 'running') {
                     logger.warn('StallDetector', 'AudioContext resumed via .resume()')
                 }
-            } catch {
-                // resume failed — ignore
+            } catch (e) {
+                logger.warn('StallDetector', 'AudioContext resume failed', e)
             }
         }
     }

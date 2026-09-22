@@ -193,7 +193,10 @@ export default class Sound {
             if (Object.keys(this.generatedSounds).length === 0) {
                 await this.loadGeneratedSounds()
             }
-            if (!flatNote || Object.keys(this.generatedSounds).length === 0) return null
+            if (!flatNote || Object.keys(this.generatedSounds).length === 0) {
+                logger.warn('Sound', 'playGenerated: no flatNote or generatedSounds available')
+                return null
+            }
             return await this._playVoice(flatNote, time, { syncGeneratedSounds: true, registerSynth: true })
         } catch (e) {
             logger.error('Sound', 'playGenerated failed', e)

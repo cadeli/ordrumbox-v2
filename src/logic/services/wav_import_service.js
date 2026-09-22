@@ -1,3 +1,4 @@
+import { logger } from '../../core/logger.js'
 import { appState } from '../../state/app_state.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { serviceRegistry } from '../../state/service_registry.js'
@@ -45,7 +46,9 @@ export default class WavImportService {
             }
 
             instruments.push({ display_name: fileName, key, url: fileName })
-            cacheSample(fileName, arrayBuffer).catch(() => {})
+            cacheSample(fileName, arrayBuffer).catch((e) => {
+                logger.warn('WavImport', `Failed to cache sample "${fileName}"`, e)
+            })
         }
 
         soundRegistry.drumkits[kitName] = { instruments }

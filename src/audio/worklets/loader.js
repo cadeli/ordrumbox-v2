@@ -100,7 +100,9 @@ export default class WorkletLoader {
                         logger.warn('WorkletLoader', `WorkletLoader: failed to load '${name}'`, err)
                         throw err
                     } finally {
-                        try { URL.revokeObjectURL(url) } catch {}
+                        try { URL.revokeObjectURL(url) } catch (e) {
+                            logger.warn('WorkletLoader', `Failed to revoke Blob URL for '${name}'`, e)
+                        }
                         contextPending.delete(name)
                     }
                 })()

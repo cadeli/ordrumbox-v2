@@ -97,6 +97,7 @@ class SongService {
     parseImportedFile(text) {
         const data = JSON.parse(text)
         if (!data?.patterns || !Array.isArray(data.patterns)) {
+            logger.warn('SongService', 'Imported file has no valid patterns array')
             return null
         }
         return data

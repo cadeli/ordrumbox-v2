@@ -1,3 +1,4 @@
+import { logger } from '../core/logger.js'
 import {
     TICK,
     C3_FREQ,
@@ -9,13 +10,17 @@ export function safeDisconnect(node) {
     if (!node || typeof node.disconnect !== 'function') return
     try {
         node.disconnect()
-    } catch (_) {
-        // Ignored: Node already disconnected
+    } catch (e) {
+        logger.warn('Math', 'safeDisconnect: node already disconnected', e)
     }
 }
 
 export function clamp(value, min, max) {
-    return Math.min(max, Math.max(min, value))
+    const clamped = Math.min(max, Math.max(min, value))
+    if (clamped !== value) {
+        logger.warn('Math', `clamp: ${value} outside [${min}, ${max}] → ${clamped}`)
+    }
+    return clamped
 }
 
 export function toFiniteNumber(value, fallback = 0) {

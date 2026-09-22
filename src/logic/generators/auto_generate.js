@@ -222,6 +222,7 @@ export default class AutoGenerate {
             case 'PERC':
                 return 'fill'
             default:
+                logger.warn(AutoGenerate.TAG, `Unknown percussion type: ${type}`)
                 return null
         }
     }

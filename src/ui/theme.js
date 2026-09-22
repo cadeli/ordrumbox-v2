@@ -40,12 +40,16 @@ const TOKENS = {
     'toast-shadow':    '#000000',
 }
 
-/** Read a CSS custom property from :root (browser only). */
+import { logger } from '../core/logger.js'
+
 function _cssVar(name) {
     try {
         return getComputedStyle(document.documentElement)
             .getPropertyValue(`--${name}`).trim()
-    } catch { return '' }
+    } catch (e) {
+        logger.warn('Theme', `CSS variable --${name} not found`, e)
+        return ''
+    }
 }
 
 function _hexToRgb(hex) {

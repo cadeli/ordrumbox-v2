@@ -162,12 +162,16 @@ export default class ResourcesLoader {
                 Object.assign(soundRegistry.settings, defaults, raw)
                 return
             }
-        } catch { /* IndexedDB unavailable or empty */ }
+        } catch (e) {
+            logger.warn('ResourcesLoader', 'Failed to load settings from IndexedDB', e)
+        }
         try {
             const settings = await this.loadJsonResource(ResourcesLoader.SETTINGS_URL)
             if (settings.master) settings.master = { ...masterDefaults, ...settings.master }
             Object.assign(soundRegistry.settings, defaults, settings)
-        } catch { /* file not found — use defaults */ }
+        } catch (e) {
+            logger.warn('ResourcesLoader', 'Failed to load settings from JSON, using defaults', e)
+        }
     }
 
     async saveSettings() {

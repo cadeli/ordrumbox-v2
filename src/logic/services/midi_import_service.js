@@ -198,6 +198,7 @@ export default class MidiImportService {
                     return sound.url
                 }
             }
+            logger.warn('MidiImport', `No sample found for track "${trackName}" in drumkit "${selDrumkitName}"`)
             return null
         }
 

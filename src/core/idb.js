@@ -1,3 +1,5 @@
+import { logger } from './logger.js'
+
 const DB_NAME = 'ordrumbox'
 const DB_VERSION = 4
 
@@ -135,7 +137,9 @@ export async function idbReport() {
             report.quotaBytes = est.quota ?? 0
             report.usagePct = est.quota > 0 ? ((est.usage / est.quota) * 100).toFixed(2) + '%' : 'N/A'
         }
-    } catch { /* storage estimate unavailable */ }
+    } catch (e) {
+        logger.warn('Idb', 'Storage estimate unavailable', e)
+    }
 
     try {
         const db = await openDb()
@@ -150,7 +154,9 @@ export async function idbReport() {
             report.stores[name] = keys
         }
         db.close()
-    } catch { /* idb unavailable */ }
+    } catch (e) {
+        logger.warn('Idb', 'IDB unavailable for store listing', e)
+    }
 
     return report
 }
