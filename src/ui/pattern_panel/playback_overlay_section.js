@@ -1,9 +1,8 @@
 // src/ui/pattern_panel/PlaybackOverlaySection.js
-// Playhead animation, VU meter updates, waveform canvas drawing, RAF loop.
+// Playhead animation, VU meter updates, RAF loop.
 
 import { TICK, BEATS_PER_PAGE } from '../../core/constants.js'
 
-const WAVEFORM_AMPLITUDE_SCALE = 0.45
 import { appState } from '../../state/app_state.js'
 import Utils from '../../core/utils.js'
 import { color } from '../theme.js'
@@ -78,7 +77,6 @@ export default class PlaybackOverlaySection {
             }
 
             this.#updateVus(mixer)
-            this.#drawWaveform(mixer)
             this.#updatePlayhead()
 
             this.#rafId = requestAnimationFrame(loop)
@@ -127,100 +125,6 @@ export default class PlaybackOverlaySection {
                 }
             }
         }
-    }
-
-    #drawWaveform(mixer) {
-        return
-        if (appState.showVus === false) return
-        const editor = this.#editor
-        if (!this.#waveformCanvas) {
-            this.#waveformCanvas = editor.container?.querySelector('.pp-waveform-overlay')
-        }
-        const canvas = this.#waveformCanvas
-        if (!canvas || !editor.layoutCache) return
-
-        if (!this.#tracksEl) {
-            this.#tracksEl = editor.container?.querySelector('.pp-tracks')
-        }
-        const tracksEl = this.#tracksEl
-        if (!tracksEl) return
-
-        const dpr = window.devicePixelRatio ?? 1
-
-        const firstBeatCache = editor.beatRectsCache[appState.currentPage * 4]
-        const lastBeatIdx = Math.min(editor.beatRectsCache.length - 1, (appState.currentPage + 1) * 4 - 1)
-        const lastBeatCache = editor.beatRectsCache[lastBeatIdx]
-
-        if (!firstBeatCache || !lastBeatCache) return
-
-        const { containerLeft, containerRight, tracksLeft, tracksHeight } = editor.layoutCache
-
-        const visibleLeft = Math.max(firstBeatCache.absLeft, containerLeft)
-        const visibleRight = Math.min(lastBeatCache.absRight, containerRight)
-        const vW = Math.max(0, visibleRight - visibleLeft)
-        const vH = tracksHeight
-
-        if (vW <= 0 || vH <= 0) {
-            if (canvas.style.display !== 'none') canvas.style.display = 'none'
-            return
-        }
-        if (canvas.style.display !== 'block') canvas.style.display = 'block'
-
-        const canvasLeft = (visibleLeft - tracksLeft) + 'px'
-        const canvasTop = (tracksEl.scrollTop ?? 0) + 'px'
-        const canvasWidth = vW + 'px'
-        const canvasHeight = vH + 'px'
-
-        if (canvas.style.left !== canvasLeft) canvas.style.left = canvasLeft
-        if (canvas.style.top !== canvasTop) canvas.style.top = canvasTop
-        if (canvas.style.width !== canvasWidth) canvas.style.width = canvasWidth
-        if (canvas.style.height !== canvasHeight) canvas.style.height = canvasHeight
-
-        const w = Math.round(vW * dpr)
-        const h = Math.round(vH * dpr)
-
-        if (canvas.width !== w || canvas.height !== h) {
-            canvas.width = w
-            canvas.height = h
-        }
-
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return
-
-        const data = editor.serviceRegistry.audioEngine?.getAnalyserData?.()
-        if (!data) {
-            ctx.fillStyle = color('surface-2')
-            ctx.fillRect(0, 0, w, h)
-            return
-        }
-
-        data.analyser.getByteTimeDomainData(data.dataArray)
-
-        ctx.fillStyle = color('surface-2')
-        ctx.fillRect(0, 0, w, h)
-
-        ctx.strokeStyle = color('color-success')
-        ctx.lineWidth = 2 * dpr
-        ctx.beginPath()
-
-        const len = data.dataArray.length
-        const sliceW = w / len
-        const mid = h * 0.5
-        const step = len > w && w > 0 ? Math.max(1, Math.floor(len / w)) : 1
-
-        let first = true
-        for (let i = 0; i < len; i += step) {
-            const v = (data.dataArray[i] - 128) / 128
-            const x = i * sliceW
-            const y = v * h * WAVEFORM_AMPLITUDE_SCALE + mid
-            if (first) {
-                ctx.moveTo(x, y)
-                first = false
-            } else {
-                ctx.lineTo(x, y)
-            }
-        }
-        ctx.stroke()
     }
 
     syncVusVisibility() {
