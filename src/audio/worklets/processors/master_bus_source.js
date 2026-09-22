@@ -60,8 +60,9 @@ class MasterBusProcessor extends AudioWorkletProcessor {
         const overDb = inputDb - threshold;
         if (overDb <= -knee / 2) return 0;
         if (knee > 0 && overDb < knee / 2) {
-            const t = (overDb + knee / 2) / knee;
-            return (1 - 1 / ratio) * overDb * t * t * 0.5;
+            // Standard soft-knee: (1 - 1/R) * (over + W/2)^2 / (2W)
+            const d = overDb + knee / 2;
+            return (1 - 1 / ratio) * d * d / (2 * knee);
         }
         return overDb * (1 - 1 / ratio);
     }

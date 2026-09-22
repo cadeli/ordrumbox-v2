@@ -1716,10 +1716,29 @@ min-height: auto;
     overflow: visible;
     white-space: nowrap;
 }
+.op-comp-top-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.op-comp-curve-wrap {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+}
+#op-comp-curve {
+    display: block;
+    width: 80%;
+    height: 72px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
 .op-comp-pregain {
-    margin-top: 4px;
-    border-top: 1px solid var(--border-subtle);
-    padding-top: 4px;
+    flex-shrink: 0;
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0;
     justify-self: center;
 }
 .op-comp-pregain .or-knob-label {

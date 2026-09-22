@@ -6,6 +6,13 @@ import { OrKnob } from './components/or_knob.js'
 
 const SPECTRUM_WIDTH = 256
 const SPECTRUM_HEIGHT = 100
+const COMP_CURVE_WIDTH = 320
+const COMP_CURVE_HEIGHT = 140
+// dB ranges for the transfer curve plot
+const CURVE_X_MIN = -60
+const CURVE_X_MAX = 0
+const CURVE_Y_MIN = -60
+const CURVE_Y_MAX = 12
 import BasePanel from './base_panel.js'
 import { color } from './theme.js'
 
@@ -29,6 +36,8 @@ export default class OutputPanel extends BasePanel {
     #compSliders = null
     #compBypass = false
     #compBypassBtn = null
+    #compCurveCanvas = null
+    #preGainEl = null
     #lowcut = null
     #hicut = null
     #bgColor = null
@@ -109,7 +118,7 @@ this.container.innerHTML = `
         })
         const el = this.#preGain.createElement()
         el.classList.add('op-comp-pregain')
-        this.container.querySelector('#op-comp-panel').appendChild(el)
+        this.#preGainEl = el
     }
 
     #buildCompressorSliders() {
@@ -131,8 +140,24 @@ this.container.innerHTML = `
             this.#compBypassBtn.classList.toggle('active', !this.#compBypass)
             serviceRegistry.audioEngine?.mixer?.setMasterBus({ bypass: this.#compBypass })
             this.#persistMaster('compBypass', this.#compBypass)
+            this.#drawCompCurve()
         })
         header.append(title, this.#compBypassBtn)
+
+        const curveWrap = document.createElement('div')
+        curveWrap.className = 'op-comp-curve-wrap'
+        this.#compCurveCanvas = document.createElement('canvas')
+        this.#compCurveCanvas.id = 'op-comp-curve'
+        this.#compCurveCanvas.width = COMP_CURVE_WIDTH
+        this.#compCurveCanvas.height = COMP_CURVE_HEIGHT
+        curveWrap.appendChild(this.#compCurveCanvas)
+
+        // Top row: pregain knob beside the transfer curve
+        const topRow = document.createElement('div')
+        topRow.className = 'op-comp-top-row'
+        if (this.#preGainEl) topRow.appendChild(this.#preGainEl)
+        topRow.appendChild(curveWrap)
+        panel.appendChild(topRow)
         panel.appendChild(header)
 
         const knobsRow = document.createElement('div')
@@ -151,6 +176,9 @@ this.container.innerHTML = `
                 onChange: v => {
                     serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v })
                     this.#persistMaster(p.key, v)
+                    if (p.key === 'threshold' || p.key === 'ratio' || p.key === 'knee' || p.key === 'makeup') {
+                        this.#drawCompCurve()
+                    }
                 },
             })
             this.#compSliders[p.key] = knob
@@ -158,6 +186,7 @@ this.container.innerHTML = `
         })
 
         panel.appendChild(knobsRow)
+        this.#drawCompCurve()
     }
 
     #buildFilterSliders() {
@@ -236,6 +265,7 @@ this.container.innerHTML = `
                 this.#compSliders[p.key].setValue(m[p.key])
             }
         }
+        this.#drawCompCurve()
     }
 
     subscribe() {}
@@ -243,6 +273,7 @@ this.container.innerHTML = `
     show() {
         super.show()
         this.#visible = true
+        this.#drawCompCurve()
         this.#startAnimation()
     }
 
@@ -311,5 +342,123 @@ this.container.innerHTML = `
             else ctx.lineTo(x, y)
         }
         ctx.stroke()
+    }
+
+    /**
+     * Soft-knee gain reduction in dB — mirrors master_bus_source.js
+     * #computeGainReduction so the curve matches the audible result.
+     */
+    #gainReductionDb(inputDb, threshold, ratio, knee) {
+        const overDb = inputDb - threshold
+        if (overDb <= -knee / 2) return 0
+        if (knee > 0 && overDb < knee / 2) {
+            const d = overDb + knee / 2
+            return (1 - 1 / ratio) * d * d / (2 * knee)
+        }
+        return overDb * (1 - 1 / ratio)
+    }
+
+    /** Draws the compressor transfer curve (input dB → output dB). */
+    #drawCompCurve() {
+        const canvas = this.#compCurveCanvas
+        if (!canvas) return
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+        const w = canvas.width
+        const h = canvas.height
+
+        const threshold = this.#compSliders?.threshold?.getValue() ?? -18
+        const ratio     = Math.max(1, this.#compSliders?.ratio?.getValue() ?? 8)
+        const knee      = Math.max(0, this.#compSliders?.knee?.getValue() ?? 3)
+        const makeup    = this.#compSliders?.makeup?.getValue() ?? 8
+        const bypass    = this.#compBypass
+
+        const xToPx = db => ((db - CURVE_X_MIN) / (CURVE_X_MAX - CURVE_X_MIN)) * w
+        const yToPx = db => h - ((db - CURVE_Y_MIN) / (CURVE_Y_MAX - CURVE_Y_MIN)) * h
+
+        const transfer = xDb => {
+            if (bypass) return xDb
+            return xDb - this.#gainReductionDb(xDb, threshold, ratio, knee) + makeup
+        }
+
+        // Background
+        ctx.fillStyle = color('surface-2')
+        ctx.fillRect(0, 0, w, h)
+
+        // Grid lines at useful dB levels
+        ctx.strokeStyle = color('border-subtle')
+        ctx.lineWidth = 1
+        ctx.setLineDash([])
+        for (const db of [-60, -40, -20, 0]) {
+            const x = xToPx(db)
+            const y = yToPx(db)
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, h)
+            ctx.stroke()
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(w, y)
+            ctx.stroke()
+        }
+
+        // 1:1 reference diagonal (dashed) — only within overlapping range
+        ctx.strokeStyle = color('muted')
+        ctx.setLineDash([6, 6])
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        const diagStart = Math.max(CURVE_X_MIN, CURVE_Y_MIN)
+        const diagEnd   = Math.min(CURVE_X_MAX, CURVE_Y_MAX)
+        ctx.moveTo(xToPx(diagStart), yToPx(diagStart))
+        ctx.lineTo(xToPx(diagEnd), yToPx(diagEnd))
+        ctx.stroke()
+        ctx.setLineDash([])
+
+        // Threshold marker (vertical dashed line)
+        if (!bypass && threshold >= CURVE_X_MIN && threshold <= CURVE_X_MAX) {
+            const tx = xToPx(threshold)
+            ctx.strokeStyle = color('color-warning')
+            ctx.setLineDash([4, 4])
+            ctx.lineWidth = 1.5
+            ctx.beginPath()
+            ctx.moveTo(tx, 0)
+            ctx.lineTo(tx, h)
+            ctx.stroke()
+            ctx.setLineDash([])
+        }
+
+        // Transfer curve
+        ctx.strokeStyle = bypass ? color('muted') : color('accent')
+        ctx.lineWidth = 2.5
+        ctx.beginPath()
+        const steps = w
+        for (let px = 0; px <= steps; px++) {
+            const xDb = CURVE_X_MIN + (px / steps) * (CURVE_X_MAX - CURVE_X_MIN)
+            const yDb = transfer(xDb)
+            const py = yToPx(yDb)
+            if (px === 0) ctx.moveTo(px, py)
+            else ctx.lineTo(px, py)
+        }
+        ctx.stroke()
+
+        // Axis labels
+        ctx.fillStyle = color('muted')
+        ctx.font = '10px sans-serif'
+        ctx.textAlign = 'left'
+        ctx.fillText(`${CURVE_Y_MAX} dB`, 4, 12)
+        ctx.textAlign = 'left'
+        ctx.fillText(`${CURVE_Y_MIN} dB`, 4, h - 4)
+        ctx.textAlign = 'right'
+        ctx.fillText('0 dB', w - 4, h - 4)
+        ctx.textAlign = 'left'
+        ctx.fillText(`${CURVE_X_MIN} dB`, 4, h - 16)
+
+        // Bypass watermark
+        if (bypass) {
+            ctx.fillStyle = color('muted')
+            ctx.font = 'bold 12px sans-serif'
+            ctx.textAlign = 'center'
+            ctx.fillText('BYPASSED', w / 2, h / 2)
+        }
     }
 }

@@ -153,4 +153,62 @@ describe('OutputPanel — compressor (VST knobs)', () => {
         const title = header.querySelector('.op-comp-title')
         expect(title.textContent).toBe('COMPRESSOR')
     })
+
+    it('compressor panel renders a transfer curve canvas', () => {
+        const canvas = panel.container.querySelector('#op-comp-curve')
+        expect(canvas).not.toBeNull()
+        expect(canvas.tagName).toBe('CANVAS')
+        expect(canvas.width).toBe(320)
+        expect(canvas.height).toBe(140)
+    })
+
+    it('curve sits beside the pregain knob in a top row', () => {
+        const topRow = panel.container.querySelector('.op-comp-top-row')
+        expect(topRow).not.toBeNull()
+        const pregain = topRow.querySelector('.op-comp-pregain')
+        const curve = topRow.querySelector('.op-comp-curve-wrap')
+        expect(pregain).not.toBeNull()
+        expect(curve).not.toBeNull()
+        // pregain comes before curve in DOM order
+        expect(
+            Array.from(topRow.children).indexOf(pregain)
+        ).toBeLessThan(Array.from(topRow.children).indexOf(curve))
+        // top row comes before the COMPRESSOR header
+        const panelEl = panel.container.querySelector('#op-comp-panel')
+        const children = Array.from(panelEl.children)
+        const topRowIdx = children.indexOf(topRow)
+        const headerIdx = children.findIndex(c => c.classList.contains('op-comp-header'))
+        const knobsIdx  = children.findIndex(c => c.classList.contains('op-comp-knobs'))
+        expect(topRowIdx).toBeGreaterThanOrEqual(0)
+        expect(headerIdx).toBeGreaterThan(topRowIdx)
+        expect(knobsIdx).toBeGreaterThan(headerIdx)
+    })
+
+    it('changing threshold/ratio/knee/makeup triggers curve redraw', () => {
+        const canvas = panel.container.querySelector('#op-comp-curve')
+        const ctx = canvas.getContext('2d')
+        ctx.beginPath.mockClear()
+        ctx.stroke.mockClear()
+        panel.getKnob('threshold').setValue(-24, true)
+        expect(ctx.beginPath).toHaveBeenCalled()
+        expect(ctx.stroke).toHaveBeenCalled()
+    })
+
+    it('toggling bypass triggers curve redraw', () => {
+        const canvas = panel.container.querySelector('#op-comp-curve')
+        const ctx = canvas.getContext('2d')
+        ctx.beginPath.mockClear()
+        ctx.stroke.mockClear()
+        panel.container.querySelector('.op-comp-bypass').click()
+        expect(ctx.beginPath).toHaveBeenCalled()
+        expect(ctx.stroke).toHaveBeenCalled()
+    })
+
+    it('attack/release changes do not redraw the curve (time-domain only)', () => {
+        const canvas = panel.container.querySelector('#op-comp-curve')
+        const ctx = canvas.getContext('2d')
+        ctx.beginPath.mockClear()
+        panel.getKnob('attack').setValue(0.5, true)
+        expect(ctx.beginPath).not.toHaveBeenCalled()
+    })
 })

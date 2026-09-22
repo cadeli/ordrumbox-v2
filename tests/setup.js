@@ -51,7 +51,13 @@ const stubContext = () => ({
 })
 
 if (typeof HTMLCanvasElement !== 'undefined') {
-    HTMLCanvasElement.prototype.getContext = stubContext
+    // Cache the stub context per canvas so repeated getContext() calls
+    // return the same object (matches browser behavior and lets tests
+    // assert on drawing calls made by production code).
+    HTMLCanvasElement.prototype.getContext = function getContext() {
+        if (!this.__stubCtx) this.__stubCtx = stubContext()
+        return this.__stubCtx
+    }
 }
 
 if (typeof ResizeObserver === 'undefined') {

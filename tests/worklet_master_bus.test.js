@@ -216,6 +216,34 @@ describe('MasterBusProcessor source', () => {
         expect(maxDelta).toBeLessThan(0.5)
     })
 
+    it('soft-knee gain reduction is continuous at the knee boundary', () => {
+        // The formula lives inside the worklet source string — verify the
+        // source uses the standard soft-knee form (not the old buggy one).
+        expect(MASTER_BUS_SOURCE).toContain('d * d / (2 * knee)')
+        expect(MASTER_BUS_SOURCE).not.toContain('overDb * t * t * 0.5')
+
+        // Mathematical continuity check at overDb = knee/2
+        const threshold = -18
+        const ratio = 4
+        const knee = 20
+        const g = (inputDb) => {
+            const overDb = inputDb - threshold
+            if (overDb <= -knee / 2) return 0
+            if (knee > 0 && overDb < knee / 2) {
+                const d = overDb + knee / 2
+                return (1 - 1 / ratio) * d * d / (2 * knee)
+            }
+            return overDb * (1 - 1 / ratio)
+        }
+        const atBoundary = threshold + knee / 2
+        const justBelow = g(atBoundary - 0.001)
+        const atOrAbove = g(atBoundary)
+        expect(Math.abs(justBelow - atOrAbove)).toBeLessThan(0.01)
+        // Soft-knee at boundary should match hard-knee value
+        const hardKneeAtBoundary = (knee / 2) * (1 - 1 / ratio)
+        expect(justBelow).toBeCloseTo(hardKneeAtBoundary, 2)
+    })
+
     it('stereo processing: L and R remain independent', () => {
         const proc = makeProc()
         const FRAMES = 256
