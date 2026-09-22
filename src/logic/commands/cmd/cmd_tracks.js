@@ -55,6 +55,7 @@ export function createTrackMethods(cmd) {
             let loopStepPc = Math.round((track.loopPointStep * 100) / track.stepsPerBeat)
             track.stepsPerBeat++
             if (track.stepsPerBeat > 8) {
+                // Cyclic wrap: 8 → 1 (intentional, not a bug)
                 track.stepsPerBeat = 1
             }
 

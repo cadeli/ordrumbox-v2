@@ -155,24 +155,32 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
         if (isCompactFormat(sourceTrack)) {
             for (const arr of notes) {
                 const sourceNote = compactArrayToNote(arr, noteKeys);
-                const b = Number(sourceNote.beat ?? 0)
-                const bs = Number(sourceNote.beatStep ?? 0)
-                const p = Number(sourceNote.pitch ?? 0)
-                if (!Number.isFinite(b) || !Number.isFinite(bs) || !Number.isFinite(p)) {
-                    logger.warn('PatternImport', 'NaN note values in compact format', { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch })
+                const bRaw = Number(sourceNote.beat ?? 0)
+                const bsRaw = Number(sourceNote.beatStep ?? 0)
+                const pRaw = Number(sourceNote.pitch ?? 0)
+                const b = Number.isFinite(bRaw) ? bRaw : 0
+                const bs = Number.isFinite(bsRaw) ? bsRaw : 0
+                const p = Number.isFinite(pRaw) ? pRaw : 0
+                if (b !== bRaw || bs !== bsRaw || p !== pRaw) {
+                    logger.warn('PatternImport', 'Invalid note values replaced with 0 in compact format',
+                        { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch, replaced: { beat: b !== bRaw, beatStep: bs !== bsRaw, pitch: p !== pRaw } })
                 }
-                const note = addNote(track, b || 0, bs || 0, p || 0)
+                const note = addNote(track, b, bs, p)
                 copyNoteProps(note, sourceNote, track)
             }
         } else {
             for (const sourceNote of Object.values(notes)) {
-                const b = Number(sourceNote.beat ?? 0)
-                const bs = Number(sourceNote.beatStep ?? 0)
-                const p = Number(sourceNote.pitch ?? 0)
-                if (!Number.isFinite(b) || !Number.isFinite(bs) || !Number.isFinite(p)) {
-                    logger.warn('PatternImport', 'NaN note values in imported note', { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch })
+                const bRaw = Number(sourceNote.beat ?? 0)
+                const bsRaw = Number(sourceNote.beatStep ?? 0)
+                const pRaw = Number(sourceNote.pitch ?? 0)
+                const b = Number.isFinite(bRaw) ? bRaw : 0
+                const bs = Number.isFinite(bsRaw) ? bsRaw : 0
+                const p = Number.isFinite(pRaw) ? pRaw : 0
+                if (b !== bRaw || bs !== bsRaw || p !== pRaw) {
+                    logger.warn('PatternImport', 'Invalid note values replaced with 0 in imported note',
+                        { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch, replaced: { beat: b !== bRaw, beatStep: bs !== bsRaw, pitch: p !== pRaw } })
                 }
-                const note = addNote(track, b || 0, bs || 0, p || 0)
+                const note = addNote(track, b, bs, p)
                 copyNoteProps(note, sourceNote, track)
             }
         }

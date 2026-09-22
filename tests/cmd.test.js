@@ -236,7 +236,7 @@ describe('Functional: Commander operations', () => {
 
         it('caps stepsPerBeat at 8 when steppc exceeds 100', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
-            track.stepsPerBeat = 4
+            track.stepsPerBeat = 9
             const note = cmd.addNote(track, 0, 5)
             expect(track.stepsPerBeat).toBe(8)
             expect(note.steppc).toBe(63)

@@ -33,12 +33,11 @@ export function createNoteMethods(cmd) {
         },
 
         addNote(track, beat, beatStep, pitch = 0) {
-            let steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
-            if (steppc > 100) {
-                logger.warn('Cmd', `stepsPerBeat override ${track.stepsPerBeat} → 8 (beatStep ${beatStep})`)
+            if (!Number.isInteger(track.stepsPerBeat) || track.stepsPerBeat < 1 || track.stepsPerBeat > 8) {
+                logger.warn('Cmd', `stepsPerBeat out of bounds (${track.stepsPerBeat}), resetting to 8`)
                 track.stepsPerBeat = 8
-                steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
             }
+            let steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
             const note = {
                 ...Utils.NOTE_DEFAULTS,
                 beatStep,
