@@ -62,42 +62,58 @@ export const LFO_TARGET_SCALE = {
  * Renders rotary knobs, wave icon selectors, and ADSR waveform preview.
  */
 export default class SynthEditor {
-    /**
-     * @param {object} host  Parent (trackEditor) reference.
-     * @param {object} [deps]  Optional dependency overrides (DI).
-     */
+    #soundRegistry
+    #serviceRegistry
+    #playbackEvents
+    #editKey
+    #original
+    #draft
+    #loading
+    #loadFailed
+    #loadPromise
+    #cardBypassed
+    #waveTab
+    #scrollEl
+    #delegationBound
+    #knobMap
+    #groups
+    #waveform
+    #presets
+    #lfoRafId
+    #lfoLastTime
+
     constructor(host, deps = {}) {
         this.host = host
         this.panel = null
 
-        this._soundRegistry = deps.soundRegistry ?? _soundRegistrySingleton
-        this._serviceRegistry = deps.serviceRegistry ?? _serviceRegistrySingleton
-        this._playbackEvents = deps.playbackEvents ?? _playbackEventsSingleton
+        this.#soundRegistry = deps.soundRegistry ?? _soundRegistrySingleton
+        this.#serviceRegistry = deps.serviceRegistry ?? _serviceRegistrySingleton
+        this.#playbackEvents = deps.playbackEvents ?? _playbackEventsSingleton
 
-        this._editKey = null
-        this._original = null
-        this._draft = null
-        this._loading = false
-        this._loadFailed = false
-        this._loadPromise = null
-        this._delegationBound = false
-        this._cardBypassed = {}
-        this._waveTab = 'wave'
+        this.#editKey = null
+        this.#original = null
+        this.#draft = null
+        this.#loading = false
+        this.#loadFailed = false
+        this.#loadPromise = null
+        this.#delegationBound = false
+        this.#cardBypassed = {}
+        this.#waveTab = 'wave'
 
         /** @type {Map<string, OrKnob>} knob instances kept alive between renders */
-        this._knobMap = new Map()
+        this.#knobMap = new Map()
 
-        this._groups = new GroupsSection(this)
-        this._waveform = new WaveformSection(this)
-        this._presets = new PresetSection(this)
+        this.#groups = new GroupsSection(this)
+        this.#waveform = new WaveformSection(this)
+        this.#presets = new PresetSection(this)
 
-        this._lfoRafId = null
-        this._lfoLastTime = -1
+        this.#lfoRafId = null
+        this.#lfoLastTime = -1
     }
 
     /** @returns {OrKnob[]} flat array of current knob instances. */
     get _knobs() {
-        return [...this._knobMap.values()]
+        return [...this.#knobMap.values()]
     }
 
     createDOM() {
@@ -105,9 +121,9 @@ export default class SynthEditor {
         this.panel.id = 'soft-synth-panel'
         this.panel.classList.add('workspace-panel')
         this.panel.style.display = 'none'
-        this._scrollEl = document.createElement('div')
-        this._scrollEl.className = 'ss-scroll'
-        this.panel.appendChild(this._scrollEl)
+        this.#scrollEl = document.createElement('div')
+        this.#scrollEl.className = 'ss-scroll'
+        this.panel.appendChild(this.#scrollEl)
     }
 
     dispose() {
@@ -116,12 +132,12 @@ export default class SynthEditor {
 
     /** @returns {string[]} sorted keys of loaded synth presets. */
     getGeneratedSoundKeys() {
-        return this._presets.getGeneratedSoundKeys()
+        return this.#presets.getGeneratedSoundKeys()
     }
 
     /** Loads generated sounds from disk if not already loaded. */
     async ensureGeneratedSoundsLoaded() {
-        return this._presets.ensureGeneratedSoundsLoaded()
+        return this.#presets.ensureGeneratedSoundsLoaded()
     }
 
     /** Opens the editor for the current track's synth sound. */
@@ -132,12 +148,12 @@ export default class SynthEditor {
             await this.ensureGeneratedSoundsLoaded()
 
             const key = track.synthSoundKey
-            const generatedSound = this._soundRegistry.generatedSounds?.[key]
+            const generatedSound = this.#soundRegistry.generatedSounds?.[key]
             if (!key || !generatedSound) return
 
-            if (!this._presets.loadPreset(key)) return
-            this._showSynthPanel()
-            this._renderEditor()
+            if (!this.#presets.loadPreset(key)) return
+            this.#showSynthPanel()
+            this.#renderEditor()
         } catch (e) {
             logger.error('SynthEditor', 'openEditor failed', e)
         }
@@ -147,26 +163,26 @@ export default class SynthEditor {
     async showPanel() {
         try {
             await this.ensureGeneratedSoundsLoaded()
-            this._showSynthPanel()
+            this.#showSynthPanel()
 
             const track = this.host._track
             const key = track?.synthSoundKey
-            const generatedSound = key ? this._soundRegistry.generatedSounds?.[key] : null
+            const generatedSound = key ? this.#soundRegistry.generatedSounds?.[key] : null
 
             if (key && generatedSound) {
-                this._presets.loadPreset(key)
-                this._renderEditor()
+                this.#presets.loadPreset(key)
+                this.#renderEditor()
             } else {
                 const keys = this.getGeneratedSoundKeys()
                 if (keys.length > 0) {
-                    this._presets.loadPreset(keys[0])
-                    this._renderEditor()
+                    this.#presets.loadPreset(keys[0])
+                    this.#renderEditor()
                 } else {
-                    this._scrollEl.innerHTML = `
+                    this.#scrollEl.innerHTML = `
                     <div class="ss-body ss-body-empty">
                         No synth presets loaded.
                     </div>`
-                    this._bindEvents()
+                    this.#bindEvents()
                 }
             }
         } catch (e) {
@@ -177,10 +193,10 @@ export default class SynthEditor {
     /** Hides the panel, committing live-previewed changes. */
     hidePanel() {
         if (this.panel.style.display !== 'flex') return
-        if (this._editKey && this._draft) {
-            this._closeEditor(true)
+        if (this.#editKey && this.#draft) {
+            this.#closeEditor(true)
         } else {
-            this._hideSynthPanel()
+            this.#hideSynthPanel()
             if (this.host._track) {
                 this.host.sync()
             }
@@ -189,34 +205,34 @@ export default class SynthEditor {
 
     // ─── Panel visibility ──────────────────────────────────────────────
 
-    _showSynthPanel() {
+    #showSynthPanel() {
         this.panel.style.display = 'flex'
-        this._startLfoWatch()
+        this.#startLfoWatch()
     }
 
-    _hideSynthPanel() {
+    #hideSynthPanel() {
         this.panel.style.display = 'none'
-        this._stopLfoWatch()
+        this.#stopLfoWatch()
     }
 
     // ─── Rendering ─────────────────────────────────────────────────────
 
     /** Renders the full editor: groups, footer, knobs, waveform. */
-    _renderEditor() {
-        if (!this._draft || !this._editKey) return
+    #renderEditor() {
+        if (!this.#draft || !this.#editKey) return
         try {
             const knobConfigs = []
-            let html = this._presets.renderFooter()
-            html += this._groups.render(knobConfigs)
+            let html = this.#presets.renderFooter()
+            html += this.#groups.render(knobConfigs)
 
-            this._scrollEl.innerHTML = html
-            bindTabToggles(this._scrollEl, () => {
-                requestAnimationFrame(() => this._waveform.draw())
+            this.#scrollEl.innerHTML = html
+            bindTabToggles(this.#scrollEl, () => {
+                requestAnimationFrame(() => this.#waveform.draw())
             })
-            this._syncKnobs(knobConfigs)
-            this._updateLfoIndicators()
-            this._bindEvents()
-            this._waveform.draw()
+            this.#syncKnobs(knobConfigs)
+            this.#updateLfoIndicators()
+            this.#bindEvents()
+            this.#waveform.draw()
         } catch (e) {
             logger.error('SynthEditor', '_renderEditor failed', e)
         }
@@ -226,85 +242,85 @@ export default class SynthEditor {
      * Syncs knob instances: reuse existing via setValue(), create new only for new paths,
      * destroy orphaned knobs. Keeps instances alive between renders.
      */
-    _syncKnobs(configs) {
-        this._knobMap = syncKnobs({
+    #syncKnobs(configs) {
+        this.#knobMap = syncKnobs({
             container: this.panel,
             configs,
             selector: 'ss-knob-placeholder',
-            prev: this._knobMap,
+            prev: this.#knobMap,
             paramMeta: SYNTH_PARAM_META,
-            onChange: (key, val) => this._onKnobChange(key, val),
+            onChange: (key, val) => this.#onKnobChange(key, val),
         })
     }
 
-    _onKnobChange(pathStr, value) {
-        this._setValue(pathStr, Number.isNaN(value) ? 0 : value)
-        this._updateLfoIndicators()
-        this._waveform.draw()
+    #onKnobChange(pathStr, value) {
+        this.#setValue(pathStr, Number.isNaN(value) ? 0 : value)
+        this.#updateLfoIndicators()
+        this.#waveform.draw()
     }
 
     /**
      * Sets hasLfo on knobs whose path matches an active LFO target.
      * An LFO is "active" when its target is not 'NOT', depth > 0, and not bypassed.
      */
-    _updateLfoIndicators() {
-        if (!this._draft) return
-        const lfo1 = this._draft.lfo ?? {}
-        const lfo2 = this._draft.lfo2 ?? {}
+    #updateLfoIndicators() {
+        if (!this.#draft) return
+        const lfo1 = this.#draft.lfo ?? {}
+        const lfo2 = this.#draft.lfo2 ?? {}
         const activeTargets = new Set()
-        if (lfo1.target && lfo1.target !== 'NOT' && (lfo1.depth ?? 0) > 0 && !this._draft.bypassLfo1) {
+        if (lfo1.target && lfo1.target !== 'NOT' && (lfo1.depth ?? 0) > 0 && !this.#draft.bypassLfo1) {
             activeTargets.add(lfo1.target)
         }
-        if (lfo2.target && lfo2.target !== 'NOT' && (lfo2.depth ?? 0) > 0 && !this._draft.bypassLfo2) {
+        if (lfo2.target && lfo2.target !== 'NOT' && (lfo2.depth ?? 0) > 0 && !this.#draft.bypassLfo2) {
             activeTargets.add(lfo2.target)
         }
-        for (const [path, knob] of this._knobMap) {
+        for (const [path, knob] of this.#knobMap) {
             knob.setHasLfo?.(activeTargets.has(path))
         }
     }
 
     // ── LFO animation (real-time knob display) ───────────────────────
 
-    _startLfoWatch() {
-        if (this._lfoRafId) return
-        this._lfoLastTime = -1
+    #startLfoWatch() {
+        if (this.#lfoRafId) return
+        this.#lfoLastTime = -1
         const tick = () => {
-            if (this.panel?.style.display !== 'flex') { this._lfoRafId = null; return }
-            this._lfoRafId = requestAnimationFrame(tick)
-            this._updateLfoKnobs()
-            this._waveform.draw()
+            if (this.panel?.style.display !== 'flex') { this.#lfoRafId = null; return }
+            this.#lfoRafId = requestAnimationFrame(tick)
+            this.#updateLfoKnobs()
+            this.#waveform.draw()
         }
-        this._lfoRafId = requestAnimationFrame(tick)
+        this.#lfoRafId = requestAnimationFrame(tick)
     }
 
-    _stopLfoWatch() {
-        if (this._lfoRafId) { cancelAnimationFrame(this._lfoRafId); this._lfoRafId = null }
-        this._lfoLastTime = -1
+    #stopLfoWatch() {
+        if (this.#lfoRafId) { cancelAnimationFrame(this.#lfoRafId); this.#lfoRafId = null }
+        this.#lfoLastTime = -1
     }
 
     /**
      * Computes and applies LFO-modulated values to synth knobs in real time.
      * Mirrors the worklet's #lfoValue() + getLfoWaveformValue() math.
      */
-    _updateLfoKnobs() {
-        if (!this._draft || !this._knobMap.size) return
-        const audioCtx = this._serviceRegistry.audioCtx
+    #updateLfoKnobs() {
+        if (!this.#draft || !this.#knobMap.size) return
+        const audioCtx = this.#serviceRegistry.audioCtx
         if (!audioCtx) return
         const now = audioCtx.currentTime
 
-        const lfo1 = this._draft.bypassLfo1 ? null : this._draft.lfo
-        const lfo2 = this._draft.bypassLfo2 ? null : this._draft.lfo2
+        const lfo1 = this.#draft.bypassLfo1 ? null : this.#draft.lfo
+        const lfo2 = this.#draft.bypassLfo2 ? null : this.#draft.lfo2
 
-        for (const [path, knob] of this._knobMap) {
+        for (const [path, knob] of this.#knobMap) {
             let totalMod = 0
             if (lfo1?.target === path && (lfo1.depth ?? 0) > 0) {
-                totalMod += this._computeSynthLfoMod(lfo1, now)
+                totalMod += this.#computeSynthLfoMod(lfo1, now)
             }
             if (lfo2?.target === path && (lfo2.depth ?? 0) > 0) {
-                totalMod += this._computeSynthLfoMod(lfo2, now)
+                totalMod += this.#computeSynthLfoMod(lfo2, now)
             }
             if (totalMod !== 0) {
-                const base = this._getValue(path) ?? 0
+                const base = this.#getValue(path) ?? 0
                 const meta = SYNTH_PARAM_META[path]
                 const min = meta?.min ?? -Infinity
                 const max = meta?.max ?? Infinity
@@ -319,13 +335,13 @@ export default class SynthEditor {
      * @param {number} audioTime  AudioContext.currentTime
      * @returns {number} modulation amount in the target's display units
      */
-    _computeSynthLfoMod(lfo, audioTime) {
+    #computeSynthLfoMod(lfo, audioTime) {
         const target = lfo.target
         const scale = LFO_TARGET_SCALE[target]
         if (!scale) return 0
 
         // Same frequency resolution as WorkletSynthVoice (tempo sync wins over freq)
-        const freq = syncToHz(lfo.sync, this._serviceRegistry.transport?.bpm) ?? lfo.freq ?? 0
+        const freq = syncToHz(lfo.sync, this.#serviceRegistry.transport?.bpm) ?? lfo.freq ?? 0
         const depth = lfo.depth ?? 0
         if (freq <= 0 || depth <= 0) return 0
 
@@ -341,20 +357,20 @@ export default class SynthEditor {
     // ─── Draft hydration ───────────────────────────────────────────────
 
     /** Fills missing draft fields with defaults. */
-    _hydrateDraft() {
-        if (!this._draft) return
+    #hydrateDraft() {
+        if (!this.#draft) return
         try {
             for (const [key, defaultValue] of Object.entries(SYNTH_GROUP_DEFAULTS)) {
-                if (this._isPlainObject(defaultValue)) {
-                    if (!this._isPlainObject(this._draft[key])) {
-                        this._draft[key] = structuredClone(defaultValue)
+                if (this.#isPlainObject(defaultValue)) {
+                    if (!this.#isPlainObject(this.#draft[key])) {
+                        this.#draft[key] = structuredClone(defaultValue)
                         continue
                     }
                     for (const [childKey, childDefault] of Object.entries(defaultValue)) {
-                        if (this._draft[key][childKey] === undefined) this._draft[key][childKey] = childDefault
+                        if (this.#draft[key][childKey] === undefined) this.#draft[key][childKey] = childDefault
                     }
-                } else if (this._draft[key] === undefined) {
-                    this._draft[key] = defaultValue
+                } else if (this.#draft[key] === undefined) {
+                    this.#draft[key] = defaultValue
                 }
             }
         } catch (e) {
@@ -364,52 +380,52 @@ export default class SynthEditor {
 
     // ─── Event handling ────────────────────────────────────────────────
 
-    _bindEvents() {
-        if (this._delegationBound) return
+    #bindEvents() {
+        if (this.#delegationBound) return
 
-        this.panel.addEventListener('click', (e) => this._handleClick(e))
+        this.panel.addEventListener('click', (e) => this.#handleClick(e))
         this.panel.addEventListener('change', (e) => {
             const { target } = e
             if (target.tagName === 'SELECT' && target.dataset.synthPath) {
-                this._setValue(target.dataset.synthPath, target.value)
-                this._updateLfoIndicators()
-                this._waveform.draw()
+                this.#setValue(target.dataset.synthPath, target.value)
+                this.#updateLfoIndicators()
+                this.#waveform.draw()
             }
             if (target.tagName === 'SELECT' && target.dataset.action === 'synth-preset') {
-                this._presets.selectPreset(target.value)
+                this.#presets.selectPreset(target.value)
             }
         })
 
-        this._delegationBound = true
+        this.#delegationBound = true
     }
 
-    _handleClick(e) {
+    #handleClick(e) {
         try {
             const { target } = e
-            if (this._handlePowerBtn(target, e)) return
-            if (this._handleWaveTab(target)) return
-            if (this._handleBooleanBtn(target)) return
-            if (this._handleIconBtn(target)) return
-            if (this._handleAction(target)) return
-            this._handlePresetNav(target)
+            if (this.#handlePowerBtn(target, e)) return
+            if (this.#handleWaveTab(target)) return
+            if (this.#handleBooleanBtn(target)) return
+            if (this.#handleIconBtn(target)) return
+            if (this.#handleAction(target)) return
+            this.#handlePresetNav(target)
         } catch (err) {
             logger.warn('SynthEditor', '_handleClick failed', err)
         }
     }
 
-    _handlePowerBtn(target, e) {
+    #handlePowerBtn(target, e) {
         const powerBtn = target.closest('[data-power-card]')
         if (!powerBtn) return false
         e.stopPropagation()
         const groupName = powerBtn.dataset.powerCard
-        this._cardBypassed[groupName] = !this._cardBypassed[groupName]
+        this.#cardBypassed[groupName] = !this.#cardBypassed[groupName]
         const card = this.panel.querySelector(`[data-ss-card="${groupName}"]`)
-        if (card) card.classList.toggle('bypassed', this._cardBypassed[groupName])
-        powerBtn.classList.toggle('active', !this._cardBypassed[groupName])
+        if (card) card.classList.toggle('bypassed', this.#cardBypassed[groupName])
+        powerBtn.classList.toggle('active', !this.#cardBypassed[groupName])
 
-        const draftGroup = this._draft?.[groupName]
+        const draftGroup = this.#draft?.[groupName]
         if (groupName.startsWith('vco') && draftGroup && typeof draftGroup === 'object') {
-            if (this._cardBypassed[groupName]) {
+            if (this.#cardBypassed[groupName]) {
                 draftGroup._savedGain = draftGroup.gain ?? 0
                 draftGroup.gain = 0
             } else {
@@ -420,114 +436,114 @@ export default class SynthEditor {
             const flagMap = { noise: 'bypassNoise', filter: 'bypassFilter', filterEnv: 'bypassFilterEnv', envelope: 'bypassEnv', lfo: 'bypassLfo1', lfo2: 'bypassLfo2', fm: 'bypassFm', modEnvelope: 'bypassModEnv' }
             const flag = flagMap[groupName]
             if (flag) {
-                this._draft[flag] = this._cardBypassed[groupName]
-                if (groupName === 'envelope' && !this._cardBypassed[groupName]) {
-                    this._draft._resetEnv = true
+                this.#draft[flag] = this.#cardBypassed[groupName]
+                if (groupName === 'envelope' && !this.#cardBypassed[groupName]) {
+                    this.#draft._resetEnv = true
                 }
             }
         }
 
-        this._waveform.draw()
-        this._updateLfoIndicators()
-        this._previewDraft()
+        this.#waveform.draw()
+        this.#updateLfoIndicators()
+        this.#previewDraft()
         return true
     }
 
-    _handleWaveTab(target) {
+    #handleWaveTab(target) {
         const waveTab = target.closest('[data-wave-tab]')
         if (!waveTab) return false
         this.panel.querySelectorAll('[data-wave-tab]').forEach(t => t.classList.remove('active'))
         waveTab.classList.add('active')
-        this._waveTab = waveTab.dataset.waveTab
-        this._waveform.draw()
+        this.#waveTab = waveTab.dataset.waveTab
+        this.#waveform.draw()
         return true
     }
 
-    _handleBooleanBtn(target) {
+    #handleBooleanBtn(target) {
         if (target.dataset.synthType !== 'boolean') return false
-        const next = !this._getValue(target.dataset.synthPath)
-        this._setValue(target.dataset.synthPath, next)
+        const next = !this.#getValue(target.dataset.synthPath)
+        this.#setValue(target.dataset.synthPath, next)
         target.textContent = next ? 'ON' : 'OFF'
         target.classList.toggle('active', next)
-        this._updateLfoIndicators()
-        this._waveform.draw()
+        this.#updateLfoIndicators()
+        this.#waveform.draw()
         return true
     }
 
-    _handleIconBtn(target) {
+    #handleIconBtn(target) {
         const waveIcon = target.closest('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon')
         if (!waveIcon) return false
         const path = waveIcon.dataset.synthPath
         const val = waveIcon.dataset.waveVal
-        this._setValue(path, val)
+        this.#setValue(path, val)
         const scope = waveIcon.closest('.ne-row') ?? waveIcon.closest('.ss-group')
         scope?.querySelectorAll('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon').forEach(b => b.classList.remove('selected'))
         waveIcon.classList.add('selected')
-        this._waveform.draw()
+        this.#waveform.draw()
         return true
     }
 
-    _handleAction(target) {
+    #handleAction(target) {
         const action = target.dataset.action
-        if (action === 'synth-revert') this._revertPreset()
-        else if (action === 'synth-duplicate') this._presets.duplicatePreset()
-        else if (action === 'synth-rename') this._presets.renamePreset()
-        else if (action === 'synth-randomize') this._presets.randomizePreset()
-        else if (action === 'synth-new') this._presets.newPreset()
-        else if (action === 'synth-delete') this._presets.deletePreset()
-        else if (action === 'synth-export') this._exportSynth()
-        else if (action === 'synth-import') this._importSynth()
+        if (action === 'synth-revert') this.#revertPreset()
+        else if (action === 'synth-duplicate') this.#presets.duplicatePreset()
+        else if (action === 'synth-rename') this.#presets.renamePreset()
+        else if (action === 'synth-randomize') this.#presets.randomizePreset()
+        else if (action === 'synth-new') this.#presets.newPreset()
+        else if (action === 'synth-delete') this.#presets.deletePreset()
+        else if (action === 'synth-export') this.#exportSynth()
+        else if (action === 'synth-import') this.#importSynth()
         else return false
         return true
     }
 
-    _handlePresetNav(target) {
+    #handlePresetNav(target) {
         const nav = target.closest('[data-preset-nav]')
         if (!nav) return
         const dir = parseInt(nav.dataset.presetNav, 10)
-        this._presets.navigatePreset(dir)
+        this.#presets.navigatePreset(dir)
     }
 
     // ─── Value access ──────────────────────────────────────────────────
 
     /** @param {string} pathString dot-separated path */
-    _getValue(pathString) {
-        return pathString.split('.').reduce((obj, key) => obj?.[key], this._draft)
+    #getValue(pathString) {
+        return pathString.split('.').reduce((obj, key) => obj?.[key], this.#draft)
     }
 
     /** Sets a nested draft value and triggers preview. */
-    _setValue(pathString, value) {
+    #setValue(pathString, value) {
         try {
             const path = pathString.split('.')
-            let target = this._draft
+            let target = this.#draft
             for (let i = 0; i < path.length - 1; i++) {
                 target = target?.[path[i]]
                 if (target === undefined || target === null) return
             }
             target[path.at(-1)] = value
-            this._previewDraft()
+            this.#previewDraft()
         } catch (e) {
             logger.warn('SynthEditor', '_setValue failed', e)
         }
     }
 
-    _previewDraft() {
-        if (!this._editKey || !this._draft) return
-        this._presets.commitSound(this._editKey, this._draft)
+    #previewDraft() {
+        if (!this.#editKey || !this.#draft) return
+        this.#presets.commitSound(this.#editKey, this.#draft)
     }
 
     // ─── Close / save / revert ─────────────────────────────────────────
 
-    _revertPreset() {
-        if (!this._editKey || !this._original) return
+    #revertPreset() {
+        if (!this.#editKey || !this.#original) return
         try {
-            this._presets.commitSound(this._editKey, this._original)
-            this._draft = structuredClone(this._original)
-            this._renderEditor()
-            this._serviceRegistry.audioEngine?.invalidateCache?.()
-            this._playbackEvents.batch(() => {
-                this._playbackEvents.emit('trackParamChange', this.host._track)
-                this._playbackEvents.emit('patternChange', [this.host._track])
+            this.#presets.commitSound(this.#editKey, this.#original)
+            this.#draft = structuredClone(this.#original)
+            this.#renderEditor()
+            this.#serviceRegistry.audioEngine?.invalidateCache?.()
+            this.#playbackEvents.batch(() => {
+                this.#playbackEvents.emit('trackParamChange', this.host._track)
+                this.#playbackEvents.emit('patternChange', [this.host._track])
             })
         } catch (e) {
             logger.error('SynthEditor', '_revertPreset failed', e)
@@ -536,9 +552,9 @@ export default class SynthEditor {
 
     // ─── Value access ──────────────────────────────────────────────────
 
-    _exportSynth() {
+    #exportSynth() {
         try {
-            const sounds = this._soundRegistry.generatedSounds
+            const sounds = this.#soundRegistry.generatedSounds
             if (!sounds || Object.keys(sounds).length === 0) {
                 showToast('No synth sounds loaded', 'info')
                 return
@@ -551,7 +567,7 @@ export default class SynthEditor {
         }
     }
 
-    _importSynth() {
+    #importSynth() {
         const input = document.createElement('input')
         input.type = 'file'
         input.accept = '.json'
@@ -565,7 +581,7 @@ export default class SynthEditor {
                     showToast('Invalid synth file: expected a JSON object', 'error')
                     return
                 }
-                const sr = this._soundRegistry
+                const sr = this.#soundRegistry
                 let count = 0
                 for (const [key, val] of Object.entries(data)) {
                     if (val && typeof val === 'object') {
@@ -573,10 +589,10 @@ export default class SynthEditor {
                         count++
                     }
                 }
-                this._serviceRegistry.audioEngine?.updateGeneratedSounds(sr.generatedSounds)
-                this._presets._persist()
-                this._presets.ensureGeneratedSoundsLoaded()
-                this._renderEditor()
+                this.#serviceRegistry.audioEngine?.updateGeneratedSounds(sr.generatedSounds)
+                this.#presets._persist()
+                this.#presets.ensureGeneratedSoundsLoaded()
+                this.#renderEditor()
                 showToast(`Imported ${count} synth sound(s)`, 'success')
             } catch (err) {
                 showToast('Import failed: ' + err.message, 'error')
@@ -585,96 +601,117 @@ export default class SynthEditor {
         input.click()
     }
 
-    _closeEditor(shouldSave) {
+    #closeEditor(shouldSave) {
         try {
-            if (shouldSave && this._editKey && this._draft) {
-                this._presets.commitSound(this._editKey, this._draft)
-                this._serviceRegistry.audioEngine?.invalidateCache?.()
-                this._playbackEvents.batch(() => {
-                    this._playbackEvents.emit('trackParamChange', this.host._track)
-                    this._playbackEvents.emit('patternChange', [this.host._track])
+            if (shouldSave && this.#editKey && this.#draft) {
+                this.#presets.commitSound(this.#editKey, this.#draft)
+                this.#serviceRegistry.audioEngine?.invalidateCache?.()
+                this.#playbackEvents.batch(() => {
+                    this.#playbackEvents.emit('trackParamChange', this.host._track)
+                    this.#playbackEvents.emit('patternChange', [this.host._track])
                 })
-            } else if (!shouldSave && this._editKey && this._original) {
-                this._presets.commitSound(this._editKey, this._original)
+            } else if (!shouldSave && this.#editKey && this.#original) {
+                this.#presets.commitSound(this.#editKey, this.#original)
             }
 
-            this._hideSynthPanel()
+            this.#hideSynthPanel()
             if (this.host._track) {
                 this.host.sync()
             }
         } catch (e) {
             logger.error('SynthEditor', '_closeEditor failed', e)
         } finally {
-            this._editKey = null
-            this._original = null
-            this._draft = null
+            this.#editKey = null
+            this.#original = null
+            this.#draft = null
         }
     }
 
     reset() {
         this.panel.style.display = 'none'
-        this._stopLfoWatch()
-        this._editKey = null
-        this._original = null
-        this._draft = null
-        this._loading = false
-        this._loadFailed = false
-        this._cardBypassed = {}
-        this._waveTab = 'wave'
+        this.#stopLfoWatch()
+        this.#editKey = null
+        this.#original = null
+        this.#draft = null
+        this.#loading = false
+        this.#loadFailed = false
+        this.#cardBypassed = {}
+        this.#waveTab = 'wave'
     }
 
     // ─── Utilities ─────────────────────────────────────────────────────
 
     /** @returns {boolean} true if value is a plain object (not array, not null). */
-    _isPlainObject(val) {
+    #isPlainObject(val) {
         return val != null && typeof val === 'object' && !Array.isArray(val)
     }
 
     // ─── Public API ───────────────────────────────────────────────────────
     /** @returns {Object|null} current draft state */
-    get draft() { return this._draft }
-    set draft(v) { this._draft = v }
+    get draft() { return this.#draft }
+    set draft(v) { this.#draft = v }
 
     /** @returns {object} sound registry */
-    get soundRegistry() { return this._soundRegistry }
-    set soundRegistry(v) { this._soundRegistry = v }
+    get soundRegistry() { return this.#soundRegistry }
+    set soundRegistry(v) { this.#soundRegistry = v }
 
     /** @returns {object} service registry */
-    get serviceRegistry() { return this._serviceRegistry }
-    set serviceRegistry(v) { this._serviceRegistry = v }
+    get serviceRegistry() { return this.#serviceRegistry }
+    set serviceRegistry(v) { this.#serviceRegistry = v }
 
     /** @returns {object} playback events */
-    get playbackEvents() { return this._playbackEvents }
+    get playbackEvents() { return this.#playbackEvents }
 
     /** @returns {string|null} current edit key */
-    get editKey() { return this._editKey }
-    set editKey(k) { this._editKey = k }
+    get editKey() { return this.#editKey }
+    set editKey(k) { this.#editKey = k }
 
     /** @returns {Object|null} original draft (before edits) */
-    get original() { return this._original }
-    set original(v) { this._original = v }
+    get original() { return this.#original }
+    set original(v) { this.#original = v }
 
     /** @returns {boolean} true if loading */
-    get loading() { return this._loading }
+    get loading() { return this.#loading }
+    set loading(v) { this.#loading = v }
 
     /** @returns {boolean} true if load failed */
-    get loadFailed() { return this._loadFailed }
+    get loadFailed() { return this.#loadFailed }
+    set loadFailed(v) { this.#loadFailed = v }
 
     /** @returns {Promise|null} load promise */
-    get loadPromise() { return this._loadPromise }
+    get loadPromise() { return this.#loadPromise }
+    set loadPromise(v) { this.#loadPromise = v }
 
     /** @returns {string} current wave tab ('wave' or 'custom') */
-    get waveTab() { return this._waveTab }
+    get waveTab() { return this.#waveTab }
 
     /** @returns {Object} card bypassed state { [groupName]: boolean } */
-    get cardBypassed() { return this._cardBypassed }
+    get cardBypassed() { return this.#cardBypassed }
 
     /** @returns {OrKnob[]} current knob instances */
-    get knobs() { return [...this._knobMap.values()] }
+    get knobs() { return [...this.#knobMap.values()] }
 
     /** Render the editor with current draft. */
-    renderEditor() { this._renderEditor() }
+    renderEditor() { this.#renderEditor() }
 
     /** Hydrate draft from a sound object. */
-    hydrateDraft() { this._hydrateDraft() }
+    hydrateDraft() { this.#hydrateDraft() }
+
+    /** Compute LFO modulation value. */
+    computeSynthLfoMod(lfo, audioTime) { return this.#computeSynthLfoMod(lfo, audioTime) }
+
+    /** Close the editor panel. */
+    closeEditor(shouldSave) { this.#closeEditor(shouldSave) }
+
+    /** @returns {PresetSection} preset section */
+    get presets() { return this.#presets }
+
+    updateLfoIndicators() { this.#updateLfoIndicators() }
+    updateLfoKnobs() { this.#updateLfoKnobs() }
+    startLfoWatch() { this.#startLfoWatch() }
+    stopLfoWatch() { this.#stopLfoWatch() }
+    showSynthPanel() { this.#showSynthPanel() }
+    hideSynthPanel() { this.#hideSynthPanel() }
+
+    get lfoRafId() { return this.#lfoRafId }
 }

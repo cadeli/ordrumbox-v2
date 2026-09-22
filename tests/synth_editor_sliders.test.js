@@ -170,7 +170,7 @@ describe('SynthEditor — OrKnob integration', () => {
         await trackEditor.synthEditor.openEditor()
         trackEditor.synthEditor.draft.someFlag = false
         soundRegistry.generatedSounds.BASS1.someFlag = false
-        trackEditor.synthEditor._renderEditor()
+        trackEditor.synthEditor.renderEditor()
 
         const panel = document.getElementById('soft-synth-panel')
         const btn = panel.querySelector('button[data-synth-type="boolean"][data-synth-path="someFlag"]')
@@ -259,7 +259,7 @@ describe('SynthEditor — LFO animation', () => {
         // At t=0, freq=1: phase=(0*1)%1=0
         // getLfoWaveformValue(0, 0=sine): p=(0-0.25)-floor(-0.25)=0.75, sin(2pi*0.75)=-1
         // raw = -1 * 0.5 = -0.5, scale=1 -> -0.5
-        const mod = se._computeSynthLfoMod(lfo, 0)
+        const mod = se.computeSynthLfoMod(lfo, 0)
         expect(mod).toBeCloseTo(-0.5, 5)
     })
 
@@ -272,7 +272,7 @@ describe('SynthEditor — LFO animation', () => {
         // phase = 0.25*1 % 1 = 0.25
         // getLfoWaveformValue(0.25, 0=sine): p=(0.25-0.25)=0, sin(0)=0
         // raw = 0 * 1.0 = 0, scale=1 → 0
-        const mod = se._computeSynthLfoMod(lfo, 0.25)
+        const mod = se.computeSynthLfoMod(lfo, 0.25)
         expect(mod).toBe(0)
     })
 
@@ -280,21 +280,21 @@ describe('SynthEditor — LFO animation', () => {
         await trackEditor.synthEditor.openEditor()
         const se = trackEditor.synthEditor
         const lfo = { target: 'NOT', wave: 'sine', freq: 1, depth: 1.0 }
-        expect(se._computeSynthLfoMod(lfo, 0)).toBe(0)
+        expect(se.computeSynthLfoMod(lfo, 0)).toBe(0)
     })
 
     it('_computeSynthLfoMod returns 0 when depth is 0', async () => {
         await trackEditor.synthEditor.openEditor()
         const se = trackEditor.synthEditor
         const lfo = { target: 'vco1.octave', wave: 'sine', freq: 1, depth: 0 }
-        expect(se._computeSynthLfoMod(lfo, 0)).toBe(0)
+        expect(se.computeSynthLfoMod(lfo, 0)).toBe(0)
     })
 
     it('_computeSynthLfoMod returns 0 when freq is 0', async () => {
         await trackEditor.synthEditor.openEditor()
         const se = trackEditor.synthEditor
         const lfo = { target: 'vco1.octave', wave: 'sine', freq: 0, depth: 1.0 }
-        expect(se._computeSynthLfoMod(lfo, 0)).toBe(0)
+        expect(se.computeSynthLfoMod(lfo, 0)).toBe(0)
     })
 
     it('_computeSynthLfoMod applies correct scale for filter.freq target', async () => {
@@ -303,7 +303,7 @@ describe('SynthEditor — LFO animation', () => {
         const lfo = { target: 'filter.freq', wave: 'sine', freq: 1, depth: 0.5 }
 
         // phase = 0.25 → sine = 0 → mod = 0 * 0.5 * 1000 = 0
-        expect(se._computeSynthLfoMod(lfo, 0.25)).toBe(0)
+        expect(se.computeSynthLfoMod(lfo, 0.25)).toBe(0)
     })
 
     it('_updateLfoKnobs updates vco1.octave knob when LFO targets it', async () => {
@@ -312,7 +312,7 @@ describe('SynthEditor — LFO animation', () => {
 
         // Set LFO1 to target vco1.octave with full depth
         se.draft.lfo = { target: 'vco1.octave', wave: 'sine', freq: 2, depth: 1.0 }
-        se._updateLfoIndicators()
+        se.updateLfoIndicators()
 
         const knob = se.knobs.find(k => k.key === 'vco1.octave')
         expect(knob).not.toBeNull()
@@ -320,7 +320,7 @@ describe('SynthEditor — LFO animation', () => {
 
         // Simulate audio time passing — _updateLfoKnobs should compute the LFO value
         serviceRegistry.audioCtx = { currentTime: 0.125 }
-        se._updateLfoKnobs()
+        se.updateLfoKnobs()
 
         // After _updateLfoKnobs, the knob value should have been updated
         // At t=0.125, freq=2: phase=0.125*2=0.25, sine=0, mod=0, so value stays at base
@@ -332,22 +332,22 @@ describe('SynthEditor — LFO animation', () => {
         const se = trackEditor.synthEditor
 
         // start
-        se._startLfoWatch()
-        expect(se._lfoRafId).not.toBeNull()
+        se.startLfoWatch()
+        expect(se.lfoRafId).not.toBeNull()
 
         // stop
-        se._stopLfoWatch()
-        expect(se._lfoRafId).toBeNull()
+        se.stopLfoWatch()
+        expect(se.lfoRafId).toBeNull()
     })
 
     it('_hideSynthPanel stops the LFO watch', async () => {
         await trackEditor.synthEditor.openEditor()
         const se = trackEditor.synthEditor
 
-        se._startLfoWatch()
-        expect(se._lfoRafId).not.toBeNull()
+        se.startLfoWatch()
+        expect(se.lfoRafId).not.toBeNull()
 
         se.hidePanel()
-        expect(se._lfoRafId).toBeNull()
+        expect(se.lfoRafId).toBeNull()
     })
 })

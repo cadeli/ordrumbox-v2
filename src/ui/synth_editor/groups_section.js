@@ -32,7 +32,7 @@ export default class GroupsSection {
 
     /** Ordered group names derived from draft keys. */
     getOrderedGroupNames() {
-        const draft = this._editor._draft
+        const draft = this._editor.draft
         if (!draft) return SYNTH_GROUP_ORDER.slice()
 
         const mergedKeys = new Set(Object.values(SYNTH_GROUP_MERGE).flat())
@@ -68,7 +68,7 @@ export default class GroupsSection {
      */
     render(knobConfigs) {
         const editor = this._editor
-        const draft = editor._draft
+        const draft = editor.draft
         if (!draft) return ''
 
         const groupNames = this.getOrderedGroupNames()
@@ -107,7 +107,7 @@ export default class GroupsSection {
     _renderGroupCard(groupName, knobConfigs, draft, editor) {
         const content = this._buildGroupContent(groupName, knobConfigs)
         const label = this.getGroupLabel(groupName)
-        const isBypassed = editor._cardBypassed[groupName] ?? false
+        const isBypassed = editor.cardBypassed[groupName] ?? false
 
         const isVco = VCO_RE.test(groupName)
         const isLfo = LFO_RE.test(groupName)
@@ -160,7 +160,7 @@ export default class GroupsSection {
     /** Builds inner content for a single group. */
     _buildGroupContent(groupName, knobConfigs) {
         const editor = this._editor
-        const draft = editor._draft
+        const draft = editor.draft
         const merged = SYNTH_GROUP_MERGE[groupName]
         const groupDefaults = SYNTH_GROUP_DEFAULTS[groupName]
         const fields = merged

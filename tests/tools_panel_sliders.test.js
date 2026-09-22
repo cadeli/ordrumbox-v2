@@ -74,7 +74,7 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
         appState.selectedPatternNum = 0
 
         downloadMock.mockClear()
-        await toolsPanel._exportMidi()
+        await toolsPanel.exportMidi()
 
         expect(downloadMock).toHaveBeenCalledTimes(1)
         const opts = downloadMock.mock.calls[0][2]

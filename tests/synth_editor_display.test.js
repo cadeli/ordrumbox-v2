@@ -148,7 +148,7 @@ describe('Soft Synth Editor display', () => {
         const panel = document.getElementById('soft-synth-panel')
         expect(panel.style.display).toBe('flex')
 
-        trackEditor.synthEditor._closeEditor(false)
+        trackEditor.synthEditor.closeEditor(false)
 
         expect(panel.style.display).toBe('none')
         expect(trackEditor.container.style.display).toBe('block')

@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SynthEditor from '../src/ui/synth_editor.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
+import { playbackEvents } from '../src/state/playback_events.js'
 
 const makeGeneratedSound = () => ({
     masterVolume: 0.8,
@@ -48,7 +49,8 @@ describe('SynthEditor sub-panel toolbar', () => {
             container: document.getElementById('te-panel'),
             sync: vi.fn()
         }
-        editor = new SynthEditor(host)
+        const deps = { playbackEvents: playbackEvents, serviceRegistry: serviceRegistry, soundRegistry: soundRegistry }
+        editor = new SynthEditor(host, deps)
         editor.createDOM()
         // Attach panel to app-content
         document.getElementById('app-content').appendChild(editor.panel)

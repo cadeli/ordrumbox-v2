@@ -45,6 +45,35 @@ index.html → src/main.js (bootstrap after "Start" click)
         ui/toolbar/              ← transport + view switch
 ```
 
+## JavaScript Guidelines (Vanilla JS)
+
+### 1. Default Rule: Clean & Modern Vanilla JS
+By default, code must prioritize readability, maintainability, and ES2020+ standards.
+
+* **Modern Syntax:** Use destructuring, template literals, `const`/`let` (never `var`), optional chaining (`?.`), and nullish coalescing (`??`).
+* **Functional & Immutable Style:** Prefer declarative array methods (`.map()`, `.filter()`, `.reduce()`, `.find()`) over imperative loops. Avoid mutating existing objects or arrays—use spread syntax (`...`) instead.
+* **Asynchronous Code:** Consistently use `async`/`await` with explicit error handling (`try...catch`) over `.then()` chains.
+* **DOM & Events:**
+  * Prefer `querySelector` and `querySelectorAll`.
+  * Use **event delegation** on parent elements instead of binding listeners to individual items.
+  * Use `classList` (`add`, `remove`, `toggle`) to manage styles rather than directly mutating `element.style`.
+
+---
+
+### 2. Exception: Performance-Critical Hot Paths
+**Trigger Condition:** Apply these rules *only* in bottleneck areas (e.g., high-frequency loops, 60fps animations/rendering, processing large datasets,processing sound, bulk DOM operations).
+
+In these specific paths **only**:
+
+* **Iteration:** Replace `.map()`, `.forEach()`, or `.reduce()` with classic `for` loops (`for (let i = 0; i < len; i++)`) or `while` loops to eliminate closure overhead and function call stack costs.
+* **In-Place Mutation:** Direct array/object mutations and object reuse are allowed to reduce memory allocation and Garbage Collector pressure.
+* **DOM Access Optimization:**
+  * Use `getElementById` or `getElementsByClassName` when selector lookup speed is critical.
+  * Cache all DOM references outside hot loops.
+  * Batch DOM reads and writes to prevent layout thrashing (forced synchronous reflows), or use `DocumentFragment` and `requestAnimationFrame`.
+* **Mandatory Commenting:** Any deviation from clean code standards for performance reasons MUST include a brief inline comment explaining the bottleneck justification
+
+
 ### Key constants
 
 - `TICK = 32` — ticks per step (`src/core/constants.js`)

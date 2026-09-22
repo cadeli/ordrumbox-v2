@@ -25,14 +25,28 @@ const SOUND_KNOB_DEFS = [
 ]
 
 export default class DrumkitManager extends BasePanel {
+    #selectedSoundKey;
+    #knobs;
+    #listEl;
+    #detailEl;
+    #wavImportService;
+    #drumkitChangeDebounce;
+
+    get _knobs() { return this.#knobs }
+    get _selectedSoundKey() { return this.#selectedSoundKey }
+    set _selectedSoundKey(v) { this.#selectedSoundKey = v }
+
+    _onKnobChange(sound, key, value) { this.#onKnobChange(sound, key, value) }
+    _selectSound(key) { this.#selectSound(key) }
+
     constructor() {
         super('dm-panel')
-        this._selectedSoundKey = null
-        this._listEl = null
-        this._detailEl = null
-        this._knobs = []
-        this._drumkitChangeDebounce = null
-        this._wavImportService = new WavImportService()
+        this.#selectedSoundKey = null
+        this.#listEl = null
+        this.#detailEl = null
+        this.#knobs = []
+        this.#drumkitChangeDebounce = null
+        this.#wavImportService = new WavImportService()
     }
 
     createDOM() {
@@ -63,40 +77,40 @@ export default class DrumkitManager extends BasePanel {
             </div>
         `
 
-        this._listEl = this.container.querySelector('#dm-list')
-        this._detailEl = this.container.querySelector('#dm-detail')
+        this.#listEl = this.container.querySelector('#dm-list')
+        this.#detailEl = this.container.querySelector('#dm-detail')
 
         this.container.querySelector('#dm-add-sample').addEventListener('click', () => {
             this.container.querySelector('#dm-add-file').click()
         })
 
         this.container.querySelector('#dm-add-file').addEventListener('change', (e) => {
-            this._onAddSample(e)
+            this.#onAddSample(e)
         })
 
         this.container.querySelector('#dm-auto-detect').addEventListener('click', () => {
-            this._onAutoDetectAll()
+            this.#onAutoDetectAll()
         })
 
         this.container.querySelector('#dm-normalize-all').addEventListener('click', () => {
-            this._onNormalizeAll()
+            this.#onNormalizeAll()
         })
 
         this.container.querySelector('#dm-import-dir').addEventListener('click', () => {
             this.container.querySelector('#dm-import-dir-file').click()
         })
         this.container.querySelector('#dm-import-dir-file').addEventListener('change', (e) => {
-            this._onImportDir(e)
+            this.#onImportDir(e)
         })
 
         this.container.querySelector('#dm-save-kit').addEventListener('click', () => {
-            this._saveCurrentKit()
+            this.#saveCurrentKit()
         })
         this.container.querySelector('#dm-load-kit').addEventListener('click', () => {
             this.container.querySelector('#dm-load-kit-file').click()
         })
         this.container.querySelector('#dm-load-kit-file').addEventListener('change', (e) => {
-            this._onLoadKitFile(e)
+            this.#onLoadKitFile(e)
         })
     }
 
@@ -105,24 +119,24 @@ export default class DrumkitManager extends BasePanel {
     }
 
     sync() {
-        if (this._selectedSoundKey && !soundRegistry.sounds[this._selectedSoundKey]) {
-            this._selectedSoundKey = null
+        if (this.#selectedSoundKey && !soundRegistry.sounds[this.#selectedSoundKey]) {
+            this.#selectedSoundKey = null
         }
-        if (!this._selectedSoundKey) {
+        if (!this.#selectedSoundKey) {
             const sounds = drumkitService.getCurrentKitSounds()
             if (sounds.length) {
-                this._selectedSoundKey = sounds[0].url
+                this.#selectedSoundKey = sounds[0].url
             }
         }
-        this._renderList()
-        if (this._selectedSoundKey) {
-            this._renderDetail(this._selectedSoundKey)
+        this.#renderList()
+        if (this.#selectedSoundKey) {
+            this.#renderDetail(this.#selectedSoundKey)
         } else {
-            this._detailEl.innerHTML = '<div class="dm-detail-empty">Select a sample from the list</div>'
+            this.#detailEl.innerHTML = '<div class="dm-detail-empty">Select a sample from the list</div>'
         }
     }
 
-    _saveCurrentKit() {
+    #saveCurrentKit() {
         const kit = drumkitService.exportCurrentKit()
         if (!kit) {
             showToast('No drumkit selected', 'warning')
@@ -133,7 +147,7 @@ export default class DrumkitManager extends BasePanel {
         showToast(`Saved drumkit "${kit.name}"`, 'success')
     }
 
-    async _onLoadKitFile(e) {
+    async #onLoadKitFile(e) {
         const file = e.target.files?.[0]
         if (!file) return
 
@@ -141,7 +155,7 @@ export default class DrumkitManager extends BasePanel {
             const data = JSON.parse(await file.text())
             const kitName = await drumkitService.restoreDrumkit(data)
             showToast(`Loaded drumkit "${kitName}"`, 'success')
-            this._selectedSoundKey = null
+            this.#selectedSoundKey = null
             this.sync()
         } catch (err) {
             logger.warn(TAG, `Drumkit load failed: ${err.message}`)
@@ -151,25 +165,25 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
-    async _onImportDir(e) {
+    async #onImportDir(e) {
         const files = e.target.files
         if (!files || files.length === 0) return
 
         try {
-            const { kitName, fileCount, warning } = await this._wavImportService.importDirectory(files)
+            const { kitName, fileCount, warning } = await this.#wavImportService.importDirectory(files)
             if (warning) {
                 showToast(warning, 'warning')
                 return
             }
             if (fileCount > 0) {
-                const assignResult = await this._wavImportService.autoAssignSounds()
+                const assignResult = await this.#wavImportService.autoAssignSounds()
                 if (assignResult?.warning) {
                     showToast(assignResult.warning, 'warning')
                 }
                 serviceRegistry.audioEngine?.invalidateCache()
                 playbackEvents.emit('patternChange')
                 showToast(`Imported ${fileCount} files into kit "${kitName}"`, 'success')
-                this._selectedSoundKey = null
+                this.#selectedSoundKey = null
                 this.sync()
             }
         } catch (err) {
@@ -179,17 +193,17 @@ export default class DrumkitManager extends BasePanel {
         e.target.value = ''
     }
 
-    _renderList() {
+    #renderList() {
         const sounds = drumkitService.getCurrentKitSounds()
         if (!sounds.length) {
-            this._listEl.innerHTML = '<div class="dm-list-empty">No samples in this kit</div>'
+            this.#listEl.innerHTML = '<div class="dm-list-empty">No samples in this kit</div>'
             return
         }
 
-        this._listEl.innerHTML = ''
+        this.#listEl.innerHTML = ''
         for (const s of sounds) {
             const item = document.createElement('div')
-            item.className = 'dm-list-item' + (s.url === this._selectedSoundKey ? ' dm-selected' : '')
+            item.className = 'dm-list-item' + (s.url === this.#selectedSoundKey ? ' dm-selected' : '')
             item.dataset.key = s.url
 
             const name = document.createElement('span')
@@ -197,23 +211,23 @@ export default class DrumkitManager extends BasePanel {
             name.textContent = `${s.display_name ?? s.url} [${s.kit_name}]`
 
             item.appendChild(name)
-            item.addEventListener('click', () => this._selectSound(s.url))
-            this._listEl.appendChild(item)
+            item.addEventListener('click', () => this.#selectSound(s.url))
+            this.#listEl.appendChild(item)
         }
     }
 
-    _selectSound(key) {
-        this._selectedSoundKey = key
-        this._listEl.querySelectorAll('.dm-list-item').forEach(el => {
+    #selectSound(key) {
+        this.#selectedSoundKey = key
+        this.#listEl.querySelectorAll('.dm-list-item').forEach(el => {
             el.classList.toggle('dm-selected', el.dataset.key === key)
         })
-        this._renderDetail(key)
+        this.#renderDetail(key)
     }
 
-    _renderDetail(key) {
+    #renderDetail(key) {
         const sound = soundRegistry.sounds[key]
         if (!sound) {
-            this._detailEl.innerHTML = '<div class="dm-detail-empty">Sample not found</div>'
+            this.#detailEl.innerHTML = '<div class="dm-detail-empty">Sample not found</div>'
             return
         }
 
@@ -236,7 +250,7 @@ export default class DrumkitManager extends BasePanel {
             ? renderOptions(InstrumentsManager.DATA.instruments.map(i => i.id), sound.key)
             : ''
 
-        this._detailEl.innerHTML = `
+        this.#detailEl.innerHTML = `
             <div class="dm-detail-header">
                 <button class="dm-play-btn dm-play-large" id="dm-detail-play" title="Audition">\u25B6</button>
                 <span class="dm-detail-filename">${this.esc(sound.display_name ?? sound.url)}</span>
@@ -275,35 +289,35 @@ export default class DrumkitManager extends BasePanel {
             </div>
         `
 
-        this._syncKnobs(sound)
-        this._drawWaveform(sound, analysis, { resize: true })
+        this.#syncKnobs(sound)
+        this.#drawWaveform(sound, analysis, { resize: true })
 
-        this._detailEl.querySelector('#dm-detail-play')?.addEventListener('click', () => {
-            this._audition(sound.url)
+        this.#detailEl.querySelector('#dm-detail-play')?.addEventListener('click', () => {
+            this.#audition(sound.url)
         })
 
-        this._detailEl.querySelector('#dm-kit-select')?.addEventListener('change', (e) => {
+        this.#detailEl.querySelector('#dm-kit-select')?.addEventListener('change', (e) => {
             const displayName = drumkitService.moveToKit(key, e.target.value)
             if (displayName) showToast(`Moved "${displayName}" to kit "${e.target.value}"`, 'success')
             this.sync()
         })
 
-        this._detailEl.querySelector('#dm-inst-select')?.addEventListener('change', (e) => {
+        this.#detailEl.querySelector('#dm-inst-select')?.addEventListener('change', (e) => {
             const displayName = drumkitService.setInstrument(key, e.target.value)
             if (displayName) showToast(`Set "${displayName}" to instrument "${e.target.value}"`, 'success')
             this.sync()
         })
 
-        this._detailEl.querySelector('#dm-replace')?.addEventListener('click', () => {
-            this._detailEl.querySelector('#dm-replace-file').click()
+        this.#detailEl.querySelector('#dm-replace')?.addEventListener('click', () => {
+            this.#detailEl.querySelector('#dm-replace-file').click()
         })
 
-        this._detailEl.querySelector('#dm-replace-file')?.addEventListener('change', (e) => {
-            this._onReplaceSample(key, e)
+        this.#detailEl.querySelector('#dm-replace-file')?.addEventListener('change', (e) => {
+            this.#onReplaceSample(key, e)
         })
 
-        this._detailEl.querySelector('#dm-remove')?.addEventListener('click', () => {
-            this._removeSample(key)
+        this.#detailEl.querySelector('#dm-remove')?.addEventListener('click', () => {
+            this.#removeSample(key)
         })
     }
 
@@ -313,31 +327,31 @@ export default class DrumkitManager extends BasePanel {
     // looks and behaves like the rest of the app instead of raw <input
     // type="range"> sliders.
 
-    _syncKnobs(sound) {
+    #syncKnobs(sound) {
         const values = { gain: sound.gainDb ?? 0, tune: sound.tune ?? 0, decay: sound.decay ?? 0 }
-        this._knobs = [...syncKnobs({
-            container: this._detailEl,
+        this.#knobs = [...syncKnobs({
+            container: this.#detailEl,
             configs: SOUND_KNOB_DEFS.map(def => ({
                 ...def, val: values[def.key],
-                onChange: (v) => this._onKnobChange(sound, def.key, v),
+                onChange: (v) => this.#onKnobChange(sound, def.key, v),
             })),
-            prev: new Map(this._knobs.map(k => [k.key, k])),
+            prev: new Map(this.#knobs.map(k => [k.key, k])),
         }).values()]
     }
 
-    _onKnobChange(sound, key, value) {
+    #onKnobChange(sound, key, value) {
         if (key === 'gain') sound.gainDb = value
         else if (key === 'tune') sound.tune = value
         else if (key === 'decay') {
             sound.decay = value
-            this._drawWaveform(sound, drumkitService.getAnalysisInfo(sound))
+            this.#drawWaveform(sound, drumkitService.getAnalysisInfo(sound))
         }
         // Debounced: dragging a knob fires onChange continuously, and a full
         // resync (list + detail rebuild) on every tick would fight the drag.
         // The knob already reflects the live value; other panels/persistence
         // catch up once the drag settles.
-        clearTimeout(this._drumkitChangeDebounce)
-        this._drumkitChangeDebounce = setTimeout(() => playbackEvents.emit("drumkitChange"), 200)
+        clearTimeout(this.#drumkitChangeDebounce)
+        this.#drumkitChangeDebounce = setTimeout(() => playbackEvents.emit("drumkitChange"), 200)
     }
 
     // ── Waveform ───────────────────────────────────────────────────────
@@ -345,8 +359,8 @@ export default class DrumkitManager extends BasePanel {
     // the same decay-cutoff marker line, so a sample looks the same whether
     // it's being tuned from a track or from the drumkit manager.
 
-    _drawWaveform(sound, analysis, { resize = false } = {}) {
-        const canvas = this._detailEl.querySelector('#dm-waveform')
+    #drawWaveform(sound, analysis, { resize = false } = {}) {
+        const canvas = this.#detailEl.querySelector('#dm-waveform')
         if (!canvas || !analysis?.envelope?.length) return
 
         const draw = () => {
@@ -381,7 +395,7 @@ export default class DrumkitManager extends BasePanel {
         }
     }
 
-    _audition(url) {
+    #audition(url) {
         const ctx = serviceRegistry.audioCtx
         if (!ctx) return
         const sound = soundRegistry.sounds[url]
@@ -397,16 +411,16 @@ export default class DrumkitManager extends BasePanel {
         source.start()
     }
 
-    _removeSample(soundKey) {
+    #removeSample(soundKey) {
         const displayName = drumkitService.removeSample(soundKey)
         if (displayName) {
-            this._selectedSoundKey = null
+            this.#selectedSoundKey = null
             showToast(`Removed "${displayName}"`, 'success')
             this.sync()
         }
     }
 
-    async _onReplaceSample(soundKey, e) {
+    async #onReplaceSample(soundKey, e) {
         const file = e.target.files?.[0]
         if (!file) return
 
@@ -426,7 +440,7 @@ export default class DrumkitManager extends BasePanel {
         e.target.value = ''
     }
 
-    async _onAddSample(e) {
+    async #onAddSample(e) {
         const file = e.target.files?.[0]
         if (!file) return
 
@@ -446,13 +460,13 @@ export default class DrumkitManager extends BasePanel {
         e.target.value = ''
     }
 
-    async _onAutoDetectAll() {
+    async #onAutoDetectAll() {
         const ok = await drumkitService.autoDetectAll()
         if (ok) showToast('Auto-detect complete', 'success')
         else showToast('No pattern selected', 'warning')
     }
 
-    _onNormalizeAll() {
+    #onNormalizeAll() {
         const count = drumkitService.normalizeAll()
         if (count > 0) {
             showToast(`Normalized ${count} sample(s)`, 'success')

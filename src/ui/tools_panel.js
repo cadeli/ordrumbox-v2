@@ -16,11 +16,18 @@ import { isMobileViewport } from '../core/constants.js'
 import MidiExporter from '../logic/midi/midi_exporter.js'
 
 export default class ToolsPanel extends BasePanel {
+    #midiImportService;
+    #midiView;
+    #wavLoops;
+    #jsonModalCleanup;
+
+    get _wavLoops() { return this.#wavLoops }
+
     constructor() {
         super('tools-panel')
-        this._wavLoops = null
+        this.#wavLoops = null
         this.exportWavBtn = null
-        this._midiImportService = new MidiImportService()
+        this.#midiImportService = new MidiImportService()
     }
 
     createDOM() {
@@ -38,21 +45,21 @@ export default class ToolsPanel extends BasePanel {
                 <button class="ne-tab-btn" data-ne-tab="midi">MIDI</button>
                 <button class="ne-tab-btn" data-ne-tab="cache">Cache</button>
             </div>
-            ${this._patternTabHtml()}
-            ${this._exportTabHtml()}
-            ${this._importTabHtml()}
-            ${this._midiStatusTabHtml()}
-            ${this._midiTabHtml()}
-            ${this._cacheTabHtml()}
+            ${this.#patternTabHtml()}
+            ${this.#exportTabHtml()}
+            ${this.#importTabHtml()}
+            ${this.#midiStatusTabHtml()}
+            ${this.#midiTabHtml()}
+            ${this.#cacheTabHtml()}
         `
 
-        this._bindPatternTabEvents()
-        this._bindExportTabEvents()
-        this._bindImportTabEvents()
-        this._bindMidiTabEvents()
-        this._bindCacheTabEvents()
+        this.#bindPatternTabEvents()
+        this.#bindExportTabEvents()
+        this.#bindImportTabEvents()
+        this.#bindMidiTabEvents()
+        this.#bindCacheTabEvents()
 
-        this._midiView = new MidiIndicatorView(this.container)
+        this.#midiView = new MidiIndicatorView(this.container)
 
         bindCloseButton(this.container, () => playbackEvents.emit("toolsToggle", false))
         bindTabToggles(this.container)
@@ -60,7 +67,7 @@ export default class ToolsPanel extends BasePanel {
 
     // ── Tab templates ─────────────────────────────────────────────
 
-    _patternTabHtml() {
+    #patternTabHtml() {
         return `
             <div class="ne-tab-panel" data-tab-panel="pattern">
                 <div class="ne-row">
@@ -73,7 +80,7 @@ export default class ToolsPanel extends BasePanel {
         `
     }
 
-    _exportTabHtml() {
+    #exportTabHtml() {
         return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="export">
                 <div class="ne-row">
@@ -87,7 +94,7 @@ export default class ToolsPanel extends BasePanel {
         `
     }
 
-    _importTabHtml() {
+    #importTabHtml() {
         return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="import">
                 <div class="ne-row">
@@ -98,7 +105,7 @@ export default class ToolsPanel extends BasePanel {
         `
     }
 
-    _midiStatusTabHtml() {
+    #midiStatusTabHtml() {
         return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="midi-status">
                 <div class="ne-row no-cursor">
@@ -130,7 +137,7 @@ export default class ToolsPanel extends BasePanel {
         `
     }
 
-    _midiTabHtml() {
+    #midiTabHtml() {
         return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="midi">
                 <div class="ne-row">
@@ -147,7 +154,7 @@ export default class ToolsPanel extends BasePanel {
         `
     }
 
-    _cacheTabHtml() {
+    #cacheTabHtml() {
         return `
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="cache">
                 <div class="ne-row no-cursor tp-cache-header">
@@ -169,13 +176,13 @@ export default class ToolsPanel extends BasePanel {
 
     // ── Tab event bindings ───────────────────────────────────────────
 
-    _bindPatternTabEvents() {
-        this.container.querySelector('#tp-compact').addEventListener('click', () => this._compactPattern())
-        this.container.querySelector('#tp-rnd').addEventListener('click', () => this._randomizePattern())
+    #bindPatternTabEvents() {
+        this.container.querySelector('#tp-compact').addEventListener('click', () => this.#compactPattern())
+        this.container.querySelector('#tp-rnd').addEventListener('click', () => this.#randomizePattern())
     }
 
-    _bindExportTabEvents() {
-        this._wavLoops = new OrSlider({
+    #bindExportTabEvents() {
+        this.#wavLoops = new OrSlider({
             key:    'tp-wav-loops',
             label:  'Loops',
             min:    1,
@@ -184,21 +191,21 @@ export default class ToolsPanel extends BasePanel {
             value:  1,
             format: v => String(Math.round(v)),
         })
-        this.container.querySelector('#tp-wav-loops-slot').replaceWith(this._wavLoops.createElement())
+        this.container.querySelector('#tp-wav-loops-slot').replaceWith(this.#wavLoops.createElement())
 
         this.exportWavBtn = this.container.querySelector('#tp-export-wav')
-        this.exportWavBtn.addEventListener('click', () => this._exportWav())
+        this.exportWavBtn.addEventListener('click', () => this.#exportWav())
 
-        this.container.querySelector('#tp-export-midi').addEventListener('click', () => this._exportMidi())
+        this.container.querySelector('#tp-export-midi').addEventListener('click', () => this.exportMidi())
     }
 
-    _bindImportTabEvents() {
+    #bindImportTabEvents() {
         const importMidiFile = this.container.querySelector('#tp-import-midi-file')
         this.container.querySelector('#tp-import-midi').addEventListener('click', () => importMidiFile.click())
-        importMidiFile.addEventListener('change', (e) => this._onImportMidiFile(e))
+        importMidiFile.addEventListener('change', (e) => this.#onImportMidiFile(e))
     }
 
-    _bindMidiTabEvents() {
+    #bindMidiTabEvents() {
         this.container.querySelector('#tp-midi-enable').addEventListener('click', async () => {
             const btn = this.container.querySelector('#tp-midi-enable')
             if (!serviceRegistry.midiManager) {
@@ -233,33 +240,33 @@ export default class ToolsPanel extends BasePanel {
         })
     }
 
-    _bindCacheTabEvents() {
-        this.container.querySelector('#tp-cache-refresh').addEventListener('click', () => this._refreshCacheStats())
+    #bindCacheTabEvents() {
+        this.container.querySelector('#tp-cache-refresh').addEventListener('click', () => this.#refreshCacheStats())
         this.container.querySelector('#tp-cache-clear-patterns').addEventListener('click', async () => {
             await clearPatternsCache()
             showToast('Patterns cache cleared', 'success')
-            this._refreshCacheStats()
+            this.#refreshCacheStats()
         })
         this.container.querySelector('#tp-cache-clear-drumkits').addEventListener('click', async () => {
             await clearDrumkitsCache()
             showToast('Drumkits cache cleared', 'success')
-            this._refreshCacheStats()
+            this.#refreshCacheStats()
         })
         this.container.querySelector('#tp-cache-clear-samples').addEventListener('click', async () => {
             await clearSamplesCache()
             showToast('Samples cache cleared', 'success')
-            this._refreshCacheStats()
+            this.#refreshCacheStats()
         })
         this.container.querySelector('#tp-cache-clear-all').addEventListener('click', async () => {
             await clearAllCache()
             showToast('All cache cleared', 'success')
-            this._refreshCacheStats()
+            this.#refreshCacheStats()
         })
         this.container.querySelector('#tp-cache-list').addEventListener('click', async (e) => {
             const viewBtn = e.target.closest('.tp-cache-item-view')
             if (viewBtn) {
                 const { cacheType, cacheKey } = viewBtn.dataset
-                await this._showCacheJson(cacheType, cacheKey)
+                await this.#showCacheJson(cacheType, cacheKey)
                 return
             }
             const delBtn = e.target.closest('.tp-cache-item-del')
@@ -267,7 +274,7 @@ export default class ToolsPanel extends BasePanel {
             const { cacheType, cacheKey } = delBtn.dataset
             if (!window.confirm(`Remove "${cacheKey}" from ${cacheType} cache?`)) return
             await removeCacheEntry(cacheType, cacheKey)
-            this._refreshCacheStats()
+            this.#refreshCacheStats()
         })
     }
 
@@ -280,8 +287,8 @@ export default class ToolsPanel extends BasePanel {
         const enableBtn = this.container.querySelector('#tp-midi-enable')
 
         if (serviceRegistry.midiManager) {
-            this._midiView.connect(serviceRegistry.midiManager)
-            this._midiView.sync(serviceRegistry.midiManager)
+            this.#midiView.connect(serviceRegistry.midiManager)
+            this.#midiView.sync(serviceRegistry.midiManager)
             enableBtn.textContent = serviceRegistry.midiManager.isReady ? 'Disable MIDI' : 'Enable MIDI'
 
             // Sync output list
@@ -297,18 +304,18 @@ export default class ToolsPanel extends BasePanel {
                 outputSelect.value = nameOr(currentOutputId, '', 'ToolsPanel', 'outputId fallback')
             }
         } else {
-            this._midiView.disconnect()
-            this._midiView.sync(null)
+            this.#midiView.disconnect()
+            this.#midiView.sync(null)
             if (outputSelect) outputSelect.innerHTML = '<option value="">MIDI Not Enabled</option>'
         }
 
         // Refresh cache stats if cache tab is visible
         if (this.isVisible) {
-            this._refreshCacheStats()
+            this.#refreshCacheStats()
         }
     }
 
-    async _refreshCacheStats() {
+    async #refreshCacheStats() {
         try {
             const stats = await getCacheStats()
             const q = (sel) => this.container.querySelector(sel)
@@ -361,7 +368,7 @@ export default class ToolsPanel extends BasePanel {
         }
     }
 
-    async _showCacheJson(type, key) {
+    async #showCacheJson(type, key) {
         const storeMap = { patterns: 'patterns', drumkits: 'drumkits', settings: 'settings', songs: 'songs', generated_sounds: 'generated_sounds' }
         const store = storeMap[type]
         if (!store) return
@@ -373,19 +380,19 @@ export default class ToolsPanel extends BasePanel {
             }
             const data = raw?.data ?? raw
             const json = JSON.stringify(data, null, 2)
-            this._openJsonModal(key, json)
+            this.#openJsonModal(key, json)
         } catch (e) {
             logger.error('ToolsPanel', 'Failed to read cache entry', e)
             showToast('Failed to read cache entry', 'error')
         }
     }
 
-    _openJsonModal(title, json) {
-        this._closeJsonModal()
+    #openJsonModal(title, json) {
+        this.#closeJsonModal()
         const overlay = document.createElement('div')
         overlay.className = 'tp-json-modal-overlay'
         overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) this._closeJsonModal()
+            if (e.target === overlay) this.#closeJsonModal()
         })
 
         const modal = document.createElement('div')
@@ -399,7 +406,7 @@ export default class ToolsPanel extends BasePanel {
         const closeBtn = document.createElement('button')
         closeBtn.className = 'tp-json-modal-close'
         closeBtn.innerHTML = '&#x2715;'
-        closeBtn.addEventListener('click', () => this._closeJsonModal())
+        closeBtn.addEventListener('click', () => this.#closeJsonModal())
         header.append(titleSpan, closeBtn)
 
         const pre = document.createElement('pre')
@@ -412,21 +419,21 @@ export default class ToolsPanel extends BasePanel {
 
         const onKey = (e) => {
             if (e.key === 'Escape') {
-                this._closeJsonModal()
+                this.#closeJsonModal()
                 document.removeEventListener('keydown', onKey)
             }
         }
         document.addEventListener('keydown', onKey)
-        this._jsonModalCleanup = () => document.removeEventListener('keydown', onKey)
+        this.#jsonModalCleanup = () => document.removeEventListener('keydown', onKey)
     }
 
-    _closeJsonModal() {
-        this._jsonModalCleanup?.()
-        this._jsonModalCleanup = null
+    #closeJsonModal() {
+        this.#jsonModalCleanup?.()
+        this.#jsonModalCleanup = null
         document.querySelector('.tp-json-modal-overlay')?.remove()
     }
 
-    _compactPattern() {
+    #compactPattern() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern || !pattern.tracks) return
 
@@ -446,7 +453,7 @@ export default class ToolsPanel extends BasePanel {
 
     }
 
-    _randomizePattern() {
+    #randomizePattern() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
         const tracks = Utils.getTracksArray(pattern)
@@ -460,15 +467,15 @@ export default class ToolsPanel extends BasePanel {
         })
     }
 
-    async _exportMidi() {
+    async exportMidi() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
         const exporter = new MidiExporter()
-        const loops = Math.round(this._wavLoops.getValue())
+        const loops = Math.round(this.#wavLoops.getValue())
         exporter.download(pattern, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`, { loops })
     }
 
-    async _exportWav() {
+    async #exportWav() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
 
@@ -482,7 +489,7 @@ export default class ToolsPanel extends BasePanel {
                 serviceRegistry.wavExporter = new WavExporter()
             }
 
-            const loops = Math.round(this._wavLoops.getValue())
+            const loops = Math.round(this.#wavLoops.getValue())
             const blob = await serviceRegistry.wavExporter.exportPatternToWav(pattern, loops)
             serviceRegistry.wavExporter.downloadWav(blob, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`)
         } catch (e) {
@@ -494,12 +501,12 @@ export default class ToolsPanel extends BasePanel {
         }
     }
 
-    async _onImportMidiFile(e) {
+    async #onImportMidiFile(e) {
         const file = e.target.files[0]
         if (!file) return
 
         try {
-            const result = await this._midiImportService.importFile(file)
+            const result = await this.#midiImportService.importFile(file)
             if (result?.warning) {
                 showToast(result.warning, 'warning')
             } else if (result?.message) {

@@ -3,53 +3,61 @@ import { isMidiSupported } from '../logic/midi/midi_parser.js'
 const ACTIVITY_FLASH_MS = 120
 
 export default class MidiIndicatorView {
-    constructor(container) {
-        this._container = container
-        this._midiManager = null
-        this._activityTimer = null
+    #container;
+    #midiManager;
+    #activityTimer;
+    #onActivity;
+    #onStatusChange;
 
-        this._onStatusChange = () => this.sync(this._midiManager)
-        this._onActivity = () => this._flashActivity()
+    flashActivity() { this.#flashActivity() }
+
+    constructor(container) {
+        this.#container = container
+        this.#midiManager = null
+        this.#activityTimer = null
+
+        this.#onStatusChange = () => this.sync(this.#midiManager)
+        this.#onActivity = () => this.#flashActivity()
     }
 
     connect(midiManager) {
-        if (this._midiManager === midiManager) return
+        if (this.#midiManager === midiManager) return
         this.disconnect()
-        this._midiManager = midiManager
+        this.#midiManager = midiManager
         if (midiManager) {
-            midiManager.addEventListener('statusChange', this._onStatusChange)
-            midiManager.addEventListener('activity', this._onActivity)
+            midiManager.addEventListener('statusChange', this.#onStatusChange)
+            midiManager.addEventListener('activity', this.#onActivity)
         }
     }
 
     disconnect() {
-        if (this._midiManager) {
-            this._midiManager.removeEventListener('statusChange', this._onStatusChange)
-            this._midiManager.removeEventListener('activity', this._onActivity)
-            this._midiManager = null
+        if (this.#midiManager) {
+            this.#midiManager.removeEventListener('statusChange', this.#onStatusChange)
+            this.#midiManager.removeEventListener('activity', this.#onActivity)
+            this.#midiManager = null
         }
     }
 
     sync(midiManager) {
         if (midiManager) {
             const s = midiManager.getStatus()
-            this._setLedState('midiSupportLed', s.supported, s.supported ? 'Supported' : 'Unavailable')
-            this._setLedState('midiReadyLed', s.ready, s.ready ? 'Ready' : 'Locked')
-            this._setLedState('midiConnectedLed', s.inputCount > 0, s.inputCount > 0 ? `${s.inputCount} input(s)` : 'None')
-            this._setLedState('midiSyncLed', s.syncEnabled, s.syncEnabled ? 'External' : 'Internal')
+            this.#setLedState('midiSupportLed', s.supported, s.supported ? 'Supported' : 'Unavailable')
+            this.#setLedState('midiReadyLed', s.ready, s.ready ? 'Ready' : 'Locked')
+            this.#setLedState('midiConnectedLed', s.inputCount > 0, s.inputCount > 0 ? `${s.inputCount} input(s)` : 'None')
+            this.#setLedState('midiSyncLed', s.syncEnabled, s.syncEnabled ? 'External' : 'Internal')
         } else {
             const support = isMidiSupported()
-            this._setLedState('midiSupportLed', support, support ? 'Supported' : 'Unavailable')
-            this._setLedState('midiReadyLed', false, 'Locked')
-            this._setLedState('midiConnectedLed', false, 'None')
-            this._setLedState('midiSyncLed', false, 'Internal')
-            this._setLedState('midiActivityLed', false, 'Idle')
+            this.#setLedState('midiSupportLed', support, support ? 'Supported' : 'Unavailable')
+            this.#setLedState('midiReadyLed', false, 'Locked')
+            this.#setLedState('midiConnectedLed', false, 'None')
+            this.#setLedState('midiSyncLed', false, 'Internal')
+            this.#setLedState('midiActivityLed', false, 'Idle')
         }
     }
 
-    _setLedState(ledId, isOn, label) {
-        const led = this._container.querySelector(`#${ledId}`)
-        const text = this._container.querySelector(`#${ledId.replace('Led', 'Label')}`)
+    #setLedState(ledId, isOn, label) {
+        const led = this.#container.querySelector(`#${ledId}`)
+        const text = this.#container.querySelector(`#${ledId.replace('Led', 'Label')}`)
         if (led) {
             led.classList.toggle('midi-indicator-on', !!isOn)
             led.classList.toggle('midi-indicator-off', !isOn)
@@ -59,9 +67,9 @@ export default class MidiIndicatorView {
         }
     }
 
-    _flashActivity() {
-        const led = this._container.querySelector('#midiActivityLed')
-        const label = this._container.querySelector('#midiActivityLabel')
+    #flashActivity() {
+        const led = this.#container.querySelector('#midiActivityLed')
+        const label = this.#container.querySelector('#midiActivityLabel')
         if (led) {
             led.classList.add('midi-indicator-on')
             led.classList.remove('midi-indicator-off')
@@ -70,10 +78,10 @@ export default class MidiIndicatorView {
             label.textContent = 'Activity'
         }
 
-        if (this._activityTimer) {
-            clearTimeout(this._activityTimer)
+        if (this.#activityTimer) {
+            clearTimeout(this.#activityTimer)
         }
-        this._activityTimer = setTimeout(() => {
+        this.#activityTimer = setTimeout(() => {
             if (led) {
                 led.classList.add('midi-indicator-off')
                 led.classList.remove('midi-indicator-on')

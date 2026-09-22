@@ -20,7 +20,7 @@ export default class WaveformSection {
     _drawWaveform() {
         const editor = this._editor
         const canvas = editor.panel.querySelector('.ss-waveform')
-        if (!canvas || !editor._draft) return
+        if (!canvas || !editor.draft) return
         const ctx = canvas.getContext('2d')
         if (!ctx) return
         const w = canvas.width
@@ -36,7 +36,7 @@ export default class WaveformSection {
         ctx.lineTo(w, mid)
         ctx.stroke()
 
-        if (editor._waveTab === 'wave') {
+        if (editor.waveTab === 'wave') {
             this._drawOscillators(ctx, w, mid)
         }
         this._updateModuleTrace()
@@ -55,18 +55,18 @@ export default class WaveformSection {
 
     _drawOscillators(ctx, w, mid) {
         const vcos = this._buildVcoArray()
-        const draft = this._editor._draft
+        const draft = this._editor.draft
         const masterVol = draft.masterVolume ?? 1.0
         const fmAmount = draft.fm?.amount ?? 0
         const fmAlgo = draft.fm?.algo ?? 0
         const cycles = 4
         const sampleRate = WAVE_BUFFER.length
 
-        const now = this._editor._serviceRegistry?.audioCtx?.currentTime ?? 0
+        const now = this._editor.serviceRegistry?.audioCtx?.currentTime ?? 0
         const lfo1 = draft.bypassLfo1 ? null : draft.lfo
         const lfo2 = draft.bypassLfo2 ? null : draft.lfo2
-        const lfo1Mod = lfo1 ? this._editor._computeSynthLfoMod(lfo1, now) : 0
-        const lfo2Mod = lfo2 ? this._editor._computeSynthLfoMod(lfo2, now) : 0
+        const lfo1Mod = lfo1 ? this._editor.computeSynthLfoMod(lfo1, now) : 0
+        const lfo2Mod = lfo2 ? this._editor.computeSynthLfoMod(lfo2, now) : 0
 
         const freqMult = vcos.map((v, i) => {
             let octave = v.octave
@@ -156,7 +156,7 @@ export default class WaveformSection {
     }
 
     _buildVcoArray() {
-        const draft = this._editor._draft
+        const draft = this._editor.draft
         return [1, 2, 3].map(n => {
             const v = draft[`vco${n}`] ?? {}
             return {
@@ -169,7 +169,7 @@ export default class WaveformSection {
     }
 
     _getActiveModules() {
-        const d = this._editor._draft
+        const d = this._editor.draft
         if (!d) return []
         const vcos = this._buildVcoArray()
         const lfo1Target = d.lfo?.target ?? 'NOT'
@@ -204,7 +204,7 @@ export default class WaveformSection {
     _drawEnvCanvas() {
         const editor = this._editor
         const canvas = editor.panel.querySelector('.ss-env-canvas')
-        if (!canvas || !editor._draft) return
+        if (!canvas || !editor.draft) return
         const ctx = canvas.getContext('2d')
         if (!ctx) return
         const w = canvas.width
@@ -231,7 +231,7 @@ export default class WaveformSection {
     }
 
     _drawAdsrEnvelope(ctx, w, mid) {
-        const { attack = 0, decay = 0.12, sustain = 1, release = 0.05 } = this._editor._draft.envelope ?? {}
+        const { attack = 0, decay = 0.12, sustain = 1, release = 0.05 } = this._editor.draft.envelope ?? {}
         const totalTime = Math.max(attack + decay + 0.3 + release, 0.5)
 
         const scaleX = (t) => (t / totalTime) * w
@@ -260,24 +260,24 @@ export default class WaveformSection {
     _drawFilterResponse() {
         const editor = this._editor
         const canvas = editor.panel.querySelector('.ss-filter-curve')
-        if (!canvas || !editor._draft) return
+        if (!canvas || !editor.draft) return
         const ctx = canvas.getContext('2d')
         if (!ctx) return
         const w = canvas.width
         const h = canvas.height
-        const draft = editor._draft
+        const draft = editor.draft
         const flt = draft.filter ?? {}
         const type = flt.type ?? 'lowpass'
         let fc = Math.max(20, Math.min(20000, flt.freq ?? 400))
         let Q = Math.max(0.1, Math.min(24, flt.Q ?? 1))
 
-        const now = editor._serviceRegistry?.audioCtx?.currentTime ?? 0
+        const now = editor.serviceRegistry?.audioCtx?.currentTime ?? 0
         const lfo1 = draft.bypassLfo1 ? null : draft.lfo
         const lfo2 = draft.bypassLfo2 ? null : draft.lfo2
-        if (lfo1?.target === 'filter.freq') fc += editor._computeSynthLfoMod(lfo1, now)
-        if (lfo2?.target === 'filter.freq') fc += editor._computeSynthLfoMod(lfo2, now)
-        if (lfo1?.target === 'filter.Q') Q += editor._computeSynthLfoMod(lfo1, now)
-        if (lfo2?.target === 'filter.Q') Q += editor._computeSynthLfoMod(lfo2, now)
+        if (lfo1?.target === 'filter.freq') fc += editor.computeSynthLfoMod(lfo1, now)
+        if (lfo2?.target === 'filter.freq') fc += editor.computeSynthLfoMod(lfo2, now)
+        if (lfo1?.target === 'filter.Q') Q += editor.computeSynthLfoMod(lfo1, now)
+        if (lfo2?.target === 'filter.Q') Q += editor.computeSynthLfoMod(lfo2, now)
         fc = Math.max(20, Math.min(20000, fc))
         Q = Math.max(0.1, Math.min(24, Q))
 

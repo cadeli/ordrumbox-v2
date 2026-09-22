@@ -126,7 +126,7 @@ describe('MidiIndicatorView', () => {
         const container = buildMidiContainer()
         const view = new MidiIndicatorView(container)
 
-        view._flashActivity()
+        view.flashActivity()
         expect(container.querySelector('#midiActivityLabel').textContent).toBe('Activity')
         expect(container.querySelector('#midiActivityLed').classList.contains('midi-indicator-on')).toBe(true)
 
@@ -159,9 +159,9 @@ describe('MidiIndicatorView', () => {
         const container = buildMidiContainer()
         const view = new MidiIndicatorView(container)
 
-        view._flashActivity()
+        view.flashActivity()
         vi.advanceTimersByTime(80)
-        view._flashActivity()
+        view.flashActivity()
         vi.advanceTimersByTime(80)
         expect(container.querySelector('#midiActivityLabel').textContent).toBe('Activity')
 

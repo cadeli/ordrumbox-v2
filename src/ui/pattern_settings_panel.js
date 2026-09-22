@@ -8,18 +8,40 @@ import { MAX_BEATS } from '../core/constants.js'
 import { prevPage, nextPage } from '../core/page_nav.js'
 
 export default class PatternSettingsPanel {
+    #isOpen;
+    #prevPageBtn;
+    #nextPageBtn;
+    #pageLabel;
+    #beatsSelect;
+    #drumkitSelect;
+    #patternSelect;
+    #drumBtn;
+    #bassBtn;
+    #chordsBtn;
+
+    get _isOpen() { return this.#isOpen }
+    get _beatsSelect() { return this.#beatsSelect }
+    get _drumkitSelect() { return this.#drumkitSelect }
+    get _patternSelect() { return this.#patternSelect }
+    get _drumBtn() { return this.#drumBtn }
+    get _bassBtn() { return this.#bassBtn }
+    get _chordsBtn() { return this.#chordsBtn }
+    get _pageLabel() { return this.#pageLabel }
+    get _prevPageBtn() { return this.#prevPageBtn }
+    get _nextPageBtn() { return this.#nextPageBtn }
+
     constructor() {
         this.container = null
-        this._isOpen = false
+        this.#isOpen = false
     }
 
     init() {
-        this._createDOM()
-        this._bindEvents()
-        this._subscribeEvents()
+        this.#createDOM()
+        this.#bindEvents()
+        this.#subscribeEvents()
     }
 
-    _createDOM() {
+    #createDOM() {
         this.container = document.createElement('div')
         this.container.id = 'pattern-settings-panel'
 
@@ -92,39 +114,39 @@ export default class PatternSettingsPanel {
         document.body.appendChild(this.container)
 
         /* Store refs */
-        this._prevPageBtn = this.container.querySelector('.ps-prev-page')
-        this._nextPageBtn = this.container.querySelector('.ps-next-page')
-        this._pageLabel = this.container.querySelector('.ps-page-label')
-        this._beatsSelect = this.container.querySelector('.ps-beats-select')
-        this._drumkitSelect = this.container.querySelector('.ps-drumkit-select')
-        this._patternSelect = this.container.querySelector('.ps-pattern-select')
-        this._drumBtn = this.container.querySelector('.ps-gen-drum')
-        this._bassBtn = this.container.querySelector('.ps-gen-bass')
-        this._chordsBtn = this.container.querySelector('.ps-gen-chords')
+        this.#prevPageBtn = this.container.querySelector('.ps-prev-page')
+        this.#nextPageBtn = this.container.querySelector('.ps-next-page')
+        this.#pageLabel = this.container.querySelector('.ps-page-label')
+        this.#beatsSelect = this.container.querySelector('.ps-beats-select')
+        this.#drumkitSelect = this.container.querySelector('.ps-drumkit-select')
+        this.#patternSelect = this.container.querySelector('.ps-pattern-select')
+        this.#drumBtn = this.container.querySelector('.ps-gen-drum')
+        this.#bassBtn = this.container.querySelector('.ps-gen-bass')
+        this.#chordsBtn = this.container.querySelector('.ps-gen-chords')
 
         /* Close button */
         closeBtn.addEventListener('click', () => this.hide())
     }
 
-    _bindEvents() {
-        this._bindPageControls()
-        this._bindBeatsSelect()
-        this._bindDrumkitSelect()
-        this._bindPatternSelect()
-        this._bindGenerationButtons()
+    #bindEvents() {
+        this.#bindPageControls()
+        this.#bindBeatsSelect()
+        this.#bindDrumkitSelect()
+        this.#bindPatternSelect()
+        this.#bindGenerationButtons()
     }
 
-    _bindPageControls() {
-        this._prevPageBtn.addEventListener('click', () => prevPage())
-        this._nextPageBtn.addEventListener('click', () => nextPage())
+    #bindPageControls() {
+        this.#prevPageBtn.addEventListener('click', () => prevPage())
+        this.#nextPageBtn.addEventListener('click', () => nextPage())
     }
 
-    _bindBeatsSelect() {
-        this._beatsSelect.addEventListener('change', () => this._onBeatsChange())
+    #bindBeatsSelect() {
+        this.#beatsSelect.addEventListener('change', () => this.#onBeatsChange())
     }
 
-    _onBeatsChange() {
-        const val = parseInt(this._beatsSelect.value, 10)
+    #onBeatsChange() {
+        const val = parseInt(this.#beatsSelect.value, 10)
         if (isNaN(val)) return
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
@@ -144,23 +166,23 @@ export default class PatternSettingsPanel {
         })
     }
 
-    _bindDrumkitSelect() {
-        this._drumkitSelect.addEventListener('change', () => this._onDrumkitChange())
+    #bindDrumkitSelect() {
+        this.#drumkitSelect.addEventListener('change', () => this.#onDrumkitChange())
     }
 
-    _onDrumkitChange() {
-        const num = parseInt(this._drumkitSelect.value, 10)
+    #onDrumkitChange() {
+        const num = parseInt(this.#drumkitSelect.value, 10)
         if (!isNaN(num)) {
             serviceRegistry.cmd.setSelectedDrumkitNum(num)
         }
     }
 
-    _bindPatternSelect() {
-        this._patternSelect.addEventListener('change', () => this._onPatternChange())
+    #bindPatternSelect() {
+        this.#patternSelect.addEventListener('change', () => this.#onPatternChange())
     }
 
-    _onPatternChange() {
-        const num = parseInt(this._patternSelect.value, 10)
+    #onPatternChange() {
+        const num = parseInt(this.#patternSelect.value, 10)
         if (!isNaN(num)) {
             serviceRegistry.cmd.setSelectedPatternNum(num)
             appState.currentPage = 0
@@ -177,13 +199,13 @@ export default class PatternSettingsPanel {
     // melodic track type and create it on first use — that shared shape
     // lives in _toggleMelodicAutoGen().
 
-    _bindGenerationButtons() {
-        this._drumBtn.addEventListener('click', () => this._onDrumClick())
-        this._bassBtn.addEventListener('click', () => this._toggleMelodicAutoGen('BASS', { synthSoundKey: 'BASS1', defaultVariant: 'basic' }))
-        this._chordsBtn.addEventListener('click', () => this._toggleMelodicAutoGen('PIANO', { synthSoundKey: 'PIANO', defaultVariant: 'chordStab' }))
+    #bindGenerationButtons() {
+        this.#drumBtn.addEventListener('click', () => this.#onDrumClick())
+        this.#bassBtn.addEventListener('click', () => this.#toggleMelodicAutoGen('BASS', { synthSoundKey: 'BASS1', defaultVariant: 'basic' }))
+        this.#chordsBtn.addEventListener('click', () => this.#toggleMelodicAutoGen('PIANO', { synthSoundKey: 'PIANO', defaultVariant: 'chordStab' }))
     }
 
-    async _onDrumClick() {
+    async #onDrumClick() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
         const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
@@ -214,7 +236,7 @@ export default class PatternSettingsPanel {
     // Shared toggle for single-track melodic auto-generation (Bass, Chords):
     // turns auto off if already active, otherwise creates the track (if
     // missing) from the current genre's structure and turns auto on.
-    async _toggleMelodicAutoGen(trackType, { synthSoundKey, defaultVariant }) {
+    async #toggleMelodicAutoGen(trackType, { synthSoundKey, defaultVariant }) {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
         const hasAuto = (pattern.tracks ?? []).some(t => t.auto && Utils.detectTrackType(t.name) === trackType)
@@ -251,7 +273,7 @@ export default class PatternSettingsPanel {
         })
     }
 
-    _subscribeEvents() {
+    #subscribeEvents() {
         playbackEvents.on("patternMetaChange", () => this.sync())
         playbackEvents.on("patternStructureChange", () => this.sync())
         playbackEvents.on("drumkitChange", () => this.syncDrumkits())
@@ -265,48 +287,48 @@ export default class PatternSettingsPanel {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
 
-        this._beatsSelect.value = pattern.nbBeats ?? 4
+        this.#beatsSelect.value = pattern.nbBeats ?? 4
 
         const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4 // we use only track 0 for the polyrhythms
         const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
         const maxPage = Math.ceil(totalSteps / 16) - 1
-        this._pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
-        this._prevPageBtn.disabled = appState.currentPage === 0
-        this._nextPageBtn.disabled = appState.currentPage >= maxPage
+        this.#pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
+        this.#prevPageBtn.disabled = appState.currentPage === 0
+        this.#nextPageBtn.disabled = appState.currentPage >= maxPage
     }
 
     syncDrumkits() {
-        this._drumkitSelect.innerHTML = ''
+        this.#drumkitSelect.innerHTML = ''
         soundRegistry.drumkitList.forEach((kit, i) => {
             const opt = document.createElement('option')
             opt.value = i
             opt.textContent = kit.name ?? `Kit ${i}`
-            this._drumkitSelect.appendChild(opt)
+            this.#drumkitSelect.appendChild(opt)
         })
-        if (this._drumkitSelect.options.length > 0) {
-            const idx = Math.min(appState.selectedDrumkitNum, this._drumkitSelect.options.length - 1)
-            this._drumkitSelect.selectedIndex = idx
+        if (this.#drumkitSelect.options.length > 0) {
+            const idx = Math.min(appState.selectedDrumkitNum, this.#drumkitSelect.options.length - 1)
+            this.#drumkitSelect.selectedIndex = idx
         }
 
-        this._patternSelect.innerHTML = ''
+        this.#patternSelect.innerHTML = ''
         appState.patterns.forEach((pat, i) => {
             const opt = document.createElement('option')
             opt.value = i
             opt.textContent = pat.name ?? `Pattern ${i}`
-            this._patternSelect.appendChild(opt)
+            this.#patternSelect.appendChild(opt)
             if (i === appState.selectedPatternNum) opt.selected = true
         })
     }
 
     show() {
-        this._isOpen = true
+        this.#isOpen = true
         this.container.classList.add('open')
         this.sync()
         this.syncDrumkits()
     }
 
     hide() {
-        this._isOpen = false
+        this.#isOpen = false
         this.container.classList.remove('open')
     }
 }
