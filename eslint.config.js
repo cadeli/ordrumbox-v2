@@ -74,5 +74,37 @@ export default defineConfig([
             globals: { ...globals.commonjs, ...globals.node },
         },
     },
+    {
+        files: ['src/logic/**/*.js', 'src/audio/**/*.js', 'src/patterns/**/*.js', 'src/model/**/*.js'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['**/ui/**', '**/ui/toast.js'],
+                            message: 'Non-UI layers must not import from ui/ — use core/notify.js for toasts.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
+        files: ['src/core/**/*.js', 'src/cache/**/*.js'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['**/ui/**', '**/logic/**', '**/audio/**'],
+                            message: 'core/ and cache/ must not import from higher layers.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
     prettier,
 ])

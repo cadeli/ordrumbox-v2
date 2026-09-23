@@ -10,7 +10,7 @@ import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_r
 import { playbackEvents as _playbackEventsSingleton } from '../state/playback_events.js'
 import { logger } from '../core/logger.js'
 import { syncKnobs } from './components/sync_helpers.js'
-import { showToast } from './toast.js'
+import { showToast } from '../core/notify.js'
 import { bindTabToggles, downloadJson } from './components/panel_helpers.js'
 import { getLfoWaveformValue, syncToHz } from '../audio/math.js'
 import Utils from '../core/utils.js'

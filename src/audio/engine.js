@@ -10,7 +10,7 @@ import Utils from '../core/utils.js'
 import { applyParamsToStrip } from './strip_sync.js'
 import { computeTrackLfoValues } from '../logic/lfo_engine.js'
 import { logger, nameOr } from '../core/logger.js'
-import { showToast } from '../ui/toast.js'
+import { showToast } from '../core/notify.js'
 
 export default class AudioEngine {
     static TAG = 'AUDIOENGINE'

@@ -5,7 +5,7 @@ import { applyTrackToStrip } from './strip_sync.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import ResourcesLoader from '../loader/resources_loader.js'
 import { logger } from '../core/logger.js'
-import { showToast } from '../ui/toast.js'
+import { showToast } from '../core/notify.js'
 import { TICK } from '../core/constants.js'
 
 const MAX_POLYPHONY = 16

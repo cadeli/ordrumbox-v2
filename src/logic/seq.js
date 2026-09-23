@@ -9,7 +9,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { getAutoAssignService, getAutoGenerateService } from '../state/service_loader.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { logger } from '../core/logger.js'
-import { showToast } from '../ui/toast.js'
+import { showToast } from '../core/notify.js'
 
 export default class Sequencer {
     static TAG = 'Sequencer'

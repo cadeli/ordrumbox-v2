@@ -29,6 +29,7 @@ export class AppState {
         selectedLfo: 'pitchLfo',
         displayBeats: 1,
         currentPage: 0,
+        currentView: 'edit',
         autoMode: false,
         textInput: false,
         secondsPerBeat: 8,

@@ -6,7 +6,7 @@ import { playbackEvents } from './state/playback_events.js'
 import Utils from './core/utils.js'
 import ResourcesLoader from './loader/resources_loader.js'
 import { logger } from './core/logger.js'
-import { showToast } from './ui/toast.js'
+import { showToast } from './core/notify.js'
 
 const PHYSICAL_TRACK_MUTE_KEYS = [
     'Digit1',

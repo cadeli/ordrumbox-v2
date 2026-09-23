@@ -16,7 +16,7 @@ import {
 } from '../cache/idb_cache.js'
 import Utils from '../core/utils.js'
 import { logger } from '../core/logger.js'
-import { showToast } from '../ui/toast.js'
+import { showToast } from '../core/notify.js'
 
 export default class ResourcesLoader {
     static TAG = 'ResourcesLoader'
@@ -237,11 +237,14 @@ export default class ResourcesLoader {
     }
 
     saveSession = () => {
-        const s = soundRegistry.settings.session
+        // Persist session snapshot from appState (authoritative runtime source).
+        // soundRegistry.settings.session is a serialization buffer for IDB only.
+        const s = (soundRegistry.settings.session ??= {})
         s.selectedDrumkitNum = appState.selectedDrumkitNum
         s.selectedPatternNum = appState.selectedPatternNum
         s.selectedTrackNum = appState.selectedTrackNum
-        s.currentView = serviceRegistry.viewManager?.currentView ?? 'edit'
+        s.currentView = serviceRegistry.viewManager?.currentView ?? appState.currentView ?? 'edit'
+        appState.currentView = s.currentView
         this.saveSettings()
     }
 
@@ -251,6 +254,7 @@ export default class ResourcesLoader {
         if (typeof s.selectedDrumkitNum === 'number') appState.selectedDrumkitNum = s.selectedDrumkitNum
         if (typeof s.selectedPatternNum === 'number') appState.selectedPatternNum = s.selectedPatternNum
         if (typeof s.selectedTrackNum === 'number') appState.selectedTrackNum = s.selectedTrackNum
+        if (typeof s.currentView === 'string') appState.currentView = s.currentView
     }
 
     #persistTimer = null

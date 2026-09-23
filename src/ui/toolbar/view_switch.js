@@ -3,7 +3,7 @@
 
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import { showToast } from '../toast.js'
+import { showToast } from '../../core/notify.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import Utils from '../../core/utils.js'
 

@@ -2,7 +2,7 @@
 // Preset CRUD operations and footer rendering.
 
 import { escapeHtml, renderOptions } from '../components/panel_helpers.js'
-import { showToast } from '../toast.js'
+import { showToast } from '../../core/notify.js'
 import { SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META } from './constants.js'
 import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
 

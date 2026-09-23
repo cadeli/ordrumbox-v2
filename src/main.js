@@ -1,5 +1,5 @@
 import './ui/styles.css'
-import { showToast } from './ui/toast.js'
+import { showToast } from './core/notify.js'
 import Sequencer from './logic/seq.js'
 import Commander from './logic/commands/cmd.js'
 import * as patternsManager from './patterns/manager.js'
@@ -241,7 +241,7 @@ export function init() {
             serviceRegistry.cmd.setSelectedDrumkitNum(dkNum)
             serviceRegistry.cmd.setSelectedPatternNum(patNum)
 
-            const savedView = soundRegistry.settings.session?.currentView
+            const savedView = appState.currentView
             const resolvedView = savedView === 'output' ? 'master' : savedView
             if (isMobileViewport()) {
                 playbackEvents.emit('mobileSeqToggle')

@@ -8,7 +8,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { showToast } from './toast.js'
+import { showToast } from '../core/notify.js'
 
 import SynthEditor from './synth_editor.js'
 import { OrTab } from './components/or_tab.js'

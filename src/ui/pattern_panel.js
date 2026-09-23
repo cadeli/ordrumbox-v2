@@ -14,7 +14,7 @@ import { validatePatternJson } from '../logic/commands/pattern_import.js'
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
-import { showToast } from './toast.js'
+import { showToast } from '../core/notify.js'
 import { downloadJson, formatNoteTooltip } from './components/panel_helpers.js'
 
 import HeaderSection from './pattern_panel/header_section.js'

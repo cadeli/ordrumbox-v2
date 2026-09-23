@@ -1,5 +1,5 @@
 import { logger } from './core/logger.js'
-import { showToast } from './ui/toast.js'
+import { showToast } from './core/notify.js'
 
 export function initServiceWorker() {
     if (!('serviceWorker' in navigator)) return

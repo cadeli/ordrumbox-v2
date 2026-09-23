@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { showToast } from '../src/ui/toast.js'
+import { showToast } from '../src/core/notify.js'
 
 describe('showToast', () => {
     beforeEach(() => {

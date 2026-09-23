@@ -3,7 +3,7 @@
 
 import { playbackEvents } from '../state/playback_events.js'
 import { logger } from '../core/logger.js'
-import { showToast } from '../ui/toast.js'
+import { showToast } from '../core/notify.js'
 
 export default class HistoryManager {
     #past

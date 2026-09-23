@@ -4,7 +4,7 @@ import { soundRegistry } from '../../../state/sound_registry.js'
 import { playbackEvents } from '../../../state/playback_events.js'
 import { getAutoAssignService } from '../../../state/service_loader.js'
 import { logger } from '../../../core/logger.js'
-import { showToast } from '../../../ui/toast.js'
+import { showToast } from '../../../core/notify.js'
 
 /**
  * Selection & state commands — returns an object of methods bound to the Commander instance.

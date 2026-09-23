@@ -5,7 +5,7 @@ import InstrumentsManager, { instrumentsManager } from '../logic/services/instru
 import drumkitService from '../logic/services/drumkit_service.js'
 import { drawEnvelope } from '../audio/sample_analyzer.js'
 import { formatNote } from '../core/hz_to_note.js'
-import { showToast } from './toast.js'
+import { showToast } from '../core/notify.js'
 import { downloadJson, renderOptions, knobFormat } from './components/panel_helpers.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { color } from './theme.js'
