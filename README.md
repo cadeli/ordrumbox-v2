@@ -123,7 +123,7 @@ For more professional setups, orDrumbox is compatible with external MIDI control
 ```bash
 npm install
 npm run dev          # Vite dev server (port 3000)
-npm test             # Run all unit tests (Vitest, 102 files, 2730 tests)
+npm test             # Run all unit tests (Vitest)
 npm run test:watch   # Watch mode
 npm run test:coverage # Test coverage (v8)
 npm run build        # Production build
@@ -136,7 +136,7 @@ npm run electron:build # Build Electron installer (release/)
 E2E tests run in real Chromium (desktop + mobile viewport) against the Vite dev server.
 
 ```bash
-npx playwright test                         # Run all e2e tests (43 tests)
+npx playwright test                         # Run all e2e tests
 npx playwright test --reporter=list         # With test names
 npx playwright test e2e/cold-start.spec.js  # Run a single spec
 npx playwright test -g "E2E-D"             # Run by test title pattern
@@ -157,7 +157,7 @@ Tests use `window.__e2e` (exposed in `main.js` after init) to access `appState`,
 
 - Framework: Vanilla JavaScript with ES6 modules
 - Build Tool: Vite
-- Test Framework: Vitest (102 test files, 2730 tests) + Playwright (12 e2e specs, 43 tests)
+- Test Framework: Vitest + Playwright
 - Audio: Web Audio API with AudioWorklet synthesis
 - Node Pool: Recycling of GainNode, BiquadFilterNode, and StereoPannerNode for reduced GC pressure
 - Storage: IndexedDB for caching, LocalStorage for settings, JSON for import/export

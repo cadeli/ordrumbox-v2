@@ -58,7 +58,7 @@ index.html → src/main.js (bootstrap after "Start" click)
 
 - **Config**: `vite.config.js` under `test` key (no separate vitest.config.js)
 - **Setup**: `tests/setup.js` — stubs canvas, ResizeObserver, injects CSS for jsdom
-- **101 test files**, ~2730 tests in `tests/`
+- Unit tests live in `tests/`
 - **Run**: `npm test` or `npx vitest run`
 
 Test helpers in `tests/helpers/`:
@@ -72,7 +72,7 @@ Test helpers in `tests/helpers/`:
 ### E2E tests (playwright)
 
 - **Config**: `playwright.config.js`
-- **12 spec files** in `e2e/`
+- Spec files live in `e2e/`
 - **Workers: 1** (serial) — AudioContext tests are sensitive to parallelism
 - **Timeout**: 30s per test, 5s per expect
 - **Base URL**: `http://localhost:3000`
@@ -103,7 +103,7 @@ import { bootApp } from './fixtures.js'
 - **Language**: vanilla JS, ES Modules (`import`/`export`), no transpiler
 - **English only**: all code, comments, variable/function/class names must be exclusively in English. No other languages in source code.
 - **Class pattern**: ES classes with private fields (`#field`)
-- **State**: centralized in `app_state.js`, accessed via `serviceRegistry`
+- **State**: data (patterns, selection, song) centralized in `app_state.js`; services/DI instances (cmd, seq, audioEngine…) in `service_registry.js` — they are separate, appState is not accessed via serviceRegistry
 - **UI panels**: extend `BasePanel` or follow its pattern (no framework)
 - **Naming**: `snake_case` for files, `camelCase` for variables/functions, `PascalCase` for classes
 - **Generators**: imported dynamically via `service_loader.js`
