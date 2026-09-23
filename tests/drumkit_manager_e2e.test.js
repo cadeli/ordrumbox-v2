@@ -24,7 +24,7 @@ vi.mock('../src/logic/services/drumkit_service.js', () => ({
     default: mockDrumkitService,
 }))
 
-vi.mock('../src/logic/services/instruments_manager.js', () => ({
+vi.mock('../src/logic/services/instrument_manager/index.js', () => ({
     default: {
         DATA: {
             instruments: [

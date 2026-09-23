@@ -28,7 +28,7 @@
 import { describe, it, expect } from 'vitest'
 import { recomputeFlatNotes, isTriggered, normalizeArp, computeTickSpacing } from '../src/patterns/engine.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
-import InstrumentsManager from '../src/logic/services/instruments_manager.js'
+import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
 import { TICK } from '../src/core/constants.js'
 import { parseMidi, findAllNotes, readUint16BE } from './helpers/midi_reader.js'
 import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'

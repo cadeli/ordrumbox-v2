@@ -1,4 +1,4 @@
-import InstrumentsManager from './src/logic/services/instruments_manager.js'
+import InstrumentsManager from './src/logic/services/instrument_manager/index.js'
 
 const GM_PROGRAMS = {
     1: 'Acoustic Grand Piano',

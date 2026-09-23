@@ -1,7 +1,7 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import InstrumentsManager, { instrumentsManager } from '../logic/services/instruments_manager.js'
+import InstrumentsManager, { instrumentsManager } from '../logic/services/instrument_manager/index.js'
 import drumkitService from '../logic/services/drumkit_service.js'
 import { drawEnvelope } from '../audio/sample_analyzer.js'
 import { formatNote } from '../core/hz_to_note.js'

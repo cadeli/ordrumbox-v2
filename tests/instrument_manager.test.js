@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import InstrumentsManager from '../src/logic/services/instruments_manager.js'
+import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
 import Instrument from '../src/model/instrument.js'
 
 describe('Instrument', () => {

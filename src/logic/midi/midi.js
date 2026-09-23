@@ -1,6 +1,6 @@
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import { instrumentsManager } from '../services/instruments_manager.js'
+import { instrumentsManager } from '../services/instrument_manager/index.js'
 import { logger } from '../../core/logger.js'
 import {
     parseMidiNoteOn,

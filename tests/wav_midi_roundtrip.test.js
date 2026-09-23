@@ -21,7 +21,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import WavExporter from '../src/audio/export/wav_exporter.js'
 import MidiExporter, { C3_MIDI_NOTE } from '../src/logic/midi/midi_exporter.js'
-import InstrumentsManager from '../src/logic/services/instruments_manager.js'
+import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import * as patternsManager from '../src/patterns/manager.js'

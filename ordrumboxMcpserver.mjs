@@ -20,7 +20,7 @@ console.error = (...args) => mcpLogger.error(...args)
 import Commander from './src/logic/commands/cmd.js'
 import { appState } from './src/state/app_state.js'
 import AudioAnalyzer from './src/audio/analyze.js'
-import InstrumentsManager from './src/logic/services/instruments_manager.js'
+import InstrumentsManager from './src/logic/services/instrument_manager/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)

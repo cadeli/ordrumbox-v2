@@ -4,7 +4,7 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { TICK, MIDI_MAX_BEATS, MIDI_MAX_PATTERNS } from '../../core/constants.js'
 import { parseMidi, findAllNotes, extractProgramChanges, midiVelocityToNormalized } from '../midi/midi_parser.js'
 import { C3_MIDI_NOTE } from '../midi/midi_exporter.js'
-import { instrumentsManager, GM_DRUM_NAMES, GM_PROGRAM_NAMES } from './instruments_manager.js'
+import { instrumentsManager, GM_DRUM_NAMES, GM_PROGRAM_NAMES } from './instrument_manager/index.js'
 import { logger } from '../../core/logger.js'
 
 export default class MidiImportService {

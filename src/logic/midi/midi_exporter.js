@@ -24,7 +24,7 @@
  *   Ratio = 384 / 32 = 12  →  midi_tick = engine_tick * 12
  */
 
-import InstrumentsManager from '../services/instruments_manager.js'
+import InstrumentsManager from '../services/instrument_manager/index.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { recomputeFlatNotes, computeNbTickForPattern } from '../../patterns/engine.js'
 import { TICK } from '../../core/constants.js'

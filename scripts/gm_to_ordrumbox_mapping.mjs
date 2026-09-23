@@ -1,9 +1,9 @@
-import { instrumentsManager, GM_DRUM_NAMES, GM_PROGRAM_NAMES } from '../src/logic/services/instruments_manager.js'
+import { instrumentsManager, GM_DRUM_NAMES, GM_PROGRAM_NAMES } from '../src/logic/services/instrument_manager/index.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import AutoAssign from '../src/logic/services/auto_assign.js'
 import Instrument from '../src/model/instrument.js'
-import drumkits from '../assets/data/drumkits.json'
+import drumkits from '../assets/data/drumkits.json' with { type: 'json' }
 
 const buildRealKitSounds = () => {
     const sounds = {}

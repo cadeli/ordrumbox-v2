@@ -1,6 +1,6 @@
 import { appState as _appState } from '../../state/app_state.js'
 import { soundRegistry as _soundRegistry } from '../../state/sound_registry.js'
-import InstrumentsManager, { instrumentsManager } from './instruments_manager.js'
+import InstrumentsManager, { instrumentsManager } from './instrument_manager/index.js'
 import Utils from '../../core/utils.js'
 import { NOT_FOUND } from '../../core/constants.js'
 import { logger } from '../../core/logger.js'

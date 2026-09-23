@@ -11,7 +11,7 @@ vi.mock('../src/logic/midi/midi_parser.js', () => ({
     isMidiSupported: vi.fn(() => true),
 }))
 
-vi.mock('../src/logic/services/instruments_manager.js', () => ({
+vi.mock('../src/logic/services/instrument_manager/index.js', () => ({
     instrumentsManager: {
         findTrackIndexFromMidi: vi.fn(() => 0),
     },

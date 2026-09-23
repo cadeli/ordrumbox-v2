@@ -2,7 +2,7 @@
 // Sound tab — instrument/sample/synth selects, mono toggle, auto-assign.
 
 import { renderOptions } from '../components/panel_helpers.js'
-import InstrumentsManager from '../../logic/services/instruments_manager.js'
+import InstrumentsManager from '../../logic/services/instrument_manager/index.js'
 import AutoAssign from '../../logic/services/auto_assign.js'
 
 export default class SoundSection {

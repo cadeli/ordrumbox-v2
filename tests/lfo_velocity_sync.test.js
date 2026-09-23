@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { computeLfoValue } from '../src/audio/math.js'
-import InstrumentsManager from '../src/logic/services/instruments_manager.js'
+import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
 
 import TrackEditor from '../src/ui/track_editor.js'
 import { appState } from '../src/state/app_state.js'
