@@ -180,7 +180,7 @@ export default class PatternSettingsPanel {
                 recalcLoopDerived(track)
             }
         })
-        appState.currentPage = 0
+        serviceRegistry.cmd.resetPage()
         playbackEvents.batch(() => {
             playbackEvents.emit('patternMetaChange')
             playbackEvents.emit('patternChange')
@@ -206,7 +206,7 @@ export default class PatternSettingsPanel {
         const num = parseInt(this.#patternSelect.value, 10)
         if (!isNaN(num)) {
             serviceRegistry.cmd.setSelectedPatternNum(num)
-            appState.currentPage = 0
+            serviceRegistry.cmd.resetPage()
             playbackEvents.batch(() => {
                 playbackEvents.emit('patternStructureChange')
                 playbackEvents.emit('patternChange')

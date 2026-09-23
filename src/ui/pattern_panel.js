@@ -182,7 +182,7 @@ export default class PatternPanel extends BasePanel {
             const nbBeats = pattern?.nbBeats ?? 4
             const maxPage = Math.floor((nbBeats - 1) / BEATS_PER_PAGE)
             if (this.#appState.currentPage > maxPage) {
-                this.#appState.currentPage = 0
+                this.#serviceRegistry.cmd.resetPage()
             }
             this.#forceFullRender = true
             this.#headerDirty = true
@@ -352,7 +352,7 @@ export default class PatternPanel extends BasePanel {
 
         const startBeat = this.#appState.currentPage * BEATS_PER_PAGE
         if (this.#cursorBeat < startBeat || this.#cursorBeat >= startBeat + BEATS_PER_PAGE) {
-            this.#appState.currentPage = Math.floor(this.#cursorBeat / BEATS_PER_PAGE)
+            this.#serviceRegistry.cmd.setCurrentPage(Math.floor(this.#cursorBeat / BEATS_PER_PAGE))
             this.sync()
         }
 
@@ -645,7 +645,7 @@ export default class PatternPanel extends BasePanel {
                 const newIdx = this.#appState.patterns.length
                 cmd.addPattern()
                 cmd.setSelectedPatternNum(newIdx)
-                this.#appState.currentPage = 0
+                cmd.resetPage()
                 this.#emitStructureChange()
                 showToast('Pattern added', 'success')
                 break

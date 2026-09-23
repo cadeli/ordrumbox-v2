@@ -183,7 +183,7 @@ export default class PlaybackOverlaySection {
         if (currentPatternBeat < startBeat || currentPatternBeat >= endBeat) {
             const newPage = Math.floor(currentPatternBeat / BEATS_PER_PAGE)
             if (newPage !== appState.currentPage) {
-                appState.currentPage = newPage
+                editor.serviceRegistry.cmd.setCurrentPage(newPage)
                 editor.requestSync()
                 editor.playbackEvents.batch(() => {
                     editor.playbackEvents.emit('patternMetaChange')

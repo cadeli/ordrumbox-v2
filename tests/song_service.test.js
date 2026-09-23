@@ -23,7 +23,12 @@ describe('SongService', () => {
         idbPut.mockClear()
         idbGet.mockClear()
         idbKeys.mockClear()
-        serviceRegistry.cmd = { setSelectedPatternNum: vi.fn() }
+        serviceRegistry.cmd = {
+            setSelectedPatternNum: vi.fn(),
+            resetPage: vi.fn(() => {
+                appState.currentPage = 0
+            }),
+        }
     })
 
     describe('buildSongData', () => {

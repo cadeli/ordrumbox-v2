@@ -67,6 +67,12 @@ function makeCmd() {
                 }
             }
         }),
+        setCurrentPage: vi.fn((page) => {
+            appState.currentPage = Math.max(0, Math.floor(page) || 0)
+        }),
+        resetPage: vi.fn(() => {
+            appState.currentPage = 0
+        }),
     }
 }
 

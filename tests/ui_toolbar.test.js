@@ -25,6 +25,9 @@ describe('Toolbar UI Layout', () => {
             setSelectedPatternNum: vi.fn(),
             setSelectedDrumkitNum: vi.fn(),
             cleanPattern: vi.fn(),
+            resetPage: vi.fn(() => {
+                appState.currentPage = 0
+            }),
         }
         serviceRegistry.patterns = {
             applyFlatNotes: vi.fn(),

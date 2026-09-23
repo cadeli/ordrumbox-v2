@@ -141,7 +141,7 @@ export function init() {
 
     playbackEvents.on('trackSelect', (data) => {
         if (data && data.trackIdx !== undefined) {
-            appState.selectedTrackNum = data.trackIdx
+            serviceRegistry.cmd.setSelectedTrackNum(data.trackIdx)
         }
     })
 
@@ -229,8 +229,6 @@ export function init() {
 
             const dkNum = Math.min(appState.selectedDrumkitNum, soundRegistry.drumkitList.length - 1)
             const patNum = Math.min(appState.selectedPatternNum, appState.patterns.length - 1)
-            appState.selectedDrumkitNum = dkNum
-            appState.selectedPatternNum = patNum
 
             playbackEvents.batch(() => {
                 playbackEvents.emit('patternStructureChange')

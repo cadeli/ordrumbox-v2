@@ -79,7 +79,7 @@ export default class PatternNav {
             const num = parseInt(tb.patternSelect.value, 10)
             if (!isNaN(num)) {
                 serviceRegistry.cmd.setSelectedPatternNum(num)
-                appState.currentPage = 0
+                serviceRegistry.cmd.resetPage()
                 playbackEvents.emit('patternMetaChange')
             }
         })

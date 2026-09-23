@@ -105,7 +105,7 @@ export default class TransportControls {
                     recalcLoopDerived(track)
                 }
             })
-            appState.currentPage = 0
+            serviceRegistry.cmd.resetPage()
             playbackEvents.batch(() => {
                 playbackEvents.emit('patternMetaChange')
                 playbackEvents.emit('patternChange')

@@ -50,8 +50,7 @@ async function generatePattern() {
 }
 
 function toggleVus() {
-    appState.showVus = !appState.showVus
-    playbackEvents.emit('trackParamChange', null)
+    serviceRegistry.cmd?.toggleShowVus()
 }
 
 function toggleStartStop() {

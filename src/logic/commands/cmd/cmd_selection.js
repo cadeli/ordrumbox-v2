@@ -55,5 +55,27 @@ export function createSelectionMethods(_cmd) {
                 showToast('Pattern switch failed', 'error')
             }
         },
+
+        setSelectedTrackNum(num) {
+            appState.selectedTrackNum = num
+        },
+
+        setCurrentPage(page) {
+            const n = Number.isFinite(page) ? Math.max(0, Math.floor(page)) : 0
+            appState.currentPage = n
+        },
+
+        resetPage() {
+            appState.currentPage = 0
+        },
+
+        setCurrentView(view) {
+            if (typeof view === 'string') appState.currentView = view
+        },
+
+        toggleShowVus() {
+            appState.showVus = !appState.showVus
+            playbackEvents.emit('trackParamChange', null)
+        },
     }
 }

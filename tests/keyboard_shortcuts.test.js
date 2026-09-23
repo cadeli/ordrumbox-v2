@@ -36,6 +36,9 @@ describe('Keyboard shortcuts', () => {
         serviceRegistry.cmd = {
             setSelectedPatternNum: vi.fn(),
             setSelectedDrumkitNum: vi.fn(),
+            toggleShowVus: vi.fn(() => {
+                appState.showVus = !appState.showVus
+            }),
         }
         soundRegistry.drumkitList = [{ name: '8bits' }, { name: 'real' }]
     })

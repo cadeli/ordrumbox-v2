@@ -71,7 +71,7 @@ class SongService {
         appState.songInfos.date = data.date ?? ''
 
         serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
-        appState.currentPage = 0
+        serviceRegistry.cmd.resetPage()
 
         return name
     }

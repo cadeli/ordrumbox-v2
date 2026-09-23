@@ -1,6 +1,7 @@
 // src/core/page_nav.js — Shared page navigation for pattern panels.
 
 import { appState } from '../state/app_state.js'
+import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from './utils.js'
 
@@ -9,7 +10,7 @@ import Utils from './utils.js'
  */
 export function prevPage() {
     if (appState.currentPage > 0) {
-        appState.currentPage--
+        serviceRegistry.cmd?.setCurrentPage(appState.currentPage - 1)
         playbackEvents.batch(() => {
             playbackEvents.emit('patternMetaChange')
             playbackEvents.emit('patternChange')
@@ -27,7 +28,7 @@ export function nextPage() {
     const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
     const maxPage = Math.ceil(totalSteps / 16) - 1
     if (appState.currentPage < maxPage) {
-        appState.currentPage++
+        serviceRegistry.cmd?.setCurrentPage(appState.currentPage + 1)
         playbackEvents.batch(() => {
             playbackEvents.emit('patternMetaChange')
             playbackEvents.emit('patternChange')

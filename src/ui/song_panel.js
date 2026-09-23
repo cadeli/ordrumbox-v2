@@ -221,7 +221,7 @@ export default class SongPanel extends BasePanel {
 
     #selectPattern(idx) {
         serviceRegistry.cmd.setSelectedPatternNum(idx)
-        appState.currentPage = 0
+        serviceRegistry.cmd.resetPage()
         playbackEvents.batch(() => {
             playbackEvents.emit('patternStructureChange')
             playbackEvents.emit('patternChange')

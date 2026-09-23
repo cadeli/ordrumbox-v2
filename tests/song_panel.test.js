@@ -18,6 +18,9 @@ describe('SongPanel', () => {
             setSelectedPatternNum: vi.fn(),
             renamePattern: vi.fn(),
             removePattern: vi.fn(),
+            resetPage: vi.fn(() => {
+                appState.currentPage = 0
+            }),
         }
         appState.patterns = [
             { name: 'Pattern 1', tracks: [{ name: 'KICK', notes: [] }] },

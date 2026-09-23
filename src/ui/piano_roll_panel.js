@@ -565,12 +565,12 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     #clampPage() {
-        appState.currentPage = Math.max(0, Math.min(appState.currentPage, this.#totalPages() - 1))
+        serviceRegistry.cmd.setCurrentPage(Math.max(0, Math.min(appState.currentPage, this.#totalPages() - 1)))
     }
 
     #prevPage() {
         if (appState.currentPage <= 0) return
-        appState.currentPage--
+        serviceRegistry.cmd.setCurrentPage(appState.currentPage - 1)
         playbackEvents.batch(() => {
             playbackEvents.emit('patternMetaChange')
             playbackEvents.emit('patternChange')
@@ -579,7 +579,7 @@ export default class PianoRollPanel extends BasePanel {
 
     #nextPage() {
         if (appState.currentPage >= this.#totalPages() - 1) return
-        appState.currentPage++
+        serviceRegistry.cmd.setCurrentPage(appState.currentPage + 1)
         playbackEvents.batch(() => {
             playbackEvents.emit('patternMetaChange')
             playbackEvents.emit('patternChange')
@@ -681,7 +681,7 @@ export default class PianoRollPanel extends BasePanel {
         const pageStartStep = appState.currentPage * PAGE_BEATS * stepsPerBeat
         const pageEndStep = pageStartStep + PAGE_BEATS * stepsPerBeat
         if (this.#cursorStep < pageStartStep || this.#cursorStep >= pageEndStep) {
-            appState.currentPage = Math.floor(this.#cursorStep / stepsPerBeat / PAGE_BEATS)
+            serviceRegistry.cmd.setCurrentPage(Math.floor(this.#cursorStep / stepsPerBeat / PAGE_BEATS))
             this.#gridDirty = true
         }
         const track = this.#track
@@ -765,7 +765,7 @@ export default class PianoRollPanel extends BasePanel {
         if (absStep < pageStartStep || absStep >= pageEndStep) {
             const newPage = Math.floor(absStep / stepsPerBeat / PAGE_BEATS)
             if (newPage !== appState.currentPage) {
-                appState.currentPage = newPage
+                serviceRegistry.cmd.setCurrentPage(newPage)
                 this.#clampPage()
                 this.#gridDirty = true
                 this.#sync()

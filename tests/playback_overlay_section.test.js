@@ -14,6 +14,11 @@ beforeEach(async () => {
     appState.reset()
     serviceRegistry.reset()
     soundRegistry.reset()
+    serviceRegistry.cmd = {
+        setCurrentPage: vi.fn((page) => {
+            appState.currentPage = Math.max(0, Math.floor(page) || 0)
+        }),
+    }
     globalThis.requestAnimationFrame = vi.fn()
     globalThis.cancelAnimationFrame = vi.fn()
     playbackEvents = (await import('../src/state/playback_events.js')).playbackEvents
