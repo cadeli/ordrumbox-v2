@@ -86,13 +86,18 @@ const SYNTH_SOUND_MAP = {
 
 async function convertToGeneratedSounds() {
     const selPattern = getSelectedPattern()
-    if (!selPattern) return
+    if (!selPattern) {
+        showToast('No pattern selected', 'info')
+        return
+    }
 
     if (Object.keys(soundRegistry.generatedSounds).length === 0) {
         try {
             await serviceRegistry.resourcesLoader.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
         } catch (e) {
             logger.error('KeyboardShortcuts', 'Failed to load generated sounds', e)
+            showToast('Failed to load generated sounds', 'error')
+            return
         }
     }
 
@@ -107,6 +112,7 @@ async function convertToGeneratedSounds() {
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     logger.info('KeyboardShortcuts', 'All tracks converted to generated sounds')
+    showToast('All tracks converted to generated sounds', 'success')
 }
 
 function assignRandomSampleAllTracks() {
