@@ -44,8 +44,8 @@ export const NOTE_KEY_ORDER = [
     'arp',
     'arpTriggerProbability',
     'euclidianFill',
-    'pos'
-];
+    'pos',
+]
 
 /**
  * Default values for note properties.
@@ -79,20 +79,20 @@ export const NOTE_DEFAULTS = {
     arp: null,
     arpTriggerProbability: 1,
     euclidianFill: 0,
-    pos: 0
-};
+    pos: 0,
+}
 
 /**
  * Properties that are recalculated on the fly (derived).
  * Never exported or imported in the compact format.
  */
-export const NOTE_RECALCULATED = ['steppc', 'stepPercent'];
+export const NOTE_RECALCULATED = ['steppc', 'stepPercent']
 
 /**
  * Position keys used for step calculation.
  * Included in the compact format when non-default.
  */
-export const NOTE_POSITION_KEYS = new Set(['beat', 'beatStep', 'stepPercent']);
+export const NOTE_POSITION_KEYS = new Set(['beat', 'beatStep', 'stepPercent'])
 
 /**
  * Convert a note object to a compact array using the given key order.
@@ -106,22 +106,22 @@ export const NOTE_POSITION_KEYS = new Set(['beat', 'beatStep', 'stepPercent']);
 const NOTE_ROUND_2D = new Set(['velocity', 'pan', 'prob', 'rate'])
 
 export function noteToObjectCompact(note, keys = NOTE_KEY_ORDER) {
-    let lastIndex = -1;
+    let lastIndex = -1
     for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        const val = note[key];
-        const defaultVal = NOTE_DEFAULTS[key];
+        const key = keys[i]
+        const val = note[key]
+        const defaultVal = NOTE_DEFAULTS[key]
         if (val !== undefined && val !== defaultVal) {
-            lastIndex = i;
+            lastIndex = i
         }
     }
-    if (lastIndex === -1) return [];
-    const arr = [];
+    if (lastIndex === -1) return []
+    const arr = []
     for (let i = 0; i <= lastIndex; i++) {
-        const val = note[keys[i]] ?? NOTE_DEFAULTS[keys[i]];
-        arr.push(NOTE_ROUND_2D.has(keys[i]) ? Math.round(val * 100) / 100 : val);
+        const val = note[keys[i]] ?? NOTE_DEFAULTS[keys[i]]
+        arr.push(NOTE_ROUND_2D.has(keys[i]) ? Math.round(val * 100) / 100 : val)
     }
-    return arr;
+    return arr
 }
 
 /**
@@ -133,11 +133,11 @@ export function noteToObjectCompact(note, keys = NOTE_KEY_ORDER) {
  * @returns {Object} Note object with all properties
  */
 export function compactArrayToNote(arr, keys = NOTE_KEY_ORDER) {
-    const note = {};
+    const note = {}
     for (let i = 0; i < arr.length && i < keys.length; i++) {
-        note[keys[i]] = arr[i];
+        note[keys[i]] = arr[i]
     }
-    return note;
+    return note
 }
 
 /**
@@ -148,15 +148,15 @@ export function compactArrayToNote(arr, keys = NOTE_KEY_ORDER) {
  * @returns {string[]} Used keys in optimal order
  */
 export function detectUsedKeys(notes) {
-    const used = new Set();
+    const used = new Set()
     for (const note of notes) {
         for (const key of NOTE_KEY_ORDER) {
             if (key in note && note[key] !== NOTE_DEFAULTS[key]) {
-                used.add(key);
+                used.add(key)
             }
         }
     }
-    return NOTE_KEY_ORDER.filter(key => used.has(key));
+    return NOTE_KEY_ORDER.filter((key) => used.has(key))
 }
 
 /**
@@ -166,7 +166,7 @@ export function detectUsedKeys(notes) {
  * @returns {boolean} True if notes are arrays (compact format)
  */
 export function isCompactFormat(track) {
-    return Array.isArray(track.noteKeys) && track.notes?.length > 0 && Array.isArray(track.notes[0]);
+    return Array.isArray(track.noteKeys) && track.notes?.length > 0 && Array.isArray(track.notes[0])
 }
 
 /**
@@ -177,7 +177,7 @@ export function isCompactFormat(track) {
  * @returns {Object} Normalized note with all properties
  */
 export function normalizeNote(note) {
-    if (!note) return { ...NOTE_DEFAULTS };
+    if (!note) return { ...NOTE_DEFAULTS }
     return {
         velocity: note.velocity ?? NOTE_DEFAULTS.velocity,
         beat: note.beat ?? NOTE_DEFAULTS.beat,
@@ -193,5 +193,5 @@ export function normalizeNote(note) {
         euclidianFill: note.euclidianFill ?? NOTE_DEFAULTS.euclidianFill,
         pos: note.pos ?? NOTE_DEFAULTS.pos,
         ...note,
-    };
+    }
 }

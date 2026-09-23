@@ -3,7 +3,7 @@ import { appState } from '../../../state/app_state.js'
 import { logger } from '../../../core/logger.js'
 
 function _findPatternForTrack(track) {
-    return appState.patterns.find(p => Utils.getTracksArray(p).includes(track))
+    return appState.patterns.find((p) => Utils.getTracksArray(p).includes(track))
 }
 
 /**
@@ -15,18 +15,25 @@ export function createNoteMethods(cmd) {
             const values = Object.values(track.notes)
             for (let i = values.length - 1; i >= 0; i--) {
                 const note = values[i]
-                if (note.beatStep === selNote.beatStep && note.beat === selNote.beat && (note.pitch ?? 0) === (selNote.pitch ?? 0)) {
+                if (
+                    note.beatStep === selNote.beatStep &&
+                    note.beat === selNote.beat &&
+                    (note.pitch ?? 0) === (selNote.pitch ?? 0)
+                ) {
                     const deletedNote = { ...note }
                     const noteIndex = track.notes.indexOf(note)
                     track.notes.splice(noteIndex, 1)
                     cmd.incrementPatternVersionByTrack(track)
                     cmd.persist()
                     const patName = _findPatternForTrack(track)?.name ?? ''
-                    cmd.record(() => {
-                        track.notes.splice(noteIndex, 0, deletedNote)
-                        cmd.incrementPatternVersionByTrack(track)
-                        cmd.persist()
-                    }, { desc: `Delete note on ${track.name} in "${patName}"` })
+                    cmd.record(
+                        () => {
+                            track.notes.splice(noteIndex, 0, deletedNote)
+                            cmd.incrementPatternVersionByTrack(track)
+                            cmd.persist()
+                        },
+                        { desc: `Delete note on ${track.name} in "${patName}"` },
+                    )
                     return
                 }
             }
@@ -43,19 +50,22 @@ export function createNoteMethods(cmd) {
                 beatStep,
                 steppc,
                 beat,
-                pitch
+                pitch,
             }
             const noteIndex = track.notes.length
             track.notes.push(note)
             cmd.incrementPatternVersionByTrack(track)
             cmd.persist()
             const patName = _findPatternForTrack(track)?.name ?? ''
-            cmd.record(() => {
-                track.notes.splice(noteIndex, 1)
-                cmd.incrementPatternVersionByTrack(track)
-                cmd.persist()
-            }, { desc: `Add note on ${track.name} in "${patName}"` })
+            cmd.record(
+                () => {
+                    track.notes.splice(noteIndex, 1)
+                    cmd.incrementPatternVersionByTrack(track)
+                    cmd.persist()
+                },
+                { desc: `Add note on ${track.name} in "${patName}"` },
+            )
             return note
-        }
+        },
     }
 }

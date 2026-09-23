@@ -1,4 +1,4 @@
-import { nameOr } from "../core/logger.js"
+import { nameOr } from '../core/logger.js'
 /**
  * track_schema.js — Single source of truth for the track structure.
  *
@@ -55,9 +55,9 @@ import { nameOr } from "../core/logger.js"
  * @property {Array}   notes                - Note array (objects or compact arrays). Default: []
  */
 export const TRACK_DEFAULTS = {
-    name: "",
+    name: '',
     useAutoAssignSound: true,
-    soundId: "NOT_DEFINED",
+    soundId: 'NOT_DEFINED',
     nbBeats: 4,
     stepsPerBeat: 4,
     loopAtStep: null,
@@ -88,27 +88,27 @@ export const TRACK_DEFAULTS = {
     prob_arp: 50,
     pitch_range: 12,
     pitch_scale_lock: false,
-    auto_variant: "",
+    auto_variant: '',
     auto_density: -1,
-    filterType: "allpass",
+    filterType: 'allpass',
     filterFreqLfo: null,
     filterFreq: 20,
     filterQLfo: null,
     filterQ: 0.707,
-    reverbType: "none",
+    reverbType: 'none',
     reverbAmount: 0,
-    delayType: "tape",
+    delayType: 'tape',
     delayTime: 1,
     delayDepth: 0,
-    fxSelected: "reverb",
-    saturationType: "soft",
+    fxSelected: 'reverb',
+    saturationType: 'soft',
     saturationAmount: 0,
     sat: true,
     reverbOn: true,
     delayOn: true,
     synthSoundKey: null,
-    notes: []
-};
+    notes: [],
+}
 
 /**
  * Normalizes a track object by applying default values
@@ -116,51 +116,51 @@ export const TRACK_DEFAULTS = {
  */
 export function normalizeTrack(track = {}) {
     const t = nameOr(track, {}, 'TrackSchema', 'track null/undefined')
-    const { notes: inputNotes, ...rest } = t;
-    const normalized = { ...TRACK_DEFAULTS, ...rest };
-    normalized.notes = Array.isArray(inputNotes) ? [...inputNotes] : [];
-    return normalized;
+    const { notes: inputNotes, ...rest } = t
+    const normalized = { ...TRACK_DEFAULTS, ...rest }
+    normalized.notes = Array.isArray(inputNotes) ? [...inputNotes] : []
+    return normalized
 }
 
 /**
  * Properties that are recalculated on the fly (derived).
  * Never exported or imported in the compact format.
  */
-export const TRACK_RECALCULATED = ["loopPointBeat", "loopPointStep"];
+export const TRACK_RECALCULATED = ['loopPointBeat', 'loopPointStep']
 
 /**
  * Numeric range constraints for track properties.
  * Used by updateTrack() and MCP tools to clamp values.
  */
 export const TRACK_VALUE_RANGES = {
-    velocity:      { min: 0,    max: 1 },
-    pan:           { min: -1,   max: 1 },
-    pitch:         { min: -24,  max: 24 },
-    nbBeats:          { min: 1,    max: 16 },
-    stepsPerBeat:   { min: 1,    max: 8 },
-    loopAtStep:    { min: 0,    max: 1024 },
-    swingResolution: { min: 1,  max: 8 },
-    swingAmount:   { min: 0,    max: 1 },
-    filterFreq:    { min: 20,   max: 20000 },
-    filterQ:       { min: 0.1,  max: 24 },
-    reverbAmount:  { min: 0,    max: 1 },
-    delayTime:     { min: 0,    max: 4 },
-    delayDepth:   { min: 0,    max: 1 },
+    velocity: { min: 0, max: 1 },
+    pan: { min: -1, max: 1 },
+    pitch: { min: -24, max: 24 },
+    nbBeats: { min: 1, max: 16 },
+    stepsPerBeat: { min: 1, max: 8 },
+    loopAtStep: { min: 0, max: 1024 },
+    swingResolution: { min: 1, max: 8 },
+    swingAmount: { min: 0, max: 1 },
+    filterFreq: { min: 20, max: 20000 },
+    filterQ: { min: 0.1, max: 24 },
+    reverbAmount: { min: 0, max: 1 },
+    delayTime: { min: 0, max: 4 },
+    delayDepth: { min: 0, max: 1 },
     saturationAmount: { min: 0, max: 1 },
-    variation:     { min: 0,    max: 100 },
-    variation2:    { min: 0,    max: 100 },
-    prob_pitch:    { min: 0,    max: 100 },
-    prob_velocity: { min: 0,    max: 100 },
-    prob_silence:  { min: 0,    max: 100 },
-    prob_fill:     { min: 0,    max: 100 },
-    prob_ghost:    { min: 0,    max: 100 },
-    prob_retrig:   { min: 0,    max: 100 },
-    prob_euclid:   { min: 0,    max: 100 },
-    prob_note:     { min: 0,    max: 100 },
-    prob_arp:      { min: 0,    max: 100 },
-    pitch_range:   { min: 1,    max: 24 },
-    auto_density:  { min: -1,   max: 1 },
-};
+    variation: { min: 0, max: 100 },
+    variation2: { min: 0, max: 100 },
+    prob_pitch: { min: 0, max: 100 },
+    prob_velocity: { min: 0, max: 100 },
+    prob_silence: { min: 0, max: 100 },
+    prob_fill: { min: 0, max: 100 },
+    prob_ghost: { min: 0, max: 100 },
+    prob_retrig: { min: 0, max: 100 },
+    prob_euclid: { min: 0, max: 100 },
+    prob_note: { min: 0, max: 100 },
+    prob_arp: { min: 0, max: 100 },
+    pitch_range: { min: 1, max: 24 },
+    auto_density: { min: -1, max: 1 },
+}
 
 /**
  * Recalculates loopPointBeat and loopPointStep from loopAtStep and stepsPerBeat.

@@ -1,13 +1,27 @@
 class SoundRegistry {
     static DEFAULTS = {
-        sounds: {}, scales: {}, generatedSounds: {},
-        drumkitList: [], drumkits: {}, leds: {},
+        sounds: {},
+        scales: {},
+        generatedSounds: {},
+        drumkitList: [],
+        drumkits: {},
+        leds: {},
         settings: {
-            version: 1, sampleDirs: [], maxSampleDirs: 10,
+            version: 1,
+            sampleDirs: [],
+            maxSampleDirs: 10,
             master: {
-                volume: 1, preGain: 0, lowcut: 35, hicut: 18500,
-                compBypass: false, threshold: -18, ratio: 8, attack: 0.002,
-                release: 0.08, knee: 3, makeup: 8,
+                volume: 1,
+                preGain: 0,
+                lowcut: 35,
+                hicut: 18500,
+                compBypass: false,
+                threshold: -18,
+                ratio: 8,
+                attack: 0.002,
+                release: 0.08,
+                knee: 3,
+                makeup: 8,
             },
             session: {
                 selectedDrumkitNum: 0,

@@ -23,14 +23,20 @@ describe('Functional: Pattern serialization round-trip', () => {
             bpm: 130,
             nbBeats: 8,
             tracks: [
-                makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9, pitch: 0, every: 1, pos: 0 }),
-                    makeNote(2, 2, { velocity: 0.7, pitch: 2, every: 2, pos: 1 })
-                ], { nbBeats: 8, stepsPerBeat: 4, loopAtStep: 32, velocity: 0.9, pan: 0 }),
-                makeTrack('SNARE', [
-                    makeNote(1, 0, { velocity: 0.8, pitch: 0, arp: [0, 7], retriggerNum: 3 })
-                ], { nbBeats: 8, stepsPerBeat: 4, loopAtStep: 32 })
-            ]
+                makeTrack(
+                    'KICK',
+                    [
+                        makeNote(0, 0, { velocity: 0.9, pitch: 0, every: 1, pos: 0 }),
+                        makeNote(2, 2, { velocity: 0.7, pitch: 2, every: 2, pos: 1 }),
+                    ],
+                    { nbBeats: 8, stepsPerBeat: 4, loopAtStep: 32, velocity: 0.9, pan: 0 },
+                ),
+                makeTrack('SNARE', [makeNote(1, 0, { velocity: 0.8, pitch: 0, arp: [0, 7], retriggerNum: 3 })], {
+                    nbBeats: 8,
+                    stepsPerBeat: 4,
+                    loopAtStep: 32,
+                }),
+            ],
         })
         sourcePattern.description = 'Test pattern'
         sourcePattern.tags = ['techno', 'dark']
@@ -81,7 +87,7 @@ describe('Functional: Pattern serialization round-trip', () => {
             name: 'Empty',
             bpm: 120,
             nbBeats: 4,
-            tracks: []
+            tracks: [],
         })
 
         const imported = cmd.importPatternFromJson(sourcePattern)
@@ -94,14 +100,12 @@ describe('Functional: Pattern serialization round-trip', () => {
         expect(reimported.tracks).toEqual([])
     })
 
-
-
     it('import with missing optional fields uses defaults', () => {
         const sourcePattern = makePattern({
             name: 'Minimal',
             bpm: 120,
             nbBeats: 4,
-            tracks: [makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 4, stepsPerBeat: 4 })]
+            tracks: [makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 4, stepsPerBeat: 4 })],
         })
 
         const imported = cmd.importPatternFromJson(sourcePattern)
@@ -120,10 +124,12 @@ describe('Functional: Pattern serialization round-trip', () => {
             name: 'Stable',
             bpm: 140,
             nbBeats: 4,
-            tracks: [makeTrack('KICK', [
-                makeNote(0, 0, { velocity: 0.85, pitch: 1 }),
-                makeNote(2, 2, { velocity: 0.75 })
-            ], { nbBeats: 4, stepsPerBeat: 4 })]
+            tracks: [
+                makeTrack('KICK', [makeNote(0, 0, { velocity: 0.85, pitch: 1 }), makeNote(2, 2, { velocity: 0.75 })], {
+                    nbBeats: 4,
+                    stepsPerBeat: 4,
+                }),
+            ],
         })
         source.description = 'Double export'
 
@@ -144,16 +150,18 @@ describe('Functional: Pattern serialization round-trip', () => {
             name: 'TrackProps',
             bpm: 120,
             nbBeats: 4,
-            tracks: [makeTrack('TOM', [makeNote(0, 0)], {
-                nbBeats: 4,
-                stepsPerBeat: 4,
-                mute: true,
-                solo: true,
-                auto: true,
-                useSoftSynth: true,
-                velocity: 0.8,
-                loopAtStep: 16
-            })]
+            tracks: [
+                makeTrack('TOM', [makeNote(0, 0)], {
+                    nbBeats: 4,
+                    stepsPerBeat: 4,
+                    mute: true,
+                    solo: true,
+                    auto: true,
+                    useSoftSynth: true,
+                    velocity: 0.8,
+                    loopAtStep: 16,
+                }),
+            ],
         })
         const imported = cmd.importPatternFromJson(source)
         const exported = PatternExporter.export(imported)
@@ -173,9 +181,12 @@ describe('Functional: Pattern serialization round-trip', () => {
             name: 'ArpTest',
             bpm: 120,
             nbBeats: 4,
-            tracks: [makeTrack('SNARE', [
-                makeNote(1, 0, { arp: [0, 4, 7], retriggerNum: 3, rate: 2, euclidianFill: 5 })
-            ], { nbBeats: 4, stepsPerBeat: 4 })]
+            tracks: [
+                makeTrack('SNARE', [makeNote(1, 0, { arp: [0, 4, 7], retriggerNum: 3, rate: 2, euclidianFill: 5 })], {
+                    nbBeats: 4,
+                    stepsPerBeat: 4,
+                }),
+            ],
         })
         const imported = cmd.importPatternFromJson(source)
         const exported = PatternExporter.export(imported)
@@ -193,7 +204,7 @@ describe('Functional: Pattern serialization round-trip', () => {
             name: 'MetaTest',
             bpm: 120,
             nbBeats: 4,
-            tracks: [makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 4, stepsPerBeat: 4 })]
+            tracks: [makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 4, stepsPerBeat: 4 })],
         })
         source.application = 'test-app'
         source.url = 'https://test.com'
@@ -216,7 +227,7 @@ describe('Functional: Pattern serialization round-trip', () => {
             name: 'NoNotes',
             bpm: 120,
             nbBeats: 4,
-            tracks: [makeTrack('KICK', [], { nbBeats: 4, stepsPerBeat: 4 })]
+            tracks: [makeTrack('KICK', [], { nbBeats: 4, stepsPerBeat: 4 })],
         })
         const imported = cmd.importPatternFromJson(source)
         const exported = PatternExporter.export(imported)
@@ -248,15 +259,17 @@ describe('Functional: Pattern serialization round-trip', () => {
             name: 'FilterTest',
             bpm: 120,
             nbBeats: 4,
-            tracks: [makeTrack('KICK', [makeNote(0, 0)], {
-                nbBeats: 4,
-                stepsPerBeat: 4,
-                filterType: 'lowpass',
-                filterFreq: 800,
-                filterQ: 1.5,
-                saturationType: 'hard',
-                saturationAmount: 0.3
-            })]
+            tracks: [
+                makeTrack('KICK', [makeNote(0, 0)], {
+                    nbBeats: 4,
+                    stepsPerBeat: 4,
+                    filterType: 'lowpass',
+                    filterFreq: 800,
+                    filterQ: 1.5,
+                    saturationType: 'hard',
+                    saturationAmount: 0.3,
+                }),
+            ],
         })
         const imported = cmd.importPatternFromJson(source)
         const exported = PatternExporter.export(imported)
@@ -275,11 +288,19 @@ describe('Functional: Pattern serialization round-trip', () => {
     describe.each(PARAM_SETS)('Round-trip — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
         it('preserves all properties through export → reimport', () => {
             const source = makePattern({
-                name: 'ParamRoundTrip', bpm, nbBeats,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9, pitch: 1 }),
-                    makeNote(Math.min(2, nbBeats - 1), 0, { velocity: 0.7 }),
-                ], { stepsPerBeat, nbBeats })],
+                name: 'ParamRoundTrip',
+                bpm,
+                nbBeats,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        [
+                            makeNote(0, 0, { velocity: 0.9, pitch: 1 }),
+                            makeNote(Math.min(2, nbBeats - 1), 0, { velocity: 0.7 }),
+                        ],
+                        { stepsPerBeat, nbBeats },
+                    ),
+                ],
             })
             const imported = cmd.importPatternFromJson(source)
             const exported = PatternExporter.export(imported)
@@ -294,10 +315,10 @@ describe('Functional: Pattern serialization round-trip', () => {
 
         it('double export is stable', () => {
             const source = makePattern({
-                name: 'ParamStable', bpm, nbBeats,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.8, pitch: 3 }),
-                ], { stepsPerBeat, nbBeats })],
+                name: 'ParamStable',
+                bpm,
+                nbBeats,
+                tracks: [makeTrack('KICK', [makeNote(0, 0, { velocity: 0.8, pitch: 3 })], { stepsPerBeat, nbBeats })],
             })
             const once = cmd.importPatternFromJson(source)
             const exportedOnce = PatternExporter.export(once)

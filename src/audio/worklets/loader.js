@@ -20,13 +20,12 @@ import { logger } from '../../core/logger.js'
 
 const registry = new Map()
 const loadedProcessors = new WeakMap() // audioCtx -> Set of loaded processor names
-const pendingLoads = new WeakMap()     // audioCtx -> Map<name, in-flight load Promise>
+const pendingLoads = new WeakMap() // audioCtx -> Map<name, in-flight load Promise>
 
 export default class WorkletLoader {
     static isSupported(audioCtx) {
         if (!audioCtx) return false
-        return typeof audioCtx.audioWorklet !== 'undefined'
-            && typeof audioCtx.audioWorklet.addModule === 'function'
+        return typeof audioCtx.audioWorklet !== 'undefined' && typeof audioCtx.audioWorklet.addModule === 'function'
     }
 
     static register(name, sourceCode) {
@@ -100,7 +99,9 @@ export default class WorkletLoader {
                         logger.warn('WorkletLoader', `WorkletLoader: failed to load '${name}'`, err)
                         throw err
                     } finally {
-                        try { URL.revokeObjectURL(url) } catch (e) {
+                        try {
+                            URL.revokeObjectURL(url)
+                        } catch (e) {
                             logger.warn('WorkletLoader', `Failed to revoke Blob URL for '${name}'`, e)
                         }
                         contextPending.delete(name)
@@ -129,10 +130,12 @@ export default class WorkletLoader {
         if (!registry.has(name)) {
             throw new Error(`WorkletLoader.createNode: processor '${name}' not registered`)
         }
-        
+
         const contextLoadedSet = loadedProcessors.get(audioCtx)
         if (!contextLoadedSet || !contextLoadedSet.has(name)) {
-            throw new Error(`WorkletLoader.createNode: processor '${name}' not loaded into this context. Call ensureLoaded(audioCtx) first.`)
+            throw new Error(
+                `WorkletLoader.createNode: processor '${name}' not loaded into this context. Call ensureLoaded(audioCtx) first.`,
+            )
         }
         return new AudioWorkletNode(audioCtx, name, options)
     }

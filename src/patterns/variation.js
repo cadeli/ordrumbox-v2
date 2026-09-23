@@ -10,7 +10,7 @@ const COST_PITCH = 1
 const DEFAULT_MAJOR_SCALE = [0, 2, 4, 5, 7, 9, 11]
 
 function weightedShuffle(ops, weightFn) {
-    const scored = ops.map(op => ({ op, score: Math.random() * (weightFn(op) ?? 50) }))
+    const scored = ops.map((op) => ({ op, score: Math.random() * (weightFn(op) ?? 50) }))
     scored.sort((a, b) => b.score - a.score)
     for (let i = 0; i < ops.length; i++) ops[i] = scored[i].op
     return ops
@@ -43,7 +43,10 @@ function pickPitch(track) {
     let bestDist = 999
     for (const s of scaleSteps) {
         const dist = Math.abs(degree - s)
-        if (dist < bestDist) { bestDist = dist; best = s }
+        if (dist < bestDist) {
+            bestDist = dist
+            best = s
+        }
     }
     return sign * (octave * 12 + best)
 }
@@ -51,13 +54,19 @@ function pickPitch(track) {
 function applyOps(flatNotes, track, ops, budget) {
     const weightFn = (op) => {
         switch (op.type) {
-            case 'silence':     return track.prob_silence ?? 50
-            case 'velocity':    return track.prob_velocity ?? 50
-            case 'pitch':       return track.prob_pitch ?? 50
+            case 'silence':
+                return track.prob_silence ?? 50
+            case 'velocity':
+                return track.prob_velocity ?? 50
+            case 'pitch':
+                return track.prob_pitch ?? 50
             case 'anticipation':
-            case 'double':      return track.prob_fill ?? 50
-            case 'ghost':       return track.prob_ghost ?? 50
-            default:            return 50
+            case 'double':
+                return track.prob_fill ?? 50
+            case 'ghost':
+                return track.prob_ghost ?? 50
+            default:
+                return 50
         }
     }
     weightedShuffle(ops, weightFn)
@@ -86,7 +95,7 @@ function applyOps(flatNotes, track, ops, budget) {
                     velocity: Math.round(Math.max(0.2, (op.fn.note.velocity ?? 0.8) * 0.7) * 100) / 100,
                     pan: op.fn.note.pan ?? 0,
                     beat: op.target.beat,
-                    beatStep: op.target.beatStep
+                    beatStep: op.target.beatStep,
                 }
                 const newFn = new FlatNote(op.target.t, track, note)
                 if (!flatNotes.has(op.target.t)) flatNotes.set(op.target.t, [])
@@ -101,7 +110,7 @@ function applyOps(flatNotes, track, ops, budget) {
                     velocity: Math.round((op.fn.note.velocity ?? 0.8) * 0.8 * 100) / 100,
                     pan: op.fn.note.pan ?? 0,
                     beat: op.target.beat,
-                    beatStep: op.target.beatStep
+                    beatStep: op.target.beatStep,
                 }
                 const newFn = new FlatNote(op.target.t, track, note)
                 if (!flatNotes.has(op.target.t)) flatNotes.set(op.target.t, [])
@@ -116,7 +125,7 @@ function applyOps(flatNotes, track, ops, budget) {
                     velocity: Math.round((op.source.note.velocity ?? 0.8) * 0.5 * 100) / 100,
                     pan: op.source.note.pan ?? 0,
                     beat: op.target.beat,
-                    beatStep: op.target.beatStep
+                    beatStep: op.target.beatStep,
                 }
                 const newFn = new FlatNote(op.target.t, track, note)
                 if (!flatNotes.has(op.target.t)) flatNotes.set(op.target.t, [])
@@ -148,7 +157,12 @@ function applyNoteVariation(sourceNotes, budget, track) {
         const newEucl = Math.floor(Math.random() * 2) + 1
         ops.push({ type: 'euclidianFill', cost: Math.min(newEucl, budget), idx: i, newValue: newEucl })
 
-        ops.push({ type: 'prob', cost: COST_PROB, idx: i, newValue: Math.round((Math.random() * 0.8 + 0.2) * 100) / 100 })
+        ops.push({
+            type: 'prob',
+            cost: COST_PROB,
+            idx: i,
+            newValue: Math.round((Math.random() * 0.8 + 0.2) * 100) / 100,
+        })
 
         if (note.arp && Array.isArray(note.arp) && note.arp.length >= 2) {
             ops.push({ type: 'arpRange', cost: COST_ARP_RANGE, idx: i, newValue: Math.floor(Math.random() * 7) + 6 })
@@ -157,11 +171,16 @@ function applyNoteVariation(sourceNotes, budget, track) {
 
     const weightFn = (op) => {
         switch (op.type) {
-            case 'retrigRate':    return track.prob_retrig ?? 50
-            case 'euclidianFill': return track.prob_euclid ?? 50
-            case 'prob':          return track.prob_note ?? 50
-            case 'arpRange':      return track.prob_arp ?? 50
-            default:              return 50
+            case 'retrigRate':
+                return track.prob_retrig ?? 50
+            case 'euclidianFill':
+                return track.prob_euclid ?? 50
+            case 'prob':
+                return track.prob_note ?? 50
+            case 'arpRange':
+                return track.prob_arp ?? 50
+            default:
+                return 50
         }
     }
     weightedShuffle(ops, weightFn)
@@ -198,9 +217,9 @@ export default class TrackVariation {
         const variation = variationOverride ?? track.variation ?? 0
         if (variation <= 0) return
 
-        const budget = Math.round(variation * 16 / 100)
+        const budget = Math.round((variation * 16) / 100)
         const stepsPerBeat = track.stepsPerBeat ?? 4
-        const totalStepsInLoop = Math.round(nbTickForLoop * stepsPerBeat / tick)
+        const totalStepsInLoop = Math.round((nbTickForLoop * stepsPerBeat) / tick)
         const loopCount = Math.max(1, Math.ceil(nbTickForPattern / nbTickForLoop))
 
         for (let loop = 0; loop < loopCount; loop++) {
@@ -212,7 +231,7 @@ export default class TrackVariation {
                 if (t >= nbTickForPattern) continue
 
                 const existing = flatNotes.get(t)
-                const fn = existing?.find(n => n.track === track)
+                const fn = existing?.find((n) => n.track === track)
                 if (fn) {
                     occupied.add(step)
                     byStep.set(step, fn)
@@ -240,7 +259,7 @@ export default class TrackVariation {
                         type: 'anticipation',
                         cost: COST_ADD,
                         fn,
-                        target: { t, beat: Math.floor(nextStep / stepsPerBeat), beatStep: nextStep % stepsPerBeat }
+                        target: { t, beat: Math.floor(nextStep / stepsPerBeat), beatStep: nextStep % stepsPerBeat },
                     })
                 }
 
@@ -257,7 +276,7 @@ export default class TrackVariation {
                         type: 'double',
                         cost: COST_ADD,
                         fn,
-                        target: { t, beat: Math.floor(nextStep / stepsPerBeat), beatStep: nextStep % stepsPerBeat }
+                        target: { t, beat: Math.floor(nextStep / stepsPerBeat), beatStep: nextStep % stepsPerBeat },
                     })
                 }
             }
@@ -273,7 +292,7 @@ export default class TrackVariation {
                     type: 'ghost',
                     cost: COST_ADD,
                     source: byStep.get(sortedSteps[i]),
-                    target: { t, beat: Math.floor(midStep / stepsPerBeat), beatStep: midStep % stepsPerBeat }
+                    target: { t, beat: Math.floor(midStep / stepsPerBeat), beatStep: midStep % stepsPerBeat },
                 })
             }
 
@@ -285,7 +304,7 @@ export default class TrackVariation {
         const variation2 = track.variation2 ?? 0
         if (variation2 <= 0) return
 
-        const budget = Math.round(variation2 * 16 / 100)
+        const budget = Math.round((variation2 * 16) / 100)
         const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? {})
         applyNoteVariation(notes, budget, track)
     }

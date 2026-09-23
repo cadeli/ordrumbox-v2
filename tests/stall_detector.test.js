@@ -16,13 +16,13 @@ function makeAudioCtx(state = 'running') {
         }),
         removeEventListener: vi.fn((type, fn) => {
             if (listeners[type]) {
-                listeners[type] = listeners[type].filter(f => f !== fn)
+                listeners[type] = listeners[type].filter((f) => f !== fn)
             }
         }),
         resume: vi.fn().mockResolvedValue(undefined),
         _emit(type) {
             for (const fn of listeners[type] ?? []) fn()
-        }
+        },
     }
 }
 
@@ -40,7 +40,7 @@ describe('AudioStallDetector', () => {
     it('constructor sets default state', () => {
         const detector = new AudioStallDetector({
             audioCtx: makeAudioCtx(),
-            transport: makeTransport()
+            transport: makeTransport(),
         })
         expect(detector.isStalled).toBe(false)
     })

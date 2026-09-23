@@ -30,8 +30,6 @@ describe('Defaults', () => {
             expect(result.pan).toBe(0.3)
         })
 
-
-
         it('preserves extra custom fields via spread', () => {
             const note = { beat: 0, beatStep: 0, customField: 'hello' }
             const result = Defaults.normalizeNote(note)

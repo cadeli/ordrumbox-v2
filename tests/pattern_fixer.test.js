@@ -6,7 +6,7 @@ import {
     fixTrackDefaults,
     fixPattern,
     fixPatterns,
-    getUnloadedSamplesFromDrumkits
+    getUnloadedSamplesFromDrumkits,
 } from '../src/patterns/fixer.js'
 import { normalizeNote } from '../src/core/note_schema.js'
 
@@ -72,7 +72,7 @@ describe('patternFixer - fixTrackDefaults', () => {
         const track = {
             stepsPerBeat: 4,
             loopAtStep: 16,
-            notes: [{ beat: 0, beatStep: 0 }]
+            notes: [{ beat: 0, beatStep: 0 }],
         }
         fixTrackDefaults(track, 0)
         expect(track.pan).toBe(0)
@@ -82,8 +82,6 @@ describe('patternFixer - fixTrackDefaults', () => {
         expect(track.filterType).toBe('allpass')
         expect(track.notes[0].every).toBe(1)
     })
-
-
 
     it('disables auto-assign when useSoftSynth is true', () => {
         const track = { stepsPerBeat: 4, loopAtStep: 16, useSoftSynth: true }
@@ -104,7 +102,7 @@ describe('patternFixer - fixPattern', () => {
         const pattern = {
             application: 'my-app',
             url: 'https://example.com',
-            tracks: []
+            tracks: [],
         }
         fixPattern(pattern)
         expect(pattern.application).toBe('my-app')
@@ -115,8 +113,8 @@ describe('patternFixer - fixPattern', () => {
         const pattern = {
             tracks: [
                 { stepsPerBeat: 4, loopAtStep: 16, notes: [] },
-                { stepsPerBeat: 4, loopAtStep: 16, notes: [] }
-            ]
+                { stepsPerBeat: 4, loopAtStep: 16, notes: [] },
+            ],
         }
         fixPattern(pattern)
         expect(pattern.tracks[0].pan).toBe(0)
@@ -128,7 +126,7 @@ describe('patternFixer - fixPatterns', () => {
     it('fixes multiple patterns', () => {
         const patterns = [
             { name: 'A', tracks: [{ stepsPerBeat: 4, loopAtStep: 16, notes: [] }] },
-            { name: 'B', tracks: [] }
+            { name: 'B', tracks: [] },
         ]
         const fixed = fixPatterns(patterns)
         expect(fixed.length).toBe(2)
@@ -140,13 +138,13 @@ describe('patternFixer - fixPatterns', () => {
 describe('patternFixer - getUnloadedSamplesFromDrumkits', () => {
     it('returns unloaded samples', () => {
         const drumkits = {
-            '0': {
+            0: {
                 name: 'real',
                 instruments: {
                     'kick.wav': { url: 'kits/real/kick.wav', key: 'KICK' },
-                    'snare.wav': { url: 'kits/real/snare.wav', key: 'SNARE' }
-                }
-            }
+                    'snare.wav': { url: 'kits/real/snare.wav', key: 'SNARE' },
+                },
+            },
         }
         const existingSounds = {}
         const result = getUnloadedSamplesFromDrumkits(drumkits, existingSounds)
@@ -156,16 +154,16 @@ describe('patternFixer - getUnloadedSamplesFromDrumkits', () => {
 
     it('skips already loaded samples', () => {
         const drumkits = {
-            '0': {
+            0: {
                 name: 'real',
                 instruments: {
                     'kick.wav': { url: 'kits/real/kick.wav', key: 'KICK' },
-                    'snare.wav': { url: 'kits/real/snare.wav', key: 'SNARE' }
-                }
-            }
+                    'snare.wav': { url: 'kits/real/snare.wav', key: 'SNARE' },
+                },
+            },
         }
         const existingSounds = {
-            'kits/real/kick.wav': { buffer: {} }
+            'kits/real/kick.wav': { buffer: {} },
         }
         const result = getUnloadedSamplesFromDrumkits(drumkits, existingSounds)
         expect(result.length).toBe(1)
@@ -174,14 +172,14 @@ describe('patternFixer - getUnloadedSamplesFromDrumkits', () => {
 
     it('skips duplicates across drumkits', () => {
         const drumkits = {
-            '0': {
+            0: {
                 name: 'kit1',
-                instruments: { 'a.wav': { url: 'kits/a.wav', key: 'A' } }
+                instruments: { 'a.wav': { url: 'kits/a.wav', key: 'A' } },
             },
-            '1': {
+            1: {
                 name: 'kit2',
-                instruments: { 'a.wav': { url: 'kits/a.wav', key: 'A' } }
-            }
+                instruments: { 'a.wav': { url: 'kits/a.wav', key: 'A' } },
+            },
         }
         const result = getUnloadedSamplesFromDrumkits(drumkits, {})
         expect(result.length).toBe(1)
@@ -245,15 +243,25 @@ describe.each(PARAM_SETS)('fixPattern — spb=%i bpm=%i beats=%i (%s)', (stepsPe
         const loopAtStep = nbBeats * stepsPerBeat
         const inputBeatStep = stepsPerBeat + 1
         const pattern = {
-            name: 'ParamFix', bpm, nbBeats,
+            name: 'ParamFix',
+            bpm,
+            nbBeats,
             tracks: [
-                { name: 'KICK', nbBeats, stepsPerBeat, loopAtStep, notes: [
-                    { beat: 0, beatStep: inputBeatStep, velocity: 0.8, pitch: 0 }
-                ]},
-                { name: 'SNARE', nbBeats, stepsPerBeat, loopAtStep, notes: [
-                    { beat: 1, beatStep: 0, velocity: 0.8, pitch: 0 }
-                ]},
-            ]
+                {
+                    name: 'KICK',
+                    nbBeats,
+                    stepsPerBeat,
+                    loopAtStep,
+                    notes: [{ beat: 0, beatStep: inputBeatStep, velocity: 0.8, pitch: 0 }],
+                },
+                {
+                    name: 'SNARE',
+                    nbBeats,
+                    stepsPerBeat,
+                    loopAtStep,
+                    notes: [{ beat: 1, beatStep: 0, velocity: 0.8, pitch: 0 }],
+                },
+            ],
         }
         const fixed = fixPattern(pattern)
         expect(fixed.tracks[0].notes[0].beat).toBe(Math.floor(inputBeatStep / stepsPerBeat))

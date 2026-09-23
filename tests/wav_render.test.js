@@ -50,12 +50,12 @@ function floatToWav(samples, sampleRate) {
     // fmt chunk
     writeString(view, 12, 'fmt ')
     view.setUint32(16, 16, true)
-    view.setUint16(20, 1, true)       // PCM
-    view.setUint16(22, 1, true)       // mono
+    view.setUint16(20, 1, true) // PCM
+    view.setUint16(22, 1, true) // mono
     view.setUint32(24, sampleRate, true)
     view.setUint32(28, sampleRate * 2, true) // byte rate
-    view.setUint16(32, 2, true)       // block align
-    view.setUint16(34, 16, true)      // bits per sample
+    view.setUint16(32, 2, true) // block align
+    view.setUint16(34, 16, true) // bits per sample
 
     // data chunk
     writeString(view, 36, 'data')
@@ -63,7 +63,7 @@ function floatToWav(samples, sampleRate) {
 
     for (let i = 0; i < length; i++) {
         const s = Math.max(-1, Math.min(1, samples[i]))
-        view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true)
+        view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true)
     }
 
     return new Uint8Array(buffer)
@@ -102,9 +102,7 @@ describe('real render — tempo accuracy', () => {
         })
 
         // Expected positions in samples
-        const expectedSamples = Array.from({ length: numBeats }, (_, i) =>
-            Math.round(i * beatDuration * SAMPLE_RATE)
-        )
+        const expectedSamples = Array.from({ length: numBeats }, (_, i) => Math.round(i * beatDuration * SAMPLE_RATE))
 
         const tolerance = SAMPLE_RATE * 0.03 // 30ms tolerance
         const { matched, missed } = matchOnsets(onsets, expectedSamples, tolerance)
@@ -136,9 +134,7 @@ describe('real render — tempo accuracy', () => {
             minOnsetGap: beatDuration * 0.5,
         })
 
-        const expectedSamples = Array.from({ length: numBeats }, (_, i) =>
-            Math.round(i * beatDuration * SAMPLE_RATE)
-        )
+        const expectedSamples = Array.from({ length: numBeats }, (_, i) => Math.round(i * beatDuration * SAMPLE_RATE))
 
         const tolerance = SAMPLE_RATE * 0.03
         const { matched } = matchOnsets(onsets, expectedSamples, tolerance)
@@ -169,9 +165,7 @@ describe('real render — tempo accuracy', () => {
             minOnsetGap: beatDuration * 0.4,
         })
 
-        const expectedSamples = Array.from({ length: numBeats }, (_, i) =>
-            Math.round(i * beatDuration * SAMPLE_RATE)
-        )
+        const expectedSamples = Array.from({ length: numBeats }, (_, i) => Math.round(i * beatDuration * SAMPLE_RATE))
 
         const tolerance = SAMPLE_RATE * 0.03
         const { matched } = matchOnsets(onsets, expectedSamples, tolerance)
@@ -189,10 +183,10 @@ describe('real render — tempo accuracy', () => {
 
         // Kick on beats 1,3 and snare on beats 2,4
         const events = [
-            { beat: 0, freq: 60, dur: 0.1, amp: 0.9 },   // kick
-            { beat: 1, freq: 200, dur: 0.08, amp: 0.7 },  // snare
-            { beat: 2, freq: 60, dur: 0.1, amp: 0.9 },    // kick
-            { beat: 3, freq: 200, dur: 0.08, amp: 0.7 },  // snare
+            { beat: 0, freq: 60, dur: 0.1, amp: 0.9 }, // kick
+            { beat: 1, freq: 200, dur: 0.08, amp: 0.7 }, // snare
+            { beat: 2, freq: 60, dur: 0.1, amp: 0.9 }, // kick
+            { beat: 3, freq: 200, dur: 0.08, amp: 0.7 }, // snare
         ]
 
         for (const ev of events) {
@@ -210,9 +204,7 @@ describe('real render — tempo accuracy', () => {
             minOnsetGap: beatDuration * 0.4,
         })
 
-        const expectedSamples = events.map(e =>
-            Math.round(e.beat * beatDuration * SAMPLE_RATE)
-        )
+        const expectedSamples = events.map((e) => Math.round(e.beat * beatDuration * SAMPLE_RATE))
 
         const tolerance = SAMPLE_RATE * 0.03
         const { matched } = matchOnsets(onsets, expectedSamples, tolerance)
@@ -292,8 +284,7 @@ describe('real render — orDrumbox pattern', () => {
         const realBuffer = tmpCtx.createBuffer(1, bufLength, SAMPLE_RATE)
         const channelData = realBuffer.getChannelData(0)
         for (let i = 0; i < bufLength; i++) {
-            channelData[i] = Math.sin(2 * Math.PI * 60 * i / SAMPLE_RATE) *
-                             Math.exp(-i / (SAMPLE_RATE * 0.05))
+            channelData[i] = Math.sin((2 * Math.PI * 60 * i) / SAMPLE_RATE) * Math.exp(-i / (SAMPLE_RATE * 0.05))
         }
 
         soundRegistry.sounds = {

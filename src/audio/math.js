@@ -1,9 +1,5 @@
 import { logger } from '../core/logger.js'
-import {
-    TICK,
-    C3_FREQ,
-    MIN_NOTE_RATIO,
-} from '../core/constants.js'
+import { TICK, C3_FREQ, MIN_NOTE_RATIO } from '../core/constants.js'
 import Utils from '../core/utils.js'
 
 export function safeDisconnect(node) {
@@ -32,7 +28,7 @@ export function computeOscFrequency(noteRatio, octave = 0, detune = 0) {
     const nRatio = computeNoteRatio(noteRatio)
     const oct = clamp(toFiniteNumber(octave, 0), -4, 4)
     const det = clamp(toFiniteNumber(detune, 0), -100, 100)
-    return C3_FREQ * nRatio * Math.pow(2, oct + (det / 100))
+    return C3_FREQ * nRatio * Math.pow(2, oct + det / 100)
 }
 
 export function computeNoteRatio(fpitch) {
@@ -99,16 +95,16 @@ export function computeLfoValue(lfo, tick, _nbTicks = TICK * 4, _controlKey = nu
  */
 export function getLfoWaveformValue(phase, wave) {
     // Shift by -0.25 to start at minimum (-1) when phase=0
-    const p = (phase - 0.25) - Math.floor(phase - 0.25)
-    
+    const p = phase - 0.25 - Math.floor(phase - 0.25)
+
     if (wave < 0.5) return Math.sin(2 * Math.PI * p) // Sine
-    if (wave < 1.5) return p < 0.25 ? p * 4 - 1 : (p < 0.75 ? 3 - p * 4 : p * 4 - 5) // Tri
+    if (wave < 1.5) return p < 0.25 ? p * 4 - 1 : p < 0.75 ? 3 - p * 4 : p * 4 - 5 // Tri
     if (wave < 2.5) return p * 2 - 1 // Saw
     if (wave < 3.5) return p < 0.5 ? 1 : -1 // Square
-    
+
     // S&H — deterministic pseudo-random, new value at each LFO cycle boundary
     const cycle = Math.floor(phase)
-    let rng = ((cycle * 1234567 + 890123) | 0)
+    let rng = (cycle * 1234567 + 890123) | 0
     rng ^= rng << 13
     rng ^= rng >> 17
     rng ^= rng << 5
@@ -117,19 +113,19 @@ export function getLfoWaveformValue(phase, wave) {
 
 export function computeAccent(noteVelo, accentAmount = 0.5) {
     const isAccented = noteVelo > 0.5
-    const accentMultiplier = isAccented ? 1 + (accentAmount * 0.5) : 1
+    const accentMultiplier = isAccented ? 1 + accentAmount * 0.5 : 1
     const accentFilterBoost = isAccented ? accentAmount * 2000 : 0
     return { isAccented, accentMultiplier, accentFilterBoost }
 }
 
 const SYNC_NOTE_HZ = {
-    '1/1':  0.25,
-    '1/2':  0.5,
-    '1/4':  1,
-    '1/8':  2,
+    '1/1': 0.25,
+    '1/2': 0.5,
+    '1/4': 1,
+    '1/8': 2,
     '1/16': 4,
-    '1/8T':  2 * 2 / 3,
-    '1/16T': 4 * 2 / 3,
+    '1/8T': (2 * 2) / 3,
+    '1/16T': (4 * 2) / 3,
 }
 
 export function syncToHz(syncValue, bpm) {

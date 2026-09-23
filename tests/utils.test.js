@@ -141,7 +141,9 @@ describe('Utils', () => {
     describe('addLoopToTrackIfPossible', () => {
         it('detects smallest repeating loop and minimizes notes', () => {
             const track = {
-                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+                loopAtStep: 16,
                 notes: [
                     { beat: 0, beatStep: 0, velocity: 0.8 },
                     { beat: 0, beatStep: 2, velocity: 0.6 },
@@ -151,7 +153,7 @@ describe('Utils', () => {
                     { beat: 2, beatStep: 2, velocity: 0.6 },
                     { beat: 3, beatStep: 0, velocity: 0.8 },
                     { beat: 3, beatStep: 2, velocity: 0.6 },
-                ]
+                ],
             }
             const result = Utils.addLoopToTrackIfPossible(track)
             expect(result.changed).toBe(true)
@@ -162,13 +164,15 @@ describe('Utils', () => {
 
         it('compacts one note per beat to single note + 1-beat loop', () => {
             const track = {
-                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+                loopAtStep: 16,
                 notes: [
                     { beat: 0, beatStep: 0 },
                     { beat: 1, beatStep: 0 },
                     { beat: 2, beatStep: 0 },
                     { beat: 3, beatStep: 0 },
-                ]
+                ],
             }
             const result = Utils.addLoopToTrackIfPossible(track)
             expect(result.changed).toBe(true)
@@ -182,25 +186,31 @@ describe('Utils', () => {
 
         it('compacts each track independently when called on multiple tracks', () => {
             const trackA = {
-                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+                loopAtStep: 16,
                 notes: [
                     { beat: 0, beatStep: 0, velocity: 0.8 },
                     { beat: 1, beatStep: 0, velocity: 0.8 },
                     { beat: 2, beatStep: 0, velocity: 0.8 },
                     { beat: 3, beatStep: 0, velocity: 0.8 },
-                ]
+                ],
             }
             const trackB = {
-                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+                loopAtStep: 16,
                 notes: [
                     { beat: 0, beatStep: 1, velocity: 0.6 },
                     { beat: 1, beatStep: 1, velocity: 0.6 },
                     { beat: 2, beatStep: 1, velocity: 0.6 },
                     { beat: 3, beatStep: 1, velocity: 0.6 },
-                ]
+                ],
             }
             const trackC = {
-                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+                loopAtStep: 16,
                 notes: [
                     { beat: 0, beatStep: 0, velocity: 0.8 },
                     { beat: 0, beatStep: 2, velocity: 0.6 },
@@ -210,7 +220,7 @@ describe('Utils', () => {
                     { beat: 2, beatStep: 2, velocity: 0.6 },
                     { beat: 3, beatStep: 0, velocity: 0.8 },
                     { beat: 3, beatStep: 2, velocity: 0.6 },
-                ]
+                ],
             }
 
             const resultA = Utils.addLoopToTrackIfPossible(trackA)
@@ -249,11 +259,13 @@ describe('Utils', () => {
 
         it('returns unchanged if notes are truly non-repeating', () => {
             const track = {
-                nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8,
+                nbBeats: 2,
+                stepsPerBeat: 4,
+                loopAtStep: 8,
                 notes: [
                     { beat: 0, beatStep: 0, velocity: 0.8 },
                     { beat: 1, beatStep: 2, velocity: 0.3 },
-                ]
+                ],
             }
             const result = Utils.addLoopToTrackIfPossible(track)
             expect(result.changed).toBe(false)
@@ -261,8 +273,10 @@ describe('Utils', () => {
 
         it('returns unchanged if track has no notes and loopAtStep stays same', () => {
             const track = {
-                nbBeats: 4, stepsPerBeat: 4, loopAtStep: 8,
-                notes: []
+                nbBeats: 4,
+                stepsPerBeat: 4,
+                loopAtStep: 8,
+                notes: [],
             }
             const originalLoopAtStep = track.loopAtStep
             const originalLoopPointBeat = track.loopPointBeat
@@ -289,7 +303,7 @@ describe('Utils', () => {
                     { beat: 0, beatStep: 2 },
                     { beat: 1, beatStep: 0 },
                     { beat: 1, beatStep: 2 },
-                ]
+                ],
             }
             expect(Utils.trackNotesMatchLoop(track, 4, 8)).toBe(true)
         })
@@ -300,7 +314,7 @@ describe('Utils', () => {
                 notes: [
                     { beat: 0, beatStep: 0 },
                     { beat: 1, beatStep: 1 },
-                ]
+                ],
             }
             expect(Utils.trackNotesMatchLoop(track, 4, 8)).toBe(false)
         })
@@ -415,7 +429,7 @@ describe('Utils', () => {
                 notes: [
                     { beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
                     { beat: 1, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
-                ]
+                ],
             }
             const result = Utils.addLoopToTrackIfPossible(track)
             expect(result.changed).toBe(false)
@@ -435,7 +449,7 @@ describe('Utils', () => {
                     { beat: 1, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
                     { beat: 2, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
                     { beat: 3, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0 },
-                ]
+                ],
             }
             const result = Utils.addLoopToTrackIfPossible(track)
             expect(result.changed).toBe(true)

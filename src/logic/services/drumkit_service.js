@@ -11,8 +11,7 @@ const TAG = 'DrumkitService'
 
 class DrumkitService {
     getCurrentKitSounds() {
-        return Object.entries(soundRegistry.sounds)
-            .map(([url, s]) => ({ url, ...s }))
+        return Object.entries(soundRegistry.sounds).map(([url, s]) => ({ url, ...s }))
     }
 
     currentKitName() {
@@ -24,8 +23,8 @@ class DrumkitService {
         if (!name) return null
 
         const instruments = Object.values(soundRegistry.sounds)
-            .filter(sound => sound.kit_name === name)
-            .map(sound => ({
+            .filter((sound) => sound.kit_name === name)
+            .map((sound) => ({
                 url: sound.url,
                 display_name: sound.display_name,
                 key: sound.key,
@@ -45,8 +44,8 @@ class DrumkitService {
         }
 
         const instruments = data.instruments
-            .filter(sample => typeof sample?.url === 'string' && typeof sample?.key === 'string')
-            .map(sample => ({
+            .filter((sample) => typeof sample?.url === 'string' && typeof sample?.key === 'string')
+            .map((sample) => ({
                 url: sample.url,
                 display_name: sample.display_name ?? sample.url,
                 key: sample.key,
@@ -59,7 +58,7 @@ class DrumkitService {
         if (!instruments.length) throw new Error('No valid instruments')
 
         const kit = { name: data.name, instruments: structuredClone(instruments) }
-        const existingIndex = soundRegistry.drumkitList.findIndex(entry => entry.name === kit.name)
+        const existingIndex = soundRegistry.drumkitList.findIndex((entry) => entry.name === kit.name)
         if (existingIndex === -1) soundRegistry.drumkitList.push(kit)
         else soundRegistry.drumkitList.splice(existingIndex, 1, kit)
         soundRegistry.drumkits[kit.name] = { name: kit.name, instruments: structuredClone(instruments) }
@@ -70,7 +69,7 @@ class DrumkitService {
             Object.assign(sound, sample, { kit_name: kit.name })
         }
 
-        const kitIndex = soundRegistry.drumkitList.findIndex(entry => entry.name === kit.name)
+        const kitIndex = soundRegistry.drumkitList.findIndex((entry) => entry.name === kit.name)
         appState.selectedDrumkitNum = kitIndex
         appState.selectedDrumkit = kit.name
         try {
@@ -81,7 +80,7 @@ class DrumkitService {
             throw err
         }
 
-        playbackEvents.emit("drumkitChange")
+        playbackEvents.emit('drumkitChange')
         return kit.name
     }
 
@@ -96,11 +95,11 @@ class DrumkitService {
 
         const oldKit = soundRegistry.drumkits[oldKitName]
         if (oldKit?.instruments) {
-            oldKit.instruments = oldKit.instruments.filter(i => i.url !== soundKey)
+            oldKit.instruments = oldKit.instruments.filter((i) => i.url !== soundKey)
         }
-        const oldListEntry = soundRegistry.drumkitList.find(d => d.name === oldKitName)
+        const oldListEntry = soundRegistry.drumkitList.find((d) => d.name === oldKitName)
         if (oldListEntry?.instruments) {
-            oldListEntry.instruments = oldListEntry.instruments.filter(i => i.url !== soundKey)
+            oldListEntry.instruments = oldListEntry.instruments.filter((i) => i.url !== soundKey)
         }
 
         let newKit = soundRegistry.drumkits[newKitName]
@@ -111,14 +110,14 @@ class DrumkitService {
         const instEntry = { display_name: sound.display_name, key: sound.key, url: soundKey }
         newKit.instruments.push(instEntry)
 
-        let newListEntry = soundRegistry.drumkitList.find(d => d.name === newKitName)
+        let newListEntry = soundRegistry.drumkitList.find((d) => d.name === newKitName)
         if (!newListEntry) {
             newListEntry = { name: newKitName, instruments: [] }
             soundRegistry.drumkitList.push(newListEntry)
         }
         newListEntry.instruments.push(instEntry)
 
-        playbackEvents.emit("drumkitChange")
+        playbackEvents.emit('drumkitChange')
         return sound.display_name
     }
 
@@ -129,15 +128,15 @@ class DrumkitService {
         sound.key = instrumentKey
         const kitName = sound.kit_name
         const updateInstrumentEntry = (kit) => {
-            kit?.instruments?.forEach(entry => {
+            kit?.instruments?.forEach((entry) => {
                 if (entry.url === soundKey) entry.key = instrumentKey
             })
         }
 
         updateInstrumentEntry(soundRegistry.drumkits[kitName])
-        updateInstrumentEntry(soundRegistry.drumkitList.find(kit => kit.name === kitName))
+        updateInstrumentEntry(soundRegistry.drumkitList.find((kit) => kit.name === kitName))
 
-        playbackEvents.emit("drumkitChange")
+        playbackEvents.emit('drumkitChange')
         return sound.display_name
     }
 
@@ -150,14 +149,14 @@ class DrumkitService {
 
         const kit = soundRegistry.drumkits[kitName]
         if (kit?.instruments) {
-            kit.instruments = kit.instruments.filter(i => i.url !== soundKey)
+            kit.instruments = kit.instruments.filter((i) => i.url !== soundKey)
         }
-        const listEntry = soundRegistry.drumkitList.find(d => d.name === kitName)
+        const listEntry = soundRegistry.drumkitList.find((d) => d.name === kitName)
         if (listEntry?.instruments) {
-            listEntry.instruments = listEntry.instruments.filter(i => i.url !== soundKey)
+            listEntry.instruments = listEntry.instruments.filter((i) => i.url !== soundKey)
         }
 
-        playbackEvents.emit("drumkitChange")
+        playbackEvents.emit('drumkitChange')
         return sound.display_name
     }
 
@@ -170,7 +169,7 @@ class DrumkitService {
         oldSound.display_name = displayName
         oldSound.duration = Math.floor(buffer.duration * 1000)
 
-        playbackEvents.emit("drumkitChange")
+        playbackEvents.emit('drumkitChange')
         return true
     }
 
@@ -188,19 +187,19 @@ class DrumkitService {
             buffer,
             duration: Math.floor(buffer.duration * 1000),
             isLoad: true,
-            playStatus: false
+            playStatus: false,
         }
 
         const kit = soundRegistry.drumkits[kitName] ?? { instruments: [] }
         kit.instruments.push({ display_name: file.name, key, url: file.name })
         soundRegistry.drumkits[kitName] = kit
 
-        const listEntry = soundRegistry.drumkitList.find(d => d.name === kitName)
+        const listEntry = soundRegistry.drumkitList.find((d) => d.name === kitName)
         if (listEntry) {
             listEntry.instruments.push({ display_name: file.name, key, url: file.name })
         }
 
-        playbackEvents.emit("drumkitChange")
+        playbackEvents.emit('drumkitChange')
         return { fileName: file.name, kitName }
     }
 
@@ -217,11 +216,7 @@ class DrumkitService {
             const gainDb = -analysis.peakDb
             const gainLinear = Math.pow(10, gainDb / 20)
 
-            const newBuffer = ctx.createBuffer(
-                s.buffer.numberOfChannels,
-                s.buffer.length,
-                s.buffer.sampleRate
-            )
+            const newBuffer = ctx.createBuffer(s.buffer.numberOfChannels, s.buffer.length, s.buffer.sampleRate)
             for (let ch = 0; ch < s.buffer.numberOfChannels; ch++) {
                 const input = s.buffer.getChannelData(ch)
                 const output = newBuffer.getChannelData(ch)

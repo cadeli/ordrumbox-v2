@@ -39,7 +39,14 @@ export default class Sound {
         // (non-pooled) AudioWorkletNode per note, same as before pooling
         // was introduced.
         this.synthNodePool = isOffline ? null : new SynthVoiceNodePool(audioCtx)
-        this.voiceFactory = new VoiceFactory(audioCtx, mixer, sounds, this.generatedSounds, this.nodePool, this.synthNodePool)
+        this.voiceFactory = new VoiceFactory(
+            audioCtx,
+            mixer,
+            sounds,
+            this.generatedSounds,
+            this.nodePool,
+            this.synthNodePool,
+        )
         this.generatedSoundsLoading = false
         this.generatedSoundsLoadFailed = false
 
@@ -66,7 +73,7 @@ export default class Sound {
     }
 
     registerSynthVoice = (voice) => {
-        if (!voice || typeof voice.updateGeneratedSound !== "function") return
+        if (!voice || typeof voice.updateGeneratedSound !== 'function') return
         this.activeSynthVoices.add(voice)
         const prevOnEnded = voice.onEnded
         voice.onEnded = () => {
@@ -76,7 +83,7 @@ export default class Sound {
     }
 
     stopVoice = (voice, time) => {
-        if (!voice || typeof voice.stop !== "function") return
+        if (!voice || typeof voice.stop !== 'function') return
         voice.stop(time)
         // Remove from active tracking immediately so polyphony limit
         // is freed right away. In offline export, onended never fires
@@ -266,7 +273,7 @@ export default class Sound {
         const time = this.audioCtx?.currentTime ?? 0
         for (const voice of this._activeVoiceSet) {
             try {
-                if (voice && typeof voice.stop === "function") {
+                if (voice && typeof voice.stop === 'function') {
                     voice.stop(time)
                 }
             } catch (e) {
@@ -282,7 +289,7 @@ export default class Sound {
     updateGeneratedSounds = (generatedSounds) => {
         Object.assign(this.generatedSounds, generatedSounds)
         const time = this.audioCtx?.currentTime ?? 0
-        this.activeSynthVoices.forEach(voice => {
+        this.activeSynthVoices.forEach((voice) => {
             try {
                 const generatedSound = this.generatedSounds?.[voice.soundKey]
                 if (generatedSound) voice.updateGeneratedSound(generatedSound, time)

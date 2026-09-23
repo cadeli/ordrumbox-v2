@@ -4,21 +4,16 @@ import { bufferToWav } from './wav_encoder.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { getAutoGenerateService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import { nameOr } from "../../core/logger.js"
+import { nameOr } from '../../core/logger.js'
 
 export default class WavExporter {
-    constructor() {
-    }
+    constructor() {}
 
     exportPatternToWav = async (pattern, loopsCount = 1) => {
-        const TICK_TIME = (60 * 4) / (pattern.bpm * TICK) * 0.25 // Match Transport.js timing
+        const TICK_TIME = ((60 * 4) / (pattern.bpm * TICK)) * 0.25 // Match Transport.js timing
         const duration = pattern.nbBeats * TICK * loopsCount * TICK_TIME
         const sampleRate = 44100
-        const offlineCtx = new OfflineAudioContext(
-            2,
-            Math.floor(sampleRate * duration),
-            sampleRate
-        )
+        const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * duration), sampleRate)
 
         const exporterAudioEngine = new AudioEngine({
             audioCtx: offlineCtx,
@@ -32,7 +27,7 @@ export default class WavExporter {
             uiState: {},
             TICK,
             secondsPerBeat: TICK_TIME * 4, // Approx seconds per beat for swing
-            isOffline: true
+            isOffline: true,
         })
 
         // start() awaits the worklet mixer init internally — must be awaited
@@ -61,7 +56,7 @@ export default class WavExporter {
 
         const renderedBuffer = await offlineCtx.startRendering()
         const wavBlob = bufferToWav(renderedBuffer)
-        
+
         return wavBlob
     }
 

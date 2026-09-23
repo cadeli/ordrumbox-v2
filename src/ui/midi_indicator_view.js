@@ -3,13 +3,15 @@ import { isMidiSupported } from '../logic/midi/midi_parser.js'
 const ACTIVITY_FLASH_MS = 120
 
 export default class MidiIndicatorView {
-    #container;
-    #midiManager;
-    #activityTimer;
-    #onActivity;
-    #onStatusChange;
+    #container
+    #midiManager
+    #activityTimer
+    #onActivity
+    #onStatusChange
 
-    flashActivity() { this.#flashActivity() }
+    flashActivity() {
+        this.#flashActivity()
+    }
 
     constructor(container) {
         this.#container = container
@@ -43,7 +45,11 @@ export default class MidiIndicatorView {
             const s = midiManager.getStatus()
             this.#setLedState('midiSupportLed', s.supported, s.supported ? 'Supported' : 'Unavailable')
             this.#setLedState('midiReadyLed', s.ready, s.ready ? 'Ready' : 'Locked')
-            this.#setLedState('midiConnectedLed', s.inputCount > 0, s.inputCount > 0 ? `${s.inputCount} input(s)` : 'None')
+            this.#setLedState(
+                'midiConnectedLed',
+                s.inputCount > 0,
+                s.inputCount > 0 ? `${s.inputCount} input(s)` : 'None',
+            )
             this.#setLedState('midiSyncLed', s.syncEnabled, s.syncEnabled ? 'External' : 'Internal')
         } else {
             const support = isMidiSupported()

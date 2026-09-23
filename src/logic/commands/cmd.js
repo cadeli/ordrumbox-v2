@@ -9,7 +9,7 @@ import { createSelectionMethods } from './cmd/cmd_selection.js'
 import { clamp } from '../../audio/math.js'
 
 export default class Commander {
-    static TAG = "Commander"
+    static TAG = 'Commander'
     static #DERIVED_KEYS = new Set(['loopPointBeat', 'loopPointStep'])
     static #TRACK_KEY_SET = new Set(Object.keys(TRACK_DEFAULTS))
     static TRACK_VALUE_RANGES = TRACK_VALUE_RANGES
@@ -89,20 +89,27 @@ export default class Commander {
         if (changed) {
             this.incrementPatternVersionByTrack(track)
             this.persist()
-            this.record(() => {
-                for (const [k, v] of Object.entries(oldValues)) {
-                    track[k] = v
-                }
-                this.incrementPatternVersionByTrack(track)
-                this.persist()
-            }, { desc: `Update ${track.name}` })
+            this.record(
+                () => {
+                    for (const [k, v] of Object.entries(oldValues)) {
+                        track[k] = v
+                    }
+                    this.incrementPatternVersionByTrack(track)
+                    this.persist()
+                },
+                { desc: `Update ${track.name}` },
+            )
         }
 
         if (typeof track.stepsPerBeat === 'number' && typeof track.loopAtStep === 'number') {
             recalcLoopDerived(track)
         }
 
-        if (track.loopAtStep === undefined && typeof track.loopPointBeat === 'number' && typeof track.stepsPerBeat === 'number') {
+        if (
+            track.loopAtStep === undefined &&
+            typeof track.loopPointBeat === 'number' &&
+            typeof track.stepsPerBeat === 'number'
+        ) {
             track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + (track.loopPointStep ?? 0)
             recalcLoopDerived(track)
         }
@@ -113,9 +120,9 @@ export default class Commander {
         this.#genSnapshot = {
             pattern,
             savedTracksLength: (pattern.tracks ?? []).length,
-            trackSnapshots: (pattern.tracks ?? []).map(t => ({
+            trackSnapshots: (pattern.tracks ?? []).map((t) => ({
                 ref: t,
-                notes: t.notes.map(n => ({ ...n })),
+                notes: t.notes.map((n) => ({ ...n })),
                 loopPointStep: t.loopPointStep,
                 loopPointBeat: t.loopPointBeat,
                 loopAtStep: t.loopAtStep,
@@ -128,19 +135,22 @@ export default class Commander {
         const snap = this.#genSnapshot
         if (!snap) return
         this.#suppressRecord = false
-        this.record(() => {
-            for (const ts of snap.trackSnapshots) {
-                ts.ref.notes = ts.notes
-                ts.ref.loopPointStep = ts.loopPointStep
-                ts.ref.loopPointBeat = ts.loopPointBeat
-                ts.ref.loopAtStep = ts.loopAtStep
-            }
-            if (snap.pattern.tracks && snap.pattern.tracks.length > snap.savedTracksLength) {
-                snap.pattern.tracks.length = snap.savedTracksLength
-            }
-            this.incrementPatternVersionByTrack(snap.pattern.tracks[0])
-            this.persist()
-        }, { desc })
+        this.record(
+            () => {
+                for (const ts of snap.trackSnapshots) {
+                    ts.ref.notes = ts.notes
+                    ts.ref.loopPointStep = ts.loopPointStep
+                    ts.ref.loopPointBeat = ts.loopPointBeat
+                    ts.ref.loopAtStep = ts.loopAtStep
+                }
+                if (snap.pattern.tracks && snap.pattern.tracks.length > snap.savedTracksLength) {
+                    snap.pattern.tracks.length = snap.savedTracksLength
+                }
+                this.incrementPatternVersionByTrack(snap.pattern.tracks[0])
+                this.persist()
+            },
+            { desc },
+        )
         this.#genSnapshot = null
     }
 }

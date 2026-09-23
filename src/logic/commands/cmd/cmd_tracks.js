@@ -13,10 +13,13 @@ export function createTrackMethods(cmd) {
             const trackIndex = pattern.tracks.length
             pattern.tracks.push(track)
             cmd.persist()
-            cmd.record(() => {
-                pattern.tracks.splice(trackIndex, 1)
-                cmd.persist()
-            }, { desc: `Add track ${track.name}` })
+            cmd.record(
+                () => {
+                    pattern.tracks.splice(trackIndex, 1)
+                    cmd.persist()
+                },
+                { desc: `Add track ${track.name}` },
+            )
             return track
         },
 
@@ -24,14 +27,17 @@ export function createTrackMethods(cmd) {
             const tracks = pattern.tracks
             if (trackIdx < 0 || trackIdx >= tracks.length) return
             const removed = tracks[trackIdx]
-            const removedNotes = removed.notes.map(n => ({ ...n }))
+            const removedNotes = removed.notes.map((n) => ({ ...n }))
             tracks.splice(trackIdx, 1)
             cmd.persist()
-            cmd.record(() => {
-                tracks.splice(trackIdx, 0, removed)
-                removed.notes = removedNotes
-                cmd.persist()
-            }, { desc: `Remove track ${removed.name}` })
+            cmd.record(
+                () => {
+                    tracks.splice(trackIdx, 0, removed)
+                    removed.notes = removedNotes
+                    cmd.persist()
+                },
+                { desc: `Remove track ${removed.name}` },
+            )
         },
 
         createTrack(nbBeats, name, stepsPerBeat = 4) {
@@ -50,7 +56,7 @@ export function createTrackMethods(cmd) {
             const oldStepsPerBeat = track.stepsPerBeat
             const oldLoopPointStep = track.loopPointStep
             const oldLoopAtStep = track.loopAtStep
-            const oldNotes = track.notes.map(n => ({ ...n }))
+            const oldNotes = track.notes.map((n) => ({ ...n }))
 
             const loopStepPc = Math.round((track.loopPointStep * 100) / track.stepsPerBeat)
             track.stepsPerBeat++
@@ -65,13 +71,16 @@ export function createTrackMethods(cmd) {
             track.loopPointStep = Math.floor((loopStepPc / 100) * track.stepsPerBeat)
             track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
             cmd.persist()
-            cmd.record(() => {
-                track.stepsPerBeat = oldStepsPerBeat
-                track.loopPointStep = oldLoopPointStep
-                track.loopAtStep = oldLoopAtStep
-                track.notes = oldNotes
-                cmd.persist()
-            }, { desc: `Steps per bar on ${track.name}` })
+            cmd.record(
+                () => {
+                    track.stepsPerBeat = oldStepsPerBeat
+                    track.loopPointStep = oldLoopPointStep
+                    track.loopAtStep = oldLoopAtStep
+                    track.notes = oldNotes
+                    cmd.persist()
+                },
+                { desc: `Steps per bar on ${track.name}` },
+            )
         },
 
         incrLoopPoint(track) {
@@ -85,12 +94,15 @@ export function createTrackMethods(cmd) {
             }
             recalcLoopDerived(track)
             cmd.persist()
-            cmd.record(() => {
-                track.loopAtStep = oldLoopAtStep
-                track.loopPointBeat = oldLoopPointBeat
-                track.loopPointStep = oldLoopPointStep
-                cmd.persist()
-            }, { desc: `Loop point on ${track.name}` })
+            cmd.record(
+                () => {
+                    track.loopAtStep = oldLoopAtStep
+                    track.loopPointBeat = oldLoopPointBeat
+                    track.loopPointStep = oldLoopPointStep
+                    cmd.persist()
+                },
+                { desc: `Loop point on ${track.name}` },
+            )
         },
 
         cleanPattern(pattern) {
@@ -100,7 +112,7 @@ export function createTrackMethods(cmd) {
         },
 
         cleanTrack(track) {
-            const oldNotes = track.notes.map(n => ({ ...n }))
+            const oldNotes = track.notes.map((n) => ({ ...n }))
             const oldLoopPointStep = track.loopPointStep
             const oldLoopPointBeat = track.loopPointBeat
             const oldLoopAtStep = track.loopAtStep
@@ -108,35 +120,41 @@ export function createTrackMethods(cmd) {
             track.loopPointStep = 0
             track.loopPointBeat = track.nbBeats
             track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
-            cmd.record(() => {
-                track.notes = oldNotes
-                track.loopPointStep = oldLoopPointStep
-                track.loopPointBeat = oldLoopPointBeat
-                track.loopAtStep = oldLoopAtStep
-                cmd.persist()
-            }, { desc: `Clean ${track.name}` })
-        },
-
-        compactTrack(track) {
-            const oldNotes = track.notes.map(n => ({ ...n }))
-            const oldLoopPointStep = track.loopPointStep
-            const oldLoopPointBeat = track.loopPointBeat
-            const oldLoopAtStep = track.loopAtStep
-            const result = Utils.addLoopToTrackIfPossible(track)
-            if (result.changed) {
-                cmd.record(() => {
+            cmd.record(
+                () => {
                     track.notes = oldNotes
                     track.loopPointStep = oldLoopPointStep
                     track.loopPointBeat = oldLoopPointBeat
                     track.loopAtStep = oldLoopAtStep
                     cmd.persist()
-                }, { desc: `Compact ${track.name}` })
+                },
+                { desc: `Clean ${track.name}` },
+            )
+        },
+
+        compactTrack(track) {
+            const oldNotes = track.notes.map((n) => ({ ...n }))
+            const oldLoopPointStep = track.loopPointStep
+            const oldLoopPointBeat = track.loopPointBeat
+            const oldLoopAtStep = track.loopAtStep
+            const result = Utils.addLoopToTrackIfPossible(track)
+            if (result.changed) {
+                cmd.record(
+                    () => {
+                        track.notes = oldNotes
+                        track.loopPointStep = oldLoopPointStep
+                        track.loopPointBeat = oldLoopPointBeat
+                        track.loopAtStep = oldLoopAtStep
+                        cmd.persist()
+                    },
+                    { desc: `Compact ${track.name}` },
+                )
             }
             return result
         },
 
         randomizeTrack(track, pattern) {
-            const oldNotes = track.notes.map(n => ({ ...n }))
+            const oldNotes = track.notes.map((n) => ({ ...n }))
             const oldLoopPointStep = track.loopPointStep
             const oldLoopPointBeat = track.loopPointBeat
             const oldLoopAtStep = track.loopAtStep
@@ -151,20 +169,25 @@ export function createTrackMethods(cmd) {
             const used = new Set()
             for (let i = 0; i < noteCount; i++) {
                 let step
-                do { step = Math.floor(Math.random() * totalSteps) } while (used.has(step))
+                do {
+                    step = Math.floor(Math.random() * totalSteps)
+                } while (used.has(step))
                 used.add(step)
                 const beat = Math.floor(step / stepsPerBeat)
                 const beatStep = step % stepsPerBeat
                 const pitch = Math.floor(Math.random() * 13) - 6
                 track.notes.push({ ...Utils.NOTE_DEFAULTS, beat, beatStep, pitch, velocity: 0.5 + Math.random() * 0.5 })
             }
-            cmd.record(() => {
-                track.notes = oldNotes
-                track.loopPointStep = oldLoopPointStep
-                track.loopPointBeat = oldLoopPointBeat
-                track.loopAtStep = oldLoopAtStep
-                cmd.persist()
-            }, { desc: `Randomize ${track.name}` })
+            cmd.record(
+                () => {
+                    track.notes = oldNotes
+                    track.loopPointStep = oldLoopPointStep
+                    track.loopPointBeat = oldLoopPointBeat
+                    track.loopAtStep = oldLoopAtStep
+                    cmd.persist()
+                },
+                { desc: `Randomize ${track.name}` },
+            )
         },
 
         changeTrackSound(track, soundId) {
@@ -175,27 +198,33 @@ export function createTrackMethods(cmd) {
             track.useAutoAssignSound = false
             track.useSoftSynth = false
             cmd.persist()
-            cmd.record(() => {
-                track.soundId = oldSoundId
-                track.useAutoAssignSound = oldUseAutoAssign
-                track.useSoftSynth = oldUseSoftSynth
-                cmd.persist()
-            }, { desc: `Sound on ${track.name}` })
+            cmd.record(
+                () => {
+                    track.soundId = oldSoundId
+                    track.useAutoAssignSound = oldUseAutoAssign
+                    track.useSoftSynth = oldUseSoftSynth
+                    cmd.persist()
+                },
+                { desc: `Sound on ${track.name}` },
+            )
         },
 
         changeTrackName(track, newName) {
             const oldName = track.name
             track.name = newName
             cmd.persist()
-            cmd.record(() => {
-                track.name = oldName
-                cmd.persist()
-            }, { desc: `Rename track → ${newName}` })
+            cmd.record(
+                () => {
+                    track.name = oldName
+                    cmd.persist()
+                },
+                { desc: `Rename track → ${newName}` },
+            )
         },
 
         getSoundIdFromUrl(url) {
             const entry = Object.entries(soundRegistry.sounds).find(([, s]) => s.url === url)
             return entry?.[0] ?? NOT_FOUND
-        }
+        },
     }
 }

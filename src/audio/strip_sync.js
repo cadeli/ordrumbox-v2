@@ -25,7 +25,7 @@ export function applyTrackToStrip(strip, track, time, opts) {
         strip.updateFilter(
             track.filterType,
             track.filterFreqLfo ? undefined : track.filterFreq,
-            track.filterQLfo ? undefined : track.filterQ
+            track.filterQLfo ? undefined : track.filterQ,
         )
     }
 
@@ -40,14 +40,10 @@ export function applyTrackToStrip(strip, track, time, opts) {
     }
 
     if (!skipVelocityPan) {
-        const trackVelo = readDefaults
-            ? (track.velocity ?? Defaults.getTrackProp(track, 'velocity'))
-            : track.velocity
+        const trackVelo = readDefaults ? (track.velocity ?? Defaults.getTrackProp(track, 'velocity')) : track.velocity
         if (trackVelo !== undefined && !track.velocityLfo) strip.output.gain.setTargetAtTime(trackVelo, time, 0.01)
 
-        const trackPan = readDefaults
-            ? (track.pan ?? Defaults.getTrackProp(track, 'pan'))
-            : track.pan
+        const trackPan = readDefaults ? (track.pan ?? Defaults.getTrackProp(track, 'pan')) : track.pan
         if (trackPan !== undefined && !track.panLfo) strip.pan.pan.setTargetAtTime(trackPan, time, 0.01)
     }
 

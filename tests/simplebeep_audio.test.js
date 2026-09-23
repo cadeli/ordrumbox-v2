@@ -74,16 +74,16 @@ describe('simpleBeep — real audio rendering', () => {
             name: 'Beep Test',
             bpm: 120,
             nbBeats: 1,
-            tracks: [{
-                name: 'KICK',
-                soundId: 'kick.wav',
-                nbBeats: 1,
-                stepsPerBeat: 4,
-                mute: false,
-                notes: [
-                    { beat: 0, beatStep: 0, velocity: 1, pitch: 0 },
-                ],
-            }],
+            tracks: [
+                {
+                    name: 'KICK',
+                    soundId: 'kick.wav',
+                    nbBeats: 1,
+                    stepsPerBeat: 4,
+                    mute: false,
+                    notes: [{ beat: 0, beatStep: 0, velocity: 1, pitch: 0 }],
+                },
+            ],
         }
 
         const exporter = new WavExporter()
@@ -103,7 +103,7 @@ describe('simpleBeep — real audio rendering', () => {
         for (let i = 0; i < numSamples; i++) {
             const offset = headerSize + i * bytesPerSample * numChannels
             const val = wavBytes[offset] | (wavBytes[offset + 1] << 8)
-            samples.push(val < 0x8000 ? val / 0x7FFF : (val - 0x10000) / 0x7FFF)
+            samples.push(val < 0x8000 ? val / 0x7fff : (val - 0x10000) / 0x7fff)
         }
 
         expect(samples.length).toBeGreaterThan(0)
@@ -129,14 +129,16 @@ describe('simpleBeep — real audio rendering', () => {
             name: 'Silent Test',
             bpm: 120,
             nbBeats: 1,
-            tracks: [{
-                name: 'KICK',
-                soundId: 'kick.wav',
-                nbBeats: 1,
-                stepsPerBeat: 4,
-                mute: false,
-                notes: [],
-            }],
+            tracks: [
+                {
+                    name: 'KICK',
+                    soundId: 'kick.wav',
+                    nbBeats: 1,
+                    stepsPerBeat: 4,
+                    mute: false,
+                    notes: [],
+                },
+            ],
         }
 
         const exporter = new WavExporter()
@@ -152,7 +154,7 @@ describe('simpleBeep — real audio rendering', () => {
         for (let i = 0; i < numSamples; i++) {
             const offset = 44 + i * 2 * numChannels
             const val = wavBytes[offset] | (wavBytes[offset + 1] << 8)
-            samples.push(val < 0x8000 ? val / 0x7FFF : (val - 0x10000) / 0x7FFF)
+            samples.push(val < 0x8000 ? val / 0x7fff : (val - 0x10000) / 0x7fff)
         }
 
         expect(peak(samples)).toBeLessThan(0.05)
@@ -222,7 +224,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
         const buf = ctx.createBuffer(1, len, SAMPLE_RATE)
         const ch = buf.getChannelData(0)
         for (let i = 0; i < len; i++) {
-            ch[i] = Math.sin(2 * Math.PI * 440 * i / SAMPLE_RATE) * Math.exp(-i / (SAMPLE_RATE * 0.05))
+            ch[i] = Math.sin((2 * Math.PI * 440 * i) / SAMPLE_RATE) * Math.exp(-i / (SAMPLE_RATE * 0.05))
         }
         src.buffer = buf
 
@@ -259,7 +261,7 @@ describe('simpleBeep — mixer graph reconnection', () => {
         const buf = ctx.createBuffer(1, len, SAMPLE_RATE)
         const ch = buf.getChannelData(0)
         for (let i = 0; i < len; i++) {
-            ch[i] = Math.sin(2 * Math.PI * 440 * i / SAMPLE_RATE) * 0.8
+            ch[i] = Math.sin((2 * Math.PI * 440 * i) / SAMPLE_RATE) * 0.8
         }
         src.buffer = buf
 

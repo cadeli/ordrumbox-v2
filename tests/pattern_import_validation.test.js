@@ -10,7 +10,7 @@ describe('validatePatternJson', () => {
     it('accepts a valid pattern with tracks array', () => {
         const result = validatePatternJson({
             name: 'Test',
-            tracks: [{ name: 'KICK', notes: [] }]
+            tracks: [{ name: 'KICK', notes: [] }],
         })
         expect(result).toEqual({ ok: true })
     })
@@ -88,14 +88,14 @@ describe('validatePatternJson', () => {
 
     it('accepts notes as array (compact format)', () => {
         const result = validatePatternJson({
-            tracks: { t: { name: 'T', notes: [[0, 0, 0]] } }
+            tracks: { t: { name: 'T', notes: [[0, 0, 0]] } },
         })
         expect(result).toEqual({ ok: true })
     })
 
     it('accepts tracks as array', () => {
         const result = validatePatternJson({
-            tracks: [{ name: 'KICK', notes: [] }]
+            tracks: [{ name: 'KICK', notes: [] }],
         })
         expect(result).toEqual({ ok: true })
     })
@@ -106,7 +106,7 @@ describe('validatePatternJson', () => {
             bpm: 120,
             nbBeats: 4,
             tracks: {},
-            unknownField: true
+            unknownField: true,
         })
         expect(result).toEqual({ ok: true })
     })

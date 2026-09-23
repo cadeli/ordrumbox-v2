@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite';
-import { resolve } from 'node:path';
+import { defineConfig } from 'vite'
+import { resolve } from 'node:path'
 
 export default defineConfig({
     root: '.',
@@ -19,9 +19,9 @@ export default defineConfig({
 
         terserOptions: {
             compress: {
-                drop_console: true,  // no console.log for prod
-                drop_debugger: true
-            }
+                drop_console: true, // no console.log for prod
+                drop_debugger: true,
+            },
         },
 
         // 3. Assets
@@ -33,24 +33,24 @@ export default defineConfig({
                 entryFileNames: 'assets/js/[name].[hash].js',
                 chunkFileNames: 'assets/js/[name].[hash].js',
                 manualChunks(id) {
-                    if (id.includes('src/audio/')) return 'audio-engine';
-                    if (id.includes('src/patterns/')) return 'pattern-core';
+                    if (id.includes('src/audio/')) return 'audio-engine'
+                    if (id.includes('src/patterns/')) return 'pattern-core'
                 },
                 assetFileNames: ({ name }) => {
                     if (/\.wav$/.test(name ?? '')) {
-                        return 'assets/audio/[name].[hash][extname]';
+                        return 'assets/audio/[name].[hash][extname]'
                     }
                     if (/\.(gif|jpe?g|png|svg)$/.test(name ?? '')) {
-                        return 'assets/images/[name].[hash][extname]';
+                        return 'assets/images/[name].[hash][extname]'
                     }
                     if (/\.css$/.test(name ?? '')) {
-                        return 'assets/css/[name].[hash][extname]';
+                        return 'assets/css/[name].[hash][extname]'
                     }
                     if (/\.json$/.test(name ?? '')) {
-                        return 'assets/json/[name].[hash][extname]';
+                        return 'assets/json/[name].[hash][extname]'
                     }
 
-                    return 'assets/[name].[hash][extname]';
+                    return 'assets/[name].[hash][extname]'
                 },
             },
         },
@@ -61,6 +61,4 @@ export default defineConfig({
         port: 3000,
         open: true, // Open navigator
     },
-
-
-});
+})

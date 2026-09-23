@@ -53,28 +53,66 @@ const GAP = 4
 const TOP_SECONDARY = TOOLBAR_H + MAIN_H + GAP
 
 const MOCK_TRACK = {
-    name: 'KICK', notes: [{ beat: 0, beatStep: 0, pitch: 0, velocity: 0.8 }],
-    nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
-    mute: false, solo: false, useAutoAssignSound: true,
-    velocity: 0.8, pan: 0, pitch: 0,
-    filterCutoff: 12000, filterResonance: 1, filterType: 'lowpass',
-    filterLfo: 0, filterEnvelopeAmount: 0,
-    pitchLfo: 0, volumeLfo: 0, panLfo: 0, filterLfoValue: 0,
-    pitchEnv: 0, delaySend: 0, reverbSend: 0, saturationDrive: 0,
-    delayActive: false, reverbActive: false, saturationActive: false,
-    swingAmount: 0, swingMode: 'off', synthSoundKey: 'BASS1'
+    name: 'KICK',
+    notes: [{ beat: 0, beatStep: 0, pitch: 0, velocity: 0.8 }],
+    nbBeats: 4,
+    stepsPerBeat: 4,
+    loopAtStep: 16,
+    mute: false,
+    solo: false,
+    useAutoAssignSound: true,
+    velocity: 0.8,
+    pan: 0,
+    pitch: 0,
+    filterCutoff: 12000,
+    filterResonance: 1,
+    filterType: 'lowpass',
+    filterLfo: 0,
+    filterEnvelopeAmount: 0,
+    pitchLfo: 0,
+    volumeLfo: 0,
+    panLfo: 0,
+    filterLfoValue: 0,
+    pitchEnv: 0,
+    delaySend: 0,
+    reverbSend: 0,
+    saturationDrive: 0,
+    delayActive: false,
+    reverbActive: false,
+    saturationActive: false,
+    swingAmount: 0,
+    swingMode: 'off',
+    synthSoundKey: 'BASS1',
 }
 const SECOND_TRACK = { ...structuredClone(MOCK_TRACK), name: 'SNARE' }
 
 function setupCanvas() {
     HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
-        fillRect: vi.fn(), clearRect: vi.fn(), getImageData: vi.fn(),
-        putImageData: vi.fn(), createImageData: vi.fn(), setTransform: vi.fn(),
-        drawImage: vi.fn(), save: vi.fn(), fillText: vi.fn(), restore: vi.fn(),
-        beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(),
-        stroke: vi.fn(), translate: vi.fn(), scale: vi.fn(), rotate: vi.fn(),
-        arc: vi.fn(), fill: vi.fn(), measureText: vi.fn().mockReturnValue({ width: 0 }),
-        transform: vi.fn(), rect: vi.fn(), clip: vi.fn(), setLineDash: vi.fn()
+        fillRect: vi.fn(),
+        clearRect: vi.fn(),
+        getImageData: vi.fn(),
+        putImageData: vi.fn(),
+        createImageData: vi.fn(),
+        setTransform: vi.fn(),
+        drawImage: vi.fn(),
+        save: vi.fn(),
+        fillText: vi.fn(),
+        restore: vi.fn(),
+        beginPath: vi.fn(),
+        moveTo: vi.fn(),
+        lineTo: vi.fn(),
+        closePath: vi.fn(),
+        stroke: vi.fn(),
+        translate: vi.fn(),
+        scale: vi.fn(),
+        rotate: vi.fn(),
+        arc: vi.fn(),
+        fill: vi.fn(),
+        measureText: vi.fn().mockReturnValue({ width: 0 }),
+        transform: vi.fn(),
+        rect: vi.fn(),
+        clip: vi.fn(),
+        setLineDash: vi.fn(),
     })
 }
 
@@ -90,15 +128,18 @@ function setupApp(viewport) {
     appState.reset()
     soundRegistry.reset()
     serviceRegistry.reset()
-    appState.patterns = [{
-        name: 'Pattern 1', nbBeats: 4,
-        tracks: [structuredClone(MOCK_TRACK), SECOND_TRACK]
-    }]
+    appState.patterns = [
+        {
+            name: 'Pattern 1',
+            nbBeats: 4,
+            tracks: [structuredClone(MOCK_TRACK), SECOND_TRACK],
+        },
+    ]
     appState.selectedPatternNum = 0
     appState.selectedTrackNum = 0
 
     global.fetch = vi.fn().mockResolvedValue({
-        json: () => Promise.resolve({ major: { scaleSteps: [0, 2, 4, 5, 7, 9, 11] } })
+        json: () => Promise.resolve({ major: { scaleSteps: [0, 2, 4, 5, 7, 9, 11] } }),
     })
     setupCanvas()
 
@@ -117,15 +158,23 @@ function setupApp(viewport) {
     const mockSynthEditor = {
         createDOM: () => {},
         getGeneratedSoundKeys: () => [],
-        hidePanel: () => { document.getElementById('soft-synth-panel').style.display = 'none' },
-        showPanel: () => { document.getElementById('soft-synth-panel').style.display = 'block' },
+        hidePanel: () => {
+            document.getElementById('soft-synth-panel').style.display = 'none'
+        },
+        showPanel: () => {
+            document.getElementById('soft-synth-panel').style.display = 'block'
+        },
         ensureGeneratedSoundsLoaded: async () => {},
-        reset: () => {}
+        reset: () => {},
     }
 
     const mockPianoRollPanel = {
-        hide: () => { document.getElementById('piano-roll-panel').style.display = 'none' },
-        show: () => { document.getElementById('piano-roll-panel').style.display = 'block' }
+        hide: () => {
+            document.getElementById('piano-roll-panel').style.display = 'none'
+        },
+        show: () => {
+            document.getElementById('piano-roll-panel').style.display = 'block'
+        },
     }
 
     const trackEditor = new TrackEditor()
@@ -156,10 +205,16 @@ function setupApp(viewport) {
     drumkitManager.init()
 
     const viewManager = new ViewManager({
-        trackEditor, synthEditor: mockSynthEditor,
-        pianoRollPanel: mockPianoRollPanel, noteEditor,
-        toolsPanel, patternSettingsPanel,
-        outputPanel, drumkitManager, patternsPanel: songPanel, aboutPanel
+        trackEditor,
+        synthEditor: mockSynthEditor,
+        pianoRollPanel: mockPianoRollPanel,
+        noteEditor,
+        toolsPanel,
+        patternSettingsPanel,
+        outputPanel,
+        drumkitManager,
+        patternsPanel: songPanel,
+        aboutPanel,
     })
     viewManager.init()
 
@@ -167,7 +222,17 @@ function setupApp(viewport) {
     mockAnchor(document.getElementById('piano-roll-panel'), TOOLBAR_H, MAIN_H)
     mockAnchor(document.getElementById('soft-synth-panel'), TOOLBAR_H, MAIN_H)
 
-    return { viewManager, trackEditor, noteEditor, toolsPanel, outputPanel, aboutPanel, songPanel, drumkitManager, patternSettingsPanel }
+    return {
+        viewManager,
+        trackEditor,
+        noteEditor,
+        toolsPanel,
+        outputPanel,
+        aboutPanel,
+        songPanel,
+        drumkitManager,
+        patternSettingsPanel,
+    }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -176,7 +241,9 @@ function setupApp(viewport) {
 
 describe('Panel visibility matrix — Desktop (1200×800)', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(DESKTOP) })
+    beforeEach(() => {
+        ctx = setupApp(DESKTOP)
+    })
 
     describe('Workspace panels → top-left slot', () => {
         it('edit: pattern visible, synth/piano-roll hidden', () => {
@@ -223,12 +290,15 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
     describe('Track editor → right-top slot', () => {
         for (const [name, emit] of [
-            ['edit',  () => playbackEvents.emit('editToggle')],
+            ['edit', () => playbackEvents.emit('editToggle')],
             ['proll', () => playbackEvents.emit('prollToggle')],
             ['synth', () => playbackEvents.emit('synthToggle')],
             ['tools', () => playbackEvents.emit('toolsToggle', true)],
         ]) {
-            it(`TE visible in ${name}`, () => { emit(); expect(ctx.trackEditor.isVisible).toBe(true) })
+            it(`TE visible in ${name}`, () => {
+                emit()
+                expect(ctx.trackEditor.isVisible).toBe(true)
+            })
         }
 
         it('TE visible with multiple slot panels', () => {
@@ -247,7 +317,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
     describe('Note editor → inline in TE', () => {
         for (const [name, emit] of [
-            ['edit',  () => playbackEvents.emit('editToggle')],
+            ['edit', () => playbackEvents.emit('editToggle')],
             ['proll', () => playbackEvents.emit('prollToggle')],
             ['synth', () => playbackEvents.emit('synthToggle')],
             ['tools', () => playbackEvents.emit('toolsToggle', true)],
@@ -352,7 +422,10 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
                 () => playbackEvents.emit('prollToggle'),
                 () => playbackEvents.emit('toolsToggle', true),
                 () => playbackEvents.emit('editToggle'),
-            ]) { emit(); expect(ctx.trackEditor.isVisible).toBe(true) }
+            ]) {
+                emit()
+                expect(ctx.trackEditor.isVisible).toBe(true)
+            }
         })
 
         it('NE inline visible across full cycle', () => {
@@ -371,10 +444,10 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
         })
 
         for (const [name, id] of [
-            ['about',    'about-panel'],
-            ['dm',       'dm-panel'],
-            ['song',      'song-panel'],
-            ['output',   'output-panel'],
+            ['about', 'about-panel'],
+            ['dm', 'dm-panel'],
+            ['song', 'song-panel'],
+            ['output', 'output-panel'],
         ]) {
             it(`${name} persists across view switches`, () => {
                 document.getElementById(id).style.display = 'block'
@@ -382,7 +455,10 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
                     () => playbackEvents.emit('editToggle'),
                     () => playbackEvents.emit('synthToggle'),
                     () => playbackEvents.emit('prollToggle'),
-                ]) { emit(); expect(document.getElementById(id).style.display).not.toBe('none') }
+                ]) {
+                    emit()
+                    expect(document.getElementById(id).style.display).not.toBe('none')
+                }
             })
         }
     })
@@ -405,8 +481,8 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
     describe('Slot panel show/hide via ViewManager', () => {
         const slotMap = [
-            ['aboutToggle',  'about-panel'],
-            ['toolsToggle',  'tools-panel'],
+            ['aboutToggle', 'about-panel'],
+            ['toolsToggle', 'tools-panel'],
             ['masterToggle', 'output-panel'],
         ]
 
@@ -477,7 +553,9 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
 describe('Panel visibility matrix — Mobile (768×480)', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE) })
+    beforeEach(() => {
+        ctx = setupApp(MOBILE)
+    })
 
     describe('mobileSeq', () => {
         it('pattern panel visible', () => {
@@ -553,7 +631,9 @@ describe('Panel visibility matrix — Mobile (768×480)', () => {
 
 describe('Panel visibility matrix — Mobile landscape (800×375)', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE_LANDSCAPE) })
+    beforeEach(() => {
+        ctx = setupApp(MOBILE_LANDSCAPE)
+    })
 
     describe('sequential view cycling', () => {
         it('seq → tools → synth → track → seq', () => {

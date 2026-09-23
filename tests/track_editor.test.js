@@ -17,10 +17,10 @@ describe('TrackEditor sound panel', () => {
         soundRegistry.drumkitList = [
             { name: '8bits', instruments: [{ key: 'KICK', url: '8bits/kick.wav', display_name: 'Kick 8' }] },
             { name: 'real', instruments: [{ key: 'KICK', url: 'real/kick.wav', display_name: 'Kick Real' }] },
-            { name: 'vintage', instruments: [{ key: 'KICK', url: 'vintage/kick.wav', display_name: 'Kick Vintage' }] }
+            { name: 'vintage', instruments: [{ key: 'KICK', url: 'vintage/kick.wav', display_name: 'Kick Vintage' }] },
         ]
         soundRegistry.sounds = {
-            'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} }
+            'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} },
         }
         appState.selectedDrumkitNum = 1
     })
@@ -45,14 +45,14 @@ describe('TrackEditor sound panel', () => {
             name: 'KICK',
             soundId: 'real/kick.wav',
             useAutoAssignSound: false,
-            useSoftSynth: false
+            useSoftSynth: false,
         })
         const sampleOptions = [...wrapper.querySelectorAll('select[data-sound="sample"] option')]
 
-        expect(sampleOptions.map(option => option.value)).toEqual([
+        expect(sampleOptions.map((option) => option.value)).toEqual([
             'real/kick.wav',
             '8bits/kick.wav',
-            'vintage/kick.wav'
+            'vintage/kick.wav',
         ])
         expect(sampleOptions[0].selected).toBe(true)
     })
@@ -62,7 +62,7 @@ describe('TrackEditor sound panel', () => {
             name: 'OLDNAME',
             soundId: 'real/kick.wav',
             useAutoAssignSound: false,
-            useSoftSynth: false
+            useSoftSynth: false,
         })
         const instrumentSelect = wrapper.querySelector('select[data-sound="instrument"]')
 
@@ -101,7 +101,7 @@ describe('TrackEditor loop panel', () => {
         editor._track = {
             nbBeats: 8,
             stepsPerBeat: 4,
-            loopAtStep: 16
+            loopAtStep: 16,
         }
 
         const html = editor._loopSection.render()
@@ -134,7 +134,7 @@ describe('TrackEditor onPatternChange', () => {
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.emit("patternChange")
+        playbackEvents.emit('patternChange')
 
         expect(editor._track).toBe(newTrack)
         expect(editor._trackIdx).toBe(0)
@@ -152,7 +152,7 @@ describe('TrackEditor onPatternChange', () => {
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.emit("patternChange")
+        playbackEvents.emit('patternChange')
 
         expect(editor._track).toBeNull()
         expect(editor._trackIdx).toBe(-1)
@@ -164,7 +164,7 @@ describe('TrackEditor onPatternChange', () => {
         editor.init()
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.emit("patternChange")
+        playbackEvents.emit('patternChange')
 
         expect(syncSpy).not.toHaveBeenCalled()
     })
@@ -177,12 +177,12 @@ describe('TrackEditor loop slider events', () => {
             nbBeats: 4,
             stepsPerBeat: 16,
             loopAtStep: 16,
-            notes: []
+            notes: [],
         }
         const pattern = {
             name: 'Test Pattern',
             tracks: [track],
-            nbBeats: 4
+            nbBeats: 4,
         }
         appState.patterns = [pattern]
         appState.selectedPatternNum = 0
@@ -192,21 +192,22 @@ describe('TrackEditor loop slider events', () => {
         editor.show({ track, trackIdx: 0 })
 
         const onLoopPointChangeSpy = vi.fn()
-        playbackEvents.on("loopPointChange", onLoopPointChangeSpy)
+        playbackEvents.on('loopPointChange', onLoopPointChangeSpy)
 
         // Simulate the onChange call that happens during drag/input
-        // This is what _renderLoopPanel does: 
+        // This is what _renderLoopPanel does:
         // onChange: (v, key) => this._onLoopSlider({ dataset: { loop: key }, value: v })
-        
+
         expect(() => {
             editor._onLoopSlider({ dataset: { loop: 'loopAtStep' }, value: 32 })
         }).not.toThrow()
 
         expect(track.loopAtStep).toBe(32)
-        expect(onLoopPointChangeSpy).toHaveBeenCalledWith(expect.objectContaining({
-            loopAtStep: 32,
-            trackIdx: 0
-        }))
+        expect(onLoopPointChangeSpy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                loopAtStep: 32,
+                trackIdx: 0,
+            }),
+        )
     })
 })
-

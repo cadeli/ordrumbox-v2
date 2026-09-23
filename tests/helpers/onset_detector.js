@@ -26,12 +26,7 @@
  * @returns {Array<{ sample: number, time: number, energy: number }>} - Detected onsets
  */
 export function detectOnsets(samples, sampleRate, options = {}) {
-    const {
-        windowSize = 256,
-        hopSize = 128,
-        threshold = 0.001,
-        minOnsetGap = 0.02,
-    } = options
+    const { windowSize = 256, hopSize = 128, threshold = 0.001, minOnsetGap = 0.02 } = options
 
     const minOnsetSamples = Math.floor(minOnsetGap * sampleRate)
     const onsets = []
@@ -58,8 +53,8 @@ export function detectOnsets(samples, sampleRate, options = {}) {
     for (let w = 0; w < numWindows; w++) {
         if (energies[w] < threshold) continue
 
-        const isLocalMax = (w === 0 || energies[w] >= energies[w - 1]) &&
-                           (w === numWindows - 1 || energies[w] >= energies[w + 1])
+        const isLocalMax =
+            (w === 0 || energies[w] >= energies[w - 1]) && (w === numWindows - 1 || energies[w] >= energies[w + 1])
 
         if (isLocalMax) {
             const onsetSample = w * hopSize

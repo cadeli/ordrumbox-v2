@@ -12,7 +12,7 @@ import { logger } from '../core/logger.js'
 import { showToast } from '../ui/toast.js'
 
 export default class Sequencer {
-    static TAG = "Sequencer"
+    static TAG = 'Sequencer'
 
     #stallDetector
     _starting
@@ -29,8 +29,12 @@ export default class Sequencer {
         this.ensureTransport()
     }
 
-    get isRunning() { return this.serviceRegistry.transport?.isRunning ?? false }
-    get tick() { return this.serviceRegistry.transport?.tick ?? 0 }
+    get isRunning() {
+        return this.serviceRegistry.transport?.isRunning ?? false
+    }
+    get tick() {
+        return this.serviceRegistry.transport?.tick ?? 0
+    }
 
     ensureTransport = () => {
         if (!this.serviceRegistry.transport) {
@@ -58,7 +62,7 @@ export default class Sequencer {
             TICK,
             secondsPerBeat: this.appState.secondsPerBeat,
         })
-        this.playbackEvents.on("patternChange", (changedTracks) => {
+        this.playbackEvents.on('patternChange', (changedTracks) => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
                 const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
@@ -71,7 +75,7 @@ export default class Sequencer {
                 }
             }
         })
-        this.playbackEvents.on("selectedPatternChange", () => {
+        this.playbackEvents.on('selectedPatternChange', () => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
                 const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
@@ -85,12 +89,12 @@ export default class Sequencer {
                 }
             }
         })
-        this.playbackEvents.on("noteChange", () => {
+        this.playbackEvents.on('noteChange', () => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
             }
         })
-        this.playbackEvents.on("trackParamChange", (track) => {
+        this.playbackEvents.on('trackParamChange', (track) => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
                 this.serviceRegistry.audioEngine.syncTrack(track)
@@ -118,7 +122,7 @@ export default class Sequencer {
                 this.stop()
             }
         } catch (error) {
-            logger.error('Sequencer', "Sequencer::start: unexpected error", error)
+            logger.error('Sequencer', 'Sequencer::start: unexpected error', error)
         } finally {
             this._starting = false
         }
@@ -127,23 +131,23 @@ export default class Sequencer {
     _startInner = async () => {
         try {
             await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
-            this.playbackEvents.emit("drumkitChange")
+            this.playbackEvents.emit('drumkitChange')
         } catch (error) {
-            logger.error('Sequencer', "Sequencer::start: Failed to load resources", error)
+            logger.error('Sequencer', 'Sequencer::start: Failed to load resources', error)
             showToast('Failed to load audio resources', 'error')
             return
         }
 
         const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
         if (!selPattern) {
-            logger.warn('Sequencer', "Sequencer::start: No selected pattern")
+            logger.warn('Sequencer', 'Sequencer::start: No selected pattern')
             showToast('No pattern selected', 'warning')
             return
         }
 
         // Ensure transport has the current audioCtx (created in toggleStartStop)
         if (!this.serviceRegistry.audioCtx) {
-            logger.warn('Sequencer', "Sequencer::start: No audioCtx available")
+            logger.warn('Sequencer', 'Sequencer::start: No audioCtx available')
             showToast('Audio not available', 'error')
             return
         }
@@ -158,17 +162,17 @@ export default class Sequencer {
         this.serviceRegistry.transport.start()
         this.#stallDetector = new AudioStallDetector({
             audioCtx: this.serviceRegistry.audioCtx,
-            transport: this.serviceRegistry.transport
+            transport: this.serviceRegistry.transport,
         })
         this.#stallDetector.start()
-        this.playbackEvents.emit("playbackStart")
+        this.playbackEvents.emit('playbackStart')
     }
 
     stop = () => {
         this.#stallDetector?.stop()
         this.#stallDetector = null
         this.serviceRegistry.transport?.stop()
-        this.playbackEvents.emit("playbackStop")
+        this.playbackEvents.emit('playbackStop')
         if (this.serviceRegistry.audioEngine) {
             this.serviceRegistry.audioEngine.stop()
         }
@@ -181,7 +185,7 @@ export default class Sequencer {
             try {
                 this.serviceRegistry.audioCtx = this.serviceRegistry.resourcesLoader.audioCtx
             } catch (err) {
-                logger.error('Sequencer', "Sequencer::toggleStartStop: Failed to create AudioContext", err)
+                logger.error('Sequencer', 'Sequencer::toggleStartStop: Failed to create AudioContext', err)
                 showToast('Audio initialization failed', 'error')
                 return
             }
@@ -189,15 +193,15 @@ export default class Sequencer {
 
         // Resume audio context on user interaction (spacebar/click)
         if (this.serviceRegistry.audioCtx && this.serviceRegistry.audioCtx.state === 'suspended') {
-            this.serviceRegistry.audioCtx.resume().catch(err => {
-                logger.error('Sequencer', "Sequencer::toggleStartStop: Failed to resume AudioContext", err);
-            });
+            this.serviceRegistry.audioCtx.resume().catch((err) => {
+                logger.error('Sequencer', 'Sequencer::toggleStartStop: Failed to resume AudioContext', err)
+            })
         }
 
         if (this.isRunning === false) {
             this.start()
         } else {
-             this.stop()
+            this.stop()
         }
     }
 
@@ -217,13 +221,17 @@ export default class Sequencer {
         if (!this.serviceRegistry.audioCtx && typeof window !== 'undefined') {
             try {
                 this.serviceRegistry.audioCtx = new (window.AudioContext ?? window.webkitAudioContext)()
-            } catch (_) { /* no-op */ }
+            } catch (_) {
+                /* no-op */
+            }
         }
         if (!this.serviceRegistry.audioCtx) return
         if (this.serviceRegistry.audioCtx.state === 'suspended') {
             try {
                 await this.serviceRegistry.audioCtx.resume()
-            } catch (_) { /* no-op */ }
+            } catch (_) {
+                /* no-op */
+            }
         }
         this.ensureTransport()
         this.ensureAudioEngine()
@@ -232,11 +240,11 @@ export default class Sequencer {
         const tracks = Utils.getTracksArray(pat)
         const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]
         if (!track) return
-        if ((track.soundId === "NOT_DEFINED" || !track.soundId) && !track.useSoftSynth) {
+        if ((track.soundId === 'NOT_DEFINED' || !track.soundId) && !track.useSoftSynth) {
             try {
                 await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
             } catch (e) {
-                logger.error('Sequencer', "simpleBeep: resources not loaded", e)
+                logger.error('Sequencer', 'simpleBeep: resources not loaded', e)
                 return
             }
             const autoAssign = await getAutoAssignService()

@@ -9,27 +9,47 @@ import { prevPage, nextPage } from '../core/page_nav.js'
 import { showToast } from './toast.js'
 
 export default class PatternSettingsPanel {
-    #isOpen;
-    #prevPageBtn;
-    #nextPageBtn;
-    #pageLabel;
-    #beatsSelect;
-    #drumkitSelect;
-    #patternSelect;
-    #drumBtn;
-    #bassBtn;
-    #chordsBtn;
+    #isOpen
+    #prevPageBtn
+    #nextPageBtn
+    #pageLabel
+    #beatsSelect
+    #drumkitSelect
+    #patternSelect
+    #drumBtn
+    #bassBtn
+    #chordsBtn
 
-    get _isOpen() { return this.#isOpen }
-    get _beatsSelect() { return this.#beatsSelect }
-    get _drumkitSelect() { return this.#drumkitSelect }
-    get _patternSelect() { return this.#patternSelect }
-    get _drumBtn() { return this.#drumBtn }
-    get _bassBtn() { return this.#bassBtn }
-    get _chordsBtn() { return this.#chordsBtn }
-    get _pageLabel() { return this.#pageLabel }
-    get _prevPageBtn() { return this.#prevPageBtn }
-    get _nextPageBtn() { return this.#nextPageBtn }
+    get _isOpen() {
+        return this.#isOpen
+    }
+    get _beatsSelect() {
+        return this.#beatsSelect
+    }
+    get _drumkitSelect() {
+        return this.#drumkitSelect
+    }
+    get _patternSelect() {
+        return this.#patternSelect
+    }
+    get _drumBtn() {
+        return this.#drumBtn
+    }
+    get _bassBtn() {
+        return this.#bassBtn
+    }
+    get _chordsBtn() {
+        return this.#chordsBtn
+    }
+    get _pageLabel() {
+        return this.#pageLabel
+    }
+    get _prevPageBtn() {
+        return this.#prevPageBtn
+    }
+    get _nextPageBtn() {
+        return this.#nextPageBtn
+    }
 
     constructor() {
         this.container = null
@@ -152,7 +172,7 @@ export default class PatternSettingsPanel {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
         pattern.nbBeats = val
-        Utils.getTracksArray(pattern).forEach(track => {
+        Utils.getTracksArray(pattern).forEach((track) => {
             track.nbBeats = val
             const maxSteps = val * (track.stepsPerBeat ?? 4)
             if (track.loopAtStep > maxSteps) {
@@ -162,8 +182,8 @@ export default class PatternSettingsPanel {
         })
         appState.currentPage = 0
         playbackEvents.batch(() => {
-            playbackEvents.emit("patternMetaChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.emit('patternMetaChange')
+            playbackEvents.emit('patternChange')
         })
     }
 
@@ -188,8 +208,8 @@ export default class PatternSettingsPanel {
             serviceRegistry.cmd.setSelectedPatternNum(num)
             appState.currentPage = 0
             playbackEvents.batch(() => {
-                playbackEvents.emit("patternStructureChange")
-                playbackEvents.emit("patternChange")
+                playbackEvents.emit('patternStructureChange')
+                playbackEvents.emit('patternChange')
             })
         }
     }
@@ -202,15 +222,19 @@ export default class PatternSettingsPanel {
 
     #bindGenerationButtons() {
         this.#drumBtn.addEventListener('click', () => this.#onDrumClick())
-        this.#bassBtn.addEventListener('click', () => this.#toggleMelodicAutoGen('BASS', { synthSoundKey: 'BASS1', defaultVariant: 'basic' }))
-        this.#chordsBtn.addEventListener('click', () => this.#toggleMelodicAutoGen('PIANO', { synthSoundKey: 'PIANO', defaultVariant: 'chordStab' }))
+        this.#bassBtn.addEventListener('click', () =>
+            this.#toggleMelodicAutoGen('BASS', { synthSoundKey: 'BASS1', defaultVariant: 'basic' }),
+        )
+        this.#chordsBtn.addEventListener('click', () =>
+            this.#toggleMelodicAutoGen('PIANO', { synthSoundKey: 'PIANO', defaultVariant: 'chordStab' }),
+        )
     }
 
     async #onDrumClick() {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
         const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
-        const hasDrumAuto = (pattern.tracks ?? []).some(t => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
+        const hasDrumAuto = (pattern.tracks ?? []).some((t) => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
         if (hasDrumAuto) {
             for (const track of pattern.tracks) {
                 if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = false
@@ -233,8 +257,8 @@ export default class PatternSettingsPanel {
             serviceRegistry.cmd.commitGenerationUndo()
         }
         playbackEvents.batch(() => {
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.emit('noteChange')
+            playbackEvents.emit('patternChange')
         })
     }
 
@@ -244,13 +268,13 @@ export default class PatternSettingsPanel {
     async #toggleMelodicAutoGen(trackType, { synthSoundKey, defaultVariant }) {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
-        const hasAuto = (pattern.tracks ?? []).some(t => t.auto && Utils.detectTrackType(t.name) === trackType)
+        const hasAuto = (pattern.tracks ?? []).some((t) => t.auto && Utils.detectTrackType(t.name) === trackType)
         if (hasAuto) {
             for (const track of pattern.tracks) {
                 if (Utils.detectTrackType(track.name) === trackType) track.auto = false
             }
         } else {
-            let track = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === trackType)
+            let track = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === trackType)
             const { getAutoGenerateService } = await import('../state/service_loader.js')
             const autoGen = await getAutoGenerateService()
             serviceRegistry.cmd.beginGenerationUndo(pattern)
@@ -258,7 +282,11 @@ export default class PatternSettingsPanel {
                 if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                 const genre = pattern._autoGenGenre
                 const firstElement = autoGen.structureGen.getElement(0)
-                const harmony = autoGen.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+                const harmony = autoGen.structureGen.resolveHarmony(
+                    genre,
+                    firstElement.name,
+                    firstElement.loopInElement,
+                )
                 const structure = autoGen.structureGen.generateStructure(genre)
                 const variant = structure[trackType] ?? defaultVariant
                 track = serviceRegistry.cmd.addTrack(pattern, trackType)
@@ -277,16 +305,16 @@ export default class PatternSettingsPanel {
             serviceRegistry.cmd.commitGenerationUndo()
         }
         playbackEvents.batch(() => {
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.emit('noteChange')
+            playbackEvents.emit('patternChange')
         })
     }
 
     #subscribeEvents() {
-        playbackEvents.on("patternMetaChange", () => this.sync())
-        playbackEvents.on("patternStructureChange", () => this.sync())
-        playbackEvents.on("drumkitChange", () => this.syncDrumkits())
-        playbackEvents.on("patternSettingsToggle", (show) => {
+        playbackEvents.on('patternMetaChange', () => this.sync())
+        playbackEvents.on('patternStructureChange', () => this.sync())
+        playbackEvents.on('drumkitChange', () => this.syncDrumkits())
+        playbackEvents.on('patternSettingsToggle', (show) => {
             if (show) this.show()
             else this.hide()
         })

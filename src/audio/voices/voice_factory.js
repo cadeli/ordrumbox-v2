@@ -1,6 +1,6 @@
 import SampleVoice from './sample_voice.js'
 import WorkletSynthVoice from './worklet_synth_voice.js'
-import { logger, nameOr } from "../../core/logger.js"
+import { logger, nameOr } from '../../core/logger.js'
 
 export default class VoiceFactory {
     constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null, synthNodePool = null) {
@@ -18,11 +18,18 @@ export default class VoiceFactory {
         if (!strip) return null
 
         if (track.useSoftSynth === true) {
-            const soundKey      = nameOr(track?.synthSoundKey, "BASS1", 'VoiceFactory', 'synthSoundKey fallback')
+            const soundKey = nameOr(track?.synthSoundKey, 'BASS1', 'VoiceFactory', 'synthSoundKey fallback')
             const generatedSound = this.generatedSounds?.[soundKey]
             if (!generatedSound) return null
 
-            return new WorkletSynthVoice(this.audioCtx, strip, generatedSound, soundKey, this.nodePool, this.synthNodePool)
+            return new WorkletSynthVoice(
+                this.audioCtx,
+                strip,
+                generatedSound,
+                soundKey,
+                this.nodePool,
+                this.synthNodePool,
+            )
         }
 
         let sound = this.sounds[flatNote.soundId]

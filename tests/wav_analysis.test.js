@@ -16,7 +16,9 @@ describe('wav_builder', () => {
         const view = new DataView(wav.buffer, wav.byteOffset, wav.byteLength)
 
         expect(String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3))).toBe('RIFF')
-        expect(String.fromCharCode(view.getUint8(8), view.getUint8(9), view.getUint8(10), view.getUint8(11))).toBe('WAVE')
+        expect(String.fromCharCode(view.getUint8(8), view.getUint8(9), view.getUint8(10), view.getUint8(11))).toBe(
+            'WAVE',
+        )
         expect(view.getUint32(24, true)).toBe(SAMPLE_RATE)
     })
 
@@ -63,7 +65,7 @@ describe('wav_builder', () => {
         for (let i = start; i < end; i++) {
             energy += mono[i] * mono[i]
         }
-        energy /= (end - start)
+        energy /= end - start
 
         expect(energy).toBeGreaterThan(0.01)
     })
@@ -178,9 +180,9 @@ describe('wav analysis pipeline integration', () => {
     it('four-on-the-floor kick at 120 BPM', async () => {
         const bpm = 120
         const ticksPerBar = 32
-        const tickTime = (60 * 4) / (bpm * ticksPerBar) * 0.25
+        const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
 
-        const kicks = [0, 32, 64, 96].map(tick => ({
+        const kicks = [0, 32, 64, 96].map((tick) => ({
             tick,
             freq: 60,
             duration: 0.05,
@@ -191,7 +193,7 @@ describe('wav analysis pipeline integration', () => {
 
         const { onsets } = detectOnsetsFromWav(analyzer, wav, DETECT_OPTIONS)
 
-        const expectedSamples = kicks.map(k => Math.round(k.tick * tickTime * SAMPLE_RATE))
+        const expectedSamples = kicks.map((k) => Math.round(k.tick * tickTime * SAMPLE_RATE))
 
         expect(onsets.length).toBeGreaterThanOrEqual(4)
 
@@ -205,7 +207,7 @@ describe('wav analysis pipeline integration', () => {
     it('snare on beats 2 and 4 at 90 BPM', async () => {
         const bpm = 90
         const ticksPerBar = 32
-        const tickTime = (60 * 4) / (bpm * ticksPerBar) * 0.25
+        const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
 
         const snares = [
             { tick: 8, freq: 200, duration: 0.04, amplitude: 0.7 },
@@ -216,7 +218,7 @@ describe('wav analysis pipeline integration', () => {
 
         const { onsets } = detectOnsetsFromWav(analyzer, wav, DETECT_OPTIONS)
 
-        const expectedSamples = snares.map(s => Math.round(s.tick * tickTime * SAMPLE_RATE))
+        const expectedSamples = snares.map((s) => Math.round(s.tick * tickTime * SAMPLE_RATE))
 
         expect(onsets.length).toBeGreaterThanOrEqual(2)
 
@@ -228,7 +230,7 @@ describe('wav analysis pipeline integration', () => {
     it('mixed kick + snare pattern', async () => {
         const bpm = 120
         const ticksPerBar = 32
-        const tickTime = (60 * 4) / (bpm * ticksPerBar) * 0.25
+        const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
 
         const notes = [
             { tick: 0, freq: 60, duration: 0.05, amplitude: 0.9 },
@@ -244,7 +246,7 @@ describe('wav analysis pipeline integration', () => {
             minOnsetGap: 0.04,
         })
 
-        const expectedSamples = notes.map(n => Math.round(n.tick * tickTime * SAMPLE_RATE))
+        const expectedSamples = notes.map((n) => Math.round(n.tick * tickTime * SAMPLE_RATE))
 
         expect(onsets.length).toBeGreaterThanOrEqual(4)
 
@@ -276,7 +278,7 @@ describe('wav analysis pipeline integration', () => {
     it('handles 2-beat pattern with loop', async () => {
         const bpm = 120
         const ticksPerBar = 32
-        const tickTime = (60 * 4) / (bpm * ticksPerBar) * 0.25
+        const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
 
         const notes = []
         for (let loop = 0; loop < 2; loop++) {
@@ -295,7 +297,7 @@ describe('wav analysis pipeline integration', () => {
 
         const { onsets } = detectOnsetsFromWav(analyzer, wav, DETECT_OPTIONS)
 
-        const expectedSamples = notes.map(n => Math.round(n.tick * tickTime * SAMPLE_RATE))
+        const expectedSamples = notes.map((n) => Math.round(n.tick * tickTime * SAMPLE_RATE))
 
         expect(onsets.length).toBeGreaterThanOrEqual(4)
 
@@ -441,11 +443,7 @@ describe('onset_detector utilities', () => {
     })
 
     it('matchOnsets correctly categorizes matched, missed, and extra', () => {
-        const detected = [
-            { sample: 1000 },
-            { sample: 5100 },
-            { sample: 9500 },
-        ]
+        const detected = [{ sample: 1000 }, { sample: 5100 }, { sample: 9500 }]
 
         const expected = [1000, 5000, 8000]
 

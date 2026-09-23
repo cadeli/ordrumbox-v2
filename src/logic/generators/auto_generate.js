@@ -10,7 +10,7 @@ import MelodyGenerate from './melody_generate.js'
 import PercGenerate from './perc_generate.js'
 import SnareGenerate from './snare_generate.js'
 import StructureSong from './structure_song.js'
-import { logger } from "../../core/logger.js"
+import { logger } from '../../core/logger.js'
 
 const SECTION_DENSITY = Object.freeze({
     intro: 0.4,
@@ -18,11 +18,11 @@ const SECTION_DENSITY = Object.freeze({
     chorus: 1.0,
     break: 0.2,
     bridge: 0.6,
-    outro: 0.3
+    outro: 0.3,
 })
 
 export default class AutoGenerate {
-    static TAG = "AutoGenerate"
+    static TAG = 'AutoGenerate'
 
     #cachedGenre
     #cachedStructure
@@ -63,12 +63,11 @@ export default class AutoGenerate {
         try {
             let pattern = appState.patterns[appState.selectedPatternNum]
             if (!pattern) {
-                pattern = serviceRegistry.cmd.addPattern("Generated")
+                pattern = serviceRegistry.cmd.addPattern('Generated')
             }
 
-            const genre = options.genre
-                ?? StructureSong.resolveGenreFromTags(pattern.tags)
-                ?? this.structureGen.getRandomGenre()
+            const genre =
+                options.genre ?? StructureSong.resolveGenreFromTags(pattern.tags) ?? this.structureGen.getRandomGenre()
             const structure = options.structure ?? this.structureGen.generateStructure(genre)
 
             pattern._autoGenGenre = genre
@@ -76,7 +75,10 @@ export default class AutoGenerate {
             const firstElement = this.structureGen.getElement(0)
             const harmony = this.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
 
-            logger.info(AutoGenerate.TAG, `generatePattern: genre=${genre}, harmony=${JSON.stringify(harmony)}, tracks=${Object.keys(structure).join(',')}`)
+            logger.info(
+                AutoGenerate.TAG,
+                `generatePattern: genre=${genre}, harmony=${JSON.stringify(harmony)}, tracks=${Object.keys(structure).join(',')}`,
+            )
 
             if (!pattern.tracks || pattern.tracks.length === 0) {
                 for (const [trackName, config] of Object.entries(structure)) {
@@ -94,7 +96,7 @@ export default class AutoGenerate {
                 }
             }
 
-            const hasBassTrack = pattern.tracks.some(t => Utils.detectTrackType(t.name) === 'BASS')
+            const hasBassTrack = pattern.tracks.some((t) => Utils.detectTrackType(t.name) === 'BASS')
             if (!hasBassTrack) {
                 const bassTrack = serviceRegistry.cmd.addTrack(pattern, 'BASS')
                 bassTrack.useSoftSynth = false
@@ -166,16 +168,24 @@ export default class AutoGenerate {
             const element = this.structureGen.getElement(loop)
             const isSectionEnd = element.isLastLoopBeforeChange
             const isBreak = element.name === 'break'
-            const density = track.auto_density >= 0
-                ? track.auto_density
-                : (isSectionEnd ? 0.2 : (SECTION_DENSITY[element.name] ?? 0.7))
+            const density =
+                track.auto_density >= 0
+                    ? track.auto_density
+                    : isSectionEnd
+                      ? 0.2
+                      : (SECTION_DENSITY[element.name] ?? 0.7)
             const harmony = this.structureGen.resolveHarmony(genre, element.name, element.loopInElement)
 
-            logger.info(AutoGenerate.TAG, `changeTrack: loop=${loop}, section=${element.name}#${element.number}, track=${track.name}, harmony=${JSON.stringify(harmony)}, sectionEnd=${isSectionEnd}, break=${isBreak}, density=${density}`)
+            logger.info(
+                AutoGenerate.TAG,
+                `changeTrack: loop=${loop}, section=${element.name}#${element.number}, track=${track.name}, harmony=${JSON.stringify(harmony)}, sectionEnd=${isSectionEnd}, break=${isBreak}, density=${density}`,
+            )
 
-            const structure = this.#cachedGenre === genre
-                ? this.#cachedStructure
-                : (this.#cachedGenre = genre, this.#cachedStructure = this.structureGen.generateStructure(genre))
+            const structure =
+                this.#cachedGenre === genre
+                    ? this.#cachedStructure
+                    : ((this.#cachedGenre = genre),
+                      (this.#cachedStructure = this.structureGen.generateStructure(genre)))
 
             const type = Utils.detectTrackType(track.name)
             const config = track.auto_variant || this.#findTrackConfig(structure, track)
@@ -190,7 +200,7 @@ export default class AutoGenerate {
                     logger.info(AutoGenerate.TAG, `  -> section-end merge (variant=${mergeVariant})`)
                     const savedNotes = [...track.notes]
                     await this.generateTrack(track, mergeVariant, density, pattern, harmony)
-                    const seen = new Set(savedNotes.map(n => `${n.beat}:${n.beatStep}`))
+                    const seen = new Set(savedNotes.map((n) => `${n.beat}:${n.beatStep}`))
                     for (const note of track.notes) {
                         const key = `${note.beat}:${note.beatStep}`
                         if (!seen.has(key)) {
@@ -216,9 +226,7 @@ export default class AutoGenerate {
         const trackNameUpper = track.name.toUpperCase()
         switch (type) {
             case 'HAT':
-                return trackNameUpper.includes('OHH') || trackNameUpper.includes('OPEN')
-                    ? 'ohhRoll'
-                    : 'chhRoll'
+                return trackNameUpper.includes('OHH') || trackNameUpper.includes('OPEN') ? 'ohhRoll' : 'chhRoll'
             case 'PERC':
                 return 'fill'
             default:

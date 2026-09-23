@@ -27,7 +27,7 @@ describe('Strip (Unified Worklet)', () => {
     let ctx
 
     beforeEach(() => {
-        ctx   = makeAudioCtx()
+        ctx = makeAudioCtx()
         installWorkletMocks()
     })
 

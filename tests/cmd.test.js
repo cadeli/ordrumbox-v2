@@ -171,7 +171,7 @@ describe('Functional: Commander operations', () => {
                 fxSelected: 'delay',
                 saturationType: 'hard',
                 saturationAmount: 0.5,
-                synthSoundKey: 'saw'
+                synthSoundKey: 'saw',
             }
             cmd.updateTrack(track, source)
 
@@ -322,21 +322,21 @@ describe('Functional: Commander operations', () => {
             cmd.addNote(track, 1, 2)
             cmd.addNote(track, 2, 6)
 
-            const origBeats = track.notes.map(n => n.beat)
-            const origSteps = track.notes.map(n => n.beatStep)
+            const origBeats = track.notes.map((n) => n.beat)
+            const origSteps = track.notes.map((n) => n.beatStep)
 
             track.stepsPerBeat = 4
-            track.notes.forEach(note => {
+            track.notes.forEach((note) => {
                 note.beatStep = Math.min(Math.round((note.steppc / 100) * 4), 3)
             })
 
-            expect(track.notes.map(n => n.beatStep)).toEqual([0, 2, 1, 3])
+            expect(track.notes.map((n) => n.beatStep)).toEqual([0, 2, 1, 3])
             track.notes.forEach((note, i) => {
                 expect(note.beat).toBe(origBeats[i])
             })
 
             track.stepsPerBeat = 8
-            track.notes.forEach(note => {
+            track.notes.forEach((note) => {
                 note.beatStep = Math.min(Math.round((note.steppc / 100) * 8), 7)
             })
 
@@ -353,16 +353,16 @@ describe('Functional: Commander operations', () => {
             cmd.addNote(track, 0, 4)
             cmd.addNote(track, 1, 6)
 
-            const origBeats = track.notes.map(n => n.beat)
-            const origSteps = track.notes.map(n => n.beatStep)
+            const origBeats = track.notes.map((n) => n.beat)
+            const origSteps = track.notes.map((n) => n.beatStep)
 
             track.stepsPerBeat = 1
-            track.notes.forEach(note => {
+            track.notes.forEach((note) => {
                 note.beatStep = Math.min(Math.round((note.steppc / 100) * 1), 0)
             })
 
             track.stepsPerBeat = 8
-            track.notes.forEach(note => {
+            track.notes.forEach((note) => {
                 note.beatStep = Math.min(Math.round((note.steppc / 100) * 8), 7)
             })
 
@@ -383,16 +383,16 @@ describe('Functional: Commander operations', () => {
             cmd.addNote(track, 1, 3)
             cmd.addNote(track, 2, 5)
 
-            const origBeats = track.notes.map(n => n.beat)
-            const origSteps = track.notes.map(n => n.beatStep)
+            const origBeats = track.notes.map((n) => n.beat)
+            const origSteps = track.notes.map((n) => n.beatStep)
 
             track.stepsPerBeat = 2
-            track.notes.forEach(note => {
+            track.notes.forEach((note) => {
                 note.beatStep = Math.min(Math.round((note.steppc / 100) * 2), 1)
             })
 
             track.stepsPerBeat = 6
-            track.notes.forEach(note => {
+            track.notes.forEach((note) => {
                 note.beatStep = Math.min(Math.round((note.steppc / 100) * 6), 5)
             })
 
@@ -407,7 +407,7 @@ describe('Functional: Commander operations', () => {
             cmd.addNote(track, 0, 7)
 
             track.stepsPerBeat = 4
-            track.notes.forEach(note => {
+            track.notes.forEach((note) => {
                 note.beatStep = Math.min(Math.round((note.steppc / 100) * 4), 3)
             })
 
@@ -422,15 +422,15 @@ describe('Functional: Commander operations', () => {
             cmd.addNote(track, 0, 2)
             cmd.addNote(track, 0, 3)
 
-            const origSteps = track.notes.map(n => n.beatStep)
+            const origSteps = track.notes.map((n) => n.beatStep)
 
             track.stepsPerBeat = 1
-            track.notes.forEach(note => {
+            track.notes.forEach((note) => {
                 note.beatStep = Math.min(Math.round((note.steppc / 100) * 1), 0)
             })
 
             track.stepsPerBeat = 4
-            track.notes.forEach(note => {
+            track.notes.forEach((note) => {
                 note.beatStep = Math.min(Math.round((note.steppc / 100) * 4), 3)
             })
 
@@ -513,7 +513,7 @@ describe('Functional: Commander operations', () => {
             soundRegistry.sounds = {
                 s1: { key: 'kd', kit_name: 'real' },
                 s2: { key: 'sd', kit_name: 'real' },
-                s3: { key: 'kd', kit_name: 'electro' }
+                s3: { key: 'kd', kit_name: 'electro' },
             }
 
             const sounds = getAllSoundsForType('kd')
@@ -532,7 +532,7 @@ describe('Functional: Commander operations', () => {
         it('finds soundId by url', () => {
             soundRegistry.sounds = {
                 snd_1: { url: 'kits/real/kick.wav' },
-                snd_2: { url: 'kits/real/snare.wav' }
+                snd_2: { url: 'kits/real/snare.wav' },
             }
 
             expect(cmd.getSoundIdFromUrl('kits/real/kick.wav')).toBe('snd_1')
@@ -553,4 +553,3 @@ describe('Functional: Commander operations', () => {
         })
     })
 })
-

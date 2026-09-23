@@ -29,7 +29,7 @@ export function promptNumericInput(label, min, max, current, unit, clampFn) {
  * @param {number} v
  * @returns {number}
  */
-export const fmt = v => parseFloat(Number(v).toFixed(2))
+export const fmt = (v) => parseFloat(Number(v).toFixed(2))
 
 /**
  * Escape HTML special characters to prevent XSS in template literals.
@@ -93,7 +93,13 @@ export function formatNoteTooltip(note, trackPitch = 0) {
     const arp = note.arp
     if (arp && Array.isArray(arp) && arp.length >= 2) {
         parts.push(`arp:[${arp.join(',')}]`)
-    } else if (arp && typeof arp === 'object' && !Array.isArray(arp) && Array.isArray(arp.intervals) && arp.intervals.length >= 2) {
+    } else if (
+        arp &&
+        typeof arp === 'object' &&
+        !Array.isArray(arp) &&
+        Array.isArray(arp.intervals) &&
+        arp.intervals.length >= 2
+    ) {
         parts.push(`arp:[${arp.intervals.join(',')}]`)
     }
 
@@ -133,11 +139,15 @@ export function bindCloseButton(container, onClose) {
  * @param {function(string): void} [onChange]  – called with the newly activated tab id
  */
 export function bindTabToggles(container, onChange) {
-    container.querySelectorAll('.ne-tab-btn[data-ne-tab]').forEach(btn => {
+    container.querySelectorAll('.ne-tab-btn[data-ne-tab]').forEach((btn) => {
         btn.addEventListener('click', () => {
             const id = btn.dataset.neTab
-            container.querySelectorAll('.ne-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.neTab === id))
-            container.querySelectorAll('.ne-tab-panel').forEach(p => p.classList.toggle('ne-tab-panel-hidden', p.dataset.tabPanel !== id))
+            container
+                .querySelectorAll('.ne-tab-btn')
+                .forEach((b) => b.classList.toggle('active', b.dataset.neTab === id))
+            container
+                .querySelectorAll('.ne-tab-panel')
+                .forEach((p) => p.classList.toggle('ne-tab-panel-hidden', p.dataset.tabPanel !== id))
             onChange?.(id)
         })
     })
@@ -181,9 +191,9 @@ export function downloadJson(data, filename) {
  * Creates a Knob format callback for velocity/pitch/fallback.
  */
 const KNOB_FORMATTERS = new Map([
-    ['velocity', v => Math.round(v * 100)],
-    ['pitch',    v => `${v >= 0 ? '+' : ''}${v}`],
-    ['decay',    v => `${Math.round(v)} ms`],
+    ['velocity', (v) => Math.round(v * 100)],
+    ['pitch', (v) => `${v >= 0 ? '+' : ''}${v}`],
+    ['decay', (v) => `${Math.round(v)} ms`],
 ])
 export const knobFormat = (def) => KNOB_FORMATTERS.get(def.key) ?? fmt
 
@@ -202,14 +212,16 @@ const _eq = (a, b) => String(a) === String(b)
  * @returns {string} HTML
  */
 export function renderOptions(options, currentValue, { labels, escape: esc } = {}) {
-    return options.map((opt, i) => {
-        const value = typeof opt === 'object' ? opt.value : opt
-        const label = labels?.[i] ?? (typeof opt === 'object' ? opt.label : opt)
-        const sel = _eq(value, currentValue) ? ' selected' : ''
-        const dVal = esc ? esc(value) : value
-        const dLbl = esc ? esc(label) : label
-        return `<option value="${dVal}"${sel}>${dLbl}</option>`
-    }).join('')
+    return options
+        .map((opt, i) => {
+            const value = typeof opt === 'object' ? opt.value : opt
+            const label = labels?.[i] ?? (typeof opt === 'object' ? opt.label : opt)
+            const sel = _eq(value, currentValue) ? ' selected' : ''
+            const dVal = esc ? esc(value) : value
+            const dLbl = esc ? esc(label) : label
+            return `<option value="${dVal}"${sel}>${dLbl}</option>`
+        })
+        .join('')
 }
 
 /**
@@ -225,16 +237,23 @@ export function renderOptions(options, currentValue, { labels, escape: esc } = {
  * @param {function}[opts.extraAttrs]    (value) => string — extra HTML attributes per button
  * @returns {string} HTML
  */
-export function renderIconChoices(options, currentValue, iconMap, { cssClass, valueDataAttr, escape: esc, extraAttrs, titleMap } = {}) {
-    return options.map(opt => {
-        const value = typeof opt === 'object' ? opt.value : opt
-        const sel = _eq(value, currentValue) ? ' selected' : ''
-        const dVal = esc ? esc(value) : value
-        const icon = iconMap[value] ?? value
-        const extra = extraAttrs ? extraAttrs(value) : ''
-        const title = titleMap?.[value] ?? dVal
-        return `<button class="${cssClass}${sel}" ${valueDataAttr}="${dVal}" title="${title}"${extra}>${icon}</button>`
-    }).join('')
+export function renderIconChoices(
+    options,
+    currentValue,
+    iconMap,
+    { cssClass, valueDataAttr, escape: esc, extraAttrs, titleMap } = {},
+) {
+    return options
+        .map((opt) => {
+            const value = typeof opt === 'object' ? opt.value : opt
+            const sel = _eq(value, currentValue) ? ' selected' : ''
+            const dVal = esc ? esc(value) : value
+            const icon = iconMap[value] ?? value
+            const extra = extraAttrs ? extraAttrs(value) : ''
+            const title = titleMap?.[value] ?? dVal
+            return `<button class="${cssClass}${sel}" ${valueDataAttr}="${dVal}" title="${title}"${extra}>${icon}</button>`
+        })
+        .join('')
 }
 
 /**

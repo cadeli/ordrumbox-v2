@@ -10,25 +10,25 @@ import { recalcLoopDerived } from '../../src/model/track_schema.js'
  * @returns {object[]}
  */
 export function isNoteAt(track, beat, beatStep) {
-    return Object.values(track.notes).filter(n => n.beatStep === beatStep && n.beat === beat)
+    return Object.values(track.notes).filter((n) => n.beatStep === beatStep && n.beat === beat)
 }
 
 export function kitIsLoaded(drumkit) {
-    return Object.values(soundRegistry.sounds).some(sound => sound.kit_name === drumkit.name)
+    return Object.values(soundRegistry.sounds).some((sound) => sound.kit_name === drumkit.name)
 }
 
 export function getTrackFromType(pattern, type) {
-    return Utils.getTracksArray(pattern).find(track => track.name === type) ?? null
+    return Utils.getTracksArray(pattern).find((track) => track.name === type) ?? null
 }
 
 export function setNbBeats(cmd, pattern, newBeats) {
     const oldNbBeats = pattern.nbBeats
-    const oldTrackStates = Utils.getTracksArray(pattern).map(track => ({
+    const oldTrackStates = Utils.getTracksArray(pattern).map((track) => ({
         track,
         nbBeats: track.nbBeats,
         loopAtStep: track.loopAtStep,
         loopPointBeat: track.loopPointBeat,
-        loopPointStep: track.loopPointStep
+        loopPointStep: track.loopPointStep,
     }))
 
     const oldBeats = pattern.nbBeats * (Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4)
@@ -41,18 +41,21 @@ export function setNbBeats(cmd, pattern, newBeats) {
         track.nbBeats = pattern.nbBeats
     })
     cmd.persist()
-    cmd.record(() => {
-        pattern.nbBeats = oldNbBeats
-        for (const { track, nbBeats, loopAtStep, loopPointBeat, loopPointStep } of oldTrackStates) {
-            track.nbBeats = nbBeats
-            track.loopAtStep = loopAtStep
-            track.loopPointBeat = loopPointBeat
-            track.loopPointStep = loopPointStep
-        }
-        cmd.persist()
-    }, { desc: 'Set nb beats' })
+    cmd.record(
+        () => {
+            pattern.nbBeats = oldNbBeats
+            for (const { track, nbBeats, loopAtStep, loopPointBeat, loopPointStep } of oldTrackStates) {
+                track.nbBeats = nbBeats
+                track.loopAtStep = loopAtStep
+                track.loopPointBeat = loopPointBeat
+                track.loopPointStep = loopPointStep
+            }
+            cmd.persist()
+        },
+        { desc: 'Set nb beats' },
+    )
 }
 
 export function getAllSoundsForType(soundKey) {
-    return Object.values(soundRegistry.sounds).filter(s => s.key === soundKey)
+    return Object.values(soundRegistry.sounds).filter((s) => s.key === soundKey)
 }

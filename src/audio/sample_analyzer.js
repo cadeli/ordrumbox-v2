@@ -18,9 +18,7 @@ export function analyzeSample(audioBuffer) {
     }
 
     const result = _analyzer.analyzeAudioBuffer(audioBuffer)
-    result.noteInfo = result.fundamentalHz
-        ? hzToNote(result.fundamentalHz)
-        : null
+    result.noteInfo = result.fundamentalHz ? hzToNote(result.fundamentalHz) : null
 
     _cache.set(audioBuffer, result)
     return result
@@ -49,9 +47,7 @@ export function clearAnalysisCache(audioBuffer) {
 export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
     if (!envelope?.length) return
 
-    const colors = typeof strokeOrColors === 'string'
-        ? { stroke: strokeOrColors }
-        : (strokeOrColors ?? {})
+    const colors = typeof strokeOrColors === 'string' ? { stroke: strokeOrColors } : (strokeOrColors ?? {})
 
     const stroke = colors.stroke ?? '#202321'
     const background = colors.background ?? '#D1D2CE'
@@ -68,7 +64,7 @@ export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
     const step = width / (envelope.length - 1)
     for (let i = 0; i < envelope.length; i++) {
         const x = i * step
-        const y = height - (envelope[i] * height)
+        const y = height - envelope[i] * height
         if (i === 0) ctx.moveTo(x, y)
         else ctx.lineTo(x, y)
     }

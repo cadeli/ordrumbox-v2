@@ -28,7 +28,11 @@ describe('safeDisconnect', () => {
     })
 
     it('ignores already-disconnected node', () => {
-        const node = { disconnect: vi.fn(() => { throw new Error('already') }) }
+        const node = {
+            disconnect: vi.fn(() => {
+                throw new Error('already')
+            }),
+        }
         safeDisconnect(node)
         expect(node.disconnect).toHaveBeenCalledOnce()
     })
@@ -126,7 +130,7 @@ describe('getLfoWaveformValue', () => {
     })
 
     it('saw returns expected values', () => {
-        const p = (0 - 0.25) - Math.floor(0 - 0.25)
+        const p = 0 - 0.25 - Math.floor(0 - 0.25)
         expect(getLfoWaveformValue(0, 2)).toBeCloseTo(p * 2 - 1, 2)
     })
 
@@ -240,6 +244,6 @@ describe('syncToHz', () => {
 
     it('handles triplet values', () => {
         const hz = syncToHz('1/8T', 120)
-        expect(hz).toBeCloseTo(2 * 2 / 3 * 2, 1)
+        expect(hz).toBeCloseTo(((2 * 2) / 3) * 2, 1)
     })
 })

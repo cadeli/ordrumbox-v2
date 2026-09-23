@@ -17,19 +17,10 @@ const PHYSICAL_TRACK_MUTE_KEYS = [
     'Digit6',
     'Digit7',
     'Digit8',
-    'Digit9'
+    'Digit9',
 ]
 
-const PHYSICAL_TRACK_PREVIEW_KEYS = [
-    'KeyQ',
-    'KeyW',
-    'KeyE',
-    'KeyR',
-    'KeyT',
-    'KeyY',
-    'KeyU',
-    'KeyI'
-]
+const PHYSICAL_TRACK_PREVIEW_KEYS = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI']
 
 const PHYSICAL_KEYS_PREVENTING_BROWSER_DEFAULT = new Set(['Space'])
 
@@ -90,7 +81,7 @@ const SYNTH_SOUND_MAP = {
     BASS: 'BASS2',
     PERC: 'SYNTH2',
     PIANO: 'PIANO',
-    TOM: 'TOM'
+    TOM: 'TOM',
 }
 
 async function convertToGeneratedSounds() {
@@ -105,7 +96,7 @@ async function convertToGeneratedSounds() {
         }
     }
 
-    Object.values(selPattern.tracks).forEach(track => {
+    Object.values(selPattern.tracks).forEach((track) => {
         const type = Utils.detectTrackType(track.name)
         track.useSoftSynth = true
         track.useAutoAssignSound = false
@@ -128,7 +119,7 @@ function assignRandomSampleAllTracks() {
         return
     }
 
-    Object.values(selPattern.tracks).forEach(track => {
+    Object.values(selPattern.tracks).forEach((track) => {
         track.useAutoAssignSound = false
         track.useSoftSynth = false
         track.soundId = allSounds[Math.floor(Math.random() * allSounds.length)]
@@ -144,7 +135,7 @@ async function autoAssignAllTracks() {
     const selPattern = getSelectedPattern()
     if (!selPattern) return
 
-    Object.values(selPattern.tracks).forEach(track => {
+    Object.values(selPattern.tracks).forEach((track) => {
         track.useAutoAssignSound = true
         track.useSoftSynth = false
     })
@@ -197,7 +188,7 @@ const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyK: assignRandomSampleAllTracks,
     KeyD: exportCurrentTrackSound,
     KeyV: toggleVus,
-    Space: toggleStartStop
+    Space: toggleStartStop,
 }
 
 function getKeyboardShortcut(code, key) {
@@ -221,8 +212,12 @@ function getKeyboardShortcut(code, key) {
 async function handleKeyboardShortcut(event) {
     const target = event.target
 
-    if (target && (target.tagName === 'TEXTAREA' || target.isContentEditable ||
-        (target.tagName === 'INPUT' && /^(text|search|password|email|url|tel)$/i.test(target.type ?? 'text')))) {
+    if (
+        target &&
+        (target.tagName === 'TEXTAREA' ||
+            target.isContentEditable ||
+            (target.tagName === 'INPUT' && /^(text|search|password|email|url|tel)$/i.test(target.type ?? 'text')))
+    ) {
         return
     }
 
@@ -239,7 +234,11 @@ async function handleKeyboardShortcut(event) {
 }
 
 export function initKeyboardShortcuts() {
-    document.addEventListener('keydown', (event) => {
-        void handleKeyboardShortcut(event)
-    }, false)
+    document.addEventListener(
+        'keydown',
+        (event) => {
+            void handleKeyboardShortcut(event)
+        },
+        false,
+    )
 }

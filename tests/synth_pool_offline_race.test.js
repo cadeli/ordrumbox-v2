@@ -120,9 +120,12 @@ describe('synth-voice pool vs. offline export scheduling race', () => {
         // different sound. In the exporter's synchronous scheduling loop
         // it's nonetheless set up right after A.
         const voiceB = new WorkletSynthVoice(
-            ctx, strip,
+            ctx,
+            strip,
             makeGeneratedSound({ vco1: { wave: 'square', octave: 2, detune: 0, gain: 1 } }),
-            'B', null, pool
+            'B',
+            null,
+            pool,
         )
         await voiceB.setup(makeFlatNote(), 50)
         voiceB.start(50)
@@ -149,9 +152,12 @@ describe('synth-voice pool vs. offline export scheduling race', () => {
         vi.advanceTimersByTime(1000)
 
         const voiceB = new WorkletSynthVoice(
-            ctx, strip,
+            ctx,
+            strip,
             makeGeneratedSound({ vco1: { wave: 'square', octave: 2, detune: 0, gain: 1 } }),
-            'B', null, offlineSound.synthNodePool
+            'B',
+            null,
+            offlineSound.synthNodePool,
         )
         await voiceB.setup(makeFlatNote(), 50)
         voiceB.start(50)

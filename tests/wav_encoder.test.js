@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-    bufferToWav,
-    computeWavExportDuration,
-    computeWavExportSamples,
-} from '../src/audio/export/wav_encoder.js'
+import { bufferToWav, computeWavExportDuration, computeWavExportSamples } from '../src/audio/export/wav_encoder.js'
 
 function createMockAudioBuffer(channels, length, sampleRate) {
     return {
@@ -16,7 +12,7 @@ function createMockAudioBuffer(channels, length, sampleRate) {
                 data[i] = Math.sin(i * 0.01) * 0.5
             }
             return data
-        }
+        },
     }
 }
 
@@ -84,7 +80,7 @@ describe('wavEncoder - bufferToWav', () => {
                 data[2] = 0.5
                 data[3] = -0.5
                 return data
-            }
+            },
         }
         const blob = bufferToWav(buffer)
         const arrayBuffer = await blob.arrayBuffer()
@@ -93,7 +89,7 @@ describe('wavEncoder - bufferToWav', () => {
         const sample0 = view.getInt16(44, true)
         const sample1 = view.getInt16(46, true)
         // 1.5 should be clamped to 0x7FFF
-        expect(sample0).toBe(0x7FFF)
+        expect(sample0).toBe(0x7fff)
         // -1.5 should be clamped to -0x8000
         expect(sample1).toBe(-0x8000)
     })

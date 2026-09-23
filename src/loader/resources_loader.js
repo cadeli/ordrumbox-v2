@@ -4,20 +4,43 @@ import { soundRegistry } from '../state/sound_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { fixPatterns, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
 import { idbGet, idbPut } from '../core/idb.js'
-import { cachePatterns, getCachedPatterns, cacheDrumkits, getCachedDrumkits, cacheSample, getCachedSample, cacheGeneratedSounds, getCachedGeneratedSounds } from '../cache/idb_cache.js'
+import {
+    cachePatterns,
+    getCachedPatterns,
+    cacheDrumkits,
+    getCachedDrumkits,
+    cacheSample,
+    getCachedSample,
+    cacheGeneratedSounds,
+    getCachedGeneratedSounds,
+} from '../cache/idb_cache.js'
 import Utils from '../core/utils.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../ui/toast.js'
 
 export default class ResourcesLoader {
-    static TAG = "ResourcesLoader"
-    static get KITS_PATH() { return "assets/kits/" }
-    static get SCALES_URL() { return "assets/data/scales.json" }
-    static get DRUMKITS_URL() { return "assets/data/drumkits.json" }
-    static get SONG_URL() { return "assets/data/song.json" }
-    static get GENERATED_SOUNDS_URL() { return "assets/data/generated_sounds.json" }
-    static get SETTINGS_URL() { return "assets/data/settings.json" }
-    static get SETTINGS_KEY() { return 'ordrumbox_settings' }
+    static TAG = 'ResourcesLoader'
+    static get KITS_PATH() {
+        return 'assets/kits/'
+    }
+    static get SCALES_URL() {
+        return 'assets/data/scales.json'
+    }
+    static get DRUMKITS_URL() {
+        return 'assets/data/drumkits.json'
+    }
+    static get SONG_URL() {
+        return 'assets/data/song.json'
+    }
+    static get GENERATED_SOUNDS_URL() {
+        return 'assets/data/generated_sounds.json'
+    }
+    static get SETTINGS_URL() {
+        return 'assets/data/settings.json'
+    }
+    static get SETTINGS_KEY() {
+        return 'ordrumbox_settings'
+    }
 
     #audioCtx
     #autoPersistEnabled
@@ -64,14 +87,18 @@ export default class ResourcesLoader {
     _samplesLoadingPromise = null
 
     async ensureResourcesLoaded() {
-
         // 1. Load Patterns if missing
         if (appState.patterns.length === 0) {
             if (this.patternsLoadFailed) return
             if (!this._patternsLoadingPromise) {
                 this._patternsLoadingPromise = this.loadSong(ResourcesLoader.SONG_URL)
-                    .catch(err => { this.patternsLoadFailed = true; throw err })
-                    .finally(() => { this._patternsLoadingPromise = null })
+                    .catch((err) => {
+                        this.patternsLoadFailed = true
+                        throw err
+                    })
+                    .finally(() => {
+                        this._patternsLoadingPromise = null
+                    })
             }
             await this._patternsLoadingPromise
         }
@@ -97,8 +124,13 @@ export default class ResourcesLoader {
             }
             if (!this._samplesLoadingPromise) {
                 this._samplesLoadingPromise = this.loadSamplesFromDrumkit(drumkit)
-                    .catch(err => { this.samplesLoadFailed = true; throw err })
-                    .finally(() => { this._samplesLoadingPromise = null })
+                    .catch((err) => {
+                        this.samplesLoadFailed = true
+                        throw err
+                    })
+                    .finally(() => {
+                        this._samplesLoadingPromise = null
+                    })
             }
             await this._samplesLoadingPromise
         }
@@ -149,11 +181,32 @@ export default class ResourcesLoader {
     }
 
     async loadSettings() {
-        const masterDefaults = { volume: 1, preGain: 0, lowcut: 35, hicut: 18500,
-            compBypass: false, threshold: -18, ratio: 8, attack: 0.002,
-            release: 0.08, knee: 3, makeup: 8 }
-        const sessionDefaults = { selectedDrumkitNum: 0, selectedPatternNum: 0, selectedTrackNum: 0, currentView: 'edit' }
-        const defaults = { version: 1, sampleDirs: [], maxSampleDirs: 10, master: masterDefaults, session: sessionDefaults }
+        const masterDefaults = {
+            volume: 1,
+            preGain: 0,
+            lowcut: 35,
+            hicut: 18500,
+            compBypass: false,
+            threshold: -18,
+            ratio: 8,
+            attack: 0.002,
+            release: 0.08,
+            knee: 3,
+            makeup: 8,
+        }
+        const sessionDefaults = {
+            selectedDrumkitNum: 0,
+            selectedPatternNum: 0,
+            selectedTrackNum: 0,
+            currentView: 'edit',
+        }
+        const defaults = {
+            version: 1,
+            sampleDirs: [],
+            maxSampleDirs: 10,
+            master: masterDefaults,
+            session: sessionDefaults,
+        }
         try {
             const raw = await idbGet('settings', ResourcesLoader.SETTINGS_KEY)
             if (raw) {
@@ -237,9 +290,9 @@ export default class ResourcesLoader {
         fixedPatterns.forEach((pattern) => {
             if (pattern?.tracks) {
                 Utils.getTracksArray(pattern).forEach((trk) => {
-                    if (trk?.soundId && trk.soundId !== "NOT_DEFINED") {
+                    if (trk?.soundId && trk.soundId !== 'NOT_DEFINED') {
                         if (trk.useAutoAssignSound !== false) {
-                            trk.soundId = "NOT_DEFINED"
+                            trk.soundId = 'NOT_DEFINED'
                         }
                     }
                 })
@@ -249,11 +302,9 @@ export default class ResourcesLoader {
         this.#autoPersistEnabled = true
     }
 
-
-
     onSoundsProgress = (progress) => {
         if (typeof document === 'undefined') return
-        const progressBar = document.getElementById("resourcesProgressBar")
+        const progressBar = document.getElementById('resourcesProgressBar')
         if (progressBar) {
             progressBar.value = progress
         }
@@ -274,20 +325,22 @@ export default class ResourcesLoader {
         }
 
         const updateProgress = () => {
-            this.onSoundsProgress(Math.floor(nbLoad * 100 / nbToLoad))
+            this.onSoundsProgress(Math.floor((nbLoad * 100) / nbToLoad))
         }
 
-        const results = await Promise.all(samplesToLoad.map(async ({ sample, kitName }) => {
-            try {
-                return await this.loadSample(sample, kitName)
-            } catch (error) {
-                logger.error('ResourcesLoader', "ResourcesLoader::loadSample error " + sample.url, error)
-                return null
-            } finally {
-                nbLoad++
-                updateProgress()
-            }
-        }))
+        const results = await Promise.all(
+            samplesToLoad.map(async ({ sample, kitName }) => {
+                try {
+                    return await this.loadSample(sample, kitName)
+                } catch (error) {
+                    logger.error('ResourcesLoader', 'ResourcesLoader::loadSample error ' + sample.url, error)
+                    return null
+                } finally {
+                    nbLoad++
+                    updateProgress()
+                }
+            }),
+        )
         return results.filter(Boolean)
     }
 

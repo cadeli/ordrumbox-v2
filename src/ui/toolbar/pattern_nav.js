@@ -11,7 +11,9 @@ export default class PatternNav {
     #tb
 
     /** @param {import('../toolbar.js').default} toolbar */
-    constructor(toolbar) { this.#tb = toolbar }
+    constructor(toolbar) {
+        this.#tb = toolbar
+    }
 
     createDOM() {
         const tb = this.#tb

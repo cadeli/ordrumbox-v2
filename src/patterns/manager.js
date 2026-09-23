@@ -13,8 +13,8 @@ export function applyFlatNotes(djtPattern, loop = 0) {
     const flatNotes = recomputeFlatNotes(djtPattern, loop, null, TICK)
     appState.flatNotes = flatNotes
     playbackEvents.batch(() => {
-        playbackEvents.emit("noteChange")
-        playbackEvents.emit("patternChange")
+        playbackEvents.emit('noteChange')
+        playbackEvents.emit('patternChange')
     })
     return flatNotes
 }

@@ -5,10 +5,16 @@ function buildDefaultVisibility() {
     return {
         trackEditorVisibility: {
             basic: true,
-            filters: !isMobile, effects: !isMobile, sound: !isMobile, loop: false, lfo: !isMobile,
+            filters: !isMobile,
+            effects: !isMobile,
+            sound: !isMobile,
+            loop: false,
+            lfo: !isMobile,
         },
         noteEditorVisibility: {
-            triggers: !isMobile, retrig: !isMobile, arp: !isMobile,
+            triggers: !isMobile,
+            retrig: !isMobile,
+            arp: !isMobile,
         },
     }
 }
@@ -19,8 +25,8 @@ export class AppState {
         selectedPatternNum: 0,
         selectedTrackNum: 0,
         selectedDrumkitNum: 0,
-        selectedDrumkit: "real",
-        selectedLfo: "pitchLfo",
+        selectedDrumkit: 'real',
+        selectedLfo: 'pitchLfo',
         displayBeats: 1,
         currentPage: 0,
         autoMode: false,

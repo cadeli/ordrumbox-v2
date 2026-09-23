@@ -5,30 +5,50 @@
 import Utils from '../../core/utils.js'
 import { escapeHtml, renderOptions, renderIconChoices } from '../components/panel_helpers.js'
 import {
-    WAVE_ICONS, FILTER_ICONS, FM_ALGO_ICONS, FM_ALGO_LABELS,
-    SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META, SYNTH_LFO_TARGETS, SYNTH_GROUP_MERGE,
-    SYNTH_GROUP_LABELS, SYNTH_GROUP_ORDER, VCO_RE, LFO_RE,
-    LFO_SYNC_OPTIONS, MOD_ENV_TARGETS,
+    WAVE_ICONS,
+    FILTER_ICONS,
+    FM_ALGO_ICONS,
+    FM_ALGO_LABELS,
+    SYNTH_GROUP_DEFAULTS,
+    SYNTH_PARAM_META,
+    SYNTH_LFO_TARGETS,
+    SYNTH_GROUP_MERGE,
+    SYNTH_GROUP_LABELS,
+    SYNTH_GROUP_ORDER,
+    VCO_RE,
+    LFO_RE,
+    LFO_SYNC_OPTIONS,
+    MOD_ENV_TARGETS,
 } from './constants.js'
 
 const TAB_DEFS = [
-    { id: 'osc',  label: 'OSC' },
-    { id: 'flt',  label: 'FLT' },
-    { id: 'mod',  label: 'MOD' },
-    { id: 'env',  label: 'ENV' },
+    { id: 'osc', label: 'OSC' },
+    { id: 'flt', label: 'FLT' },
+    { id: 'mod', label: 'MOD' },
+    { id: 'env', label: 'ENV' },
 ]
 
 const GROUP_TAB = {
     scope: 'osc',
-    vco1: 'osc', vco2: 'osc', vco3: 'osc', fm: 'osc',
-    filter: 'flt', filterEnv: 'flt', modEnvelope: 'flt',
-    lfo: 'mod', lfo2: 'mod', noise: 'mod',
-    envelope: 'env', master: 'env',
+    vco1: 'osc',
+    vco2: 'osc',
+    vco3: 'osc',
+    fm: 'osc',
+    filter: 'flt',
+    filterEnv: 'flt',
+    modEnvelope: 'flt',
+    lfo: 'mod',
+    lfo2: 'mod',
+    noise: 'mod',
+    envelope: 'env',
+    master: 'env',
 }
 
 export default class GroupsSection {
     /** @param {import('./synth_editor.js').default} editor */
-    constructor(editor) { this._editor = editor }
+    constructor(editor) {
+        this._editor = editor
+    }
 
     /** Ordered group names derived from draft keys. */
     getOrderedGroupNames() {
@@ -40,7 +60,7 @@ export default class GroupsSection {
         const allGroups = new Set(SYNTH_GROUP_ORDER)
 
         for (const [group, keys] of Object.entries(SYNTH_GROUP_MERGE)) {
-            if (keys.some(k => draftKeys.includes(k))) allGroups.add(group)
+            if (keys.some((k) => draftKeys.includes(k))) allGroups.add(group)
         }
         for (const name of draftKeys) {
             if (!mergedKeys.has(name) && !name.startsWith('bypass')) allGroups.add(name)
@@ -73,7 +93,7 @@ export default class GroupsSection {
 
         const groupNames = this.getOrderedGroupNames()
 
-        const tabGroups = new Map(TAB_DEFS.map(t => [t.id, []]))
+        const tabGroups = new Map(TAB_DEFS.map((t) => [t.id, []]))
         for (const groupName of groupNames) {
             const tabId = GROUP_TAB[groupName] ?? TAB_DEFS[0].id
             tabGroups.get(tabId)?.push(groupName)
@@ -118,24 +138,35 @@ export default class GroupsSection {
             const waveVal = draft?.[groupName]?.wave ?? 'sine'
             const pathStr = `${groupName}.wave`
             waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.waveList, waveVal, WAVE_ICONS, {
-                cssClass: 'ss-wave-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
-                extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`
+                cssClass: 'ss-wave-icon',
+                valueDataAttr: 'data-wave-val',
+                escape: escapeHtml,
+                extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`,
             })}</span>`
         } else if (isFilter || isNoise) {
             const filterKey = isFilter ? 'type' : 'filterType'
             const filterVal = draft?.[groupName]?.[filterKey] ?? 'lowpass'
             const pathStr = `${groupName}.${filterKey}`
-            waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.filterTypeList, filterVal, FILTER_ICONS, {
-                cssClass: 'ss-ft-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
-                extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`
-            })}</span>`
+            waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(
+                Utils.filterTypeList,
+                filterVal,
+                FILTER_ICONS,
+                {
+                    cssClass: 'ss-ft-icon',
+                    valueDataAttr: 'data-wave-val',
+                    escape: escapeHtml,
+                    extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`,
+                },
+            )}</span>`
         } else if (groupName === 'fm') {
             const algoVal = draft?.fm?.algo ?? 0
             const algoOpts = Object.keys(FM_ALGO_ICONS).map(Number)
             waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(algoOpts, algoVal, FM_ALGO_ICONS, {
-                cssClass: 'ss-fm-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
+                cssClass: 'ss-fm-icon',
+                valueDataAttr: 'data-wave-val',
+                escape: escapeHtml,
                 extraAttrs: () => ` data-synth-path="fm.algo"`,
-                titleMap: FM_ALGO_LABELS
+                titleMap: FM_ALGO_LABELS,
             })}</span>`
         }
 
@@ -164,16 +195,20 @@ export default class GroupsSection {
         const merged = SYNTH_GROUP_MERGE[groupName]
         const groupDefaults = SYNTH_GROUP_DEFAULTS[groupName]
         const fields = merged
-            ? merged.map(key => ({ path: [key], key, val: draft[key] }))
+            ? merged.map((key) => ({ path: [key], key, val: draft[key] }))
             : this._isPlainObject(draft[groupName])
-                ? Object.entries(draft[groupName]).filter(([key]) => !this._isPlainObject(groupDefaults) || key in groupDefaults).map(([key, val]) => ({ path: [groupName, key], key, val }))
-                : [{ path: [groupName], key: groupName, val: draft[groupName] }]
+              ? Object.entries(draft[groupName])
+                    .filter(([key]) => !this._isPlainObject(groupDefaults) || key in groupDefaults)
+                    .map(([key, val]) => ({ path: [groupName, key], key, val }))
+              : [{ path: [groupName], key: groupName, val: draft[groupName] }]
 
-        const fieldsHtml = fields.map(({ path, key, val }) => {
-            const pathStr = path.join('.')
-            const paramLabel = SYNTH_PARAM_META[pathStr]?.label ?? key
-            return this._buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName)
-        }).join('')
+        const fieldsHtml = fields
+            .map(({ path, key, val }) => {
+                const pathStr = path.join('.')
+                const paramLabel = SYNTH_PARAM_META[pathStr]?.label ?? key
+                return this._buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName)
+            })
+            .join('')
 
         if (groupName === 'envelope') {
             return `<canvas class="ss-env-canvas" width="320" height="40"></canvas>${fieldsHtml}`
@@ -240,8 +275,10 @@ export default class GroupsSection {
     /** Renders icon buttons (wave shapes, filter types). */
     _renderIconRow(options, pathStr, val, cssClass, icons) {
         return renderIconChoices(options, val, icons, {
-            cssClass, valueDataAttr: 'data-wave-val', escape: escapeHtml,
-            extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`
+            cssClass,
+            valueDataAttr: 'data-wave-val',
+            escape: escapeHtml,
+            extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`,
         })
     }
 
@@ -257,7 +294,7 @@ export default class GroupsSection {
         if (pathArr[0] === 'fm' && key === 'algo') return [0, 1, 2, 3, 4]
         if (pathArr[0] === 'modEnvelope' && key === 'target') return MOD_ENV_TARGETS
         if (isLfo && key === 'target') {
-            return SYNTH_LFO_TARGETS.map(target => ({ value: target, label: target === 'NOT' ? 'off' : target }))
+            return SYNTH_LFO_TARGETS.map((target) => ({ value: target, label: target === 'NOT' ? 'off' : target }))
         }
         if (isLfo && key === 'sync') return LFO_SYNC_OPTIONS
         return null

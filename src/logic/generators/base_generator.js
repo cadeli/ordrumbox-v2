@@ -9,11 +9,14 @@ export default class BaseGenerator {
     constructor(instrumentName, configs, addNoteFn) {
         this.instrumentName = instrumentName
         this.configs = configs
-        this.addNoteFn = addNoteFn ?? ((track, beat, beatStep, pitch) => serviceRegistry.cmd.addNote(track, beat, beatStep, pitch))
+        this.addNoteFn =
+            addNoteFn ?? ((track, beat, beatStep, pitch) => serviceRegistry.cmd.addNote(track, beat, beatStep, pitch))
     }
 
     /** Protected setter — subclasses call this in their constructor. */
-    setToneThreshold(value) { this.#toneThreshold = value }
+    setToneThreshold(value) {
+        this.#toneThreshold = value
+    }
 
     addNote = (track, beat, beatStep, pitch = 0, velocity = 0.8, isGhost = false) => {
         const note = this.addNoteFn(track, beat, beatStep, pitch)
@@ -99,18 +102,18 @@ export default class BaseGenerator {
             approach: Math.random() < 0.5 ? -1 : -2,
         }
         if (Object.hasOwn(sourceOffsets, phrase.source)) {
-            return (typeof sourceOffsets[phrase.source] === 'function'
-                ? sourceOffsets[phrase.source]()
-                : sourceOffsets[phrase.source]) + pitchBias
+            return (
+                (typeof sourceOffsets[phrase.source] === 'function'
+                    ? sourceOffsets[phrase.source]()
+                    : sourceOffsets[phrase.source]) + pitchBias
+            )
         }
 
         return this.getRndTone(tones) + pitchBias
     }
 
     formatCompactVelocity = (velocityConfig, defaults = {}) => {
-        const segments = [
-            `b${velocityConfig.base ?? defaults.base ?? 0.75}`
-        ]
+        const segments = [`b${velocityConfig.base ?? defaults.base ?? 0.75}`]
         if (typeof velocityConfig.accentOnBeat === 'number') {
             segments.push(`a${velocityConfig.accentOnBeat}`)
         }
@@ -123,7 +126,9 @@ export default class BaseGenerator {
         if (typeof velocityConfig.randomSpread === 'number') {
             segments.push(`r${velocityConfig.randomSpread}`)
         }
-        segments.push(`c${velocityConfig.clampMin ?? defaults.clampMin ?? 0.25}-${velocityConfig.clampMax ?? defaults.clampMax ?? 1}`)
+        segments.push(
+            `c${velocityConfig.clampMin ?? defaults.clampMin ?? 0.25}-${velocityConfig.clampMax ?? defaults.clampMax ?? 1}`,
+        )
         return segments.join(',')
     }
 
@@ -165,7 +170,7 @@ export default class BaseGenerator {
                     beat,
                     step,
                     pitch,
-                    this.computeVelocity(config.velocity, { step, accent, ghost })
+                    this.computeVelocity(config.velocity, { step, accent, ghost }),
                 )
                 this.applyNoteProperties(note, config)
             }
@@ -212,7 +217,7 @@ export default class BaseGenerator {
                 phrase.beat,
                 step,
                 pitch,
-                this.computeVelocity(config.velocity, { step, accent, ghost })
+                this.computeVelocity(config.velocity, { step, accent, ghost }),
             )
             this.applyNoteProperties(note, phrase)
             if (cachedPitches) cachedPitches.push(pitch)
@@ -305,12 +310,17 @@ export default class BaseGenerator {
         const clamped = clamp(targetQuantize, range.min, range.max)
         const saved = track.stepsPerBeat
         track.stepsPerBeat = clamped
-        try { fn() } finally { track.stepsPerBeat = saved }
+        try {
+            fn()
+        } finally {
+            track.stepsPerBeat = saved
+        }
     }
 
     _isRequiredStep = (beat, step, requiredSteps = []) => {
         return requiredSteps.some((requiredStep) => {
-            const beatMatches = requiredStep.beatModulo === undefined || beat % requiredStep.beatModulo === requiredStep.beatModulo - 1
+            const beatMatches =
+                requiredStep.beatModulo === undefined || beat % requiredStep.beatModulo === requiredStep.beatModulo - 1
             return beatMatches && requiredStep.step === step
         })
     }

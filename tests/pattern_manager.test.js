@@ -15,7 +15,7 @@ vi.mock('../src/state/app_state.js', () => {
     const state = { flatNotes: null }
     return {
         appState: state,
-        __esModule: true
+        __esModule: true,
     }
 })
 
@@ -24,24 +24,41 @@ vi.mock('../src/state/playback_events.js', () => {
     let batchDepth = 0
     const pending = []
     const bus = {
-        on: (ev, fn) => { callbacks.push(fn) },
-        off: (ev, fn) => { const i = callbacks.indexOf(fn); if (i >= 0) callbacks.splice(i, 1) },
+        on: (ev, fn) => {
+            callbacks.push(fn)
+        },
+        off: (ev, fn) => {
+            const i = callbacks.indexOf(fn)
+            if (i >= 0) callbacks.splice(i, 1)
+        },
         emit: (ev) => {
-            if (batchDepth > 0) { pending.push(ev); return }
-            callbacks.forEach(fn => fn())
+            if (batchDepth > 0) {
+                pending.push(ev)
+                return
+            }
+            callbacks.forEach((fn) => fn())
         },
         batch: (fn) => {
             batchDepth++
-            try { fn() } finally {
+            try {
+                fn()
+            } finally {
                 batchDepth--
-                if (batchDepth === 0) { while (pending.length) { pending.shift(); callbacks.forEach(fn => fn()) } }
+                if (batchDepth === 0) {
+                    while (pending.length) {
+                        pending.shift()
+                        callbacks.forEach((fn) => fn())
+                    }
+                }
             }
         },
-        _clearCallbacks: () => { callbacks.length = 0 },
+        _clearCallbacks: () => {
+            callbacks.length = 0
+        },
     }
     return {
         playbackEvents: bus,
-        __esModule: true
+        __esModule: true,
     }
 })
 
@@ -55,7 +72,9 @@ describe('PatternManager', () => {
     describe('computeNextPatternStepNote', () => {
         it('finds next note in same beat', () => {
             const track = makeTrack('KICK', [makeNote(0, 0), makeNote(0, 2)], {
-                nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8,
+                nbBeats: 2,
+                stepsPerBeat: 4,
+                loopAtStep: 8,
             })
             const note = track.notes[0]
             const result = mgr.computeNextPatternStepNote(note, track)
@@ -64,7 +83,9 @@ describe('PatternManager', () => {
 
         it('finds next note in next beat', () => {
             const track = makeTrack('KICK', [makeNote(0, 2), makeNote(1, 0)], {
-                nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8,
+                nbBeats: 2,
+                stepsPerBeat: 4,
+                loopAtStep: 8,
             })
             const note = track.notes[0]
             const result = mgr.computeNextPatternStepNote(note, track)
@@ -73,7 +94,9 @@ describe('PatternManager', () => {
 
         it('returns loopAtStep when no note found after', () => {
             const track = makeTrack('KICK', [makeNote(0, 4)], {
-                nbBeats: 2, stepsPerBeat: 4, loopAtStep: 6,
+                nbBeats: 2,
+                stepsPerBeat: 4,
+                loopAtStep: 6,
             })
             const note = track.notes[0]
             const result = mgr.computeNextPatternStepNote(note, track)
@@ -82,7 +105,9 @@ describe('PatternManager', () => {
 
         it('returns total steps when no note found and no loopAtStep', () => {
             const track = makeTrack('KICK', [makeNote(0, 6)], {
-                nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8,
+                nbBeats: 2,
+                stepsPerBeat: 4,
+                loopAtStep: 8,
             })
             delete track.loopAtStep
             const note = track.notes[0]
@@ -92,7 +117,9 @@ describe('PatternManager', () => {
 
         it('wraps around beats correctly', () => {
             const track = makeTrack('KICK', [makeNote(1, 3), makeNote(2, 1)], {
-                nbBeats: 3, stepsPerBeat: 4, loopAtStep: 12,
+                nbBeats: 3,
+                stepsPerBeat: 4,
+                loopAtStep: 12,
             })
             const note = track.notes[0]
             const result = mgr.computeNextPatternStepNote(note, track)
@@ -108,9 +135,7 @@ describe('PatternManager', () => {
                 name: 'Test',
                 bpm: 120,
                 nbBeats: 1,
-                tracks: [
-                    makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 1, stepsPerBeat: 4, loopAtStep: 4 })
-                ]
+                tracks: [makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 1, stepsPerBeat: 4, loopAtStep: 4 })],
             }
 
             const result = mgr.applyFlatNotes(pattern, 0)
@@ -121,13 +146,13 @@ describe('PatternManager', () => {
         it('fires onPatternChange callbacks', async () => {
             const { playbackEvents } = await import('../src/state/playback_events.js')
             const cb = vi.fn()
-            playbackEvents.on("patternChange", cb)
+            playbackEvents.on('patternChange', cb)
 
             const pattern = {
                 name: 'Test',
                 bpm: 120,
                 nbBeats: 1,
-                tracks: [makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 1, stepsPerBeat: 4, loopAtStep: 4 })]
+                tracks: [makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 1, stepsPerBeat: 4, loopAtStep: 4 })],
             }
 
             mgr.applyFlatNotes(pattern, 0)
@@ -214,7 +239,7 @@ describe('PatternManager', () => {
             const track = makeTrack('KICK')
             const note = makeNote(0, 0, {
                 retriggerNum: 4,
-                arp: { mode: 'up', intervals: [0, 3, 7] }
+                arp: { mode: 'up', intervals: [0, 3, 7] },
             })
             generateSubNotes(flatNotes, 0, track, note, 32, 32)
             expect(flatNotes.size).toBeGreaterThan(0)
@@ -238,7 +263,9 @@ describe('PatternManager', () => {
     describe.each(PARAM_SETS)('computeNextPatternStepNote — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat) => {
         it('finds next note in same beat', () => {
             const track = makeTrack('KICK', [makeNote(0, 0), makeNote(0, 2)], {
-                nbBeats: 2, stepsPerBeat, loopAtStep: 2 * stepsPerBeat,
+                nbBeats: 2,
+                stepsPerBeat,
+                loopAtStep: 2 * stepsPerBeat,
             })
             const result = mgr.computeNextPatternStepNote(track.notes[0], track)
             expect(result).toBe(2)
@@ -246,7 +273,9 @@ describe('PatternManager', () => {
 
         it('finds next note in next beat', () => {
             const track = makeTrack('KICK', [makeNote(0, 0), makeNote(1, 0)], {
-                nbBeats: 2, stepsPerBeat, loopAtStep: 2 * stepsPerBeat,
+                nbBeats: 2,
+                stepsPerBeat,
+                loopAtStep: 2 * stepsPerBeat,
             })
             const result = mgr.computeNextPatternStepNote(track.notes[0], track)
             expect(result).toBe(stepsPerBeat)
@@ -255,7 +284,9 @@ describe('PatternManager', () => {
         it('returns loopAtStep when no note found after', () => {
             const loopAt = stepsPerBeat + 1
             const track = makeTrack('KICK', [makeNote(0, 0)], {
-                nbBeats: 2, stepsPerBeat, loopAtStep: loopAt,
+                nbBeats: 2,
+                stepsPerBeat,
+                loopAtStep: loopAt,
             })
             const result = mgr.computeNextPatternStepNote(track.notes[0], track)
             expect(result).toBe(loopAt)
@@ -264,7 +295,9 @@ describe('PatternManager', () => {
         it('returns total steps when no loopAtStep', () => {
             const totalSteps = 2 * stepsPerBeat
             const track = makeTrack('KICK', [makeNote(0, 0)], {
-                nbBeats: 2, stepsPerBeat, loopAtStep: totalSteps,
+                nbBeats: 2,
+                stepsPerBeat,
+                loopAtStep: totalSteps,
             })
             delete track.loopAtStep
             const result = mgr.computeNextPatternStepNote(track.notes[0], track)
@@ -274,7 +307,9 @@ describe('PatternManager', () => {
         it('wraps around beats correctly', () => {
             const loopAt = 3 * stepsPerBeat
             const track = makeTrack('KICK', [makeNote(1, 0), makeNote(2, 0)], {
-                nbBeats: 3, stepsPerBeat, loopAtStep: loopAt,
+                nbBeats: 3,
+                stepsPerBeat,
+                loopAtStep: loopAt,
             })
             const result = mgr.computeNextPatternStepNote(track.notes[0], track)
             expect(result).toBe(2 * stepsPerBeat)

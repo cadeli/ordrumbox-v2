@@ -12,16 +12,20 @@ class MockAudioWorkletProcessor {
     constructor() {
         this.port = { onmessage: null, postMessage: () => {} }
     }
-    process() { return true }
+    process() {
+        return true
+    }
 }
 
 const globalScope = {
     sampleRate: 44100,
     currentFrame: 0,
     AudioWorkletProcessor: MockAudioWorkletProcessor,
-    processors: {}
+    processors: {},
 }
-function registerProcessor(name, cls) { globalScope.processors[name] = cls }
+function registerProcessor(name, cls) {
+    globalScope.processors[name] = cls
+}
 
 function makeProc() {
     const factory = new Function('registerProcessor', 'AudioWorkletProcessor', 'sampleRate', SYNTH_VOICE_SOURCE)
@@ -37,15 +41,15 @@ function runProcess(processor, paramValues, frames = 128) {
         parameters[desc.name] = new Float32Array(frames).fill(v)
     }
     const outputs = [[new Float32Array(frames), new Float32Array(frames)]]
-    
+
     // Set globals for the process call
     globalThis.sampleRate = globalScope.sampleRate
     globalThis.currentFrame = globalScope.currentFrame
-    
+
     processor.process([], outputs, parameters)
-    
+
     globalScope.currentFrame += frames
-    return outputs[0]  // [chL, chR]
+    return outputs[0] // [chL, chR]
 }
 
 describe('SynthVoiceProcessor source', () => {
@@ -78,7 +82,7 @@ describe('SynthVoiceProcessor source', () => {
         const out1 = runProcess(proc, { master: 1, osc1Gain: 1, attack: 0.001, sustain: 1, release: 0.05 }, 8820) // 200ms
         let rms1 = 0
         for (let i = 0; i < 8820; i++) rms1 += out1[0][i] * out1[0][i]
-        expect(Math.sqrt(rms1 / 8820)).toBeGreaterThan(0.1)  // sustain level
+        expect(Math.sqrt(rms1 / 8820)).toBeGreaterThan(0.1) // sustain level
 
         // Now release
         proc.port.onmessage({ data: { type: 'release', releaseTime: 0.2 } })
@@ -94,7 +98,11 @@ describe('SynthVoiceProcessor source', () => {
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         // Attack = 10ms, sample at start, mid, end
         const FRAMES = 441 // 10ms
-        const out = runProcess(proc, { master: 1, osc1Gain: 1, attack: 0.01, decay: 0, sustain: 1, velocity: 1 }, FRAMES)
+        const out = runProcess(
+            proc,
+            { master: 1, osc1Gain: 1, attack: 0.01, decay: 0, sustain: 1, velocity: 1 },
+            FRAMES,
+        )
         // Check envelope shape
         const rms = (start, end) => {
             let s = 0
@@ -113,11 +121,19 @@ describe('SynthVoiceProcessor source', () => {
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         // Attack 5ms, decay 50ms, sustain 0.5
         const FRAMES = 44100 // 1s
-        const out = runProcess(proc, {
-            master: 1, osc1Gain: 1,
-            attack: 0.005, decay: 0.05, sustain: 0.5,
-            velocity: 1, release: 5  // never release
-        }, FRAMES)
+        const out = runProcess(
+            proc,
+            {
+                master: 1,
+                osc1Gain: 1,
+                attack: 0.005,
+                decay: 0.05,
+                sustain: 0.5,
+                velocity: 1,
+                release: 5, // never release
+            },
+            FRAMES,
+        )
         // Measure RMS in middle of sustain (200ms in)
         let rms = 0
         for (let i = 8820; i < 13230; i++) rms += out[0][i] * out[0][i]
@@ -131,11 +147,20 @@ describe('SynthVoiceProcessor source', () => {
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         const FRAMES = 1024
-        const out = runProcess(proc, {
-            osc1Gain: 1, osc2Gain: 1, osc3Gain: 1,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const out = runProcess(
+            proc,
+            {
+                osc1Gain: 1,
+                osc2Gain: 1,
+                osc3Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         let peak = 0
         for (let i = 100; i < FRAMES; i++) peak = Math.max(peak, Math.abs(out[0][i]))
         // 3 sines summed can reach ±3, but with envelope < 1, expect > 1
@@ -149,13 +174,21 @@ describe('SynthVoiceProcessor source', () => {
         proc2.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         // 100 cents = 1 semitone up
         const FRAMES = 4410
-        const out1 = runProcess(proc1, { osc1Gain: 1, osc1Detune: 0,   attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 1 }, FRAMES)
-        const out2 = runProcess(proc2, { osc1Gain: 1, osc1Detune: 100, attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 1 }, FRAMES)
+        const out1 = runProcess(
+            proc1,
+            { osc1Gain: 1, osc1Detune: 0, attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 1 },
+            FRAMES,
+        )
+        const out2 = runProcess(
+            proc2,
+            { osc1Gain: 1, osc1Detune: 100, attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 1 },
+            FRAMES,
+        )
         // Count zero crossings — detuned should have more crossings
         const count = (arr) => {
             let c = 0
             for (let i = 1; i < FRAMES; i++) {
-                if ((arr[i-1] < 0 && arr[i] >= 0) || (arr[i-1] >= 0 && arr[i] < 0)) c++
+                if ((arr[i - 1] < 0 && arr[i] >= 0) || (arr[i - 1] >= 0 && arr[i] < 0)) c++
             }
             return c
         }
@@ -169,11 +202,21 @@ describe('SynthVoiceProcessor source', () => {
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         const FRAMES = 4410
-        const outNoise = runProcess(proc, {
-            osc1Gain: 0, osc2Gain: 0, osc3Gain: 0,
-            noiseMix: 1, attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const outNoise = runProcess(
+            proc,
+            {
+                osc1Gain: 0,
+                osc2Gain: 0,
+                osc3Gain: 0,
+                noiseMix: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // Noise should have many distinct values, not pure tone
         const seen = new Set()
         for (let i = 100; i < FRAMES; i++) seen.add(outNoise[0][i].toFixed(3))
@@ -183,11 +226,22 @@ describe('SynthVoiceProcessor source', () => {
     it('filter LP mode passes low frequencies', () => {
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        const FRAMES = 44100  // 1s
-        const out = runProcess(proc, {
-            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1, filterType: 0, filterFreq: 20000, filterQ: 0.7
-        }, FRAMES)
+        const FRAMES = 44100 // 1s
+        const out = runProcess(
+            proc,
+            {
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+                filterType: 0,
+                filterFreq: 20000,
+                filterQ: 0.7,
+            },
+            FRAMES,
+        )
         // With LP at 20kHz (open), output should be roughly the oscillator level
         let rms = 0
         for (let i = 8820; i < FRAMES; i++) rms += out[0][i] * out[0][i]
@@ -199,12 +253,22 @@ describe('SynthVoiceProcessor source', () => {
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         const FRAMES = 44100
         // Use a 0Hz osc1 (DC)... actually we need AC, so use 50Hz tone
-        const out = runProcess(proc, {
-            osc1Freq: 50, osc1Gain: 1,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1,
-            filterType: 1, filterFreq: 1000, filterQ: 0.7
-        }, FRAMES)
+        const out = runProcess(
+            proc,
+            {
+                osc1Freq: 50,
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+                filterType: 1,
+                filterFreq: 1000,
+                filterQ: 0.7,
+            },
+            FRAMES,
+        )
         // 50Hz tone should be heavily attenuated by 1000Hz HPF
         let rms = 0
         for (let i = FRAMES - 1000; i < FRAMES; i++) rms += out[0][i] * out[0][i]
@@ -212,12 +276,22 @@ describe('SynthVoiceProcessor source', () => {
         // Compare to unfiltered
         const proc2 = makeProc()
         proc2.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        const outNoFilt = runProcess(proc2, {
-            osc1Freq: 50, osc1Gain: 1,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1,
-            filterType: 0, filterFreq: 20000, filterQ: 0.7
-        }, FRAMES)
+        const outNoFilt = runProcess(
+            proc2,
+            {
+                osc1Freq: 50,
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+                filterType: 0,
+                filterFreq: 20000,
+                filterQ: 0.7,
+            },
+            FRAMES,
+        )
         let rms2 = 0
         for (let i = FRAMES - 1000; i < FRAMES; i++) rms2 += outNoFilt[0][i] * outNoFilt[0][i]
         const inLevel = Math.sqrt(rms2 / 1000)
@@ -231,12 +305,22 @@ describe('SynthVoiceProcessor source', () => {
         procL.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         procR.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         const FRAMES = 256
-        const outL = runProcess(procL, {
-            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1, pan: -1
-        }, FRAMES)
+        const outL = runProcess(
+            procL,
+            {
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+                pan: -1,
+            },
+            FRAMES,
+        )
         // pan=-1: L should be loud, R should be silent
-        let rmsLR = 0, rmsRR = 0
+        let rmsLR = 0,
+            rmsRR = 0
         for (let i = 100; i < FRAMES; i++) {
             rmsLR += outL[0][i] * outL[0][i]
             rmsRR += outL[1][i] * outL[1][i]
@@ -249,11 +333,20 @@ describe('SynthVoiceProcessor source', () => {
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         const FRAMES = 256
-        const outLoud = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 1 }, FRAMES)
+        const outLoud = runProcess(
+            proc,
+            { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 1 },
+            FRAMES,
+        )
         const proc2 = makeProc()
         proc2.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        const outQuiet = runProcess(proc2, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 0.5 }, FRAMES)
-        let rmsL = 0, rmsQ = 0
+        const outQuiet = runProcess(
+            proc2,
+            { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 0.5 },
+            FRAMES,
+        )
+        let rmsL = 0,
+            rmsQ = 0
         for (let i = 100; i < FRAMES; i++) {
             rmsL += outLoud[0][i] * outLoud[0][i]
             rmsQ += outQuiet[0][i] * outQuiet[0][i]
@@ -270,9 +363,18 @@ describe('SynthVoiceProcessor source', () => {
         procV1.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         procV2.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         const FRAMES = 1024
-        const outV1 = runProcess(procV1, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 0.5, master: 1 }, FRAMES)
-        const outV2 = runProcess(procV2, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 1.0, master: 1 }, FRAMES)
-        let peak1 = 0, peak2 = 0
+        const outV1 = runProcess(
+            procV1,
+            { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 0.5, master: 1 },
+            FRAMES,
+        )
+        const outV2 = runProcess(
+            procV2,
+            { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 1.0, master: 1 },
+            FRAMES,
+        )
+        let peak1 = 0,
+            peak2 = 0
         for (let i = 100; i < FRAMES; i++) {
             peak1 = Math.max(peak1, Math.abs(outV1[0][i]))
             peak2 = Math.max(peak2, Math.abs(outV2[0][i]))
@@ -287,7 +389,11 @@ describe('SynthVoiceProcessor source', () => {
         // Send update to set master=0.1
         proc.port.onmessage({ data: { type: 'update', master: 0.1 } })
         const FRAMES = 256
-        const out = runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 1 }, FRAMES)
+        const out = runProcess(
+            proc,
+            { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, velocity: 1, master: 1 },
+            FRAMES,
+        )
         // Should use the override (0.1), not the param (1)
         let peak = 0
         for (let i = 50; i < FRAMES; i++) peak = Math.max(peak, Math.abs(out[0][i]))
@@ -299,12 +405,22 @@ describe('SynthVoiceProcessor source', () => {
         // With filter active (HP at 1000Hz, should attenuate 50Hz)
         const procFilt = makeProc()
         procFilt.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        const outFilt = runProcess(procFilt, {
-            osc1Freq: 50, osc1Gain: 1,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1,
-            filterType: 1, filterFreq: 1000, filterQ: 0.7
-        }, FRAMES)
+        const outFilt = runProcess(
+            procFilt,
+            {
+                osc1Freq: 50,
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+                filterType: 1,
+                filterFreq: 1000,
+                filterQ: 0.7,
+            },
+            FRAMES,
+        )
         let rmsFilt = 0
         for (let i = FRAMES - 500; i < FRAMES; i++) rmsFilt += outFilt[0][i] * outFilt[0][i]
         const levelFilt = Math.sqrt(rmsFilt / 500)
@@ -313,12 +429,22 @@ describe('SynthVoiceProcessor source', () => {
         const procByp = makeProc()
         procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         procByp.port.onmessage({ data: { type: 'update', bypassFilter: true } })
-        const outByp = runProcess(procByp, {
-            osc1Freq: 50, osc1Gain: 1,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1,
-            filterType: 1, filterFreq: 1000, filterQ: 0.7
-        }, FRAMES)
+        const outByp = runProcess(
+            procByp,
+            {
+                osc1Freq: 50,
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+                filterType: 1,
+                filterFreq: 1000,
+                filterQ: 0.7,
+            },
+            FRAMES,
+        )
         let rmsByp = 0
         for (let i = FRAMES - 500; i < FRAMES; i++) rmsByp += outByp[0][i] * outByp[0][i]
         const levelByp = Math.sqrt(rmsByp / 500)
@@ -332,18 +458,34 @@ describe('SynthVoiceProcessor source', () => {
         // With envelope: short attack should produce ramp-up
         const procEnv = makeProc()
         procEnv.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        const outEnv = runProcess(procEnv, {
-            osc1Gain: 1, attack: 0.01, sustain: 0.5, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const outEnv = runProcess(
+            procEnv,
+            {
+                osc1Gain: 1,
+                attack: 0.01,
+                sustain: 0.5,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // With bypass: envelope=1, should be constant from the start
         const procByp = makeProc()
         procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         procByp.port.onmessage({ data: { type: 'update', bypassEnv: true } })
-        const outByp = runProcess(procByp, {
-            osc1Gain: 1, attack: 0.01, sustain: 0.5, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const outByp = runProcess(
+            procByp,
+            {
+                osc1Gain: 1,
+                attack: 0.01,
+                sustain: 0.5,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // Bypassed env: first sample should be near full level (no ramp-up)
         expect(Math.abs(outByp[0][10])).toBeGreaterThan(0.1)
         // With envelope: first samples should be small (attack ramp)
@@ -355,11 +497,19 @@ describe('SynthVoiceProcessor source', () => {
         // With noise
         const procNoise = makeProc()
         procNoise.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        const outNoise = runProcess(procNoise, {
-            osc1Gain: 0, noiseMix: 1,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const outNoise = runProcess(
+            procNoise,
+            {
+                osc1Gain: 0,
+                noiseMix: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         let rmsNoise = 0
         for (let i = 100; i < FRAMES; i++) rmsNoise += outNoise[0][i] * outNoise[0][i]
         const levelNoise = Math.sqrt(rmsNoise / (FRAMES - 100))
@@ -368,11 +518,19 @@ describe('SynthVoiceProcessor source', () => {
         const procByp = makeProc()
         procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         procByp.port.onmessage({ data: { type: 'update', bypassNoise: true } })
-        const outByp = runProcess(procByp, {
-            osc1Gain: 0, noiseMix: 1,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const outByp = runProcess(
+            procByp,
+            {
+                osc1Gain: 0,
+                noiseMix: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         let rmsByp = 0
         for (let i = 100; i < FRAMES; i++) rmsByp += outByp[0][i] * outByp[0][i]
         const levelByp = Math.sqrt(rmsByp / (FRAMES - 100))
@@ -387,22 +545,44 @@ describe('SynthVoiceProcessor source', () => {
         const procLfo = makeProc()
         procLfo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         procLfo.port.onmessage({ data: { type: 'update', lfo1Target: 5, lfo1Depth: 0.5, lfo1Freq: 5 } })
-        const outLfo = runProcess(procLfo, {
-            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
-            velocity: 0.5, master: 1
-        }, FRAMES)
+        const outLfo = runProcess(
+            procLfo,
+            {
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 0.5,
+                master: 1,
+            },
+            FRAMES,
+        )
         // With LFO bypassed
         const procByp = makeProc()
         procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        procByp.port.onmessage({ data: { type: 'update', lfo1Target: 5, lfo1Depth: 0.5, lfo1Freq: 5, bypassLfo1: true } })
-        const outByp = runProcess(procByp, {
-            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
-            velocity: 0.5, master: 1
-        }, FRAMES)
+        procByp.port.onmessage({
+            data: { type: 'update', lfo1Target: 5, lfo1Depth: 0.5, lfo1Freq: 5, bypassLfo1: true },
+        })
+        const outByp = runProcess(
+            procByp,
+            {
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 0.5,
+                master: 1,
+            },
+            FRAMES,
+        )
         // With LFO, output should vary; with bypass, it should be constant
         const variance = (arr) => {
-            let min = Infinity, max = -Infinity
-            for (let i = 200; i < arr.length; i++) { min = Math.min(min, arr[i]); max = Math.max(max, arr[i]) }
+            let min = Infinity,
+                max = -Infinity
+            for (let i = 200; i < arr.length; i++) {
+                min = Math.min(min, arr[i])
+                max = Math.max(max, arr[i])
+            }
             return max - min
         }
         expect(variance(outLfo[0])).toBeGreaterThan(variance(outByp[0]) + 0.05)
@@ -413,31 +593,69 @@ describe('SynthVoiceProcessor source', () => {
         // Sawtooth has rich harmonics — filter sweep will produce amplitude variation
         const procLfo = makeProc()
         procLfo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        procLfo.port.onmessage({ data: {
-            type: 'update',
-            lfo1Target: 15, lfo1Depth: 1.0, lfo1Freq: 5, lfo1Wave: 0,
-            filterFreq: 400, filterQ: 8, filterType: 0,
-            osc1Gain: 1, osc1Wave: 2, // sawtooth
-        }})
-        const outLfo = runProcess(procLfo, {
-            osc1Gain: 1, osc1Wave: 2, attack: 0.001, sustain: 1, release: 5,
-            velocity: 0.8, master: 1,
-            filterFreq: 400, filterQ: 8, filterType: 0,
-        }, FRAMES)
+        procLfo.port.onmessage({
+            data: {
+                type: 'update',
+                lfo1Target: 15,
+                lfo1Depth: 1.0,
+                lfo1Freq: 5,
+                lfo1Wave: 0,
+                filterFreq: 400,
+                filterQ: 8,
+                filterType: 0,
+                osc1Gain: 1,
+                osc1Wave: 2, // sawtooth
+            },
+        })
+        const outLfo = runProcess(
+            procLfo,
+            {
+                osc1Gain: 1,
+                osc1Wave: 2,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 0.8,
+                master: 1,
+                filterFreq: 400,
+                filterQ: 8,
+                filterType: 0,
+            },
+            FRAMES,
+        )
         // No LFO — static filter
         const procNo = makeProc()
         procNo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        procNo.port.onmessage({ data: {
-            type: 'update',
-            lfo1Target: 15, lfo1Depth: 0, lfo1Freq: 5, lfo1Wave: 0,
-            filterFreq: 400, filterQ: 8, filterType: 0,
-            osc1Gain: 1, osc1Wave: 2,
-        }})
-        const outNo = runProcess(procNo, {
-            osc1Gain: 1, osc1Wave: 2, attack: 0.001, sustain: 1, release: 5,
-            velocity: 0.8, master: 1,
-            filterFreq: 400, filterQ: 8, filterType: 0,
-        }, FRAMES)
+        procNo.port.onmessage({
+            data: {
+                type: 'update',
+                lfo1Target: 15,
+                lfo1Depth: 0,
+                lfo1Freq: 5,
+                lfo1Wave: 0,
+                filterFreq: 400,
+                filterQ: 8,
+                filterType: 0,
+                osc1Gain: 1,
+                osc1Wave: 2,
+            },
+        })
+        const outNo = runProcess(
+            procNo,
+            {
+                osc1Gain: 1,
+                osc1Wave: 2,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 0.8,
+                master: 1,
+                filterFreq: 400,
+                filterQ: 8,
+                filterType: 0,
+            },
+            FRAMES,
+        )
         const rms = (arr) => {
             let sum = 0
             for (let i = 200; i < arr.length; i++) sum += arr[i] * arr[i]
@@ -456,31 +674,65 @@ describe('SynthVoiceProcessor source', () => {
         const FRAMES = 4410
         const procLfo = makeProc()
         procLfo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        procLfo.port.onmessage({ data: {
-            type: 'update',
-            lfo1Target: 8, lfo1Depth: 1.0, lfo1Freq: 5, lfo1Wave: 0,
-            filterFreq: 20000, filterType: 0,
-            osc1Gain: 1, osc1Wave: 0,
-        }})
-        const outLfo = runProcess(procLfo, {
-            osc1Gain: 1, osc1Wave: 0, attack: 0.001, sustain: 1, release: 5,
-            velocity: 0.8, master: 1,
-            filterFreq: 20000, filterType: 0,
-        }, FRAMES)
+        procLfo.port.onmessage({
+            data: {
+                type: 'update',
+                lfo1Target: 8,
+                lfo1Depth: 1.0,
+                lfo1Freq: 5,
+                lfo1Wave: 0,
+                filterFreq: 20000,
+                filterType: 0,
+                osc1Gain: 1,
+                osc1Wave: 0,
+            },
+        })
+        const outLfo = runProcess(
+            procLfo,
+            {
+                osc1Gain: 1,
+                osc1Wave: 0,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 0.8,
+                master: 1,
+                filterFreq: 20000,
+                filterType: 0,
+            },
+            FRAMES,
+        )
         // No LFO
         const procNo = makeProc()
         procNo.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        procNo.port.onmessage({ data: {
-            type: 'update',
-            lfo1Target: 8, lfo1Depth: 0, lfo1Freq: 5, lfo1Wave: 0,
-            filterFreq: 20000, filterType: 0,
-            osc1Gain: 1, osc1Wave: 0,
-        }})
-        const outNo = runProcess(procNo, {
-            osc1Gain: 1, osc1Wave: 0, attack: 0.001, sustain: 1, release: 5,
-            velocity: 0.8, master: 1,
-            filterFreq: 20000, filterType: 0,
-        }, FRAMES)
+        procNo.port.onmessage({
+            data: {
+                type: 'update',
+                lfo1Target: 8,
+                lfo1Depth: 0,
+                lfo1Freq: 5,
+                lfo1Wave: 0,
+                filterFreq: 20000,
+                filterType: 0,
+                osc1Gain: 1,
+                osc1Wave: 0,
+            },
+        })
+        const outNo = runProcess(
+            procNo,
+            {
+                osc1Gain: 1,
+                osc1Wave: 0,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 0.8,
+                master: 1,
+                filterFreq: 20000,
+                filterType: 0,
+            },
+            FRAMES,
+        )
         // Compare zero-crossings: vibrato shifts frequency → different zero-crossing rate
         const countCrossings = (arr) => {
             let c = 0
@@ -499,23 +751,45 @@ describe('SynthVoiceProcessor source', () => {
         const FRAMES = 4410
         // Scenario: send update, then trigger (clears), then re-send (restores)
         const proc = makeProc()
-        proc.port.onmessage({ data: {
-            type: 'update',
-            lfo1Target: 5, lfo1Depth: 0.8, lfo1Freq: 5,
-            osc1Gain: 1, velocity: 0.5, master: 1,
-        }})
+        proc.port.onmessage({
+            data: {
+                type: 'update',
+                lfo1Target: 5,
+                lfo1Depth: 0.8,
+                lfo1Freq: 5,
+                osc1Gain: 1,
+                velocity: 0.5,
+                master: 1,
+            },
+        })
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        proc.port.onmessage({ data: {
-            type: 'update',
-            lfo1Target: 5, lfo1Depth: 0.8, lfo1Freq: 5,
-            osc1Gain: 1, velocity: 0.5, master: 1,
-        }})
-        const out = runProcess(proc, {
-            osc1Gain: 1, velocity: 0.5, master: 1,
-        }, FRAMES)
+        proc.port.onmessage({
+            data: {
+                type: 'update',
+                lfo1Target: 5,
+                lfo1Depth: 0.8,
+                lfo1Freq: 5,
+                osc1Gain: 1,
+                velocity: 0.5,
+                master: 1,
+            },
+        })
+        const out = runProcess(
+            proc,
+            {
+                osc1Gain: 1,
+                velocity: 0.5,
+                master: 1,
+            },
+            FRAMES,
+        )
         const variance = (arr) => {
-            let min = Infinity, max = -Infinity
-            for (let i = 200; i < arr.length; i++) { min = Math.min(min, arr[i]); max = Math.max(max, arr[i]) }
+            let min = Infinity,
+                max = -Infinity
+            for (let i = 200; i < arr.length; i++) {
+                min = Math.min(min, arr[i])
+                max = Math.max(max, arr[i])
+            }
             return max - min
         }
         // With LFO re-sent after trigger, output should vary (tremolo)
@@ -528,20 +802,40 @@ describe('SynthVoiceProcessor source', () => {
         const procFm = makeProc()
         procFm.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         procFm.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 2 } })
-        const outFm = runProcess(procFm, {
-            osc1Gain: 1, osc2Gain: 1, osc3Gain: 1, osc3Freq: 220,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const outFm = runProcess(
+            procFm,
+            {
+                osc1Gain: 1,
+                osc2Gain: 1,
+                osc3Gain: 1,
+                osc3Freq: 220,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // With FM bypassed
         const procByp = makeProc()
         procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         procByp.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 2, bypassFm: true } })
-        const outByp = runProcess(procByp, {
-            osc1Gain: 1, osc2Gain: 1, osc3Gain: 1, osc3Freq: 220,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const outByp = runProcess(
+            procByp,
+            {
+                osc1Gain: 1,
+                osc2Gain: 1,
+                osc3Gain: 1,
+                osc3Freq: 220,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // FM should produce more zero crossings than non-FM
         const countCrossings = (arr) => {
             let c = 0
@@ -562,12 +856,21 @@ describe('SynthVoiceProcessor source', () => {
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         proc.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 0 } })
-        const out = runProcess(proc, {
-            osc1Gain: 1, osc2Gain: 1, osc3Gain: 0,
-            osc2Freq: 880,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const out = runProcess(
+            proc,
+            {
+                osc1Gain: 1,
+                osc2Gain: 1,
+                osc3Gain: 0,
+                osc2Freq: 880,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // Should produce output (FM is active on osc1)
         let rms = 0
         for (let i = 200; i < FRAMES; i++) rms += out[0][i] * out[0][i]
@@ -579,12 +882,22 @@ describe('SynthVoiceProcessor source', () => {
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         proc.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 3 } })
-        const out = runProcess(proc, {
-            osc1Gain: 1, osc2Gain: 1, osc3Gain: 1,
-            osc2Freq: 880, osc3Freq: 660,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const out = runProcess(
+            proc,
+            {
+                osc1Gain: 1,
+                osc2Gain: 1,
+                osc3Gain: 1,
+                osc2Freq: 880,
+                osc3Freq: 660,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         let rms = 0
         for (let i = 200; i < FRAMES; i++) rms += out[0][i] * out[0][i]
         expect(Math.sqrt(rms / (FRAMES - 200))).toBeGreaterThan(0.1)
@@ -595,12 +908,21 @@ describe('SynthVoiceProcessor source', () => {
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         proc.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 4 } })
-        const out = runProcess(proc, {
-            osc1Gain: 1, osc2Gain: 1, osc3Gain: 0,
-            osc2Freq: 880,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const out = runProcess(
+            proc,
+            {
+                osc1Gain: 1,
+                osc2Gain: 1,
+                osc3Gain: 0,
+                osc2Freq: 880,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         let rms = 0
         for (let i = 200; i < FRAMES; i++) rms += out[0][i] * out[0][i]
         expect(Math.sqrt(rms / (FRAMES - 200))).toBeGreaterThan(0.1)
@@ -611,19 +933,56 @@ describe('SynthVoiceProcessor source', () => {
         // With mod envelope targeting pitch (mTgt=2), pitch should sweep
         const procMod = makeProc()
         procMod.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        procMod.port.onmessage({ data: { type: 'update', modEnvTarget: 2, modEnvDepth: 1, modEnvAttack: 0.01, modEnvDecay: 0.5, modEnvSustain: 0, modEnvRelease: 0.1 } })
-        const outMod = runProcess(procMod, {
-            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        procMod.port.onmessage({
+            data: {
+                type: 'update',
+                modEnvTarget: 2,
+                modEnvDepth: 1,
+                modEnvAttack: 0.01,
+                modEnvDecay: 0.5,
+                modEnvSustain: 0,
+                modEnvRelease: 0.1,
+            },
+        })
+        const outMod = runProcess(
+            procMod,
+            {
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // With mod envelope bypassed
         const procByp = makeProc()
         procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        procByp.port.onmessage({ data: { type: 'update', modEnvTarget: 2, modEnvDepth: 1, modEnvAttack: 0.01, modEnvDecay: 0.5, modEnvSustain: 0, modEnvRelease: 0.1, bypassModEnv: true } })
-        const outByp = runProcess(procByp, {
-            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        procByp.port.onmessage({
+            data: {
+                type: 'update',
+                modEnvTarget: 2,
+                modEnvDepth: 1,
+                modEnvAttack: 0.01,
+                modEnvDecay: 0.5,
+                modEnvSustain: 0,
+                modEnvRelease: 0.1,
+                bypassModEnv: true,
+            },
+        })
+        const outByp = runProcess(
+            procByp,
+            {
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // Pitch modulation produces more zero crossings (sidebands)
         const countCrossings = (arr) => {
             let c = 0
@@ -641,24 +1000,49 @@ describe('SynthVoiceProcessor source', () => {
         const procEnv = makeProc()
         procEnv.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         procEnv.port.onmessage({ data: { type: 'update', filterFreq: 1000, filterQ: 0.7, filterType: 1 } })
-        const outEnv = runProcess(procEnv, {
-            osc1Freq: 200, osc1Gain: 1,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1,
-            filterType: 1, filterFreq: 1000, filterQ: 0.7, filterEnvelopeAmount: 0.8
-        }, FRAMES)
+        const outEnv = runProcess(
+            procEnv,
+            {
+                osc1Freq: 200,
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+                filterType: 1,
+                filterFreq: 1000,
+                filterQ: 0.7,
+                filterEnvelopeAmount: 0.8,
+            },
+            FRAMES,
+        )
         // With filter envelope bypassed
         const procByp = makeProc()
         procByp.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        procByp.port.onmessage({ data: { type: 'update', filterFreq: 1000, filterQ: 0.7, filterType: 1, bypassFilterEnv: true } })
-        const outByp = runProcess(procByp, {
-            osc1Freq: 200, osc1Gain: 1,
-            attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1,
-            filterType: 1, filterFreq: 1000, filterQ: 0.7, filterEnvelopeAmount: 0.8
-        }, FRAMES)
+        procByp.port.onmessage({
+            data: { type: 'update', filterFreq: 1000, filterQ: 0.7, filterType: 1, bypassFilterEnv: true },
+        })
+        const outByp = runProcess(
+            procByp,
+            {
+                osc1Freq: 200,
+                osc1Gain: 1,
+                attack: 0.001,
+                sustain: 1,
+                release: 5,
+                velocity: 1,
+                master: 1,
+                filterType: 1,
+                filterFreq: 1000,
+                filterQ: 0.7,
+                filterEnvelopeAmount: 0.8,
+            },
+            FRAMES,
+        )
         // Both should produce output (filter is active, just envelope sweep differs)
-        let rmsEnv = 0, rmsByp = 0
+        let rmsEnv = 0,
+            rmsByp = 0
         for (let i = 200; i < FRAMES; i++) {
             rmsEnv += outEnv[0][i] * outEnv[0][i]
             rmsByp += outByp[0][i] * outByp[0][i]
@@ -672,20 +1056,38 @@ describe('SynthVoiceProcessor source', () => {
         // Trigger note and let it play into sustain
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        const out1 = runProcess(proc, {
-            osc1Gain: 1, attack: 0.01, decay: 0.1, sustain: 0.5, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const out1 = runProcess(
+            proc,
+            {
+                osc1Gain: 1,
+                attack: 0.01,
+                decay: 0.1,
+                sustain: 0.5,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // After sustain, level should be near 0.5 * velocity
         const sustainLevel = Math.abs(out1[0][FRAMES - 10])
         expect(sustainLevel).toBeGreaterThan(0.1)
 
         // Now send resetEnv — envelope should restart from attack
         proc.port.onmessage({ data: { type: 'resetEnv' } })
-        const out2 = runProcess(proc, {
-            osc1Gain: 1, attack: 0.01, decay: 0.1, sustain: 0.5, release: 5,
-            velocity: 1, master: 1
-        }, FRAMES)
+        const out2 = runProcess(
+            proc,
+            {
+                osc1Gain: 1,
+                attack: 0.01,
+                decay: 0.1,
+                sustain: 0.5,
+                release: 5,
+                velocity: 1,
+                master: 1,
+            },
+            FRAMES,
+        )
         // First samples after reset should be small (attack ramp starting from 0)
         expect(Math.abs(out2[0][10])).toBeLessThan(sustainLevel)
     })
@@ -694,10 +1096,19 @@ describe('SynthVoiceProcessor source', () => {
         const proc = makeProc()
         // Schedule note 100ms in the future (at 4410 frames)
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0.1 } })
-        const out = runProcess(proc, {
-            osc1Gain: 1, attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.1,
-            velocity: 1, master: 1
-        }, 2205) // 50ms (before startTime)
+        const out = runProcess(
+            proc,
+            {
+                osc1Gain: 1,
+                attack: 0.01,
+                decay: 0.1,
+                sustain: 0.5,
+                release: 0.1,
+                velocity: 1,
+                master: 1,
+            },
+            2205,
+        ) // 50ms (before startTime)
 
         let maxAmp = 0
         for (let i = 0; i < 2205; i++) {
@@ -758,12 +1169,24 @@ describe('SynthVoiceProcessor source', () => {
         const proc = makeProc()
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
         proc.port.onmessage({ data: { type: 'update', fmAmount: 1, fmAlgo: 4, filterFreq: 18000, filterQ: 20 } })
-        const out = runProcess(proc, {
-            osc1Freq: 10000, osc2Freq: 9000, osc3Freq: 8000,
-            osc1Gain: 1, osc2Gain: 1, osc3Gain: 1,
-            attack: 0.001, decay: 0.1, sustain: 0.8, release: 0.5,
-            velocity: 1, master: 1
-        }, 4410)
+        const out = runProcess(
+            proc,
+            {
+                osc1Freq: 10000,
+                osc2Freq: 9000,
+                osc3Freq: 8000,
+                osc1Gain: 1,
+                osc2Gain: 1,
+                osc3Gain: 1,
+                attack: 0.001,
+                decay: 0.1,
+                sustain: 0.8,
+                release: 0.5,
+                velocity: 1,
+                master: 1,
+            },
+            4410,
+        )
 
         for (let i = 0; i < 4410; i++) {
             expect(Number.isFinite(out[0][i])).toBe(true)
@@ -896,7 +1319,17 @@ describe('SynthVoiceProcessor source', () => {
 
         // Trigger with heavy filter and modulation
         proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
-        proc.port.onmessage({ data: { type: 'update', filterFreq: 200, filterQ: 10, filterType: 0, lfo1Target: 1, lfo1Depth: 1, lfo1Freq: 10 } })
+        proc.port.onmessage({
+            data: {
+                type: 'update',
+                filterFreq: 200,
+                filterQ: 10,
+                filterType: 0,
+                lfo1Target: 1,
+                lfo1Depth: 1,
+                lfo1Freq: 10,
+            },
+        })
         runProcess(proc, { osc1Gain: 1, attack: 0.001, sustain: 1, release: 5, master: 1 }, 4410)
 
         // Reset

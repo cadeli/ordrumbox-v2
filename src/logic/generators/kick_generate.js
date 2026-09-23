@@ -11,7 +11,7 @@ export default class KickGenerate extends BaseGenerator {
                 { beat: 1, step: 0, accent: true },
                 { beat: 2, step: 0, accent: true },
                 { beat: 2, step: 2 },
-                { beat: 3, step: 0, accent: true }
+                { beat: 3, step: 0, accent: true },
             ],
             velocity: {
                 base: 0.84,
@@ -19,8 +19,8 @@ export default class KickGenerate extends BaseGenerator {
                 ghost: -0.28,
                 randomSpread: 0.06,
                 clampMin: 0.42,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         fourOnFloor: {
             mode: 'grid',
@@ -33,8 +33,8 @@ export default class KickGenerate extends BaseGenerator {
                 ghost: -0.35,
                 randomSpread: 0.04,
                 clampMin: 0.4,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         syncopated: {
             mode: 'grid',
@@ -47,8 +47,8 @@ export default class KickGenerate extends BaseGenerator {
                 ghost: -0.24,
                 randomSpread: 0.08,
                 clampMin: 0.38,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         break: {
             mode: 'grid',
@@ -61,9 +61,9 @@ export default class KickGenerate extends BaseGenerator {
                 ghost: -0.18,
                 randomSpread: 0.1,
                 clampMin: 0.36,
-                clampMax: 1
-            }
-        }
+                clampMax: 1,
+            },
+        },
     })
 
     constructor() {
@@ -78,19 +78,23 @@ export default class KickGenerate extends BaseGenerator {
 
         switch (config.mode) {
             case 'grid':
-                this.generateGridVariant(kickTrack, config,
+                this.generateGridVariant(
+                    kickTrack,
+                    config,
                     (beat, step) => step === 0,
                     (beat, step) => step !== 0,
-                    density
+                    density,
                 )
                 break
             case 'phrases':
             default:
-                this.generatePhraseVariant(kickTrack, config,
+                this.generatePhraseVariant(
+                    kickTrack,
+                    config,
                     () => 0,
                     (phrase) => phrase.accent === true,
                     (phrase) => phrase.ghost === true,
-                    density
+                    density,
                 )
                 break
         }

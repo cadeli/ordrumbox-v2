@@ -12,7 +12,7 @@ export default class PercGenerate extends BaseGenerator {
                 { beat: 0, step: 3, source: 'randomScale' },
                 { beat: 1, step: 2, source: 'reuse', reuseIndex: 0 },
                 { beat: 2, step: 'random', source: 'randomScale' },
-                { beat: 3, step: 3, source: 'root' }
+                { beat: 3, step: 3, source: 'root' },
             ],
             velocity: {
                 base: 0.62,
@@ -20,15 +20,17 @@ export default class PercGenerate extends BaseGenerator {
                 variationBoost: 0.08,
                 randomSpread: 0.1,
                 clampMin: 0.28,
-                clampMax: 0.95
-            }
+                clampMax: 0.95,
+            },
         },
         shaker44: {
             mode: 'lockedPerc',
             scaleName: 'chromatic',
             loopPointBeat: 1,
             loopPointStep: 0,
-            velocityPattern: [0.68, 0.42, 0.58, 0.45, 0.68, 0.42, 0.58, 0.38, 0.68, 0.42, 0.58, 0.45, 0.68, 0.42, 0.58, 0.35],
+            velocityPattern: [
+                0.68, 0.42, 0.58, 0.45, 0.68, 0.42, 0.58, 0.38, 0.68, 0.42, 0.58, 0.45, 0.68, 0.42, 0.58, 0.35,
+            ],
             accentEvery: 4,
             pitchPattern: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, -1],
             velocity: {
@@ -37,8 +39,8 @@ export default class PercGenerate extends BaseGenerator {
                 ghost: -0.12,
                 randomSpread: 0.04,
                 clampMin: 0.25,
-                clampMax: 0.78
-            }
+                clampMax: 0.78,
+            },
         },
         tambourine44: {
             mode: 'lockedPerc',
@@ -54,8 +56,8 @@ export default class PercGenerate extends BaseGenerator {
                 ghost: -0.1,
                 randomSpread: 0.05,
                 clampMin: 0.3,
-                clampMax: 0.85
-            }
+                clampMax: 0.85,
+            },
         },
         clap44: {
             mode: 'lockedPerc',
@@ -71,8 +73,8 @@ export default class PercGenerate extends BaseGenerator {
                 ghost: -0.08,
                 randomSpread: 0.04,
                 clampMin: 0.35,
-                clampMax: 0.9
-            }
+                clampMax: 0.9,
+            },
         },
         conversation: {
             mode: 'callResponse',
@@ -88,8 +90,8 @@ export default class PercGenerate extends BaseGenerator {
                 variationBoost: 0.1,
                 randomSpread: 0.12,
                 clampMin: 0.25,
-                clampMax: 0.92
-            }
+                clampMax: 0.92,
+            },
         },
         sparse: {
             mode: 'grid',
@@ -103,8 +105,8 @@ export default class PercGenerate extends BaseGenerator {
                 variationBoost: 0.06,
                 randomSpread: 0.08,
                 clampMin: 0.3,
-                clampMax: 0.88
-            }
+                clampMax: 0.88,
+            },
         },
         fill: {
             mode: 'fill',
@@ -121,8 +123,8 @@ export default class PercGenerate extends BaseGenerator {
                 variationBoost: 0.12,
                 randomSpread: 0.12,
                 clampMin: 0.3,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         texture: {
             mode: 'phrases',
@@ -133,7 +135,7 @@ export default class PercGenerate extends BaseGenerator {
                 { beat: 0, step: 0, source: 'root', accent: true, euclidianFill: 3 },
                 { beat: 1, step: 2, source: 'randomScale', euclidianFill: 2 },
                 { beat: 2, step: 0, source: 'root', accent: true, euclidianFill: 4 },
-                { beat: 3, step: 3, source: 'randomScale', euclidianFill: 1 }
+                { beat: 3, step: 3, source: 'randomScale', euclidianFill: 1 },
             ],
             velocity: {
                 base: 0.58,
@@ -141,8 +143,8 @@ export default class PercGenerate extends BaseGenerator {
                 variationBoost: 0.08,
                 randomSpread: 0.1,
                 clampMin: 0.28,
-                clampMax: 0.92
-            }
+                clampMax: 0.92,
+            },
         },
         crash: {
             mode: 'crash',
@@ -153,9 +155,9 @@ export default class PercGenerate extends BaseGenerator {
                 base: 0.7,
                 randomSpread: 0.2,
                 clampMin: 0.35,
-                clampMax: 1
-            }
-        }
+                clampMax: 1,
+            },
+        },
     })
 
     constructor() {
@@ -178,10 +180,10 @@ export default class PercGenerate extends BaseGenerator {
                 this.generateCrashVariant(percTrack, config)
                 break
             case 'grid':
-                this.generateGridVariant(percTrack, config,
-                    null, null, density,
-                    { defaultBar: 2, pitchResolver: () => this.getRndTone(tones) + pitchBias }
-                )
+                this.generateGridVariant(percTrack, config, null, null, density, {
+                    defaultBar: 2,
+                    pitchResolver: () => this.getRndTone(tones) + pitchBias,
+                })
                 break
             case 'callResponse':
                 this.generatePercCallResponseVariant(percTrack, tones, pitchBias, config, density)
@@ -192,12 +194,14 @@ export default class PercGenerate extends BaseGenerator {
             case 'phrases':
             default: {
                 const cachedPitches = []
-                this.generatePhraseVariant(percTrack, config,
+                this.generatePhraseVariant(
+                    percTrack,
+                    config,
                     (phrase) => this.resolvePhrasePitch(phrase, tones, cachedPitches, pitchBias),
                     (phrase, step) => step === 0,
                     (phrase, _step) => phrase.source !== 'root',
                     density,
-                    { cachedPitches }
+                    { cachedPitches },
                 )
                 break
             }
@@ -236,8 +240,8 @@ export default class PercGenerate extends BaseGenerator {
                             step,
                             accent: isAccent,
                             ghost: !isAccent,
-                            velocityBase: patternVelocity
-                        })
+                            velocityBase: patternVelocity,
+                        }),
                     )
                 }
             }
@@ -265,8 +269,8 @@ export default class PercGenerate extends BaseGenerator {
                     this.computeVelocity(config.velocity, {
                         step,
                         accent: step === 0,
-                        isVariation: true
-                    })
+                        isVariation: true,
+                    }),
                 )
             })
         }
@@ -293,8 +297,8 @@ export default class PercGenerate extends BaseGenerator {
                 this.computeVelocity(config.velocity, {
                     step,
                     accent: step === 0,
-                    isVariation: index > 0
-                })
+                    isVariation: index > 0,
+                }),
             )
             if (config.prob != null) {
                 note.prob = config.prob
@@ -321,9 +325,9 @@ export default class PercGenerate extends BaseGenerator {
                     beat,
                     step,
                     Math.floor(Math.random() * 24) - 12,
-                    this.computeVelocity(config.velocity, { step, accent: false })
+                    this.computeVelocity(config.velocity, { step, accent: false }),
                 )
-                note.pan = (Math.random() * 2 - 1)
+                note.pan = Math.random() * 2 - 1
             }
         }
     }
@@ -343,10 +347,10 @@ export default class PercGenerate extends BaseGenerator {
     }
 
     getScaleSteps = (scaleName) => {
-        return soundRegistry.scales[scaleName]?.scaleSteps
-            ?? soundRegistry.scales["pentatonic minor"]?.scaleSteps
-            ?? soundRegistry.scales["major"]?.scaleSteps
-            ?? [0, 2, 3, 5, 7, 10]
+        return (
+            soundRegistry.scales[scaleName]?.scaleSteps ??
+            soundRegistry.scales['pentatonic minor']?.scaleSteps ??
+            soundRegistry.scales['major']?.scaleSteps ?? [0, 2, 3, 5, 7, 10]
+        )
     }
-
 }

@@ -41,14 +41,14 @@ describe('drumkits.json validation', () => {
     })
 
     it('each kit name is unique', () => {
-        const names = drumkits.map(k => k.name)
+        const names = drumkits.map((k) => k.name)
         const unique = new Set(names)
         expect(names.length).toBe(unique.size)
     })
 
     it('no duplicate keys within a kit', () => {
         drumkits.forEach((kit) => {
-            const keys = kit.instruments.map(i => i.key.toUpperCase())
+            const keys = kit.instruments.map((i) => i.key.toUpperCase())
             const unique = new Set(keys)
             if (keys.length !== unique.size) {
                 const dupes = keys.filter((k, idx) => keys.indexOf(k) !== idx)

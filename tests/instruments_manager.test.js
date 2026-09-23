@@ -16,7 +16,7 @@ describe('Instrument', () => {
             id: 'KICK',
             drum: true,
             pan: '0',
-            midi: [{ ch: '9', name: 'Bass Drum 1', key: '36' }]
+            midi: [{ ch: '9', name: 'Bass Drum 1', key: '36' }],
         })
         expect(inst.id).toBe('KICK')
         expect(inst.drum).toBe(true)
@@ -37,7 +37,7 @@ describe('Instrument', () => {
             drum: true,
             pan: '3',
             name: { syn: ['SN', '.*SNAR.*'] },
-            midi: [{ ch: '9', name: 'Acoustic Snare', key: '38' }]
+            midi: [{ ch: '9', name: 'Acoustic Snare', key: '38' }],
         })
         const str = inst.toString()
         expect(str).toContain('SNARE')

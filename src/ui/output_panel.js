@@ -17,12 +17,12 @@ import BasePanel from './base_panel.js'
 import { color } from './theme.js'
 
 const COMPRESSOR_PARAMS = [
-    { key: 'threshold', label: 'Threshold', min: -40, max: 0,     step: 1,     default: -18,   unit: 'dB' },
-    { key: 'ratio',     label: 'Ratio',     min: 1,   max: 20,    step: 0.5,   default: 8             },
-    { key: 'attack',    label: 'Attack',    min: 0,   max: 1,     step: 0.001, default: 0.002, unit: 's' },
-    { key: 'release',   label: 'Release',   min: 0,   max: 1,     step: 0.001, default: 0.08,  unit: 's' },
-    { key: 'knee',      label: 'Knee',      min: 0,   max: 40,    step: 1,     default: 3,     unit: 'dB' },
-    { key: 'makeup',    label: 'Makeup',    min: 0,   max: 24,    step: 0.5,   default: 8,     unit: 'dB' },
+    { key: 'threshold', label: 'Threshold', min: -40, max: 0, step: 1, default: -18, unit: 'dB' },
+    { key: 'ratio', label: 'Ratio', min: 1, max: 20, step: 0.5, default: 8 },
+    { key: 'attack', label: 'Attack', min: 0, max: 1, step: 0.001, default: 0.002, unit: 's' },
+    { key: 'release', label: 'Release', min: 0, max: 1, step: 0.001, default: 0.08, unit: 's' },
+    { key: 'knee', label: 'Knee', min: 0, max: 40, step: 1, default: 3, unit: 'dB' },
+    { key: 'makeup', label: 'Makeup', min: 0, max: 24, step: 0.5, default: 8, unit: 'dB' },
 ]
 
 export default class OutputPanel extends BasePanel {
@@ -44,12 +44,12 @@ export default class OutputPanel extends BasePanel {
 
     constructor() {
         super('output-panel')
-        this.canvas    = null
+        this.canvas = null
     }
 
     createDOM() {
         super.createDOM()
-this.container.innerHTML = `
+        this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Master</span>
             </div>
@@ -75,7 +75,7 @@ this.container.innerHTML = `
         this.#buildFilterSliders()
 
         this.canvas = this.container.querySelector('#op-spectrum')
-        this.canvas.width  = SPECTRUM_WIDTH
+        this.canvas.width = SPECTRUM_WIDTH
         this.canvas.height = SPECTRUM_HEIGHT
 
         bindTabToggles(this.container)
@@ -84,14 +84,14 @@ this.container.innerHTML = `
 
     #buildMasterSlider() {
         this.#masterVol = new OrKnob({
-            key:     'op-master-vol',
-            label:   'Volume',
-            min:     0,
-            max:     2,
-            step:    0.01,
-            value:   1,
-            format:  v => v.toFixed(2),
-            onChange: v => {
+            key: 'op-master-vol',
+            label: 'Volume',
+            min: 0,
+            max: 2,
+            step: 0.01,
+            value: 1,
+            format: (v) => v.toFixed(2),
+            onChange: (v) => {
                 serviceRegistry.audioEngine?.mixer?.setMasterBus({ master: v })
                 this.#persistMaster('volume', v)
             },
@@ -103,15 +103,15 @@ this.container.innerHTML = `
 
     #buildPreGainSlider() {
         this.#preGain = new OrKnob({
-            key:     'op-pregain',
-            label:   'Pre-Gain',
-            min:     -20,
-            max:     20,
-            step:    0.5,
-            value:   0,
-            format:  v => (v >= 0 ? '+' : '') + v.toFixed(1),
-            unit:    'dB',
-            onChange: v => {
+            key: 'op-pregain',
+            label: 'Pre-Gain',
+            min: -20,
+            max: 20,
+            step: 0.5,
+            value: 0,
+            format: (v) => (v >= 0 ? '+' : '') + v.toFixed(1),
+            unit: 'dB',
+            onChange: (v) => {
                 serviceRegistry.audioEngine?.mixer?.setMasterBus({ preGain: v })
                 this.#persistMaster('preGain', v)
             },
@@ -133,7 +133,8 @@ this.container.innerHTML = `
         title.textContent = 'COMPRESSOR'
         this.#compBypassBtn = document.createElement('button')
         this.#compBypassBtn.className = 'op-comp-bypass active'
-        this.#compBypassBtn.innerHTML = '<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>'
+        this.#compBypassBtn.innerHTML =
+            '<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="4" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>'
         this.#compBypassBtn.title = 'Compressor on/off'
         this.#compBypassBtn.addEventListener('click', () => {
             this.#compBypass = !this.#compBypass
@@ -163,17 +164,17 @@ this.container.innerHTML = `
         const knobsRow = document.createElement('div')
         knobsRow.className = 'op-comp-knobs'
 
-        COMPRESSOR_PARAMS.forEach(p => {
+        COMPRESSOR_PARAMS.forEach((p) => {
             const knob = new OrKnob({
-                key:      p.key,
-                label:    p.label,
-                min:      p.min,
-                max:      p.max,
-                step:     p.step,
-                value:    p.default,
-                format:   v => p.step < 1 ? parseFloat(v.toFixed(3)) : Math.round(v),
-                unit:     p.unit ?? '',
-                onChange: v => {
+                key: p.key,
+                label: p.label,
+                min: p.min,
+                max: p.max,
+                step: p.step,
+                value: p.default,
+                format: (v) => (p.step < 1 ? parseFloat(v.toFixed(3)) : Math.round(v)),
+                unit: p.unit ?? '',
+                onChange: (v) => {
                     serviceRegistry.audioEngine?.mixer?.setMasterBus({ [p.key]: v })
                     this.#persistMaster(p.key, v)
                     if (p.key === 'threshold' || p.key === 'ratio' || p.key === 'knee' || p.key === 'makeup') {
@@ -193,16 +194,16 @@ this.container.innerHTML = `
         const grid = this.container.querySelector('#op-filters-grid')
 
         this.#lowcut = new OrSlider({
-            key:     'op-lowcut',
-            label:   'Low Cut',
-            min:     10,
-            max:     500,
-            step:    1,
-            value:   35,
+            key: 'op-lowcut',
+            label: 'Low Cut',
+            min: 10,
+            max: 500,
+            step: 1,
+            value: 35,
             noCursor: true,
-            format:  v => Math.round(v),
-            unit:    'Hz',
-            onChange: v => {
+            format: (v) => Math.round(v),
+            unit: 'Hz',
+            onChange: (v) => {
                 this.#lowcutVal = v
                 this.#pushFilters()
             },
@@ -210,16 +211,16 @@ this.container.innerHTML = `
         grid.appendChild(this.#lowcut.createElement())
 
         this.#hicut = new OrSlider({
-            key:     'op-hicut',
-            label:   'High Cut',
-            min:     1000,
-            max:     20000,
-            step:    100,
-            value:   18500,
+            key: 'op-hicut',
+            label: 'High Cut',
+            min: 1000,
+            max: 20000,
+            step: 100,
+            value: 18500,
             noCursor: true,
-            format:  v => Math.round(v),
-            unit:    'Hz',
-            onChange: v => {
+            format: (v) => Math.round(v),
+            unit: 'Hz',
+            onChange: (v) => {
                 this.#hicutVal = v
                 this.#pushFilters()
             },
@@ -230,7 +231,7 @@ this.container.innerHTML = `
     #pushFilters() {
         serviceRegistry.audioEngine?.mixer?.setMasterBus({
             lowcut: this.#lowcutVal,
-            hicut:  this.#hicutVal,
+            hicut: this.#hicutVal,
         })
         this.#persistMaster('lowcut', this.#lowcutVal)
         this.#persistMaster('hicut', this.#hicutVal)
@@ -325,7 +326,7 @@ this.container.innerHTML = `
             return
         }
         data.analyser.getByteFrequencyData(data.gFftData)
-        const bins     = data.gFftData
+        const bins = data.gFftData
         const beatCount = Math.min(bins.length, w)
 
         ctx.fillStyle = this.#bgColor
@@ -335,7 +336,7 @@ this.container.innerHTML = `
         ctx.strokeStyle = '#202321'
         ctx.lineWidth = 1.5
         for (let i = 0; i < beatCount; i++) {
-            const val  = bins[i] / 255
+            const val = bins[i] / 255
             const x = (i / beatCount) * w
             const y = h - val * h
             if (i === 0) ctx.moveTo(x, y)
@@ -353,7 +354,7 @@ this.container.innerHTML = `
         if (overDb <= -knee / 2) return 0
         if (knee > 0 && overDb < knee / 2) {
             const d = overDb + knee / 2
-            return (1 - 1 / ratio) * d * d / (2 * knee)
+            return ((1 - 1 / ratio) * d * d) / (2 * knee)
         }
         return overDb * (1 - 1 / ratio)
     }
@@ -368,15 +369,15 @@ this.container.innerHTML = `
         const h = canvas.height
 
         const threshold = this.#compSliders?.threshold?.getValue() ?? -18
-        const ratio     = Math.max(1, this.#compSliders?.ratio?.getValue() ?? 8)
-        const knee      = Math.max(0, this.#compSliders?.knee?.getValue() ?? 3)
-        const makeup    = this.#compSliders?.makeup?.getValue() ?? 8
-        const bypass    = this.#compBypass
+        const ratio = Math.max(1, this.#compSliders?.ratio?.getValue() ?? 8)
+        const knee = Math.max(0, this.#compSliders?.knee?.getValue() ?? 3)
+        const makeup = this.#compSliders?.makeup?.getValue() ?? 8
+        const bypass = this.#compBypass
 
-        const xToPx = db => ((db - CURVE_X_MIN) / (CURVE_X_MAX - CURVE_X_MIN)) * w
-        const yToPx = db => h - ((db - CURVE_Y_MIN) / (CURVE_Y_MAX - CURVE_Y_MIN)) * h
+        const xToPx = (db) => ((db - CURVE_X_MIN) / (CURVE_X_MAX - CURVE_X_MIN)) * w
+        const yToPx = (db) => h - ((db - CURVE_Y_MIN) / (CURVE_Y_MAX - CURVE_Y_MIN)) * h
 
-        const transfer = xDb => {
+        const transfer = (xDb) => {
             if (bypass) return xDb
             return xDb - this.#gainReductionDb(xDb, threshold, ratio, knee) + makeup
         }
@@ -408,7 +409,7 @@ this.container.innerHTML = `
         ctx.lineWidth = 1
         ctx.beginPath()
         const diagStart = Math.max(CURVE_X_MIN, CURVE_Y_MIN)
-        const diagEnd   = Math.min(CURVE_X_MAX, CURVE_Y_MAX)
+        const diagEnd = Math.min(CURVE_X_MAX, CURVE_Y_MAX)
         ctx.moveTo(xToPx(diagStart), yToPx(diagStart))
         ctx.lineTo(xToPx(diagEnd), yToPx(diagEnd))
         ctx.stroke()

@@ -15,7 +15,7 @@ export default class ModulationSection {
 
     /** All props that support LFO. */
     _lfoProps() {
-        return [...ALL_TRACK_PROPS, ...KNOB_PROPS].filter(p => p.lfo)
+        return [...ALL_TRACK_PROPS, ...KNOB_PROPS].filter((p) => p.lfo)
     }
 
     /** Ensure _selectedLfoTarget is valid. */
@@ -23,10 +23,10 @@ export default class ModulationSection {
         const editor = this._editor
         const props = this._lfoProps()
         if (!props.length) return null
-        if (!editor._selectedLfoTarget || !props.find(p => p.key === editor._selectedLfoTarget)) {
+        if (!editor._selectedLfoTarget || !props.find((p) => p.key === editor._selectedLfoTarget)) {
             editor._selectedLfoTarget = props[0].key
         }
-        return props.find(p => p.key === editor._selectedLfoTarget) ?? props[0]
+        return props.find((p) => p.key === editor._selectedLfoTarget) ?? props[0]
     }
 
     _getDefaultLfo(prop, type = 'sine') {
@@ -53,7 +53,7 @@ export default class ModulationSection {
         const type = lfo ? (lfo.type ?? 'sine') : 'sine'
 
         let content = `<div class="te-mod-targets">`
-        this._lfoProps().forEach(p => {
+        this._lfoProps().forEach((p) => {
             const isActive = p.key === editor._selectedLfoTarget
             const lfoOn = !!track[p.lfo]
             const ledCls = lfoOn ? 'lfo-led on' : 'lfo-led'
@@ -107,7 +107,7 @@ export default class ModulationSection {
     _toggleLfoForTarget(targetKey) {
         const editor = this._editor
         const track = editor._track
-        const prop = this._lfoProps().find(p => p.key === targetKey)
+        const prop = this._lfoProps().find((p) => p.key === targetKey)
         if (!prop) return
         if (track[prop.lfo]) {
             delete track[prop.lfo]
@@ -120,7 +120,7 @@ export default class ModulationSection {
         const editor = this._editor
         editor._isDragging = true
         const track = editor._track
-        const prop = this._lfoProps().find(p => p.key === editor._selectedLfoTarget)
+        const prop = this._lfoProps().find((p) => p.key === editor._selectedLfoTarget)
         if (!prop) return false
         let lfo = track[prop.lfo]
         let needsSync = false
@@ -146,7 +146,7 @@ export default class ModulationSection {
     onSelect(sel) {
         const editor = this._editor
         const track = editor._track
-        const prop = this._lfoProps().find(p => p.key === editor._selectedLfoTarget)
+        const prop = this._lfoProps().find((p) => p.key === editor._selectedLfoTarget)
         if (!prop) return
         let lfo = track[prop.lfo]
         if (!lfo) {

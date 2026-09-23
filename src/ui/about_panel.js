@@ -77,7 +77,7 @@ export default class AboutPanel extends BasePanel {
             </div>
         `
 
-        bindCloseButton(this.container, () => playbackEvents.emit("aboutToggle", false))
+        bindCloseButton(this.container, () => playbackEvents.emit('aboutToggle', false))
         bindTabToggles(this.container)
 
         this.#installBtn = this.container.querySelector('#about-pwa-install')

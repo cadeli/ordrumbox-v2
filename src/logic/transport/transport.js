@@ -4,7 +4,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 
 export default class Transport {
-    #tickInFlight;
+    #tickInFlight
 
     constructor(audioCtx) {
         this.audioCtx = audioCtx
@@ -24,19 +24,16 @@ export default class Transport {
     ensureTimerWorker = () => {
         if (this.timerWorker) return
 
-        this.timerWorker = new Worker(
-            new URL('../../core/timerworker.js', import.meta.url),
-            { type: 'module' }
-        )
+        this.timerWorker = new Worker(new URL('../../core/timerworker.js', import.meta.url), { type: 'module' })
 
         this.timerWorker.onmessage = (e) => {
-            if (e.data === "tick") {
+            if (e.data === 'tick') {
                 this.scheduler()
             } else {
-                logger.info('Transport', "Transport worker message: " + e.data)
+                logger.info('Transport', 'Transport worker message: ' + e.data)
             }
         }
-        this.timerWorker.postMessage({ "interval": this.lookahead })
+        this.timerWorker.postMessage({ interval: this.lookahead })
     }
 
     start = () => {
@@ -45,9 +42,9 @@ export default class Transport {
         const now = this.audioCtx.currentTime
         this.nextStepTime = now
         this.nextClockTime = now
-        
+
         this.ensureTimerWorker()
-        this.timerWorker.postMessage("start")
+        this.timerWorker.postMessage('start')
 
         if (serviceRegistry.midiManager) {
             const perfNow = performance.now()
@@ -57,8 +54,8 @@ export default class Transport {
 
     stop = () => {
         this.isRunning = false
-        this.timerWorker?.postMessage("stop")
-        
+        this.timerWorker?.postMessage('stop')
+
         if (serviceRegistry.midiManager) {
             serviceRegistry.midiManager.sendStop()
         }
@@ -67,8 +64,8 @@ export default class Transport {
     setBpm = (bpm) => {
         this.bpm = bpm
         this.clockInterval = 60 / (this.bpm * 24)
-        appState.secondsPerBeat = 60 * 4 / (this.bpm * TICK)
-        logger.info('Transport', "Transport::setBpm new bpm is ", bpm)
+        appState.secondsPerBeat = (60 * 4) / (this.bpm * TICK)
+        logger.info('Transport', 'Transport::setBpm new bpm is ', bpm)
     }
 
     scheduler = () => {
@@ -94,8 +91,10 @@ export default class Transport {
                 const result = this.onSchedule(this.tick, this.nextStepTime)
                 if (result && typeof result.catch === 'function') {
                     this.#tickInFlight = result
-                        .catch(err => logger.error('Transport', 'onSchedule error', err))
-                        .finally(() => { this.#tickInFlight = null })
+                        .catch((err) => logger.error('Transport', 'onSchedule error', err))
+                        .finally(() => {
+                            this.#tickInFlight = null
+                        })
                 }
                 this.nextNote()
             } else {

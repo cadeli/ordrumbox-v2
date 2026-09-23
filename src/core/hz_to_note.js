@@ -22,7 +22,7 @@ export function hzToNote(hz) {
         note: NOTE_NAMES[noteIndex],
         octave,
         cents,
-        midi
+        midi,
     }
 }
 

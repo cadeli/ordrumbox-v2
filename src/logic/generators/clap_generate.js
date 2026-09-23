@@ -8,7 +8,7 @@ export default class ClapGenerate extends BaseGenerator {
             loopPointStep: 0,
             phrases: [
                 { beat: 1, step: 0, accent: true },
-                { beat: 3, step: 0, accent: true }
+                { beat: 3, step: 0, accent: true },
             ],
             velocity: {
                 base: 0.78,
@@ -16,8 +16,8 @@ export default class ClapGenerate extends BaseGenerator {
                 ghost: -0.3,
                 randomSpread: 0.06,
                 clampMin: 0.35,
-                clampMax: 0.95
-            }
+                clampMax: 0.95,
+            },
         },
         offbeat: {
             mode: 'grid',
@@ -30,8 +30,8 @@ export default class ClapGenerate extends BaseGenerator {
                 ghost: -0.2,
                 randomSpread: 0.08,
                 clampMin: 0.3,
-                clampMax: 0.92
-            }
+                clampMax: 0.92,
+            },
         },
         sparse: {
             mode: 'phrases',
@@ -39,15 +39,15 @@ export default class ClapGenerate extends BaseGenerator {
             loopPointStep: 0,
             phrases: [
                 { beat: 1, step: 0 },
-                { beat: 3, step: 2 }
+                { beat: 3, step: 2 },
             ],
             velocity: {
                 base: 0.65,
                 accentOnBeat: 0.1,
                 randomSpread: 0.08,
                 clampMin: 0.3,
-                clampMax: 0.88
-            }
+                clampMax: 0.88,
+            },
         },
         fourOnFloor: {
             mode: 'grid',
@@ -60,8 +60,8 @@ export default class ClapGenerate extends BaseGenerator {
                 ghost: -0.25,
                 randomSpread: 0.06,
                 clampMin: 0.32,
-                clampMax: 0.9
-            }
+                clampMax: 0.9,
+            },
         },
         syncopated: {
             mode: 'phrases',
@@ -73,7 +73,7 @@ export default class ClapGenerate extends BaseGenerator {
                 { beat: 1, step: 1 },
                 { beat: 2, step: 0, accent: true },
                 { beat: 2, step: 2 },
-                { beat: 3, step: 1 }
+                { beat: 3, step: 1 },
             ],
             velocity: {
                 base: 0.68,
@@ -81,8 +81,8 @@ export default class ClapGenerate extends BaseGenerator {
                 ghost: -0.2,
                 randomSpread: 0.1,
                 clampMin: 0.28,
-                clampMax: 0.92
-            }
+                clampMax: 0.92,
+            },
         },
         dense: {
             mode: 'grid',
@@ -95,9 +95,9 @@ export default class ClapGenerate extends BaseGenerator {
                 ghost: -0.18,
                 randomSpread: 0.08,
                 clampMin: 0.3,
-                clampMax: 0.88
-            }
-        }
+                clampMax: 0.88,
+            },
+        },
     })
 
     constructor() {
@@ -112,17 +112,17 @@ export default class ClapGenerate extends BaseGenerator {
 
         switch (config.mode) {
             case 'grid':
-                this.generateGridVariant(clapTrack, config,
-                    null, null, density, { defaultBar: 2 }
-                )
+                this.generateGridVariant(clapTrack, config, null, null, density, { defaultBar: 2 })
                 break
             case 'phrases':
             default:
-                this.generatePhraseVariant(clapTrack, config,
+                this.generatePhraseVariant(
+                    clapTrack,
+                    config,
                     () => 0,
                     (phrase) => phrase.accent === true,
                     (phrase) => phrase.ghost === true,
-                    density
+                    density,
                 )
                 break
         }

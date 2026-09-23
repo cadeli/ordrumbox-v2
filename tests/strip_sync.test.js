@@ -40,19 +40,49 @@ describe('applyTrackToStrip', () => {
 
     it('passes freq=undefined to updateFilter when filterFreqLfo is set', () => {
         const strip = makeStrip()
-        applyTrackToStrip(strip, { name: 'KICK', filterType: 'lowpass', filterFreq: 0.5, filterFreqLfo: { freq: 1, min: 0, max: 1, phase: 0 } }, 1.0)
+        applyTrackToStrip(
+            strip,
+            {
+                name: 'KICK',
+                filterType: 'lowpass',
+                filterFreq: 0.5,
+                filterFreqLfo: { freq: 1, min: 0, max: 1, phase: 0 },
+            },
+            1.0,
+        )
         expect(strip.updateFilter).toHaveBeenCalledWith('lowpass', undefined, undefined)
     })
 
     it('passes q=undefined to updateFilter when filterQLfo is set', () => {
         const strip = makeStrip()
-        applyTrackToStrip(strip, { name: 'KICK', filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7, filterQLfo: { freq: 1, min: 0, max: 1, phase: 0 } }, 1.0)
+        applyTrackToStrip(
+            strip,
+            {
+                name: 'KICK',
+                filterType: 'lowpass',
+                filterFreq: 0.5,
+                filterQ: 0.7,
+                filterQLfo: { freq: 1, min: 0, max: 1, phase: 0 },
+            },
+            1.0,
+        )
         expect(strip.updateFilter).toHaveBeenCalledWith('lowpass', 0.5, undefined)
     })
 
     it('passes freq=undefined and q=undefined when both LFOs are set', () => {
         const strip = makeStrip()
-        applyTrackToStrip(strip, { name: 'KICK', filterType: 'lowpass', filterFreq: 0.5, filterQ: 0.7, filterFreqLfo: { freq: 1 }, filterQLfo: { freq: 1 } }, 1.0)
+        applyTrackToStrip(
+            strip,
+            {
+                name: 'KICK',
+                filterType: 'lowpass',
+                filterFreq: 0.5,
+                filterQ: 0.7,
+                filterFreqLfo: { freq: 1 },
+                filterQLfo: { freq: 1 },
+            },
+            1.0,
+        )
         expect(strip.updateFilter).toHaveBeenCalledWith('lowpass', undefined, undefined)
     })
 
@@ -82,13 +112,21 @@ describe('applyTrackToStrip', () => {
 
     it('calls updateDelay with amount=0 when delayOn=false', () => {
         const strip = makeStrip()
-        applyTrackToStrip(strip, { name: 'KICK', delayType: 'tape', delayOn: false, delayTime: 1, delayDepth: 0.4 }, 1.0)
+        applyTrackToStrip(
+            strip,
+            { name: 'KICK', delayType: 'tape', delayOn: false, delayTime: 1, delayDepth: 0.4 },
+            1.0,
+        )
         expect(strip.updateDelay).toHaveBeenCalledWith('tape', 1, 0)
     })
 
     it('calls updateDelay with amount when delayOn=true', () => {
         const strip = makeStrip()
-        applyTrackToStrip(strip, { name: 'KICK', delayType: 'pingpong', delayOn: true, delayTime: 2, delayDepth: 0.3 }, 1.0)
+        applyTrackToStrip(
+            strip,
+            { name: 'KICK', delayType: 'pingpong', delayOn: true, delayTime: 2, delayDepth: 0.3 },
+            1.0,
+        )
         expect(strip.updateDelay).toHaveBeenCalledWith('pingpong', 2, 0.3)
     })
 

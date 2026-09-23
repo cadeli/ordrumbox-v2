@@ -18,11 +18,32 @@ function makeAudioCtx() {
         currentTime: 1.0,
         sampleRate,
         createGain: vi.fn(() => ({ ...makeNode(), gain: makeParam(1) })),
-        createBiquadFilter: vi.fn(() => ({ ...makeNode(), type: 'lowpass', frequency: makeParam(350), Q: makeParam(1) })),
+        createBiquadFilter: vi.fn(() => ({
+            ...makeNode(),
+            type: 'lowpass',
+            frequency: makeParam(350),
+            Q: makeParam(1),
+        })),
         createStereoPanner: vi.fn(() => ({ ...makeNode(), pan: makeParam(0) })),
-        createOscillator: vi.fn(() => ({ ...makeNode(), type: 'sine', frequency: makeParam(440), detune: makeParam(0) })),
-        createBufferSource: vi.fn(() => ({ ...makeNode(), buffer: null, loop: false, playbackRate: makeParam(1), detune: makeParam(0) })),
-        createBuffer: vi.fn((ch, len, sr) => ({ numberOfChannels: ch, length: len, sampleRate: sr, getChannelData: vi.fn(() => new Float32Array(len)) })),
+        createOscillator: vi.fn(() => ({
+            ...makeNode(),
+            type: 'sine',
+            frequency: makeParam(440),
+            detune: makeParam(0),
+        })),
+        createBufferSource: vi.fn(() => ({
+            ...makeNode(),
+            buffer: null,
+            loop: false,
+            playbackRate: makeParam(1),
+            detune: makeParam(0),
+        })),
+        createBuffer: vi.fn((ch, len, sr) => ({
+            numberOfChannels: ch,
+            length: len,
+            sampleRate: sr,
+            getChannelData: vi.fn(() => new Float32Array(len)),
+        })),
         createWaveShaper: vi.fn(() => ({ ...makeNode(), curve: null, oversample: '4x' })),
         createConvolver: vi.fn(() => ({ ...makeNode(), buffer: null })),
         createDelay: vi.fn(() => ({ ...makeNode(), delayTime: makeParam(0.25) })),
@@ -36,10 +57,19 @@ function makeStrip() {
         output: { ...makeNode(), gain: makeParam(1) },
         pan: { ...makeNode(), pan: makeParam(0) },
         lfos: {
-            pitchLfo: { osc: { frequency: makeParam(), type: 'sine', ...makeNode() }, gain: { ...makeNode(), gain: makeParam(0) } },
-            velocityLfo: { osc: { frequency: makeParam(), ...makeNode() }, gain: { ...makeNode(), gain: makeParam(0) } },
+            pitchLfo: {
+                osc: { frequency: makeParam(), type: 'sine', ...makeNode() },
+                gain: { ...makeNode(), gain: makeParam(0) },
+            },
+            velocityLfo: {
+                osc: { frequency: makeParam(), ...makeNode() },
+                gain: { ...makeNode(), gain: makeParam(0) },
+            },
             panLfo: { osc: { frequency: makeParam(), ...makeNode() }, gain: { ...makeNode(), gain: makeParam(0) } },
-            filterFreqLfo: { osc: { frequency: makeParam(), ...makeNode() }, gain: { ...makeNode(), gain: makeParam(0) } },
+            filterFreqLfo: {
+                osc: { frequency: makeParam(), ...makeNode() },
+                gain: { ...makeNode(), gain: makeParam(0) },
+            },
             filterQLfo: { osc: { frequency: makeParam(), ...makeNode() }, gain: { ...makeNode(), gain: makeParam(0) } },
         },
         updateFilter: vi.fn(),
@@ -104,11 +134,11 @@ describe('Sound', () => {
     let ctx, mixer, sounds, generatedSounds, sound
 
     beforeEach(() => {
-        ctx    = makeAudioCtx()
-        mixer  = makeMixer()
+        ctx = makeAudioCtx()
+        mixer = makeMixer()
         sounds = { snd_kick: { buffer: ctx.createBuffer(1, 1024, 44100) } }
         generatedSounds = { BASS1: { vco1: { wave: 'sine', octave: 0, detune: 0, gain: 1 }, masterVolume: 0.8 } }
-        sound  = new Sound(ctx, mixer, sounds, generatedSounds)
+        sound = new Sound(ctx, mixer, sounds, generatedSounds)
         sound.voiceFactory = makeVoiceFactory()
         serviceRegistry.resourcesLoader.loadGeneratedSounds.mockClear()
     })
@@ -195,7 +225,17 @@ describe('Sound', () => {
     })
     it('play calls playGenerated for useSoftSynth=true', async () => {
         const playGeneratedSpy = vi.spyOn(sound, 'playGenerated')
-        const fn = makeFlatNote({ track: { name: 'BASS', useSoftSynth: true, mono: false, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 } })
+        const fn = makeFlatNote({
+            track: {
+                name: 'BASS',
+                useSoftSynth: true,
+                mono: false,
+                velocity: 0.8,
+                pan: 0,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+            },
+        })
         await sound.play(fn, 1.0)
         expect(playGeneratedSpy).toHaveBeenCalled()
     })
@@ -213,7 +253,17 @@ describe('Sound', () => {
         expect(sound.voiceFactory.createVoice).not.toHaveBeenCalled()
     })
     it('playSample registers voice for mono track', async () => {
-        const fn = makeFlatNote({ track: { name: 'KICK', useSoftSynth: false, mono: true, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 } })
+        const fn = makeFlatNote({
+            track: {
+                name: 'KICK',
+                useSoftSynth: false,
+                mono: true,
+                velocity: 0.8,
+                pan: 0,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+            },
+        })
         await sound.playSample(fn, 1.0)
         // voice should have been stored — trigger stop via stopPreviousVoice
         sound.stopPreviousVoice(fn.track, 2.0)
@@ -229,7 +279,17 @@ describe('Sound', () => {
         expect(loadSpy).toHaveBeenCalled()
     })
     it('playGenerated plays voice when generatedSounds is populated', async () => {
-        const fn = makeFlatNote({ track: { name: 'BASS', useSoftSynth: true, mono: false, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 } })
+        const fn = makeFlatNote({
+            track: {
+                name: 'BASS',
+                useSoftSynth: true,
+                mono: false,
+                velocity: 0.8,
+                pan: 0,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+            },
+        })
         await sound.playGenerated(fn, 1.0)
         expect(sound.voiceFactory._voice.start).toHaveBeenCalledWith(1.0)
     })
@@ -286,7 +346,11 @@ describe('Sound', () => {
     })
     it('updateStripFromTrack calls strip.updateSaturation with 0 when sat=false', () => {
         const strip = makeStrip()
-        sound.updateStripFromTrack(strip, { name: 'KICK', saturationType: 'soft', sat: false, saturationAmount: 0.5 }, 1.0)
+        sound.updateStripFromTrack(
+            strip,
+            { name: 'KICK', saturationType: 'soft', sat: false, saturationAmount: 0.5 },
+            1.0,
+        )
         expect(strip.updateSaturation).toHaveBeenCalledWith('soft', 0)
     })
 
@@ -324,7 +388,17 @@ describe('Sound', () => {
         await sound._playVoice(makeFlatNote(), 1.0)
         expect(updateSpy).toHaveBeenCalled()
         // Mono: stopPreviousVoice is called after setup()
-        const monoFn = makeFlatNote({ track: { name: 'KICK', useSoftSynth: false, mono: true, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 } })
+        const monoFn = makeFlatNote({
+            track: {
+                name: 'KICK',
+                useSoftSynth: false,
+                mono: true,
+                velocity: 0.8,
+                pan: 0,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+            },
+        })
         const stopSpy = vi.spyOn(sound, 'stopPreviousVoice')
         await sound._playVoice(monoFn, 1.0)
         expect(stopSpy).toHaveBeenCalled()
@@ -337,7 +411,17 @@ describe('Sound', () => {
     })
 
     it('_playVoice registers voice for mono track', async () => {
-        const fn = makeFlatNote({ track: { name: 'KICK', useSoftSynth: false, mono: true, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 } })
+        const fn = makeFlatNote({
+            track: {
+                name: 'KICK',
+                useSoftSynth: false,
+                mono: true,
+                velocity: 0.8,
+                pan: 0,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+            },
+        })
         await sound._playVoice(fn, 1.0)
         sound.stopPreviousVoice(fn.track, 2.0)
         expect(sound.voiceFactory._voice.stop).toHaveBeenCalledWith(2.0)
@@ -445,13 +529,26 @@ describe('Sound', () => {
     // ── onEnded called exactly once ────────────────────────────────────
 
     it('onEnded fires exactly once through the full lifecycle (auto-release path)', async () => {
-        const fn = makeFlatNote({ track: { name: 'BASS', useSoftSynth: false, mono: false, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 } })
+        const fn = makeFlatNote({
+            track: {
+                name: 'BASS',
+                useSoftSynth: false,
+                mono: false,
+                velocity: 0.8,
+                pan: 0,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+            },
+        })
         await sound._playVoice(fn, 1.0)
         const voice = sound.voiceFactory._voice
 
         let callCount = 0
         const prevOnEnded = voice.onEnded
-        const trackedOnEnded = () => { callCount++; prevOnEnded?.() }
+        const trackedOnEnded = () => {
+            callCount++
+            prevOnEnded?.()
+        }
         voice.onEnded = trackedOnEnded
 
         // Simulate auto-release timer firing (the path in start())
@@ -500,14 +597,22 @@ describe('Sound', () => {
         // The race: call A's setup() yields, call B runs to completion,
         // call A resumes — its stopPreviousVoice now sees and stops V_B's
         // track entry, then registers V_A. Extra guard catches this.
-        const track = { name: 'KICK', useSoftSynth: false, mono: true, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 }
+        const track = {
+            name: 'KICK',
+            useSoftSynth: false,
+            mono: true,
+            velocity: 0.8,
+            pan: 0,
+            nbBeats: 4,
+            stepsPerBeat: 4,
+        }
 
         const voice1 = makeVoice()
         const voice2 = makeVoice()
         let callCount = 0
         sound.voiceFactory = {
-            createVoice: vi.fn(() => callCount++ === 0 ? voice1 : voice2),
-            generatedSounds: {}
+            createVoice: vi.fn(() => (callCount++ === 0 ? voice1 : voice2)),
+            generatedSounds: {},
         }
 
         const fn1 = makeFlatNote({ track })
@@ -530,7 +635,15 @@ describe('Sound', () => {
         // Fill up to MAX_POLYPHONY with mock voices
         const tracks = []
         for (let i = 0; i < 16; i++) {
-            const track = { name: `T${i}`, useSoftSynth: false, mono: false, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 }
+            const track = {
+                name: `T${i}`,
+                useSoftSynth: false,
+                mono: false,
+                velocity: 0.8,
+                pan: 0,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+            }
             tracks.push(track)
             const v = makeVoice()
             sound.voiceFactory = { createVoice: vi.fn(() => v), generatedSounds: {} }
@@ -540,7 +653,15 @@ describe('Sound', () => {
         expect(sound._activeVoiceSet.size).toBe(16)
 
         // Add one more — should trigger polyphony steal via the while loop
-        const overflowTrack = { name: 'OVER', useSoftSynth: false, mono: false, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 }
+        const overflowTrack = {
+            name: 'OVER',
+            useSoftSynth: false,
+            mono: false,
+            velocity: 0.8,
+            pan: 0,
+            nbBeats: 4,
+            stepsPerBeat: 4,
+        }
         const overflowVoice = makeVoice()
         sound.voiceFactory = { createVoice: vi.fn(() => overflowVoice), generatedSounds: {} }
         await sound._playVoice(makeFlatNote({ track: overflowTrack }), 1.0)

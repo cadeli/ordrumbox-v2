@@ -11,7 +11,7 @@ import {
 } from './midi_parser.js'
 
 export default class MidiManager extends EventTarget {
-    static TAG = "MidiManager"
+    static TAG = 'MidiManager'
 
     constructor() {
         super()
@@ -90,12 +90,12 @@ export default class MidiManager extends EventTarget {
 
     getButtonLabel = () => {
         if (this.isInitializing) {
-            return "Enabling MIDI..."
+            return 'Enabling MIDI...'
         }
         if (this.isReady) {
-            return "MIDI ready"
+            return 'MIDI ready'
         }
-        return "Enable MIDI"
+        return 'Enable MIDI'
     }
 
     getStatus = () => {
@@ -104,7 +104,7 @@ export default class MidiManager extends EventTarget {
             ready: this.isReady,
             inputCount: this.inputs.length,
             outputCount: this.outputs.length,
-            syncEnabled: this.externalSyncEnabled
+            syncEnabled: this.externalSyncEnabled,
         }
     }
 
@@ -154,7 +154,7 @@ export default class MidiManager extends EventTarget {
 
     sendMidiMessage = (data, timestamp) => {
         if (!this.isReady || !this.selectedOutputId) return
-        const output = this.outputs.find(o => o.id === this.selectedOutputId)
+        const output = this.outputs.find((o) => o.id === this.selectedOutputId)
         if (output) {
             try {
                 if (timestamp) {
@@ -169,46 +169,46 @@ export default class MidiManager extends EventTarget {
     }
 
     sendNoteOn = (channel, note, velocity, timestamp) => {
-        const status = 0x90 | (Math.max(0, Math.min(15, channel)))
+        const status = 0x90 | Math.max(0, Math.min(15, channel))
         this.sendMidiMessage([status, note, velocity], timestamp)
     }
 
     sendNoteOff = (channel, note, timestamp) => {
-        const status = 0x80 | (Math.max(0, Math.min(15, channel)))
+        const status = 0x80 | Math.max(0, Math.min(15, channel))
         this.sendMidiMessage([status, note, 0], timestamp)
     }
 
     sendClock = (timestamp) => {
-        this.sendMidiMessage([0xF8], timestamp)
+        this.sendMidiMessage([0xf8], timestamp)
     }
 
     sendStart = (timestamp) => {
-        this.sendMidiMessage([0xFA], timestamp)
+        this.sendMidiMessage([0xfa], timestamp)
     }
 
     sendStop = (timestamp) => {
-        this.sendMidiMessage([0xFC], timestamp)
+        this.sendMidiMessage([0xfc], timestamp)
     }
 
     sendAllNotesOff = () => {
         if (!this.selectedOutputId) return
         for (let ch = 0; ch < 16; ch++) {
-            this.sendMidiMessage([0xB0 | ch, 123, 0])
+            this.sendMidiMessage([0xb0 | ch, 123, 0])
         }
     }
 
     onMidiMessage = (event) => {
-        logger.info('MidiManager', "onMidiMessage ", event)
+        logger.info('MidiManager', 'onMidiMessage ', event)
         const data = event?.data
         if (!data || data.length < 3) {
-            if (data && data.length === 1 && data[0] >= 0xF8) {
+            if (data && data.length === 1 && data[0] >= 0xf8) {
                 this.onRealtimeMessage(data[0])
             }
             return
         }
 
         const status = data[0]
-        if (status >= 0xF8) {
+        if (status >= 0xf8) {
             this.onRealtimeMessage(status)
             return
         }
@@ -223,12 +223,12 @@ export default class MidiManager extends EventTarget {
 
     onRealtimeMessage = (status) => {
         if (!this.externalSyncEnabled) return
-        logger.info('MidiManager', "onRealtimeMessage")
+        logger.info('MidiManager', 'onRealtimeMessage')
         const type = parseMidiRealtime(status)
         switch (type) {
             case 'start':
                 this.handleExternalStart()
-                logger.info('MidiManager', "handleExternalStart")
+                logger.info('MidiManager', 'handleExternalStart')
                 break
             case 'continue':
                 this.handleExternalContinue()
@@ -320,7 +320,10 @@ export default class MidiManager extends EventTarget {
 
         const trackIndex = this.instrumentsManager.findTrackIndexFromMidi(pattern, 9, noteNumber)
         if (trackIndex < 0) {
-            logger.info('MidiManager', `${MidiManager.TAG}: No GM track mapped for MIDI note ${noteNumber} on channel 9`)
+            logger.info(
+                'MidiManager',
+                `${MidiManager.TAG}: No GM track mapped for MIDI note ${noteNumber} on channel 9`,
+            )
             return
         }
 

@@ -4,18 +4,20 @@
  */
 
 export function readUint32BE(bytes, offset) {
-    return ((bytes[offset] << 24) | (bytes[offset+1] << 16) | (bytes[offset+2] << 8) | bytes[offset+3]) >>> 0
+    return ((bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3]) >>> 0
 }
 
 export function readUint16BE(bytes, offset) {
-    return ((bytes[offset] << 8) | bytes[offset+1]) >>> 0
+    return ((bytes[offset] << 8) | bytes[offset + 1]) >>> 0
 }
 
 export function decodeVLQ(bytes, offset) {
-    let value = 0, bytesRead = 0, b
+    let value = 0,
+        bytesRead = 0,
+        b
     do {
         b = bytes[offset + bytesRead]
-        value = (value << 7) | (b & 0x7F)
+        value = (value << 7) | (b & 0x7f)
         bytesRead++
     } while (b & 0x80)
     return { value, bytesRead }
@@ -40,7 +42,7 @@ function parseMTrkEvents(bytes, dataOffset, length) {
             b0 = runningStatus
         }
 
-        if (b0 === 0xFF) {
+        if (b0 === 0xff) {
             const type = bytes[pos]
             const lv = decodeVLQ(bytes, pos + 1)
             events.push({
@@ -52,13 +54,20 @@ function parseMTrkEvents(bytes, dataOffset, length) {
             pos += 1 + lv.bytesRead + lv.value
             runningStatus = 0
         } else {
-            const hi = b0 & 0xF0
-            const channel = (b0 & 0x0F)
-            if (hi === 0xC0 || hi === 0xD0) {
+            const hi = b0 & 0xf0
+            const channel = b0 & 0x0f
+            if (hi === 0xc0 || hi === 0xd0) {
                 events.push({ absTick: cursor, type: 'midi', status: hi, channel, program: bytes[pos] })
                 pos += 1
             } else {
-                events.push({ absTick: cursor, type: 'midi', status: hi, channel, note: bytes[pos], velocity: bytes[pos + 1] ?? 0 })
+                events.push({
+                    absTick: cursor,
+                    type: 'midi',
+                    status: hi,
+                    channel,
+                    note: bytes[pos],
+                    velocity: bytes[pos + 1] ?? 0,
+                })
                 pos += 2
             }
         }
@@ -77,7 +86,7 @@ export function parseMidi(bytes) {
 
     let i = 0
     while (i + 8 <= bytes.length) {
-        const tag = String.fromCharCode(bytes[i], bytes[i+1], bytes[i+2], bytes[i+3])
+        const tag = String.fromCharCode(bytes[i], bytes[i + 1], bytes[i + 2], bytes[i + 3])
         const length = readUint32BE(bytes, i + 4)
 
         if (tag === 'MThd') {
@@ -90,8 +99,8 @@ export function parseMidi(bytes) {
         i += 8 + length
     }
 
-    const trackNames = tracks.map(trackEvents => {
-        const nameEvent = trackEvents.find(e => e.type === 'meta' && e.metaType === 0x03)
+    const trackNames = tracks.map((trackEvents) => {
+        const nameEvent = trackEvents.find((e) => e.type === 'meta' && e.metaType === 0x03)
         return nameEvent ? String.fromCharCode(...nameEvent.data) : ''
     })
 
@@ -148,7 +157,7 @@ export function extractProgramChanges(midi) {
     const channelProgram = new Map()
     for (let ti = 1; ti < midi.tracks.length; ti++) {
         for (const ev of midi.tracks[ti]) {
-            if (ev.type === 'midi' && ev.status === 0xC0) {
+            if (ev.type === 'midi' && ev.status === 0xc0) {
                 channelProgram.set(ev.channel, ev.program)
             }
         }
@@ -164,10 +173,10 @@ export function extractProgramChanges(midi) {
 export function parseMidiNoteOn(data) {
     if (!data || data.length < 3) return null
     const status = data[0]
-    if ((status & 0xF0) !== 0x90) return null
-    const channel = status & 0x0F
-    const noteNumber = data[1] & 0x7F
-    const velocity = data[2] & 0x7F
+    if ((status & 0xf0) !== 0x90) return null
+    const channel = status & 0x0f
+    const noteNumber = data[1] & 0x7f
+    const velocity = data[2] & 0x7f
     if (velocity === 0) return null // Note On with velocity 0 = Note Off
     return { noteNumber, channel, velocity }
 }
@@ -179,13 +188,20 @@ export function parseMidiNoteOn(data) {
  */
 export function parseMidiRealtime(status) {
     switch (status) {
-        case 0xFA: return 'start'
-        case 0xFC: return 'stop'
-        case 0xFB: return 'continue'
-        case 0xF8: return 'clock'
-        case 0xFE: return 'active'
-        case 0xFF: return 'reset'
-        default: return null
+        case 0xfa:
+            return 'start'
+        case 0xfc:
+            return 'stop'
+        case 0xfb:
+            return 'continue'
+        case 0xf8:
+            return 'clock'
+        case 0xfe:
+            return 'active'
+        case 0xff:
+            return 'reset'
+        default:
+            return null
     }
 }
 

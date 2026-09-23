@@ -1,6 +1,6 @@
-import Utils from "../../core/utils.js"
+import Utils from '../../core/utils.js'
 export default class StructureSong {
-    static TAG = "StructureSong"
+    static TAG = 'StructureSong'
 
     static GENRES = ['techno', 'house', 'drumandbass', 'hiphop', 'rock']
 
@@ -31,28 +31,31 @@ export default class StructureSong {
 
     static resolveGenreFromTags = (tags) => {
         if (!tags) return null
-        const style = typeof tags === 'string'
-            ? tags.toLowerCase()
-            : String(tags.style ?? tags.genre ?? '').toLowerCase().trim()
+        const style =
+            typeof tags === 'string'
+                ? tags.toLowerCase()
+                : String(tags.style ?? tags.genre ?? '')
+                      .toLowerCase()
+                      .trim()
         if (!style) return null
         return StructureSong.STYLE_TO_GENRE[style] ?? null
     }
 
     static CHORD_PROGRESSIONS = Object.freeze({
-        techno:     [0, 7, 5, 7],
-        house:      [0, 7, 9, 5],
+        techno: [0, 7, 5, 7],
+        house: [0, 7, 9, 5],
         drumandbass: [0, 10, 8, 7],
-        hiphop:     [0, 5, 7, 10],
-        rock:       [0, 5, 7, 0]
+        hiphop: [0, 5, 7, 10],
+        rock: [0, 5, 7, 0],
     })
 
     static HARMONIC_TABLE = Object.freeze({
-        intro:  { root: 0, scale: 'natural minor' },
-        verse:  { root: 0, scale: 'natural minor' },
+        intro: { root: 0, scale: 'natural minor' },
+        verse: { root: 0, scale: 'natural minor' },
         chorus: { root: 7, scale: 'natural minor' },
         bridge: { root: 5, scale: 'natural minor' },
-        break:  { root: 0, scale: 'natural minor' },
-        outro:  { root: 0, scale: 'natural minor' }
+        break: { root: 0, scale: 'natural minor' },
+        outro: { root: 0, scale: 'natural minor' },
     })
 
     resolveHarmony = (genre, sectionName, loopInElement = 0) => {
@@ -66,11 +69,11 @@ export default class StructureSong {
     }
 
     static SWING_BY_GENRE = Object.freeze({
-        techno:     { swingAmount: 0,    swingResolution: 4 },
-        house:      { swingAmount: 0.18, swingResolution: 4 },
+        techno: { swingAmount: 0, swingResolution: 4 },
+        house: { swingAmount: 0.18, swingResolution: 4 },
         drumandbass: { swingAmount: 0.05, swingResolution: 4 },
-        hiphop:     { swingAmount: 0.12, swingResolution: 4 },
-        rock:       { swingAmount: 0,    swingResolution: 4 }
+        hiphop: { swingAmount: 0.12, swingResolution: 4 },
+        rock: { swingAmount: 0, swingResolution: 4 },
     })
 
     getGenreSwing = (genre) => {
@@ -89,7 +92,7 @@ export default class StructureSong {
             ORGAN: 'arpeggio',
             PERC: 'shaker44',
             COWBELL: 'offbeat',
-            CRASH: 'crash'
+            CRASH: 'crash',
         },
         house: {
             KICK: 'fourOnFloor',
@@ -102,7 +105,7 @@ export default class StructureSong {
             ORGAN: 'chordStab',
             TAMBOURINE: 'tambourine44',
             COWBELL: 'dense',
-            CRASH: 'crash'
+            CRASH: 'crash',
         },
         drumandbass: {
             KICK: 'syncopated',
@@ -115,7 +118,7 @@ export default class StructureSong {
             ORGAN: 'sparse',
             CONGAS: 'conversation',
             COWBELL: 'syncopated',
-            CRASH: 'crash'
+            CRASH: 'crash',
         },
         hiphop: {
             KICK: 'basic',
@@ -128,7 +131,7 @@ export default class StructureSong {
             ORGAN: 'sparse',
             HI_TOM: 'basic',
             COWBELL: 'sparse',
-            CRASH: 'crash'
+            CRASH: 'crash',
         },
         rock: {
             KICK: 'basic',
@@ -142,22 +145,22 @@ export default class StructureSong {
             PERC: 'clap44',
             COWBELL: 'basic',
             HI_TOM: 'fill',
-            CRASH: 'crash'
-        }
+            CRASH: 'crash',
+        },
     }
 
     constructor(structure = null) {
         this.structure = structure ?? [
-            { name: "intro", loops: 4 },
-            { name: "chorus", loops: 8 },
-            { name: "verse", loops: 8 },
-            { name: "break", loops: 1 },
-            { name: "chorus", loops: 8 },
-            { name: "verse", loops: 8 },
-            { name: "break", loops: 1 },
-            { name: "bridge", loops: 4 },
-            { name: "verse", loops: 8 },
-            { name: "outro", loops: 4 }
+            { name: 'intro', loops: 4 },
+            { name: 'chorus', loops: 8 },
+            { name: 'verse', loops: 8 },
+            { name: 'break', loops: 1 },
+            { name: 'chorus', loops: 8 },
+            { name: 'verse', loops: 8 },
+            { name: 'break', loops: 1 },
+            { name: 'bridge', loops: 4 },
+            { name: 'verse', loops: 8 },
+            { name: 'outro', loops: 4 },
         ]
         this.totalLoops = this.structure.reduce((total, element) => total + element.loops, 0)
     }
@@ -192,7 +195,7 @@ export default class StructureSong {
                     loopInElement: loopInSong - cursor,
                     isLastLoopBeforeChange: loopInSong - cursor === element.loops - 1,
                     elementLoops: element.loops,
-                    totalLoops: this.totalLoops
+                    totalLoops: this.totalLoops,
                 }
             }
 
@@ -200,7 +203,7 @@ export default class StructureSong {
         }
 
         return {
-            name: "unknown",
+            name: 'unknown',
             number: 0,
             index: -1,
             loop: safeLoop,
@@ -208,7 +211,7 @@ export default class StructureSong {
             loopInElement: 0,
             isLastLoopBeforeChange: false,
             elementLoops: 0,
-            totalLoops: this.totalLoops
+            totalLoops: this.totalLoops,
         }
     }
 }

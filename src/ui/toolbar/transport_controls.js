@@ -15,7 +15,9 @@ export default class TransportControls {
     #tb
 
     /** @param {import('../toolbar.js').default} toolbar */
-    constructor(toolbar) { this.#tb = toolbar }
+    constructor(toolbar) {
+        this.#tb = toolbar
+    }
 
     createDOM() {
         const tb = this.#tb
@@ -95,7 +97,7 @@ export default class TransportControls {
             const pattern = appState.patterns[appState.selectedPatternNum]
             if (!pattern) return
             pattern.nbBeats = val
-            Utils.getTracksArray(pattern).forEach(track => {
+            Utils.getTracksArray(pattern).forEach((track) => {
                 track.nbBeats = val
                 const maxSteps = val * (track.stepsPerBeat ?? 4)
                 if (track.loopAtStep > maxSteps) {

@@ -26,11 +26,11 @@ function makeGeneratedSound(overrides = {}) {
                 frequency: 440,
                 gain: 0.5,
                 detune: 0,
-                ...overrides
-            }
+                ...overrides,
+            },
         ],
         envelope: { attack: 10, decay: 200, sustain: 0.5, release: 100 },
-        filter: { type: 'lowpass', freq: 8000, q: 1 }
+        filter: { type: 'lowpass', freq: 8000, q: 1 },
     }
 }
 
@@ -46,7 +46,7 @@ function makeTrack(overrides = {}) {
         useAutoAssignSound: true,
         useSoftSynth: true,
         synthSoundKey: 'BASS1',
-        ...overrides
+        ...overrides,
     }
 }
 
@@ -56,12 +56,12 @@ function setupEditor(track) {
         track: track,
         container: document.createElement('div'),
         sync: vi.fn(),
-        _appState: appState
+        _appState: appState,
     }
     const deps = {
         playbackEvents: playbackEvents,
         serviceRegistry: serviceRegistry,
-        soundRegistry: soundRegistry
+        soundRegistry: soundRegistry,
     }
     const editor = new SynthEditor(host, deps)
     editor.createDOM()
@@ -74,7 +74,7 @@ describe('PresetSection', () => {
             soundRegistry.generatedSounds = {
                 SYNTH1: makeGeneratedSound(),
                 BASS1: makeGeneratedSound(),
-                ALPHA: makeGeneratedSound()
+                ALPHA: makeGeneratedSound(),
             }
             const { editor } = setupEditor(makeTrack())
             const keys = editor.getGeneratedSoundKeys()
@@ -141,7 +141,7 @@ describe('PresetSection', () => {
         it('increments name if new_preset already exists', () => {
             soundRegistry.generatedSounds = {
                 BASS1: makeGeneratedSound(),
-                new_preset: makeGeneratedSound()
+                new_preset: makeGeneratedSound(),
             }
             serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
@@ -180,7 +180,7 @@ describe('PresetSection', () => {
         it('removes preset from registry', () => {
             soundRegistry.generatedSounds = {
                 BASS1: makeGeneratedSound(),
-                BASS2: makeGeneratedSound()
+                BASS2: makeGeneratedSound(),
             }
             serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
@@ -208,7 +208,7 @@ describe('PresetSection', () => {
             soundRegistry.generatedSounds = {
                 A: makeGeneratedSound(),
                 B: makeGeneratedSound(),
-                C: makeGeneratedSound()
+                C: makeGeneratedSound(),
             }
             serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
             const { editor } = setupEditor(makeTrack())
@@ -226,7 +226,7 @@ describe('PresetSection', () => {
         it('loads preset by key from dropdown', () => {
             soundRegistry.generatedSounds = {
                 BASS1: makeGeneratedSound(),
-                SYNTH1: makeGeneratedSound()
+                SYNTH1: makeGeneratedSound(),
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
@@ -267,7 +267,7 @@ describe('PresetSection', () => {
             soundRegistry.generatedSounds = {
                 A: makeGeneratedSound(),
                 B: makeGeneratedSound(),
-                C: makeGeneratedSound()
+                C: makeGeneratedSound(),
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
@@ -282,7 +282,7 @@ describe('PresetSection', () => {
             soundRegistry.generatedSounds = {
                 A: makeGeneratedSound(),
                 B: makeGeneratedSound(),
-                C: makeGeneratedSound()
+                C: makeGeneratedSound(),
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
@@ -296,7 +296,7 @@ describe('PresetSection', () => {
         it('wraps around from last to first', () => {
             soundRegistry.generatedSounds = {
                 A: makeGeneratedSound(),
-                B: makeGeneratedSound()
+                B: makeGeneratedSound(),
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
@@ -310,7 +310,7 @@ describe('PresetSection', () => {
         it('wraps around from first to last', () => {
             soundRegistry.generatedSounds = {
                 A: makeGeneratedSound(),
-                B: makeGeneratedSound()
+                B: makeGeneratedSound(),
             }
             const { editor } = setupEditor(makeTrack())
             editor.showPanel()
@@ -385,7 +385,7 @@ describe('PresetSection', () => {
         it('loads from resourcesLoader when empty', async () => {
             soundRegistry.generatedSounds = {}
             serviceRegistry.resourcesLoader = {
-                loadGeneratedSounds: vi.fn().mockResolvedValue(undefined)
+                loadGeneratedSounds: vi.fn().mockResolvedValue(undefined),
             }
             serviceRegistry.audioEngine = { updateGeneratedSounds: vi.fn() }
 
@@ -398,7 +398,7 @@ describe('PresetSection', () => {
         it('skips loading when presets already exist', async () => {
             soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
             serviceRegistry.resourcesLoader = {
-                loadGeneratedSounds: vi.fn()
+                loadGeneratedSounds: vi.fn(),
             }
 
             const { editor } = setupEditor(makeTrack())

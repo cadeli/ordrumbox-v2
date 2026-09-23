@@ -13,11 +13,13 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
     let toolsPanel
 
     const TEST_PATTERN = {
-        name: 'Test', nbBeats: 2, bpm: 120,
+        name: 'Test',
+        nbBeats: 2,
+        bpm: 120,
         tracks: [
             { name: 'KICK', notes: [], nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8 },
             { name: 'SNARE', notes: [], nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8 },
-        ]
+        ],
     }
 
     beforeEach(() => {
@@ -37,7 +39,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
 
         toolsPanel = new ToolsPanel()
         toolsPanel.init()
-        playbackEvents.emit("toolsToggle", true)
+        playbackEvents.emit('toolsToggle', true)
     })
 
     describe('Rnd button', () => {
@@ -77,7 +79,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
 
             const pattern = appState.patterns[0]
             for (const track of pattern.tracks) {
-                const positions = track.notes.map(n => `${n.beat}:${n.beatStep}`)
+                const positions = track.notes.map((n) => `${n.beat}:${n.beatStep}`)
                 expect(new Set(positions).size).toBe(positions.length)
             }
         })
@@ -96,7 +98,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
 
         it('dispatches patternChange', () => {
             const spy = vi.fn()
-            playbackEvents.on("patternChange", spy)
+            playbackEvents.on('patternChange', spy)
 
             toolsPanel.container.querySelector('#tp-rnd').click()
             expect(spy).toHaveBeenCalled()

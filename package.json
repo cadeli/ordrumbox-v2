@@ -1,65 +1,65 @@
 {
-  "name": "ordrumbox",
-  "version": "1.0.0",
-  "description": "MinFact /online ordrumbox v2.0",
-  "main": "electron-main.cjs",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "dev": "vite",
-    "build": "vite build && cp sw.js manifest.json dist/ && cp -r assets/data assets/kits assets/images dist/assets/",
-    "preview": "vite preview",
-    "electron:dev": "electron .",
-    "electron:build": "npm run build && electron-builder",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
-  },
-  "build": {
-    "appId": "com.ordrumbox.v2",
-    "productName": "orDrumbox",
-    "files": [
-      "dist/**/*",
-      "electron-main.cjs",
-      "assets/images/logo.png"
+    "name": "ordrumbox",
+    "version": "1.0.0",
+    "description": "MinFact /online ordrumbox v2.0",
+    "main": "electron-main.cjs",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "dev": "vite",
+        "build": "vite build && cp sw.js manifest.json dist/ && cp -r assets/data assets/kits assets/images dist/assets/",
+        "preview": "vite preview",
+        "electron:dev": "electron .",
+        "electron:build": "npm run build && electron-builder",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "build": {
+        "appId": "com.ordrumbox.v2",
+        "productName": "orDrumbox",
+        "files": [
+            "dist/**/*",
+            "electron-main.cjs",
+            "assets/images/logo.png"
+        ],
+        "directories": {
+            "output": "release"
+        }
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/cadeli/ordrumbox-v2.git"
+    },
+    "keywords": [
+        "online drum machine",
+        "js",
+        "vanilla"
     ],
-    "directories": {
-      "output": "release"
+    "author": "orDrumbox team",
+    "license": "GPL-3.0-only",
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@playwright/test": "^1.63.0",
+        "@vitest/coverage-v8": "^4.1.6",
+        "electron": "^42.3.2",
+        "electron-builder": "^26.8.1",
+        "eslint": "^10.4.1",
+        "eslint-config-prettier": "^10.1.8",
+        "globals": "^17.12.0",
+        "jsdom": "^29.1.1",
+        "node-web-audio-api": "^2.0.0",
+        "prettier": "^3.9.8",
+        "vite": "^8.0.16",
+        "vitest": "^4.1.6"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.28.0",
+        "express": "^5.2.1",
+        "terser": "^5.46.0"
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/cadeli/ordrumbox-v2.git"
-  },
-  "keywords": [
-    "online drum machine",
-    "js",
-    "vanilla"
-  ],
-  "author": "orDrumbox team",
-  "license": "GPL-3.0-only",
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.63.0",
-    "@vitest/coverage-v8": "^4.1.6",
-    "electron": "^42.3.2",
-    "electron-builder": "^26.8.1",
-    "eslint": "^10.4.1",
-    "eslint-config-prettier": "^10.1.8",
-    "globals": "^17.12.0",
-    "jsdom": "^29.1.1",
-    "node-web-audio-api": "^2.0.0",
-    "prettier": "^3.9.8",
-    "vite": "^8.0.16",
-    "vitest": "^4.1.6"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.28.0",
-    "express": "^5.2.1",
-    "terser": "^5.46.0"
-  }
 }

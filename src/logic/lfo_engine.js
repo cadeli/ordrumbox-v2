@@ -1,11 +1,11 @@
 import { computeLfoValue } from '../audio/math.js'
 
 export const LFO_MAP = [
-    { lfoKey: 'velocityLfo',   resultKey: 'velocity' },
-    { lfoKey: 'panLfo',        resultKey: 'pan' },
-    { lfoKey: 'pitchLfo',      resultKey: 'pitch' },
+    { lfoKey: 'velocityLfo', resultKey: 'velocity' },
+    { lfoKey: 'panLfo', resultKey: 'pan' },
+    { lfoKey: 'pitchLfo', resultKey: 'pitch' },
     { lfoKey: 'filterFreqLfo', resultKey: 'filterFreq' },
-    { lfoKey: 'filterQLfo',    resultKey: 'filterQ' },
+    { lfoKey: 'filterQLfo', resultKey: 'filterQ' },
 ]
 
 export function computeTrackLfoValues(track, tick, nbTicks, bpm) {

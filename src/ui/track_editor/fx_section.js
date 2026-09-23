@@ -49,8 +49,8 @@ export default class FxSection {
         if (!val) return
         if (target.closest('[data-prop="filterType"]')) {
             const cur = track.filterType
-            track.filterType = (cur === val) ? 'allpass' : val
-            editor._prevFilterType = (cur === val) ? undefined : cur
+            track.filterType = cur === val ? 'allpass' : val
+            editor._prevFilterType = cur === val ? undefined : cur
         }
     }
 
@@ -62,7 +62,7 @@ export default class FxSection {
         const activeTab = String(tabIdx)
         editor._fxTab.setActive(activeTab)
         editor._fxTab.togglePanels(editor.container)
-        editor.container.querySelectorAll('.te-mod-btn').forEach(tab => {
+        editor.container.querySelectorAll('.te-mod-btn').forEach((tab) => {
             const tabButton = tab.querySelector('[data-fx-tab]')
             tab.classList.toggle('active', tabButton?.dataset.fxTab === activeTab)
         })
@@ -91,7 +91,7 @@ export default class FxSection {
 
             content += `<div class="fx-tab-panel ${isHidden ? 'fx-tab-panel-hidden' : ''}" data-fx-panel="${idx}">`
 
-            fx.controls.forEach(ck => {
+            fx.controls.forEach((ck) => {
                 const prop = PROP_BY_KEY.get(ck)
                 if (!prop) return
                 const val = track[ck]
@@ -107,7 +107,7 @@ export default class FxSection {
                 } else {
                     const hasLfo = prop.lfo && track[prop.lfo] ? 'has-lfo' : ''
                     const isSelected = editor._selectedPropKey === ck ? 'selected' : ''
-                    let knob = editor._fxKnobs.find(k => k.key === ck)
+                    let knob = editor._fxKnobs.find((k) => k.key === ck)
                     if (knob) {
                         knob.setValue(val ?? prop.min)
                     } else {
@@ -123,10 +123,10 @@ export default class FxSection {
                             onChange: (v) => {
                                 editor._track[ck] = v
                                 editor._playbackEvents.batch(() => {
-                                    editor._playbackEvents.emit("trackParamChange", editor._track)
-                                    editor._playbackEvents.emit("patternChange", [editor._track])
+                                    editor._playbackEvents.emit('trackParamChange', editor._track)
+                                    editor._playbackEvents.emit('patternChange', [editor._track])
                                 })
-                            }
+                            },
                         })
                     }
                     editor._fxKnobs.push(knob)

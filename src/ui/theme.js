@@ -14,38 +14,37 @@
 // Fallback hex values — must stay in sync with styles.css :root
 const TOKENS = {
     // Palette
-    'bg':              '#E7E8E4',
-    'surface':         '#D9DAD6',
-    'surface-2':       '#CFD0CC',
-    'line':            '#A9AAA6',
-    'muted':           '#686A67',
-    'text':            '#202321',
-    'accent':          '#596B61',
+    bg: '#E7E8E4',
+    surface: '#D9DAD6',
+    'surface-2': '#CFD0CC',
+    line: '#A9AAA6',
+    muted: '#686A67',
+    text: '#202321',
+    accent: '#596B61',
 
     // Accent variants
-    'accent-400':      '#6a7d73',
-    'accent-600':      '#4a5c52',
+    'accent-400': '#6a7d73',
+    'accent-600': '#4a5c52',
 
     // Borders
-    'border-subtle':   '#C1C2BE',
+    'border-subtle': '#C1C2BE',
 
     // Semantic (mapped to palette, for dark mode overrides)
-    'color-success':   '#596B61',
-    'color-warning':   '#686A67',
-    'color-danger':    '#686A67',
-    'color-info':      '#596B61',
+    'color-success': '#596B61',
+    'color-warning': '#686A67',
+    'color-danger': '#686A67',
+    'color-info': '#596B61',
 
     // Shadows
-    'canvas-shadow':   '#000000',
-    'toast-shadow':    '#000000',
+    'canvas-shadow': '#000000',
+    'toast-shadow': '#000000',
 }
 
 import { logger } from '../core/logger.js'
 
 function _cssVar(name) {
     try {
-        return getComputedStyle(document.documentElement)
-            .getPropertyValue(`--${name}`).trim()
+        return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim()
     } catch (e) {
         logger.warn('Theme', `CSS variable --${name} not found`, e)
         return ''
@@ -54,11 +53,7 @@ function _cssVar(name) {
 
 function _hexToRgb(hex) {
     const h = hex.replace('#', '')
-    return [
-        parseInt(h.substring(0, 2), 16),
-        parseInt(h.substring(2, 4), 16),
-        parseInt(h.substring(4, 6), 16),
-    ]
+    return [parseInt(h.substring(0, 2), 16), parseInt(h.substring(2, 4), 16), parseInt(h.substring(4, 6), 16)]
 }
 
 let _cache = null

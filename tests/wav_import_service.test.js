@@ -89,10 +89,7 @@ describe('WavImportService', () => {
     })
 
     it('imports a directory of WAV files as a drumkit', async () => {
-        const files = [
-            makeWavFile('kick.wav', 'my_drums/kick.wav'),
-            makeWavFile('snare.wav', 'my_drums/snare.wav'),
-        ]
+        const files = [makeWavFile('kick.wav', 'my_drums/kick.wav'), makeWavFile('snare.wav', 'my_drums/snare.wav')]
         const service = new WavImportService()
         const result = await service.importDirectory(files)
 
@@ -120,14 +117,11 @@ describe('WavImportService', () => {
     })
 
     it('adds drumkit to drumkitList', async () => {
-        const files = [
-            makeWavFile('kick.wav', 'my_drums/kick.wav'),
-            makeWavFile('hat.wav', 'my_drums/hat.wav'),
-        ]
+        const files = [makeWavFile('kick.wav', 'my_drums/kick.wav'), makeWavFile('hat.wav', 'my_drums/hat.wav')]
         const service = new WavImportService()
         await service.importDirectory(files)
 
-        const kit = sharedSoundRegistry.drumkitList.find(d => d.name === 'my_drums')
+        const kit = sharedSoundRegistry.drumkitList.find((d) => d.name === 'my_drums')
         expect(kit).toBeDefined()
         expect(kit.instruments).toHaveLength(2)
     })
@@ -141,10 +135,7 @@ describe('WavImportService', () => {
     })
 
     it('decodes audio data for each file', async () => {
-        const files = [
-            makeWavFile('kick.wav', 'my_drums/kick.wav'),
-            makeWavFile('snare.wav', 'my_drums/snare.wav'),
-        ]
+        const files = [makeWavFile('kick.wav', 'my_drums/kick.wav'), makeWavFile('snare.wav', 'my_drums/snare.wav')]
         const service = new WavImportService()
         await service.importDirectory(files)
 
@@ -164,9 +155,7 @@ describe('WavImportService', () => {
         const service = new WavImportService()
         await service.importDirectory(files)
 
-        expect(mockCacheDrumkits).toHaveBeenCalledWith(
-            expect.objectContaining({ 'my_drums': expect.any(Object) })
-        )
+        expect(mockCacheDrumkits).toHaveBeenCalledWith(expect.objectContaining({ my_drums: expect.any(Object) }))
     })
 
     it('emits drumkitChange event', async () => {
@@ -211,7 +200,7 @@ describe('WavImportService', () => {
         const service = new WavImportService()
         await service.importDirectory(files)
 
-        const kit = sharedSoundRegistry.drumkitList.find(d => d.name === 'my_drums')
+        const kit = sharedSoundRegistry.drumkitList.find((d) => d.name === 'my_drums')
         expect(kit.instruments).toHaveLength(1)
         expect(sharedAppState.selectedDrumkitNum).toBe(0)
     })

@@ -26,39 +26,36 @@
 
 import InstrumentsManager from '../services/instruments_manager.js'
 import { soundRegistry } from '../../state/sound_registry.js'
-import {
-    recomputeFlatNotes,
-    computeNbTickForPattern,
-} from '../../patterns/engine.js'
+import { recomputeFlatNotes, computeNbTickForPattern } from '../../patterns/engine.js'
 import { TICK } from '../../core/constants.js'
 import { computeLfoValue, clamp } from '../../audio/math.js'
 import Utils from '../../core/utils.js'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const PPQN            = 96
-const TICKS_PER_BAR   = PPQN * 1              // 384
-const MIDI_RATIO      = TICKS_PER_BAR / TICK  // 12
-const DRUM_CHANNEL    = 9                      // 0-indexed = MIDI channel 10
-const NOTE_DURATION   = 24                     // ticks (1/16th at PPQN=96)
-const DEFAULT_MIDI_NOTE = 36                   // Bass Drum 1 fallback
-export const C3_MIDI_NOTE      = 48                   // orDrumbox pitch 0 = C3
+const PPQN = 96
+const TICKS_PER_BAR = PPQN * 1 // 384
+const MIDI_RATIO = TICKS_PER_BAR / TICK // 12
+const DRUM_CHANNEL = 9 // 0-indexed = MIDI channel 10
+const NOTE_DURATION = 24 // ticks (1/16th at PPQN=96)
+const DEFAULT_MIDI_NOTE = 36 // Bass Drum 1 fallback
+export const C3_MIDI_NOTE = 48 // orDrumbox pitch 0 = C3
 
 // ─── Low-level binary helpers ─────────────────────────────────────────────────
 
 function uint32BE(v) {
-    return [(v >>> 24) & 0xFF, (v >>> 16) & 0xFF, (v >>> 8) & 0xFF, v & 0xFF]
+    return [(v >>> 24) & 0xff, (v >>> 16) & 0xff, (v >>> 8) & 0xff, v & 0xff]
 }
 function uint16BE(v) {
-    return [(v >>> 8) & 0xFF, v & 0xFF]
+    return [(v >>> 8) & 0xff, v & 0xff]
 }
 
 export function encodeVLQ(value) {
     if (value < 0) throw new RangeError('VLQ value must be >= 0')
-    const bytes = [value & 0x7F]
+    const bytes = [value & 0x7f]
     value >>>= 7
     while (value > 0) {
-        bytes.unshift((value & 0x7F) | 0x80)
+        bytes.unshift((value & 0x7f) | 0x80)
         value >>>= 7
     }
     return bytes
@@ -68,20 +65,17 @@ function midiEvent(delta, data) {
     return [...encodeVLQ(delta), ...data]
 }
 function metaEvent(delta, type, data) {
-    return midiEvent(delta, [0xFF, type, ...encodeVLQ(data.length), ...data])
+    return midiEvent(delta, [0xff, type, ...encodeVLQ(data.length), ...data])
 }
 function buildMTrk(eventBytes) {
-    const body = [...eventBytes, ...midiEvent(0, [0xFF, 0x2F, 0x00])]
-    return [0x4D, 0x54, 0x72, 0x6B, ...uint32BE(body.length), ...body]
+    const body = [...eventBytes, ...midiEvent(0, [0xff, 0x2f, 0x00])]
+    return [0x4d, 0x54, 0x72, 0x6b, ...uint32BE(body.length), ...body]
 }
 
 // ─── SMF header ───────────────────────────────────────────────────────────────
 
 function buildMThd(numTracks) {
-    return [
-        0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06,
-        ...uint16BE(1), ...uint16BE(numTracks), ...uint16BE(PPQN),
-    ]
+    return [0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, ...uint16BE(1), ...uint16BE(numTracks), ...uint16BE(PPQN)]
 }
 
 // ─── Tempo track ──────────────────────────────────────────────────────────────
@@ -90,8 +84,12 @@ function buildTempoTrack(bpm) {
     const us = Math.round(60_000_000 / bpm)
     return buildMTrk([
         ...metaEvent(0, 0x58, [0x04, 0x02, 0x18, 0x08]),
-        ...metaEvent(0, 0x51, [(us >>> 16) & 0xFF, (us >>> 8) & 0xFF, us & 0xFF]),
-        ...metaEvent(0, 0x03, Array.from('orDrumbox Pattern', c => c.charCodeAt(0))),
+        ...metaEvent(0, 0x51, [(us >>> 16) & 0xff, (us >>> 8) & 0xff, us & 0xff]),
+        ...metaEvent(
+            0,
+            0x03,
+            Array.from('orDrumbox Pattern', (c) => c.charCodeAt(0)),
+        ),
     ])
 }
 
@@ -144,7 +142,7 @@ export function resolveTrackMidi(trackName, instrumentsManager) {
     const instrument = instrumentsManager.findByName(name)
     if (instrument && instrument.midi && instrument.midi.length > 0) {
         const mapping = instrument.midi[0]
-        const isDrum  = instrument.drum === true
+        const isDrum = instrument.drum === true
         const channel = isDrum ? DRUM_CHANNEL : 0
         if (mapping.key != null) {
             const rawKey = parseInt(mapping.key, 10)
@@ -173,25 +171,26 @@ export function buildInstrumentTrackFromEvents(trackName, midiNote, channel, eve
     // Expand into Note On + Note Off pairs
     const raw = []
     for (const ev of events) {
-        raw.push({ tick: ev.absMidiTick,              type: 'on',  noteNum: ev.noteNum, velocity: ev.velocity })
+        raw.push({ tick: ev.absMidiTick, type: 'on', noteNum: ev.noteNum, velocity: ev.velocity })
         raw.push({ tick: ev.absMidiTick + NOTE_DURATION, type: 'off', noteNum: ev.noteNum })
     }
     raw.sort((a, b) => a.tick - b.tick || (a.type === 'off' ? -1 : 1))
 
-    const nameBytes = Array.from(trackName ?? 'TRACK', c => c.charCodeAt(0))
-    const evBytes   = [...metaEvent(0, 0x03, nameBytes)]
+    const nameBytes = Array.from(trackName ?? 'TRACK', (c) => c.charCodeAt(0))
+    const evBytes = [...metaEvent(0, 0x03, nameBytes)]
 
     if (program != null && program >= 0 && program <= 127) {
-        evBytes.push(...midiEvent(0, [0xC0 | (channel & 0x0F), program]))
+        evBytes.push(...midiEvent(0, [0xc0 | (channel & 0x0f), program]))
     }
 
-    const statusOn  = 0x90 | (channel & 0x0F)
-    const statusOff = 0x80 | (channel & 0x0F)
+    const statusOn = 0x90 | (channel & 0x0f)
+    const statusOff = 0x80 | (channel & 0x0f)
     let cursor = 0
     for (const ev of raw) {
-        const delta = ev.tick - cursor; cursor = ev.tick
+        const delta = ev.tick - cursor
+        cursor = ev.tick
         if (ev.type === 'on') {
-            evBytes.push(...midiEvent(delta, [statusOn,  ev.noteNum, ev.velocity]))
+            evBytes.push(...midiEvent(delta, [statusOn, ev.noteNum, ev.velocity]))
         } else {
             evBytes.push(...midiEvent(delta, [statusOff, ev.noteNum, 0]))
         }
@@ -219,9 +218,9 @@ export default class MidiExporter {
     export(pattern, { loops = 1 } = {}) {
         if (!pattern) throw new Error('MidiExporter.export: pattern is required')
 
-        const bpm              = pattern.bpm    ?? 120
-        const nbBeats           = pattern.nbBeats ?? 4
-        const tracks           = pattern.tracks ?? []
+        const bpm = pattern.bpm ?? 120
+        const nbBeats = pattern.nbBeats ?? 4
+        const tracks = pattern.tracks ?? []
         const nbTickForPattern = computeNbTickForPattern(nbBeats, TICK)
 
         // Collect engine events per track name
@@ -229,13 +228,23 @@ export default class MidiExporter {
         const trackData = new Map()
 
         const anySolo = Utils.hasAnySolo(tracks)
-        const unmutedNames = tracks.filter(t => Utils.shouldTrackPlay(t, anySolo)).map(t => t.name)
+        const unmutedNames = tracks.filter((t) => Utils.shouldTrackPlay(t, anySolo)).map((t) => t.name)
         const channelMap = assignChannels(this.instrumentsManager, unmutedNames, soundRegistry)
 
         for (const track of tracks) {
             if (!Utils.shouldTrackPlay(track, anySolo)) continue
-            const resolved = channelMap.get(track.name) ?? { midiNote: DEFAULT_MIDI_NOTE, channel: DRUM_CHANNEL, isDrum: true, program: null }
-            trackData.set(track.name, { midiNote: resolved.midiNote, channel: resolved.channel, program: resolved.program, events: [] })
+            const resolved = channelMap.get(track.name) ?? {
+                midiNote: DEFAULT_MIDI_NOTE,
+                channel: DRUM_CHANNEL,
+                isDrum: true,
+                program: null,
+            }
+            trackData.set(track.name, {
+                midiNote: resolved.midiNote,
+                channel: resolved.channel,
+                program: resolved.program,
+                events: [],
+            })
         }
 
         // Run engine for each loop iteration
@@ -265,7 +274,7 @@ export default class MidiExporter {
                     pitchOffset += fn.track.pitch ?? 0
 
                     const noteNum = clamp(td.midiNote + pitchOffset, 0, 127)
-                    const midiVel  = Math.round(velocity * 127)
+                    const midiVel = Math.round(velocity * 127)
                     td.events.push({ absMidiTick, noteNum, velocity: midiVel })
                 }
             }
@@ -278,19 +287,19 @@ export default class MidiExporter {
             trackChunks.push(buildInstrumentTrackFromEvents(name, td.midiNote, td.channel, td.events, td.program))
         }
 
-        const numTracks  = 1 + trackChunks.length
-        const allBytes   = [...buildMThd(numTracks), ...buildTempoTrack(bpm)]
+        const numTracks = 1 + trackChunks.length
+        const allBytes = [...buildMThd(numTracks), ...buildTempoTrack(bpm)]
         for (const chunk of trackChunks) allBytes.push(...chunk)
         return new Uint8Array(allBytes)
     }
 
     download(pattern, filename, options = {}) {
         const bytes = this.export(pattern, options)
-        const blob  = new Blob([bytes], { type: 'audio/midi' })
-        const url   = URL.createObjectURL(blob)
-        const a     = document.createElement('a')
-        a.href      = url
-        a.download  = filename ?? `${pattern.name ?? 'pattern'}.mid`
+        const blob = new Blob([bytes], { type: 'audio/midi' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename ?? `${pattern.name ?? 'pattern'}.mid`
         a.click()
         URL.revokeObjectURL(url)
     }

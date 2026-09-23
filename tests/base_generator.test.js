@@ -15,7 +15,7 @@ describe('BaseGenerator', () => {
             loopPointStep: 0,
             phrases: [
                 { beat: 0, step: 0, accent: true },
-                { beat: 1, step: 2 }
+                { beat: 1, step: 2 },
             ],
             velocity: {
                 base: 0.8,
@@ -23,8 +23,8 @@ describe('BaseGenerator', () => {
                 ghost: -0.3,
                 randomSpread: 0.05,
                 clampMin: 0.4,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         grid: {
             mode: 'grid',
@@ -37,9 +37,9 @@ describe('BaseGenerator', () => {
                 ghost: -0.2,
                 randomSpread: 0.1,
                 clampMin: 0.3,
-                clampMax: 1
-            }
-        }
+                clampMax: 1,
+            },
+        },
     }
 
     beforeEach(() => {
@@ -116,7 +116,7 @@ describe('BaseGenerator', () => {
                 ghost: -0.3,
                 randomSpread: 0.05,
                 clampMin: 0.4,
-                clampMax: 1
+                clampMax: 1,
             })
             expect(result).toContain('b0.8')
             expect(result).toContain('a0.15')
@@ -149,9 +149,11 @@ describe('BaseGenerator', () => {
                 return callCount % 2 === 0 ? 0.2 : 0.9
             }
 
-            generator.generateGridVariant(track, testConfigs.grid,
+            generator.generateGridVariant(
+                track,
+                testConfigs.grid,
                 (beat, step) => step === 0,
-                (beat, step) => step !== 0
+                (beat, step) => step !== 0,
             )
 
             Math.random = originalRandom
@@ -162,10 +164,12 @@ describe('BaseGenerator', () => {
     describe('generatePhraseVariant', () => {
         it('generates notes from phrases', () => {
             const track = { name: 'TEST', stepsPerBeat: 4, nbBeats: 4, notes: [] }
-            generator.generatePhraseVariant(track, testConfigs.basic,
+            generator.generatePhraseVariant(
+                track,
+                testConfigs.basic,
                 () => 0,
                 (phrase) => phrase.accent === true,
-                (phrase) => phrase.ghost === true
+                (phrase) => phrase.ghost === true,
             )
             expect(track.notes.length).toBe(2)
         })

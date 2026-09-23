@@ -23,13 +23,13 @@ Add to your `.opencode/agents.json` or project config:
 
 ```json
 {
-  "mcpServers": {
-    "ordrumbox": {
-      "command": "node",
-      "args": ["ordrumboxMcpserver.mjs"],
-      "cwd": "/path/to/ordrumbox-v2"
+    "mcpServers": {
+        "ordrumbox": {
+            "command": "node",
+            "args": ["ordrumboxMcpserver.mjs"],
+            "cwd": "/path/to/ordrumbox-v2"
+        }
     }
-  }
 }
 ```
 
@@ -37,10 +37,10 @@ Add to your `.opencode/agents.json` or project config:
 
 In Cursor settings → Features → MCP Servers → Add new:
 
-| Field | Value |
-|-------|-------|
-| Name | `ordrumbox` |
-| Type | `command` |
+| Field   | Value                                                        |
+| ------- | ------------------------------------------------------------ |
+| Name    | `ordrumbox`                                                  |
+| Type    | `command`                                                    |
 | Command | `node /absolute/path/to/ordrumbox-v2/ordrumboxMcpserver.mjs` |
 
 ### Claude Desktop
@@ -49,12 +49,12 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
-  "mcpServers": {
-    "ordrumbox": {
-      "command": "node",
-      "args": ["/absolute/path/to/ordrumbox-v2/ordrumboxMcpserver.mjs"]
+    "mcpServers": {
+        "ordrumbox": {
+            "command": "node",
+            "args": ["/absolute/path/to/ordrumbox-v2/ordrumboxMcpserver.mjs"]
+        }
     }
-  }
 }
 ```
 
@@ -64,9 +64,10 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ### 1. Create a beat from scratch
 
-Ask your LLM: *"Create a drum pattern called 'FourOnFloor' with KICK on steps 0,4,8,12 and SNARE on steps 4,12 at 128 BPM."*
+Ask your LLM: _"Create a drum pattern called 'FourOnFloor' with KICK on steps 0,4,8,12 and SNARE on steps 4,12 at 128 BPM."_
 
 The LLM will call:
+
 1. `createNewPattern({ patternName: "FourOnFloor" })`
 2. `addNotesToPattern({ patternName: "FourOnFloor", notes: [{ trackName: "KICK", step: 0 }, ...] })`
 3. `addNotesToPattern({ patternName: "FourOnFloor", notes: [{ trackName: "SNARE", step: 4 }, ...] })`
@@ -74,14 +75,14 @@ The LLM will call:
 
 ### 2. Add variation with triggers and retriggers
 
-*"On the FourOnFloor pattern, make the hi-hat play 16th notes with retriggers."*
+_"On the FourOnFloor pattern, make the hi-hat play 16th notes with retriggers."_
 
 - `addNotesToPattern({ patternName: "FourOnFloor", notes: [{ trackName: "CHH", step: 0, every: 4 }] })`
 - Or via `updateTrack({ patternName: "FourOnFloor", trackName: "CHH", updates: {}, noteUpdates: { every: 4 } })`
 
 ### 3. Apply effects to a track
 
-*"Add a lowpass filter to the KICK and some reverb to the SNARE."*
+_"Add a lowpass filter to the KICK and some reverb to the SNARE."_
 
 - `updateTrack({ patternName: "FourOnFloor", trackName: "KICK", updates: { filterType: "lowpass", filterFreq: 400 } })`
 - `updateTrack({ patternName: "FourOnFloor", trackName: "SNARE", updates: { reverbType: "hall", reverbAmount: 0.3 } })`
@@ -100,21 +101,21 @@ The LLM will call:
 
 ## Available Tools
 
-| Tool | Purpose |
-|------|---------|
-| `createNewPattern` | Create empty pattern |
-| `addNotesToPattern` | Add notes (step-based) with full trigger/retrigger/arp support |
-| `updateTrack` | Update track properties + note overrides |
-| `savePatternToJson` | Export pattern to file |
-| `loadPattern` | Read pattern data |
-| `listPatterns` | List all pattern names |
-| `listAllInstrumentsNames` | Get valid track names (66 instruments) |
-| `setPatternBpm` | Set tempo (20-300) |
-| `setPatternTags` | Set genre/category tags |
-| `setPatternNbBeats` | Set number of beats |
-| `setPatternDescription` | Add description text |
-| `listKitSamples` | List available WAV samples |
-| `analyzeSamples` | Analyse audio characteristics |
+| Tool                      | Purpose                                                        |
+| ------------------------- | -------------------------------------------------------------- |
+| `createNewPattern`        | Create empty pattern                                           |
+| `addNotesToPattern`       | Add notes (step-based) with full trigger/retrigger/arp support |
+| `updateTrack`             | Update track properties + note overrides                       |
+| `savePatternToJson`       | Export pattern to file                                         |
+| `loadPattern`             | Read pattern data                                              |
+| `listPatterns`            | List all pattern names                                         |
+| `listAllInstrumentsNames` | Get valid track names (66 instruments)                         |
+| `setPatternBpm`           | Set tempo (20-300)                                             |
+| `setPatternTags`          | Set genre/category tags                                        |
+| `setPatternNbBeats`       | Set number of beats                                            |
+| `setPatternDescription`   | Add description text                                           |
+| `listKitSamples`          | List available WAV samples                                     |
+| `analyzeSamples`          | Analyse audio characteristics                                  |
 
 See `MCP_TOOLS.md` for full parameter details.
 

@@ -15,19 +15,19 @@ describe('Toolbar UI Layout', () => {
         // Reset state
         appState.reset()
         soundRegistry.reset()
-        
+
         // Mock serviceRegistry dependencies
         serviceRegistry.seq = {
             toggleStartStop: vi.fn(),
-            setBpm: vi.fn()
+            setBpm: vi.fn(),
         }
         serviceRegistry.cmd = {
             setSelectedPatternNum: vi.fn(),
             setSelectedDrumkitNum: vi.fn(),
-            cleanPattern: vi.fn()
+            cleanPattern: vi.fn(),
         }
         serviceRegistry.patterns = {
-            applyFlatNotes: vi.fn()
+            applyFlatNotes: vi.fn(),
         }
 
         // Clear body
@@ -46,17 +46,17 @@ describe('Toolbar UI Layout', () => {
     it('contains all essential control buttons', () => {
         const tb = document.getElementById('tb')
         const buttons = Array.from(tb.querySelectorAll('button'))
-        const classes = buttons.map(b => b.className)
-        const textContents = buttons.map(b => b.textContent)
+        const classes = buttons.map((b) => b.className)
+        const textContents = buttons.map((b) => b.textContent)
 
         // Check BPM button (text is the BPM value, e.g. '120')
-        expect(textContents.some(t => t === '120' || t.includes('BPM'))).toBe(true)
+        expect(textContents.some((t) => t === '120' || t.includes('BPM'))).toBe(true)
         // Check BPM label exists
-        const labels = Array.from(tb.querySelectorAll('.tb-label')).map(l => l.textContent)
+        const labels = Array.from(tb.querySelectorAll('.tb-label')).map((l) => l.textContent)
         expect(labels).toContain('BPM')
         expect(classes).toContain('tb-start')
-        expect(classes.some(c => c.includes('tb-tools'))).toBe(true)
-        expect(classes.some(c => c.includes('tb-about'))).toBe(true)
+        expect(classes.some((c) => c.includes('tb-tools'))).toBe(true)
+        expect(classes.some((c) => c.includes('tb-about'))).toBe(true)
 
         // Check pagination arrows
         expect(textContents).toContain('◀')
@@ -71,13 +71,13 @@ describe('Toolbar UI Layout', () => {
     it('toggles the BPM panel visibility when clicked', () => {
         const toggle = document.querySelector('.tb-bpm-toggle')
         const panel = document.querySelector('.tb-bpm-panel')
-        
+
         // Initially should not have "open" class
         expect(panel.classList.contains('open')).toBe(false)
-        
+
         toggle.click()
         expect(panel.classList.contains('open')).toBe(true)
-        
+
         toggle.click()
         expect(panel.classList.contains('open')).toBe(false)
     })
@@ -86,10 +86,10 @@ describe('Toolbar UI Layout', () => {
         const slider = document.querySelector('.tb-bpm-panel input[type="range"]')
         const valDisplay = document.querySelector('.tb-bpm-val')
         const toggle = document.querySelector('.tb-bpm-toggle')
-        
+
         slider.value = '140'
         slider.dispatchEvent(new Event('input'))
-        
+
         expect(valDisplay.textContent).toBe('140')
         expect(toggle.textContent).toBe('140')
         expect(serviceRegistry.seq.setBpm).toHaveBeenCalledWith(140)
@@ -98,9 +98,9 @@ describe('Toolbar UI Layout', () => {
     it('contains the pattern, drumkit and beats selectors', () => {
         const selects = document.querySelectorAll('#tb select')
         expect(selects.length).toBe(3)
-        
+
         // Check labels associated with selects
-        const labels = Array.from(document.querySelectorAll('#tb .tb-label')).map(l => l.textContent)
+        const labels = Array.from(document.querySelectorAll('#tb .tb-label')).map((l) => l.textContent)
         expect(labels).toContain('Pattern')
         expect(labels).toContain('Drumkit')
         expect(labels).toContain('Beats')

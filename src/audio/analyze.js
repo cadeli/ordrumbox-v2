@@ -1,16 +1,20 @@
-import { logger } from "../core/logger.js"
+import { logger } from '../core/logger.js'
 export default class AudioAnalyzer {
-    static TAG = "AudioAnalyzer"
+    static TAG = 'AudioAnalyzer'
     static DEFAULTS = Object.freeze({
         envelopePoints: 128,
         fftSize: 1024,
         pitchFrameSize: 4096,
         minFundamentalHz: 40,
-        maxFundamentalHz: 2000
+        maxFundamentalHz: 2000,
     })
 
     analyzeAudioBuffer(audioBuffer, options = {}) {
-        if (!audioBuffer || typeof audioBuffer.sampleRate !== 'number' || typeof audioBuffer.numberOfChannels !== 'number') {
+        if (
+            !audioBuffer ||
+            typeof audioBuffer.sampleRate !== 'number' ||
+            typeof audioBuffer.numberOfChannels !== 'number'
+        ) {
             throw new TypeError('analyzeAudioBuffer expects an AudioBuffer-like object')
         }
 
@@ -47,14 +51,19 @@ export default class AudioAnalyzer {
                 energySubPct: 0,
                 energyHighPct: 0,
                 harmonicRatio: 0,
-                pitchConfidence: 0
+                pitchConfidence: 0,
             }
         }
 
         const envelope = this.computeEnvelope(samples, config.envelopePoints)
         const { peakLinear, peakDb, rmsLinear, rmsDb } = this.computeLevelMetrics(samples)
         const pitchFrame = this.selectAnalysisFrame(samples, config.pitchFrameSize)
-        const pitchMetrics = this.estimateFundamental(pitchFrame, sampleRate, config.minFundamentalHz, config.maxFundamentalHz)
+        const pitchMetrics = this.estimateFundamental(
+            pitchFrame,
+            sampleRate,
+            config.minFundamentalHz,
+            config.maxFundamentalHz,
+        )
         const spectrumFrame = this.selectAnalysisFrame(samples, config.fftSize)
         const spectrumMetrics = this.computeSpectralMetrics(spectrumFrame, sampleRate, pitchMetrics.fundamentalHz)
 
@@ -72,7 +81,7 @@ export default class AudioAnalyzer {
             harmonicRatio: spectrumMetrics.harmonicRatio,
             pitchConfidence: pitchMetrics.pitchConfidence,
             peakLinear,
-            rmsLinear
+            rmsLinear,
         }
     }
 
@@ -83,7 +92,7 @@ export default class AudioAnalyzer {
             ...this.analyzeChannelData(mono, decoded.sampleRate, options),
             sampleRate: decoded.sampleRate,
             numberOfChannels: decoded.numberOfChannels,
-            bitsPerSample: decoded.bitsPerSample
+            bitsPerSample: decoded.bitsPerSample,
         }
     }
 
@@ -146,7 +155,7 @@ export default class AudioAnalyzer {
             sampleRate,
             numberOfChannels,
             bitsPerSample,
-            channels
+            channels,
         }
     }
 
@@ -216,7 +225,7 @@ export default class AudioAnalyzer {
             peakLinear,
             peakDb: this.linearToDb(peakLinear),
             rmsLinear,
-            rmsDb: this.linearToDb(rmsLinear)
+            rmsDb: this.linearToDb(rmsLinear),
         }
     }
 
@@ -304,7 +313,7 @@ export default class AudioAnalyzer {
 
         return {
             fundamentalHz: Number((sampleRate / bestLag).toFixed(3)),
-            pitchConfidence: Number(Math.min(1, Math.max(0, bestCorrelation)).toFixed(4))
+            pitchConfidence: Number(Math.min(1, Math.max(0, bestCorrelation)).toFixed(4)),
         }
     }
 
@@ -339,7 +348,7 @@ export default class AudioAnalyzer {
         }
 
         if (fundamentalHz && totalEnergy > 0) {
-            const maxHarmonic = Math.floor((sampleRate / 2) / fundamentalHz)
+            const maxHarmonic = Math.floor(sampleRate / 2 / fundamentalHz)
             for (let harmonic = 1; harmonic <= maxHarmonic; harmonic++) {
                 const targetHz = harmonic * fundamentalHz
                 const centerBin = Math.round(targetHz / binHz)
@@ -354,7 +363,7 @@ export default class AudioAnalyzer {
             spectralCentroidHz: totalMagnitude > 0 ? Number((weightedFrequencySum / totalMagnitude).toFixed(3)) : 0,
             energySubPct: totalEnergy > 0 ? Number(((subEnergy / totalEnergy) * 100).toFixed(3)) : 0,
             energyHighPct: totalEnergy > 0 ? Number(((highEnergy / totalEnergy) * 100).toFixed(3)) : 0,
-            harmonicRatio: totalEnergy > 0 ? Number(Math.min(1, harmonicEnergy / totalEnergy).toFixed(4)) : 0
+            harmonicRatio: totalEnergy > 0 ? Number(Math.min(1, harmonicEnergy / totalEnergy).toFixed(4)) : 0,
         }
     }
 
@@ -374,7 +383,12 @@ export default class AudioAnalyzer {
         const size = Math.min(frame.length, fftSize)
 
         for (let index = 0; index < size; index++) {
-            const window = 0.5 * (1 - Math.cos((2 * Math.PI * index) / (size > 1 ? size - 1 : (logger.warn('Analyzer', 'size<=1', size), 1))))
+            const window =
+                0.5 *
+                (1 -
+                    Math.cos(
+                        (2 * Math.PI * index) / (size > 1 ? size - 1 : (logger.warn('Analyzer', 'size<=1', size), 1)),
+                    ))
             output[index] = frame[index] * window
         }
 
@@ -423,7 +437,7 @@ export default class AudioAnalyzer {
             view.getUint8(offset),
             view.getUint8(offset + 1),
             view.getUint8(offset + 2),
-            view.getUint8(offset + 3)
+            view.getUint8(offset + 3),
         )
     }
 

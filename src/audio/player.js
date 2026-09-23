@@ -3,11 +3,11 @@ import FlatNote from '../model/flatnote.js'
 import NoteParams from '../patterns/note_params.js'
 import { getAutoGenerateService } from '../state/service_loader.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { logger, nameOr } from "../core/logger.js"
+import { logger, nameOr } from '../core/logger.js'
 import Utils from '../core/utils.js'
 
 export default class Player {
-    static TAG = "Player"
+    static TAG = 'Player'
 
     #lastFlatNotesMap = null
     #lastFlatNotesLoop = -1
@@ -46,7 +46,10 @@ export default class Player {
 
             if (isSectionStart || isSectionEnd) {
                 const tag = isSectionEnd ? 'break' : 'generate'
-                logger.info('Player', `[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`)
+                logger.info(
+                    'Player',
+                    `[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`,
+                )
             }
 
             const isHarmonicBoundary = isSectionStart || isSectionEnd
@@ -69,7 +72,7 @@ export default class Player {
                         (async () => {
                             const autoGen = await this.getAutoGenerate()
                             return autoGen.changeTrack(this.loop, selPat, track)
-                        })()
+                        })(),
                     )
                 }
             }
@@ -130,7 +133,7 @@ export default class Player {
                     playbackEvents.emit('noteTrigger', {
                         trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
                         beat: flatNote.note.beat,
-                        beatStep: flatNote.note.beatStep
+                        beatStep: flatNote.note.beatStep,
                     })
                 }
             }
@@ -154,7 +157,7 @@ export default class Player {
         if (!track) return
 
         const previewNote = {
-            name: "N_" + (track.name ?? indexTrack) + "_preview",
+            name: 'N_' + (track.name ?? indexTrack) + '_preview',
             soundId: track.soundId,
             beatStep: note?.beatStep ?? 0,
             steppc: 0,
@@ -169,12 +172,15 @@ export default class Player {
             arpTriggerProbability: 1,
             retriggerNum: note?.retriggerNum ?? 1,
             rate: note?.rate ?? 1,
-            euclidianFill: note?.euclidianFill ?? 0
+            euclidianFill: note?.euclidianFill ?? 0,
         }
         const flatNote = new FlatNote(0, track, previewNote)
-        NoteParams.applyNoteParams(flatNote, this.secondsPerBeat ?? (60 / 120))
+        NoteParams.applyNoteParams(flatNote, this.secondsPerBeat ?? 60 / 120)
         await this.sound.play(flatNote, this.audioCtx.currentTime)
-        logger.info('Player', "Play :" + track.name + "=" + (this.sounds[track.soundId]?.url ?? track.synthSoundKey ?? 'synth'))
+        logger.info(
+            'Player',
+            'Play :' + track.name + '=' + (this.sounds[track.soundId]?.url ?? track.synthSoundKey ?? 'synth'),
+        )
     }
 
     updateGeneratedSounds = (generatedSounds) => {

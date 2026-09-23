@@ -1,11 +1,8 @@
 import { fixPattern } from '../../patterns/fixer.js'
 import { TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
-import {
-    compactArrayToNote,
-    isCompactFormat
-} from '../../core/note_schema.js'
+import { compactArrayToNote, isCompactFormat } from '../../core/note_schema.js'
 import Utils from '../../core/utils.js'
-import { logger } from "../../core/logger.js"
+import { logger } from '../../core/logger.js'
 import { MAX_IMPORT_TRACKS, MAX_IMPORT_NOTES } from '../../core/constants.js'
 
 /**
@@ -68,10 +65,21 @@ export function copyTrackProps(track, sourceTrack) {
         }
     }
 
-    const optionalProps = ['mono', 'reverbType', 'reverbAmount',
-        'delayType', 'delayTime', 'delayDepth', 'fxSelected',
-        'saturationType', 'saturationAmount', 'synthSoundKey',
-        'reverbOn', 'delayOn', 'sat']
+    const optionalProps = [
+        'mono',
+        'reverbType',
+        'reverbAmount',
+        'delayType',
+        'delayTime',
+        'delayDepth',
+        'fxSelected',
+        'saturationType',
+        'saturationAmount',
+        'synthSoundKey',
+        'reverbOn',
+        'delayOn',
+        'sat',
+    ]
 
     for (const prop of optionalProps) {
         if (!(prop in sourceTrack)) delete track[prop]
@@ -90,10 +98,19 @@ export function copyTrackProps(track, sourceTrack) {
  */
 export function copyNoteProps(note, sourceNote, track) {
     const props = [
-        'beat', 'velocity', 'pan', 'pitch', 'arp',
-        'every', 'pos', 'prob',
-        'arpTriggerProbability', 'retriggerNum', 'rate',
-        'euclidianFill', 'steppc'
+        'beat',
+        'velocity',
+        'pan',
+        'pitch',
+        'arp',
+        'every',
+        'pos',
+        'prob',
+        'arpTriggerProbability',
+        'retriggerNum',
+        'rate',
+        'euclidianFill',
+        'steppc',
     ]
 
     for (const prop of props) {
@@ -149,12 +166,12 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
         const track = addTrack(importedPattern, sourceTrack.name)
         copyTrackProps(track, sourceTrack)
 
-        const notes = sourceTrack.notes ?? [];
-        const noteKeys = sourceTrack.noteKeys;
+        const notes = sourceTrack.notes ?? []
+        const noteKeys = sourceTrack.noteKeys
 
         if (isCompactFormat(sourceTrack)) {
             for (const arr of notes) {
-                const sourceNote = compactArrayToNote(arr, noteKeys);
+                const sourceNote = compactArrayToNote(arr, noteKeys)
                 const bRaw = Number(sourceNote.beat ?? 0)
                 const bsRaw = Number(sourceNote.beatStep ?? 0)
                 const pRaw = Number(sourceNote.pitch ?? 0)
@@ -162,8 +179,12 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
                 const bs = Number.isFinite(bsRaw) ? bsRaw : 0
                 const p = Number.isFinite(pRaw) ? pRaw : 0
                 if (b !== bRaw || bs !== bsRaw || p !== pRaw) {
-                    logger.warn('PatternImport', 'Invalid note values replaced with 0 in compact format',
-                        { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch, replaced: { beat: b !== bRaw, beatStep: bs !== bsRaw, pitch: p !== pRaw } })
+                    logger.warn('PatternImport', 'Invalid note values replaced with 0 in compact format', {
+                        beat: sourceNote.beat,
+                        beatStep: sourceNote.beatStep,
+                        pitch: sourceNote.pitch,
+                        replaced: { beat: b !== bRaw, beatStep: bs !== bsRaw, pitch: p !== pRaw },
+                    })
                 }
                 const note = addNote(track, b, bs, p)
                 copyNoteProps(note, sourceNote, track)
@@ -177,8 +198,12 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
                 const bs = Number.isFinite(bsRaw) ? bsRaw : 0
                 const p = Number.isFinite(pRaw) ? pRaw : 0
                 if (b !== bRaw || bs !== bsRaw || p !== pRaw) {
-                    logger.warn('PatternImport', 'Invalid note values replaced with 0 in imported note',
-                        { beat: sourceNote.beat, beatStep: sourceNote.beatStep, pitch: sourceNote.pitch, replaced: { beat: b !== bRaw, beatStep: bs !== bsRaw, pitch: p !== pRaw } })
+                    logger.warn('PatternImport', 'Invalid note values replaced with 0 in imported note', {
+                        beat: sourceNote.beat,
+                        beatStep: sourceNote.beatStep,
+                        pitch: sourceNote.pitch,
+                        replaced: { beat: b !== bRaw, beatStep: bs !== bsRaw, pitch: p !== pRaw },
+                    })
                 }
                 const note = addNote(track, b, bs, p)
                 copyNoteProps(note, sourceNote, track)

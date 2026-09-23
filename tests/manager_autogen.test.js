@@ -65,7 +65,7 @@ describe('PatternManager', () => {
     it('fires onPatternChange callbacks', async () => {
         const cb = vi.fn()
         const { playbackEvents } = await import('../src/state/playback_events.js')
-        const unsub = playbackEvents.on("patternChange", cb)
+        const unsub = playbackEvents.on('patternChange', cb)
         patternsMgr.applyFlatNotes(pattern, 0)
         expect(cb).toHaveBeenCalled()
         unsub()
@@ -147,7 +147,13 @@ describe('PatternManager', () => {
 
     it('generateSubNotes mutates the flatNotes map (no return value)', () => {
         const flatNotes = new Map()
-        generateSubNotes(flatNotes, 0, { stepsPerBeat: 4, nbBeats: 4, loopAtStep: 16, notes: [] }, { retriggerNum: 1, rate: 1, arp: null }, 32)
+        generateSubNotes(
+            flatNotes,
+            0,
+            { stepsPerBeat: 4, nbBeats: 4, loopAtStep: 16, notes: [] },
+            { retriggerNum: 1, rate: 1, arp: null },
+            32,
+        )
         // generateSubNotes mutates flatNotes in-place; it does not return a value
         expect(flatNotes).toBeInstanceOf(Map)
     })
@@ -174,19 +180,19 @@ describe('AutoGenerate', () => {
     // ── detectTrackType ───────────────────────────────────────────────
 
     it.each([
-        ['KICK',    'KICK'],
-        ['KICK2',   'KICK'],
-        ['BD',      'KICK'],
-        ['SNARE',   'SNARE'],
-        ['SD',      'SNARE'],
-        ['CHH',     'HAT'],
-        ['OHH',     'HAT'],
+        ['KICK', 'KICK'],
+        ['KICK2', 'KICK'],
+        ['BD', 'KICK'],
+        ['SNARE', 'SNARE'],
+        ['SD', 'SNARE'],
+        ['CHH', 'HAT'],
+        ['OHH', 'HAT'],
         ['HAT_TOP', 'HAT'],
-        ['BASS',    'BASS'],
-        ['SYNTH1',  'BASS'],
-        ['PERC',    'PERC'],
+        ['BASS', 'BASS'],
+        ['SYNTH1', 'BASS'],
+        ['PERC', 'PERC'],
         ['COWBELL', 'COWBELL'],
-        ['CLAP',    'CLAP'],
+        ['CLAP', 'CLAP'],
     ])('detectTrackType("%s") → "%s"', (name, expected) => {
         expect(Utils.detectTrackType(name)).toBe(expected)
     })
@@ -238,14 +244,14 @@ describe('AutoGenerate', () => {
 
 describe('PercGenerate – extra variants', () => {
     beforeEach(() => {
-        soundRegistry.scales = { 'pentatonic minor': [0, 3, 5, 7, 10], 'dorian': [0, 2, 3, 5, 7, 9, 10] }
+        soundRegistry.scales = { 'pentatonic minor': [0, 3, 5, 7, 10], dorian: [0, 2, 3, 5, 7, 9, 10] }
     })
 
     it('basic: produces notes with pitch values', () => {
         const track = makeTrack('PERC')
         new PercGenerate().generateNewPerc(track, 'basic')
         if (track.notes.length > 0) {
-            expect(track.notes.every(n => typeof n.pitch === 'number')).toBe(true)
+            expect(track.notes.every((n) => typeof n.pitch === 'number')).toBe(true)
         }
     })
 
@@ -253,7 +259,7 @@ describe('PercGenerate – extra variants', () => {
         const track = makeTrack('PERC', [], { nbBeats: 4 })
         new PercGenerate().generateNewPerc(track, 'conversation')
         // Should have notes across beats 0..3
-        const beats = new Set(track.notes.map(n => n.beat))
+        const beats = new Set(track.notes.map((n) => n.beat))
         expect(beats.size).toBeGreaterThanOrEqual(0) // random, so can be 0
     })
 
@@ -291,7 +297,7 @@ describe('PercGenerate – extra variants', () => {
         const gen = new PercGenerate()
         const tones = [0, 4, 7]
         const result = gen.resolvePhrasePitch({ source: 'randomScale' }, tones, {}, 3)
-        const allPossible = tones.map(t => (t > 6 ? t - 12 : t) + 3)
+        const allPossible = tones.map((t) => (t > 6 ? t - 12 : t) + 3)
         expect(allPossible).toContain(result)
     })
 
@@ -300,10 +306,19 @@ describe('PercGenerate – extra variants', () => {
         const gen = new PercGenerate()
         const tones = [0, 4, 7]
         const config = {
-            loopPointBeat: 4, loopPointStep: 0,
-            callSteps: [0, 2], responseSteps: [1, 3],
+            loopPointBeat: 4,
+            loopPointStep: 0,
+            callSteps: [0, 2],
+            responseSteps: [1, 3],
             density: 1.0,
-            velocity: { base: 0.6, accentOnBeat: 0.1, variationBoost: 0.05, randomSpread: 0.05, clampMin: 0.2, clampMax: 1 }
+            velocity: {
+                base: 0.6,
+                accentOnBeat: 0.1,
+                variationBoost: 0.05,
+                randomSpread: 0.05,
+                clampMin: 0.2,
+                clampMax: 1,
+            },
         }
         gen.generatePercCallResponseVariant(track, tones, 0, config)
         for (const note of track.notes) {
@@ -316,10 +331,18 @@ describe('PercGenerate – extra variants', () => {
         const track = makeTrack('PERC', [], { nbBeats: 4 })
         const gen = new PercGenerate()
         const config = {
-            loopPointBeat: 4, loopPointStep: 0,
+            loopPointBeat: 4,
+            loopPointStep: 0,
             startBarOffset: 1,
             steps: [0, 1, 2],
-            velocity: { base: 0.6, accentOnBeat: 0.1, variationBoost: 0.05, randomSpread: 0.05, clampMin: 0.2, clampMax: 1 }
+            velocity: {
+                base: 0.6,
+                accentOnBeat: 0.1,
+                variationBoost: 0.05,
+                randomSpread: 0.05,
+                clampMin: 0.2,
+                clampMax: 1,
+            },
         }
         gen.generatePercFillVariant(track, [0, 4, 7], 0, config)
         for (const note of track.notes) {

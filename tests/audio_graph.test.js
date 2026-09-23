@@ -53,12 +53,18 @@ describe('Audio Graph Validity', () => {
             const strip = await Strip.create('TEST', mockCtx)
 
             strip.updateSaturation('soft', 999)
-            expect(strip.stripNode.parameters.get('satDrive').setTargetAtTime)
-                .not.toHaveBeenCalledWith(NaN, expect.any(Number), expect.any(Number))
+            expect(strip.stripNode.parameters.get('satDrive').setTargetAtTime).not.toHaveBeenCalledWith(
+                NaN,
+                expect.any(Number),
+                expect.any(Number),
+            )
 
             strip.updateSaturation('soft', -999)
-            expect(strip.stripNode.parameters.get('satDrive').setTargetAtTime)
-                .not.toHaveBeenCalledWith(NaN, expect.any(Number), expect.any(Number))
+            expect(strip.stripNode.parameters.get('satDrive').setTargetAtTime).not.toHaveBeenCalledWith(
+                NaN,
+                expect.any(Number),
+                expect.any(Number),
+            )
 
             strip.updateSaturation('invalid', 0.5)
             expect(strip.currentSaturationType).toBe('soft')
@@ -111,19 +117,23 @@ describe('Audio Graph Validity', () => {
             const mixer = makeMockMixer()
             const sound = new Sound(mockCtx, mixer, {}, {})
 
-            sound.updateStripFromTrack(strip, {
-                name: 'TEST',
-                reverbOn: false,
-                reverbType: 'room',
-                reverbAmount: 0.7,
-                delayOn: false,
-                delayType: 'tape',
-                delayTime: 1,
-                delayDepth: 0.6,
-                sat: false,
-                saturationType: 'hard',
-                saturationAmount: 0.5,
-            }, mockCtx.currentTime)
+            sound.updateStripFromTrack(
+                strip,
+                {
+                    name: 'TEST',
+                    reverbOn: false,
+                    reverbType: 'room',
+                    reverbAmount: 0.7,
+                    delayOn: false,
+                    delayType: 'tape',
+                    delayTime: 1,
+                    delayDepth: 0.6,
+                    sat: false,
+                    saturationType: 'hard',
+                    saturationAmount: 0.5,
+                },
+                mockCtx.currentTime,
+            )
 
             // Effect busses are set to 0 (muted)
             expect(strip.currentReverbAmount).toBe(0)
@@ -147,7 +157,9 @@ describe('Audio Graph Validity', () => {
             const stripB = { pan: { connect: vi.fn() }, delete: vi.fn() }
 
             let resolveFirst
-            const firstPromise = new Promise(r => { resolveFirst = r })
+            const firstPromise = new Promise((r) => {
+                resolveFirst = r
+            })
             vi.spyOn(Strip, 'create').mockImplementation(async (_name, _ctx, _mixer) => {
                 callCount++
                 if (callCount === 1) {

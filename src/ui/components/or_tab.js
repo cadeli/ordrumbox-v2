@@ -62,10 +62,14 @@ export class OrTab {
     }
 
     /** Currently active tab id. */
-    get active() { return this.#activeTab }
+    get active() {
+        return this.#activeTab
+    }
 
     /** Tab definitions. */
-    get tabs() { return this.#tabs }
+    get tabs() {
+        return this.#tabs
+    }
 
     /**
      * Set the active tab programmatically.
@@ -134,7 +138,9 @@ export class OrTab {
     bindTo(root) {
         const { bar, dataAttr } = this.#css
         const camelDataAttr = OrTab.#toCamel(dataAttr)
-        const barEl = root.classList?.contains(bar) ? root : (root.querySelector(`:scope > .${bar}`) ?? root.querySelector(`.${bar}`))
+        const barEl = root.classList?.contains(bar)
+            ? root
+            : (root.querySelector(`:scope > .${bar}`) ?? root.querySelector(`.${bar}`))
         if (!barEl || barEl.dataset.orTabBound) return
         barEl.dataset.orTabBound = '1'
         barEl.addEventListener('click', (e) => {
@@ -151,7 +157,7 @@ export class OrTab {
     togglePanels(container) {
         const { panel, hidden, panelData } = this.#css
         const camelPanelData = OrTab.#toCamel(panelData)
-        container.querySelectorAll(`.${panel}`).forEach(p => {
+        container.querySelectorAll(`.${panel}`).forEach((p) => {
             p.classList.toggle(hidden, p.dataset[camelPanelData] !== this.#activeTab)
         })
     }

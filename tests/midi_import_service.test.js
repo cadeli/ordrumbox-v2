@@ -195,11 +195,13 @@ describe('MidiImportService', () => {
             format: 1,
             division: 96,
             tempo: 140,
-            tracks: [{
-                name: 'KICK',
-                channel: 9,
-                notes: [{ tick: 0, note: 36, velocity: 100 }],
-            }],
+            tracks: [
+                {
+                    name: 'KICK',
+                    channel: 9,
+                    notes: [{ tick: 0, note: 36, velocity: 100 }],
+                },
+            ],
         })
         const file = makeFile('tempo_test.mid', midiBytes)
         const service = new MidiImportService()
@@ -216,14 +218,16 @@ describe('MidiImportService', () => {
             format: 1,
             division: 96,
             tempo: 120,
-            tracks: [{
-                name: 'KICK',
-                channel: 9,
-                notes: [
-                    { tick: 0, note: 36, velocity: 100 },
-                    { tick: 384, note: 36, velocity: 100 },
-                ],
-            }],
+            tracks: [
+                {
+                    name: 'KICK',
+                    channel: 9,
+                    notes: [
+                        { tick: 0, note: 36, velocity: 100 },
+                        { tick: 384, note: 36, velocity: 100 },
+                    ],
+                },
+            ],
         })
         const file = makeFile('beats_test.mid', midiBytes)
         const service = new MidiImportService()
@@ -240,11 +244,13 @@ describe('MidiImportService', () => {
             format: 1,
             division: 96,
             tempo: 120,
-            tracks: [{
-                name: 'KICK',
-                channel: 9,
-                notes: [{ tick: 0, note: 36, velocity: 100 }],
-            }],
+            tracks: [
+                {
+                    name: 'KICK',
+                    channel: 9,
+                    notes: [{ tick: 0, note: 36, velocity: 100 }],
+                },
+            ],
         })
         const file = makeFile('note_place.mid', midiBytes)
         const service = new MidiImportService()
@@ -262,13 +268,15 @@ describe('MidiImportService', () => {
             format: 1,
             division: 96,
             tempo: 120,
-            tracks: [{
-                name: 'Synth Bass',
-                channel: 0,
-                program: 38,
-                programChanges: [{ tick: 0, program: 38 }],
-                notes: [{ tick: 0, note: 48, velocity: 100, duration: 48 }],
-            }],
+            tracks: [
+                {
+                    name: 'Synth Bass',
+                    channel: 0,
+                    program: 38,
+                    programChanges: [{ tick: 0, program: 38 }],
+                    notes: [{ tick: 0, note: 48, velocity: 100, duration: 48 }],
+                },
+            ],
         })
         const file = makeFile('prog_change.mid', midiBytes)
         const service = new MidiImportService()
@@ -286,11 +294,13 @@ describe('MidiImportService', () => {
             format: 1,
             division: 96,
             tempo: 120,
-            tracks: [{
-                name: 'KICK',
-                channel: 9,
-                notes,
-            }],
+            tracks: [
+                {
+                    name: 'KICK',
+                    channel: 9,
+                    notes,
+                },
+            ],
         })
         const file = makeFile('long_file.mid', midiBytes)
         const service = new MidiImportService()

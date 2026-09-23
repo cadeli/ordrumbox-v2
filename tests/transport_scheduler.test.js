@@ -7,7 +7,9 @@ vi.mock('../src/state/service_registry.js', () => ({
 vi.mock('../src/core/timerworker.js', () => ({}))
 
 class MockWorker {
-    constructor() { this.onmessage = null }
+    constructor() {
+        this.onmessage = null
+    }
     postMessage() {}
     terminate() {}
 }
@@ -34,7 +36,9 @@ describe('Transport scheduler', () => {
         const t = makeRunningTransport()
 
         let resolveFlight
-        const flightPromise = new Promise(r => { resolveFlight = r })
+        const flightPromise = new Promise((r) => {
+            resolveFlight = r
+        })
         t.onSchedule = vi.fn(() => flightPromise)
 
         t.scheduler()
@@ -55,7 +59,9 @@ describe('Transport scheduler', () => {
         const t = makeRunningTransport({ scheduleAhead: 10.0 })
 
         let resolveFirst
-        const firstPromise = new Promise(r => { resolveFirst = r })
+        const firstPromise = new Promise((r) => {
+            resolveFirst = r
+        })
 
         t.onSchedule = vi.fn((tick) => {
             if (tick === 0) return firstPromise
@@ -73,7 +79,7 @@ describe('Transport scheduler', () => {
 
         // Resolve the first promise
         resolveFirst()
-        await new Promise(r => setTimeout(r, 0))
+        await new Promise((r) => setTimeout(r, 0))
 
         // After resolving, onSchedule should be callable again (no more blocking)
         // Third call — tick=1 should now fire (among others scheduled ahead)
@@ -81,7 +87,7 @@ describe('Transport scheduler', () => {
         t.scheduler()
         expect(t.onSchedule.mock.calls.length).toBeGreaterThan(callsBefore)
         // tick=1 was among the calls
-        const tickValues = t.onSchedule.mock.calls.map(c => c[0])
+        const tickValues = t.onSchedule.mock.calls.map((c) => c[0])
         expect(tickValues).toContain(1)
     })
 
@@ -89,7 +95,9 @@ describe('Transport scheduler', () => {
         const t = makeRunningTransport({ scheduleAhead: 10.0 })
 
         let resolveFlight
-        const flightPromise = new Promise(r => { resolveFlight = r })
+        const flightPromise = new Promise((r) => {
+            resolveFlight = r
+        })
         t.onSchedule = vi.fn(() => flightPromise)
 
         // Run scheduler multiple times while blocked

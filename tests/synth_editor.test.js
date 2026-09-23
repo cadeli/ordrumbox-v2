@@ -11,7 +11,7 @@ const makeGeneratedSound = () => ({
     masterVolume: 0.8,
     vco1: { gain: 1, octave: 0, detune: 0, wave: 'sine' },
     filter: { type: 'lowpass', freq: 400, Q: 1, filterEnvelopeAmount: 0 },
-    envelope: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 }
+    envelope: { attack: 0, decay: 0.12, sustain: 1, release: 0.05 },
 })
 
 describe('SynthEditor sub-panel toolbar', () => {
@@ -26,7 +26,7 @@ describe('SynthEditor sub-panel toolbar', () => {
         soundRegistry.generatedSounds = { BASS1: makeGeneratedSound() }
         audioEngine = {
             updateGeneratedSounds: vi.fn(),
-            invalidateCache: vi.fn()
+            invalidateCache: vi.fn(),
         }
         serviceRegistry.audioEngine = audioEngine
 
@@ -41,13 +41,13 @@ describe('SynthEditor sub-panel toolbar', () => {
             stroke: vi.fn(),
             setLineDash: vi.fn(),
             closePath: vi.fn(),
-            fill: vi.fn()
+            fill: vi.fn(),
         })
 
         host = {
             _track: { synthSoundKey: 'BASS1' },
             container: document.getElementById('te-panel'),
-            sync: vi.fn()
+            sync: vi.fn(),
         }
         const deps = { playbackEvents: playbackEvents, serviceRegistry: serviceRegistry, soundRegistry: soundRegistry }
         editor = new SynthEditor(host, deps)
@@ -60,7 +60,7 @@ describe('SynthEditor sub-panel toolbar', () => {
         await editor.openEditor()
 
         const blocks = Array.from(document.querySelectorAll('#soft-synth-panel [data-ss-card]'))
-        expect(blocks.map(b => b.dataset.ssCard)).toEqual([
+        expect(blocks.map((b) => b.dataset.ssCard)).toEqual([
             'scope',
             'vco1',
             'vco2',
@@ -73,7 +73,7 @@ describe('SynthEditor sub-panel toolbar', () => {
             'lfo2',
             'noise',
             'master',
-            'envelope'
+            'envelope',
         ])
 
         const bypassBtns = document.querySelectorAll('#soft-synth-panel .ss-bypass-btn[data-power-card]')
@@ -88,21 +88,21 @@ describe('SynthEditor sub-panel toolbar', () => {
         expect(masterBlock.classList.contains('bypassed')).toBe(true)
     })
 
-it('keeps Revert in the toolbar and preserves revert behavior', async () => {
-         await editor.openEditor()
+    it('keeps Revert in the toolbar and preserves revert behavior', async () => {
+        await editor.openEditor()
 
-         const panel = document.querySelector('#soft-synth-panel')
-         const revertButton = panel.querySelector('[data-action="synth-revert"]')
-         expect(revertButton).not.toBeNull()
+        const panel = document.querySelector('#soft-synth-panel')
+        const revertButton = panel.querySelector('[data-action="synth-revert"]')
+        expect(revertButton).not.toBeNull()
 
-         const masterKnob = editor.knobs.find(k => k.key === 'masterVolume')
-         masterKnob.setValue(0.25, true)
-         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.25)
+        const masterKnob = editor.knobs.find((k) => k.key === 'masterVolume')
+        masterKnob.setValue(0.25, true)
+        expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.25)
 
-         revertButton.click()
-         expect(document.getElementById('soft-synth-panel').style.display).toBe('flex')
-         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.8)
-     })
+        revertButton.click()
+        expect(document.getElementById('soft-synth-panel').style.display).toBe('flex')
+        expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.8)
+    })
 
     it('sets bypassFilter flag on draft when toggling filter bypass', async () => {
         await editor.openEditor()

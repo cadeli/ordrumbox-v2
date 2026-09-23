@@ -15,7 +15,7 @@ const SAMPLE_DRAFT = {
     filter: { type: 'lowpass', freq: 1200, Q: 2, filterEnvelopeAmount: 0.3 },
     lfo: { target: 'NOT', wave: 'sine', freq: 4, depth: 0.1 },
     noise: { mix: 0.05, filterType: 'highpass', filterFreq: 2000, filterQ: 1 },
-    envelope: { attack: 0.01, decay: 0.12, sustain: 0.7, release: 0.1 }
+    envelope: { attack: 0.01, decay: 0.12, sustain: 0.7, release: 0.1 },
 }
 
 describe('Soft Synth Editor display', () => {
@@ -30,19 +30,21 @@ describe('Soft Synth Editor display', () => {
         soundRegistry.reset()
         serviceRegistry.reset()
 
-        soundRegistry.drumkitList = [
-            { name: 'real', instruments: [{ key: 'KICK', url: 'real/kick.wav' }] }
-        ]
+        soundRegistry.drumkitList = [{ name: 'real', instruments: [{ key: 'KICK', url: 'real/kick.wav' }] }]
         soundRegistry.sounds = {
-            'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: { duration: 0.5, sampleRate: 44100, getChannelData: () => new Float32Array(1024) } }
+            'real/kick.wav': {
+                key: 'KICK',
+                url: 'real/kick.wav',
+                buffer: { duration: 0.5, sampleRate: 44100, getChannelData: () => new Float32Array(1024) },
+            },
         }
         soundRegistry.generatedSounds = {
-            BASS1: { ...SAMPLE_DRAFT, _key: 'BASS1' }
+            BASS1: { ...SAMPLE_DRAFT, _key: 'BASS1' },
         }
 
         serviceRegistry.audioEngine = {
             updateGeneratedSounds: vi.fn(),
-            invalidateCache: vi.fn()
+            invalidateCache: vi.fn(),
         }
         serviceRegistry.cmd = { changeTrackSound: vi.fn() }
 
@@ -52,36 +54,74 @@ describe('Soft Synth Editor display', () => {
         document.body.appendChild(appContent)
 
         global.fetch = vi.fn().mockResolvedValue({
-            json: () => Promise.resolve({ major: { scaleSteps: [0, 2, 4, 5, 7, 9, 11] } })
+            json: () => Promise.resolve({ major: { scaleSteps: [0, 2, 4, 5, 7, 9, 11] } }),
         })
         HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
-            fillRect: vi.fn(), clearRect: vi.fn(), getImageData: vi.fn(),
-            putImageData: vi.fn(), createImageData: vi.fn(), setTransform: vi.fn(),
-            drawImage: vi.fn(), save: vi.fn(), fillText: vi.fn(), restore: vi.fn(),
-            beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(),
-            stroke: vi.fn(), translate: vi.fn(), scale: vi.fn(), rotate: vi.fn(),
-            arc: vi.fn(), fill: vi.fn(), measureText: vi.fn().mockReturnValue({ width: 0 }),
-            transform: vi.fn(), rect: vi.fn(), clip: vi.fn(), setLineDash: vi.fn()
+            fillRect: vi.fn(),
+            clearRect: vi.fn(),
+            getImageData: vi.fn(),
+            putImageData: vi.fn(),
+            createImageData: vi.fn(),
+            setTransform: vi.fn(),
+            drawImage: vi.fn(),
+            save: vi.fn(),
+            fillText: vi.fn(),
+            restore: vi.fn(),
+            beginPath: vi.fn(),
+            moveTo: vi.fn(),
+            lineTo: vi.fn(),
+            closePath: vi.fn(),
+            stroke: vi.fn(),
+            translate: vi.fn(),
+            scale: vi.fn(),
+            rotate: vi.fn(),
+            arc: vi.fn(),
+            fill: vi.fn(),
+            measureText: vi.fn().mockReturnValue({ width: 0 }),
+            transform: vi.fn(),
+            rect: vi.fn(),
+            clip: vi.fn(),
+            setLineDash: vi.fn(),
         })
 
         mockTrack = {
             name: 'BASS_1',
             notes: [],
-            mute: false, solo: false,
+            mute: false,
+            solo: false,
             useAutoAssignSound: false,
             useSoftSynth: true,
             synthSoundKey: 'BASS1',
             soundId: '',
-            velocity: 0.8, pan: 0, pitch: 0,
-            filterCutoff: 12000, filterResonance: 1, filterType: 'lowpass',
-            filterLfo: 0, filterEnvelopeAmount: 0,
-            lfoPitch: 0, lfoVolume: 0, lfoPan: 0, lfoFilter: 0,
-            pitchLfo: 0.2, volumeLfo: 0.1, panLfo: 0.05, filterLfoValue: 0.15,
+            velocity: 0.8,
+            pan: 0,
+            pitch: 0,
+            filterCutoff: 12000,
+            filterResonance: 1,
+            filterType: 'lowpass',
+            filterLfo: 0,
+            filterEnvelopeAmount: 0,
+            lfoPitch: 0,
+            lfoVolume: 0,
+            lfoPan: 0,
+            lfoFilter: 0,
+            pitchLfo: 0.2,
+            volumeLfo: 0.1,
+            panLfo: 0.05,
+            filterLfoValue: 0.15,
             pitchEnv: 0,
-            delaySend: 0, reverbSend: 0, saturationDrive: 0,
-            delayActive: false, reverbActive: false, saturationActive: false,
-            swingAmount: 0, swingMode: 'off',
-            nbBeats: 4, stepsPerBeat: 4, loopLength: 4, loopEnabled: false
+            delaySend: 0,
+            reverbSend: 0,
+            saturationDrive: 0,
+            delayActive: false,
+            reverbActive: false,
+            saturationActive: false,
+            swingAmount: 0,
+            swingMode: 'off',
+            nbBeats: 4,
+            stepsPerBeat: 4,
+            loopLength: 4,
+            loopEnabled: false,
         }
 
         trackEditor = new TrackEditor()
@@ -131,13 +171,13 @@ describe('Soft Synth Editor display', () => {
         const count = knobs.length + selects.length
         expect(count).toBeGreaterThanOrEqual(20)
 
-        const knobKeys = Array.from(knobs).map(k => k.dataset.orKnob)
+        const knobKeys = Array.from(knobs).map((k) => k.dataset.orKnob)
         expect(knobKeys).toContain('masterVolume')
         expect(knobKeys).toContain('vco1.gain')
         expect(knobKeys).toContain('filter.freq')
         expect(knobKeys).toContain('envelope.attack')
 
-        const selectPaths = Array.from(selects).map(s => s.dataset.synthPath)
+        const selectPaths = Array.from(selects).map((s) => s.dataset.synthPath)
         expect(selectPaths).toContain('lfo.target')
     })
 

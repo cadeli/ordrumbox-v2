@@ -37,9 +37,29 @@ function makeMultiPagePattern(nbBeats = 8) {
         nbBeats,
         bpm: 120,
         tracks: [
-            { name: 'KICK', notes: [...notes], nbBeats, stepsPerBeat: 4, loopAtStep: totalSteps, mute: false, soundId: 'kick', useAutoAssignSound: true, useSoftSynth: false },
-            { name: 'SNARE', notes: notes.filter((_, i) => i % 2 === 1).map(n => ({ ...n, pitch: 62 })), nbBeats, stepsPerBeat: 4, loopAtStep: totalSteps, mute: false, soundId: 'snare', useAutoAssignSound: true, useSoftSynth: false }
-        ]
+            {
+                name: 'KICK',
+                notes: [...notes],
+                nbBeats,
+                stepsPerBeat: 4,
+                loopAtStep: totalSteps,
+                mute: false,
+                soundId: 'kick',
+                useAutoAssignSound: true,
+                useSoftSynth: false,
+            },
+            {
+                name: 'SNARE',
+                notes: notes.filter((_, i) => i % 2 === 1).map((n) => ({ ...n, pitch: 62 })),
+                nbBeats,
+                stepsPerBeat: 4,
+                loopAtStep: totalSteps,
+                mute: false,
+                soundId: 'snare',
+                useAutoAssignSound: true,
+                useSoftSynth: false,
+            },
+        ],
     }
 }
 
@@ -53,8 +73,18 @@ function make4BeatPattern() {
         nbBeats: 4,
         bpm: 120,
         tracks: [
-            { name: 'KICK', notes, nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16, mute: false, soundId: 'kick', useAutoAssignSound: true, useSoftSynth: false }
-        ]
+            {
+                name: 'KICK',
+                notes,
+                nbBeats: 4,
+                stepsPerBeat: 4,
+                loopAtStep: 16,
+                mute: false,
+                soundId: 'kick',
+                useAutoAssignSound: true,
+                useSoftSynth: false,
+            },
+        ],
     }
 }
 
@@ -62,10 +92,12 @@ function setupServices() {
     serviceRegistry.seq = {
         toggleStartStop: vi.fn(),
         setBpm: vi.fn(),
-        setTick: vi.fn()
+        setTick: vi.fn(),
     }
     serviceRegistry.cmd = {
-        setSelectedPatternNum: vi.fn((num) => { appState.selectedPatternNum = num }),
+        setSelectedPatternNum: vi.fn((num) => {
+            appState.selectedPatternNum = num
+        }),
         setSelectedDrumkitNum: vi.fn(),
         setSelectedTrackNum: vi.fn(),
         cleanPattern: vi.fn(),
@@ -76,13 +108,13 @@ function setupServices() {
     }
     serviceRegistry.transport = {
         isRunning: false,
-        tick: 0
+        tick: 0,
     }
     serviceRegistry.patterns = {
-        applyFlatNotes: vi.fn()
+        applyFlatNotes: vi.fn(),
     }
     serviceRegistry.resourcesLoader = {
-        loadGeneratedSounds: vi.fn().mockResolvedValue(undefined)
+        loadGeneratedSounds: vi.fn().mockResolvedValue(undefined),
     }
 }
 
@@ -288,7 +320,7 @@ describe('Page navigation E2E — Toolbar ↔ PatternPanel grid', () => {
         const cells = patternPanel.container.querySelectorAll('.pp-cell')
         if (cells.length > 0) {
             const beatNums = new Set()
-            cells.forEach(c => {
+            cells.forEach((c) => {
                 const beat = parseInt(c.dataset.beat, 10)
                 if (!isNaN(beat)) beatNums.add(beat)
             })

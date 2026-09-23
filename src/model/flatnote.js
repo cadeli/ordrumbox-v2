@@ -1,6 +1,5 @@
-
 export default class FlatNote {
-    static TAG = "FlatNote"
+    static TAG = 'FlatNote'
 
     constructor(tick, track, note) {
         this.tick = tick

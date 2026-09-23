@@ -258,9 +258,7 @@ function buildComplexProject() {
                         pitch: 0,
                         mute: false,
                         solo: false,
-                        notes: [
-                            { beat: 0, beatStep: 0, velocity: 0.6, pitch: 0, len: 8 },
-                        ],
+                        notes: [{ beat: 0, beatStep: 0, velocity: 0.6, pitch: 0, len: 8 }],
                     },
                 ],
             },
@@ -439,9 +437,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             await songService.save('Song_Alpha')
 
             // Save Song Beta with completely different patterns
-            appState.patterns = [
-                { name: 'Beta_Heavy', bpm: 150, nbBeats: 8, tracks: [] },
-            ]
+            appState.patterns = [{ name: 'Beta_Heavy', bpm: 150, nbBeats: 8, tracks: [] }]
             appState.songInfos.description = 'Beta project'
             await songService.save('Song_Beta')
 

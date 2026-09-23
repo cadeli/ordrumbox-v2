@@ -92,7 +92,10 @@ function computePeak(samples) {
 
 function compareBuffers(a, b, tolerance = 1e-4) {
     const len = Math.min(a.length, b.length)
-    let matchCount = 0, mismatchCount = 0, maxDiff = 0, diffSum = 0
+    let matchCount = 0,
+        mismatchCount = 0,
+        maxDiff = 0,
+        diffSum = 0
     for (let i = 0; i < len; i++) {
         const diff = Math.abs(a[i] - b[i])
         if (diff <= tolerance) matchCount++
@@ -100,7 +103,14 @@ function compareBuffers(a, b, tolerance = 1e-4) {
         maxDiff = Math.max(maxDiff, diff)
         diffSum += diff * diff
     }
-    return { matchCount, mismatchCount, totalSamples: len, matchPct: (matchCount / len) * 100, maxDiff, rmsDiff: Math.sqrt(diffSum / len) }
+    return {
+        matchCount,
+        mismatchCount,
+        totalSamples: len,
+        matchPct: (matchCount / len) * 100,
+        maxDiff,
+        rmsDiff: Math.sqrt(diffSum / len),
+    }
 }
 
 function mixToMono(channels) {
@@ -154,10 +164,12 @@ describe('E2E Audio 1 — WAV export produces valid headers', () => {
         const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
 
         expect(String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3))).toBe('RIFF')
-        expect(String.fromCharCode(view.getUint8(8), view.getUint8(9), view.getUint8(10), view.getUint8(11))).toBe('WAVE')
-        expect(view.getUint16(22, true)).toBe(2)     // stereo
+        expect(String.fromCharCode(view.getUint8(8), view.getUint8(9), view.getUint8(10), view.getUint8(11))).toBe(
+            'WAVE',
+        )
+        expect(view.getUint16(22, true)).toBe(2) // stereo
         expect(view.getUint32(24, true)).toBe(SAMPLE_RATE)
-        expect(view.getUint16(34, true)).toBe(16)    // 16-bit
+        expect(view.getUint16(34, true)).toBe(16) // 16-bit
     })
 
     it('WAV has more data for multi-track pattern', async () => {
@@ -194,9 +206,7 @@ describe('E2E Audio 2 — Two renders of same pattern are bit-identical', () => 
             'kick_ident.wav': { url: 'kick_ident.wav', buffer: createDrumBuffer(60, 0.05, 0.5), key: 'KICK' },
         }
 
-        const pat = makeTestPattern(cmd, 'Identical', 120, 4, [
-            { name: 'KICK', notes: [{ beat: 0 }, { beat: 2 }] },
-        ])
+        const pat = makeTestPattern(cmd, 'Identical', 120, 4, [{ name: 'KICK', notes: [{ beat: 0 }, { beat: 2 }] }])
 
         const blob1 = await new WavExporter().exportPatternToWav(pat, 1)
         const blob2 = await new WavExporter().exportPatternToWav(pat, 1)
@@ -208,7 +218,10 @@ describe('E2E Audio 2 — Two renders of same pattern are bit-identical', () => 
 
         let identical = true
         for (let i = 0; i < bytes1.length; i++) {
-            if (bytes1[i] !== bytes2[i]) { identical = false; break }
+            if (bytes1[i] !== bytes2[i]) {
+                identical = false
+                break
+            }
         }
         expect(identical).toBe(true)
     })
@@ -218,17 +231,14 @@ describe('E2E Audio 2 — Two renders of same pattern are bit-identical', () => 
             'kick_diff.wav': { url: 'kick_diff.wav', buffer: createDrumBuffer(60, 0.05, 0.5), key: 'KICK' },
         }
 
-        const pat1 = makeTestPattern(cmd, 'A', 120, 2, [
-            { name: 'KICK', notes: [{ beat: 0 }] },
-        ])
-        const pat2 = makeTestPattern(cmd, 'B', 120, 2, [
-            { name: 'KICK', notes: [{ beat: 0 }, { beat: 1 }] },
-        ])
+        const pat1 = makeTestPattern(cmd, 'A', 120, 2, [{ name: 'KICK', notes: [{ beat: 0 }] }])
+        const pat2 = makeTestPattern(cmd, 'B', 120, 2, [{ name: 'KICK', notes: [{ beat: 0 }, { beat: 1 }] }])
 
         const flat1 = recomputeFlatNotes(pat1, 0)
         const flat2 = recomputeFlatNotes(pat2, 0)
 
-        let count1 = 0, count2 = 0
+        let count1 = 0,
+            count2 = 0
         for (const notes of flat1.values()) count1 += notes.length
         for (const notes of flat2.values()) count2 += notes.length
 
@@ -254,9 +264,7 @@ describe('E2E Audio 3 — WAV duration scales with BPM and loops', () => {
             'kick_loops.wav': { url: 'kick_loops.wav', buffer: createDrumBuffer(60, 0.05, 0.5), key: 'KICK' },
         }
 
-        const pat = makeTestPattern(cmd, 'Loops', 120, 2, [
-            { name: 'KICK', notes: [{ beat: 0 }] },
-        ])
+        const pat = makeTestPattern(cmd, 'Loops', 120, 2, [{ name: 'KICK', notes: [{ beat: 0 }] }])
 
         const bytes1 = new Uint8Array(await (await new WavExporter().exportPatternToWav(pat, 1)).arrayBuffer())
         const bytes2 = new Uint8Array(await (await new WavExporter().exportPatternToWav(pat, 2)).arrayBuffer())
@@ -275,12 +283,8 @@ describe('E2E Audio 3 — WAV duration scales with BPM and loops', () => {
             'kick_bpm.wav': { url: 'kick_bpm.wav', buffer: createDrumBuffer(60, 0.05, 0.5), key: 'KICK' },
         }
 
-        const patSlow = makeTestPattern(cmd, 'Slow', 80, 4, [
-            { name: 'KICK', notes: [{ beat: 0 }] },
-        ])
-        const patFast = makeTestPattern(cmd, 'Fast', 160, 4, [
-            { name: 'KICK', notes: [{ beat: 0 }] },
-        ])
+        const patSlow = makeTestPattern(cmd, 'Slow', 80, 4, [{ name: 'KICK', notes: [{ beat: 0 }] }])
+        const patFast = makeTestPattern(cmd, 'Fast', 160, 4, [{ name: 'KICK', notes: [{ beat: 0 }] }])
 
         const bytesSlow = new Uint8Array(await (await new WavExporter().exportPatternToWav(patSlow, 1)).arrayBuffer())
         const bytesFast = new Uint8Array(await (await new WavExporter().exportPatternToWav(patFast, 1)).arrayBuffer())
@@ -294,12 +298,8 @@ describe('E2E Audio 3 — WAV duration scales with BPM and loops', () => {
             'kick_beats.wav': { url: 'kick_beats.wav', buffer: createDrumBuffer(60, 0.05, 0.5), key: 'KICK' },
         }
 
-        const patShort = makeTestPattern(cmd, 'Short', 120, 2, [
-            { name: 'KICK', notes: [{ beat: 0 }] },
-        ])
-        const patLong = makeTestPattern(cmd, 'Long', 120, 4, [
-            { name: 'KICK', notes: [{ beat: 0 }] },
-        ])
+        const patShort = makeTestPattern(cmd, 'Short', 120, 2, [{ name: 'KICK', notes: [{ beat: 0 }] }])
+        const patLong = makeTestPattern(cmd, 'Long', 120, 4, [{ name: 'KICK', notes: [{ beat: 0 }] }])
 
         const bytesShort = new Uint8Array(await (await new WavExporter().exportPatternToWav(patShort, 1)).arrayBuffer())
         const bytesLong = new Uint8Array(await (await new WavExporter().exportPatternToWav(patLong, 1)).arrayBuffer())
@@ -370,7 +370,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
 
         const flat = recomputeFlatNotes(pat, 0)
         const allNotes = [...flat.values()].flat()
-        const trackNames = new Set(allNotes.map(n => n.track?.name))
+        const trackNames = new Set(allNotes.map((n) => n.track?.name))
         expect(trackNames.has('KICK')).toBe(true)
         expect(trackNames.has('SNARE')).toBe(true)
         expect(trackNames.has('HIHAT')).toBe(true)
@@ -399,7 +399,7 @@ describe('E2E Audio 5 — WAV encode/decode roundtrip preserves audio data', () 
         expect(decoded.numberOfChannels).toBe(2)
         expect(decoded.sampleRate).toBe(SAMPLE_RATE)
 
-        const tolerance = 1.5 / 0x7FFF // 16-bit quantization + rounding
+        const tolerance = 1.5 / 0x7fff // 16-bit quantization + rounding
         const comp0 = compareBuffers(data0, decoded.channels[0], tolerance)
         const comp1 = compareBuffers(data1, decoded.channels[1], tolerance)
 
@@ -468,8 +468,8 @@ describe('E2E Audio 5 — WAV encode/decode roundtrip preserves audio data', () 
         const peakOrig = computePeak(data)
         const peakDecoded = computePeak(mono)
         const clippedPeak = Math.min(peakOrig, 1.0)
-        expect(peakDecoded).toBeGreaterThan(clippedPeak * 0.90)
-        expect(peakDecoded).toBeLessThanOrEqual(clippedPeak * 1.10)
+        expect(peakDecoded).toBeGreaterThan(clippedPeak * 0.9)
+        expect(peakDecoded).toBeLessThanOrEqual(clippedPeak * 1.1)
     })
 })
 
@@ -576,7 +576,7 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
     function generateBass(t, freq = 55) {
         let val = 0
         for (let h = 1; h <= 8; h++) {
-            val += Math.sin(2 * Math.PI * freq * h * t) / h * (h % 2 === 1 ? 1 : 0.5)
+            val += (Math.sin(2 * Math.PI * freq * h * t) / h) * (h % 2 === 1 ? 1 : 0.5)
         }
         return val * 0.3
     }
@@ -595,7 +595,7 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
         let noisePhase = 0
         for (let i = 0; i < length; i++) {
             const t = i / SAMPLE_RATE
-            noisePhase += (2000 + Math.random() * 6000) / SAMPLE_RATE * 2 * Math.PI
+            noisePhase += ((2000 + Math.random() * 6000) / SAMPLE_RATE) * 2 * Math.PI
             data[i] = generator(t, SAMPLE_RATE, noisePhase)
         }
         return { buffer, data }
@@ -677,7 +677,8 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
         const mixData = mixed.getChannelData(0)
 
         // Mix 4 instruments at beat positions
-        const bpm = 120, beatDur = 60 / bpm
+        const bpm = 120,
+            beatDur = 60 / bpm
         const instruments = [
             { gen: generateKick, beats: [0, 0.5, 1, 1.5] },
             { gen: (t, sr, np) => generateSnare(t, sr, np), beats: [0.5, 1.5] },
@@ -688,7 +689,7 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
         let noisePhase = 0
         for (let i = 0; i < length; i++) {
             const t = i / SAMPLE_RATE
-            noisePhase += (4000 + Math.random() * 4000) / SAMPLE_RATE * 2 * Math.PI
+            noisePhase += ((4000 + Math.random() * 4000) / SAMPLE_RATE) * 2 * Math.PI
             let sample = 0
             for (const inst of instruments) {
                 for (const beat of inst.beats) {
@@ -748,7 +749,7 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
 
     /** Simple delay effect (tap delay with decay) */
     function delayEffect(data, delayMs, feedback, wetMix, sampleRate) {
-        const delaySamples = Math.round(delayMs * sampleRate / 1000)
+        const delaySamples = Math.round((delayMs * sampleRate) / 1000)
         const out = new Float32Array(data.length)
         for (let i = 0; i < data.length; i++) {
             const delayed = i >= delaySamples ? out[i - delaySamples] : 0
@@ -909,8 +910,8 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
             const t = i / SAMPLE_RATE
             const mod = Math.sin(2 * Math.PI * 6 * t) * 3
             const sample = Math.sin(2 * Math.PI * 440 * t + mod) * 0.4
-            left[i] = sample * 0.8   // panned left
-            right[i] = sample * 0.2  // panned right
+            left[i] = sample * 0.8 // panned left
+            right[i] = sample * 0.2 // panned right
         }
 
         const blob = bufferToWav(buffer)
@@ -939,7 +940,6 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
 // and the file is saved for manual listening.
 
 describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', () => {
-
     // ── DSP helpers (same as suite 8) ────────────────────────────────────
 
     function lowPass(data, cutoff, sr) {
@@ -967,7 +967,7 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
     }
 
     function delayEffect(data, delayMs, feedback, wetMix, sr) {
-        const delaySamples = Math.round(delayMs * sr / 1000)
+        const delaySamples = Math.round((delayMs * sr) / 1000)
         const out = new Float32Array(data.length)
         for (let i = 0; i < data.length; i++) {
             const delayed = i >= delaySamples ? out[i - delaySamples] : 0
@@ -1011,12 +1011,12 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
         const body = Math.sin(2 * Math.PI * 200 * t) * Math.exp(-t * 15)
         const noise = (Math.random() * 2 - 1) * Math.exp(-t * 10)
         const filtered = noise * (1 - Math.exp(-t * 500))
-        return (body * 0.6 + filtered * 0.4)
+        return body * 0.6 + filtered * 0.4
     }
 
     function generateHihatClosed(t, _sr = SAMPLE_RATE) {
         if (t > 0.08) return 0
-        const noise = (Math.random() * 2 - 1)
+        const noise = Math.random() * 2 - 1
         const env = Math.exp(-t * 60)
         const hp = Math.sin(2 * Math.PI * 6000 * t) * 0.3 + noise * 0.7
         return hp * env * 0.4
@@ -1024,7 +1024,7 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
 
     function generateHihatOpen(t, _sr = SAMPLE_RATE) {
         if (t > 0.25) return 0
-        const noise = (Math.random() * 2 - 1)
+        const noise = Math.random() * 2 - 1
         const env = Math.exp(-t * 10)
         return noise * env * 0.35
     }
@@ -1048,7 +1048,7 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
     function generateClap(t, _sr = SAMPLE_RATE) {
         if (t > 0.15) return 0
         const env = Math.exp(-t * 25)
-        const noise = (Math.random() * 2 - 1)
+        const noise = Math.random() * 2 - 1
         // Bandpass-ish: mix noise with resonant tone
         const tone = Math.sin(2 * Math.PI * 1200 * t) * 0.3
         return (noise * 0.7 + tone) * env * 0.5
@@ -1075,7 +1075,7 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
     const BPM = 110
     const BEATS = 8
     const BEAT_DUR = 60 / BPM
-    const TOTAL_DUR = BEATS * BEAT_DUR  // ~4.36s
+    const TOTAL_DUR = BEATS * BEAT_DUR // ~4.36s
     const LENGTH = Math.ceil(TOTAL_DUR * SAMPLE_RATE)
 
     // Instrument definitions: { gen, beats, pan, fx }
@@ -1085,56 +1085,56 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
         {
             name: 'KICK',
             gen: generateKick,
-            beats: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4].map(b => b * 4), // beats 1,3,5,7,8 in 8-beat
+            beats: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4].map((b) => b * 4), // beats 1,3,5,7,8 in 8-beat
             pan: 0,
-            fx: (d) => lowPass(d, 2000, SAMPLE_RATE),   // slight warmth
+            fx: (d) => lowPass(d, 2000, SAMPLE_RATE), // slight warmth
         },
         {
             name: 'SNARE',
             gen: generateSnare,
-            beats: [0.5, 1.5, 2.5, 3.5].map(b => b * 4), // beats 2,4,6,8
+            beats: [0.5, 1.5, 2.5, 3.5].map((b) => b * 4), // beats 2,4,6,8
             pan: 0.1,
             fx: (d) => reverbEffect(d, 0.08, 441, SAMPLE_RATE), // room reverb
         },
         {
             name: 'HIHAT-C',
             gen: generateHihatClosed,
-            beats: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75].map(b => b * 4),
+            beats: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75].map((b) => b * 4),
             pan: 0.4,
             fx: (d) => highPass(d, 3000, SAMPLE_RATE), // crisp top end
         },
         {
             name: 'HIHAT-O',
             gen: generateHihatOpen,
-            beats: [0.75, 3.75].map(b => b * 4),       // off-beat openings
+            beats: [0.75, 3.75].map((b) => b * 4), // off-beat openings
             pan: 0.5,
             fx: (d) => delayEffect(d, 150, 0.2, 0.2, SAMPLE_RATE), // ping delay
         },
         {
             name: 'BASS',
             gen: (t) => generateBass(t, 55),
-            beats: [0, 0.75, 1.5, 2, 2.75].map(b => b * 4),
+            beats: [0, 0.75, 1.5, 2, 2.75].map((b) => b * 4),
             pan: -0.1,
-            fx: (d) => lowPass(d, 400, SAMPLE_RATE),    // subby
+            fx: (d) => lowPass(d, 400, SAMPLE_RATE), // subby
         },
         {
             name: 'LEAD',
             gen: generateSynthLead,
-            beats: [1, 3, 4.5].map(b => b * 4),         // syncopated
+            beats: [1, 3, 4.5].map((b) => b * 4), // syncopated
             pan: -0.6,
             fx: (d) => delayEffect(d, 187, 0.3, 0.25, SAMPLE_RATE), // triplet delay
         },
         {
             name: 'CLAP',
             gen: generateClap,
-            beats: [0.5, 2.5].map(b => b * 4),          // layered with snare
+            beats: [0.5, 2.5].map((b) => b * 4), // layered with snare
             pan: 0.2,
             fx: (d) => reverbEffect(d, 0.05, 441, SAMPLE_RATE), // short room
         },
         {
             name: 'RIM',
             gen: generateRim,
-            beats: [0.25, 0.75, 1.25, 2.25, 3.25].map(b => b * 4),
+            beats: [0.25, 0.75, 1.25, 2.25, 3.25].map((b) => b * 4),
             pan: -0.3,
             fx: (d) => delayEffect(d, 250, 0.15, 0.2, SAMPLE_RATE), // stereo delay
         },
@@ -1161,9 +1161,9 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
             const processed = track.fx(raw)
 
             // Pan (equal-power-ish)
-            const panNorm = (track.pan + 1) / 2  // 0..1
-            const gainL = Math.cos(panNorm * Math.PI / 2)
-            const gainR = Math.sin(panNorm * Math.PI / 2)
+            const panNorm = (track.pan + 1) / 2 // 0..1
+            const gainL = Math.cos((panNorm * Math.PI) / 2)
+            const gainR = Math.sin((panNorm * Math.PI) / 2)
 
             for (let i = 0; i < LENGTH; i++) {
                 left[i] += processed[i] * gainL
@@ -1228,7 +1228,7 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
             _seed ^= _seed << 13
             _seed ^= _seed >> 17
             _seed ^= _seed << 5
-            return ((_seed >>> 0) / 4294967296)
+            return (_seed >>> 0) / 4294967296
         }
 
         function detReverb(data, decay, irLength, sr) {
@@ -1273,17 +1273,31 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
         }
 
         // Reset seed for deterministic render
-        function resetSeed() { _seed = 42 }
+        function resetSeed() {
+            _seed = 42
+        }
 
         const detTracks = [
-            { name: 'KICK',  gen: generateKick,    beats: TRACKS[0].beats, pan: TRACKS[0].pan, fx: TRACKS[0].fx },
-            { name: 'SNARE', gen: detSnare,        beats: TRACKS[1].beats, pan: TRACKS[1].pan, fx: (d) => detReverb(d, 0.08, 441, SAMPLE_RATE) },
-            { name: 'HH-C',  gen: detHiHatC,       beats: TRACKS[2].beats, pan: TRACKS[2].pan, fx: TRACKS[2].fx },
-            { name: 'HH-O',  gen: detHiHatO,       beats: TRACKS[3].beats, pan: TRACKS[3].pan, fx: TRACKS[3].fx },
-            { name: 'BASS',  gen: TRACKS[4].gen,    beats: TRACKS[4].beats, pan: TRACKS[4].pan, fx: TRACKS[4].fx },
-            { name: 'LEAD',  gen: generateSynthLead,beats: TRACKS[5].beats, pan: TRACKS[5].pan, fx: TRACKS[5].fx },
-            { name: 'CLAP',  gen: detClap,         beats: TRACKS[6].beats, pan: TRACKS[6].pan, fx: (d) => detReverb(d, 0.05, 441, SAMPLE_RATE) },
-            { name: 'RIM',   gen: generateRim,     beats: TRACKS[7].beats, pan: TRACKS[7].pan, fx: TRACKS[7].fx },
+            { name: 'KICK', gen: generateKick, beats: TRACKS[0].beats, pan: TRACKS[0].pan, fx: TRACKS[0].fx },
+            {
+                name: 'SNARE',
+                gen: detSnare,
+                beats: TRACKS[1].beats,
+                pan: TRACKS[1].pan,
+                fx: (d) => detReverb(d, 0.08, 441, SAMPLE_RATE),
+            },
+            { name: 'HH-C', gen: detHiHatC, beats: TRACKS[2].beats, pan: TRACKS[2].pan, fx: TRACKS[2].fx },
+            { name: 'HH-O', gen: detHiHatO, beats: TRACKS[3].beats, pan: TRACKS[3].pan, fx: TRACKS[3].fx },
+            { name: 'BASS', gen: TRACKS[4].gen, beats: TRACKS[4].beats, pan: TRACKS[4].pan, fx: TRACKS[4].fx },
+            { name: 'LEAD', gen: generateSynthLead, beats: TRACKS[5].beats, pan: TRACKS[5].pan, fx: TRACKS[5].fx },
+            {
+                name: 'CLAP',
+                gen: detClap,
+                beats: TRACKS[6].beats,
+                pan: TRACKS[6].pan,
+                fx: (d) => detReverb(d, 0.05, 441, SAMPLE_RATE),
+            },
+            { name: 'RIM', gen: generateRim, beats: TRACKS[7].beats, pan: TRACKS[7].pan, fx: TRACKS[7].fx },
         ]
 
         function renderDet() {
@@ -1304,8 +1318,8 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
                 }
                 const processed = track.fx(raw)
                 const panNorm = (track.pan + 1) / 2
-                const gL = Math.cos(panNorm * Math.PI / 2)
-                const gR = Math.sin(panNorm * Math.PI / 2)
+                const gL = Math.cos((panNorm * Math.PI) / 2)
+                const gR = Math.sin((panNorm * Math.PI) / 2)
                 for (let i = 0; i < LENGTH; i++) {
                     L[i] += processed[i] * gL
                     R[i] += processed[i] * gR
@@ -1330,7 +1344,10 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
         expect(bytes1.length).toBe(bytes2.length)
         let identical = true
         for (let i = 0; i < bytes1.length; i++) {
-            if (bytes1[i] !== bytes2[i]) { identical = false; break }
+            if (bytes1[i] !== bytes2[i]) {
+                identical = false
+                break
+            }
         }
         expect(identical).toBe(true)
     })

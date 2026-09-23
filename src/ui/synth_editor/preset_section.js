@@ -8,7 +8,9 @@ import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
 
 export default class PresetSection {
     /** @param {import('./synth_editor.js').default} editor */
-    constructor(editor) { this._editor = editor }
+    constructor(editor) {
+        this._editor = editor
+    }
 
     /** @returns {string[]} sorted keys of loaded synth presets. */
     getGeneratedSoundKeys() {
@@ -27,7 +29,7 @@ export default class PresetSection {
         editor.loadPromise = (async () => {
             try {
                 await editor.serviceRegistry.resourcesLoader?.loadGeneratedSounds(
-                    (await import('../../loader/resources_loader.js')).default.GENERATED_SOUNDS_URL
+                    (await import('../../loader/resources_loader.js')).default.GENERATED_SOUNDS_URL,
                 )
                 editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
             } catch {
@@ -151,9 +153,7 @@ export default class PresetSection {
         editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
         this._persist()
         const nextIdx = idx < keys.length - 1 ? idx : idx - 1
-        const nextKey = keys[nextIdx] === deletedName
-            ? keys[(idx + 1) % keys.length]
-            : keys[nextIdx]
+        const nextKey = keys[nextIdx] === deletedName ? keys[(idx + 1) % keys.length] : keys[nextIdx]
         editor.editKey = null
         editor.original = null
         editor.draft = null
@@ -186,9 +186,7 @@ export default class PresetSection {
                     randomize(val, path)
                 } else if (typeof val === 'number') {
                     const meta = SYNTH_PARAM_META[path]
-                    obj[key] = meta
-                        ? meta.min + Math.random() * (meta.max - meta.min)
-                        : Math.random()
+                    obj[key] = meta ? meta.min + Math.random() * (meta.max - meta.min) : Math.random()
                 }
             }
         }

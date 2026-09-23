@@ -44,7 +44,7 @@ describe('cmd_selection', () => {
     beforeEach(() => {
         appState.reset()
         soundRegistry.reset()
-        Object.values(mocks).forEach(m => m.mockClear())
+        Object.values(mocks).forEach((m) => m.mockClear())
 
         serviceRegistry.seq = { setBpm: mocks.setBpm }
         serviceRegistry.patterns = { applyFlatNotes: mocks.applyFlatNotes }
@@ -57,7 +57,10 @@ describe('cmd_selection', () => {
 
     describe('setSelectedPatternNum', () => {
         it('sets appState.selectedPatternNum', async () => {
-            appState.patterns = [{ name: 'A', bpm: 120 }, { name: 'B', bpm: 140 }]
+            appState.patterns = [
+                { name: 'A', bpm: 120 },
+                { name: 'B', bpm: 140 },
+            ]
             await cmd.setSelectedPatternNum(1)
             expect(appState.selectedPatternNum).toBe(1)
         })

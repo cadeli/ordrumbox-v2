@@ -4,86 +4,80 @@
 // Playback running → drumkitChange → useAutoAssignSound tracks reassigned →
 // no orphaned notes, no soundId pointing to an absent sound.
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
 test.describe('E2E-C: Kit change mid-playback', () => {
+    test('changing kit during playback reassigns soundIds without orphans', async ({ page }) => {
+        await page.goto('/')
+        await page.locator('#waiting-screen-start-btn').click()
+        await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
+        await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 })
 
-  test('changing kit during playback reassigns soundIds without orphans', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('#waiting-screen-start-btn').click();
-    await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
-    await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 });
+        await page.locator('button.tb-start').click()
+        await page.waitForFunction(() => window.__e2e.serviceRegistry.transport?.isRunning === true, { timeout: 5_000 })
 
-    await page.locator('button.tb-start').click();
-    await page.waitForFunction(
-      () => window.__e2e.serviceRegistry.transport?.isRunning === true,
-      { timeout: 5_000 }
-    );
+        const dkCount = await page.evaluate(() => window.__e2e.soundRegistry.drumkitList.length)
+        expect(dkCount).toBeGreaterThan(1)
 
-    const dkCount = await page.evaluate(() => window.__e2e.soundRegistry.drumkitList.length);
-    expect(dkCount).toBeGreaterThan(1);
+        const dkSelect = page.locator('select.tb-drumkit-select')
+        if (await dkSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
+            await dkSelect.selectOption({ index: 1 })
+        } else {
+            await page.evaluate(() => {
+                const { serviceRegistry } = window.__e2e
+                serviceRegistry.cmd.setSelectedDrumkitNum(1)
+            })
+        }
 
-    const dkSelect = page.locator('select.tb-drumkit-select');
-    if (await dkSelect.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await dkSelect.selectOption({ index: 1 });
-    } else {
-      await page.evaluate(() => {
-        const { serviceRegistry } = window.__e2e
-        serviceRegistry.cmd.setSelectedDrumkitNum(1)
-      });
-    }
+        await page.waitForTimeout(300)
 
-    await page.waitForTimeout(300);
+        const afterChange = await page.evaluate(() => {
+            const { appState, soundRegistry } = window.__e2e
+            const tracks = appState.patterns[0]?.tracks ?? []
+            return {
+                drumkitName: appState.selectedDrumkit,
+                tracks: tracks.map((t) => ({
+                    name: t.name,
+                    soundId: t.soundId,
+                    autoAssign: t.useAutoAssignSound,
+                    soundExists: !!(t.soundId && soundRegistry.sounds[t.soundId]),
+                })),
+            }
+        })
 
-    const afterChange = await page.evaluate(() => {
-      const { appState, soundRegistry } = window.__e2e
-      const tracks = appState.patterns[0]?.tracks ?? []
-      return {
-        drumkitName: appState.selectedDrumkit,
-        tracks: tracks.map(t => ({
-          name: t.name,
-          soundId: t.soundId,
-          autoAssign: t.useAutoAssignSound,
-          soundExists: !!(t.soundId && soundRegistry.sounds[t.soundId]),
-        })),
-      }
-    });
+        for (const track of afterChange.tracks) {
+            if (track.autoAssign) {
+                expect(track.soundId).not.toBe('NOT_DEFINED')
+                expect(track.soundId).not.toBe('NOT_FOUND')
+                expect(track.soundExists, `track "${track.name}" soundId "${track.soundId}" missing`).toBe(true)
+            }
+        }
 
-    for (const track of afterChange.tracks) {
-      if (track.autoAssign) {
-        expect(track.soundId).not.toBe('NOT_DEFINED');
-        expect(track.soundId).not.toBe('NOT_FOUND');
-        expect(track.soundExists, `track "${track.name}" soundId "${track.soundId}" missing`).toBe(true);
-      }
-    }
+        const isRunning = await page.evaluate(() => window.__e2e.serviceRegistry.transport?.isRunning)
+        expect(isRunning).toBe(true)
+    })
 
-    const isRunning = await page.evaluate(() =>
-      window.__e2e.serviceRegistry.transport?.isRunning
-    );
-    expect(isRunning).toBe(true);
-  });
+    test('flatNotes are rebuilt after kit change', async ({ page }) => {
+        await page.goto('/')
+        await page.locator('#waiting-screen-start-btn').click()
+        await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
+        await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 })
 
-  test('flatNotes are rebuilt after kit change', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('#waiting-screen-start-btn').click();
-    await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
-    await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 });
+        await page.evaluate(() => {
+            window.__e2e.serviceRegistry.cmd.setSelectedDrumkitNum(1)
+        })
+        await page.waitForTimeout(300)
 
-    await page.evaluate(() => {
-      window.__e2e.serviceRegistry.cmd.setSelectedDrumkitNum(1)
-    });
-    await page.waitForTimeout(300);
+        const afterFlatNotes = await page.evaluate(() => {
+            const fn = window.__e2e.appState.flatNotes
+            if (!(fn instanceof Map)) return { tickCount: 0, noteCount: 0 }
+            return {
+                tickCount: fn.size,
+                noteCount: [...fn.values()].reduce((n, arr) => n + arr.length, 0),
+            }
+        })
 
-    const afterFlatNotes = await page.evaluate(() => {
-      const fn = window.__e2e.appState.flatNotes
-      if (!(fn instanceof Map)) return { tickCount: 0, noteCount: 0 }
-      return {
-        tickCount: fn.size,
-        noteCount: [...fn.values()].reduce((n, arr) => n + arr.length, 0),
-      }
-    });
-
-    expect(afterFlatNotes.tickCount).toBeGreaterThan(0);
-    expect(afterFlatNotes.noteCount).toBeGreaterThan(0);
-  });
-});
+        expect(afterFlatNotes.tickCount).toBeGreaterThan(0)
+        expect(afterFlatNotes.noteCount).toBeGreaterThan(0)
+    })
+})

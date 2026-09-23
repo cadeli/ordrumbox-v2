@@ -22,8 +22,8 @@ export default class MelodyGenerate extends BaseGenerator {
                 ghost: -0.2,
                 randomSpread: 0.06,
                 clampMin: 0.3,
-                clampMax: 0.88
-            }
+                clampMax: 0.88,
+            },
         },
         arpeggio: {
             mode: 'arpeggio',
@@ -44,8 +44,8 @@ export default class MelodyGenerate extends BaseGenerator {
                 variationBoost: 0.06,
                 randomSpread: 0.08,
                 clampMin: 0.28,
-                clampMax: 0.82
-            }
+                clampMax: 0.82,
+            },
         },
         sparse: {
             mode: 'phrases',
@@ -57,15 +57,15 @@ export default class MelodyGenerate extends BaseGenerator {
                 { beat: 0, step: 0, source: 'root', accent: true },
                 { beat: 1, step: 2, source: 'randomScale' },
                 { beat: 2, step: 0, source: 'fifth', accent: true },
-                { beat: 3, step: 3, source: 'randomScale' }
+                { beat: 3, step: 3, source: 'randomScale' },
             ],
             velocity: {
                 base: 0.52,
                 accentOnBeat: 0.12,
                 randomSpread: 0.08,
                 clampMin: 0.28,
-                clampMax: 0.82
-            }
+                clampMax: 0.82,
+            },
         },
         walking: {
             mode: 'groove',
@@ -84,8 +84,8 @@ export default class MelodyGenerate extends BaseGenerator {
                 variationBoost: 0.08,
                 randomSpread: 0.1,
                 clampMin: 0.3,
-                clampMax: 0.85
-            }
+                clampMax: 0.85,
+            },
         },
         reggae: {
             mode: 'phrases',
@@ -101,15 +101,15 @@ export default class MelodyGenerate extends BaseGenerator {
                 { beat: 2, step: 2, source: 'fifth' },
                 { beat: 2, step: 3, source: 'third' },
                 { beat: 3, step: 2, source: 'root' },
-                { beat: 3, step: 3, source: 'seventh' }
+                { beat: 3, step: 3, source: 'seventh' },
             ],
             velocity: {
                 base: 0.56,
                 accentOnBeat: 0.08,
                 randomSpread: 0.06,
                 clampMin: 0.32,
-                clampMax: 0.8
-            }
+                clampMax: 0.8,
+            },
         },
         break: {
             mode: 'phrases',
@@ -121,7 +121,7 @@ export default class MelodyGenerate extends BaseGenerator {
                 { beat: 3, step: 0, source: 'root', accent: true },
                 { beat: 3, step: 1, source: 'third' },
                 { beat: 3, step: 2, source: 'fifth' },
-                { beat: 3, step: 3, source: 'octave', accent: true }
+                { beat: 3, step: 3, source: 'octave', accent: true },
             ],
             velocity: {
                 base: 0.65,
@@ -129,16 +129,22 @@ export default class MelodyGenerate extends BaseGenerator {
                 ghost: -0.3,
                 randomSpread: 0.1,
                 clampMin: 0.3,
-                clampMax: 1
-            }
-        }
+                clampMax: 1,
+            },
+        },
     })
 
     constructor() {
         super('MELODY', MelodyGenerate.MELODY_GENERATION_CONFIGS)
     }
 
-    generateNewMelody = (melodyTrack, variantName = null, density = 1, pattern = null, harmony = { root: 0, scale: null }) => {
+    generateNewMelody = (
+        melodyTrack,
+        variantName = null,
+        density = 1,
+        pattern = null,
+        harmony = { root: 0, scale: null },
+    ) => {
         const rootNote = harmony.root ?? 0
         const scaleName = harmony.scale ?? null
         if (variantName === 'break') {
@@ -146,11 +152,13 @@ export default class MelodyGenerate extends BaseGenerator {
             this.clearTrackNotes(melodyTrack)
             const tones = this.getScaleSteps(scaleName ?? config.scaleName)
             const octaveShift = (config.octaveShift ?? 1) * 12
-            this.generatePhraseVariant(melodyTrack, config,
+            this.generatePhraseVariant(
+                melodyTrack,
+                config,
                 (phrase) => this.resolvePhrasePitch(phrase, tones, [], rootNote + octaveShift),
                 (phrase) => phrase.accent === true,
                 (phrase) => phrase.ghost === true,
-                density
+                density,
             )
             this.applyLoopPoint(melodyTrack, config)
             return
@@ -177,12 +185,14 @@ export default class MelodyGenerate extends BaseGenerator {
             case 'phrases':
             default: {
                 const cachedPitches = []
-                this.generatePhraseVariant(melodyTrack, config,
+                this.generatePhraseVariant(
+                    melodyTrack,
+                    config,
                     (phrase) => this.#resolveChordPitch(phrase, tones, cachedPitches, pitchBias, bassRootPitch),
                     (phrase, step) => step % 2 === 0,
                     null,
                     density,
-                    { cachedPitches, allowStacking: true }
+                    { cachedPitches, allowStacking: true },
                 )
                 break
             }
@@ -193,19 +203,22 @@ export default class MelodyGenerate extends BaseGenerator {
 
     #extractBassRootPitch = (pattern) => {
         if (!pattern?.tracks) return null
-        const bassTrack = pattern.tracks.find(t => {
+        const bassTrack = pattern.tracks.find((t) => {
             const name = (t.name ?? '').toUpperCase()
             return name.includes('BASS')
         })
         if (!bassTrack?.notes?.length) return null
-        const pitches = bassTrack.notes.map(n => n.pitch)
+        const pitches = bassTrack.notes.map((n) => n.pitch)
         const freq = new Map()
         let maxCount = 0
         let mostFrequent = pitches[0]
         for (const p of pitches) {
             const count = (freq.get(p) ?? 0) + 1
             freq.set(p, count)
-            if (count > maxCount) { maxCount = count; mostFrequent = p }
+            if (count > maxCount) {
+                maxCount = count
+                mostFrequent = p
+            }
         }
         return mostFrequent
     }
@@ -260,8 +273,8 @@ export default class MelodyGenerate extends BaseGenerator {
                     this.computeVelocity(config.velocity, {
                         step,
                         accent: strongBeat,
-                        isVariation: !strongBeat
-                    })
+                        isVariation: !strongBeat,
+                    }),
                 )
             }
         }
@@ -299,8 +312,8 @@ export default class MelodyGenerate extends BaseGenerator {
                         this.computeVelocity(config.velocity, {
                             step,
                             accent: step % 4 === 0,
-                            isVariation: noteIndex % contourSequence.length !== 0
-                        })
+                            isVariation: noteIndex % contourSequence.length !== 0,
+                        }),
                     )
                     if (arp) {
                         note.arp = arp
@@ -314,5 +327,4 @@ export default class MelodyGenerate extends BaseGenerator {
             }
         }
     }
-
 }

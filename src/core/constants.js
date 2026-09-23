@@ -41,6 +41,8 @@ const MOBILE_MAX_HEIGHT = 480
 
 /** True when viewport matches mobile criteria (portrait or landscape) */
 export function isMobileViewport() {
-    return typeof window !== 'undefined'
-        && (window.innerWidth <= MOBILE_MAX_WIDTH || window.innerHeight <= MOBILE_MAX_HEIGHT)
+    return (
+        typeof window !== 'undefined' &&
+        (window.innerWidth <= MOBILE_MAX_WIDTH || window.innerHeight <= MOBILE_MAX_HEIGHT)
+    )
 }

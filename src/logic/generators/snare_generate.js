@@ -8,7 +8,7 @@ export default class SnareGenerate extends BaseGenerator {
             loopPointStep: 0,
             phrases: [
                 { beat: 1, step: 0, accent: true },
-                { beat: 3, step: 0, accent: true }
+                { beat: 3, step: 0, accent: true },
             ],
             velocity: {
                 base: 0.82,
@@ -16,8 +16,8 @@ export default class SnareGenerate extends BaseGenerator {
                 ghost: -0.42,
                 randomSpread: 0.05,
                 clampMin: 0.28,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         ghost: {
             mode: 'phrases',
@@ -29,7 +29,7 @@ export default class SnareGenerate extends BaseGenerator {
                 { beat: 2, step: 1, ghost: true },
                 { beat: 3, step: 0, accent: true },
                 { beat: 3, step: 2, ghost: true },
-                { beat: 3, step: 3, ghost: true }
+                { beat: 3, step: 3, ghost: true },
             ],
             velocity: {
                 base: 0.78,
@@ -37,8 +37,8 @@ export default class SnareGenerate extends BaseGenerator {
                 ghost: -0.46,
                 randomSpread: 0.08,
                 clampMin: 0.22,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         break: {
             mode: 'fill',
@@ -53,25 +53,23 @@ export default class SnareGenerate extends BaseGenerator {
                 ghost: -0.24,
                 randomSpread: 0.12,
                 clampMin: 0.25,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         syncopated: {
             mode: 'grid',
             loopPointBeat: 2,
             loopPointStep: 0,
             probabilities: [0.15, 0.35, 0.2, 0.72],
-            requiredSteps: [
-                { beatModulo: 2, step: 0 }
-            ],
+            requiredSteps: [{ beatModulo: 2, step: 0 }],
             velocity: {
                 base: 0.7,
                 accentOnBeat: 0.2,
                 ghost: -0.32,
                 randomSpread: 0.1,
                 clampMin: 0.24,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         roll: {
             mode: 'roll',
@@ -88,8 +86,8 @@ export default class SnareGenerate extends BaseGenerator {
                 ghost: -0.08,
                 randomSpread: 0.08,
                 clampMin: 0.28,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         breakCrescendo: {
             mode: 'breakCrescendo',
@@ -104,9 +102,9 @@ export default class SnareGenerate extends BaseGenerator {
                 ghost: -0.2,
                 randomSpread: 0.06,
                 clampMin: 0.3,
-                clampMax: 1
-            }
-        }
+                clampMax: 1,
+            },
+        },
     })
 
     constructor() {
@@ -121,9 +119,7 @@ export default class SnareGenerate extends BaseGenerator {
 
         switch (config.mode) {
             case 'grid':
-                this.generateGridVariant(snareTrack, config,
-                    null, null, density, { defaultBar: 2 }
-                )
+                this.generateGridVariant(snareTrack, config, null, null, density, { defaultBar: 2 })
                 break
             case 'fill':
                 this.generateSnareFillVariant(snareTrack, config, density)
@@ -136,11 +132,13 @@ export default class SnareGenerate extends BaseGenerator {
                 break
             case 'phrases':
             default:
-                this.generatePhraseVariant(snareTrack, config,
+                this.generatePhraseVariant(
+                    snareTrack,
+                    config,
                     () => 0,
                     (phrase) => phrase.accent === true,
                     (phrase) => phrase.ghost === true,
-                    density
+                    density,
                 )
                 break
         }
@@ -162,7 +160,8 @@ export default class SnareGenerate extends BaseGenerator {
             if (absoluteStep >= loopPointAbsolute) continue
 
             const progress = lastStep === 0 ? 1 : step / lastStep
-            const velocity = (config.minVelocity ?? 0.3) + ((config.maxVelocity ?? 1) - (config.minVelocity ?? 0.3)) * progress
+            const velocity =
+                (config.minVelocity ?? 0.3) + ((config.maxVelocity ?? 1) - (config.minVelocity ?? 0.3)) * progress
             const ratchetCount = Math.max(1, Math.round(1 + (retriggerNum - 1) * progress))
 
             const note = this.addNote(
@@ -174,8 +173,8 @@ export default class SnareGenerate extends BaseGenerator {
                     step,
                     accent: step === lastStep,
                     ghost: step !== lastStep,
-                    velocityBase: velocity
-                })
+                    velocityBase: velocity,
+                }),
             )
             if (ratchetCount > 1) {
                 note.retriggerNum = ratchetCount
@@ -204,8 +203,8 @@ export default class SnareGenerate extends BaseGenerator {
                     this.computeVelocity(config.velocity, {
                         step,
                         accent: step === 0 || step === snareTrack.stepsPerBeat - 1,
-                        ghost: step !== 0
-                    })
+                        ghost: step !== 0,
+                    }),
                 )
             })
         }
@@ -234,8 +233,8 @@ export default class SnareGenerate extends BaseGenerator {
                 this.computeVelocity(config.velocity, {
                     step: beatStep,
                     accent: beatStep === 0,
-                    ghost: false
-                })
+                    ghost: false,
+                }),
             )
             note.prob = Number(prob.toFixed(2))
             if (retriggerNumMax > 1) {

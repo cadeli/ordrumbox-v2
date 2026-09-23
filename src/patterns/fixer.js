@@ -1,21 +1,17 @@
 import Utils from '../core/utils.js'
 import { recalcLoopDerived, normalizeTrack } from '../model/track_schema.js'
-import {
-    compactArrayToNote,
-    isCompactFormat,
-    normalizeNote
-} from '../core/note_schema.js'
+import { compactArrayToNote, isCompactFormat, normalizeNote } from '../core/note_schema.js'
 
 /**
  * Expand compact note arrays to objects if track uses compact format.
  * Mutates the track in place.
  */
 function expandCompactNotes(track) {
-    if (!isCompactFormat(track)) return;
+    if (!isCompactFormat(track)) return
 
-    const keys = track.noteKeys;
-    track.notes = track.notes.map(arr => compactArrayToNote(arr, keys));
-    delete track.noteKeys;
+    const keys = track.noteKeys
+    track.notes = track.notes.map((arr) => compactArrayToNote(arr, keys))
+    delete track.noteKeys
 }
 
 export function fixTrackPanning(track, indexTrack) {
@@ -34,7 +30,7 @@ export function fixNoteStepBar(track, note) {
 }
 
 export function fixTrackDefaults(track, indexTrack) {
-    expandCompactNotes(track);
+    expandCompactNotes(track)
 
     const normalized = normalizeTrack(track)
     Object.assign(track, normalized)
@@ -44,7 +40,7 @@ export function fixTrackDefaults(track, indexTrack) {
     recalcLoopDerived(track)
     if (track.useAutoAssignSound === undefined) track.useAutoAssignSound = true
     track.notes ??= []
-    track.notes.forEach(note => {
+    track.notes.forEach((note) => {
         fixNoteStepBar(track, note)
         Object.assign(note, normalizeNote(note))
     })
@@ -52,8 +48,8 @@ export function fixTrackDefaults(track, indexTrack) {
 }
 
 export function fixPattern(pattern) {
-    pattern.application ??= "online-ordrumbox"
-    pattern.url ??= "https://www.ordrumbox.com"
+    pattern.application ??= 'online-ordrumbox'
+    pattern.url ??= 'https://www.ordrumbox.com'
     if (pattern.tracks) {
         Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
             fixTrackDefaults(track, indexTrack)
@@ -63,7 +59,7 @@ export function fixPattern(pattern) {
 }
 
 export function fixPatterns(patterns) {
-    return Object.values(patterns).map(pattern => fixPattern(pattern))
+    return Object.values(patterns).map((pattern) => fixPattern(pattern))
 }
 
 export function getUnloadedSamplesFromDrumkits(drumkits, existingSounds) {

@@ -1,345 +1,551 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <!-- ResourcesLoader uses document-relative asset URLs; this tool lives below /. -->
-  <base href="/">
-  <title>orDrumbox — Live vs Export Comparison</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: monospace; background: #0d0d1a; color: #eee; padding: 24px; }
-    h1 { font-size: 16px; color: #e94560; margin-bottom: 16px; }
-    button {
-      background: #1a1a2e; color: #eee; border: 1px solid #555;
-      padding: 10px 20px; font-family: monospace; font-size: 13px;
-      cursor: pointer; margin-right: 8px; margin-bottom: 8px;
-    }
-    button:hover { background: #2a2a3e; border-color: #e94560; }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
-    #log {
-      background: #12121e; border: 1px solid #333; padding: 12px;
-      margin-top: 16px; font-size: 11px; line-height: 1.6;
-      max-height: 500px; overflow-y: auto; white-space: pre-wrap;
-    }
-    .ok { color: #4ade80; }
-    .fail { color: #ef9a9a; }
-    .info { color: #4fc3f7; }
-    .warn { color: #f59e0b; }
-    #results { margin-top: 16px; }
-    .waveform { display: flex; gap: 16px; margin-top: 16px; }
-    .waveform canvas {
-      background: #0a0a14; border: 1px solid #333;
-      width: 100%; height: 120px; border-radius: 4px;
-    }
-    .waveform label { font-size: 11px; color: #888; margin-bottom: 4px; display: block; }
-    .diff-bar { height: 6px; margin-top: 8px; border-radius: 3px; background: #333; overflow: hidden; }
-    .diff-bar .fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-    .metric-row { display: flex; gap: 24px; margin-top: 8px; flex-wrap: wrap; }
-    .metric { font-size: 11px; }
-    .metric .label { color: #888; }
-    .metric .value { color: #eee; font-weight: bold; }
-    .btn-play {
-      background: #16213e; color: #4fc3f7; border: 1px solid #4fc3f7;
-      padding: 4px 10px; font-family: monospace; font-size: 11px;
-      cursor: pointer; margin-bottom: 6px; border-radius: 3px;
-    }
-    .btn-play:hover { background: #1a3a5c; }
-  </style>
-</head>
-<body>
-  <h1>Live vs Export — Audio Comparison</h1>
-  <p style="font-size:11px;color:#888;margin-bottom:12px">
-    Compares real-time engine playback (captured via AudioWorklet) against offline WAV export.<br>
-    Uses metric comparison (RMS, peak, envelope, onsets) — not sample-by-sample alignment.
-  </p>
-  <button id="btn-run">Run Test</button>
-  <button id="btn-stop" disabled>Stop</button>
-  <div id="log"></div>
-  <div id="results"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <!-- ResourcesLoader uses document-relative asset URLs; this tool lives below /. -->
+        <base href="/" />
+        <title>orDrumbox — Live vs Export Comparison</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: monospace;
+                background: #0d0d1a;
+                color: #eee;
+                padding: 24px;
+            }
+            h1 {
+                font-size: 16px;
+                color: #e94560;
+                margin-bottom: 16px;
+            }
+            button {
+                background: #1a1a2e;
+                color: #eee;
+                border: 1px solid #555;
+                padding: 10px 20px;
+                font-family: monospace;
+                font-size: 13px;
+                cursor: pointer;
+                margin-right: 8px;
+                margin-bottom: 8px;
+            }
+            button:hover {
+                background: #2a2a3e;
+                border-color: #e94560;
+            }
+            button:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            #log {
+                background: #12121e;
+                border: 1px solid #333;
+                padding: 12px;
+                margin-top: 16px;
+                font-size: 11px;
+                line-height: 1.6;
+                max-height: 500px;
+                overflow-y: auto;
+                white-space: pre-wrap;
+            }
+            .ok {
+                color: #4ade80;
+            }
+            .fail {
+                color: #ef9a9a;
+            }
+            .info {
+                color: #4fc3f7;
+            }
+            .warn {
+                color: #f59e0b;
+            }
+            #results {
+                margin-top: 16px;
+            }
+            .waveform {
+                display: flex;
+                gap: 16px;
+                margin-top: 16px;
+            }
+            .waveform canvas {
+                background: #0a0a14;
+                border: 1px solid #333;
+                width: 100%;
+                height: 120px;
+                border-radius: 4px;
+            }
+            .waveform label {
+                font-size: 11px;
+                color: #888;
+                margin-bottom: 4px;
+                display: block;
+            }
+            .diff-bar {
+                height: 6px;
+                margin-top: 8px;
+                border-radius: 3px;
+                background: #333;
+                overflow: hidden;
+            }
+            .diff-bar .fill {
+                height: 100%;
+                border-radius: 3px;
+                transition: width 0.3s;
+            }
+            .metric-row {
+                display: flex;
+                gap: 24px;
+                margin-top: 8px;
+                flex-wrap: wrap;
+            }
+            .metric {
+                font-size: 11px;
+            }
+            .metric .label {
+                color: #888;
+            }
+            .metric .value {
+                color: #eee;
+                font-weight: bold;
+            }
+            .btn-play {
+                background: #16213e;
+                color: #4fc3f7;
+                border: 1px solid #4fc3f7;
+                padding: 4px 10px;
+                font-family: monospace;
+                font-size: 11px;
+                cursor: pointer;
+                margin-bottom: 6px;
+                border-radius: 3px;
+            }
+            .btn-play:hover {
+                background: #1a3a5c;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Live vs Export — Audio Comparison</h1>
+        <p style="font-size: 11px; color: #888; margin-bottom: 12px">
+            Compares real-time engine playback (captured via AudioWorklet) against offline WAV export.<br />
+            Uses metric comparison (RMS, peak, envelope, onsets) — not sample-by-sample alignment.
+        </p>
+        <button id="btn-run">Run Test</button>
+        <button id="btn-stop" disabled>Stop</button>
+        <div id="log"></div>
+        <div id="results"></div>
 
-  <script type="module">
-    import { serviceRegistry } from '../src/state/service_registry.js'
-    import { soundRegistry } from '../src/state/sound_registry.js'
-    import { appState } from '../src/state/app_state.js'
-    import { playbackEvents } from '../src/state/playback_events.js'
-    import Commander from '../src/logic/commands/cmd.js'
-    import Sequencer from '../src/logic/seq.js'
-    import ResourcesLoader from '../src/loader/resources_loader.js'
-    import AudioEngine from '../src/audio/engine.js'
-    import WavExporter from '../src/audio/export/wav_exporter.js'
-    import { bufferToWav } from '../src/audio/export/wav_encoder.js'
-    import { TICK } from '../src/core/constants.js'
-    import { getAutoAssignService } from '../src/state/service_loader.js'
-    import Transport from '../src/logic/transport/transport.js'
+        <script type="module">
+            import { serviceRegistry } from '../src/state/service_registry.js'
+            import { soundRegistry } from '../src/state/sound_registry.js'
+            import { appState } from '../src/state/app_state.js'
+            import { playbackEvents } from '../src/state/playback_events.js'
+            import Commander from '../src/logic/commands/cmd.js'
+            import Sequencer from '../src/logic/seq.js'
+            import ResourcesLoader from '../src/loader/resources_loader.js'
+            import AudioEngine from '../src/audio/engine.js'
+            import WavExporter from '../src/audio/export/wav_exporter.js'
+            import { bufferToWav } from '../src/audio/export/wav_encoder.js'
+            import { TICK } from '../src/core/constants.js'
+            import { getAutoAssignService } from '../src/state/service_loader.js'
+            import Transport from '../src/logic/transport/transport.js'
 
-    const logEl = document.getElementById('log')
-    const resultsEl = document.getElementById('results')
-    const btnRun = document.getElementById('btn-run')
-    const btnStop = document.getElementById('btn-stop')
+            const logEl = document.getElementById('log')
+            const resultsEl = document.getElementById('results')
+            const btnRun = document.getElementById('btn-run')
+            const btnStop = document.getElementById('btn-stop')
 
-    let abortController = null
-    let liveEngine = null
-    let liveAudioCtx = null
-    let liveTransport = null
-    let playbackCtx = null
-    let playbackSource = null
-    let playbackBuffer = null
-    let activeBtn = null
-    const objectURLs = []
+            let abortController = null
+            let liveEngine = null
+            let liveAudioCtx = null
+            let liveTransport = null
+            let playbackCtx = null
+            let playbackSource = null
+            let playbackBuffer = null
+            let activeBtn = null
+            const objectURLs = []
 
-    function log(msg, cls = '') {
-      const span = document.createElement('span')
-      span.className = cls
-      span.textContent = msg + '\n'
-      logEl.appendChild(span)
-      logEl.scrollTop = logEl.scrollHeight
-    }
-    function clearLog() { logEl.innerHTML = '' }
+            function log(msg, cls = '') {
+                const span = document.createElement('span')
+                span.className = cls
+                span.textContent = msg + '\n'
+                logEl.appendChild(span)
+                logEl.scrollTop = logEl.scrollHeight
+            }
+            function clearLog() {
+                logEl.innerHTML = ''
+            }
 
-    // ── Deterministic audio scenario (no global state mutation) ────────
+            // ── Deterministic audio scenario (no global state mutation) ────────
 
-    const BPM = 110, NB_BEATS = 8
+            const BPM = 110,
+                NB_BEATS = 8
 
-    function makeNote(beat, vel = 0.8, pitch = 0) {
-      return { velocity: vel, beat, beatStep: 0, pitch, steppc: beat * 25,
-        every: 1, prob: 1, rate: 1, retriggerNum: 1, pan: 0,
-        arp: null, arpTriggerProbability: 1, euclidianFill: 0, pos: 0 }
-    }
+            function makeNote(beat, vel = 0.8, pitch = 0) {
+                return {
+                    velocity: vel,
+                    beat,
+                    beatStep: 0,
+                    pitch,
+                    steppc: beat * 25,
+                    every: 1,
+                    prob: 1,
+                    rate: 1,
+                    retriggerNum: 1,
+                    pan: 0,
+                    arp: null,
+                    arpTriggerProbability: 1,
+                    euclidianFill: 0,
+                    pos: 0,
+                }
+            }
 
-    function makeTrack(name, notes, overrides = {}) {
-      return {
-        name, nbBeats: NB_BEATS, stepsPerBeat: 4,
-        loopAtStep: NB_BEATS * 4, loopPointBeat: NB_BEATS, loopPointStep: 0,
-        velocity: 1, pan: 0, pitch: 0, soundId: 'NOT_DEFINED',
-        useAutoAssignSound: true, useSoftSynth: false,
-        mono: false, solo: false, mute: false, auto: false,
-        filterType: 'allpass', filterFreq: 20, filterQ: 0.707,
-        reverbType: 'none', reverbAmount: 0, delayType: 'tape', delayTime: 1, delayDepth: 0,
-        saturationType: 'soft', saturationAmount: 0,
-        sat: true, reverbOn: true, delayOn: true,
-        variation: 0, variation2: 0, notes, ...overrides,
-      }
-    }
+            function makeTrack(name, notes, overrides = {}) {
+                return {
+                    name,
+                    nbBeats: NB_BEATS,
+                    stepsPerBeat: 4,
+                    loopAtStep: NB_BEATS * 4,
+                    loopPointBeat: NB_BEATS,
+                    loopPointStep: 0,
+                    velocity: 1,
+                    pan: 0,
+                    pitch: 0,
+                    soundId: 'NOT_DEFINED',
+                    useAutoAssignSound: true,
+                    useSoftSynth: false,
+                    mono: false,
+                    solo: false,
+                    mute: false,
+                    auto: false,
+                    filterType: 'allpass',
+                    filterFreq: 20,
+                    filterQ: 0.707,
+                    reverbType: 'none',
+                    reverbAmount: 0,
+                    delayType: 'tape',
+                    delayTime: 1,
+                    delayDepth: 0,
+                    saturationType: 'soft',
+                    saturationAmount: 0,
+                    sat: true,
+                    reverbOn: true,
+                    delayOn: true,
+                    variation: 0,
+                    variation2: 0,
+                    notes,
+                    ...overrides,
+                }
+            }
 
-    function buildTestPattern() {
-      return {
-        name: 'LiveVsExport', description: '', bpm: BPM, nbBeats: NB_BEATS,
-        _version: 0,
-        tracks: [
-          makeTrack('KICK', [makeNote(0,0.9),makeNote(2,0.85),makeNote(4,0.9),makeNote(6,0.8)]),
-          makeTrack('SNARE', [makeNote(2,0.8),makeNote(6,0.75)]),
-          makeTrack('HIHAT', Array.from({length:8}, (_,i) => makeNote(i, i%2===0?0.6:0.5))),
-          makeTrack('BASS_SYNTH', [makeNote(0,0.9),makeNote(2,0.8),makeNote(4,0.9),makeNote(6,0.7)], {
-            useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BASS0',
-            soundId: 'SYNTH:BASS0',
-          }),
-          makeTrack('SYNTH_LEAD', [makeNote(0,0.7),makeNote(3,0.6),makeNote(5,0.65),makeNote(7,0.55)], {
-            useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'SYNTH1',
-            soundId: 'SYNTH:SYNTH1',
-          }),
-          makeTrack('SYNTH_BELL', [makeNote(1,0.5),makeNote(5,0.45)], {
-            useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BELL1',
-            soundId: 'SYNTH:BELL1',
-          }),
-          makeTrack('SHAKER', Array.from({length:16}, (_,i) => makeNote(i*0.5, i%2===0?0.3:0.25))),
-          makeTrack('PERC', [makeNote(0,0.4),makeNote(3,0.35),makeNote(5,0.4)]),
-        ],
-      }
-    }
+            function buildTestPattern() {
+                return {
+                    name: 'LiveVsExport',
+                    description: '',
+                    bpm: BPM,
+                    nbBeats: NB_BEATS,
+                    _version: 0,
+                    tracks: [
+                        makeTrack('KICK', [makeNote(0, 0.9), makeNote(2, 0.85), makeNote(4, 0.9), makeNote(6, 0.8)]),
+                        makeTrack('SNARE', [makeNote(2, 0.8), makeNote(6, 0.75)]),
+                        makeTrack(
+                            'HIHAT',
+                            Array.from({ length: 8 }, (_, i) => makeNote(i, i % 2 === 0 ? 0.6 : 0.5)),
+                        ),
+                        makeTrack(
+                            'BASS_SYNTH',
+                            [makeNote(0, 0.9), makeNote(2, 0.8), makeNote(4, 0.9), makeNote(6, 0.7)],
+                            {
+                                useAutoAssignSound: false,
+                                useSoftSynth: true,
+                                synthSoundKey: 'BASS0',
+                                soundId: 'SYNTH:BASS0',
+                            },
+                        ),
+                        makeTrack(
+                            'SYNTH_LEAD',
+                            [makeNote(0, 0.7), makeNote(3, 0.6), makeNote(5, 0.65), makeNote(7, 0.55)],
+                            {
+                                useAutoAssignSound: false,
+                                useSoftSynth: true,
+                                synthSoundKey: 'SYNTH1',
+                                soundId: 'SYNTH:SYNTH1',
+                            },
+                        ),
+                        makeTrack('SYNTH_BELL', [makeNote(1, 0.5), makeNote(5, 0.45)], {
+                            useAutoAssignSound: false,
+                            useSoftSynth: true,
+                            synthSoundKey: 'BELL1',
+                            soundId: 'SYNTH:BELL1',
+                        }),
+                        makeTrack(
+                            'SHAKER',
+                            Array.from({ length: 16 }, (_, i) => makeNote(i * 0.5, i % 2 === 0 ? 0.3 : 0.25)),
+                        ),
+                        makeTrack('PERC', [makeNote(0, 0.4), makeNote(3, 0.35), makeNote(5, 0.4)]),
+                    ],
+                }
+            }
 
-    // ── Metrics ──────────────────────────────────────────────────────
+            // ── Metrics ──────────────────────────────────────────────────────
 
-    function computeRms(data) {
-      let sum = 0
-      for (let i = 0; i < data.length; i++) sum += data[i] * data[i]
-      return Math.sqrt(sum / data.length)
-    }
-    function computePeak(data) {
-      let p = 0
-      for (let i = 0; i < data.length; i++) { const a = Math.abs(data[i]); if (a > p) p = a }
-      return p
-    }
+            function computeRms(data) {
+                let sum = 0
+                for (let i = 0; i < data.length; i++) sum += data[i] * data[i]
+                return Math.sqrt(sum / data.length)
+            }
+            function computePeak(data) {
+                let p = 0
+                for (let i = 0; i < data.length; i++) {
+                    const a = Math.abs(data[i])
+                    if (a > p) p = a
+                }
+                return p
+            }
 
-    /** Normalize data to target RMS (returns new Float32Array). */
-    function normalizeRms(data, targetRms) {
-      const currentRms = computeRms(data)
-      if (currentRms < 1e-10) return new Float32Array(data)
-      const scale = targetRms / currentRms
-      const out = new Float32Array(data.length)
-      for (let i = 0; i < data.length; i++) out[i] = data[i] * scale
-      return out
-    }
+            /** Normalize data to target RMS (returns new Float32Array). */
+            function normalizeRms(data, targetRms) {
+                const currentRms = computeRms(data)
+                if (currentRms < 1e-10) return new Float32Array(data)
+                const scale = targetRms / currentRms
+                const out = new Float32Array(data.length)
+                for (let i = 0; i < data.length; i++) out[i] = data[i] * scale
+                return out
+            }
 
-    function computeEnvelope(data, blockSize = 1024) {
-      const blocks = []
-      for (let i = 0; i < data.length; i += blockSize) {
-        let sum = 0
-        const end = Math.min(i + blockSize, data.length)
-        for (let j = i; j < end; j++) sum += data[j] * data[j]
-        blocks.push(Math.sqrt(sum / (end - i)))
-      }
-      return blocks
-    }
+            function computeEnvelope(data, blockSize = 1024) {
+                const blocks = []
+                for (let i = 0; i < data.length; i += blockSize) {
+                    let sum = 0
+                    const end = Math.min(i + blockSize, data.length)
+                    for (let j = i; j < end; j++) sum += data[j] * data[j]
+                    blocks.push(Math.sqrt(sum / (end - i)))
+                }
+                return blocks
+            }
 
-    function computeOnsets(envelope, threshold = 0.01) {
-      const onsets = []
-      for (let i = 1; i < envelope.length; i++) {
-        if (envelope[i] > threshold && envelope[i] - envelope[i - 1] > threshold * 0.5) {
-          onsets.push(i)
-        }
-      }
-      return onsets
-    }
+            function computeOnsets(envelope, threshold = 0.01) {
+                const onsets = []
+                for (let i = 1; i < envelope.length; i++) {
+                    if (envelope[i] > threshold && envelope[i] - envelope[i - 1] > threshold * 0.5) {
+                        onsets.push(i)
+                    }
+                }
+                return onsets
+            }
 
-    /** Compute onsets with adaptive threshold based on envelope mean. */
-    function computeOnsetsAdaptive(envelope) {
-      let sum = 0
-      for (let i = 0; i < envelope.length; i++) sum += envelope[i]
-      const mean = sum / envelope.length
-      const threshold = Math.max(0.005, mean * 0.15)
-      const onsets = []
-      for (let i = 1; i < envelope.length; i++) {
-        if (envelope[i] > threshold && envelope[i] - envelope[i - 1] > threshold * 0.3) {
-          onsets.push(i)
-        }
-      }
-      return { onsets, threshold }
-    }
+            /** Compute onsets with adaptive threshold based on envelope mean. */
+            function computeOnsetsAdaptive(envelope) {
+                let sum = 0
+                for (let i = 0; i < envelope.length; i++) sum += envelope[i]
+                const mean = sum / envelope.length
+                const threshold = Math.max(0.005, mean * 0.15)
+                const onsets = []
+                for (let i = 1; i < envelope.length; i++) {
+                    if (envelope[i] > threshold && envelope[i] - envelope[i - 1] > threshold * 0.3) {
+                        onsets.push(i)
+                    }
+                }
+                return { onsets, threshold }
+            }
 
-    function envelopeCorrelation(a, b) {
-      const len = Math.min(a.length, b.length)
-      if (len === 0) return 0
-      let sumA = 0, sumB = 0, sumAB = 0, sumA2 = 0, sumB2 = 0
-      for (let i = 0; i < len; i++) {
-        sumA += a[i]; sumB += b[i]
-        sumAB += a[i] * b[i]
-        sumA2 += a[i] * a[i]; sumB2 += b[i] * b[i]
-      }
-      const num = len * sumAB - sumA * sumB
-      const den = Math.sqrt((len * sumA2 - sumA * sumA) * (len * sumB2 - sumB * sumB))
-      return den > 0 ? num / den : 0
-    }
+            function envelopeCorrelation(a, b) {
+                const len = Math.min(a.length, b.length)
+                if (len === 0) return 0
+                let sumA = 0,
+                    sumB = 0,
+                    sumAB = 0,
+                    sumA2 = 0,
+                    sumB2 = 0
+                for (let i = 0; i < len; i++) {
+                    sumA += a[i]
+                    sumB += b[i]
+                    sumAB += a[i] * b[i]
+                    sumA2 += a[i] * a[i]
+                    sumB2 += b[i] * b[i]
+                }
+                const num = len * sumAB - sumA * sumB
+                const den = Math.sqrt((len * sumA2 - sumA * sumA) * (len * sumB2 - sumB * sumB))
+                return den > 0 ? num / den : 0
+            }
 
-    // ── Drawing ──────────────────────────────────────────────────────
+            // ── Drawing ──────────────────────────────────────────────────────
 
-    function drawWaveform(canvasId, buffer, color = '#4fc3f7') {
-      const canvas = document.getElementById(canvasId)
-      if (!canvas) return
-      const ctx = canvas.getContext('2d')
-      const data = buffer.getChannelData(0)
-      const w = canvas.width = canvas.clientWidth * 2
-      const h = canvas.height = canvas.clientHeight * 2
-      ctx.clearRect(0, 0, w, h)
-      ctx.strokeStyle = '#333'; ctx.lineWidth = 1
-      ctx.beginPath(); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke()
-      ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.beginPath()
-      const step = Math.max(1, Math.floor(data.length / w))
-      for (let i = 0; i < w; i++) {
-        const idx = Math.floor(i * data.length / w)
-        let min = 1, max = -1
-        for (let j = 0; j < step; j++) { const v = data[idx + j] ?? 0; if (v < min) min = v; if (v > max) max = v }
-        ctx.moveTo(i, (1 - max) * h / 2); ctx.lineTo(i, (1 - min) * h / 2)
-      }
-      ctx.stroke()
-    }
+            function drawWaveform(canvasId, buffer, color = '#4fc3f7') {
+                const canvas = document.getElementById(canvasId)
+                if (!canvas) return
+                const ctx = canvas.getContext('2d')
+                const data = buffer.getChannelData(0)
+                const w = (canvas.width = canvas.clientWidth * 2)
+                const h = (canvas.height = canvas.clientHeight * 2)
+                ctx.clearRect(0, 0, w, h)
+                ctx.strokeStyle = '#333'
+                ctx.lineWidth = 1
+                ctx.beginPath()
+                ctx.moveTo(0, h / 2)
+                ctx.lineTo(w, h / 2)
+                ctx.stroke()
+                ctx.strokeStyle = color
+                ctx.lineWidth = 1
+                ctx.beginPath()
+                const step = Math.max(1, Math.floor(data.length / w))
+                for (let i = 0; i < w; i++) {
+                    const idx = Math.floor((i * data.length) / w)
+                    let min = 1,
+                        max = -1
+                    for (let j = 0; j < step; j++) {
+                        const v = data[idx + j] ?? 0
+                        if (v < min) min = v
+                        if (v > max) max = v
+                    }
+                    ctx.moveTo(i, ((1 - max) * h) / 2)
+                    ctx.lineTo(i, ((1 - min) * h) / 2)
+                }
+                ctx.stroke()
+            }
 
-    function drawEnvelope(canvasId, envA, envB, colorA = '#4ade80', colorB = '#4fc3f7') {
-      const canvas = document.getElementById(canvasId)
-      if (!canvas) return
-      const ctx = canvas.getContext('2d')
-      const w = canvas.width = canvas.clientWidth * 2
-      const h = canvas.height = canvas.clientHeight * 2
-      ctx.clearRect(0, 0, w, h)
-      const maxVal = Math.max(...envA, ...envB, 0.001)
-      for (const [env, color] of [[envA, colorA], [envB, colorB]]) {
-        ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.beginPath()
-        for (let i = 0; i < env.length; i++) {
-          const x = (i / env.length) * w
-          const y = h - (env[i] / maxVal) * h * 0.9
-          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
-        }
-        ctx.stroke()
-      }
-    }
+            function drawEnvelope(canvasId, envA, envB, colorA = '#4ade80', colorB = '#4fc3f7') {
+                const canvas = document.getElementById(canvasId)
+                if (!canvas) return
+                const ctx = canvas.getContext('2d')
+                const w = (canvas.width = canvas.clientWidth * 2)
+                const h = (canvas.height = canvas.clientHeight * 2)
+                ctx.clearRect(0, 0, w, h)
+                const maxVal = Math.max(...envA, ...envB, 0.001)
+                for (const [env, color] of [
+                    [envA, colorA],
+                    [envB, colorB],
+                ]) {
+                    ctx.strokeStyle = color
+                    ctx.lineWidth = 1
+                    ctx.beginPath()
+                    for (let i = 0; i < env.length; i++) {
+                        const x = (i / env.length) * w
+                        const y = h - (env[i] / maxVal) * h * 0.9
+                        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+                    }
+                    ctx.stroke()
+                }
+            }
 
-    function decodeWavBlob(blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = async () => {
-          try {
-            const ctx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, 2, 44100)
-            const buf = await ctx.decodeAudioData(reader.result)
-            resolve(buf)
-          } catch (e) { reject(e) }
-        }
-        reader.onerror = reject
-        reader.readAsArrayBuffer(blob)
-      })
-    }
+            function decodeWavBlob(blob) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader()
+                    reader.onload = async () => {
+                        try {
+                            const ctx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
+                                2,
+                                2,
+                                44100,
+                            )
+                            const buf = await ctx.decodeAudioData(reader.result)
+                            resolve(buf)
+                        } catch (e) {
+                            reject(e)
+                        }
+                    }
+                    reader.onerror = reject
+                    reader.readAsArrayBuffer(blob)
+                })
+            }
 
-    // ── Cleanup ──────────────────────────────────────────────────────
+            // ── Cleanup ──────────────────────────────────────────────────────
 
-    function revokeObjectURLs() {
-      for (const url of objectURLs) { try { URL.revokeObjectURL(url) } catch {} }
-      objectURLs.length = 0
-    }
+            function revokeObjectURLs() {
+                for (const url of objectURLs) {
+                    try {
+                        URL.revokeObjectURL(url)
+                    } catch {}
+                }
+                objectURLs.length = 0
+            }
 
-    function addDownloadLink(blob, filename) {
-      const url = URL.createObjectURL(blob)
-      objectURLs.push(url)
-      const a = document.createElement('a')
-      a.href = url; a.download = filename
-      a.style.cssText = 'color:#4fc3f7;display:block;margin:4px 0;font-size:12px;text-decoration:none'
-      a.textContent = `Download ${filename}`
-      a.addEventListener('mouseenter', () => a.style.textDecoration = 'underline')
-      a.addEventListener('mouseleave', () => a.style.textDecoration = 'none')
-      return a
-    }
+            function addDownloadLink(blob, filename) {
+                const url = URL.createObjectURL(blob)
+                objectURLs.push(url)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = filename
+                a.style.cssText = 'color:#4fc3f7;display:block;margin:4px 0;font-size:12px;text-decoration:none'
+                a.textContent = `Download ${filename}`
+                a.addEventListener('mouseenter', () => (a.style.textDecoration = 'underline'))
+                a.addEventListener('mouseleave', () => (a.style.textDecoration = 'none'))
+                return a
+            }
 
-    async function dispose() {
-      stopPlayback()
-      if (liveTransport) { try { liveTransport.stop() } catch {} liveTransport = null }
-      if (liveEngine) { try { liveEngine.stop() } catch {} liveEngine = null }
-      if (liveAudioCtx) { try { await liveAudioCtx.close() } catch {} liveAudioCtx = null }
-      revokeObjectURLs()
-    }
+            async function dispose() {
+                stopPlayback()
+                if (liveTransport) {
+                    try {
+                        liveTransport.stop()
+                    } catch {}
+                    liveTransport = null
+                }
+                if (liveEngine) {
+                    try {
+                        liveEngine.stop()
+                    } catch {}
+                    liveEngine = null
+                }
+                if (liveAudioCtx) {
+                    try {
+                        await liveAudioCtx.close()
+                    } catch {}
+                    liveAudioCtx = null
+                }
+                revokeObjectURLs()
+            }
 
-    // ── Playback (listen to waveforms) ─────────────────────────────
+            // ── Playback (listen to waveforms) ─────────────────────────────
 
-    function playBuffer(buffer) {
-      stopPlayback()
-      const ctx = new (window.AudioContext || window.webkitAudioContext)()
-      playbackCtx = ctx
-      const source = ctx.createBufferSource()
-      source.buffer = buffer
-      source.connect(ctx.destination)
-      source.start()
-      playbackSource = source
-      source.onended = () => {
-        if (playbackSource === source) {
-          playbackSource = null; playbackCtx = null
-          if (activeBtn) { activeBtn.textContent = activeBtn.dataset.label; activeBtn = null }
-        }
-      }
-    }
+            function playBuffer(buffer) {
+                stopPlayback()
+                const ctx = new (window.AudioContext || window.webkitAudioContext)()
+                playbackCtx = ctx
+                const source = ctx.createBufferSource()
+                source.buffer = buffer
+                source.connect(ctx.destination)
+                source.start()
+                playbackSource = source
+                source.onended = () => {
+                    if (playbackSource === source) {
+                        playbackSource = null
+                        playbackCtx = null
+                        if (activeBtn) {
+                            activeBtn.textContent = activeBtn.dataset.label
+                            activeBtn = null
+                        }
+                    }
+                }
+            }
 
-    function stopPlayback() {
-      if (playbackSource) {
-        try { playbackSource.stop() } catch {}
-        playbackSource = null
-      }
-      if (playbackCtx) {
-        try { playbackCtx.close() } catch {}
-        playbackCtx = null
-      }
-    }
+            function stopPlayback() {
+                if (playbackSource) {
+                    try {
+                        playbackSource.stop()
+                    } catch {}
+                    playbackSource = null
+                }
+                if (playbackCtx) {
+                    try {
+                        playbackCtx.close()
+                    } catch {}
+                    playbackCtx = null
+                }
+            }
 
-    // ── RecordingWorklet capture ─────────────────────────────────────
+            // ── RecordingWorklet capture ─────────────────────────────────────
 
-    function createCaptureWorklet(audioCtx) {
-      return new Promise((resolve, reject) => {
-        const blob = new Blob([
-          `class RecorderProcessor extends AudioWorkletProcessor {
+            function createCaptureWorklet(audioCtx) {
+                return new Promise((resolve, reject) => {
+                    const blob = new Blob(
+                        [
+                            `class RecorderProcessor extends AudioWorkletProcessor {
             #buffer; #writePos = 0; #chunkSize
             constructor(options) {
               super()
@@ -368,270 +574,320 @@
             }
           }
           registerProcessor('recorder-processor', RecorderProcessor)`,
-        ], { type: 'application/javascript' })
-        const url = URL.createObjectURL(blob)
-        audioCtx.audioWorklet.addModule(url).then(() => {
-          URL.revokeObjectURL(url)
-          resolve()
-        }).catch(reject)
-      })
-    }
+                        ],
+                        { type: 'application/javascript' },
+                    )
+                    const url = URL.createObjectURL(blob)
+                    audioCtx.audioWorklet
+                        .addModule(url)
+                        .then(() => {
+                            URL.revokeObjectURL(url)
+                            resolve()
+                        })
+                        .catch(reject)
+                })
+            }
 
-    /**
-     * Arms capture before the transport starts, so recording and playback have
-     * the same audio-clock origin. The old implementation armed the recorder
-     * after playback began, making every metric depend on module-load latency.
-     */
-    async function armWorkletCapture(audioCtx, mixer, signal) {
-      await createCaptureWorklet(audioCtx)
-      const node = new AudioWorkletNode(audioCtx, 'recorder-processor', {
-        processorOptions: { chunkSize: 32768 }
-      })
-      const chunks = []
-      let stopped = false
-      node.port.onmessage = (e) => {
-        if (e.data?.type === 'chunk') chunks.push(e.data.samples)
-      }
+            /**
+             * Arms capture before the transport starts, so recording and playback have
+             * the same audio-clock origin. The old implementation armed the recorder
+             * after playback began, making every metric depend on module-load latency.
+             */
+            async function armWorkletCapture(audioCtx, mixer, signal) {
+                await createCaptureWorklet(audioCtx)
+                const node = new AudioWorkletNode(audioCtx, 'recorder-processor', {
+                    processorOptions: { chunkSize: 32768 },
+                })
+                const chunks = []
+                let stopped = false
+                node.port.onmessage = (e) => {
+                    if (e.data?.type === 'chunk') chunks.push(e.data.samples)
+                }
 
-      const source = mixer.analyser
-      if (!source) {
-        node.disconnect()
-        throw new Error('mixer.analyser is null')
-      }
-      source.connect(node)
-      node.connect(audioCtx.destination)
+                const source = mixer.analyser
+                if (!source) {
+                    node.disconnect()
+                    throw new Error('mixer.analyser is null')
+                }
+                source.connect(node)
+                node.connect(audioCtx.destination)
 
-      const stop = async () => {
-        if (stopped) return new Float32Array()
-        stopped = true
-        node.port.postMessage({ type: 'stop' })
-        await new Promise(resolve => setTimeout(resolve, 50))
-        node.disconnect()
-        const totalSamples = chunks.reduce((total, chunk) => total + chunk.length, 0)
-        const merged = new Float32Array(totalSamples)
-        let offset = 0
-        for (const chunk of chunks) {
-          merged.set(chunk, offset)
-          offset += chunk.length
-        }
-        return merged
-      }
+                const stop = async () => {
+                    if (stopped) return new Float32Array()
+                    stopped = true
+                    node.port.postMessage({ type: 'stop' })
+                    await new Promise((resolve) => setTimeout(resolve, 50))
+                    node.disconnect()
+                    const totalSamples = chunks.reduce((total, chunk) => total + chunk.length, 0)
+                    const merged = new Float32Array(totalSamples)
+                    let offset = 0
+                    for (const chunk of chunks) {
+                        merged.set(chunk, offset)
+                        offset += chunk.length
+                    }
+                    return merged
+                }
 
-      if (signal) {
-        signal.addEventListener('abort', () => { stop() }, { once: true })
-      }
-      return { stop }
-    }
+                if (signal) {
+                    signal.addEventListener(
+                        'abort',
+                        () => {
+                            stop()
+                        },
+                        { once: true },
+                    )
+                }
+                return { stop }
+            }
 
-    // ── Main test flow ───────────────────────────────────────────────
+            // ── Main test flow ───────────────────────────────────────────────
 
-    btnRun.addEventListener('click', async () => {
-      clearLog(); resultsEl.innerHTML = ''
-      revokeObjectURLs()
-      btnRun.disabled = true; btnStop.disabled = false
-      abortController = new AbortController()
-      const signal = abortController.signal
+            btnRun.addEventListener('click', async () => {
+                clearLog()
+                resultsEl.innerHTML = ''
+                revokeObjectURLs()
+                btnRun.disabled = true
+                btnStop.disabled = false
+                abortController = new AbortController()
+                const signal = abortController.signal
 
-      try {
-        // ── 1. Bootstrap ────────────────────────────────────────────
-        log('[1/5] Bootstrapping...', 'info')
-        serviceRegistry.cmd = new Commander()
-        serviceRegistry.patterns = { computeNextPatternStepNote: (note, track) => track.loopAtStep }
-        serviceRegistry.resourcesLoader = new ResourcesLoader()
-        serviceRegistry.seq = new Sequencer()
+                try {
+                    // ── 1. Bootstrap ────────────────────────────────────────────
+                    log('[1/5] Bootstrapping...', 'info')
+                    serviceRegistry.cmd = new Commander()
+                    serviceRegistry.patterns = { computeNextPatternStepNote: (note, track) => track.loopAtStep }
+                    serviceRegistry.resourcesLoader = new ResourcesLoader()
+                    serviceRegistry.seq = new Sequencer()
 
-        const AudioCtx = window.AudioContext || window.webkitAudioContext
-        liveAudioCtx = new AudioCtx()
-        await liveAudioCtx.resume()
-        serviceRegistry.audioCtx = liveAudioCtx
-        log(`  AudioContext: ${liveAudioCtx.state}`, 'ok')
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext
+                    liveAudioCtx = new AudioCtx()
+                    await liveAudioCtx.resume()
+                    serviceRegistry.audioCtx = liveAudioCtx
+                    log(`  AudioContext: ${liveAudioCtx.state}`, 'ok')
 
-        // ── 2. Load resources ───────────────────────────────────────
-        log('[2/5] Loading samples + synth presets...', 'info')
-        await serviceRegistry.resourcesLoader.loadSettings()
-        await serviceRegistry.resourcesLoader.loadDrumkitList(ResourcesLoader.DRUMKITS_URL)
-        await serviceRegistry.resourcesLoader.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
-        const firstKit = soundRegistry.drumkitList[0]
-        if (!firstKit) throw new Error('No drumkit found')
-        await serviceRegistry.resourcesLoader.loadSamplesFromDrumkit(firstKit)
-        log(`  ${Object.keys(soundRegistry.sounds).length} samples from "${firstKit.name}"`, 'ok')
-        log(`  ${Object.keys(soundRegistry.generatedSounds).length} synth presets`, 'ok')
+                    // ── 2. Load resources ───────────────────────────────────────
+                    log('[2/5] Loading samples + synth presets...', 'info')
+                    await serviceRegistry.resourcesLoader.loadSettings()
+                    await serviceRegistry.resourcesLoader.loadDrumkitList(ResourcesLoader.DRUMKITS_URL)
+                    await serviceRegistry.resourcesLoader.loadGeneratedSounds(ResourcesLoader.GENERATED_SOUNDS_URL)
+                    const firstKit = soundRegistry.drumkitList[0]
+                    if (!firstKit) throw new Error('No drumkit found')
+                    await serviceRegistry.resourcesLoader.loadSamplesFromDrumkit(firstKit)
+                    log(`  ${Object.keys(soundRegistry.sounds).length} samples from "${firstKit.name}"`, 'ok')
+                    log(`  ${Object.keys(soundRegistry.generatedSounds).length} synth presets`, 'ok')
 
-        // ── 3. Auto-assign sounds (on a cloned pattern) ─────────────
-        log('[3/5] Auto-assigning sounds...', 'info')
-        const testPattern = buildTestPattern()
-        appState.patterns.length = 0
-        appState.patterns.push(testPattern)
-        appState.selectedPatternNum = 0
-        appState.selectedDrumkitNum = 0
-        const autoAssign = await getAutoAssignService()
-        autoAssign.autoAssignSounds(testPattern)
-        for (const t of testPattern.tracks) log(`  ${t.name.padEnd(8)} → ${t.soundId}`, '')
+                    // ── 3. Auto-assign sounds (on a cloned pattern) ─────────────
+                    log('[3/5] Auto-assigning sounds...', 'info')
+                    const testPattern = buildTestPattern()
+                    appState.patterns.length = 0
+                    appState.patterns.push(testPattern)
+                    appState.selectedPatternNum = 0
+                    appState.selectedDrumkitNum = 0
+                    const autoAssign = await getAutoAssignService()
+                    autoAssign.autoAssignSounds(testPattern)
+                    for (const t of testPattern.tracks) log(`  ${t.name.padEnd(8)} → ${t.soundId}`, '')
 
-        // Add slow LFO1 modulation on VCO1 to the SYNTH_LEAD preset
-        const synthLead = soundRegistry.generatedSounds['SYNTH1']
-        if (synthLead) {
-          synthLead.lfo = { target: 'vco1.octave', wave: 'sine', freq: 0.5, depth: 0.6 }
-          log('  LFO1: SYNTH1 → vco1.octave, sine 0.5 Hz, depth 0.6', 'ok')
-        }
+                    // Add slow LFO1 modulation on VCO1 to the SYNTH_LEAD preset
+                    const synthLead = soundRegistry.generatedSounds['SYNTH1']
+                    if (synthLead) {
+                        synthLead.lfo = { target: 'vco1.octave', wave: 'sine', freq: 0.5, depth: 0.6 }
+                        log('  LFO1: SYNTH1 → vco1.octave, sine 0.5 Hz, depth 0.6', 'ok')
+                    }
 
-        // ── 4. Offline WAV export ───────────────────────────────────
-        log('[4/5] Running offline WAV export...', 'info')
-        const exporter = new WavExporter()
-        const offlineBlob = await exporter.exportPatternToWav(testPattern, 1)
-        const offlineBuffer = await decodeWavBlob(offlineBlob)
-        log(`  Offline: ${offlineBuffer.duration.toFixed(3)}s, ${offlineBuffer.numberOfChannels}ch`, 'ok')
-        const offlineL = offlineBuffer.getChannelData(0)
+                    // ── 4. Offline WAV export ───────────────────────────────────
+                    log('[4/5] Running offline WAV export...', 'info')
+                    const exporter = new WavExporter()
+                    const offlineBlob = await exporter.exportPatternToWav(testPattern, 1)
+                    const offlineBuffer = await decodeWavBlob(offlineBlob)
+                    log(`  Offline: ${offlineBuffer.duration.toFixed(3)}s, ${offlineBuffer.numberOfChannels}ch`, 'ok')
+                    const offlineL = offlineBuffer.getChannelData(0)
 
-        // ── 5. Live playback + capture via AudioWorklet ─────────────
-        log('[5/5] Starting live playback + AudioWorklet capture...', 'info')
+                    // ── 5. Live playback + capture via AudioWorklet ─────────────
+                    log('[5/5] Starting live playback + AudioWorklet capture...', 'info')
 
-        // Create + wire Transport (the timer worker that drives note scheduling)
-        liveTransport = new Transport(liveAudioCtx)
-        liveTransport.setBpm(BPM)
-        liveTransport.onSchedule = (tick, time) => {
-          liveEngine?.playNotes(tick, time)
-        }
-        serviceRegistry.transport = liveTransport
+                    // Create + wire Transport (the timer worker that drives note scheduling)
+                    liveTransport = new Transport(liveAudioCtx)
+                    liveTransport.setBpm(BPM)
+                    liveTransport.onSchedule = (tick, time) => {
+                        liveEngine?.playNotes(tick, time)
+                    }
+                    serviceRegistry.transport = liveTransport
 
-        liveEngine = new AudioEngine({
-          audioCtx: liveAudioCtx, sounds: soundRegistry.sounds,
-          generatedSounds: soundRegistry.generatedSounds,
-          patterns: [testPattern], selectedPatternNum: 0,
-          getSelectedPatternNum: () => 0,
-          computeNextStep: (note, track) =>
-            serviceRegistry.patterns.computeNextPatternStepNote?.(note, track) ?? track.loopAtStep,
-          TICK, secondsPerBeat: 60 * 4 / (BPM * TICK), isOffline: false,
-        })
-        await liveEngine.ready
-        await liveEngine.start(testPattern)
-        liveEngine.mixer.setBpm(BPM)
-        serviceRegistry.audioEngine = liveEngine
-        const patternDurationMs = NB_BEATS * (60 / BPM) * 1000
-        log(`  Pattern: ${NB_BEATS} beats @ ${BPM} BPM = ${(patternDurationMs / 1000).toFixed(1)}s`, '')
+                    liveEngine = new AudioEngine({
+                        audioCtx: liveAudioCtx,
+                        sounds: soundRegistry.sounds,
+                        generatedSounds: soundRegistry.generatedSounds,
+                        patterns: [testPattern],
+                        selectedPatternNum: 0,
+                        getSelectedPatternNum: () => 0,
+                        computeNextStep: (note, track) =>
+                            serviceRegistry.patterns.computeNextPatternStepNote?.(note, track) ?? track.loopAtStep,
+                        TICK,
+                        secondsPerBeat: (60 * 4) / (BPM * TICK),
+                        isOffline: false,
+                    })
+                    await liveEngine.ready
+                    await liveEngine.start(testPattern)
+                    liveEngine.mixer.setBpm(BPM)
+                    serviceRegistry.audioEngine = liveEngine
+                    const patternDurationMs = NB_BEATS * (60 / BPM) * 1000
+                    log(`  Pattern: ${NB_BEATS} beats @ ${BPM} BPM = ${(patternDurationMs / 1000).toFixed(1)}s`, '')
 
-        const capture = await armWorkletCapture(liveAudioCtx, liveEngine.mixer, signal)
-        liveTransport.start()
-        log('  Engine + Transport started', 'ok')
-        await new Promise(resolve => setTimeout(resolve, patternDurationMs + 50))
-        if (signal.aborted) throw new Error('Aborted')
-        const liveSamples = await capture.stop()
-        log(`  Captured ${liveSamples.length} samples (${(liveSamples.length / liveAudioCtx.sampleRate).toFixed(2)}s)`, 'ok')
+                    const capture = await armWorkletCapture(liveAudioCtx, liveEngine.mixer, signal)
+                    liveTransport.start()
+                    log('  Engine + Transport started', 'ok')
+                    await new Promise((resolve) => setTimeout(resolve, patternDurationMs + 50))
+                    if (signal.aborted) throw new Error('Aborted')
+                    const liveSamples = await capture.stop()
+                    log(
+                        `  Captured ${liveSamples.length} samples (${(liveSamples.length / liveAudioCtx.sampleRate).toFixed(2)}s)`,
+                        'ok',
+                    )
 
-        liveTransport.stop()
-        liveEngine.stop()
-        const liveSampleRate = liveAudioCtx?.sampleRate ?? 44100
-        liveEngine = null
-        liveTransport = null
-        if (liveAudioCtx) { await liveAudioCtx.close(); liveAudioCtx = null }
+                    liveTransport.stop()
+                    liveEngine.stop()
+                    const liveSampleRate = liveAudioCtx?.sampleRate ?? 44100
+                    liveEngine = null
+                    liveTransport = null
+                    if (liveAudioCtx) {
+                        await liveAudioCtx.close()
+                        liveAudioCtx = null
+                    }
 
-        // Validate capture is not silence
-        let nonZeroCount = 0
-        for (let i = 0; i < liveSamples.length; i++) {
-          if (Math.abs(liveSamples[i]) > 0.0001) nonZeroCount++
-        }
-        const nonZeroRatio = nonZeroCount / liveSamples.length
-        log(`  Non-zero samples: ${nonZeroCount}/${liveSamples.length} (${(nonZeroRatio * 100).toFixed(1)}%)`, nonZeroRatio > 0.01 ? 'ok' : 'fail')
+                    // Validate capture is not silence
+                    let nonZeroCount = 0
+                    for (let i = 0; i < liveSamples.length; i++) {
+                        if (Math.abs(liveSamples[i]) > 0.0001) nonZeroCount++
+                    }
+                    const nonZeroRatio = nonZeroCount / liveSamples.length
+                    log(
+                        `  Non-zero samples: ${nonZeroCount}/${liveSamples.length} (${(nonZeroRatio * 100).toFixed(1)}%)`,
+                        nonZeroRatio > 0.01 ? 'ok' : 'fail',
+                    )
 
-        if (nonZeroRatio <= 0.01) {
-          log('', '')
-          log('FAIL — Live capture is silent. AudioWorklet may not be receiving audio from the mixer.', 'fail')
-          log('This tool requires a real-time browser with AudioWorklet support.', 'warn')
-          log('The offline export path is NOT used as a fallback.', 'warn')
-          resultsEl.innerHTML = '<p style="color:#ef9a9a;font-size:12px">Live capture failed — no fallback applied.</p>'
-          return
-        }
+                    if (nonZeroRatio <= 0.01) {
+                        log('', '')
+                        log(
+                            'FAIL — Live capture is silent. AudioWorklet may not be receiving audio from the mixer.',
+                            'fail',
+                        )
+                        log('This tool requires a real-time browser with AudioWorklet support.', 'warn')
+                        log('The offline export path is NOT used as a fallback.', 'warn')
+                        resultsEl.innerHTML =
+                            '<p style="color:#ef9a9a;font-size:12px">Live capture failed — no fallback applied.</p>'
+                        return
+                    }
 
-        // Build live AudioBuffer (mono), trimmed to offline duration
-        const trimLen = Math.min(liveSamples.length, offlineL.length)
-        const liveBuffer = new OfflineAudioContext(1, trimLen, liveSampleRate)
-          .createBuffer(1, trimLen, liveSampleRate)
-        liveBuffer.getChannelData(0).set(liveSamples.subarray(0, trimLen))
-        const liveL = liveBuffer.getChannelData(0)
+                    // Build live AudioBuffer (mono), trimmed to offline duration
+                    const trimLen = Math.min(liveSamples.length, offlineL.length)
+                    const liveBuffer = new OfflineAudioContext(1, trimLen, liveSampleRate).createBuffer(
+                        1,
+                        trimLen,
+                        liveSampleRate,
+                    )
+                    liveBuffer.getChannelData(0).set(liveSamples.subarray(0, trimLen))
+                    const liveL = liveBuffer.getChannelData(0)
 
-        // ── Metrics comparison ───────────────────────────────────────
-        log('', '')
-        log('═══ Metrics Comparison: LIVE (AudioWorklet) vs OFFLINE (WavExporter) ═══', 'info')
+                    // ── Metrics comparison ───────────────────────────────────────
+                    log('', '')
+                    log('═══ Metrics Comparison: LIVE (AudioWorklet) vs OFFLINE (WavExporter) ═══', 'info')
 
-        const minLen = trimLen
+                    const minLen = trimLen
 
-        const rmsLive = computeRms(liveL)
-        const rmsOff = computeRms(offlineL)
-        const rmsDiff = (rmsLive + rmsOff) > 0
-          ? Math.abs(rmsLive - rmsOff) / Math.max(rmsLive, rmsOff) * 100 : 100
-        log(`  RMS live:    ${rmsLive.toFixed(6)}`, rmsLive > 0.001 ? 'ok' : 'fail')
-        log(`  RMS offline: ${rmsOff.toFixed(6)}`, rmsOff > 0.001 ? 'ok' : 'fail')
-        log(`  RMS diff:    ${rmsDiff.toFixed(2)}%`, rmsDiff < 25 ? 'ok' : 'fail')
+                    const rmsLive = computeRms(liveL)
+                    const rmsOff = computeRms(offlineL)
+                    const rmsDiff =
+                        rmsLive + rmsOff > 0 ? (Math.abs(rmsLive - rmsOff) / Math.max(rmsLive, rmsOff)) * 100 : 100
+                    log(`  RMS live:    ${rmsLive.toFixed(6)}`, rmsLive > 0.001 ? 'ok' : 'fail')
+                    log(`  RMS offline: ${rmsOff.toFixed(6)}`, rmsOff > 0.001 ? 'ok' : 'fail')
+                    log(`  RMS diff:    ${rmsDiff.toFixed(2)}%`, rmsDiff < 25 ? 'ok' : 'fail')
 
-        const peakLive = computePeak(liveL)
-        const peakOff = computePeak(offlineL)
-        const peakDiff = Math.max(peakLive, peakOff) > 0
-          ? Math.abs(peakLive - peakOff) / Math.max(peakLive, peakOff) * 100 : 100
-        log(`  Peak live:    ${peakLive.toFixed(6)}`, peakLive > 0.001 ? 'ok' : 'fail')
-        log(`  Peak offline: ${peakOff.toFixed(6)}`, 'ok')
-        log(`  Peak diff:    ${peakDiff.toFixed(2)}%`, peakDiff < 25 ? 'ok' : 'fail')
+                    const peakLive = computePeak(liveL)
+                    const peakOff = computePeak(offlineL)
+                    const peakDiff =
+                        Math.max(peakLive, peakOff) > 0
+                            ? (Math.abs(peakLive - peakOff) / Math.max(peakLive, peakOff)) * 100
+                            : 100
+                    log(`  Peak live:    ${peakLive.toFixed(6)}`, peakLive > 0.001 ? 'ok' : 'fail')
+                    log(`  Peak offline: ${peakOff.toFixed(6)}`, 'ok')
+                    log(`  Peak diff:    ${peakDiff.toFixed(2)}%`, peakDiff < 25 ? 'ok' : 'fail')
 
-        log(`  Duration live:    ${(liveSamples.length / liveSampleRate).toFixed(3)}s`, '')
-        log(`  Duration offline: ${offlineBuffer.duration.toFixed(3)}s`, '')
+                    log(`  Duration live:    ${(liveSamples.length / liveSampleRate).toFixed(3)}s`, '')
+                    log(`  Duration offline: ${offlineBuffer.duration.toFixed(3)}s`, '')
 
-        // Envelope comparison (block-based RMS, insensitive to sample alignment)
-        const blockSize = 1024
-        const envLive = computeEnvelope(liveL, blockSize)
-        const envOff = computeEnvelope(offlineL, blockSize)
-        const corr = envelopeCorrelation(envLive, envOff)
-        log(`  Envelope correlation: ${corr.toFixed(4)}`, corr > 0.7 ? 'ok' : 'fail')
+                    // Envelope comparison (block-based RMS, insensitive to sample alignment)
+                    const blockSize = 1024
+                    const envLive = computeEnvelope(liveL, blockSize)
+                    const envOff = computeEnvelope(offlineL, blockSize)
+                    const corr = envelopeCorrelation(envLive, envOff)
+                    log(`  Envelope correlation: ${corr.toFixed(4)}`, corr > 0.7 ? 'ok' : 'fail')
 
-        // Onset comparison (fixed threshold)
-        const onsetsLive = computeOnsets(envLive)
-        const onsetsOff = computeOnsets(envOff)
-        log(`  Onsets live (fixed):    ${onsetsLive.length}`, '')
-        log(`  Onsets offline (fixed): ${onsetsOff.length}`, '')
+                    // Onset comparison (fixed threshold)
+                    const onsetsLive = computeOnsets(envLive)
+                    const onsetsOff = computeOnsets(envOff)
+                    log(`  Onsets live (fixed):    ${onsetsLive.length}`, '')
+                    log(`  Onsets offline (fixed): ${onsetsOff.length}`, '')
 
-        // ── Normalized comparison (eliminates level difference) ──────
-        log('', '')
-        log('═══ Normalized Comparison (both signals scaled to same RMS) ═══', 'info')
-        const targetRms = Math.max(rmsLive, rmsOff)
-        const liveNorm = normalizeRms(liveL, targetRms)
-        const offNorm = normalizeRms(offlineL, targetRms)
-        const envLiveNorm = computeEnvelope(liveNorm, blockSize)
-        const envOffNorm = computeEnvelope(offNorm, blockSize)
-        const corrNorm = envelopeCorrelation(envLiveNorm, envOffNorm)
-        log(`  Normalized envelope correlation: ${corrNorm.toFixed(4)}`, corrNorm > 0.7 ? 'ok' : 'fail')
+                    // ── Normalized comparison (eliminates level difference) ──────
+                    log('', '')
+                    log('═══ Normalized Comparison (both signals scaled to same RMS) ═══', 'info')
+                    const targetRms = Math.max(rmsLive, rmsOff)
+                    const liveNorm = normalizeRms(liveL, targetRms)
+                    const offNorm = normalizeRms(offlineL, targetRms)
+                    const envLiveNorm = computeEnvelope(liveNorm, blockSize)
+                    const envOffNorm = computeEnvelope(offNorm, blockSize)
+                    const corrNorm = envelopeCorrelation(envLiveNorm, envOffNorm)
+                    log(`  Normalized envelope correlation: ${corrNorm.toFixed(4)}`, corrNorm > 0.7 ? 'ok' : 'fail')
 
-        // Adaptive onset comparison (threshold based on signal mean)
-        const { onsets: onsetsLiveAdapt, threshold: thLive } = computeOnsetsAdaptive(envLive)
-        const { onsets: onsetsOffAdapt, threshold: thOff } = computeOnsetsAdaptive(envOff)
-        log(`  Onsets live (adaptive, th=${thLive.toFixed(4)}):    ${onsetsLiveAdapt.length}`, '')
-        log(`  Onsets offline (adaptive, th=${thOff.toFixed(4)}): ${onsetsOffAdapt.length}`, '')
-        const onsetRatioAdapt = Math.min(onsetsLiveAdapt.length, onsetsOffAdapt.length) / Math.max(onsetsLiveAdapt.length, onsetsOffAdapt.length, 1)
-        log(`  Onset ratio (adaptive): ${(onsetRatioAdapt * 100).toFixed(1)}%`, onsetRatioAdapt > 0.6 ? 'ok' : 'fail')
+                    // Adaptive onset comparison (threshold based on signal mean)
+                    const { onsets: onsetsLiveAdapt, threshold: thLive } = computeOnsetsAdaptive(envLive)
+                    const { onsets: onsetsOffAdapt, threshold: thOff } = computeOnsetsAdaptive(envOff)
+                    log(`  Onsets live (adaptive, th=${thLive.toFixed(4)}):    ${onsetsLiveAdapt.length}`, '')
+                    log(`  Onsets offline (adaptive, th=${thOff.toFixed(4)}): ${onsetsOffAdapt.length}`, '')
+                    const onsetRatioAdapt =
+                        Math.min(onsetsLiveAdapt.length, onsetsOffAdapt.length) /
+                        Math.max(onsetsLiveAdapt.length, onsetsOffAdapt.length, 1)
+                    log(
+                        `  Onset ratio (adaptive): ${(onsetRatioAdapt * 100).toFixed(1)}%`,
+                        onsetRatioAdapt > 0.6 ? 'ok' : 'fail',
+                    )
 
-        // Correlation on normalized envelopes
-        const onsetRatio = Math.min(onsetsLive.length, onsetsOff.length) / Math.max(onsetsLive.length, onsetsOff.length, 1)
-        log(`  Onset ratio (fixed):    ${(onsetRatio * 100).toFixed(1)}%`, onsetRatio > 0.5 ? 'ok' : 'fail')
+                    // Correlation on normalized envelopes
+                    const onsetRatio =
+                        Math.min(onsetsLive.length, onsetsOff.length) / Math.max(onsetsLive.length, onsetsOff.length, 1)
+                    log(`  Onset ratio (fixed):    ${(onsetRatio * 100).toFixed(1)}%`, onsetRatio > 0.5 ? 'ok' : 'fail')
 
-        // ── Diagnostic: per-track voice count ────────────────────────
-        log('', '')
-        log('═══ Diagnostic Info ═══', 'info')
-        log(`  Live sample rate: ${liveSampleRate} Hz`, '')
-        log(`  Offline sample rate: ${offlineBuffer.sampleRate} Hz`, '')
-        log(`  Trim length: ${trimLen} samples (${(trimLen / liveSampleRate).toFixed(3)}s at live SR)`, '')
+                    // ── Diagnostic: per-track voice count ────────────────────────
+                    log('', '')
+                    log('═══ Diagnostic Info ═══', 'info')
+                    log(`  Live sample rate: ${liveSampleRate} Hz`, '')
+                    log(`  Offline sample rate: ${offlineBuffer.sampleRate} Hz`, '')
+                    log(`  Trim length: ${trimLen} samples (${(trimLen / liveSampleRate).toFixed(3)}s at live SR)`, '')
 
-        // ── Verdict ─────────────────────────────────────────────────
-        log('', '')
-        const passed = rmsDiff < 25 && corr > 0.7 && nonZeroRatio > 0.01
-        if (passed) {
-          log(`PASS — Live and offline renders are comparable (RMS diff ${rmsDiff.toFixed(2)}%, envelope corr ${corr.toFixed(3)})`, 'ok')
-          log(`Live capture used AudioWorklet-based recording (no AnalyserNode polling).`, '')
-        } else {
-          log(`FAIL — Significant differences detected (RMS diff ${rmsDiff.toFixed(2)}%, envelope corr ${corr.toFixed(3)})`, 'fail')
-          if (corrNorm > 0.7) {
-            log(`  Note: Normalized correlation is ${corrNorm.toFixed(3)} — shapes match, level difference is the issue`, 'warn')
-          }
-        }
+                    // ── Verdict ─────────────────────────────────────────────────
+                    log('', '')
+                    const passed = rmsDiff < 25 && corr > 0.7 && nonZeroRatio > 0.01
+                    if (passed) {
+                        log(
+                            `PASS — Live and offline renders are comparable (RMS diff ${rmsDiff.toFixed(2)}%, envelope corr ${corr.toFixed(3)})`,
+                            'ok',
+                        )
+                        log(`Live capture used AudioWorklet-based recording (no AnalyserNode polling).`, '')
+                    } else {
+                        log(
+                            `FAIL — Significant differences detected (RMS diff ${rmsDiff.toFixed(2)}%, envelope corr ${corr.toFixed(3)})`,
+                            'fail',
+                        )
+                        if (corrNorm > 0.7) {
+                            log(
+                                `  Note: Normalized correlation is ${corrNorm.toFixed(3)} — shapes match, level difference is the issue`,
+                                'warn',
+                            )
+                        }
+                    }
 
-        // ── Results UI ──────────────────────────────────────────────
-        resultsEl.innerHTML = `
+                    // ── Results UI ──────────────────────────────────────────────
+                    resultsEl.innerHTML = `
           <div class="waveform">
             <div style="flex:1">
               <label>LIVE (AudioWorklet capture)</label>
@@ -656,64 +912,76 @@
           </div>
           <div id="wav-links" style="margin-top:8px"></div>
         `
-        await new Promise(r => setTimeout(r, 50))
-        drawWaveform('cv-live', liveBuffer, '#4ade80')
-        drawWaveform('cv-offline', offlineBuffer, '#4fc3f7')
-        drawEnvelope('cv-env', envLive, envOff)
+                    await new Promise((r) => setTimeout(r, 50))
+                    drawWaveform('cv-live', liveBuffer, '#4ade80')
+                    drawWaveform('cv-offline', offlineBuffer, '#4fc3f7')
+                    drawEnvelope('cv-env', envLive, envOff)
 
-        const btnPlayLive = document.getElementById('btn-play-live')
-        const btnPlayOffline = document.getElementById('btn-play-offline')
+                    const btnPlayLive = document.getElementById('btn-play-live')
+                    const btnPlayOffline = document.getElementById('btn-play-offline')
 
-        function setPlaying(btn) {
-          if (activeBtn) activeBtn.textContent = activeBtn.dataset.label
-          activeBtn = btn
-          if (btn) btn.textContent = '⏹ Stop'
-        }
-        if (btnPlayLive) btnPlayLive.addEventListener('click', () => {
-          if (activeBtn === btnPlayLive) { stopPlayback(); setPlaying(null); return }
-          playBuffer(liveBuffer, btnPlayLive); setPlaying(btnPlayLive)
-        })
-        if (btnPlayOffline) btnPlayOffline.addEventListener('click', () => {
-          if (activeBtn === btnPlayOffline) { stopPlayback(); setPlaying(null); return }
-          playBuffer(offlineBuffer, btnPlayOffline); setPlaying(btnPlayOffline)
-        })
+                    function setPlaying(btn) {
+                        if (activeBtn) activeBtn.textContent = activeBtn.dataset.label
+                        activeBtn = btn
+                        if (btn) btn.textContent = '⏹ Stop'
+                    }
+                    if (btnPlayLive)
+                        btnPlayLive.addEventListener('click', () => {
+                            if (activeBtn === btnPlayLive) {
+                                stopPlayback()
+                                setPlaying(null)
+                                return
+                            }
+                            playBuffer(liveBuffer, btnPlayLive)
+                            setPlaying(btnPlayLive)
+                        })
+                    if (btnPlayOffline)
+                        btnPlayOffline.addEventListener('click', () => {
+                            if (activeBtn === btnPlayOffline) {
+                                stopPlayback()
+                                setPlaying(null)
+                                return
+                            }
+                            playBuffer(offlineBuffer, btnPlayOffline)
+                            setPlaying(btnPlayOffline)
+                        })
 
-        const similarityPct = Math.max(0, Math.min(100, corr * 100))
-        const diffFill = document.getElementById('diff-fill')
-        const diffLabel = document.getElementById('diff-label')
-        if (diffFill) {
-          diffFill.style.width = `${similarityPct}%`
-          diffFill.style.background = similarityPct > 70 ? '#4ade80' : similarityPct > 40 ? '#f59e0b' : '#ef9a9a'
-          diffLabel.textContent = `Similarity: ${similarityPct.toFixed(1)}% — RMS diff: ${rmsDiff.toFixed(2)}% — Envelope corr: ${corr.toFixed(3)}`
-        }
+                    const similarityPct = Math.max(0, Math.min(100, corr * 100))
+                    const diffFill = document.getElementById('diff-fill')
+                    const diffLabel = document.getElementById('diff-label')
+                    if (diffFill) {
+                        diffFill.style.width = `${similarityPct}%`
+                        diffFill.style.background =
+                            similarityPct > 70 ? '#4ade80' : similarityPct > 40 ? '#f59e0b' : '#ef9a9a'
+                        diffLabel.textContent = `Similarity: ${similarityPct.toFixed(1)}% — RMS diff: ${rmsDiff.toFixed(2)}% — Envelope corr: ${corr.toFixed(3)}`
+                    }
 
-        const wavLinks = document.getElementById('wav-links')
-        if (wavLinks) {
-          wavLinks.appendChild(addDownloadLink(bufferToWav(liveBuffer), 'live_capture.wav'))
-          wavLinks.appendChild(addDownloadLink(offlineBlob, 'offline_export.wav'))
-        }
+                    const wavLinks = document.getElementById('wav-links')
+                    if (wavLinks) {
+                        wavLinks.appendChild(addDownloadLink(bufferToWav(liveBuffer), 'live_capture.wav'))
+                        wavLinks.appendChild(addDownloadLink(offlineBlob, 'offline_export.wav'))
+                    }
+                } catch (err) {
+                    if (signal?.aborted) {
+                        log('Stopped.', 'info')
+                    } else {
+                        log(`ERROR: ${err.message}`, 'fail')
+                        console.error(err)
+                    }
+                } finally {
+                    await dispose()
+                    btnRun.disabled = false
+                    btnStop.disabled = true
+                    abortController = null
+                }
+            })
 
-      } catch (err) {
-        if (signal?.aborted) {
-          log('Stopped.', 'info')
-        } else {
-          log(`ERROR: ${err.message}`, 'fail')
-          console.error(err)
-        }
-      } finally {
-        await dispose()
-        btnRun.disabled = false
-        btnStop.disabled = true
-        abortController = null
-      }
-    })
-
-    btnStop.addEventListener('click', () => {
-      if (abortController) {
-        abortController.abort()
-        log('Stopping...', 'info')
-      }
-    })
-  </script>
-</body>
+            btnStop.addEventListener('click', () => {
+                if (abortController) {
+                    abortController.abort()
+                    log('Stopping...', 'info')
+                }
+            })
+        </script>
+    </body>
 </html>

@@ -1,112 +1,138 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:">
-  
-  <title>orDrumbox | Free Online Drum Machine & Step Sequencer</title>
-  <meta name="description" content="Create beats with orDrumbox, a free online drum machine. Features step sequencer, soft synth, LFO modulators, and WAV export.">
-  
-  <meta property="og:title" content="orDrumbox - Free Online Drum Machine">
-  <meta property="og:description" content="Create, customize, and export drum patterns directly in your browser.">
-  <meta property="og:image" content="https://www.ordrumbox.com/assets/images/ordrumbox-online-screenshot.png">
-  <meta property="og:url" content="https://www.ordrumbox.com">
-  <meta property="og:type" content="website">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; worker-src 'self' blob:"
+        />
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="orDrumbox | Online Beat Maker">
-  <meta name="twitter:image" content="https://www.ordrumbox.com/assets/images/ordrumbox-online-screenshot.png">
-  <link rel="canonical" href="https://www.ordrumbox.com">
+        <title>orDrumbox | Free Online Drum Machine & Step Sequencer</title>
+        <meta
+            name="description"
+            content="Create beats with orDrumbox, a free online drum machine. Features step sequencer, soft synth, LFO modulators, and WAV export."
+        />
 
-  <link rel="manifest" href="manifest.json">
-  <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "online orDrumbox",
-        "description": "Create you own patterns with powerfull custom controls using various styles drumkits ",
-        "url": "https://www.ordrumbox.com/index.html",
-        "applicationCategory": "Music",
-        "operatingSystem": "Web",
-        "screenshot": "https://www.ordrumbox.com/assets/images/jsdrumbox-screenshot.png",
-        "inLanguage": "en-US",
-        "author": {
-            "@type": "Organization",
-            "name": "orDrumbox Team",
-            "url": "https://www.ordrumbox.com"
-        },
-        "applicationSubCategory": "Music Composition",
-        "applicationFeature": [
-            "Music Sequencing",
-            "Drum Kits",
-            "Demo Patterns",
-            "Filters",
-            "Triggers",
-            "Midi",
-            "LFO Modulators",
-            "Virtual Drum Machine",
-            "Virtual Synth"
-        ]
-    }
-    </script>
- 
-  
+        <meta property="og:title" content="orDrumbox - Free Online Drum Machine" />
+        <meta
+            property="og:description"
+            content="Create, customize, and export drum patterns directly in your browser."
+        />
+        <meta property="og:image" content="https://www.ordrumbox.com/assets/images/ordrumbox-online-screenshot.png" />
+        <meta property="og:url" content="https://www.ordrumbox.com" />
+        <meta property="og:type" content="website" />
 
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="orDrumbox | Online Beat Maker" />
+        <meta name="twitter:image" content="https://www.ordrumbox.com/assets/images/ordrumbox-online-screenshot.png" />
+        <link rel="canonical" href="https://www.ordrumbox.com" />
 
-</head>
-<body>
-  <main id="app-main" aria-label="orDrumbox Beat Maker" role="application">
-    <style>
-      #waiting-screen {
-        position: fixed; inset: 0; width: 100%; height: 100%;
-        display: flex; justify-content: center; align-items: center;
-        padding: 24px; box-sizing: border-box;
-        background-color: #E7E8E4; z-index: 9999;
-      }
-      #waiting-screen-start-btn {
-        position: absolute; top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        padding: 16px 36px; font-size: 14px; font-weight: bold;
-        border: 2px solid #202321; border-radius: 8px;
-        cursor: pointer; background-color: #686A67; color: #E7E8E4;
-        touch-action: manipulation; transition: background-color 0.2s, transform 0.1s;
-        z-index: 1;
-      }
-      #waiting-screen-start-btn:hover { transform: translate(-50%, -50%) scale(1.02); }
-      #waiting-screen-start-btn.ready {
-        background-color: #596B61; color: #E7E8E4; border-color: #596B61;
-      }
-    </style>
-    <div id="waiting-screen">
-      <button id="waiting-screen-start-btn">Start orDrumbox V2</button>
-    </div>
-  </main>
-  <script type="module">
-    const screenEl = document.getElementById('waiting-screen')
-    const startBtn = document.getElementById('waiting-screen-start-btn')
-    let isStarted = false
+        <link rel="manifest" href="manifest.json" />
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                "name": "online orDrumbox",
+                "description": "Create you own patterns with powerfull custom controls using various styles drumkits ",
+                "url": "https://www.ordrumbox.com/index.html",
+                "applicationCategory": "Music",
+                "operatingSystem": "Web",
+                "screenshot": "https://www.ordrumbox.com/assets/images/jsdrumbox-screenshot.png",
+                "inLanguage": "en-US",
+                "author": {
+                    "@type": "Organization",
+                    "name": "orDrumbox Team",
+                    "url": "https://www.ordrumbox.com"
+                },
+                "applicationSubCategory": "Music Composition",
+                "applicationFeature": [
+                    "Music Sequencing",
+                    "Drum Kits",
+                    "Demo Patterns",
+                    "Filters",
+                    "Triggers",
+                    "Midi",
+                    "LFO Modulators",
+                    "Virtual Drum Machine",
+                    "Virtual Synth"
+                ]
+            }
+        </script>
+    </head>
+    <body>
+        <main id="app-main" aria-label="orDrumbox Beat Maker" role="application">
+            <style>
+                #waiting-screen {
+                    position: fixed;
+                    inset: 0;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 24px;
+                    box-sizing: border-box;
+                    background-color: #e7e8e4;
+                    z-index: 9999;
+                }
+                #waiting-screen-start-btn {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    padding: 16px 36px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    border: 2px solid #202321;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    background-color: #686a67;
+                    color: #e7e8e4;
+                    touch-action: manipulation;
+                    transition:
+                        background-color 0.2s,
+                        transform 0.1s;
+                    z-index: 1;
+                }
+                #waiting-screen-start-btn:hover {
+                    transform: translate(-50%, -50%) scale(1.02);
+                }
+                #waiting-screen-start-btn.ready {
+                    background-color: #596b61;
+                    color: #e7e8e4;
+                    border-color: #596b61;
+                }
+            </style>
+            <div id="waiting-screen">
+                <button id="waiting-screen-start-btn">Start orDrumbox V2</button>
+            </div>
+        </main>
+        <script type="module">
+            const screenEl = document.getElementById('waiting-screen')
+            const startBtn = document.getElementById('waiting-screen-start-btn')
+            let isStarted = false
 
-    async function startApp() {
-      if (isStarted) return
-      isStarted = true
-      if (screenEl) screenEl.style.display = 'none'
-      try {
-        const mainModule = await import('./src/main.js')
-        if (typeof mainModule.init === 'function') mainModule.init()
-      } catch (error) {
-        const { logger } = await import('./src/core/logger.js')
-        logger.error('WaitingScreen', 'Failed to load main application:', error)
-      }
-    }
+            async function startApp() {
+                if (isStarted) return
+                isStarted = true
+                if (screenEl) screenEl.style.display = 'none'
+                try {
+                    const mainModule = await import('./src/main.js')
+                    if (typeof mainModule.init === 'function') mainModule.init()
+                } catch (error) {
+                    const { logger } = await import('./src/core/logger.js')
+                    logger.error('WaitingScreen', 'Failed to load main application:', error)
+                }
+            }
 
-    if (startBtn) {
-      startBtn.classList.add('ready')
-      startBtn.addEventListener('click', () => startApp())
-    }
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !isStarted) startApp()
-    })
-  </script>
-</body>
+            if (startBtn) {
+                startBtn.classList.add('ready')
+                startBtn.addEventListener('click', () => startApp())
+            }
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !isStarted) startApp()
+            })
+        </script>
+    </body>
 </html>

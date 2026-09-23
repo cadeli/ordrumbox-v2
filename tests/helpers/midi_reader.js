@@ -15,18 +15,20 @@
 // ─── Low-level parsing ────────────────────────────────────────────────────────
 
 export function readUint32BE(bytes, offset) {
-    return ((bytes[offset] << 24) | (bytes[offset+1] << 16) | (bytes[offset+2] << 8) | bytes[offset+3]) >>> 0
+    return ((bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3]) >>> 0
 }
 
 export function readUint16BE(bytes, offset) {
-    return ((bytes[offset] << 8) | bytes[offset+1]) >>> 0
+    return ((bytes[offset] << 8) | bytes[offset + 1]) >>> 0
 }
 
 export function decodeVLQ(bytes, offset) {
-    let value = 0, bytesRead = 0, b
+    let value = 0,
+        bytesRead = 0,
+        b
     do {
         b = bytes[offset + bytesRead]
-        value = (value << 7) | (b & 0x7F)
+        value = (value << 7) | (b & 0x7f)
         bytesRead++
     } while (b & 0x80)
     return { value, bytesRead }
@@ -38,14 +40,15 @@ export function decodeVLQ(bytes, offset) {
  */
 function parseMTrkEvents(bytes, dataOffset, length) {
     const events = []
-    let pos = dataOffset, cursor = 0
+    let pos = dataOffset,
+        cursor = 0
     const end = dataOffset + length
     while (pos < end) {
         const vlq = decodeVLQ(bytes, pos)
         pos += vlq.bytesRead
         cursor += vlq.value
         const b0 = bytes[pos]
-        if (b0 === 0xFF) {
+        if (b0 === 0xff) {
             const type = bytes[pos + 1]
             const lv = decodeVLQ(bytes, pos + 2)
             events.push({
@@ -59,8 +62,8 @@ function parseMTrkEvents(bytes, dataOffset, length) {
             events.push({
                 absTick: cursor,
                 type: 'midi',
-                status: b0 & 0xF0,
-                channel: b0 & 0x0F,
+                status: b0 & 0xf0,
+                channel: b0 & 0x0f,
                 note: bytes[pos + 1],
                 velocity: bytes[pos + 2],
             })
@@ -84,7 +87,7 @@ export function parseMidi(bytes) {
 
     let i = 0
     while (i + 8 <= bytes.length) {
-        const tag = String.fromCharCode(bytes[i], bytes[i+1], bytes[i+2], bytes[i+3])
+        const tag = String.fromCharCode(bytes[i], bytes[i + 1], bytes[i + 2], bytes[i + 3])
         const length = readUint32BE(bytes, i + 4)
 
         if (tag === 'MThd') {
@@ -97,8 +100,8 @@ export function parseMidi(bytes) {
         i += 8 + length
     }
 
-    const trackNames = tracks.map(trackEvents => {
-        const nameEvent = trackEvents.find(e => e.type === 'meta' && e.metaType === 0x03)
+    const trackNames = tracks.map((trackEvents) => {
+        const nameEvent = trackEvents.find((e) => e.type === 'meta' && e.metaType === 0x03)
         return nameEvent ? String.fromCharCode(...nameEvent.data) : ''
     })
 
@@ -138,11 +141,12 @@ export function findAllNotes(midi) {
  */
 export function findNotesAt(midi, filter) {
     const { tick, channel, note, velocity } = filter
-    return findAllNotes(midi).filter(n =>
-        n.absTick === tick &&
-        (channel === undefined || n.channel === channel) &&
-        (note === undefined || n.note === note) &&
-        (velocity === undefined || n.velocity === velocity)
+    return findAllNotes(midi).filter(
+        (n) =>
+            n.absTick === tick &&
+            (channel === undefined || n.channel === channel) &&
+            (note === undefined || n.note === note) &&
+            (velocity === undefined || n.velocity === velocity),
     )
 }
 

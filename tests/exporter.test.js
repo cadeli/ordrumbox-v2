@@ -72,8 +72,8 @@ describe('PatternExporter', () => {
             const track = { ...Utils.TRACK_DEFAULTS, notes: [] }
             const cleaned = PatternExporter.cleanTrack(track)
             // Default fields that are also default-valued should be stripped
-            expect(cleaned).not.toHaveProperty('nbBeats')       // beats=4 is default
-            expect(cleaned).not.toHaveProperty('mute')       // false is default
+            expect(cleaned).not.toHaveProperty('nbBeats') // beats=4 is default
+            expect(cleaned).not.toHaveProperty('mute') // false is default
         })
 
         it('keeps non-default values', () => {
@@ -100,7 +100,7 @@ describe('PatternExporter', () => {
             const track = {
                 ...Utils.TRACK_DEFAULTS,
                 nbBeats: 2,
-                notes: [{ ...Utils.NOTE_DEFAULTS, velocity: 0.5, pitch: 0 }]
+                notes: [{ ...Utils.NOTE_DEFAULTS, velocity: 0.5, pitch: 0 }],
             }
             const cleaned = PatternExporter.cleanTrack(track)
             // pitch=0 is default, velocity=0.5 is not
@@ -132,7 +132,7 @@ describe('PatternExporter', () => {
             const pattern = {
                 ...Utils.PATTERN_DEFAULTS,
                 bpm: 130,
-                tracks: [{ ...Utils.TRACK_DEFAULTS, nbBeats: 2, notes: [] }]
+                tracks: [{ ...Utils.TRACK_DEFAULTS, nbBeats: 2, notes: [] }],
             }
             const cleaned = PatternExporter.cleanPattern(pattern)
             expect(cleaned.tracks[0].nbBeats).toBe(2)
@@ -152,6 +152,4 @@ describe('PatternExporter', () => {
             expect(result.bpm).toBe(99)
         })
     })
-
-
 })

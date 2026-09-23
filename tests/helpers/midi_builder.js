@@ -30,10 +30,10 @@
 export function encodeVLQ(value) {
     if (value < 0) throw new RangeError('VLQ value must be non-negative')
     const bytes = []
-    bytes.unshift(value & 0x7F)
+    bytes.unshift(value & 0x7f)
     value >>= 7
     while (value > 0) {
-        bytes.unshift((value & 0x7F) | 0x80)
+        bytes.unshift((value & 0x7f) | 0x80)
         value >>= 7
     }
     return bytes
@@ -42,48 +42,51 @@ export function encodeVLQ(value) {
 // ─── Low-level byte helpers ───────────────────────────────────────────────────
 
 function uint16BE(value) {
-    return [(value >> 8) & 0xFF, value & 0xFF]
+    return [(value >> 8) & 0xff, value & 0xff]
 }
 
 function uint32BE(value) {
-    return [(value >> 24) & 0xFF, (value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF]
+    return [(value >> 24) & 0xff, (value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff]
 }
 
 function asciiString(str) {
-    return Array.from(str).map(c => c.charCodeAt(0))
+    return Array.from(str).map((c) => c.charCodeAt(0))
 }
 
 // ─── Meta event builders ──────────────────────────────────────────────────────
 
 function metaTrackName(name) {
     const data = asciiString(name)
-    return [0xFF, 0x03, ...encodeVLQ(data.length), ...data]
+    return [0xff, 0x03, ...encodeVLQ(data.length), ...data]
 }
 
 function metaTempo(microsecondsPerQuarter) {
-    return [0xFF, 0x51, 0x03,
-        (microsecondsPerQuarter >> 16) & 0xFF,
-        (microsecondsPerQuarter >> 8) & 0xFF,
-        microsecondsPerQuarter & 0xFF
+    return [
+        0xff,
+        0x51,
+        0x03,
+        (microsecondsPerQuarter >> 16) & 0xff,
+        (microsecondsPerQuarter >> 8) & 0xff,
+        microsecondsPerQuarter & 0xff,
     ]
 }
 
 function metaEndOfTrack() {
-    return [0xFF, 0x2F, 0x00]
+    return [0xff, 0x2f, 0x00]
 }
 
 // ─── MIDI event body builders (no delta prefix) ───────────────────────────────
 
 function midiNoteOnBody(channel, note, velocity) {
-    return [0x90 | (channel & 0x0F), note & 0x7F, velocity & 0x7F]
+    return [0x90 | (channel & 0x0f), note & 0x7f, velocity & 0x7f]
 }
 
 function midiNoteOffBody(channel, note) {
-    return [0x80 | (channel & 0x0F), note & 0x7F, 0x00]
+    return [0x80 | (channel & 0x0f), note & 0x7f, 0x00]
 }
 
 function midiProgramChangeBody(channel, program) {
-    return [0xC0 | (channel & 0x0F), program & 0x7F]
+    return [0xc0 | (channel & 0x0f), program & 0x7f]
 }
 
 // ─── MTrk chunk builder ──────────────────────────────────────────────────────
@@ -98,9 +101,12 @@ export function buildMTrk(eventBytes) {
     const events = [...eventBytes]
     events.push(0x00, ...metaEndOfTrack()) // delta=0 + EndOfTrack
     return [
-        0x4D, 0x54, 0x72, 0x6B, // 'MTrk'
+        0x4d,
+        0x54,
+        0x72,
+        0x6b, // 'MTrk'
         ...uint32BE(events.length),
-        ...events
+        ...events,
     ]
 }
 
@@ -195,11 +201,14 @@ export function buildMidi(options = {}) {
     // MThd header (always 14 bytes)
     const microsecondsPerQuarter = Math.round(60000000 / tempo)
     allChunks.push(
-        0x4D, 0x54, 0x68, 0x64, // 'MThd'
-        ...uint32BE(6),          // header length (always 6)
+        0x4d,
+        0x54,
+        0x68,
+        0x64, // 'MThd'
+        ...uint32BE(6), // header length (always 6)
         ...uint16BE(format),
         ...uint16BE(tracks.length),
-        ...uint16BE(division)
+        ...uint16BE(division),
     )
 
     // Build tracks
@@ -208,11 +217,16 @@ export function buildMidi(options = {}) {
         // If user didn't provide a conductor track, create one
         const hasConductor = tracks.length > 0 && tracks[0].name === '' && tracks[0].notes.length === 0
         if (!hasConductor) {
-            allChunks.push(...buildMidiTrack({
-                name: '',
-                channel: 0,
-                tempos: [{ tick: 0, tempo: microsecondsPerQuarter }]
-            }, division))
+            allChunks.push(
+                ...buildMidiTrack(
+                    {
+                        name: '',
+                        channel: 0,
+                        tempos: [{ tick: 0, tempo: microsecondsPerQuarter }],
+                    },
+                    division,
+                ),
+            )
         }
         for (const track of tracks) {
             allChunks.push(...buildMidiTrack(track, division))
@@ -221,11 +235,16 @@ export function buildMidi(options = {}) {
         // Format 0: all channels in one track, add tempo at start
         if (tracks.length === 0) {
             // Empty file with just a conductor track
-            allChunks.push(...buildMidiTrack({
-                name: '',
-                channel: 0,
-                tempos: [{ tick: 0, tempo: microsecondsPerQuarter }]
-            }, division))
+            allChunks.push(
+                ...buildMidiTrack(
+                    {
+                        name: '',
+                        channel: 0,
+                        tempos: [{ tick: 0, tempo: microsecondsPerQuarter }],
+                    },
+                    division,
+                ),
+            )
         } else {
             // Merge all tracks into one (flatten notes from all tracks)
             const mergedNotes = []
@@ -246,14 +265,19 @@ export function buildMidi(options = {}) {
                 }
             }
 
-            allChunks.push(...buildMidiTrack({
-                name: mergedName,
-                channel: primaryChannel,
-                program: primaryProgram,
-                notes: mergedNotes,
-                programChanges: mergedProgramChanges,
-                tempos: [{ tick: 0, tempo: microsecondsPerQuarter }]
-            }, division))
+            allChunks.push(
+                ...buildMidiTrack(
+                    {
+                        name: mergedName,
+                        channel: primaryChannel,
+                        program: primaryProgram,
+                        notes: mergedNotes,
+                        programChanges: mergedProgramChanges,
+                        tempos: [{ tick: 0, tempo: microsecondsPerQuarter }],
+                    },
+                    division,
+                ),
+            )
         }
     }
 
@@ -285,7 +309,7 @@ export function buildEmptyMidi(opts = {}) {
  */
 export function buildDrumMidi(opts = {}) {
     const { notes = [], bpm = 120, ppqn = 96 } = opts
-    const formattedNotes = notes.map(n => ({
+    const formattedNotes = notes.map((n) => ({
         tick: n.tick ?? 0,
         note: n.note ?? 36,
         velocity: n.velocity ?? 100,
@@ -294,12 +318,14 @@ export function buildDrumMidi(opts = {}) {
         format: 1,
         division: ppqn,
         tempo: bpm,
-        tracks: [{
-            name: 'KICK',
-            channel: 9,
-            program: 0,
-            isDrum: true,
-            notes: formattedNotes,
-        }]
+        tracks: [
+            {
+                name: 'KICK',
+                channel: 9,
+                program: 0,
+                isDrum: true,
+                notes: formattedNotes,
+            },
+        ],
     })
 }

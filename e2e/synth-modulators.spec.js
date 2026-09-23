@@ -28,147 +28,143 @@
 // renderSynthBatch() — Chromium only produces audio on the first
 // startRendering() per page.
 
-import { test, expect } from '@playwright/test';
-import { renderSynthBatch, rmsWindows } from './helpers/synth_render.js';
-import { bootApp } from './fixtures.js';
+import { test, expect } from '@playwright/test'
+import { renderSynthBatch, rmsWindows } from './helpers/synth_render.js'
+import { bootApp } from './fixtures.js'
 
 test.describe('Static coherence of modulation targets', () => {
-  test.beforeEach(async ({ page }) => {
-    await bootApp(page);
-  });
+    test.beforeEach(async ({ page }) => {
+        await bootApp(page)
+    })
 
-  test('all UI targets have an entry in LFO_TARGET_SCALE (displayed curve)', async ({
-    page,
-  }) => {
-    const { targets, scaleKeys } = await page.evaluate(async () => {
-      const constants = await import('/src/ui/synth_editor/constants.js');
-      const editorModule = await import('/src/ui/synth_editor.js');
-      const scaleKeys = editorModule.LFO_TARGET_SCALE
-        ? Object.keys(editorModule.LFO_TARGET_SCALE)
-        : null;
-      return { targets: constants.SYNTH_LFO_TARGETS.filter((t) => t !== 'NOT'), scaleKeys };
-    });
+    test('all UI targets have an entry in LFO_TARGET_SCALE (displayed curve)', async ({ page }) => {
+        const { targets, scaleKeys } = await page.evaluate(async () => {
+            const constants = await import('/src/ui/synth_editor/constants.js')
+            const editorModule = await import('/src/ui/synth_editor.js')
+            const scaleKeys = editorModule.LFO_TARGET_SCALE ? Object.keys(editorModule.LFO_TARGET_SCALE) : null
+            return { targets: constants.SYNTH_LFO_TARGETS.filter((t) => t !== 'NOT'), scaleKeys }
+        })
 
-    test.skip(
-      scaleKeys === null,
-      "LFO_TARGET_SCALE is not exported by synth_editor.js — export it (even just for tests) to enable this static check."
-    );
+        test.skip(
+            scaleKeys === null,
+            'LFO_TARGET_SCALE is not exported by synth_editor.js — export it (even just for tests) to enable this static check.',
+        )
 
-    const missing = targets.filter((t) => !scaleKeys.includes(t));
-    expect(missing, `Targets missing UI scale (silent curve for these targets): ${missing}`).toEqual([]);
-  });
-});
+        const missing = targets.filter((t) => !scaleKeys.includes(t))
+        expect(missing, `Targets missing UI scale (silent curve for these targets): ${missing}`).toEqual([])
+    })
+})
 
 test.describe('Real modulator effect on sound (per target)', () => {
-  test.beforeEach(async ({ page }) => {
-    await bootApp(page);
-  });
+    test.beforeEach(async ({ page }) => {
+        await bootApp(page)
+    })
 
-  test('each LFO target produces time-varying sound', async ({ page }) => {
-    const { SYNTH_LFO_TARGETS } = await page.evaluate(() =>
-      import('/src/ui/synth_editor/constants.js').then((m) => ({
-        SYNTH_LFO_TARGETS: m.SYNTH_LFO_TARGETS,
-      }))
-    );
-    const targets = SYNTH_LFO_TARGETS.filter((t) => t !== 'NOT');
-    const durationSec = 1.2;
-    const lfoFreqHz = 3;
+    test('each LFO target produces time-varying sound', async ({ page }) => {
+        const { SYNTH_LFO_TARGETS } = await page.evaluate(() =>
+            import('/src/ui/synth_editor/constants.js').then((m) => ({
+                SYNTH_LFO_TARGETS: m.SYNTH_LFO_TARGETS,
+            })),
+        )
+        const targets = SYNTH_LFO_TARGETS.filter((t) => t !== 'NOT')
+        const durationSec = 1.2
+        const lfoFreqHz = 3
 
-    const configs = [];
-    for (const target of targets) {
-      configs.push({
-        synthOverrides: {
-          lfo: { target, wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
-        },
-      });
-      configs.push({
-        synthOverrides: {
-          lfo: { target: 'NOT', wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
-        },
-      });
-    }
+        const configs = []
+        for (const target of targets) {
+            configs.push({
+                synthOverrides: {
+                    lfo: { target, wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
+                },
+            })
+            configs.push({
+                synthOverrides: {
+                    lfo: { target: 'NOT', wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
+                },
+            })
+        }
 
-    const results = await renderSynthBatch(page, configs, { durationPerNote: durationSec, gapSec: 0.05 });
+        const results = await renderSynthBatch(page, configs, { durationPerNote: durationSec, gapSec: 0.05 })
 
-    const failures = [];
-    for (let i = 0; i < targets.length; i++) {
-      const target = targets[i];
-      const modulated = results[i * 2];
-      const baseline = results[i * 2 + 1];
+        const failures = []
+        for (let i = 0; i < targets.length; i++) {
+            const target = targets[i]
+            const modulated = results[i * 2]
+            const baseline = results[i * 2 + 1]
 
-      const windows = rmsWindows(modulated.channelData[0], modulated.sampleRate, durationSec, 8);
-      const mean = windows.reduce((a, b) => a + b, 0) / windows.length;
-      const variance = windows.reduce((a, w) => a + (w - mean) ** 2, 0) / windows.length;
-      const timeVarying = Math.sqrt(variance) > mean * 0.02 + 1e-5;
+            const windows = rmsWindows(modulated.channelData[0], modulated.sampleRate, durationSec, 8)
+            const mean = windows.reduce((a, b) => a + b, 0) / windows.length
+            const variance = windows.reduce((a, w) => a + (w - mean) ** 2, 0) / windows.length
+            const timeVarying = Math.sqrt(variance) > mean * 0.02 + 1e-5
 
-      const baseWindows = rmsWindows(baseline.channelData[0], baseline.sampleRate, durationSec, 8);
-      const overallRms = mean;
-      const baseRms = baseWindows.reduce((a, b) => a + b, 0) / baseWindows.length;
-      const differsFromBaseline = Math.abs(overallRms - baseRms) > baseRms * 0.02 + 1e-5;
+            const baseWindows = rmsWindows(baseline.channelData[0], baseline.sampleRate, durationSec, 8)
+            const overallRms = mean
+            const baseRms = baseWindows.reduce((a, b) => a + b, 0) / baseWindows.length
+            const differsFromBaseline = Math.abs(overallRms - baseRms) > baseRms * 0.02 + 1e-5
 
-      if (!timeVarying && !differsFromBaseline) {
-        failures.push(`${target}: no effect detected (neither time-varying nor differs from unmodulated)`);
-      } else if (!timeVarying) {
-        failures.push(
-          `${target}: shifts the sound but DOES NOT VARY over time — signature of "frozen modulation" bug (RMS windows: ${windows.map((w) => w.toFixed(4))})`
-        );
-      }
-    }
+            if (!timeVarying && !differsFromBaseline) {
+                failures.push(`${target}: no effect detected (neither time-varying nor differs from unmodulated)`)
+            } else if (!timeVarying) {
+                failures.push(
+                    `${target}: shifts the sound but DOES NOT VARY over time — signature of "frozen modulation" bug (RMS windows: ${windows.map((w) => w.toFixed(4))})`,
+                )
+            }
+        }
 
-    expect(failures, `Suspect LFO targets:\n${failures.join('\n')}`).toEqual([]);
-  });
+        expect(failures, `Suspect LFO targets:\n${failures.join('\n')}`).toEqual([])
+    })
 
-  test('each LFO2 target produces time-varying sound', async ({ page }) => {
-    const { SYNTH_LFO_TARGETS } = await page.evaluate(() =>
-      import('/src/ui/synth_editor/constants.js').then((m) => ({
-        SYNTH_LFO_TARGETS: m.SYNTH_LFO_TARGETS,
-      }))
-    );
-    const targets = SYNTH_LFO_TARGETS.filter((t) => t !== 'NOT');
-    const durationSec = 1.2;
-    const lfoFreqHz = 3;
+    test('each LFO2 target produces time-varying sound', async ({ page }) => {
+        const { SYNTH_LFO_TARGETS } = await page.evaluate(() =>
+            import('/src/ui/synth_editor/constants.js').then((m) => ({
+                SYNTH_LFO_TARGETS: m.SYNTH_LFO_TARGETS,
+            })),
+        )
+        const targets = SYNTH_LFO_TARGETS.filter((t) => t !== 'NOT')
+        const durationSec = 1.2
+        const lfoFreqHz = 3
 
-    const configs = [];
-    for (const target of targets) {
-      configs.push({
-        synthOverrides: {
-          lfo2: { target, wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
-        },
-      });
-      configs.push({
-        synthOverrides: {
-          lfo2: { target: 'NOT', wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
-        },
-      });
-    }
+        const configs = []
+        for (const target of targets) {
+            configs.push({
+                synthOverrides: {
+                    lfo2: { target, wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
+                },
+            })
+            configs.push({
+                synthOverrides: {
+                    lfo2: { target: 'NOT', wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
+                },
+            })
+        }
 
-    const results = await renderSynthBatch(page, configs, { durationPerNote: durationSec, gapSec: 0.05 });
+        const results = await renderSynthBatch(page, configs, { durationPerNote: durationSec, gapSec: 0.05 })
 
-    const failures = [];
-    for (let i = 0; i < targets.length; i++) {
-      const target = targets[i];
-      const modulated = results[i * 2];
-      const baseline = results[i * 2 + 1];
+        const failures = []
+        for (let i = 0; i < targets.length; i++) {
+            const target = targets[i]
+            const modulated = results[i * 2]
+            const baseline = results[i * 2 + 1]
 
-      const windows = rmsWindows(modulated.channelData[0], modulated.sampleRate, durationSec, 8);
-      const mean = windows.reduce((a, b) => a + b, 0) / windows.length;
-      const variance = windows.reduce((a, w) => a + (w - mean) ** 2, 0) / windows.length;
-      const timeVarying = Math.sqrt(variance) > mean * 0.02 + 1e-5;
+            const windows = rmsWindows(modulated.channelData[0], modulated.sampleRate, durationSec, 8)
+            const mean = windows.reduce((a, b) => a + b, 0) / windows.length
+            const variance = windows.reduce((a, w) => a + (w - mean) ** 2, 0) / windows.length
+            const timeVarying = Math.sqrt(variance) > mean * 0.02 + 1e-5
 
-      const baseWindows = rmsWindows(baseline.channelData[0], baseline.sampleRate, durationSec, 8);
-      const overallRms = mean;
-      const baseRms = baseWindows.reduce((a, b) => a + b, 0) / baseWindows.length;
-      const differsFromBaseline = Math.abs(overallRms - baseRms) > baseRms * 0.02 + 1e-5;
+            const baseWindows = rmsWindows(baseline.channelData[0], baseline.sampleRate, durationSec, 8)
+            const overallRms = mean
+            const baseRms = baseWindows.reduce((a, b) => a + b, 0) / baseWindows.length
+            const differsFromBaseline = Math.abs(overallRms - baseRms) > baseRms * 0.02 + 1e-5
 
-      if (!timeVarying && !differsFromBaseline) {
-        failures.push(`${target}: no effect detected (neither time-varying nor differs from unmodulated)`);
-      } else if (!timeVarying) {
-        failures.push(
-          `${target}: shifts the sound but DOES NOT VARY over time — signature of "frozen modulation" bug (RMS windows: ${windows.map((w) => w.toFixed(4))})`
-        );
-      }
-    }
+            if (!timeVarying && !differsFromBaseline) {
+                failures.push(`${target}: no effect detected (neither time-varying nor differs from unmodulated)`)
+            } else if (!timeVarying) {
+                failures.push(
+                    `${target}: shifts the sound but DOES NOT VARY over time — signature of "frozen modulation" bug (RMS windows: ${windows.map((w) => w.toFixed(4))})`,
+                )
+            }
+        }
 
-    expect(failures, `Suspect LFO2 targets:\n${failures.join('\n')}`).toEqual([]);
-  });
-});
+        expect(failures, `Suspect LFO2 targets:\n${failures.join('\n')}`).toEqual([])
+    })
+})

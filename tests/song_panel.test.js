@@ -17,11 +17,11 @@ describe('SongPanel', () => {
         serviceRegistry.cmd = {
             setSelectedPatternNum: vi.fn(),
             renamePattern: vi.fn(),
-            removePattern: vi.fn()
+            removePattern: vi.fn(),
         }
         appState.patterns = [
             { name: 'Pattern 1', tracks: [{ name: 'KICK', notes: [] }] },
-            { name: 'Pattern 2', tracks: [{ name: 'SNARE', notes: [] }] }
+            { name: 'Pattern 2', tracks: [{ name: 'SNARE', notes: [] }] },
         ]
         appState.selectedPatternNum = 0
         appState.songInfos = { name: 'Test Song', date: '2024-01-01', description: 'desc' }

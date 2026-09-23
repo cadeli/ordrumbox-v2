@@ -40,7 +40,12 @@ function parseWav(arrayBuffer) {
     result.fmt.bitsPerSample = view.getUint16(34, true)
 
     const dataOffset = 20 + result.fmt.chunkSize
-    result.data.chunkId = String.fromCharCode(view.getUint8(dataOffset), view.getUint8(dataOffset + 1), view.getUint8(dataOffset + 2), view.getUint8(dataOffset + 3))
+    result.data.chunkId = String.fromCharCode(
+        view.getUint8(dataOffset),
+        view.getUint8(dataOffset + 1),
+        view.getUint8(dataOffset + 2),
+        view.getUint8(dataOffset + 3),
+    )
     result.data.chunkSize = view.getUint32(dataOffset + 4, true)
 
     const sampleStart = dataOffset + 8
@@ -56,7 +61,7 @@ function parseWav(arrayBuffer) {
         for (let ch = 0; ch < numCh; ch++) {
             const offset = sampleStart + (i * numCh + ch) * 2
             const raw = view.getInt16(offset, true)
-            result.sampleData[ch][i] = raw < 0 ? raw / 0x8000 : raw / 0x7FFF
+            result.sampleData[ch][i] = raw < 0 ? raw / 0x8000 : raw / 0x7fff
         }
     }
 
@@ -80,49 +85,96 @@ class MockOfflineAudioContext {
 
     createGain() {
         return {
-            gain: { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
-            connect: vi.fn(), disconnect: vi.fn()
+            gain: {
+                value: 1,
+                setValueAtTime: vi.fn(),
+                setTargetAtTime: vi.fn(),
+                linearRampToValueAtTime: vi.fn(),
+                exponentialRampToValueAtTime: vi.fn(),
+            },
+            connect: vi.fn(),
+            disconnect: vi.fn(),
         }
     }
     createDynamicsCompressor() {
         return {
-            threshold: { value: 0, setValueAtTime: vi.fn() }, knee: { value: 0, setValueAtTime: vi.fn() },
-            ratio: { value: 0, setValueAtTime: vi.fn() }, attack: { value: 0, setValueAtTime: vi.fn() },
-            release: { value: 0, setValueAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn()
+            threshold: { value: 0, setValueAtTime: vi.fn() },
+            knee: { value: 0, setValueAtTime: vi.fn() },
+            ratio: { value: 0, setValueAtTime: vi.fn() },
+            attack: { value: 0, setValueAtTime: vi.fn() },
+            release: { value: 0, setValueAtTime: vi.fn() },
+            connect: vi.fn(),
+            disconnect: vi.fn(),
         }
     }
     createBiquadFilter() {
         return {
-            type: 'lowpass', frequency: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
-            Q: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn()
+            type: 'lowpass',
+            frequency: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            Q: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            connect: vi.fn(),
+            disconnect: vi.fn(),
         }
     }
     createOscillator() {
-        return { start: vi.fn(), stop: vi.fn(), connect: vi.fn(), disconnect: vi.fn(), frequency: { value: 0, setValueAtTime: vi.fn() } }
+        return {
+            start: vi.fn(),
+            stop: vi.fn(),
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+            frequency: { value: 0, setValueAtTime: vi.fn() },
+        }
     }
-    createAnalyser() { return { fftSize: 1024, connect: vi.fn(), disconnect: vi.fn() } }
+    createAnalyser() {
+        return { fftSize: 1024, connect: vi.fn(), disconnect: vi.fn() }
+    }
     createBuffer(ch, len, sr) {
         return { numberOfChannels: ch, length: len, sampleRate: sr, getChannelData: () => new Float32Array(len) }
     }
     createBufferSource() {
         const node = {
-            buffer: null, start: vi.fn(), stop: vi.fn(), connect: vi.fn(), disconnect: vi.fn(), loop: false,
-            playbackRate: { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }
+            buffer: null,
+            start: vi.fn(),
+            stop: vi.fn(),
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+            loop: false,
+            playbackRate: { value: 1, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
         }
         return trackSource(node)
     }
     createStereoPanner() {
-        return { pan: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() }
+        return {
+            pan: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+        }
     }
-    createWaveShaper() { return { curve: null, oversample: 'none', connect: vi.fn(), disconnect: vi.fn() } }
-    createConvolver() { return { buffer: null, connect: vi.fn(), disconnect: vi.fn() } }
+    createWaveShaper() {
+        return { curve: null, oversample: 'none', connect: vi.fn(), disconnect: vi.fn() }
+    }
+    createConvolver() {
+        return { buffer: null, connect: vi.fn(), disconnect: vi.fn() }
+    }
     createDelay() {
-        return { delayTime: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() }, connect: vi.fn(), disconnect: vi.fn() }
+        return {
+            delayTime: { value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+        }
     }
     createConstantSource() {
         return {
-            offset: { value: 0, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), cancelScheduledValues: vi.fn() },
-            connect: vi.fn(), start: vi.fn(), stop: vi.fn(), disconnect: vi.fn()
+            offset: {
+                value: 0,
+                setValueAtTime: vi.fn(),
+                linearRampToValueAtTime: vi.fn(),
+                cancelScheduledValues: vi.fn(),
+            },
+            connect: vi.fn(),
+            start: vi.fn(),
+            stop: vi.fn(),
+            disconnect: vi.fn(),
         }
     }
 
@@ -135,10 +187,10 @@ class MockOfflineAudioContext {
             getChannelData: () => {
                 const data = new Float32Array(length)
                 for (let i = 0; i < length; i++) {
-                    data[i] = Math.sin(2 * Math.PI * MOCK_FREQUENCY * i / sampleRate) * MOCK_AMPLITUDE
+                    data[i] = Math.sin((2 * Math.PI * MOCK_FREQUENCY * i) / sampleRate) * MOCK_AMPLITUDE
                 }
                 return data
-            }
+            },
         })
     }
 }
@@ -147,12 +199,17 @@ class MockAudioWorkletNode {
     constructor() {
         this.parameters = {
             get: () => ({
-                value: 0, setValueAtTime: () => {}, setTargetAtTime: () => {},
-                linearRampToValueAtTime: () => {}, cancelScheduledValues: () => {},
+                value: 0,
+                setValueAtTime: () => {},
+                setTargetAtTime: () => {},
+                linearRampToValueAtTime: () => {},
+                cancelScheduledValues: () => {},
             }),
         }
     }
-    connect() { return this }
+    connect() {
+        return this
+    }
     disconnect() {}
 }
 
@@ -174,19 +231,19 @@ function trackSource(node) {
 
 function getStartTimes() {
     return _trackedSources
-        .filter(n => n.start.mock.calls.length > 0)
-        .map(n => n.start.mock.calls.map(c => c[0]))
+        .filter((n) => n.start.mock.calls.length > 0)
+        .map((n) => n.start.mock.calls.map((c) => c[0]))
         .flat()
         .sort((a, b) => a - b)
 }
 
 function getTickTime(bpm) {
-    return (60 * 4) / (bpm * TICK) * 0.25
+    return ((60 * 4) / (bpm * TICK)) * 0.25
 }
 
 function startTimesToTicks(startTimes, bpm) {
     const tickTime = getTickTime(bpm)
-    return startTimes.map(t => Math.round(t / tickTime))
+    return startTimes.map((t) => Math.round(t / tickTime))
 }
 
 function makeTrack(name, soundId, notes, opts = {}) {
@@ -206,7 +263,7 @@ describe('WAV Export — functional end-to-end', () => {
                 url: 'kick.wav',
                 buffer: { duration: 1, length: SAMPLE_RATE, getChannelData: () => new Float32Array(SAMPLE_RATE) },
                 key: 'KICK',
-            }
+            },
         }
     })
 
@@ -215,8 +272,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 1: WAV header structure', () => {
         it('produces valid RIFF/WAVE headers', async () => {
             const pattern = {
-                name: 'HeaderTest', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'HeaderTest',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -231,8 +290,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('fmt chunk has PCM format (1), 16-bit', async () => {
             const pattern = {
-                name: 'FmtTest', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'FmtTest',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -247,8 +308,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('block align = numChannels × (bitsPerSample / 8)', async () => {
             const pattern = {
-                name: 'BlockAlign', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'BlockAlign',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -260,8 +323,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('byteRate = sampleRate × blockAlign', async () => {
             const pattern = {
-                name: 'ByteRate', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'ByteRate',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -277,8 +342,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 2: duration matches pattern parameters', () => {
         it('1 beat at 120 BPM → ~0.5s → ~22050 frames', async () => {
             const pattern = {
-                name: 'Dur1Bar', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'Dur1Bar',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -291,8 +358,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('4 beats at 120 BPM → ~2s → ~88200 frames', async () => {
             const pattern = {
-                name: 'Dur4Bar', bpm: 120, nbBeats: 4,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'Dur4Bar',
+                bpm: 120,
+                nbBeats: 4,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -305,8 +374,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('2 loops doubles the duration', async () => {
             const pattern = {
-                name: 'Dur2Loop', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'Dur2Loop',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob1 = await exporter.exportPatternToWav(pattern, 1)
@@ -322,8 +393,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('BPM change scales duration inversely', async () => {
             const make = (bpm) => ({
-                name: 'BpmScale', bpm, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'BpmScale',
+                bpm,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             })
             const exporter = new WavExporter()
 
@@ -342,8 +415,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 3: mock audio content is encoded in WAV', () => {
         it('sample data is not all zeros (mock sine is present)', async () => {
             const pattern = {
-                name: 'ContentTest', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'ContentTest',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -359,8 +434,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('peak amplitude is approximately 0.8 (mock amplitude)', async () => {
             const pattern = {
-                name: 'PeakTest', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'PeakTest',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -377,8 +454,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('stereo channels both contain signal', async () => {
             const pattern = {
-                name: 'StereoTest', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'StereoTest',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -387,7 +466,8 @@ describe('WAV Export — functional end-to-end', () => {
 
             expect(wav.sampleData.length).toBe(2)
 
-            let maxL = 0, maxR = 0
+            let maxL = 0,
+                maxR = 0
             for (let i = 0; i < wav.sampleData[0].length; i++) {
                 maxL = Math.max(maxL, Math.abs(wav.sampleData[0][i]))
                 maxR = Math.max(maxR, Math.abs(wav.sampleData[1][i]))
@@ -398,15 +478,18 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('stereo channels have same peak (mock fills all channels identically)', async () => {
             const pattern = {
-                name: 'StereoPeak', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'StereoPeak',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
             const ab = await blob.arrayBuffer()
             const wav = parseWav(ab)
 
-            let peakL = 0, peakR = 0
+            let peakL = 0,
+                peakR = 0
             for (let i = 0; i < wav.sampleData[0].length; i++) {
                 peakL = Math.max(peakL, Math.abs(wav.sampleData[0][i]))
                 peakR = Math.max(peakR, Math.abs(wav.sampleData[1][i]))
@@ -420,8 +503,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 4: WAV binary size is consistent', () => {
         it('blob size = 44 header + frames × channels × 2 bytes', async () => {
             const pattern = {
-                name: 'SizeTest', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'SizeTest',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -435,8 +520,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('data chunk size = frames × channels × 2', async () => {
             const pattern = {
-                name: 'DataChunk', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'DataChunk',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -450,8 +537,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('RIFF file size field matches actual blob size', async () => {
             const pattern = {
-                name: 'RiffSize', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'RiffSize',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -467,8 +556,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 5: different patterns produce different output', () => {
         it('2-beat WAV is longer than 1-beat WAV', async () => {
             const make = (nbBeats) => ({
-                name: 'Compare', bpm: 120, nbBeats,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'Compare',
+                bpm: 120,
+                nbBeats,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             })
             const exporter = new WavExporter()
 
@@ -480,8 +571,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('empty track list still produces valid WAV', async () => {
             const pattern = {
-                name: 'EmptyTracks', bpm: 120, nbBeats: 1,
-                tracks: []
+                name: 'EmptyTracks',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -495,8 +588,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('exported blob has audio/wav mime type', async () => {
             const pattern = {
-                name: 'MimeTest', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'MimeTest',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -509,10 +604,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 6: engine scheduling', () => {
         it('createBufferSource is called when notes are present', async () => {
             const pattern = {
-                name: 'SchedTest', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0), makeNote(0, 16),
-                ])]
+                name: 'SchedTest',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0), makeNote(0, 16)])],
             }
             const exporter = new WavExporter()
             const spy = vi.spyOn(MockOfflineAudioContext.prototype, 'createBufferSource')
@@ -530,8 +625,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 7: 16-bit quantization', () => {
         it('all decoded samples are within -1..1', async () => {
             const pattern = {
-                name: 'QuantTest', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'QuantTest',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -548,8 +645,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('sample values are quantized (no float precision artifacts beyond 16-bit)', async () => {
             const pattern = {
-                name: 'QuantPrecision', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'QuantPrecision',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const blob = await exporter.exportPatternToWav(pattern, 1)
@@ -563,7 +662,7 @@ describe('WAV Export — functional end-to-end', () => {
 
             for (let i = 0; i < Math.min(100, frameCount); i++) {
                 const raw = view.getInt16(sampleStart + i * numCh * 2, true)
-                const decoded = raw / 0x7FFF
+                const decoded = raw / 0x7fff
                 expect(decoded).toBeGreaterThanOrEqual(-1)
                 expect(decoded).toBeLessThanOrEqual(1)
             }
@@ -575,8 +674,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 8: multi-loop export', () => {
         it('3 loops → 3× the samples of 1 loop', async () => {
             const pattern = {
-                name: 'MultiLoop', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'MultiLoop',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             const wav1 = parseWav(await (await exporter.exportPatternToWav(pattern, 1)).arrayBuffer())
@@ -591,8 +692,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 9: engine scheduling via flat notes', () => {
         it('1-beat pattern, note at beat0 step0 → start() at tick 0', async () => {
             const pattern = {
-                name: 'Tick0', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])]
+                name: 'Tick0',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -602,8 +705,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('1-beat pattern, note at beat0 step2 → start() at tick 16', async () => {
             const pattern = {
-                name: 'Tick16', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 2)])]
+                name: 'Tick16',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 2)])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -613,8 +718,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('2-beat pattern, note at beat1 step0 → start() at tick 32', async () => {
             const pattern = {
-                name: 'Tick32', bpm: 120, nbBeats: 2,
-                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(1, 0)])]
+                name: 'Tick32',
+                bpm: 120,
+                nbBeats: 2,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(1, 0)])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -624,11 +731,14 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('4 kicks on beats in 2-beat pattern → start() at ticks 0,16,32,48', async () => {
             const pattern = {
-                name: 'FourBeats', bpm: 120, nbBeats: 2,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0), makeNote(0, 2),
-                    makeNote(1, 0), makeNote(1, 2),
-                ], { nbBeats: 2 })]
+                name: 'FourBeats',
+                bpm: 120,
+                nbBeats: 2,
+                tracks: [
+                    makeTrack('KICK', 'kick.wav', [makeNote(0, 0), makeNote(0, 2), makeNote(1, 0), makeNote(1, 2)], {
+                        nbBeats: 2,
+                    }),
+                ],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -641,11 +751,13 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('multi-track: 2 kicks + 2 snares → 4 notes (+ silent buffer)', async () => {
             const pattern = {
-                name: 'MultiTrack', bpm: 120, nbBeats: 1,
+                name: 'MultiTrack',
+                bpm: 120,
+                nbBeats: 1,
                 tracks: [
                     makeTrack('KICK', 'kick.wav', [makeNote(0, 0), makeNote(0, 2)]),
                     makeTrack('SNARE', 'kick.wav', [makeNote(0, 1), makeNote(0, 3)]),
-                ]
+                ],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -659,11 +771,14 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 10: note count via WAV export scheduling', () => {
         it('4 kicks on beats in 2-beat → 4 notes scheduled (+ silent buffer)', async () => {
             const pattern = {
-                name: 'NoteCount4', bpm: 120, nbBeats: 2,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0), makeNote(0, 2),
-                    makeNote(1, 0), makeNote(1, 2),
-                ], { nbBeats: 2 })]
+                name: 'NoteCount4',
+                bpm: 120,
+                nbBeats: 2,
+                tracks: [
+                    makeTrack('KICK', 'kick.wav', [makeNote(0, 0), makeNote(0, 2), makeNote(1, 0), makeNote(1, 2)], {
+                        nbBeats: 2,
+                    }),
+                ],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -672,16 +787,15 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('multi-track: 4 kicks + 2 snares → 6 notes scheduled', async () => {
             const pattern = {
-                name: 'MultiTrack', bpm: 120, nbBeats: 2,
+                name: 'MultiTrack',
+                bpm: 120,
+                nbBeats: 2,
                 tracks: [
-                    makeTrack('KICK', 'kick.wav', [
-                        makeNote(0, 0), makeNote(0, 2),
-                        makeNote(1, 0), makeNote(1, 2),
-                    ], { nbBeats: 2 }),
-                    makeTrack('SNARE', 'kick.wav', [
-                        makeNote(0, 2), makeNote(1, 2),
-                    ], { nbBeats: 2 }),
-                ]
+                    makeTrack('KICK', 'kick.wav', [makeNote(0, 0), makeNote(0, 2), makeNote(1, 0), makeNote(1, 2)], {
+                        nbBeats: 2,
+                    }),
+                    makeTrack('SNARE', 'kick.wav', [makeNote(0, 2), makeNote(1, 2)], { nbBeats: 2 }),
+                ],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -694,11 +808,15 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 11: velocity propagation', () => {
         it('notes with velocity 0.5 and 1.0 produce different flat note velocities', () => {
             const pattern = {
-                name: 'Velocity', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { velocity: 0.5 }),
-                    makeNote(0, 2, { velocity: 1.0 }),
-                ])]
+                name: 'Velocity',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('KICK', 'kick.wav', [
+                        makeNote(0, 0, { velocity: 0.5 }),
+                        makeNote(0, 2, { velocity: 1.0 }),
+                    ]),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -711,11 +829,15 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('low velocity notes have lower velocity than high velocity notes', () => {
             const pattern = {
-                name: 'VelocityCompare', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { velocity: 0.3 }),
-                    makeNote(0, 2, { velocity: 0.9 }),
-                ])]
+                name: 'VelocityCompare',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('KICK', 'kick.wav', [
+                        makeNote(0, 0, { velocity: 0.3 }),
+                        makeNote(0, 2, { velocity: 0.9 }),
+                    ]),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -730,11 +852,14 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 12: pitch propagation', () => {
         it('notes with pitch 0 and +5 semitones produce different pitches', () => {
             const pattern = {
-                name: 'Pitch', bpm: 120, nbBeats: 2,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, { pitch: 0 }),
-                    makeNote(1, 0, { pitch: 5 }),
-                ], { nbBeats: 2 })]
+                name: 'Pitch',
+                bpm: 120,
+                nbBeats: 2,
+                tracks: [
+                    makeTrack('BASS', 'kick.wav', [makeNote(0, 0, { pitch: 0 }), makeNote(1, 0, { pitch: 5 })], {
+                        nbBeats: 2,
+                    }),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -747,15 +872,19 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('track pitch is inherited by all notes on that track', () => {
             const pattern = {
-                name: 'TrackPitch', bpm: 120, nbBeats: 2,
-                tracks: [{
-                    name: 'BASS', soundId: 'kick.wav',
-                    nbBeats: 2, stepsPerBeat: 4, pitch: 7,
-                    notes: [
-                        makeNote(0, 0, { pitch: 0 }),
-                        makeNote(1, 0, { pitch: 3 }),
-                    ]
-                }]
+                name: 'TrackPitch',
+                bpm: 120,
+                nbBeats: 2,
+                tracks: [
+                    {
+                        name: 'BASS',
+                        soundId: 'kick.wav',
+                        nbBeats: 2,
+                        stepsPerBeat: 4,
+                        pitch: 7,
+                        notes: [makeNote(0, 0, { pitch: 0 }), makeNote(1, 0, { pitch: 3 })],
+                    },
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -772,10 +901,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 13: every scheduling', () => {
         it('every=1 → note fires on every loop', () => {
             const pattern = {
-                name: 'TrigFreq1', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { every: 1, pos: 0 }),
-                ])]
+                name: 'TrigFreq1',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { every: 1, pos: 0 })])],
             }
             for (let loop = 0; loop < 4; loop++) {
                 const flatMap = recomputeFlatNotes(pattern, loop)
@@ -787,10 +916,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('every=2, phase=0 → fires on loops 0,2,4,...', () => {
             const pattern = {
-                name: 'TrigFreq2', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { every: 2, pos: 0 }),
-                ])]
+                name: 'TrigFreq2',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { every: 2, pos: 0 })])],
             }
             const loopCounts = []
             for (let loop = 0; loop < 6; loop++) {
@@ -804,10 +933,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('every=2, phase=1 → fires on loops 1,3,5,...', () => {
             const pattern = {
-                name: 'TrigFreq2Phase1', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { every: 2, pos: 1 }),
-                ])]
+                name: 'TrigFreq2Phase1',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { every: 2, pos: 1 })])],
             }
             const loopCounts = []
             for (let loop = 0; loop < 6; loop++) {
@@ -821,10 +950,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('every=3 → fires on loops 0,3,6,...', () => {
             const pattern = {
-                name: 'TrigFreq3', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { every: 3, pos: 0 }),
-                ])]
+                name: 'TrigFreq3',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { every: 3, pos: 0 })])],
             }
             const loopCounts = []
             for (let loop = 0; loop < 9; loop++) {
@@ -838,11 +967,17 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('mixed every: always note + every=2 note', () => {
             const pattern = {
-                name: 'MixedTrig', bpm: 120, nbBeats: 2,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { every: 1 }),
-                    makeNote(0, 1, { every: 2, pos: 0 }),
-                ], { nbBeats: 2 })]
+                name: 'MixedTrig',
+                bpm: 120,
+                nbBeats: 2,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        'kick.wav',
+                        [makeNote(0, 0, { every: 1 }), makeNote(0, 1, { every: 2, pos: 0 })],
+                        { nbBeats: 2 },
+                    ),
+                ],
             }
             const loopCounts = []
             for (let loop = 0; loop < 4; loop++) {
@@ -860,10 +995,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 14: retrigger scheduling', () => {
         it('retriggerNum=1 → 1 start() (+ silent buffer)', async () => {
             const pattern = {
-                name: 'Retrig1', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { retriggerNum: 1, rate: 1 }),
-                ])]
+                name: 'Retrig1',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 1, rate: 1 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -872,10 +1007,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('retriggerNum=3 → 3 start() calls from one beatStep', async () => {
             const pattern = {
-                name: 'Retrig3', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { retriggerNum: 3, rate: 1 }),
-                ])]
+                name: 'Retrig3',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 3, rate: 1 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -884,10 +1019,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('retriggerNum=4, rate=2 → 4 start() calls', async () => {
             const pattern = {
-                name: 'Retrig4Step2', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { retriggerNum: 4, rate: 2 }),
-                ])]
+                name: 'Retrig4Step2',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 4, rate: 2 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -896,25 +1031,25 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('retriggered notes have increasing start() times', async () => {
             const pattern = {
-                name: 'RetrigTicks', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { retriggerNum: 3, rate: 1 }),
-                ])]
+                name: 'RetrigTicks',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 3, rate: 1 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             const times = getStartTimes()
-            const noteTimes = times.filter(t => t > 0)
+            const noteTimes = times.filter((t) => t > 0)
             expect(noteTimes.length).toBeGreaterThanOrEqual(2)
             expect(noteTimes[0]).toBeLessThan(noteTimes[1])
         })
 
         it('retriggerNum=4 → 4 start() calls', async () => {
             const pattern = {
-                name: 'RetrigFlat', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { retriggerNum: 4, rate: 1 }),
-                ])]
+                name: 'RetrigFlat',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { retriggerNum: 4, rate: 1 })])],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -927,10 +1062,14 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 15: arp scheduling', () => {
         it('arp up [0,3,7] → 3 notes with correct pitch offsets', () => {
             const pattern = {
-                name: 'ArpUp', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
-                ])]
+                name: 'ArpUp',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('BASS', 'kick.wav', [
+                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
+                    ]),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -944,10 +1083,14 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('arp down [0,3,7] → 3 notes in descending order', () => {
             const pattern = {
-                name: 'ArpDown', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'down' }, retriggerNum: 3 }),
-                ])]
+                name: 'ArpDown',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('BASS', 'kick.wav', [
+                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'down' }, retriggerNum: 3 }),
+                    ]),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -961,42 +1104,52 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('arp updown [0,3,7] → 5 notes: up then down (excluding endpoints)', () => {
             const pattern = {
-                name: 'ArpUpDown', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'updown' }, retriggerNum: 5 }),
-                ])]
+                name: 'ArpUpDown',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('BASS', 'kick.wav', [
+                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'updown' }, retriggerNum: 5 }),
+                    ]),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
             expect(allNotes).toHaveLength(5)
-            const pitches = allNotes.map(n => n.note.pitch)
+            const pitches = allNotes.map((n) => n.note.pitch)
             expect(pitches).toEqual([0, 3, 7, 3, 0])
         })
 
         it('arp with array syntax [0,5,7] → 3 notes', () => {
             const pattern = {
-                name: 'ArpArray', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, { pitch: 0, arp: [0, 5, 7], retriggerNum: 3 }),
-                ])]
+                name: 'ArpArray',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('BASS', 'kick.wav', [makeNote(0, 0, { pitch: 0, arp: [0, 5, 7], retriggerNum: 3 })]),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
             for (const notes of flatMap.values()) allNotes.push(...notes)
 
             expect(allNotes).toHaveLength(3)
-            const pitches = allNotes.map(n => n.note.pitch).sort((a, b) => a - b)
+            const pitches = allNotes.map((n) => n.note.pitch).sort((a, b) => a - b)
             expect(pitches).toEqual([0, 5, 7])
         })
 
         it('arp + base pitch offset: arp [0,3,7] on pitch=12', () => {
             const pattern = {
-                name: 'ArpPitch', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, { pitch: 12, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
-                ])]
+                name: 'ArpPitch',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('BASS', 'kick.wav', [
+                        makeNote(0, 0, { pitch: 12, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
+                    ]),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -1010,30 +1163,38 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('arp notes are at increasing ticks', async () => {
             const pattern = {
-                name: 'ArpTicks', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
-                ])]
+                name: 'ArpTicks',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('BASS', 'kick.wav', [
+                        makeNote(0, 0, { pitch: 0, arp: { intervals: [0, 3, 7], mode: 'up' }, retriggerNum: 3 }),
+                    ]),
+                ],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
             const times = getStartTimes()
-            const noteTimes = times.filter(t => t > 0)
+            const noteTimes = times.filter((t) => t > 0)
             expect(noteTimes.length).toBeGreaterThanOrEqual(2)
             expect(noteTimes[0]).toBeLessThan(noteTimes[1])
         })
 
         it('arp retriggerNum=4 + arp [0,3,7] → 4 arp notes', async () => {
             const pattern = {
-                name: 'ArpRetrig', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, {
-                        pitch: 0,
-                        retriggerNum: 4,
-                        rate: 1,
-                        arp: { intervals: [0, 3, 7], mode: 'up' },
-                    }),
-                ])]
+                name: 'ArpRetrig',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('BASS', 'kick.wav', [
+                        makeNote(0, 0, {
+                            pitch: 0,
+                            retriggerNum: 4,
+                            rate: 1,
+                            arp: { intervals: [0, 3, 7], mode: 'up' },
+                        }),
+                    ]),
+                ],
             }
             const exporter = new WavExporter()
             await exporter.exportPatternToWav(pattern, 1)
@@ -1046,10 +1207,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 16: multi-loop + every combined', () => {
         it('4 loops with every=2 → 2 fires of the every note', () => {
             const pattern = {
-                name: 'MultiLoopTrig', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { every: 2, pos: 0 }),
-                ])]
+                name: 'MultiLoopTrig',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { every: 2, pos: 0 })])],
             }
             let totalNotes = 0
             for (let loop = 0; loop < 4; loop++) {
@@ -1061,11 +1222,17 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('4 loops: always note + every=2 → 4 + 2 = 6 notes total', () => {
             const pattern = {
-                name: 'MultiLoopMixed', bpm: 120, nbBeats: 2,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { every: 1 }),
-                    makeNote(0, 1, { every: 2, pos: 0 }),
-                ], { nbBeats: 2 })]
+                name: 'MultiLoopMixed',
+                bpm: 120,
+                nbBeats: 2,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        'kick.wav',
+                        [makeNote(0, 0, { every: 1 }), makeNote(0, 1, { every: 2, pos: 0 })],
+                        { nbBeats: 2 },
+                    ),
+                ],
             }
             let totalNotes = 0
             for (let loop = 0; loop < 4; loop++) {
@@ -1077,10 +1244,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('2-beat pattern, 6 loops, every=2 → fires on loops 0,2,4', () => {
             const pattern = {
-                name: 'MultiBarLoop', bpm: 120, nbBeats: 2,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { every: 2, pos: 0 }),
-                ], { nbBeats: 2 })]
+                name: 'MultiBarLoop',
+                bpm: 120,
+                nbBeats: 2,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0, { every: 2, pos: 0 })], { nbBeats: 2 })],
             }
             const loopCounts = []
             for (let loop = 0; loop < 6; loop++) {
@@ -1098,11 +1265,17 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 17: short loop repeats within pattern', () => {
         it('2-beat loop in 4-beat pattern → notes repeat twice', () => {
             const pattern = {
-                name: 'ShortLoop', bpm: 120, nbBeats: 4,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0, { velocity: 0.8 }),
-                    makeNote(1, 0, { velocity: 0.6 }),
-                ], { loopPointBeat: 2 })]
+                name: 'ShortLoop',
+                bpm: 120,
+                nbBeats: 4,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        'kick.wav',
+                        [makeNote(0, 0, { velocity: 0.8 }), makeNote(1, 0, { velocity: 0.6 })],
+                        { loopPointBeat: 2 },
+                    ),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
@@ -1112,10 +1285,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('1-beat loop in 4-beat pattern → notes repeat 4 times', () => {
             const pattern = {
-                name: 'OneBarLoop', bpm: 120, nbBeats: 4,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0),
-                ], { loopPointBeat: 1 })]
+                name: 'OneBarLoop',
+                bpm: 120,
+                nbBeats: 4,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)], { loopPointBeat: 1 })],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
@@ -1129,10 +1302,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 18: combined retrigger + velocity + pitch', () => {
         it('retriggerNum=3 with different velocities on each note', () => {
             const pattern = {
-                name: 'RetrigVel', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('SNARE', 'kick.wav', [
-                    makeNote(0, 0, { velocity: 0.5, retriggerNum: 3, rate: 1 }),
-                ])]
+                name: 'RetrigVel',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('SNARE', 'kick.wav', [makeNote(0, 0, { velocity: 0.5, retriggerNum: 3, rate: 1 })])],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -1146,10 +1319,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('retriggerNum=2 + pitch offset → both notes have same pitch', () => {
             const pattern = {
-                name: 'RetrigPitch', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, { pitch: 5, retriggerNum: 2, rate: 1 }),
-                ])]
+                name: 'RetrigPitch',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('BASS', 'kick.wav', [makeNote(0, 0, { pitch: 5, retriggerNum: 2, rate: 1 })])],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             const allNotes = []
@@ -1162,15 +1335,19 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('arp + retrigger + pitch: arp [0,3,7] with retriggerNum=2', () => {
             const pattern = {
-                name: 'CombinedAll', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('BASS', 'kick.wav', [
-                    makeNote(0, 0, {
-                        pitch: 12,
-                        retriggerNum: 2,
-                        rate: 1,
-                        arp: { intervals: [0, 3, 7], mode: 'up' },
-                    }),
-                ])]
+                name: 'CombinedAll',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack('BASS', 'kick.wav', [
+                        makeNote(0, 0, {
+                            pitch: 12,
+                            retriggerNum: 2,
+                            rate: 1,
+                            arp: { intervals: [0, 3, 7], mode: 'up' },
+                        }),
+                    ]),
+                ],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
@@ -1184,8 +1361,10 @@ describe('WAV Export — functional end-to-end', () => {
     describe('Case 19: no notes produces silent WAV', () => {
         it('empty notes array → flat notes map is empty', () => {
             const pattern = {
-                name: 'Silent', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [])]
+                name: 'Silent',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [])],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
@@ -1195,10 +1374,10 @@ describe('WAV Export — functional end-to-end', () => {
 
         it('muted track → flat notes still computed (mute is runtime)', () => {
             const pattern = {
-                name: 'Muted', bpm: 120, nbBeats: 1,
-                tracks: [makeTrack('KICK', 'kick.wav', [
-                    makeNote(0, 0), makeNote(0, 2),
-                ], { mute: true })]
+                name: 'Muted',
+                bpm: 120,
+                nbBeats: 1,
+                tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0), makeNote(0, 2)], { mute: true })],
             }
             const flatMap = recomputeFlatNotes(pattern, 0)
             let count = 0
@@ -1211,8 +1390,9 @@ describe('WAV Export — functional end-to-end', () => {
 describe.each(PARAM_SETS)('WAV export — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
     it('exports a valid WAV blob', async () => {
         const pattern = makePattern({
-            bpm, nbBeats,
-            tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)], { stepsPerBeat, nbBeats })]
+            bpm,
+            nbBeats,
+            tracks: [makeTrack('KICK', 'kick.wav', [makeNote(0, 0)], { stepsPerBeat, nbBeats })],
         })
         const exporter = new WavExporter()
         const blob = await exporter.exportPatternToWav(pattern, 1)

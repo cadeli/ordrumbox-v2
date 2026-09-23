@@ -24,7 +24,18 @@ export default class ViewManager {
     #slots
     #viewHandlers
 
-    constructor({ trackEditor, synthEditor, pianoRollPanel, noteEditor, toolsPanel, patternSettingsPanel, outputPanel, drumkitManager, patternsPanel, aboutPanel }) {
+    constructor({
+        trackEditor,
+        synthEditor,
+        pianoRollPanel,
+        noteEditor,
+        toolsPanel,
+        patternSettingsPanel,
+        outputPanel,
+        drumkitManager,
+        patternsPanel,
+        aboutPanel,
+    }) {
         this.#trackEditor = trackEditor
         this.#synthEditor = synthEditor
         this.#pianoRollPanel = pianoRollPanel
@@ -35,32 +46,32 @@ export default class ViewManager {
 
         // ── Slot panel registry: short name → { event, panel } ─────────────
         this.#slots = new Map([
-            ['tools', { event: 'toolsToggle',           panel: toolsPanel }],
-            ['master',{ event: 'masterToggle',          panel: outputPanel }],
-            ['dm',    { event: 'drumkitManagerToggle',  panel: drumkitManager }],
-            ['pp',    { event: 'songToggle',            panel: patternsPanel }],
-            ['about', { event: 'aboutToggle',            panel: aboutPanel }],
+            ['tools', { event: 'toolsToggle', panel: toolsPanel }],
+            ['master', { event: 'masterToggle', panel: outputPanel }],
+            ['dm', { event: 'drumkitManagerToggle', panel: drumkitManager }],
+            ['pp', { event: 'songToggle', panel: patternsPanel }],
+            ['about', { event: 'aboutToggle', panel: aboutPanel }],
         ])
 
         // ── View registry: view name → { enter, exit } ──────────────────
         // `exit` runs cleanup for the view being left (only views that need
         // teardown define one); `enter` renders the view being switched to.
         this.#viewHandlers = new Map([
-            ['synth',       { enter: () => this.#showSynth(),      exit: () => this.#synthEditor?.hidePanel() }],
-            ['edit',        { enter: () => this.#showEdit() }],
-            ['proll',       { enter: () => this.#showProll(),      exit: () => this.#pianoRollPanel?.hide() }],
-            ['mobileSeq',   { enter: () => this.#showMobileSeq(),  exit: () => this.#exitMobileSeq() }],
-            ['mobileTrack', { enter: () => this.#showMobileTrack(),exit: () => this.#exitMobileTrack() }],
+            ['synth', { enter: () => this.#showSynth(), exit: () => this.#synthEditor?.hidePanel() }],
+            ['edit', { enter: () => this.#showEdit() }],
+            ['proll', { enter: () => this.#showProll(), exit: () => this.#pianoRollPanel?.hide() }],
+            ['mobileSeq', { enter: () => this.#showMobileSeq(), exit: () => this.#exitMobileSeq() }],
+            ['mobileTrack', { enter: () => this.#showMobileTrack(), exit: () => this.#exitMobileTrack() }],
         ])
     }
 
     init() {
         // View switches (synth, edit, proll, mobile)
-        playbackEvents.on("synthToggle", () => this.#switchTo('synth'))
-        playbackEvents.on("editToggle", () => this.#switchTo('edit'))
-        playbackEvents.on("prollToggle", () => this.#switchTo('proll'))
-        playbackEvents.on("mobileSeqToggle", () => this.#switchTo('mobileSeq'))
-        playbackEvents.on("mobileTrackToggle", () => this.#switchTo('mobileTrack'))
+        playbackEvents.on('synthToggle', () => this.#switchTo('synth'))
+        playbackEvents.on('editToggle', () => this.#switchTo('edit'))
+        playbackEvents.on('prollToggle', () => this.#switchTo('proll'))
+        playbackEvents.on('mobileSeqToggle', () => this.#switchTo('mobileSeq'))
+        playbackEvents.on('mobileTrackToggle', () => this.#switchTo('mobileTrack'))
 
         // Slot panels — one listener per event, all routed through #toggleSlotPanel
         for (const [name, { event, panel }] of this.#slots) {

@@ -19,12 +19,24 @@ function makeMockCtx() {
         stroke: vi.fn(),
         closePath: vi.fn(),
         fill: vi.fn(),
-        set strokeStyle(v) { this._strokeStyle = v },
-        get strokeStyle() { return this._strokeStyle },
-        set fillStyle(v) { this._fillStyle = v },
-        get fillStyle() { return this._fillStyle },
-        set lineWidth(v) { this._lineWidth = v },
-        get lineWidth() { return this._lineWidth },
+        set strokeStyle(v) {
+            this._strokeStyle = v
+        },
+        get strokeStyle() {
+            return this._strokeStyle
+        },
+        set fillStyle(v) {
+            this._fillStyle = v
+        },
+        get fillStyle() {
+            return this._fillStyle
+        },
+        set lineWidth(v) {
+            this._lineWidth = v
+        },
+        get lineWidth() {
+            return this._lineWidth
+        },
     }
 }
 

@@ -12,21 +12,42 @@ export default class CowbellGenerate extends BaseGenerator {
                 { beat: 2, step: 0 },
                 { beat: 3, step: 0 },
             ],
-            velocity: { base: 0.72, accentOnBeat: 0.14, ghost: -0.3, randomSpread: 0.06, clampMin: 0.35, clampMax: 0.95 }
+            velocity: {
+                base: 0.72,
+                accentOnBeat: 0.14,
+                ghost: -0.3,
+                randomSpread: 0.06,
+                clampMin: 0.35,
+                clampMax: 0.95,
+            },
         },
         offbeat: {
             mode: 'grid',
             loopPointBeat: 2,
             loopPointStep: 0,
             probabilities: [0.05, 0.8, 0.05, 0.8],
-            velocity: { base: 0.68, accentOnBeat: 0.12, ghost: -0.2, randomSpread: 0.08, clampMin: 0.3, clampMax: 0.92 }
+            velocity: {
+                base: 0.68,
+                accentOnBeat: 0.12,
+                ghost: -0.2,
+                randomSpread: 0.08,
+                clampMin: 0.3,
+                clampMax: 0.92,
+            },
         },
         dense: {
             mode: 'grid',
             loopPointBeat: 1,
             loopPointStep: 0,
             probabilities: [0.7, 0.3, 0.7, 0.3],
-            velocity: { base: 0.62, accentOnBeat: 0.16, ghost: -0.18, randomSpread: 0.08, clampMin: 0.3, clampMax: 0.88 }
+            velocity: {
+                base: 0.62,
+                accentOnBeat: 0.16,
+                ghost: -0.18,
+                randomSpread: 0.08,
+                clampMin: 0.3,
+                clampMax: 0.88,
+            },
         },
         sparse: {
             mode: 'phrases',
@@ -36,7 +57,7 @@ export default class CowbellGenerate extends BaseGenerator {
                 { beat: 0, step: 0 },
                 { beat: 2, step: 2 },
             ],
-            velocity: { base: 0.6, accentOnBeat: 0.1, randomSpread: 0.08, clampMin: 0.3, clampMax: 0.88 }
+            velocity: { base: 0.6, accentOnBeat: 0.1, randomSpread: 0.08, clampMin: 0.3, clampMax: 0.88 },
         },
         syncopated: {
             mode: 'phrases',
@@ -50,7 +71,14 @@ export default class CowbellGenerate extends BaseGenerator {
                 { beat: 2, step: 3 },
                 { beat: 3, step: 2 },
             ],
-            velocity: { base: 0.65, accentOnBeat: 0.14, ghost: -0.2, randomSpread: 0.1, clampMin: 0.28, clampMax: 0.92 }
+            velocity: {
+                base: 0.65,
+                accentOnBeat: 0.14,
+                ghost: -0.2,
+                randomSpread: 0.1,
+                clampMin: 0.28,
+                clampMax: 0.92,
+            },
         },
     })
 
@@ -73,7 +101,7 @@ export default class CowbellGenerate extends BaseGenerator {
                 () => 0,
                 (phrase) => phrase.accent === true,
                 (phrase) => phrase.ghost === true,
-                density
+                density,
             )
         }
         this.applyLoopPoint(track, config)

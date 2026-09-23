@@ -17,11 +17,11 @@ const mockDrumkitService = {
     addSample: vi.fn().mockResolvedValue({ fileName: 'new.wav', kitName: 'Default' }),
     autoDetectAll: vi.fn().mockResolvedValue(true),
     normalizeAll: vi.fn().mockReturnValue(2),
-    getAnalysisInfo: vi.fn().mockReturnValue(null)
+    getAnalysisInfo: vi.fn().mockReturnValue(null),
 }
 
 vi.mock('../src/logic/services/drumkit_service.js', () => ({
-    default: mockDrumkitService
+    default: mockDrumkitService,
 }))
 
 vi.mock('../src/logic/services/instruments_manager.js', () => ({
@@ -30,24 +30,28 @@ vi.mock('../src/logic/services/instruments_manager.js', () => ({
             instruments: [
                 { id: 'KICK', name: 'Kick' },
                 { id: 'SNARE', name: 'Snare' },
-                { id: 'HIHAT', name: 'HiHat' }
-            ]
+                { id: 'HIHAT', name: 'HiHat' },
+            ],
         },
-        findInstrumentFromFileName: vi.fn().mockReturnValue({ id: 'KICK' })
+        findInstrumentFromFileName: vi.fn().mockReturnValue({ id: 'KICK' }),
     },
     instrumentsManager: {
-        findInstrumentFromFileName: vi.fn().mockReturnValue({ id: 'KICK' })
-    }
+        findInstrumentFromFileName: vi.fn().mockReturnValue({ id: 'KICK' }),
+    },
 }))
 
 vi.mock('../src/audio/sample_analyzer.js', () => ({
-    drawEnvelope: vi.fn()
+    drawEnvelope: vi.fn(),
 }))
 
 vi.mock('../src/logic/services/wav_import_service.js', () => {
     class MockWavImportService {
-        async importDirectory() { return { kitName: 'Imported', fileCount: 3 } }
-        async autoAssignSounds() { return undefined }
+        async importDirectory() {
+            return { kitName: 'Imported', fileCount: 3 }
+        }
+        async autoAssignSounds() {
+            return undefined
+        }
     }
     return { default: MockWavImportService }
 })
@@ -59,7 +63,7 @@ beforeEach(async () => {
     appState.reset()
     serviceRegistry.reset()
     soundRegistry.reset()
-    Object.values(mockDrumkitService).forEach(fn => fn.mockClear?.())
+    Object.values(mockDrumkitService).forEach((fn) => fn.mockClear?.())
 
     DrumkitManager = (await import('../src/ui/drumkit_manager.js')).default
 })
@@ -78,9 +82,9 @@ function makeSound(overrides = {}) {
             length: 22050,
             numberOfChannels: 1,
             sampleRate: 44100,
-            getChannelData: vi.fn().mockReturnValue(new Float32Array(22050))
+            getChannelData: vi.fn().mockReturnValue(new Float32Array(22050)),
         },
-        ...overrides
+        ...overrides,
     }
 }
 
@@ -90,20 +94,20 @@ function setupSounds() {
         'http://example.com/snare.wav': makeSound({
             url: 'http://example.com/snare.wav',
             display_name: 'Snare 1',
-            key: 'SNARE'
+            key: 'SNARE',
         }),
         'http://example.com/hihat.wav': makeSound({
             url: 'http://example.com/hihat.wav',
             display_name: 'HiHat 1',
-            key: 'HIHAT'
-        })
+            key: 'HIHAT',
+        }),
     }
     soundRegistry.sounds = sounds
 
     mockDrumkitService.getCurrentKitSounds.mockReturnValue([
         { url: 'http://example.com/kick.wav', display_name: 'Kick 1', key: 'KICK', kit_name: 'Default' },
         { url: 'http://example.com/snare.wav', display_name: 'Snare 1', key: 'SNARE', kit_name: 'Default' },
-        { url: 'http://example.com/hihat.wav', display_name: 'HiHat 1', key: 'HIHAT', kit_name: 'Default' }
+        { url: 'http://example.com/hihat.wav', display_name: 'HiHat 1', key: 'HIHAT', kit_name: 'Default' },
     ])
     mockDrumkitService.exportCurrentKit.mockReturnValue({ name: 'Default', sounds: [] })
     mockDrumkitService.getAnalysisInfo.mockReturnValue({
@@ -111,34 +115,37 @@ function setupSounds() {
         peakDb: -1.2,
         rmsDb: -12.5,
         noteInfo: { freq: 60, midi: 60 },
-        length: 0.5
+        length: 0.5,
     })
 
     soundRegistry.drumkitList = [
-        { name: 'Default', instruments: Object.values(sounds).map(s => ({ ...s })) },
-        { name: 'Electronic', instruments: [] }
+        { name: 'Default', instruments: Object.values(sounds).map((s) => ({ ...s })) },
+        { name: 'Electronic', instruments: [] },
     ]
 
     serviceRegistry.audioEngine = {
         invalidateCache: vi.fn(),
-        updateGeneratedSounds: vi.fn()
+        updateGeneratedSounds: vi.fn(),
     }
     serviceRegistry.audioCtx = {
         createBufferSource: vi.fn().mockReturnValue({
             buffer: null,
             detune: { value: 0 },
             connect: vi.fn(),
-            start: vi.fn()
+            start: vi.fn(),
         }),
         createGain: vi.fn().mockReturnValue({
             gain: { value: 1 },
-            connect: vi.fn()
+            connect: vi.fn(),
         }),
         destination: {},
         decodeAudioData: vi.fn().mockResolvedValue({
-            duration: 0.5, length: 22050, numberOfChannels: 1, sampleRate: 44100,
-            getChannelData: vi.fn().mockReturnValue(new Float32Array(22050))
-        })
+            duration: 0.5,
+            length: 22050,
+            numberOfChannels: 1,
+            sampleRate: 44100,
+            getChannelData: vi.fn().mockReturnValue(new Float32Array(22050)),
+        }),
     }
 }
 
@@ -250,10 +257,7 @@ describe('DrumkitManager E2E', () => {
             kitSelect.value = 'Electronic'
             kitSelect.dispatchEvent(new Event('change'))
 
-            expect(mockDrumkitService.moveToKit).toHaveBeenCalledWith(
-                'http://example.com/kick.wav',
-                'Electronic'
-            )
+            expect(mockDrumkitService.moveToKit).toHaveBeenCalledWith('http://example.com/kick.wav', 'Electronic')
         })
     })
 
@@ -267,10 +271,7 @@ describe('DrumkitManager E2E', () => {
             instSelect.value = 'SNARE'
             instSelect.dispatchEvent(new Event('change'))
 
-            expect(mockDrumkitService.setInstrument).toHaveBeenCalledWith(
-                'http://example.com/kick.wav',
-                'SNARE'
-            )
+            expect(mockDrumkitService.setInstrument).toHaveBeenCalledWith('http://example.com/kick.wav', 'SNARE')
         })
     })
 

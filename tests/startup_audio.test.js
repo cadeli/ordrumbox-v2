@@ -48,7 +48,12 @@ function makeFakeAudioCtx(overrides = {}) {
         })),
         createBiquadFilter: vi.fn(() => ({
             type: 'lowpass',
-            frequency: { value: 350, cancelScheduledValues: vi.fn(), setTargetAtTime: vi.fn(), setValueAtTime: vi.fn() },
+            frequency: {
+                value: 350,
+                cancelScheduledValues: vi.fn(),
+                setTargetAtTime: vi.fn(),
+                setValueAtTime: vi.fn(),
+            },
             Q: { value: 1, cancelScheduledValues: vi.fn(), setTargetAtTime: vi.fn(), setValueAtTime: vi.fn() },
             connect: vi.fn(),
             disconnect: vi.fn(),
@@ -85,8 +90,12 @@ function makeFakeTransport() {
         isRunning: false,
         audioCtx: null,
         setBpm: vi.fn(),
-        start: vi.fn(function () { this.isRunning = true }),
-        stop: vi.fn(function () { this.isRunning = false }),
+        start: vi.fn(function () {
+            this.isRunning = true
+        }),
+        stop: vi.fn(function () {
+            this.isRunning = false
+        }),
         onSchedule: null,
     }
 }
@@ -154,7 +163,9 @@ describe('toggleStartStop — audioCtx creation', () => {
     it('logs error and returns when AudioContext creation throws', async () => {
         const loggerSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
         const errorLoader = {
-            get audioCtx() { throw new Error('No AudioContext') },
+            get audioCtx() {
+                throw new Error('No AudioContext')
+            },
             ensureResourcesLoaded: vi.fn(),
         }
 
@@ -173,7 +184,7 @@ describe('toggleStartStop — audioCtx creation', () => {
         expect(loggerSpy).toHaveBeenCalledWith(
             'Sequencer',
             'Sequencer::toggleStartStop: Failed to create AudioContext',
-            expect.any(Error)
+            expect.any(Error),
         )
         loggerSpy.mockRestore()
     })
@@ -205,7 +216,7 @@ describe('toggleStartStop — start guard', () => {
         seq.toggleStartStop()
 
         // Give microtasks time to settle
-        await new Promise(r => setTimeout(r, 50))
+        await new Promise((r) => setTimeout(r, 50))
 
         // _startInner should only be entered once (second call skipped)
         expect(seq._startInner).toHaveBeenCalledTimes(1)

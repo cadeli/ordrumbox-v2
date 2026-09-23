@@ -14,7 +14,12 @@ vi.mock('../src/state/sound_registry.js', () => {
         scales: {},
         generatedSounds: {},
         settings: { version: 1, sampleDirs: [], maxSampleDirs: 10 },
-        reset() { this.drumkitList = []; this.sounds = {}; this.scales = {}; this.generatedSounds = {} }
+        reset() {
+            this.drumkitList = []
+            this.sounds = {}
+            this.scales = {}
+            this.generatedSounds = {}
+        },
     }
     return { soundRegistry: state, __esModule: true }
 })
@@ -26,13 +31,13 @@ vi.mock('../src/state/service_registry.js', () => {
 
 vi.mock('../src/patterns/fixer.js', () => ({
     fixPatterns: vi.fn((p) => p),
-    getUnloadedSamplesFromDrumkits: vi.fn(() => [])
+    getUnloadedSamplesFromDrumkits: vi.fn(() => []),
 }))
 
 function makeJsonResponse(data) {
     return {
         ok: true,
-        json: () => Promise.resolve(data)
+        json: () => Promise.resolve(data),
     }
 }
 
@@ -52,26 +57,34 @@ describe('ResourcesLoader', () => {
             let _handler = null
             const req = { result, onerror: null }
             Object.defineProperty(req, 'onsuccess', {
-                get() { return _handler },
-                set(fn) { _handler = fn; queueMicrotask(() => fn?.()) },
+                get() {
+                    return _handler
+                },
+                set(fn) {
+                    _handler = fn
+                    queueMicrotask(() => fn?.())
+                },
             })
             return req
         }
         const mockStore = {
-            ordrumbox_settings: { version: 1, sampleDirs: [], maxSampleDirs: 10 }
+            ordrumbox_settings: { version: 1, sampleDirs: [], maxSampleDirs: 10 },
         }
         const mockObjectStore = {
             get: vi.fn((key) => makeIdbRequest(mockStore[key] ?? undefined)),
-            put: vi.fn((value, key) => { mockStore[key] = value; return makeIdbRequest(undefined) }),
+            put: vi.fn((value, key) => {
+                mockStore[key] = value
+                return makeIdbRequest(undefined)
+            }),
         }
         const mockTx = { objectStore: vi.fn(() => mockObjectStore) }
         const mockDb = {
             close: vi.fn(),
             transaction: vi.fn(() => mockTx),
-            objectStoreNames: { contains: vi.fn(() => true) }
+            objectStoreNames: { contains: vi.fn(() => true) },
         }
         globalThis.indexedDB = {
-            open: vi.fn(() => makeIdbRequest(mockDb))
+            open: vi.fn(() => makeIdbRequest(mockDb)),
         }
         vi.spyOn(logger, 'error').mockImplementation(() => {})
         vi.spyOn(logger, 'info').mockImplementation(() => {})
@@ -97,15 +110,13 @@ describe('ResourcesLoader', () => {
         it('throws on HTTP error', async () => {
             fetchSpy.mockResolvedValue(makeErrorResponse(500))
 
-            await expect(loader.loadJsonResource('fail.json'))
-                .rejects.toThrow('HTTP 500')
+            await expect(loader.loadJsonResource('fail.json')).rejects.toThrow('HTTP 500')
         })
 
         it('throws on network error', async () => {
             fetchSpy.mockRejectedValue(new Error('Network error'))
 
-            await expect(loader.loadJsonResource('fail.json'))
-                .rejects.toThrow('Network error')
+            await expect(loader.loadJsonResource('fail.json')).rejects.toThrow('Network error')
         })
     })
 
@@ -128,7 +139,10 @@ describe('ResourcesLoader', () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
 
-            const song = { infos: { name: 'Test', description: '', date: '2025-01-01' }, patterns: [{ name: 'P1', bpm: 120, nbBeats: 4, tracks: [] }] }
+            const song = {
+                infos: { name: 'Test', description: '', date: '2025-01-01' },
+                patterns: [{ name: 'P1', bpm: 120, nbBeats: 4, tracks: [] }],
+            }
             fetchSpy.mockResolvedValue(makeJsonResponse(song))
 
             await loader.loadSong('song.json')
@@ -140,10 +154,17 @@ describe('ResourcesLoader', () => {
         it('resets soundId when useAutoAssignSound is not false', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
-            const song = { infos: {}, patterns: [{
-                name: 'P1', bpm: 120, nbBeats: 4,
-                tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: true, notes: [] }]
-            }] }
+            const song = {
+                infos: {},
+                patterns: [
+                    {
+                        name: 'P1',
+                        bpm: 120,
+                        nbBeats: 4,
+                        tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: true, notes: [] }],
+                    },
+                ],
+            }
             fetchSpy.mockResolvedValue(makeJsonResponse(song))
 
             await loader.loadSong('song.json')
@@ -155,10 +176,17 @@ describe('ResourcesLoader', () => {
         it('keeps soundId when useAutoAssignSound is false', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
-            const song = { infos: {}, patterns: [{
-                name: 'P1', bpm: 120, nbBeats: 4,
-                tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: false, notes: [] }]
-            }] }
+            const song = {
+                infos: {},
+                patterns: [
+                    {
+                        name: 'P1',
+                        bpm: 120,
+                        nbBeats: 4,
+                        tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: false, notes: [] }],
+                    },
+                ],
+            }
             fetchSpy.mockResolvedValue(makeJsonResponse(song))
 
             await loader.loadSong('song.json')
@@ -170,10 +198,17 @@ describe('ResourcesLoader', () => {
         it('skips tracks with soundId NOT_DEFINED', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
-            const song = { infos: {}, patterns: [{
-                name: 'P1', bpm: 120, nbBeats: 4,
-                tracks: [{ name: 'KICK', soundId: 'NOT_DEFINED', notes: [] }]
-            }] }
+            const song = {
+                infos: {},
+                patterns: [
+                    {
+                        name: 'P1',
+                        bpm: 120,
+                        nbBeats: 4,
+                        tracks: [{ name: 'KICK', soundId: 'NOT_DEFINED', notes: [] }],
+                    },
+                ],
+            }
             fetchSpy.mockResolvedValue(makeJsonResponse(song))
 
             await loader.loadSong('song.json')
@@ -216,11 +251,9 @@ describe('ResourcesLoader', () => {
             appState.patterns.length = 0
             soundRegistry.drumkitList.length = 0
             soundRegistry.settings._loaded = false
-            Object.keys(soundRegistry.sounds).forEach(k => delete soundRegistry.sounds[k])
+            Object.keys(soundRegistry.sounds).forEach((k) => delete soundRegistry.sounds[k])
 
-            fetchSpy
-                .mockResolvedValueOnce(makeJsonResponse([]))
-                .mockResolvedValueOnce(makeJsonResponse({}))
+            fetchSpy.mockResolvedValueOnce(makeJsonResponse([])).mockResolvedValueOnce(makeJsonResponse({}))
 
             await loader.ensureResourcesLoaded()
 
@@ -234,9 +267,11 @@ describe('ResourcesLoader', () => {
             loader._patternsLoadingPromise = pending
 
             let settled = false
-            loader.ensureResourcesLoaded().then(() => { settled = true })
+            loader.ensureResourcesLoaded().then(() => {
+                settled = true
+            })
 
-            await new Promise(r => setTimeout(r, 10))
+            await new Promise((r) => setTimeout(r, 10))
             expect(settled).toBe(false)
             expect(fetchSpy).not.toHaveBeenCalled()
         })
@@ -259,7 +294,7 @@ describe('ResourcesLoader', () => {
             appState.patterns = [{ name: 'p' }]
             soundRegistry.drumkitList = [{ name: 'real', samples: [] }]
             soundRegistry.settings._loaded = true
-            Object.keys(soundRegistry.sounds).forEach(k => delete soundRegistry.sounds[k])
+            Object.keys(soundRegistry.sounds).forEach((k) => delete soundRegistry.sounds[k])
             loader._samplesLoadingPromise = Promise.resolve()
 
             await loader.ensureResourcesLoaded()
@@ -274,17 +309,21 @@ describe('ResourcesLoader', () => {
             appState.patterns.length = 0
 
             let resolveLoad
-            const loadPromise = new Promise(r => { resolveLoad = r })
+            const loadPromise = new Promise((r) => {
+                resolveLoad = r
+            })
             loader._patternsLoadingPromise = loadPromise
 
             let settled = false
-            loader.ensureResourcesLoaded().then(() => { settled = true })
+            loader.ensureResourcesLoaded().then(() => {
+                settled = true
+            })
 
-            await new Promise(r => setTimeout(r, 10))
+            await new Promise((r) => setTimeout(r, 10))
             expect(settled).toBe(false)
 
             resolveLoad()
-            await new Promise(r => setTimeout(r, 10))
+            await new Promise((r) => setTimeout(r, 10))
             expect(settled).toBe(true)
         })
     })
@@ -292,7 +331,11 @@ describe('ResourcesLoader', () => {
     describe('audioCtx', () => {
         it('creates AudioContext if not provided', () => {
             const mockCtx = { createGain: vi.fn() }
-            globalThis.AudioContext = class { constructor() { return mockCtx } }
+            globalThis.AudioContext = class {
+                constructor() {
+                    return mockCtx
+                }
+            }
 
             const l = new ResourcesLoader()
             const ctx = l.audioCtx
@@ -320,12 +363,12 @@ describe('ResourcesLoader', () => {
             const mockBuffer = { duration: 1.5 }
             const mockArrayBuffer = new ArrayBuffer(8)
             const mockCtx = {
-                decodeAudioData: vi.fn().mockResolvedValue(mockBuffer)
+                decodeAudioData: vi.fn().mockResolvedValue(mockBuffer),
             }
             loader = new ResourcesLoader(mockCtx)
             fetchSpy.mockResolvedValue({
                 ok: true,
-                arrayBuffer: () => Promise.resolve(mockArrayBuffer)
+                arrayBuffer: () => Promise.resolve(mockArrayBuffer),
             })
 
             const result = await loader.loadSample({ url: 'kick.wav', key: 'K' }, 'real')
@@ -344,8 +387,7 @@ describe('ResourcesLoader', () => {
             loader = new ResourcesLoader(mockCtx)
             fetchSpy.mockResolvedValue({ ok: false, status: 404 })
 
-            await expect(loader.loadSample({ url: 'missing.wav' }, 'real'))
-                .rejects.toThrow('HTTP 404')
+            await expect(loader.loadSample({ url: 'missing.wav' }, 'real')).rejects.toThrow('HTTP 404')
         })
     })
 

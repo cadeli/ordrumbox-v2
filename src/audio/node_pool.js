@@ -12,7 +12,9 @@ export default class NodePool {
         this.#activeCount = 0
     }
 
-    get activeCount() { return this.#activeCount }
+    get activeCount() {
+        return this.#activeCount
+    }
 
     acquire(type) {
         let pool = this.#pools[type]
@@ -56,7 +58,9 @@ export default class NodePool {
                     if (node.pan) node.pan.value = 0
                     break
             }
-        } catch (_) { /* no-op: reset is best-effort */ }
+        } catch (_) {
+            /* no-op: reset is best-effort */
+        }
     }
 
     get stats() {
@@ -69,12 +73,18 @@ export default class NodePool {
 
     #create(type) {
         switch (type) {
-            case 'GainNode':          return this.audioCtx.createGain()
-            case 'BiquadFilterNode':  return this.audioCtx.createBiquadFilter()
-            case 'StereoPannerNode':  return this.audioCtx.createStereoPanner()
-            case 'OscillatorNode':    return this.audioCtx.createOscillator()
-            case 'BufferSourceNode':  return this.audioCtx.createBufferSource()
-            default: throw new Error(`NodePool: unsupported node type "${type}"`)
+            case 'GainNode':
+                return this.audioCtx.createGain()
+            case 'BiquadFilterNode':
+                return this.audioCtx.createBiquadFilter()
+            case 'StereoPannerNode':
+                return this.audioCtx.createStereoPanner()
+            case 'OscillatorNode':
+                return this.audioCtx.createOscillator()
+            case 'BufferSourceNode':
+                return this.audioCtx.createBufferSource()
+            default:
+                throw new Error(`NodePool: unsupported node type "${type}"`)
         }
     }
 }

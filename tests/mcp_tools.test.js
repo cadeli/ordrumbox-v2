@@ -5,7 +5,7 @@ import Commander from '../src/logic/commands/cmd.js'
 import { isNoteAt } from './helpers/cmd_test_helpers.js'
 
 function ensureTrack(cmd, pattern, trackName, stepsPerBeat) {
-    let track = pattern.tracks.find(t => t.name === trackName)
+    let track = pattern.tracks.find((t) => t.name === trackName)
     if (!track) {
         track = cmd.addTrack(pattern, trackName, stepsPerBeat)
     }
@@ -47,7 +47,7 @@ describe('Functional: MCP tools flow', () => {
         const notes = [
             { trackName: 'KICK', step: 0 },
             { trackName: 'KICK', step: 4 },
-            { trackName: 'SNARE', step: 6 }
+            { trackName: 'SNARE', step: 6 },
         ]
 
         for (const noteData of notes) {

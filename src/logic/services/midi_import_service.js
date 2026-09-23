@@ -18,7 +18,10 @@ export default class MidiImportService {
         const arrayBuffer = await file.arrayBuffer()
         const midiData = parseMidi(new Uint8Array(arrayBuffer))
 
-        logger.debug('MidiImport', `format: ${midiData.header.format}, tracks: ${midiData.tracks.length}, division: ${midiData.header.division}, tempo: ${midiData.header.tempo ?? 'none'}`)
+        logger.debug(
+            'MidiImport',
+            `format: ${midiData.header.format}, tracks: ${midiData.tracks.length}, division: ${midiData.header.division}, tempo: ${midiData.header.tempo ?? 'none'}`,
+        )
 
         const notes = findAllNotes(midiData)
         if (notes.length === 0) {
@@ -28,7 +31,10 @@ export default class MidiImportService {
         logger.debug('MidiImport', `found ${notes.length} note-on events`)
 
         const channelPrograms = extractProgramChanges(midiData)
-        logger.debug('MidiImport', `program changes: ${[...channelPrograms.entries()].map(([ch, pr]) => `ch${ch}=pr${pr}`).join(', ') || 'none'}`)
+        logger.debug(
+            'MidiImport',
+            `program changes: ${[...channelPrograms.entries()].map(([ch, pr]) => `ch${ch}=pr${pr}`).join(', ') || 'none'}`,
+        )
 
         const im = instrumentsManager
 
@@ -41,7 +47,10 @@ export default class MidiImportService {
                 channelTrackNames.set(note.channel, midiData.trackNames[note.trackIdx] ?? '')
             }
         }
-        logger.debug('MidiImport', `channels with notes: ${[...channelNotes.keys()].join(', ')} (${[...channelNotes.values()].map(n => n.length).join('+')} notes)`)
+        logger.debug(
+            'MidiImport',
+            `channels with notes: ${[...channelNotes.keys()].join(', ')} (${[...channelNotes.values()].map((n) => n.length).join('+')} notes)`,
+        )
 
         const { trackDefs } = this.#resolveTrackDefs(channelNotes, channelTrackNames, channelPrograms, im)
 
@@ -50,8 +59,11 @@ export default class MidiImportService {
         if (trackDefs.length === 0) {
             logger.warn('MidiImport', 'no matching instruments — dumping channel/note summary:')
             for (const [channel, chNotes] of channelNotes) {
-                const noteNums = [...new Set(chNotes.map(n => n.note))].sort((a, b) => a - b)
-                logger.warn('MidiImport', `  ch${channel}: notes [${noteNums.join(', ')}], program=${channelPrograms.get(channel) ?? 'none'}, count=${chNotes.length}`)
+                const noteNums = [...new Set(chNotes.map((n) => n.note))].sort((a, b) => a - b)
+                logger.warn(
+                    'MidiImport',
+                    `  ch${channel}: notes [${noteNums.join(', ')}], program=${channelPrograms.get(channel) ?? 'none'}, count=${chNotes.length}`,
+                )
             }
             return { trackCount: 0, patternCount: 0, warning: 'No matching instruments found in MIDI file' }
         }
@@ -65,9 +77,10 @@ export default class MidiImportService {
         await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
 
         serviceRegistry.audioEngine?.invalidateCache()
-        const message = patternCount > 1
-            ? `MIDI imported: ${trackDefs.length} track(s) into ${patternCount} patterns`
-            : `MIDI imported: ${trackDefs.length} track(s)`
+        const message =
+            patternCount > 1
+                ? `MIDI imported: ${trackDefs.length} track(s) into ${patternCount} patterns`
+                : `MIDI imported: ${trackDefs.length} track(s)`
 
         return { trackCount: trackDefs.length, patternCount, message }
     }
@@ -84,7 +97,12 @@ export default class MidiImportService {
         }
 
         const makeDef = (trackName, groupNotes, opts) => ({
-            trackName, groupNotes, midiTrackName: opts.midiTrackName, program: opts.program, channel: opts.channel, ...opts
+            trackName,
+            groupNotes,
+            midiTrackName: opts.midiTrackName,
+            program: opts.program,
+            channel: opts.channel,
+            ...opts,
         })
 
         const trackDefs = []
@@ -95,15 +113,29 @@ export default class MidiImportService {
             const midiTrackName = channelTrackNames.get(channel) ?? ''
             const isDrumChannel = channel === 9
 
-            logger.warn('MidiImport', `── Channel ${channel}, program=${program}, name="${midiTrackName}", notes=${chNotes.length} ──`)
+            logger.warn(
+                'MidiImport',
+                `── Channel ${channel}, program=${program}, name="${midiTrackName}", notes=${chNotes.length} ──`,
+            )
 
             if (!isDrumChannel) {
                 const melodicInst = im.findInstrumentFromMidiProgram(program)
                 if (melodicInst.id !== 'NOT_FOUND' && !melodicInst.drum) {
                     const trackName = melodicInst.id
-                    if (!trackDefs.some(d => d.trackName === trackName)) {
-                        trackDefs.push(makeDef(trackName, chNotes, { baseNote: resolveRootMidi(trackName), midiTrackName, program, channel, isDrum: false }))
-                        logger.warn('MidiImport', `  → ${trackName} (tier1: findInstrumentFromMidiProgram ch=${channel} prog=${program})`)
+                    if (!trackDefs.some((d) => d.trackName === trackName)) {
+                        trackDefs.push(
+                            makeDef(trackName, chNotes, {
+                                baseNote: resolveRootMidi(trackName),
+                                midiTrackName,
+                                program,
+                                channel,
+                                isDrum: false,
+                            }),
+                        )
+                        logger.warn(
+                            'MidiImport',
+                            `  → ${trackName} (tier1: findInstrumentFromMidiProgram ch=${channel} prog=${program})`,
+                        )
                     }
                     continue
                 }
@@ -119,8 +151,16 @@ export default class MidiImportService {
                 const nameInst = im.findByName(midiTrackName)
                 if (nameInst) {
                     const trackName = nameInst.id
-                    if (!trackDefs.some(d => d.trackName === trackName)) {
-                        trackDefs.push(makeDef(trackName, chNotes, { baseNote: resolveRootMidi(trackName), midiTrackName, program, channel, isDrum: false }))
+                    if (!trackDefs.some((d) => d.trackName === trackName)) {
+                        trackDefs.push(
+                            makeDef(trackName, chNotes, {
+                                baseNote: resolveRootMidi(trackName),
+                                midiTrackName,
+                                program,
+                                channel,
+                                isDrum: false,
+                            }),
+                        )
                         logger.warn('MidiImport', `  → ${trackName} (tier3: findByName "${midiTrackName}")`)
                     }
                     continue
@@ -133,7 +173,7 @@ export default class MidiImportService {
 
         for (const channel of skippedChannels) {
             const allInstIds = [...im.byId.keys()].sort()
-            const usedIds = new Set(trackDefs.map(d => d.trackName))
+            const usedIds = new Set(trackDefs.map((d) => d.trackName))
             let fallbackIdx = 0
             while (fallbackIdx < allInstIds.length && usedIds.has(allInstIds[fallbackIdx])) fallbackIdx++
             if (fallbackIdx >= allInstIds.length) continue
@@ -141,7 +181,15 @@ export default class MidiImportService {
             const instId = allInstIds[fallbackIdx]
             const chNotes = channelNotes.get(channel)
             const program = channelPrograms.get(channel) ?? 0
-            trackDefs.push(makeDef(instId, chNotes, { baseNote: resolveRootMidi(instId), midiTrackName: channelTrackNames.get(channel) ?? '', program, channel, isDrum: false }))
+            trackDefs.push(
+                makeDef(instId, chNotes, {
+                    baseNote: resolveRootMidi(instId),
+                    midiTrackName: channelTrackNames.get(channel) ?? '',
+                    program,
+                    channel,
+                    isDrum: false,
+                }),
+            )
             usedIds.add(instId)
         }
 
@@ -164,7 +212,8 @@ export default class MidiImportService {
                 const gmName = GM_DRUM_NAMES[noteNum]
                 if (gmName) {
                     drumInst = im.findInstrumentFromFileName(gmName)
-                    if (drumInst.id !== 'NOT_FOUND') matchMethod = `GM_DRUM_NAMES[${noteNum}]="${gmName}" → findInstrumentFromFileName`
+                    if (drumInst.id !== 'NOT_FOUND')
+                        matchMethod = `GM_DRUM_NAMES[${noteNum}]="${gmName}" → findInstrumentFromFileName`
                 }
                 if (drumInst.id === 'NOT_FOUND') {
                     logger.warn('MidiImport', `  note ${noteNum}: no instrument found`)
@@ -173,8 +222,17 @@ export default class MidiImportService {
             }
 
             const trackName = drumInst.id
-            if (!results.some(d => d.trackName === trackName)) {
-                results.push({ trackName, groupNotes: grpNotes, baseNote: noteNum, midiTrackName, program, channel, isDrum: true, key: noteNum })
+            if (!results.some((d) => d.trackName === trackName)) {
+                results.push({
+                    trackName,
+                    groupNotes: grpNotes,
+                    baseNote: noteNum,
+                    midiTrackName,
+                    program,
+                    channel,
+                    isDrum: true,
+                    key: noteNum,
+                })
                 drumFound = true
                 logger.warn('MidiImport', `  → ${trackName} (tier2: ${matchMethod}, note=${noteNum})`)
             }
@@ -207,10 +265,16 @@ export default class MidiImportService {
             const sampleUrl = resolveSampleUrl(def.trackName) ?? '?'
             if (def.isDrum) {
                 const gmName = GM_DRUM_NAMES[def.key] ?? ''
-                logger.warn('MidiImport', `  original: "ch: ${def.channel}, key: ${def.key}${gmName ? ', ' + gmName : ''}" → ${def.trackName} (${def.groupNotes.length} notes) [${sampleUrl}]`)
+                logger.warn(
+                    'MidiImport',
+                    `  original: "ch: ${def.channel}, key: ${def.key}${gmName ? ', ' + gmName : ''}" → ${def.trackName} (${def.groupNotes.length} notes) [${sampleUrl}]`,
+                )
             } else {
                 const gmProgName = GM_PROGRAM_NAMES[def.program] ?? ''
-                logger.warn('MidiImport', `  original: "ch: ${def.channel}, program: ${def.program}${gmProgName ? ', ' + gmProgName : ''}" → ${def.trackName} (${def.groupNotes.length} notes) [${sampleUrl}]`)
+                logger.warn(
+                    'MidiImport',
+                    `  original: "ch: ${def.channel}, program: ${def.program}${gmProgName ? ', ' + gmProgName : ''}" → ${def.trackName} (${def.groupNotes.length} notes) [${sampleUrl}]`,
+                )
             }
         }
         logger.warn('MidiImport', `═══════════════════════════════════════════`)
@@ -232,7 +296,10 @@ export default class MidiImportService {
         const numPatterns = Math.min(MIDI_MAX_PATTERNS, Math.ceil(totalBeats / MIDI_MAX_BEATS))
         const beatsPerPattern = MIDI_MAX_BEATS
 
-        logger.debug('MidiImport', `maxTick=${maxTick}, PPQN=${PPQN}, TICK_RATIO=${TICK_RATIO.toFixed(3)}, totalBeats=${totalBeats}, patterns=${numPatterns}, beatsPerPattern=${beatsPerPattern}`)
+        logger.debug(
+            'MidiImport',
+            `maxTick=${maxTick}, PPQN=${PPQN}, TICK_RATIO=${TICK_RATIO.toFixed(3)}, totalBeats=${totalBeats}, patterns=${numPatterns}, beatsPerPattern=${beatsPerPattern}`,
+        )
 
         for (let p = 0; p < numPatterns; p++) {
             const patStartBeat = p * beatsPerPattern
@@ -266,7 +333,10 @@ export default class MidiImportService {
                     }
                     noteCount++
                 }
-                logger.debug('MidiImport', `pattern "${pattern.name}" track "${def.trackName}": ${noteCount} notes placed`)
+                logger.debug(
+                    'MidiImport',
+                    `pattern "${pattern.name}" track "${def.trackName}": ${noteCount} notes placed`,
+                )
             }
         }
 

@@ -44,8 +44,9 @@ describe('Track variation2', () => {
 
     it('does nothing when variation2 is 0', () => {
         const track = {
-            stepsPerBeat: 4, variation2: 0,
-            notes: [{ beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 }]
+            stepsPerBeat: 4,
+            variation2: 0,
+            notes: [{ beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 }],
         }
         TrackVariation.applyNoteVariation(track)
         expect(track.notes[0].retriggerNum).toBe(1)
@@ -56,7 +57,20 @@ describe('Track variation2', () => {
     it('modifies retrig+rate (sum < 5), euclidianFill (< 3), prob (>= 0.2)', () => {
         let changed = false
         for (let i = 0; i < 20; i++) {
-            const notes = [{ beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, every: 1, pos: 0, prob: 1, retriggerNum: 1, rate: 1, euclidianFill: 0 }]
+            const notes = [
+                {
+                    beat: 0,
+                    beatStep: 0,
+                    velocity: 0.8,
+                    pitch: 0,
+                    every: 1,
+                    pos: 0,
+                    prob: 1,
+                    retriggerNum: 1,
+                    rate: 1,
+                    euclidianFill: 0,
+                },
+            ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
             TrackVariation.applyNoteVariation(t)
             const r = notes[0]
@@ -79,15 +93,18 @@ describe('Track variation2', () => {
 
     it('arp range is modified only when arp exists', () => {
         const trackNoArp = {
-            stepsPerBeat: 4, variation2: 100,
-            notes: [{ beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arp: null }]
+            stepsPerBeat: 4,
+            variation2: 100,
+            notes: [{ beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arp: null }],
         }
         TrackVariation.applyNoteVariation(trackNoArp)
         expect(trackNoArp.notes[0].arp).toBeNull()
 
         let arpChanged = false
         for (let i = 0; i < 20; i++) {
-            const notes = [{ beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arp: [0, 4, 7] }]
+            const notes = [
+                { beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arp: [0, 4, 7] },
+            ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
             TrackVariation.applyNoteVariation(t)
             if (notes[0].arp[0] !== 0) {
@@ -104,7 +121,9 @@ describe('Track variation2', () => {
 
     it('does NOT modify trigger props (every, pos) but CAN modify prob', () => {
         for (let i = 0; i < 20; i++) {
-            const notes = [{ beat: 0, beatStep: 0, every: 1, pos: 0, prob: 1, retriggerNum: 1, rate: 1, euclidianFill: 0 }]
+            const notes = [
+                { beat: 0, beatStep: 0, every: 1, pos: 0, prob: 1, retriggerNum: 1, rate: 1, euclidianFill: 0 },
+            ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
             TrackVariation.applyNoteVariation(t)
             expect(notes[0].every).toBe(1)
@@ -116,7 +135,21 @@ describe('Track variation2', () => {
 
     it('does not alter beat/velocity/pitch/pan', () => {
         for (let i = 0; i < 20; i++) {
-            const notes = [{ beat: 2, beatStep: 3, velocity: 0.9, pitch: 5, pan: 0.3, every: 1, pos: 0, prob: 1, retriggerNum: 1, rate: 1, euclidianFill: 0 }]
+            const notes = [
+                {
+                    beat: 2,
+                    beatStep: 3,
+                    velocity: 0.9,
+                    pitch: 5,
+                    pan: 0.3,
+                    every: 1,
+                    pos: 0,
+                    prob: 1,
+                    retriggerNum: 1,
+                    rate: 1,
+                    euclidianFill: 0,
+                },
+            ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
             TrackVariation.applyNoteVariation(t)
             expect(notes[0].beat).toBe(2)

@@ -1,6 +1,5 @@
 import { isMobileViewport } from '../core/constants.js'
 
-
 /**
  * Check if the current viewport qualifies for mobile landscape 3-column layout.
  * @returns {boolean}
@@ -10,7 +9,7 @@ export function isMobileLandscape() {
 }
 
 /**
-  *
+ *
  * @param {HTMLElement} teContainer  — #te-panel
  */
 export function applyLayout(teContainer) {

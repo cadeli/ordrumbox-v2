@@ -24,10 +24,12 @@ describe('Multiple notes at the same step', () => {
         it('two notes at beat 0 step 0 produce two flatnotes at the same tick', () => {
             const pattern = makePattern({
                 name: 'MultiNote',
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.5, pitch: 2 }),
-                ])],
+                tracks: [
+                    makeTrack('KICK', [
+                        makeNote(0, 0, { velocity: 0.9, pitch: 0 }),
+                        makeNote(0, 0, { velocity: 0.5, pitch: 2 }),
+                    ]),
+                ],
             })
 
             const flatMap = recomputeFlatNotes(pattern, 0)
@@ -43,11 +45,13 @@ describe('Multiple notes at the same step', () => {
         it('three notes at the same step produce three flatnotes', () => {
             const pattern = makePattern({
                 name: 'TriNote',
-                tracks: [makeTrack('SNARE', [
-                    makeNote(1, 2, { velocity: 1.0, pitch: -1 }),
-                    makeNote(1, 2, { velocity: 0.7, pitch: 0 }),
-                    makeNote(1, 2, { velocity: 0.3, pitch: 3 }),
-                ])],
+                tracks: [
+                    makeTrack('SNARE', [
+                        makeNote(1, 2, { velocity: 1.0, pitch: -1 }),
+                        makeNote(1, 2, { velocity: 0.7, pitch: 0 }),
+                        makeNote(1, 2, { velocity: 0.3, pitch: 3 }),
+                    ]),
+                ],
             })
 
             const flatMap = recomputeFlatNotes(pattern, 0)
@@ -55,17 +59,19 @@ describe('Multiple notes at the same step', () => {
             const flatNotes = flatMap.get(tick)
             expect(flatNotes).toBeDefined()
             expect(flatNotes.length).toBe(3)
-            expect(flatNotes.map(fn => fn.note.pitch)).toEqual([-1, 0, 3])
+            expect(flatNotes.map((fn) => fn.note.pitch)).toEqual([-1, 0, 3])
         })
 
         it('multi-note step does not interfere with other steps', () => {
             const pattern = makePattern({
                 name: 'Mixed',
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.5, pitch: 2 }),
-                    makeNote(2, 0, { velocity: 0.8, pitch: 0 }),
-                ])],
+                tracks: [
+                    makeTrack('KICK', [
+                        makeNote(0, 0, { velocity: 0.9, pitch: 0 }),
+                        makeNote(0, 0, { velocity: 0.5, pitch: 2 }),
+                        makeNote(2, 0, { velocity: 0.8, pitch: 0 }),
+                    ]),
+                ],
             })
 
             const flatMap = recomputeFlatNotes(pattern, 0)
@@ -84,10 +90,12 @@ describe('Multiple notes at the same step', () => {
         it('two notes at same step survive export → reimport', () => {
             const source = makePattern({
                 name: 'MultiJSON',
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9, pitch: -3 }),
-                    makeNote(0, 0, { velocity: 0.5, pitch: 5 }),
-                ])],
+                tracks: [
+                    makeTrack('KICK', [
+                        makeNote(0, 0, { velocity: 0.9, pitch: -3 }),
+                        makeNote(0, 0, { velocity: 0.5, pitch: 5 }),
+                    ]),
+                ],
             })
 
             const imported = cmd.importPatternFromJson(source)
@@ -106,12 +114,15 @@ describe('Multiple notes at the same step', () => {
 
         it('export → reimport round-trip preserves all notes at same step', () => {
             const source = makePattern({
-                name: 'RoundTripMulti', bpm: 140,
-                tracks: [makeTrack('SNARE', [
-                    makeNote(1, 2, { velocity: 1.0, pitch: -2 }),
-                    makeNote(1, 2, { velocity: 0.6, pitch: 4 }),
-                    makeNote(3, 0, { velocity: 0.8, pitch: 0 }),
-                ])],
+                name: 'RoundTripMulti',
+                bpm: 140,
+                tracks: [
+                    makeTrack('SNARE', [
+                        makeNote(1, 2, { velocity: 1.0, pitch: -2 }),
+                        makeNote(1, 2, { velocity: 0.6, pitch: 4 }),
+                        makeNote(3, 0, { velocity: 0.8, pitch: 0 }),
+                    ]),
+                ],
             })
 
             const imported = cmd.importPatternFromJson(source)
@@ -121,24 +132,26 @@ describe('Multiple notes at the same step', () => {
 
             expect(track.notes.length).toBe(3)
 
-            const step1Notes = track.notes.filter(n => n.beat === 1 && n.beatStep === 2)
+            const step1Notes = track.notes.filter((n) => n.beat === 1 && n.beatStep === 2)
             expect(step1Notes.length).toBe(2)
             expect(step1Notes[0].pitch).toBe(-2)
             expect(step1Notes[1].pitch).toBe(4)
             expect(step1Notes[0].velocity).toBe(1.0)
             expect(step1Notes[1].velocity).toBe(0.6)
 
-            const step3Notes = track.notes.filter(n => n.beat === 3 && n.beatStep === 0)
+            const step3Notes = track.notes.filter((n) => n.beat === 3 && n.beatStep === 0)
             expect(step3Notes.length).toBe(1)
         })
 
         it('double export is stable with multi-note steps', () => {
             const source = makePattern({
                 name: 'StableMulti',
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.4, pitch: 3 }),
-                ])],
+                tracks: [
+                    makeTrack('KICK', [
+                        makeNote(0, 0, { velocity: 0.9, pitch: 0 }),
+                        makeNote(0, 0, { velocity: 0.4, pitch: 3 }),
+                    ]),
+                ],
             })
 
             const once = cmd.importPatternFromJson(source)
@@ -155,11 +168,15 @@ describe('Multiple notes at the same step', () => {
     describe('MIDI: multi-note steps produce separate Note On events', () => {
         it('two notes at same step → two Note Ons at same MIDI tick', () => {
             const pattern = makePattern({
-                name: 'MIDIMulti', nbBeats: 1,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 1.0, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.5, pitch: 3 }),
-                ], { nbBeats: 1 })],
+                name: 'MIDIMulti',
+                nbBeats: 1,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        [makeNote(0, 0, { velocity: 1.0, pitch: 0 }), makeNote(0, 0, { velocity: 0.5, pitch: 3 })],
+                        { nbBeats: 1 },
+                    ),
+                ],
             })
 
             const im = new InstrumentsManager()
@@ -177,12 +194,19 @@ describe('Multiple notes at the same step', () => {
 
         it('three notes at same step → three Note Ons', () => {
             const pattern = makePattern({
-                name: 'MIDITri', nbBeats: 1,
-                tracks: [makeTrack('SNARE', [
-                    makeNote(0, 0, { velocity: 1.0, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.7, pitch: 2 }),
-                    makeNote(0, 0, { velocity: 0.4, pitch: -1 }),
-                ], { nbBeats: 1 })],
+                name: 'MIDITri',
+                nbBeats: 1,
+                tracks: [
+                    makeTrack(
+                        'SNARE',
+                        [
+                            makeNote(0, 0, { velocity: 1.0, pitch: 0 }),
+                            makeNote(0, 0, { velocity: 0.7, pitch: 2 }),
+                            makeNote(0, 0, { velocity: 0.4, pitch: -1 }),
+                        ],
+                        { nbBeats: 1 },
+                    ),
+                ],
             })
 
             const im = new InstrumentsManager()
@@ -191,19 +215,26 @@ describe('Multiple notes at the same step', () => {
             const noteOns = findAllNotes(parseMidi(midiBytes))
 
             expect(noteOns.length).toBe(3)
-            const ticks = noteOns.map(n => n.absTick)
+            const ticks = noteOns.map((n) => n.absTick)
             expect(ticks[0]).toBe(ticks[1])
             expect(ticks[1]).toBe(ticks[2])
         })
 
         it('multi-note step combined with single-note step in MIDI', () => {
             const pattern = makePattern({
-                name: 'MIDIMixed', nbBeats: 2,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 1.0, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.5, pitch: 5 }),
-                    makeNote(1, 0, { velocity: 0.8, pitch: 0 }),
-                ], { nbBeats: 2 })],
+                name: 'MIDIMixed',
+                nbBeats: 2,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        [
+                            makeNote(0, 0, { velocity: 1.0, pitch: 0 }),
+                            makeNote(0, 0, { velocity: 0.5, pitch: 5 }),
+                            makeNote(1, 0, { velocity: 0.8, pitch: 0 }),
+                        ],
+                        { nbBeats: 2 },
+                    ),
+                ],
             })
 
             const im = new InstrumentsManager()
@@ -222,11 +253,16 @@ describe('Multiple notes at the same step', () => {
     describe.each(PARAM_SETS)('FlatNotes — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
         it('two notes at beat 0 step 0 produce two flatnotes at tick 0', () => {
             const pattern = makePattern({
-                name: 'ParamMulti', bpm, nbBeats,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.5, pitch: 2 }),
-                ], { stepsPerBeat, nbBeats })],
+                name: 'ParamMulti',
+                bpm,
+                nbBeats,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        [makeNote(0, 0, { velocity: 0.9, pitch: 0 }), makeNote(0, 0, { velocity: 0.5, pitch: 2 })],
+                        { stepsPerBeat, nbBeats },
+                    ),
+                ],
             })
 
             const flatMap = recomputeFlatNotes(pattern, 0)
@@ -240,37 +276,53 @@ describe('Multiple notes at the same step', () => {
         it('three notes at same step produce three flatnotes at correct tick', () => {
             const b = Math.min(1, nbBeats - 1)
             const pattern = makePattern({
-                name: 'ParamTri', bpm, nbBeats,
-                tracks: [makeTrack('SNARE', [
-                    makeNote(b, 0, { velocity: 1.0, pitch: -1 }),
-                    makeNote(b, 0, { velocity: 0.7, pitch: 0 }),
-                    makeNote(b, 0, { velocity: 0.3, pitch: 3 }),
-                ], { stepsPerBeat, nbBeats })],
+                name: 'ParamTri',
+                bpm,
+                nbBeats,
+                tracks: [
+                    makeTrack(
+                        'SNARE',
+                        [
+                            makeNote(b, 0, { velocity: 1.0, pitch: -1 }),
+                            makeNote(b, 0, { velocity: 0.7, pitch: 0 }),
+                            makeNote(b, 0, { velocity: 0.3, pitch: 3 }),
+                        ],
+                        { stepsPerBeat, nbBeats },
+                    ),
+                ],
             })
 
             const flatMap = recomputeFlatNotes(pattern, 0)
-            const tick = computeNbTickForPattern(nbBeats, TICK) / (nbBeats * stepsPerBeat) * (b * stepsPerBeat + 0)
+            const tick = (computeNbTickForPattern(nbBeats, TICK) / (nbBeats * stepsPerBeat)) * (b * stepsPerBeat + 0)
             const flatNotes = flatMap.get(tick)
             expect(flatNotes).toBeDefined()
             expect(flatNotes.length).toBe(3)
-            expect(flatNotes.map(fn => fn.note.pitch)).toEqual([-1, 0, 3])
+            expect(flatNotes.map((fn) => fn.note.pitch)).toEqual([-1, 0, 3])
         })
 
         it('multi-note step does not interfere with other steps', () => {
             if (nbBeats < 2) return
             const pattern = makePattern({
-                name: 'ParamMixed', bpm, nbBeats,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9 }),
-                    makeNote(0, 0, { velocity: 0.5 }),
-                    makeNote(1, 0, { velocity: 0.8 }),
-                ], { stepsPerBeat, nbBeats })],
+                name: 'ParamMixed',
+                bpm,
+                nbBeats,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        [
+                            makeNote(0, 0, { velocity: 0.9 }),
+                            makeNote(0, 0, { velocity: 0.5 }),
+                            makeNote(1, 0, { velocity: 0.8 }),
+                        ],
+                        { stepsPerBeat, nbBeats },
+                    ),
+                ],
             })
 
             const flatMap = recomputeFlatNotes(pattern, 0)
             expect(flatMap.get(0).length).toBe(2)
 
-            const tick1 = computeNbTickForPattern(nbBeats, TICK) / (nbBeats * stepsPerBeat) * stepsPerBeat
+            const tick1 = (computeNbTickForPattern(nbBeats, TICK) / (nbBeats * stepsPerBeat)) * stepsPerBeat
             const tickN = flatMap.get(tick1)
             expect(tickN).toBeDefined()
             expect(tickN.length).toBe(1)
@@ -282,11 +334,16 @@ describe('Multiple notes at the same step', () => {
     describe.each(PARAM_SETS)('JSON round-trip — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
         it('export → reimport preserves multi-note steps', () => {
             const source = makePattern({
-                name: 'ParamRoundTrip', bpm, nbBeats,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9, pitch: -3 }),
-                    makeNote(0, 0, { velocity: 0.5, pitch: 5 }),
-                ], { stepsPerBeat, nbBeats })],
+                name: 'ParamRoundTrip',
+                bpm,
+                nbBeats,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        [makeNote(0, 0, { velocity: 0.9, pitch: -3 }), makeNote(0, 0, { velocity: 0.5, pitch: 5 })],
+                        { stepsPerBeat, nbBeats },
+                    ),
+                ],
             })
 
             const imported = cmd.importPatternFromJson(source)
@@ -303,11 +360,16 @@ describe('Multiple notes at the same step', () => {
 
         it('double export is stable', () => {
             const source = makePattern({
-                name: 'ParamStable', bpm, nbBeats,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 0.9, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.4, pitch: 3 }),
-                ], { stepsPerBeat, nbBeats })],
+                name: 'ParamStable',
+                bpm,
+                nbBeats,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        [makeNote(0, 0, { velocity: 0.9, pitch: 0 }), makeNote(0, 0, { velocity: 0.4, pitch: 3 })],
+                        { stepsPerBeat, nbBeats },
+                    ),
+                ],
             })
 
             const once = cmd.importPatternFromJson(source)
@@ -324,11 +386,16 @@ describe('Multiple notes at the same step', () => {
     describe.each(PARAM_SETS)('MIDI multi-note — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
         it('two notes at same step → two Note Ons at same tick', () => {
             const pattern = makePattern({
-                name: 'ParamMIDI', bpm, nbBeats: 1,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 1.0, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.5, pitch: 3 }),
-                ], { stepsPerBeat, nbBeats: 1 })],
+                name: 'ParamMIDI',
+                bpm,
+                nbBeats: 1,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        [makeNote(0, 0, { velocity: 1.0, pitch: 0 }), makeNote(0, 0, { velocity: 0.5, pitch: 3 })],
+                        { stepsPerBeat, nbBeats: 1 },
+                    ),
+                ],
             })
 
             const im = new InstrumentsManager()
@@ -346,12 +413,20 @@ describe('Multiple notes at the same step', () => {
             const nBeats = Math.max(2, nbBeats)
             const b = Math.min(1, nBeats - 1)
             const pattern = makePattern({
-                name: 'ParamMIDIMixed', bpm, nbBeats: nBeats,
-                tracks: [makeTrack('KICK', [
-                    makeNote(0, 0, { velocity: 1.0, pitch: 0 }),
-                    makeNote(0, 0, { velocity: 0.5, pitch: 5 }),
-                    makeNote(b, 0, { velocity: 0.8, pitch: 0 }),
-                ], { stepsPerBeat, nbBeats: nBeats })],
+                name: 'ParamMIDIMixed',
+                bpm,
+                nbBeats: nBeats,
+                tracks: [
+                    makeTrack(
+                        'KICK',
+                        [
+                            makeNote(0, 0, { velocity: 1.0, pitch: 0 }),
+                            makeNote(0, 0, { velocity: 0.5, pitch: 5 }),
+                            makeNote(b, 0, { velocity: 0.8, pitch: 0 }),
+                        ],
+                        { stepsPerBeat, nbBeats: nBeats },
+                    ),
+                ],
             })
 
             const im = new InstrumentsManager()

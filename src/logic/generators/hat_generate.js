@@ -7,7 +7,9 @@ export default class HatGenerate extends BaseGenerator {
             trackType: 'CHH',
             loopPointBeat: 1,
             loopPointStep: 0,
-            velocityPattern: [0.72, 0.55, 0.68, 0.52, 0.72, 0.55, 0.68, 0.48, 0.72, 0.55, 0.68, 0.52, 0.72, 0.55, 0.68, 0.42],
+            velocityPattern: [
+                0.72, 0.55, 0.68, 0.52, 0.72, 0.55, 0.68, 0.48, 0.72, 0.55, 0.68, 0.52, 0.72, 0.55, 0.68, 0.42,
+            ],
             accentEvery: 4,
             velocity: {
                 base: 0.58,
@@ -15,8 +17,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.18,
                 randomSpread: 0.03,
                 clampMin: 0.28,
-                clampMax: 0.82
-            }
+                clampMax: 0.82,
+            },
         },
         chhBasic: {
             mode: 'grid',
@@ -30,8 +32,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.14,
                 randomSpread: 0.08,
                 clampMin: 0.18,
-                clampMax: 0.78
-            }
+                clampMax: 0.78,
+            },
         },
         chhDense: {
             mode: 'grid',
@@ -45,8 +47,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.1,
                 randomSpread: 0.07,
                 clampMin: 0.16,
-                clampMax: 0.72
-            }
+                clampMax: 0.72,
+            },
         },
         chhSparse: {
             mode: 'grid',
@@ -60,8 +62,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.16,
                 randomSpread: 0.08,
                 clampMin: 0.18,
-                clampMax: 0.75
-            }
+                clampMax: 0.75,
+            },
         },
         chhRoll: {
             mode: 'roll',
@@ -77,8 +79,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.12,
                 randomSpread: 0.1,
                 clampMin: 0.18,
-                clampMax: 0.82
-            }
+                clampMax: 0.82,
+            },
         },
         ohhShaker: {
             mode: 'shaker',
@@ -93,8 +95,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.12,
                 randomSpread: 0.05,
                 clampMin: 0.25,
-                clampMax: 0.82
-            }
+                clampMax: 0.82,
+            },
         },
         ohhRide: {
             mode: 'ride',
@@ -110,8 +112,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.1,
                 randomSpread: 0.04,
                 clampMin: 0.3,
-                clampMax: 0.85
-            }
+                clampMax: 0.85,
+            },
         },
         ohhBasic: {
             mode: 'phrases',
@@ -120,7 +122,7 @@ export default class HatGenerate extends BaseGenerator {
             loopPointStep: 0,
             phrases: [
                 { beat: 0, step: 2, accent: true },
-                { beat: 1, step: 2 }
+                { beat: 1, step: 2 },
             ],
             velocity: {
                 base: 0.58,
@@ -128,8 +130,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.18,
                 randomSpread: 0.08,
                 clampMin: 0.28,
-                clampMax: 0.9
-            }
+                clampMax: 0.9,
+            },
         },
         ohhOffbeat: {
             mode: 'grid',
@@ -143,8 +145,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.16,
                 randomSpread: 0.1,
                 clampMin: 0.25,
-                clampMax: 0.88
-            }
+                clampMax: 0.88,
+            },
         },
         ohhRoll: {
             mode: 'roll',
@@ -160,8 +162,8 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.1,
                 randomSpread: 0.1,
                 clampMin: 0.25,
-                clampMax: 0.9
-            }
+                clampMax: 0.9,
+            },
         },
         transition: {
             mode: 'transition',
@@ -177,9 +179,9 @@ export default class HatGenerate extends BaseGenerator {
                 ghost: -0.08,
                 randomSpread: 0.1,
                 clampMin: 0.16,
-                clampMax: 0.92
-            }
-        }
+                clampMax: 0.92,
+            },
+        },
     })
 
     constructor() {
@@ -204,10 +206,12 @@ export default class HatGenerate extends BaseGenerator {
                 this.generateHatRideVariant(hatTrack, config, density)
                 break
             case 'grid':
-                this.generateGridVariant(hatTrack, config,
+                this.generateGridVariant(
+                    hatTrack,
+                    config,
                     (beat, step) => step === 0 || step === Math.floor(hatTrack.stepsPerBeat / 2),
                     (beat, step) => step % 2 !== 0,
-                    density
+                    density,
                 )
                 break
             case 'roll':
@@ -218,11 +222,13 @@ export default class HatGenerate extends BaseGenerator {
                 break
             case 'phrases':
             default:
-                this.generatePhraseVariant(hatTrack, config,
+                this.generatePhraseVariant(
+                    hatTrack,
+                    config,
                     () => 0,
                     (phrase) => phrase.accent === true,
                     (phrase) => phrase.ghost === true,
-                    density
+                    density,
                 )
                 break
         }
@@ -253,8 +259,8 @@ export default class HatGenerate extends BaseGenerator {
                             step,
                             accent: isAccent,
                             ghost: !isAccent,
-                            velocityBase: patternVelocity
-                        })
+                            velocityBase: patternVelocity,
+                        }),
                     )
                 }
             }
@@ -296,8 +302,8 @@ export default class HatGenerate extends BaseGenerator {
                         step,
                         accent: isAccent || isBell,
                         ghost: !isAccent && !isBell,
-                        velocityBase: isBell ? (config.bell?.velocity ?? 0.75) : patternVelocity
-                    })
+                        velocityBase: isBell ? (config.bell?.velocity ?? 0.75) : patternVelocity,
+                    }),
                 )
             }
         }
@@ -323,8 +329,8 @@ export default class HatGenerate extends BaseGenerator {
                 this.computeVelocity(config.velocity, {
                     step,
                     accent: step === stepsPerBeat - interval,
-                    ghost: step !== stepsPerBeat - interval
-                })
+                    ghost: step !== stepsPerBeat - interval,
+                }),
             )
             if (step === stepsPerBeat - interval && typeof config.retriggerNum === 'number') {
                 note.retriggerNum = config.retriggerNum
@@ -355,8 +361,8 @@ export default class HatGenerate extends BaseGenerator {
                 this.computeVelocity(config.velocity, {
                     step,
                     accent: step === 0,
-                    ghost: step !== 0
-                })
+                    ghost: step !== 0,
+                }),
             )
             if (ratchetCount > 1) {
                 note.retriggerNum = ratchetCount

@@ -29,27 +29,65 @@ const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
 const MOBILE = { width: 768, height: 480 }
 
 const MOCK_TRACK = {
-    name: 'KICK', notes: [{ beat: 0, beatStep: 0, pitch: 0, velocity: 0.8 }],
-    nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16,
-    mute: false, solo: false, useAutoAssignSound: true,
-    velocity: 0.8, pan: 0, pitch: 0,
-    filterCutoff: 12000, filterResonance: 1, filterType: 'lowpass',
-    filterLfo: 0, filterEnvelopeAmount: 0,
-    pitchLfo: 0, volumeLfo: 0, panLfo: 0, filterLfoValue: 0,
-    pitchEnv: 0, delaySend: 0, reverbSend: 0, saturationDrive: 0,
-    delayActive: false, reverbActive: false, saturationActive: false,
-    swingAmount: 0, swingMode: 'off', synthSoundKey: 'BASS1'
+    name: 'KICK',
+    notes: [{ beat: 0, beatStep: 0, pitch: 0, velocity: 0.8 }],
+    nbBeats: 4,
+    stepsPerBeat: 4,
+    loopAtStep: 16,
+    mute: false,
+    solo: false,
+    useAutoAssignSound: true,
+    velocity: 0.8,
+    pan: 0,
+    pitch: 0,
+    filterCutoff: 12000,
+    filterResonance: 1,
+    filterType: 'lowpass',
+    filterLfo: 0,
+    filterEnvelopeAmount: 0,
+    pitchLfo: 0,
+    volumeLfo: 0,
+    panLfo: 0,
+    filterLfoValue: 0,
+    pitchEnv: 0,
+    delaySend: 0,
+    reverbSend: 0,
+    saturationDrive: 0,
+    delayActive: false,
+    reverbActive: false,
+    saturationActive: false,
+    swingAmount: 0,
+    swingMode: 'off',
+    synthSoundKey: 'BASS1',
 }
 
 function setupCanvas() {
     HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
-        fillRect: vi.fn(), clearRect: vi.fn(), getImageData: vi.fn(),
-        putImageData: vi.fn(), createImageData: vi.fn(), setTransform: vi.fn(),
-        drawImage: vi.fn(), save: vi.fn(), fillText: vi.fn(), restore: vi.fn(),
-        beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(),
-        stroke: vi.fn(), translate: vi.fn(), scale: vi.fn(), rotate: vi.fn(),
-        arc: vi.fn(), fill: vi.fn(), measureText: vi.fn().mockReturnValue({ width: 0 }),
-        transform: vi.fn(), rect: vi.fn(), clip: vi.fn(), setLineDash: vi.fn()
+        fillRect: vi.fn(),
+        clearRect: vi.fn(),
+        getImageData: vi.fn(),
+        putImageData: vi.fn(),
+        createImageData: vi.fn(),
+        setTransform: vi.fn(),
+        drawImage: vi.fn(),
+        save: vi.fn(),
+        fillText: vi.fn(),
+        restore: vi.fn(),
+        beginPath: vi.fn(),
+        moveTo: vi.fn(),
+        lineTo: vi.fn(),
+        closePath: vi.fn(),
+        stroke: vi.fn(),
+        translate: vi.fn(),
+        scale: vi.fn(),
+        rotate: vi.fn(),
+        arc: vi.fn(),
+        fill: vi.fn(),
+        measureText: vi.fn().mockReturnValue({ width: 0 }),
+        transform: vi.fn(),
+        rect: vi.fn(),
+        clip: vi.fn(),
+        setLineDash: vi.fn(),
     })
 }
 
@@ -60,10 +98,13 @@ function setupApp(viewport) {
     appState.reset()
     soundRegistry.reset()
     serviceRegistry.reset()
-    appState.patterns = [{
-        name: 'Pattern 1', nbBeats: 4,
-        tracks: [structuredClone(MOCK_TRACK)]
-    }]
+    appState.patterns = [
+        {
+            name: 'Pattern 1',
+            nbBeats: 4,
+            tracks: [structuredClone(MOCK_TRACK)],
+        },
+    ]
     appState.selectedPatternNum = 0
     appState.selectedTrackNum = 0
 
@@ -103,7 +144,7 @@ function setupApp(viewport) {
         toolsPanel,
         patternSettingsPanel: { hide: vi.fn(), show: vi.fn(), _isOpen: false },
         outputPanel,
-        aboutPanel
+        aboutPanel,
     })
     viewManager.init()
 
@@ -129,7 +170,7 @@ function hasCombinedRule(block, selector, prop, value) {
     let m
     while ((m = ruleRe.exec(block)) !== null) {
         const cleanSelector = m[1].replace(/\/\*[\s\S]*?\*\//g, '')
-        const selectors = cleanSelector.split(',').map(s => s.trim())
+        const selectors = cleanSelector.split(',').map((s) => s.trim())
         if (selectors.includes(selector)) {
             const re = new RegExp(`${prop}\\s*:\\s*${escapedVal}`)
             if (re.test(m[2])) return true
@@ -148,7 +189,9 @@ function hasRuleAnywhere(selector, prop, value) {
 
 describe('Mobile tab: Sequencer — panel visibility & position', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE) })
+    beforeEach(() => {
+        ctx = setupApp(MOBILE)
+    })
 
     it('pattern panel is visible (no ui-hidden class)', () => {
         playbackEvents.emit('mobileSeqToggle')
@@ -193,7 +236,9 @@ describe('Mobile tab: Sequencer — panel visibility & position', () => {
 
 describe('Mobile tab: Track — panel visibility & position', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE) })
+    beforeEach(() => {
+        ctx = setupApp(MOBILE)
+    })
 
     it('track editor is visible', () => {
         playbackEvents.emit('mobileTrackToggle')
@@ -235,7 +280,9 @@ describe('Mobile tab: Track — panel visibility & position', () => {
 
 describe('Mobile tab: Synth — panel visibility & position', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE) })
+    beforeEach(() => {
+        ctx = setupApp(MOBILE)
+    })
 
     it('synth panel element exists after synthToggle', () => {
         playbackEvents.emit('synthToggle')
@@ -274,7 +321,9 @@ describe('Mobile tab: Synth — panel visibility & position', () => {
 
 describe('Mobile tab: Master — panel visibility & position', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE) })
+    beforeEach(() => {
+        ctx = setupApp(MOBILE)
+    })
 
     it('output panel is visible (display: block)', () => {
         playbackEvents.emit('masterToggle', true)
@@ -306,7 +355,9 @@ describe('Mobile tab: Master — panel visibility & position', () => {
 
 describe('Mobile tab switching — mutual exclusion', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE) })
+    beforeEach(() => {
+        ctx = setupApp(MOBILE)
+    })
 
     it('seq -> track: pattern hidden, track visible', () => {
         playbackEvents.emit('mobileSeqToggle')
@@ -372,7 +423,9 @@ describe('Mobile tab switching — mutual exclusion', () => {
 
 describe('Mobile panel scrollability', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE) })
+    beforeEach(() => {
+        ctx = setupApp(MOBILE)
+    })
 
     it('pattern panel has workspace-panel class (overflow-y: auto, full-height)', () => {
         playbackEvents.emit('mobileSeqToggle')
@@ -416,7 +469,9 @@ describe('Mobile panel scrollability', () => {
 // ══════════════════════════════════════════════════════════════════
 
 describe('Mobile tab bar: position, size, visibility', () => {
-    beforeEach(() => { setupApp(MOBILE) })
+    beforeEach(() => {
+        setupApp(MOBILE)
+    })
 
     it('tab bar element exists in DOM', () => {
         const bar = document.getElementById('mobile-tab-bar')
@@ -500,7 +555,9 @@ describe('Mobile scroll chain: landscape overrides', () => {
 
 describe('Mobile scroll chain: #te-panel DOM structure verification', () => {
     let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE) })
+    beforeEach(() => {
+        ctx = setupApp(MOBILE)
+    })
 
     it('#te-panel has two direct children: .track-editor and #ne-container', () => {
         playbackEvents.emit('mobileTrackToggle')

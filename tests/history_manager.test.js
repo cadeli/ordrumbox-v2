@@ -11,7 +11,10 @@ vi.mock('../src/state/playback_events.js', async () => {
     return {
         playbackEvents: {
             emit: vi.fn((...a) => {
-                if (batchDepth > 0) { pending.push(a); return }
+                if (batchDepth > 0) {
+                    pending.push(a)
+                    return
+                }
                 emitter.emit(...a)
             }),
             on: vi.fn((...a) => emitter.on(...a)),
@@ -19,9 +22,13 @@ vi.mock('../src/state/playback_events.js', async () => {
             removeAllListeners: vi.fn((...a) => emitter.removeAllListeners(...a)),
             batch: vi.fn((fn) => {
                 batchDepth++
-                try { fn() } finally {
+                try {
+                    fn()
+                } finally {
                     batchDepth--
-                    if (batchDepth === 0) { while (pending.length) emitter.emit(...pending.shift()) }
+                    if (batchDepth === 0) {
+                        while (pending.length) emitter.emit(...pending.shift())
+                    }
                 }
             }),
         },
@@ -115,7 +122,12 @@ describe('HistoryManager', () => {
         })
 
         it('re-pushes command on undo failure', () => {
-            const cmd = { execute: vi.fn(), undo: vi.fn(() => { throw new Error('fail') }) }
+            const cmd = {
+                execute: vi.fn(),
+                undo: vi.fn(() => {
+                    throw new Error('fail')
+                }),
+            }
             history.record(cmd)
             const result = history.undo()
             expect(result).toBe(false)
@@ -146,7 +158,12 @@ describe('HistoryManager', () => {
         })
 
         it('re-pushes command on redo failure', () => {
-            const cmd = { execute: vi.fn(() => { throw new Error('fail') }), undo: vi.fn() }
+            const cmd = {
+                execute: vi.fn(() => {
+                    throw new Error('fail')
+                }),
+                undo: vi.fn(),
+            }
             history.record(cmd)
             history.undo()
             const result = history.redo()
@@ -171,11 +188,32 @@ describe('HistoryManager', () => {
         it('restores state through full cycle', () => {
             const state = { value: 0 }
             const cmds = [
-                { execute: () => { state.value = 1 }, undo: () => { state.value = 0 } },
-                { execute: () => { state.value = 2 }, undo: () => { state.value = 1 } },
-                { execute: () => { state.value = 3 }, undo: () => { state.value = 2 } },
+                {
+                    execute: () => {
+                        state.value = 1
+                    },
+                    undo: () => {
+                        state.value = 0
+                    },
+                },
+                {
+                    execute: () => {
+                        state.value = 2
+                    },
+                    undo: () => {
+                        state.value = 1
+                    },
+                },
+                {
+                    execute: () => {
+                        state.value = 3
+                    },
+                    undo: () => {
+                        state.value = 2
+                    },
+                },
             ]
-            cmds.forEach(c => history.record(c))
+            cmds.forEach((c) => history.record(c))
             expect(state.value).toBe(0)
 
             history.undo()

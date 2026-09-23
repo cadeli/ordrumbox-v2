@@ -25,9 +25,7 @@ function setupRegistry() {
     soundRegistry.drumkits = {
         custom: { instruments: [{ url: SOUND_ID, key: 'CLAP' }] },
     }
-    soundRegistry.drumkitList = [
-        { name: 'custom', instruments: [{ url: SOUND_ID, key: 'CLAP' }] },
-    ]
+    soundRegistry.drumkitList = [{ name: 'custom', instruments: [{ url: SOUND_ID, key: 'CLAP' }] }]
 }
 
 describe('DrumkitManager instrument mapping', () => {
@@ -64,7 +62,7 @@ describe('DrumkitManager instrument mapping', () => {
         manager._selectSound(SOUND_ID)
 
         const setKnob = (key, value) => {
-            manager._knobs.find(k => k.key === key).setValue(value, true)
+            manager._knobs.find((k) => k.key === key).setValue(value, true)
         }
 
         setKnob('gain', -3.5)

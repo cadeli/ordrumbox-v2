@@ -28,7 +28,7 @@ function installSliderKeyHandler(doc = document) {
             return
         }
         el.value = String(next)
-        el.dispatchEvent(new Event('input',  { bubbles: true }))
+        el.dispatchEvent(new Event('input', { bubbles: true }))
         el.dispatchEvent(new Event('change', { bubbles: true }))
         e.preventDefault()
     })
@@ -211,11 +211,11 @@ describe('OrSlider does not double-fire with the main.js fallback handler', () =
 
     function mountOrSlider({ value = 0.5, onChange = vi.fn() } = {}) {
         const s = new OrSlider({
-            key:    'test',
-            label:  'T',
-            min:    0,
-            max:    1,
-            step:   0.01,
+            key: 'test',
+            label: 'T',
+            min: 0,
+            max: 1,
+            step: 0.01,
             value,
             onChange,
         })
@@ -226,9 +226,13 @@ describe('OrSlider does not double-fire with the main.js fallback handler', () =
     it('ArrowRight on an OrSlider moves by exactly ONE step (not two)', () => {
         const { input, slider } = mountOrSlider({ value: 0.5 })
         input.focus()
-        input.dispatchEvent(new KeyboardEvent('keydown', {
-            key: 'ArrowRight', bubbles: true, cancelable: true,
-        }))
+        input.dispatchEvent(
+            new KeyboardEvent('keydown', {
+                key: 'ArrowRight',
+                bubbles: true,
+                cancelable: true,
+            }),
+        )
         expect(parseFloat(input.value)).toBeCloseTo(0.51, 5)
         expect(slider.getValue()).toBeCloseTo(0.51, 5)
     })
@@ -236,14 +240,23 @@ describe('OrSlider does not double-fire with the main.js fallback handler', () =
     it('onChange fires exactly once per arrow press', () => {
         const counted = vi.fn()
         const s = new OrSlider({
-            key: 'test', label: 'T', min: 0, max: 1, step: 0.01, value: 0.5,
+            key: 'test',
+            label: 'T',
+            min: 0,
+            max: 1,
+            step: 0.01,
+            value: 0.5,
             onChange: counted,
         })
         document.body.appendChild(s.createElement())
         s.input.focus()
-        s.input.dispatchEvent(new KeyboardEvent('keydown', {
-            key: 'ArrowRight', bubbles: true, cancelable: true,
-        }))
+        s.input.dispatchEvent(
+            new KeyboardEvent('keydown', {
+                key: 'ArrowRight',
+                bubbles: true,
+                cancelable: true,
+            }),
+        )
         expect(counted).toHaveBeenCalledTimes(1)
     })
 })

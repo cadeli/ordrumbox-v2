@@ -10,12 +10,12 @@
 // loading to finish and to read the actual AudioContext state.
 
 export async function bootApp(page) {
-  await page.goto('/');
-  await page.locator('#waiting-screen-start-btn').click();
-  await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 15_000 });
-  await page.waitForSelector('#waiting-screen', { state: 'hidden' });
+    await page.goto('/')
+    await page.locator('#waiting-screen-start-btn').click()
+    await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 15_000 })
+    await page.waitForSelector('#waiting-screen', { state: 'hidden' })
 }
 
 export function audioContextState(page) {
-  return page.evaluate(() => window.__e2e?.serviceRegistry?.audioCtx?.state ?? null);
+    return page.evaluate(() => window.__e2e?.serviceRegistry?.audioCtx?.state ?? null)
 }

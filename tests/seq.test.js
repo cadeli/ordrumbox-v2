@@ -9,7 +9,9 @@ vi.mock('../src/audio/stall_detector.js', () => ({ default: vi.fn() }))
 vi.mock('../src/core/timerworker.js', () => ({}))
 
 class MockWorker {
-    constructor() { this.onmessage = null }
+    constructor() {
+        this.onmessage = null
+    }
     postMessage() {}
     terminate() {}
 }
@@ -17,14 +19,16 @@ globalThis.Worker = MockWorker
 
 vi.mock('../src/logic/transport/transport.js', () => {
     return {
-        default: vi.fn().mockImplementation(function() {
+        default: vi.fn().mockImplementation(function () {
             return {
                 audioCtx: null,
                 isRunning: false,
                 tick: 1,
                 bpm: 120,
                 onSchedule: null,
-                setBpm: vi.fn(function(bpm) { this.bpm = bpm }),
+                setBpm: vi.fn(function (bpm) {
+                    this.bpm = bpm
+                }),
                 start: vi.fn(),
                 stop: vi.fn(),
                 ensureTimerWorker: vi.fn(),
@@ -45,7 +49,9 @@ describe('Sequencer', () => {
             state: 'running',
             resume: vi.fn().mockResolvedValue(undefined),
             createBuffer: vi.fn().mockReturnValue({ getChannelData: () => new Float32Array(0) }),
-            createBufferSource: vi.fn().mockReturnValue({ connect: vi.fn(), start: vi.fn(), buffer: null, disconnect: vi.fn() }),
+            createBufferSource: vi
+                .fn()
+                .mockReturnValue({ connect: vi.fn(), start: vi.fn(), buffer: null, disconnect: vi.fn() }),
             destination: {},
             createGain: vi.fn().mockReturnValue({ gain: { value: 1 }, connect: vi.fn(), disconnect: vi.fn() }),
         }
@@ -140,7 +146,12 @@ describe('Sequencer', () => {
     })
 
     it('toggleStartStop calls start when not running', () => {
-        serviceRegistry.transport = { isRunning: false, stop: vi.fn(), start: vi.fn(), audioCtx: serviceRegistry.audioCtx }
+        serviceRegistry.transport = {
+            isRunning: false,
+            stop: vi.fn(),
+            start: vi.fn(),
+            audioCtx: serviceRegistry.audioCtx,
+        }
         const seq = new Sequencer()
         seq.start = vi.fn()
         seq.toggleStartStop()

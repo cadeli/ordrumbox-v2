@@ -7,12 +7,19 @@ import NoteEditor from '../src/ui/note_editor.js'
 
 async function showNote(ne, overrides = {}) {
     const note = {
-        beat: 0, beatStep: 0,
-        velocity: 1, pitch: 0, pan: 0,
-        every: 1, pos: 0, prob: 1,
+        beat: 0,
+        beatStep: 0,
+        velocity: 1,
+        pitch: 0,
+        pan: 0,
+        every: 1,
+        pos: 0,
+        prob: 1,
         euclidianFill: 0,
-        retriggerNum: 1, rate: 1,
-        arpRange: 0, arpTriggerProbability: 1,
+        retriggerNum: 1,
+        rate: 1,
+        arpRange: 0,
+        arpTriggerProbability: 1,
         ...overrides,
     }
     const track = { name: 'SNARE', notes: [note], nbBeats: 1, stepsPerBeat: 4 }
@@ -31,11 +38,9 @@ describe('NoteEditor — knob bar layout', () => {
         soundRegistry.reset()
         serviceRegistry.reset()
 
-        soundRegistry.drumkitList = [
-            { name: 'real', instruments: [{ key: 'KICK', url: 'real/kick.wav' }] }
-        ]
+        soundRegistry.drumkitList = [{ name: 'real', instruments: [{ key: 'KICK', url: 'real/kick.wav' }] }]
         soundRegistry.sounds = {
-            'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} }
+            'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} },
         }
         serviceRegistry.cmd = { changeTrackSound: vi.fn() }
 
@@ -43,7 +48,7 @@ describe('NoteEditor — knob bar layout', () => {
 
         global.fetch = vi.fn().mockResolvedValue({
             ok: true,
-            json: async () => ({})
+            json: async () => ({}),
         })
 
         noteEditor = new NoteEditor()
@@ -69,7 +74,7 @@ describe('NoteEditor — knob bar layout', () => {
         const knobs = knobBar.querySelectorAll('[data-or-knob]')
         expect(knobs.length).toBe(3)
 
-        const keys = [...knobs].map(k => k.dataset.orKnob)
+        const keys = [...knobs].map((k) => k.dataset.orKnob)
         expect(keys).toEqual(['velocity', 'pitch', 'pan'])
     })
 

@@ -63,12 +63,7 @@ function createBurst(sampleRate, totalSamples, startSample, freq, duration, ampl
  * @returns {Uint8Array} - Complete WAV file as bytes
  */
 export async function buildWav(options) {
-    const {
-        sampleRate = DEFAULT_SAMPLE_RATE,
-        channels = 1,
-        onsets = [],
-        duration,
-    } = options
+    const { sampleRate = DEFAULT_SAMPLE_RATE, channels = 1, onsets = [], duration } = options
 
     // Compute total samples
     let totalSamples
@@ -134,7 +129,7 @@ export async function buildWav(options) {
 export async function buildWavFromOnsets(options) {
     const { sampleRate = DEFAULT_SAMPLE_RATE, onsets = [], ...rest } = options
 
-    const sampleOnsets = onsets.map(o => ({
+    const sampleOnsets = onsets.map((o) => ({
         ...o,
         sample: Math.round(o.time * sampleRate),
     }))
@@ -157,9 +152,9 @@ export async function buildWavFromTicks(options) {
     const { bpm, ticksPerBar = 32, sampleRate = DEFAULT_SAMPLE_RATE, onsets = [], ...rest } = options
 
     // Convert ticks to seconds: tickTime = (60 * 4) / (bpm * ticksPerBar) * 0.25
-    const tickTime = (60 * 4) / (bpm * ticksPerBar) * 0.25
+    const tickTime = ((60 * 4) / (bpm * ticksPerBar)) * 0.25
 
-    const sampleOnsets = onsets.map(o => ({
+    const sampleOnsets = onsets.map((o) => ({
         ...o,
         sample: Math.round(o.tick * tickTime * sampleRate),
     }))

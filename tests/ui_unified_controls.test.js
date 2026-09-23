@@ -19,7 +19,7 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
                 step: 0.01,
                 value: 0.8,
                 defaultValue: 0.5,
-                onChange
+                onChange,
             })
             const el = knob.createElement()
             document.body.appendChild(el)
@@ -40,7 +40,7 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
                 max: 1,
                 step: 0.1,
                 value: 0.5,
-                onChange
+                onChange,
             })
             knob.createElement()
 
@@ -62,7 +62,7 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
                 step: 0.01,
                 value: 0.8,
                 defaultValue: 0,
-                onChange
+                onChange,
             })
             const el = slider.createElement()
             document.body.appendChild(el)
@@ -82,7 +82,7 @@ describe('Unified UI Controls — OrKnob & OrSlider Features', () => {
                 max: 1,
                 step: 0.1,
                 value: 0.5,
-                onChange
+                onChange,
             })
             slider.createElement()
 

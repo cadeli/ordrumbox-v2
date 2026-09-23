@@ -29,7 +29,7 @@ describe('OrKnob — CLS prevention', () => {
             max: 1,
             step: 0.0000001,
             value: 0.123456789012345,
-            format: v => v.toFixed(15),
+            format: (v) => v.toFixed(15),
         })
     })
 
@@ -54,7 +54,7 @@ describe('OrKnob — CLS prevention', () => {
             max: 999999,
             step: 1,
             value: 123456.789,
-            format: v => v.toFixed(10),
+            format: (v) => v.toFixed(10),
         })
         const el = largeKnob.createElement()
         const text = getValText(el)
@@ -96,7 +96,7 @@ describe('OrSlider — CLS prevention', () => {
             max: 20000,
             step: 1,
             value: 12345.6789012345,
-            format: v => v.toFixed(10),
+            format: (v) => v.toFixed(10),
             unit: 'Hz',
         })
     })
@@ -124,7 +124,7 @@ describe('OrSlider — CLS prevention', () => {
             max: 99999999,
             step: 1,
             value: 12345678.12345678,
-            format: v => v.toFixed(8),
+            format: (v) => v.toFixed(8),
             unit: 'Hz',
         })
         const el = bigSlider.createElement()
@@ -151,14 +151,7 @@ describe('OrSlider — CLS prevention', () => {
     it('value text does not exceed 8 chars after multiple extreme setValue calls', () => {
         const el = slider.createElement()
 
-        const extremeValues = [
-            0.000000001,
-            123456789.12345679,
-            0.123456789012345,
-            99999.999999,
-            0,
-            20000,
-        ]
+        const extremeValues = [0.000000001, 123456789.12345679, 0.123456789012345, 99999.999999, 0, 20000]
         for (const v of extremeValues) {
             slider.setValue(v)
             const text = getValText(el)
@@ -190,14 +183,34 @@ describe('OrSlider — CLS prevention', () => {
 describe('CLS prevention — width stability', () => {
     it('OrKnob: _fmt always returns ≤ 8 chars for any numeric input', () => {
         const values = [
-            0, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001,
-            1, 10, 100, 1000, 10000, 100000,
-            0.123456789, 1.23456789, 12.3456789, 123.456789,
-            Number.MAX_SAFE_INTEGER, Number.MIN_VALUE,
+            0,
+            0.1,
+            0.01,
+            0.001,
+            0.0001,
+            0.00001,
+            0.000001,
+            1,
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            0.123456789,
+            1.23456789,
+            12.3456789,
+            123.456789,
+            Number.MAX_SAFE_INTEGER,
+            Number.MIN_VALUE,
         ]
         const k = new OrKnob({
-            key: 'x', label: 'X', min: -99999, max: 99999, step: 0.001,
-            value: 0, format: v => v.toFixed(12),
+            key: 'x',
+            label: 'X',
+            min: -99999,
+            max: 99999,
+            step: 0.001,
+            value: 0,
+            format: (v) => v.toFixed(12),
         })
         for (const v of values) {
             const result = k.formatValue(v)
@@ -207,14 +220,33 @@ describe('CLS prevention — width stability', () => {
 
     it('OrSlider: _fmt always returns ≤ 8 chars for any numeric input', () => {
         const values = [
-            0, 0.1, 0.01, 0.001, 0.0001, 0.00001,
-            1, 10, 100, 1000, 10000, 100000,
-            0.123456789, 1.23456789, 12.3456789,
-            Number.MAX_SAFE_INTEGER, Number.MIN_VALUE,
+            0,
+            0.1,
+            0.01,
+            0.001,
+            0.0001,
+            0.00001,
+            1,
+            10,
+            100,
+            1000,
+            10000,
+            100000,
+            0.123456789,
+            1.23456789,
+            12.3456789,
+            Number.MAX_SAFE_INTEGER,
+            Number.MIN_VALUE,
         ]
         const s = new OrSlider({
-            key: 'x', label: 'X', min: -99999, max: 99999, step: 0.001,
-            value: 0, format: v => v.toFixed(12), unit: 'Hz',
+            key: 'x',
+            label: 'X',
+            min: -99999,
+            max: 99999,
+            step: 0.001,
+            value: 0,
+            format: (v) => v.toFixed(12),
+            unit: 'Hz',
         })
         for (const v of values) {
             const result = s.formatValue(v)

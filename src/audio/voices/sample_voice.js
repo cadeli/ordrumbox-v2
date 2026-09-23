@@ -8,7 +8,7 @@ import {
     RELEASE_TIME,
     MIN_GAIN_VALUE,
     STOP_BUFFER,
-    STOP_EXTRA_BUFFER
+    STOP_EXTRA_BUFFER,
 } from '../../core/constants.js'
 
 export default class SampleVoice extends BaseVoice {
@@ -77,7 +77,7 @@ export default class SampleVoice extends BaseVoice {
             this.gainEnvelope.gain.setValueAtTime(currentGain, time)
             this.gainEnvelope.gain.exponentialRampToValueAtTime(MIN_GAIN_VALUE, time + STOP_BUFFER)
         } catch (e) {
-            logger.error('SampleVoice', "SampleVoice::stop gain error", e)
+            logger.error('SampleVoice', 'SampleVoice::stop gain error', e)
         }
 
         try {

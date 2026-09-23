@@ -10,10 +10,16 @@ const ARP_TYPES = ['up', 'down', 'updown']
 const SCALES_URL = 'assets/data/scales.json'
 
 const DEFAULT_NOTE = {
-    velocity: 1, pitch: 0, pan: 0,
-    every: 1, prob: 1,
-    retriggerNum: 1, rate: 1,
-    euclidianFill: 0, arpTriggerProbability: 0, arpRange: 0
+    velocity: 1,
+    pitch: 0,
+    pan: 0,
+    every: 1,
+    prob: 1,
+    retriggerNum: 1,
+    rate: 1,
+    euclidianFill: 0,
+    arpTriggerProbability: 0,
+    arpRange: 0,
 }
 
 let _scalesCache = null
@@ -41,15 +47,15 @@ function getScaleIntervals(scaleName, range) {
 }
 
 const KNOB_PROPS = [
-    { key: 'velocity', label: 'Vel',   min: 0,   max: 1,  step: 0.01 },
-    { key: 'pitch',    label: 'Pitch', min: -24, max: 24, step: 1 },
-    { key: 'pan',      label: 'Pan',   min: -1,  max: 1,  step: 0.01 }
+    { key: 'velocity', label: 'Vel', min: 0, max: 1, step: 0.01 },
+    { key: 'pitch', label: 'Pitch', min: -24, max: 24, step: 1 },
+    { key: 'pan', label: 'Pan', min: -1, max: 1, step: 0.01 },
 ]
 
 const TAB_DEFS = [
     { id: 'triggers', label: 'Trig' },
-    { id: 'retrig',   label: 'Retr' },
-    { id: 'arp',      label: 'Arp' }
+    { id: 'retrig', label: 'Retr' },
+    { id: 'arp', label: 'Arp' },
 ]
 
 const GROUPS = [
@@ -59,8 +65,8 @@ const GROUPS = [
         props: [
             { key: 'every', label: 'Every', min: 1, max: 16, step: 1 },
             { key: 'pos', label: 'Pos', min: 0, max: 15, step: 1 },
-            { key: 'prob', label: 'Prob', min: 0, max: 1, step: 0.01 }
-        ]
+            { key: 'prob', label: 'Prob', min: 0, max: 1, step: 0.01 },
+        ],
     },
     {
         id: 'retrig',
@@ -69,8 +75,8 @@ const GROUPS = [
             { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
             { key: 'rate', label: 'Rate', min: 1, max: 16, step: 1 },
             { key: 'euclidianFill', label: 'Eucl', min: 0, max: 16, step: 1 },
-            { key: 'arpTriggerProbability', label: 'Prob', min: 0, max: 1, step: 0.01 }
-        ]
+            { key: 'arpTriggerProbability', label: 'Prob', min: 0, max: 1, step: 0.01 },
+        ],
     },
     {
         id: 'arp',
@@ -78,9 +84,9 @@ const GROUPS = [
         props: [
             { key: 'arpScale', label: 'Scale', type: 'select', options: [] },
             { key: 'arpType', label: 'Dir', type: 'select', options: ARP_TYPES },
-            { key: 'arpRange', label: 'Range', min: 0, max: 12, step: 1 }
-        ]
-    }
+            { key: 'arpRange', label: 'Range', min: 0, max: 12, step: 1 },
+        ],
+    },
 ]
 
 export default class NoteEditor extends BasePanel {
@@ -109,7 +115,7 @@ export default class NoteEditor extends BasePanel {
         this.#tab = new OrTab({
             tabs: TAB_DEFS,
             defaultTab: 'triggers',
-            onChange: () => this.sync()
+            onChange: () => this.sync(),
         })
     }
 
@@ -143,7 +149,7 @@ export default class NoteEditor extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on("noteSelect", (data) => {
+        playbackEvents.on('noteSelect', (data) => {
             if (!data) return
             if (data.note) {
                 if (this.isVisible) this.show(data)
@@ -185,7 +191,10 @@ export default class NoteEditor extends BasePanel {
             const match = intervals.every((iv, i) => {
                 return steps[i % steps.length] + Math.floor(i / steps.length) * 12 === iv
             })
-            if (match) { scale = name; break }
+            if (match) {
+                scale = name
+                break
+            }
         }
         return { scale, type, range: intervals.length }
     }
@@ -250,17 +259,17 @@ export default class NoteEditor extends BasePanel {
             <span class="ne-track">${this.esc(this.#track.name)} [beat ${this.#beat + 1} step ${this.#beatStep + 1}]</span>
         </div>`
 
-        const knobBarHtml = `<div class="ne-knob-bar">${
-            KNOB_PROPS.map(p => `<div data-or-knob="${p.key}"></div>`).join('')
-        }</div>`
+        const knobBarHtml = `<div class="ne-knob-bar">${KNOB_PROPS.map(
+            (p) => `<div data-or-knob="${p.key}"></div>`,
+        ).join('')}</div>`
 
         const tabBarHtml = this.#tab.renderBar()
 
-        const panelsHtml = TAB_DEFS.map(tab => {
-            const g = GROUPS.find(gr => gr.id === tab.id)
+        const panelsHtml = TAB_DEFS.map((tab) => {
+            const g = GROUPS.find((gr) => gr.id === tab.id)
             if (!g) return ''
             const isHidden = this.#tab.isHidden(tab.id)
-            const groupContent = g.props.map(p => this.#renderProp(p, arpState, scaleKeys)).join('')
+            const groupContent = g.props.map((p) => this.#renderProp(p, arpState, scaleKeys)).join('')
             return `<div class="ne-tab-panel${isHidden ? ' ne-tab-panel-hidden' : ''}" data-tab-panel="${tab.id}">${groupContent}</div>`
         }).join('')
 
@@ -292,55 +301,65 @@ export default class NoteEditor extends BasePanel {
 
     /** @private Keep-alive: reuse existing knobs via setValue, create only new ones. */
     #syncKnobs() {
-        this.#knobs = [...syncKnobs({
-            container: this.container,
-            configs: KNOB_PROPS.map(def => ({
-                key: def.key, label: def.label, val: this.#note[def.key] ?? def.min,
-                min: def.min, max: def.max, step: def.step,
-                format: knobFormat(def),
-                unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
-                onChange: (v) => this.#onSlider(def.key, v),
-            })),
-            prev: new Map(this.#knobs.map(k => [k.key, k])),
-        }).values()]
+        this.#knobs = [
+            ...syncKnobs({
+                container: this.container,
+                configs: KNOB_PROPS.map((def) => ({
+                    key: def.key,
+                    label: def.label,
+                    val: this.#note[def.key] ?? def.min,
+                    min: def.min,
+                    max: def.max,
+                    step: def.step,
+                    format: knobFormat(def),
+                    unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
+                    onChange: (v) => this.#onSlider(def.key, v),
+                })),
+                prev: new Map(this.#knobs.map((k) => [k.key, k])),
+            }).values(),
+        ]
     }
 
     /** @private Keep-alive: reuse existing sliders via setValue, create only new ones. */
     #syncSliders(arpState) {
-        const sliderProps = GROUPS.flatMap(g => g.props.filter(p => p.type !== 'select'))
-        const configs = sliderProps.map(p => ({
+        const sliderProps = GROUPS.flatMap((g) => g.props.filter((p) => p.type !== 'select'))
+        const configs = sliderProps.map((p) => ({
             ...p,
             value: p.key === 'arpRange' ? arpState.range : (this.#note[p.key] ?? p.min),
         }))
 
-        this.#sliders = [...syncComponentMap({
-            container: this.container,
-            configs,
-            selector: 'or-slider',
-            prev: new Map(this.#sliders.map(s => [s.key, s])),
-            create: (cfg) => new OrSlider({
-                key:    cfg.key,
-                label:  cfg.label,
-                min:    cfg.min,
-                max:    cfg.max,
-                step:   cfg.step,
-                value:  cfg.value,
-                format: cfg.key === 'pitch'
-                    ? v => `${fmt(v)} ${pitchToNoteName(v, this.#track?.pitch ?? 0)}`
-                    : fmt,
-                onChange: v => this.#onSlider(cfg.key, v),
-            }),
-            update: (inst, cfg) => {
-                inst.onChange = (v) => this.#onSlider(cfg.key, v)
-                inst.setValue(cfg.value)
-            },
-            postMount: (el) => el.removeAttribute('data-prop'),
-        }).values()]
+        this.#sliders = [
+            ...syncComponentMap({
+                container: this.container,
+                configs,
+                selector: 'or-slider',
+                prev: new Map(this.#sliders.map((s) => [s.key, s])),
+                create: (cfg) =>
+                    new OrSlider({
+                        key: cfg.key,
+                        label: cfg.label,
+                        min: cfg.min,
+                        max: cfg.max,
+                        step: cfg.step,
+                        value: cfg.value,
+                        format:
+                            cfg.key === 'pitch'
+                                ? (v) => `${fmt(v)} ${pitchToNoteName(v, this.#track?.pitch ?? 0)}`
+                                : fmt,
+                        onChange: (v) => this.#onSlider(cfg.key, v),
+                    }),
+                update: (inst, cfg) => {
+                    inst.onChange = (v) => this.#onSlider(cfg.key, v)
+                    inst.setValue(cfg.value)
+                },
+                postMount: (el) => el.removeAttribute('data-prop'),
+            }).values(),
+        ]
     }
 
     /** @private */
     #bindEvents() {
-        this.container.querySelectorAll('select').forEach(sel => {
+        this.container.querySelectorAll('select').forEach((sel) => {
             sel.addEventListener('change', () => this.#onSelect(sel))
         })
     }
@@ -351,9 +370,9 @@ export default class NoteEditor extends BasePanel {
         } else {
             super.hide()
         }
-        this.#knobs.forEach(k => k.destroy())
+        this.#knobs.forEach((k) => k.destroy())
         this.#knobs = []
-        this.#sliders.forEach(s => s.destroy())
+        this.#sliders.forEach((s) => s.destroy())
         this.#sliders = []
         this.#note = null
         this.#track = null
@@ -365,9 +384,7 @@ export default class NoteEditor extends BasePanel {
         const scale = this.#note._arpScale ?? 'major'
         const type = this.#note._arpType ?? 'up'
         const range = this.#note.arpRange ?? this.#getArpState(this.#note).range
-        this.#note.arp = range > 0
-            ? { intervals: getScaleIntervals(scale, range), mode: type }
-            : null
+        this.#note.arp = range > 0 ? { intervals: getScaleIntervals(scale, range), mode: type } : null
     }
 
     #onSlider(key, val) {
@@ -375,8 +392,8 @@ export default class NoteEditor extends BasePanel {
         this.#note[key] = val
         if (key === 'arpRange') this.#composeArp()
         playbackEvents.batch(() => {
-            playbackEvents.emit("noteChange", [this.#track])
-            playbackEvents.emit("patternChange", [this.#track])
+            playbackEvents.emit('noteChange', [this.#track])
+            playbackEvents.emit('patternChange', [this.#track])
         })
     }
 
@@ -385,12 +402,14 @@ export default class NoteEditor extends BasePanel {
         this.#note['_' + sel.dataset.key] = sel.value
         this.#composeArp()
         playbackEvents.batch(() => {
-            playbackEvents.emit("noteChange", [this.#track])
-            playbackEvents.emit("patternChange", [this.#track])
+            playbackEvents.emit('noteChange', [this.#track])
+            playbackEvents.emit('patternChange', [this.#track])
         })
     }
 
     // ─── Public API ───────────────────────────────────────────────────────
     /** @returns {OrKnob[]} current knob instances */
-    get knobs() { return this.#knobs }
+    get knobs() {
+        return this.#knobs
+    }
 }

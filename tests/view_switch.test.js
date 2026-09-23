@@ -6,29 +6,29 @@ import ViewSwitch from '../src/ui/toolbar/view_switch.js'
 vi.mock('../src/state/playback_events.js', () => ({
     playbackEvents: {
         emit: vi.fn(),
-        batch: vi.fn(fn => fn())
-    }
+        batch: vi.fn((fn) => fn()),
+    },
 }))
 
 vi.mock('../src/state/service_registry.js', () => ({
     serviceRegistry: {
         history: { undo: vi.fn(), redo: vi.fn() },
         cmd: { beginGenerationUndo: vi.fn(), commitGenerationUndo: vi.fn() },
-        patterns: {}
-    }
+        patterns: {},
+    },
 }))
 
 vi.mock('../src/state/app_state.js', () => ({
     appState: {
         patterns: [{ tracks: [] }],
-        selectedPatternNum: 0
-    }
+        selectedPatternNum: 0,
+    },
 }))
 
 vi.mock('../src/core/utils.js', () => ({
     default: {
         DRUM_TYPES: new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC']),
-        detectTrackType: vi.fn(name => {
+        detectTrackType: vi.fn((name) => {
             const n = (name ?? '').toUpperCase()
             if (n.includes('KICK') || n.includes('BD')) return 'KICK'
             if (n.includes('SNARE') || n.includes('SD')) return 'SNARE'
@@ -41,12 +41,12 @@ vi.mock('../src/core/utils.js', () => ({
             if (n.includes('SYNTH')) return 'BASS'
             return 'PERC'
         }),
-        filterEmptyMelodicTracks: vi.fn(tracks => tracks)
-    }
+        filterEmptyMelodicTracks: vi.fn((tracks) => tracks),
+    },
 }))
 
 vi.mock('../src/state/service_loader.js', () => ({
-    getAutoGenerateService: vi.fn()
+    getAutoGenerateService: vi.fn(),
 }))
 
 import { playbackEvents } from '../src/state/playback_events.js'
@@ -64,7 +64,7 @@ function makeMockToolbar() {
         redoBtn: null,
         synthBtn: null,
         editBtn: null,
-        prollBtn: null
+        prollBtn: null,
     }
 }
 

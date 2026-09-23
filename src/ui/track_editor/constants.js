@@ -5,12 +5,12 @@ import Utils from '../../core/utils.js'
 
 // ── Format helpers ────────────────────────────────────────────────────
 
-const fmtFreq = v => {
+const fmtFreq = (v) => {
     const hz = Math.round(Utils.toFiniteNumber(v, 20, 'filterFreq'))
     return hz >= 1000 ? (hz / 1000).toFixed(1) + 'k' : hz + 'Hz'
 }
 
-const fmtPitch = v => {
+const fmtPitch = (v) => {
     const n = Math.round(v)
     return (n >= 0 ? '+' : '') + String(Math.abs(n)).padStart(2, '0')
 }
@@ -25,7 +25,7 @@ export const fmtVal = (key, v) => {
 // ── Filter ────────────────────────────────────────────────────────────
 
 export const FILTER_TYPE_ICONS = {
-    lowpass:  'LP',
+    lowpass: 'LP',
     highpass: 'HP',
     bandpass: 'BP',
 }
@@ -33,7 +33,7 @@ export const FILTER_TYPE_ICONS = {
 const FILTER_PROPS = [
     { key: 'filterType', label: 'Type', type: 'icon', options: ['lowpass', 'highpass', 'bandpass'] },
     { key: 'filterFreq', label: 'Freq', min: 20, max: 20000, step: 1, lfo: 'filterFreqLfo' },
-    { key: 'filterQ', label: 'Q', min: 0.707, max: 18.707, step: 0.01, lfo: 'filterQLfo' }
+    { key: 'filterQ', label: 'Q', min: 0.707, max: 18.707, step: 0.01, lfo: 'filterQLfo' },
 ]
 
 // ── FX definitions ────────────────────────────────────────────────────
@@ -42,26 +42,26 @@ export const FX_DEFS = [
     { key: 'reverbAmount', label: 'Rev', controls: ['reverbAmount', 'reverbType'] },
     { key: 'delayDepth', label: 'Dly', controls: ['delayDepth', 'delayTime', 'delayType'] },
     { key: 'saturationAmount', label: 'Sat', controls: ['saturationAmount', 'saturationType'] },
-    { key: 'filterFreq', label: 'fltr', controls: ['filterType', 'filterFreq', 'filterQ'] }
+    { key: 'filterFreq', label: 'fltr', controls: ['filterType', 'filterFreq', 'filterQ'] },
 ]
 
 // ── Knob bar definitions ──────────────────────────────────────────────
 
 export const KNOB_PROPS = [
-    { key: 'velocity',    label: 'Vel',   min: 0,  max: 1,  step: 0.01, lfo: 'velocityLfo' },
-    { key: 'pan',         label: 'Pan',   min: -1, max: 1,  step: 0.01, lfo: 'panLfo' },
-    { key: 'pitch',       label: 'Pitch', min: -24, max: 24, step: 1,   lfo: 'pitchLfo' },
-    { key: 'decay', label: 'Decay', min: 0,  max: 5000, step: 10 }
+    { key: 'velocity', label: 'Vel', min: 0, max: 1, step: 0.01, lfo: 'velocityLfo' },
+    { key: 'pan', label: 'Pan', min: -1, max: 1, step: 0.01, lfo: 'panLfo' },
+    { key: 'pitch', label: 'Pitch', min: -24, max: 24, step: 1, lfo: 'pitchLfo' },
+    { key: 'decay', label: 'Decay', min: 0, max: 5000, step: 10 },
 ]
 
 // ── Tabs ──────────────────────────────────────────────────────────────
 
 export const TAB_DEFS = [
-    { id: 'fx',   label: 'fx' },
-    { id: 'snd',  label: 'sound' },
-    { id: 'mod',  label: 'mod' },
+    { id: 'fx', label: 'fx' },
+    { id: 'snd', label: 'sound' },
+    { id: 'mod', label: 'mod' },
     { id: 'loop', label: 'loop' },
-    { id: 'gen',  label: 'gen' }
+    { id: 'gen', label: 'gen' },
 ]
 
 // ── Generation groups ─────────────────────────────────────────────────
@@ -74,35 +74,46 @@ export const GROUPS = [
             { key: 'variation', label: 'Var Pos', min: 0, max: 100, step: 1 },
             { key: 'variation2', label: 'Var Prop', min: 0, max: 100, step: 1 },
             { key: 'probability', label: 'Prob', min: 0, max: 1, step: 0.01 },
-        ]
+        ],
     },
     {
         label: 'Effects',
         props: [
             { key: 'reverbAmount', label: 'Depth', min: 0, max: 1, step: 0.01 },
-            { key: 'reverbType', label: 'Type', type: 'select', options: ['none', 'room', 'hall', 'plate', 'spring', 'gated'] },
+            {
+                key: 'reverbType',
+                label: 'Type',
+                type: 'select',
+                options: ['none', 'room', 'hall', 'plate', 'spring', 'gated'],
+            },
             { key: 'delayDepth', label: 'Depth', min: 0, max: 1, step: 0.01 },
-            { key: 'delayTime', label: 'Time', type: 'select', options: Utils.delayTimeValues, labels: Utils.delayTimeLabels },
+            {
+                key: 'delayTime',
+                label: 'Time',
+                type: 'select',
+                options: Utils.delayTimeValues,
+                labels: Utils.delayTimeLabels,
+            },
             { key: 'delayType', label: 'Type', type: 'select', options: ['none', 'slap', 'tape', 'pingpong'] },
             { key: 'saturationAmount', label: 'Depth', min: 0, max: 1, step: 0.01 },
-            { key: 'saturationType', label: 'Type', type: 'select', options: ['soft', 'hard', 'tape'] }
-        ]
+            { key: 'saturationType', label: 'Type', type: 'select', options: ['soft', 'hard', 'tape'] },
+        ],
     },
     {
         label: 'Sound',
-        props: []
+        props: [],
     },
     {
         label: 'Loop / Pattern',
-        props: []
-    }
+        props: [],
+    },
 ]
 
 // ── Generation sub-tabs (Groove / Engine) ────────────────────────────
 
 export const GEN_SUBTAB_DEFS = [
     { id: 'groove', label: 'Groove' },
-    { id: 'engine', label: 'Engine' }
+    { id: 'engine', label: 'Engine' },
 ]
 
 export const GEN_GROOVE_PROPS = [
@@ -120,11 +131,23 @@ export const GEN_ENGINE_PROPS = [
     { key: 'prob_euclid', label: 'Euclid', min: 0, max: 100, step: 1 },
     { key: 'prob_note', label: 'Note Prob', min: 0, max: 100, step: 1 },
     { key: 'prob_arp', label: 'Arp', min: 0, max: 100, step: 1 },
-    { key: 'auto_variant', label: 'Variant', type: 'select', options: ['', 'basic', 'fill', 'roll', 'sparse', 'dense'] },
-    { key: 'auto_density', label: 'Density', min: -1, max: 1, step: 0.01, format: (v) => v < 0 ? 'Auto' : v.toFixed(2) },
+    {
+        key: 'auto_variant',
+        label: 'Variant',
+        type: 'select',
+        options: ['', 'basic', 'fill', 'roll', 'sparse', 'dense'],
+    },
+    {
+        key: 'auto_density',
+        label: 'Density',
+        min: -1,
+        max: 1,
+        step: 0.01,
+        format: (v) => (v < 0 ? 'Auto' : v.toFixed(2)),
+    },
 ]
 
 // ── Derived ───────────────────────────────────────────────────────────
 
-export const ALL_TRACK_PROPS = [...GROUPS.flatMap(g => g.props), ...FILTER_PROPS]
-export const PROP_BY_KEY = new Map(ALL_TRACK_PROPS.map(p => [p.key, p]))
+export const ALL_TRACK_PROPS = [...GROUPS.flatMap((g) => g.props), ...FILTER_PROPS]
+export const PROP_BY_KEY = new Map(ALL_TRACK_PROPS.map((p) => [p.key, p]))

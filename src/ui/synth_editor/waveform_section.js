@@ -8,7 +8,9 @@ const FM_DEPTH_SCALE = 0.08
 
 export default class WaveformSection {
     /** @param {import('./synth_editor.js').default} editor */
-    constructor(editor) { this._editor = editor }
+    constructor(editor) {
+        this._editor = editor
+    }
 
     /** Draw all canvases (waveform + ADSR + filter curve). */
     draw() {
@@ -45,11 +47,16 @@ export default class WaveformSection {
     /** Returns wave value [-1,1] for a given normalized phase [0,1). */
     _waveAtPhase(wave, p) {
         switch (wave) {
-            case 'sine': return Math.sin(2 * Math.PI * p)
-            case 'square': return Math.sin(2 * Math.PI * p) >= 0 ? 1 : -1
-            case 'sawtooth': return 2 * p - 1
-            case 'triangle': return 4 * Math.abs(p - 0.5) - 1
-            default: return Math.sin(2 * Math.PI * p)
+            case 'sine':
+                return Math.sin(2 * Math.PI * p)
+            case 'square':
+                return Math.sin(2 * Math.PI * p) >= 0 ? 1 : -1
+            case 'sawtooth':
+                return 2 * p - 1
+            case 'triangle':
+                return 4 * Math.abs(p - 0.5) - 1
+            default:
+                return Math.sin(2 * Math.PI * p)
         }
     }
 
@@ -88,21 +95,31 @@ export default class WaveformSection {
         })
 
         const baseInc = cycles / sampleRate
-        const inc = freqMult.map(fm => baseInc * fm)
+        const inc = freqMult.map((fm) => baseInc * fm)
         const fmDepth = fmAmount * FM_DEPTH_SCALE
         const phase = [0, 0, 0]
         for (let i = 0; i < sampleRate; i++) {
             const rawO2 = this._waveAtPhase(vcos[1].wave, phase[1])
             const rawO3 = this._waveAtPhase(vcos[2].wave, phase[2])
 
-            let f1 = inc[0], f2 = inc[1]
+            let f1 = inc[0],
+                f2 = inc[1]
             const f3 = inc[2]
             if (fmAmount > 0.001) {
                 switch (fmAlgo) {
-                    case 0: f1 += rawO2 * fmDepth; break
-                    case 1: f1 += rawO3 * fmDepth; break
-                    case 2: f1 += rawO2 * fmDepth; f2 += rawO3 * fmDepth; break
-                    case 3: f1 += (rawO2 + rawO3) * fmDepth; break
+                    case 0:
+                        f1 += rawO2 * fmDepth
+                        break
+                    case 1:
+                        f1 += rawO3 * fmDepth
+                        break
+                    case 2:
+                        f1 += rawO2 * fmDepth
+                        f2 += rawO3 * fmDepth
+                        break
+                    case 3:
+                        f1 += (rawO2 + rawO3) * fmDepth
+                        break
                     case 4: {
                         const rawO1 = this._waveAtPhase(vcos[0].wave, phase[0])
                         f1 += rawO2 * fmDepth
@@ -157,13 +174,13 @@ export default class WaveformSection {
 
     _buildVcoArray() {
         const draft = this._editor.draft
-        return [1, 2, 3].map(n => {
+        return [1, 2, 3].map((n) => {
             const v = draft[`vco${n}`] ?? {}
             return {
                 wave: v.wave ?? 'sine',
                 gain: v.gain ?? (n === 1 ? 1 : 0),
                 octave: v.octave ?? 0,
-                detune: v.detune ?? 0
+                detune: v.detune ?? 0,
             }
         })
     }
@@ -180,13 +197,13 @@ export default class WaveformSection {
             { label: 'VCO1', active: vcos[0].gain > 0.01 },
             { label: 'VCO2', active: vcos[1].gain > 0.01 },
             { label: 'VCO3', active: vcos[2].gain > 0.01 },
-            { label: 'Flt',  active: !d.bypassFilter },
-            { label: 'Env',  active: !d.bypassEnv },
+            { label: 'Flt', active: !d.bypassFilter },
+            { label: 'Env', active: !d.bypassEnv },
             { label: 'LFO1', active: !d.bypassLfo1 && lfo1Target !== 'NOT' && (d.lfo?.depth ?? 0) > 0 },
             { label: 'LFO2', active: !d.bypassLfo2 && lfo2Target !== 'NOT' && (d.lfo2?.depth ?? 0) > 0 },
-            { label: 'FM',   active: !d.bypassFm && (d.fm?.amount ?? 0) > 0.001 },
-            { label: 'Mod',  active: !d.bypassModEnv && modTgt !== 'off' },
-            { label: 'Ns',   active: !d.bypassNoise && (d.noise?.mix ?? 0) > 0.001 },
+            { label: 'FM', active: !d.bypassFm && (d.fm?.amount ?? 0) > 0.001 },
+            { label: 'Mod', active: !d.bypassModEnv && modTgt !== 'off' },
+            { label: 'Ns', active: !d.bypassNoise && (d.noise?.mix ?? 0) > 0.001 },
             { label: 'FltEnv', active: !d.bypassFilterEnv && filtEnvAmt > 0.001 },
         ]
         return mods
@@ -196,9 +213,9 @@ export default class WaveformSection {
         const el = this._editor.panel?.querySelector('[data-ss-module-trace]')
         if (!el) return
         const mods = this._getActiveModules()
-        el.innerHTML = mods.map(m =>
-            `<span class="ss-mod-pill${m.active ? ' active' : ''}">${m.label}</span>`
-        ).join('')
+        el.innerHTML = mods
+            .map((m) => `<span class="ss-mod-pill${m.active ? ' active' : ''}">${m.label}</span>`)
+            .join('')
     }
 
     _drawEnvCanvas() {
@@ -241,7 +258,7 @@ export default class WaveformSection {
             { t: attack, v: 1 },
             { t: attack + decay, v: sustain },
             { t: totalTime - release, v: sustain },
-            { t: totalTime, v: 0 }
+            { t: totalTime, v: 0 },
         ]
 
         ctx.beginPath()
@@ -298,11 +315,17 @@ export default class WaveformSection {
         ctx.lineWidth = 0.5
         for (const gf of [100, 1000, 10000]) {
             const x = toX(gf)
-            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke()
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, h)
+            ctx.stroke()
         }
         for (const gdb of [0, -20]) {
             const y = toY(gdb)
-            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke()
+            ctx.beginPath()
+            ctx.moveTo(0, y)
+            ctx.lineTo(w, y)
+            ctx.stroke()
         }
 
         const N = 200
@@ -315,19 +338,21 @@ export default class WaveformSection {
                 const f = fMin * Math.pow(fMax / fMin, i / N)
                 let mag
                 const d = centerFreq * centerFreq - f * f
-                const denom = Math.sqrt(d * d + (centerFreq * f / Q) * (centerFreq * f / Q))
+                const denom = Math.sqrt(d * d + ((centerFreq * f) / Q) * ((centerFreq * f) / Q))
                 if (type === 'highpass') {
                     mag = (f * f) / denom
                 } else if (type === 'bandpass') {
-                    mag = (centerFreq * f / Q) / denom
+                    mag = (centerFreq * f) / Q / denom
                 } else {
                     mag = (centerFreq * centerFreq) / denom
                 }
                 const db = 20 * Math.log10(Math.max(mag, 1e-10))
                 const x = (i / N) * w
                 const y = toY(Math.max(dbMin, Math.min(dbMax, db)))
-                if (first) { ctx.moveTo(x, y); first = false }
-                else ctx.lineTo(x, y)
+                if (first) {
+                    ctx.moveTo(x, y)
+                    first = false
+                } else ctx.lineTo(x, y)
             }
             ctx.stroke()
             if (fillAlpha > 0) {
@@ -345,10 +370,7 @@ export default class WaveformSection {
         const isLfo2Filter = lfo2raw.target === 'filter.freq' && !draft.bypassLfo2 && (lfo2raw.depth ?? 0) > 0
 
         if (isLfo1Filter || isLfo2Filter) {
-            const lfoDepth = Math.max(
-                isLfo1Filter ? (lfo1raw.depth ?? 0) : 0,
-                isLfo2Filter ? (lfo2raw.depth ?? 0) : 0
-            )
+            const lfoDepth = Math.max(isLfo1Filter ? (lfo1raw.depth ?? 0) : 0, isLfo2Filter ? (lfo2raw.depth ?? 0) : 0)
             const modHz = lfoDepth * 1000
             const fcMin = Math.max(20, fc - modHz)
             const fcMax = Math.min(20000, fc + modHz)

@@ -28,7 +28,7 @@ beforeEach(() => {
 })
 
 function lastPostByType(type) {
-    const matches = postMessageMock.mock.calls.map(c => c[0]).filter(m => m?.type === type)
+    const matches = postMessageMock.mock.calls.map((c) => c[0]).filter((m) => m?.type === type)
     return matches.at(-1)
 }
 
@@ -74,7 +74,7 @@ function createMockStrip() {
         voicesInput: makeNode(),
         _lfoGains: {
             pitchLfo: { ...makeNode(), gain: makeParam() },
-            panLfo:   { ...makeNode(), gain: makeParam() },
+            panLfo: { ...makeNode(), gain: makeParam() },
         },
     }
 }
@@ -169,7 +169,11 @@ describe('BaseVoice', () => {
     })
 
     it('cleanup tolerates disconnect errors gracefully', () => {
-        const badNode = { disconnect: vi.fn(() => { throw new Error('already disconnected') }) }
+        const badNode = {
+            disconnect: vi.fn(() => {
+                throw new Error('already disconnected')
+            }),
+        }
         voice.registerNode(badNode)
         expect(() => voice.cleanup()).not.toThrow()
     })
@@ -245,7 +249,7 @@ describe('SampleVoice', () => {
         expect(adjustedVoice.snd.playbackRate.setTargetAtTime).toHaveBeenCalledWith(2, 1.0, expect.any(Number))
         expect(adjustedVoice.gainEnvelope.gain.linearRampToValueAtTime).toHaveBeenCalledWith(
             expect.closeTo(0.8 * Math.pow(10, -6 / 20), 5),
-            expect.any(Number)
+            expect.any(Number),
         )
         expect(adjustedVoice.duration).toBeLessThan(0.3)
     })
@@ -302,7 +306,7 @@ describe('SampleVoice', () => {
             expect(voice.snd.playbackRate.setTargetAtTime).toHaveBeenCalledWith(
                 expect.closeTo(expectedRate, 5),
                 1.0,
-                expect.any(Number)
+                expect.any(Number),
             )
         })
 
@@ -413,25 +417,65 @@ describe('WorkletSynthVoice parameter coverage', () => {
 
         const msg = lastPostByType('update')
         const expectedKeys = [
-            'osc1Freq', 'osc2Freq', 'osc3Freq',
-            'osc1Gain', 'osc2Gain', 'osc3Gain',
-            'osc1Detune', 'osc2Detune', 'osc3Detune',
-            'osc1Wave', 'osc2Wave', 'osc3Wave',
-            'noiseMix', 'noiseFilterType', 'noiseFilterFreq', 'noiseFilterQ',
-            'filterType', 'filterFreq', 'filterQ', 'drive', 'pitchPunch', 'subGain',
-            'attack', 'decay', 'sustain', 'release',
-            'master', 'pan', 'velocity',
-            'lfo1Target', 'lfo1Wave', 'lfo1Freq', 'lfo1Depth',
-            'lfo2Target', 'lfo2Wave', 'lfo2Freq', 'lfo2Depth',
-            'filterEnvAmt', 'fmAmount', 'fmAlgo',
-            'modEnvAttack', 'modEnvDecay', 'modEnvSustain', 'modEnvRelease', 'modEnvTarget', 'modEnvDepth',
-            'bypassNoise', 'bypassFilter', 'bypassEnv', 'bypassLfo1', 'bypassLfo2', 'bypassFm',
-            'bypassModEnv', 'bypassFilterEnv',
+            'osc1Freq',
+            'osc2Freq',
+            'osc3Freq',
+            'osc1Gain',
+            'osc2Gain',
+            'osc3Gain',
+            'osc1Detune',
+            'osc2Detune',
+            'osc3Detune',
+            'osc1Wave',
+            'osc2Wave',
+            'osc3Wave',
+            'noiseMix',
+            'noiseFilterType',
+            'noiseFilterFreq',
+            'noiseFilterQ',
+            'filterType',
+            'filterFreq',
+            'filterQ',
+            'drive',
+            'pitchPunch',
+            'subGain',
+            'attack',
+            'decay',
+            'sustain',
+            'release',
+            'master',
+            'pan',
+            'velocity',
+            'lfo1Target',
+            'lfo1Wave',
+            'lfo1Freq',
+            'lfo1Depth',
+            'lfo2Target',
+            'lfo2Wave',
+            'lfo2Freq',
+            'lfo2Depth',
+            'filterEnvAmt',
+            'fmAmount',
+            'fmAlgo',
+            'modEnvAttack',
+            'modEnvDecay',
+            'modEnvSustain',
+            'modEnvRelease',
+            'modEnvTarget',
+            'modEnvDepth',
+            'bypassNoise',
+            'bypassFilter',
+            'bypassEnv',
+            'bypassLfo1',
+            'bypassLfo2',
+            'bypassFm',
+            'bypassModEnv',
+            'bypassFilterEnv',
         ]
         for (const key of expectedKeys) {
             expect(msg).toHaveProperty(key)
         }
-        expect(Object.keys(msg).filter(k => k !== 'type')).toHaveLength(expectedKeys.length)
+        expect(Object.keys(msg).filter((k) => k !== 'type')).toHaveLength(expectedKeys.length)
     })
 
     it('maps LFO target string to correct integer in worklet message', async () => {
@@ -525,7 +569,7 @@ describe('WorkletSynthVoice parameter coverage', () => {
 
         const msg = lastPostByType('update')
         expect(msg.lfo2Target).toBe(7) // vco1.detune
-        expect(msg.lfo2Wave).toBe(1)   // triangle
+        expect(msg.lfo2Wave).toBe(1) // triangle
         expect(msg.lfo2Freq).toBe(3)
         expect(msg.lfo2Depth).toBe(0.7)
     })
@@ -681,7 +725,7 @@ describe('VoiceFactory', () => {
             voice.start(0)
             voice.stop(1.0)
             voice.stop(1.0)
-            const releases = postMessageMock.mock.calls.filter(c => c[0].type === 'release')
+            const releases = postMessageMock.mock.calls.filter((c) => c[0].type === 'release')
             // start() sends a deferred auto-release, stop() sends its own
             // release — calling stop() twice still produces only 1 stop-release.
             expect(releases).toHaveLength(2)

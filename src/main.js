@@ -26,7 +26,7 @@ import { getHistoryService } from './state/service_loader.js'
 import { serviceRegistry } from './state/service_registry.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
-import { logger } from "./core/logger.js"
+import { logger } from './core/logger.js'
 import { idbReport } from './core/idb.js'
 import { isMobileViewport } from './core/constants.js'
 import { initKeyboardShortcuts } from './keyboard_shortcuts.js'
@@ -45,7 +45,6 @@ serviceRegistry.autoAssign = null
 serviceRegistry.midiManager = null
 serviceRegistry.history = await getHistoryService()
 
-
 function scheduleAfterFirstPaint(callback) {
     requestAnimationFrame(() => {
         const scheduleIdle = window.requestIdleCallback ?? ((idleCallback) => window.setTimeout(idleCallback, 0))
@@ -53,22 +52,33 @@ function scheduleAfterFirstPaint(callback) {
     })
 }
 
-
-let _toolbar, _patternPanel, _pianoRollPanel, _noteEditor, _trackEditor, _toolsPanel, _outputPanel, _aboutPanel, _drumkitManager, _songPanel, _viewManager, _mobileTabBar, _patternSettingsPanel
+let _toolbar,
+    _patternPanel,
+    _pianoRollPanel,
+    _noteEditor,
+    _trackEditor,
+    _toolsPanel,
+    _outputPanel,
+    _aboutPanel,
+    _drumkitManager,
+    _songPanel,
+    _viewManager,
+    _mobileTabBar,
+    _patternSettingsPanel
 
 export function init() {
     if (window.orientation > 1) {
-        const de = document.documentElement;
+        const de = document.documentElement
         if (de.requestFullscreen) {
-            de.requestFullscreen();
+            de.requestFullscreen()
         } else if (de.mozRequestFullScreen) {
-            de.mozRequestFullScreen();
+            de.mozRequestFullScreen()
         } else if (de.webkitRequestFullscreen) {
-            de.webkitRequestFullscreen();
+            de.webkitRequestFullscreen()
         } else if (de.msRequestFullscreen) {
-            de.msRequestFullscreen();
+            de.msRequestFullscreen()
         }
-        screen.orientation.lock("landscape-primary");
+        screen.orientation.lock('landscape-primary')
     }
 
     _toolbar = new Toolbar()
@@ -125,7 +135,7 @@ export function init() {
     serviceRegistry.viewManager = _viewManager
     _viewManager.init()
 
-    playbackEvents.on("trackSelect", (data) => {
+    playbackEvents.on('trackSelect', (data) => {
         if (data && data.trackIdx !== undefined) {
             appState.selectedTrackNum = data.trackIdx
         }
@@ -133,7 +143,7 @@ export function init() {
 
     const tbEl = document.getElementById('tb')
     if (tbEl) {
-        const ro = new ResizeObserver(entries => {
+        const ro = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 document.documentElement.style.setProperty('--tb-h', `${entry.contentRect.height}px`)
             }
@@ -162,7 +172,7 @@ export function init() {
             return
         }
         el.value = String(next)
-        el.dispatchEvent(new Event('input',  { bubbles: true }))
+        el.dispatchEvent(new Event('input', { bubbles: true }))
         el.dispatchEvent(new Event('change', { bubbles: true }))
         e.preventDefault()
     })
@@ -206,9 +216,9 @@ export function init() {
             appState.selectedPatternNum = patNum
 
             playbackEvents.batch(() => {
-                playbackEvents.emit("patternStructureChange")
-                playbackEvents.emit("patternChange")
-                playbackEvents.emit("drumkitChange")
+                playbackEvents.emit('patternStructureChange')
+                playbackEvents.emit('patternChange')
+                playbackEvents.emit('drumkitChange')
             })
 
             serviceRegistry.cmd.setSelectedDrumkitNum(dkNum)
@@ -217,15 +227,15 @@ export function init() {
             const savedView = soundRegistry.settings.session?.currentView
             const resolvedView = savedView === 'output' ? 'master' : savedView
             if (isMobileViewport()) {
-                playbackEvents.emit("mobileSeqToggle")
+                playbackEvents.emit('mobileSeqToggle')
             } else if (resolvedView) {
                 playbackEvents.emit(resolvedView + 'Toggle', true)
             } else {
-                playbackEvents.emit("editToggle")
+                playbackEvents.emit('editToggle')
             }
 
             if (!isMobileViewport() && resolvedView !== 'master') {
-                playbackEvents.emit("masterToggle", true)
+                playbackEvents.emit('masterToggle', true)
             }
         }
 
@@ -240,7 +250,12 @@ export function init() {
         ;(async () => {
             const report = await idbReport()
             console.group('%c IndexedDB Report', 'color: #e94560; font-weight: bold')
-            logger.info('Main', 'Usage:', report.usagePct ?? 'N/A', `(${(report.usageBytes ?? 0).toLocaleString()} / ${(report.quotaBytes ?? 0).toLocaleString()} bytes)`)
+            logger.info(
+                'Main',
+                'Usage:',
+                report.usagePct ?? 'N/A',
+                `(${(report.usageBytes ?? 0).toLocaleString()} / ${(report.quotaBytes ?? 0).toLocaleString()} bytes)`,
+            )
             for (const [store, keys] of Object.entries(report.stores ?? {})) {
                 logger.info('Main', `Store "${store}":`, keys.length, 'entries', keys)
             }

@@ -24,14 +24,16 @@ export default class LfoUiBridge {
         })
     }
 
-    get fallback() { return this.#fallback }
+    get fallback() {
+        return this.#fallback
+    }
 
     async #init(audioCtx) {
         await WorkletLoader.ensureLoaded(audioCtx)
         this.#node = WorkletLoader.createNode(audioCtx, 'lfo-ui', {
             numberOfInputs: 0,
             numberOfOutputs: 1,
-            outputChannelCount: [1]
+            outputChannelCount: [1],
         })
         this.#node.port.onmessage = (e) => {
             const { id, vals } = e.data
@@ -60,7 +62,7 @@ export default class LfoUiBridge {
             return values
         }
 
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const id = this.#nextId++
             this.#pending.set(id, resolve)
             this.#node.port.postMessage({ id, lfos, tick, nbTicks })

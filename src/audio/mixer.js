@@ -1,25 +1,25 @@
-import Strip from './strip.js';
-import WorkletLoader from './worklets/loader.js';
-import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js';
-import { logger } from '../core/logger.js';
-import { soundRegistry } from '../state/sound_registry.js';
+import Strip from './strip.js'
+import WorkletLoader from './worklets/loader.js'
+import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js'
+import { logger } from '../core/logger.js'
+import { soundRegistry } from '../state/sound_registry.js'
 
 // Register master bus processor at module load (idempotent)
-WorkletLoader.register('master-bus', MASTER_BUS_SOURCE);
+WorkletLoader.register('master-bus', MASTER_BUS_SOURCE)
 
 export default class Mixer {
-    static TAG = "Mixer";
+    static TAG = 'Mixer'
 
-    #pendingStrips = new Map();
+    #pendingStrips = new Map()
 
     constructor(audioCtx) {
-        this.audioCtx = audioCtx;
-        this.trackName = "all";
-        this.strips = {};
+        this.audioCtx = audioCtx
+        this.trackName = 'all'
+        this.strips = {}
 
-        this.analyser  = null;
-        this.busInput  = null;   // GainNode — all strip pans connect here
-        this.busWorklet = null;  // master-bus AudioWorkletNode
+        this.analyser = null
+        this.busInput = null // GainNode — all strip pans connect here
+        this.busWorklet = null // master-bus AudioWorkletNode
     }
 
     /**
@@ -27,33 +27,33 @@ export default class Mixer {
      */
     static async create(audioCtx) {
         try {
-            const mixer = new Mixer(audioCtx);
-            await WorkletLoader.ensureLoaded(audioCtx);
-            mixer.start();
-            return mixer;
+            const mixer = new Mixer(audioCtx)
+            await WorkletLoader.ensureLoaded(audioCtx)
+            mixer.start()
+            return mixer
         } catch (err) {
             logger.error('Mixer', 'Mixer::create failed', err)
-            return new Mixer(audioCtx);
+            return new Mixer(audioCtx)
         }
     }
 
     // ─── Lifecycle ──────────────────────────────────────────────────────────────
 
     start = () => {
-        const ctx = this.audioCtx;
+        const ctx = this.audioCtx
 
         if (!this.analyser) {
-            this.analyser = ctx.createAnalyser();
-            this.analyser.fftSize = 4096;
-            this.gFftData  = new Uint8Array(this.analyser.frequencyBinCount);
-            this.dataArray = new Uint8Array(this.analyser.fftSize);
+            this.analyser = ctx.createAnalyser()
+            this.analyser.fftSize = 4096
+            this.gFftData = new Uint8Array(this.analyser.frequencyBinCount)
+            this.dataArray = new Uint8Array(this.analyser.fftSize)
         }
         if (!this.busInput) {
-            this.busInput = ctx.createGain();
+            this.busInput = ctx.createGain()
         }
         if (!this.transportClock) {
-            this.transportClock = ctx.createConstantSource();
-            this.transportClock.offset.value = 0;
+            this.transportClock = ctx.createConstantSource()
+            this.transportClock.offset.value = 0
         }
         // Recreate the master-bus worklet only if the worklets have already
         // been loaded onto this context. Cold-start (worklets still loading)
@@ -64,21 +64,37 @@ export default class Mixer {
                 numberOfInputs: 1,
                 numberOfOutputs: 1,
                 outputChannelCount: [2],
-            });
+            })
         }
 
         // Wire the bus only when every link is present.
         // Always disconnect first — Web Audio connect() accumulates duplicate
         // connections which double the signal each time.
         if (this.busInput && this.busWorklet && this.analyser) {
-            try { this.busInput.disconnect(); } catch (_) { /* no-op */ }
-            try { this.busWorklet.disconnect(); } catch (_) { /* no-op */ }
-            try { this.analyser.disconnect(); } catch (_) { /* no-op */ }
-            this.busInput.connect(this.busWorklet);
-            this.busWorklet.connect(this.analyser);
-            this.analyser.connect(ctx.destination);
+            try {
+                this.busInput.disconnect()
+            } catch (_) {
+                /* no-op */
+            }
+            try {
+                this.busWorklet.disconnect()
+            } catch (_) {
+                /* no-op */
+            }
+            try {
+                this.analyser.disconnect()
+            } catch (_) {
+                /* no-op */
+            }
+            this.busInput.connect(this.busWorklet)
+            this.busWorklet.connect(this.analyser)
+            this.analyser.connect(ctx.destination)
 
-            try { this.transportClock.start(); } catch (_) { /* no-op */ }
+            try {
+                this.transportClock.start()
+            } catch (_) {
+                /* no-op */
+            }
 
             this.#applySavedMasterSettings()
         }
@@ -88,33 +104,46 @@ export default class Mixer {
         const m = soundRegistry.settings?.master
         if (!m) return
         this.setMasterBus({
-            master: m.volume, preGain: m.preGain,
-            lowcut: m.lowcut, hicut: m.hicut,
+            master: m.volume,
+            preGain: m.preGain,
+            lowcut: m.lowcut,
+            hicut: m.hicut,
             bypass: m.compBypass,
-            threshold: m.threshold, ratio: m.ratio,
-            attack: m.attack, release: m.release,
-            knee: m.knee, makeup: m.makeup,
+            threshold: m.threshold,
+            ratio: m.ratio,
+            attack: m.attack,
+            release: m.release,
+            knee: m.knee,
+            makeup: m.makeup,
         })
     }
 
     stop = () => {
-        this.deleteStrips();
+        this.deleteStrips()
 
-        const nodes = [this.busWorklet, this.busInput, this.analyser, this.transportClock];
+        const nodes = [this.busWorklet, this.busInput, this.analyser, this.transportClock]
         for (const node of nodes) {
-            if (!node) continue;
-            try { node.disconnect(); } catch (e) { logger.error('Mixer', e); }
+            if (!node) continue
+            try {
+                node.disconnect()
+            } catch (e) {
+                logger.error('Mixer', e)
+            }
             if (node === this.transportClock) {
-                try { node.stop(); } catch (_) { /* no-op */ }
+                try {
+                    node.stop()
+                } catch (_) {
+                    /* no-op */
+                }
             }
         }
 
-        this.busWorklet = null;
-        this.busInput   = null;
-        this.analyser   = null;
-        this.transportClock = null;
-        this.gFftData   = null;
-        this.dataArray  = null;
+        this.busWorklet = null
+        this.busInput = null
+        this.analyser = null
+        this.transportClock = null
+        this.gFftData = null
+        this.dataArray = null
     }
 
     // ─── Strip management ────────────────────────────────────────────────────────
@@ -125,77 +154,77 @@ export default class Mixer {
      * promise cache — prevents orphaned strips from double-creation races.
      */
     addStrip = async (name) => {
-        if (this.strips[name]) return this.strips[name];
+        if (this.strips[name]) return this.strips[name]
 
-        if (this.#pendingStrips.has(name)) return this.#pendingStrips.get(name);
+        if (this.#pendingStrips.has(name)) return this.#pendingStrips.get(name)
 
         // Re-initialise bus nodes if they were torn down by stop().
-        if (!this.busInput) this.start();
+        if (!this.busInput) this.start()
 
         const p = (async () => {
             try {
-                const strip = await Strip.create(name, this.audioCtx, this);
-                this.strips[name] = strip;
+                const strip = await Strip.create(name, this.audioCtx, this)
+                this.strips[name] = strip
                 if (strip.pan && this.busInput) {
-                    strip.pan.connect(this.busInput);
+                    strip.pan.connect(this.busInput)
                 }
-                return strip;
+                return strip
             } finally {
-                this.#pendingStrips.delete(name);
+                this.#pendingStrips.delete(name)
             }
-        })();
+        })()
 
-        this.#pendingStrips.set(name, p);
-        return p;
+        this.#pendingStrips.set(name, p)
+        return p
     }
 
     getOrCreateStrip = async (name) => {
         if (!this.strips[name]) {
-            await this.addStrip(name);
+            await this.addStrip(name)
         }
-        return this.strips[name];
+        return this.strips[name]
     }
 
     deleteStrips = () => {
         for (const name of Object.keys(this.strips)) {
             if (this.strips[name]?.delete) {
-                this.strips[name].delete();
+                this.strips[name].delete()
             }
-            delete this.strips[name];
+            delete this.strips[name]
         }
     }
 
     setBpm = (bpm) => {
         for (const strip of Object.values(this.strips)) {
-            strip.setBpm(bpm);
+            strip.setBpm(bpm)
         }
     }
 
     // ─── Master bus control ──────────────────────────────────────────────────────
 
     setMasterBus = (options = {}) => {
-        if (!this.busWorklet) return;
-        const time  = this.audioCtx.currentTime;
-        const ramp  = 0.02;
-        const params = this.busWorklet.parameters;
+        if (!this.busWorklet) return
+        const time = this.audioCtx.currentTime
+        const ramp = 0.02
+        const params = this.busWorklet.parameters
         const set = (name, val) => {
             if (val !== undefined && params.get(name)) {
-                params.get(name).setTargetAtTime(val, time, ramp);
+                params.get(name).setTargetAtTime(val, time, ramp)
             }
-        };
+        }
 
-        set('lowcut',        options.lowcut);
-        set('hicut',         options.hicut);
-        set('master',        options.master);
-        set('compThreshold', options.threshold);
-        set('compRatio',     options.ratio);
-        set('compKnee',      options.knee);
-        set('compAttack',    options.attack);
-        set('compRelease',   options.release);
-        set('compMakeup',    options.makeup);
-        set('preGain',       options.preGain);
+        set('lowcut', options.lowcut)
+        set('hicut', options.hicut)
+        set('master', options.master)
+        set('compThreshold', options.threshold)
+        set('compRatio', options.ratio)
+        set('compKnee', options.knee)
+        set('compAttack', options.attack)
+        set('compRelease', options.release)
+        set('compMakeup', options.makeup)
+        set('preGain', options.preGain)
         if (options.bypass !== undefined && params.get('bypass')) {
-            params.get('bypass').setTargetAtTime(options.bypass ? 1 : 0, time, ramp);
+            params.get('bypass').setTargetAtTime(options.bypass ? 1 : 0, time, ramp)
         }
     }
 }

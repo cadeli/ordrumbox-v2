@@ -9,22 +9,26 @@ export default class GridSection {
     #editor
 
     /** @param {import('./pattern_panel.js').default} editor */
-    constructor(editor) { this.#editor = editor }
+    constructor(editor) {
+        this.#editor = editor
+    }
 
     /** Build noteMap + ghostMap for a track (cached by coordinator). */
     buildTrackData(track, startBeat, endBeatPage, pattern) {
         const stepsPerBeat = track.stepsPerBeat ?? 4
-        const notes = Array.isArray(track.notes) ? track.notes : Object.values(nameOr(track.notes, {}, 'PatternPanel', 'track.notes fallback'))
+        const notes = Array.isArray(track.notes)
+            ? track.notes
+            : Object.values(nameOr(track.notes, {}, 'PatternPanel', 'track.notes fallback'))
 
         const noteMap = new Map()
-        notes.forEach(n => {
+        notes.forEach((n) => {
             const key = `${n.beat}:${n.beatStep}`
             if (!noteMap.has(key)) noteMap.set(key, [])
             noteMap.get(key).push(n)
         })
 
         const ghostMap = new Map()
-        noteMap.forEach(notes => {
+        noteMap.forEach((notes) => {
             for (const note of notes) {
                 this.#getSubPositions(note, track, pattern).forEach(({ pos, type }) => {
                     const stepAbs = Math.floor(pos)
@@ -45,17 +49,21 @@ export default class GridSection {
         let noteSlicesHtml = ''
         if (notesAtStep && notesAtStep.length > 0) {
             const slicePct = (100 / notesAtStep.length).toFixed(2)
-            noteSlicesHtml = notesAtStep.map((note, ni) => {
-                const vel = note.velocity ?? 0.8
-                const alpha = 0.25 + vel * 0.75
-                return `<div class="pp-note-slice" data-note-idx="${ni}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"></div>`
-            }).join('')
+            noteSlicesHtml = notesAtStep
+                .map((note, ni) => {
+                    const vel = note.velocity ?? 0.8
+                    const alpha = 0.25 + vel * 0.75
+                    return `<div class="pp-note-slice" data-note-idx="${ni}" style="width:${slicePct}%;opacity:${alpha.toFixed(2)}"></div>`
+                })
+                .join('')
         }
 
-        const ghosts = (ghostsAtStep ?? []).map(({ type }) => {
-            const ghostCls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
-            return `<div class="${ghostCls}"></div>`
-        }).join('')
+        const ghosts = (ghostsAtStep ?? [])
+            .map(({ type }) => {
+                const ghostCls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
+                return `<div class="${ghostCls}"></div>`
+            })
+            .join('')
 
         return `${ghosts}${noteSlicesHtml}`
     }
@@ -173,13 +181,15 @@ export default class GridSection {
             }
             beatsHtml += '</div>'
 
-            const currentTrackIdx = editor.selTrackIdx !== -1 ? editor.selTrackIdx : (editor.appState.selectedTrackNum ?? -1)
+            const currentTrackIdx =
+                editor.selTrackIdx !== -1 ? editor.selTrackIdx : (editor.appState.selectedTrackNum ?? -1)
             const isSelected = currentTrackIdx === tIdx
             const isMuted = track.mute === true
             const isSolo = track.solo === true
-            const soundUrl = track.soundId && track.soundId !== 'NOT_DEFINED'
-                ? (soundRegistry.sounds[track.soundId]?.url ?? track.soundId)
-                : ''
+            const soundUrl =
+                track.soundId && track.soundId !== 'NOT_DEFINED'
+                    ? (soundRegistry.sounds[track.soundId]?.url ?? track.soundId)
+                    : ''
             html += `
                 <div class="pp-track ${isMuted ? 'pp-muted' : ''} ${isSelected ? 'pp-selected' : ''}">
                     <div class="pp-vu ${isSelected ? 'selected' : ''}" data-track="${tIdx}"><div class="pp-vu-fill"></div></div>
@@ -240,7 +250,13 @@ export default class GridSection {
         const retriggerNum = note.retriggerNum ?? 1
         const rate = note.rate ?? 1
         const euclidianFill = note.euclidianFill ?? 0
-        const hasArp = note.arp && (typeof note.arp === 'string' || (typeof note.arp === 'object' && !Array.isArray(note.arp) && Array.isArray(note.arp.intervals) && note.arp.intervals.length > 0))
+        const hasArp =
+            note.arp &&
+            (typeof note.arp === 'string' ||
+                (typeof note.arp === 'object' &&
+                    !Array.isArray(note.arp) &&
+                    Array.isArray(note.arp.intervals) &&
+                    note.arp.intervals.length > 0))
         const totalSteps = (track.nbBeats ?? 4) * stepsPerBeat
 
         const positions = []
@@ -256,7 +272,7 @@ export default class GridSection {
             const endStep = (() => {
                 const currentPatternPos = basePos
                 let nextNotePos = totalSteps
-                for (const n of (track.notes ?? [])) {
+                for (const n of track.notes ?? []) {
                     const nPos = n.beat * stepsPerBeat + n.beatStep
                     if (nPos > currentPatternPos && nPos < nextNotePos) {
                         nextNotePos = nPos

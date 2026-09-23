@@ -2,7 +2,7 @@ import Utils from '../core/utils.js'
 import { NOTE_DEFAULTS, normalizeNote } from '../core/note_schema.js'
 
 export default class Defaults {
-    static TAG = "Defaults"
+    static TAG = 'Defaults'
 
     static normalizeNote = normalizeNote
 

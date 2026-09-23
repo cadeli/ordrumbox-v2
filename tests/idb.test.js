@@ -20,32 +20,50 @@ function createMockIDB() {
                     objectStore: () => ({
                         get: (key) => {
                             const req = { result: undefined, onsuccess: null, onerror: null }
-                            queueMicrotask(() => { req.result = store[key]; req.onsuccess?.() })
+                            queueMicrotask(() => {
+                                req.result = store[key]
+                                req.onsuccess?.()
+                            })
                             return req
                         },
                         put: (value, key) => {
                             const req = { onsuccess: null, onerror: null }
-                            queueMicrotask(() => { store[key] = value; req.onsuccess?.() })
+                            queueMicrotask(() => {
+                                store[key] = value
+                                req.onsuccess?.()
+                            })
                             return req
                         },
                         delete: (key) => {
                             const req = { onsuccess: null, onerror: null }
-                            queueMicrotask(() => { delete store[key]; req.onsuccess?.() })
+                            queueMicrotask(() => {
+                                delete store[key]
+                                req.onsuccess?.()
+                            })
                             return req
                         },
                         getAllKeys: () => {
                             const req = { result: [], onsuccess: null, onerror: null }
-                            queueMicrotask(() => { req.result = Object.keys(store); req.onsuccess?.() })
+                            queueMicrotask(() => {
+                                req.result = Object.keys(store)
+                                req.onsuccess?.()
+                            })
                             return req
                         },
                         getAll: () => {
                             const req = { result: [], onsuccess: null, onerror: null }
-                            queueMicrotask(() => { req.result = Object.values(store); req.onsuccess?.() })
+                            queueMicrotask(() => {
+                                req.result = Object.values(store)
+                                req.onsuccess?.()
+                            })
                             return req
                         },
                         clear: () => {
                             const req = { onsuccess: null, onerror: null }
-                            queueMicrotask(() => { for (const k in store) delete store[k]; req.onsuccess?.() })
+                            queueMicrotask(() => {
+                                for (const k in store) delete store[k]
+                                req.onsuccess?.()
+                            })
                             return req
                         },
                         openCursor: () => {
@@ -189,8 +207,8 @@ describe('IndexedDB helpers', () => {
         await idbModule.idbPut('samples', 'snare.wav', new ArrayBuffer(2048))
         const entries = await idbModule.idbGetAllEntries('samples')
         expect(entries).toHaveLength(2)
-        expect(entries.map(e => e.key)).toContain('kick.wav')
-        expect(entries.map(e => e.key)).toContain('snare.wav')
+        expect(entries.map((e) => e.key)).toContain('kick.wav')
+        expect(entries.map((e) => e.key)).toContain('snare.wav')
     })
 
     it('idbClearStore only affects the target store', async () => {

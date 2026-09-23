@@ -12,23 +12,41 @@ vi.mock('../src/logic/services/auto_assign.js', () => {
 
 function makeMockEditor(overrides = {}) {
     return {
-        _track: { name: 'KICK', soundId: 'kick_1.wav', useSoftSynth: false, useAutoAssignSound: true, mono: false, ...overrides.track },
+        _track: {
+            name: 'KICK',
+            soundId: 'kick_1.wav',
+            useSoftSynth: false,
+            useAutoAssignSound: true,
+            mono: false,
+            ...overrides.track,
+        },
         _soundRegistry: {
             sounds: {
                 'kick_1.wav': { url: 'kick_1.wav', key: 'KICK', kit_name: '808', display_name: 'Kick' },
-                'snare_1.wav': { url: 'snare_1.wav', key: 'SNARE', kit_name: '808', display_name: 'Snare' }
+                'snare_1.wav': { url: 'snare_1.wav', key: 'SNARE', kit_name: '808', display_name: 'Snare' },
             },
-            drumkitList: [{ name: '808', instruments: [{ key: 'KICK', url: 'kick_1.wav', display_name: 'Kick' }, { key: 'SNARE', url: 'snare_1.wav', display_name: 'Snare' }] }],
-            generatedSounds: { BASS1: {}, PIANO: {} }
+            drumkitList: [
+                {
+                    name: '808',
+                    instruments: [
+                        { key: 'KICK', url: 'kick_1.wav', display_name: 'Kick' },
+                        { key: 'SNARE', url: 'snare_1.wav', display_name: 'Snare' },
+                    ],
+                },
+            ],
+            generatedSounds: { BASS1: {}, PIANO: {} },
         },
         _appState: { selectedDrumkitNum: 0 },
-        _serviceRegistry: { cmd: { changeTrackName: vi.fn(), changeTrackSound: vi.fn() }, resourcesLoader: { loadSample: vi.fn() } },
-        _playbackEvents: { batch: vi.fn(fn => fn()), emit: vi.fn() },
+        _serviceRegistry: {
+            cmd: { changeTrackName: vi.fn(), changeTrackSound: vi.fn() },
+            resourcesLoader: { loadSample: vi.fn() },
+        },
+        _playbackEvents: { batch: vi.fn((fn) => fn()), emit: vi.fn() },
         synthEditor: { getGeneratedSoundKeys: vi.fn(() => ['BASS1', 'PIANO']), ensureGeneratedSoundsLoaded: vi.fn() },
         resourcesLoader: { loadSample: vi.fn() },
         sync: vi.fn(),
-        esc: s => s,
-        ...overrides
+        esc: (s) => s,
+        ...overrides,
     }
 }
 
@@ -146,8 +164,16 @@ describe('SoundSection', () => {
 
         it('renders multiple drumkits in sample list', () => {
             const editor = makeMockEditor()
-            editor._soundRegistry.drumkitList.push({ name: 'TRAP', instruments: [{ key: 'KICK', url: 'trap_kick.wav', display_name: 'Trap Kick' }] })
-            editor._soundRegistry.sounds['trap_kick.wav'] = { url: 'trap_kick.wav', key: 'KICK', kit_name: 'TRAP', display_name: 'Trap Kick' }
+            editor._soundRegistry.drumkitList.push({
+                name: 'TRAP',
+                instruments: [{ key: 'KICK', url: 'trap_kick.wav', display_name: 'Trap Kick' }],
+            })
+            editor._soundRegistry.sounds['trap_kick.wav'] = {
+                url: 'trap_kick.wav',
+                key: 'KICK',
+                kit_name: 'TRAP',
+                display_name: 'Trap Kick',
+            }
             section = new SoundSection(editor)
             const html = section.render()
             expect(html).toContain('kick_1.wav')
@@ -246,12 +272,16 @@ describe('SoundSection', () => {
         it('loads sample from kit resourcesLoader when not found in sounds registry', async () => {
             const editor = makeMockEditor()
             delete editor._soundRegistry.sounds['new_sample.wav']
-            editor._soundRegistry.drumkitList[0].instruments.push({ key: 'HIT', url: 'new_sample.wav', display_name: 'Hit' })
+            editor._soundRegistry.drumkitList[0].instruments.push({
+                key: 'HIT',
+                url: 'new_sample.wav',
+                display_name: 'Hit',
+            })
             section = new SoundSection(editor)
             await section.onSampleChange({ value: 'new_sample.wav' })
             expect(editor._serviceRegistry.resourcesLoader.loadSample).toHaveBeenCalledWith(
                 { key: 'HIT', url: 'new_sample.wav', display_name: 'Hit' },
-                '808'
+                '808',
             )
         })
     })
@@ -327,14 +357,18 @@ describe('SoundSection', () => {
         })
 
         it('sets useSoftSynth=false when enabling auto', () => {
-            const editor = makeMockEditor({ track: { useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BASS1' } })
+            const editor = makeMockEditor({
+                track: { useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BASS1' },
+            })
             section = new SoundSection(editor)
             section.toggleAuto()
             expect(editor._track.useSoftSynth).toBe(false)
         })
 
         it('sets synthSoundKey=null when enabling auto', () => {
-            const editor = makeMockEditor({ track: { useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BASS1' } })
+            const editor = makeMockEditor({
+                track: { useAutoAssignSound: false, useSoftSynth: true, synthSoundKey: 'BASS1' },
+            })
             section = new SoundSection(editor)
             section.toggleAuto()
             expect(editor._track.synthSoundKey).toBeNull()
@@ -400,20 +434,23 @@ describe('SoundSection', () => {
     describe('_getAllKitSamples()', () => {
         it('flattens all kits into a single array', () => {
             const editor = makeMockEditor()
-            editor._soundRegistry.drumkitList.push({ name: 'TRAP', instruments: [{ key: 'HIT', url: 'trap_hit.wav', display_name: 'Trap Hit' }] })
+            editor._soundRegistry.drumkitList.push({
+                name: 'TRAP',
+                instruments: [{ key: 'HIT', url: 'trap_hit.wav', display_name: 'Trap Hit' }],
+            })
             section = new SoundSection(editor)
             const samples = section._getAllKitSamples()
             expect(samples).toHaveLength(3)
-            expect(samples.map(s => s.url)).toContain('kick_1.wav')
-            expect(samples.map(s => s.url)).toContain('snare_1.wav')
-            expect(samples.map(s => s.url)).toContain('trap_hit.wav')
+            expect(samples.map((s) => s.url)).toContain('kick_1.wav')
+            expect(samples.map((s) => s.url)).toContain('snare_1.wav')
+            expect(samples.map((s) => s.url)).toContain('trap_hit.wav')
         })
 
         it('adds kitName to each sample', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
             const samples = section._getAllKitSamples()
-            expect(samples.every(s => s.kitName === '808')).toBe(true)
+            expect(samples.every((s) => s.kitName === '808')).toBe(true)
         })
 
         it('returns empty array when no kits exist', () => {
@@ -429,9 +466,14 @@ describe('SoundSection', () => {
             const editor = makeMockEditor()
             editor._soundRegistry.drumkitList = [
                 { name: 'TRAP', instruments: [{ key: 'KICK', url: 'trap_kick.wav', display_name: 'Trap Kick' }] },
-                { name: '808', instruments: [{ key: 'KICK', url: 'kick_1.wav', display_name: 'Kick' }] }
+                { name: '808', instruments: [{ key: 'KICK', url: 'kick_1.wav', display_name: 'Kick' }] },
             ]
-            editor._soundRegistry.sounds['trap_kick.wav'] = { url: 'trap_kick.wav', key: 'KICK', kit_name: 'TRAP', display_name: 'Trap Kick' }
+            editor._soundRegistry.sounds['trap_kick.wav'] = {
+                url: 'trap_kick.wav',
+                key: 'KICK',
+                kit_name: 'TRAP',
+                display_name: 'Trap Kick',
+            }
             editor._appState.selectedDrumkitNum = 1
             section = new SoundSection(editor)
             const samples = section._getAllKitSamples()
@@ -444,10 +486,20 @@ describe('SoundSection', () => {
             const editor = makeMockEditor()
             editor._soundRegistry.drumkitList = [
                 { name: 'ZOOM', instruments: [{ key: 'KICK', url: 'z_kick.wav', display_name: 'Z Kick' }] },
-                { name: 'ALPHA', instruments: [{ key: 'KICK', url: 'a_kick.wav', display_name: 'A Kick' }] }
+                { name: 'ALPHA', instruments: [{ key: 'KICK', url: 'a_kick.wav', display_name: 'A Kick' }] },
             ]
-            editor._soundRegistry.sounds['z_kick.wav'] = { url: 'z_kick.wav', key: 'KICK', kit_name: 'ZOOM', display_name: 'Z Kick' }
-            editor._soundRegistry.sounds['a_kick.wav'] = { url: 'a_kick.wav', key: 'KICK', kit_name: 'ALPHA', display_name: 'A Kick' }
+            editor._soundRegistry.sounds['z_kick.wav'] = {
+                url: 'z_kick.wav',
+                key: 'KICK',
+                kit_name: 'ZOOM',
+                display_name: 'Z Kick',
+            }
+            editor._soundRegistry.sounds['a_kick.wav'] = {
+                url: 'a_kick.wav',
+                key: 'KICK',
+                kit_name: 'ALPHA',
+                display_name: 'A Kick',
+            }
             editor._appState.selectedDrumkitNum = 0
             section = new SoundSection(editor)
             const samples = section._getAllKitSamples()
@@ -459,13 +511,26 @@ describe('SoundSection', () => {
         it('sorts by display_name within same kit', () => {
             const editor = makeMockEditor()
             editor._soundRegistry.drumkitList = [
-                { name: '808', instruments: [
-                    { key: 'KICK', url: 'b_kick.wav', display_name: 'B Kick' },
-                    { key: 'KICK', url: 'a_kick.wav', display_name: 'A Kick' }
-                ] }
+                {
+                    name: '808',
+                    instruments: [
+                        { key: 'KICK', url: 'b_kick.wav', display_name: 'B Kick' },
+                        { key: 'KICK', url: 'a_kick.wav', display_name: 'A Kick' },
+                    ],
+                },
             ]
-            editor._soundRegistry.sounds['b_kick.wav'] = { url: 'b_kick.wav', key: 'KICK', kit_name: '808', display_name: 'B Kick' }
-            editor._soundRegistry.sounds['a_kick.wav'] = { url: 'a_kick.wav', key: 'KICK', kit_name: '808', display_name: 'A Kick' }
+            editor._soundRegistry.sounds['b_kick.wav'] = {
+                url: 'b_kick.wav',
+                key: 'KICK',
+                kit_name: '808',
+                display_name: 'B Kick',
+            }
+            editor._soundRegistry.sounds['a_kick.wav'] = {
+                url: 'a_kick.wav',
+                key: 'KICK',
+                kit_name: '808',
+                display_name: 'A Kick',
+            }
             section = new SoundSection(editor)
             const samples = section._getAllKitSamples()
             const sorted = section._sortSamplesForCurrentKit(samples)
@@ -492,8 +557,16 @@ describe('SoundSection', () => {
 
         it('returns multiple samples when several kits have the same instrument', () => {
             const editor = makeMockEditor()
-            editor._soundRegistry.drumkitList.push({ name: 'TRAP', instruments: [{ key: 'SNARE', url: 'trap_snare.wav', display_name: 'Trap Snare' }] })
-            editor._soundRegistry.sounds['trap_snare.wav'] = { url: 'trap_snare.wav', key: 'SNARE', kit_name: 'TRAP', display_name: 'Trap Snare' }
+            editor._soundRegistry.drumkitList.push({
+                name: 'TRAP',
+                instruments: [{ key: 'SNARE', url: 'trap_snare.wav', display_name: 'Trap Snare' }],
+            })
+            editor._soundRegistry.sounds['trap_snare.wav'] = {
+                url: 'trap_snare.wav',
+                key: 'SNARE',
+                kit_name: 'TRAP',
+                display_name: 'Trap Snare',
+            }
             section = new SoundSection(editor)
             const samples = section._getSamplesForInstrument('SNARE')
             expect(samples).toHaveLength(2)

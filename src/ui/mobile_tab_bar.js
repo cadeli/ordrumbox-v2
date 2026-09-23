@@ -30,7 +30,7 @@ export default class MobileTabBar {
             { id: 'master', label: 'Master' },
         ]
 
-        tabs.forEach(tab => {
+        tabs.forEach((tab) => {
             const btn = document.createElement('button')
             btn.className = 'mtb-btn'
             btn.dataset.tab = tab.id
@@ -77,10 +77,10 @@ export default class MobileTabBar {
 
         try {
             const dispatchMap = {
-                seq: () => playbackEvents.emit("mobileSeqToggle"),
-                track: () => playbackEvents.emit("mobileTrackToggle"),
-                synth: () => playbackEvents.emit("synthToggle"),
-                master: () => playbackEvents.emit("masterToggle", true),
+                seq: () => playbackEvents.emit('mobileSeqToggle'),
+                track: () => playbackEvents.emit('mobileTrackToggle'),
+                synth: () => playbackEvents.emit('synthToggle'),
+                master: () => playbackEvents.emit('masterToggle', true),
             }
             dispatchMap[tab]?.()
         } finally {
@@ -92,7 +92,7 @@ export default class MobileTabBar {
     }
 
     #updateActive() {
-        this.container?.querySelectorAll('.mtb-btn').forEach(btn => {
+        this.container?.querySelectorAll('.mtb-btn').forEach((btn) => {
             btn.classList.toggle('active', btn.dataset.tab === this.#currentTab)
         })
     }

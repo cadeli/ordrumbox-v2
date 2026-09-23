@@ -9,19 +9,31 @@ import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import BasePanel from './base_panel.js'
 import MidiIndicatorView from './midi_indicator_view.js'
-import { logger, nameOr } from "../core/logger.js"
-import { getCacheStats, getCachedDrumkits, clearPatternsCache, clearDrumkitsCache, clearSamplesCache, clearAllCache, removeCacheEntry, formatBytes, formatDate } from '../cache/idb_cache.js'
+import { logger, nameOr } from '../core/logger.js'
+import {
+    getCacheStats,
+    getCachedDrumkits,
+    clearPatternsCache,
+    clearDrumkitsCache,
+    clearSamplesCache,
+    clearAllCache,
+    removeCacheEntry,
+    formatBytes,
+    formatDate,
+} from '../cache/idb_cache.js'
 import { idbGet } from '../core/idb.js'
 import { isMobileViewport } from '../core/constants.js'
 import MidiExporter from '../logic/midi/midi_exporter.js'
 
 export default class ToolsPanel extends BasePanel {
-    #midiImportService;
-    #midiView;
-    #wavLoops;
-    #jsonModalCleanup;
+    #midiImportService
+    #midiView
+    #wavLoops
+    #jsonModalCleanup
 
-    get _wavLoops() { return this.#wavLoops }
+    get _wavLoops() {
+        return this.#wavLoops
+    }
 
     constructor() {
         super('tools-panel')
@@ -61,7 +73,7 @@ export default class ToolsPanel extends BasePanel {
 
         this.#midiView = new MidiIndicatorView(this.container)
 
-        bindCloseButton(this.container, () => playbackEvents.emit("toolsToggle", false))
+        bindCloseButton(this.container, () => playbackEvents.emit('toolsToggle', false))
         bindTabToggles(this.container)
     }
 
@@ -183,13 +195,13 @@ export default class ToolsPanel extends BasePanel {
 
     #bindExportTabEvents() {
         this.#wavLoops = new OrSlider({
-            key:    'tp-wav-loops',
-            label:  'Loops',
-            min:    1,
-            max:    32,
-            step:   1,
-            value:  1,
-            format: v => String(Math.round(v)),
+            key: 'tp-wav-loops',
+            label: 'Loops',
+            min: 1,
+            max: 32,
+            step: 1,
+            value: 1,
+            format: (v) => String(Math.round(v)),
         })
         this.container.querySelector('#tp-wav-loops-slot').replaceWith(this.#wavLoops.createElement())
 
@@ -295,8 +307,8 @@ export default class ToolsPanel extends BasePanel {
 
             // Only update if list changed or empty
             if (outputSelect.options.length !== outputs.length) {
-                const values = outputs.map(o => o.id)
-                const labels = outputs.map(o => nameOr(o.name, 'Unknown', 'ToolsPanel', 'name fallback'))
+                const values = outputs.map((o) => o.id)
+                const labels = outputs.map((o) => nameOr(o.name, 'Unknown', 'ToolsPanel', 'name fallback'))
                 outputSelect.innerHTML = renderOptions(values, currentOutputId, { labels, escape: escapeHtml })
             } else {
                 outputSelect.value = nameOr(currentOutputId, '', 'ToolsPanel', 'outputId fallback')
@@ -339,35 +351,54 @@ export default class ToolsPanel extends BasePanel {
             }
 
             const sorted = [...stats.entries].sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
-            const TYPE_LABELS = { patterns: 'PAT', drumkits: 'DK', samples: 'SMP', settings: 'SET', songs: 'SONG', generated_sounds: 'SYN' }
+            const TYPE_LABELS = {
+                patterns: 'PAT',
+                drumkits: 'DK',
+                samples: 'SMP',
+                settings: 'SET',
+                songs: 'SONG',
+                generated_sounds: 'SYN',
+            }
             const isDesktop = !isMobileViewport()
 
-            listEl.innerHTML = sorted.map(e => {
-                const label = TYPE_LABELS[e.type] ?? e.type
-                const date = formatDate(e.savedAt)
-                const size = formatBytes(e.size)
-                const kitName = e.type === 'samples' ? (urlToKit[e.key] ?? '') : ''
-                const tooltip = e.type === 'samples' && kitName
-                    ? `${e.key}\nDrumkit: ${kitName}`
-                    : e.key
-                const canView = isDesktop && e.type !== 'samples'
-                return `<div class="tp-cache-item" title="${escapeHtml(tooltip)}">` +
-                    `<span class="tp-cache-item-label">${label}</span>` +
-                    `<span class="tp-cache-item-key">${escapeHtml(e.key)}</span>` +
-                    (kitName ? `<span class="tp-cache-item-kit" title="${escapeHtml(kitName)}">${escapeHtml(kitName)}</span>` : `<span class="tp-cache-item-kit"></span>`) +
-                    `<span class="tp-cache-item-size">${size}</span>` +
-                    `<span class="tp-cache-item-date">${date}</span>` +
-                    (canView ? `<button class="tp-cache-item-view" data-cache-type="${e.type}" data-cache-key="${escapeHtml(e.key)}" title="View JSON">&#x1F441;</button>` : '') +
-                    `<button class="tp-cache-item-del" data-cache-type="${e.type}" data-cache-key="${escapeHtml(e.key)}" title="Remove">&#x2715;</button>` +
-                    `</div>`
-            }).join('')
+            listEl.innerHTML = sorted
+                .map((e) => {
+                    const label = TYPE_LABELS[e.type] ?? e.type
+                    const date = formatDate(e.savedAt)
+                    const size = formatBytes(e.size)
+                    const kitName = e.type === 'samples' ? (urlToKit[e.key] ?? '') : ''
+                    const tooltip = e.type === 'samples' && kitName ? `${e.key}\nDrumkit: ${kitName}` : e.key
+                    const canView = isDesktop && e.type !== 'samples'
+                    return (
+                        `<div class="tp-cache-item" title="${escapeHtml(tooltip)}">` +
+                        `<span class="tp-cache-item-label">${label}</span>` +
+                        `<span class="tp-cache-item-key">${escapeHtml(e.key)}</span>` +
+                        (kitName
+                            ? `<span class="tp-cache-item-kit" title="${escapeHtml(kitName)}">${escapeHtml(kitName)}</span>`
+                            : `<span class="tp-cache-item-kit"></span>`) +
+                        `<span class="tp-cache-item-size">${size}</span>` +
+                        `<span class="tp-cache-item-date">${date}</span>` +
+                        (canView
+                            ? `<button class="tp-cache-item-view" data-cache-type="${e.type}" data-cache-key="${escapeHtml(e.key)}" title="View JSON">&#x1F441;</button>`
+                            : '') +
+                        `<button class="tp-cache-item-del" data-cache-type="${e.type}" data-cache-key="${escapeHtml(e.key)}" title="Remove">&#x2715;</button>` +
+                        `</div>`
+                    )
+                })
+                .join('')
         } catch (e) {
             logger.error('ToolsPanel', 'Failed to refresh cache stats', e)
         }
     }
 
     async #showCacheJson(type, key) {
-        const storeMap = { patterns: 'patterns', drumkits: 'drumkits', settings: 'settings', songs: 'songs', generated_sounds: 'generated_sounds' }
+        const storeMap = {
+            patterns: 'patterns',
+            drumkits: 'drumkits',
+            settings: 'settings',
+            songs: 'songs',
+            generated_sounds: 'generated_sounds',
+        }
         const store = storeMap[type]
         if (!store) return
         try {
@@ -435,16 +466,15 @@ export default class ToolsPanel extends BasePanel {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern || !pattern.tracks) return
 
-        Utils.getTracksArray(pattern).forEach(track => {
+        Utils.getTracksArray(pattern).forEach((track) => {
             serviceRegistry.cmd?.compactTrack(track)
         })
 
         serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.batch(() => {
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.emit('noteChange')
+            playbackEvents.emit('patternChange')
         })
-
     }
 
     #randomizePattern() {
@@ -456,8 +486,8 @@ export default class ToolsPanel extends BasePanel {
         }
         serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.batch(() => {
-            playbackEvents.emit("noteChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.emit('noteChange')
+            playbackEvents.emit('patternChange')
         })
     }
 
@@ -466,7 +496,11 @@ export default class ToolsPanel extends BasePanel {
         if (!pattern) return
         const exporter = new MidiExporter()
         const loops = Math.round(this.#wavLoops.getValue())
-        exporter.download(pattern, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`, { loops })
+        exporter.download(
+            pattern,
+            `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`,
+            { loops },
+        )
     }
 
     async #exportWav() {
@@ -485,7 +519,10 @@ export default class ToolsPanel extends BasePanel {
 
             const loops = Math.round(this.#wavLoops.getValue())
             const blob = await serviceRegistry.wavExporter.exportPatternToWav(pattern, loops)
-            serviceRegistry.wavExporter.downloadWav(blob, `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`)
+            serviceRegistry.wavExporter.downloadWav(
+                blob,
+                `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'wav name fallback')}.wav`,
+            )
         } catch (e) {
             logger.error('ToolsPanel', 'WAV Export failed', e)
             showToast('WAV Export failed', 'error')

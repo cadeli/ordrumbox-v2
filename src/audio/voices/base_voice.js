@@ -1,6 +1,8 @@
 export default class BaseVoice {
     static #activeNodeCount = 0
-    static get activeNodeCount() { return BaseVoice.#activeNodeCount }
+    static get activeNodeCount() {
+        return BaseVoice.#activeNodeCount
+    }
 
     #pooledNodes
 
@@ -14,11 +16,11 @@ export default class BaseVoice {
     }
 
     setup(_flatNote, _time) {
-        throw new Error("setup() must be implemented by subclass")
+        throw new Error('setup() must be implemented by subclass')
     }
 
     start(_time) {
-        throw new Error("start() must be implemented by subclass")
+        throw new Error('start() must be implemented by subclass')
     }
 
     stop(_time) {
@@ -27,8 +29,12 @@ export default class BaseVoice {
 
     cleanup() {
         const count = this.nodes.length
-        this.nodes.forEach(node => {
-            try { node.disconnect() } catch { /* no-op */ }
+        this.nodes.forEach((node) => {
+            try {
+                node.disconnect()
+            } catch {
+                /* no-op */
+            }
         })
         if (this.nodePool) {
             for (const node of this.#pooledNodes) {
@@ -59,10 +65,14 @@ export default class BaseVoice {
 
     #createNode(type) {
         switch (type) {
-            case 'GainNode':          return this.audioCtx.createGain()
-            case 'BiquadFilterNode':  return this.audioCtx.createBiquadFilter()
-            case 'StereoPannerNode':  return this.audioCtx.createStereoPanner()
-            default: throw new Error(`BaseVoice: unsupported node type "${type}"`)
+            case 'GainNode':
+                return this.audioCtx.createGain()
+            case 'BiquadFilterNode':
+                return this.audioCtx.createBiquadFilter()
+            case 'StereoPannerNode':
+                return this.audioCtx.createStereoPanner()
+            default:
+                throw new Error(`BaseVoice: unsupported node type "${type}"`)
         }
     }
 

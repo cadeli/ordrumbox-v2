@@ -2,7 +2,7 @@ import BaseVoice from './base_voice.js'
 import WorkletLoader from '../worklets/loader.js'
 import SYNTH_VOICE_SOURCE from '../worklets/processors/synth_voice_source.js'
 import { computeOscFrequency, computeNoteRatio, computeAccent, toFiniteNumber, clamp, syncToHz } from '../math.js'
-import { RELEASE_TIME , NOTE_VELO_BALANCE } from '../../core/constants.js'
+import { RELEASE_TIME, NOTE_VELO_BALANCE } from '../../core/constants.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 
@@ -11,7 +11,43 @@ WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
 
 const WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3, random: 4 }
 const FILTER_TO_INT = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
-const LFO_TARGET_TO_INT = { NOT: 0, FLT: 1, VCO1: 2, VCO2: 3, VCO3: 4, masterVolume: 5, 'vco1.gain': 6, 'vco1.detune': 7, 'vco1.octave': 8, 'vco2.gain': 9, 'vco2.detune': 10, 'vco2.octave': 11, 'vco3.gain': 12, 'vco3.detune': 13, 'vco3.octave': 14, 'filter.freq': 15, 'filter.filterEnvelopeAmount': 16, 'filterEnv.filterEnvelopeAmount': 16, 'filter.Q': 17, 'noise.mix': 18, subGain: 19, pitchPunch: 20, 'filter.drive': 21, 'noise.filterFreq': 22, 'noise.filterQ': 23, 'fm.amount': 24, 'fm.algo': 25, 'envelope.attack': 26, 'envelope.decay': 27, 'envelope.sustain': 28, 'envelope.release': 29, 'modEnvelope.attack': 30, 'modEnvelope.decay': 31, 'modEnvelope.sustain': 32, 'modEnvelope.release': 33 }
+const LFO_TARGET_TO_INT = {
+    NOT: 0,
+    FLT: 1,
+    VCO1: 2,
+    VCO2: 3,
+    VCO3: 4,
+    masterVolume: 5,
+    'vco1.gain': 6,
+    'vco1.detune': 7,
+    'vco1.octave': 8,
+    'vco2.gain': 9,
+    'vco2.detune': 10,
+    'vco2.octave': 11,
+    'vco3.gain': 12,
+    'vco3.detune': 13,
+    'vco3.octave': 14,
+    'filter.freq': 15,
+    'filter.filterEnvelopeAmount': 16,
+    'filterEnv.filterEnvelopeAmount': 16,
+    'filter.Q': 17,
+    'noise.mix': 18,
+    subGain: 19,
+    pitchPunch: 20,
+    'filter.drive': 21,
+    'noise.filterFreq': 22,
+    'noise.filterQ': 23,
+    'fm.amount': 24,
+    'fm.algo': 25,
+    'envelope.attack': 26,
+    'envelope.decay': 27,
+    'envelope.sustain': 28,
+    'envelope.release': 29,
+    'modEnvelope.attack': 30,
+    'modEnvelope.decay': 31,
+    'modEnvelope.sustain': 32,
+    'modEnvelope.release': 33,
+}
 const MOD_ENV_TARGET_TO_INT = { off: 0, filter: 1, pitch: 2, fm: 3, shape: 4 }
 
 const SYNTH_VOICE_OPTIONS = Object.freeze({
@@ -70,7 +106,8 @@ export default class WorkletSynthVoice extends BaseVoice {
             this.noteRatio = computeNoteRatio(flatNote.fpitch)
 
             // Normalize velocity by total VCO gain so output level matches SampleVoice
-            const totalVcoGain = toFiniteNumber(gs.vco1?.gain, 0) + toFiniteNumber(gs.vco2?.gain, 0) + toFiniteNumber(gs.vco3?.gain, 0)
+            const totalVcoGain =
+                toFiniteNumber(gs.vco1?.gain, 0) + toFiniteNumber(gs.vco2?.gain, 0) + toFiniteNumber(gs.vco3?.gain, 0)
             const vcoNorm = totalVcoGain > 0.001 ? 1 / totalVcoGain : 1
             this.noteVelo = (flatNote.note?.velocity ?? 0.8) * vcoNorm
 
@@ -124,7 +161,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             // The processor self-terminates via `return false` when envSegment
             // reaches idle, so no JS-side cleanup is needed for offline.
             if (this.#synthNodePool) {
-                const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }  // fallback: legacy French property name from v1 data
+                const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 } // fallback: legacy French property name from v1 data
                 const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
                 const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
                 this.#autoReleaseTimer = setTimeout(() => {
@@ -165,7 +202,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             }
 
             const gs = this.generatedSound
-            const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 }  // fallback: legacy French property name from v1 data
+            const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 } // fallback: legacy French property name from v1 data
             const release = Math.max(0.008, toFiniteNumber(env.release, 0.1))
             if (this.#synthNodePool) {
                 const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
@@ -221,7 +258,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         if (!this.workletNode) return
         this.#lastPan = pan
         try {
-            const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }  // fallback: legacy French property name from v1 data
+            const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 } // fallback: legacy French property name from v1 data
             const noiseCfg = gs.noise ?? {}
             const filterCfg = gs.filter ?? {}
 
@@ -278,12 +315,12 @@ export default class WorkletSynthVoice extends BaseVoice {
                 modEnvRelease: Math.min(0.5, Math.max(0.008, toFiniteNumber(gs.modEnvelope?.release, 0.1))),
                 modEnvTarget: MOD_ENV_TARGET_TO_INT[gs.modEnvelope?.target] ?? 0,
                 modEnvDepth: gs.modEnvelope?.target && gs.modEnvelope.target !== 'off' ? 1 : 0,
-                bypassNoise:  !!gs.bypassNoise,
+                bypassNoise: !!gs.bypassNoise,
                 bypassFilter: !!gs.bypassFilter,
-                bypassEnv:    !!gs.bypassEnv,
-                bypassLfo1:   !!gs.bypassLfo1,
-                bypassLfo2:   !!gs.bypassLfo2,
-                bypassFm:     !!gs.bypassFm,
+                bypassEnv: !!gs.bypassEnv,
+                bypassLfo1: !!gs.bypassLfo1,
+                bypassLfo2: !!gs.bypassLfo2,
+                bypassFm: !!gs.bypassFm,
                 bypassModEnv: !!gs.bypassModEnv,
                 bypassFilterEnv: !!gs.bypassFilterEnv,
             })

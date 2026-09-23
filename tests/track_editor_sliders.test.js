@@ -6,20 +6,39 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 
-
 function makeTrack(overrides = {}) {
     return {
         name: 'KICK',
-        velocity: 0.8, pan: 0, pitch: 0,
-        filterType: 'lowpass', filterFreq: 632, filterQ: 1,
-        filterEnvelopeAmount: 0, filterLfo: 0,
-        reverbAmount: 0, reverbType: 'none',
-        delayDepth: 0, delayTime: 0.25, delayType: 'none',
-        saturationAmount: 0, saturationType: 'soft',
-        mute: false, mono: false,
-        volumeLfo: 0, panLfo: 0, pitchLfo: 0, filterFreqLfo: 0, filterQLfo: 0,
-        useAutoAssignSound: false, useSoftSynth: false, synthSoundKey: null,
-        soundId: '', nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16, swingAmount: 0,
+        velocity: 0.8,
+        pan: 0,
+        pitch: 0,
+        filterType: 'lowpass',
+        filterFreq: 632,
+        filterQ: 1,
+        filterEnvelopeAmount: 0,
+        filterLfo: 0,
+        reverbAmount: 0,
+        reverbType: 'none',
+        delayDepth: 0,
+        delayTime: 0.25,
+        delayType: 'none',
+        saturationAmount: 0,
+        saturationType: 'soft',
+        mute: false,
+        mono: false,
+        volumeLfo: 0,
+        panLfo: 0,
+        pitchLfo: 0,
+        filterFreqLfo: 0,
+        filterQLfo: 0,
+        useAutoAssignSound: false,
+        useSoftSynth: false,
+        synthSoundKey: null,
+        soundId: '',
+        nbBeats: 4,
+        stepsPerBeat: 4,
+        loopAtStep: 16,
+        swingAmount: 0,
         ...overrides,
     }
 }
@@ -29,23 +48,44 @@ function setup() {
     appState.reset()
     serviceRegistry.reset()
     soundRegistry.reset()
-    soundRegistry.drumkitList = [
-        { name: 'real', instruments: [{ key: 'KICK', url: 'real/kick.wav' }] }
-    ]
+    soundRegistry.drumkitList = [{ name: 'real', instruments: [{ key: 'KICK', url: 'real/kick.wav' }] }]
     soundRegistry.sounds = {
-        'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} }
+        'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} },
     }
     appState.trackEditorVisibility = {
-        basic: true, filters: true, effects: true, sound: false, loop: false, lfo: true,
+        basic: true,
+        filters: true,
+        effects: true,
+        sound: false,
+        loop: false,
+        lfo: true,
     }
     HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
-        fillRect: vi.fn(), clearRect: vi.fn(), getImageData: vi.fn(),
-        putImageData: vi.fn(), createImageData: vi.fn(), setTransform: vi.fn(),
-        drawImage: vi.fn(), save: vi.fn(), fillText: vi.fn(), restore: vi.fn(),
-        beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), closePath: vi.fn(),
-        stroke: vi.fn(), translate: vi.fn(), scale: vi.fn(), rotate: vi.fn(),
-        arc: vi.fn(), fill: vi.fn(), measureText: vi.fn().mockReturnValue({ width: 0 }),
-        transform: vi.fn(), rect: vi.fn(), clip: vi.fn(), setLineDash: vi.fn()
+        fillRect: vi.fn(),
+        clearRect: vi.fn(),
+        getImageData: vi.fn(),
+        putImageData: vi.fn(),
+        createImageData: vi.fn(),
+        setTransform: vi.fn(),
+        drawImage: vi.fn(),
+        save: vi.fn(),
+        fillText: vi.fn(),
+        restore: vi.fn(),
+        beginPath: vi.fn(),
+        moveTo: vi.fn(),
+        lineTo: vi.fn(),
+        closePath: vi.fn(),
+        stroke: vi.fn(),
+        translate: vi.fn(),
+        scale: vi.fn(),
+        rotate: vi.fn(),
+        arc: vi.fn(),
+        fill: vi.fn(),
+        measureText: vi.fn().mockReturnValue({ width: 0 }),
+        transform: vi.fn(),
+        rect: vi.fn(),
+        clip: vi.fn(),
+        setLineDash: vi.fn(),
     })
 }
 
@@ -82,7 +122,9 @@ describe('TrackEditor — OrSlider integration', () => {
 
     it('selects stay as native <select> (not sliders)', () => {
         editor._track = makeTrack({
-            reverbAmount: 0.5, delayDepth: 0.3, saturationAmount: 0.2,
+            reverbAmount: 0.5,
+            delayDepth: 0.3,
+            saturationAmount: 0.2,
         })
         editor.sync()
         for (const key of ['reverbType', 'delayType', 'saturationType']) {
@@ -99,9 +141,15 @@ describe('TrackEditor — OrSlider integration', () => {
         editor.container.querySelector('[data-fx-tab="1"]').click()
 
         expect(syncSpy).not.toHaveBeenCalled()
-        expect(editor.container.querySelector('[data-fx-panel="1"]').classList.contains('fx-tab-panel-hidden')).toBe(false)
-        expect(editor.container.querySelector('[data-fx-panel="0"]').classList.contains('fx-tab-panel-hidden')).toBe(true)
-        expect(editor.container.querySelector('[data-fx-tab="1"]').closest('.te-mod-btn').classList.contains('active')).toBe(true)
+        expect(editor.container.querySelector('[data-fx-panel="1"]').classList.contains('fx-tab-panel-hidden')).toBe(
+            false,
+        )
+        expect(editor.container.querySelector('[data-fx-panel="0"]').classList.contains('fx-tab-panel-hidden')).toBe(
+            true,
+        )
+        expect(
+            editor.container.querySelector('[data-fx-tab="1"]').closest('.te-mod-btn').classList.contains('active'),
+        ).toBe(true)
     })
 
     it('filterType renders as icon buttons', () => {
@@ -125,9 +173,9 @@ describe('TrackEditor — OrSlider integration', () => {
         editor._track = makeTrack({ filterFreq: 632 })
         editor.sync()
         const fn = vi.fn()
-        playbackEvents.on("trackParamChange", fn)
+        playbackEvents.on('trackParamChange', fn)
 
-        const knob = editor._fxKnobs.find(k => k.key === 'filterFreq')
+        const knob = editor._fxKnobs.find((k) => k.key === 'filterFreq')
         expect(knob).not.toBeNull()
         knob.setValue(1000)
         knob.onChange?.(1000, 'filterFreq')
@@ -138,7 +186,7 @@ describe('TrackEditor — OrSlider integration', () => {
     it('filterFreq knob shows formatted Hz display after value change', () => {
         editor._track = makeTrack({ filterFreq: 20 })
         editor.sync()
-        const knob = editor._fxKnobs.find(k => k.key === 'filterFreq')
+        const knob = editor._fxKnobs.find((k) => k.key === 'filterFreq')
         expect(knob).not.toBeNull()
         knob.setValue(2500)
         knob.onChange?.(2500, 'filterFreq')
@@ -151,9 +199,13 @@ describe('TrackEditor — OrSlider integration', () => {
         editor.sync()
         const knobEl = editor.container.querySelector('.or-knob[data-or-knob="filterFreq"]')
         knobEl.focus()
-        knobEl.dispatchEvent(new KeyboardEvent('keydown', {
-            key: 'ArrowRight', bubbles: true, cancelable: true,
-        }))
+        knobEl.dispatchEvent(
+            new KeyboardEvent('keydown', {
+                key: 'ArrowRight',
+                bubbles: true,
+                cancelable: true,
+            }),
+        )
         expect(editor._track.filterFreq).toBeGreaterThan(1000)
     })
 })
@@ -232,7 +284,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         editor._selectedLfoTarget = 'velocity'
         editor.sync()
         const fn = vi.fn()
-        playbackEvents.on("trackParamChange", fn)
+        playbackEvents.on('trackParamChange', fn)
 
         const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
         freqInput.value = '1.5'
@@ -277,7 +329,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
     it('renders all LFO sub-tab buttons (filterFreq, filterQ, Vel, Pan, Pitch)', () => {
         showModTab(makeTrack())
         const btns = editor.container.querySelectorAll('[data-lfo-select-btn]')
-        const keys = [...btns].map(b => b.dataset.lfoSelectBtn)
+        const keys = [...btns].map((b) => b.dataset.lfoSelectBtn)
         expect(keys).toEqual(['filterFreq', 'filterQ', 'velocity', 'pan', 'pitch'])
     })
 
@@ -311,8 +363,10 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
 
     it('clicking different sub-tabs switches the displayed controls', () => {
         const track = makeTrack({
-            velocity: 0.5, velocityLfo: { freq: 1.8, min: 0, max: 1, phase: 0 },
-            filterFreq: 632, filterFreqLfo: { freq: 0.5, min: 0.2, max: 0.8, phase: 0.3 },
+            velocity: 0.5,
+            velocityLfo: { freq: 1.8, min: 0, max: 1, phase: 0 },
+            filterFreq: 632,
+            filterFreqLfo: { freq: 0.5, min: 0.2, max: 0.8, phase: 0.3 },
         })
         showModTab(track)
 
@@ -345,7 +399,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
         const track = makeTrack({ velocity: 0.5 })
         showModTab(track)
         const fn = vi.fn()
-        playbackEvents.on("patternChange", fn)
+        playbackEvents.on('patternChange', fn)
 
         editor.container.querySelector('[data-lfo-toggle-btn="velocity"]').click()
         expect(fn).toHaveBeenCalled()
@@ -354,7 +408,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
     it('toggle button also selects the target and shows its controls', () => {
         const track = makeTrack({
             velocity: 0.5,
-            filterFreq: 632
+            filterFreq: 632,
         })
         showModTab(track)
 
@@ -384,7 +438,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
         const track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 } })
         showModTab(track)
         const fn = vi.fn()
-        playbackEvents.on("trackParamChange", fn)
+        playbackEvents.on('trackParamChange', fn)
 
         editor.container.querySelector('[data-lfo-select-btn="velocity"]').click()
         const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
@@ -557,7 +611,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
         const track = makeTrack({ filterType: 'allpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
         const fn = vi.fn()
-        playbackEvents.on("patternChange", fn)
+        playbackEvents.on('patternChange', fn)
 
         editor.container.querySelector('[data-fx-icon-val="lowpass"]').click()
         expect(fn).toHaveBeenCalled()
@@ -579,7 +633,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
         showFxTab(track)
 
         const icons = editor.container.querySelectorAll('[data-fx-icon-val]')
-        icons.forEach(icon => {
+        icons.forEach((icon) => {
             expect(icon.classList.contains('selected')).toBe(false)
         })
     })

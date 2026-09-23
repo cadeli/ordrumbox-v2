@@ -66,7 +66,16 @@ export function syncComponentMap({ container, configs, selector, prev, create, u
  * @param {Function} [opts.postMount]      (el, config) => void — hook after createElement
  * @returns {Map<string, OrKnob>}          Map of live OrKnob instances
  */
-export function syncKnobs({ container, configs, selector = 'or-knob', prev, onChange, paramMeta, defaultUnit = '', postMount }) {
+export function syncKnobs({
+    container,
+    configs,
+    selector = 'or-knob',
+    prev,
+    onChange,
+    paramMeta,
+    defaultUnit = '',
+    postMount,
+}) {
     return syncComponentMap({
         container,
         configs,
@@ -74,24 +83,25 @@ export function syncKnobs({ container, configs, selector = 'or-knob', prev, onCh
         prev,
         create: (cfg) => {
             const meta = paramMeta?.[cfg.key] ?? {
-                min: 0, max: Math.max(1, Math.ceil(cfg.val ?? 1)),
+                min: 0,
+                max: Math.max(1, Math.ceil(cfg.val ?? 1)),
                 step: Number.isInteger(cfg.val) ? 1 : 0.001,
             }
             return new OrKnob({
-                key:      cfg.key,
-                label:    cfg.label,
-                min:      cfg.min ?? meta.min,
-                max:      cfg.max ?? meta.max,
-                step:     cfg.step ?? meta.step,
-                value:    cfg.val,
-                format:   cfg.format ?? fmt,
-                unit:     cfg.unit ?? meta.unit ?? defaultUnit,
-                scale:    cfg.scale ?? meta.scale,
-                onChange: cfg.onChange ?? (v => onChange?.(cfg.key, v)),
+                key: cfg.key,
+                label: cfg.label,
+                min: cfg.min ?? meta.min,
+                max: cfg.max ?? meta.max,
+                step: cfg.step ?? meta.step,
+                value: cfg.val,
+                format: cfg.format ?? fmt,
+                unit: cfg.unit ?? meta.unit ?? defaultUnit,
+                scale: cfg.scale ?? meta.scale,
+                onChange: cfg.onChange ?? ((v) => onChange?.(cfg.key, v)),
             })
         },
         update: (inst, cfg) => {
-            inst.onChange = cfg.onChange ?? (v => onChange?.(cfg.key, v))
+            inst.onChange = cfg.onChange ?? ((v) => onChange?.(cfg.key, v))
             inst.setValue(cfg.val)
         },
         postMount,

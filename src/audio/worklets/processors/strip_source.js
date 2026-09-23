@@ -1,9 +1,9 @@
 /**
  * Unified Strip AudioWorkletProcessor source.
- * 
- * Combines Filter (TPT SVF), Saturation, Reverb (Freeverb), 
+ *
+ * Combines Filter (TPT SVF), Saturation, Reverb (Freeverb),
  * and Delay (with feedback FX) into a single DSP block.
- * 
+ *
  * LFO values are pre-computed in JS and pushed to the strip's
  * parameters at each step boundary — no internal LFO computation.
  */
@@ -225,5 +225,5 @@ class StripProcessor extends AudioWorkletProcessor {
     }
 }
 registerProcessor('strip', StripProcessor);
-`;
-export default STRIP_PROCESSOR_SOURCE;
+`
+export default STRIP_PROCESSOR_SOURCE

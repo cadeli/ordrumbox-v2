@@ -9,11 +9,11 @@ import { instrumentsManager } from '../logic/services/instruments_manager.js'
 import Utils from '../core/utils.js'
 import { applyParamsToStrip } from './strip_sync.js'
 import { computeTrackLfoValues } from '../logic/lfo_engine.js'
-import { logger, nameOr } from "../core/logger.js"
+import { logger, nameOr } from '../core/logger.js'
 import { showToast } from '../ui/toast.js'
 
 export default class AudioEngine {
-    static TAG = "AUDIOENGINE"
+    static TAG = 'AUDIOENGINE'
 
     #cachedPatternRef
     #cachedLoop
@@ -67,10 +67,10 @@ export default class AudioEngine {
                 })
                 this.sound = this.player.sound
 
-                playbackEvents.emit("workletStatusChange", 'active')
+                playbackEvents.emit('workletStatusChange', 'active')
             } catch (err) {
                 logger.warn('AudioEngine: worklet init failed, audio unavailable', err)
-                playbackEvents.emit("workletStatusChange", 'unavailable')
+                playbackEvents.emit('workletStatusChange', 'unavailable')
             }
         })()
 
@@ -107,11 +107,7 @@ export default class AudioEngine {
         if (!pattern) return this.flatNotes
 
         const patternVersion = pattern._version ?? 0
-        if (
-            this.#cachedPatternRef === pattern &&
-            this.#cachedLoop === loop &&
-            this.#cachedVersion === patternVersion
-        ) {
+        if (this.#cachedPatternRef === pattern && this.#cachedLoop === loop && this.#cachedVersion === patternVersion) {
             return this.flatNotes
         }
 
@@ -190,7 +186,12 @@ export default class AudioEngine {
         const t = 0.005
 
         for (const track of Object.values(tracks)) {
-            const hasLfo = track.velocityLfo != null || track.panLfo != null || track.pitchLfo != null || track.filterFreqLfo != null || track.filterQLfo != null
+            const hasLfo =
+                track.velocityLfo != null ||
+                track.panLfo != null ||
+                track.pitchLfo != null ||
+                track.filterFreqLfo != null ||
+                track.filterQLfo != null
             if (!hasLfo) continue
 
             let strip = this.mixer.strips[track.name]
@@ -235,25 +236,30 @@ export default class AudioEngine {
 
         const nbTickForPattern = this.TICK * selPat.nbBeats
         const loopStep = tick % nbTickForPattern
-        const flatNotesMap = this.player.getCurrentFlatNotesMap() ?? this.getFlatNotesForCurrentPattern(this.player.loop)
+        const flatNotesMap =
+            this.player.getCurrentFlatNotesMap() ?? this.getFlatNotesForCurrentPattern(this.player.loop)
 
         if (!(flatNotesMap instanceof Map)) return
         const notesToPlay = flatNotesMap.get(loopStep)
         if (!notesToPlay) return
 
-        const perfNow  = performance.now()
+        const perfNow = performance.now()
         const audioNow = this.audioCtx.currentTime
         const midiTime = perfNow + (atTime - audioNow) * 1000
 
         const anySolo = Utils.hasAnySolo(selPat.tracks)
-        notesToPlay.forEach(flatNote => {
+        notesToPlay.forEach((flatNote) => {
             if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
                 const mapping = this.#resolveMidiMapping(flatNote.track.id)
                 if (mapping) {
-                    const channel   = Number.isFinite(parseInt(mapping.ch, 10)) ? parseInt(mapping.ch, 10) : (logger.warn('Fallback','pi',mapping.ch,9), 9)
-                    const note      = Number.isFinite(parseInt(mapping.key, 10)) ? parseInt(mapping.key, 10) : (logger.warn('Fallback','pi',mapping.key,60), 60)
-                    const vel       = Math.floor(flatNote.velocity * 127)
-                    const startTime = midiTime + (flatNote.swingTime * 1000)
+                    const channel = Number.isFinite(parseInt(mapping.ch, 10))
+                        ? parseInt(mapping.ch, 10)
+                        : (logger.warn('Fallback', 'pi', mapping.ch, 9), 9)
+                    const note = Number.isFinite(parseInt(mapping.key, 10))
+                        ? parseInt(mapping.key, 10)
+                        : (logger.warn('Fallback', 'pi', mapping.key, 60), 60)
+                    const vel = Math.floor(flatNote.velocity * 127)
+                    const startTime = midiTime + flatNote.swingTime * 1000
 
                     midi.sendNoteOn(channel, note, vel, startTime)
                     const durationMs = nameOr(flatNote.duration, 100, 'AudioEngine', 'duration fallback')
@@ -267,7 +273,7 @@ export default class AudioEngine {
         if (this.#midiMappingCache.has(trackId)) {
             return this.#midiMappingCache.get(trackId)
         }
-        const mapping = instrumentsManager.DATA.instruments.find(i => i.id === trackId)?.midi?.[0] ?? null
+        const mapping = instrumentsManager.DATA.instruments.find((i) => i.id === trackId)?.midi?.[0] ?? null
         this.#midiMappingCache.set(trackId, mapping)
         return mapping
     }
@@ -284,7 +290,7 @@ export default class AudioEngine {
 
         const midi = serviceRegistry.midiManager
         if (midi && midi.isReady && midi.selectedOutputId) {
-            const pat   = this.patterns[this.getSelectedPatternNum()]
+            const pat = this.patterns[this.getSelectedPatternNum()]
             const tracks = Utils.getTracksArray(pat)
             const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat?.tracks?.[indexTrack]
             if (track) {
@@ -357,21 +363,21 @@ export default class AudioEngine {
 
     exportOffline = async (pattern, numLoops, OfflineAudioContextClass, _unusedStripClass, bufferToWavFn) => {
         try {
-            const bpm              = pattern.bpm
-            const nbBeats           = pattern.nbBeats
-            const totalLoops       = Math.max(1, numLoops)
-            const secondsPerBeat   = 60 / bpm
-            const patternDuration  = nbBeats * secondsPerBeat
-            const sampleRate       = this.audioCtx.sampleRate
+            const bpm = pattern.bpm
+            const nbBeats = pattern.nbBeats
+            const totalLoops = Math.max(1, numLoops)
+            const secondsPerBeat = 60 / bpm
+            const patternDuration = nbBeats * secondsPerBeat
+            const sampleRate = this.audioCtx.sampleRate
             const samplesPerPattern = Math.round(patternDuration * sampleRate)
-            const totalSamples     = samplesPerPattern * totalLoops
+            const totalSamples = samplesPerPattern * totalLoops
 
-            const offlineCtx    = new OfflineAudioContextClass(2, totalSamples, sampleRate)
+            const offlineCtx = new OfflineAudioContextClass(2, totalSamples, sampleRate)
 
             // Build a full worklet-based mixer for the offline context. AudioWorklet
             // is supported in OfflineAudioContext, so the same code path works.
-            const offlineMixer  = await Mixer.create(offlineCtx)
-            const offlineSound  = new Sound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds, true)
+            const offlineMixer = await Mixer.create(offlineCtx)
+            const offlineSound = new Sound(offlineCtx, offlineMixer, this.sounds, this.generatedSounds, true)
 
             for (const track of Object.values(pattern.tracks)) {
                 const strip = await offlineMixer.getOrCreateStrip(track.name)
@@ -383,7 +389,10 @@ export default class AudioEngine {
             // Initialize and ramp transport clock for offline render
             if (offlineMixer.transportClock) {
                 offlineMixer.transportClock.offset.setValueAtTime(0, 0)
-                offlineMixer.transportClock.offset.linearRampToValueAtTime(patternDuration * totalLoops, patternDuration * totalLoops)
+                offlineMixer.transportClock.offset.linearRampToValueAtTime(
+                    patternDuration * totalLoops,
+                    patternDuration * totalLoops,
+                )
                 offlineMixer.transportClock.start(0)
             }
 
@@ -397,8 +406,8 @@ export default class AudioEngine {
                 for (const [tick, notesAtTick] of this.flatNotes.entries()) {
                     for (const flatNote of notesAtTick) {
                         const nbTickForPattern = this.TICK * nbBeats
-                        const noteTime         = NoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
-                        const absoluteTime     = loopStartTime + noteTime
+                        const noteTime = NoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
+                        const absoluteTime = loopStartTime + noteTime
                         NoteParams.applyNoteParams(flatNote, secondsPerBeat)
 
                         if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
@@ -409,7 +418,7 @@ export default class AudioEngine {
             }
 
             const renderedBuffer = await offlineCtx.startRendering()
-            const blob           = bufferToWavFn(renderedBuffer)
+            const blob = bufferToWavFn(renderedBuffer)
             return { blob, fileName: `ordrumbox-${pattern.name.replace(/\s+/g, '_')}-${totalLoops}loops.wav` }
         } catch (err) {
             logger.warn('AudioEngine', 'exportOffline failed', err)

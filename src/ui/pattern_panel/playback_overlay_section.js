@@ -9,17 +9,17 @@ import { color } from '../theme.js'
 
 export default class PlaybackOverlaySection {
     /** @type {import('./pattern_panel.js').default} */
-    #editor;
+    #editor
     /** @type {number | null} */
-    #rafId;
+    #rafId
     /** @type {HTMLDivElement | null} */
-    #playhead;
+    #playhead
     /** @type {number} */
-    #prevLoopTick;
+    #prevLoopTick
     /** @type {HTMLCanvasElement | null} */
-    #waveformCanvas;
+    #waveformCanvas
     /** @type {NodeListOf<HTMLElement> | null} */
-    #vuElCache;
+    #vuElCache
 
     /** @param {import('./pattern_panel.js').default} editor */
     constructor(editor) {
@@ -186,8 +186,8 @@ export default class PlaybackOverlaySection {
                 appState.currentPage = newPage
                 editor.requestSync()
                 editor.playbackEvents.batch(() => {
-                    editor.playbackEvents.emit("patternMetaChange")
-                    editor.playbackEvents.emit("patternChange")
+                    editor.playbackEvents.emit('patternMetaChange')
+                    editor.playbackEvents.emit('patternChange')
                 })
             }
             if (this.#playhead.style.display !== 'none') this.#playhead.style.display = 'none'

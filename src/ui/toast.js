@@ -1,9 +1,9 @@
 const CONTAINER_ID = 'odbox-toast-container'
 
 const TOAST_STYLES = {
-    info:    { bg: 'var(--surface)', border: 'var(--line)' },
+    info: { bg: 'var(--surface)', border: 'var(--line)' },
     success: { bg: 'var(--bg-success)', border: 'var(--color-success)' },
-    error:   { bg: 'var(--bg)', border: 'var(--color-danger)' },
+    error: { bg: 'var(--bg)', border: 'var(--color-danger)' },
     warning: { bg: 'var(--bg)', border: 'var(--color-warning)' },
 }
 

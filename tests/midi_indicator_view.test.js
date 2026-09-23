@@ -6,11 +6,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 function buildMidiContainer() {
     const container = document.createElement('div')
     const ids = [
-        'midiSupportLed', 'midiSupportLabel',
-        'midiReadyLed', 'midiReadyLabel',
-        'midiConnectedLed', 'midiConnectedLabel',
-        'midiSyncLed', 'midiSyncLabel',
-        'midiActivityLed', 'midiActivityLabel',
+        'midiSupportLed',
+        'midiSupportLabel',
+        'midiReadyLed',
+        'midiReadyLabel',
+        'midiConnectedLed',
+        'midiConnectedLabel',
+        'midiSyncLed',
+        'midiSyncLabel',
+        'midiActivityLed',
+        'midiActivityLabel',
     ]
     for (const id of ids) {
         const el = document.createElement(id.includes('Led') ? 'button' : 'span')

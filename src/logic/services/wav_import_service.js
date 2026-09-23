@@ -13,7 +13,7 @@ export default class WavImportService {
      * @returns {Promise<{kitName: string, fileCount: number, warning?: string}>}
      */
     async importDirectory(files) {
-        const wavFiles = Array.from(files).filter(f => /\.(wav|flac|mp3|aac)$/i.test(f.name))
+        const wavFiles = Array.from(files).filter((f) => /\.(wav|flac|mp3|aac)$/i.test(f.name))
         if (wavFiles.length === 0) {
             return { kitName: '', fileCount: 0, warning: 'No audio files found in selected directory' }
         }
@@ -42,7 +42,7 @@ export default class WavImportService {
                 buffer,
                 duration: Math.floor(buffer.duration * 1000),
                 isLoad: true,
-                playStatus: false
+                playStatus: false,
             }
 
             instruments.push({ display_name: fileName, key, url: fileName })
@@ -53,7 +53,7 @@ export default class WavImportService {
 
         soundRegistry.drumkits[kitName] = { instruments }
 
-        const existingIdx = soundRegistry.drumkitList.findIndex(d => d.name === kitName)
+        const existingIdx = soundRegistry.drumkitList.findIndex((d) => d.name === kitName)
         if (existingIdx >= 0) {
             soundRegistry.drumkitList[existingIdx] = { name: kitName, instruments }
             appState.selectedDrumkitNum = existingIdx
@@ -62,9 +62,9 @@ export default class WavImportService {
             appState.selectedDrumkitNum = soundRegistry.drumkitList.length - 1
         }
 
-        await cacheDrumkits(Object.fromEntries(soundRegistry.drumkitList.map(d => [d.name, d])))
+        await cacheDrumkits(Object.fromEntries(soundRegistry.drumkitList.map((d) => [d.name, d])))
 
-        playbackEvents.emit("drumkitChange")
+        playbackEvents.emit('drumkitChange')
 
         return { kitName, fileCount: wavFiles.length }
     }

@@ -11,9 +11,12 @@ export function initServiceWorker() {
             const registration = await navigator.serviceWorker.register(swPath)
             logger.info('Main', 'orDrumbox SW registered with scope:', registration.scope)
 
-            setInterval(() => {
-                registration.update()
-            }, 1000 * 60 * 60)
+            setInterval(
+                () => {
+                    registration.update()
+                },
+                1000 * 60 * 60,
+            )
 
             if (registration.waiting) {
                 showUpdateNotification(registration.waiting)

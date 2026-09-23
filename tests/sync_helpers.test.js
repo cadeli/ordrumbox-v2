@@ -18,7 +18,7 @@ function makeInstance(key) {
 
 function makeContainer(keyToPlaceholder = {}) {
     return {
-        querySelector: vi.fn(sel => {
+        querySelector: vi.fn((sel) => {
             for (const [k, v] of Object.entries(keyToPlaceholder)) {
                 if (sel.includes(k)) return v
             }

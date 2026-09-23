@@ -22,11 +22,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { PatternExporter } from '../src/patterns/exporter.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
-import {
-    recomputeFlatNotes,
-    isTriggered,
-    normalizeArp,
-} from '../src/patterns/engine.js'
+import { recomputeFlatNotes, isTriggered, normalizeArp } from '../src/patterns/engine.js'
 import { applyFlatNotes as managerApplyFlat } from '../src/patterns/manager.js'
 import { TICK } from '../src/core/constants.js'
 import { parseMidi, findAllNotes } from './helpers/midi_reader.js'
@@ -108,7 +104,7 @@ describe('E2E Flow 1 — Create pattern and build beat', () => {
             expect(note.pitch).toBe(0)
             expect(note.beatStep).toBe(0)
         }
-        expect(kick.notes.map(n => n.beat).sort()).toEqual([0, 1, 2, 3])
+        expect(kick.notes.map((n) => n.beat).sort()).toEqual([0, 1, 2, 3])
     })
 
     it('adds SNARE on beats 1 and 3 (backbeat)', () => {
@@ -379,7 +375,7 @@ describe('E2E Flow 4 — Compute flat notes from pattern', () => {
 
         const flatNotes = recomputeFlatNotes(pat, 0)
         const allNotes = [...flatNotes.values()].flat()
-        const bassNote = allNotes.find(n => n.track?.name === 'BASS')
+        const bassNote = allNotes.find((n) => n.track?.name === 'BASS')
         expect(bassNote).toBeDefined()
         expect(bassNote.note.pitch).toBe(5)
         expect(bassNote.note.velocity).toBeCloseTo(0.8, 1)
@@ -407,8 +403,8 @@ describe('E2E Flow 4 — Compute flat notes from pattern', () => {
 
         const flat = recomputeFlatNotes(pat, 0)
         const allNotes = [...flat.values()].flat()
-        const kicks = allNotes.filter(n => n.track?.name === 'KICK')
-        const snares = allNotes.filter(n => n.track?.name === 'SNARE')
+        const kicks = allNotes.filter((n) => n.track?.name === 'KICK')
+        const snares = allNotes.filter((n) => n.track?.name === 'SNARE')
         expect(kicks.length).toBe(2)
         expect(snares.length).toBe(2)
     })
@@ -455,7 +451,7 @@ describe('E2E Flow 5 — Export to MIDI and verify', () => {
         const noteOns = findAllNotes(midi)
 
         expect(noteOns.length).toBe(2)
-        const ticks = noteOns.map(n => n.absTick).sort((a, b) => a - b)
+        const ticks = noteOns.map((n) => n.absTick).sort((a, b) => a - b)
         expect(ticks[0]).toBe(0)
         expect(ticks[1]).toBeGreaterThan(0)
     })
@@ -848,11 +844,11 @@ describe('E2E Flow 9 — Full user session simulation', () => {
         const allFlat = [...flat.values()].flat()
 
         // KICK should have 4 notes
-        const kickFlat = allFlat.filter(n => n.track?.name === 'KICK')
+        const kickFlat = allFlat.filter((n) => n.track?.name === 'KICK')
         expect(kickFlat.length).toBe(4)
 
         // SNARE should have retriggered notes
-        const snareFlat = allFlat.filter(n => n.track?.name === 'SNARE')
+        const snareFlat = allFlat.filter((n) => n.track?.name === 'SNARE')
         expect(snareFlat.length).toBeGreaterThanOrEqual(1)
 
         // Export to MIDI
@@ -878,7 +874,7 @@ describe('E2E Flow 9 — Full user session simulation', () => {
                         { beat: 1, beatStep: 0, pitch: 0, velocity: 0.8 },
                         { beat: 2, beatStep: 0, pitch: 0, velocity: 0.9 },
                         { beat: 3, beatStep: 0, pitch: 0, velocity: 0.8 },
-                    ]
+                    ],
                 },
                 {
                     name: 'SNARE',
@@ -888,9 +884,9 @@ describe('E2E Flow 9 — Full user session simulation', () => {
                     notes: [
                         { beat: 1, beatStep: 0, pitch: 0, velocity: 0.7 },
                         { beat: 3, beatStep: 0, pitch: 0, velocity: 0.7 },
-                    ]
-                }
-            ]
+                    ],
+                },
+            ],
         }
 
         const imported = cmd.importPatternFromJson(originalJson)

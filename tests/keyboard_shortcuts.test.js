@@ -20,17 +20,22 @@ describe('Keyboard shortcuts', () => {
         serviceRegistry.reset()
         soundRegistry.reset()
 
-        appState.patterns = [{ name: 'P1', tracks: [
-            { name: 'KICK', mute: false },
-            { name: 'SNARE', mute: false }
-        ] }]
+        appState.patterns = [
+            {
+                name: 'P1',
+                tracks: [
+                    { name: 'KICK', mute: false },
+                    { name: 'SNARE', mute: false },
+                ],
+            },
+        ]
         appState.selectedPatternNum = 0
         appState.showVus = false
 
         serviceRegistry.seq = { toggleStartStop: vi.fn(), simpleBeep: vi.fn() }
         serviceRegistry.cmd = {
             setSelectedPatternNum: vi.fn(),
-            setSelectedDrumkitNum: vi.fn()
+            setSelectedDrumkitNum: vi.fn(),
         }
         soundRegistry.drumkitList = [{ name: '8bits' }, { name: 'real' }]
     })
@@ -118,9 +123,12 @@ describe('Keyboard shortcuts', () => {
 
     it('Digit3 through Digit8 toggle mute on respective tracks', () => {
         appState.patterns[0].tracks.push(
-            { name: 'T3', mute: false }, { name: 'T4', mute: false },
-            { name: 'T5', mute: false }, { name: 'T6', mute: false },
-            { name: 'T7', mute: false }, { name: 'T8', mute: false }
+            { name: 'T3', mute: false },
+            { name: 'T4', mute: false },
+            { name: 'T5', mute: false },
+            { name: 'T6', mute: false },
+            { name: 'T7', mute: false },
+            { name: 'T8', mute: false },
         )
         fireKeydown('Digit3')
         expect(appState.patterns[0].tracks[2].mute).toBe(true)

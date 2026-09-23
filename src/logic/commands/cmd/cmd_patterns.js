@@ -13,10 +13,13 @@ export function createPatternMethods(cmd) {
             const patternIndex = appState.patterns.length
             appState.patterns.push(pattern)
             cmd.persist()
-            cmd.record(() => {
-                appState.patterns.splice(patternIndex, 1)
-                cmd.persist()
-            }, { desc: `Add pattern "${pattern.name}"` })
+            cmd.record(
+                () => {
+                    appState.patterns.splice(patternIndex, 1)
+                    cmd.persist()
+                },
+                { desc: `Add pattern "${pattern.name}"` },
+            )
             return pattern
         },
 
@@ -28,10 +31,13 @@ export function createPatternMethods(cmd) {
                 appState.selectedPatternNum = appState.patterns.length - 1
             }
             cmd.persist()
-            cmd.record(() => {
-                appState.patterns.splice(idx, 0, removedPattern)
-                cmd.persist()
-            }, { desc: `Remove pattern "${removedPattern.name}"` })
+            cmd.record(
+                () => {
+                    appState.patterns.splice(idx, 0, removedPattern)
+                    cmd.persist()
+                },
+                { desc: `Remove pattern "${removedPattern.name}"` },
+            )
             return true
         },
 
@@ -41,14 +47,19 @@ export function createPatternMethods(cmd) {
             const oldName = pat.name
             pat.name = String(newName ?? '').trim() || pat.name
             cmd.persist()
-            cmd.record(() => {
-                pat.name = oldName
-                cmd.persist()
-            }, { desc: `Rename pattern → "${pat.name}"` })
+            cmd.record(
+                () => {
+                    pat.name = oldName
+                    cmd.persist()
+                },
+                { desc: `Rename pattern → "${pat.name}"` },
+            )
         },
 
         getPatternByName(name) {
-            const normalizedName = String(name ?? '').trim().toUpperCase()
+            const normalizedName = String(name ?? '')
+                .trim()
+                .toUpperCase()
             return appState.patterns.find((pattern) => pattern?.name?.toUpperCase() === normalizedName) ?? null
         },
 
@@ -62,10 +73,13 @@ export function createPatternMethods(cmd) {
                 pattern.bpm = bpmNum
             }
             cmd.persist()
-            cmd.record(() => {
-                pattern.bpm = oldBpm
-                cmd.persist()
-            }, { desc: `Set BPM → ${pattern.bpm}` })
+            cmd.record(
+                () => {
+                    pattern.bpm = oldBpm
+                    cmd.persist()
+                },
+                { desc: `Set BPM → ${pattern.bpm}` },
+            )
             return pattern
         },
 
@@ -73,10 +87,13 @@ export function createPatternMethods(cmd) {
             const oldDescription = pattern.description
             pattern.description = String(description ?? '')
             cmd.persist()
-            cmd.record(() => {
-                pattern.description = oldDescription
-                cmd.persist()
-            }, { desc: `Set description on "${pattern.name}"` })
+            cmd.record(
+                () => {
+                    pattern.description = oldDescription
+                    cmd.persist()
+                },
+                { desc: `Set description on "${pattern.name}"` },
+            )
             return pattern
         },
 
@@ -85,7 +102,7 @@ export function createPatternMethods(cmd) {
                 sourcePattern,
                 (name) => this.addPattern(name),
                 (pattern, name) => this.addTrack(pattern, name),
-                (track, beat, beatStep, pitch) => this.addNote(track, beat, beatStep, pitch)
+                (track, beat, beatStep, pitch) => this.addNote(track, beat, beatStep, pitch),
             )
             cmd.persist()
             return result
@@ -93,7 +110,7 @@ export function createPatternMethods(cmd) {
 
         createPattern(name) {
             name ??= `NewPat_${appState.patterns.length}`
-            return { name, description: "", tracks: [], bpm: 120, nbBeats: 4 }
-        }
+            return { name, description: '', tracks: [], bpm: 120, nbBeats: 4 }
+        },
     }
 }

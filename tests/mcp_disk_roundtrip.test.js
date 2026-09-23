@@ -22,9 +22,9 @@ describe('Functional: MCP generate → disk save → import', () => {
 
     afterEach(async () => {
         try {
-            const files = await import('node:fs/promises').then(fs => fs.readdir(TMP_DIR))
+            const files = await import('node:fs/promises').then((fs) => fs.readdir(TMP_DIR))
             for (const f of files) await unlink(resolve(TMP_DIR, f))
-            await import('node:fs/promises').then(fs => fs.rmdir(TMP_DIR))
+            await import('node:fs/promises').then((fs) => fs.rmdir(TMP_DIR))
         } catch {
             // Cleanup is best-effort; ignore errors when the directory is already gone.
         }
@@ -73,20 +73,20 @@ describe('Functional: MCP generate → disk save → import', () => {
         expect(reimported.tags).toEqual(expect.objectContaining({ 0: 'hiphop', 1: 'bass' }))
         expect(reimported.tracks).toHaveLength(3)
 
-        const k = reimported.tracks.find(t => t.name === 'KICK')
+        const k = reimported.tracks.find((t) => t.name === 'KICK')
         expect(k).toBeDefined()
         expect(k.notes).toHaveLength(1)
         expect(k.notes[0].beat).toBe(0)
         expect(k.notes[0].beatStep).toBe(0)
         expect(k.notes[0].velocity).toBe(0.95)
 
-        const s = reimported.tracks.find(t => t.name === 'SNARE')
+        const s = reimported.tracks.find((t) => t.name === 'SNARE')
         expect(s).toBeDefined()
         expect(s.notes).toHaveLength(1)
         expect(s.notes[0].beat).toBe(1)
         expect(s.notes[0].velocity).toBe(0.85)
 
-        const b = reimported.tracks.find(t => t.name === 'BASS')
+        const b = reimported.tracks.find((t) => t.name === 'BASS')
         expect(b).toBeDefined()
         expect(b.notes).toHaveLength(3)
         expect(b.notes[0].beat).toBe(0)

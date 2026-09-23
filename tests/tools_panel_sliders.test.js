@@ -3,7 +3,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 const downloadMock = vi.fn()
 vi.mock('../src/logic/midi/midi_exporter.js', () => ({
-    default: class { download = downloadMock },
+    default: class {
+        download = downloadMock
+    },
 }))
 
 import { appState } from '../src/state/app_state.js'
@@ -32,7 +34,7 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
 
         toolsPanel = new ToolsPanel()
         toolsPanel.init()
-        playbackEvents.emit("toolsToggle", true)
+        playbackEvents.emit('toolsToggle', true)
     })
 
     it('renders the WAV loops slider inside the Export tab', () => {
@@ -52,7 +54,7 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
 
     it('displays the initial value as "1" and updates on input', () => {
         const input = toolsPanel.container.querySelector('input[data-key="tp-wav-loops"]')
-        const span  = toolsPanel.container.querySelector('.ne-val[data-key="tp-wav-loops"]')
+        const span = toolsPanel.container.querySelector('.ne-val[data-key="tp-wav-loops"]')
         expect(span.textContent).toBe('1')
 
         fireInput(input, 4)

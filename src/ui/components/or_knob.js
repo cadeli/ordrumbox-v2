@@ -200,9 +200,7 @@ export class OrKnob {
         this.#knobEl.classList.add('dragging')
 
         const isLog = this.#scale === 'log' && this.#logRange > 0
-        const baseSensitivity = isLog
-            ? this.#logRange / 200
-            : (this.#max - this.#min) / 200
+        const baseSensitivity = isLog ? this.#logRange / 200 : (this.#max - this.#min) / 200
         const startLogPos = isLog
             ? (Math.log10(Math.max(this.#min, this.#dragStartVal)) - this.#logMin) / this.#logRange
             : 0
@@ -269,9 +267,8 @@ export class OrKnob {
 
     /** Opens prompt for entering raw numeric value */
     promptDirectInput() {
-        const val = promptNumericInput(
-            this.#label, this.#min, this.#max, this.#value, this.#unit,
-            num => this.#clampStep(num)
+        const val = promptNumericInput(this.#label, this.#min, this.#max, this.#value, this.#unit, (num) =>
+            this.#clampStep(num),
         )
         if (val !== null) this.setValue(val, true)
     }
@@ -279,15 +276,23 @@ export class OrKnob {
     // ─── Public API ───────────────────────────────────────────────────────
 
     /** @returns {string} knob identifier */
-    get key() { return this.#key }
+    get key() {
+        return this.#key
+    }
 
     /** @returns {Function|null} current onChange callback */
-    get onChange() { return this.#onChange }
+    get onChange() {
+        return this.#onChange
+    }
     /** @param {Function|null} fn — rebind the onChange callback */
-    set onChange(fn) { this.#onChange = fn }
+    set onChange(fn) {
+        this.#onChange = fn
+    }
 
     /** Formats value for display (exposed for testing). */
-    formatValue(v) { return this.#fmt(v) }
+    formatValue(v) {
+        return this.#fmt(v)
+    }
 
     /**
      * Updates the knob visual and value display.
@@ -303,7 +308,9 @@ export class OrKnob {
     }
 
     /** @returns {number} current value */
-    getValue() { return this.#value }
+    getValue() {
+        return this.#value
+    }
 
     /** Toggles the LFO indicator CSS class. */
     setHasLfo(bool) {

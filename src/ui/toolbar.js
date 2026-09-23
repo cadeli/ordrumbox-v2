@@ -107,21 +107,23 @@ export default class Toolbar {
         const canRedo = history?.canRedo ?? false
         this.undoBtn.disabled = !canUndo
         this.redoBtn.disabled = !canRedo
-        this.undoBtn.title = canUndo
-            ? `Undo: ${this.#nextUndoDesc ?? ''} (Ctrl+Z)`
-            : 'Undo (Ctrl+Z)'
-        this.redoBtn.title = canRedo
-            ? `Redo: ${this.#nextRedoDesc ?? ''} (Ctrl+Y)`
-            : 'Redo (Ctrl+Y)'
+        this.undoBtn.title = canUndo ? `Undo: ${this.#nextUndoDesc ?? ''} (Ctrl+Z)` : 'Undo (Ctrl+Z)'
+        this.redoBtn.title = canRedo ? `Redo: ${this.#nextRedoDesc ?? ''} (Ctrl+Y)` : 'Redo (Ctrl+Y)'
 
         const tracks = pat ? Utils.getTracksArray(pat) : []
         const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
-        this.drumBtn.classList.toggle('active',
-            tracks.some(t => t._toolbarAuto && drumTypes.has(Utils.detectTrackType(t.name))))
-        this.bassBtn.classList.toggle('active',
-            tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'BASS'))
-        this.chordsBtn.classList.toggle('active',
-            tracks.some(t => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO'))
+        this.drumBtn.classList.toggle(
+            'active',
+            tracks.some((t) => t._toolbarAuto && drumTypes.has(Utils.detectTrackType(t.name))),
+        )
+        this.bassBtn.classList.toggle(
+            'active',
+            tracks.some((t) => t._toolbarAuto && Utils.detectTrackType(t.name) === 'BASS'),
+        )
+        this.chordsBtn.classList.toggle(
+            'active',
+            tracks.some((t) => t._toolbarAuto && Utils.detectTrackType(t.name) === 'PIANO'),
+        )
 
         this.#patternNav.rebuildPatternSelect()
         this.#patternNav.rebuildDrumkitSelect()
@@ -135,7 +137,7 @@ export default class Toolbar {
         if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
             e.preventDefault()
             serviceRegistry.history?.undo()
-        } else if ((e.ctrlKey || e.metaKey) && (e.shiftKey && e.key === 'z' || e.key === 'y')) {
+        } else if ((e.ctrlKey || e.metaKey) && ((e.shiftKey && e.key === 'z') || e.key === 'y')) {
             e.preventDefault()
             serviceRegistry.history?.redo()
         }
@@ -199,8 +201,14 @@ export default class Toolbar {
         setTimeout(check, 0)
     }
 
-    get bpmOverride() { return this.#bpmOverride }
-    set bpmOverride(v) { this.#bpmOverride = v }
+    get bpmOverride() {
+        return this.#bpmOverride
+    }
+    set bpmOverride(v) {
+        this.#bpmOverride = v
+    }
 
-    checkOverflow() { this.#checkOverflow?.() }
+    checkOverflow() {
+        this.#checkOverflow?.()
+    }
 }

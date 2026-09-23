@@ -8,7 +8,9 @@ export default class HeaderSection {
     #editor
 
     /** @param {import('./pattern_panel.js').default} editor */
-    constructor(editor) { this.#editor = editor }
+    constructor(editor) {
+        this.#editor = editor
+    }
 
     /**
      * @param {object} pattern

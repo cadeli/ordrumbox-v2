@@ -69,7 +69,7 @@ export default class TrackEditor extends BasePanel {
         this._tab = new OrTab({
             tabs: TAB_DEFS,
             defaultTab: 'fx',
-            onChange: () => this.sync()
+            onChange: () => this.sync(),
         })
         this._fxTab = new OrTab({
             tabs: FX_DEFS.map((fx, i) => ({ id: String(i), label: fx.label })),
@@ -94,7 +94,9 @@ export default class TrackEditor extends BasePanel {
 
     // ── Lifecycle ──────────────────────────────────────────────────
 
-    setNoteEditor(editor) { this._noteEditor = editor }
+    setNoteEditor(editor) {
+        this._noteEditor = editor
+    }
 
     createDOM() {
         super.createDOM()
@@ -113,8 +115,12 @@ export default class TrackEditor extends BasePanel {
             const stepsPerBeat = track.stepsPerBeat ?? 4
             const pos = (firstNote.beat ?? 0) * stepsPerBeat + (firstNote.beatStep ?? 0)
             this._noteEditor.showInline({
-                track, trackIdx, note: firstNote, pos,
-                beat: firstNote.beat ?? 0, beatStep: firstNote.beatStep ?? 0
+                track,
+                trackIdx,
+                note: firstNote,
+                pos,
+                beat: firstNote.beat ?? 0,
+                beatStep: firstNote.beatStep ?? 0,
             })
         } else {
             this._noteEditor.showEmptyInline({ track, trackIdx })
@@ -122,7 +128,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     subscribe() {
-        this._playbackEvents.on("trackSelect", (data) => {
+        this._playbackEvents.on('trackSelect', (data) => {
             if (!data) return
             if (this.isVisible) {
                 this._track = data.track
@@ -131,15 +137,17 @@ export default class TrackEditor extends BasePanel {
                 this._showNoteEditorForTrack(data.track, data.trackIdx)
             }
         })
-        this._playbackEvents.on("playbackStart", () => this._startStepWatch())
-        this._playbackEvents.on("playbackStop", () => this._stopStepWatch())
-        this._playbackEvents.on("drumkitChange", () => { if (this._track) this.sync() })
-        this._playbackEvents.on("patternChange", () => {
+        this._playbackEvents.on('playbackStart', () => this._startStepWatch())
+        this._playbackEvents.on('playbackStop', () => this._stopStepWatch())
+        this._playbackEvents.on('drumkitChange', () => {
+            if (this._track) this.sync()
+        })
+        this._playbackEvents.on('patternChange', () => {
             if (this._isDragging || this._isSelecting) return
             if (!this._track) return
             const pattern = this._appState.patterns[this._appState.selectedPatternNum]
             if (!pattern?.tracks) return
-            const newIdx = pattern.tracks.findIndex(t => t?.name === this._track.name)
+            const newIdx = pattern.tracks.findIndex((t) => t?.name === this._track.name)
             if (newIdx === -1) {
                 this._track = null
                 this._trackIdx = -1
@@ -159,7 +167,10 @@ export default class TrackEditor extends BasePanel {
         this._lastTick = -1
         const tick = () => {
             const transport = this._serviceRegistry.transport
-            if (!transport?.isRunning) { this._rafId = null; return }
+            if (!transport?.isRunning) {
+                this._rafId = null
+                return
+            }
             this._rafId = requestAnimationFrame(tick)
             const currentTick = transport.tick
             if (currentTick !== this._lastTick) {
@@ -171,9 +182,15 @@ export default class TrackEditor extends BasePanel {
     }
 
     _stopStepWatch() {
-        if (this._rafId) { cancelAnimationFrame(this._rafId); this._rafId = null }
+        if (this._rafId) {
+            cancelAnimationFrame(this._rafId)
+            this._rafId = null
+        }
         this._lastTick = -1
-        if (this._lfoBridge) { this._lfoBridge.destroy(); this._lfoBridge = null }
+        if (this._lfoBridge) {
+            this._lfoBridge.destroy()
+            this._lfoBridge = null
+        }
     }
 
     _lfoValuesForTick(tick) {
@@ -187,16 +204,16 @@ export default class TrackEditor extends BasePanel {
 
     _applyLfoValues(lfoValues) {
         if (!lfoValues || !this._track) return
-        ALL_TRACK_PROPS.forEach(p => {
+        ALL_TRACK_PROPS.forEach((p) => {
             if (!p.lfo || !this._track[p.lfo]) return
-            const ctrl = this._sliders.get(p.key) ?? this._fxKnobs.find(kn => kn.key === p.key)
+            const ctrl = this._sliders.get(p.key) ?? this._fxKnobs.find((kn) => kn.key === p.key)
             if (!ctrl) return
             const raw = lfoValues[p.key] ?? 0
             ctrl.setValue(p.denormalize ? p.denormalize(raw) : raw)
         })
-        KNOB_PROPS.forEach(p => {
+        KNOB_PROPS.forEach((p) => {
             if (p.lfo && this._track[p.lfo]) {
-                const knob = this._knobs.find(k => k.key === p.key)
+                const knob = this._knobs.find((k) => k.key === p.key)
                 if (knob) knob.setValue(lfoValues[p.key] ?? 0)
             }
         })
@@ -240,7 +257,7 @@ export default class TrackEditor extends BasePanel {
         // ── Snapshot existing instances for reuse ──────────────────
         const prevSliders = new Map(this._sliders)
         this._sliders.clear()
-        const prevFxKnobs = new Map(this._fxKnobs.map(k => [k.key, k]))
+        const prevFxKnobs = new Map(this._fxKnobs.map((k) => [k.key, k]))
         this._fxKnobs = []
 
         const tabBarHtml = this._tab.renderBar()
@@ -248,11 +265,11 @@ export default class TrackEditor extends BasePanel {
         let panelsHtml = ''
 
         const TAB_PANEL_MAP = {
-            gen:  () => this._genSection.render(),
-            fx:   () => this._fxSection.render(),
-            snd:  () => this._sndSection.render(),
-            mod:  () => this._modSection.render(),
-            loop: () => this._loopSection.render()
+            gen: () => this._genSection.render(),
+            fx: () => this._fxSection.render(),
+            snd: () => this._sndSection.render(),
+            mod: () => this._modSection.render(),
+            loop: () => this._loopSection.render(),
         }
 
         for (const tab of TAB_DEFS) {
@@ -273,15 +290,15 @@ export default class TrackEditor extends BasePanel {
         this._tab.bindTo(teElement)
 
         // Mount main sliders
-        this._sliders.forEach(s => {
+        this._sliders.forEach((s) => {
             const row = this.container.querySelector(`.ne-row[data-or-slider="${s.key}"]`)
             if (row) {
                 s.mount(row)
                 const input = row.querySelector('input')
                 if (input) {
                     input.addEventListener('change', () => {
-        this._isDragging = false
-        this._isSelecting = false
+                        this._isDragging = false
+                        this._isSelecting = false
                         this._emitTrackChange()
                     })
                 }
@@ -289,7 +306,7 @@ export default class TrackEditor extends BasePanel {
         })
 
         // Mount FX knobs
-        this._fxKnobs.forEach(k => {
+        this._fxKnobs.forEach((k) => {
             const row = this.container.querySelector(`.ne-row[data-or-slider="${k.key}"]`)
             if (row) k.mount(row)
         })
@@ -302,7 +319,7 @@ export default class TrackEditor extends BasePanel {
             if (!this._sliders.has(key)) slider.destroy()
         }
         for (const [key, knob] of prevFxKnobs) {
-            if (!this._fxKnobs.some(k => k.key === key)) knob.destroy()
+            if (!this._fxKnobs.some((k) => k.key === key)) knob.destroy()
         }
 
         if (this.synthEditor?.panel?.style?.display !== 'block') {
@@ -338,27 +355,36 @@ export default class TrackEditor extends BasePanel {
 
     /** Sync knob bar: reuse OrKnob instances, create new ones, destroy orphans. */
     _syncKnobs() {
-        this._knobs = [...syncKnobs({
-            container: this.container,
-            configs: KNOB_PROPS.map(def => {
-                const isDecay = def.key === 'decay'
-                const sound = isDecay ? this._soundRegistry.sounds[this._track?.soundId] : null
-                return {
-                    key: def.key, label: def.label,
-                    val: isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min),
-                    min: def.min, max: def.max, step: def.step,
-                    format: knobFormat(def),
-                    unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : def.key === 'decay' ? 'ms' : '',
-                    onChange: (v) => {
-                        if (isDecay) { if (sound) sound.decay = v }
-                        else { this._track[def.key] = v }
-                        this._emitTrackChange()
-                        if (isDecay) this._drawSampleWaveform()
-                    },
-                }
-            }),
-            prev: new Map(this._knobs.map(k => [k.key, k])),
-        }).values()]
+        this._knobs = [
+            ...syncKnobs({
+                container: this.container,
+                configs: KNOB_PROPS.map((def) => {
+                    const isDecay = def.key === 'decay'
+                    const sound = isDecay ? this._soundRegistry.sounds[this._track?.soundId] : null
+                    return {
+                        key: def.key,
+                        label: def.label,
+                        val: isDecay ? (sound?.decay ?? 0) : (this._track[def.key] ?? def.min),
+                        min: def.min,
+                        max: def.max,
+                        step: def.step,
+                        format: knobFormat(def),
+                        unit:
+                            def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : def.key === 'decay' ? 'ms' : '',
+                        onChange: (v) => {
+                            if (isDecay) {
+                                if (sound) sound.decay = v
+                            } else {
+                                this._track[def.key] = v
+                            }
+                            this._emitTrackChange()
+                            if (isDecay) this._drawSampleWaveform()
+                        },
+                    }
+                }),
+                prev: new Map(this._knobs.map((k) => [k.key, k])),
+            }).values(),
+        ]
     }
 
     // ── Sample bar ─────────────────────────────────────────────────
@@ -370,9 +396,7 @@ export default class TrackEditor extends BasePanel {
         const sound = this._soundRegistry.sounds[soundId]
         if (!sound?.buffer) return ''
         const analysis = analyzeSample(sound.buffer)
-        const pitchStr = analysis?.noteInfo
-            ? `${analysis.noteInfo.note}${analysis.noteInfo.octave}`
-            : '—'
+        const pitchStr = analysis?.noteInfo ? `${analysis.noteInfo.note}${analysis.noteInfo.octave}` : '—'
         const durStr = analysis?.length != null ? (analysis.length * 1000).toFixed(0) + ' ms' : '—'
         const peakStr = analysis?.peakDb != null ? analysis.peakDb.toFixed(1) + ' dB' : '—'
         return `<div class="te-sample-bar">
@@ -439,8 +463,12 @@ export default class TrackEditor extends BasePanel {
                 oldSound.duration = Math.floor(buffer.duration * 1000)
             } else {
                 this._soundRegistry.sounds[soundId] = {
-                    url: soundId, key: soundId, display_name: file.name,
-                    buffer, duration: Math.floor(buffer.duration * 1000), isLoad: true
+                    url: soundId,
+                    key: soundId,
+                    display_name: file.name,
+                    buffer,
+                    duration: Math.floor(buffer.duration * 1000),
+                    isLoad: true,
                 }
             }
             this.sync()
@@ -464,7 +492,9 @@ export default class TrackEditor extends BasePanel {
         this._emitTrackChange()
     }
 
-    _onFxTab(btn)                 { this._fxSection.onFxTab(btn) }
+    _onFxTab(btn) {
+        this._fxSection.onFxTab(btn)
+    }
 
     _onGenTab(genTabId) {
         if (!genTabId) return
@@ -534,27 +564,54 @@ export default class TrackEditor extends BasePanel {
                 else if (target.dataset.sound) {
                     const soundType = target.dataset.sound
                     const p =
-                        soundType === 'instrument' ? this._sndSection.onInstrumentChange(target)
-                        : soundType === 'sample' ? this._sndSection.onSampleChange(target)
-                        : soundType === 'generated' ? this._sndSection.onGeneratedChange(target)
-                        : null
-                    if (p) p.finally(() => { this._isSelecting = false })
+                        soundType === 'instrument'
+                            ? this._sndSection.onInstrumentChange(target)
+                            : soundType === 'sample'
+                              ? this._sndSection.onSampleChange(target)
+                              : soundType === 'generated'
+                                ? this._sndSection.onGeneratedChange(target)
+                                : null
+                    if (p)
+                        p.finally(() => {
+                            this._isSelecting = false
+                        })
                 }
             }
         })
 
         this.container.addEventListener('click', (e) => {
             const target = e.target
-            if (target.dataset.lfoToggleBtn)  { this._onLfoToggleBtn(target.dataset.lfoToggleBtn); return }
-            if (target.dataset.lfoSelectBtn)  { this._onLfoSelectBtn(target.dataset.lfoSelectBtn); return }
-            if (target.dataset.fxToggleBtn)   { this._toggleFxByKey(target.dataset.fxToggleBtn); return }
-            if (target.dataset.fxTab)         { this._onFxTab({ dataset: { fxTab: target.dataset.fxTab } }); return }
-            if (target.dataset.genTab)        { this._onGenTab(target.dataset.genTab); return }
+            if (target.dataset.lfoToggleBtn) {
+                this._onLfoToggleBtn(target.dataset.lfoToggleBtn)
+                return
+            }
+            if (target.dataset.lfoSelectBtn) {
+                this._onLfoSelectBtn(target.dataset.lfoSelectBtn)
+                return
+            }
+            if (target.dataset.fxToggleBtn) {
+                this._toggleFxByKey(target.dataset.fxToggleBtn)
+                return
+            }
+            if (target.dataset.fxTab) {
+                this._onFxTab({ dataset: { fxTab: target.dataset.fxTab } })
+                return
+            }
+            if (target.dataset.genTab) {
+                this._onGenTab(target.dataset.genTab)
+                return
+            }
             {
                 const genTabEl = target.closest?.('[data-gen-tab]')
-                if (genTabEl) { this._onGenTab(genTabEl.dataset.genTab); return }
+                if (genTabEl) {
+                    this._onGenTab(genTabEl.dataset.genTab)
+                    return
+                }
             }
-            if (target.dataset.fxIconVal)     { this._onFxIcon(target); return }
+            if (target.dataset.fxIconVal) {
+                this._onFxIcon(target)
+                return
+            }
 
             const btn = target.closest('button')
             if (!btn) {
@@ -565,9 +622,9 @@ export default class TrackEditor extends BasePanel {
                 return
             }
 
-            if (btn.dataset.key)            this._onToggle(btn)
-            else if (btn.dataset.action === 'toggle-auto')  this._sndSection.toggleAuto()
-            else if (btn.dataset.action === 'load-sample')  this._onLoadSample()
+            if (btn.dataset.key) this._onToggle(btn)
+            else if (btn.dataset.action === 'toggle-auto') this._sndSection.toggleAuto()
+            else if (btn.dataset.action === 'load-sample') this._onLoadSample()
         })
 
         this._delegationBound = true
@@ -607,7 +664,7 @@ export default class TrackEditor extends BasePanel {
 
         if (key === 'stepsPerBeat') {
             if (this._track.notes) {
-                this._track.notes.forEach(note => {
+                this._track.notes.forEach((note) => {
                     const steppc = note.steppc ?? Math.round((note.beatStep * 100) / (oldStepsPerBeat ?? 4))
                     note.beatStep = Math.min(Math.round((steppc / 100) * val), val - 1)
                 })
@@ -632,7 +689,8 @@ export default class TrackEditor extends BasePanel {
         if (key === 'loopAtStep') {
             this._playbackEvents.batch(() => {
                 this._playbackEvents.emit('loopPointChange', {
-                    trackIdx: this._trackIdx, loopAtStep: this._track.loopAtStep
+                    trackIdx: this._trackIdx,
+                    loopAtStep: this._track.loopAtStep,
                 })
                 this._emitTrackChange()
             })
@@ -643,8 +701,8 @@ export default class TrackEditor extends BasePanel {
 
     _emitTrackChange() {
         this._playbackEvents.batch(() => {
-            this._playbackEvents.emit("trackParamChange", this._track)
-            this._playbackEvents.emit("patternChange", [this._track])
+            this._playbackEvents.emit('trackParamChange', this._track)
+            this._playbackEvents.emit('patternChange', [this._track])
         })
     }
 
@@ -662,11 +720,14 @@ export default class TrackEditor extends BasePanel {
         this._trackIdx = -1
         this._selectedPropKey = null
         this._lastTick = -1
-        this._knobs.forEach(k => k.destroy())
+        this._knobs.forEach((k) => k.destroy())
         this._knobs = []
-        this._fxKnobs.forEach(k => k.destroy())
+        this._fxKnobs.forEach((k) => k.destroy())
         this._fxKnobs = []
-        if (this._lfoBridge) { this._lfoBridge.destroy(); this._lfoBridge = null }
+        if (this._lfoBridge) {
+            this._lfoBridge.destroy()
+            this._lfoBridge = null
+        }
         if (this._noteEditor) this._noteEditor.hide()
         setViewBtn('edit', false)
     }

@@ -19,15 +19,15 @@ export default class BassGenerate extends BaseGenerator {
                 { beat: 2, step: 0, source: 'root' },
                 { beat: 2, step: 2, source: 'octave' },
                 { beat: 3, step: 0, source: 'root' },
-                { beat: 3, step: 2, source: 'fifth' }
+                { beat: 3, step: 2, source: 'fifth' },
             ],
             velocity: {
                 base: 0.72,
                 accentOnBeat: 0.18,
                 randomSpread: 0.08,
                 clampMin: 0.45,
-                clampMax: 0.98
-            }
+                clampMax: 0.98,
+            },
         },
         stepping: {
             mode: 'stepGrid',
@@ -42,8 +42,8 @@ export default class BassGenerate extends BaseGenerator {
                 accentPattern: [0.22, -0.08, 0.05, -0.02],
                 randomSpread: 0.06,
                 clampMin: 0.4,
-                clampMax: 0.95
-            }
+                clampMax: 0.95,
+            },
         },
         groove: {
             mode: 'groove',
@@ -63,8 +63,8 @@ export default class BassGenerate extends BaseGenerator {
                 variationBoost: 0.08,
                 randomSpread: 0.1,
                 clampMin: 0.42,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         melodic: {
             mode: 'groove',
@@ -84,8 +84,8 @@ export default class BassGenerate extends BaseGenerator {
                 variationBoost: 0.12,
                 randomSpread: 0.09,
                 clampMin: 0.48,
-                clampMax: 1
-            }
+                clampMax: 1,
+            },
         },
         hypnotic: {
             mode: 'phrases',
@@ -101,15 +101,15 @@ export default class BassGenerate extends BaseGenerator {
                 { beat: 2, step: 0, source: 'root', retriggerNum: 2, rate: 86 },
                 { beat: 2, step: 2, source: 'fifth' },
                 { beat: 3, step: 0, source: 'root' },
-                { beat: 3, step: 2, source: 'approach' }
+                { beat: 3, step: 2, source: 'approach' },
             ],
             velocity: {
                 base: 0.66,
                 accentOnBeat: 0.1,
                 randomSpread: 0.04,
                 clampMin: 0.52,
-                clampMax: 0.84
-            }
+                clampMax: 0.84,
+            },
         },
         arpege: {
             mode: 'arpeggio',
@@ -129,8 +129,8 @@ export default class BassGenerate extends BaseGenerator {
                 variationBoost: 0.06,
                 randomSpread: 0.05,
                 clampMin: 0.5,
-                clampMax: 0.94
-            }
+                clampMax: 0.94,
+            },
         },
         acid: {
             mode: 'phrases',
@@ -139,19 +139,51 @@ export default class BassGenerate extends BaseGenerator {
             loopPointBeat: 4,
             loopPointStep: 0,
             phrases: [
-                { beat: 0, step: 0, source: 'root', accent: true, arp: { intervals: [0, 3, 7, 10, 12, 10, 7, 3], mode: 'updown' }, retriggerNum: 6, rate: 8 },
-                { beat: 1, step: 0, source: 'root', accent: true, arp: { intervals: [0, 5, 7, 12], mode: 'up' }, retriggerNum: 4, rate: 8 },
-                { beat: 2, step: 0, source: 'root', accent: true, arp: { intervals: [0, 3, 7, 10, 12, 15], mode: 'updown' }, retriggerNum: 8, rate: 8 },
-                { beat: 3, step: 0, source: 'root', accent: true, arp: { intervals: [0, 7, 12], mode: 'up' }, retriggerNum: 3, rate: 86 }
+                {
+                    beat: 0,
+                    step: 0,
+                    source: 'root',
+                    accent: true,
+                    arp: { intervals: [0, 3, 7, 10, 12, 10, 7, 3], mode: 'updown' },
+                    retriggerNum: 6,
+                    rate: 8,
+                },
+                {
+                    beat: 1,
+                    step: 0,
+                    source: 'root',
+                    accent: true,
+                    arp: { intervals: [0, 5, 7, 12], mode: 'up' },
+                    retriggerNum: 4,
+                    rate: 8,
+                },
+                {
+                    beat: 2,
+                    step: 0,
+                    source: 'root',
+                    accent: true,
+                    arp: { intervals: [0, 3, 7, 10, 12, 15], mode: 'updown' },
+                    retriggerNum: 8,
+                    rate: 8,
+                },
+                {
+                    beat: 3,
+                    step: 0,
+                    source: 'root',
+                    accent: true,
+                    arp: { intervals: [0, 7, 12], mode: 'up' },
+                    retriggerNum: 3,
+                    rate: 86,
+                },
             ],
             velocity: {
                 base: 0.78,
                 accentOnBeat: 0.12,
                 randomSpread: 0.06,
                 clampMin: 0.5,
-                clampMax: 1
-            }
-        }
+                clampMax: 1,
+            },
+        },
     })
 
     constructor() {
@@ -169,7 +201,7 @@ export default class BassGenerate extends BaseGenerator {
 
     checkResources = () => {
         this.isScalesLoading = false
-     }
+    }
 
     static TAG = 'BassGenerate'
 
@@ -180,7 +212,10 @@ export default class BassGenerate extends BaseGenerator {
         const tones = this.getScaleSteps(scaleName)
         const rootNote = (config.rootNote ?? 0) + (harmony.root ?? 0)
 
-        logger.info(BassGenerate.TAG, `generateNewBass: variant=${resolvedVariantName}, mode=${config.mode}, density=${density}, rootNote=${rootNote} (harmony=${JSON.stringify(harmony)})`)
+        logger.info(
+            BassGenerate.TAG,
+            `generateNewBass: variant=${resolvedVariantName}, mode=${config.mode}, density=${density}, rootNote=${rootNote} (harmony=${JSON.stringify(harmony)})`,
+        )
 
         this.clearTrackNotes(bassTrack)
 
@@ -197,12 +232,14 @@ export default class BassGenerate extends BaseGenerator {
             case 'phrases':
             default: {
                 const cachedPitches = []
-                this.generatePhraseVariant(bassTrack, config,
+                this.generatePhraseVariant(
+                    bassTrack,
+                    config,
                     (phrase) => this.resolvePhrasePitch(phrase, tones, cachedPitches, rootNote),
                     (phrase, step) => step % 4 === 0,
                     null,
                     density,
-                    { cachedPitches }
+                    { cachedPitches },
                 )
                 break
             }
@@ -235,9 +272,10 @@ export default class BassGenerate extends BaseGenerator {
                     generatedTones[step],
                     this.computeVelocity(config.velocity, {
                         step,
-                        accent: config.velocity?.accentPattern?.[step % (config.velocity?.accentPattern?.length ?? 1)] ?? 0,
-                        toFixed: false
-                    })
+                        accent:
+                            config.velocity?.accentPattern?.[step % (config.velocity?.accentPattern?.length ?? 1)] ?? 0,
+                        toFixed: false,
+                    }),
                 )
             }
         }
@@ -263,9 +301,10 @@ export default class BassGenerate extends BaseGenerator {
                 let notePitch
                 let isVariation = false
                 if (strongBeat || Math.random() > config.variation) {
-                    const interval = Math.random() < config.strongBeatWeight
-                        ? config.strongBeatIntervals[0]
-                        : config.strongBeatIntervals[1]
+                    const interval =
+                        Math.random() < config.strongBeatWeight
+                            ? config.strongBeatIntervals[0]
+                            : config.strongBeatIntervals[1]
                     notePitch = rootPitch + interval
                 } else {
                     const degree = scale[Math.floor(Math.random() * scale.length)]
@@ -286,8 +325,8 @@ export default class BassGenerate extends BaseGenerator {
                     this.computeVelocity(config.velocity, {
                         step,
                         accent: strongBeat,
-                        isVariation
-                    })
+                        isVariation,
+                    }),
                 )
             }
         }
@@ -324,8 +363,8 @@ export default class BassGenerate extends BaseGenerator {
                         this.computeVelocity(config.velocity, {
                             step,
                             accent: step % 4 === 0,
-                            isVariation: noteIndex % contourSequence.length !== 0
-                        })
+                            isVariation: noteIndex % contourSequence.length !== 0,
+                        }),
                     )
                 }
 
@@ -334,5 +373,4 @@ export default class BassGenerate extends BaseGenerator {
             }
         }
     }
-
 }

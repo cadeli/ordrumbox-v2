@@ -17,12 +17,12 @@ const GEN_SOUNDS_KEY = 'generated_sounds_data'
 // Settings have no TTL (user preferences). Samples have a long TTL
 // because they are large and expensive to re-fetch.
 const CACHE_TTL = {
-    [PATTERNS_STORE]:      7 * 24 * 60 * 60 * 1000,   // 7 days
-    [DRUMKITS_STORE]:      7 * 24 * 60 * 60 * 1000,   // 7 days
-    [SAMPLES_STORE]:      30 * 24 * 60 * 60 * 1000,   // 30 days
+    [PATTERNS_STORE]: 7 * 24 * 60 * 60 * 1000, // 7 days
+    [DRUMKITS_STORE]: 7 * 24 * 60 * 60 * 1000, // 7 days
+    [SAMPLES_STORE]: 30 * 24 * 60 * 60 * 1000, // 30 days
     [GENERATED_SOUNDS_STORE]: 7 * 24 * 60 * 60 * 1000, // 7 days
-    [SETTINGS_STORE]:            Infinity,               // no expiry
-    [SONGS_STORE]:        30 * 24 * 60 * 60 * 1000,   // 30 days
+    [SETTINGS_STORE]: Infinity, // no expiry
+    [SONGS_STORE]: 30 * 24 * 60 * 60 * 1000, // 30 days
 }
 
 function measureBytes(value) {
@@ -51,14 +51,20 @@ function unwrap(entry, storeName) {
 
     // Version check: reject stale cache from a previous app version
     if (entry.version !== APP_VERSION) {
-        logger.debug('IdbCache', `Cache version mismatch (got "${entry.version}", expected "${APP_VERSION}") — discarding`)
+        logger.debug(
+            'IdbCache',
+            `Cache version mismatch (got "${entry.version}", expected "${APP_VERSION}") — discarding`,
+        )
         return null
     }
 
     // TTL check: reject expired entries
     const ttl = CACHE_TTL[storeName] ?? Infinity
-    if (ttl !== Infinity && entry.savedAt && (Date.now() - entry.savedAt > ttl)) {
-        logger.debug('IdbCache', `Cache expired for store "${storeName}" (age ${Math.round((Date.now() - entry.savedAt) / 60000)} min) — discarding`)
+    if (ttl !== Infinity && entry.savedAt && Date.now() - entry.savedAt > ttl) {
+        logger.debug(
+            'IdbCache',
+            `Cache expired for store "${storeName}" (age ${Math.round((Date.now() - entry.savedAt) / 60000)} min) — discarding`,
+        )
         return null
     }
 
@@ -93,7 +99,7 @@ export async function cachePatterns(json) {
 
 export async function getCachedPatterns() {
     try {
-        const entry = await idbGet(PATTERNS_STORE, SONG_KEY) ?? null
+        const entry = (await idbGet(PATTERNS_STORE, SONG_KEY)) ?? null
         return unwrap(entry, PATTERNS_STORE)
     } catch (e) {
         logger.warn('IdbCache', 'Failed to read cached patterns', e)
@@ -112,7 +118,7 @@ export async function cacheDrumkits(json) {
 
 export async function getCachedDrumkits() {
     try {
-        const entry = await idbGet(DRUMKITS_STORE, DRUMKITS_KEY) ?? null
+        const entry = (await idbGet(DRUMKITS_STORE, DRUMKITS_KEY)) ?? null
         return unwrap(entry, DRUMKITS_STORE)
     } catch (e) {
         logger.warn('IdbCache', 'Failed to read cached drumkits', e)
@@ -130,7 +136,7 @@ export async function cacheSample(url, arrayBuffer) {
 
 export async function getCachedSample(url) {
     try {
-        const entry = await idbGet(SAMPLES_STORE, url) ?? null
+        const entry = (await idbGet(SAMPLES_STORE, url)) ?? null
         return unwrap(entry, SAMPLES_STORE)
     } catch (e) {
         logger.warn('IdbCache', `Failed to read cached sample "${url}"`, e)
@@ -149,7 +155,7 @@ export async function cacheGeneratedSounds(json) {
 
 export async function getCachedGeneratedSounds() {
     try {
-        const entry = await idbGet(GENERATED_SOUNDS_STORE, GEN_SOUNDS_KEY) ?? null
+        const entry = (await idbGet(GENERATED_SOUNDS_STORE, GEN_SOUNDS_KEY)) ?? null
         return unwrap(entry, GENERATED_SOUNDS_STORE)
     } catch (e) {
         logger.warn('IdbCache', 'Failed to read cached generated sounds', e)
@@ -158,10 +164,14 @@ export async function getCachedGeneratedSounds() {
 }
 
 export async function removeCacheEntry(type, key) {
-    const store = type === 'patterns' ? PATTERNS_STORE
-        : type === 'drumkits' ? DRUMKITS_STORE
-        : type === 'samples' ? SAMPLES_STORE
-        : null
+    const store =
+        type === 'patterns'
+            ? PATTERNS_STORE
+            : type === 'drumkits'
+              ? DRUMKITS_STORE
+              : type === 'samples'
+                ? SAMPLES_STORE
+                : null
     if (!store) return
     await idbDelete(store, key)
     logger.debug('IdbCache', `Removed ${type} entry: "${key}"`)
@@ -211,14 +221,33 @@ export async function getCacheStats() {
     }
 
     try {
-        const [patternEntries, drumkitEntries, sampleEntries, settingsEntries, songEntries, genSoundEntries] = await Promise.all([
-            idbGetAllEntries(PATTERNS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read pattern entries', e); return [] }),
-            idbGetAllEntries(DRUMKITS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read drumkit entries', e); return [] }),
-            idbGetAllEntries(SAMPLES_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read sample entries', e); return [] }),
-            idbGetAllEntries(SETTINGS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read settings entries', e); return [] }),
-            idbGetAllEntries(SONGS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read song entries', e); return [] }),
-            idbGetAllEntries(GENERATED_SOUNDS_STORE).catch((e) => { logger.warn('IdbCache', 'Failed to read generated sound entries', e); return [] }),
-        ])
+        const [patternEntries, drumkitEntries, sampleEntries, settingsEntries, songEntries, genSoundEntries] =
+            await Promise.all([
+                idbGetAllEntries(PATTERNS_STORE).catch((e) => {
+                    logger.warn('IdbCache', 'Failed to read pattern entries', e)
+                    return []
+                }),
+                idbGetAllEntries(DRUMKITS_STORE).catch((e) => {
+                    logger.warn('IdbCache', 'Failed to read drumkit entries', e)
+                    return []
+                }),
+                idbGetAllEntries(SAMPLES_STORE).catch((e) => {
+                    logger.warn('IdbCache', 'Failed to read sample entries', e)
+                    return []
+                }),
+                idbGetAllEntries(SETTINGS_STORE).catch((e) => {
+                    logger.warn('IdbCache', 'Failed to read settings entries', e)
+                    return []
+                }),
+                idbGetAllEntries(SONGS_STORE).catch((e) => {
+                    logger.warn('IdbCache', 'Failed to read song entries', e)
+                    return []
+                }),
+                idbGetAllEntries(GENERATED_SOUNDS_STORE).catch((e) => {
+                    logger.warn('IdbCache', 'Failed to read generated sound entries', e)
+                    return []
+                }),
+            ])
 
         accumulateStats(stats, patternEntries, 'patterns')
         accumulateStats(stats, drumkitEntries, 'drumkits')
@@ -227,8 +256,13 @@ export async function getCacheStats() {
         accumulateStats(stats, songEntries, 'songs')
         accumulateStats(stats, genSoundEntries, 'generated_sounds')
 
-        stats.totalBytes = stats.patterns.bytes + stats.drumkits.bytes + stats.samples.bytes
-            + stats.settings.bytes + stats.songs.bytes + stats.generated_sounds.bytes
+        stats.totalBytes =
+            stats.patterns.bytes +
+            stats.drumkits.bytes +
+            stats.samples.bytes +
+            stats.settings.bytes +
+            stats.songs.bytes +
+            stats.generated_sounds.bytes
     } catch (e) {
         logger.warn('IdbCache', 'Failed to compute cache stats', e)
     }

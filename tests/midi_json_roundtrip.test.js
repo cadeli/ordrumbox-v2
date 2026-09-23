@@ -41,16 +41,25 @@ const SIMPLE_JSON = {
         {
             name: 'SNARE',
             noteKeys: ['beat', 'beatStep'],
-            notes: [[0, 2], [1, 2], [2, 2], [3, 2]],
+            notes: [
+                [0, 2],
+                [1, 2],
+                [2, 2],
+                [3, 2],
+            ],
         },
         {
             name: 'BASS',
             noteKeys: ['beat', 'beatStep', 'pitch'],
             notes: [
-                [0, 0, -4], [0, 2, -3],
-                [1, 0, -2], [1, 2, -1],
-                [2, 0, 0],  [2, 2, 1],
-                [3, 0, 2],  [3, 2, 3],
+                [0, 0, -4],
+                [0, 2, -3],
+                [1, 0, -2],
+                [1, 2, -1],
+                [2, 0, 0],
+                [2, 2, 1],
+                [3, 0, 2],
+                [3, 2, 3],
             ],
         },
         {
@@ -101,7 +110,7 @@ function importMidiToPattern(midiBytes, cmd) {
         const melodicInst = program !== null ? im.findInstrumentFromMidiProgram(program) : { id: 'NOT_FOUND' }
         if (melodicInst.id !== 'NOT_FOUND' && !melodicInst.drum) {
             const trackName = melodicInst.id
-            if (!trackDefs.some(d => d.trackName === trackName)) {
+            if (!trackDefs.some((d) => d.trackName === trackName)) {
                 trackDefs.push({ trackName, groupNotes: chNotes, baseNote: C3_MIDI_NOTE })
             }
             continue
@@ -118,7 +127,7 @@ function importMidiToPattern(midiBytes, cmd) {
             const drumInst = im.findInstrumentFromMidi(channel, noteNum)
             if (drumInst.id === 'NOT_FOUND') continue
             const trackName = drumInst.id
-            if (!trackDefs.some(d => d.trackName === trackName)) {
+            if (!trackDefs.some((d) => d.trackName === trackName)) {
                 trackDefs.push({ trackName, groupNotes: grpNotes, baseNote: noteNum })
                 drumFound = true
             }
@@ -129,7 +138,7 @@ function importMidiToPattern(midiBytes, cmd) {
             const nameInst = im.findByName(midiTrackName)
             if (nameInst) {
                 const trackName = nameInst.id
-                if (!trackDefs.some(d => d.trackName === trackName)) {
+                if (!trackDefs.some((d) => d.trackName === trackName)) {
                     trackDefs.push({ trackName, groupNotes: chNotes, baseNote: C3_MIDI_NOTE })
                 }
                 continue
@@ -194,13 +203,13 @@ describe('MIDI JSON Roundtrip', () => {
             SIMPLE_JSON,
             (name) => cmd.addPattern(name),
             (pat, name) => cmd.addTrack(pat, name),
-            (track, beat, beatStep, pitch) => cmd.addNote(track, beat, beatStep, pitch)
+            (track, beat, beatStep, pitch) => cmd.addNote(track, beat, beatStep, pitch),
         )
     })
 
     it('loads JSON and produces correct tracks', () => {
-        const withNotes = originalPattern.tracks.filter(t => t.notes.length > 0)
-        expect(withNotes.map(t => t.name).sort()).toEqual(['BASS', 'KICK', 'OHH', 'SNARE'])
+        const withNotes = originalPattern.tracks.filter((t) => t.notes.length > 0)
+        expect(withNotes.map((t) => t.name).sort()).toEqual(['BASS', 'KICK', 'OHH', 'SNARE'])
     })
 
     it('note counts survive MIDI roundtrip', () => {
@@ -234,8 +243,8 @@ describe('MIDI JSON Roundtrip', () => {
             const reNotes = reimportedPositions.get(name)
             expect(reNotes, `[${name}] should exist`).toBeDefined()
 
-            const origBeatPos = origNotes.map(n => `${n.beat}:${n.beatStep}`).sort()
-            const reBeatPos = reNotes.map(n => `${n.beat}:${n.beatStep}`).sort()
+            const origBeatPos = origNotes.map((n) => `${n.beat}:${n.beatStep}`).sort()
+            const reBeatPos = reNotes.map((n) => `${n.beat}:${n.beatStep}`).sort()
             expect(reBeatPos, `[${name}] beat:beatStep positions`).toEqual(origBeatPos)
         }
     })
@@ -255,8 +264,8 @@ describe('MIDI JSON Roundtrip', () => {
         expect(origBass).toBeDefined()
         expect(reBass).toBeDefined()
 
-        const origPitches = origBass.map(n => n.pitch).sort((a, b) => a - b)
-        const rePitches = reBass.map(n => n.pitch).sort((a, b) => a - b)
+        const origPitches = origBass.map((n) => n.pitch).sort((a, b) => a - b)
+        const rePitches = reBass.map((n) => n.pitch).sort((a, b) => a - b)
         expect(rePitches, 'BASS pitch values').toEqual(origPitches)
     })
 
@@ -275,8 +284,8 @@ describe('MIDI JSON Roundtrip', () => {
         expect(origBass).toBeDefined()
         expect(reBass).toBeDefined()
 
-        const origFull = origBass.map(n => `${n.beat}:${n.beatStep}:${n.pitch}`).sort()
-        const reFull = reBass.map(n => `${n.beat}:${n.beatStep}:${n.pitch}`).sort()
+        const origFull = origBass.map((n) => `${n.beat}:${n.beatStep}:${n.pitch}`).sort()
+        const reFull = reBass.map((n) => `${n.beat}:${n.beatStep}:${n.pitch}`).sort()
         expect(reFull, 'BASS beat:beatStep:pitch').toEqual(origFull)
     })
 })

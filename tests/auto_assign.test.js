@@ -14,10 +14,10 @@ describe('Functional: Auto-assign sounds', () => {
         cmd = new Commander()
         autoAssign = new AutoAssign()
         soundRegistry.sounds = {
-            'snd_kick': { key: 'KICK', kit_name: 'real', url: 'kits/real/kick.wav' },
-            'snd_snare': { key: 'SNARE', kit_name: 'real', url: 'kits/real/snare.wav' },
-            'snd_chh': { key: 'CHH', kit_name: 'real', url: 'kits/real/chh.wav' },
-            'snd_ohh': { key: 'OHH', kit_name: 'real', url: 'kits/real/ohh.wav' }
+            snd_kick: { key: 'KICK', kit_name: 'real', url: 'kits/real/kick.wav' },
+            snd_snare: { key: 'SNARE', kit_name: 'real', url: 'kits/real/snare.wav' },
+            snd_chh: { key: 'CHH', kit_name: 'real', url: 'kits/real/chh.wav' },
+            snd_ohh: { key: 'OHH', kit_name: 'real', url: 'kits/real/ohh.wav' },
         }
         soundRegistry.drumkitList = [{ name: 'real', instruments: [] }]
         appState.selectedDrumkitNum = 0

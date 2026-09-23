@@ -29,9 +29,7 @@ function makeMockPattern(nbBeats = 4) {
     return {
         name: 'Test',
         nbBeats,
-        tracks: [
-            { name: 'KICK', notes: [], nbBeats, stepsPerBeat: 4, loopAtStep: nbBeats * 4, mute: false }
-        ]
+        tracks: [{ name: 'KICK', notes: [], nbBeats, stepsPerBeat: 4, loopAtStep: nbBeats * 4, mute: false }],
     }
 }
 
@@ -45,7 +43,7 @@ function makeMockEditor() {
         playbackEvents: playbackEvents,
         beatRectsCache: [],
         layoutCache: null,
-        requestSync: vi.fn()
+        requestSync: vi.fn(),
     }
 }
 
@@ -172,16 +170,21 @@ describe('PlaybackOverlaySection', () => {
             appState.currentPage = 0
 
             editor.beatRectsCache = Array.from({ length: 8 }, () => ({
-                left: 0, width: 50, absLeft: 0, absRight: 400
+                left: 0,
+                width: 50,
+                absLeft: 0,
+                absRight: 400,
             }))
             editor.layoutCache = {
-                containerLeft: 0, containerRight: 400,
-                tracksLeft: 0, tracksHeight: 200
+                containerLeft: 0,
+                containerRight: 400,
+                tracksLeft: 0,
+                tracksHeight: 200,
             }
 
             serviceRegistry.transport = {
                 isRunning: true,
-                tick: TICK * 5
+                tick: TICK * 5,
             }
 
             const mixer = { strips: {} }
@@ -201,16 +204,21 @@ describe('PlaybackOverlaySection', () => {
             appState.currentPage = 0
 
             editor.beatRectsCache = Array.from({ length: 8 }, () => ({
-                left: 0, width: 50, absLeft: 0, absRight: 400
+                left: 0,
+                width: 50,
+                absLeft: 0,
+                absRight: 400,
             }))
             editor.layoutCache = {
-                containerLeft: 0, containerRight: 400,
-                tracksLeft: 0, tracksHeight: 200
+                containerLeft: 0,
+                containerRight: 400,
+                tracksLeft: 0,
+                tracksHeight: 200,
             }
 
             serviceRegistry.transport = {
                 isRunning: true,
-                tick: TICK * 6
+                tick: TICK * 6,
             }
             serviceRegistry.audioEngine = { mixer: { strips: {} }, getAnalyserData: vi.fn() }
 
@@ -232,16 +240,21 @@ describe('PlaybackOverlaySection', () => {
             appState.currentPage = 1
 
             editor.beatRectsCache = Array.from({ length: 8 }, (_, i) => ({
-                left: i * 100, width: 100, absLeft: i * 100, absRight: (i + 1) * 100
+                left: i * 100,
+                width: 100,
+                absLeft: i * 100,
+                absRight: (i + 1) * 100,
             }))
             editor.layoutCache = {
-                containerLeft: 0, containerRight: 800,
-                tracksLeft: 0, tracksHeight: 200
+                containerLeft: 0,
+                containerRight: 800,
+                tracksLeft: 0,
+                tracksHeight: 200,
             }
 
             serviceRegistry.transport = {
                 isRunning: true,
-                tick: TICK * 5
+                tick: TICK * 5,
             }
             serviceRegistry.audioEngine = { mixer: { strips: {} }, getAnalyserData: vi.fn() }
 
@@ -266,7 +279,7 @@ describe('PlaybackOverlaySection', () => {
             editor.container.appendChild(vuEl)
 
             const strip = { getLevel: vi.fn().mockReturnValue(0.05) }
-            const mixer = { strips: { 'KICK': strip } }
+            const mixer = { strips: { KICK: strip } }
             serviceRegistry.audioEngine = { mixer, getAnalyserData: vi.fn() }
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
@@ -305,8 +318,10 @@ describe('PlaybackOverlaySection', () => {
 
             editor.beatRectsCache = [{ left: 0, width: 0, absLeft: 0, absRight: 0 }]
             editor.layoutCache = {
-                containerLeft: 0, containerRight: 0,
-                tracksLeft: 0, tracksHeight: 0
+                containerLeft: 0,
+                containerRight: 0,
+                tracksLeft: 0,
+                tracksHeight: 0,
             }
 
             const mixer = { strips: {} }

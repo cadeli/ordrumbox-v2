@@ -23,37 +23,61 @@ function createMockIDB() {
                         get: (key) => {
                             const req = { result: undefined, onsuccess: null, onerror: null }
                             pendingOps++
-                            queueMicrotask(() => { req.result = store[key]; req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
+                            queueMicrotask(() => {
+                                req.result = store[key]
+                                req.onsuccess?.()
+                                if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.())
+                            })
                             return req
                         },
                         put: (value, key) => {
                             const req = { onsuccess: null, onerror: null }
                             pendingOps++
-                            queueMicrotask(() => { store[key] = value; req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
+                            queueMicrotask(() => {
+                                store[key] = value
+                                req.onsuccess?.()
+                                if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.())
+                            })
                             return req
                         },
                         delete: (key) => {
                             const req = { onsuccess: null, onerror: null }
                             pendingOps++
-                            queueMicrotask(() => { delete store[key]; req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
+                            queueMicrotask(() => {
+                                delete store[key]
+                                req.onsuccess?.()
+                                if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.())
+                            })
                             return req
                         },
                         getAllKeys: () => {
                             const req = { result: [], onsuccess: null, onerror: null }
                             pendingOps++
-                            queueMicrotask(() => { req.result = Object.keys(store); req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
+                            queueMicrotask(() => {
+                                req.result = Object.keys(store)
+                                req.onsuccess?.()
+                                if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.())
+                            })
                             return req
                         },
                         getAll: () => {
                             const req = { result: [], onsuccess: null, onerror: null }
                             pendingOps++
-                            queueMicrotask(() => { req.result = Object.values(store); req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
+                            queueMicrotask(() => {
+                                req.result = Object.values(store)
+                                req.onsuccess?.()
+                                if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.())
+                            })
                             return req
                         },
                         clear: () => {
                             const req = { onsuccess: null, onerror: null }
                             pendingOps++
-                            queueMicrotask(() => { for (const k in store) delete store[k]; req.onsuccess?.(); if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) })
+                            queueMicrotask(() => {
+                                for (const k in store) delete store[k]
+                                req.onsuccess?.()
+                                if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.())
+                            })
                             return req
                         },
                         openCursor: () => {
@@ -76,7 +100,9 @@ function createMockIDB() {
                                     req.result = null
                                 }
                                 req.onsuccess?.()
-                                if (!keys.length) { if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.()) }
+                                if (!keys.length) {
+                                    if (--pendingOps === 0 && tx.oncomplete) queueMicrotask(() => tx.oncomplete?.())
+                                }
                             }
                             queueMicrotask(fire)
                             return req
@@ -199,7 +225,7 @@ describe('IDB Cache', () => {
     it('getCacheStats entries contain key, type, size, savedAt', async () => {
         await cache.cachePatterns({ patterns: [] })
         const stats = await cache.getCacheStats()
-        const entry = stats.entries.find(e => e.type === 'patterns')
+        const entry = stats.entries.find((e) => e.type === 'patterns')
         expect(entry).toBeDefined()
         expect(entry.key).toBe('song_data')
         expect(typeof entry.size).toBe('number')
@@ -244,9 +270,11 @@ describe('IDB Cache', () => {
         const tx = db.transaction('patterns', 'readwrite')
         tx.objectStore('patterns').put(
             { data: { old: true }, savedAt: Date.now(), size: 10, version: '0.0.1', store: 'patterns' },
-            'song_data'
+            'song_data',
         )
-        await new Promise(r => { tx.oncomplete = r })
+        await new Promise((r) => {
+            tx.oncomplete = r
+        })
         db.close()
 
         const result = await cache.getCachedPatterns()
@@ -261,9 +289,11 @@ describe('IDB Cache', () => {
         const tx = db.transaction('drumkits', 'readwrite')
         tx.objectStore('drumkits').put(
             { data: { old: true }, savedAt: Date.now(), size: 10, version: '0.0.1', store: 'drumkits' },
-            'drumkits_data'
+            'drumkits_data',
         )
-        await new Promise(r => { tx.oncomplete = r })
+        await new Promise((r) => {
+            tx.oncomplete = r
+        })
         db.close()
 
         const result = await cache.getCachedDrumkits()
@@ -278,9 +308,11 @@ describe('IDB Cache', () => {
         const tx = db.transaction('samples', 'readwrite')
         tx.objectStore('samples').put(
             { data: new ArrayBuffer(64), savedAt: Date.now(), size: 64, version: '0.0.1', store: 'samples' },
-            'stale.wav'
+            'stale.wav',
         )
-        await new Promise(r => { tx.oncomplete = r })
+        await new Promise((r) => {
+            tx.oncomplete = r
+        })
         db.close()
 
         const result = await cache.getCachedSample('stale.wav')
@@ -298,9 +330,11 @@ describe('IDB Cache', () => {
         const tx = db.transaction('patterns', 'readwrite')
         tx.objectStore('patterns').put(
             { data: { expired: true }, savedAt: eightDaysAgo, size: 10, version: '2.0.0', store: 'patterns' },
-            'song_data'
+            'song_data',
         )
-        await new Promise(r => { tx.oncomplete = r })
+        await new Promise((r) => {
+            tx.oncomplete = r
+        })
         db.close()
 
         const result = await cache.getCachedPatterns()
@@ -318,9 +352,11 @@ describe('IDB Cache', () => {
         const tx = db.transaction('samples', 'readwrite')
         tx.objectStore('samples').put(
             { data: buf, savedAt: fifteenDaysAgo, size: 256, version: '2.0.0', store: 'samples' },
-            'fresh.wav'
+            'fresh.wav',
         )
-        await new Promise(r => { tx.oncomplete = r })
+        await new Promise((r) => {
+            tx.oncomplete = r
+        })
         db.close()
 
         const result = await cache.getCachedSample('fresh.wav')
@@ -336,9 +372,11 @@ describe('IDB Cache', () => {
         const tx = db.transaction('samples', 'readwrite')
         tx.objectStore('samples').put(
             { data: new ArrayBuffer(64), savedAt: thirtyOneDaysAgo, size: 64, version: '2.0.0', store: 'samples' },
-            'old.wav'
+            'old.wav',
         )
-        await new Promise(r => { tx.oncomplete = r })
+        await new Promise((r) => {
+            tx.oncomplete = r
+        })
         db.close()
 
         const result = await cache.getCachedSample('old.wav')

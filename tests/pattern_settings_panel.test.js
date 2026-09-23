@@ -28,7 +28,7 @@ function makeTrack(overrides = {}) {
         soundId: 'kick_url',
         useAutoAssignSound: true,
         useSoftSynth: false,
-        ...overrides
+        ...overrides,
     }
 }
 
@@ -48,7 +48,7 @@ describe('PatternSettingsPanel', () => {
             setSelectedPatternNum: vi.fn(),
             beginGenerationUndo: vi.fn(),
             commitGenerationUndo: vi.fn(),
-            addTrack: vi.fn()
+            addTrack: vi.fn(),
         }
         panel = new PatternSettingsPanel()
         panel.init()
@@ -130,7 +130,7 @@ describe('PatternSettingsPanel', () => {
         it('populates drumkit select from soundRegistry', () => {
             soundRegistry.drumkitList = [
                 { name: 'Kit A', instruments: [] },
-                { name: 'Kit B', instruments: [] }
+                { name: 'Kit B', instruments: [] },
             ]
             appState.selectedDrumkitNum = 0
             panel.syncDrumkits()
@@ -142,7 +142,7 @@ describe('PatternSettingsPanel', () => {
         it('populates pattern select from appState.patterns', () => {
             appState.patterns = [
                 { name: 'Pattern 1', nbBeats: 4, tracks: [] },
-                { name: 'Pattern 2', nbBeats: 4, tracks: [] }
+                { name: 'Pattern 2', nbBeats: 4, tracks: [] },
             ]
             panel.syncDrumkits()
             const opts = panel._patternSelect.querySelectorAll('option')
@@ -269,7 +269,7 @@ describe('PatternSettingsPanel', () => {
         it('calls cmd.setSelectedDrumkitNum', () => {
             soundRegistry.drumkitList = [
                 { name: 'Kit A', instruments: [] },
-                { name: 'Kit B', instruments: [] }
+                { name: 'Kit B', instruments: [] },
             ]
             panel.syncDrumkits()
             panel._drumkitSelect.value = '1'
@@ -282,7 +282,7 @@ describe('PatternSettingsPanel', () => {
         it('calls cmd.setSelectedPatternNum', () => {
             appState.patterns = [
                 { name: 'P1', nbBeats: 4, tracks: [] },
-                { name: 'P2', nbBeats: 4, tracks: [] }
+                { name: 'P2', nbBeats: 4, tracks: [] },
             ]
             panel.syncDrumkits()
             panel._patternSelect.value = '1'
@@ -293,7 +293,7 @@ describe('PatternSettingsPanel', () => {
         it('resets currentPage to 0', () => {
             appState.patterns = [
                 { name: 'P1', nbBeats: 4, tracks: [] },
-                { name: 'P2', nbBeats: 4, tracks: [] }
+                { name: 'P2', nbBeats: 4, tracks: [] },
             ]
             appState.currentPage = 1
             panel.syncDrumkits()
@@ -325,7 +325,7 @@ describe('PatternSettingsPanel', () => {
 
             soundRegistry.drumkitList = [
                 { name: 'A', instruments: [] },
-                { name: 'B', instruments: [] }
+                { name: 'B', instruments: [] },
             ]
             playbackEvents.emit('drumkitChange')
             expect(panel._drumkitSelect.options.length).toBe(2)

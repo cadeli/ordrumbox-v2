@@ -1,8 +1,4 @@
-import {
-    instrumentsManager,
-    GM_DRUM_NAMES,
-    GM_PROGRAM_NAMES
-} from '../src/logic/services/instruments_manager.js'
+import { instrumentsManager, GM_DRUM_NAMES, GM_PROGRAM_NAMES } from '../src/logic/services/instruments_manager.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import AutoAssign from '../src/logic/services/auto_assign.js'
@@ -42,8 +38,8 @@ const setupKit = (selectedKitName = 'punchy') => {
     appState.reset()
     soundRegistry.reset()
     soundRegistry.sounds = { ...realSounds }
-    soundRegistry.drumkitList = drumkits.map(k => ({ name: k.name, instruments: [] }))
-    appState.selectedDrumkitNum = drumkits.findIndex(k => k.name === selectedKitName)
+    soundRegistry.drumkitList = drumkits.map((k) => ({ name: k.name, instruments: [] }))
+    appState.selectedDrumkitNum = drumkits.findIndex((k) => k.name === selectedKitName)
 }
 
 const findByNameDetailed = (gmName) => {
@@ -60,7 +56,9 @@ const findByNameDetailed = (gmName) => {
 const runAutoAssign = (trackName) => {
     const warnLogs = []
     const origWarn = console.warn
-    console.warn = (...args) => { warnLogs.push(args.join(' ')) }
+    console.warn = (...args) => {
+        warnLogs.push(args.join(' '))
+    }
 
     const track = { name: trackName, soundId: null, useAutoAssignSound: true, useSoftSynth: false }
     const autoAssign = new AutoAssign({ appState, soundRegistry })
@@ -68,9 +66,13 @@ const runAutoAssign = (trackName) => {
 
     console.warn = origWarn
 
-    const logLine = warnLogs.find(l => l.includes('tier')) ?? warnLogs.find(l => l.includes('aléatoire')) ?? warnLogs.find(l => l.includes('NOT_DEFINED')) ?? ''
+    const logLine =
+        warnLogs.find((l) => l.includes('tier')) ??
+        warnLogs.find((l) => l.includes('aléatoire')) ??
+        warnLogs.find((l) => l.includes('NOT_DEFINED')) ??
+        ''
     const tierMatch = logLine.match(/tier(\d)/)
-    const tier = tierMatch ? Number(tierMatch[1]) : (logLine.includes('NOT_DEFINED') ? 0 : null)
+    const tier = tierMatch ? Number(tierMatch[1]) : logLine.includes('NOT_DEFINED') ? 0 : null
 
     let info = ''
     if (tier === 1) {
@@ -89,12 +91,10 @@ const runAutoAssign = (trackName) => {
         info = 'NOT_DEFINED'
     }
 
-    const soundUrl = track.soundId && track.soundId !== 'NOT_DEFINED'
-        ? (realSounds[track.soundId]?.url ?? track.soundId)
-        : 'NONE'
-    const soundKit = track.soundId && track.soundId !== 'NOT_DEFINED'
-        ? (realSounds[track.soundId]?.kit_name ?? '?')
-        : '-'
+    const soundUrl =
+        track.soundId && track.soundId !== 'NOT_DEFINED' ? (realSounds[track.soundId]?.url ?? track.soundId) : 'NONE'
+    const soundKit =
+        track.soundId && track.soundId !== 'NOT_DEFINED' ? (realSounds[track.soundId]?.kit_name ?? '?') : '-'
 
     return { track, soundUrl, soundKit, info, tier }
 }
@@ -105,7 +105,9 @@ const pad = (s, n) => String(s).padStart(n)
 
 setupKit('punchy')
 console.log('\n══ ALL GM → orDrumbox → sample (real kits) ══')
-console.log('  kit sélectionné: punchy | alt: real, matt, electro, open, ropen, generated, human, 8bits, delagrange, vintage')
+console.log(
+    '  kit sélectionné: punchy | alt: real, matt, electro, open, ropen, generated, human, 8bits, delagrange, vintage',
+)
 console.log('  étape1: GM name → instrument [match info]  |  étape2: instrument → sample [tier]')
 console.log('  tiers: [t1]=punchy exact/contains  [t2]=alt kit  [t3]=subst  [t4]=random')
 console.log('  ────────────────────────────────────────────────────────────────────────────────────────────────\n')
@@ -121,7 +123,9 @@ for (const [note, gmName] of Object.entries(GM_DRUM_NAMES)) {
     const { soundUrl, soundKit, info, tier } = runAutoAssign(inst.id)
     const tierTag = `[t${tier}]`
     const infoStr = info ? ` ${info}` : ''
-    console.log(`  [${pad(note, 3)}] "${gmName}" → ${inst.id.padEnd(14)} [${matchInfo}] → ${soundUrl.padEnd(36)} ${tierTag}${infoStr} (${soundKit})`)
+    console.log(
+        `  [${pad(note, 3)}] "${gmName}" → ${inst.id.padEnd(14)} [${matchInfo}] → ${soundUrl.padEnd(36)} ${tierTag}${infoStr} (${soundKit})`,
+    )
 }
 
 console.log('\n── Programs ──')
@@ -135,7 +139,9 @@ for (const [prog, gmName] of Object.entries(GM_PROGRAM_NAMES)) {
     const { soundUrl, soundKit, info, tier } = runAutoAssign(inst.id)
     const tierTag = `[t${tier}]`
     const infoStr = info ? ` ${info}` : ''
-    console.log(`  [${pad(prog, 3)}] "${gmName}" → ${inst.id.padEnd(14)} [${matchInfo}] → ${soundUrl.padEnd(36)} ${tierTag}${infoStr} (${soundKit})`)
+    console.log(
+        `  [${pad(prog, 3)}] "${gmName}" → ${inst.id.padEnd(14)} [${matchInfo}] → ${soundUrl.padEnd(36)} ${tierTag}${infoStr} (${soundKit})`,
+    )
 }
 
 const total = Object.keys(GM_DRUM_NAMES).length + Object.keys(GM_PROGRAM_NAMES).length

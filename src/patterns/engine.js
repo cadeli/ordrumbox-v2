@@ -120,7 +120,7 @@ export function computeTickSpacing(track, rate, tick = TICK) {
 export function createArpFlatNote(tick, track, note, semitoneOffset) {
     const arpNote = {
         ...note,
-        pitch: (note.pitch ?? 0) + semitoneOffset
+        pitch: (note.pitch ?? 0) + semitoneOffset,
     }
     return new FlatNote(tick, track, arpNote)
 }
@@ -176,7 +176,15 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
     }
 }
 
-export function generateSubNotesWithEuclidean(flatNotes, baseTick, track, note, nbTickForPattern, computeNextStep, tick = TICK) {
+export function generateSubNotesWithEuclidean(
+    flatNotes,
+    baseTick,
+    track,
+    note,
+    nbTickForPattern,
+    computeNextStep,
+    tick = TICK,
+) {
     generateSubNotes(flatNotes, baseTick, track, note, nbTickForPattern, tick)
 
     const euclidianFill = note.euclidianFill ?? 0
@@ -224,8 +232,10 @@ export function recomputeFlatNotes(djtPattern, loop = 0, computeNextStep = null,
         for (const note of Object.values(track.notes)) {
             const pos = note.pos ?? 0
             const every = note.every ?? 1
-            if (!isTriggered(pos, every, loop)
-                || !isProbabilityTriggered((track.probability ?? 1) * (note.prob ?? 1))) {
+            if (
+                !isTriggered(pos, every, loop) ||
+                !isProbabilityTriggered((track.probability ?? 1) * (note.prob ?? 1))
+            ) {
                 continue
             }
 

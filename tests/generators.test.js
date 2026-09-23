@@ -44,7 +44,7 @@ describe('Generators', () => {
                 expect(note.beatStep).toBeGreaterThanOrEqual(0)
                 expect(note.beatStep).toBeLessThan(4)
             }
-            const steps = track.notes.map(n => n.beatStep).sort()
+            const steps = track.notes.map((n) => n.beatStep).sort()
             expect(steps[0]).toBe(0)
         })
 
@@ -52,7 +52,7 @@ describe('Generators', () => {
             const track = makeTrack('KICK', [], { nbBeats: 4, stepsPerBeat: 4 })
             new KickGenerate().generateNewKick(track, 'basic')
             expect(track.notes.length).toBe(5)
-            const positions = track.notes.map(n => `${n.beat}:${n.beatStep}`).sort()
+            const positions = track.notes.map((n) => `${n.beat}:${n.beatStep}`).sort()
             expect(positions).toEqual(['0:0', '1:0', '2:0', '2:2', '3:0'])
         })
 
@@ -101,7 +101,7 @@ describe('Generators', () => {
                 expect(note.beat).toBeGreaterThanOrEqual(0)
                 expect(note.beat).toBeLessThan(4)
             }
-            const beats = track.notes.map(n => n.beat).sort()
+            const beats = track.notes.map((n) => n.beat).sort()
             expect(beats).toEqual([0, 1, 2, 3])
         })
 
@@ -119,7 +119,7 @@ describe('Generators', () => {
         it('unknown variantName falls back to basic', () => {
             const track = makeTrack('KICK', [], { nbBeats: 4, stepsPerBeat: 4 })
             new KickGenerate().generateNewKick(track, 'doesNotExist')
-            const hasBar0 = track.notes.some(n => n.beat === 0 && n.beatStep === 0)
+            const hasBar0 = track.notes.some((n) => n.beat === 0 && n.beatStep === 0)
             expect(hasBar0).toBe(true)
         })
 
@@ -150,7 +150,7 @@ describe('Generators', () => {
             const track = makeTrack('SNARE', [], { nbBeats: 4, stepsPerBeat: 4 })
             new SnareGenerate().generateNewSnare(track, 'basic')
             expect(track.notes.length).toBe(2)
-            const beats = track.notes.map(n => n.beat).sort()
+            const beats = track.notes.map((n) => n.beat).sort()
             expect(beats).toEqual([1, 3])
             for (const note of track.notes) {
                 expect(note.beatStep).toBe(0)
@@ -161,7 +161,7 @@ describe('Generators', () => {
             const track = makeTrack('SNARE', [], { nbBeats: 4, stepsPerBeat: 4 })
             new SnareGenerate().generateNewSnare(track, 'ghost')
             expect(track.notes.length).toBeGreaterThan(2)
-            const velocities = track.notes.map(n => parseFloat(n.velocity))
+            const velocities = track.notes.map((n) => parseFloat(n.velocity))
             expect(Math.max(...velocities)).toBeGreaterThan(0.7)
             expect(Math.min(...velocities)).toBeLessThan(0.5)
         })
@@ -190,7 +190,7 @@ describe('Generators', () => {
             for (const note of track.notes) {
                 expect(note.beat).toBe(0)
             }
-            const steps = track.notes.map(n => n.beatStep).sort()
+            const steps = track.notes.map((n) => n.beatStep).sort()
             expect(steps).toEqual([0, 1, 2, 3])
         })
 
@@ -200,7 +200,7 @@ describe('Generators', () => {
             const velocities = track.notes
                 .slice()
                 .sort((a, b) => a.beatStep - b.beatStep)
-                .map(n => n.velocity)
+                .map((n) => n.velocity)
             for (let i = 1; i < velocities.length; i++) {
                 expect(velocities[i]).toBeGreaterThanOrEqual(velocities[i - 1])
             }
@@ -268,7 +268,7 @@ describe('Generators', () => {
             for (const note of track.notes) {
                 expect(note.beatStep).toBe(2)
             }
-            const beats = track.notes.map(n => n.beat).sort()
+            const beats = track.notes.map((n) => n.beat).sort()
             expect(beats).toEqual([0, 1])
         })
 
@@ -296,7 +296,7 @@ describe('Generators', () => {
             const track = makeTrack('BASS', [], { nbBeats: 4, stepsPerBeat: 4 })
             new BassGenerate().generateNewBass(track, 'basic')
             expect(track.notes.length).toBe(8)
-            const beats = track.notes.map(n => n.beat).sort()
+            const beats = track.notes.map((n) => n.beat).sort()
             expect(beats).toEqual([0, 0, 1, 1, 2, 2, 3, 3])
         })
 
@@ -304,7 +304,7 @@ describe('Generators', () => {
             const track = makeTrack('BASS', [], { nbBeats: 4, stepsPerBeat: 4 })
             new BassGenerate().generateNewBass(track, 'groove')
             expect(track.notes.length).toBeGreaterThan(4)
-            const beats = [...new Set(track.notes.map(n => n.beat))].sort()
+            const beats = [...new Set(track.notes.map((n) => n.beat))].sort()
             expect(beats).toEqual([0, 1, 2, 3])
         })
 
@@ -312,7 +312,7 @@ describe('Generators', () => {
             const track = makeTrack('BASS', [], { nbBeats: 4, stepsPerBeat: 4 })
             new BassGenerate().generateNewBass(track, 'arpege')
             expect(track.notes.length).toBeGreaterThan(0)
-            const uniquePitches = [...new Set(track.notes.map(n => n.pitch))]
+            const uniquePitches = [...new Set(track.notes.map((n) => n.pitch))]
             expect(uniquePitches.length).toBeGreaterThan(1)
         })
     })
@@ -324,7 +324,7 @@ describe('Generators', () => {
             const track = makeTrack('HI_TOM', [], { nbBeats: 4, stepsPerBeat: 4 })
             new PercGenerate().generateNewPerc(track, 'basic')
             expect(track.notes.length).toBe(4)
-            const beats = track.notes.map(n => n.beat).sort()
+            const beats = track.notes.map((n) => n.beat).sort()
             expect(beats).toEqual([0, 1, 2, 3])
         })
 
@@ -361,7 +361,7 @@ describe('Generators', () => {
                 { gen: new SnareGenerate(), name: 'SNARE', variant: 'basic', method: 'generateNewSnare' },
                 { gen: new HatGenerate(), name: 'CHH', variant: 'chhBasic', method: 'generateNewHat' },
                 { gen: new BassGenerate(), name: 'BASS', variant: 'basic', method: 'generateNewBass' },
-                { gen: new PercGenerate(), name: 'HI_TOM', variant: 'basic', method: 'generateNewPerc' }
+                { gen: new PercGenerate(), name: 'HI_TOM', variant: 'basic', method: 'generateNewPerc' },
             ]
 
             for (const { gen, name, variant, method } of testCases) {
@@ -555,7 +555,7 @@ describe('Generators', () => {
 
             expect(result).not.toBeNull()
             expect(result.tracks.length).toBeGreaterThan(0)
-            const tracksWithNotes = result.tracks.filter(t => t.notes.length > 0)
+            const tracksWithNotes = result.tracks.filter((t) => t.notes.length > 0)
             expect(tracksWithNotes.length).toBeGreaterThan(0)
             for (const track of tracksWithNotes) {
                 for (const note of track.notes) {

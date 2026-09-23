@@ -171,11 +171,12 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
             bpm: 128,
             nbBeats: 4,
             tracks: [
-                makeTrack('KICK', [
-                    makeNote(0, 0, { pitch: 0, velocity: 0.9 }),
-                    makeNote(1, 0, { pitch: 0, velocity: 0.7 })
-                ], { nbBeats: 4, stepsPerBeat: 4 })
-            ]
+                makeTrack(
+                    'KICK',
+                    [makeNote(0, 0, { pitch: 0, velocity: 0.9 }), makeNote(1, 0, { pitch: 0, velocity: 0.7 })],
+                    { nbBeats: 4, stepsPerBeat: 4 },
+                ),
+            ],
         })
         const pat = cmd.importPatternFromJson(json)
         expect(pat.name).toBe('Imported')
@@ -200,15 +201,15 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
 
         const json = {
             name: pat.name + '_copy',
-            tracks: pat.tracks.map(trk => ({
+            tracks: pat.tracks.map((trk) => ({
                 name: trk.name,
                 nbBeats: trk.nbBeats,
                 stepsPerBeat: trk.stepsPerBeat,
                 loopAtStep: trk.loopAtStep,
-                notes: trk.notes.map(n => ({ ...n }))
+                notes: trk.notes.map((n) => ({ ...n })),
             })),
             bpm: pat.bpm,
-            nbBeats: pat.nbBeats
+            nbBeats: pat.nbBeats,
         }
 
         const imported = cmd.importPatternFromJson(json)
@@ -259,20 +260,20 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
 
     it('multiple dispatches accumulate call count', () => {
         const spy = vi.fn()
-        playbackEvents.on("playbackStart", spy)
+        playbackEvents.on('playbackStart', spy)
 
-        playbackEvents.emit("playbackStart")
-        playbackEvents.emit("playbackStart")
-        playbackEvents.emit("playbackStart")
+        playbackEvents.emit('playbackStart')
+        playbackEvents.emit('playbackStart')
+        playbackEvents.emit('playbackStart')
         expect(spy).toHaveBeenCalledTimes(3)
     })
 
     it('dispatch with payload carries data through', () => {
         const spy = vi.fn()
-        playbackEvents.on("noteTrigger", spy)
+        playbackEvents.on('noteTrigger', spy)
 
         const data = { trackIdx: 2, beat: 1, beatStep: 3 }
-        playbackEvents.emit("noteTrigger", data)
+        playbackEvents.emit('noteTrigger', data)
         expect(spy).toHaveBeenCalledWith(data)
     })
 
@@ -281,15 +282,15 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
         const spyMaster = vi.fn()
         const spyAbout = vi.fn()
         const spyDM = vi.fn()
-        playbackEvents.on("toolsToggle", spyTools)
-        playbackEvents.on("masterToggle", spyMaster)
-        playbackEvents.on("aboutToggle", spyAbout)
-        playbackEvents.on("drumkitManagerToggle", spyDM)
+        playbackEvents.on('toolsToggle', spyTools)
+        playbackEvents.on('masterToggle', spyMaster)
+        playbackEvents.on('aboutToggle', spyAbout)
+        playbackEvents.on('drumkitManagerToggle', spyDM)
 
-        playbackEvents.emit("toolsToggle", true)
-        playbackEvents.emit("masterToggle", false)
-        playbackEvents.emit("aboutToggle", true)
-        playbackEvents.emit("drumkitManagerToggle", false)
+        playbackEvents.emit('toolsToggle', true)
+        playbackEvents.emit('masterToggle', false)
+        playbackEvents.emit('aboutToggle', true)
+        playbackEvents.emit('drumkitManagerToggle', false)
 
         expect(spyTools).toHaveBeenCalledWith(true)
         expect(spyMaster).toHaveBeenCalledWith(false)
@@ -299,23 +300,23 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
 
     it('track select/deselect lifecycle', () => {
         const spy = vi.fn()
-        playbackEvents.on("trackSelect", spy)
+        playbackEvents.on('trackSelect', spy)
 
-        playbackEvents.emit("trackSelect", { trackIdx: 0, track: {} })
+        playbackEvents.emit('trackSelect', { trackIdx: 0, track: {} })
         expect(spy).toHaveBeenCalledWith(expect.objectContaining({ trackIdx: 0 }))
 
-        playbackEvents.emit("trackSelect", null)
+        playbackEvents.emit('trackSelect', null)
         expect(spy).toHaveBeenCalledWith(null)
     })
 
     it('note select/deselect lifecycle', () => {
         const spy = vi.fn()
-        playbackEvents.on("noteSelect", spy)
+        playbackEvents.on('noteSelect', spy)
 
-        playbackEvents.emit("noteSelect", { note: {}, beat: 0, beatStep: 1 })
+        playbackEvents.emit('noteSelect', { note: {}, beat: 0, beatStep: 1 })
         expect(spy).toHaveBeenCalledTimes(1)
 
-        playbackEvents.emit("noteSelect", null)
+        playbackEvents.emit('noteSelect', null)
         expect(spy).toHaveBeenCalledTimes(2)
         expect(spy).toHaveBeenLastCalledWith(null)
     })
@@ -326,24 +327,26 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
         playbackEvents.on('drumkitChange', spy1)
         playbackEvents.on('drumkitChange', spy2)
 
-        playbackEvents.emit("drumkitChange")
+        playbackEvents.emit('drumkitChange')
         expect(spy1).toHaveBeenCalledTimes(1)
 
         playbackEvents.off('drumkitChange', spy1)
         playbackEvents.off('drumkitChange', spy2)
 
-        playbackEvents.emit("drumkitChange")
+        playbackEvents.emit('drumkitChange')
         expect(spy1).toHaveBeenCalledTimes(1)
         expect(spy2).toHaveBeenCalledTimes(1)
     })
 
     it('BPM change roundtrip through event chain', () => {
         let receivedBpm = null
-        playbackEvents.on("bpmChange", (bpm) => { receivedBpm = bpm })
-        playbackEvents.emit("bpmChange", 140)
+        playbackEvents.on('bpmChange', (bpm) => {
+            receivedBpm = bpm
+        })
+        playbackEvents.emit('bpmChange', 140)
         expect(receivedBpm).toBe(140)
 
-        playbackEvents.emit("bpmChange", 90)
+        playbackEvents.emit('bpmChange', 90)
         expect(receivedBpm).toBe(90)
     })
 })
@@ -369,7 +372,9 @@ describe('Roundtrip 4 — Transport → Player tick chain', () => {
 
     it('start sets isRunning and resets tick', () => {
         const transport = new Transport({
-            state: 'running', currentTime: 0, sampleRate: 44100,
+            state: 'running',
+            currentTime: 0,
+            sampleRate: 44100,
         })
         transport.tick = 42
         transport.start()
@@ -379,7 +384,9 @@ describe('Roundtrip 4 — Transport → Player tick chain', () => {
 
     it('stop sets isRunning to false', () => {
         const transport = new Transport({
-            state: 'running', currentTime: 0, sampleRate: 44100,
+            state: 'running',
+            currentTime: 0,
+            sampleRate: 44100,
         })
         transport.start()
         transport.stop()
@@ -428,7 +435,7 @@ describe('Roundtrip 4 — Transport → Player tick chain', () => {
         transport.setBpm(140)
         expect(transport.bpm).toBe(140)
         expect(transport.clockInterval).toBeCloseTo(60 / (140 * 24), 6)
-        expect(appState.secondsPerBeat).toBeCloseTo(60 * 4 / (140 * TICK), 6)
+        expect(appState.secondsPerBeat).toBeCloseTo((60 * 4) / (140 * TICK), 6)
     })
 
     it('onSchedule receives monotonically increasing ticks', () => {
@@ -443,7 +450,7 @@ describe('Roundtrip 4 — Transport → Player tick chain', () => {
 
         transport.scheduler()
 
-        const ticks = onScheduleSpy.mock.calls.map(c => c[0])
+        const ticks = onScheduleSpy.mock.calls.map((c) => c[0])
         for (let i = 1; i < ticks.length; i++) {
             expect(ticks[i]).toBeGreaterThan(ticks[i - 1])
         }
@@ -484,15 +491,20 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
             nbBeats: 2,
             bpm: 120,
             tracks: {
-                'KICK': makeTrack('KICK', [
-                    makeNote(0, 0, { pitch: 0, velocity: 1 }),
-                    makeNote(0, 2, { pitch: 2, velocity: 0.6 }),
-                    makeNote(1, 0, { pitch: -1, velocity: 0.8 }),
-                ], { nbBeats: 2, stepsPerBeat: 4 }),
-                'SNARE': makeTrack('SNARE', [
-                    makeNote(0, 0, { pitch: 0, velocity: 0.9 }),
-                ], { nbBeats: 2, stepsPerBeat: 4 })
-            }
+                KICK: makeTrack(
+                    'KICK',
+                    [
+                        makeNote(0, 0, { pitch: 0, velocity: 1 }),
+                        makeNote(0, 2, { pitch: 2, velocity: 0.6 }),
+                        makeNote(1, 0, { pitch: -1, velocity: 0.8 }),
+                    ],
+                    { nbBeats: 2, stepsPerBeat: 4 },
+                ),
+                SNARE: makeTrack('SNARE', [makeNote(0, 0, { pitch: 0, velocity: 0.9 })], {
+                    nbBeats: 2,
+                    stepsPerBeat: 4,
+                }),
+            },
         })
         appState.patterns = [testPattern]
         appState.selectedPatternNum = 0
@@ -534,10 +546,10 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
 
     it('applies velocity-based opacity to note slices', () => {
         const slices = panel.container.querySelectorAll('.pp-note-slice')
-        const opacities = [...slices].map(s => parseFloat(s.style.opacity))
+        const opacities = [...slices].map((s) => parseFloat(s.style.opacity))
 
         const hasCloseTo = (arr, expected, digits = 2) =>
-            arr.some(v => Math.abs(v - expected) < Math.pow(10, -digits))
+            arr.some((v) => Math.abs(v - expected) < Math.pow(10, -digits))
         expect(hasCloseTo(opacities, 1.0)).toBe(true)
         expect(hasCloseTo(opacities, 0.7)).toBe(true)
     })

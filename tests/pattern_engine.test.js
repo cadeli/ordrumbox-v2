@@ -22,16 +22,34 @@ import {
 
 function buildPattern(noteOverrides = {}, trackOverrides = {}, nbBeats = 4) {
     const note = {
-        beat: 0, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0,
-        arp: null, every: 1, pos: 0, prob: 1,
-        arpTriggerProbability: 1, retriggerNum: 1, rate: 1,
+        beat: 0,
+        beatStep: 0,
+        velocity: 0.8,
+        pitch: 0,
+        pan: 0,
+        arp: null,
+        every: 1,
+        pos: 0,
+        prob: 1,
+        arpTriggerProbability: 1,
+        retriggerNum: 1,
+        rate: 1,
         euclidianFill: 0,
         ...noteOverrides,
     }
     const track = {
-        name: 'T1', nbBeats: 4, stepsPerBeat: 4, mute: false,
-        loopAtStep: undefined, loopPointBeat: undefined, loopPointStep: undefined,
-        swingAmount: 0, swingResolution: 4, velocity: 1, pan: 0, pitch: 0,
+        name: 'T1',
+        nbBeats: 4,
+        stepsPerBeat: 4,
+        mute: false,
+        loopAtStep: undefined,
+        loopPointBeat: undefined,
+        loopPointStep: undefined,
+        swingAmount: 0,
+        swingResolution: 4,
+        velocity: 1,
+        pan: 0,
+        pitch: 0,
         notes: { N0: note },
         ...trackOverrides,
     }
@@ -135,21 +153,21 @@ describe('retriggerNum / rate', () => {
         const pattern = buildPattern({ retriggerNum: 4, rate: 1 }, { nbBeats: 1 }, 1)
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(4)
-        expect(notes.map(n => n.tick)).toEqual([0, 1, 2, 3])
+        expect(notes.map((n) => n.tick)).toEqual([0, 1, 2, 3])
     })
 
     it('retriggerNum=4 with rate=8 produces 4 notes with step spacing', () => {
         const pattern = buildPattern({ retriggerNum: 4, rate: 8 }, { nbBeats: 1 }, 1)
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(4)
-        expect(notes.map(n => n.tick)).toEqual([0, 8, 16, 24])
+        expect(notes.map((n) => n.tick)).toEqual([0, 8, 16, 24])
     })
 
     it('retriggerNum=3 with rate=4 produces 3 notes at half-step spacing', () => {
         const pattern = buildPattern({ retriggerNum: 3, rate: 4 }, { nbBeats: 1 }, 1)
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(3)
-        expect(notes.map(n => n.tick)).toEqual([0, 4, 8])
+        expect(notes.map((n) => n.tick)).toEqual([0, 4, 8])
     })
 
     it('computeTickSpacing returns correct values', () => {
@@ -185,7 +203,7 @@ describe('Arpeggios and Retriggers (generateSubNotes)', () => {
             pitch: 0,
             retriggerNum: 3,
             rate: 8,
-            arp: { intervals: [0, 12], mode: 'up' }
+            arp: { intervals: [0, 12], mode: 'up' },
         }
         const flatNotes = new Map()
         generateSubNotes(flatNotes, 0, mockTrack, note, 128, 32)
@@ -230,50 +248,55 @@ describe('arpeggio', () => {
     it('arp mode "up" creates notes with ascending pitch offsets', () => {
         const pattern = buildPattern(
             { arp: { intervals: [0, 4, 7], mode: 'up' }, retriggerNum: 3, rate: 8 },
-            { nbBeats: 1 }, 1
+            { nbBeats: 1 },
+            1,
         )
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(3)
-        expect(notes.map(n => n.note.pitch)).toEqual([0, 4, 7])
+        expect(notes.map((n) => n.note.pitch)).toEqual([0, 4, 7])
     })
 
     it('arp mode "down" creates notes with descending pitch offsets', () => {
         const pattern = buildPattern(
             { arp: { intervals: [0, 4, 7], mode: 'down' }, retriggerNum: 3, rate: 8 },
-            { nbBeats: 1 }, 1
+            { nbBeats: 1 },
+            1,
         )
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(3)
-        expect(notes.map(n => n.note.pitch)).toEqual([7, 4, 0])
+        expect(notes.map((n) => n.note.pitch)).toEqual([7, 4, 0])
     })
 
     it('arp mode "updown" cycles through the sequence', () => {
         const pattern = buildPattern(
             { arp: { intervals: [0, 4, 7], mode: 'updown' }, retriggerNum: 4, rate: 8 },
-            { nbBeats: 1 }, 1
+            { nbBeats: 1 },
+            1,
         )
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(4)
-        expect(notes.map(n => n.note.pitch)).toEqual([0, 4, 7, 4])
+        expect(notes.map((n) => n.note.pitch)).toEqual([0, 4, 7, 4])
     })
 
     it('arp cycles through intervals when retriggerNum > sequence length', () => {
         const pattern = buildPattern(
             { arp: { intervals: [0, 4, 7], mode: 'up' }, retriggerNum: 6, rate: 4 },
-            { nbBeats: 2 }, 2
+            { nbBeats: 2 },
+            2,
         )
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(6)
-        expect(notes.map(n => n.note.pitch)).toEqual([0, 4, 7, 0, 4, 7])
+        expect(notes.map((n) => n.note.pitch)).toEqual([0, 4, 7, 0, 4, 7])
     })
 
     it('arp with base pitch offset adds semitone to note.pitch', () => {
         const pattern = buildPattern(
             { pitch: 5, arp: { intervals: [0, 4, 7], mode: 'up' }, retriggerNum: 3, rate: 8 },
-            { nbBeats: 1 }, 1
+            { nbBeats: 1 },
+            1,
         )
         const notes = getAllNotes(pattern)
-        expect(notes.map(n => n.note.pitch)).toEqual([5, 9, 12])
+        expect(notes.map((n) => n.note.pitch)).toEqual([5, 9, 12])
     })
 })
 
@@ -298,13 +321,13 @@ describe('loopPointBeat / loopPointStep', () => {
     it('note repeats at loop interval across pattern', () => {
         const pattern = buildPattern({}, { nbBeats: 4, loopPointBeat: 1 }, 4)
         const notes = getAllNotes(pattern)
-        expect(notes.map(n => n.tick)).toEqual([0, 32, 64, 96])
+        expect(notes.map((n) => n.tick)).toEqual([0, 32, 64, 96])
     })
 
     it('note with loopPointBeat=2 repeats every 2 beats', () => {
         const pattern = buildPattern({}, { nbBeats: 4, loopPointBeat: 2 }, 4)
         const notes = getAllNotes(pattern)
-        expect(notes.map(n => n.tick)).toEqual([0, 64])
+        expect(notes.map((n) => n.tick)).toEqual([0, 64])
     })
 
     it('expandLoopOccurrences generates correct tick positions', () => {
@@ -373,7 +396,7 @@ describe('Euclidean Fill (generateSubNotesWithEuclidean)', () => {
             ...mockNote,
             pitch: 0,
             arp: { intervals: [0, 7], mode: 'up' },
-            retriggerNum: 1
+            retriggerNum: 1,
         }
         const flatNotes = new Map()
         generateSubNotesWithEuclidean(flatNotes, 0, mockTrack, note, 128, mockComputeNextStep, 32)
@@ -390,15 +413,15 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
         const pattern = {
             nbBeats: 4,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        'N1': { beat: 0, beatStep: 0, euclidianFill: 1, every: 1, prob: 1 },
-                        'N2': { beat: 0, beatStep: 2, every: 1, prob: 1 }
-                    }
-                }
-            }
+                        N1: { beat: 0, beatStep: 0, euclidianFill: 1, every: 1, prob: 1 },
+                        N2: { beat: 0, beatStep: 2, every: 1, prob: 1 },
+                    },
+                },
+            },
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
 
@@ -414,15 +437,15 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
         const pattern = {
             nbBeats: 4,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        'N1': { beat: 0, beatStep: 0, euclidianFill: 3, every: 1, prob: 1 },
-                        'N2': { beat: 1, beatStep: 0, every: 1, prob: 1 }
-                    }
-                }
-            }
+                        N1: { beat: 0, beatStep: 0, euclidianFill: 3, every: 1, prob: 1 },
+                        N2: { beat: 1, beatStep: 0, every: 1, prob: 1 },
+                    },
+                },
+            },
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
 
@@ -438,14 +461,14 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
         const pattern = {
             nbBeats: 1,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        'N1': { beat: 0, beatStep: 0, euclidianFill: 5, every: 1, prob: 1 }
-                    }
-                }
-            }
+                        N1: { beat: 0, beatStep: 0, euclidianFill: 5, every: 1, prob: 1 },
+                    },
+                },
+            },
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
 
@@ -459,15 +482,23 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
         const pattern = {
             nbBeats: 4,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        'N1': { beat: 0, beatStep: 0, euclidianFill: 1, arp: { intervals: [0, 7], mode: 'up' }, retriggerNum: 1, every: 1, prob: 1 },
-                        'N2': { beat: 1, beatStep: 0, every: 1, prob: 1 }
-                    }
-                }
-            }
+                        N1: {
+                            beat: 0,
+                            beatStep: 0,
+                            euclidianFill: 1,
+                            arp: { intervals: [0, 7], mode: 'up' },
+                            retriggerNum: 1,
+                            every: 1,
+                            prob: 1,
+                        },
+                        N2: { beat: 1, beatStep: 0, every: 1, prob: 1 },
+                    },
+                },
+            },
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
 
@@ -485,15 +516,15 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
         const pattern = {
             nbBeats: 2,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'T1',
                     nbBeats: 1,
                     stepsPerBeat: 4,
                     notes: {
-                        'N1': { beat: 0, beatStep: 0, pitch: 60, prob: 1, every: 1 }
-                    }
-                }
-            }
+                        N1: { beat: 0, beatStep: 0, pitch: 60, prob: 1, every: 1 },
+                    },
+                },
+            },
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
 
@@ -506,16 +537,16 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
         const pattern = {
             nbBeats: 4,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'T1',
                     nbBeats: 1,
                     stepsPerBeat: 4,
                     notes: {
-                        'N1': { beat: 0, beatStep: 0, pitch: 60 },
-                        'N2': { beat: 2, beatStep: 0, pitch: 62 }
-                    }
-                }
-            }
+                        N1: { beat: 0, beatStep: 0, pitch: 60 },
+                        N2: { beat: 2, beatStep: 0, pitch: 62 },
+                    },
+                },
+            },
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
 
@@ -525,8 +556,8 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
         expect(result.get(96)).toBeDefined()
 
         const notesAt64 = result.get(64)
-        expect(notesAt64.some(fn => fn.note.pitch === 62)).toBe(true)
-        expect(notesAt64.some(fn => fn.note.pitch === 60)).toBe(true)
+        expect(notesAt64.some((fn) => fn.note.pitch === 62)).toBe(true)
+        expect(notesAt64.some((fn) => fn.note.pitch === 60)).toBe(true)
 
         const notesAt96 = result.get(96)
         expect(notesAt96.length).toBe(1)
@@ -537,17 +568,15 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
         const pattern = {
             nbBeats: 4,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
                     loopAtStep: 3,
                     loopPointBeat: 0,
                     loopPointStep: 3,
-                    notes: [
-                        { beat: 0, beatStep: 1, pitch: 60, prob: 1, every: 1 }
-                    ]
-                }
-            }
+                    notes: [{ beat: 0, beatStep: 1, pitch: 60, prob: 1, every: 1 }],
+                },
+            },
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
 
@@ -564,17 +593,15 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
         const pattern = {
             nbBeats: 4,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
                     loopAtStep: 6,
                     loopPointBeat: 1,
                     loopPointStep: 2,
-                    notes: [
-                        { beat: 1, beatStep: 0, pitch: 72, prob: 1, every: 1 }
-                    ]
-                }
-            }
+                    notes: [{ beat: 1, beatStep: 0, pitch: 72, prob: 1, every: 1 }],
+                },
+            },
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
         const ticks = [...result.keys()].sort((a, b) => a - b)
@@ -585,17 +612,15 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
         const pattern = {
             nbBeats: 4,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'T1',
                     stepsPerBeat: 4,
                     loopAtStep: 3,
                     loopPointBeat: 0,
                     loopPointStep: 3,
-                    notes: [
-                        { beat: 0, beatStep: 3, pitch: 48, prob: 1, every: 1 }
-                    ]
-                }
-            }
+                    notes: [{ beat: 0, beatStep: 3, pitch: 48, prob: 1, every: 1 }],
+                },
+            },
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
         const ticks = [...result.keys()].sort((a, b) => a - b)
@@ -607,10 +632,7 @@ describe('Full Pattern to FlatNotes (recomputeFlatNotes)', () => {
 
 describe('complex pattern combinations', () => {
     it('every=2 + retriggerNum=4 on 4-beat pattern', () => {
-        const pattern = buildPattern(
-            { every: 2, pos: 0, retriggerNum: 4, rate: 8 },
-            { nbBeats: 4 }, 4
-        )
+        const pattern = buildPattern({ every: 2, pos: 0, retriggerNum: 4, rate: 8 }, { nbBeats: 4 }, 4)
         expect(countNotes(pattern, 0)).toBe(4)
         expect(countNotes(pattern, 1)).toBe(0)
         expect(countNotes(pattern, 2)).toBe(4)
@@ -619,23 +641,26 @@ describe('complex pattern combinations', () => {
     it('arp + loopPointBeat=1 on 4-beat pattern', () => {
         const pattern = buildPattern(
             { arp: { intervals: [0, 4, 7], mode: 'up' }, retriggerNum: 3, rate: 8 },
-            { nbBeats: 4, loopPointBeat: 1 }, 4
+            { nbBeats: 4, loopPointBeat: 1 },
+            4,
         )
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(12)
-        const beat0 = notes.filter(n => n.tick >= 0 && n.tick < 32)
-        expect(beat0.map(n => n.note.pitch).sort((a, b) => a - b)).toEqual([0, 4, 7])
+        const beat0 = notes.filter((n) => n.tick >= 0 && n.tick < 32)
+        expect(beat0.map((n) => n.note.pitch).sort((a, b) => a - b)).toEqual([0, 4, 7])
     })
 
     it('multiple tracks with different parameters', () => {
         const kickNote = { beat: 0, beatStep: 0, every: 1, velocity: 0.9 }
         const snareNote = { beat: 0, beatStep: 2, every: 2, pos: 0, velocity: 0.7 }
         const pattern = {
-            name: 'Multi', bpm: 120, nbBeats: 2,
+            name: 'Multi',
+            bpm: 120,
+            nbBeats: 2,
             tracks: {
                 KICK: { name: 'KICK', nbBeats: 2, stepsPerBeat: 4, notes: { N0: kickNote } },
                 SNARE: { name: 'SNARE', nbBeats: 2, stepsPerBeat: 4, notes: { N2: snareNote } },
-            }
+            },
         }
         expect(countNotes(pattern, 0)).toBe(2)
         expect(countNotes(pattern, 1)).toBe(1)
@@ -745,9 +770,19 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
         track.notes = {}
         for (let b = 0; b < nbBeats; b++) {
             track.notes[`N${b}`] = {
-                beat: b, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0,
-                arp: null, every: 1, pos: 0, prob: 1,
-                arpTriggerProbability: 1, retriggerNum: 1, rate: 1, euclidianFill: 0,
+                beat: b,
+                beatStep: 0,
+                velocity: 0.8,
+                pitch: 0,
+                pan: 0,
+                arp: null,
+                every: 1,
+                pos: 0,
+                prob: 1,
+                arpTriggerProbability: 1,
+                retriggerNum: 1,
+                rate: 1,
+                euclidianFill: 0,
             }
         }
         const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
@@ -759,16 +794,26 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
         track.notes = {}
         for (let b = 0; b < nbBeats; b++) {
             track.notes[`N${b}`] = {
-                beat: b, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0,
-                arp: null, every: 1, pos: 0, prob: 1,
-                arpTriggerProbability: 1, retriggerNum: 1, rate: 1, euclidianFill: 0,
+                beat: b,
+                beatStep: 0,
+                velocity: 0.8,
+                pitch: 0,
+                pan: 0,
+                arp: null,
+                every: 1,
+                pos: 0,
+                prob: 1,
+                arpTriggerProbability: 1,
+                retriggerNum: 1,
+                rate: 1,
+                euclidianFill: 0,
             }
         }
         const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
         const notes = getAllNotes(pattern)
         const expected = []
         for (let b = 0; b < nbBeats; b++) expected.push(b * TICK)
-        expect(notes.map(n => n.tick)).toEqual(expected)
+        expect(notes.map((n) => n.tick)).toEqual(expected)
     })
 
     it('retriggerNum=3 produces 3 notes per note occurrence', () => {
@@ -776,9 +821,19 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
         track.notes = {}
         for (let b = 0; b < nbBeats; b++) {
             track.notes[`N${b}`] = {
-                beat: b, beatStep: 0, velocity: 0.8, pitch: 0, pan: 0,
-                arp: null, every: 1, pos: 0, prob: 1,
-                arpTriggerProbability: 1, retriggerNum: 3, rate: 1, euclidianFill: 0,
+                beat: b,
+                beatStep: 0,
+                velocity: 0.8,
+                pitch: 0,
+                pan: 0,
+                arp: null,
+                every: 1,
+                pos: 0,
+                prob: 1,
+                arpTriggerProbability: 1,
+                retriggerNum: 3,
+                rate: 1,
+                euclidianFill: 0,
             }
         }
         const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
@@ -786,29 +841,21 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
     })
 
     it('retriggerNum=4 with rate=8 uses correct tick spacing', () => {
-        const pattern = buildPattern(
-            { retriggerNum: 4, rate: 8 },
-            { stepsPerBeat, nbBeats },
-            nbBeats
-        )
+        const pattern = buildPattern({ retriggerNum: 4, rate: 8 }, { stepsPerBeat, nbBeats }, nbBeats)
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(4)
         const spacing = computeTickSpacing({ stepsPerBeat }, 8)
         const expected = [0, spacing, spacing * 2, spacing * 3]
-        expect(notes.map(n => n.tick)).toEqual(expected)
+        expect(notes.map((n) => n.tick)).toEqual(expected)
     })
 
     it('retriggerNum=4 with rate=4 uses correct tick spacing', () => {
-        const pattern = buildPattern(
-            { retriggerNum: 4, rate: 4 },
-            { stepsPerBeat, nbBeats },
-            nbBeats
-        )
+        const pattern = buildPattern({ retriggerNum: 4, rate: 4 }, { stepsPerBeat, nbBeats }, nbBeats)
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(4)
         const spacing = computeTickSpacing({ stepsPerBeat }, 4)
         const expected = [0, spacing, spacing * 2, spacing * 3]
-        expect(notes.map(n => n.tick)).toEqual(expected)
+        expect(notes.map((n) => n.tick)).toEqual(expected)
     })
 
     it('note at beatStep positions reflects stepsPerBeat resolution', () => {
@@ -816,9 +863,19 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
         track.notes = {}
         for (let s = 0; s < stepsPerBeat; s++) {
             track.notes[`N${s}`] = {
-                beat: 0, beatStep: s, velocity: 0.8, pitch: 0, pan: 0,
-                arp: null, every: 1, pos: 0, prob: 1,
-                arpTriggerProbability: 1, retriggerNum: 1, rate: 1, euclidianFill: 0,
+                beat: 0,
+                beatStep: s,
+                velocity: 0.8,
+                pitch: 0,
+                pan: 0,
+                arp: null,
+                every: 1,
+                pos: 0,
+                prob: 1,
+                arpTriggerProbability: 1,
+                retriggerNum: 1,
+                rate: 1,
+                euclidianFill: 0,
             }
         }
         const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
@@ -831,23 +888,15 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
     })
 
     it('loopPointBeat=1 tiles note at TICK intervals', () => {
-        const pattern = buildPattern(
-            {},
-            { stepsPerBeat, nbBeats, loopPointBeat: 1 },
-            nbBeats
-        )
+        const pattern = buildPattern({}, { stepsPerBeat, nbBeats, loopPointBeat: 1 }, nbBeats)
         const notes = getAllNotes(pattern)
         const expected = []
         for (let t = 0; t < nbBeats * TICK; t += TICK) expected.push(t)
-        expect(notes.map(n => n.tick)).toEqual(expected)
+        expect(notes.map((n) => n.tick)).toEqual(expected)
     })
 
     it('every=2 + retriggerNum=4 fires correctly per loop', () => {
-        const pattern = buildPattern(
-            { every: 2, pos: 0, retriggerNum: 4, rate: 1 },
-            { stepsPerBeat, nbBeats },
-            nbBeats
-        )
+        const pattern = buildPattern({ every: 2, pos: 0, retriggerNum: 4, rate: 1 }, { stepsPerBeat, nbBeats }, nbBeats)
         expect(countNotes(pattern, 0)).toBe(4)
         expect(countNotes(pattern, 1)).toBe(0)
         expect(countNotes(pattern, 2)).toBe(4)

@@ -3,7 +3,7 @@ import Defaults from './defaults.js'
 import { logger } from '../core/logger.js'
 
 export default class NoteParams {
-    static TAG = "NoteParams"
+    static TAG = 'NoteParams'
 
     static SWING_RESOLUTION_OVERRIDE = 2
 
@@ -42,7 +42,7 @@ export default class NoteParams {
             flatNote.note,
             secondsPerBeat,
             flatNote.track.swingResolution,
-            flatNote.track.swingAmount
+            flatNote.track.swingAmount,
         )
     }
 

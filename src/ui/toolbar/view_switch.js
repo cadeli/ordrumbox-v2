@@ -11,7 +11,9 @@ export default class ViewSwitch {
     #tb
 
     /** @param {import('../toolbar.js').default} toolbar */
-    constructor(toolbar) { this.#tb = toolbar }
+    constructor(toolbar) {
+        this.#tb = toolbar
+    }
 
     createDOM() {
         const tb = this.#tb
@@ -140,14 +142,18 @@ export default class ViewSwitch {
 
         tb.bassBtn.addEventListener('click', async () => {
             await this._toggleAutoGen('BASS', async (pattern, autoGen) => {
-                let bassTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'BASS')
+                let bassTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'BASS')
 
                 serviceRegistry.cmd.beginGenerationUndo(pattern)
                 if (!bassTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre
                     const firstElement = autoGen.structureGen.getElement(0)
-                    const harmony = autoGen.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+                    const harmony = autoGen.structureGen.resolveHarmony(
+                        genre,
+                        firstElement.name,
+                        firstElement.loopInElement,
+                    )
                     const structure = autoGen.structureGen.generateStructure(genre)
                     const bassVariant = structure.BASS ?? 'basic'
 
@@ -167,14 +173,18 @@ export default class ViewSwitch {
 
         tb.chordsBtn.addEventListener('click', async () => {
             await this._toggleAutoGen('PIANO', async (pattern, autoGen) => {
-                let pianoTrack = pattern.tracks?.find(t => Utils.detectTrackType(t.name) === 'PIANO')
+                let pianoTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'PIANO')
 
                 serviceRegistry.cmd.beginGenerationUndo(pattern)
                 if (!pianoTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre
                     const firstElement = autoGen.structureGen.getElement(0)
-                    const harmony = autoGen.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+                    const harmony = autoGen.structureGen.resolveHarmony(
+                        genre,
+                        firstElement.name,
+                        firstElement.loopInElement,
+                    )
                     const structure = autoGen.structureGen.generateStructure(genre)
                     const pianoVariant = structure.PIANO ?? 'chordStab'
 
@@ -197,12 +207,9 @@ export default class ViewSwitch {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern) return
 
-        const types = typeOrTypes instanceof Set
-            ? typeOrTypes
-            : new Set(Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes])
-        const hasAuto = (pattern.tracks ?? []).some(t =>
-            t._toolbarAuto && types.has(Utils.detectTrackType(t.name))
-        )
+        const types =
+            typeOrTypes instanceof Set ? typeOrTypes : new Set(Array.isArray(typeOrTypes) ? typeOrTypes : [typeOrTypes])
+        const hasAuto = (pattern.tracks ?? []).some((t) => t._toolbarAuto && types.has(Utils.detectTrackType(t.name)))
 
         if (hasAuto) {
             for (const track of pattern.tracks) {

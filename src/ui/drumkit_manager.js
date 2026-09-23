@@ -19,25 +19,43 @@ const TAG = 'DrumkitManager'
 // the range/step of track_editor's KNOB_PROPS decay entry so both panels
 // commit the same values through the same widget.
 const SOUND_KNOB_DEFS = [
-    { key: 'gain',  label: 'Gain',  min: -24, max: 6,    step: 0.1, unit: 'dB', format: v => v.toFixed(1) },
-    { key: 'tune',  label: 'Tune',  min: -12, max: 12,   step: 0.1, unit: 'st', format: v => `${v >= 0 ? '+' : ''}${v.toFixed(1)}` },
-    { key: 'decay', label: 'Decay', min: 0,   max: 5000, step: 10,  unit: '',   format: knobFormat({ key: 'decay' }) },
+    { key: 'gain', label: 'Gain', min: -24, max: 6, step: 0.1, unit: 'dB', format: (v) => v.toFixed(1) },
+    {
+        key: 'tune',
+        label: 'Tune',
+        min: -12,
+        max: 12,
+        step: 0.1,
+        unit: 'st',
+        format: (v) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}`,
+    },
+    { key: 'decay', label: 'Decay', min: 0, max: 5000, step: 10, unit: '', format: knobFormat({ key: 'decay' }) },
 ]
 
 export default class DrumkitManager extends BasePanel {
-    #selectedSoundKey;
-    #knobs;
-    #listEl;
-    #detailEl;
-    #wavImportService;
-    #drumkitChangeDebounce;
+    #selectedSoundKey
+    #knobs
+    #listEl
+    #detailEl
+    #wavImportService
+    #drumkitChangeDebounce
 
-    get _knobs() { return this.#knobs }
-    get _selectedSoundKey() { return this.#selectedSoundKey }
-    set _selectedSoundKey(v) { this.#selectedSoundKey = v }
+    get _knobs() {
+        return this.#knobs
+    }
+    get _selectedSoundKey() {
+        return this.#selectedSoundKey
+    }
+    set _selectedSoundKey(v) {
+        this.#selectedSoundKey = v
+    }
 
-    _onKnobChange(sound, key, value) { this.#onKnobChange(sound, key, value) }
-    _selectSound(key) { this.#selectSound(key) }
+    _onKnobChange(sound, key, value) {
+        this.#onKnobChange(sound, key, value)
+    }
+    _selectSound(key) {
+        this.#selectSound(key)
+    }
 
     constructor() {
         super('dm-panel')
@@ -115,7 +133,9 @@ export default class DrumkitManager extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on("drumkitChange", () => { if (this.isVisible) this.sync() })
+        playbackEvents.on('drumkitChange', () => {
+            if (this.isVisible) this.sync()
+        })
     }
 
     sync() {
@@ -218,7 +238,7 @@ export default class DrumkitManager extends BasePanel {
 
     #selectSound(key) {
         this.#selectedSoundKey = key
-        this.#listEl.querySelectorAll('.dm-list-item').forEach(el => {
+        this.#listEl.querySelectorAll('.dm-list-item').forEach((el) => {
             el.classList.toggle('dm-selected', el.dataset.key === key)
         })
         this.#renderDetail(key)
@@ -240,14 +260,17 @@ export default class DrumkitManager extends BasePanel {
         const decayStr = sound.decay != null ? sound.decay + ' ms' : '—'
         const tooltipText = `${detected.id !== 'NOT_FOUND' ? 'Detected: ' + detected.id : 'No instrument detected'}\nPeak: ${peakDb} dB\nRMS: ${rmsDb} dB\nDuration: ${duration}\nDecay: ${decayStr}`
 
-        const kitNames = soundRegistry.drumkitList.map(k => k.name)
+        const kitNames = soundRegistry.drumkitList.map((k) => k.name)
         if (sound.kit_name && !kitNames.includes(sound.kit_name)) {
             kitNames.unshift(sound.kit_name)
         }
         const kitOptions = renderOptions(kitNames, sound.kit_name)
 
         const instOptions = InstrumentsManager.DATA?.instruments
-            ? renderOptions(InstrumentsManager.DATA.instruments.map(i => i.id), sound.key)
+            ? renderOptions(
+                  InstrumentsManager.DATA.instruments.map((i) => i.id),
+                  sound.key,
+              )
             : ''
 
         this.#detailEl.innerHTML = `
@@ -329,14 +352,17 @@ export default class DrumkitManager extends BasePanel {
 
     #syncKnobs(sound) {
         const values = { gain: sound.gainDb ?? 0, tune: sound.tune ?? 0, decay: sound.decay ?? 0 }
-        this.#knobs = [...syncKnobs({
-            container: this.#detailEl,
-            configs: SOUND_KNOB_DEFS.map(def => ({
-                ...def, val: values[def.key],
-                onChange: (v) => this.#onKnobChange(sound, def.key, v),
-            })),
-            prev: new Map(this.#knobs.map(k => [k.key, k])),
-        }).values()]
+        this.#knobs = [
+            ...syncKnobs({
+                container: this.#detailEl,
+                configs: SOUND_KNOB_DEFS.map((def) => ({
+                    ...def,
+                    val: values[def.key],
+                    onChange: (v) => this.#onKnobChange(sound, def.key, v),
+                })),
+                prev: new Map(this.#knobs.map((k) => [k.key, k])),
+            }).values(),
+        ]
     }
 
     #onKnobChange(sound, key, value) {
@@ -351,7 +377,7 @@ export default class DrumkitManager extends BasePanel {
         // The knob already reflects the live value; other panels/persistence
         // catch up once the drag settles.
         clearTimeout(this.#drumkitChangeDebounce)
-        this.#drumkitChangeDebounce = setTimeout(() => playbackEvents.emit("drumkitChange"), 200)
+        this.#drumkitChangeDebounce = setTimeout(() => playbackEvents.emit('drumkitChange'), 200)
     }
 
     // ── Waveform ───────────────────────────────────────────────────────
@@ -384,8 +410,8 @@ export default class DrumkitManager extends BasePanel {
 
         if (resize) {
             requestAnimationFrame(() => {
-                const w = (canvas.clientWidth && canvas.clientWidth > 0) ? canvas.clientWidth : 300
-                const h = (canvas.clientHeight && canvas.clientHeight > 0) ? canvas.clientHeight : 80
+                const w = canvas.clientWidth && canvas.clientWidth > 0 ? canvas.clientWidth : 300
+                const h = canvas.clientHeight && canvas.clientHeight > 0 ? canvas.clientHeight : 80
                 canvas.width = w
                 canvas.height = h
                 draw()

@@ -7,7 +7,9 @@ import AutoAssign from '../../logic/services/auto_assign.js'
 
 export default class SoundSection {
     /** @param {import('./track_editor.js').default} editor */
-    constructor(editor) { this._editor = editor }
+    constructor(editor) {
+        this._editor = editor
+    }
 
     // ── Render ─────────────────────────────────────────────────────
 
@@ -20,16 +22,12 @@ export default class SoundSection {
         const auto = track.useAutoAssignSound !== false
         const ledClass = auto ? 'lfo-led on' : 'lfo-led'
         const generatedSoundKeys = editor.synthEditor.getGeneratedSoundKeys()
-        const currentGeneratedSound = track.useSoftSynth === true
-            ? (track.synthSoundKey ?? 'BASS1')
-            : 'none'
+        const currentGeneratedSound = track.useSoftSynth === true ? (track.synthSoundKey ?? 'BASS1') : 'none'
 
-        const keysWithSamples = new Set(
-            sr.drumkitList.flatMap(kit => kit.instruments.map(s => s.key))
-        )
+        const keysWithSamples = new Set(sr.drumkitList.flatMap((kit) => kit.instruments.map((s) => s.key)))
         const instrumentIds = InstrumentsManager.DATA.instruments
-            .map(i => i.id)
-            .filter(id => keysWithSamples.has(id))
+            .map((i) => i.id)
+            .filter((id) => keysWithSamples.has(id))
             .sort()
         const currentName = this._getCurrentInstrumentName(instrumentIds, keysWithSamples)
         const currentSoundId = this._getCurrentSoundUrl()
@@ -39,13 +37,13 @@ export default class SoundSection {
         const currentSound = sr.sounds[currentSoundId]
         const sampleTooltip = currentSound
             ? [
-                `Kit: ${currentSound.kit_name ?? '?'}`,
-                `URL: ${currentSound.url ?? '?'}`,
-                `Instrument: ${currentSound.key ?? '?'}`,
-                `Synth: ${track.useSoftSynth === true ? 'yes' : 'no'}`,
-                `Size: ${currentSound.buffer?.length != null ? currentSound.buffer.length.toLocaleString() + ' samples' : '?'}`,
-                `Length: ${currentSound.duration != null ? currentSound.duration + ' ms' : '?'}`
-            ].join(NL)
+                  `Kit: ${currentSound.kit_name ?? '?'}`,
+                  `URL: ${currentSound.url ?? '?'}`,
+                  `Instrument: ${currentSound.key ?? '?'}`,
+                  `Synth: ${track.useSoftSynth === true ? 'yes' : 'no'}`,
+                  `Size: ${currentSound.buffer?.length != null ? currentSound.buffer.length.toLocaleString() + ' samples' : '?'}`,
+                  `Length: ${currentSound.duration != null ? currentSound.duration + ' ms' : '?'}`,
+              ].join(NL)
             : ''
 
         let content = ''
@@ -54,8 +52,8 @@ export default class SoundSection {
         if (matchingSounds.length === 0) {
             content += `<option value="">— no samples —</option>`
         } else {
-            const sampleValues = matchingSounds.map(s => s.url)
-            const sampleLabels = matchingSounds.map(s => {
+            const sampleValues = matchingSounds.map((s) => s.url)
+            const sampleLabels = matchingSounds.map((s) => {
                 const kit = s.kitName ?? ''
                 const name = s.display_name ?? s.url ?? '??'
                 return kit ? `${kit}/${name}` : name
@@ -73,8 +71,11 @@ export default class SoundSection {
 
         const monoActive = track.mono ? 'active' : ''
         const monoLabel = track.mono ? 'ON' : 'OFF'
-        return `<div class="ne-row"><label>Mono</label><button class="ne-btn ${monoActive}" data-key="mono">${monoLabel}</button></div>
-        <div class="ne-row"><button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> <label>auto</label></div>` + content
+        return (
+            `<div class="ne-row"><label>Mono</label><button class="ne-btn ${monoActive}" data-key="mono">${monoLabel}</button></div>
+        <div class="ne-row"><button class="${ledClass}" data-action="toggle-auto" title="${auto ? 'Disable' : 'Enable'} auto-assign"></button> <label>auto</label></div>` +
+            content
+        )
     }
 
     // ── Event handlers ─────────────────────────────────────────────
@@ -93,8 +94,8 @@ export default class SoundSection {
         }
         editor.sync()
         editor._playbackEvents.batch(() => {
-            editor._playbackEvents.emit("trackParamChange", track)
-            editor._playbackEvents.emit("patternChange", [track])
+            editor._playbackEvents.emit('trackParamChange', track)
+            editor._playbackEvents.emit('patternChange', [track])
         })
     }
 
@@ -105,8 +106,12 @@ export default class SoundSection {
         if (!editor._soundRegistry.sounds[url]?.buffer) {
             let foundKit, foundSample
             for (const kit of editor._soundRegistry.drumkitList) {
-                const s = kit.instruments.find(i => i.url === url)
-                if (s) { foundKit = kit; foundSample = s; break }
+                const s = kit.instruments.find((i) => i.url === url)
+                if (s) {
+                    foundKit = kit
+                    foundSample = s
+                    break
+                }
             }
             if (foundSample && foundKit) {
                 await editor._serviceRegistry.resourcesLoader.loadSample(foundSample, foundKit.name)
@@ -114,8 +119,8 @@ export default class SoundSection {
         }
         editor._serviceRegistry.cmd.changeTrackSound(track, url)
         editor._playbackEvents.batch(() => {
-            editor._playbackEvents.emit("trackParamChange", track)
-            editor._playbackEvents.emit("patternChange", [track])
+            editor._playbackEvents.emit('trackParamChange', track)
+            editor._playbackEvents.emit('patternChange', [track])
         })
     }
 
@@ -135,8 +140,8 @@ export default class SoundSection {
         }
         editor.sync()
         editor._playbackEvents.batch(() => {
-            editor._playbackEvents.emit("trackParamChange", track)
-            editor._playbackEvents.emit("patternChange", [track])
+            editor._playbackEvents.emit('trackParamChange', track)
+            editor._playbackEvents.emit('patternChange', [track])
         })
     }
 
@@ -152,8 +157,8 @@ export default class SoundSection {
         }
         editor.sync()
         editor._playbackEvents.batch(() => {
-            editor._playbackEvents.emit("trackParamChange", track)
-            editor._playbackEvents.emit("patternChange", [track])
+            editor._playbackEvents.emit('trackParamChange', track)
+            editor._playbackEvents.emit('patternChange', [track])
         })
     }
 
@@ -166,8 +171,8 @@ export default class SoundSection {
 
     _getAllKitSamples() {
         const editor = this._editor
-        return editor._soundRegistry.drumkitList.flatMap(kit =>
-            kit.instruments.map(s => ({ ...s, kitName: kit.name }))
+        return editor._soundRegistry.drumkitList.flatMap((kit) =>
+            kit.instruments.map((s) => ({ ...s, kitName: kit.name })),
         )
     }
 
@@ -186,9 +191,7 @@ export default class SoundSection {
     }
 
     _getSamplesForInstrument(instrumentId) {
-        return this._sortSamplesForCurrentKit(
-            this._getAllKitSamples().filter(s => s.key === instrumentId)
-        )
+        return this._sortSamplesForCurrentKit(this._getAllKitSamples().filter((s) => s.key === instrumentId))
     }
 
     _getPreferredSampleForInstrument(instrumentId) {

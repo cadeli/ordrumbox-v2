@@ -1,13 +1,13 @@
 import { TRACK_DEFAULTS, TRACK_RECALCULATED } from '../model/track_schema.js'
 import { NOTE_DEFAULTS, NOTE_RECALCULATED, NOTE_POSITION_KEYS } from './note_schema.js'
-import { logger } from "./logger.js"
+import { logger } from './logger.js'
 
 export default class Utils {
-static TAG = "UTILS"
+    static TAG = 'UTILS'
 
-    static filterTypeList = ['lowpass','highpass','bandpass']
+    static filterTypeList = ['lowpass', 'highpass', 'bandpass']
 
-    static waveList = ["sine", "triangle", "sawtooth", "square", "random"]
+    static waveList = ['sine', 'triangle', 'sawtooth', 'square', 'random']
 
     static delayTimeValues = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4]
 
@@ -19,20 +19,20 @@ static TAG = "UTILS"
         if (multiplier === 1 && (Number.isNaN(num) || num === 0)) {
             logger.warn(Utils.TAG, 'num', 'delayTimeValue', 1)
         }
-        return (60 / bpm) * multiplier;
+        return (60 / bpm) * multiplier
     }
 
-    static TRACK_DEFAULTS = TRACK_DEFAULTS;
+    static TRACK_DEFAULTS = TRACK_DEFAULTS
 
-    static TRACK_RECALCULATED = TRACK_RECALCULATED;
+    static TRACK_RECALCULATED = TRACK_RECALCULATED
 
     static PATTERN_DEFAULTS = {
-        "nbBeats": 4,
-        "bpm": 120,
-        "description": "",
-        "tags": [],
-        "tracks": []
-    };
+        nbBeats: 4,
+        bpm: 120,
+        description: '',
+        tags: [],
+        tracks: [],
+    }
 
     static toFiniteNumber = (value, fallback = 0, label = null) => {
         const num = Number(value)
@@ -43,11 +43,11 @@ static TAG = "UTILS"
         return num
     }
 
-    static NOTE_DEFAULTS = NOTE_DEFAULTS;
+    static NOTE_DEFAULTS = NOTE_DEFAULTS
 
-    static NOTE_RECALCULATED = NOTE_RECALCULATED;
+    static NOTE_RECALCULATED = NOTE_RECALCULATED
 
-    static NOTE_POSITION_KEYS = NOTE_POSITION_KEYS;
+    static NOTE_POSITION_KEYS = NOTE_POSITION_KEYS
 
     /**
      * Returns the tracks of a pattern as an array, regardless of
@@ -60,17 +60,17 @@ static TAG = "UTILS"
 
     static addLoopToTrackIfPossible = (track, _options = {}) => {
         if (!track || !Array.isArray(track.notes)) {
-            return { changed: false, reason: "invalid-track", loopAtStep: null, removedNotes: 0 }
+            return { changed: false, reason: 'invalid-track', loopAtStep: null, removedNotes: 0 }
         }
 
         const stepsPerBeat = Number(track.stepsPerBeat)
         if (!Number.isInteger(stepsPerBeat) || stepsPerBeat <= 0) {
-            return { changed: false, reason: "invalid-beat-quantize", loopAtStep: null, removedNotes: 0 }
+            return { changed: false, reason: 'invalid-beat-quantize', loopAtStep: null, removedNotes: 0 }
         }
 
         const trackSteps = Utils.getTrackStepLength(track)
         if (trackSteps <= 1) {
-            return { changed: false, reason: "track-too-short", loopAtStep: null, removedNotes: 0 }
+            return { changed: false, reason: 'track-too-short', loopAtStep: null, removedNotes: 0 }
         }
 
         const currentLoopAtStep = Utils.getTrackLoopAtStep(track)
@@ -78,9 +78,9 @@ static TAG = "UTILS"
         if (track.notes.length === 0) {
             return {
                 changed: false,
-                reason: "no-notes",
+                reason: 'no-notes',
                 loopAtStep: currentLoopAtStep,
-                removedNotes: 0
+                removedNotes: 0,
             }
         }
 
@@ -100,29 +100,30 @@ static TAG = "UTILS"
 
             return {
                 changed: true,
-                reason: "loop-added",
+                reason: 'loop-added',
                 loopAtStep,
-                removedNotes: previousNoteCount - track.notes.length
+                removedNotes: previousNoteCount - track.notes.length,
             }
         }
 
         return {
             changed: false,
-            reason: "no-identical-loop-found",
+            reason: 'no-identical-loop-found',
             loopAtStep: currentLoopAtStep,
-            removedNotes: 0
+            removedNotes: 0,
         }
     }
 
     static getTrackStepLength = (track) => {
         const stepsPerBeat = Number(track?.stepsPerBeat)
         const beats = Number(track?.nbBeats)
-        const declaredSteps = Number.isFinite(beats) && beats > 0 && Number.isFinite(stepsPerBeat) && stepsPerBeat > 0
-            ? Math.floor(beats * stepsPerBeat)
-            : 0
+        const declaredSteps =
+            Number.isFinite(beats) && beats > 0 && Number.isFinite(stepsPerBeat) && stepsPerBeat > 0
+                ? Math.floor(beats * stepsPerBeat)
+                : 0
         const notesLastStep = Math.max(
             0,
-            ...Object.values(track?.notes ?? []).map((note) => Utils.getNoteAbsoluteStep(note, stepsPerBeat) + 1)
+            ...Object.values(track?.notes ?? []).map((note) => Utils.getNoteAbsoluteStep(note, stepsPerBeat) + 1),
         )
         return Math.max(declaredSteps, notesLastStep)
     }
@@ -137,7 +138,7 @@ static TAG = "UTILS"
         const loopPointBeat = Number(track?.loopPointBeat)
         const loopPointStep = Number(track?.loopPointStep ?? 0)
         if (Number.isFinite(loopPointBeat) && Number.isFinite(loopPointStep) && Number.isFinite(stepsPerBeat)) {
-            return Math.floor((loopPointBeat * stepsPerBeat) + loopPointStep)
+            return Math.floor(loopPointBeat * stepsPerBeat + loopPointStep)
         }
 
         return Utils.getTrackStepLength(track)
@@ -149,12 +150,12 @@ static TAG = "UTILS"
         const looped = Utils.createStepSignatureMap(
             track.notes.filter((note) => Utils.getNoteAbsoluteStep(note, stepsPerBeat) < loopAtStep),
             stepsPerBeat,
-            (step) => step % loopAtStep
+            (step) => step % loopAtStep,
         )
 
         for (let step = 0; step < trackSteps; step++) {
-            const originalSignature = original.get(step) ?? ""
-            const loopedSignature = looped.get(step % loopAtStep) ?? ""
+            const originalSignature = original.get(step) ?? ''
+            const loopedSignature = looped.get(step % loopAtStep) ?? ''
             if (originalSignature !== loopedSignature) {
                 return false
             }
@@ -178,7 +179,7 @@ static TAG = "UTILS"
         })
 
         for (const [step, signatures] of map) {
-            map.set(step, signatures.join("|"))
+            map.set(step, signatures.join('|'))
         }
 
         return map
@@ -187,7 +188,7 @@ static TAG = "UTILS"
     static getNoteAbsoluteStep = (note, stepsPerBeat) => {
         const beat = Number(note?.beat ?? 0)
         const beatStep = Number(note?.beatStep ?? 0)
-        return Math.floor((beat * stepsPerBeat) + beatStep)
+        return Math.floor(beat * stepsPerBeat + beatStep)
     }
 
     static getAudibleNoteSignature = (note) => {
@@ -205,7 +206,7 @@ static TAG = "UTILS"
         if (Array.isArray(value)) {
             return value.map((item) => Utils.normalizeSignatureValue(item))
         }
-        if (value && typeof value === "object") {
+        if (value && typeof value === 'object') {
             return Object.keys(value)
                 .sort()
                 .reduce((normalized, key) => {
@@ -216,27 +217,33 @@ static TAG = "UTILS"
         return value
     }
 
-    static semiToneToPitch = (semiTone) => Math.pow(2, semiTone / 12);
+    static semiToneToPitch = (semiTone) => Math.pow(2, semiTone / 12)
 
     static getStepSpacing = (value) => {
         if (value < 8) {
-        return (value/8)
+            return value / 8
         } else {
-            return (value-7)
-        } 
+            return value - 7
+        }
     }
 
     static getRandomKey(obj) {
-        const keys = Object.keys(obj); 
-        if (keys.length === 0) return null;
+        const keys = Object.keys(obj)
+        if (keys.length === 0) return null
 
-        const randomIndex = Math.floor(Math.random() * keys.length);
-        return keys[randomIndex];
+        const randomIndex = Math.floor(Math.random() * keys.length)
+        return keys[randomIndex]
     }
 
     static TRACK_NAME_TO_INDEX = {
-        KICK: 0, SNARE: 1, TOM: 2, CLAP: 3,
-        COWBELL: 4, CHH: 5, OHH: 6, CRASH: 7
+        KICK: 0,
+        SNARE: 1,
+        TOM: 2,
+        CLAP: 3,
+        COWBELL: 4,
+        CHH: 5,
+        OHH: 6,
+        CRASH: 7,
     }
 
     static DRUM_TYPES = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
@@ -272,7 +279,7 @@ static TAG = "UTILS"
      * @returns {Array} filtered tracks array (mutated in place)
      */
     static filterEmptyMelodicTracks(tracks) {
-        return tracks.filter(t => {
+        return tracks.filter((t) => {
             const type = Utils.detectTrackType(t.name)
             const isMelodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
             return !isMelodic || (t.notes && t.notes.length > 0)
@@ -300,6 +307,6 @@ static TAG = "UTILS"
      */
     static hasAnySolo(tracks) {
         const arr = Array.isArray(tracks) ? tracks : Object.values(tracks)
-        return arr.some(t => t.solo === true)
+        return arr.some((t) => t.solo === true)
     }
 }

@@ -56,7 +56,7 @@ describe('WorkletLoader', () => {
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) }
+            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) },
         }
         expect(WorkletLoader.isSupported(fakeCtx)).toBe(true)
     })
@@ -71,7 +71,7 @@ describe('WorkletLoader', () => {
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) }
+            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) },
         }
         global.AudioWorkletNode = vi.fn()
         expect(() => WorkletLoader.createNode(fakeCtx, 'missing')).toThrow(/not registered/)
@@ -81,7 +81,7 @@ describe('WorkletLoader', () => {
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) }
+            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) },
         }
         WorkletLoader.register('foo', 'src')
         global.AudioWorkletNode = vi.fn()
@@ -99,12 +99,16 @@ describe('WorkletLoader', () => {
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule }
+            audioWorklet: { addModule },
         }
         const createObjectURL = vi.fn().mockReturnValue('blob:foo')
         const revokeObjectURL = vi.fn()
         global.URL = { createObjectURL, revokeObjectURL }
-        global.Blob = class { constructor(parts) { this.parts = parts } }
+        global.Blob = class {
+            constructor(parts) {
+                this.parts = parts
+            }
+        }
 
         WorkletLoader.register('a', 'src-a')
         WorkletLoader.register('b', 'src-b')
@@ -121,7 +125,7 @@ describe('WorkletLoader', () => {
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule }
+            audioWorklet: { addModule },
         }
         global.URL = { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }
         global.Blob = class {}
@@ -145,11 +149,16 @@ describe('WorkletLoader', () => {
     // triggered the losing call.
     it('ensureLoaded() deduplicates concurrent calls for the same context (no duplicate addModule)', async () => {
         let resolveAddModule
-        const addModule = vi.fn(() => new Promise(resolve => { resolveAddModule = resolve }))
+        const addModule = vi.fn(
+            () =>
+                new Promise((resolve) => {
+                    resolveAddModule = resolve
+                }),
+        )
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule }
+            audioWorklet: { addModule },
         }
         global.URL = { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }
         global.Blob = class {}
@@ -177,13 +186,11 @@ describe('WorkletLoader', () => {
     })
 
     it('ensureLoaded() allows a fresh load after a failed one (no stuck pending state)', async () => {
-        const addModule = vi.fn()
-            .mockRejectedValueOnce(new Error('boom'))
-            .mockResolvedValueOnce(undefined)
+        const addModule = vi.fn().mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce(undefined)
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule }
+            audioWorklet: { addModule },
         }
         global.URL = { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }
         global.Blob = class {}
@@ -202,7 +209,7 @@ describe('WorkletLoader', () => {
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule }
+            audioWorklet: { addModule },
         }
         const createObjectURL = vi.fn(() => 'blob:abc')
         const revokeObjectURL = vi.fn()
@@ -222,7 +229,7 @@ describe('WorkletLoader', () => {
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule }
+            audioWorklet: { addModule },
         }
         const createObjectURL = vi.fn(() => 'blob:xyz')
         const revokeObjectURL = vi.fn()
@@ -242,7 +249,7 @@ describe('WorkletLoader', () => {
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule }
+            audioWorklet: { addModule },
         }
         global.URL = { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }
         global.Blob = class {}
@@ -256,7 +263,7 @@ describe('WorkletLoader', () => {
         WorkletLoader.register('b', 'src-b')
         await WorkletLoader.ensureLoaded(fakeCtx)
         expect(addModule).toHaveBeenCalledTimes(2) // Should have called addModule for 'b' too
-        
+
         expect(WorkletLoader.isContextReady(fakeCtx)).toBe(true)
     })
 
@@ -264,7 +271,7 @@ describe('WorkletLoader', () => {
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) }
+            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) },
         }
         global.URL = { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }
         global.Blob = class {}
@@ -282,11 +289,13 @@ describe('WorkletLoader', () => {
 
     it('createNode() succeeds after ensureLoaded()', () => {
         const fakeNode = { parameters: new Map(), port: {}, connect: vi.fn() }
-        const MockWorkletNode = vi.fn(function() { return fakeNode })
+        const MockWorkletNode = vi.fn(function () {
+            return fakeNode
+        })
         const fakeCtx = {
             sampleRate: 44100,
             currentTime: 0,
-            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) }
+            audioWorklet: { addModule: vi.fn().mockResolvedValue(undefined) },
         }
         global.AudioWorkletNode = MockWorkletNode
         global.URL = { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }

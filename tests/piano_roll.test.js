@@ -32,11 +32,19 @@ const TEST_PATTERN = {
                 { beat: 2, beatStep: 4, pitch: 0, velocity: 0.8, every: 2 },
                 { beat: 2, beatStep: 8, pitch: 0, velocity: 0.8, prob: 0.5 },
                 { beat: 3, beatStep: 0, pitch: 0, velocity: 0.8, retriggerNum: 3, rate: 8 },
-                { beat: 3, beatStep: 0, pitch: 0, velocity: 0.8, retriggerNum: 3, rate: 8, arp: { intervals: [0, 4, 7], mode: 'up' } },
+                {
+                    beat: 3,
+                    beatStep: 0,
+                    pitch: 0,
+                    velocity: 0.8,
+                    retriggerNum: 3,
+                    rate: 8,
+                    arp: { intervals: [0, 4, 7], mode: 'up' },
+                },
                 { beat: 3, beatStep: 2, pitch: 0, velocity: 0.8, euclidianFill: 2 },
-            ]
-        }
-    ]
+            ],
+        },
+    ],
 }
 
 function makeCmd() {
@@ -49,7 +57,11 @@ function makeCmd() {
         deleteNote: vi.fn((track, selNote) => {
             for (let i = track.notes.length - 1; i >= 0; i--) {
                 const n = track.notes[i]
-                if (n.beat === selNote.beat && n.beatStep === selNote.beatStep && (n.pitch ?? 0) === (selNote.pitch ?? 0)) {
+                if (
+                    n.beat === selNote.beat &&
+                    n.beatStep === selNote.beatStep &&
+                    (n.pitch ?? 0) === (selNote.pitch ?? 0)
+                ) {
                     track.notes.splice(i, 1)
                     return
                 }
@@ -113,9 +125,14 @@ describe('PianoRollPanel', () => {
 
     function clickGrid(cellX, cellY) {
         const grid = getGrid()
-        grid.dispatchEvent(new MouseEvent('click', {
-            clientX: cellX, clientY: cellY, bubbles: true, cancelable: true
-        }))
+        grid.dispatchEvent(
+            new MouseEvent('click', {
+                clientX: cellX,
+                clientY: cellY,
+                bubbles: true,
+                cancelable: true,
+            }),
+        )
     }
 
     function clickNoteAtStepPitch(step, pitch) {
@@ -125,9 +142,13 @@ describe('PianoRollPanel', () => {
     }
 
     function pressKey(key) {
-        panel.onKeyDown(new KeyboardEvent('keydown', {
-            key, bubbles: true, cancelable: true
-        }))
+        panel.onKeyDown(
+            new KeyboardEvent('keydown', {
+                key,
+                bubbles: true,
+                cancelable: true,
+            }),
+        )
     }
 
     describe('grid width fills available space', () => {
@@ -284,13 +305,13 @@ describe('PianoRollPanel', () => {
 
         it('sets probability label when prob < 1', () => {
             const track = getTrack()
-            const probNote = track.notes.find(n => (n.prob ?? 1) < 1)
+            const probNote = track.notes.find((n) => (n.prob ?? 1) < 1)
             if (!probNote) return
             const step = probNote.beat * track.stepsPerBeat + probNote.beatStep
             if (step >= 4 * track.stepsPerBeat) return
 
             const notes = getNotes()
-            const matching = Array.from(notes).find(n => {
+            const matching = Array.from(notes).find((n) => {
                 const idx = parseInt(n.dataset.note, 10)
                 return track.notes[idx] === probNote
             })
@@ -301,13 +322,13 @@ describe('PianoRollPanel', () => {
 
         it('sets every label when every > 1', () => {
             const track = getTrack()
-            const everyNote = track.notes.find(n => (n.every ?? 1) > 1)
+            const everyNote = track.notes.find((n) => (n.every ?? 1) > 1)
             if (!everyNote) return
             const step = everyNote.beat * track.stepsPerBeat + everyNote.beatStep
             if (step >= 4 * track.stepsPerBeat) return
 
             const notes = getNotes()
-            const matching = Array.from(notes).find(n => {
+            const matching = Array.from(notes).find((n) => {
                 const idx = parseInt(n.dataset.note, 10)
                 return track.notes[idx] === everyNote
             })
@@ -334,30 +355,26 @@ describe('PianoRollPanel', () => {
     describe('ghost notes', () => {
         it('renders retrigger ghost markers', () => {
             const ghosts = getGhosts()
-            const retriggerGhosts = Array.from(ghosts).filter(g =>
-                g.classList.contains('pp-pr-ghost-retrigger')
-            )
+            const retriggerGhosts = Array.from(ghosts).filter((g) => g.classList.contains('pp-pr-ghost-retrigger'))
             expect(retriggerGhosts.length).toBeGreaterThan(0)
         })
 
         it('renders euclidian ghost markers', () => {
             const ghosts = getGhosts()
-            const euclidianGhosts = Array.from(ghosts).filter(g =>
-                g.classList.contains('pp-pr-ghost-euclidian')
-            )
+            const euclidianGhosts = Array.from(ghosts).filter((g) => g.classList.contains('pp-pr-ghost-euclidian'))
             expect(euclidianGhosts.length).toBeGreaterThan(0)
         })
 
         it('ghosts for arp notes have pitch offset (different row than parent)', () => {
             const track = getTrack()
-            const arpNote = track.notes.find(n => n.arp && (n.retriggerNum ?? 1) > 1)
+            const arpNote = track.notes.find((n) => n.arp && (n.retriggerNum ?? 1) > 1)
             if (!arpNote) return
             const step = arpNote.beat * track.stepsPerBeat + arpNote.beatStep
             if (step >= 4 * track.stepsPerBeat) return
 
             const ghosts = getGhosts()
             const parentRow = noteRow(arpNote, track.pitch ?? 0)
-            const nonParentGhosts = Array.from(ghosts).filter(g => {
+            const nonParentGhosts = Array.from(ghosts).filter((g) => {
                 const bottom = parseInt(g.style.bottom, 10)
                 const ghostRow = bottom / NOTE_HEIGHT
                 return Math.abs(ghostRow - parentRow) > 0.5
@@ -460,7 +477,7 @@ describe('PianoRollPanel', () => {
     describe('note editor integration', () => {
         it('dispatches noteSelect when a note is clicked', () => {
             const listener = vi.fn()
-            playbackEvents.on("noteSelect", listener)
+            playbackEvents.on('noteSelect', listener)
 
             const track = getTrack()
             const note = track.notes[0]
@@ -475,7 +492,7 @@ describe('PianoRollPanel', () => {
 
         it('dispatches noteSelect(null) on clearSelection', () => {
             const listener = vi.fn()
-            playbackEvents.on("noteSelect", listener)
+            playbackEvents.on('noteSelect', listener)
             panel.clearSelection()
             expect(listener).toHaveBeenCalledWith(null)
         })
@@ -526,7 +543,9 @@ describe('PianoRollPanel', () => {
 
         it('illuminates retrigger sub-notes at their positions', () => {
             const track = getTrack()
-            const retrigNote = track.notes.find(n => (n.retriggerNum ?? 1) > 1 && !(n.arp && (n.retriggerNum ?? 1) > 1))
+            const retrigNote = track.notes.find(
+                (n) => (n.retriggerNum ?? 1) > 1 && !(n.arp && (n.retriggerNum ?? 1) > 1),
+            )
             if (!retrigNote) return
             const spb = track.stepsPerBeat
             const basePos = (retrigNote.beat ?? 0) * spb + (retrigNote.beatStep ?? 0)
@@ -546,7 +565,7 @@ describe('PianoRollPanel', () => {
             track.loopAtStep = 4
             panel.sync()
 
-            const noteBeyond = track.notes.find(n => {
+            const noteBeyond = track.notes.find((n) => {
                 const step = (n.beat ?? 0) * track.stepsPerBeat + (n.beatStep ?? 0)
                 return step >= 4
             })
@@ -554,7 +573,7 @@ describe('PianoRollPanel', () => {
 
             const step = (noteBeyond.beat ?? 0) * track.stepsPerBeat + (noteBeyond.beatStep ?? 0)
             panel.illuminateStep(step, 10)
-            const playing = Array.from(getPlayingNotes()).filter(el => {
+            const playing = Array.from(getPlayingNotes()).filter((el) => {
                 const idx = parseInt(el.dataset.note, 10)
                 return track.notes[idx] === noteBeyond
             })
@@ -607,7 +626,7 @@ describe('PianoRollPanel', () => {
 
             const repeatedStep = basePos + track.loopAtStep
             panel.illuminateStep(repeatedStep, 77)
-            const playing = Array.from(getPlayingNotes()).filter(el => {
+            const playing = Array.from(getPlayingNotes()).filter((el) => {
                 const idx = parseInt(el.dataset.note, 10)
                 return track.notes[idx] === note
             })
@@ -619,14 +638,14 @@ describe('PianoRollPanel', () => {
             const spb = track.stepsPerBeat
             track.loopAtStep = 2 * spb
             panel.sync()
-            const noteOutside = track.notes.find(n => {
+            const noteOutside = track.notes.find((n) => {
                 const step = (n.beat ?? 0) * spb + (n.beatStep ?? 0)
                 return step >= track.loopAtStep
             })
             if (!noteOutside) return
             const step = (noteOutside.beat ?? 0) * spb + (noteOutside.beatStep ?? 0)
             panel.illuminateStep(step, 88)
-            const playing = Array.from(getPlayingNotes()).filter(el => {
+            const playing = Array.from(getPlayingNotes()).filter((el) => {
                 const idx = parseInt(el.dataset.note, 10)
                 return track.notes[idx] === noteOutside
             })
@@ -691,7 +710,7 @@ describe('PianoRollPanel', () => {
             appState.patterns = [structuredClone(TEST_PATTERN)]
             appState.selectedPatternNum = 0
             appState.selectedTrackNum = 0
-            playbackEvents.emit("patternStructureChange")
+            playbackEvents.emit('patternStructureChange')
 
             expect(panel._track).not.toBeNull()
             expect(panel._trackIdx).toBe(0)

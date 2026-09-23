@@ -16,7 +16,7 @@ export function createSelectionMethods(_cmd) {
                 appState.selectedDrumkitNum = num
                 await serviceRegistry.resourcesLoader.loadMissingSamplesFromDrumkits([soundRegistry.drumkitList[num]])
                 await this.autoAssignSoundsForNewDrumkit()
-                playbackEvents.emit("drumkitChange")
+                playbackEvents.emit('drumkitChange')
             } catch (err) {
                 logger.error('Commander', 'cmd::setSelectedDrumkitNum failed', err)
                 showToast('Drumkit switch failed', 'error')
@@ -48,12 +48,12 @@ export function createSelectionMethods(_cmd) {
                         autoAssign.autoAssignSounds(selPattern)
                     }
                     serviceRegistry.patterns.applyFlatNotes(selPattern)
-                    playbackEvents.emit("selectedPatternChange")
+                    playbackEvents.emit('selectedPatternChange')
                 }
             } catch (err) {
                 logger.error('Commander', 'cmd::setSelectedPatternNum failed', err)
                 showToast('Pattern switch failed', 'error')
             }
-        }
+        },
     }
 }

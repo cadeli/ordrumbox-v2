@@ -45,7 +45,8 @@ function energyInRange(samples, sampleRate, lowHz, highHz) {
     for (let i = 0; i < len; i++) frame[i] = samples[i]
 
     for (let bin = 1; bin < fftSize / 2; bin++) {
-        let re = 0, im = 0
+        let re = 0,
+            im = 0
         for (let i = 0; i < fftSize; i++) {
             const angle = (2 * Math.PI * bin * i) / fftSize
             re += frame[i] * Math.cos(angle)
@@ -62,8 +63,15 @@ function energyInRange(samples, sampleRate, lowHz, highHz) {
 /**
  * Render a sine burst with given parameters and return the audio samples.
  */
-async function renderBurst({ freq = 440, duration = 0.2, gain = 1, pan = 0,
-    filterFreq = null, filterQ = null, sampleRate = SAMPLE_RATE } = {}) {
+async function renderBurst({
+    freq = 440,
+    duration = 0.2,
+    gain = 1,
+    pan = 0,
+    filterFreq = null,
+    filterQ = null,
+    sampleRate = SAMPLE_RATE,
+} = {}) {
     const totalSamples = Math.ceil((duration + 0.05) * sampleRate)
     const ctx = new OfflineAudioContext(2, totalSamples, sampleRate)
 
@@ -454,7 +462,7 @@ describe('LFO → parameter modulation', () => {
 describe('retrigger → multiple note events', () => {
     it('4 retriggers produce 4 distinct energy bursts', async () => {
         const bpm = 120
-        const tickTime = (60 * 4) / (bpm * 32) * 0.25
+        const tickTime = ((60 * 4) / (bpm * 32)) * 0.25
         const tickSpacing = 8 // rate=8
         const sampleSpacing = Math.round(tickSpacing * tickTime * SAMPLE_RATE)
         const numRetriggers = 4
@@ -509,7 +517,7 @@ describe('arpeggio → pitch sequence', () => {
         const noteDuration = 0.15
 
         // Render each arp note
-        const freqs = intervals.map(i => baseFreq * Math.pow(2, i / 12))
+        const freqs = intervals.map((i) => baseFreq * Math.pow(2, i / 12))
         const analyses = []
 
         for (const freq of freqs) {

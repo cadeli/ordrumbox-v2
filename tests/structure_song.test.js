@@ -10,7 +10,7 @@ const SYNTH_SOUND_MAP = {
     BASS: 'BASS2',
     PERC: 'SYNTH2',
     PIANO: 'PIANO',
-    TOM: 'TOM'
+    TOM: 'TOM',
 }
 
 function detectTrackSynthType(name) {
@@ -35,20 +35,20 @@ describe('StructureSong', () => {
     describe('GENRES', () => {
         it('contains expected genres', () => {
             expect(StructureSong.GENRES).toEqual(
-                expect.arrayContaining(['techno', 'house', 'drumandbass', 'hiphop', 'rock'])
+                expect.arrayContaining(['techno', 'house', 'drumandbass', 'hiphop', 'rock']),
             )
         })
     })
 
     describe('STRUCTURES', () => {
         it('has an entry for each genre', () => {
-            StructureSong.GENRES.forEach(genre => {
+            StructureSong.GENRES.forEach((genre) => {
                 expect(StructureSong.STRUCTURES).toHaveProperty(genre)
             })
         })
 
         it('each structure maps track names to variant strings', () => {
-            Object.values(StructureSong.STRUCTURES).forEach(structure => {
+            Object.values(StructureSong.STRUCTURES).forEach((structure) => {
                 Object.entries(structure).forEach(([track, variant]) => {
                     expect(typeof track).toBe('string')
                     expect(typeof variant).toBe('string')
@@ -66,7 +66,7 @@ describe('StructureSong', () => {
 
         it('can return each genre over multiple calls', () => {
             const results = new Set(Array.from({ length: 100 }, () => structure.getRandomGenre()))
-            StructureSong.GENRES.forEach(genre => {
+            StructureSong.GENRES.forEach((genre) => {
                 expect(results.has(genre)).toBe(true)
             })
         })
@@ -74,7 +74,7 @@ describe('StructureSong', () => {
 
     describe('generateStructure', () => {
         it('returns a non-empty object for each genre', () => {
-            StructureSong.GENRES.forEach(genre => {
+            StructureSong.GENRES.forEach((genre) => {
                 const result = structure.generateStructure(genre)
                 expect(Object.keys(result).length).toBeGreaterThan(0)
             })
@@ -199,7 +199,7 @@ describe('convertToGeneratedSounds', () => {
 
     describe('track conversion logic', () => {
         function convertTracks() {
-            Object.values(pattern.tracks).forEach(track => {
+            Object.values(pattern.tracks).forEach((track) => {
                 const type = detectTrackSynthType(track.name)
                 track.useSoftSynth = true
                 track.useAutoAssignSound = false
@@ -292,7 +292,7 @@ describe('convertToGeneratedSounds', () => {
 
             convertTracks()
 
-            pattern.tracks.forEach(track => {
+            pattern.tracks.forEach((track) => {
                 expect(track.useSoftSynth).toBe(true)
                 expect(track.useAutoAssignSound).toBe(false)
             })

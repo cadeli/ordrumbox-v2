@@ -29,7 +29,7 @@ export default class GenerationSection {
         const editor = this._editor
         let html = ''
 
-        props.forEach(p => {
+        props.forEach((p) => {
             const val = track[p.key]
             const isSelected = editor._selectedPropKey === p.key ? 'selected' : ''
             const hasLfo = p.lfo && track[p.lfo] ? 'has-lfo' : ''
@@ -59,17 +59,17 @@ export default class GenerationSection {
                         value: val ?? p.min,
                         hasLfo: !!(p.lfo && track[p.lfo]),
                         extraClass: isSelected,
-                        format: (v) => p.format ? p.format(v) : fmtVal(p.key, v),
+                        format: (v) => (p.format ? p.format(v) : fmtVal(p.key, v)),
                         normalize: p.normalize ?? ((v) => v),
                         denormalize: p.denormalize ?? ((v) => v),
                         onChange: (v, key) => {
                             editor._isDragging = true
                             editor._track[key] = v
                             editor._playbackEvents.batch(() => {
-                                editor._playbackEvents.emit("trackParamChange", editor._track)
-                                editor._playbackEvents.emit("patternChange", [editor._track])
+                                editor._playbackEvents.emit('trackParamChange', editor._track)
+                                editor._playbackEvents.emit('patternChange', [editor._track])
                             })
-                        }
+                        },
                     })
                     editor._sliders.set(p.key, s)
                 }

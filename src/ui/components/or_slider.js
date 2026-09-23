@@ -76,30 +76,30 @@ export class OrSlider {
      * @param {Function} [cfg.onChange]     (valDenorm, key) => void
      */
     constructor(cfg) {
-        this.#key        = cfg.key
-        this.#label      = cfg.label
-        this.#min        = cfg.min
-        this.#max        = cfg.max
-        this.#step       = cfg.step
-        this.#unit       = cfg.unit      ?? ''
-        this.#format     = cfg.format    ?? _defaultFmt
-        this.#normalize  = cfg.normalize   ?? null
+        this.#key = cfg.key
+        this.#label = cfg.label
+        this.#min = cfg.min
+        this.#max = cfg.max
+        this.#step = cfg.step
+        this.#unit = cfg.unit ?? ''
+        this.#format = cfg.format ?? _defaultFmt
+        this.#normalize = cfg.normalize ?? null
         this.#denormalize = cfg.denormalize ?? null
-        this.#hasLfo     = cfg.hasLfo    ?? false
-        this.#noCursor   = cfg.noCursor  ?? false
-        this.#dataAttr   = cfg.dataAttr  ?? 'data-key'
+        this.#hasLfo = cfg.hasLfo ?? false
+        this.#noCursor = cfg.noCursor ?? false
+        this.#dataAttr = cfg.dataAttr ?? 'data-key'
         this.#extraClass = cfg.extraClass ?? ''
-        this.#onChange   = cfg.onChange  ?? null
+        this.#onChange = cfg.onChange ?? null
 
         // Current value in denormalized space
         this.#value = cfg.value ?? cfg.min
         this.#defaultValue = cfg.defaultValue ?? cfg.value ?? cfg.min
 
-        this.el       = null   // div.ne-row — available after mount() / createElement()
-        this.#input   = null
+        this.el = null // div.ne-row — available after mount() / createElement()
+        this.#input = null
         this.#valSpan = null
 
-        this.#boundOnInput   = this.#onInput.bind(this)
+        this.#boundOnInput = this.#onInput.bind(this)
         this.#boundOnKeydown = this.#onKeydown.bind(this)
         this.#boundOnDblClick = this.#onDblClick.bind(this)
         this.#boundOnContextMenu = this.#onContextMenu.bind(this)
@@ -127,7 +127,7 @@ export class OrSlider {
     /** Row CSS classes */
     #rowClasses() {
         const classes = ['ne-row']
-        if (this.#hasLfo)   classes.push('has-lfo')
+        if (this.#hasLfo) classes.push('has-lfo')
         if (this.#noCursor) classes.push('no-cursor')
         if (this.#extraClass) classes.push(this.#extraClass)
         return classes.join(' ')
@@ -140,7 +140,7 @@ export class OrSlider {
      * Then call mount(rowEl) to bind events.
      */
     toHTML() {
-        const normVal    = this.#toNorm(this.#value)
+        const normVal = this.#toNorm(this.#value)
         const displayVal = this.#fmt(this.#value)
         return `<div class="${this.#rowClasses()}" data-or-slider="${this.#key}" data-prop="${this.#key}">
             <label>${_escHtml(this.#label)}</label>
@@ -157,8 +157,8 @@ export class OrSlider {
      * @param {HTMLElement} rowEl  The element returned by toHTML(), already in the DOM.
      */
     mount(rowEl) {
-        this.el       = rowEl
-        this.#input   = rowEl.querySelector(`input[type=range]`)
+        this.el = rowEl
+        this.#input = rowEl.querySelector(`input[type=range]`)
         this.#valSpan = rowEl.querySelector(`.ne-val`)
         this.#bind()
     }
@@ -178,10 +178,10 @@ export class OrSlider {
         label.textContent = this.#label
 
         const input = document.createElement('input')
-        input.type  = 'range'
-        input.min   = this.#min
-        input.max   = this.#max
-        input.step  = this.#step
+        input.type = 'range'
+        input.min = this.#min
+        input.max = this.#max
+        input.step = this.#step
         input.value = this.#toNorm(this.#value)
         input.setAttribute(this.#dataAttr, this.#key)
 
@@ -194,8 +194,8 @@ export class OrSlider {
         div.appendChild(input)
         div.appendChild(span)
 
-        this.el       = div
-        this.#input   = input
+        this.el = div
+        this.#input = input
         this.#valSpan = span
 
         this.#bind()
@@ -207,7 +207,7 @@ export class OrSlider {
     #bind() {
         this.#unbind()
         if (this.#input) {
-            this.#input.addEventListener('input',   this.#boundOnInput)
+            this.#input.addEventListener('input', this.#boundOnInput)
             this.#input.addEventListener('keydown', this.#boundOnKeydown)
         }
         if (this.el) {
@@ -224,7 +224,7 @@ export class OrSlider {
     }
 
     #unbind() {
-        this.#input?.removeEventListener('input',   this.#boundOnInput)
+        this.#input?.removeEventListener('input', this.#boundOnInput)
         this.#input?.removeEventListener('keydown', this.#boundOnKeydown)
         if (this.el) {
             this.el.removeEventListener('dblclick', this.#boundOnDblClick)
@@ -252,9 +252,8 @@ export class OrSlider {
     }
 
     promptDirectInput() {
-        const val = promptNumericInput(
-            this.#label, this.#min, this.#max, this.#value, this.#unit,
-            num => clamp(this.#toDenorm(num), this.#min, this.#max)
+        const val = promptNumericInput(this.#label, this.#min, this.#max, this.#value, this.#unit, (num) =>
+            clamp(this.#toDenorm(num), this.#min, this.#max),
         )
         if (val !== null) this.setValue(val, true)
     }
@@ -263,10 +262,10 @@ export class OrSlider {
      * Handles 'input' events from the range element.
      */
     handleInput(_e) {
-        const norm    = parseFloat(this.#input.value)
-        const denorm  = this.#toDenorm(norm)
+        const norm = parseFloat(this.#input.value)
+        const denorm = this.#toDenorm(norm)
         if (this.#value === denorm) return
-        this.#value   = denorm
+        this.#value = denorm
         if (this.#valSpan) this.#valSpan.textContent = this.#fmt(denorm)
         this.#onChange?.(denorm, this.#key)
     }
@@ -279,7 +278,7 @@ export class OrSlider {
      * Handles 'keydown' events (ArrowUp/Down).
      */
     handleKeydown(e) {
-        const isUp   = e.key === 'ArrowUp'   || e.key === 'ArrowRight'
+        const isUp = e.key === 'ArrowUp' || e.key === 'ArrowRight'
         const isDown = e.key === 'ArrowDown' || e.key === 'ArrowLeft'
         if (!isUp && !isDown) return
 
@@ -291,14 +290,14 @@ export class OrSlider {
         if (isFine) multiplier = 0.1
         else if (e.ctrlKey || e.metaKey) multiplier = 10
 
-        const delta    = (isUp ? 1 : -1) * this.#step * multiplier
-        const norm     = parseFloat(this.#input.value)
+        const delta = (isUp ? 1 : -1) * this.#step * multiplier
+        const norm = parseFloat(this.#input.value)
         const newNorm = clamp(norm + delta, this.#min, this.#max)
-        const denorm   = this.#toDenorm(newNorm)
+        const denorm = this.#toDenorm(newNorm)
 
         if (this.#value !== denorm) {
-            this.#input.value         = newNorm
-            this.#value               = denorm
+            this.#input.value = newNorm
+            this.#value = denorm
             if (this.#valSpan) this.#valSpan.textContent = this.#fmt(denorm)
             this.#onChange?.(denorm, this.#key)
         }
@@ -312,18 +311,28 @@ export class OrSlider {
     // ─── Public API ─────────────────────────────────────────────────────────
 
     /** @returns {string} slider identifier */
-    get key() { return this.#key }
+    get key() {
+        return this.#key
+    }
 
     /** @returns {HTMLInputElement|null} the range input element */
-    get input() { return this.#input }
+    get input() {
+        return this.#input
+    }
 
     /** @returns {Function|null} current onChange callback */
-    get onChange() { return this.#onChange }
+    get onChange() {
+        return this.#onChange
+    }
     /** @param {Function|null} fn — rebind the onChange callback */
-    set onChange(fn) { this.#onChange = fn }
+    set onChange(fn) {
+        this.#onChange = fn
+    }
 
     /** Formats denormalized value for display (exposed for testing). */
-    formatValue(v) { return this.#fmt(v) }
+    formatValue(v) {
+        return this.#fmt(v)
+    }
 
     /**
      * Updates the slider and display.
@@ -377,8 +386,8 @@ export class OrSlider {
     /** Removes event listeners. Call before removing the element from the DOM. */
     destroy() {
         this.#unbind()
-        this.el       = null
-        this.#input   = null
+        this.el = null
+        this.#input = null
         this.#valSpan = null
     }
 }

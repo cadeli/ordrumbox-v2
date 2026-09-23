@@ -17,17 +17,17 @@ describe('Pattern Panel UI Grid', () => {
             nbBeats: 2,
             bpm: 120,
             tracks: {
-                'T1': {
+                T1: {
                     name: 'KICK',
                     nbBeats: 1,
                     stepsPerBeat: 4,
                     loopAtStep: 3, // Loop point at index 2 (4th step of 1st beat)
                     notes: [
                         { beat: 0, beatStep: 0, pitch: 0, velocity: 1 }, // Main note
-                        { beat: 0, beatStep: 1, pitch: 0, velocity: 0.8, retriggerNum: 3, rate: 1 } // Note with 2 ghost notes
-                    ]
-                }
-            }
+                        { beat: 0, beatStep: 1, pitch: 0, velocity: 0.8, retriggerNum: 3, rate: 1 }, // Note with 2 ghost notes
+                    ],
+                },
+            },
         }
         appState.patterns = [testPattern]
         appState.selectedPatternNum = 0
@@ -35,7 +35,7 @@ describe('Pattern Panel UI Grid', () => {
 
         // Mock dependencies
         serviceRegistry.transport = { isRunning: false, tick: 0 }
-        
+
         // Setup DOM
         document.body.innerHTML = ''
         panel = new PatternPanel()
@@ -73,7 +73,7 @@ describe('Pattern Panel UI Grid', () => {
         // This should generate 2 ghost notes in addition to the main note
         const ghosts = document.querySelectorAll('.pp-ghost')
         expect(ghosts.length).toBeGreaterThan(0)
-        
+
         // Check if ghosts are inside the expected cell or nearby
         const cellWithGhosts = document.querySelector('.pp-cell[data-pos="1"]')
         expect(cellWithGhosts.querySelector('.pp-ghost')).not.toBeNull()
@@ -146,7 +146,7 @@ describe('Pattern Panel UI Grid', () => {
                 const note = { beat, beatStep: step, pitch: 0, velocity: 0.8 }
                 track.notes.push(note)
                 return note
-            })
+            }),
         }
 
         const initialTrackEl = document.querySelector('.pp-track')
@@ -157,9 +157,7 @@ describe('Pattern Panel UI Grid', () => {
 
         // Verify note was added and cell was updated in-place
         expect(emptyCell.classList.contains('filled')).toBe(true)
-        expect(serviceRegistry.cmd.addNote).toHaveBeenCalledWith(
-            appState.patterns[0].tracks['T1'], 0, 3
-        )
+        expect(serviceRegistry.cmd.addNote).toHaveBeenCalledWith(appState.patterns[0].tracks['T1'], 0, 3)
         // Verify audio preview was called
         expect(simpleBeepSpy).toHaveBeenCalledWith(0, expect.objectContaining({ beat: 0, beatStep: 3 }))
         // Verify DOM elements were preserved in-place (not destroyed and recreated)

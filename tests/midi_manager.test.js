@@ -8,13 +8,13 @@ vi.mock('../src/logic/midi/midi_parser.js', () => ({
     parseMidiRealtime: vi.fn(),
     estimateBpmFromClockPulses: vi.fn(),
     updateClockPulseTracking: vi.fn(),
-    isMidiSupported: vi.fn(() => true)
+    isMidiSupported: vi.fn(() => true),
 }))
 
 vi.mock('../src/logic/services/instruments_manager.js', () => ({
     instrumentsManager: {
-        findTrackIndexFromMidi: vi.fn(() => 0)
-    }
+        findTrackIndexFromMidi: vi.fn(() => 0),
+    },
 }))
 
 describe('MidiManager', () => {
@@ -198,21 +198,21 @@ describe('MidiManager', () => {
             const mgr = createManager()
             const spy = vi.spyOn(mgr, 'sendMidiMessage')
             mgr.sendClock()
-            expect(spy).toHaveBeenCalledWith([0xF8], undefined)
+            expect(spy).toHaveBeenCalledWith([0xf8], undefined)
         })
 
         it('sendStart sends 0xFA', () => {
             const mgr = createManager()
             const spy = vi.spyOn(mgr, 'sendMidiMessage')
             mgr.sendStart()
-            expect(spy).toHaveBeenCalledWith([0xFA], undefined)
+            expect(spy).toHaveBeenCalledWith([0xfa], undefined)
         })
 
         it('sendStop sends 0xFC', () => {
             const mgr = createManager()
             const spy = vi.spyOn(mgr, 'sendMidiMessage')
             mgr.sendStop()
-            expect(spy).toHaveBeenCalledWith([0xFC], undefined)
+            expect(spy).toHaveBeenCalledWith([0xfc], undefined)
         })
     })
 
@@ -226,8 +226,8 @@ describe('MidiManager', () => {
 
             mgr.sendAllNotesOff()
             expect(mockSend).toHaveBeenCalledTimes(16)
-            expect(mockSend).toHaveBeenCalledWith([0xB0, 123, 0])
-            expect(mockSend).toHaveBeenCalledWith([0xBF, 123, 0])
+            expect(mockSend).toHaveBeenCalledWith([0xb0, 123, 0])
+            expect(mockSend).toHaveBeenCalledWith([0xbf, 123, 0])
         })
 
         it('does nothing when no output selected', () => {
@@ -251,8 +251,8 @@ describe('MidiManager', () => {
             mgr.externalSyncEnabled = true
             serviceRegistry.seq = { isRunning: false, toggleStartStop: vi.fn() }
 
-            mgr.onMidiMessage({ data: new Uint8Array([0xF8]) })
-            expect(parseMidiRealtime).toHaveBeenCalledWith(0xF8)
+            mgr.onMidiMessage({ data: new Uint8Array([0xf8]) })
+            expect(parseMidiRealtime).toHaveBeenCalledWith(0xf8)
         })
 
         it('ignores realtime when sync not enabled', async () => {
@@ -261,7 +261,7 @@ describe('MidiManager', () => {
             const mgr = createManager()
             mgr.externalSyncEnabled = false
 
-            mgr.onMidiMessage({ data: new Uint8Array([0xF8]) })
+            mgr.onMidiMessage({ data: new Uint8Array([0xf8]) })
             expect(parseMidiRealtime).not.toHaveBeenCalled()
         })
 

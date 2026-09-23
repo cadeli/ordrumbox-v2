@@ -62,7 +62,10 @@ export default class SongPanel extends BasePanel {
             appState.songInfos.description = this.#songDescEl.textContent.trim()
         })
         this.#songDescEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); this.#songDescEl.blur() }
+            if (e.key === 'Enter') {
+                e.preventDefault()
+                this.#songDescEl.blur()
+            }
         })
 
         this.container.querySelector('#sg-rename').addEventListener('click', () => {
@@ -82,8 +85,12 @@ export default class SongPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on("patternStructureChange", () => { if (this.isVisible) this.sync() })
-        playbackEvents.on("drumkitChange", () => { if (this.isVisible) this.sync() })
+        playbackEvents.on('patternStructureChange', () => {
+            if (this.isVisible) this.sync()
+        })
+        playbackEvents.on('drumkitChange', () => {
+            if (this.isVisible) this.sync()
+        })
     }
 
     sync() {
@@ -152,8 +159,8 @@ export default class SongPanel extends BasePanel {
             if (newName && newName !== currentName) {
                 serviceRegistry.cmd.renamePattern(idx, newName)
                 playbackEvents.batch(() => {
-                    playbackEvents.emit("patternStructureChange")
-                    playbackEvents.emit("patternChange")
+                    playbackEvents.emit('patternStructureChange')
+                    playbackEvents.emit('patternChange')
                 })
             }
             this.sync()
@@ -161,8 +168,14 @@ export default class SongPanel extends BasePanel {
 
         input.addEventListener('blur', commit)
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); input.blur() }
-            if (e.key === 'Escape') { input.value = currentName; input.blur() }
+            if (e.key === 'Enter') {
+                e.preventDefault()
+                input.blur()
+            }
+            if (e.key === 'Escape') {
+                input.value = currentName
+                input.blur()
+            }
         })
     }
 
@@ -195,8 +208,14 @@ export default class SongPanel extends BasePanel {
 
         input.addEventListener('blur', commit)
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); input.blur() }
-            if (e.key === 'Escape') { input.value = current; input.blur() }
+            if (e.key === 'Enter') {
+                e.preventDefault()
+                input.blur()
+            }
+            if (e.key === 'Escape') {
+                input.value = current
+                input.blur()
+            }
         })
     }
 
@@ -204,8 +223,8 @@ export default class SongPanel extends BasePanel {
         serviceRegistry.cmd.setSelectedPatternNum(idx)
         appState.currentPage = 0
         playbackEvents.batch(() => {
-            playbackEvents.emit("patternStructureChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit('patternChange')
         })
         this.#selectedIdx = idx
         this.#renderList()
@@ -222,8 +241,8 @@ export default class SongPanel extends BasePanel {
         serviceRegistry.cmd.removePattern(idx)
         this.#selectedIdx = appState.selectedPatternNum
         playbackEvents.batch(() => {
-            playbackEvents.emit("patternStructureChange")
-            playbackEvents.emit("patternChange")
+            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit('patternChange')
         })
         this.sync()
         showToast(`Deleted "${name}"`, 'success')
@@ -252,7 +271,7 @@ export default class SongPanel extends BasePanel {
                 <div class="sg-modal">
                     <div class="sg-modal-title">Load Song</div>
                     <select class="sg-modal-select" id="sg-load-select">
-                        ${keys.map(k => `<option value="${k}">${k}</option>`).join('')}
+                        ${keys.map((k) => `<option value="${k}">${k}</option>`).join('')}
                     </select>
                     <div class="sg-modal-actions">
                         <button class="ne-btn" id="sg-load-ok">Load</button>
@@ -264,7 +283,9 @@ export default class SongPanel extends BasePanel {
 
             const close = () => overlay.remove()
             overlay.querySelector('#sg-load-cancel').addEventListener('click', close)
-            overlay.addEventListener('click', (e) => { if (e.target === overlay) close() })
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) close()
+            })
 
             overlay.querySelector('#sg-load-ok').addEventListener('click', async () => {
                 const choice = overlay.querySelector('#sg-load-select').value
@@ -278,8 +299,8 @@ export default class SongPanel extends BasePanel {
 
                 this.#songName = songService.applyToAppState(data, choice)
                 playbackEvents.batch(() => {
-                    playbackEvents.emit("patternStructureChange")
-                    playbackEvents.emit("patternChange")
+                    playbackEvents.emit('patternStructureChange')
+                    playbackEvents.emit('patternChange')
                 })
                 this.sync()
                 showToast(`Song "${this.#songName}" loaded`, 'success')
@@ -314,8 +335,8 @@ export default class SongPanel extends BasePanel {
                 const fallbackName = file.name.replace(/\.\w+$/, '')
                 this.#songName = songService.applyToAppState(data, fallbackName)
                 playbackEvents.batch(() => {
-                    playbackEvents.emit("patternStructureChange")
-                    playbackEvents.emit("patternChange")
+                    playbackEvents.emit('patternStructureChange')
+                    playbackEvents.emit('patternChange')
                 })
                 this.sync()
                 showToast(`Song "${this.#songName}" imported`, 'success')

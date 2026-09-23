@@ -39,14 +39,14 @@ export const LFO_TARGET_SCALE = {
     'filter.Q': 24,
     'filter.drive': 1,
     'filterEnv.filterEnvelopeAmount': 1,
-    'masterVolume': 1,
+    masterVolume: 1,
     'noise.mix': 1,
     'noise.filterFreq': 10000,
     'noise.filterQ': 24,
     'fm.amount': 1,
     'fm.algo': 1,
-    'subGain': 1,
-    'pitchPunch': 1,
+    subGain: 1,
+    pitchPunch: 1,
     'envelope.attack': 0.25,
     'envelope.decay': 0.5,
     'envelope.sustain': 0.5,
@@ -282,7 +282,10 @@ export default class SynthEditor {
     #startLfoWatch() {
         if (this.#lfoRafId) return
         const tick = () => {
-            if (this.panel?.style.display !== 'flex') { this.#lfoRafId = null; return }
+            if (this.panel?.style.display !== 'flex') {
+                this.#lfoRafId = null
+                return
+            }
             this.#lfoRafId = requestAnimationFrame(tick)
             this.#updateLfoKnobs()
             this.#waveform.draw()
@@ -291,7 +294,10 @@ export default class SynthEditor {
     }
 
     #stopLfoWatch() {
-        if (this.#lfoRafId) { cancelAnimationFrame(this.#lfoRafId); this.#lfoRafId = null }
+        if (this.#lfoRafId) {
+            cancelAnimationFrame(this.#lfoRafId)
+            this.#lfoRafId = null
+        }
     }
 
     /**
@@ -429,7 +435,16 @@ export default class SynthEditor {
                 delete draftGroup._savedGain
             }
         } else {
-            const flagMap = { noise: 'bypassNoise', filter: 'bypassFilter', filterEnv: 'bypassFilterEnv', envelope: 'bypassEnv', lfo: 'bypassLfo1', lfo2: 'bypassLfo2', fm: 'bypassFm', modEnvelope: 'bypassModEnv' }
+            const flagMap = {
+                noise: 'bypassNoise',
+                filter: 'bypassFilter',
+                filterEnv: 'bypassFilterEnv',
+                envelope: 'bypassEnv',
+                lfo: 'bypassLfo1',
+                lfo2: 'bypassLfo2',
+                fm: 'bypassFm',
+                modEnvelope: 'bypassModEnv',
+            }
             const flag = flagMap[groupName]
             if (flag) {
                 this.#draft[flag] = this.#cardBypassed[groupName]
@@ -448,7 +463,7 @@ export default class SynthEditor {
     #handleWaveTab(target) {
         const waveTab = target.closest('[data-wave-tab]')
         if (!waveTab) return false
-        this.panel.querySelectorAll('[data-wave-tab]').forEach(t => t.classList.remove('active'))
+        this.panel.querySelectorAll('[data-wave-tab]').forEach((t) => t.classList.remove('active'))
         waveTab.classList.add('active')
         this.#waveTab = waveTab.dataset.waveTab
         this.#waveform.draw()
@@ -473,7 +488,9 @@ export default class SynthEditor {
         const val = waveIcon.dataset.waveVal
         this.#setValue(path, val)
         const scope = waveIcon.closest('.ne-row') ?? waveIcon.closest('.ss-group')
-        scope?.querySelectorAll('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon').forEach(b => b.classList.remove('selected'))
+        scope
+            ?.querySelectorAll('.ss-wave-icon, .ss-ft-icon, .ss-fm-icon')
+            .forEach((b) => b.classList.remove('selected'))
         waveIcon.classList.add('selected')
         this.#waveform.draw()
         return true
@@ -644,70 +661,134 @@ export default class SynthEditor {
 
     // ─── Public API ───────────────────────────────────────────────────────
     /** @returns {Object|null} current draft state */
-    get draft() { return this.#draft }
-    set draft(v) { this.#draft = v }
+    get draft() {
+        return this.#draft
+    }
+    set draft(v) {
+        this.#draft = v
+    }
 
     /** @returns {object} sound registry */
-    get soundRegistry() { return this.#soundRegistry }
-    set soundRegistry(v) { this.#soundRegistry = v }
+    get soundRegistry() {
+        return this.#soundRegistry
+    }
+    set soundRegistry(v) {
+        this.#soundRegistry = v
+    }
 
     /** @returns {object} service registry */
-    get serviceRegistry() { return this.#serviceRegistry }
-    set serviceRegistry(v) { this.#serviceRegistry = v }
+    get serviceRegistry() {
+        return this.#serviceRegistry
+    }
+    set serviceRegistry(v) {
+        this.#serviceRegistry = v
+    }
 
     /** @returns {object} playback events */
-    get playbackEvents() { return this.#playbackEvents }
+    get playbackEvents() {
+        return this.#playbackEvents
+    }
 
     /** @returns {string|null} current edit key */
-    get editKey() { return this.#editKey }
-    set editKey(k) { this.#editKey = k }
+    get editKey() {
+        return this.#editKey
+    }
+    set editKey(k) {
+        this.#editKey = k
+    }
 
     /** @returns {Object|null} original draft (before edits) */
-    get original() { return this.#original }
-    set original(v) { this.#original = v }
+    get original() {
+        return this.#original
+    }
+    set original(v) {
+        this.#original = v
+    }
 
     /** @returns {boolean} true if loading */
-    get loading() { return this.#loading }
-    set loading(v) { this.#loading = v }
+    get loading() {
+        return this.#loading
+    }
+    set loading(v) {
+        this.#loading = v
+    }
 
     /** @returns {boolean} true if load failed */
-    get loadFailed() { return this.#loadFailed }
-    set loadFailed(v) { this.#loadFailed = v }
+    get loadFailed() {
+        return this.#loadFailed
+    }
+    set loadFailed(v) {
+        this.#loadFailed = v
+    }
 
     /** @returns {Promise|null} load promise */
-    get loadPromise() { return this.#loadPromise }
-    set loadPromise(v) { this.#loadPromise = v }
+    get loadPromise() {
+        return this.#loadPromise
+    }
+    set loadPromise(v) {
+        this.#loadPromise = v
+    }
 
     /** @returns {string} current wave tab ('wave' or 'custom') */
-    get waveTab() { return this.#waveTab }
+    get waveTab() {
+        return this.#waveTab
+    }
 
     /** @returns {Object} card bypassed state { [groupName]: boolean } */
-    get cardBypassed() { return this.#cardBypassed }
+    get cardBypassed() {
+        return this.#cardBypassed
+    }
 
     /** @returns {OrKnob[]} current knob instances */
-    get knobs() { return [...this.#knobMap.values()] }
+    get knobs() {
+        return [...this.#knobMap.values()]
+    }
 
     /** Render the editor with current draft. */
-    renderEditor() { this.#renderEditor() }
+    renderEditor() {
+        this.#renderEditor()
+    }
 
     /** Hydrate draft from a sound object. */
-    hydrateDraft() { this.#hydrateDraft() }
+    hydrateDraft() {
+        this.#hydrateDraft()
+    }
 
     /** Compute LFO modulation value. */
-    computeSynthLfoMod(lfo, audioTime) { return this.#computeSynthLfoMod(lfo, audioTime) }
+    computeSynthLfoMod(lfo, audioTime) {
+        return this.#computeSynthLfoMod(lfo, audioTime)
+    }
 
     /** Close the editor panel. */
-    closeEditor(shouldSave) { this.#closeEditor(shouldSave) }
+    closeEditor(shouldSave) {
+        this.#closeEditor(shouldSave)
+    }
 
     /** @returns {PresetSection} preset section */
-    get presets() { return this.#presets }
+    get presets() {
+        return this.#presets
+    }
 
-    updateLfoIndicators() { this.#updateLfoIndicators() }
-    updateLfoKnobs() { this.#updateLfoKnobs() }
-    startLfoWatch() { this.#startLfoWatch() }
-    stopLfoWatch() { this.#stopLfoWatch() }
-    showSynthPanel() { this.#showSynthPanel() }
-    hideSynthPanel() { this.#hideSynthPanel() }
+    updateLfoIndicators() {
+        this.#updateLfoIndicators()
+    }
+    updateLfoKnobs() {
+        this.#updateLfoKnobs()
+    }
+    startLfoWatch() {
+        this.#startLfoWatch()
+    }
+    stopLfoWatch() {
+        this.#stopLfoWatch()
+    }
+    showSynthPanel() {
+        this.#showSynthPanel()
+    }
+    hideSynthPanel() {
+        this.#hideSynthPanel()
+    }
 
-    get lfoRafId() { return this.#lfoRafId }
+    get lfoRafId() {
+        return this.#lfoRafId
+    }
 }
