@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import AutoGenerate from '../src/logic/generators/auto_generate.js'
 import KickGenerate from '../src/logic/generators/kick_generate.js'
@@ -8,8 +9,12 @@ import HatGenerate from '../src/logic/generators/hat_generate.js'
 import BassGenerate from '../src/logic/generators/bass_generate.js'
 import PercGenerate from '../src/logic/generators/perc_generate.js'
 import RandomGenerate from '../src/logic/generators/random_generate.js'
+import ClapGenerate from '../src/logic/generators/clap_generate.js'
+import CowbellGenerate from '../src/logic/generators/cowbell_generate.js'
+import MelodyGenerate from '../src/logic/generators/melody_generate.js'
+import Utils from '../src/core/utils.js'
 import { appState } from '../src/state/app_state.js'
-import { makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
+import { makeTrack, makeNote, PARAM_SETS } from './helpers/make_pattern.js'
 import * as patternsManager from '../src/patterns/manager.js'
 
 describe('Generators', () => {
@@ -351,6 +356,184 @@ describe('Generators', () => {
                 }
             }
         })
+
+        it('conversation: all notes land within beats 0..3', () => {
+            const track = makeTrack('PERC', [], { nbBeats: 4 })
+            new PercGenerate().generateNewPerc(track, 'conversation')
+            for (const note of track.notes) {
+                expect(note.beat).toBeGreaterThanOrEqual(0)
+                expect(note.beat).toBeLessThan(4)
+            }
+        })
+
+        it('conversation: produces at least one note over repeated generation', () => {
+            let totalNotes = 0
+            for (let i = 0; i < 5; i++) {
+                const track = makeTrack('PERC', [], { nbBeats: 4 })
+                new PercGenerate().generateNewPerc(track, 'conversation')
+                totalNotes += track.notes.length
+            }
+            expect(totalNotes).toBeGreaterThan(0)
+        })
+
+        it('all variants produce notes with velocity in [0,1]', () => {
+            for (const variant of ['basic', 'conversation']) {
+                const track = makeTrack('PERC')
+                new PercGenerate().generateNewPerc(track, variant)
+                for (const note of track.notes) {
+                    expect(note.velocity).toBeGreaterThanOrEqual(0)
+                    expect(note.velocity).toBeLessThanOrEqual(1)
+                }
+            }
+        })
+
+        it('resolvePhrasePitch: returns pitch+pitchBias for numeric phrase.pitch', () => {
+            const gen = new PercGenerate()
+            const result = gen.resolvePhrasePitch({ pitch: 5 }, [0, 4, 7], {}, 3)
+            expect(result).toBe(8)
+        })
+
+        it('resolvePhrasePitch: reuse returns cached pitch', () => {
+            const gen = new PercGenerate()
+            const cached = { 0: 12 }
+            const result = gen.resolvePhrasePitch({ source: 'reuse', reuseIndex: 0 }, [0, 4, 7], cached, 0)
+            expect(result).toBe(12)
+        })
+
+        it('resolvePhrasePitch: root returns pitchBias', () => {
+            const gen = new PercGenerate()
+            const result = gen.resolvePhrasePitch({ source: 'root' }, [0, 4, 7], {}, 5)
+            expect(result).toBe(5)
+        })
+
+        it('resolvePhrasePitch: randomScale picks from tones + pitchBias', () => {
+            const gen = new PercGenerate()
+            const tones = [0, 4, 7]
+            const result = gen.resolvePhrasePitch({ source: 'randomScale' }, tones, {}, 3)
+            const allPossible = tones.map((t) => (t > 6 ? t - 12 : t) + 3)
+            expect(allPossible).toContain(result)
+        })
+
+        it('generatePercCallResponseVariant produces notes within loopPointAbsolute', () => {
+            const track = makeTrack('PERC', [], { nbBeats: 4 })
+            const gen = new PercGenerate()
+            const tones = [0, 4, 7]
+            const config = {
+                loopPointBeat: 4,
+                loopPointStep: 0,
+                callSteps: [0, 2],
+                responseSteps: [1, 3],
+                density: 1.0,
+                velocity: {
+                    base: 0.6,
+                    accentOnBeat: 0.1,
+                    variationBoost: 0.05,
+                    randomSpread: 0.05,
+                    clampMin: 0.2,
+                    clampMax: 1,
+                },
+            }
+            gen.generatePercCallResponseVariant(track, tones, 0, config)
+            for (const note of track.notes) {
+                const abs = note.beat * 4 + note.beatStep
+                expect(abs).toBeLessThan(16)
+            }
+        })
+
+        it('generatePercFillVariant places notes at startBar', () => {
+            const track = makeTrack('PERC', [], { nbBeats: 4 })
+            const gen = new PercGenerate()
+            const config = {
+                loopPointBeat: 4,
+                loopPointStep: 0,
+                startBarOffset: 1,
+                steps: [0, 1, 2],
+                velocity: {
+                    base: 0.6,
+                    accentOnBeat: 0.1,
+                    variationBoost: 0.05,
+                    randomSpread: 0.05,
+                    clampMin: 0.2,
+                    clampMax: 1,
+                },
+            }
+            gen.generatePercFillVariant(track, [0, 4, 7], 0, config)
+            for (const note of track.notes) {
+                expect(note.beat).toBe(3)
+            }
+        })
+
+        it('loop point is set after generation', () => {
+            const track = makeTrack('PERC')
+            new PercGenerate().generateNewPerc(track, 'basic')
+            expect(track.loopPointBeat).toBeGreaterThan(0)
+        })
+    })
+
+    // ── AutoGenerate dispatch ──────────────────────────────────────
+
+    describe('AutoGenerate dispatch', () => {
+        beforeEach(() => {
+            serviceRegistry.patterns = patternsManager
+            soundRegistry.scales = { 'pentatonic minor': [0, 3, 5, 7, 10] }
+        })
+
+        it.each([
+            ['KICK', 'KICK'],
+            ['KICK2', 'KICK'],
+            ['BD', 'KICK'],
+            ['SNARE', 'SNARE'],
+            ['SD', 'SNARE'],
+            ['CHH', 'HAT'],
+            ['OHH', 'HAT'],
+            ['HAT_TOP', 'HAT'],
+            ['BASS', 'BASS'],
+            ['SYNTH1', 'BASS'],
+            ['PERC', 'PERC'],
+            ['COWBELL', 'COWBELL'],
+            ['CLAP', 'CLAP'],
+        ])('detectTrackType("%s") → "%s"', (name, expected) => {
+            expect(Utils.detectTrackType(name)).toBe(expected)
+        })
+
+        it.each(['KICK', 'SNARE', 'CHH', 'BASS', 'PERC'])('generateTrack for %s does not throw', async (name) => {
+            const pattern = cmd.addPattern('T')
+            const track = cmd.addTrack(pattern, name, 4)
+            track.nbBeats = 4
+            const autoGen = new AutoGenerate()
+            await expect(autoGen.generateTrack(track, 'basic')).resolves.not.toThrow()
+        })
+
+        it('generateTrack for COWBELL runs the cowbell generator', async () => {
+            const pattern = cmd.addPattern('T')
+            const track = cmd.addTrack(pattern, 'COWBELL', 4)
+            track.nbBeats = 4
+            const autoGen = new AutoGenerate()
+            await expect(autoGen.generateTrack(track, 'basic')).resolves.not.toThrow()
+        })
+
+        it('changeTrack clears track notes and regenerates', async () => {
+            const pattern = cmd.addPattern('T')
+            const track = cmd.addTrack(pattern, 'KICK', 4)
+            track.nbBeats = 4
+            cmd.addNote(track, 0, 0, 0)
+            const applySpy = vi.fn()
+            serviceRegistry.patterns = { ...patternsManager, applyFlatNotes: applySpy }
+            const autoGen = new AutoGenerate()
+
+            await autoGen.changeTrack(0, pattern, track)
+
+            expect(Array.isArray(track.notes)).toBe(true)
+            expect(applySpy).toHaveBeenCalledWith(pattern)
+        })
+
+        it('changeTrack works for non-KICK track types', async () => {
+            const pattern = cmd.addPattern('T')
+            const track = cmd.addTrack(pattern, 'SNARE', 4)
+            track.nbBeats = 4
+            const autoGen = new AutoGenerate()
+            await expect(autoGen.changeTrack(0, pattern, track)).resolves.not.toThrow()
+        })
     })
 
     // ── Loop point consistency ──────────────────────────────────────
@@ -535,6 +718,175 @@ describe('Generators', () => {
             }
         })
     })
+
+    // ── Clap Generator ─────────────────────────────────────────────
+
+    describe('Clap Generator', () => {
+        it.each(['backbeat', 'offbeat', 'sparse', 'fourOnFloor', 'syncopated', 'dense'])(
+            'variant %s produces notes within grid bounds',
+            (variant) => {
+                Math.random = () => 0
+                const track = makeTrack('CLAP', [], { nbBeats: 4, stepsPerBeat: 4 })
+                new ClapGenerate().generateNewClap(track, variant)
+                expect(track.notes.length).toBeGreaterThan(0)
+                for (const note of track.notes) {
+                    expect(note.beat).toBeGreaterThanOrEqual(0)
+                    expect(note.beat).toBeLessThan(4)
+                    expect(note.beatStep).toBeGreaterThanOrEqual(0)
+                    expect(note.beatStep).toBeLessThan(4)
+                    expect(note.velocity).toBeGreaterThanOrEqual(0)
+                    expect(note.velocity).toBeLessThanOrEqual(1)
+                }
+            },
+        )
+
+        it('backbeat places notes on beats 1 and 3', () => {
+            const track = makeTrack('CLAP', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new ClapGenerate().generateNewClap(track, 'backbeat')
+            const beats = [...new Set(track.notes.map((n) => n.beat))].sort()
+            expect(beats).toEqual([1, 3])
+        })
+
+        it('sets loop point from config', () => {
+            const track = makeTrack('CLAP', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new ClapGenerate().generateNewClap(track, 'backbeat')
+            expect(track.loopPointBeat).toBe(4)
+            expect(track.loopAtStep).toBe(16)
+        })
+
+        it('clears previous notes before generating', () => {
+            const track = makeTrack('CLAP', [makeNote(0, 0)], { nbBeats: 4, stepsPerBeat: 4 })
+            new ClapGenerate().generateNewClap(track, 'backbeat')
+            const positions = track.notes.map((n) => `${n.beat}:${n.beatStep}`)
+            expect(new Set(positions).size).toBe(positions.length)
+            expect(track.notes.some((n) => n.beat === 0 && n.beatStep === 0)).toBe(false)
+        })
+    })
+
+    // ── Cowbell Generator ──────────────────────────────────────────
+
+    describe('Cowbell Generator', () => {
+        it.each(['basic', 'offbeat', 'dense', 'sparse', 'syncopated'])(
+            'variant %s produces notes within grid bounds',
+            async (variant) => {
+                Math.random = () => 0
+                const track = makeTrack('COWBELL', [], { nbBeats: 4, stepsPerBeat: 4 })
+                await new CowbellGenerate().generateNewCowbell(track, variant)
+                expect(track.notes.length).toBeGreaterThan(0)
+                for (const note of track.notes) {
+                    expect(note.beat).toBeGreaterThanOrEqual(0)
+                    expect(note.beat).toBeLessThan(4)
+                    expect(note.beatStep).toBeGreaterThanOrEqual(0)
+                    expect(note.beatStep).toBeLessThan(4)
+                    expect(note.velocity).toBeGreaterThanOrEqual(0)
+                    expect(note.velocity).toBeLessThanOrEqual(1)
+                }
+            },
+        )
+
+        it('basic places a note on each beat step 0', async () => {
+            const track = makeTrack('COWBELL', [], { nbBeats: 4, stepsPerBeat: 4 })
+            await new CowbellGenerate().generateNewCowbell(track, 'basic')
+            const beats = track.notes.map((n) => n.beat).sort()
+            expect(beats).toEqual([0, 1, 2, 3])
+            for (const note of track.notes) expect(note.beatStep).toBe(0)
+        })
+
+        it('sets loop point from config', async () => {
+            const track = makeTrack('COWBELL', [], { nbBeats: 4, stepsPerBeat: 4 })
+            await new CowbellGenerate().generateNewCowbell(track, 'basic')
+            expect(track.loopPointBeat).toBe(4)
+            expect(track.loopAtStep).toBe(16)
+        })
+    })
+
+    // ── Melody Generator ───────────────────────────────────────────
+
+    describe('Melody Generator', () => {
+        it('chordStab stacks chord tones on beats 0 and 2', () => {
+            const track = makeTrack('PIANO', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new MelodyGenerate().generateNewMelody(track, 'chordStab')
+            expect(track.notes.length).toBeGreaterThanOrEqual(3)
+            const beats = [...new Set(track.notes.map((n) => n.beat))].sort()
+            expect(beats).toEqual([0, 2])
+        })
+
+        it('break places notes only on the last beat', () => {
+            const track = makeTrack('PIANO', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new MelodyGenerate().generateNewMelody(track, 'break')
+            expect(track.notes.length).toBeGreaterThan(0)
+            for (const note of track.notes) expect(note.beat).toBe(3)
+        })
+
+        it('intro and outro are no-ops (notes untouched)', () => {
+            for (const variant of ['intro', 'outro']) {
+                const track = makeTrack('PIANO', [makeNote(0, 0)], { nbBeats: 4, stepsPerBeat: 4 })
+                new MelodyGenerate().generateNewMelody(track, variant)
+                expect(track.notes).toHaveLength(1)
+            }
+        })
+
+        it('arpeggio attaches arp config to generated notes', () => {
+            const track = makeTrack('PIANO', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new MelodyGenerate().generateNewMelody(track, 'arpeggio')
+            expect(track.notes.length).toBeGreaterThan(0)
+            const withArp = track.notes.filter((n) => n.arp)
+            expect(withArp.length).toBeGreaterThan(0)
+            expect(withArp[0].retriggerNum).toBe(4)
+            expect(withArp[0].rate).toBe(16)
+        })
+
+        it('walking (groove) produces notes on strong beats', () => {
+            const track = makeTrack('PIANO', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new MelodyGenerate().generateNewMelody(track, 'walking')
+            expect(track.notes.length).toBeGreaterThan(0)
+            for (const note of track.notes) {
+                expect(note.beat).toBeGreaterThanOrEqual(0)
+                expect(note.beatStep).toBeGreaterThanOrEqual(0)
+                expect(note.beatStep).toBeLessThan(4)
+            }
+            expect(track.notes.some((n) => n.beatStep === 0)).toBe(true)
+        })
+
+        it('reggae places notes on offbeat steps 2 and 3', () => {
+            const track = makeTrack('PIANO', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new MelodyGenerate().generateNewMelody(track, 'reggae')
+            expect(track.notes.length).toBeGreaterThan(0)
+            for (const note of track.notes) {
+                expect([2, 3]).toContain(note.beatStep)
+            }
+        })
+
+        it('sparse produces notes with pitches from the scale', () => {
+            const track = makeTrack('PIANO', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new MelodyGenerate().generateNewMelody(track, 'sparse')
+            expect(track.notes.length).toBeGreaterThan(0)
+            for (const note of track.notes) {
+                expect(typeof note.pitch).toBe('number')
+                expect(note.velocity).toBeGreaterThanOrEqual(0)
+                expect(note.velocity).toBeLessThanOrEqual(1)
+            }
+        })
+
+        it('respects harmony root offset', () => {
+            const flat = makeTrack('PIANO', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new MelodyGenerate().generateNewMelody(flat, 'sparse', 1, null, { root: 0, scale: null })
+            const raised = makeTrack('PIANO', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new MelodyGenerate().generateNewMelody(raised, 'sparse', 1, null, { root: 12, scale: null })
+            const minFlat = Math.min(...flat.notes.map((n) => n.pitch))
+            const minRaised = Math.min(...raised.notes.map((n) => n.pitch))
+            expect(minRaised).toBeGreaterThanOrEqual(minFlat + 12)
+        })
+
+        it('sets loop point from config', () => {
+            const track = makeTrack('PIANO', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new MelodyGenerate().generateNewMelody(track, 'chordStab')
+            expect(track.loopPointBeat).toBe(4)
+            expect(track.loopAtStep).toBe(16)
+        })
+    })
+
+    // ── RandomGenerate ─────────────────────────────────────────────
 
     describe('RandomGenerate', () => {
         it('produces at least one note within grid bounds', () => {

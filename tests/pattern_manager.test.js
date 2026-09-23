@@ -1,14 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import * as patternsManager from '../src/patterns/manager.js'
-import {
-    normalizeArp,
-    hasArp,
-    getArpNoteCount,
-    isTriggered,
-    isProbabilityTriggered,
-    generateSubNotes,
-    createArpFlatNote,
-} from '../src/patterns/engine.js'
+import { hasArp, getArpNoteCount, generateSubNotes, createArpFlatNote } from '../src/patterns/engine.js'
 import { makeNote, makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
 import { EVENTS } from '../src/core/events.js'
 
@@ -70,64 +62,6 @@ describe('PatternManager', () => {
         mgr = patternsManager
     })
 
-    describe('computeNextPatternStepNote', () => {
-        it('finds next note in same beat', () => {
-            const track = makeTrack('KICK', [makeNote(0, 0), makeNote(0, 2)], {
-                nbBeats: 2,
-                stepsPerBeat: 4,
-                loopAtStep: 8,
-            })
-            const note = track.notes[0]
-            const result = mgr.computeNextPatternStepNote(note, track)
-            expect(result).toBe(2)
-        })
-
-        it('finds next note in next beat', () => {
-            const track = makeTrack('KICK', [makeNote(0, 2), makeNote(1, 0)], {
-                nbBeats: 2,
-                stepsPerBeat: 4,
-                loopAtStep: 8,
-            })
-            const note = track.notes[0]
-            const result = mgr.computeNextPatternStepNote(note, track)
-            expect(result).toBe(4)
-        })
-
-        it('returns loopAtStep when no note found after', () => {
-            const track = makeTrack('KICK', [makeNote(0, 4)], {
-                nbBeats: 2,
-                stepsPerBeat: 4,
-                loopAtStep: 6,
-            })
-            const note = track.notes[0]
-            const result = mgr.computeNextPatternStepNote(note, track)
-            expect(result).toBe(6)
-        })
-
-        it('returns total steps when no note found and no loopAtStep', () => {
-            const track = makeTrack('KICK', [makeNote(0, 6)], {
-                nbBeats: 2,
-                stepsPerBeat: 4,
-                loopAtStep: 8,
-            })
-            delete track.loopAtStep
-            const note = track.notes[0]
-            const result = mgr.computeNextPatternStepNote(note, track)
-            expect(result).toBe(8)
-        })
-
-        it('wraps around beats correctly', () => {
-            const track = makeTrack('KICK', [makeNote(1, 3), makeNote(2, 1)], {
-                nbBeats: 3,
-                stepsPerBeat: 4,
-                loopAtStep: 12,
-            })
-            const note = track.notes[0]
-            const result = mgr.computeNextPatternStepNote(note, track)
-            expect(result).toBe(9)
-        })
-    })
-
     describe('applyFlatNotes', () => {
         it('returns flatNotes and updates appState', async () => {
             const { appState } = await import('../src/state/app_state.js')
@@ -144,7 +78,7 @@ describe('PatternManager', () => {
             expect(appState.flatNotes).toBe(result)
         })
 
-        it('fires onPatternChange callbacks', async () => {
+        it('fires PATTERN_CHANGE callbacks on playbackEvents', async () => {
             const { playbackEvents } = await import('../src/state/playback_events.js')
             const cb = vi.fn()
             playbackEvents.on(EVENTS.PATTERN_CHANGE, cb)
@@ -163,30 +97,17 @@ describe('PatternManager', () => {
         })
     })
 
-    describe('delegate methods', () => {
-        it('isTriggered delegates to engine', () => {
-            expect(isTriggered(0, 1, 0)).toBe(true)
-            expect(isTriggered(0, 2, 0)).toBe(true)
-            expect(isTriggered(0, 2, 1)).toBe(false)
-        })
+    // isTriggered / isProbabilityTriggered / normalizeArp / generateSubNotes
+    // are covered exhaustively in pattern_engine.test.js — only the
+    // manager-specific helpers are tested here.
 
-        it('isProbabilityTriggered delegates to engine', () => {
-            expect(isProbabilityTriggered(1)).toBe(true)
-            expect(isProbabilityTriggered(0)).toBe(false)
-        })
-
-        it('hasArp delegates to engine', () => {
+    describe('engine helpers unique to the manager', () => {
+        it('hasArp(null) returns false', () => {
             expect(hasArp(null)).toBe(false)
+        })
+
+        it('hasArp({ type: "up", notes: 4 }) returns true', () => {
             expect(hasArp({ type: 'up', notes: 4 })).toBe(true)
-        })
-
-        it('normalizeArp returns null for empty intervals', () => {
-            expect(normalizeArp({ mode: 'up' })).toBeNull()
-        })
-
-        it('normalizeArp returns sequence for valid intervals', () => {
-            const result = normalizeArp({ mode: 'up', intervals: [0, 3, 7] })
-            expect(result).toEqual({ sequence: [0, 3, 7] })
         })
 
         it('getArpNoteCount reads retriggerNum from note', () => {

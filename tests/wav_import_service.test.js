@@ -37,9 +37,6 @@ vi.mock('../src/state/service_registry.js', () => ({
         },
         cmd: null,
     },
-    getAutoAssignService: vi.fn().mockResolvedValue({
-        autoAssignSounds: vi.fn(),
-    }),
     __esModule: true,
 }))
 

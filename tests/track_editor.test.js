@@ -121,7 +121,7 @@ describe('TrackEditor loop panel', () => {
     })
 })
 
-describe('TrackEditor onPatternChange', () => {
+describe('TrackEditor PATTERN_CHANGE handling', () => {
     it('rebinds to the same-named track in the new pattern and re-syncs', () => {
         const editor = new TrackEditor()
         editor.init()

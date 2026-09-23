@@ -88,6 +88,13 @@ export default defineConfig([
                     ],
                 },
             ],
+            'no-restricted-globals': [
+                'error',
+                {
+                    name: 'document',
+                    message: 'Non-UI layers must not touch the DOM — use core/download.js or core/notify.js.',
+                },
+            ],
         },
     },
     {
@@ -100,6 +107,38 @@ export default defineConfig([
                         {
                             group: ['**/ui/**', '**/logic/**', '**/audio/**'],
                             message: 'core/ and cache/ must not import from higher layers.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
+        files: ['src/state/**/*.js', 'src/loader/**/*.js', 'src/keyboard_shortcuts.js'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['**/ui/**'],
+                            message: 'state/, loader/ and keyboard_shortcuts must not import from ui/.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
+        files: ['src/service_worker.js'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['**/ui/**', '**/logic/**', '**/audio/**'],
+                            message: 'service worker must not import from ui/, logic/ or audio/.',
                         },
                     ],
                 },

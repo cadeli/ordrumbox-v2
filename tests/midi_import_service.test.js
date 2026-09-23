@@ -38,9 +38,6 @@ vi.mock('../src/state/service_registry.js', () => ({
         },
         audioEngine: { invalidateCache: vi.fn() },
     },
-    getAutoAssignService: vi.fn().mockResolvedValue({
-        autoAssignSounds: vi.fn(),
-    }),
     __esModule: true,
 }))
 

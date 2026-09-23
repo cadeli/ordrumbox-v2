@@ -190,27 +190,21 @@ describe('Granular patternChange events', () => {
         })
     })
 
-    describe('backward compatibility', () => {
-        it('patternChange still fires when granular event fires', () => {
+    describe('patternChange emission independence', () => {
+        it('granular events do not auto-fire patternChange', () => {
             const spy = vi.fn()
             playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
 
             playbackEvents.emit(EVENTS.NOTE_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-            expect(spy).toHaveBeenCalled()
-        })
-
-        it('existing consumers still work with patternChange only', () => {
-            const spy = vi.fn()
-            playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
-
             playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE)
+            expect(spy).not.toHaveBeenCalled()
+
             playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             expect(spy).toHaveBeenCalledTimes(1)
         })
     })
 
-    describe('Consumer migration', () => {
+    describe('Toolbar signal consumers', () => {
         it('toolbar gen buttons update via signal on noteChange', () => {
             const toolbar = new Toolbar()
             toolbar.init()

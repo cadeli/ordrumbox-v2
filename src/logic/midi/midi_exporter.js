@@ -30,6 +30,7 @@ import { recomputeFlatNotes, computeNbTickForPattern } from '../../patterns/engi
 import { TICK } from '../../core/constants.js'
 import { computeLfoValue, clamp } from '../../audio/math.js'
 import Utils from '../../core/utils.js'
+import { downloadBlob } from '../../core/download.js'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -296,11 +297,6 @@ export default class MidiExporter {
     download(pattern, filename, options = {}) {
         const bytes = this.export(pattern, options)
         const blob = new Blob([bytes], { type: 'audio/midi' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = filename ?? `${pattern.name ?? 'pattern'}.mid`
-        a.click()
-        URL.revokeObjectURL(url)
+        downloadBlob(blob, filename ?? `${pattern.name ?? 'pattern'}.mid`)
     }
 }

@@ -152,7 +152,7 @@ describe('NoteEditor — OrSlider integration', () => {
         expect(noteEditor.container.querySelector('input[type=range][data-key="arpType"]')).toBeNull()
     })
 
-    it('changing a knob updates the note and fires onPatternChange', async () => {
+    it('changing a knob updates the note and fires PATTERN_CHANGE', async () => {
         const { note } = await showNote(noteEditor)
         const fn = vi.fn()
         playbackEvents.on(EVENTS.PATTERN_CHANGE, fn)

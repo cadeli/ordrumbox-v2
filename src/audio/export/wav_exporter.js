@@ -5,6 +5,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { getAutoGenerateService } from '../../state/service_loader.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { nameOr } from '../../core/logger.js'
+import { downloadBlob } from '../../core/download.js'
 
 export default class WavExporter {
     constructor() {}
@@ -64,11 +65,6 @@ export default class WavExporter {
     }
 
     downloadWav = (blob, filename) => {
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = nameOr(filename, 'pattern.wav', 'WavExporter', 'filename fallback')
-        a.click()
-        URL.revokeObjectURL(url)
+        downloadBlob(blob, nameOr(filename, 'pattern.wav', 'WavExporter', 'filename fallback'))
     }
 }

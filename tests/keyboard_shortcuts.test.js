@@ -8,21 +8,35 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 import { initKeyboardShortcuts } from '../src/keyboard_shortcuts.js'
 import { EVENTS } from '../src/core/events.js'
 import { showToast } from '../src/core/notify.js'
+import { getAutoGenerateService, getAutoAssignService } from '../src/state/service_loader.js'
+import { logger } from '../src/core/logger.js'
 
 vi.mock('../src/core/notify.js', () => ({
     showToast: vi.fn(),
 }))
 
+vi.mock('../src/state/service_loader.js', () => ({
+    getService: vi.fn(),
+    getAutoGenerateService: vi.fn(async () => ({ generatePattern: vi.fn() })),
+    getAutoAssignService: vi.fn(async () => ({ autoAssignSounds: vi.fn() })),
+    getMidiManagerService: vi.fn(),
+    getHistoryService: vi.fn(),
+}))
+
 function fireKeydown(code, key = '') {
-    const event = new KeyboardEvent('keydown', { code, key, bubbles: true })
+    const event = new KeyboardEvent('keydown', { code, key, bubbles: true, cancelable: true })
     document.dispatchEvent(event)
     return event
 }
 
+function fireKeydownOn(target, code, key = '') {
+    const event = new KeyboardEvent('keydown', { code, key, bubbles: true, cancelable: true })
+    target.dispatchEvent(event)
+    return event
+}
+
 async function flushAsyncShortcut() {
-    await Promise.resolve()
-    await Promise.resolve()
-    await Promise.resolve()
+    for (let i = 0; i < 10; i++) await Promise.resolve()
 }
 
 describe('Keyboard shortcuts', () => {
@@ -32,7 +46,6 @@ describe('Keyboard shortcuts', () => {
         appState.reset()
         serviceRegistry.reset()
         soundRegistry.reset()
-        document.getElementById('odbox-toast-container')?.remove()
 
         appState.patterns = [
             {
@@ -201,5 +214,194 @@ describe('Keyboard shortcuts', () => {
 
         expect(showToast).toHaveBeenCalledWith('Failed to load generated sounds', 'error')
         expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
+    })
+
+    // ── KeyB / KeyS / KeyJ / KeyK / KeyD ─────────────────────────
+
+    it('KeyB triggers auto-generate pattern', async () => {
+        const mockGen = { generatePattern: vi.fn() }
+        getAutoGenerateService.mockImplementation(async () => mockGen)
+
+        fireKeydown('KeyB')
+        await flushAsyncShortcut()
+
+        expect(getAutoGenerateService).toHaveBeenCalled()
+        expect(mockGen.generatePattern).toHaveBeenCalled()
+    })
+
+    it('KeyS logs patterns and generated sounds', async () => {
+        const infoSpy = vi.spyOn(logger, 'info')
+
+        fireKeydown('KeyS')
+
+        expect(infoSpy).toHaveBeenCalledTimes(2)
+        infoSpy.mockRestore()
+    })
+
+    it('KeyJ auto-assigns all tracks', async () => {
+        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        const autoAssign = { autoAssignSounds: vi.fn() }
+        getAutoAssignService.mockResolvedValueOnce(autoAssign)
+
+        fireKeydown('KeyJ')
+        await flushAsyncShortcut()
+
+        const track = appState.patterns[0].tracks[0]
+        expect(track.useAutoAssignSound).toBe(true)
+        expect(track.useSoftSynth).toBe(false)
+        expect(autoAssign.autoAssignSounds).toHaveBeenCalledWith(appState.patterns[0])
+        expect(serviceRegistry.patterns.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
+        expect(showToast).toHaveBeenCalledWith('All tracks auto-assigned', 'success')
+    })
+
+    it('KeyJ no-ops when no pattern is selected', async () => {
+        appState.patterns = []
+        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+
+        fireKeydown('KeyJ')
+        await flushAsyncShortcut()
+
+        expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
+        expect(showToast).not.toHaveBeenCalledWith('All tracks auto-assigned', 'success')
+    })
+
+    it('KeyK assigns a random sample to all tracks', async () => {
+        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        soundRegistry.sounds = { 'kick.wav': {}, 'snare.wav': {} }
+
+        fireKeydown('KeyK')
+
+        const tracks = appState.patterns[0].tracks
+        for (const track of tracks) {
+            expect(track.useAutoAssignSound).toBe(false)
+            expect(track.useSoftSynth).toBe(false)
+            expect(['kick.wav', 'snare.wav']).toContain(track.soundId)
+        }
+        expect(serviceRegistry.patterns.applyFlatNotes).toHaveBeenCalledWith(appState.patterns[0])
+        expect(showToast).toHaveBeenCalledWith('Random samples assigned', 'success')
+    })
+
+    it('KeyK shows error toast when no samples are loaded', async () => {
+        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+        soundRegistry.sounds = {}
+
+        fireKeydown('KeyK')
+
+        expect(showToast).toHaveBeenCalledWith('No samples loaded', 'error')
+        expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
+    })
+
+    it('KeyK no-ops when no pattern is selected', async () => {
+        appState.patterns = []
+        serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
+
+        fireKeydown('KeyK')
+
+        expect(showToast).not.toHaveBeenCalledWith('Random samples assigned', 'success')
+    })
+
+    it('KeyD shows info toast when selected track does not use a generated sound', async () => {
+        fireKeydown('KeyD')
+
+        expect(showToast).toHaveBeenCalledWith('Current track does not use a generated sound', 'info')
+    })
+
+    it('KeyD shows info toast when no track is selected', async () => {
+        appState.selectedTrackNum = 99
+
+        fireKeydown('KeyD')
+
+        expect(showToast).toHaveBeenCalledWith('No track selected', 'info')
+    })
+
+    it('KeyD shows error toast when generated sound is missing from registry', async () => {
+        const track = appState.patterns[0].tracks[0]
+        track.useSoftSynth = true
+        track.synthSoundKey = 'MISSING_KEY'
+        soundRegistry.generatedSounds = {}
+
+        fireKeydown('KeyD')
+
+        expect(showToast).toHaveBeenCalledWith('Generated sound not found', 'error')
+    })
+
+    it('KeyD logs the generated sound on success', async () => {
+        const infoSpy = vi.spyOn(logger, 'info')
+        const track = appState.patterns[0].tracks[0]
+        track.useSoftSynth = true
+        track.synthSoundKey = 'BASS0'
+        const sound = { name: 'BASS0' }
+        soundRegistry.generatedSounds = { BASS0: sound }
+
+        fireKeydown('KeyD')
+
+        expect(infoSpy).toHaveBeenCalled()
+        const logged = infoSpy.mock.calls.at(-1)?.[1] ?? ''
+        expect(String(logged)).toBe(JSON.stringify(sound, null, 2))
+        infoSpy.mockRestore()
+    })
+
+    // ── Preview keys KeyT / KeyY / KeyU / KeyI ────────────────────
+
+    it('KeyT / KeyY / KeyU / KeyI preview tracks 4-7', () => {
+        fireKeydown('KeyT')
+        expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(4)
+        fireKeydown('KeyY')
+        expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(5)
+        fireKeydown('KeyU')
+        expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(6)
+        fireKeydown('KeyI')
+        expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(7)
+    })
+
+    // ── INPUT / TEXTAREA guards ───────────────────────────────────
+
+    it('ignores shortcuts when focus is in a text INPUT', () => {
+        const input = document.createElement('input')
+        input.type = 'text'
+        document.body.appendChild(input)
+
+        fireKeydownOn(input, 'Space')
+
+        expect(serviceRegistry.seq.toggleStartStop).not.toHaveBeenCalled()
+        input.remove()
+    })
+
+    it('ignores shortcuts when focus is in a TEXTAREA', () => {
+        const textarea = document.createElement('textarea')
+        document.body.appendChild(textarea)
+
+        fireKeydownOn(textarea, 'Space')
+
+        expect(serviceRegistry.seq.toggleStartStop).not.toHaveBeenCalled()
+        textarea.remove()
+    })
+
+    it('ignores shortcuts when focus is in a contenteditable element', () => {
+        const div = document.createElement('div')
+        div.setAttribute('contenteditable', 'true')
+        Object.defineProperty(div, 'isContentEditable', { value: true, configurable: true })
+        document.body.appendChild(div)
+
+        fireKeydownOn(div, 'Space')
+
+        expect(serviceRegistry.seq.toggleStartStop).not.toHaveBeenCalled()
+        div.remove()
+    })
+
+    it('still handles shortcuts when focus is in a range INPUT', () => {
+        const input = document.createElement('input')
+        input.type = 'range'
+        document.body.appendChild(input)
+
+        fireKeydownOn(input, 'Space')
+
+        expect(serviceRegistry.seq.toggleStartStop).toHaveBeenCalled()
+        input.remove()
+    })
+
+    it('Space keydown calls preventDefault', () => {
+        const event = fireKeydown('Space')
+        expect(event.defaultPrevented).toBe(true)
     })
 })

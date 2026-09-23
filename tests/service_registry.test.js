@@ -94,4 +94,34 @@ describe('lazyService', () => {
         const s = await getAutoAssignService()
         expect(s).toEqual({ reused: true })
     })
+
+    it('getService rejects unknown lazy service keys', async () => {
+        const { getService } = await import('../src/state/service_loader.js')
+        await expect(getService('nope')).rejects.toThrow(/Unknown lazy service/)
+    })
+
+    it('getMidiManagerService creates instance once', async () => {
+        const { getMidiManagerService } = await import('../src/state/service_loader.js')
+        const s1 = await getMidiManagerService()
+        expect(s1).toBeDefined()
+        expect(serviceRegistry.midiManager).toBe(s1)
+        const s2 = await getMidiManagerService()
+        expect(s2).toBe(s1)
+    })
+
+    it('getHistoryService creates instance once', async () => {
+        const { getHistoryService } = await import('../src/state/service_loader.js')
+        const s1 = await getHistoryService()
+        expect(s1).toBeDefined()
+        expect(typeof s1.canUndo).toBe('boolean')
+        const s2 = await getHistoryService()
+        expect(s2).toBe(s1)
+    })
+
+    it('getService returns the same instance as the dedicated getter', async () => {
+        const { getService, getAutoGenerateService } = await import('../src/state/service_loader.js')
+        const viaGetter = await getAutoGenerateService()
+        const viaGeneric = await getService('autoGenerate')
+        expect(viaGeneric).toBe(viaGetter)
+    })
 })

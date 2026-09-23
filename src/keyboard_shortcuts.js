@@ -1,6 +1,6 @@
 import { appState } from './state/app_state.js'
 import { serviceRegistry } from './state/service_registry.js'
-import { getAutoAssignService } from './state/service_loader.js'
+import { getAutoAssignService, getAutoGenerateService } from './state/service_loader.js'
 import { soundRegistry } from './state/sound_registry.js'
 import { playbackEvents } from './state/playback_events.js'
 import Utils from './core/utils.js'
@@ -45,7 +45,6 @@ function previewTrack(trackIndex) {
 }
 
 async function generatePattern() {
-    const { getAutoGenerateService } = await import('./state/service_loader.js')
     const autoGen = await getAutoGenerateService()
     await autoGen.generatePattern()
 }

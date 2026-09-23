@@ -2,7 +2,7 @@
 
 import Utils from '../core/utils.js'
 import { logger, nameOr } from '../core/logger.js'
-import { instrumentsManager } from '../logic/services/instrument_manager/index.js'
+import InstrumentsManager from '../logic/services/instrument_manager/index.js'
 import { serviceRegistry } from '../state/service_registry.js'
 
 /**
@@ -13,7 +13,7 @@ export function createMidiMappingResolver() {
     const cache = new Map()
     return (trackId) => {
         if (cache.has(trackId)) return cache.get(trackId)
-        const mapping = instrumentsManager.DATA.instruments.find((i) => i.id === trackId)?.midi?.[0] ?? null
+        const mapping = InstrumentsManager.DATA.instruments.find((i) => i.id === trackId)?.midi?.[0] ?? null
         cache.set(trackId, mapping)
         return mapping
     }

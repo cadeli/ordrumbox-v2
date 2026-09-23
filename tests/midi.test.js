@@ -101,18 +101,4 @@ describe('MidiManager', () => {
         midi.onMidiMessage({ data: new Uint8Array([0x90, 60, 100]) })
         expect(handler).not.toHaveBeenCalled()
     })
-
-    it('no longer has renderIndicators, flashActivity, or setLedState', () => {
-        const midi = new MidiManager()
-        expect(midi.renderIndicators).toBeUndefined()
-        expect(midi.flashActivity).toBeUndefined()
-        expect(midi.setLedState).toBeUndefined()
-    })
-
-    it('no longer references document', () => {
-        const src = MidiManager.toString()
-        expect(src).not.toContain('document.getElementById')
-        expect(src).not.toContain('classList')
-        expect(src).not.toContain('innerText')
-    })
 })
