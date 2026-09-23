@@ -21,8 +21,8 @@ describe('Utils', () => {
             expect(Utils.getDelayTimeInSeconds('abc', 120)).toBe(0.5)
         })
 
-        it('0 falls back to multiplier 1', () => {
-            expect(Utils.getDelayTimeInSeconds(0, 120)).toBe(0.5)
+        it('0 is a valid delay time (returns 0 seconds)', () => {
+            expect(Utils.getDelayTimeInSeconds(0, 120)).toBe(0)
         })
     })
 

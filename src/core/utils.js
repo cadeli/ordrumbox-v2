@@ -15,11 +15,12 @@ export default class Utils {
 
     static getDelayTimeInSeconds = (delayTimeValue, bpm) => {
         const num = Number(delayTimeValue)
-        const multiplier = Number.isFinite(num) && num !== 0 ? num : 1
-        if (multiplier === 1 && (Number.isNaN(num) || num === 0)) {
-            logger.warn(Utils.TAG, 'num', 'delayTimeValue', 1)
+        // 0 is a valid delayTime (TRACK_VALUE_RANGES.delayTime.min = 0) — only non-finite falls back.
+        if (!Number.isFinite(num)) {
+            logger.warn(Utils.TAG, 'invalid delayTimeValue, using 1 beat', delayTimeValue)
+            return (60 / bpm) * 1
         }
-        return (60 / bpm) * multiplier
+        return (60 / bpm) * num
     }
 
     static TRACK_DEFAULTS = TRACK_DEFAULTS
@@ -186,8 +187,8 @@ export default class Utils {
     }
 
     static getNoteAbsoluteStep = (note, stepsPerBeat) => {
-        const beat = Number(note?.beat ?? 0)
-        const beatStep = Number(note?.beatStep ?? 0)
+        const beat = Utils.toFiniteNumber(note?.beat, 0, 'getNoteAbsoluteStep.beat')
+        const beatStep = Utils.toFiniteNumber(note?.beatStep, 0, 'getNoteAbsoluteStep.beatStep')
         return Math.floor(beat * stepsPerBeat + beatStep)
     }
 

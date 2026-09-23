@@ -32,6 +32,7 @@ export default class WavExporter {
 
         // start() awaits the worklet mixer init internally — must be awaited
         // before playNotes, otherwise this.player is null and notes are dropped.
+        // It rethrows on failure so we never render a silent WAV.
         await exporterAudioEngine.start(pattern)
 
         // Sync strip BPM so delay/reverb timing matches the pattern tempo.
@@ -44,15 +45,17 @@ export default class WavExporter {
         const savedTransport = serviceRegistry.transport
         serviceRegistry.transport = { bpm: pattern.bpm }
 
-        // Simple offline scheduling
-        const totalTicks = pattern.nbBeats * TICK * loopsCount
+        try {
+            // Simple offline scheduling
+            const totalTicks = pattern.nbBeats * TICK * loopsCount
 
-        for (let t = 0; t < totalTicks; t++) {
-            await exporterAudioEngine.playNotes(t, t * TICK_TIME)
+            for (let t = 0; t < totalTicks; t++) {
+                await exporterAudioEngine.playNotes(t, t * TICK_TIME)
+            }
+        } finally {
+            // Always restore original transport, even on render/schedule failure
+            serviceRegistry.transport = savedTransport
         }
-
-        // Restore original transport
-        serviceRegistry.transport = savedTransport
 
         const renderedBuffer = await offlineCtx.startRendering()
         const wavBlob = bufferToWav(renderedBuffer)

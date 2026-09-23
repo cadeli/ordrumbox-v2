@@ -133,6 +133,9 @@ export default class AudioEngine {
             if (!this.unlocked) this.playSilentBuffer()
             // Wait for worklet mixer to be ready before starting
             await this.#workletReady
+            if (!this.player) {
+                throw new Error('Audio engine failed to initialise (worklet unavailable)')
+            }
             this.isRunning = true
             this.nextStepTime = this.audioCtx.currentTime
             this.mixer.start()
@@ -153,6 +156,9 @@ export default class AudioEngine {
         } catch (err) {
             logger.warn('AudioEngine', 'start failed', err)
             showToast('Playback start failed', 'error')
+            // Only abort callers when the engine cannot play at all (player never built).
+            // Mixer/worklet degradation is non-fatal — playback/export continues degraded.
+            if (!this.player) throw err
         }
     }
 

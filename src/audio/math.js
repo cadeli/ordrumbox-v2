@@ -11,17 +11,28 @@ export function safeDisconnect(node) {
     }
 }
 
+let _lastClampWarnAt = 0
+
 export function clamp(value, min, max) {
     const clamped = Math.min(max, Math.max(min, value))
     if (clamped !== value) {
-        logger.warn('Math', `clamp: ${value} outside [${min}, ${max}] → ${clamped}`)
+        const now = Date.now()
+        // Rate-limit: hot-path sliders can hit the bound every frame — warn at most once per second.
+        if (now - _lastClampWarnAt >= 1000) {
+            _lastClampWarnAt = now
+            logger.warn('Math', `clamp: ${value} outside [${min}, ${max}] → ${clamped}`)
+        }
     }
     return clamped
 }
 
-export function toFiniteNumber(value, fallback = 0) {
+export function toFiniteNumber(value, fallback = 0, label = null) {
     const num = Number(value)
-    return Number.isFinite(num) ? num : fallback
+    if (!Number.isFinite(num)) {
+        if (label) logger.warn('Math', 'toFiniteNumber', label, fallback, value)
+        return fallback
+    }
+    return num
 }
 
 export function computeOscFrequency(noteRatio, octave = 0, detune = 0) {
@@ -131,6 +142,9 @@ const SYNC_NOTE_HZ = {
 export function syncToHz(syncValue, bpm) {
     if (!syncValue || syncValue === 'off' || !bpm || bpm <= 0) return null
     const base = SYNC_NOTE_HZ[syncValue]
-    if (base === undefined) return null
+    if (base === undefined) {
+        logger.warn('Math', 'syncToHz: unknown sync label', syncValue)
+        return null
+    }
     return base * (bpm / 60)
 }

@@ -492,15 +492,23 @@ export default class ToolsPanel extends BasePanel {
     }
 
     async exportMidi() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        if (!pattern) return
-        const exporter = new MidiExporter()
-        const loops = Math.round(this.#wavLoops.getValue())
-        exporter.download(
-            pattern,
-            `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`,
-            { loops },
-        )
+        try {
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            if (!pattern) {
+                showToast('No pattern selected', 'warning')
+                return
+            }
+            const exporter = new MidiExporter()
+            const loops = Math.round(this.#wavLoops.getValue())
+            exporter.download(
+                pattern,
+                `ordrumbox-${nameOr(pattern.name, 'pattern', 'ToolsPanel', 'midi name fallback')}.mid`,
+                { loops },
+            )
+        } catch (e) {
+            logger.error('ToolsPanel', 'MIDI Export failed', e)
+            showToast('MIDI Export failed: ' + e.message, 'error')
+        }
     }
 
     async #exportWav() {

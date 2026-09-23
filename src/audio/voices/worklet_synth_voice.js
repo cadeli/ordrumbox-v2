@@ -50,6 +50,19 @@ const LFO_TARGET_TO_INT = {
 }
 const MOD_ENV_TARGET_TO_INT = { off: 0, filter: 1, pitch: 2, fm: 3, shape: 4 }
 
+/** Map an enum string to its int; warn once per unknown value (import/typo boundary). */
+const _enumWarned = new Set()
+function mapEnum(map, value, label, fallback = 0) {
+    if (value == null) return fallback
+    if (Object.prototype.hasOwnProperty.call(map, value)) return map[value]
+    const key = `${label}:${value}`
+    if (!_enumWarned.has(key)) {
+        _enumWarned.add(key)
+        logger.warn('WorkletSynthVoice', `Unknown ${label} "${value}" → ${fallback}`, value)
+    }
+    return fallback
+}
+
 const SYNTH_VOICE_OPTIONS = Object.freeze({
     numberOfInputs: 0,
     numberOfOutputs: 1,
@@ -278,14 +291,14 @@ export default class WorkletSynthVoice extends BaseVoice {
                 osc1Detune: toFiniteNumber(gs.vco1?.detune, 0),
                 osc2Detune: toFiniteNumber(gs.vco2?.detune, 0),
                 osc3Detune: toFiniteNumber(gs.vco3?.detune, 0),
-                osc1Wave: WAVE_TO_INT[gs.vco1?.wave] ?? 0,
-                osc2Wave: WAVE_TO_INT[gs.vco2?.wave] ?? 0,
-                osc3Wave: WAVE_TO_INT[gs.vco3?.wave] ?? 0,
+                osc1Wave: mapEnum(WAVE_TO_INT, gs.vco1?.wave, 'wave'),
+                osc2Wave: mapEnum(WAVE_TO_INT, gs.vco2?.wave, 'wave'),
+                osc3Wave: mapEnum(WAVE_TO_INT, gs.vco3?.wave, 'wave'),
                 noiseMix: toFiniteNumber(noiseCfg.mix, 0),
-                noiseFilterType: FILTER_TO_INT[noiseCfg.filterType] ?? 0,
+                noiseFilterType: mapEnum(FILTER_TO_INT, noiseCfg.filterType, 'noiseFilterType'),
                 noiseFilterFreq: toFiniteNumber(noiseCfg.filterFreq, 1000),
                 noiseFilterQ: toFiniteNumber(noiseCfg.filterQ, 0.7),
-                filterType: FILTER_TO_INT[filterCfg.type] ?? 0,
+                filterType: mapEnum(FILTER_TO_INT, filterCfg.type, 'filterType'),
                 filterFreq: toFiniteNumber(filterCfg.freq, 1000),
                 filterQ: toFiniteNumber(filterCfg.Q, 0.7),
                 drive: toFiniteNumber(filterCfg.drive, 0),
@@ -298,12 +311,12 @@ export default class WorkletSynthVoice extends BaseVoice {
                 master: 1.0,
                 pan: toFiniteNumber(pan, 0),
                 velocity: peak,
-                lfo1Target: LFO_TARGET_TO_INT[gs.lfo?.target] ?? 0,
-                lfo1Wave: WAVE_TO_INT[gs.lfo?.wave] ?? 0,
+                lfo1Target: mapEnum(LFO_TARGET_TO_INT, gs.lfo?.target, 'lfoTarget'),
+                lfo1Wave: mapEnum(WAVE_TO_INT, gs.lfo?.wave, 'wave'),
                 lfo1Freq: syncToHz(gs.lfo?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo?.freq, 0),
                 lfo1Depth: toFiniteNumber(gs.lfo?.depth, 0),
-                lfo2Target: LFO_TARGET_TO_INT[gs.lfo2?.target] ?? 0,
-                lfo2Wave: WAVE_TO_INT[gs.lfo2?.wave] ?? 0,
+                lfo2Target: mapEnum(LFO_TARGET_TO_INT, gs.lfo2?.target, 'lfoTarget'),
+                lfo2Wave: mapEnum(WAVE_TO_INT, gs.lfo2?.wave, 'wave'),
                 lfo2Freq: syncToHz(gs.lfo2?.sync, serviceRegistry.transport?.bpm) ?? toFiniteNumber(gs.lfo2?.freq, 0),
                 lfo2Depth: toFiniteNumber(gs.lfo2?.depth, 0),
                 filterEnvAmt: clamp(toFiniteNumber((gs.filterEnv ?? gs.filter)?.filterEnvelopeAmount, 0), 0, 1),
@@ -313,7 +326,7 @@ export default class WorkletSynthVoice extends BaseVoice {
                 modEnvDecay: Math.min(1.0, toFiniteNumber(gs.modEnvelope?.decay, 0.1)),
                 modEnvSustain: toFiniteNumber(gs.modEnvelope?.sustain, 0),
                 modEnvRelease: Math.min(0.5, Math.max(0.008, toFiniteNumber(gs.modEnvelope?.release, 0.1))),
-                modEnvTarget: MOD_ENV_TARGET_TO_INT[gs.modEnvelope?.target] ?? 0,
+                modEnvTarget: mapEnum(MOD_ENV_TARGET_TO_INT, gs.modEnvelope?.target, 'modEnvTarget'),
                 modEnvDepth: gs.modEnvelope?.target && gs.modEnvelope.target !== 'off' ? 1 : 0,
                 bypassNoise: !!gs.bypassNoise,
                 bypassFilter: !!gs.bypassFilter,

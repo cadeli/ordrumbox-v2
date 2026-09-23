@@ -66,6 +66,11 @@ let _toolbar,
     _patternSettingsPanel
 
 export function init() {
+    window.addEventListener('unhandledrejection', (event) => {
+        logger.error('Main', 'Unhandled promise rejection', event.reason)
+        showToast('Unexpected error: ' + (event.reason?.message ?? event.reason), 'error')
+    })
+
     if (window.orientation > 1) {
         const de = document.documentElement
         if (de.requestFullscreen) {
