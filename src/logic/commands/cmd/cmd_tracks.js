@@ -7,6 +7,37 @@ import { soundRegistry } from '../../../state/sound_registry.js'
  * Track CRUD + mutation commands — returns an object of methods bound to the Commander instance.
  */
 export function createTrackMethods(cmd) {
+    const TRACK_STATE_KEYS = ['notes', 'loopPointStep', 'loopPointBeat', 'loopAtStep']
+
+    function snapshotTrack(track, keys) {
+        const snap = {}
+        for (const key of keys) {
+            const value = track[key]
+            snap[key] = Array.isArray(value) ? value.map((n) => ({ ...n })) : value
+        }
+        return snap
+    }
+
+    function restoreTrack(track, snap, keys) {
+        for (const key of keys) track[key] = snap[key]
+        cmd.persist()
+    }
+
+    /**
+     * Snapshot track keys, run mutate, record undo that restores the snapshot.
+     * mutate may return false to skip recording (no-op).
+     * options.persist: call cmd.persist() after mutate.
+     */
+    function withUndo(track, keys, desc, mutate, { persist = false } = {}) {
+        const snap = snapshotTrack(track, keys)
+        const recordable = mutate() !== false
+        if (persist) cmd.persist()
+        if (recordable) {
+            cmd.record(() => restoreTrack(track, snap, keys), { desc })
+        }
+        return snap
+    }
+
     return {
         addTrack(pattern, type, stepsPerBeat = 4) {
             const track = this.createTrack(pattern.nbBeats, type, stepsPerBeat)
@@ -53,55 +84,44 @@ export function createTrackMethods(cmd) {
         },
 
         incrNbStepPerBar(track) {
-            const oldStepsPerBeat = track.stepsPerBeat
-            const oldLoopPointStep = track.loopPointStep
-            const oldLoopAtStep = track.loopAtStep
-            const oldNotes = track.notes.map((n) => ({ ...n }))
-
-            const loopStepPc = Math.round((track.loopPointStep * 100) / track.stepsPerBeat)
-            track.stepsPerBeat++
-            if (track.stepsPerBeat > 8) {
-                // Cyclic wrap: 8 → 1 (intentional, not a bug)
-                track.stepsPerBeat = 1
-            }
-
-            Object.values(track.notes).forEach((note) => {
-                note.beatStep = Math.min(Math.round((note.steppc / 100) * track.stepsPerBeat), track.stepsPerBeat - 1)
-            })
-            track.loopPointStep = Math.floor((loopStepPc / 100) * track.stepsPerBeat)
-            track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
-            cmd.persist()
-            cmd.record(
+            withUndo(
+                track,
+                ['stepsPerBeat', 'loopPointStep', 'loopAtStep', 'notes'],
+                `Steps per bar on ${track.name}`,
                 () => {
-                    track.stepsPerBeat = oldStepsPerBeat
-                    track.loopPointStep = oldLoopPointStep
-                    track.loopAtStep = oldLoopAtStep
-                    track.notes = oldNotes
-                    cmd.persist()
+                    const loopStepPc = Math.round((track.loopPointStep * 100) / track.stepsPerBeat)
+                    track.stepsPerBeat++
+                    if (track.stepsPerBeat > 8) {
+                        // Cyclic wrap: 8 → 1 (intentional, not a bug)
+                        track.stepsPerBeat = 1
+                    }
+
+                    for (const note of track.notes) {
+                        note.beatStep = Math.min(
+                            Math.round((note.steppc / 100) * track.stepsPerBeat),
+                            track.stepsPerBeat - 1,
+                        )
+                    }
+                    track.loopPointStep = Math.floor((loopStepPc / 100) * track.stepsPerBeat)
+                    track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
                 },
-                { desc: `Steps per bar on ${track.name}` },
+                { persist: true },
             )
         },
 
         incrLoopPoint(track) {
-            const oldLoopAtStep = track.loopAtStep
-            const oldLoopPointBeat = track.loopPointBeat
-            const oldLoopPointStep = track.loopPointStep
-
-            track.loopAtStep--
-            if (track.loopAtStep < 1) {
-                track.loopAtStep = track.stepsPerBeat * track.nbBeats
-            }
-            recalcLoopDerived(track)
-            cmd.persist()
-            cmd.record(
+            withUndo(
+                track,
+                ['loopAtStep', 'loopPointBeat', 'loopPointStep'],
+                `Loop point on ${track.name}`,
                 () => {
-                    track.loopAtStep = oldLoopAtStep
-                    track.loopPointBeat = oldLoopPointBeat
-                    track.loopPointStep = oldLoopPointStep
-                    cmd.persist()
+                    track.loopAtStep--
+                    if (track.loopAtStep < 1) {
+                        track.loopAtStep = track.stepsPerBeat * track.nbBeats
+                    }
+                    recalcLoopDerived(track)
                 },
-                { desc: `Loop point on ${track.name}` },
+                { persist: true },
             )
         },
 
@@ -112,113 +132,77 @@ export function createTrackMethods(cmd) {
         },
 
         cleanTrack(track) {
-            const oldNotes = track.notes.map((n) => ({ ...n }))
-            const oldLoopPointStep = track.loopPointStep
-            const oldLoopPointBeat = track.loopPointBeat
-            const oldLoopAtStep = track.loopAtStep
-            track.notes = []
-            track.loopPointStep = 0
-            track.loopPointBeat = track.nbBeats
-            track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
-            cmd.record(
-                () => {
-                    track.notes = oldNotes
-                    track.loopPointStep = oldLoopPointStep
-                    track.loopPointBeat = oldLoopPointBeat
-                    track.loopAtStep = oldLoopAtStep
-                    cmd.persist()
-                },
-                { desc: `Clean ${track.name}` },
-            )
+            withUndo(track, TRACK_STATE_KEYS, `Clean ${track.name}`, () => {
+                track.notes = []
+                track.loopPointStep = 0
+                track.loopPointBeat = track.nbBeats
+                track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
+            })
         },
 
         compactTrack(track) {
-            const oldNotes = track.notes.map((n) => ({ ...n }))
-            const oldLoopPointStep = track.loopPointStep
-            const oldLoopPointBeat = track.loopPointBeat
-            const oldLoopAtStep = track.loopAtStep
+            const snap = snapshotTrack(track, TRACK_STATE_KEYS)
             const result = Utils.addLoopToTrackIfPossible(track)
             if (result.changed) {
-                cmd.record(
-                    () => {
-                        track.notes = oldNotes
-                        track.loopPointStep = oldLoopPointStep
-                        track.loopPointBeat = oldLoopPointBeat
-                        track.loopAtStep = oldLoopAtStep
-                        cmd.persist()
-                    },
-                    { desc: `Compact ${track.name}` },
-                )
+                cmd.record(() => restoreTrack(track, snap, TRACK_STATE_KEYS), { desc: `Compact ${track.name}` })
             }
             return result
         },
 
         randomizeTrack(track, pattern) {
-            const oldNotes = track.notes.map((n) => ({ ...n }))
-            const oldLoopPointStep = track.loopPointStep
-            const oldLoopPointBeat = track.loopPointBeat
-            const oldLoopAtStep = track.loopAtStep
-            track.notes = []
-            track.loopPointStep = 0
-            track.loopPointBeat = track.nbBeats ?? pattern.nbBeats ?? 4
-            track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
-            const beats = track.nbBeats ?? pattern.nbBeats ?? 4
-            const stepsPerBeat = track.stepsPerBeat ?? 4
-            const totalSteps = beats * stepsPerBeat
-            const noteCount = Math.max(1, Math.floor(totalSteps * (0.15 + Math.random() * 0.2)))
-            const used = new Set()
-            for (let i = 0; i < noteCount; i++) {
-                let step
-                do {
-                    step = Math.floor(Math.random() * totalSteps)
-                } while (used.has(step))
-                used.add(step)
-                const beat = Math.floor(step / stepsPerBeat)
-                const beatStep = step % stepsPerBeat
-                const pitch = Math.floor(Math.random() * 13) - 6
-                track.notes.push({ ...Utils.NOTE_DEFAULTS, beat, beatStep, pitch, velocity: 0.5 + Math.random() * 0.5 })
-            }
-            cmd.record(
-                () => {
-                    track.notes = oldNotes
-                    track.loopPointStep = oldLoopPointStep
-                    track.loopPointBeat = oldLoopPointBeat
-                    track.loopAtStep = oldLoopAtStep
-                    cmd.persist()
-                },
-                { desc: `Randomize ${track.name}` },
-            )
+            withUndo(track, TRACK_STATE_KEYS, `Randomize ${track.name}`, () => {
+                track.notes = []
+                track.loopPointStep = 0
+                track.loopPointBeat = track.nbBeats ?? pattern.nbBeats ?? 4
+                track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
+                const beats = track.nbBeats ?? pattern.nbBeats ?? 4
+                const stepsPerBeat = track.stepsPerBeat ?? 4
+                const totalSteps = beats * stepsPerBeat
+                const noteCount = Math.max(1, Math.floor(totalSteps * (0.15 + Math.random() * 0.2)))
+                const used = new Set()
+                for (let i = 0; i < noteCount; i++) {
+                    let step
+                    do {
+                        step = Math.floor(Math.random() * totalSteps)
+                    } while (used.has(step))
+                    used.add(step)
+                    const beat = Math.floor(step / stepsPerBeat)
+                    const beatStep = step % stepsPerBeat
+                    const pitch = Math.floor(Math.random() * 13) - 6
+                    track.notes.push({
+                        ...Utils.NOTE_DEFAULTS,
+                        beat,
+                        beatStep,
+                        pitch,
+                        velocity: 0.5 + Math.random() * 0.5,
+                    })
+                }
+            })
         },
 
         changeTrackSound(track, soundId) {
-            const oldSoundId = track.soundId
-            const oldUseAutoAssign = track.useAutoAssignSound
-            const oldUseSoftSynth = track.useSoftSynth
-            track.soundId = soundId
-            track.useAutoAssignSound = false
-            track.useSoftSynth = false
-            cmd.persist()
-            cmd.record(
+            withUndo(
+                track,
+                ['soundId', 'useAutoAssignSound', 'useSoftSynth'],
+                `Sound on ${track.name}`,
                 () => {
-                    track.soundId = oldSoundId
-                    track.useAutoAssignSound = oldUseAutoAssign
-                    track.useSoftSynth = oldUseSoftSynth
-                    cmd.persist()
+                    track.soundId = soundId
+                    track.useAutoAssignSound = false
+                    track.useSoftSynth = false
                 },
-                { desc: `Sound on ${track.name}` },
+                { persist: true },
             )
         },
 
         changeTrackName(track, newName) {
-            const oldName = track.name
-            track.name = newName
-            cmd.persist()
-            cmd.record(
+            withUndo(
+                track,
+                ['name'],
+                `Rename track → ${newName}`,
                 () => {
-                    track.name = oldName
-                    cmd.persist()
+                    track.name = newName
                 },
-                { desc: `Rename track → ${newName}` },
+                { persist: true },
             )
         },
 
