@@ -211,4 +211,71 @@ describe('TrackEditor loop slider events', () => {
             }),
         )
     })
+
+    it('emits PATTERN_META_CHANGE when stepsPerBeat changes', () => {
+        const track = {
+            name: 'Test Track',
+            nbBeats: 4,
+            stepsPerBeat: 4,
+            loopAtStep: 16,
+            notes: [],
+        }
+        const pattern = {
+            name: 'Test Pattern',
+            tracks: [track],
+            nbBeats: 4,
+        }
+        appState.patterns = [pattern]
+        appState.selectedPatternNum = 0
+
+        const editor = new TrackEditor()
+        editor.init()
+        editor.show({ track, trackIdx: 0 })
+
+        const metaSpy = vi.fn()
+        const paramSpy = vi.fn()
+        const offMeta = playbackEvents.on(EVENTS.PATTERN_META_CHANGE, metaSpy)
+        const offParam = playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, paramSpy)
+
+        editor._onLoopSlider({ dataset: { loop: 'stepsPerBeat' }, value: 8 })
+
+        expect(track.stepsPerBeat).toBe(8)
+        expect(metaSpy).toHaveBeenCalled()
+        expect(paramSpy).toHaveBeenCalled()
+
+        offMeta()
+        offParam()
+    })
+
+    it('does not emit PATTERN_META_CHANGE for non-structural loop keys', () => {
+        const track = {
+            name: 'Test Track',
+            nbBeats: 4,
+            stepsPerBeat: 4,
+            loopAtStep: 16,
+            swingAmount: 0,
+            notes: [],
+        }
+        const pattern = {
+            name: 'Test Pattern',
+            tracks: [track],
+            nbBeats: 4,
+        }
+        appState.patterns = [pattern]
+        appState.selectedPatternNum = 0
+
+        const editor = new TrackEditor()
+        editor.init()
+        editor.show({ track, trackIdx: 0 })
+
+        const metaSpy = vi.fn()
+        const offMeta = playbackEvents.on(EVENTS.PATTERN_META_CHANGE, metaSpy)
+
+        editor._onLoopSlider({ dataset: { loop: 'swingAmount' }, value: 0.5 })
+
+        expect(track.swingAmount).toBe(0.5)
+        expect(metaSpy).not.toHaveBeenCalled()
+
+        offMeta()
+    })
 })

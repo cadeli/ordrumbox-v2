@@ -695,6 +695,13 @@ export default class TrackEditor extends BasePanel {
                 })
                 this._emitTrackChange()
             })
+        } else if (key === 'stepsPerBeat') {
+            // Structure change: grid cell count per beat and piano-roll columns
+            // must rebuild — TRACK_PARAM_CHANGE alone only updates cell content.
+            this._playbackEvents.batch(() => {
+                this._playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+                this._emitTrackChange()
+            })
         } else {
             this._emitTrackChange()
         }

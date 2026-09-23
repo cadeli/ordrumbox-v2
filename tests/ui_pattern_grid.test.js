@@ -86,6 +86,19 @@ describe('Pattern Panel UI Grid', () => {
         expect(cells.length).toBe(8)
     })
 
+    it('rebuilds cell count per beat when stepsPerBeat changes without PATTERN_META_CHANGE', () => {
+        // TRACK_PARAM_CHANGE only marks trackDataDirty — structureSig must force full render.
+        expect(document.querySelectorAll('.pp-cell').length).toBe(8)
+        expect(document.querySelectorAll('.pp-beat')[0].querySelectorAll('.pp-cell').length).toBe(4)
+
+        appState.patterns[0].tracks['T1'].stepsPerBeat = 8
+        panel.sync()
+
+        expect(document.querySelectorAll('.pp-cell').length).toBe(16)
+        const firstBeat = document.querySelectorAll('.pp-beat')[0]
+        expect(firstBeat.querySelectorAll('.pp-cell').length).toBe(8)
+    })
+
     it('handles empty tracks gracefully', () => {
         appState.patterns[0].tracks = {}
         panel.sync()

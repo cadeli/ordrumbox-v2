@@ -46,6 +46,7 @@ export default class PatternPanel extends BasePanel {
     #overlay
     #headerDirty
     #forceFullRender
+    #structureSig
     #headerEl
     #tracksEl
     #tooltip
@@ -81,6 +82,7 @@ export default class PatternPanel extends BasePanel {
         this.#overlay = new PlaybackOverlaySection(this)
         this.#headerDirty = true
         this.#forceFullRender = false
+        this.#structureSig = ''
     }
 
     createDOM() {
@@ -901,6 +903,18 @@ export default class PatternPanel extends BasePanel {
                 })
             }
             return
+        }
+
+        // Structure (stepsPerBeat/nbBeats) can change via TRACK_PARAM_CHANGE or
+        // undo without PATTERN_META_CHANGE — detect it and force a full rebuild
+        // so the DOM cell count per beat matches the track.
+        const structureSig = `${pattern.nbBeats ?? 4}|${tracks
+            .map((t) => `${t?.stepsPerBeat ?? 4}:${t?.nbBeats ?? 4}`)
+            .join(',')}`
+        if (structureSig !== this.#structureSig) {
+            this.#structureSig = structureSig
+            this.#forceFullRender = true
+            this.#headerDirty = true
         }
 
         const existingTrackEls = this.#tracksEl?.querySelectorAll('.pp-track:not(.pp-master-track)')
