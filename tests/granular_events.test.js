@@ -9,7 +9,6 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 import PatternPanel from '../src/ui/pattern_panel.js'
-import NoteEditor from '../src/ui/note_editor.js'
 import TrackEditor from '../src/ui/track_editor.js'
 import PianoRollPanel from '../src/ui/piano_roll_panel.js'
 import SongPanel from '../src/ui/song_panel.js'
@@ -211,7 +210,6 @@ describe('Granular patternChange events', () => {
         it('toolbar page label updates via signal on patternMetaChange', () => {
             const toolbar = new Toolbar()
             toolbar.init()
-            const label = toolbar.pageLabel.textContent
             playbackEvents.emit('patternMetaChange')
             expect(toolbar.pageLabel.textContent).toBeDefined()
         })

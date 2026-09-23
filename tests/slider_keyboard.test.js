@@ -51,8 +51,6 @@ function press(el, key) {
 }
 
 describe('Slider keyboard navigation (Arrow Left/Right)', () => {
-    const HANDLER_REF = { current: null }
-
     beforeAll(() => {
         installSliderKeyHandler(document)
     })

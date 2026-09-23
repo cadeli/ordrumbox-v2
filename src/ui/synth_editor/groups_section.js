@@ -119,7 +119,7 @@ export default class GroupsSection {
             const pathStr = `${groupName}.wave`
             waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.waveList, waveVal, WAVE_ICONS, {
                 cssClass: 'ss-wave-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
-                extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
+                extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`
             })}</span>`
         } else if (isFilter || isNoise) {
             const filterKey = isFilter ? 'type' : 'filterType'
@@ -127,14 +127,14 @@ export default class GroupsSection {
             const pathStr = `${groupName}.${filterKey}`
             waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(Utils.filterTypeList, filterVal, FILTER_ICONS, {
                 cssClass: 'ss-ft-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
-                extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
+                extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`
             })}</span>`
         } else if (groupName === 'fm') {
             const algoVal = draft?.fm?.algo ?? 0
             const algoOpts = Object.keys(FM_ALGO_ICONS).map(Number)
             waveRowHtml = `<span class="ss-group-wave-row">${renderIconChoices(algoOpts, algoVal, FM_ALGO_ICONS, {
                 cssClass: 'ss-fm-icon', valueDataAttr: 'data-wave-val', escape: escapeHtml,
-                extraAttrs: (v) => ` data-synth-path="fm.algo"`,
+                extraAttrs: () => ` data-synth-path="fm.algo"`,
                 titleMap: FM_ALGO_LABELS
             })}</span>`
         }
@@ -241,7 +241,7 @@ export default class GroupsSection {
     _renderIconRow(options, pathStr, val, cssClass, icons) {
         return renderIconChoices(options, val, icons, {
             cssClass, valueDataAttr: 'data-wave-val', escape: escapeHtml,
-            extraAttrs: (v) => ` data-synth-path="${escapeHtml(pathStr)}"`
+            extraAttrs: () => ` data-synth-path="${escapeHtml(pathStr)}"`
         })
     }
 

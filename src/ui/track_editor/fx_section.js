@@ -88,8 +88,6 @@ export default class FxSection {
         let content = tabsHtml
         FX_DEFS.forEach((fx, idx) => {
             const isHidden = editor._fxTab.isHidden(String(idx))
-            const on = this.isFxOn(fx)
-            const ledClass = on ? 'lfo-led on' : 'lfo-led'
 
             content += `<div class="fx-tab-panel ${isHidden ? 'fx-tab-panel-hidden' : ''}" data-fx-panel="${idx}">`
 

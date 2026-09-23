@@ -13,8 +13,6 @@
  *   // → [{ sample: 44100, time: 1.0, energy: 0.8 }]
  */
 
-import AudioAnalyzer from '../../src/audio/analyze.js'
-
 /**
  * Detect onsets from raw Float32Array audio data using energy-based detection.
  *

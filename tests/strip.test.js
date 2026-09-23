@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import Strip, { SATURATION_TYPES, REVERB_PRESETS } from '../src/audio/strip.js'
+import Strip from '../src/audio/strip.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
 import { makeParam, makeNode, installWorkletMocks } from './helpers/worklet_mocks.js'
 
@@ -24,11 +24,11 @@ function makeAudioCtx() {
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('Strip (Unified Worklet)', () => {
-    let ctx, nodes
+    let ctx
 
     beforeEach(() => {
         ctx   = makeAudioCtx()
-        nodes = installWorkletMocks()
+        installWorkletMocks()
     })
 
     it('create() instantiates the unified strip worklet node', async () => {

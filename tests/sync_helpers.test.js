@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { syncComponentMap, syncKnobs } from '../src/ui/components/sync_helpers.js'
 
 function makeInstance(key) {

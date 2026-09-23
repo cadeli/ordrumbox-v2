@@ -40,17 +40,6 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
         playbackEvents.emit("toolsToggle", true)
     })
 
-    function addNotes(count) {
-        const pattern = appState.patterns[0]
-        const tracks = pattern.tracks
-        for (let i = 0; i < count; i++) {
-            const track = tracks[i % tracks.length]
-            const beat = i % (track.nbBeats ?? 4)
-            const beatStep = i % (track.stepsPerBeat ?? 4)
-            serviceRegistry.cmd.addNote(track, beat, beatStep, 0)
-        }
-    }
-
     describe('Rnd button', () => {
         it('is present in the pattern tab', () => {
             const btn = toolsPanel.container.querySelector('#tp-rnd')

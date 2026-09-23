@@ -1,4 +1,4 @@
-import { idbGet, idbPut, idbDelete, idbKeys, idbClearStore, idbGetAllEntries } from '../core/idb.js'
+import { idbGet, idbPut, idbDelete, idbClearStore, idbGetAllEntries } from '../core/idb.js'
 import { APP_VERSION } from '../core/constants.js'
 import { logger } from '../core/logger.js'
 
@@ -208,13 +208,6 @@ export async function getCacheStats() {
         generated_sounds: { count: 0, bytes: 0 },
         totalBytes: 0,
         entries: [],
-    }
-
-    const extractMeta = (entry) => {
-        if (entry && typeof entry === 'object' && 'data' in entry) {
-            return { size: entry.size ?? measureBytes(entry.data), savedAt: entry.savedAt ?? null }
-        }
-        return { size: measureBytes(entry), savedAt: null }
     }
 
     try {

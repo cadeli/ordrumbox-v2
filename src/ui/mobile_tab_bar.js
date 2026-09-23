@@ -1,5 +1,4 @@
 import { playbackEvents } from '../state/playback_events.js'
-import { appState } from '../state/app_state.js'
 import { isMobileViewport } from '../core/constants.js'
 import { logger } from '../core/logger.js'
 

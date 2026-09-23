@@ -168,7 +168,7 @@ function main() {
 
   const noteChanges = [];
 
-  for (const { kit, inst, wavPath } of wavFiles) {
+  for (const { inst, wavPath } of wavFiles) {
     if (!fs.existsSync(wavPath)) { console.log(`  MISSING: ${wavPath}`); continue; }
 
     const buf = fs.readFileSync(wavPath);

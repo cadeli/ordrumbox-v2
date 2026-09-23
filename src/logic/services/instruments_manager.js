@@ -172,7 +172,7 @@ export default class InstrumentsManager {
                     try {
                         const pattern = new RegExp(`^${syn}$`, 'i');
                         this.matchers.push({ pattern, instrument: inst });
-                    } catch (e) {
+                    } catch {
                         logger.warn('Instrument', `Regexp invalide: ${syn}`);
                     }
                 });

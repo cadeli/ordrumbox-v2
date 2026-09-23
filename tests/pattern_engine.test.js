@@ -644,7 +644,7 @@ describe('complex pattern combinations', () => {
 
 // ─── Parameterized: computeTickSpacing ────────────────────────────────────────
 
-describe.each(PARAM_SETS)('computeTickSpacing — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+describe.each(PARAM_SETS)('computeTickSpacing — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat) => {
     it('rate=1 spacing uses getStepSpacing(1)=1/8', () => {
         const expected = Math.round((32 / stepsPerBeat) * 0.125)
         expect(computeTickSpacing({ stepsPerBeat }, 1)).toBe(expected)

@@ -234,7 +234,6 @@ describe('DrumkitManager E2E', () => {
             manager.sync()
 
             const detail = manager.container.querySelector('#dm-detail')
-            const knobBar = detail.querySelector('.dm-detail-right .dm-knob-bar, .dm-detail-right [class*="knob"]')
             const selectRow = detail.querySelector('.dm-select-row')
             expect(selectRow).not.toBeNull()
             expect(manager._knobs.length).toBeGreaterThanOrEqual(0)

@@ -5,7 +5,6 @@ import { appState } from '../../state/app_state.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
-import Utils from '../../core/utils.js'
 import { prevPage, nextPage } from '../../core/page_nav.js'
 
 export default class PatternNav {

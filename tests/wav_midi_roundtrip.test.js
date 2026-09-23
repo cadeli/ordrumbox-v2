@@ -59,7 +59,7 @@ class MockOfflineAudioContext {
             numberOfChannels: this.channels,
             length: this.length,
             sampleRate: this.sampleRate,
-            getChannelData: (ch) => new Float32Array(this.length)
+            getChannelData: () => new Float32Array(this.length)
         })
     }
 }

@@ -1,7 +1,6 @@
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 const A4_HZ = 440
 const A4_MIDI = 69
-const LN2_OVER_12 = Math.LN2 / 12
 
 /**
  * Convert a frequency in Hz to the nearest musical note.

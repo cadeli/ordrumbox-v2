@@ -37,7 +37,7 @@ export function createNoteMethods(cmd) {
                 logger.warn('Cmd', `stepsPerBeat out of bounds (${track.stepsPerBeat}), resetting to 8`)
                 track.stepsPerBeat = 8
             }
-            let steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
+            const steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
             const note = {
                 ...Utils.NOTE_DEFAULTS,
                 beatStep,

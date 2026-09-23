@@ -2,7 +2,6 @@
 // Loop tab — stepsPerBeat, loopAtStep, swingAmount sliders.
 
 import { OrSlider } from '../components/or_slider.js'
-import { fmt } from '../components/panel_helpers.js'
 
 export default class LoopSection {
     /** @param {import('./track_editor.js').default} editor */

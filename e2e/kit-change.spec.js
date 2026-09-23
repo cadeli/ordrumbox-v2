@@ -20,17 +20,6 @@ test.describe('E2E-C: Kit change mid-playback', () => {
       { timeout: 5_000 }
     );
 
-    const initial = await page.evaluate(() => {
-      const { appState, soundRegistry } = window.__e2e
-      const tracks = appState.patterns[0]?.tracks ?? []
-      return tracks.map(t => ({
-        name: t.name,
-        soundId: t.soundId,
-        autoAssign: t.useAutoAssignSound,
-        soundExists: !!(t.soundId && soundRegistry.sounds[t.soundId]),
-      }))
-    });
-
     const dkCount = await page.evaluate(() => window.__e2e.soundRegistry.drumkitList.length);
     expect(dkCount).toBeGreaterThan(1);
 
@@ -39,7 +28,7 @@ test.describe('E2E-C: Kit change mid-playback', () => {
       await dkSelect.selectOption({ index: 1 });
     } else {
       await page.evaluate(() => {
-        const { serviceRegistry, soundRegistry } = window.__e2e
+        const { serviceRegistry } = window.__e2e
         serviceRegistry.cmd.setSelectedDrumkitNum(1)
       });
     }
@@ -79,15 +68,6 @@ test.describe('E2E-C: Kit change mid-playback', () => {
     await page.locator('#waiting-screen-start-btn').click();
     await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 });
     await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 });
-
-    const beforeFlatNotes = await page.evaluate(() => {
-      const fn = window.__e2e.appState.flatNotes
-      if (!(fn instanceof Map)) return { tickCount: 0, noteCount: 0 }
-      return {
-        tickCount: fn.size,
-        noteCount: [...fn.values()].reduce((n, arr) => n + arr.length, 0),
-      }
-    });
 
     await page.evaluate(() => {
       window.__e2e.serviceRegistry.cmd.setSelectedDrumkitNum(1)

@@ -143,13 +143,12 @@ describe('Audio Graph Validity', () => {
 
             // Make Strip.create slow so the race is visible
             let callCount = 0
-            const origCreate = Strip.create
             const stripA = { pan: { connect: vi.fn() }, delete: vi.fn() }
             const stripB = { pan: { connect: vi.fn() }, delete: vi.fn() }
 
             let resolveFirst
             const firstPromise = new Promise(r => { resolveFirst = r })
-            vi.spyOn(Strip, 'create').mockImplementation(async (name, ctx, mixer) => {
+            vi.spyOn(Strip, 'create').mockImplementation(async (_name, _ctx, _mixer) => {
                 callCount++
                 if (callCount === 1) {
                     await firstPromise

@@ -103,7 +103,6 @@ describe('PatternManager', () => {
     describe('applyFlatNotes', () => {
         it('returns flatNotes and updates appState', async () => {
             const { appState } = await import('../src/state/app_state.js')
-            const { playbackEvents } = await import('../src/state/playback_events.js')
 
             const pattern = {
                 name: 'Test',
@@ -236,7 +235,7 @@ describe('PatternManager', () => {
 
     // ── Parameterized: computeNextPatternStepNote across subdivisions ─────────
 
-    describe.each(PARAM_SETS)('computeNextPatternStepNote — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    describe.each(PARAM_SETS)('computeNextPatternStepNote — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat) => {
         it('finds next note in same beat', () => {
             const track = makeTrack('KICK', [makeNote(0, 0), makeNote(0, 2)], {
                 nbBeats: 2, stepsPerBeat, loopAtStep: 2 * stepsPerBeat,

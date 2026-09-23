@@ -7,7 +7,7 @@
  * 3. Concurrent start() calls are guarded (_starting flag).
  * 4. mixer.start() does not create duplicate connections.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { logger } from '../src/core/logger.js'
 
 // ─── Shared stubs ────────────────────────────────────────────────────────────
@@ -88,13 +88,6 @@ function makeFakeTransport() {
         start: vi.fn(function () { this.isRunning = true }),
         stop: vi.fn(function () { this.isRunning = false }),
         onSchedule: null,
-    }
-}
-
-function makeFakeAutoAssign() {
-    return {
-        autoAssignSounds: vi.fn().mockResolvedValue(undefined),
-        autoAssignTrackSounds: vi.fn(),
     }
 }
 
@@ -188,7 +181,6 @@ describe('toggleStartStop — audioCtx creation', () => {
 
 describe('toggleStartStop — start guard', () => {
     it('does not call start() twice concurrently', async () => {
-        let startCallCount = 0
         const fakeCtx = makeFakeAudioCtx()
         const fakeLoader = makeFakeResourcesLoader(fakeCtx)
         const fakeTransport = makeFakeTransport()
@@ -205,9 +197,7 @@ describe('toggleStartStop — start guard', () => {
         })
 
         // Mock _startInner to track calls
-        seq._startInner = vi.fn().mockImplementation(async () => {
-            startCallCount++
-        })
+        seq._startInner = vi.fn().mockImplementation(async () => {})
 
         // First call
         seq.toggleStartStop()

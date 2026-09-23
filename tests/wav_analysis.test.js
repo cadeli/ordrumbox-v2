@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import AudioAnalyzer from '../src/audio/analyze.js'
-import { buildWav, buildWavFromOnsets, buildWavFromTicks } from './helpers/wav_builder.js'
-import { detectOnsets, detectOnsetsFromWav, findNearestOnset, matchOnsets } from './helpers/onset_detector.js'
+import { buildWav, buildWavFromTicks } from './helpers/wav_builder.js'
+import { detectOnsetsFromWav, findNearestOnset, matchOnsets } from './helpers/onset_detector.js'
 
 const SAMPLE_RATE = 44100
 const analyzer = new AudioAnalyzer()

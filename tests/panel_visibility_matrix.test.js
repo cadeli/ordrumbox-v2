@@ -78,12 +78,6 @@ function setupCanvas() {
     })
 }
 
-function getInt(el, prop) {
-    const v = parseInt(el.style[prop], 10)
-    if (!isNaN(v)) return v
-    return parseInt(getComputedStyle(el)[prop], 10)
-}
-
 function mockAnchor(el, top, height) {
     Object.defineProperty(el, 'offsetTop', { value: top, configurable: true })
     Object.defineProperty(el, 'offsetHeight', { value: height, configurable: true })

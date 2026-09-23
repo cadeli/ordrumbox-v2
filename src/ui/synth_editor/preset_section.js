@@ -30,7 +30,7 @@ export default class PresetSection {
                     (await import('../../loader/resources_loader.js')).default.GENERATED_SOUNDS_URL
                 )
                 editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
-            } catch (error) {
+            } catch {
                 editor.loadFailed = true
             } finally {
                 editor.loading = false

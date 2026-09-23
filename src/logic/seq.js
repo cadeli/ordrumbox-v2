@@ -134,7 +134,7 @@ export default class Sequencer {
             return
         }
 
-        let selPattern = this.appState.patterns[this.appState.selectedPatternNum]
+        const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
         if (!selPattern) {
             logger.warn('Sequencer', "Sequencer::start: No selected pattern")
             showToast('No pattern selected', 'warning')
@@ -203,7 +203,7 @@ export default class Sequencer {
 
     setBpm = (bpm) => {
         this.serviceRegistry.transport?.setBpm(bpm)
-        let selPat = this.appState.patterns[this.appState.selectedPatternNum]
+        const selPat = this.appState.patterns[this.appState.selectedPatternNum]
         if (selPat) selPat.bpm = bpm
         if (this.serviceRegistry.audioEngine) {
             this.serviceRegistry.audioEngine.setBpm(bpm)
@@ -217,13 +217,13 @@ export default class Sequencer {
         if (!this.serviceRegistry.audioCtx && typeof window !== 'undefined') {
             try {
                 this.serviceRegistry.audioCtx = new (window.AudioContext ?? window.webkitAudioContext)()
-            } catch (_) {}
+            } catch (_) { /* no-op */ }
         }
         if (!this.serviceRegistry.audioCtx) return
         if (this.serviceRegistry.audioCtx.state === 'suspended') {
             try {
                 await this.serviceRegistry.audioCtx.resume()
-            } catch (_) {}
+            } catch (_) { /* no-op */ }
         }
         this.ensureTransport()
         this.ensureAudioEngine()

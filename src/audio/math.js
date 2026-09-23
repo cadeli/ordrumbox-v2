@@ -62,7 +62,7 @@ export function computeNoteRatio(fpitch) {
  * @param {number|null} bpm         Current BPM (for time-based mode)
  * @returns {number} LFO value in base units
  */
-export function computeLfoValue(lfo, tick, nbTicks = TICK * 4, controlKey = null, audioTime = null, bpm = null) {
+export function computeLfoValue(lfo, tick, _nbTicks = TICK * 4, _controlKey = null, audioTime = null, bpm = null) {
     if (!lfo) return 0
     const freqVal = Utils.toFiniteNumber(parseFloat(lfo.freq), 1, 'lfo.freq')
     const min = Utils.toFiniteNumber(parseFloat(lfo.min), 0, 'lfo.min')

@@ -1,16 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-
-function makeLedPair() {
-    const led = document.createElement('button')
-    led.className = 'lfo-led midi-indicator-off'
-    const label = document.createElement('span')
-    label.className = 'ne-val'
-    label.textContent = ''
-    return { led, label }
-}
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 function buildMidiContainer() {
     const container = document.createElement('div')

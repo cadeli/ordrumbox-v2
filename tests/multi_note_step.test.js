@@ -5,12 +5,9 @@ import { PatternExporter } from '../src/patterns/exporter.js'
 import { recomputeFlatNotes, computeNbTickForPattern } from '../src/patterns/engine.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
-import Utils from '../src/core/utils.js'
 import { TICK } from '../src/core/constants.js'
 import { parseMidi, findAllNotes } from './helpers/midi_reader.js'
 import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
-
-const MIDI_RATIO = 96 / TICK
 
 describe('Multiple notes at the same step', () => {
     let cmd

@@ -554,7 +554,7 @@ describe('E2E Audio 6 — Different patterns produce different audio characteris
 
 describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
     /** Kick: sine sweep from 150 Hz → 40 Hz + click transient */
-    function generateKick(t, sampleRate) {
+    function generateKick(t, _sampleRate) {
         const freq = 150 * Math.exp(-t * 20) + 40
         const click = Math.exp(-t * 200) * 0.5
         return Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 8) + click
@@ -599,22 +599,6 @@ describe('E2E Audio 7 — Synth-generated waveform roundtrip', () => {
             data[i] = generator(t, SAMPLE_RATE, noisePhase)
         }
         return { buffer, data }
-    }
-
-    function buildStereoBuffer(duration, leftGen, rightGen) {
-        const length = Math.ceil(duration * SAMPLE_RATE)
-        const ctx = new OfflineAudioContext(2, length, SAMPLE_RATE)
-        const buffer = ctx.createBuffer(2, length, SAMPLE_RATE)
-        const leftData = buffer.getChannelData(0)
-        const rightData = buffer.getChannelData(1)
-        let noisePhase = 0
-        for (let i = 0; i < length; i++) {
-            const t = i / SAMPLE_RATE
-            noisePhase += (2000 + Math.random() * 6000) / SAMPLE_RATE * 2 * Math.PI
-            leftData[i] = leftGen(t, SAMPLE_RATE, noisePhase)
-            rightData[i] = rightGen(t, SAMPLE_RATE, noisePhase)
-        }
-        return { buffer, leftData, rightData }
     }
 
     it('kick waveform roundtrips with < 2% RMS error', async () => {
@@ -838,7 +822,6 @@ describe('E2E Audio 8 — FX processing roundtrip', () => {
         const rmsDelayed = computeRms(delayed)
         expect(rmsDelayed).toBeGreaterThan(0.01)
         // Delayed signal should be longer than original (echo tail)
-        const peakOrig = computePeak(data)
         const peakDelayed = computePeak(delayed)
         expect(peakDelayed).toBeGreaterThan(0)
     })
@@ -1017,13 +1000,13 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
 
     // ── Synth generators ─────────────────────────────────────────────────
 
-    function generateKick(t, sr = SAMPLE_RATE) {
+    function generateKick(t, _sr = SAMPLE_RATE) {
         if (t > 0.5) return 0
         const freq = 150 * Math.exp(-t * 20) + 40
         return Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 8)
     }
 
-    function generateSnare(t, sr = SAMPLE_RATE) {
+    function generateSnare(t, _sr = SAMPLE_RATE) {
         if (t > 0.3) return 0
         const body = Math.sin(2 * Math.PI * 200 * t) * Math.exp(-t * 15)
         const noise = (Math.random() * 2 - 1) * Math.exp(-t * 10)
@@ -1031,7 +1014,7 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
         return (body * 0.6 + filtered * 0.4)
     }
 
-    function generateHihatClosed(t, sr = SAMPLE_RATE) {
+    function generateHihatClosed(t, _sr = SAMPLE_RATE) {
         if (t > 0.08) return 0
         const noise = (Math.random() * 2 - 1)
         const env = Math.exp(-t * 60)
@@ -1039,14 +1022,14 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
         return hp * env * 0.4
     }
 
-    function generateHihatOpen(t, sr = SAMPLE_RATE) {
+    function generateHihatOpen(t, _sr = SAMPLE_RATE) {
         if (t > 0.25) return 0
         const noise = (Math.random() * 2 - 1)
         const env = Math.exp(-t * 10)
         return noise * env * 0.35
     }
 
-    function generateBass(t, freq = 55, sr = SAMPLE_RATE) {
+    function generateBass(t, freq = 55, _sr = SAMPLE_RATE) {
         if (t > 0.4) return 0
         const saw = ((t * freq) % 1) * 2 - 1
         const env = Math.exp(-t * 4)
@@ -1054,7 +1037,7 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
         return Math.max(-1, Math.min(1, filtered * 0.6))
     }
 
-    function generateSynthLead(t, sr = SAMPLE_RATE) {
+    function generateSynthLead(t, _sr = SAMPLE_RATE) {
         if (t > 0.5) return 0
         const mod = Math.sin(2 * Math.PI * 6 * t) * 3
         const carrier = Math.sin(2 * Math.PI * 440 * t + mod)
@@ -1062,7 +1045,7 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
         return carrier * env * 0.35
     }
 
-    function generateClap(t, sr = SAMPLE_RATE) {
+    function generateClap(t, _sr = SAMPLE_RATE) {
         if (t > 0.15) return 0
         const env = Math.exp(-t * 25)
         const noise = (Math.random() * 2 - 1)
@@ -1071,7 +1054,7 @@ describe('E2E Audio 9 — 8-beat × 8-track production (synth + samples + FX)', 
         return (noise * 0.7 + tone) * env * 0.5
     }
 
-    function generateRim(t, sr = SAMPLE_RATE) {
+    function generateRim(t, _sr = SAMPLE_RATE) {
         if (t > 0.05) return 0
         const click = Math.sin(2 * Math.PI * 800 * t + Math.sin(2 * Math.PI * 3200 * t) * 2)
         return click * Math.exp(-t * 120) * 0.5

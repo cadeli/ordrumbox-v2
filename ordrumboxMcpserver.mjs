@@ -371,7 +371,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const patternsPath = resolve(__dirname, 'assets/data/song.json');
       const data = await readFile(patternsPath, 'utf-8');
       let patterns;
-      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
+      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`, { cause: e }); }
       patterns.push(pattern);
       await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns));
 
@@ -386,7 +386,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
         notes = typeof notesArg === 'string' ? JSON.parse(notesArg) : notesArg;
       } catch (e) {
-        throw new Error(`Invalid JSON in 'notes' argument: ${e.message}`);
+        throw new Error(`Invalid JSON in 'notes' argument: ${e.message}`, { cause: e });
       }
       
       const pattern = await loadPatternFromJson(patternName);
@@ -436,7 +436,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const patternsPath = resolve(__dirname, 'assets/data/song.json');
       const data = await readFile(patternsPath, 'utf-8');
       let patterns;
-      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
+      try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`, { cause: e }); }
       const idx = patterns.findIndex(p => p.name === patternName);
       if (idx >= 0) {
         patterns[idx] = pattern;
@@ -625,7 +625,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const patternsPath = resolve(__dirname, 'assets/data/song.json');
     const data = await readFile(patternsPath, 'utf-8');
     let patterns;
-    try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
+    try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`, { cause: e }); }
     const sourcePattern = patterns.find(p => p.name === patternName);
     if (sourcePattern) {
       const cmd = new Commander();
@@ -639,7 +639,7 @@ async function updatePatternInIndex(pattern) {
   const patternsPath = resolve(__dirname, 'assets/data/song.json');
   const data = await readFile(patternsPath, 'utf-8');
   let patterns;
-  try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`); }
+  try { patterns = JSON.parse(data); } catch (e) { throw new Error(`Corrupt song.json: ${e.message}`, { cause: e }); }
   const idx = patterns.findIndex(p => p.name === pattern.name);
   if (idx >= 0) {
     patterns[idx] = pattern;

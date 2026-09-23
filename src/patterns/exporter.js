@@ -1,7 +1,6 @@
 import Utils from '../core/utils.js';
 import {
     NOTE_DEFAULTS,
-    NOTE_KEY_ORDER,
     NOTE_RECALCULATED,
     detectUsedKeys,
     noteToObjectCompact
@@ -59,7 +58,7 @@ export class PatternExporter {
         return cleaned;
     }
 
-    static encodeNotes(notes, track) {
+    static encodeNotes(notes, _track) {
         if (!Array.isArray(notes) || notes.length === 0) {
             return null;
         }

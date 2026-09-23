@@ -178,14 +178,6 @@ function getNotePositions(pattern) {
     return positions
 }
 
-function normalizeNote(n) {
-    return { beat: n.beat ?? 0, beatStep: n.beatStep ?? 0, pitch: n.pitch ?? 0 }
-}
-
-function notesEqual(a, b) {
-    return a.beat === b.beat && a.beatStep === b.beatStep && a.pitch === b.pitch
-}
-
 describe('MIDI JSON Roundtrip', () => {
     let cmd, originalPattern
 

@@ -475,7 +475,7 @@ describe('recalcLoopDerived', () => {
 
     it('mutates the track object in place', () => {
         const track = { loopAtStep: 12, stepsPerBeat: 4 }
-        const result = recalcLoopDerived(track)
+        recalcLoopDerived(track)
         expect(track).toHaveProperty('loopPointBeat', 3)
         expect(track).toHaveProperty('loopPointStep', 0)
     })

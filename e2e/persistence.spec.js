@@ -60,8 +60,6 @@ test.describe('E2E-B: Persistence between sessions', () => {
     await page.waitForTimeout(800);
 
     const corrupted = await page.evaluate(async () => {
-      const { appState } = window.__e2e
-      const currentVersion = '2.0.0'
       const bogusVersion = '1.0.0'
 
       const dbOpen = indexedDB.open('ordrumbox', 4)
@@ -106,7 +104,7 @@ test.describe('E2E-B: Persistence between sessions', () => {
     await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 });
 
     await page.evaluate(async () => {
-      const { appState, serviceRegistry } = window.__e2e
+      const { serviceRegistry } = window.__e2e
       const ps = serviceRegistry.patterns
       if (ps?.persistPatterns) ps.persistPatterns()
       await new Promise(r => setTimeout(r, 800))

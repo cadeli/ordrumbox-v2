@@ -2,7 +2,6 @@
 import { describe, it, expect } from 'vitest'
 import { computeLfoValue, getLfoWaveformValue } from '../src/audio/math.js'
 import { computeTrackLfoValues, LFO_MAP } from '../src/logic/lfo_engine.js'
-import { TICK } from '../src/core/constants.js'
 
 // Phase shift: p = (phase - 0.25) - floor(phase - 0.25)
 // At phase=0 → p=0.75, sine=−1, tri=−2, saw=0.5, square=−1

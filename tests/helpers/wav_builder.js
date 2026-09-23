@@ -132,7 +132,7 @@ export async function buildWav(options) {
  * @returns {Uint8Array} - Complete WAV file as bytes
  */
 export async function buildWavFromOnsets(options) {
-    const { bpm, sampleRate = DEFAULT_SAMPLE_RATE, onsets = [], ...rest } = options
+    const { sampleRate = DEFAULT_SAMPLE_RATE, onsets = [], ...rest } = options
 
     const sampleOnsets = onsets.map(o => ({
         ...o,

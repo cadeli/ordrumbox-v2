@@ -31,9 +31,9 @@ export function setNbBeats(cmd, pattern, newBeats) {
         loopPointStep: track.loopPointStep
     }))
 
-    let oldBeats = pattern.nbBeats * (Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4)
+    const oldBeats = pattern.nbBeats * (Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4)
     pattern.nbBeats = newBeats * 4
-    Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
+    Utils.getTracksArray(pattern).forEach((track) => {
         if (track.loopAtStep >= oldBeats) {
             track.loopAtStep = pattern.nbBeats * track.stepsPerBeat
             recalcLoopDerived(track)

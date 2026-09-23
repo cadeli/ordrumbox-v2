@@ -1,10 +1,10 @@
 export function bufferToWav(abuffer) {
-    let numOfChan = abuffer.numberOfChannels,
+    const numOfChan = abuffer.numberOfChannels,
         length = abuffer.length * numOfChan * 2 + 44,
         buffer = new ArrayBuffer(length),
         view = new DataView(buffer),
-        channels = [],
-        i, sample,
+        channels = [];
+    let i, sample,
         offset = 0,
         pos = 0;
 

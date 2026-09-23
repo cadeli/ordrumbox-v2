@@ -183,14 +183,6 @@ export default class Toolbar {
         this.#overflow.bindEvents()
     }
 
-    #rebuildPatternSelect() {
-        this.#patternNav.rebuildPatternSelect()
-    }
-
-    #rebuildDrumkitSelect() {
-        this.#patternNav.rebuildDrumkitSelect()
-    }
-
     #setupOverflowObserver() {
         const isMobile = () => isMobileViewport()
         const check = () => {

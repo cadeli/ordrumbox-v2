@@ -458,7 +458,6 @@ describe('retrigger → multiple note events', () => {
         const tickSpacing = 8 // rate=8
         const sampleSpacing = Math.round(tickSpacing * tickTime * SAMPLE_RATE)
         const numRetriggers = 4
-        const burstDuration = Math.floor(sampleSpacing * 0.3)
         const totalSamples = sampleSpacing * numRetriggers + SAMPLE_RATE * 0.1
 
         const ctx = new OfflineAudioContext(1, totalSamples, SAMPLE_RATE)

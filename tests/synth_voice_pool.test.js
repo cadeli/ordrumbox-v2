@@ -2,9 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import SynthVoiceNodePool from '../src/audio/voices/synth_voice_pool.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
 
-const postMessageMock = vi.fn()
-const connectMock = vi.fn()
-const disconnectMock = vi.fn()
 function makeWorkletNodeMock() {
     return {
         port: { postMessage: vi.fn() },
@@ -16,7 +13,6 @@ function makeWorkletNodeMock() {
 vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
 vi.spyOn(WorkletLoader, 'ensureLoaded').mockResolvedValue(true)
 
-let nodeCounter = 0
 vi.spyOn(WorkletLoader, 'createNode').mockImplementation(() => {
     return makeWorkletNodeMock()
 })

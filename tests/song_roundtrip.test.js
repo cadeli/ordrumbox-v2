@@ -37,7 +37,7 @@ function createMockIDB() {
             get objectStoreNames() {
                 return Object.keys(stores)
             },
-            transaction: (storeName, mode) => {
+            transaction: (storeName) => {
                 const store = ensureStore(storeName)
                 return {
                     objectStore: () => ({

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import StructureSong from '../src/logic/generators/structure_song.js'
-import { appState } from '../src/state/app_state.js'
 const SYNTH_SOUND_MAP = {
     KICK: 'BASS0',
     SNARE: 'SN',

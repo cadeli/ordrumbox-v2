@@ -15,7 +15,7 @@ import Commander from '../src/logic/commands/cmd.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { makeTrack, makeNote, PARAM_SETS } from './helpers/make_pattern.js'
+import { makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -381,7 +381,7 @@ describe('WavExporter – downloadWav', () => {
 
 describe.each(PARAM_SETS)('Auto-assign — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
     it('auto-assigns a track in the pattern', () => {
-        const { cmd, pattern } = makePatternWithTrack('KICK', stepsPerBeat, nbBeats)
+        const { pattern } = makePatternWithTrack('KICK', stepsPerBeat, nbBeats)
         expect(pattern.tracks.length).toBe(1)
         expect(pattern.tracks[0].name).toBe('KICK')
         expect(pattern.tracks[0].stepsPerBeat).toBe(stepsPerBeat)

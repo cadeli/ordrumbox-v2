@@ -56,7 +56,7 @@ test.describe('Playback and AudioContext', () => {
     if (await cell.isVisible({ timeout: 2000 }).catch(() => false)) {
       await cell.click();
 
-      const isRunning = await page.evaluate(() => serviceRegistry?.transport?.isRunning ?? false);
+      const isRunning = await page.evaluate(() => window.__e2e.serviceRegistry?.transport?.isRunning ?? false);
       expect(typeof isRunning).toBe('boolean');
     }
   });

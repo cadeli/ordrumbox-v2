@@ -9,7 +9,7 @@ import { showToast } from '../../../ui/toast.js'
 /**
  * Selection & state commands — returns an object of methods bound to the Commander instance.
  */
-export function createSelectionMethods(cmd) {
+export function createSelectionMethods(_cmd) {
     return {
         async setSelectedDrumkitNum(num) {
             try {
@@ -25,7 +25,7 @@ export function createSelectionMethods(cmd) {
 
         async autoAssignSoundsForNewDrumkit() {
             try {
-                let selPattern = appState.patterns[appState.selectedPatternNum]
+                const selPattern = appState.patterns[appState.selectedPatternNum]
                 serviceRegistry.seq.setBpm(selPattern.bpm)
                 const autoAssign = await getAutoAssignService()
                 autoAssign.autoAssignSounds(selPattern)
@@ -41,7 +41,7 @@ export function createSelectionMethods(cmd) {
             try {
                 if (appState.patterns.length > 0) {
                     appState.selectedPatternNum = num
-                    let selPattern = appState.patterns[appState.selectedPatternNum]
+                    const selPattern = appState.patterns[appState.selectedPatternNum]
                     serviceRegistry.seq.setBpm(selPattern.bpm)
                     if (Object.keys(soundRegistry.sounds).length > 0) {
                         const autoAssign = await getAutoAssignService()

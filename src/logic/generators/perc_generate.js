@@ -195,7 +195,7 @@ export default class PercGenerate extends BaseGenerator {
                 this.generatePhraseVariant(percTrack, config,
                     (phrase) => this.resolvePhrasePitch(phrase, tones, cachedPitches, pitchBias),
                     (phrase, step) => step === 0,
-                    (phrase, step) => phrase.source !== 'root',
+                    (phrase, _step) => phrase.source !== 'root',
                     density,
                     { cachedPitches }
                 )

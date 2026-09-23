@@ -25,10 +25,6 @@ async function createSynthVoiceNode(audioCtx) {
     return WorkletLoader.createNode(audioCtx, 'synth-voice', SYNTH_VOICE_OPTIONS)
 }
 
-function postTrigger(node, startTime) {
-    node.port.postMessage({ type: 'trigger', startTime })
-}
-
 function postRelease(node, releaseTime) {
     node.port.postMessage({ type: 'release', releaseTime })
 }
@@ -67,7 +63,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         this.#synthNodePool = synthNodePool
     }
 
-    async setup(flatNote, time) {
+    async setup(flatNote, _time) {
         try {
             const ctx = this.audioCtx
             const gs = this.generatedSound

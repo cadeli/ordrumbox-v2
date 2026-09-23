@@ -25,7 +25,9 @@ describe('Functional: MCP generate → disk save → import', () => {
             const files = await import('node:fs/promises').then(fs => fs.readdir(TMP_DIR))
             for (const f of files) await unlink(resolve(TMP_DIR, f))
             await import('node:fs/promises').then(fs => fs.rmdir(TMP_DIR))
-        } catch {}
+        } catch {
+            // Cleanup is best-effort; ignore errors when the directory is already gone.
+        }
     })
 
     it('create → add notes → export → write disk → read back → reimport preserves everything', async () => {
@@ -181,7 +183,7 @@ describe('Functional: MCP generate → disk save → import', () => {
 
         const filePath = resolve(TMP_DIR, 'validjson.json')
 
-        const saveAndVerify = async (p, label) => {
+        const saveAndVerify = async (p, _label) => {
             const exported = PatternExporter.export(p)
             const json = JSON.stringify(exported, null, 2) + '\n'
             await writeFile(filePath, json, 'utf8')

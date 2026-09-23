@@ -230,12 +230,12 @@ export default class TrackEditor extends BasePanel {
 
         const soundInfo = this._sndSection._getSoundInfo()
 
-        let headerHtml = `<div class="ne-header">
+        const headerHtml = `<div class="ne-header">
             <span class="ne-track">Track: ${this.esc(this._track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
         </div>`
 
-        let sampleBarHtml = this._renderSampleBar()
-        let knobBarHtml = this._renderKnobBar()
+        const sampleBarHtml = this._renderSampleBar()
+        const knobBarHtml = this._renderKnobBar()
 
         // ── Snapshot existing instances for reuse ──────────────────
         const prevSliders = new Map(this._sliders)
@@ -243,7 +243,7 @@ export default class TrackEditor extends BasePanel {
         const prevFxKnobs = new Map(this._fxKnobs.map(k => [k.key, k]))
         this._fxKnobs = []
 
-        let tabBarHtml = this._tab.renderBar()
+        const tabBarHtml = this._tab.renderBar()
 
         let panelsHtml = ''
 

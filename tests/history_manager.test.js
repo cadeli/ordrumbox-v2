@@ -2,7 +2,6 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { playbackEvents } from '../src/state/playback_events.js'
 
 vi.mock('../src/state/playback_events.js', async () => {
     const { EventEmitter } = await import('events')

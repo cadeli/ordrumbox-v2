@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { TICK, BEATS_PER_PAGE } from '../src/core/constants.js'
+import { TICK } from '../src/core/constants.js'
 
 let playbackEvents
 let PlaybackOverlaySection
@@ -35,7 +35,7 @@ function makeMockPattern(nbBeats = 4) {
     }
 }
 
-function makeMockEditor(pattern) {
+function makeMockEditor() {
     const container = document.createElement('div')
     container.innerHTML = '<div class="pp-header"></div>'
     document.body.appendChild(container)
@@ -49,7 +49,7 @@ function makeMockEditor(pattern) {
     }
 }
 
-function runOneFrame(overlay) {
+function runOneFrame() {
     const calls = globalThis.requestAnimationFrame.mock?.calls
     if (!calls || calls.length === 0) return
     const rafCb = calls[calls.length - 1][0]

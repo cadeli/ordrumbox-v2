@@ -8,7 +8,7 @@ import HatGenerate from '../src/logic/generators/hat_generate.js'
 import BassGenerate from '../src/logic/generators/bass_generate.js'
 import PercGenerate from '../src/logic/generators/perc_generate.js'
 import { appState } from '../src/state/app_state.js'
-import { makeTrack, makeNote, PARAM_SETS } from './helpers/make_pattern.js'
+import { makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
 import * as patternsManager from '../src/patterns/manager.js'
 
 describe('Generators', () => {

@@ -5,9 +5,8 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
-import { SYNTH_GROUP_DEFAULTS } from '../src/ui/synth_editor/constants.js'
 
-let SynthEditor, TrackEditor
+let SynthEditor
 
 beforeEach(async () => {
     document.body.innerHTML = ''
@@ -15,7 +14,6 @@ beforeEach(async () => {
     serviceRegistry.reset()
     soundRegistry.reset()
     SynthEditor = (await import('../src/ui/synth_editor.js')).default
-    TrackEditor = (await import('../src/ui/track_editor.js')).default
 })
 
 function makeGeneratedSound(overrides = {}) {

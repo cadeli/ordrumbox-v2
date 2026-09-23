@@ -18,8 +18,6 @@ export default class PlaybackOverlaySection {
     #prevLoopTick;
     /** @type {HTMLCanvasElement | null} */
     #waveformCanvas;
-    /** @type {HTMLElement | null} */
-    #tracksEl;
     /** @type {NodeListOf<HTMLElement> | null} */
     #vuElCache;
 
@@ -30,7 +28,6 @@ export default class PlaybackOverlaySection {
         this.#playhead = null
         this.#prevLoopTick = -1
         this.#waveformCanvas = null
-        this.#tracksEl = null
         this.#vuElCache = null
     }
 
@@ -63,7 +60,6 @@ export default class PlaybackOverlaySection {
         const editor = this.#editor
         this.#waveformCanvas = editor.container?.querySelector('.pp-waveform-overlay')
         if (this.#waveformCanvas) this.#waveformCanvas.style.display = ''
-        this.#tracksEl = editor.container?.querySelector('.pp-tracks')
         this.#vuElCache = editor.container?.querySelectorAll('.pp-vu')
 
         const loop = () => {
@@ -90,7 +86,6 @@ export default class PlaybackOverlaySection {
             this.#rafId = null
         }
         this.#waveformCanvas = null
-        this.#tracksEl = null
         this.#vuElCache = null
     }
 
@@ -217,7 +212,6 @@ export default class PlaybackOverlaySection {
     /** Clear loop element caches (called after full sync). */
     clearCaches() {
         this.#waveformCanvas = null
-        this.#tracksEl = null
         this.#vuElCache = null
     }
 }

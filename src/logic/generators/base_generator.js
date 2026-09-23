@@ -98,7 +98,7 @@ export default class BaseGenerator {
             octave: 12,
             approach: Math.random() < 0.5 ? -1 : -2,
         }
-        if (sourceOffsets.hasOwnProperty(phrase.source)) {
+        if (Object.hasOwn(sourceOffsets, phrase.source)) {
             return (typeof sourceOffsets[phrase.source] === 'function'
                 ? sourceOffsets[phrase.source]()
                 : sourceOffsets[phrase.source]) + pitchBias

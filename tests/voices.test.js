@@ -8,7 +8,6 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
 import { computeOscFrequency, computeNoteRatio } from '../src/audio/math.js'
-import { C3_FREQ, MIN_NOTE_RATIO } from '../src/core/constants.js'
 import { makeParam, makeNode } from './helpers/worklet_mocks.js'
 
 const postMessageMock = vi.fn()

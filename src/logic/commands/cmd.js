@@ -1,7 +1,6 @@
 import Utils from '../../core/utils.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
-import { getHistoryService } from '../../state/service_loader.js'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES, recalcLoopDerived } from '../../model/track_schema.js'
 import { createNoteMethods } from './cmd/cmd_notes.js'
 import { createTrackMethods } from './cmd/cmd_tracks.js'

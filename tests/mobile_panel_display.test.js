@@ -27,7 +27,6 @@ const __dirname = dirname(__filename)
 const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
 
 const MOBILE = { width: 768, height: 480 }
-const TAB_BAR_HEIGHT = 60
 
 const MOCK_TRACK = {
     name: 'KICK', notes: [{ beat: 0, beatStep: 0, pitch: 0, velocity: 0.8 }],
@@ -417,8 +416,7 @@ describe('Mobile panel scrollability', () => {
 // ══════════════════════════════════════════════════════════════════
 
 describe('Mobile tab bar: position, size, visibility', () => {
-    let ctx
-    beforeEach(() => { ctx = setupApp(MOBILE) })
+    beforeEach(() => { setupApp(MOBILE) })
 
     it('tab bar element exists in DOM', () => {
         const bar = document.getElementById('mobile-tab-bar')

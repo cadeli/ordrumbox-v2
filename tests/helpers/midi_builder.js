@@ -129,7 +129,7 @@ export function buildMTrk(eventBytes) {
  * @returns {number[]}
  */
 export function buildMidiTrack(track, ppqn = 96) {
-    const { name = '', channel = 9, program = 0, notes = [], programChanges = [], tempos = [] } = track
+    const { name = '', channel = 9, notes = [], programChanges = [], tempos = [] } = track
 
     // Collect all events with their absolute ticks and raw body bytes (no delta prefix)
     const events = []

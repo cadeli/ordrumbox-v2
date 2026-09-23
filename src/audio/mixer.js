@@ -71,14 +71,14 @@ export default class Mixer {
         // Always disconnect first — Web Audio connect() accumulates duplicate
         // connections which double the signal each time.
         if (this.busInput && this.busWorklet && this.analyser) {
-            try { this.busInput.disconnect(); } catch (_) {}
-            try { this.busWorklet.disconnect(); } catch (_) {}
-            try { this.analyser.disconnect(); } catch (_) {}
+            try { this.busInput.disconnect(); } catch (_) { /* no-op */ }
+            try { this.busWorklet.disconnect(); } catch (_) { /* no-op */ }
+            try { this.analyser.disconnect(); } catch (_) { /* no-op */ }
             this.busInput.connect(this.busWorklet);
             this.busWorklet.connect(this.analyser);
             this.analyser.connect(ctx.destination);
 
-            try { this.transportClock.start(); } catch (_) {}
+            try { this.transportClock.start(); } catch (_) { /* no-op */ }
 
             this.#applySavedMasterSettings()
         }
@@ -105,7 +105,7 @@ export default class Mixer {
             if (!node) continue;
             try { node.disconnect(); } catch (e) { logger.error('Mixer', e); }
             if (node === this.transportClock) {
-                try { node.stop(); } catch (_) {}
+                try { node.stop(); } catch (_) { /* no-op */ }
             }
         }
 

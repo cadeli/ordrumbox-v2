@@ -9,21 +9,6 @@
 import { test, expect } from '@playwright/test';
 import { bootApp } from './fixtures.js';
 
-function computeRms(data) {
-  let sum = 0;
-  for (let i = 0; i < data.length; i++) sum += data[i] * data[i];
-  return Math.sqrt(sum / data.length);
-}
-
-function computePeak(data) {
-  let peak = 0;
-  for (let i = 0; i < data.length; i++) {
-    const abs = Math.abs(data[i]);
-    if (abs > peak) peak = abs;
-  }
-  return peak;
-}
-
 function computeEnvelope(data, blockSize = 1024) {
   const env = [];
   for (let i = 0; i < data.length; i += blockSize) {

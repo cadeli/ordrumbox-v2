@@ -2,7 +2,6 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { TICK } from '../src/core/constants.js'
 import { computeLfoValue } from '../src/audio/math.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
 

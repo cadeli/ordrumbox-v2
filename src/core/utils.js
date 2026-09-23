@@ -58,7 +58,7 @@ static TAG = "UTILS"
         return Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)
     }
 
-    static addLoopToTrackIfPossible = (track, options = {}) => {
+    static addLoopToTrackIfPossible = (track, _options = {}) => {
         if (!track || !Array.isArray(track.notes)) {
             return { changed: false, reason: "invalid-track", loopAtStep: null, removedNotes: 0 }
         }

@@ -1,4 +1,4 @@
-import InstrumentsManager, {
+import {
     instrumentsManager,
     GM_DRUM_NAMES,
     GM_PROGRAM_NAMES

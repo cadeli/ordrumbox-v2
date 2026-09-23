@@ -13,22 +13,22 @@ export default class BaseVoice {
         this.#pooledNodes = []
     }
 
-    setup(flatNote, time) {
+    setup(_flatNote, _time) {
         throw new Error("setup() must be implemented by subclass")
     }
 
-    start(time) {
+    start(_time) {
         throw new Error("start() must be implemented by subclass")
     }
 
-    stop(time) {
+    stop(_time) {
         this.stopped = true
     }
 
     cleanup() {
         const count = this.nodes.length
         this.nodes.forEach(node => {
-            try { node.disconnect() } catch (e) {}
+            try { node.disconnect() } catch { /* no-op */ }
         })
         if (this.nodePool) {
             for (const node of this.#pooledNodes) {

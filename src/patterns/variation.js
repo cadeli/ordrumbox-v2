@@ -9,14 +9,6 @@ const COST_PITCH = 1
 
 const DEFAULT_MAJOR_SCALE = [0, 2, 4, 5, 7, 9, 11]
 
-function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        ;[arr[i], arr[j]] = [arr[j], arr[i]]
-    }
-    return arr
-}
-
 function weightedShuffle(ops, weightFn) {
     const scored = ops.map(op => ({ op, score: Math.random() * (weightFn(op) ?? 50) }))
     scored.sort((a, b) => b.score - a.score)

@@ -47,7 +47,7 @@ describe('drumkits.json validation', () => {
     })
 
     it('no duplicate keys within a kit', () => {
-        drumkits.forEach((kit, ki) => {
+        drumkits.forEach((kit) => {
             const keys = kit.instruments.map(i => i.key.toUpperCase())
             const unique = new Set(keys)
             if (keys.length !== unique.size) {
@@ -59,8 +59,8 @@ describe('drumkits.json validation', () => {
 
     it('all referenced WAV files exist on disk', () => {
         const missing = []
-        drumkits.forEach((kit, ki) => {
-            kit.instruments.forEach((inst, ii) => {
+        drumkits.forEach((kit) => {
+            kit.instruments.forEach((inst) => {
                 const filePath = join(KITS_DIR, inst.url)
                 if (!existsSync(filePath)) {
                     missing.push(`${kit.name}/${inst.key} -> ${inst.url}`)

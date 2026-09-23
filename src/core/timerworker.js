@@ -1,19 +1,19 @@
-let timerID=null;
-let interval=100;
+let timerID = null;
+let interval = 100;
 
-self.onmessage=function(e){
-	if (e.data=="start") {
-		timerID=setInterval(function(){postMessage("tick");},interval)
+self.onmessage = function (e) {
+	if (e.data === "start") {
+		timerID = setInterval(function () { postMessage("tick"); }, interval)
 	}
 	else if (e.data.interval) {
-		interval=e.data.interval
+		interval = e.data.interval
 		if (timerID) {
 			clearInterval(timerID)
-			timerID=setInterval(function(){postMessage("tick");},interval)
+			timerID = setInterval(function () { postMessage("tick"); }, interval)
 		}
 	}
-	else if (e.data=="stop") {
+	else if (e.data === "stop") {
 		clearInterval(timerID)
-		timerID=null
+		timerID = null
 	}
 };

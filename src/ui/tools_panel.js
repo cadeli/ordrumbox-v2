@@ -281,8 +281,6 @@ export default class ToolsPanel extends BasePanel {
     subscribe() {}
 
     sync() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-
         const outputSelect = this.container.querySelector('#tp-midi-output-select')
         const enableBtn = this.container.querySelector('#tp-midi-enable')
 
@@ -437,12 +435,8 @@ export default class ToolsPanel extends BasePanel {
         const pattern = appState.patterns[appState.selectedPatternNum]
         if (!pattern || !pattern.tracks) return
 
-        let totalRemoved = 0
         Utils.getTracksArray(pattern).forEach(track => {
-            const result = serviceRegistry.cmd?.compactTrack(track)
-            if (result?.changed) {
-                totalRemoved += result.removedNotes
-            }
+            serviceRegistry.cmd?.compactTrack(track)
         })
 
         serviceRegistry.audioEngine?.invalidateCache()

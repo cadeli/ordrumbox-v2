@@ -260,7 +260,7 @@ export default class BassGenerate extends BaseGenerator {
                 const playNote = strongBeat || Math.random() < config.density * density
                 if (!playNote) continue
 
-                let notePitch = rootPitch
+                let notePitch
                 let isVariation = false
                 if (strongBeat || Math.random() > config.variation) {
                     const interval = Math.random() < config.strongBeatWeight

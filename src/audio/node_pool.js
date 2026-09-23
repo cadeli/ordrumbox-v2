@@ -56,7 +56,7 @@ export default class NodePool {
                     if (node.pan) node.pan.value = 0
                     break
             }
-        } catch (_) {}
+        } catch (_) { /* no-op: reset is best-effort */ }
     }
 
     get stats() {

@@ -9,7 +9,7 @@ import { logger } from '../../../core/logger.js'
 export function createPatternMethods(cmd) {
     return {
         addPattern(name) {
-            let pattern = this.createPattern(name)
+            const pattern = this.createPattern(name)
             const patternIndex = appState.patterns.length
             appState.patterns.push(pattern)
             cmd.persist()

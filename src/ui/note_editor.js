@@ -87,9 +87,6 @@ export default class NoteEditor extends BasePanel {
     #externalContainer
     #note
     #track
-    #trackEditor
-    #trackIdx
-    #pos
     #beat
     #beatStep
     #knobs
@@ -105,9 +102,6 @@ export default class NoteEditor extends BasePanel {
         this.#externalContainer = null
         this.#note = null
         this.#track = null
-        this.#trackEditor = null
-        this.#trackIdx = 0
-        this.#pos = 0
         this.#beat = 0
         this.#beatStep = 0
         this.#knobs = []
@@ -144,8 +138,8 @@ export default class NoteEditor extends BasePanel {
         super.createDOM()
     }
 
-    setTrackEditor(te) {
-        this.#trackEditor = te
+    setTrackEditor(_te) {
+        // Intentionally unused: kept for API compatibility with callers.
     }
 
     subscribe() {
@@ -226,7 +220,6 @@ export default class NoteEditor extends BasePanel {
     async #initData(data) {
         this.#track = data.track
         this.#note = data.note
-        this.#pos = data.pos
         this.#beat = data.beat
         this.#beatStep = data.beatStep
         await loadScales()
@@ -235,10 +228,8 @@ export default class NoteEditor extends BasePanel {
     /** @private */
     async #initEmptyData(data) {
         this.#track = data.track
-        this.#trackIdx = data.trackIdx ?? 0
         this.#beat = data.beat ?? 0
         this.#beatStep = data.beatStep ?? 0
-        this.#pos = data.pos ?? 0
         this.#note = { ...DEFAULT_NOTE }
         await loadScales()
     }

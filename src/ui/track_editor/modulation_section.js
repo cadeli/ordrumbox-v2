@@ -2,7 +2,7 @@
 // Modulation (LFO) tab — LFO target buttons + type/freq/range/phase controls.
 
 import { renderOptions } from '../components/panel_helpers.js'
-import { ALL_TRACK_PROPS, KNOB_PROPS, PROP_BY_KEY } from './constants.js'
+import { ALL_TRACK_PROPS, KNOB_PROPS } from './constants.js'
 import Utils from '../../core/utils.js'
 import { fmt } from '../components/panel_helpers.js'
 

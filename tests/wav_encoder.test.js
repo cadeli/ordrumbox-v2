@@ -10,7 +10,7 @@ function createMockAudioBuffer(channels, length, sampleRate) {
         numberOfChannels: channels,
         length,
         sampleRate,
-        getChannelData: (channelIndex) => {
+        getChannelData: () => {
             const data = new Float32Array(length)
             for (let i = 0; i < length; i++) {
                 data[i] = Math.sin(i * 0.01) * 0.5

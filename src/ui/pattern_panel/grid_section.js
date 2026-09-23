@@ -61,7 +61,7 @@ export default class GridSection {
     }
 
     /** Surgically update a single cell DOM element in-place */
-    updateCell(cellEl, track, b, s, cached, pattern) {
+    updateCell(cellEl, track, b, s, cached, _pattern) {
         if (!cellEl) return
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const absPos = b * stepsPerBeat + s
@@ -234,7 +234,7 @@ export default class GridSection {
         return cellMap
     }
 
-    #getSubPositions(note, track, pattern) {
+    #getSubPositions(note, track, _pattern) {
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const basePos = note.beat * stepsPerBeat + note.beatStep
         const retriggerNum = note.retriggerNum ?? 1

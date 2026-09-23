@@ -3,7 +3,7 @@ import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { setViewMode, setPatternPanelHidden } from './components/panel_helpers.js'
 import { isMobileViewport } from '../core/constants.js'
-import { isMobileLandscape, removeLayout } from './mobile_track_layout.js'
+import { removeLayout } from './mobile_track_layout.js'
 
 /**
  * ViewManager — single coordinator for synth / edit / proll view switching.
@@ -22,7 +22,6 @@ export default class ViewManager {
     #outputPanel
     #currentView
     #slots
-    #eventToSlot
     #viewHandlers
 
     constructor({ trackEditor, synthEditor, pianoRollPanel, noteEditor, toolsPanel, patternSettingsPanel, outputPanel, drumkitManager, patternsPanel, aboutPanel }) {
@@ -42,10 +41,6 @@ export default class ViewManager {
             ['pp',    { event: 'songToggle',            panel: patternsPanel }],
             ['about', { event: 'aboutToggle',            panel: aboutPanel }],
         ])
-        // Reverse lookup: event name → short name
-        this.#eventToSlot = new Map(
-            [...this.#slots].map(([name, { event }]) => [event, name])
-        )
 
         // ── View registry: view name → { enter, exit } ──────────────────
         // `exit` runs cleanup for the view being left (only views that need

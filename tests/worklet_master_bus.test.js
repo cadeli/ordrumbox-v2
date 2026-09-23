@@ -99,10 +99,9 @@ describe('MasterBusProcessor source', () => {
             master: 1.0
         }, FRAMES)
         // 100Hz tone should pass through with most of its energy
-        let outRms = 0, inRms = 0
+        let outRms = 0
         for (let i = 2000; i < FRAMES; i++) {
             outRms += out[0][i] * out[0][i]
-            inRms += inL[i] * inL[i]
         }
         expect(Math.sqrt(outRms / (FRAMES - 2000))).toBeGreaterThan(0.5)
     })

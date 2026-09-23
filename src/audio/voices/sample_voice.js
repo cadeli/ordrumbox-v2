@@ -8,8 +8,7 @@ import {
     RELEASE_TIME,
     MIN_GAIN_VALUE,
     STOP_BUFFER,
-    STOP_EXTRA_BUFFER,
-    TICK
+    STOP_EXTRA_BUFFER
 } from '../../core/constants.js'
 
 export default class SampleVoice extends BaseVoice {
@@ -83,7 +82,7 @@ export default class SampleVoice extends BaseVoice {
 
         try {
             this.snd.stop(time + STOP_EXTRA_BUFFER)
-        } catch (e) {
+        } catch {
             // Ignore if already stopped
         }
     }

@@ -80,7 +80,6 @@ export default class SynthEditor {
     #waveform
     #presets
     #lfoRafId
-    #lfoLastTime
 
     constructor(host, deps = {}) {
         this.host = host
@@ -108,7 +107,6 @@ export default class SynthEditor {
         this.#presets = new PresetSection(this)
 
         this.#lfoRafId = null
-        this.#lfoLastTime = -1
     }
 
     /** @returns {OrKnob[]} flat array of current knob instances. */
@@ -283,7 +281,6 @@ export default class SynthEditor {
 
     #startLfoWatch() {
         if (this.#lfoRafId) return
-        this.#lfoLastTime = -1
         const tick = () => {
             if (this.panel?.style.display !== 'flex') { this.#lfoRafId = null; return }
             this.#lfoRafId = requestAnimationFrame(tick)
@@ -295,7 +292,6 @@ export default class SynthEditor {
 
     #stopLfoWatch() {
         if (this.#lfoRafId) { cancelAnimationFrame(this.#lfoRafId); this.#lfoRafId = null }
-        this.#lfoLastTime = -1
     }
 
     /**

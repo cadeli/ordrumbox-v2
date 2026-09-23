@@ -262,7 +262,7 @@ export class OrSlider {
     /**
      * Handles 'input' events from the range element.
      */
-    handleInput(e) {
+    handleInput(_e) {
         const norm    = parseFloat(this.#input.value)
         const denorm  = this.#toDenorm(norm)
         if (this.#value === denorm) return

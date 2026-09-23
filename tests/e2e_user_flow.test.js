@@ -162,8 +162,8 @@ describe('E2E Flow 1 — Create pattern and build beat', () => {
 
         const kick = cmd.addTrack(pat, 'KICK', 4)
         const snare = cmd.addTrack(pat, 'SNARE', 4)
-        const hihat = cmd.addTrack(pat, 'HIHAT', 4)
-        const bass = cmd.addTrack(pat, 'BASS', 4)
+        cmd.addTrack(pat, 'HIHAT', 4)
+        cmd.addTrack(pat, 'BASS', 4)
 
         cmd.addNote(kick, 0, 0, 0)
         cmd.addNote(kick, 1, 0, 0)

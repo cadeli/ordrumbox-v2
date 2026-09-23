@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 function createMockAudioCtx() {
-    let id = 0
     const createNode = (type) => {
         const node = {
             constructor: { name: type },

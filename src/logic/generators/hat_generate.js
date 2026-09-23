@@ -230,7 +230,7 @@ export default class HatGenerate extends BaseGenerator {
         this.applyLoopPoint(hatTrack, config)
     }
 
-    generateHatLockedVariant = (hatTrack, config, density = 1) => {
+    generateHatLockedVariant = (hatTrack, config, _density = 1) => {
         this.withLockedBarQuantize(hatTrack, 16, () => {
             const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 1)
             const velocityPattern = config.velocityPattern ?? []

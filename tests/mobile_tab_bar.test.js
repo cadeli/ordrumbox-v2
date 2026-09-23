@@ -198,8 +198,6 @@ describe('Mobile tab bar', () => {
     })
 
     describe('mobile panel layout', () => {
-        const MOBILE_TOOLBAR_HEIGHT = 48
-
         it('pattern panel is visible below toolbar when mobileSeqToggle dispatched', () => {
             playbackEvents.emit("mobileSeqToggle")
             const el = document.getElementById('pattern-panel')

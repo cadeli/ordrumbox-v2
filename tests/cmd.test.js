@@ -317,10 +317,10 @@ describe('Functional: Commander operations', () => {
 
         it('roundtrips notes through 8→4→8 stepsPerBeat changes', () => {
             const track = cmd.createTrack(4, 'KICK', 8)
-            const n0 = cmd.addNote(track, 0, 0)
-            const n1 = cmd.addNote(track, 0, 4)
-            const n2 = cmd.addNote(track, 1, 2)
-            const n3 = cmd.addNote(track, 2, 6)
+            cmd.addNote(track, 0, 0)
+            cmd.addNote(track, 0, 4)
+            cmd.addNote(track, 1, 2)
+            cmd.addNote(track, 2, 6)
 
             const origBeats = track.notes.map(n => n.beat)
             const origSteps = track.notes.map(n => n.beatStep)

@@ -58,7 +58,7 @@ let _toolbar, _patternPanel, _pianoRollPanel, _noteEditor, _trackEditor, _toolsP
 
 export function init() {
     if (window.orientation > 1) {
-        let de = document.documentElement;
+        const de = document.documentElement;
         if (de.requestFullscreen) {
             de.requestFullscreen();
         } else if (de.mozRequestFullScreen) {

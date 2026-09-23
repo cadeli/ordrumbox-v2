@@ -30,17 +30,10 @@ import {
     recomputeFlatNotes,
     isTriggered,
     normalizeArp,
-    computeTickForNote,
-    computeNbTickForLoop,
-    computeNbTickForPattern,
-    expandLoopOccurrences,
-    adjustLoopToPattern,
-    generateSubNotesWithEuclidean,
     computeTickSpacing,
 } from '../src/patterns/engine.js'
-import MidiExporter, { resolveTrackMidi } from '../src/logic/midi/midi_exporter.js'
+import MidiExporter from '../src/logic/midi/midi_exporter.js'
 import InstrumentsManager from '../src/logic/services/instruments_manager.js'
-import Utils from '../src/core/utils.js'
 import { TICK } from '../src/core/constants.js'
 import { parseMidi, findAllNotes, readUint16BE } from './helpers/midi_reader.js'
 import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
@@ -58,92 +51,10 @@ function allNoteOns(bytes) {
     return findAllNotes(parseMidi(bytes))
 }
 
-// ─── Engine helpers ───────────────────────────────────────────────────────────
-
-/** Convert an engine tick to the expected MIDI tick (accounting for loop offset) */
-function engineTickToMidi(engineTick, loopIndex, nbTickForPattern) {
-    return (engineTick + loopIndex * nbTickForPattern) * MIDI_RATIO
-}
-
-/**
- * Run recomputeFlatNotes for `loops` iterations and gather
- * all (absMidiTick, midiNote, velocity) tuples.
- */
-function getAllExpectedNotes(pattern, loops, im) {
-    const nbTickForPattern = computeNbTickForPattern(pattern.nbBeats, TICK)
-    const expected = []
-    for (let loop = 0; loop < loops; loop++) {
-        const flatMap = recomputeFlatNotes(pattern, loop)
-        for (const [engineTick, flatNotes] of flatMap) {
-            const midiTick = engineTick * MIDI_RATIO + loop * nbTickForPattern * MIDI_RATIO
-            for (const fn of flatNotes) {
-                const { midiNote } = resolveTrackMidi(fn.track.name, im)
-                const noteNum = Math.min(127, Math.max(0, midiNote + (fn.note.pitch ?? 0)))
-                const velocity = Math.round(Math.min(1, Math.max(0, fn.note.velocity ?? 0.8)) * 127)
-                expected.push({ midiTick, noteNum, velocity })
-            }
-        }
-    }
-    return expected
-}
-
 // ─── Pattern builders ─────────────────────────────────────────────────────────
 
 function track(name, stepsPerBeat, beats, loopPointBeat, notes, opts = {}) {
     return makeTrack(name, notes, { stepsPerBeat, nbBeats: beats, loopPointBeat: loopPointBeat ?? beats, ...opts })
-}
-
-// ─── Core verifier ────────────────────────────────────────────────────────────
-
-/**
- * Run the full verification:
- *  1. export the pattern for `loops` passes
- *  2. collect expected notes from the engine
- *  3. assert each expected note is present in the MIDI file
- */
-function verifyPatternInMidi(pattern, loops, label) {
-    const im = new InstrumentsManager()
-    const exporter = new MidiExporter(im)
-    const midiBytes = Array.from(exporter.export(pattern, { loops }))
-
-    const observed = allNoteOns(midiBytes)
-    const expected = getAllExpectedNotes(pattern, loops, im)
-
-    // Index observed notes by tick for fast lookup
-    const observedByTick = new Map()
-    for (const o of observed) {
-        const key = `${o.absTick}|${o.note}|${o.channel}`
-        if (!observedByTick.has(key)) observedByTick.set(key, [])
-        observedByTick.get(key).push(o.velocity)
-    }
-
-    const missing = []
-    for (const e of expected) {
-        const { midiNote, channel } = resolveTrackMidi(
-            pattern.tracks.find(t => {
-                const { midiNote: mn } = resolveTrackMidi(t.name, im)
-                return mn === e.noteNum || (e.noteNum !== mn && Math.min(127, Math.max(0, mn + (t.notes?.[0]?.pitch ?? 0))) === e.noteNum)
-            })?.name ?? '', im)
-        const key = `${e.midiTick}|${e.noteNum}|${channel}`
-        const vels = observedByTick.get(key)
-        if (!vels || !vels.includes(e.velocity)) {
-            missing.push({ label, expected: e, key })
-        }
-    }
-
-    return { expected, observed, missing }
-}
-
-/**
- * Simpler verifier: checks note count per track and tick alignment.
- * Used for cases where pitch lookup is complex.
- */
-function verifyNoteCount(pattern, loops, expectedNoteOnCount, label) {
-    const im = new InstrumentsManager()
-    const exporter = new MidiExporter(im)
-    const midiBytes = Array.from(exporter.export(pattern, { loops }))
-    const observed = allNoteOns(midiBytes)
-    return { count: observed.length, expected: expectedNoteOnCount, observed }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -705,7 +616,6 @@ describe('MidiExporter — functional end-to-end', () => {
         })
 
         it('over 4 loops: SNARE fill appears exactly 2 times (loops 1 and 3)', () => {
-            const im = new InstrumentsManager()
             let fillCount = 0
             for (let loop = 0; loop < LOOPS; loop++) {
                 const fm = recomputeFlatNotes(complexPattern, loop)

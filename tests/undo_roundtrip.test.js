@@ -49,7 +49,7 @@ describe('Undo Roundtrip & State Inversion', () => {
 
             // Initial notes in baseline
             const baseNote1 = cmd.addNote(kick, 0, 0, 0)
-            const baseNote2 = cmd.addNote(snare, 1, 0, 0)
+            cmd.addNote(snare, 1, 0, 0)
 
             // Clear history so we start our test benchmark strictly from P0
             history.clear()
@@ -64,13 +64,13 @@ describe('Undo Roundtrip & State Inversion', () => {
             expect(pattern.tracks).toHaveLength(3)
 
             // 2. Add note on Kick
-            const n2 = cmd.addNote(kick, 2, 0, 0)
+            cmd.addNote(kick, 2, 0, 0)
 
             // 3. Add note on Snare
-            const n3 = cmd.addNote(snare, 3, 0, 0)
+            cmd.addNote(snare, 3, 0, 0)
 
             // 4. Add melodic note on Bass
-            const n4 = cmd.addNote(bass, 0, 2, -7)
+            cmd.addNote(bass, 0, 2, -7)
 
             // 5. Update Kick track parameters (velocity, pan)
             cmd.updateTrack(kick, { velocity: 0.9, pan: -0.25 })
@@ -103,7 +103,7 @@ describe('Undo Roundtrip & State Inversion', () => {
             cmd.cleanTrack(bass)
 
             // 15. Add another track (PERC)
-            const perc = cmd.addTrack(pattern, 'PERC', 4)
+            cmd.addTrack(pattern, 'PERC', 4)
             expect(pattern.tracks).toHaveLength(4)
 
             // Verify that state is thoroughly mutated

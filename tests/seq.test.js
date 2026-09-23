@@ -73,14 +73,14 @@ describe('Sequencer', () => {
 
     it('constructor creates transport if none exists', () => {
         serviceRegistry.transport = null
-        const seq = new Sequencer()
+        new Sequencer()
         expect(serviceRegistry.transport).toBeDefined()
     })
 
     it('constructor reuses existing transport', () => {
         const existing = { audioCtx: serviceRegistry.audioCtx, onSchedule: null }
         serviceRegistry.transport = existing
-        const seq = new Sequencer()
+        new Sequencer()
         expect(serviceRegistry.transport).toBe(existing)
     })
 
@@ -157,14 +157,14 @@ describe('Sequencer', () => {
 
     it('ensureTransport sets onSchedule on new transport', () => {
         serviceRegistry.transport = null
-        const seq = new Sequencer()
+        new Sequencer()
         expect(serviceRegistry.transport.onSchedule).toBeTypeOf('function')
     })
 
     it('ensureTransport sets audioCtx when missing', () => {
         const fakeTransport = { audioCtx: null, onSchedule: null }
         serviceRegistry.transport = fakeTransport
-        const seq = new Sequencer()
+        new Sequencer()
         expect(fakeTransport.audioCtx).toBe(serviceRegistry.audioCtx)
     })
 
@@ -183,7 +183,7 @@ describe('Sequencer', () => {
         const seq = new Sequencer()
         // Make _startInner take time
         seq._startInner = vi.fn(() => new Promise(() => {})) // never resolves
-        const startPromise = seq.start()
+        seq.start()
         expect(seq._starting).toBe(true)
 
         // Call start() again while _starting — should set _pendingStop

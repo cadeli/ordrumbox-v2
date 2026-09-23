@@ -9,7 +9,7 @@ import { soundRegistry } from '../../../state/sound_registry.js'
 export function createTrackMethods(cmd) {
     return {
         addTrack(pattern, type, stepsPerBeat = 4) {
-            let track = this.createTrack(pattern.nbBeats, type, stepsPerBeat)
+            const track = this.createTrack(pattern.nbBeats, type, stepsPerBeat)
             const trackIndex = pattern.tracks.length
             pattern.tracks.push(track)
             cmd.persist()
@@ -52,7 +52,7 @@ export function createTrackMethods(cmd) {
             const oldLoopAtStep = track.loopAtStep
             const oldNotes = track.notes.map(n => ({ ...n }))
 
-            let loopStepPc = Math.round((track.loopPointStep * 100) / track.stepsPerBeat)
+            const loopStepPc = Math.round((track.loopPointStep * 100) / track.stepsPerBeat)
             track.stepsPerBeat++
             if (track.stepsPerBeat > 8) {
                 // Cyclic wrap: 8 → 1 (intentional, not a bug)

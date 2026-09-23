@@ -7,7 +7,7 @@
  * 2. Mixer-level: verifies that after stop(), addStrip reconnects the
  *    audio graph so signals reach the output.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import nodeWaa from 'node-web-audio-api'
 
 const { OfflineAudioContext, AudioWorkletNode } = nodeWaa
@@ -44,42 +44,6 @@ function peak(samples) {
         if (v > max) max = v
     }
     return max
-}
-
-function floatToWav(samples, sampleRate) {
-    const numChannels = 1
-    const bitsPerSample = 16
-    const byteRate = sampleRate * numChannels * (bitsPerSample / 8)
-    const blockAlign = numChannels * (bitsPerSample / 8)
-    const dataSize = samples.length * (bitsPerSample / 8)
-    const headerSize = 44
-    const buffer = new ArrayBuffer(headerSize + dataSize)
-    const view = new DataView(buffer)
-
-    const writeStr = (offset, str) => {
-        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i))
-    }
-
-    writeStr(0, 'RIFF')
-    view.setUint32(4, 36 + dataSize, true)
-    writeStr(8, 'WAVE')
-    writeStr(12, 'fmt ')
-    view.setUint32(16, 16, true)
-    view.setUint16(20, 1, true)
-    view.setUint16(22, numChannels, true)
-    view.setUint32(24, sampleRate, true)
-    view.setUint32(28, byteRate, true)
-    view.setUint16(32, blockAlign, true)
-    view.setUint16(34, bitsPerSample, true)
-    writeStr(36, 'data')
-    view.setUint32(40, dataSize, true)
-
-    for (let i = 0; i < samples.length; i++) {
-        const s = Math.max(-1, Math.min(1, samples[i]))
-        view.setInt16(headerSize + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true)
-    }
-
-    return new Uint8Array(buffer)
 }
 
 // ─── Part 1: Real audio rendering through wav_exporter ──────────────────────
@@ -132,7 +96,6 @@ describe('simpleBeep — real audio rendering', () => {
         const headerSize = 44
         const bytesPerSample = 2
         const numChannels = wavBytes[22] | (wavBytes[23] << 8)
-        const sampleRate = wavBytes[24] | (wavBytes[25] << 8) | (wavBytes[26] << 16) | (wavBytes[27] << 24)
         const dataSize = wavBytes[40] | (wavBytes[41] << 8) | (wavBytes[42] << 16) | (wavBytes[43] << 24)
         const numSamples = dataSize / (bytesPerSample * numChannels)
 
@@ -201,7 +164,6 @@ describe('simpleBeep — real audio rendering', () => {
 describe('simpleBeep — mixer graph reconnection', () => {
     it('after stop(), addStrip re-creates busInput and connects strip', async () => {
         const { default: Mixer } = await import('../src/audio/mixer.js')
-        const { default: Strip } = await import('../src/audio/strip.js')
         const { soundRegistry } = await import('../src/state/sound_registry.js')
         const { serviceRegistry } = await import('../src/state/service_registry.js')
         const patternsManager = await import('../src/patterns/manager.js')

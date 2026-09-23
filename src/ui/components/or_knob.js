@@ -1,7 +1,5 @@
 import { fmt as _defaultFmt, escapeHtml as _escHtml, promptNumericInput } from './ui_utils.js'
 
-const DRAG_END_DEBOUNCE_MS = 50
-
 /**
  * OrKnob — rotary knob component for ordrumbox-v2.
  *
@@ -23,9 +21,6 @@ const DRAG_END_DEBOUNCE_MS = 50
  * @param {string}   [cfg.scale]    'log' for logarithmic mapping (default: 'linear')
  */
 export class OrKnob {
-    static #ID = 0
-
-    #id
     #key
     #label
     #min
@@ -40,7 +35,6 @@ export class OrKnob {
     #unit
     #valSpan
     #knobEl
-    #dragging
     #dragStartY
     #dragStartVal
     #boundOnKeydown
@@ -52,7 +46,6 @@ export class OrKnob {
     #logRange
 
     constructor(cfg) {
-        this.#id = `or-knob-${OrKnob.#ID++}`
         this.#key = cfg.key
         this.#label = cfg.label
         this.#min = cfg.min
@@ -72,8 +65,6 @@ export class OrKnob {
         this.el = null
         this.#valSpan = null
         this.#knobEl = null
-
-        this.#dragging = false
         this.#dragStartY = 0
         this.#dragStartVal = 0
         this.#boundOnKeydown = this.#onKeydown.bind(this)
@@ -204,7 +195,6 @@ export class OrKnob {
     #onMousedown(e) {
         if (e.button !== 0) return // left click only
         e.preventDefault()
-        this.#dragging = false
         this.#dragStartY = e.clientY
         this.#dragStartVal = this.#value
         this.#knobEl.classList.add('dragging')
@@ -219,7 +209,6 @@ export class OrKnob {
 
         const onMove = (ev) => {
             const deltaY = this.#dragStartY - ev.clientY
-            if (Math.abs(deltaY) > 2) this.#dragging = true
             const isFine = ev.shiftKey
             const sensitivity = isFine ? baseSensitivity * 0.1 : baseSensitivity
             const stepSize = isFine ? this.#step * 0.1 : this.#step
@@ -241,7 +230,6 @@ export class OrKnob {
             window.removeEventListener('mousemove', onMove)
             window.removeEventListener('mouseup', onUp)
             this.#knobEl?.classList.remove('dragging')
-            setTimeout(() => { this.#dragging = false }, DRAG_END_DEBOUNCE_MS)
         }
         window.addEventListener('mousemove', onMove)
         window.addEventListener('mouseup', onUp)

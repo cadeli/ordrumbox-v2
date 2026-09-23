@@ -91,12 +91,12 @@ export default class WaveformSection {
         const inc = freqMult.map(fm => baseInc * fm)
         const fmDepth = fmAmount * FM_DEPTH_SCALE
         const phase = [0, 0, 0]
-
         for (let i = 0; i < sampleRate; i++) {
             const rawO2 = this._waveAtPhase(vcos[1].wave, phase[1])
             const rawO3 = this._waveAtPhase(vcos[2].wave, phase[2])
 
-            let f1 = inc[0], f2 = inc[1], f3 = inc[2]
+            let f1 = inc[0], f2 = inc[1]
+            const f3 = inc[2]
             if (fmAmount > 0.001) {
                 switch (fmAlgo) {
                     case 0: f1 += rawO2 * fmDepth; break

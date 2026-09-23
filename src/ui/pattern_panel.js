@@ -426,6 +426,8 @@ export default class PatternPanel extends BasePanel {
 
     #handleNoteEnter(track) {
         if (!track) return
+        const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
+        if (!pattern) return
 
         const cell = this.#cellMap.get(`${this.#cursorTrackIdx}:${this.#cursorBeat}:${this.#cursorBeatStep}`)
         if (cell) {
@@ -916,7 +918,7 @@ export default class PatternPanel extends BasePanel {
         this.#overlay.syncVusVisibility()
     }
 
-    updateLoopPoint(trackIdx, loopAtStep) {
+    updateLoopPoint(trackIdx, _loopAtStep) {
         const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
         const tracks = Utils.getTracksArray(pattern)
         const track = tracks[trackIdx]

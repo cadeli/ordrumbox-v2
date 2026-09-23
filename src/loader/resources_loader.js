@@ -183,8 +183,6 @@ export default class ResourcesLoader {
         }
     }
 
-    #sessionTimer = null
-
     saveSession = () => {
         const s = soundRegistry.settings.session
         s.selectedDrumkitNum = appState.selectedDrumkitNum

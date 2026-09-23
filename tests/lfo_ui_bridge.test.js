@@ -1,5 +1,5 @@
 // tests/lfo_ui_bridge.test.js
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockCreateNode = vi.fn()
 const mockEnsureLoaded = vi.fn()

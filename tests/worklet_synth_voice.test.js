@@ -235,10 +235,6 @@ describe('SynthVoiceProcessor source', () => {
             osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
             velocity: 1, master: 1, pan: -1
         }, FRAMES)
-        const outR = runProcess(procR, {
-            osc1Gain: 1, attack: 0.001, sustain: 1, release: 5,
-            velocity: 1, master: 1, pan: 1
-        }, FRAMES)
         // pan=-1: L should be loud, R should be silent
         let rmsLR = 0, rmsRR = 0
         for (let i = 100; i < FRAMES; i++) {

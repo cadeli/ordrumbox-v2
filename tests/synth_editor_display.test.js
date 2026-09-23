@@ -3,11 +3,9 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import TrackEditor from '../src/ui/track_editor.js'
-import SynthEditor from '../src/ui/synth_editor.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
 
 const SAMPLE_DRAFT = {
     masterVolume: 0.9,

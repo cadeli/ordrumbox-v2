@@ -63,7 +63,6 @@ describe('sample_analyzer', () => {
             const buf = makeMockBuffer()
             analyzeSample(buf)
             clearAnalysisCache(buf)
-            const buf2 = makeMockBuffer()
             const r = analyzeSample(buf)
             expect(r).toBeDefined()
         })

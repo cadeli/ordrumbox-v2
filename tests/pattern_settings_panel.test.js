@@ -5,7 +5,6 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
-import { recalcLoopDerived } from '../src/model/track_schema.js'
 import { MAX_BEATS } from '../src/core/constants.js'
 
 let PatternSettingsPanel

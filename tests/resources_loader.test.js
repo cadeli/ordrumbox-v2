@@ -351,8 +351,6 @@ describe('ResourcesLoader', () => {
 
     describe('loadMissingSamplesFromDrumkits', () => {
         it('resolves empty when no samples to load', async () => {
-            const { soundRegistry } = await import('../src/state/sound_registry.js')
-            const samples = Object.values(soundRegistry.sounds)
             const result = await loader.loadMissingSamplesFromDrumkits([])
             expect(result).toEqual([])
         })

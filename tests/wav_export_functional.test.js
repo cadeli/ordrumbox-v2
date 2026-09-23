@@ -132,7 +132,7 @@ class MockOfflineAudioContext {
             numberOfChannels: channels,
             length,
             sampleRate,
-            getChannelData: (ch) => {
+            getChannelData: () => {
                 const data = new Float32Array(length)
                 for (let i = 0; i < length; i++) {
                     data[i] = Math.sin(2 * Math.PI * MOCK_FREQUENCY * i / sampleRate) * MOCK_AMPLITUDE
