@@ -7,6 +7,7 @@ import SnareGenerate from '../src/logic/generators/snare_generate.js'
 import HatGenerate from '../src/logic/generators/hat_generate.js'
 import BassGenerate from '../src/logic/generators/bass_generate.js'
 import PercGenerate from '../src/logic/generators/perc_generate.js'
+import RandomGenerate from '../src/logic/generators/random_generate.js'
 import { appState } from '../src/state/app_state.js'
 import { makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
 import * as patternsManager from '../src/patterns/manager.js'
@@ -532,6 +533,61 @@ describe('Generators', () => {
                 expect(note.beat).toBeGreaterThanOrEqual(0)
                 expect(note.beatStep).toBeGreaterThanOrEqual(0)
             }
+        })
+    })
+
+    describe('RandomGenerate', () => {
+        it('produces at least one note within grid bounds', () => {
+            const track = makeTrack('KICK', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new RandomGenerate().generateRandom(track)
+            expect(track.notes.length).toBeGreaterThan(0)
+            for (const note of track.notes) {
+                expect(note.beat).toBeGreaterThanOrEqual(0)
+                expect(note.beat).toBeLessThan(4)
+                expect(note.beatStep).toBeGreaterThanOrEqual(0)
+                expect(note.beatStep).toBeLessThan(4)
+                expect(note.velocity).toBeGreaterThanOrEqual(0.5)
+                expect(note.velocity).toBeLessThanOrEqual(1)
+                expect(note.pitch).toBeGreaterThanOrEqual(-6)
+                expect(note.pitch).toBeLessThanOrEqual(6)
+            }
+        })
+
+        it('does not place two notes at the same step', () => {
+            const track = makeTrack('SNARE', [], { nbBeats: 4, stepsPerBeat: 4 })
+            new RandomGenerate().generateRandom(track)
+            const positions = track.notes.map((n) => `${n.beat}:${n.beatStep}`)
+            expect(new Set(positions).size).toBe(positions.length)
+        })
+
+        it('resets loop point to full track length', () => {
+            const track = makeTrack('KICK', [], { nbBeats: 4, stepsPerBeat: 4 })
+            track.loopPointBeat = 1
+            track.loopPointStep = 2
+            track.loopAtStep = 6
+            new RandomGenerate().generateRandom(track)
+            expect(track.loopPointBeat).toBe(4)
+            expect(track.loopPointStep).toBe(0)
+            expect(track.loopAtStep).toBe(16)
+        })
+
+        it('falls back to pattern.nbBeats when track.nbBeats is missing', () => {
+            const track = makeTrack('KICK', [], { nbBeats: 4, stepsPerBeat: 4 })
+            delete track.nbBeats
+            new RandomGenerate().generateRandom(track, { nbBeats: 2 })
+            expect(track.loopPointBeat).toBe(2)
+            expect(track.loopAtStep).toBe(8)
+            for (const note of track.notes) {
+                expect(note.beat).toBeLessThan(2)
+            }
+        })
+
+        it('clears previous notes before generating', () => {
+            const track = makeTrack('KICK', [{ beat: 0, beatStep: 0 }], { nbBeats: 4, stepsPerBeat: 4 })
+            expect(track.notes.length).toBe(1)
+            new RandomGenerate().generateRandom(track)
+            const positions = track.notes.map((n) => `${n.beat}:${n.beatStep}`)
+            expect(new Set(positions).size).toBe(positions.length)
         })
     })
 

@@ -2,12 +2,14 @@ import Utils from '../../../core/utils.js'
 import { NOT_FOUND } from '../../../core/constants.js'
 import { normalizeTrack, recalcLoopDerived } from '../../../model/track_schema.js'
 import { soundRegistry } from '../../../state/sound_registry.js'
+import RandomGenerate from '../../generators/random_generate.js'
 
 /**
  * Track CRUD + mutation commands — returns an object of methods bound to the Commander instance.
  */
 export function createTrackMethods(cmd) {
     const TRACK_STATE_KEYS = ['notes', 'loopPointStep', 'loopPointBeat', 'loopAtStep']
+    const randomGen = new RandomGenerate()
 
     function snapshotTrack(track, keys) {
         const snap = {}
@@ -151,32 +153,7 @@ export function createTrackMethods(cmd) {
 
         randomizeTrack(track, pattern) {
             withUndo(track, TRACK_STATE_KEYS, `Randomize ${track.name}`, () => {
-                track.notes = []
-                track.loopPointStep = 0
-                track.loopPointBeat = track.nbBeats ?? pattern.nbBeats ?? 4
-                track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
-                const beats = track.nbBeats ?? pattern.nbBeats ?? 4
-                const stepsPerBeat = track.stepsPerBeat ?? 4
-                const totalSteps = beats * stepsPerBeat
-                const noteCount = Math.max(1, Math.floor(totalSteps * (0.15 + Math.random() * 0.2)))
-                const used = new Set()
-                for (let i = 0; i < noteCount; i++) {
-                    let step
-                    do {
-                        step = Math.floor(Math.random() * totalSteps)
-                    } while (used.has(step))
-                    used.add(step)
-                    const beat = Math.floor(step / stepsPerBeat)
-                    const beatStep = step % stepsPerBeat
-                    const pitch = Math.floor(Math.random() * 13) - 6
-                    track.notes.push({
-                        ...Utils.NOTE_DEFAULTS,
-                        beat,
-                        beatStep,
-                        pitch,
-                        velocity: 0.5 + Math.random() * 0.5,
-                    })
-                }
+                randomGen.generateRandom(track, pattern)
             })
         },
 
