@@ -105,6 +105,7 @@ function setupServices() {
         removePattern: vi.fn(),
         beginGenerationUndo: vi.fn(),
         commitGenerationUndo: vi.fn(),
+        cancelGenerationUndo: vi.fn(),
     }
     serviceRegistry.transport = {
         isRunning: false,

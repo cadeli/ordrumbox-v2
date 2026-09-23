@@ -13,7 +13,7 @@ vi.mock('../src/state/playback_events.js', () => ({
 vi.mock('../src/state/service_registry.js', () => ({
     serviceRegistry: {
         history: { undo: vi.fn(), redo: vi.fn() },
-        cmd: { beginGenerationUndo: vi.fn(), commitGenerationUndo: vi.fn() },
+        cmd: { beginGenerationUndo: vi.fn(), commitGenerationUndo: vi.fn(), cancelGenerationUndo: vi.fn() },
         patterns: {},
     },
 }))

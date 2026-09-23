@@ -245,16 +245,17 @@ export default class PatternSettingsPanel {
             serviceRegistry.cmd.beginGenerationUndo(pattern)
             try {
                 await autoGen.generatePattern()
+                if (pattern.tracks) {
+                    pattern.tracks = Utils.filterEmptyMelodicTracks(pattern.tracks)
+                }
+                for (const track of pattern.tracks) {
+                    if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = true
+                }
+                serviceRegistry.cmd.commitGenerationUndo()
             } catch (err) {
+                serviceRegistry.cmd.cancelGenerationUndo?.()
                 showToast('Auto-generation failed: ' + err.message, 'error')
             }
-            if (pattern.tracks) {
-                pattern.tracks = Utils.filterEmptyMelodicTracks(pattern.tracks)
-            }
-            for (const track of pattern.tracks) {
-                if (drumTypes.has(Utils.detectTrackType(track.name))) track.auto = true
-            }
-            serviceRegistry.cmd.commitGenerationUndo()
         }
         playbackEvents.batch(() => {
             playbackEvents.emit('noteChange')
@@ -278,31 +279,32 @@ export default class PatternSettingsPanel {
             const { getAutoGenerateService } = await import('../state/service_loader.js')
             const autoGen = await getAutoGenerateService()
             serviceRegistry.cmd.beginGenerationUndo(pattern)
-            if (!track) {
-                if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
-                const genre = pattern._autoGenGenre
-                const firstElement = autoGen.structureGen.getElement(0)
-                const harmony = autoGen.structureGen.resolveHarmony(
-                    genre,
-                    firstElement.name,
-                    firstElement.loopInElement,
-                )
-                const structure = autoGen.structureGen.generateStructure(genre)
-                const variant = structure[trackType] ?? defaultVariant
-                track = serviceRegistry.cmd.addTrack(pattern, trackType)
-                track.useSoftSynth = true
-                track.useAutoAssignSound = false
-                track.synthSoundKey = synthSoundKey
-                track.velocity = 0.8
-                try {
+            try {
+                if (!track) {
+                    if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
+                    const genre = pattern._autoGenGenre
+                    const firstElement = autoGen.structureGen.getElement(0)
+                    const harmony = autoGen.structureGen.resolveHarmony(
+                        genre,
+                        firstElement.name,
+                        firstElement.loopInElement,
+                    )
+                    const structure = autoGen.structureGen.generateStructure(genre)
+                    const variant = structure[trackType] ?? defaultVariant
+                    track = serviceRegistry.cmd.addTrack(pattern, trackType)
+                    track.useSoftSynth = true
+                    track.useAutoAssignSound = false
+                    track.synthSoundKey = synthSoundKey
+                    track.velocity = 0.8
                     await autoGen.generateTrack(track, variant, 1, pattern, harmony)
-                } catch (err) {
-                    showToast('Auto-generation failed: ' + err.message, 'error')
+                    serviceRegistry.patterns.applyFlatNotes(pattern)
                 }
-                serviceRegistry.patterns.applyFlatNotes(pattern)
+                track.auto = true
+                serviceRegistry.cmd.commitGenerationUndo()
+            } catch (err) {
+                serviceRegistry.cmd.cancelGenerationUndo?.()
+                showToast('Auto-generation failed: ' + err.message, 'error')
             }
-            track.auto = true
-            serviceRegistry.cmd.commitGenerationUndo()
         }
         playbackEvents.batch(() => {
             playbackEvents.emit('noteChange')

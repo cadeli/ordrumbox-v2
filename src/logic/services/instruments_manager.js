@@ -912,7 +912,7 @@ export default class InstrumentsManager {
                         const pattern = new RegExp(`^${syn}$`, 'i')
                         this.matchers.push({ pattern, instrument: inst })
                     } catch {
-                        logger.warn('Instrument', `Regexp invalide: ${syn}`)
+                        logger.warn('Instrument', `Invalid regexp: ${syn}`)
                     }
                 })
             }
@@ -980,14 +980,14 @@ export default class InstrumentsManager {
     findInstrumentFromMidiProgram = (program) => {
         const normalizedProgram = String(program)
         const normalizedProgramShifted = String(Number(program) + 1)
-        logger.warn('Instrument', `findInstrumentFromMidiProgram: program=${program}`)
+        logger.debug('Instrument', `findInstrumentFromMidiProgram: program=${program}`)
 
         for (const instrument of this.byId.values()) {
             const midiMatch = instrument.midi.find((midi) => {
                 return midi.programm != null && String(midi.programm) === normalizedProgramShifted
             })
             if (midiMatch) {
-                logger.warn(
+                logger.debug(
                     'Instrument',
                     `findInstrumentFromMidiProgram: program match program=${program} (+1=${normalizedProgramShifted}) → "${instrument.id}"`,
                 )
@@ -1000,7 +1000,7 @@ export default class InstrumentsManager {
                 return midi.programm != null && String(midi.programm) === normalizedProgram
             })
             if (midiMatch) {
-                logger.warn(
+                logger.debug(
                     'Instrument',
                     `findInstrumentFromMidiProgram: program match program=${program} (exact) → "${instrument.id}"`,
                 )
@@ -1008,24 +1008,24 @@ export default class InstrumentsManager {
             }
         }
 
-        logger.warn('Instrument', `findInstrumentFromMidiProgram: no direct match, trying GM fallback`)
+        logger.debug('Instrument', `findInstrumentFromMidiProgram: no direct match, trying GM fallback`)
         return this.#findByProgramNumber(program)
     }
 
     #findByProgramNumber = (program) => {
         const p = Number(program)
         const gmName = GM_PROGRAM_NAMES[p]
-        logger.warn('Instrument', `findByProgramNumber: program ${program} → "${gmName ?? '(none)'}"`)
+        logger.debug('Instrument', `findByProgramNumber: program ${program} → "${gmName ?? '(none)'}"`)
 
         if (gmName) {
             const inst = this.findByName(gmName)
             if (inst) {
-                logger.warn('Instrument', `findByProgramNumber: findByName("${gmName}") → "${inst.id}"`)
+                logger.debug('Instrument', `findByProgramNumber: findByName("${gmName}") → "${inst.id}"`)
                 return inst
             }
             for (const instrument of this.byId.values()) {
                 if (instrument.midi.some((m) => m.name && m.name.toLowerCase() === gmName.toLowerCase())) {
-                    logger.warn('Instrument', `findByProgramNumber: midi.name match "${gmName}" → "${instrument.id}"`)
+                    logger.debug('Instrument', `findByProgramNumber: midi.name match "${gmName}" → "${instrument.id}"`)
                     return instrument
                 }
             }

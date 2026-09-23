@@ -224,6 +224,7 @@ export default class ViewSwitch {
             try {
                 await generateFn(pattern, autoGen)
             } catch (err) {
+                serviceRegistry.cmd.cancelGenerationUndo?.()
                 showToast('Auto-generation failed: ' + err.message, 'error')
             }
         }

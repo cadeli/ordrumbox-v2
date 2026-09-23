@@ -32,7 +32,6 @@ import { isMobileViewport } from './core/constants.js'
 import { initKeyboardShortcuts } from './keyboard_shortcuts.js'
 import { initServiceWorker } from './service_worker.js'
 
-logger.suppressTags(['Instrument', 'Fallback', 'PatternImport'])
 logger.setLevel(logger.LEVELS?.INFO ?? 1)
 
 serviceRegistry.audioCtx = null
@@ -138,6 +137,19 @@ export function init() {
     playbackEvents.on('trackSelect', (data) => {
         if (data && data.trackIdx !== undefined) {
             appState.selectedTrackNum = data.trackIdx
+        }
+    })
+
+    playbackEvents.on('stall', ({ reason } = {}) => {
+        if (reason === 'context-suspended') {
+            showToast('Audio suspended by the browser — click Play to resume', 'warning')
+        } else {
+            showToast('Audio playback stalled', 'warning')
+        }
+    })
+    playbackEvents.on('workletStatusChange', (status) => {
+        if (status === 'unavailable') {
+            showToast('Audio engine unavailable — synth and effects disabled', 'error')
         }
     })
 

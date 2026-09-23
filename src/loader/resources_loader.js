@@ -275,7 +275,11 @@ export default class ResourcesLoader {
         let json = await getCachedPatterns()
         if (!json) {
             json = await this.loadJsonResource(file)
-            await cachePatterns(json)
+            try {
+                await cachePatterns(json)
+            } catch {
+                // cachePatterns already logged — load from network must still succeed
+            }
         } else {
             logger.debug('ResourcesLoader', 'Patterns loaded from IDB cache')
         }

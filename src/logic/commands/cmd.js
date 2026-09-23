@@ -153,4 +153,10 @@ export default class Commander {
         )
         this.#genSnapshot = null
     }
+
+    /** Abort a generation transaction without recording — re-enables #suppressRecord. Safe to call anytime. */
+    cancelGenerationUndo = () => {
+        this.#suppressRecord = false
+        this.#genSnapshot = null
+    }
 }

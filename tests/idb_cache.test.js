@@ -401,4 +401,11 @@ describe('IDB Cache', () => {
         expect(typeof raw.size).toBe('number')
         expect(typeof raw.savedAt).toBe('number')
     })
+
+    it('cachePatterns rethrows when idbPut fails', async () => {
+        const idb = await import('../src/core/idb.js')
+        const spy = vi.spyOn(idb, 'idbPut').mockRejectedValueOnce(new Error('quota exceeded'))
+        await expect(cache.cachePatterns({ patterns: [] })).rejects.toThrow('quota exceeded')
+        spy.mockRestore()
+    })
 })

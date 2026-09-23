@@ -94,6 +94,7 @@ export async function cachePatterns(json) {
         logger.debug('IdbCache', 'Patterns cached')
     } catch (e) {
         logger.warn('IdbCache', 'Failed to cache patterns', e)
+        throw e
     }
 }
 

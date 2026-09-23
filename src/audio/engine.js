@@ -254,10 +254,10 @@ export default class AudioEngine {
                 if (mapping) {
                     const channel = Number.isFinite(parseInt(mapping.ch, 10))
                         ? parseInt(mapping.ch, 10)
-                        : (logger.warn('Fallback', 'pi', mapping.ch, 9), 9)
+                        : (logger.warn('Fallback', 'invalid MIDI mapping.ch, using channel 9', mapping.ch), 9)
                     const note = Number.isFinite(parseInt(mapping.key, 10))
                         ? parseInt(mapping.key, 10)
-                        : (logger.warn('Fallback', 'pi', mapping.key, 60), 60)
+                        : (logger.warn('Fallback', 'invalid MIDI mapping.key, using note 60', mapping.key), 60)
                     const vel = Math.floor(flatNote.velocity * 127)
                     const startTime = midiTime + flatNote.swingTime * 1000
 

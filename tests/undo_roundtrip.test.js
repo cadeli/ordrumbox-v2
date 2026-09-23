@@ -210,6 +210,28 @@ describe('Undo Roundtrip & State Inversion', () => {
             delete preGenSnapshot._version
             expect(current).toEqual(preGenSnapshot)
         })
+
+        it('cancelGenerationUndo re-enables record after a failed generation', () => {
+            const pattern = cmd.addPattern('Cancel_Test')
+            const kick = cmd.addTrack(pattern, 'KICK', 4)
+            cmd.addNote(kick, 0, 0, 0)
+            history.clear()
+
+            cmd.beginGenerationUndo(pattern)
+            cmd.addNote(kick, 1, 0, 0)
+            // Simulate generation failure: cancel instead of commit
+            cmd.cancelGenerationUndo()
+
+            // record() must work again (suppress cleared)
+            cmd.addNote(kick, 2, 0, 0)
+            expect(history.pastLength).toBe(1)
+
+            // cancel is idempotent
+            cmd.cancelGenerationUndo()
+            cmd.addNote(kick, 3, 0, 0)
+            expect(history.pastLength).toBe(2)
+            expect(kick.notes).toHaveLength(4)
+        })
     })
 
     describe('Roundtrip 3: History Branch Invalidation', () => {

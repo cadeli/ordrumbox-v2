@@ -48,6 +48,7 @@ describe('PatternSettingsPanel', () => {
             setSelectedPatternNum: vi.fn(),
             beginGenerationUndo: vi.fn(),
             commitGenerationUndo: vi.fn(),
+            cancelGenerationUndo: vi.fn(),
             addTrack: vi.fn(),
         }
         panel = new PatternSettingsPanel()
