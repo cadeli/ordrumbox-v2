@@ -6,6 +6,7 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { initKeyboardShortcuts } from '../src/keyboard_shortcuts.js'
+import { EVENTS } from '../src/core/events.js'
 
 function fireKeydown(code, key = '') {
     const event = new KeyboardEvent('keydown', { code, key, bubbles: true })
@@ -61,8 +62,8 @@ describe('Keyboard shortcuts', () => {
         const { playbackEvents } = await import('../src/state/playback_events.js')
         const trackParamSpy = vi.fn()
         const patternChangeSpy = vi.fn()
-        playbackEvents.on('trackParamChange', trackParamSpy)
-        playbackEvents.on('patternChange', patternChangeSpy)
+        playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, trackParamSpy)
+        playbackEvents.on(EVENTS.PATTERN_CHANGE, patternChangeSpy)
         try {
             fireKeydown('Digit1')
             expect(trackParamSpy).toHaveBeenCalledWith(appState.patterns[0].tracks[0])

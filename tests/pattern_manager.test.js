@@ -10,6 +10,7 @@ import {
     createArpFlatNote,
 } from '../src/patterns/engine.js'
 import { makeNote, makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
+import { EVENTS } from '../src/core/events.js'
 
 vi.mock('../src/state/app_state.js', () => {
     const state = { flatNotes: null }
@@ -146,7 +147,7 @@ describe('PatternManager', () => {
         it('fires onPatternChange callbacks', async () => {
             const { playbackEvents } = await import('../src/state/playback_events.js')
             const cb = vi.fn()
-            playbackEvents.on('patternChange', cb)
+            playbackEvents.on(EVENTS.PATTERN_CHANGE, cb)
 
             const pattern = {
                 name: 'Test',

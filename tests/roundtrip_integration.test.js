@@ -19,6 +19,7 @@ import Commander from '../src/logic/commands/cmd.js'
 import { isNoteAt } from './helpers/cmd_test_helpers.js'
 import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pattern.js'
 import { TICK } from '../src/core/constants.js'
+import { EVENTS } from '../src/core/events.js'
 
 // ─── Shared state cleanup ────────────────────────────────────────────────
 
@@ -231,11 +232,11 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
         const spy1 = vi.fn()
         const spy2 = vi.fn()
         const spy3 = vi.fn()
-        playbackEvents.on('bpmChange', spy1)
-        playbackEvents.on('bpmChange', spy2)
-        playbackEvents.on('bpmChange', spy3)
+        playbackEvents.on(EVENTS.BPM_CHANGE, spy1)
+        playbackEvents.on(EVENTS.BPM_CHANGE, spy2)
+        playbackEvents.on(EVENTS.BPM_CHANGE, spy3)
 
-        playbackEvents.emit('bpmChange', 140)
+        playbackEvents.emit(EVENTS.BPM_CHANGE, 140)
 
         expect(spy1).toHaveBeenCalledWith(140)
         expect(spy2).toHaveBeenCalledWith(140)
@@ -245,35 +246,35 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
     it('off removes the correct subscriber', () => {
         const spy1 = vi.fn()
         const spy2 = vi.fn()
-        playbackEvents.on('patternChange', spy1)
-        playbackEvents.on('patternChange', spy2)
+        playbackEvents.on(EVENTS.PATTERN_CHANGE, spy1)
+        playbackEvents.on(EVENTS.PATTERN_CHANGE, spy2)
 
-        playbackEvents.emit('patternChange')
+        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         expect(spy1).toHaveBeenCalledTimes(1)
         expect(spy2).toHaveBeenCalledTimes(1)
 
-        playbackEvents.off('patternChange', spy1)
-        playbackEvents.emit('patternChange')
+        playbackEvents.off(EVENTS.PATTERN_CHANGE, spy1)
+        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         expect(spy1).toHaveBeenCalledTimes(1)
         expect(spy2).toHaveBeenCalledTimes(2)
     })
 
     it('multiple dispatches accumulate call count', () => {
         const spy = vi.fn()
-        playbackEvents.on('playbackStart', spy)
+        playbackEvents.on(EVENTS.PLAYBACK_START, spy)
 
-        playbackEvents.emit('playbackStart')
-        playbackEvents.emit('playbackStart')
-        playbackEvents.emit('playbackStart')
+        playbackEvents.emit(EVENTS.PLAYBACK_START)
+        playbackEvents.emit(EVENTS.PLAYBACK_START)
+        playbackEvents.emit(EVENTS.PLAYBACK_START)
         expect(spy).toHaveBeenCalledTimes(3)
     })
 
     it('dispatch with payload carries data through', () => {
         const spy = vi.fn()
-        playbackEvents.on('noteTrigger', spy)
+        playbackEvents.on(EVENTS.NOTE_TRIGGER, spy)
 
         const data = { trackIdx: 2, beat: 1, beatStep: 3 }
-        playbackEvents.emit('noteTrigger', data)
+        playbackEvents.emit(EVENTS.NOTE_TRIGGER, data)
         expect(spy).toHaveBeenCalledWith(data)
     })
 
@@ -282,15 +283,15 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
         const spyMaster = vi.fn()
         const spyAbout = vi.fn()
         const spyDM = vi.fn()
-        playbackEvents.on('toolsToggle', spyTools)
-        playbackEvents.on('masterToggle', spyMaster)
-        playbackEvents.on('aboutToggle', spyAbout)
-        playbackEvents.on('drumkitManagerToggle', spyDM)
+        playbackEvents.on(EVENTS.TOOLS_TOGGLE, spyTools)
+        playbackEvents.on(EVENTS.MASTER_TOGGLE, spyMaster)
+        playbackEvents.on(EVENTS.ABOUT_TOGGLE, spyAbout)
+        playbackEvents.on(EVENTS.DRUMKIT_MANAGER_TOGGLE, spyDM)
 
-        playbackEvents.emit('toolsToggle', true)
-        playbackEvents.emit('masterToggle', false)
-        playbackEvents.emit('aboutToggle', true)
-        playbackEvents.emit('drumkitManagerToggle', false)
+        playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
+        playbackEvents.emit(EVENTS.MASTER_TOGGLE, false)
+        playbackEvents.emit(EVENTS.ABOUT_TOGGLE, true)
+        playbackEvents.emit(EVENTS.DRUMKIT_MANAGER_TOGGLE, false)
 
         expect(spyTools).toHaveBeenCalledWith(true)
         expect(spyMaster).toHaveBeenCalledWith(false)
@@ -300,23 +301,23 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
 
     it('track select/deselect lifecycle', () => {
         const spy = vi.fn()
-        playbackEvents.on('trackSelect', spy)
+        playbackEvents.on(EVENTS.TRACK_SELECT, spy)
 
-        playbackEvents.emit('trackSelect', { trackIdx: 0, track: {} })
+        playbackEvents.emit(EVENTS.TRACK_SELECT, { trackIdx: 0, track: {} })
         expect(spy).toHaveBeenCalledWith(expect.objectContaining({ trackIdx: 0 }))
 
-        playbackEvents.emit('trackSelect', null)
+        playbackEvents.emit(EVENTS.TRACK_SELECT, null)
         expect(spy).toHaveBeenCalledWith(null)
     })
 
     it('note select/deselect lifecycle', () => {
         const spy = vi.fn()
-        playbackEvents.on('noteSelect', spy)
+        playbackEvents.on(EVENTS.NOTE_SELECT, spy)
 
-        playbackEvents.emit('noteSelect', { note: {}, beat: 0, beatStep: 1 })
+        playbackEvents.emit(EVENTS.NOTE_SELECT, { note: {}, beat: 0, beatStep: 1 })
         expect(spy).toHaveBeenCalledTimes(1)
 
-        playbackEvents.emit('noteSelect', null)
+        playbackEvents.emit(EVENTS.NOTE_SELECT, null)
         expect(spy).toHaveBeenCalledTimes(2)
         expect(spy).toHaveBeenLastCalledWith(null)
     })
@@ -324,29 +325,29 @@ describe('Roundtrip 2 — Event Bus roundtrip', () => {
     it('offAll cleans specific event channel', () => {
         const spy1 = vi.fn()
         const spy2 = vi.fn()
-        playbackEvents.on('drumkitChange', spy1)
-        playbackEvents.on('drumkitChange', spy2)
+        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, spy1)
+        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, spy2)
 
-        playbackEvents.emit('drumkitChange')
+        playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         expect(spy1).toHaveBeenCalledTimes(1)
 
-        playbackEvents.off('drumkitChange', spy1)
-        playbackEvents.off('drumkitChange', spy2)
+        playbackEvents.off(EVENTS.DRUMKIT_CHANGE, spy1)
+        playbackEvents.off(EVENTS.DRUMKIT_CHANGE, spy2)
 
-        playbackEvents.emit('drumkitChange')
+        playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         expect(spy1).toHaveBeenCalledTimes(1)
         expect(spy2).toHaveBeenCalledTimes(1)
     })
 
     it('BPM change roundtrip through event chain', () => {
         let receivedBpm = null
-        playbackEvents.on('bpmChange', (bpm) => {
+        playbackEvents.on(EVENTS.BPM_CHANGE, (bpm) => {
             receivedBpm = bpm
         })
-        playbackEvents.emit('bpmChange', 140)
+        playbackEvents.emit(EVENTS.BPM_CHANGE, 140)
         expect(receivedBpm).toBe(140)
 
-        playbackEvents.emit('bpmChange', 90)
+        playbackEvents.emit(EVENTS.BPM_CHANGE, 90)
         expect(receivedBpm).toBe(90)
     })
 })

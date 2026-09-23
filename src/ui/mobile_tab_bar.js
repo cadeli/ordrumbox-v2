@@ -1,6 +1,7 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { isMobileViewport } from '../core/constants.js'
 import { logger } from '../core/logger.js'
+import { EVENTS } from '../core/events.js'
 
 export default class MobileTabBar {
     #currentTab
@@ -52,16 +53,16 @@ export default class MobileTabBar {
 
     #subscribeEvents() {
         const tabMap = {
-            mobileSeqToggle: 'seq',
-            mobileTrackToggle: 'track',
-            synthToggle: 'synth',
-            editToggle: 'track',
-            masterToggle: 'master',
+            [EVENTS.MOBILE_SEQ_TOGGLE]: 'seq',
+            [EVENTS.MOBILE_TRACK_TOGGLE]: 'track',
+            [EVENTS.SYNTH_TOGGLE]: 'synth',
+            [EVENTS.EDIT_TOGGLE]: 'track',
+            [EVENTS.MASTER_TOGGLE]: 'master',
         }
         for (const [event, tab] of Object.entries(tabMap)) {
             playbackEvents.on(event, (arg) => {
                 if (!this.#isSwitching) {
-                    if (event === 'masterToggle' && arg === false) return
+                    if (event === EVENTS.MASTER_TOGGLE && arg === false) return
                     this.#currentTab = tab
                     this.#updateActive()
                 }
@@ -77,10 +78,10 @@ export default class MobileTabBar {
 
         try {
             const dispatchMap = {
-                seq: () => playbackEvents.emit('mobileSeqToggle'),
-                track: () => playbackEvents.emit('mobileTrackToggle'),
-                synth: () => playbackEvents.emit('synthToggle'),
-                master: () => playbackEvents.emit('masterToggle', true),
+                seq: () => playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE),
+                track: () => playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE),
+                synth: () => playbackEvents.emit(EVENTS.SYNTH_TOGGLE),
+                master: () => playbackEvents.emit(EVENTS.MASTER_TOGGLE, true),
             }
             dispatchMap[tab]?.()
         } finally {

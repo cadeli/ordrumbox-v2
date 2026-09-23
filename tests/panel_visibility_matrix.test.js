@@ -39,6 +39,7 @@ import DrumkitManager from '../src/ui/drumkit_manager.js'
 import PatternPanel from '../src/ui/pattern_panel.js'
 import PatternSettingsPanel from '../src/ui/pattern_settings_panel.js'
 import ViewManager from '../src/ui/view_manager.js'
+import { EVENTS } from '../src/core/events.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -247,28 +248,28 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
     describe('Workspace panels → top-left slot', () => {
         it('edit: pattern visible, synth/piano-roll hidden', () => {
-            playbackEvents.emit('editToggle')
+            playbackEvents.emit(EVENTS.EDIT_TOGGLE)
             expect(document.getElementById('pattern-panel').style.display).not.toBe('none')
             expect(document.getElementById('soft-synth-panel').style.display).toBe('none')
             expect(document.getElementById('piano-roll-panel').style.display).toBe('none')
         })
 
         it('proll: piano-roll visible, pattern/synth hidden', () => {
-            playbackEvents.emit('prollToggle')
+            playbackEvents.emit(EVENTS.PROLL_TOGGLE)
             expect(document.getElementById('piano-roll-panel').style.display).toBe('block')
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
             expect(document.getElementById('soft-synth-panel').style.display).toBe('none')
         })
 
         it('synth: synth visible, pattern/piano-roll hidden', () => {
-            playbackEvents.emit('synthToggle')
+            playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
             expect(document.getElementById('soft-synth-panel').style.display).toBe('block')
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
             expect(document.getElementById('piano-roll-panel').style.display).toBe('none')
         })
 
         it('pattern visible regardless of slot panels', () => {
-            playbackEvents.emit('editToggle')
+            playbackEvents.emit(EVENTS.EDIT_TOGGLE)
             for (const id of ['about-panel', 'dm-panel', 'output-panel']) {
                 document.getElementById(id).style.display = 'block'
             }
@@ -276,24 +277,24 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
         })
 
         it('piano-roll visible regardless of slot panels', () => {
-            playbackEvents.emit('prollToggle')
+            playbackEvents.emit(EVENTS.PROLL_TOGGLE)
             document.getElementById('about-panel').style.display = 'block'
             expect(document.getElementById('piano-roll-panel').style.display).toBe('block')
         })
 
         it('synth visible regardless of tools panel', () => {
-            playbackEvents.emit('synthToggle')
-            playbackEvents.emit('toolsToggle', true)
+            playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
+            playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
             expect(document.getElementById('soft-synth-panel').style.display).toBe('block')
         })
     })
 
     describe('Track editor → right-top slot', () => {
         for (const [name, emit] of [
-            ['edit', () => playbackEvents.emit('editToggle')],
-            ['proll', () => playbackEvents.emit('prollToggle')],
-            ['synth', () => playbackEvents.emit('synthToggle')],
-            ['tools', () => playbackEvents.emit('toolsToggle', true)],
+            ['edit', () => playbackEvents.emit(EVENTS.EDIT_TOGGLE)],
+            ['proll', () => playbackEvents.emit(EVENTS.PROLL_TOGGLE)],
+            ['synth', () => playbackEvents.emit(EVENTS.SYNTH_TOGGLE)],
+            ['tools', () => playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)],
         ]) {
             it(`TE visible in ${name}`, () => {
                 emit()
@@ -302,7 +303,7 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
         }
 
         it('TE visible with multiple slot panels', () => {
-            playbackEvents.emit('synthToggle')
+            playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
             for (const id of ['about-panel', 'dm-panel', 'output-panel']) {
                 document.getElementById(id).style.display = 'block'
             }
@@ -310,17 +311,17 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
         })
 
         it('TE display is block', () => {
-            playbackEvents.emit('editToggle')
+            playbackEvents.emit(EVENTS.EDIT_TOGGLE)
             expect(ctx.trackEditor.container.style.display).toBe('block')
         })
     })
 
     describe('Note editor → inline in TE', () => {
         for (const [name, emit] of [
-            ['edit', () => playbackEvents.emit('editToggle')],
-            ['proll', () => playbackEvents.emit('prollToggle')],
-            ['synth', () => playbackEvents.emit('synthToggle')],
-            ['tools', () => playbackEvents.emit('toolsToggle', true)],
+            ['edit', () => playbackEvents.emit(EVENTS.EDIT_TOGGLE)],
+            ['proll', () => playbackEvents.emit(EVENTS.PROLL_TOGGLE)],
+            ['synth', () => playbackEvents.emit(EVENTS.SYNTH_TOGGLE)],
+            ['tools', () => playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)],
         ]) {
             it(`NE inline in ${name}`, () => {
                 emit()
@@ -417,11 +418,11 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
     describe('Panel persistence across view cycles', () => {
         it('TE visible across full cycle', () => {
             for (const emit of [
-                () => playbackEvents.emit('editToggle'),
-                () => playbackEvents.emit('synthToggle'),
-                () => playbackEvents.emit('prollToggle'),
-                () => playbackEvents.emit('toolsToggle', true),
-                () => playbackEvents.emit('editToggle'),
+                () => playbackEvents.emit(EVENTS.EDIT_TOGGLE),
+                () => playbackEvents.emit(EVENTS.SYNTH_TOGGLE),
+                () => playbackEvents.emit(EVENTS.PROLL_TOGGLE),
+                () => playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true),
+                () => playbackEvents.emit(EVENTS.EDIT_TOGGLE),
             ]) {
                 emit()
                 expect(ctx.trackEditor.isVisible).toBe(true)
@@ -430,11 +431,11 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
         it('NE inline visible across full cycle', () => {
             for (const emit of [
-                () => playbackEvents.emit('editToggle'),
-                () => playbackEvents.emit('synthToggle'),
-                () => playbackEvents.emit('prollToggle'),
-                () => playbackEvents.emit('toolsToggle', true),
-                () => playbackEvents.emit('editToggle'),
+                () => playbackEvents.emit(EVENTS.EDIT_TOGGLE),
+                () => playbackEvents.emit(EVENTS.SYNTH_TOGGLE),
+                () => playbackEvents.emit(EVENTS.PROLL_TOGGLE),
+                () => playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true),
+                () => playbackEvents.emit(EVENTS.EDIT_TOGGLE),
             ]) {
                 emit()
                 const ne = document.getElementById('ne-container')
@@ -452,9 +453,9 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
             it(`${name} persists across view switches`, () => {
                 document.getElementById(id).style.display = 'block'
                 for (const emit of [
-                    () => playbackEvents.emit('editToggle'),
-                    () => playbackEvents.emit('synthToggle'),
-                    () => playbackEvents.emit('prollToggle'),
+                    () => playbackEvents.emit(EVENTS.EDIT_TOGGLE),
+                    () => playbackEvents.emit(EVENTS.SYNTH_TOGGLE),
+                    () => playbackEvents.emit(EVENTS.PROLL_TOGGLE),
                 ]) {
                     emit()
                     expect(document.getElementById(id).style.display).not.toBe('none')
@@ -481,9 +482,9 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
     describe('Slot panel show/hide via ViewManager', () => {
         const slotMap = [
-            ['aboutToggle', 'about-panel'],
-            ['toolsToggle', 'tools-panel'],
-            ['masterToggle', 'output-panel'],
+            [EVENTS.ABOUT_TOGGLE, 'about-panel'],
+            [EVENTS.TOOLS_TOGGLE, 'tools-panel'],
+            [EVENTS.MASTER_TOGGLE, 'output-panel'],
         ]
 
         for (const [event, id] of slotMap) {
@@ -502,23 +503,23 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
 
     describe('Slot panel mutual exclusion (ViewManager)', () => {
         it('opening about closes tools', () => {
-            playbackEvents.emit('toolsToggle', true)
+            playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
             expect(ctx.toolsPanel.isVisible).toBe(true)
-            playbackEvents.emit('aboutToggle', true)
+            playbackEvents.emit(EVENTS.ABOUT_TOGGLE, true)
             expect(ctx.toolsPanel.isVisible).toBe(false)
             expect(ctx.aboutPanel.isVisible).toBe(true)
         })
 
         it('opening tools closes about', () => {
-            playbackEvents.emit('aboutToggle', true)
-            playbackEvents.emit('toolsToggle', true)
+            playbackEvents.emit(EVENTS.ABOUT_TOGGLE, true)
+            playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
             expect(ctx.aboutPanel.isVisible).toBe(false)
             expect(ctx.toolsPanel.isVisible).toBe(true)
         })
 
         it('opening master closes about', () => {
-            playbackEvents.emit('aboutToggle', true)
-            playbackEvents.emit('masterToggle', true)
+            playbackEvents.emit(EVENTS.ABOUT_TOGGLE, true)
+            playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
             expect(ctx.aboutPanel.isVisible).toBe(false)
         })
     })
@@ -559,57 +560,57 @@ describe('Panel visibility matrix — Mobile (768×480)', () => {
 
     describe('mobileSeq', () => {
         it('pattern panel visible', () => {
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
         })
 
         it('track editor hidden', () => {
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(ctx.trackEditor.isVisible).toBe(false)
         })
     })
 
     describe('mobileTrack', () => {
         it('track editor visible', () => {
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             expect(ctx.trackEditor.isVisible).toBe(true)
         })
 
         it('pattern panel hidden', () => {
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
         })
     })
 
     describe('synth on mobile', () => {
         it('soft-synth-panel element exists', () => {
-            playbackEvents.emit('synthToggle')
+            playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
             expect(document.getElementById('soft-synth-panel')).not.toBeNull()
         })
     })
 
     describe('Slot panels on mobile', () => {
         it('toolsToggle shows tools panel', () => {
-            playbackEvents.emit('toolsToggle', true)
+            playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
             expect(ctx.toolsPanel.isVisible).toBe(true)
         })
 
         it('masterToggle shows output panel', () => {
-            playbackEvents.emit('masterToggle', true)
+            playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
             expect(document.getElementById('output-panel').style.display).toBe('block')
         })
     })
 
     describe('mobileSeq → mobileTrack → mobileSeq cycle', () => {
         it('clean switch between views', () => {
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
 
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             expect(ctx.trackEditor.isVisible).toBe(true)
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
 
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
             expect(ctx.trackEditor.isVisible).toBe(false)
         })
@@ -619,7 +620,7 @@ describe('Panel visibility matrix — Mobile (768×480)', () => {
         it('hides when switching tabs', () => {
             ctx.patternSettingsPanel.show()
             expect(ctx.patternSettingsPanel._isOpen).toBe(true)
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             expect(ctx.patternSettingsPanel._isOpen).toBe(false)
         })
     })
@@ -637,25 +638,25 @@ describe('Panel visibility matrix — Mobile landscape (800×375)', () => {
 
     describe('sequential view cycling', () => {
         it('seq → tools → synth → track → seq', () => {
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(ctx.viewManager.currentView).toBe('mobileSeq')
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
 
-            playbackEvents.emit('toolsToggle', true)
+            playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
             expect(ctx.viewManager.currentView).toBe('tools')
             expect(ctx.toolsPanel.isVisible).toBe(true)
 
-            playbackEvents.emit('synthToggle')
+            playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
             expect(ctx.viewManager.currentView).toBe('synth')
             expect(ctx.toolsPanel.isVisible).toBe(false)
             expect(document.getElementById('soft-synth-panel')?.style.display).toBe('block')
 
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             expect(ctx.viewManager.currentView).toBe('mobileTrack')
             expect(document.getElementById('soft-synth-panel')?.style.display).toBe('none')
             expect(ctx.trackEditor.isVisible).toBe(true)
 
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(ctx.viewManager.currentView).toBe('mobileSeq')
             expect(ctx.trackEditor.isVisible).toBe(false)
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
@@ -664,21 +665,21 @@ describe('Panel visibility matrix — Mobile landscape (800×375)', () => {
 
     describe('landscape class', () => {
         it('applied on mobileTrack', () => {
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             expect(ctx.trackEditor.container.classList.contains('te-mobile-landscape')).toBe(true)
         })
 
         it('removed on mobileSeq', () => {
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             expect(ctx.trackEditor.container.classList.contains('te-mobile-landscape')).toBe(true)
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(ctx.trackEditor.container.classList.contains('te-mobile-landscape')).toBe(false)
         })
     })
 
     describe('NE inline in mobile landscape', () => {
         it('ne-container present after track editor sync', () => {
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             ctx.trackEditor.sync()
             const neContainer = ctx.trackEditor.container.querySelector('#ne-container')
             expect(neContainer).not.toBeNull()

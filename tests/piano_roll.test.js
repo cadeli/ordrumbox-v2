@@ -7,6 +7,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import PianoRollPanel from '../src/ui/piano_roll_panel.js'
+import { EVENTS } from '../src/core/events.js'
 
 const TOTAL_KEYS = 97
 const NOTE_HEIGHT = 14
@@ -483,7 +484,7 @@ describe('PianoRollPanel', () => {
     describe('note editor integration', () => {
         it('dispatches noteSelect when a note is clicked', () => {
             const listener = vi.fn()
-            playbackEvents.on('noteSelect', listener)
+            playbackEvents.on(EVENTS.NOTE_SELECT, listener)
 
             const track = getTrack()
             const note = track.notes[0]
@@ -498,7 +499,7 @@ describe('PianoRollPanel', () => {
 
         it('dispatches noteSelect(null) on clearSelection', () => {
             const listener = vi.fn()
-            playbackEvents.on('noteSelect', listener)
+            playbackEvents.on(EVENTS.NOTE_SELECT, listener)
             panel.clearSelection()
             expect(listener).toHaveBeenCalledWith(null)
         })
@@ -716,7 +717,7 @@ describe('PianoRollPanel', () => {
             appState.patterns = [structuredClone(TEST_PATTERN)]
             appState.selectedPatternNum = 0
             appState.selectedTrackNum = 0
-            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
 
             expect(panel._track).not.toBeNull()
             expect(panel._trackIdx).toBe(0)

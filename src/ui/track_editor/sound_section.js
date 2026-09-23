@@ -4,6 +4,7 @@
 import { renderOptions } from '../components/panel_helpers.js'
 import InstrumentsManager from '../../logic/services/instrument_manager/index.js'
 import AutoAssign from '../../logic/services/auto_assign.js'
+import { EVENTS } from '../../core/events.js'
 
 export default class SoundSection {
     /** @param {import('./track_editor.js').default} editor */
@@ -94,8 +95,8 @@ export default class SoundSection {
         }
         editor.sync()
         editor._playbackEvents.batch(() => {
-            editor._playbackEvents.emit('trackParamChange', track)
-            editor._playbackEvents.emit('patternChange', [track])
+            editor._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
+            editor._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
         })
     }
 
@@ -119,8 +120,8 @@ export default class SoundSection {
         }
         editor._serviceRegistry.cmd.changeTrackSound(track, url)
         editor._playbackEvents.batch(() => {
-            editor._playbackEvents.emit('trackParamChange', track)
-            editor._playbackEvents.emit('patternChange', [track])
+            editor._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
+            editor._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
         })
     }
 
@@ -140,8 +141,8 @@ export default class SoundSection {
         }
         editor.sync()
         editor._playbackEvents.batch(() => {
-            editor._playbackEvents.emit('trackParamChange', track)
-            editor._playbackEvents.emit('patternChange', [track])
+            editor._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
+            editor._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
         })
     }
 
@@ -157,8 +158,8 @@ export default class SoundSection {
         }
         editor.sync()
         editor._playbackEvents.batch(() => {
-            editor._playbackEvents.emit('trackParamChange', track)
-            editor._playbackEvents.emit('patternChange', [track])
+            editor._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
+            editor._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
         })
     }
 

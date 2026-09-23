@@ -6,6 +6,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { BEATS_PER_PAGE, TICK } from '../src/core/constants.js'
+import { EVENTS } from '../src/core/events.js'
 
 let Toolbar, PatternPanel, PianoRollPanel
 
@@ -272,7 +273,7 @@ describe('Page navigation E2E — beats change updates pages', () => {
         const pat = makeMultiPagePattern(8)
         appState.patterns = [pat]
         appState.currentPage = 1
-        playbackEvents.emit('patternMetaChange')
+        playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
         expect(toolbar.pageLabel.textContent).toBe('2/2')
 
         const beatsSelect = toolbar.beatsSelect
@@ -315,8 +316,8 @@ describe('Page navigation E2E — Toolbar ↔ PatternPanel grid', () => {
     it('pattern panel header re-renders after page change event', () => {
         appState.currentPage = 1
         playbackEvents.batch(() => {
-            playbackEvents.emit('patternMetaChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
         patternPanel.sync()
         const header = patternPanel.container.querySelector('.pp-meta')
@@ -418,7 +419,7 @@ describe('Page navigation E2E — playback auto-page (grid)', () => {
     })
 
     it('simulating playback crossing page boundary updates toolbar label', () => {
-        playbackEvents.emit('playbackStart')
+        playbackEvents.emit(EVENTS.PLAYBACK_START)
         serviceRegistry.transport.isRunning = true
         serviceRegistry.transport.tick = 0
         runOneFrame()
@@ -434,7 +435,7 @@ describe('Page navigation E2E — playback auto-page (grid)', () => {
     })
 
     it('simulating playback wrapping resets to page 1', () => {
-        playbackEvents.emit('playbackStart')
+        playbackEvents.emit(EVENTS.PLAYBACK_START)
         serviceRegistry.transport.isRunning = true
         serviceRegistry.transport.tick = TICK * 4
         runOneFrame()

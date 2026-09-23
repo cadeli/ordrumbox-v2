@@ -11,6 +11,7 @@ import { showToast } from '../core/notify.js'
 import { pushStepLfo } from './step_lfo.js'
 import { createMidiMappingResolver, sendMidiNotes, sendTriggerMidi } from './midi_out.js'
 import { exportOffline as renderOffline } from './offline_export.js'
+import { EVENTS } from '../core/events.js'
 
 export default class AudioEngine {
     static TAG = 'AUDIOENGINE'
@@ -67,10 +68,10 @@ export default class AudioEngine {
                 })
                 this.sound = this.player.sound
 
-                playbackEvents.emit('workletStatusChange', 'active')
+                playbackEvents.emit(EVENTS.WORKLET_STATUS_CHANGE, 'active')
             } catch (err) {
                 logger.warn('AudioEngine: worklet init failed, audio unavailable', err)
-                playbackEvents.emit('workletStatusChange', 'unavailable')
+                playbackEvents.emit(EVENTS.WORKLET_STATUS_CHANGE, 'unavailable')
             }
         })()
 

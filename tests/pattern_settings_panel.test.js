@@ -6,6 +6,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { MAX_BEATS } from '../src/core/constants.js'
+import { EVENTS } from '../src/core/events.js'
 
 let PatternSettingsPanel
 
@@ -205,7 +206,7 @@ describe('PatternSettingsPanel', () => {
             appState.currentPage = 0
             panel.sync()
             const spy = vi.fn()
-            playbackEvents.on('patternChange', spy)
+            playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
             panel._nextPageBtn.click()
             expect(spy).toHaveBeenCalled()
         })
@@ -265,7 +266,7 @@ describe('PatternSettingsPanel', () => {
             setupPattern([makeTrack()])
             panel.sync()
             const spy = vi.fn()
-            playbackEvents.on('patternChange', spy)
+            playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
             panel._beatsSelect.value = '2'
             panel._beatsSelect.dispatchEvent(new Event('change'))
             expect(spy).toHaveBeenCalled()
@@ -314,14 +315,14 @@ describe('PatternSettingsPanel', () => {
         it('syncs on patternMetaChange', () => {
             setupPattern([makeTrack({ nbBeats: 6 })])
             appState.patterns[0].nbBeats = 6
-            playbackEvents.emit('patternMetaChange')
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
             expect(panel._beatsSelect.value).toBe('6')
         })
 
         it('syncs on patternStructureChange', () => {
             setupPattern([makeTrack({ nbBeats: 10 })])
             appState.patterns[0].nbBeats = 10
-            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             expect(panel._beatsSelect.value).toBe('10')
         })
 
@@ -334,7 +335,7 @@ describe('PatternSettingsPanel', () => {
                 { name: 'A', instruments: [] },
                 { name: 'B', instruments: [] },
             ]
-            playbackEvents.emit('drumkitChange')
+            playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
             expect(panel._drumkitSelect.options.length).toBe(2)
         })
     })

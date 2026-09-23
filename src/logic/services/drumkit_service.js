@@ -6,6 +6,7 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { instrumentsManager } from './instrument_manager/index.js'
 import { analyzeSample, clearAnalysisCache } from '../../audio/sample_analyzer.js'
 import { logger } from '../../core/logger.js'
+import { EVENTS } from '../../core/events.js'
 
 const TAG = 'DrumkitService'
 
@@ -80,7 +81,7 @@ class DrumkitService {
             throw err
         }
 
-        playbackEvents.emit('drumkitChange')
+        playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         return kit.name
     }
 
@@ -117,7 +118,7 @@ class DrumkitService {
         }
         newListEntry.instruments.push(instEntry)
 
-        playbackEvents.emit('drumkitChange')
+        playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         return sound.display_name
     }
 
@@ -136,7 +137,7 @@ class DrumkitService {
         updateInstrumentEntry(soundRegistry.drumkits[kitName])
         updateInstrumentEntry(soundRegistry.drumkitList.find((kit) => kit.name === kitName))
 
-        playbackEvents.emit('drumkitChange')
+        playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         return sound.display_name
     }
 
@@ -156,7 +157,7 @@ class DrumkitService {
             listEntry.instruments = listEntry.instruments.filter((i) => i.url !== soundKey)
         }
 
-        playbackEvents.emit('drumkitChange')
+        playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         return sound.display_name
     }
 
@@ -169,7 +170,7 @@ class DrumkitService {
         oldSound.display_name = displayName
         oldSound.duration = Math.floor(buffer.duration * 1000)
 
-        playbackEvents.emit('drumkitChange')
+        playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         return true
     }
 
@@ -199,7 +200,7 @@ class DrumkitService {
             listEntry.instruments.push({ display_name: file.name, key, url: file.name })
         }
 
-        playbackEvents.emit('drumkitChange')
+        playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         return { fileName: file.name, kitName }
     }
 

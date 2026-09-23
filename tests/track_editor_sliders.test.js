@@ -5,6 +5,7 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
+import { EVENTS } from '../src/core/events.js'
 
 function makeTrack(overrides = {}) {
     return {
@@ -173,7 +174,7 @@ describe('TrackEditor — OrSlider integration', () => {
         editor._track = makeTrack({ filterFreq: 632 })
         editor.sync()
         const fn = vi.fn()
-        playbackEvents.on('trackParamChange', fn)
+        playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, fn)
 
         const knob = editor._fxKnobs.find((k) => k.key === 'filterFreq')
         expect(knob).not.toBeNull()
@@ -284,7 +285,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         editor._selectedLfoTarget = 'velocity'
         editor.sync()
         const fn = vi.fn()
-        playbackEvents.on('trackParamChange', fn)
+        playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, fn)
 
         const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
         freqInput.value = '1.5'
@@ -399,7 +400,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
         const track = makeTrack({ velocity: 0.5 })
         showModTab(track)
         const fn = vi.fn()
-        playbackEvents.on('patternChange', fn)
+        playbackEvents.on(EVENTS.PATTERN_CHANGE, fn)
 
         editor.container.querySelector('[data-lfo-toggle-btn="velocity"]').click()
         expect(fn).toHaveBeenCalled()
@@ -438,7 +439,7 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
         const track = makeTrack({ velocity: 0.5, velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 } })
         showModTab(track)
         const fn = vi.fn()
-        playbackEvents.on('trackParamChange', fn)
+        playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, fn)
 
         editor.container.querySelector('[data-lfo-select-btn="velocity"]').click()
         const freqInput = editor.container.querySelector('input[data-lfo-key="freq"]')
@@ -611,7 +612,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
         const track = makeTrack({ filterType: 'allpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
         const fn = vi.fn()
-        playbackEvents.on('patternChange', fn)
+        playbackEvents.on(EVENTS.PATTERN_CHANGE, fn)
 
         editor.container.querySelector('[data-fx-icon-val="lowpass"]').click()
         expect(fn).toHaveBeenCalled()

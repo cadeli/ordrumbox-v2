@@ -7,6 +7,7 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
+import { EVENTS } from '../src/core/events.js'
 
 describe('TrackEditor sound panel', () => {
     beforeEach(() => {
@@ -134,7 +135,7 @@ describe('TrackEditor onPatternChange', () => {
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.emit('patternChange')
+        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
 
         expect(editor._track).toBe(newTrack)
         expect(editor._trackIdx).toBe(0)
@@ -152,7 +153,7 @@ describe('TrackEditor onPatternChange', () => {
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.emit('patternChange')
+        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
 
         expect(editor._track).toBeNull()
         expect(editor._trackIdx).toBe(-1)
@@ -164,7 +165,7 @@ describe('TrackEditor onPatternChange', () => {
         editor.init()
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
-        playbackEvents.emit('patternChange')
+        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
 
         expect(syncSpy).not.toHaveBeenCalled()
     })
@@ -192,7 +193,7 @@ describe('TrackEditor loop slider events', () => {
         editor.show({ track, trackIdx: 0 })
 
         const onLoopPointChangeSpy = vi.fn()
-        playbackEvents.on('loopPointChange', onLoopPointChangeSpy)
+        playbackEvents.on(EVENTS.LOOP_POINT_CHANGE, onLoopPointChangeSpy)
 
         // Simulate the onChange call that happens during drag/input
         // This is what _renderLoopPanel does:

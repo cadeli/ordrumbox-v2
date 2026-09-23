@@ -4,6 +4,7 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
+import { EVENTS } from '../core/events.js'
 
 export default class HistoryManager {
     #past
@@ -113,9 +114,9 @@ export default class HistoryManager {
     #emitBatchedRefresh() {
         playbackEvents.batch(() => {
             this.#emitChange()
-            playbackEvents.emit('patternChange')
-            playbackEvents.emit('noteChange')
-            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
         })
     }
 
@@ -126,7 +127,7 @@ export default class HistoryManager {
     }
 
     #emitChange() {
-        playbackEvents.emit('historyChange', {
+        playbackEvents.emit(EVENTS.HISTORY_CHANGE, {
             canUndo: this.canUndo,
             canRedo: this.canRedo,
             pastLength: this.pastLength,

@@ -16,6 +16,7 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
+import { EVENTS } from '../src/core/events.js'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ describe('PatternManager', () => {
     it('fires onPatternChange callbacks', async () => {
         const cb = vi.fn()
         const { playbackEvents } = await import('../src/state/playback_events.js')
-        const unsub = playbackEvents.on('patternChange', cb)
+        const unsub = playbackEvents.on(EVENTS.PATTERN_CHANGE, cb)
         patternsMgr.applyFlatNotes(pattern, 0)
         expect(cb).toHaveBeenCalled()
         unsub()

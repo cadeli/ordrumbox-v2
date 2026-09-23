@@ -32,6 +32,7 @@ import LoopSection from './track_editor/loop_section.js'
 
 // ── Constants ────────────────────────────────────────────────────────
 import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/constants.js'
+import { EVENTS } from '../core/events.js'
 
 export default class TrackEditor extends BasePanel {
     /**
@@ -128,7 +129,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     subscribe() {
-        this._playbackEvents.on('trackSelect', (data) => {
+        this._playbackEvents.on(EVENTS.TRACK_SELECT, (data) => {
             if (!data) return
             if (this.isVisible) {
                 this._track = data.track
@@ -137,12 +138,12 @@ export default class TrackEditor extends BasePanel {
                 this._showNoteEditorForTrack(data.track, data.trackIdx)
             }
         })
-        this._playbackEvents.on('playbackStart', () => this._startStepWatch())
-        this._playbackEvents.on('playbackStop', () => this._stopStepWatch())
-        this._playbackEvents.on('drumkitChange', () => {
+        this._playbackEvents.on(EVENTS.PLAYBACK_START, () => this._startStepWatch())
+        this._playbackEvents.on(EVENTS.PLAYBACK_STOP, () => this._stopStepWatch())
+        this._playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => {
             if (this._track) this.sync()
         })
-        this._playbackEvents.on('patternChange', () => {
+        this._playbackEvents.on(EVENTS.PATTERN_CHANGE, () => {
             if (this._isDragging || this._isSelecting) return
             if (!this._track) return
             const pattern = this._appState.patterns[this._appState.selectedPatternNum]
@@ -688,7 +689,7 @@ export default class TrackEditor extends BasePanel {
 
         if (key === 'loopAtStep') {
             this._playbackEvents.batch(() => {
-                this._playbackEvents.emit('loopPointChange', {
+                this._playbackEvents.emit(EVENTS.LOOP_POINT_CHANGE, {
                     trackIdx: this._trackIdx,
                     loopAtStep: this._track.loopAtStep,
                 })
@@ -701,8 +702,8 @@ export default class TrackEditor extends BasePanel {
 
     _emitTrackChange() {
         this._playbackEvents.batch(() => {
-            this._playbackEvents.emit('trackParamChange', this._track)
-            this._playbackEvents.emit('patternChange', [this._track])
+            this._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, this._track)
+            this._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this._track])
         })
     }
 

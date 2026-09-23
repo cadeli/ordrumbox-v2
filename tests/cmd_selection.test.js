@@ -37,6 +37,7 @@ vi.mock('../src/core/logger.js', () => ({
 }))
 
 import Commander from '../src/logic/commands/cmd.js'
+import { EVENTS } from '../src/core/events.js'
 
 describe('cmd_selection', () => {
     let cmd
@@ -93,7 +94,7 @@ describe('cmd_selection', () => {
         it('emits selectedPatternChange', async () => {
             appState.patterns = [{ name: 'A', bpm: 120 }]
             const spy = vi.fn()
-            playbackEvents.on('selectedPatternChange', spy)
+            playbackEvents.on(EVENTS.SELECTED_PATTERN_CHANGE, spy)
             await cmd.setSelectedPatternNum(0)
             expect(spy).toHaveBeenCalled()
         })
@@ -121,7 +122,7 @@ describe('cmd_selection', () => {
         it('emits drumkitChange', async () => {
             soundRegistry.drumkitList = [{ name: 'kit1' }]
             const spy = vi.fn()
-            playbackEvents.on('drumkitChange', spy)
+            playbackEvents.on(EVENTS.DRUMKIT_CHANGE, spy)
             await cmd.setSelectedDrumkitNum(0)
             expect(spy).toHaveBeenCalled()
         })

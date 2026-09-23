@@ -5,6 +5,7 @@ import { playbackEvents } from '../../../state/playback_events.js'
 import { getAutoAssignService } from '../../../state/service_loader.js'
 import { logger } from '../../../core/logger.js'
 import { showToast } from '../../../core/notify.js'
+import { EVENTS } from '../../../core/events.js'
 
 /**
  * Selection & state commands — returns an object of methods bound to the Commander instance.
@@ -16,7 +17,7 @@ export function createSelectionMethods(_cmd) {
                 appState.selectedDrumkitNum = num
                 await serviceRegistry.resourcesLoader.loadMissingSamplesFromDrumkits([soundRegistry.drumkitList[num]])
                 await this.autoAssignSoundsForNewDrumkit()
-                playbackEvents.emit('drumkitChange')
+                playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
             } catch (err) {
                 logger.error('Commander', 'cmd::setSelectedDrumkitNum failed', err)
                 showToast('Drumkit switch failed', 'error')
@@ -48,7 +49,7 @@ export function createSelectionMethods(_cmd) {
                         autoAssign.autoAssignSounds(selPattern)
                     }
                     serviceRegistry.patterns.applyFlatNotes(selPattern)
-                    playbackEvents.emit('selectedPatternChange')
+                    playbackEvents.emit(EVENTS.SELECTED_PATTERN_CHANGE)
                 }
             } catch (err) {
                 logger.error('Commander', 'cmd::setSelectedPatternNum failed', err)
@@ -75,7 +76,7 @@ export function createSelectionMethods(_cmd) {
 
         toggleShowVus() {
             appState.showVus = !appState.showVus
-            playbackEvents.emit('trackParamChange', null)
+            playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, null)
         },
     }
 }

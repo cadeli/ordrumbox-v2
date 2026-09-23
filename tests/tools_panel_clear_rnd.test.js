@@ -8,6 +8,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 import Commander from '../src/logic/commands/cmd.js'
+import { EVENTS } from '../src/core/events.js'
 
 describe('ToolsPanel — Clear / Rnd buttons', () => {
     let toolsPanel
@@ -39,7 +40,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
 
         toolsPanel = new ToolsPanel()
         toolsPanel.init()
-        playbackEvents.emit('toolsToggle', true)
+        playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
     })
 
     describe('Rnd button', () => {
@@ -98,7 +99,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
 
         it('dispatches patternChange', () => {
             const spy = vi.fn()
-            playbackEvents.on('patternChange', spy)
+            playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
 
             toolsPanel.container.querySelector('#tp-rnd').click()
             expect(spy).toHaveBeenCalled()

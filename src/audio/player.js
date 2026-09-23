@@ -5,6 +5,7 @@ import { getAutoGenerateService } from '../state/service_loader.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { logger, nameOr } from '../core/logger.js'
 import Utils from '../core/utils.js'
+import { EVENTS } from '../core/events.js'
 
 export default class Player {
     static TAG = 'Player'
@@ -130,7 +131,7 @@ export default class Player {
                 if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
                     NoteParams.applyNoteParams(flatNote, secondsPerBeat)
                     promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
-                    playbackEvents.emit('noteTrigger', {
+                    playbackEvents.emit(EVENTS.NOTE_TRIGGER, {
                         trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
                         beat: flatNote.note.beat,
                         beatStep: flatNote.note.beatStep,

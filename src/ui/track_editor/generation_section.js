@@ -5,6 +5,7 @@ import { OrSlider } from '../components/or_slider.js'
 import { OrTab } from '../components/or_tab.js'
 import { renderOptions } from '../components/panel_helpers.js'
 import { GROUPS, GEN_SUBTAB_DEFS, GEN_GROOVE_PROPS, GEN_ENGINE_PROPS, fmtVal } from './constants.js'
+import { EVENTS } from '../../core/events.js'
 
 export default class GenerationSection {
     /** @param {import('./track_editor.js').default} editor */
@@ -66,8 +67,8 @@ export default class GenerationSection {
                             editor._isDragging = true
                             editor._track[key] = v
                             editor._playbackEvents.batch(() => {
-                                editor._playbackEvents.emit('trackParamChange', editor._track)
-                                editor._playbackEvents.emit('patternChange', [editor._track])
+                                editor._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, editor._track)
+                                editor._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [editor._track])
                             })
                         },
                     })

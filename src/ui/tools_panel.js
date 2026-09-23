@@ -10,6 +10,7 @@ import ExportSection from './tools_panel/export_section.js'
 import ImportSection from './tools_panel/import_section.js'
 import MidiSection from './tools_panel/midi_section.js'
 import CacheSection from './tools_panel/cache_section.js'
+import { EVENTS } from '../core/events.js'
 
 export default class ToolsPanel extends BasePanel {
     #pattern
@@ -64,7 +65,7 @@ export default class ToolsPanel extends BasePanel {
         this.#midi.bind()
         this.#cache.bind()
 
-        bindCloseButton(this.container, () => playbackEvents.emit('toolsToggle', false))
+        bindCloseButton(this.container, () => playbackEvents.emit(EVENTS.TOOLS_TOGGLE, false))
         bindTabToggles(this.container)
     }
 

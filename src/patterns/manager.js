@@ -2,6 +2,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { recomputeFlatNotes } from './engine.js'
 import { TICK } from '../core/constants.js'
+import { EVENTS } from '../core/events.js'
 
 /**
  * Recompute flat notes from a pattern, write to appState, and dispatch change events.
@@ -13,8 +14,8 @@ export function applyFlatNotes(djtPattern, loop = 0) {
     const flatNotes = recomputeFlatNotes(djtPattern, loop, null, TICK)
     appState.flatNotes = flatNotes
     playbackEvents.batch(() => {
-        playbackEvents.emit('noteChange')
-        playbackEvents.emit('patternChange')
+        playbackEvents.emit(EVENTS.NOTE_CHANGE)
+        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     })
     return flatNotes
 }

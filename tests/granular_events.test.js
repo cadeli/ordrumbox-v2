@@ -15,6 +15,7 @@ import SongPanel from '../src/ui/song_panel.js'
 import Toolbar from '../src/ui/toolbar.js'
 import PatternSettingsPanel from '../src/ui/pattern_settings_panel.js'
 import { applyFlatNotes } from '../src/patterns/manager.js'
+import { EVENTS } from '../src/core/events.js'
 
 describe('Granular patternChange events', () => {
     let cmd
@@ -78,14 +79,19 @@ describe('Granular patternChange events', () => {
 
     function captureGranular() {
         const captured = {}
-        for (const evt of ['noteChange', 'trackParamChange', 'patternStructureChange', 'patternMetaChange']) {
+        for (const evt of [
+            EVENTS.NOTE_CHANGE,
+            EVENTS.TRACK_PARAM_CHANGE,
+            EVENTS.PATTERN_STRUCTURE_CHANGE,
+            EVENTS.PATTERN_META_CHANGE,
+        ]) {
             captured[evt] = vi.fn()
             playbackEvents.on(evt, captured[evt])
         }
         return captured
     }
 
-    describe('noteChange', () => {
+    describe(EVENTS.NOTE_CHANGE, () => {
         it('emitted by applyFlatNotes', () => {
             const cap = captureGranular()
             const pattern = appState.patterns[0]
@@ -100,7 +106,7 @@ describe('Granular patternChange events', () => {
             const cap = captureGranular()
             const panel = new ToolsPanel()
             panel.init()
-            playbackEvents.emit('toolsToggle', true)
+            playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
             panel.container.querySelector('#tp-compact').click()
             expect(cap.noteChange).toHaveBeenCalled()
         })
@@ -109,13 +115,13 @@ describe('Granular patternChange events', () => {
             const cap = captureGranular()
             const panel = new ToolsPanel()
             panel.init()
-            playbackEvents.emit('toolsToggle', true)
+            playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
             panel.container.querySelector('#tp-rnd').click()
             expect(cap.noteChange).toHaveBeenCalled()
         })
     })
 
-    describe('trackParamChange', () => {
+    describe(EVENTS.TRACK_PARAM_CHANGE, () => {
         it('emitted when track editor slider changes', () => {
             const cap = captureGranular()
             const te = new TrackEditor()
@@ -123,18 +129,18 @@ describe('Granular patternChange events', () => {
             const track = appState.patterns[0].tracks[0]
             te._track = track
             te._trackIdx = 0
-            playbackEvents.emit('trackParamChange', track)
+            playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
             expect(cap.trackParamChange).toHaveBeenCalled()
         })
 
         it('not emitted on noteChange', () => {
             const cap = captureGranular()
-            playbackEvents.emit('noteChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
             expect(cap.trackParamChange).not.toHaveBeenCalled()
         })
     })
 
-    describe('patternStructureChange', () => {
+    describe(EVENTS.PATTERN_STRUCTURE_CHANGE, () => {
         it('emitted by pattern_panel new action', () => {
             const cap = captureGranular()
             const pp = new PatternPanel()
@@ -171,14 +177,14 @@ describe('Granular patternChange events', () => {
         })
     })
 
-    describe('patternMetaChange', () => {
+    describe(EVENTS.PATTERN_META_CHANGE, () => {
         it('always emitted alongside patternChange', () => {
             const granularSpy = vi.fn()
             const patternChangeSpy = vi.fn()
-            playbackEvents.on('patternMetaChange', granularSpy)
-            playbackEvents.on('patternChange', patternChangeSpy)
-            playbackEvents.emit('patternMetaChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.on(EVENTS.PATTERN_META_CHANGE, granularSpy)
+            playbackEvents.on(EVENTS.PATTERN_CHANGE, patternChangeSpy)
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             expect(granularSpy).toHaveBeenCalled()
             expect(patternChangeSpy).toHaveBeenCalled()
         })
@@ -187,19 +193,19 @@ describe('Granular patternChange events', () => {
     describe('backward compatibility', () => {
         it('patternChange still fires when granular event fires', () => {
             const spy = vi.fn()
-            playbackEvents.on('patternChange', spy)
+            playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
 
-            playbackEvents.emit('noteChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
 
         it('existing consumers still work with patternChange only', () => {
             const spy = vi.fn()
-            playbackEvents.on('patternChange', spy)
+            playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
 
-            playbackEvents.emit('trackParamChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             expect(spy).toHaveBeenCalledTimes(1)
         })
     })
@@ -208,9 +214,9 @@ describe('Granular patternChange events', () => {
         it('toolbar gen buttons update via signal on noteChange', () => {
             const toolbar = new Toolbar()
             toolbar.init()
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             appState.patterns[0].tracks[0]._toolbarAuto = true
-            playbackEvents.emit('noteChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
             expect(toolbar.drumBtn.classList.contains('active')).toBe(true)
         })
 
@@ -219,14 +225,14 @@ describe('Granular patternChange events', () => {
             toolbar.init()
             const prevLen = toolbar.patternSelect.options.length
             appState.patterns.push({ name: 'New', nbBeats: 4, bpm: 120, tracks: [] })
-            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             expect(toolbar.patternSelect.options.length).toBe(prevLen + 1)
         })
 
         it('toolbar page label updates via signal on patternMetaChange', () => {
             const toolbar = new Toolbar()
             toolbar.init()
-            playbackEvents.emit('patternMetaChange')
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
             expect(toolbar.pageLabel.textContent).toBeDefined()
         })
 
@@ -234,7 +240,7 @@ describe('Granular patternChange events', () => {
             const toolbar = new Toolbar()
             toolbar.init()
             const len = toolbar.patternSelect.options.length
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             expect(toolbar.patternSelect.options.length).toBe(len)
         })
 
@@ -243,7 +249,7 @@ describe('Granular patternChange events', () => {
             pp.init()
             pp.show()
             const spy = vi.spyOn(pp, 'sync')
-            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
 
@@ -251,7 +257,7 @@ describe('Granular patternChange events', () => {
             const psp = new PatternSettingsPanel()
             psp.init()
             const spy = vi.spyOn(psp, 'sync')
-            playbackEvents.emit('patternMetaChange')
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
 
@@ -259,7 +265,7 @@ describe('Granular patternChange events', () => {
             const psp = new PatternSettingsPanel()
             psp.init()
             const spy = vi.spyOn(psp, 'sync')
-            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
 
@@ -267,7 +273,7 @@ describe('Granular patternChange events', () => {
             const pp = new PatternPanel()
             pp.init()
             const spy = vi.spyOn(pp, 'requestSync')
-            playbackEvents.emit('noteChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
 
@@ -275,7 +281,7 @@ describe('Granular patternChange events', () => {
             const pp = new PatternPanel()
             pp.init()
             const spy = vi.spyOn(pp, 'requestSync')
-            playbackEvents.emit('trackParamChange')
+            playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
 
@@ -283,7 +289,7 @@ describe('Granular patternChange events', () => {
             const pp = new PatternPanel()
             pp.init()
             const spy = vi.spyOn(pp, 'requestSync')
-            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
 
@@ -291,7 +297,7 @@ describe('Granular patternChange events', () => {
             const pp = new PatternPanel()
             pp.init()
             const spy = vi.spyOn(pp, 'requestSync')
-            playbackEvents.emit('drumkitChange')
+            playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
 
@@ -313,7 +319,7 @@ describe('Granular patternChange events', () => {
             expect(urlEl.textContent).toBe('kick_old')
 
             appState.patterns[0].tracks[0].soundId = 'kick_new'
-            playbackEvents.emit('drumkitChange')
+            playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
             await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
             const urlElAfter = pp.tracksEl.querySelector('.pp-track-url')
@@ -345,7 +351,7 @@ describe('Granular patternChange events', () => {
             expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SAW1')
 
             appState.patterns[0].tracks[0].synthSoundKey = 'SQUARE2'
-            playbackEvents.emit('drumkitChange')
+            playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
             await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
             expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SQUARE2')
@@ -367,7 +373,7 @@ describe('Granular patternChange events', () => {
             expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('old_sound')
 
             appState.patterns[0].tracks[0].soundId = 'new_sound'
-            playbackEvents.emit('trackParamChange', appState.patterns[0].tracks[0])
+            playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, appState.patterns[0].tracks[0])
             await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
             expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('new_sound')
@@ -398,7 +404,7 @@ describe('Granular patternChange events', () => {
             expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SAW1')
 
             appState.patterns[0].tracks[0].synthSoundKey = 'SQUARE2'
-            playbackEvents.emit('trackParamChange', appState.patterns[0].tracks[0])
+            playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, appState.patterns[0].tracks[0])
             await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
             expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('SYNTH: SQUARE2')
@@ -422,7 +428,7 @@ describe('Granular patternChange events', () => {
             expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('assets/sounds/kick_heavy.wav')
 
             soundRegistry.sounds['samples/kick.wav'] = { url: 'assets/sounds/kick_v2.wav' }
-            playbackEvents.emit('trackParamChange', appState.patterns[0].tracks[0])
+            playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, appState.patterns[0].tracks[0])
             await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
 
             expect(pp.tracksEl.querySelector('.pp-track-url').textContent).toBe('assets/sounds/kick_v2.wav')
@@ -432,7 +438,7 @@ describe('Granular patternChange events', () => {
             const prp = new PianoRollPanel()
             prp.init()
             const spy = vi.spyOn(prp, 'syncNotes')
-            playbackEvents.emit('noteChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
 
@@ -440,7 +446,7 @@ describe('Granular patternChange events', () => {
             const prp = new PianoRollPanel()
             prp.init()
             const spy = vi.spyOn(prp, 'sync')
-            playbackEvents.emit('patternStructureChange')
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             expect(spy).toHaveBeenCalled()
         })
     })

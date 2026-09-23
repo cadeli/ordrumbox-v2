@@ -11,6 +11,7 @@ import PercGenerate from './perc_generate.js'
 import SnareGenerate from './snare_generate.js'
 import StructureSong from './structure_song.js'
 import { logger } from '../../core/logger.js'
+import { getAutoAssignService } from '../../state/service_loader.js'
 
 const SECTION_DENSITY = Object.freeze({
     intro: 0.4,
@@ -105,11 +106,7 @@ export default class AutoGenerate {
                 bassTrack.velocity = 0.5
             }
 
-            if (!serviceRegistry.autoAssign) {
-                const { default: AutoAssign } = await import('../services/auto_assign.js')
-                serviceRegistry.autoAssign = new AutoAssign()
-            }
-            const autoAssign = serviceRegistry.autoAssign
+            const autoAssign = await getAutoAssignService()
             await autoAssign.autoAssignSounds(pattern)
             serviceRegistry.patterns.applyFlatNotes(pattern)
 

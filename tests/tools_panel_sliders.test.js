@@ -13,6 +13,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
+import { EVENTS } from '../src/core/events.js'
 
 function fireInput(el, value) {
     el.value = String(value)
@@ -34,7 +35,7 @@ describe('ToolsPanel — OrSlider integration (WAV loops)', () => {
 
         toolsPanel = new ToolsPanel()
         toolsPanel.init()
-        playbackEvents.emit('toolsToggle', true)
+        playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
     })
 
     it('renders the WAV loops slider inside the Export tab', () => {

@@ -2,6 +2,7 @@
 // Overflow menu: tools, about, settings, mobile pattern name.
 
 import { playbackEvents } from '../../state/playback_events.js'
+import { EVENTS } from '../../core/events.js'
 
 export default class OverflowMenu {
     #tb
@@ -46,15 +47,15 @@ export default class OverflowMenu {
         const tb = this.#tb
 
         tb.toolsBtn.addEventListener('click', () => {
-            playbackEvents.emit('toolsToggle', true)
+            playbackEvents.emit(EVENTS.TOOLS_TOGGLE, true)
         })
 
         tb.aboutBtn.addEventListener('click', () => {
-            playbackEvents.emit('aboutToggle', true)
+            playbackEvents.emit(EVENTS.ABOUT_TOGGLE, true)
         })
 
         tb.settingsBtn.addEventListener('click', () => {
-            playbackEvents.emit('patternSettingsToggle', true)
+            playbackEvents.emit(EVENTS.PATTERN_SETTINGS_TOGGLE, true)
         })
     }
 }

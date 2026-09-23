@@ -12,6 +12,7 @@ import PatternPanel from '../src/ui/pattern_panel.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 import ViewManager from '../src/ui/view_manager.js'
 import MobileTabBar from '../src/ui/mobile_tab_bar.js'
+import { EVENTS } from '../src/core/events.js'
 
 describe('Mobile tab bar', () => {
     let trackEditor, noteEditor, patternPanel, toolsPanel, viewManager, mobileTabBar
@@ -140,24 +141,24 @@ describe('Mobile tab bar', () => {
 
     describe('tab-to-view mapping via dispatch', () => {
         it('dispatching mobileSeqToggle shows pattern grid', () => {
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(seqVisible()).toBe(true)
         })
 
         it('dispatching mobileTrackToggle shows track editor and hides pattern grid', () => {
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             expect(seqVisible()).toBe(false)
             expect(teVisible()).toBe(true)
         })
 
         it('dispatching synthToggle shows synth panel', () => {
-            playbackEvents.emit('synthToggle')
+            playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
             const el = document.getElementById('soft-synth-panel')
             expect(el).not.toBeNull()
         })
 
         it('dispatching masterToggle(true) shows master tab active', () => {
-            playbackEvents.emit('masterToggle', true)
+            playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
             const masterBtn = mobileTabBar.container.querySelector('[data-tab="master"]')
             expect(masterBtn.classList.contains('active')).toBe(true)
         })
@@ -166,21 +167,21 @@ describe('Mobile tab bar', () => {
     describe('click on tab button triggers correct dispatch', () => {
         it('clicking Track tab dispatches mobileTrackToggle', () => {
             const spy = vi.fn()
-            playbackEvents.on('mobileTrackToggle', spy)
+            playbackEvents.on(EVENTS.MOBILE_TRACK_TOGGLE, spy)
             mobileTabBar.container.querySelector('[data-tab="track"]').click()
             expect(spy).toHaveBeenCalled()
         })
 
         it('clicking Synth tab dispatches synthToggle', () => {
             const spy = vi.fn()
-            playbackEvents.on('synthToggle', spy)
+            playbackEvents.on(EVENTS.SYNTH_TOGGLE, spy)
             mobileTabBar.container.querySelector('[data-tab="synth"]').click()
             expect(spy).toHaveBeenCalled()
         })
 
         it('clicking Master tab dispatches masterToggle(true)', () => {
             const spy = vi.fn()
-            playbackEvents.on('masterToggle', spy)
+            playbackEvents.on(EVENTS.MASTER_TOGGLE, spy)
             mobileTabBar.container.querySelector('[data-tab="master"]').click()
             expect(spy).toHaveBeenCalledWith(true)
         })
@@ -188,7 +189,7 @@ describe('Mobile tab bar', () => {
         it('clicking Sequencer tab after switching away dispatches mobileSeqToggle', () => {
             mobileTabBar.container.querySelector('[data-tab="track"]').click()
             const spy = vi.fn()
-            playbackEvents.on('mobileSeqToggle', spy)
+            playbackEvents.on(EVENTS.MOBILE_SEQ_TOGGLE, spy)
             mobileTabBar.container.querySelector('[data-tab="seq"]').click()
             expect(spy).toHaveBeenCalled()
         })
@@ -223,7 +224,7 @@ describe('Mobile tab bar', () => {
             const trackBtn = mobileTabBar.container.querySelector('[data-tab="track"]')
             trackBtn.click()
             const spy = vi.fn()
-            playbackEvents.on('mobileTrackToggle', spy)
+            playbackEvents.on(EVENTS.MOBILE_TRACK_TOGGLE, spy)
             trackBtn.click()
             expect(spy).not.toHaveBeenCalled()
         })
@@ -232,35 +233,35 @@ describe('Mobile tab bar', () => {
     describe('no recursive dispatch', () => {
         it('does not cause infinite recursion when dispatching events', () => {
             const spy = vi.fn()
-            playbackEvents.on('mobileSeqToggle', spy)
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.on(EVENTS.MOBILE_SEQ_TOGGLE, spy)
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(spy).toHaveBeenCalledTimes(1)
         })
     })
 
     describe('mobile panel layout', () => {
         it('pattern panel is visible below toolbar when mobileSeqToggle dispatched', () => {
-            playbackEvents.emit('mobileSeqToggle')
+            playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             const el = document.getElementById('pattern-panel')
             expect(el).not.toBeNull()
             expect(el.classList.contains('ui-hidden')).toBe(false)
         })
 
         it('track editor is visible below toolbar when mobileTrackToggle dispatched', () => {
-            playbackEvents.emit('mobileTrackToggle')
+            playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
             const el = document.getElementById('te-panel')
             expect(el).not.toBeNull()
             expect(el.style.display === 'block' || el.style.display === 'flex').toBe(true)
         })
 
         it('synth panel exists when synthToggle dispatched', () => {
-            playbackEvents.emit('synthToggle')
+            playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
             const el = document.getElementById('soft-synth-panel')
             expect(el).not.toBeNull()
         })
 
         it('master tab active when masterToggle dispatched', () => {
-            playbackEvents.emit('masterToggle', true)
+            playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
             const masterBtn = mobileTabBar.container.querySelector('[data-tab="master"]')
             expect(masterBtn.classList.contains('active')).toBe(true)
         })

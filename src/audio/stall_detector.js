@@ -1,5 +1,6 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { logger } from '../core/logger.js'
+import { EVENTS } from '../core/events.js'
 
 /**
  * Monitors the audio scheduling loop for stalls.
@@ -52,7 +53,7 @@ export default class AudioStallDetector {
 
         if (this.#stalled) {
             this.#stalled = false
-            playbackEvents.emit('stallResume')
+            playbackEvents.emit(EVENTS.STALL_RESUME)
         }
     }
 
@@ -65,12 +66,12 @@ export default class AudioStallDetector {
         if (state === 'suspended' && this.#transport?.isRunning && !this.#stalled) {
             this.#stalled = true
             logger.warn('StallDetector', 'AudioContext suspended during playback')
-            playbackEvents.emit('stall', { reason: 'context-suspended' })
+            playbackEvents.emit(EVENTS.STALL, { reason: 'context-suspended' })
             this.#tryResume()
         } else if (state === 'running' && this.#stalled) {
             this.#stalled = false
             logger.warn('StallDetector', 'AudioContext resumed')
-            playbackEvents.emit('stallResume')
+            playbackEvents.emit(EVENTS.STALL_RESUME)
         }
     }
 
@@ -85,12 +86,12 @@ export default class AudioStallDetector {
             if (!this.#stalled) {
                 this.#stalled = true
                 logger.warn('StallDetector', 'Scheduler stalled — tick not advancing')
-                playbackEvents.emit('stall', { reason: 'scheduler-silent' })
+                playbackEvents.emit(EVENTS.STALL, { reason: 'scheduler-silent' })
                 this.#tryResume()
             }
         } else if (this.#stalled) {
             this.#stalled = false
-            playbackEvents.emit('stallResume')
+            playbackEvents.emit(EVENTS.STALL_RESUME)
         }
     }
 

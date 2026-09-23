@@ -19,6 +19,7 @@ import GroupsSection from './synth_editor/groups_section.js'
 import WaveformSection from './synth_editor/waveform_section.js'
 import PresetSection from './synth_editor/preset_section.js'
 import { SYNTH_PARAM_META, SYNTH_GROUP_DEFAULTS } from './synth_editor/constants.js'
+import { EVENTS } from '../core/events.js'
 
 /**
  * LFO target → scale factor applied to raw waveform value.
@@ -555,8 +556,8 @@ export default class SynthEditor {
             this.#renderEditor()
             this.#serviceRegistry.audioEngine?.invalidateCache?.()
             this.#playbackEvents.batch(() => {
-                this.#playbackEvents.emit('trackParamChange', this.host._track)
-                this.#playbackEvents.emit('patternChange', [this.host._track])
+                this.#playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, this.host._track)
+                this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.host._track])
             })
         } catch (e) {
             logger.error('SynthEditor', '_revertPreset failed', e)
@@ -620,8 +621,8 @@ export default class SynthEditor {
                 this.#presets.commitSound(this.#editKey, this.#draft)
                 this.#serviceRegistry.audioEngine?.invalidateCache?.()
                 this.#playbackEvents.batch(() => {
-                    this.#playbackEvents.emit('trackParamChange', this.host._track)
-                    this.#playbackEvents.emit('patternChange', [this.host._track])
+                    this.#playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, this.host._track)
+                    this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.host._track])
                 })
             } else if (!shouldSave && this.#editKey && this.#original) {
                 this.#presets.commitSound(this.#editKey, this.#original)

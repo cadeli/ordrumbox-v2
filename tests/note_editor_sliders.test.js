@@ -5,6 +5,7 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import NoteEditor from '../src/ui/note_editor.js'
+import { EVENTS } from '../src/core/events.js'
 
 function fireInput(el, value) {
     el.value = String(value)
@@ -154,7 +155,7 @@ describe('NoteEditor — OrSlider integration', () => {
     it('changing a knob updates the note and fires onPatternChange', async () => {
         const { note } = await showNote(noteEditor)
         const fn = vi.fn()
-        playbackEvents.on('patternChange', fn)
+        playbackEvents.on(EVENTS.PATTERN_CHANGE, fn)
 
         const velocityKnob = noteEditor.knobs.find((k) => k.key === 'velocity')
         velocityKnob.setValue(0.42, true)

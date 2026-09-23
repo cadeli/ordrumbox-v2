@@ -17,6 +17,7 @@ import {
 import Utils from '../core/utils.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
+import { EVENTS } from '../core/events.js'
 
 export default class ResourcesLoader {
     static TAG = 'ResourcesLoader'
@@ -48,20 +49,20 @@ export default class ResourcesLoader {
     constructor(audioCtx = null) {
         this.#audioCtx = audioCtx
         this.#autoPersistEnabled = false
-        playbackEvents.on('patternChange', () => {
+        playbackEvents.on(EVENTS.PATTERN_CHANGE, () => {
             if (this.#autoPersistEnabled) this.persistPatterns()
         })
-        playbackEvents.on('drumkitChange', () => this.saveSession())
-        playbackEvents.on('selectedPatternChange', () => this.saveSession())
-        playbackEvents.on('trackParamChange', () => this.saveSession())
-        playbackEvents.on('toolsToggle', () => this.saveSession())
-        playbackEvents.on('drumkitManagerToggle', () => this.saveSession())
-        playbackEvents.on('songToggle', () => this.saveSession())
-        playbackEvents.on('aboutToggle', () => this.saveSession())
-        playbackEvents.on('masterToggle', () => this.saveSession())
-        playbackEvents.on('synthToggle', () => this.saveSession())
-        playbackEvents.on('editToggle', () => this.saveSession())
-        playbackEvents.on('prollToggle', () => this.saveSession())
+        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => this.saveSession())
+        playbackEvents.on(EVENTS.SELECTED_PATTERN_CHANGE, () => this.saveSession())
+        playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, () => this.saveSession())
+        playbackEvents.on(EVENTS.TOOLS_TOGGLE, () => this.saveSession())
+        playbackEvents.on(EVENTS.DRUMKIT_MANAGER_TOGGLE, () => this.saveSession())
+        playbackEvents.on(EVENTS.SONG_TOGGLE, () => this.saveSession())
+        playbackEvents.on(EVENTS.ABOUT_TOGGLE, () => this.saveSession())
+        playbackEvents.on(EVENTS.MASTER_TOGGLE, () => this.saveSession())
+        playbackEvents.on(EVENTS.SYNTH_TOGGLE, () => this.saveSession())
+        playbackEvents.on(EVENTS.EDIT_TOGGLE, () => this.saveSession())
+        playbackEvents.on(EVENTS.PROLL_TOGGLE, () => this.saveSession())
     }
 
     get audioCtx() {

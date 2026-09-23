@@ -6,6 +6,7 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { prevPage, nextPage } from '../../core/page_nav.js'
+import { EVENTS } from '../../core/events.js'
 
 export default class PatternNav {
     #tb
@@ -80,7 +81,7 @@ export default class PatternNav {
             if (!isNaN(num)) {
                 serviceRegistry.cmd.setSelectedPatternNum(num)
                 serviceRegistry.cmd.resetPage()
-                playbackEvents.emit('patternMetaChange')
+                playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
             }
         })
 
@@ -92,11 +93,11 @@ export default class PatternNav {
         })
 
         tb.kitLabel.addEventListener('click', () => {
-            playbackEvents.emit('drumkitManagerToggle', true)
+            playbackEvents.emit(EVENTS.DRUMKIT_MANAGER_TOGGLE, true)
         })
 
         tb.patLabel.addEventListener('click', () => {
-            playbackEvents.emit('songToggle', true)
+            playbackEvents.emit(EVENTS.SONG_TOGGLE, true)
         })
 
         tb.prevPageBtn.addEventListener('click', () => prevPage())

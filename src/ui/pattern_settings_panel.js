@@ -7,6 +7,7 @@ import { recalcLoopDerived } from '../model/track_schema.js'
 import { MAX_BEATS } from '../core/constants.js'
 import { prevPage, nextPage } from '../core/page_nav.js'
 import { showToast } from '../core/notify.js'
+import { EVENTS } from '../core/events.js'
 
 export default class PatternSettingsPanel {
     #isOpen
@@ -182,8 +183,8 @@ export default class PatternSettingsPanel {
         })
         serviceRegistry.cmd.resetPage()
         playbackEvents.batch(() => {
-            playbackEvents.emit('patternMetaChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 
@@ -208,8 +209,8 @@ export default class PatternSettingsPanel {
             serviceRegistry.cmd.setSelectedPatternNum(num)
             serviceRegistry.cmd.resetPage()
             playbackEvents.batch(() => {
-                playbackEvents.emit('patternStructureChange')
-                playbackEvents.emit('patternChange')
+                playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+                playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             })
         }
     }
@@ -258,8 +259,8 @@ export default class PatternSettingsPanel {
             }
         }
         playbackEvents.batch(() => {
-            playbackEvents.emit('noteChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 
@@ -307,16 +308,16 @@ export default class PatternSettingsPanel {
             }
         }
         playbackEvents.batch(() => {
-            playbackEvents.emit('noteChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 
     #subscribeEvents() {
-        playbackEvents.on('patternMetaChange', () => this.sync())
-        playbackEvents.on('patternStructureChange', () => this.sync())
-        playbackEvents.on('drumkitChange', () => this.syncDrumkits())
-        playbackEvents.on('patternSettingsToggle', (show) => {
+        playbackEvents.on(EVENTS.PATTERN_META_CHANGE, () => this.sync())
+        playbackEvents.on(EVENTS.PATTERN_STRUCTURE_CHANGE, () => this.sync())
+        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => this.syncDrumkits())
+        playbackEvents.on(EVENTS.PATTERN_SETTINGS_TOGGLE, (show) => {
             if (show) this.show()
             else this.hide()
         })

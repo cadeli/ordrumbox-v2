@@ -5,6 +5,7 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
+import { EVENTS } from '../src/core/events.js'
 
 const mockDrumkitService = {
     getCurrentKitSounds: vi.fn().mockReturnValue([]),
@@ -348,7 +349,7 @@ describe('DrumkitManager E2E', () => {
             manager.show()
 
             const spy = vi.spyOn(manager, 'sync')
-            playbackEvents.emit('drumkitChange')
+            playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
 
             expect(spy).toHaveBeenCalled()
         })
@@ -360,7 +361,7 @@ describe('DrumkitManager E2E', () => {
             manager.hide()
 
             const spy = vi.spyOn(manager, 'sync')
-            playbackEvents.emit('drumkitChange')
+            playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
 
             expect(spy).not.toHaveBeenCalled()
         })

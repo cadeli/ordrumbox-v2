@@ -6,6 +6,7 @@ import SongPanel from '../src/ui/song_panel.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
+import { EVENTS } from '../src/core/events.js'
 
 describe('SongPanel', () => {
     let panel
@@ -160,7 +161,7 @@ describe('SongPanel', () => {
         panel.subscribe()
         panel.show()
         const syncSpy = vi.spyOn(panel, 'sync')
-        playbackEvents.emit('patternStructureChange')
+        playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
         expect(syncSpy).toHaveBeenCalled()
     })
 })

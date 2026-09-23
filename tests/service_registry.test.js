@@ -23,17 +23,14 @@ describe('ServiceRegistry', () => {
         expect(reg.audioCtx).toBeNull()
         expect(reg.audioEngine).toBeNull()
         expect(reg.transport).toBeNull()
-        expect(reg.exportLoopsCount).toBe(1)
     })
 
     it('reset restores defaults', () => {
         serviceRegistry.cmd = { mock: true }
         serviceRegistry.audioCtx = { mock: true }
-        serviceRegistry.exportLoopsCount = 5
         serviceRegistry.reset()
         expect(serviceRegistry.cmd).toBeNull()
         expect(serviceRegistry.audioCtx).toBeNull()
-        expect(serviceRegistry.exportLoopsCount).toBe(1)
     })
 
     it('all default keys are present', () => {
@@ -49,7 +46,15 @@ describe('ServiceRegistry', () => {
         expect(keys).toContain('audioCtx')
         expect(keys).toContain('audioEngine')
         expect(keys).toContain('transport')
-        expect(keys).toContain('exportLoopsCount')
+        expect(keys).not.toContain('exportLoopsCount')
+    })
+
+    it('register assigns a known key and rejects unknown keys', () => {
+        const value = { ok: true }
+        expect(serviceRegistry.register('cmd', value)).toBe(value)
+        expect(serviceRegistry.cmd).toBe(value)
+        expect(() => serviceRegistry.register('cmdd', value)).toThrow(/Unknown service key/)
+        expect(serviceRegistry).not.toHaveProperty('cmdd')
     })
 
     it('reset does not leak properties from previous state', () => {

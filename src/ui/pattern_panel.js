@@ -22,6 +22,7 @@ import HeaderSection from './pattern_panel/header_section.js'
 const TRIGGER_FLASH_MS = 120
 import GridSection from './pattern_panel/grid_section.js'
 import PlaybackOverlaySection from './pattern_panel/playback_overlay_section.js'
+import { EVENTS } from '../core/events.js'
 
 export default class PatternPanel extends BasePanel {
     #appState
@@ -167,17 +168,17 @@ export default class PatternPanel extends BasePanel {
             this.#forceFullRender = true
             this.requestSync()
         }
-        this.#playbackEvents.on('noteChange', onNoteChange)
-        this.#playbackEvents.on('trackParamChange', onNoteChange)
-        this.#playbackEvents.on('patternStructureChange', onStructureChange)
-        this.#playbackEvents.on('patternMetaChange', onStructureChange)
-        this.#playbackEvents.on('drumkitChange', onStructureChange)
-        this.#playbackEvents.on('loopPointChange', (data) => {
+        this.#playbackEvents.on(EVENTS.NOTE_CHANGE, onNoteChange)
+        this.#playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, onNoteChange)
+        this.#playbackEvents.on(EVENTS.PATTERN_STRUCTURE_CHANGE, onStructureChange)
+        this.#playbackEvents.on(EVENTS.PATTERN_META_CHANGE, onStructureChange)
+        this.#playbackEvents.on(EVENTS.DRUMKIT_CHANGE, onStructureChange)
+        this.#playbackEvents.on(EVENTS.LOOP_POINT_CHANGE, (data) => {
             if (data && typeof data.trackIdx === 'number' && typeof data.loopAtStep === 'number') {
                 this.updateLoopPoint(data.trackIdx, data.loopAtStep)
             }
         })
-        this.#playbackEvents.on('selectedPatternChange', () => {
+        this.#playbackEvents.on(EVENTS.SELECTED_PATTERN_CHANGE, () => {
             const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
             const nbBeats = pattern?.nbBeats ?? 4
             const maxPage = Math.floor((nbBeats - 1) / BEATS_PER_PAGE)
@@ -189,17 +190,17 @@ export default class PatternPanel extends BasePanel {
             this.#trackDataDirty = true
             this.requestSync()
         })
-        this.#playbackEvents.on('playbackStop', () => {
+        this.#playbackEvents.on(EVENTS.PLAYBACK_STOP, () => {
             this.#overlay.resetPrevLoopTick()
             this.#overlay.stopRafLoop()
             this.#overlay.hidePlayhead()
             this.#overlay.resetVuAndWaveform()
         })
-        this.#playbackEvents.on('playbackStart', () => {
+        this.#playbackEvents.on(EVENTS.PLAYBACK_START, () => {
             this.#updateBarCache()
             this.#overlay.startRafLoop()
         })
-        this.#playbackEvents.on('noteTrigger', (data) => {
+        this.#playbackEvents.on(EVENTS.NOTE_TRIGGER, (data) => {
             if (!this.container || !data) return
             const cell = this.#cellMap.get(`${data.trackIdx}:${data.beat}:${data.beatStep}`)
             if (!cell) return
@@ -207,11 +208,11 @@ export default class PatternPanel extends BasePanel {
             clearTimeout(cell._triggerTimer)
             cell._triggerTimer = setTimeout(() => cell.classList.remove('pp-triggered'), TRIGGER_FLASH_MS)
         })
-        this.#playbackEvents.on('trackParamChange', () => {
+        this.#playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, () => {
             this.#overlay.syncVusVisibility()
             this.#updateBarCache()
         })
-        this.#playbackEvents.on('trackSelect', (data) => {
+        this.#playbackEvents.on(EVENTS.TRACK_SELECT, (data) => {
             if (data) {
                 if (this.#selTrackIdx !== data.trackIdx) {
                     this.#selNote = null
@@ -361,7 +362,7 @@ export default class PatternPanel extends BasePanel {
         this.#selTrackIdx = this.#cursorTrackIdx
         this.#applySelection()
         if (note) {
-            this.#playbackEvents.emit('noteSelect', {
+            this.#playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
                 trackIdx: this.#cursorTrackIdx,
                 note,
@@ -371,7 +372,7 @@ export default class PatternPanel extends BasePanel {
             })
             this.#serviceRegistry.seq?.simpleBeep(this.#cursorTrackIdx, note)
         } else {
-            this.#playbackEvents.emit('noteSelect', {
+            this.#playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
                 trackIdx: this.#cursorTrackIdx,
                 note: null,
@@ -404,7 +405,7 @@ export default class PatternPanel extends BasePanel {
 
         if (this.#selTrackIdx === trackIdx && !this.#selNote) {
             if (isMobileViewport()) {
-                this.#playbackEvents.emit('trackSelect', { track, trackIdx })
+                this.#playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
             } else {
                 this.#clearSelection()
             }
@@ -412,7 +413,7 @@ export default class PatternPanel extends BasePanel {
             this.#selNote = null
             this.#selTrackIdx = trackIdx
             this.#applySelection()
-            this.#playbackEvents.emit('trackSelect', { track, trackIdx })
+            this.#playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
             this.#serviceRegistry.seq?.simpleBeep(trackIdx)
         }
     }
@@ -436,8 +437,8 @@ export default class PatternPanel extends BasePanel {
             }
         }
         this.#playbackEvents.batch(() => {
-            this.#playbackEvents.emit('trackParamChange', track)
-            this.#playbackEvents.emit('patternChange')
+            this.#playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
+            this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 
@@ -462,7 +463,7 @@ export default class PatternPanel extends BasePanel {
                     this.#selTrackIdx = this.#cursorTrackIdx
                     this.#applySelection()
                     const pos = this.#cursorBeat * (track.stepsPerBeat ?? 4) + this.#cursorBeatStep
-                    this.#playbackEvents.emit('noteSelect', {
+                    this.#playbackEvents.emit(EVENTS.NOTE_SELECT, {
                         track,
                         trackIdx: this.#cursorTrackIdx,
                         note,
@@ -480,7 +481,7 @@ export default class PatternPanel extends BasePanel {
                 this.#applySelection()
 
                 const pos = this.#cursorBeat * (track.stepsPerBeat ?? 4) + this.#cursorBeatStep
-                this.#playbackEvents.emit('noteSelect', {
+                this.#playbackEvents.emit(EVENTS.NOTE_SELECT, {
                     track,
                     trackIdx: this.#cursorTrackIdx,
                     note: newNote,
@@ -502,7 +503,7 @@ export default class PatternPanel extends BasePanel {
 
         const masterTrackEl = e.target.closest('.pp-master-track')
         if (masterTrackEl) {
-            this.#playbackEvents.emit('masterToggle', true)
+            this.#playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
             return
         }
 
@@ -597,8 +598,8 @@ export default class PatternPanel extends BasePanel {
                 this.#applySelection()
                 const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
                 this.#playbackEvents.batch(() => {
-                    this.#playbackEvents.emit('trackSelect', { track, trackIdx })
-                    this.#playbackEvents.emit('noteSelect', { track, trackIdx, note, pos, beat, beatStep })
+                    this.#playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
+                    this.#playbackEvents.emit(EVENTS.NOTE_SELECT, { track, trackIdx, note, pos, beat, beatStep })
                 })
                 this.#serviceRegistry.seq?.simpleBeep(trackIdx, note)
             }
@@ -613,8 +614,8 @@ export default class PatternPanel extends BasePanel {
 
         const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
         this.#playbackEvents.batch(() => {
-            this.#playbackEvents.emit('trackSelect', { track, trackIdx })
-            this.#playbackEvents.emit('noteSelect', { track, trackIdx, note: newNote, pos, beat, beatStep })
+            this.#playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
+            this.#playbackEvents.emit(EVENTS.NOTE_SELECT, { track, trackIdx, note: newNote, pos, beat, beatStep })
         })
 
         this.#serviceRegistry.seq?.simpleBeep(trackIdx, newNote)
@@ -628,8 +629,8 @@ export default class PatternPanel extends BasePanel {
         )
         selected.forEach((el) => el.classList.remove('selected', 'pp-selected'))
         this.#playbackEvents.batch(() => {
-            this.#playbackEvents.emit('noteSelect', null)
-            this.#playbackEvents.emit('trackSelect', null)
+            this.#playbackEvents.emit(EVENTS.NOTE_SELECT, null)
+            this.#playbackEvents.emit(EVENTS.TRACK_SELECT, null)
         })
     }
 
@@ -715,8 +716,8 @@ export default class PatternPanel extends BasePanel {
 
     #emitStructureChange() {
         this.#playbackEvents.batch(() => {
-            this.#playbackEvents.emit('patternStructureChange')
-            this.#playbackEvents.emit('patternChange')
+            this.#playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+            this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 

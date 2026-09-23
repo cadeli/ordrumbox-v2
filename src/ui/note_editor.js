@@ -5,6 +5,7 @@ import { OrTab } from './components/or_tab.js'
 import { syncComponentMap, syncKnobs } from './components/sync_helpers.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
+import { EVENTS } from '../core/events.js'
 
 const ARP_TYPES = ['up', 'down', 'updown']
 const SCALES_URL = 'assets/data/scales.json'
@@ -149,7 +150,7 @@ export default class NoteEditor extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on('noteSelect', (data) => {
+        playbackEvents.on(EVENTS.NOTE_SELECT, (data) => {
             if (!data) return
             if (data.note) {
                 if (this.isVisible) this.show(data)
@@ -392,8 +393,8 @@ export default class NoteEditor extends BasePanel {
         this.#note[key] = val
         if (key === 'arpRange') this.#composeArp()
         playbackEvents.batch(() => {
-            playbackEvents.emit('noteChange', [this.#track])
-            playbackEvents.emit('patternChange', [this.#track])
+            playbackEvents.emit(EVENTS.NOTE_CHANGE, [this.#track])
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.#track])
         })
     }
 
@@ -402,8 +403,8 @@ export default class NoteEditor extends BasePanel {
         this.#note['_' + sel.dataset.key] = sel.value
         this.#composeArp()
         playbackEvents.batch(() => {
-            playbackEvents.emit('noteChange', [this.#track])
-            playbackEvents.emit('patternChange', [this.#track])
+            playbackEvents.emit(EVENTS.NOTE_CHANGE, [this.#track])
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.#track])
         })
     }
 

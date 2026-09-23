@@ -4,6 +4,7 @@ import { appState } from '../../state/app_state.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import Utils from '../../core/utils.js'
+import { EVENTS } from '../../core/events.js'
 
 export default class PatternSection {
     #panel
@@ -42,8 +43,8 @@ export default class PatternSection {
 
         serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.batch(() => {
-            playbackEvents.emit('noteChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 
@@ -56,8 +57,8 @@ export default class PatternSection {
         }
         serviceRegistry.audioEngine?.invalidateCache()
         playbackEvents.batch(() => {
-            playbackEvents.emit('noteChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 }

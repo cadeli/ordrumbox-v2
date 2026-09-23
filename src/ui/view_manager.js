@@ -4,6 +4,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { setViewMode, setPatternPanelHidden } from './components/panel_helpers.js'
 import { isMobileViewport } from '../core/constants.js'
 import { removeLayout } from './mobile_track_layout.js'
+import { EVENTS } from '../core/events.js'
 
 /**
  * ViewManager — single coordinator for synth / edit / proll view switching.
@@ -46,11 +47,11 @@ export default class ViewManager {
 
         // ── Slot panel registry: short name → { event, panel } ─────────────
         this.#slots = new Map([
-            ['tools', { event: 'toolsToggle', panel: toolsPanel }],
-            ['master', { event: 'masterToggle', panel: outputPanel }],
-            ['dm', { event: 'drumkitManagerToggle', panel: drumkitManager }],
-            ['pp', { event: 'songToggle', panel: patternsPanel }],
-            ['about', { event: 'aboutToggle', panel: aboutPanel }],
+            ['tools', { event: EVENTS.TOOLS_TOGGLE, panel: toolsPanel }],
+            ['master', { event: EVENTS.MASTER_TOGGLE, panel: outputPanel }],
+            ['dm', { event: EVENTS.DRUMKIT_MANAGER_TOGGLE, panel: drumkitManager }],
+            ['pp', { event: EVENTS.SONG_TOGGLE, panel: patternsPanel }],
+            ['about', { event: EVENTS.ABOUT_TOGGLE, panel: aboutPanel }],
         ])
 
         // ── View registry: view name → { enter, exit } ──────────────────
@@ -67,11 +68,11 @@ export default class ViewManager {
 
     init() {
         // View switches (synth, edit, proll, mobile)
-        playbackEvents.on('synthToggle', () => this.#switchTo('synth'))
-        playbackEvents.on('editToggle', () => this.#switchTo('edit'))
-        playbackEvents.on('prollToggle', () => this.#switchTo('proll'))
-        playbackEvents.on('mobileSeqToggle', () => this.#switchTo('mobileSeq'))
-        playbackEvents.on('mobileTrackToggle', () => this.#switchTo('mobileTrack'))
+        playbackEvents.on(EVENTS.SYNTH_TOGGLE, () => this.#switchTo('synth'))
+        playbackEvents.on(EVENTS.EDIT_TOGGLE, () => this.#switchTo('edit'))
+        playbackEvents.on(EVENTS.PROLL_TOGGLE, () => this.#switchTo('proll'))
+        playbackEvents.on(EVENTS.MOBILE_SEQ_TOGGLE, () => this.#switchTo('mobileSeq'))
+        playbackEvents.on(EVENTS.MOBILE_TRACK_TOGGLE, () => this.#switchTo('mobileTrack'))
 
         // Slot panels — one listener per event, all routed through #toggleSlotPanel
         for (const [name, { event, panel }] of this.#slots) {

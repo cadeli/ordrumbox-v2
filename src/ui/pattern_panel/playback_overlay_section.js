@@ -6,6 +6,7 @@ import { TICK, BEATS_PER_PAGE } from '../../core/constants.js'
 import { appState } from '../../state/app_state.js'
 import Utils from '../../core/utils.js'
 import { color } from '../theme.js'
+import { EVENTS } from '../../core/events.js'
 
 export default class PlaybackOverlaySection {
     /** @type {import('./pattern_panel.js').default} */
@@ -186,8 +187,8 @@ export default class PlaybackOverlaySection {
                 editor.serviceRegistry.cmd.setCurrentPage(newPage)
                 editor.requestSync()
                 editor.playbackEvents.batch(() => {
-                    editor.playbackEvents.emit('patternMetaChange')
-                    editor.playbackEvents.emit('patternChange')
+                    editor.playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+                    editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE)
                 })
             }
             if (this.#playhead.style.display !== 'none') this.#playhead.style.display = 'none'

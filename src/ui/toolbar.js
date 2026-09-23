@@ -9,6 +9,7 @@ import TransportControls from './toolbar/transport_controls.js'
 import PatternNav from './toolbar/pattern_nav.js'
 import ViewSwitch from './toolbar/view_switch.js'
 import OverflowMenu from './toolbar/overflow_menu.js'
+import { EVENTS } from '../core/events.js'
 
 export default class Toolbar {
     #transport
@@ -59,16 +60,16 @@ export default class Toolbar {
 
     #bindSyncEvents() {
         const sync = () => this.sync()
-        playbackEvents.on('playbackStart', sync)
-        playbackEvents.on('playbackStop', sync)
-        playbackEvents.on('bpmChange', sync)
-        playbackEvents.on('patternChange', sync)
-        playbackEvents.on('patternStructureChange', sync)
-        playbackEvents.on('patternMetaChange', sync)
-        playbackEvents.on('noteChange', sync)
-        playbackEvents.on('trackParamChange', sync)
-        playbackEvents.on('drumkitChange', sync)
-        playbackEvents.on('historyChange', (state) => {
+        playbackEvents.on(EVENTS.PLAYBACK_START, sync)
+        playbackEvents.on(EVENTS.PLAYBACK_STOP, sync)
+        playbackEvents.on(EVENTS.BPM_CHANGE, sync)
+        playbackEvents.on(EVENTS.PATTERN_CHANGE, sync)
+        playbackEvents.on(EVENTS.PATTERN_STRUCTURE_CHANGE, sync)
+        playbackEvents.on(EVENTS.PATTERN_META_CHANGE, sync)
+        playbackEvents.on(EVENTS.NOTE_CHANGE, sync)
+        playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, sync)
+        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, sync)
+        playbackEvents.on(EVENTS.HISTORY_CHANGE, (state) => {
             this.#nextUndoDesc = state?.nextUndoDesc ?? null
             this.#nextRedoDesc = state?.nextRedoDesc ?? null
             sync()

@@ -5,6 +5,7 @@ import { showToast } from '../core/notify.js'
 import BasePanel from './base_panel.js'
 import songService from '../logic/services/song_service.js'
 import { downloadJson } from './components/ui_utils.js'
+import { EVENTS } from '../core/events.js'
 
 export default class SongPanel extends BasePanel {
     #selectedIdx = null
@@ -85,10 +86,10 @@ export default class SongPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on('patternStructureChange', () => {
+        playbackEvents.on(EVENTS.PATTERN_STRUCTURE_CHANGE, () => {
             if (this.isVisible) this.sync()
         })
-        playbackEvents.on('drumkitChange', () => {
+        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => {
             if (this.isVisible) this.sync()
         })
     }
@@ -159,8 +160,8 @@ export default class SongPanel extends BasePanel {
             if (newName && newName !== currentName) {
                 serviceRegistry.cmd.renamePattern(idx, newName)
                 playbackEvents.batch(() => {
-                    playbackEvents.emit('patternStructureChange')
-                    playbackEvents.emit('patternChange')
+                    playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+                    playbackEvents.emit(EVENTS.PATTERN_CHANGE)
                 })
             }
             this.sync()
@@ -223,8 +224,8 @@ export default class SongPanel extends BasePanel {
         serviceRegistry.cmd.setSelectedPatternNum(idx)
         serviceRegistry.cmd.resetPage()
         playbackEvents.batch(() => {
-            playbackEvents.emit('patternStructureChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
         this.#selectedIdx = idx
         this.#renderList()
@@ -241,8 +242,8 @@ export default class SongPanel extends BasePanel {
         serviceRegistry.cmd.removePattern(idx)
         this.#selectedIdx = appState.selectedPatternNum
         playbackEvents.batch(() => {
-            playbackEvents.emit('patternStructureChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
         this.sync()
         showToast(`Deleted "${name}"`, 'success')
@@ -299,8 +300,8 @@ export default class SongPanel extends BasePanel {
 
                 this.#songName = songService.applyToAppState(data, choice)
                 playbackEvents.batch(() => {
-                    playbackEvents.emit('patternStructureChange')
-                    playbackEvents.emit('patternChange')
+                    playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+                    playbackEvents.emit(EVENTS.PATTERN_CHANGE)
                 })
                 this.sync()
                 showToast(`Song "${this.#songName}" loaded`, 'success')
@@ -335,8 +336,8 @@ export default class SongPanel extends BasePanel {
                 const fallbackName = file.name.replace(/\.\w+$/, '')
                 this.#songName = songService.applyToAppState(data, fallbackName)
                 playbackEvents.batch(() => {
-                    playbackEvents.emit('patternStructureChange')
-                    playbackEvents.emit('patternChange')
+                    playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+                    playbackEvents.emit(EVENTS.PATTERN_CHANGE)
                 })
                 this.sync()
                 showToast(`Song "${this.#songName}" imported`, 'success')

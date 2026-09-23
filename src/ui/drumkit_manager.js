@@ -12,6 +12,7 @@ import { color } from './theme.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 import WavImportService from '../logic/services/wav_import_service.js'
+import { EVENTS } from '../core/events.js'
 
 const TAG = 'DrumkitManager'
 
@@ -133,7 +134,7 @@ export default class DrumkitManager extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on('drumkitChange', () => {
+        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => {
             if (this.isVisible) this.sync()
         })
     }
@@ -201,7 +202,7 @@ export default class DrumkitManager extends BasePanel {
                     showToast(assignResult.warning, 'warning')
                 }
                 serviceRegistry.audioEngine?.invalidateCache()
-                playbackEvents.emit('patternChange')
+                playbackEvents.emit(EVENTS.PATTERN_CHANGE)
                 showToast(`Imported ${fileCount} files into kit "${kitName}"`, 'success')
                 this.#selectedSoundKey = null
                 this.sync()
@@ -377,7 +378,7 @@ export default class DrumkitManager extends BasePanel {
         // The knob already reflects the live value; other panels/persistence
         // catch up once the drag settles.
         clearTimeout(this.#drumkitChangeDebounce)
-        this.#drumkitChangeDebounce = setTimeout(() => playbackEvents.emit('drumkitChange'), 200)
+        this.#drumkitChangeDebounce = setTimeout(() => playbackEvents.emit(EVENTS.DRUMKIT_CHANGE), 200)
     }
 
     // ── Waveform ───────────────────────────────────────────────────────

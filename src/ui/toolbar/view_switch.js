@@ -6,6 +6,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import Utils from '../../core/utils.js'
+import { EVENTS } from '../../core/events.js'
 
 export default class ViewSwitch {
     #tb
@@ -106,13 +107,13 @@ export default class ViewSwitch {
         const tb = this.#tb
 
         tb.synthBtn.addEventListener('click', () => {
-            playbackEvents.emit('synthToggle')
+            playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         })
         tb.editBtn.addEventListener('click', () => {
-            playbackEvents.emit('editToggle')
+            playbackEvents.emit(EVENTS.EDIT_TOGGLE)
         })
         tb.prollBtn.addEventListener('click', () => {
-            playbackEvents.emit('prollToggle')
+            playbackEvents.emit(EVENTS.PROLL_TOGGLE)
         })
 
         tb.undoBtn.addEventListener('click', () => {
@@ -230,8 +231,8 @@ export default class ViewSwitch {
         }
 
         playbackEvents.batch(() => {
-            playbackEvents.emit('noteChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 }

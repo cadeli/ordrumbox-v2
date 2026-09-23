@@ -2,10 +2,10 @@
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest'
 
 /**
- * Reproduces the delegated keydown handler from src/main.js that makes all
- * <input type="range"> sliders respond to Arrow Left/Right when focused.
+ * Reproduces the delegated keydown handler from src/bootstrap/global_listeners.js
+ * that makes all <input type="range"> sliders respond to Arrow Left/Right when focused.
  *
- * Kept in sync with main.js — if the handler moves or changes, update both.
+ * Kept in sync with global_listeners.js — if the handler moves or changes, update both.
  */
 function installSliderKeyHandler(doc = document) {
     doc.addEventListener('keydown', (e) => {

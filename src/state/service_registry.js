@@ -11,13 +11,24 @@ export class ServiceRegistry {
         audioCtx: null,
         audioEngine: null,
         transport: null,
-        exportLoopsCount: 1,
         viewManager: null,
         history: null,
     }
 
     constructor() {
         Object.assign(this, ServiceRegistry.DEFAULTS)
+    }
+
+    /**
+     * Assign a known service key. Throws on unknown keys so typos
+     * cannot silently create non-resettable properties.
+     */
+    register(key, value) {
+        if (!(key in ServiceRegistry.DEFAULTS)) {
+            throw new Error(`Unknown service key: ${key}`)
+        }
+        this[key] = value
+        return value
     }
 
     reset() {

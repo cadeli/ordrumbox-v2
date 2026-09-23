@@ -5,6 +5,7 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { instrumentsManager } from './instrument_manager/index.js'
 import { cacheSample, cacheDrumkits } from '../../cache/idb_cache.js'
+import { EVENTS } from '../../core/events.js'
 
 export default class WavImportService {
     /**
@@ -64,7 +65,7 @@ export default class WavImportService {
 
         await cacheDrumkits(Object.fromEntries(soundRegistry.drumkitList.map((d) => [d.name, d])))
 
-        playbackEvents.emit('drumkitChange')
+        playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
 
         return { kitName, fileCount: wavFiles.length }
     }

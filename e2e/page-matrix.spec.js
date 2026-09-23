@@ -6,6 +6,7 @@
 // and the last page contains the last beat.
 
 import { test, expect } from '@playwright/test'
+import { EVENTS } from '../src/core/events.js'
 
 const COMBOS = [
     { stepsPerBeat: 1, nbBeats: 1 },
@@ -37,7 +38,7 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
             const expectedPages = Math.max(1, Math.ceil((nbBeats * stepsPerBeat) / 16))
 
             await page.evaluate(
-                ({ nbBeats, stepsPerBeat }) => {
+                ({ nbBeats, stepsPerBeat, patternMetaEvent, patternChangeEvent }) => {
                     const { appState, playbackEvents } = window.__e2e
                     const pattern = appState.patterns[appState.selectedPatternNum]
                     if (!pattern) return
@@ -52,11 +53,16 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
                     }
                     appState.currentPage = 0
                     playbackEvents.batch(() => {
-                        playbackEvents.emit('patternMetaChange')
-                        playbackEvents.emit('patternChange')
+                        playbackEvents.emit(patternMetaEvent)
+                        playbackEvents.emit(patternChangeEvent)
                     })
                 },
-                { nbBeats, stepsPerBeat },
+                {
+                    nbBeats,
+                    stepsPerBeat,
+                    patternMetaEvent: EVENTS.PATTERN_META_CHANGE,
+                    patternChangeEvent: EVENTS.PATTERN_CHANGE,
+                },
             )
 
             await page.waitForTimeout(200)

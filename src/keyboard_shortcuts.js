@@ -7,6 +7,7 @@ import Utils from './core/utils.js'
 import ResourcesLoader from './loader/resources_loader.js'
 import { logger } from './core/logger.js'
 import { showToast } from './core/notify.js'
+import { EVENTS } from './core/events.js'
 
 const PHYSICAL_TRACK_MUTE_KEYS = [
     'Digit1',
@@ -33,8 +34,8 @@ function toggleTrackMute(trackIndex) {
     if (track) {
         track.mute = !track.mute
         playbackEvents.batch(() => {
-            playbackEvents.emit('trackParamChange', track)
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 }
@@ -104,7 +105,7 @@ async function convertToGeneratedSounds() {
 
     serviceRegistry.patterns.applyFlatNotes(selPattern)
     serviceRegistry.audioEngine?.invalidateCache()
-    playbackEvents.emit('patternChange')
+    playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     logger.info('KeyboardShortcuts', 'All tracks converted to generated sounds')
 }
 
@@ -126,7 +127,7 @@ function assignRandomSampleAllTracks() {
 
     serviceRegistry.patterns.applyFlatNotes(selPattern)
     serviceRegistry.audioEngine?.invalidateCache()
-    playbackEvents.emit('patternChange')
+    playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     showToast('Random samples assigned', 'success')
 }
 
@@ -143,7 +144,7 @@ async function autoAssignAllTracks() {
     autoAssign.autoAssignSounds(selPattern)
     serviceRegistry.patterns.applyFlatNotes(selPattern)
     serviceRegistry.audioEngine?.invalidateCache()
-    playbackEvents.emit('patternChange')
+    playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     showToast('All tracks auto-assigned', 'success')
 }
 

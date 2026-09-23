@@ -7,6 +7,7 @@ import { appState } from '../../state/app_state.js'
 import { MAX_BEATS } from '../../core/constants.js'
 import Utils from '../../core/utils.js'
 import { recalcLoopDerived } from '../../model/track_schema.js'
+import { EVENTS } from '../../core/events.js'
 
 const BPM_MIN = 20
 const BPM_MAX = 250
@@ -88,7 +89,7 @@ export default class TransportControls {
             tb.bpmToggle.textContent = bpm
             tb.bpmOverride = bpm
             serviceRegistry.seq?.setBpm(bpm)
-            playbackEvents.emit('bpmChange', bpm)
+            playbackEvents.emit(EVENTS.BPM_CHANGE, bpm)
         })
 
         tb.beatsSelect.addEventListener('change', () => {
@@ -107,8 +108,8 @@ export default class TransportControls {
             })
             serviceRegistry.cmd.resetPage()
             playbackEvents.batch(() => {
-                playbackEvents.emit('patternMetaChange')
-                playbackEvents.emit('patternChange')
+                playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+                playbackEvents.emit(EVENTS.PATTERN_CHANGE)
             })
         })
     }

@@ -1,18 +1,28 @@
 import { serviceRegistry } from './service_registry.js'
 
-async function lazyService(key, importFn) {
+const LAZY_SERVICES = Object.freeze({
+    autoGenerate: () => import('../logic/generators/auto_generate.js'),
+    autoAssign: () => import('../logic/services/auto_assign.js'),
+    midiManager: () => import('../logic/midi/midi.js'),
+    history: () => import('../logic/history_manager.js'),
+})
+
+async function lazyService(key) {
+    const factory = LAZY_SERVICES[key]
+    if (!factory) throw new Error(`Unknown lazy service: ${key}`)
     if (!serviceRegistry[key]) {
-        const { default: Cls } = await importFn()
+        const { default: Cls } = await factory()
         serviceRegistry[key] = new Cls()
     }
     return serviceRegistry[key]
 }
 
-export const getAutoGenerateService = () =>
-    lazyService('autoGenerate', () => import('../logic/generators/auto_generate.js'))
+export const getService = (key) => lazyService(key)
 
-export const getAutoAssignService = () => lazyService('autoAssign', () => import('../logic/services/auto_assign.js'))
+export const getAutoGenerateService = () => lazyService('autoGenerate')
 
-export const getMidiManagerService = () => lazyService('midiManager', () => import('../logic/midi/midi.js'))
+export const getAutoAssignService = () => lazyService('autoAssign')
 
-export const getHistoryService = () => lazyService('history', () => import('../logic/history_manager.js'))
+export const getMidiManagerService = () => lazyService('midiManager')
+
+export const getHistoryService = () => lazyService('history')

@@ -10,6 +10,7 @@ import { getAutoAssignService, getAutoGenerateService } from '../state/service_l
 import { soundRegistry } from '../state/sound_registry.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
+import { EVENTS } from '../core/events.js'
 
 export default class Sequencer {
     static TAG = 'Sequencer'
@@ -62,7 +63,7 @@ export default class Sequencer {
             TICK,
             secondsPerBeat: this.appState.secondsPerBeat,
         })
-        this.playbackEvents.on('patternChange', (changedTracks) => {
+        this.playbackEvents.on(EVENTS.PATTERN_CHANGE, (changedTracks) => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
                 const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
@@ -75,7 +76,7 @@ export default class Sequencer {
                 }
             }
         })
-        this.playbackEvents.on('selectedPatternChange', () => {
+        this.playbackEvents.on(EVENTS.SELECTED_PATTERN_CHANGE, () => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
                 const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
@@ -89,12 +90,12 @@ export default class Sequencer {
                 }
             }
         })
-        this.playbackEvents.on('noteChange', () => {
+        this.playbackEvents.on(EVENTS.NOTE_CHANGE, () => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
             }
         })
-        this.playbackEvents.on('trackParamChange', (track) => {
+        this.playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, (track) => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
                 this.serviceRegistry.audioEngine.syncTrack(track)
@@ -131,7 +132,7 @@ export default class Sequencer {
     _startInner = async () => {
         try {
             await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
-            this.playbackEvents.emit('drumkitChange')
+            this.playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         } catch (error) {
             logger.error('Sequencer', 'Sequencer::start: Failed to load resources', error)
             showToast('Failed to load audio resources', 'error')
@@ -165,14 +166,14 @@ export default class Sequencer {
             transport: this.serviceRegistry.transport,
         })
         this.#stallDetector.start()
-        this.playbackEvents.emit('playbackStart')
+        this.playbackEvents.emit(EVENTS.PLAYBACK_START)
     }
 
     stop = () => {
         this.#stallDetector?.stop()
         this.#stallDetector = null
         this.serviceRegistry.transport?.stop()
-        this.playbackEvents.emit('playbackStop')
+        this.playbackEvents.emit(EVENTS.PLAYBACK_STOP)
         if (this.serviceRegistry.audioEngine) {
             this.serviceRegistry.audioEngine.stop()
         }

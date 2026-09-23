@@ -21,6 +21,7 @@ import OutputPanel from '../src/ui/output_panel.js'
 import AboutPanel from '../src/ui/about_panel.js'
 import ViewManager from '../src/ui/view_manager.js'
 import MobileTabBar from '../src/ui/mobile_tab_bar.js'
+import { EVENTS } from '../src/core/events.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -194,36 +195,36 @@ describe('Mobile tab: Sequencer — panel visibility & position', () => {
     })
 
     it('pattern panel is visible (no ui-hidden class)', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('ui-hidden')).toBe(false)
     })
 
     it('pattern panel has display: block', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.style.display).not.toBe('none')
     })
 
     it('track editor is hidden', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         expect(ctx.trackEditor.isVisible).toBe(false)
     })
 
     it('synth panel is hidden', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('soft-synth-panel')
         expect(el.style.display).toBe('none')
     })
 
     it('pattern panel has workspace-panel class (full-width via CSS)', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('workspace-panel')).toBe(true)
     })
 
     it('pattern panel clears space for tab bar (workspace-panel → bottom: 60px)', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('workspace-panel')).toBe(true)
         expect(hasRuleAnywhere('.workspace-panel', 'bottom', '60px !important')).toBe(true)
@@ -241,34 +242,34 @@ describe('Mobile tab: Track — panel visibility & position', () => {
     })
 
     it('track editor is visible', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(ctx.trackEditor.isVisible).toBe(true)
     })
 
     it('track editor has display: flex on mobile', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(ctx.trackEditor.container.style.display).toBe('flex')
     })
 
     it('pattern panel is hidden (ui-hidden)', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('ui-hidden')).toBe(true)
     })
 
     it('synth panel is hidden', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         const el = document.getElementById('soft-synth-panel')
         expect(el.style.display).toBe('none')
     })
 
     it('track editor has id te-panel', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(ctx.trackEditor.container.id).toBe('te-panel')
     })
 
     it('note editor container is present', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         const ne = document.getElementById('ne-container')
         expect(ne).not.toBeNull()
     })
@@ -285,30 +286,30 @@ describe('Mobile tab: Synth — panel visibility & position', () => {
     })
 
     it('synth panel element exists after synthToggle', () => {
-        playbackEvents.emit('synthToggle')
+        playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         const el = document.getElementById('soft-synth-panel')
         expect(el).not.toBeNull()
     })
 
     it('synth panel has workspace-panel class (gets mobile sizing)', () => {
-        playbackEvents.emit('synthToggle')
+        playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         const el = document.getElementById('soft-synth-panel')
         expect(el.classList.contains('workspace-panel')).toBe(true)
     })
 
     it('pattern panel is hidden (ui-hidden)', () => {
-        playbackEvents.emit('synthToggle')
+        playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('ui-hidden')).toBe(true)
     })
 
     it('track editor is hidden', () => {
-        playbackEvents.emit('synthToggle')
+        playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         expect(ctx.trackEditor.isVisible).toBe(false)
     })
 
     it('synth scroll container exists', () => {
-        playbackEvents.emit('synthToggle')
+        playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         const el = document.getElementById('soft-synth-panel')
         const scroll = el.querySelector('.ss-scroll')
         expect(scroll).not.toBeNull()
@@ -326,24 +327,24 @@ describe('Mobile tab: Master — panel visibility & position', () => {
     })
 
     it('output panel is visible (display: block)', () => {
-        playbackEvents.emit('masterToggle', true)
+        playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         const el = document.getElementById('output-panel')
         expect(el.style.display).toBe('block')
     })
 
     it('pattern panel is hidden (ui-hidden)', () => {
-        playbackEvents.emit('masterToggle', true)
+        playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('ui-hidden')).toBe(true)
     })
 
     it('track editor is hidden', () => {
-        playbackEvents.emit('masterToggle', true)
+        playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         expect(ctx.trackEditor.isVisible).toBe(false)
     })
 
     it('synth panel is hidden', () => {
-        playbackEvents.emit('masterToggle', true)
+        playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         const el = document.getElementById('soft-synth-panel')
         expect(el.style.display).toBe('none')
     })
@@ -360,58 +361,58 @@ describe('Mobile tab switching — mutual exclusion', () => {
     })
 
     it('seq -> track: pattern hidden, track visible', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
 
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
         expect(ctx.trackEditor.isVisible).toBe(true)
     })
 
     it('track -> synth: track hidden, pattern hidden', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(ctx.trackEditor.isVisible).toBe(true)
 
-        playbackEvents.emit('synthToggle')
+        playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         expect(ctx.trackEditor.isVisible).toBe(false)
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
     })
 
     it('synth -> master: pattern hidden, output visible', () => {
-        playbackEvents.emit('synthToggle')
+        playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
 
-        playbackEvents.emit('masterToggle', true)
+        playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         expect(document.getElementById('output-panel').style.display).toBe('block')
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
     })
 
     it('master -> seq: output hidden, pattern visible', () => {
-        playbackEvents.emit('masterToggle', true)
+        playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         expect(document.getElementById('output-panel').style.display).toBe('block')
 
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         expect(document.getElementById('output-panel').style.display).toBe('none')
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
     })
 
     it('full cycle: seq -> track -> synth -> master -> seq', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
 
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(ctx.trackEditor.isVisible).toBe(true)
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
 
-        playbackEvents.emit('synthToggle')
+        playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         expect(ctx.trackEditor.isVisible).toBe(false)
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
 
-        playbackEvents.emit('masterToggle', true)
+        playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         expect(document.getElementById('output-panel').style.display).toBe('block')
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
 
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
         expect(document.getElementById('output-panel').style.display).toBe('none')
     })
@@ -428,7 +429,7 @@ describe('Mobile panel scrollability', () => {
     })
 
     it('pattern panel has workspace-panel class (overflow-y: auto, full-height)', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('workspace-panel')).toBe(true)
         expect(hasCombinedRule(getMobileMediaBlock(), '.workspace-panel', 'overflow-y', 'auto')).toBe(true)
@@ -436,30 +437,30 @@ describe('Mobile panel scrollability', () => {
     })
 
     it('track editor has te-panel id (overflow-y: auto via CSS)', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(ctx.trackEditor.container.id).toBe('te-panel')
         expect(hasCombinedRule(getMobileMediaBlock(), '#te-panel', 'overflow-y', 'auto !important')).toBe(true)
     })
 
     it('synth panel has workspace-panel class (overflow-y: auto)', () => {
-        playbackEvents.emit('synthToggle')
+        playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         const el = document.getElementById('soft-synth-panel')
         expect(el.classList.contains('workspace-panel')).toBe(true)
     })
 
     it('output panel has overflow-y: auto via CSS', () => {
-        playbackEvents.emit('masterToggle', true)
+        playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         const el = document.getElementById('output-panel')
         expect(el.style.display).toBe('block')
         expect(hasCombinedRule(getMobileMediaBlock(), '#output-panel', 'overflow-y', 'auto !important')).toBe(true)
     })
 
     it('scrollability persists after switching tabs back and forth', () => {
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         expect(document.getElementById('pattern-panel').classList.contains('workspace-panel')).toBe(true)
 
-        playbackEvents.emit('mobileTrackToggle')
-        playbackEvents.emit('mobileSeqToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
+        playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         expect(document.getElementById('pattern-panel').classList.contains('workspace-panel')).toBe(true)
     })
 })
@@ -560,7 +561,7 @@ describe('Mobile scroll chain: #te-panel DOM structure verification', () => {
     })
 
     it('#te-panel has two direct children: .track-editor and #ne-container', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         const panel = ctx.trackEditor.container
         const te = panel.querySelector('.track-editor')
         const ne = document.getElementById('ne-container')
@@ -571,7 +572,7 @@ describe('Mobile scroll chain: #te-panel DOM structure verification', () => {
     })
 
     it('.te-scroll is inside .track-editor (not a direct child of #te-panel)', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         const panel = ctx.trackEditor.container
         const teScroll = panel.querySelector('.te-scroll')
         const te = panel.querySelector('.track-editor')
@@ -580,13 +581,13 @@ describe('Mobile scroll chain: #te-panel DOM structure verification', () => {
     })
 
     it('.track-editor uses display: flex on mobile', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         const te = ctx.trackEditor.container.querySelector('.track-editor')
         expect(te).not.toBeNull()
     })
 
     it('#ne-container is a direct sibling of .track-editor, not nested inside it', () => {
-        playbackEvents.emit('mobileTrackToggle')
+        playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         const panel = ctx.trackEditor.container
         const te = panel.querySelector('.track-editor')
         const ne = document.getElementById('ne-container')

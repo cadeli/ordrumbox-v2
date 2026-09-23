@@ -4,6 +4,7 @@ import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from './utils.js'
+import { EVENTS } from './events.js'
 
 /**
  * Navigate to the previous page of steps.
@@ -12,8 +13,8 @@ export function prevPage() {
     if (appState.currentPage > 0) {
         serviceRegistry.cmd?.setCurrentPage(appState.currentPage - 1)
         playbackEvents.batch(() => {
-            playbackEvents.emit('patternMetaChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 }
@@ -30,8 +31,8 @@ export function nextPage() {
     if (appState.currentPage < maxPage) {
         serviceRegistry.cmd?.setCurrentPage(appState.currentPage + 1)
         playbackEvents.batch(() => {
-            playbackEvents.emit('patternMetaChange')
-            playbackEvents.emit('patternChange')
+            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
+            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
     }
 }

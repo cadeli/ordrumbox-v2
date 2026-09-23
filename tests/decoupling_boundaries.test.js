@@ -109,8 +109,29 @@ describe('Decoupling boundaries', () => {
         expect(src).toMatch(/currentView/)
     })
 
-    it('main.js does not read soundRegistry.settings.session for currentView', () => {
-        const src = readSrc('main.js')
+    it('bootstrap/startup.js does not read soundRegistry.settings.session for currentView', () => {
+        const src = readSrc('bootstrap/startup.js')
         expect(src).not.toMatch(/soundRegistry\.settings\.session/)
+    })
+
+    it('main.js is a thin orchestrator that re-exports init', () => {
+        const src = readSrc('main.js')
+        expect(src).toMatch(/export function init/)
+        expect(src).toMatch(/bootstrap\/services/)
+    })
+
+    it('non-UI bootstrap modules do not import ui/ except panels', () => {
+        const layers = ['bootstrap']
+        const violations = []
+        for (const layer of layers) {
+            for (const rel of listSrcFiles(layer)) {
+                if (rel === 'bootstrap/panels.js') continue
+                const src = readSrc(rel)
+                if (/from\s+['"][^'"]*\/ui\//.test(src) || /from\s+['"]\.\.\/ui\//.test(src)) {
+                    violations.push(rel)
+                }
+            }
+        }
+        expect(violations).toEqual([])
     })
 })
