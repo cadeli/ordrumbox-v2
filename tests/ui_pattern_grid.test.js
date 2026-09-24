@@ -220,4 +220,186 @@ describe('Pattern Panel UI Grid', () => {
         expect(trackName.classList.contains('selected')).toBe(true)
         expect(simpleBeepSpy).toHaveBeenCalledWith(0)
     })
+
+    describe('keyboard Delete/Backspace', () => {
+        function pressKey(key) {
+            panel.container.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+        }
+
+        function mockDeleteNote() {
+            serviceRegistry.cmd = {
+                ...serviceRegistry.cmd,
+                deleteNote: vi.fn((track, note) => {
+                    const idx = track.notes.indexOf(note)
+                    if (idx >= 0) track.notes.splice(idx, 1)
+                }),
+                setCurrentPage: vi.fn(),
+                addNote: vi.fn((track, beat, step) => {
+                    const note = { beat, beatStep: step, pitch: 0, velocity: 0.8 }
+                    track.notes.push(note)
+                    return note
+                }),
+            }
+            serviceRegistry.seq = { simpleBeep: vi.fn() }
+        }
+
+        it('Delete removes the note under the cursor without prior selection', () => {
+            mockDeleteNote()
+            const track = appState.patterns[0].tracks['T1']
+            const note = track.notes[0]
+            expect(note).toEqual(expect.objectContaining({ beat: 0, beatStep: 0 }))
+
+            pressKey('Delete')
+
+            expect(track.notes).not.toContain(note)
+            expect(panel.selNote).toBeNull()
+            const cell = document.querySelector('.pp-cell[data-pos="0"]')
+            expect(cell.classList.contains('filled')).toBe(false)
+            expect(cell.classList.contains('selected')).toBe(false)
+        })
+
+        it('Backspace removes the note under the cursor without prior selection', () => {
+            mockDeleteNote()
+            const track = appState.patterns[0].tracks['T1']
+            const note = track.notes[0]
+
+            pressKey('Backspace')
+
+            expect(track.notes).not.toContain(note)
+            expect(panel.selNote).toBeNull()
+            const cell = document.querySelector('.pp-cell[data-pos="0"]')
+            expect(cell.classList.contains('filled')).toBe(false)
+        })
+
+        it('Delete removes selected note and clears selection', () => {
+            mockDeleteNote()
+            const track = appState.patterns[0].tracks['T1']
+            const note = track.notes[0]
+
+            document.querySelector('.pp-cell[data-pos="0"]').click()
+            expect(panel.selNote).toBe(note)
+            expect(document.querySelector('.pp-cell[data-pos="0"]').classList.contains('selected')).toBe(true)
+
+            pressKey('Delete')
+
+            expect(track.notes).not.toContain(note)
+            expect(panel.selNote).toBeNull()
+            expect(panel.selTrackIdx).toBe(-1)
+            expect(document.querySelector('.pp-cell[data-pos="0"]').classList.contains('selected')).toBe(false)
+        })
+
+        it('Delete on empty cell clears selection without error', () => {
+            mockDeleteNote()
+            const track = appState.patterns[0].tracks['T1']
+            const initialCount = track.notes.length
+
+            document.querySelector('.pp-cell[data-pos="0"]').click()
+            expect(panel.selNote).not.toBeNull()
+
+            panel.container.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+            )
+            panel.container.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+            )
+            pressKey('Delete')
+
+            expect(track.notes.length).toBe(initialCount)
+            expect(panel.selNote).toBeNull()
+        })
+
+        it('Delete preventDefault stops browser back navigation', () => {
+            mockDeleteNote()
+            const event = new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true })
+            const preventSpy = vi.spyOn(event, 'preventDefault')
+            panel.container.dispatchEvent(event)
+            expect(preventSpy).toHaveBeenCalled()
+        })
+
+        it('Delete removes every note stacked on the same step', () => {
+            mockDeleteNote()
+            const track = appState.patterns[0].tracks['T1']
+            track.notes.push({ beat: 0, beatStep: 0, pitch: 12, velocity: 0.9 })
+            expect(track.notes.filter((n) => n.beat === 0 && n.beatStep === 0).length).toBe(2)
+
+            pressKey('Delete')
+
+            expect(track.notes.filter((n) => n.beat === 0 && n.beatStep === 0).length).toBe(0)
+            expect(track.notes.filter((n) => n.beat === 0 && n.beatStep === 1).length).toBe(1)
+        })
+    })
+
+    describe('keyboard Escape', () => {
+        function pressKey(key) {
+            panel.container.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+        }
+
+        function setupCmd() {
+            serviceRegistry.cmd = {
+                ...serviceRegistry.cmd,
+                setCurrentPage: vi.fn(),
+                addNote: vi.fn((track, beat, step) => {
+                    const note = { beat, beatStep: step, pitch: 0, velocity: 0.8 }
+                    track.notes.push(note)
+                    return note
+                }),
+                deleteNote: vi.fn((track, note) => {
+                    const idx = track.notes.indexOf(note)
+                    if (idx >= 0) track.notes.splice(idx, 1)
+                }),
+            }
+            serviceRegistry.seq = { simpleBeep: vi.fn() }
+        }
+
+        it('Escape clears cursor and selection state', () => {
+            setupCmd()
+            pressKey('ArrowRight')
+            expect(panel.cursorTrackIdx).toBe(0)
+
+            document.querySelector('.pp-cell[data-pos="0"]').click()
+            expect(panel.selNote).not.toBeNull()
+
+            pressKey('Escape')
+
+            expect(panel.cursorTrackIdx).toBe(-1)
+            expect(panel.selNote).toBeNull()
+            expect(panel.selTrackIdx).toBe(-1)
+        })
+
+        it('Escape removes cursor and selected classes from the grid', () => {
+            setupCmd()
+            pressKey('ArrowRight')
+            document.querySelector('.pp-cell[data-pos="0"]').click()
+            expect(document.querySelector('.pp-cell.selected')).not.toBeNull()
+
+            pressKey('Escape')
+
+            expect(document.querySelector('.pp-cell.cursor')).toBeNull()
+            expect(document.querySelector('.pp-cell.selected')).toBeNull()
+            expect(document.querySelector('.pp-note-slice.selected')).toBeNull()
+        })
+
+        it('Escape preventDefault', () => {
+            setupCmd()
+            const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+            const preventSpy = vi.spyOn(event, 'preventDefault')
+            panel.container.dispatchEvent(event)
+            expect(preventSpy).toHaveBeenCalled()
+        })
+
+        it('next arrow after Escape re-initializes the cursor', () => {
+            setupCmd()
+            pressKey('ArrowRight')
+            pressKey('Escape')
+            expect(panel.cursorTrackIdx).toBe(-1)
+
+            pressKey('ArrowRight')
+
+            expect(panel.cursorTrackIdx).toBe(0)
+            expect(panel.cursorBeat).toBe(0)
+            expect(panel.cursorBeatStep).toBe(1)
+            const cell = document.querySelector('.pp-cell[data-pos="1"]')
+            expect(cell.classList.contains('selected') || cell.classList.contains('cursor')).toBe(true)
+        })
+    })
 })

@@ -298,6 +298,15 @@ export default class PatternPanel extends BasePanel {
         const tracks = Utils.getTracksArray(pattern)
         if (tracks.length === 0) return
 
+        if (e.key === 'Escape') {
+            e.preventDefault()
+            this.#cursorTrackIdx = -1
+            this.#selNote = null
+            this.#selTrackIdx = -1
+            this.#applySelection()
+            return
+        }
+
         if (this.#cursorTrackIdx === -1) {
             this.#cursorTrackIdx = 0
             this.#cursorBeat = 0
@@ -346,6 +355,11 @@ export default class PatternPanel extends BasePanel {
                     this.#handleNoteEnter(track)
                     break
                 }
+            case 'Delete':
+            case 'Backspace':
+                e.preventDefault()
+                this.#handleNoteDelete(tracks)
+                return
             default:
                 return
         }
@@ -496,6 +510,24 @@ export default class PatternPanel extends BasePanel {
         }
     }
 
+    #handleNoteDelete(tracks) {
+        const track = tracks[this.#cursorTrackIdx]
+        if (!track) return
+        const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
+        if (!pattern) return
+
+        const notesAtStep = (track.notes ?? []).filter(
+            (n) => n.beat === this.#cursorBeat && n.beatStep === this.#cursorBeatStep,
+        )
+        if (notesAtStep.length > 0) {
+            for (const note of notesAtStep) {
+                this.#serviceRegistry.cmd.deleteNote(track, note)
+            }
+            this.#updateTrackCellsInPlace(this.#cursorTrackIdx, track, pattern)
+        }
+        this.#clearSelection()
+    }
+
     #onClick(e) {
         const actionBtn = e.target.closest('.pp-action-btn')
         if (actionBtn) {
@@ -627,7 +659,7 @@ export default class PatternPanel extends BasePanel {
         this.#selNote = null
         this.#selTrackIdx = -1
         const selected = this.container.querySelectorAll(
-            '.pp-cell.selected, .pp-track-name.selected, .pp-track.pp-selected',
+            '.pp-cell.selected, .pp-track-name.selected, .pp-track.pp-selected, .pp-note-slice.selected',
         )
         selected.forEach((el) => el.classList.remove('selected', 'pp-selected'))
         this.#playbackEvents.batch(() => {
@@ -1003,6 +1035,18 @@ export default class PatternPanel extends BasePanel {
 
     get selTrackIdx() {
         return this.#selTrackIdx
+    }
+    get selNote() {
+        return this.#selNote
+    }
+    get cursorBeat() {
+        return this.#cursorBeat
+    }
+    get cursorBeatStep() {
+        return this.#cursorBeatStep
+    }
+    get cursorTrackIdx() {
+        return this.#cursorTrackIdx
     }
     get appState() {
         return this.#appState
