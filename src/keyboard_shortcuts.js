@@ -23,7 +23,7 @@ const PHYSICAL_TRACK_MUTE_KEYS = [
     'Digit9',
 ]
 
-const PHYSICAL_TRACK_PREVIEW_KEYS = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI']
+const PHYSICAL_TRACK_PREVIEW_KEYS = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyP']
 
 const PHYSICAL_KEYS_PREVENTING_BROWSER_DEFAULT = new Set(['Space'])
 

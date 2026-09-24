@@ -353,9 +353,9 @@ describe('Keyboard shortcuts', () => {
         infoSpy.mockRestore()
     })
 
-    // ── Preview keys KeyT / KeyY / KeyU / KeyI ────────────────────
+    // ── Preview keys KeyT / KeyY / KeyU / KeyI / KeyO / KeyP ──────
 
-    it('KeyT / KeyY / KeyU / KeyI preview tracks 4-7', () => {
+    it('KeyT / KeyY / KeyU / KeyI / KeyO / KeyP preview tracks 4-9', () => {
         fireKeydown('KeyT')
         expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(4)
         fireKeydown('KeyY')
@@ -364,6 +364,10 @@ describe('Keyboard shortcuts', () => {
         expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(6)
         fireKeydown('KeyI')
         expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(7)
+        fireKeydown('KeyO')
+        expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(8)
+        fireKeydown('KeyP')
+        expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(9)
     })
 
     // ── Ctrl+S / Ctrl+N / Ctrl+D global pattern shortcuts ─────────
