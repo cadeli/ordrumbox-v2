@@ -227,7 +227,7 @@ describe('Keyboard shortcuts', () => {
         expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
     })
 
-    // ── KeyB / KeyJ / KeyK / KeyD ─────────────────────────────────
+    // ── KeyB / KeyJ / KeyK ─────────────────────────────────────────
 
     it('KeyB triggers auto-generate pattern', async () => {
         const mockGen = { generatePattern: vi.fn() }
@@ -310,47 +310,6 @@ describe('Keyboard shortcuts', () => {
         fireKeydown('KeyK')
 
         expect(showToast).not.toHaveBeenCalledWith('Random samples assigned', 'success')
-    })
-
-    it('KeyD shows info toast when selected track does not use a generated sound', async () => {
-        fireKeydown('KeyD')
-
-        expect(showToast).toHaveBeenCalledWith('Current track does not use a generated sound', 'info')
-    })
-
-    it('KeyD shows info toast when no track is selected', async () => {
-        appState.selectedTrackNum = 99
-
-        fireKeydown('KeyD')
-
-        expect(showToast).toHaveBeenCalledWith('No track selected', 'info')
-    })
-
-    it('KeyD shows error toast when generated sound is missing from registry', async () => {
-        const track = appState.patterns[0].tracks[0]
-        track.useSoftSynth = true
-        track.synthSoundKey = 'MISSING_KEY'
-        soundRegistry.generatedSounds = {}
-
-        fireKeydown('KeyD')
-
-        expect(showToast).toHaveBeenCalledWith('Generated sound not found', 'error')
-    })
-
-    it('KeyD logs the generated sound on success', async () => {
-        const infoSpy = vi.spyOn(logger, 'info')
-        const track = appState.patterns[0].tracks[0]
-        track.useSoftSynth = true
-        track.synthSoundKey = 'BASS0'
-        const sound = { name: 'BASS0' }
-        soundRegistry.generatedSounds = { BASS0: sound }
-
-        fireKeydown('KeyD')
-
-        expect(infoSpy).toHaveBeenCalled()
-        const logged = infoSpy.mock.calls.at(-1)?.[1] ?? ''
-        expect(String(logged)).toBe(JSON.stringify(sound, null, 2))
-        infoSpy.mockRestore()
     })
 
     // ── Preview keys KeyT / KeyY / KeyU / KeyI / KeyO / KeyP ──────
@@ -441,10 +400,11 @@ describe('Keyboard shortcuts', () => {
         expect(event.defaultPrevented).toBe(true)
     })
 
-    it('plain KeyD still exports track sound (not duplicate)', () => {
+    it('plain KeyD does nothing (shortcut removed)', () => {
         fireKeydown('KeyD')
         expect(serviceRegistry.cmd.addPattern).not.toHaveBeenCalled()
-        expect(showToast).toHaveBeenCalledWith('Current track does not use a generated sound', 'info')
+        expect(showToast).not.toHaveBeenCalledWith('Current track does not use a generated sound', 'info')
+        expect(showToast).not.toHaveBeenCalledWith('No track selected', 'info')
     })
 
     // ── INPUT / TEXTAREA guards ───────────────────────────────────

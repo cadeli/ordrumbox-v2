@@ -2125,10 +2125,6 @@
                         <td>Auto-generate a new pattern</td>
                     </tr>
                     <tr>
-                        <td><strong>S</strong></td>
-                        <td>Log patterns as JSON to console</td>
-                    </tr>
-                    <tr>
                         <td><strong>F</strong></td>
                         <td>Switch to a random pattern</td>
                     </tr>
@@ -2141,8 +2137,12 @@
                         <td>Convert all tracks to soft-synth sounds</td>
                     </tr>
                     <tr>
-                        <td><strong>D</strong></td>
-                        <td>Export current track sound</td>
+                        <td><strong>J</strong></td>
+                        <td>Auto-assign sounds to all tracks</td>
+                    </tr>
+                    <tr>
+                        <td><strong>K</strong></td>
+                        <td>Assign a random sample to each track</td>
                     </tr>
                     <tr>
                         <td><strong>V</strong></td>
@@ -2153,20 +2153,70 @@
                         <td>Toggle mute for tracks 1–9</td>
                     </tr>
                     <tr>
-                        <td><strong>Q, W, E, R, T, Y, U, I</strong></td>
-                        <td>Preview (audition) tracks 0–7</td>
+                        <td><strong>Q, W, E, R, T, Y, U, I, O, P</strong></td>
+                        <td>Preview (audition) tracks 1–10</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + S</strong></td>
+                        <td>Export the current pattern as a JSON file</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + N</strong></td>
+                        <td>Add a new pattern</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + D</strong></td>
+                        <td>Duplicate the current pattern</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + Z</strong></td>
+                        <td>Undo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + Y</strong></td>
+                        <td>Redo</td>
                     </tr>
                     <tr>
                         <td><strong>Arrow</strong></td>
-                        <td>Adjust focused slider by one step</td>
+                        <td>Adjust focused slider by one step · move pattern-grid cursor</td>
                     </tr>
                     <tr>
                         <td><strong>Shift + Arrow</strong></td>
-                        <td>Adjust focused slider by 10 steps</td>
+                        <td>Adjust focused slider by 10 steps · extend multi-step selection in the pattern grid</td>
                     </tr>
                     <tr>
                         <td><strong>Alt/Option + Arrow</strong></td>
                         <td>Adjust focused slider by 0.1 step (fine)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Delete / Backspace</strong></td>
+                        <td>Delete selected note(s) in the pattern grid</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Escape</strong></td>
+                        <td>Clear pattern-grid cursor / selection</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + C</strong></td>
+                        <td>Copy notes at the cursor step (or the track when no cursor)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + Shift + C</strong></td>
+                        <td>Copy the whole track</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ctrl/Cmd + V</strong></td>
+                        <td>Paste clipboard (step notes, or track when clipboard holds a track)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Right-click track name</strong></td>
+                        <td>
+                            Track menu: Copy track, Paste tracks, Duplicate track, Delete track, Randomize, Clear notes
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Right-click cell</strong></td>
+                        <td>Cell menu: Copy notes, Paste notes, Add rnd note</td>
                     </tr>
                 </tbody>
             </table>

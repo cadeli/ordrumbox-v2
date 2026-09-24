@@ -191,36 +191,6 @@ async function autoAssignAllTracks() {
     showToast('All tracks auto-assigned', 'success')
 }
 
-async function exportCurrentTrackSound() {
-    const selPattern = getSelectedPattern()
-    if (!selPattern) return
-
-    const trackIdx = appState.selectedTrackNum
-    const track = selPattern.tracks[trackIdx]
-    if (!track) {
-        showToast('No track selected', 'info')
-        return
-    }
-
-    if (!track.useSoftSynth || !track.synthSoundKey) {
-        showToast('Current track does not use a generated sound', 'info')
-        return
-    }
-
-    const generatedSound = soundRegistry.generatedSounds[track.synthSoundKey]
-    if (!generatedSound) {
-        showToast('Generated sound not found', 'error')
-        return
-    }
-
-    try {
-        logger.info('KeyboardShortcuts', JSON.stringify(generatedSound, null, 2))
-    } catch (e) {
-        logger.error('KeyboardShortcuts', 'Export failed', e)
-        showToast('Export failed: ' + e.message, 'error')
-    }
-}
-
 const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyB: generatePattern,
     KeyF: selectRandomPattern,
@@ -228,7 +198,6 @@ const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyH: convertToGeneratedSounds,
     KeyJ: autoAssignAllTracks,
     KeyK: assignRandomSampleAllTracks,
-    KeyD: exportCurrentTrackSound,
     KeyV: toggleVus,
     Space: toggleStartStop,
 }
