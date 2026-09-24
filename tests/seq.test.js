@@ -179,13 +179,19 @@ describe('Sequencer', () => {
         expect(fakeTransport.audioCtx).toBe(serviceRegistry.audioCtx)
     })
 
-    it('toggleStartStop does nothing if audioCtx creation fails', () => {
+    it('toggleStartStop does nothing if audioCtx creation fails', async () => {
         serviceRegistry.resourcesLoader = { audioCtx: null, ensureResourcesLoaded: vi.fn() }
         serviceRegistry.audioCtx = null
         serviceRegistry.transport = null
         const seq = new Sequencer()
-        seq.toggleStartStop()
-        // No crash = pass
+        expect(serviceRegistry.transport).not.toBeNull()
+
+        expect(() => seq.toggleStartStop()).not.toThrow()
+        await Promise.resolve()
+        await Promise.resolve()
+
+        expect(serviceRegistry.audioCtx).toBeNull()
+        expect(seq.isRunning).toBe(false)
     })
 
     // ── race condition: start/stop TOCTOU ─────────────────────────────

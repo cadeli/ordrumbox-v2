@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 function buildMidiContainer() {
     const container = document.createElement('div')
@@ -45,6 +45,10 @@ describe('MidiIndicatorView', () => {
     beforeEach(async () => {
         const mod = await import('../src/ui/midi_indicator_view.js')
         MidiIndicatorView = mod.default
+    })
+
+    afterEach(() => {
+        vi.useRealTimers()
     })
 
     it('sync(null) sets default inactive state', () => {
@@ -95,13 +99,15 @@ describe('MidiIndicatorView', () => {
     it('connect is idempotent', () => {
         const container = buildMidiContainer()
         const view = new MidiIndicatorView(container)
-        const manager = makeMidiManager()
+        const manager = makeMidiManager({ ready: true })
 
         view.connect(manager)
         view.connect(manager)
 
         manager.dispatchEvent(new Event('statusChange'))
         manager.dispatchEvent(new Event('statusChange'))
+
+        expect(container.querySelector('#midiReadyLabel').textContent).toBe('Ready')
     })
 
     it('disconnect stops receiving events', () => {

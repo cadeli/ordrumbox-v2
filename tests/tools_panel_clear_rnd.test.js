@@ -106,9 +106,12 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
         })
 
         it('is a no-op when no pattern exists', () => {
+            const spy = vi.fn()
+            playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
             appState.patterns = []
             appState.selectedPatternNum = -1
             toolsPanel.container.querySelector('#tp-rnd').click()
+            expect(spy).not.toHaveBeenCalled()
         })
     })
 })

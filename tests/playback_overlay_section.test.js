@@ -120,15 +120,17 @@ describe('PlaybackOverlaySection', () => {
         it('starts and stops without error', () => {
             serviceRegistry.transport = { isRunning: false, tick: 0 }
             serviceRegistry.audioEngine = { mixer: null }
-            overlay.startRafLoop()
-            overlay.stopRafLoop()
+            expect(() => {
+                overlay.startRafLoop()
+                overlay.stopRafLoop()
+            }).not.toThrow()
         })
 
         it('does not start a second loop if one is running', () => {
             serviceRegistry.transport = { isRunning: false, tick: 0 }
             serviceRegistry.audioEngine = { mixer: null }
             overlay.startRafLoop()
-            overlay.startRafLoop()
+            expect(() => overlay.startRafLoop()).not.toThrow()
             overlay.stopRafLoop()
         })
 
@@ -136,7 +138,7 @@ describe('PlaybackOverlaySection', () => {
             serviceRegistry.transport = { isRunning: false, tick: 0 }
             serviceRegistry.audioEngine = { mixer: null }
             overlay.startRafLoop()
-            runOneFrame(overlay)
+            expect(() => runOneFrame(overlay)).not.toThrow()
             overlay.stopRafLoop()
         })
     })
@@ -315,27 +317,19 @@ describe('PlaybackOverlaySection', () => {
             overlay.stopRafLoop()
         })
 
-        it('hides waveform canvas when layout has zero width', () => {
+        it('hides waveform canvas when transport is not running', () => {
             const canvas = document.createElement('canvas')
             canvas.className = 'pp-waveform-overlay'
             canvas.style.display = 'block'
             editor.container.appendChild(canvas)
 
-            editor.beatRectsCache = [{ left: 0, width: 0, absLeft: 0, absRight: 0 }]
-            editor.layoutCache = {
-                containerLeft: 0,
-                containerRight: 0,
-                tracksLeft: 0,
-                tracksHeight: 0,
-            }
-
-            const mixer = { strips: {} }
-            serviceRegistry.audioEngine = { mixer, getAnalyserData: vi.fn() }
-            serviceRegistry.transport = { isRunning: true, tick: 0 }
+            serviceRegistry.audioEngine = { mixer: { strips: {} }, getAnalyserData: vi.fn() }
+            serviceRegistry.transport = { isRunning: false, tick: 0 }
 
             overlay.startRafLoop()
             runOneFrame(overlay)
 
+            expect(canvas.style.display).toBe('none')
             overlay.stopRafLoop()
         })
     })

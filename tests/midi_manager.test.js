@@ -140,13 +140,19 @@ describe('MidiManager', () => {
     describe('sendMidiMessage', () => {
         it('does nothing when not ready', () => {
             const mgr = createManager()
+            const mockSend = vi.fn()
+            mgr.outputs = [{ id: 'out1', send: mockSend }]
             mgr.sendMidiMessage([0x90, 60, 127])
+            expect(mockSend).not.toHaveBeenCalled()
         })
 
         it('does nothing when no output selected', () => {
             const mgr = createManager()
+            const mockSend = vi.fn()
             mgr.isReady = true
+            mgr.outputs = [{ id: 'out1', send: mockSend }]
             mgr.sendMidiMessage([0x90, 60, 127])
+            expect(mockSend).not.toHaveBeenCalled()
         })
 
         it('sends to selected output', () => {
@@ -232,15 +238,21 @@ describe('MidiManager', () => {
 
         it('does nothing when no output selected', () => {
             const mgr = createManager()
+            const mockSend = vi.fn()
+            mgr.isReady = true
+            mgr.outputs = [{ id: 'out1', send: mockSend }]
             mgr.sendAllNotesOff()
+            expect(mockSend).not.toHaveBeenCalled()
         })
     })
 
     describe('onMidiMessage', () => {
         it('ignores messages with no data', () => {
             const mgr = createManager()
+            const spy = vi.spyOn(mgr, 'dispatchEvent')
             mgr.onMidiMessage({ data: null })
             mgr.onMidiMessage({})
+            expect(spy).not.toHaveBeenCalled()
         })
 
         it('handles 1-byte realtime messages', async () => {
@@ -270,7 +282,10 @@ describe('MidiManager', () => {
             parseMidiNoteOn.mockReturnValue({ noteNumber: 60, channel: 0 })
 
             const mgr = createManager()
+            const activitySpy = vi.fn()
+            mgr.addEventListener('activity', activitySpy)
             mgr.onMidiMessage({ data: new Uint8Array([0x90, 60, 100, 0]) })
+            expect(activitySpy).not.toHaveBeenCalled()
         })
     })
 

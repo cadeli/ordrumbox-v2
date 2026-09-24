@@ -50,10 +50,7 @@ describe('drumkits.json validation', () => {
         drumkits.forEach((kit) => {
             const keys = kit.instruments.map((i) => i.key.toUpperCase())
             const unique = new Set(keys)
-            if (keys.length !== unique.size) {
-                const dupes = keys.filter((k, idx) => keys.indexOf(k) !== idx)
-                throw new Error(`Kit "${kit.name}" has duplicate keys: ${[...new Set(dupes)].join(', ')}`)
-            }
+            expect(keys.length, `kit "${kit.name}" has duplicate keys`).toBe(unique.size)
         })
     })
 
@@ -67,9 +64,7 @@ describe('drumkits.json validation', () => {
                 }
             })
         })
-        if (missing.length > 0) {
-            throw new Error(`Missing WAV files (${missing.length}):\n${missing.join('\n')}`)
-        }
+        expect(missing, `missing WAV files:\n${missing.join('\n')}`).toEqual([])
     })
 
     it('no WAV file is referenced by multiple kits with different paths', () => {
@@ -100,8 +95,6 @@ describe('drumkits.json validation', () => {
                 }
             })
         })
-        if (empty.length > 0) {
-            throw new Error(`Empty WAV files (${empty.length}):\n${empty.join('\n')}`)
-        }
+        expect(empty, `empty WAV files:\n${empty.join('\n')}`).toEqual([])
     })
 })

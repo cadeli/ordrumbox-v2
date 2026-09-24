@@ -54,7 +54,6 @@ describe('sendMidiNotes', () => {
 
     afterEach(() => {
         serviceRegistry.reset()
-        vi.useRealTimers()
     })
 
     it('no-op when midiManager is missing', () => {

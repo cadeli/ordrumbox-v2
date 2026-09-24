@@ -20,11 +20,11 @@ describe('safeDisconnect', () => {
     })
 
     it('ignores null node', () => {
-        safeDisconnect(null)
+        expect(() => safeDisconnect(null)).not.toThrow()
     })
 
     it('ignores node without disconnect', () => {
-        safeDisconnect({})
+        expect(() => safeDisconnect({})).not.toThrow()
     })
 
     it('ignores already-disconnected node', () => {

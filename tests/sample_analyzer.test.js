@@ -73,19 +73,21 @@ describe('sample_analyzer', () => {
         it('clears specific buffer from cache', () => {
             clearAnalysisCache()
             const buf = makeMockBuffer()
-            analyzeSample(buf)
+            const first = analyzeSample(buf)
             clearAnalysisCache(buf)
             const r = analyzeSample(buf)
             expect(r).toBeDefined()
+            expect(r).not.toBe(first)
         })
 
         it('clears entire cache when no arg', () => {
             clearAnalysisCache()
             const buf = makeMockBuffer()
-            analyzeSample(buf)
+            const first = analyzeSample(buf)
             clearAnalysisCache()
             const r1 = analyzeSample(buf)
             expect(r1).toBeDefined()
+            expect(r1).not.toBe(first)
         })
     })
 

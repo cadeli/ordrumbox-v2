@@ -9,6 +9,12 @@ export default defineConfig({
     test: {
         setupFiles: ['./tests/setup.js'],
         exclude: ['e2e/**', 'node_modules/**'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'html'],
+            include: ['src/**'],
+            exclude: ['src/**/*.test.js', 'src/**/worklets/**', 'src/audio/worklets/processors/**'],
+        },
     },
     build: {
         outDir: 'dist',

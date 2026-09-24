@@ -120,6 +120,11 @@ describe('Generators', () => {
         it('null variantName resolves to a valid config', () => {
             const track = makeTrack('KICK', [], { nbBeats: 4, stepsPerBeat: 4 })
             new KickGenerate().generateNewKick(track, null)
+            expect(track.notes.length).toBeGreaterThan(0)
+            for (const note of track.notes) {
+                expect(note.beat).toBeGreaterThanOrEqual(0)
+                expect(note.beatStep).toBeGreaterThanOrEqual(0)
+            }
         })
 
         it('unknown variantName falls back to basic', () => {
