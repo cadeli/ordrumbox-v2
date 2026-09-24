@@ -952,17 +952,18 @@ body {
     background: var(--accent);
 }
 #pattern-panel .pp-cell.selected {
-    outline: 2px solid var(--black);
+    outline: 2px solid var(--accent);
     outline-offset: -1px;
     z-index: var(--z-overlay);
 }
 #pattern-panel .pp-cell.selected.filled {
-    outline: 2px solid var(--black);
+    outline: 2px solid var(--bg);
     border-color: var(--black);
 }
 #pattern-panel .pp-note-slice.selected {
-    outline: 2px solid var(--black);
+    outline: 2px solid var(--bg);
     outline-offset: -1px;
+    background: var(--accent);
     z-index: var(--z-content);
 }
 #pattern-panel .pp-cell-multi {
