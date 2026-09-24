@@ -805,6 +805,7 @@ export default class PatternPanel extends BasePanel {
         if (!track) return
 
         const canPasteNotes = this.#clipboard?.type === 'step' && (this.#clipboard.notes?.length ?? 0) > 0
+        const notesAtStep = (track.notes ?? []).filter((n) => n.beat === beat && n.beatStep === beatStep)
         const header = `${track.name ?? 'Track'} @ ${beat + 1}.${beatStep + 1}`
         const actions = [
             { label: 'Copy notes', run: () => this.#menuCopyNotes(tracks, trackIdx, beat, beatStep) },
@@ -812,6 +813,11 @@ export default class PatternPanel extends BasePanel {
                 label: 'Paste notes',
                 disabled: !canPasteNotes,
                 run: () => this.#menuPasteNotes(pattern, tracks, trackIdx, beat, beatStep),
+            },
+            {
+                label: 'Delete note',
+                disabled: notesAtStep.length === 0,
+                run: () => this.#menuDeleteNote(pattern, tracks, trackIdx, beat, beatStep),
             },
             { label: 'Add rnd note', run: () => this.#menuAddRndNote(pattern, tracks, trackIdx, beat, beatStep) },
         ]
@@ -978,6 +984,34 @@ export default class PatternPanel extends BasePanel {
         this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
         const stepLabel = `beat ${beat + 1}.${beatStep + 1}`
         showToast(`Pasted ${this.#notesLabel(notes.length)} — ${track.name} @ ${stepLabel}`, 'success')
+    }
+
+    #menuDeleteNote(pattern, tracks, trackIdx, beat, beatStep) {
+        const track = tracks[trackIdx]
+        if (!track) return
+        const notes = (track.notes ?? []).filter((n) => n.beat === beat && n.beatStep === beatStep)
+        if (notes.length === 0) {
+            showToast('No note to delete', 'info')
+            return
+        }
+        for (const note of [...notes]) {
+            this.#serviceRegistry.cmd.deleteNote(track, note)
+        }
+        this.#cursorTrackIdx = trackIdx
+        this.#cursorBeat = beat
+        this.#cursorBeatStep = beatStep
+        if (this.#selNote && notes.includes(this.#selNote)) {
+            this.#selNote = null
+            this.#selTrackIdx = -1
+        }
+        this.#updateTrackCellsInPlace(trackIdx, track, pattern)
+        this.#applySelection()
+        this.#playbackEvents.batch(() => {
+            this.#playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+        })
+        const stepLabel = `beat ${beat + 1}.${beatStep + 1}`
+        showToast(`Deleted ${this.#notesLabel(notes.length)} — ${track.name} @ ${stepLabel}`, 'success')
     }
 
     #menuAddRndNote(pattern, tracks, trackIdx, beat, beatStep) {

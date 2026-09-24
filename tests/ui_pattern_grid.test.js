@@ -1098,7 +1098,7 @@ describe('Pattern Panel UI Grid', () => {
 
             expect(menu()).not.toBeNull()
             expect(document.querySelector('.pp-context-menu-header').textContent).toBe('KICK @ 1.1')
-            expect(menuLabels()).toEqual(['Copy notes', 'Paste notes', 'Add rnd note'])
+            expect(menuLabels()).toEqual(['Copy notes', 'Paste notes', 'Delete note', 'Add rnd note'])
         })
 
         it('right-click on empty cell opens notes menu with step label', () => {
@@ -1108,7 +1108,7 @@ describe('Pattern Panel UI Grid', () => {
             openMenu(cell)
 
             expect(document.querySelector('.pp-context-menu-header').textContent).toBe('KICK @ 1.4')
-            expect(menuLabels()).toEqual(['Copy notes', 'Paste notes', 'Add rnd note'])
+            expect(menuLabels()).toEqual(['Copy notes', 'Paste notes', 'Delete note', 'Add rnd note'])
         })
 
         it('Paste notes is disabled when clipboard has no notes', () => {
@@ -1150,6 +1150,31 @@ describe('Pattern Panel UI Grid', () => {
                 expect.arrayContaining([expect.objectContaining({ beatStep: 0 })]),
             )
             expect(showToast).toHaveBeenCalledWith('Pasted 1 note — KICK @ beat 1.4', 'success')
+        })
+
+        it('Delete note is disabled on empty cell and enabled when a note exists', () => {
+            setupCmd()
+
+            openMenu(document.querySelector('.pp-cell[data-pos="3"]'))
+            expect(menuItem('Delete note').disabled).toBe(true)
+
+            openMenu(document.querySelector('.pp-cell[data-pos="0"]'))
+            expect(menuItem('Delete note').disabled).toBe(false)
+        })
+
+        it('Delete note removes the note at the right-clicked step', () => {
+            setupCmd()
+            const track = appState.patterns[0].tracks['T1']
+            const before = track.notes.length
+
+            openMenu(document.querySelector('.pp-cell[data-pos="0"]'))
+            clickItem('Delete note')
+
+            expect(serviceRegistry.cmd.deleteNote).toHaveBeenCalled()
+            expect(track.notes.length).toBe(before - 1)
+            expect(track.notes.some((n) => n.beat === 0 && n.beatStep === 0)).toBe(false)
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Deleted'), 'success')
+            expect(document.querySelector('.pp-cell[data-pos="0"].filled')).toBeNull()
         })
 
         it('Add rnd note adds a note with a random pitch in range', () => {

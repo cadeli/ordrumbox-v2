@@ -8,6 +8,11 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import PianoRollPanel from '../src/ui/piano_roll_panel.js'
 import { EVENTS } from '../src/core/events.js'
+import { showToast } from '../src/core/notify.js'
+
+vi.mock('../src/core/notify.js', () => ({
+    showToast: vi.fn(),
+}))
 
 const TOTAL_KEYS = 97
 const NOTE_HEIGHT = 14
@@ -68,8 +73,11 @@ function makeCmd() {
                 }
             }
         }),
+        cleanTrack: vi.fn((track) => {
+            track.notes = []
+        }),
         setCurrentPage: vi.fn((page) => {
-            appState.currentPage = Math.max(0, Math.floor(page) || 0)
+            appState.currentPage = Math.max(0, Math.floor(page)) || 0
         }),
         resetPage: vi.fn(() => {
             appState.currentPage = 0
@@ -156,6 +164,39 @@ describe('PianoRollPanel', () => {
                 cancelable: true,
             }),
         )
+    }
+
+    function contextMenuGrid(cellX, cellY) {
+        const grid = getGrid()
+        const event = new MouseEvent('contextmenu', {
+            clientX: cellX,
+            clientY: cellY,
+            bubbles: true,
+            cancelable: true,
+        })
+        grid.dispatchEvent(event)
+        return event
+    }
+
+    function openMenuAtStepPitch(step, pitch) {
+        const track = getTrack()
+        const row = noteRow({ pitch }, track.pitch ?? 0)
+        return contextMenuGrid(stepToClickX(step, panel.cellWidth), rowToClickY(row))
+    }
+
+    function menuLabels() {
+        return [...document.querySelectorAll('.pp-context-menu-item')].map((el) => el.textContent)
+    }
+
+    function menuItem(label) {
+        return [...document.querySelectorAll('.pp-context-menu-item')].find((el) => el.textContent === label)
+    }
+
+    function clickItem(label) {
+        const item = menuItem(label)
+        expect(item).not.toBeNull()
+        expect(item.disabled).toBe(false)
+        item.click()
     }
 
     describe('grid width fills available space', () => {
@@ -734,6 +775,237 @@ describe('PianoRollPanel', () => {
         it('does not override CSS position with secondary-slot top', () => {
             expect(panel.container.classList.contains('workspace-panel')).toBe(true)
             expect(panel.container.style.top || '').not.toBe('518px')
+        })
+    })
+
+    describe('context menu (right-click)', () => {
+        beforeEach(() => {
+            vi.clearAllMocks()
+            serviceRegistry.seq = { simpleBeep: vi.fn() }
+        })
+
+        function menu() {
+            return document.querySelector('.pp-context-menu')
+        }
+
+        function menuHeader() {
+            return document.querySelector('.pp-context-menu-header')?.textContent
+        }
+
+        it('opens menu with note actions on right-click of grid', () => {
+            const event = openMenuAtStepPitch(0, 0)
+            expect(event.defaultPrevented).toBe(true)
+            expect(menu()).not.toBeNull()
+            expect(menuHeader()).toBe('KICK @ 1.1')
+            expect(menuLabels()).toEqual(['Add note', 'Delete note', 'Add minor chord', 'Add major chord'])
+        })
+
+        it('disables Add note when a note exists and Delete note when empty', () => {
+            openMenuAtStepPitch(0, 0)
+            expect(menuItem('Add note').disabled).toBe(true)
+            expect(menuItem('Delete note').disabled).toBe(false)
+
+            openMenuAtStepPitch(7 * 4, 0)
+            expect(menuItem('Add note').disabled).toBe(false)
+            expect(menuItem('Delete note').disabled).toBe(true)
+        })
+
+        it('opens keyboard menu with Clear all / Add sequence on keys right-click', () => {
+            const key = panel.container.querySelector('#pp-piano-keys .pp-pr-key[data-midi="60"]')
+            const event = new MouseEvent('contextmenu', {
+                bubbles: true,
+                cancelable: true,
+                clientX: 10,
+                clientY: 20,
+            })
+            key.dispatchEvent(event)
+
+            expect(event.defaultPrevented).toBe(true)
+            expect(menu()).not.toBeNull()
+            expect(menuLabels()).toEqual(['Clear all', 'Add sequence'])
+            expect(menuHeader()).toContain('C4')
+        })
+
+        it('does not open menu outside the grid or keys', () => {
+            const header = panel.container.querySelector('.ne-header')
+            const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 1, clientY: 1 })
+            header.dispatchEvent(event)
+            expect(menu()).toBeNull()
+        })
+
+        it('Clear all removes every note on the track', () => {
+            const track = getTrack()
+            expect(track.notes.length).toBeGreaterThan(0)
+
+            const key = panel.container.querySelector('#pp-piano-keys .pp-pr-key')
+            key.dispatchEvent(
+                new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }),
+            )
+            clickItem('Clear all')
+
+            expect(track.notes).toHaveLength(0)
+            expect(serviceRegistry.cmd.cleanTrack).toHaveBeenCalledWith(track)
+            expect(panel.selNote).toBeNull()
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Cleared notes'), 'success')
+            expect(menu()).toBeNull()
+        })
+
+        it('Add sequence places one chord per measure from the composition library', () => {
+            const track = getTrack()
+            track.notes = [{ beat: 1, beatStep: 0, pitch: 99, velocity: 1 }]
+            const pattern = appState.patterns[0]
+            const expectedMeasures = Math.ceil(pattern.nbBeats / 4)
+
+            const key = panel.container.querySelector('#pp-piano-keys .pp-pr-key[data-midi="60"]')
+            key.dispatchEvent(
+                new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }),
+            )
+            clickItem('Add sequence')
+
+            expect(serviceRegistry.cmd.cleanTrack).toHaveBeenCalledWith(track)
+            const byBeat = new Map()
+            for (const n of track.notes) {
+                expect(n.beatStep).toBe(0)
+                byBeat.set(n.beat, (byBeat.get(n.beat) ?? 0) + 1)
+            }
+            expect([...byBeat.keys()].sort((a, b) => a - b)).toEqual(
+                Array.from({ length: expectedMeasures }, (_, i) => i * 4),
+            )
+            for (const count of byBeat.values()) {
+                expect(count).toBeGreaterThanOrEqual(3)
+            }
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Replaced with sequence'), 'success')
+        })
+
+        it('Add sequence erases the previous sequence notes', () => {
+            const track = getTrack()
+            track.notes = [{ beat: 2, beatStep: 1, pitch: 42, velocity: 0.5 }]
+            const key = panel.container.querySelector('#pp-piano-keys .pp-pr-key[data-midi="60"]')
+            key.dispatchEvent(
+                new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }),
+            )
+            clickItem('Add sequence')
+
+            expect(track.notes.some((n) => n.pitch === 42)).toBe(false)
+            expect(track.notes.every((n) => n.beatStep === 0)).toBe(true)
+            expect(track.notes.every((n) => n.beat % 4 === 0)).toBe(true)
+        })
+
+        it('Add sequence uses the clicked key as tonic (relative pitch 0 for C4)', () => {
+            const track = getTrack()
+            track.notes = []
+            const key = panel.container.querySelector('#pp-piano-keys .pp-pr-key[data-midi="60"]')
+            key.dispatchEvent(
+                new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }),
+            )
+            clickItem('Add sequence')
+
+            const firstMeasurePitches = track.notes
+                .filter((n) => n.beat === 0)
+                .map((n) => n.pitch)
+                .sort((a, b) => a - b)
+            expect(firstMeasurePitches).toEqual([0, 4, 7])
+        })
+
+        it('Add sequence cycles through the library on successive calls', () => {
+            const track = getTrack()
+            track.notes = []
+            const key = panel.container.querySelector('#pp-piano-keys .pp-pr-key[data-midi="60"]')
+
+            key.dispatchEvent(
+                new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }),
+            )
+            expect(menuHeader()).toContain('I-V-vi-IV')
+            clickItem('Add sequence')
+
+            key.dispatchEvent(
+                new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }),
+            )
+            expect(menuHeader()).toContain('I-vi-IV-V')
+            clickItem('Add sequence')
+
+            expect(track.notes.every((n) => n.beat % 4 === 0)).toBe(true)
+        })
+
+        it('hides menu on Escape', () => {
+            openMenuAtStepPitch(0, 0)
+            expect(menu()).not.toBeNull()
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+            expect(menu()).toBeNull()
+        })
+
+        it('Add note inserts a note and selects it', () => {
+            const track = getTrack()
+            const initialCount = track.notes.length
+            openMenuAtStepPitch(7 * 4, 5)
+            clickItem('Add note')
+
+            expect(track.notes.length).toBe(initialCount + 1)
+            const added = track.notes[track.notes.length - 1]
+            expect(added.beat).toBe(7)
+            expect(added.beatStep).toBe(0)
+            expect(added.pitch).toBe(5)
+            expect(panel.selNote).toBe(added)
+            expect(serviceRegistry.cmd.addNote).toHaveBeenCalled()
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Added note (pitch 5)'), 'success')
+            expect(menu()).toBeNull()
+        })
+
+        it('Delete note removes the clicked note', () => {
+            const track = getTrack()
+            const note = track.notes[0]
+            const step = note.beat * track.stepsPerBeat + note.beatStep
+            openMenuAtStepPitch(step, note.pitch ?? 0)
+            clickItem('Delete note')
+
+            expect(track.notes).not.toContain(note)
+            expect(serviceRegistry.cmd.deleteNote).toHaveBeenCalledWith(track, note)
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Deleted note'), 'success')
+        })
+
+        it('Add minor chord inserts root + minor third + fifth', () => {
+            const track = getTrack()
+            const initialCount = track.notes.length
+            openMenuAtStepPitch(7 * 4, 0)
+            clickItem('Add minor chord')
+
+            const pitches = track.notes.slice(initialCount).map((n) => n.pitch)
+            expect(pitches).toEqual([0, 3, 7])
+            expect(track.notes.slice(initialCount).every((n) => n.beat === 7 && n.beatStep === 0)).toBe(true)
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Added minor chord'), 'success')
+        })
+
+        it('Add major chord inserts root + major third + fifth', () => {
+            const track = getTrack()
+            const initialCount = track.notes.length
+            openMenuAtStepPitch(7 * 4, 4)
+            clickItem('Add major chord')
+
+            const pitches = track.notes.slice(initialCount).map((n) => n.pitch)
+            expect(pitches).toEqual([4, 8, 11])
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Added major chord'), 'success')
+        })
+
+        it('chord skips pitches that already exist on the step', () => {
+            const track = getTrack()
+            const before = track.notes.filter((n) => n.beat === 2 && n.beatStep === 0).map((n) => n.pitch)
+            expect(before).toContain(0)
+            expect(before).toContain(7)
+
+            openMenuAtStepPitch(2 * 4, 0)
+            clickItem('Add minor chord')
+
+            const after = track.notes.filter((n) => n.beat === 2 && n.beatStep === 0).map((n) => n.pitch)
+            expect(after).toContain(3)
+            expect(after.filter((p) => p === 0)).toHaveLength(before.filter((p) => p === 0).length)
+            expect(after.filter((p) => p === 7)).toHaveLength(before.filter((p) => p === 7).length)
+        })
+
+        it('hides context menu when panel is hidden', () => {
+            openMenuAtStepPitch(0, 0)
+            expect(menu()).not.toBeNull()
+            panel.hide()
+            expect(menu()).toBeNull()
         })
     })
 })
