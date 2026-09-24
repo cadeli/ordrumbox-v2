@@ -10,9 +10,14 @@ import { EVENTS } from '../src/core/events.js'
 import { showToast } from '../src/core/notify.js'
 import { getAutoGenerateService, getAutoAssignService } from '../src/state/service_loader.js'
 import { logger } from '../src/core/logger.js'
+import { downloadBlob } from '../src/core/download.js'
 
 vi.mock('../src/core/notify.js', () => ({
     showToast: vi.fn(),
+}))
+
+vi.mock('../src/core/download.js', () => ({
+    downloadBlob: vi.fn(),
 }))
 
 vi.mock('../src/state/service_loader.js', () => ({
@@ -23,8 +28,8 @@ vi.mock('../src/state/service_loader.js', () => ({
     getHistoryService: vi.fn(),
 }))
 
-function fireKeydown(code, key = '') {
-    const event = new KeyboardEvent('keydown', { code, key, bubbles: true, cancelable: true })
+function fireKeydown(code, key = '', opts = {}) {
+    const event = new KeyboardEvent('keydown', { code, key, bubbles: true, cancelable: true, ...opts })
     document.dispatchEvent(event)
     return event
 }
@@ -66,6 +71,12 @@ describe('Keyboard shortcuts', () => {
             toggleShowVus: vi.fn(() => {
                 appState.showVus = !appState.showVus
             }),
+            addPattern: vi.fn((name) => {
+                const pattern = { name: name ?? `NewPat_${appState.patterns.length}`, tracks: [], bpm: 120, nbBeats: 4 }
+                appState.patterns.push(pattern)
+                return pattern
+            }),
+            resetPage: vi.fn(),
         }
         soundRegistry.drumkitList = [{ name: '8bits' }, { name: 'real' }]
     })
@@ -216,7 +227,7 @@ describe('Keyboard shortcuts', () => {
         expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
     })
 
-    // ── KeyB / KeyS / KeyJ / KeyK / KeyD ─────────────────────────
+    // ── KeyB / KeyJ / KeyK / KeyD ─────────────────────────────────
 
     it('KeyB triggers auto-generate pattern', async () => {
         const mockGen = { generatePattern: vi.fn() }
@@ -229,12 +240,13 @@ describe('Keyboard shortcuts', () => {
         expect(mockGen.generatePattern).toHaveBeenCalled()
     })
 
-    it('KeyS logs patterns and generated sounds', async () => {
+    it('plain KeyS does nothing (shortcut removed)', () => {
         const infoSpy = vi.spyOn(logger, 'info')
 
         fireKeydown('KeyS')
 
-        expect(infoSpy).toHaveBeenCalledTimes(2)
+        expect(infoSpy).not.toHaveBeenCalled()
+        expect(downloadBlob).not.toHaveBeenCalled()
         infoSpy.mockRestore()
     })
 
@@ -352,6 +364,83 @@ describe('Keyboard shortcuts', () => {
         expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(6)
         fireKeydown('KeyI')
         expect(serviceRegistry.seq.simpleBeep).toHaveBeenCalledWith(7)
+    })
+
+    // ── Ctrl+S / Ctrl+N / Ctrl+D global pattern shortcuts ─────────
+
+    it('Ctrl+S exports the current pattern as JSON', async () => {
+        fireKeydown('KeyS', 's', { ctrlKey: true })
+        await flushAsyncShortcut()
+
+        expect(downloadBlob).toHaveBeenCalledTimes(1)
+        const [blob, filename] = downloadBlob.mock.calls[0]
+        expect(filename).toBe('ordrumbox-P1.json')
+        expect(blob.type).toBe('application/json')
+        const text = await blob.text()
+        const data = JSON.parse(text)
+        expect(data.name).toBe('P1')
+    })
+
+    it('Ctrl+S preventDefault', () => {
+        const event = fireKeydown('KeyS', 's', { ctrlKey: true })
+        expect(event.defaultPrevented).toBe(true)
+    })
+
+    it('Ctrl+S shows info toast when no pattern is selected', () => {
+        appState.patterns = []
+        appState.selectedPatternNum = 0
+
+        fireKeydown('KeyS', 's', { ctrlKey: true })
+
+        expect(showToast).toHaveBeenCalledWith('No pattern selected', 'info')
+        expect(downloadBlob).not.toHaveBeenCalled()
+    })
+
+    it('Cmd+S on mac metaKey also exports', async () => {
+        fireKeydown('KeyS', 's', { metaKey: true })
+        await flushAsyncShortcut()
+        expect(downloadBlob).toHaveBeenCalledTimes(1)
+    })
+
+    it('Ctrl+N adds a new pattern', async () => {
+        fireKeydown('KeyN', 'n', { ctrlKey: true })
+        await flushAsyncShortcut()
+
+        expect(serviceRegistry.cmd.addPattern).toHaveBeenCalled()
+        expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalledWith(1)
+        expect(serviceRegistry.cmd.resetPage).toHaveBeenCalled()
+        expect(appState.patterns).toHaveLength(2)
+        expect(showToast).toHaveBeenCalledWith('Pattern added', 'success')
+    })
+
+    it('Ctrl+N preventDefault', () => {
+        const event = fireKeydown('KeyN', 'n', { ctrlKey: true })
+        expect(event.defaultPrevented).toBe(true)
+    })
+
+    it('Ctrl+D duplicates the current pattern', async () => {
+        appState.patterns[0].tracks.push({ name: 'HIHAT', mute: false })
+
+        fireKeydown('KeyD', 'd', { ctrlKey: true })
+        await flushAsyncShortcut()
+
+        expect(serviceRegistry.cmd.addPattern).toHaveBeenCalledWith('P1 copy')
+        expect(appState.patterns).toHaveLength(2)
+        expect(appState.patterns[1].name).toBe('P1 copy')
+        expect(appState.patterns[1].tracks).toHaveLength(3)
+        expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalledWith(1)
+        expect(showToast).toHaveBeenCalledWith('Pattern duplicated', 'success')
+    })
+
+    it('Ctrl+D preventDefault', () => {
+        const event = fireKeydown('KeyD', 'd', { ctrlKey: true })
+        expect(event.defaultPrevented).toBe(true)
+    })
+
+    it('plain KeyD still exports track sound (not duplicate)', () => {
+        fireKeydown('KeyD')
+        expect(serviceRegistry.cmd.addPattern).not.toHaveBeenCalled()
+        expect(showToast).toHaveBeenCalledWith('Current track does not use a generated sound', 'info')
     })
 
     // ── INPUT / TEXTAREA guards ───────────────────────────────────

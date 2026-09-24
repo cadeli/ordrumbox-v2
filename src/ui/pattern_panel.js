@@ -52,6 +52,10 @@ export default class PatternPanel extends BasePanel {
     #tooltip
     #resizeObserver
     #layoutCache
+    #clipboard
+    #rangeAnchor
+    #contextMenuEl
+    #contextMenuDismiss
 
     /**
      * @param {object} [deps]  Optional dependency overrides (DI).
@@ -76,6 +80,10 @@ export default class PatternPanel extends BasePanel {
         this.#trackDataCache = new Map()
         this.#cachedPage = -1
         this.#cachedVersion = -1
+        this.#clipboard = null
+        this.#rangeAnchor = null
+        this.#contextMenuEl = null
+        this.#contextMenuDismiss = null
 
         this.#header = new HeaderSection(this)
         this.#grid = new GridSection(this)
@@ -106,6 +114,7 @@ export default class PatternPanel extends BasePanel {
         )
         this.container.addEventListener('input', (e) => this.#onInput(e))
         this.container.addEventListener('keydown', (e) => this.#onKeyDown(e))
+        this.container.addEventListener('contextmenu', (e) => this.#onContextMenu(e))
         this.container.addEventListener('mouseover', (e) => this.#onMouseOver(e))
         this.container.addEventListener('mouseout', (e) => this.#onMouseOut(e))
         this.#resizeObserver = new ResizeObserver(() => this.#updateBarCache())
@@ -181,6 +190,7 @@ export default class PatternPanel extends BasePanel {
             }
         })
         this.#playbackEvents.on(EVENTS.SELECTED_PATTERN_CHANGE, () => {
+            this.#rangeAnchor = null
             const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
             const nbBeats = pattern?.nbBeats ?? 4
             const maxPage = Math.floor((nbBeats - 1) / BEATS_PER_PAGE)
@@ -298,11 +308,39 @@ export default class PatternPanel extends BasePanel {
         const tracks = Utils.getTracksArray(pattern)
         if (tracks.length === 0) return
 
+        const target = e.target
+        const isEditable =
+            target &&
+            (target.tagName === 'TEXTAREA' ||
+                target.isContentEditable ||
+                (target.tagName === 'INPUT' && /^(text|search|password|email|url|tel)$/i.test(target.type ?? 'text')))
+        if (isEditable) return
+
+        const isMod = e.ctrlKey || e.metaKey
+        const keyC = e.key === 'c' || e.key === 'C' || e.code === 'KeyC'
+        const keyV = e.key === 'v' || e.key === 'V' || e.code === 'KeyV'
+
+        if (isMod && keyC) {
+            e.preventDefault()
+            if (e.shiftKey) this.#copyTrack(tracks)
+            else if (this.#cursorTrackIdx !== -1) this.#copyStep(tracks)
+            else this.#copyTrack(tracks)
+            return
+        }
+        if (isMod && keyV) {
+            e.preventDefault()
+            if (e.shiftKey) this.#pasteTrack(pattern, tracks)
+            else this.#pasteClipboard(pattern, tracks)
+            return
+        }
+        if (isMod) return
+
         if (e.key === 'Escape') {
             e.preventDefault()
             this.#cursorTrackIdx = -1
             this.#selNote = null
             this.#selTrackIdx = -1
+            this.#rangeAnchor = null
             this.#applySelection()
             return
         }
@@ -311,6 +349,12 @@ export default class PatternPanel extends BasePanel {
             this.#cursorTrackIdx = 0
             this.#cursorBeat = 0
             this.#cursorBeatStep = 0
+        }
+
+        const isArrow = e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown'
+        if (isArrow) {
+            if (e.shiftKey) this.#ensureRangeAnchor()
+            else this.#rangeAnchor = null
         }
 
         const stepsPerBeat = tracks[this.#cursorTrackIdx]?.stepsPerBeat ?? 4
@@ -358,7 +402,8 @@ export default class PatternPanel extends BasePanel {
             case 'Delete':
             case 'Backspace':
                 e.preventDefault()
-                this.#handleNoteDelete(tracks)
+                if (this.#rangeAnchor) this.#handleRangeDelete(tracks, pattern)
+                else this.#handleNoteDelete(tracks)
                 return
             default:
                 return
@@ -417,6 +462,7 @@ export default class PatternPanel extends BasePanel {
     #selectTrack(trackIdx) {
         const track = this.#resolveTrack(trackIdx)
         if (!track) return
+        this.#rangeAnchor = null
         this.#cursorTrackIdx = trackIdx
 
         if (this.#selTrackIdx === trackIdx && !this.#selNote) {
@@ -528,7 +574,340 @@ export default class PatternPanel extends BasePanel {
         this.#clearSelection()
     }
 
+    #ensureRangeAnchor() {
+        if (this.#rangeAnchor) return
+        this.#rangeAnchor = {
+            trackIdx: this.#cursorTrackIdx,
+            beat: this.#cursorBeat,
+            beatStep: this.#cursorBeatStep,
+        }
+    }
+
+    #fracPos(track, beat, beatStep) {
+        const spb = track?.stepsPerBeat ?? 4
+        return beat + beatStep / spb
+    }
+
+    #getRangeInfo(tracks) {
+        if (!this.#rangeAnchor || this.#cursorTrackIdx === -1) return null
+        const a = this.#rangeAnchor
+        const tA = tracks[a.trackIdx]
+        const tC = tracks[this.#cursorTrackIdx]
+        if (!tA || !tC) return null
+        const fracA = this.#fracPos(tA, a.beat, a.beatStep)
+        const fracC = this.#fracPos(tC, this.#cursorBeat, this.#cursorBeatStep)
+        if (fracA === fracC && a.trackIdx === this.#cursorTrackIdx) return null
+        return {
+            trackMin: Math.min(a.trackIdx, this.#cursorTrackIdx),
+            trackMax: Math.max(a.trackIdx, this.#cursorTrackIdx),
+            fracMin: Math.min(fracA, fracC),
+            fracMax: Math.max(fracA, fracC),
+        }
+    }
+
+    #cellInInfoRange(trackIdx, beat, beatStep, track, info) {
+        if (trackIdx < info.trackMin || trackIdx > info.trackMax) return false
+        const frac = this.#fracPos(track, beat, beatStep)
+        const eps = 1e-9
+        return frac >= info.fracMin - eps && frac <= info.fracMax + eps
+    }
+
+    #handleRangeDelete(tracks, pattern) {
+        const info = this.#getRangeInfo(tracks)
+        this.#rangeAnchor = null
+        if (!info) {
+            this.#handleNoteDelete(tracks)
+            return
+        }
+        for (let t = info.trackMin; t <= info.trackMax; t++) {
+            const track = tracks[t]
+            if (!track) continue
+            const notes = [...(track.notes ?? [])]
+            for (const note of notes) {
+                if (this.#cellInInfoRange(t, note.beat, note.beatStep, track, info)) {
+                    this.#serviceRegistry.cmd.deleteNote(track, note)
+                }
+            }
+            this.#updateTrackCellsInPlace(t, track, pattern)
+        }
+        this.#selNote = null
+        this.#selTrackIdx = this.#cursorTrackIdx
+        this.#applySelection()
+    }
+
+    #applyRangeClasses(tracks) {
+        const info = this.#getRangeInfo(tracks)
+        if (!info) return
+        for (const [key, cell] of this.#cellMap) {
+            const parts = key.split(':')
+            const tIdx = Number(parts[0])
+            const beat = Number(parts[1])
+            const step = Number(parts[2])
+            const track = tracks[tIdx]
+            if (!track) continue
+            if (this.#cellInInfoRange(tIdx, beat, step, track, info)) cell.classList.add('pp-range')
+        }
+    }
+
+    #copyStep(tracks) {
+        const track = tracks[this.#cursorTrackIdx]
+        if (!track) return
+        const notes = (track.notes ?? [])
+            .filter((n) => n.beat === this.#cursorBeat && n.beatStep === this.#cursorBeatStep)
+            .map((n) => ({ ...n }))
+        this.#clipboard = { type: 'step', notes }
+        showToast(
+            notes.length > 0
+                ? `Copied ${this.#notesLabel(notes.length)} — ${track.name} @ ${this.#stepLabel()}`
+                : `Copied empty step — ${track.name} @ ${this.#stepLabel()}`,
+            'success',
+        )
+    }
+
+    #copyTrack(tracks) {
+        const idx =
+            this.#selTrackIdx !== -1
+                ? this.#selTrackIdx
+                : this.#cursorTrackIdx !== -1
+                  ? this.#cursorTrackIdx
+                  : (this.#appState.selectedTrackNum ?? -1)
+        const track = tracks[idx]
+        if (!track) return
+        const noteCount = (track.notes ?? []).length
+        this.#clipboard = { type: 'track', track: structuredClone(track) }
+        showToast(`Copied track "${track.name}" (${this.#notesLabel(noteCount)})`, 'success')
+    }
+
+    #pasteClipboard(pattern, tracks) {
+        if (!this.#clipboard) {
+            showToast('Clipboard is empty', 'info')
+            return
+        }
+        if (this.#clipboard.type === 'track') {
+            this.#pasteTrack(pattern, tracks)
+            return
+        }
+        if (this.#cursorTrackIdx === -1) {
+            this.#cursorTrackIdx = 0
+            this.#cursorBeat = 0
+            this.#cursorBeatStep = 0
+        }
+        const track = tracks[this.#cursorTrackIdx]
+        if (!track) return
+        const notes = this.#clipboard.notes ?? []
+        this.#serviceRegistry.cmd.pasteStepNotes(track, this.#cursorBeat, this.#cursorBeatStep, notes)
+        this.#updateTrackCellsInPlace(this.#cursorTrackIdx, track, pattern)
+        this.#applySelection()
+        this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+        showToast(
+            notes.length > 0
+                ? `Pasted ${this.#notesLabel(notes.length)} — ${track.name} @ ${this.#stepLabel()}`
+                : `Pasted empty step — ${track.name} @ ${this.#stepLabel()}`,
+            'success',
+        )
+    }
+
+    #pasteTrack(pattern, tracks) {
+        if (!this.#clipboard || this.#clipboard.type !== 'track') return
+        const insertAfter =
+            this.#cursorTrackIdx !== -1
+                ? this.#cursorTrackIdx
+                : this.#selTrackIdx !== -1
+                  ? this.#selTrackIdx
+                  : tracks.length - 1
+        const clone = this.#serviceRegistry.cmd.pasteTrack(pattern, insertAfter + 1, this.#clipboard.track)
+        if (!clone) return
+        this.#emitStructureChange()
+        const noteCount = (clone.notes ?? []).length
+        showToast(`Pasted track "${clone.name}" (${this.#notesLabel(noteCount)})`, 'success')
+    }
+
+    #notesLabel(count) {
+        return `${count} note${count === 1 ? '' : 's'}`
+    }
+
+    #stepLabel() {
+        return `beat ${this.#cursorBeat + 1}.${this.#cursorBeatStep + 1}`
+    }
+
+    #onContextMenu(e) {
+        const trackEl = e.target.closest('.pp-track:not(.pp-master-track)')
+        if (!trackEl) {
+            this.#hideContextMenu()
+            return
+        }
+        const trackNameEl = trackEl.querySelector('.pp-track-name[data-track]')
+        const trackIdx = parseInt(trackNameEl?.dataset.track, 10)
+        if (isNaN(trackIdx)) return
+
+        e.preventDefault()
+        this.#showContextMenu(trackIdx, e.clientX, e.clientY)
+    }
+
+    #showContextMenu(trackIdx, x, y) {
+        this.#hideContextMenu()
+        const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
+        if (!pattern) return
+        const tracks = Utils.getTracksArray(pattern)
+        const track = tracks[trackIdx]
+        if (!track) return
+
+        const menu = document.createElement('div')
+        menu.className = 'pp-context-menu'
+        menu.setAttribute('role', 'menu')
+        menu.style.left = `${x}px`
+        menu.style.top = `${y}px`
+
+        const header = document.createElement('div')
+        header.className = 'pp-context-menu-header'
+        header.textContent = track.name ?? 'Track'
+        menu.appendChild(header)
+
+        const sep = document.createElement('div')
+        sep.className = 'pp-context-menu-sep'
+        menu.appendChild(sep)
+
+        const canPasteTrack = this.#clipboard?.type === 'track'
+        const actions = [
+            { label: 'Copy track', run: () => this.#menuCopyTrack(tracks, trackIdx) },
+            {
+                label: 'Paste tracks',
+                disabled: !canPasteTrack,
+                run: () => this.#menuPasteTrack(pattern, tracks, trackIdx),
+            },
+            { label: 'Duplicate track', run: () => this.#menuDuplicateTrack(pattern, tracks, trackIdx) },
+            { label: 'Delete track', run: () => this.#menuDeleteTrack(pattern, tracks, trackIdx) },
+            { label: 'Randomize', run: () => this.#menuRandomizeTrack(track, pattern) },
+            { label: 'Clear notes', run: () => this.#menuClearTrackNotes(track, pattern, trackIdx) },
+        ]
+
+        for (const item of actions) {
+            const btn = document.createElement('button')
+            btn.type = 'button'
+            btn.className = 'pp-context-menu-item'
+            btn.setAttribute('role', 'menuitem')
+            btn.textContent = item.label
+            if (item.disabled) {
+                btn.disabled = true
+                btn.setAttribute('aria-disabled', 'true')
+            } else {
+                btn.addEventListener('click', () => {
+                    this.#hideContextMenu()
+                    item.run()
+                })
+            }
+            menu.appendChild(btn)
+        }
+
+        document.body.appendChild(menu)
+        this.#contextMenuEl = menu
+        this.#clampContextMenu()
+        this.#bindContextMenuDismiss()
+    }
+
+    #clampContextMenu() {
+        const menu = this.#contextMenuEl
+        if (!menu) return
+        const rect = menu.getBoundingClientRect()
+        const maxLeft = Math.max(0, window.innerWidth - rect.width - 4)
+        const maxTop = Math.max(0, window.innerHeight - rect.height - 4)
+        const left = Math.min(parseFloat(menu.style.left) || 0, maxLeft)
+        const top = Math.min(parseFloat(menu.style.top) || 0, maxTop)
+        menu.style.left = `${left}px`
+        menu.style.top = `${top}px`
+    }
+
+    #bindContextMenuDismiss() {
+        const dismiss = (e) => {
+            if (this.#contextMenuEl && !this.#contextMenuEl.contains(e.target)) this.#hideContextMenu()
+        }
+        const onKey = (e) => {
+            if (e.key === 'Escape') this.#hideContextMenu()
+        }
+        document.addEventListener('click', dismiss, true)
+        document.addEventListener('contextmenu', dismiss, true)
+        document.addEventListener('keydown', onKey, true)
+        this.#contextMenuDismiss = () => {
+            document.removeEventListener('click', dismiss, true)
+            document.removeEventListener('contextmenu', dismiss, true)
+            document.removeEventListener('keydown', onKey, true)
+        }
+    }
+
+    #hideContextMenu() {
+        if (this.#contextMenuDismiss) {
+            this.#contextMenuDismiss()
+            this.#contextMenuDismiss = null
+        }
+        if (this.#contextMenuEl) {
+            this.#contextMenuEl.remove()
+            this.#contextMenuEl = null
+        }
+    }
+
+    #menuCopyTrack(tracks, trackIdx) {
+        this.#selTrackIdx = trackIdx
+        this.#cursorTrackIdx = trackIdx
+        this.#copyTrack(tracks)
+    }
+
+    #menuPasteTrack(pattern, tracks, trackIdx) {
+        if (!this.#clipboard || this.#clipboard.type !== 'track') {
+            showToast('Clipboard does not contain a track', 'info')
+            return
+        }
+        this.#cursorTrackIdx = trackIdx
+        this.#pasteTrack(pattern, tracks)
+    }
+
+    #menuDuplicateTrack(pattern, tracks, trackIdx) {
+        const source = tracks[trackIdx]
+        if (!source) return
+        const clone = this.#serviceRegistry.cmd.pasteTrack(pattern, trackIdx + 1, source)
+        if (!clone) return
+        this.#emitStructureChange()
+        showToast(`Duplicated track as "${clone.name}"`, 'success')
+    }
+
+    #menuDeleteTrack(pattern, tracks, trackIdx) {
+        if (tracks.length <= 1) {
+            showToast('Cannot delete the last track', 'warning')
+            return
+        }
+        this.#serviceRegistry.cmd.removeTrack(pattern, trackIdx)
+        this.#selTrackIdx = -1
+        this.#rangeAnchor = null
+        if (this.#cursorTrackIdx === trackIdx) this.#cursorTrackIdx = -1
+        else if (this.#cursorTrackIdx > trackIdx) this.#cursorTrackIdx--
+        this.#emitStructureChange()
+        showToast('Track deleted', 'success')
+    }
+
+    #menuRandomizeTrack(track, pattern) {
+        this.#serviceRegistry.cmd.randomizeTrack(track, pattern)
+        this.#serviceRegistry.audioEngine?.invalidateCache()
+        this.#trackDataDirty = true
+        this.#playbackEvents.batch(() => {
+            this.#playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE)
+        })
+        this.requestSync()
+        showToast(`Randomized "${track.name}"`, 'success')
+    }
+
+    #menuClearTrackNotes(track, pattern, trackIdx) {
+        this.#serviceRegistry.cmd.cleanTrack(track)
+        this.#updateTrackCellsInPlace(trackIdx, track, pattern)
+        this.#playbackEvents.batch(() => {
+            this.#playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE)
+        })
+        showToast(`Cleared notes on "${track.name}"`, 'success')
+    }
+
     #onClick(e) {
+        this.#rangeAnchor = null
+
         const actionBtn = e.target.closest('.pp-action-btn')
         if (actionBtn) {
             this.#onAction(actionBtn.dataset.ppAction)
@@ -658,10 +1037,11 @@ export default class PatternPanel extends BasePanel {
     #clearSelection() {
         this.#selNote = null
         this.#selTrackIdx = -1
+        this.#rangeAnchor = null
         const selected = this.container.querySelectorAll(
-            '.pp-cell.selected, .pp-track-name.selected, .pp-track.pp-selected, .pp-note-slice.selected',
+            '.pp-cell.selected, .pp-track-name.selected, .pp-track.pp-selected, .pp-note-slice.selected, .pp-cell.pp-range',
         )
-        selected.forEach((el) => el.classList.remove('selected', 'pp-selected'))
+        selected.forEach((el) => el.classList.remove('selected', 'pp-selected', 'pp-range'))
         this.#playbackEvents.batch(() => {
             this.#playbackEvents.emit(EVENTS.NOTE_SELECT, null)
             this.#playbackEvents.emit(EVENTS.TRACK_SELECT, null)
@@ -757,9 +1137,13 @@ export default class PatternPanel extends BasePanel {
 
     #applySelection() {
         const selected = this.container.querySelectorAll(
-            '.pp-cell.selected, .pp-track-name.selected, .pp-cell.cursor, .pp-note-slice.selected, .pp-track.pp-selected',
+            '.pp-cell.selected, .pp-track-name.selected, .pp-cell.cursor, .pp-note-slice.selected, .pp-track.pp-selected, .pp-cell.pp-range',
         )
-        selected.forEach((el) => el.classList.remove('selected', 'cursor', 'pp-selected'))
+        selected.forEach((el) => el.classList.remove('selected', 'cursor', 'pp-selected', 'pp-range'))
+
+        const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
+        const tracks = pattern ? Utils.getTracksArray(pattern) : []
+        if (this.#rangeAnchor && tracks.length > 0) this.#applyRangeClasses(tracks)
 
         const currentTrackIdx = this.#selTrackIdx !== -1 ? this.#selTrackIdx : (this.#appState.selectedTrackNum ?? -1)
 
@@ -1047,6 +1431,12 @@ export default class PatternPanel extends BasePanel {
     }
     get cursorTrackIdx() {
         return this.#cursorTrackIdx
+    }
+    get clipboard() {
+        return this.#clipboard
+    }
+    get rangeAnchor() {
+        return this.#rangeAnchor
     }
     get appState() {
         return this.#appState

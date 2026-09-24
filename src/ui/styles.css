@@ -751,8 +751,64 @@ body {
     width: 100%;
 }
 #pattern-panel .pp-delete-track:hover {
-    color: var(--color-danger);
+    background: rgba(255, 80, 80, 0.15);
     border-color: var(--color-danger);
+}
+.pp-context-menu {
+    position: fixed;
+    z-index: var(--z-toast);
+    min-width: 170px;
+    padding: 4px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.pp-context-menu-header {
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: var(--fs-base);
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 240px;
+    opacity: 0.85;
+}
+.pp-context-menu-sep {
+    height: 1px;
+    background: var(--line);
+    margin: 2px 0;
+}
+.pp-context-menu-item {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    text-align: left;
+    font: inherit;
+    font-size: var(--fs-base);
+    color: var(--text);
+    cursor: pointer;
+}
+.pp-context-menu-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+.pp-context-menu-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+.pp-context-menu-item:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.pp-context-menu-item:disabled:hover {
+    background: none;
 }
 #pattern-panel .pp-track.pp-muted .pp-cell {
     opacity: 0.25;
@@ -965,6 +1021,18 @@ body {
     outline-offset: -1px;
     background: var(--accent);
     z-index: var(--z-content);
+}
+#pattern-panel .pp-cell.pp-range {
+    background: color-mix(in srgb, var(--accent) 22%, var(--surface-2));
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border-subtle));
+    z-index: var(--z-content);
+}
+#pattern-panel .pp-cell.pp-range.filled {
+    background: color-mix(in srgb, var(--accent) 28%, var(--black));
+}
+#pattern-panel .pp-cell.pp-range.cursor {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
 }
 #pattern-panel .pp-cell-multi {
     display: flex;

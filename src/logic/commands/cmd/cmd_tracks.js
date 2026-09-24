@@ -57,6 +57,9 @@ export function createTrackMethods(cmd) {
         },
 
         removeTrack(pattern, trackIdx) {
+            if (!Array.isArray(pattern.tracks)) {
+                pattern.tracks = Utils.getTracksArray(pattern)
+            }
             const tracks = pattern.tracks
             if (trackIdx < 0 || trackIdx >= tracks.length) return
             const removed = tracks[trackIdx]
@@ -71,6 +74,37 @@ export function createTrackMethods(cmd) {
                 },
                 { desc: `Remove track ${removed.name}` },
             )
+        },
+
+        pasteTrack(pattern, insertIdx, sourceTrack) {
+            if (!pattern || !sourceTrack) return null
+            if (!Array.isArray(pattern.tracks)) {
+                pattern.tracks = Utils.getTracksArray(pattern)
+            }
+            const tracks = pattern.tracks
+            const existingNames = new Set(tracks.map((t) => t?.name))
+            let name = `${sourceTrack.name ?? 'TRACK'} copy`
+            let n = 2
+            while (existingNames.has(name)) {
+                name = `${sourceTrack.name ?? 'TRACK'} copy ${n++}`
+            }
+
+            const clone = structuredClone(sourceTrack)
+            clone.name = name
+            clone.notes = (sourceTrack.notes ?? []).map((note) => ({ ...note }))
+
+            const idx = Math.max(0, Math.min(insertIdx, tracks.length))
+            tracks.splice(idx, 0, clone)
+            cmd.persist()
+            cmd.record(
+                () => {
+                    const i = tracks.indexOf(clone)
+                    if (i >= 0) tracks.splice(i, 1)
+                    cmd.persist()
+                },
+                { desc: `Paste track ${name}` },
+            )
+            return clone
         },
 
         createTrack(nbBeats, name, stepsPerBeat = 4) {

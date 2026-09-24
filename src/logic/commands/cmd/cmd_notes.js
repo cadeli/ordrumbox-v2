@@ -67,5 +67,37 @@ export function createNoteMethods(cmd) {
             )
             return note
         },
+
+        pasteStepNotes(track, beat, beatStep, sourceNotes) {
+            if (!track || !Array.isArray(sourceNotes)) return
+            const spb = track.stepsPerBeat ?? 4
+            const before = (track.notes ?? [])
+                .filter((n) => n.beat === beat && n.beatStep === beatStep)
+                .map((n) => ({ ...n }))
+
+            track.notes = (track.notes ?? []).filter((n) => !(n.beat === beat && n.beatStep === beatStep))
+
+            const added = sourceNotes.map((src) => ({
+                ...Utils.NOTE_DEFAULTS,
+                ...src,
+                beat,
+                beatStep,
+                steppc: Math.round((beatStep * 100) / spb),
+            }))
+            track.notes.push(...added)
+
+            cmd.incrementPatternVersionByTrack(track)
+            cmd.persist()
+            const patName = _findPatternForTrack(track)?.name ?? ''
+            cmd.record(
+                () => {
+                    track.notes = (track.notes ?? []).filter((n) => !(n.beat === beat && n.beatStep === beatStep))
+                    track.notes.push(...before.map((n) => ({ ...n })))
+                    cmd.incrementPatternVersionByTrack(track)
+                    cmd.persist()
+                },
+                { desc: `Paste step on ${track.name} in "${patName}"` },
+            )
+        },
     }
 }

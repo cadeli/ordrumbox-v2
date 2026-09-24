@@ -5,11 +5,17 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import PatternPanel from '../src/ui/pattern_panel.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import { showToast } from '../src/core/notify.js'
+
+vi.mock('../src/core/notify.js', () => ({
+    showToast: vi.fn(),
+}))
 
 describe('Pattern Panel UI Grid', () => {
     let panel
 
     beforeEach(() => {
+        vi.clearAllMocks()
         // Mock appState with a test pattern
         appState.reset()
         const testPattern = {
@@ -400,6 +406,682 @@ describe('Pattern Panel UI Grid', () => {
             expect(panel.cursorBeatStep).toBe(1)
             const cell = document.querySelector('.pp-cell[data-pos="1"]')
             expect(cell.classList.contains('selected') || cell.classList.contains('cursor')).toBe(true)
+        })
+    })
+
+    describe('keyboard Ctrl+C / Ctrl+V', () => {
+        function pressKey(key) {
+            panel.container.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+        }
+
+        function pressMod(key, { shift = false } = {}) {
+            const code = key === 'c' || key === 'C' ? 'KeyC' : key === 'v' || key === 'V' ? 'KeyV' : key
+            panel.container.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key,
+                    code,
+                    ctrlKey: true,
+                    shiftKey: shift,
+                    bubbles: true,
+                    cancelable: true,
+                }),
+            )
+        }
+
+        function initCursor() {
+            // ArrowUp with cursor at -1 initializes to 0:0 without moving track
+            pressKey('ArrowUp')
+        }
+
+        function setupCmd() {
+            serviceRegistry.cmd = {
+                ...serviceRegistry.cmd,
+                setCurrentPage: vi.fn(),
+                addNote: vi.fn((track, beat, step) => {
+                    const note = { beat, beatStep: step, pitch: 0, velocity: 0.8 }
+                    track.notes.push(note)
+                    return note
+                }),
+                deleteNote: vi.fn((track, note) => {
+                    const idx = track.notes.indexOf(note)
+                    if (idx >= 0) track.notes.splice(idx, 1)
+                }),
+                pasteStepNotes: vi.fn((track, beat, beatStep, sourceNotes) => {
+                    track.notes = (track.notes ?? []).filter((n) => !(n.beat === beat && n.beatStep === beatStep))
+                    for (const src of sourceNotes) {
+                        track.notes.push({ ...src, beat, beatStep })
+                    }
+                }),
+                pasteTrack: vi.fn((pattern, insertIdx, sourceTrack) => {
+                    if (!Array.isArray(pattern.tracks)) {
+                        pattern.tracks = Object.values(pattern.tracks)
+                    }
+                    const clone = structuredClone(sourceTrack)
+                    clone.name = `${sourceTrack.name} copy`
+                    pattern.tracks.splice(insertIdx, 0, clone)
+                    return clone
+                }),
+            }
+            serviceRegistry.seq = { simpleBeep: vi.fn() }
+        }
+
+        it('Ctrl+C copies notes at the cursor step', () => {
+            setupCmd()
+            initCursor()
+
+            pressMod('c')
+
+            expect(panel.clipboard).not.toBeNull()
+            expect(panel.clipboard.type).toBe('step')
+            expect(panel.clipboard.notes).toHaveLength(1)
+            expect(panel.clipboard.notes[0]).toEqual(expect.objectContaining({ beat: 0, beatStep: 0 }))
+            expect(showToast).toHaveBeenCalledWith('Copied 1 note — KICK @ beat 1.1', 'success')
+        })
+
+        it('Ctrl+C on empty step copies empty step clipboard', () => {
+            setupCmd()
+            initCursor()
+            pressKey('ArrowRight')
+            pressKey('ArrowRight')
+            pressKey('ArrowRight')
+
+            pressMod('c')
+
+            expect(panel.clipboard.type).toBe('step')
+            expect(panel.clipboard.notes).toHaveLength(0)
+            expect(showToast).toHaveBeenCalledWith('Copied empty step — KICK @ beat 1.4', 'success')
+        })
+
+        it('Ctrl+V pastes step notes at cursor', () => {
+            setupCmd()
+            const track = appState.patterns[0].tracks['T1']
+
+            initCursor()
+            pressMod('c')
+            pressKey('ArrowRight')
+            pressKey('ArrowRight')
+            pressKey('ArrowRight')
+            pressMod('V')
+
+            expect(serviceRegistry.cmd.pasteStepNotes).toHaveBeenCalledWith(
+                track,
+                0,
+                3,
+                expect.arrayContaining([expect.objectContaining({ beat: 0, beatStep: 0 })]),
+            )
+            expect(track.notes.some((n) => n.beat === 0 && n.beatStep === 3)).toBe(true)
+            expect(showToast).toHaveBeenCalledWith('Pasted 1 note — KICK @ beat 1.4', 'success')
+        })
+
+        it('Ctrl+V replaces existing notes on target step', () => {
+            setupCmd()
+            const track = appState.patterns[0].tracks['T1']
+            const beforeCount = track.notes.length
+
+            initCursor()
+            pressMod('c')
+            pressKey('ArrowRight')
+            pressMod('V')
+
+            expect(track.notes.filter((n) => n.beat === 0 && n.beatStep === 1)).toHaveLength(1)
+            expect(track.notes.length).toBe(beforeCount)
+        })
+
+        it('Ctrl+Shift+C copies the track when cursor is inactive', () => {
+            setupCmd()
+            pressKey('Escape')
+            expect(panel.cursorTrackIdx).toBe(-1)
+
+            pressMod('c', { shift: true })
+
+            expect(panel.clipboard.type).toBe('track')
+            expect(panel.clipboard.track.name).toBe('KICK')
+            expect(panel.clipboard.track.notes).toHaveLength(2)
+            expect(showToast).toHaveBeenCalledWith('Copied track "KICK" (2 notes)', 'success')
+        })
+
+        it('Ctrl+Shift+C copies track even with active cursor', () => {
+            setupCmd()
+            initCursor()
+
+            pressMod('c', { shift: true })
+
+            expect(panel.clipboard.type).toBe('track')
+            expect(panel.clipboard.track.name).toBe('KICK')
+        })
+
+        it('Ctrl+V pastes track clipboard as a new track', () => {
+            setupCmd()
+            const pattern = appState.patterns[0]
+            pressMod('c', { shift: true })
+
+            pressMod('V', { shift: true })
+
+            expect(serviceRegistry.cmd.pasteTrack).toHaveBeenCalled()
+            const tracksAfter = Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)
+            expect(tracksAfter).toHaveLength(2)
+            expect(tracksAfter[1].name).toContain('KICK')
+            expect(tracksAfter[1].notes).toHaveLength(2)
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Pasted track "KICK copy"'), 'success')
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('(2 notes)'), 'success')
+        })
+
+        it('Ctrl+C after Escape with no shift copies track (cursor inactive)', () => {
+            setupCmd()
+            initCursor()
+            pressKey('Escape')
+            expect(panel.cursorTrackIdx).toBe(-1)
+
+            pressMod('c')
+
+            expect(panel.clipboard.type).toBe('track')
+        })
+
+        it('Ctrl+V with empty clipboard is a no-op', () => {
+            setupCmd()
+            const track = appState.patterns[0].tracks['T1']
+            const count = track.notes.length
+
+            pressMod('V')
+
+            expect(serviceRegistry.cmd.pasteStepNotes).not.toHaveBeenCalled()
+            expect(track.notes).toHaveLength(count)
+            expect(showToast).toHaveBeenCalledWith('Clipboard is empty', 'info')
+        })
+
+        it('Ctrl+C preventDefault', () => {
+            setupCmd()
+            const event = new KeyboardEvent('keydown', {
+                key: 'c',
+                code: 'KeyC',
+                ctrlKey: true,
+                bubbles: true,
+                cancelable: true,
+            })
+            const spy = vi.spyOn(event, 'preventDefault')
+            panel.container.dispatchEvent(event)
+            expect(spy).toHaveBeenCalled()
+        })
+    })
+
+    describe('keyboard Shift+Arrow multi-step selection', () => {
+        function pressKey(key, opts = {}) {
+            panel.container.dispatchEvent(
+                new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...opts }),
+            )
+        }
+
+        function pressArrow(key, { shift = false } = {}) {
+            const event = new KeyboardEvent('keydown', {
+                key,
+                shiftKey: shift,
+                bubbles: true,
+                cancelable: true,
+            })
+            const spy = vi.spyOn(event, 'preventDefault')
+            panel.container.dispatchEvent(event)
+            return spy
+        }
+
+        function setupCmd() {
+            serviceRegistry.cmd = {
+                ...serviceRegistry.cmd,
+                setCurrentPage: vi.fn(),
+                addNote: vi.fn((track, beat, step) => {
+                    const note = { beat, beatStep: step, pitch: 0, velocity: 0.8 }
+                    track.notes.push(note)
+                    return note
+                }),
+                deleteNote: vi.fn((track, note) => {
+                    const idx = track.notes.indexOf(note)
+                    if (idx >= 0) track.notes.splice(idx, 1)
+                }),
+            }
+            serviceRegistry.seq = { simpleBeep: vi.fn() }
+        }
+
+        function initCursor() {
+            pressKey('ArrowUp')
+        }
+
+        function rangeCells() {
+            return document.querySelectorAll('.pp-cell.pp-range')
+        }
+
+        it('first Shift+Arrow sets the range anchor at the cursor', () => {
+            setupCmd()
+            initCursor()
+            expect(panel.rangeAnchor).toBeNull()
+
+            pressArrow('ArrowRight', { shift: true })
+
+            expect(panel.rangeAnchor).toEqual({ trackIdx: 0, beat: 0, beatStep: 0 })
+            expect(panel.cursorBeatStep).toBe(1)
+        })
+
+        it('Shift+ArrowRight extends the selection across steps', () => {
+            setupCmd()
+            initCursor()
+
+            pressArrow('ArrowRight', { shift: true })
+            pressArrow('ArrowRight', { shift: true })
+
+            expect(panel.cursorBeatStep).toBe(2)
+            expect(panel.rangeAnchor).toEqual({ trackIdx: 0, beat: 0, beatStep: 0 })
+            expect(rangeCells().length).toBe(3)
+            expect(document.querySelector('.pp-cell[data-pos="0"]').classList.contains('pp-range')).toBe(true)
+            expect(document.querySelector('.pp-cell[data-pos="1"]').classList.contains('pp-range')).toBe(true)
+            expect(document.querySelector('.pp-cell[data-pos="2"]').classList.contains('pp-range')).toBe(true)
+            expect(document.querySelector('.pp-cell[data-pos="3"]').classList.contains('pp-range')).toBe(false)
+        })
+
+        it('Shift+ArrowLeft extends backwards from the anchor', () => {
+            setupCmd()
+            initCursor()
+            pressArrow('ArrowRight', { shift: true })
+            pressArrow('ArrowRight', { shift: true })
+            pressArrow('ArrowRight', { shift: true })
+            expect(panel.cursorBeatStep).toBe(3)
+
+            pressArrow('ArrowLeft', { shift: true })
+
+            expect(panel.cursorBeatStep).toBe(2)
+            expect(panel.rangeAnchor).toEqual({ trackIdx: 0, beat: 0, beatStep: 0 })
+            expect(rangeCells().length).toBe(3)
+            expect(document.querySelector('.pp-cell[data-pos="0"]').classList.contains('pp-range')).toBe(true)
+            expect(document.querySelector('.pp-cell[data-pos="1"]').classList.contains('pp-range')).toBe(true)
+            expect(document.querySelector('.pp-cell[data-pos="2"]').classList.contains('pp-range')).toBe(true)
+        })
+
+        it('Shift+ArrowDown extends across tracks', () => {
+            setupCmd()
+            appState.patterns[0].tracks = {
+                T1: {
+                    name: 'KICK',
+                    nbBeats: 1,
+                    stepsPerBeat: 4,
+                    notes: [{ beat: 0, beatStep: 0, pitch: 0, velocity: 1 }],
+                },
+                T2: {
+                    name: 'SNARE',
+                    nbBeats: 1,
+                    stepsPerBeat: 4,
+                    notes: [],
+                },
+            }
+            panel.sync()
+            initCursor()
+
+            pressArrow('ArrowDown', { shift: true })
+
+            expect(panel.cursorTrackIdx).toBe(1)
+            expect(panel.rangeAnchor.trackIdx).toBe(0)
+            expect(rangeCells().length).toBe(2)
+            const cells = [...rangeCells()]
+            expect(cells.map((c) => c.dataset.track).sort()).toEqual(['0', '1'])
+        })
+
+        it('plain Arrow clears the range selection', () => {
+            setupCmd()
+            initCursor()
+            pressArrow('ArrowRight', { shift: true })
+            pressArrow('ArrowRight', { shift: true })
+            expect(rangeCells().length).toBe(3)
+
+            pressArrow('ArrowRight')
+
+            expect(panel.rangeAnchor).toBeNull()
+            expect(rangeCells().length).toBe(0)
+            expect(panel.cursorBeatStep).toBe(3)
+        })
+
+        it('Escape clears the range selection', () => {
+            setupCmd()
+            initCursor()
+            pressArrow('ArrowRight', { shift: true })
+            expect(panel.rangeAnchor).not.toBeNull()
+
+            pressKey('Escape')
+
+            expect(panel.rangeAnchor).toBeNull()
+            expect(rangeCells().length).toBe(0)
+            expect(panel.cursorTrackIdx).toBe(-1)
+        })
+
+        it('click clears the range selection', () => {
+            setupCmd()
+            initCursor()
+            pressArrow('ArrowRight', { shift: true })
+            expect(panel.rangeAnchor).not.toBeNull()
+
+            document.querySelector('.pp-cell[data-pos="0"]').click()
+
+            expect(panel.rangeAnchor).toBeNull()
+            expect(rangeCells().length).toBe(0)
+        })
+
+        it('Shift+Arrow preventDefault', () => {
+            setupCmd()
+            initCursor()
+            const spy = pressArrow('ArrowRight', { shift: true })
+            expect(spy).toHaveBeenCalled()
+        })
+
+        it('Delete removes every note inside the range', () => {
+            setupCmd()
+            const track = appState.patterns[0].tracks['T1']
+            track.notes.push({ beat: 0, beatStep: 2, pitch: 0, velocity: 0.9 })
+            expect(track.notes).toHaveLength(3)
+
+            initCursor()
+            pressArrow('ArrowRight', { shift: true })
+            pressArrow('ArrowRight', { shift: true })
+            pressKey('Delete')
+
+            expect(track.notes).toHaveLength(0)
+            expect(panel.rangeAnchor).toBeNull()
+            expect(document.querySelector('.pp-cell.filled')).toBeNull()
+        })
+
+        it('Delete on multi-track range only clears notes in selected tracks', () => {
+            setupCmd()
+            appState.patterns[0].tracks = {
+                T1: {
+                    name: 'KICK',
+                    nbBeats: 1,
+                    stepsPerBeat: 4,
+                    notes: [
+                        { beat: 0, beatStep: 0, pitch: 0, velocity: 1 },
+                        { beat: 0, beatStep: 3, pitch: 0, velocity: 1 },
+                    ],
+                },
+                T2: {
+                    name: 'SNARE',
+                    nbBeats: 1,
+                    stepsPerBeat: 4,
+                    notes: [{ beat: 0, beatStep: 0, pitch: 2, velocity: 1 }],
+                },
+            }
+            panel.sync()
+            initCursor()
+            pressArrow('ArrowDown', { shift: true })
+            pressKey('Delete')
+
+            expect(appState.patterns[0].tracks.T1.notes).toHaveLength(1)
+            expect(appState.patterns[0].tracks.T1.notes[0]).toEqual(expect.objectContaining({ beatStep: 3 }))
+            expect(appState.patterns[0].tracks.T2.notes).toHaveLength(0)
+        })
+
+        it('Delete outside range keeps notes beyond the selection', () => {
+            setupCmd()
+            const track = appState.patterns[0].tracks['T1']
+            track.notes.push({ beat: 0, beatStep: 3, pitch: 0, velocity: 0.9 })
+
+            initCursor()
+            pressArrow('ArrowRight', { shift: true })
+            pressKey('Delete')
+
+            expect(track.notes).toHaveLength(1)
+            expect(track.notes[0]).toEqual(expect.objectContaining({ beat: 0, beatStep: 3 }))
+        })
+    })
+
+    describe('track context menu (right-click)', () => {
+        function openMenu(trackEl = document.querySelector('.pp-track')) {
+            const event = new MouseEvent('contextmenu', {
+                bubbles: true,
+                cancelable: true,
+                clientX: 10,
+                clientY: 20,
+            })
+            trackEl.dispatchEvent(event)
+            return event
+        }
+
+        function menu() {
+            return document.querySelector('.pp-context-menu')
+        }
+
+        function menuLabels() {
+            return [...document.querySelectorAll('.pp-context-menu-item')].map((el) => el.textContent)
+        }
+
+        function menuItem(label) {
+            return [...document.querySelectorAll('.pp-context-menu-item')].find((el) => el.textContent === label)
+        }
+
+        function clickItem(label) {
+            const item = menuItem(label)
+            expect(item).not.toBeNull()
+            expect(item.disabled).toBe(false)
+            item.click()
+        }
+
+        function setupCmd() {
+            serviceRegistry.cmd = {
+                ...serviceRegistry.cmd,
+                setCurrentPage: vi.fn(),
+                removeTrack: vi.fn(),
+                cleanTrack: vi.fn((track) => {
+                    track.notes = []
+                }),
+                randomizeTrack: vi.fn(),
+                addNote: vi.fn((track, beat, step) => {
+                    const note = { beat, beatStep: step, pitch: 0, velocity: 0.8 }
+                    track.notes.push(note)
+                    return note
+                }),
+                deleteNote: vi.fn((track, note) => {
+                    const idx = track.notes.indexOf(note)
+                    if (idx >= 0) track.notes.splice(idx, 1)
+                }),
+                pasteTrack: vi.fn((pattern, insertIdx, sourceTrack) => {
+                    if (!Array.isArray(pattern.tracks)) {
+                        pattern.tracks = Object.values(pattern.tracks)
+                    }
+                    const clone = structuredClone(sourceTrack)
+                    clone.name = `${sourceTrack.name} copy`
+                    pattern.tracks.splice(insertIdx, 0, clone)
+                    return clone
+                }),
+            }
+            serviceRegistry.seq = { simpleBeep: vi.fn() }
+            serviceRegistry.audioEngine = { invalidateCache: vi.fn() }
+        }
+
+        it('right-click preventDefault and opens menu with track name header', () => {
+            setupCmd()
+            const track = document.querySelector('.pp-track:not(.pp-master-track)')
+
+            const event = openMenu(track)
+
+            expect(event.defaultPrevented).toBe(true)
+            expect(menu()).not.toBeNull()
+            expect(document.querySelector('.pp-context-menu-header').textContent).toBe('KICK')
+        })
+
+        it('lists Copy track, Paste tracks, Duplicate track, Delete track, Randomize, Clear notes', () => {
+            setupCmd()
+            openMenu()
+
+            expect(menuLabels()).toEqual([
+                'Copy track',
+                'Paste tracks',
+                'Duplicate track',
+                'Delete track',
+                'Randomize',
+                'Clear notes',
+            ])
+        })
+
+        it('right-click outside tracks closes the menu', () => {
+            setupCmd()
+            openMenu()
+            expect(menu()).not.toBeNull()
+
+            const header = document.querySelector('.pp-header')
+            header.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
+
+            expect(menu()).toBeNull()
+        })
+
+        it('Escape closes the menu', () => {
+            setupCmd()
+            openMenu()
+            expect(menu()).not.toBeNull()
+
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+
+            expect(menu()).toBeNull()
+        })
+
+        it('click outside closes the menu', () => {
+            setupCmd()
+            openMenu()
+
+            document.body.click()
+
+            expect(menu()).toBeNull()
+        })
+
+        it('menu is removed after choosing an item', () => {
+            setupCmd()
+            openMenu()
+            clickItem('Copy track')
+            expect(menu()).toBeNull()
+        })
+
+        it('Copy track puts the track on the clipboard with toast', () => {
+            setupCmd()
+            openMenu()
+
+            clickItem('Copy track')
+
+            expect(panel.clipboard).not.toBeNull()
+            expect(panel.clipboard.type).toBe('track')
+            expect(panel.clipboard.track.name).toBe('KICK')
+            expect(showToast).toHaveBeenCalledWith('Copied track "KICK" (2 notes)', 'success')
+        })
+
+        it('Paste tracks is disabled when clipboard has no track', () => {
+            setupCmd()
+            openMenu()
+
+            const paste = menuItem('Paste tracks')
+            expect(paste.disabled).toBe(true)
+            paste.click()
+            expect(serviceRegistry.cmd.pasteTrack).not.toHaveBeenCalled()
+        })
+
+        it('Paste tracks is disabled when clipboard holds a step', () => {
+            setupCmd()
+            panel.container.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true }),
+            )
+            panel.container.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key: 'c',
+                    code: 'KeyC',
+                    ctrlKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                }),
+            )
+            expect(panel.clipboard.type).toBe('step')
+
+            openMenu()
+
+            expect(menuItem('Paste tracks').disabled).toBe(true)
+        })
+
+        it('Paste tracks inserts the clipboard track after the context track', () => {
+            setupCmd()
+            const pattern = appState.patterns[0]
+            openMenu()
+            clickItem('Copy track')
+            vi.clearAllMocks()
+
+            openMenu()
+            expect(menuItem('Paste tracks').disabled).toBe(false)
+            clickItem('Paste tracks')
+
+            expect(serviceRegistry.cmd.pasteTrack).toHaveBeenCalled()
+            const tracksAfter = Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)
+            expect(tracksAfter).toHaveLength(2)
+            expect(tracksAfter[1].name).toContain('KICK')
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Pasted track "KICK copy"'), 'success')
+        })
+
+        it('Duplicate track inserts a clone without touching the clipboard', () => {
+            setupCmd()
+            const pattern = appState.patterns[0]
+
+            openMenu()
+            clickItem('Duplicate track')
+
+            expect(serviceRegistry.cmd.pasteTrack).toHaveBeenCalledWith(
+                pattern,
+                1,
+                expect.objectContaining({ name: 'KICK' }),
+            )
+            const tracksAfter = Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks)
+            expect(tracksAfter).toHaveLength(2)
+            expect(tracksAfter[1].name).toContain('KICK')
+            expect(panel.clipboard).toBeNull()
+            expect(showToast).toHaveBeenCalledWith(
+                expect.stringContaining('Duplicated track as "KICK copy"'),
+                'success',
+            )
+        })
+
+        it('Delete track removes the track and shows toast', () => {
+            setupCmd()
+            appState.patterns[0].tracks = {
+                T1: { name: 'KICK', nbBeats: 1, stepsPerBeat: 4, notes: [] },
+                T2: { name: 'SNARE', nbBeats: 1, stepsPerBeat: 4, notes: [] },
+            }
+            panel.sync()
+
+            openMenu(document.querySelectorAll('.pp-track:not(.pp-master-track)')[0])
+            clickItem('Delete track')
+
+            expect(serviceRegistry.cmd.removeTrack).toHaveBeenCalledWith(appState.patterns[0], 0)
+            expect(showToast).toHaveBeenCalledWith('Track deleted', 'success')
+        })
+
+        it('Delete track on last track shows warning and does not call removeTrack', () => {
+            setupCmd()
+            openMenu()
+            clickItem('Delete track')
+
+            expect(serviceRegistry.cmd.removeTrack).not.toHaveBeenCalled()
+            expect(showToast).toHaveBeenCalledWith('Cannot delete the last track', 'warning')
+        })
+
+        it('Randomize calls cmd.randomizeTrack for the context track', () => {
+            setupCmd()
+            const track = appState.patterns[0].tracks['T1']
+
+            openMenu()
+            clickItem('Randomize')
+
+            expect(serviceRegistry.cmd.randomizeTrack).toHaveBeenCalledWith(track, appState.patterns[0])
+            expect(showToast).toHaveBeenCalledWith('Randomized "KICK"', 'success')
+            expect(serviceRegistry.audioEngine.invalidateCache).toHaveBeenCalled()
+        })
+
+        it('Clear notes empties the track notes', () => {
+            setupCmd()
+            const track = appState.patterns[0].tracks['T1']
+            expect(track.notes).toHaveLength(2)
+
+            openMenu()
+            clickItem('Clear notes')
+
+            expect(serviceRegistry.cmd.cleanTrack).toHaveBeenCalledWith(track)
+            expect(track.notes).toHaveLength(0)
+            expect(showToast).toHaveBeenCalledWith('Cleared notes on "KICK"', 'success')
+            expect(document.querySelector('.pp-cell.filled')).toBeNull()
         })
     })
 })

@@ -8,6 +8,8 @@ import ResourcesLoader from './loader/resources_loader.js'
 import { logger } from './core/logger.js'
 import { showToast } from './core/notify.js'
 import { EVENTS } from './core/events.js'
+import { PatternExporter } from './patterns/exporter.js'
+import { downloadBlob } from './core/download.js'
 
 const PHYSICAL_TRACK_MUTE_KEYS = [
     'Digit1',
@@ -57,9 +59,45 @@ function toggleStartStop() {
     serviceRegistry.seq.toggleStartStop()
 }
 
-function logPatterns() {
-    logger.info('Main', JSON.stringify(appState.patterns))
-    logger.info('Main', JSON.stringify(soundRegistry.generatedSounds))
+function emitPatternStructureChange() {
+    playbackEvents.batch(() => {
+        playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+        playbackEvents.emit(EVENTS.PATTERN_CHANGE)
+    })
+}
+
+function saveCurrentPattern() {
+    const pattern = getSelectedPattern()
+    if (!pattern) {
+        showToast('No pattern selected', 'info')
+        return
+    }
+    const data = PatternExporter.export(pattern)
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    downloadBlob(blob, `ordrumbox-${pattern.name ?? 'pattern'}.json`)
+}
+
+function addNewPattern() {
+    const cmd = serviceRegistry.cmd
+    if (!cmd?.addPattern) return
+    const newIdx = appState.patterns.length
+    cmd.addPattern()
+    cmd.setSelectedPatternNum(newIdx)
+    cmd.resetPage?.()
+    emitPatternStructureChange()
+    showToast('Pattern added', 'success')
+}
+
+async function duplicateCurrentPattern() {
+    const cmd = serviceRegistry.cmd
+    const pattern = getSelectedPattern()
+    if (!pattern || !cmd?.addPattern) return
+    const clone = cmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
+    Object.assign(clone, structuredClone(pattern))
+    clone.name = (pattern.name ?? 'Pattern') + ' copy'
+    await cmd.setSelectedPatternNum(appState.patterns.length - 1)
+    emitPatternStructureChange()
+    showToast('Pattern duplicated', 'success')
 }
 
 function selectRandomPattern() {
@@ -185,7 +223,6 @@ async function exportCurrentTrackSound() {
 
 const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyB: generatePattern,
-    KeyS: logPatterns,
     KeyF: selectRandomPattern,
     KeyG: selectRandomDrumkit,
     KeyH: convertToGeneratedSounds,
@@ -194,6 +231,15 @@ const PHYSICAL_KEYBOARD_SHORTCUTS = {
     KeyD: exportCurrentTrackSound,
     KeyV: toggleVus,
     Space: toggleStartStop,
+}
+
+function getModShortcut(event) {
+    if (!event.ctrlKey && !event.metaKey) return null
+    const key = (event.key || '').toLowerCase()
+    if (key === 's' || event.code === 'KeyS') return saveCurrentPattern
+    if (key === 'n' || event.code === 'KeyN') return addNewPattern
+    if (key === 'd' || event.code === 'KeyD') return duplicateCurrentPattern
+    return null
 }
 
 function getKeyboardShortcut(code, key) {
@@ -223,6 +269,13 @@ async function handleKeyboardShortcut(event) {
             target.isContentEditable ||
             (target.tagName === 'INPUT' && /^(text|search|password|email|url|tel)$/i.test(target.type ?? 'text')))
     ) {
+        return
+    }
+
+    const modShortcut = getModShortcut(event)
+    if (modShortcut) {
+        event.preventDefault()
+        await modShortcut()
         return
     }
 
