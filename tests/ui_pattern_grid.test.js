@@ -866,14 +866,20 @@ describe('Pattern Panel UI Grid', () => {
                     track.notes = []
                 }),
                 randomizeTrack: vi.fn(),
-                addNote: vi.fn((track, beat, step) => {
-                    const note = { beat, beatStep: step, pitch: 0, velocity: 0.8 }
+                addNote: vi.fn((track, beat, step, pitch = 0) => {
+                    const note = { beat, beatStep: step, pitch, velocity: 0.8 }
                     track.notes.push(note)
                     return note
                 }),
                 deleteNote: vi.fn((track, note) => {
                     const idx = track.notes.indexOf(note)
                     if (idx >= 0) track.notes.splice(idx, 1)
+                }),
+                pasteStepNotes: vi.fn((track, beat, beatStep, sourceNotes) => {
+                    track.notes = (track.notes ?? []).filter((n) => !(n.beat === beat && n.beatStep === beatStep))
+                    for (const src of sourceNotes) {
+                        track.notes.push({ ...src, beat, beatStep })
+                    }
                 }),
                 pasteTrack: vi.fn((pattern, insertIdx, sourceTrack) => {
                     if (!Array.isArray(pattern.tracks)) {
@@ -1082,6 +1088,87 @@ describe('Pattern Panel UI Grid', () => {
             expect(track.notes).toHaveLength(0)
             expect(showToast).toHaveBeenCalledWith('Cleared notes on "KICK"', 'success')
             expect(document.querySelector('.pp-cell.filled')).toBeNull()
+        })
+
+        it('right-click on a cell opens the notes menu, not the track menu', () => {
+            setupCmd()
+            const cell = document.querySelector('.pp-cell')
+
+            openMenu(cell)
+
+            expect(menu()).not.toBeNull()
+            expect(document.querySelector('.pp-context-menu-header').textContent).toBe('KICK @ 1.1')
+            expect(menuLabels()).toEqual(['Copy notes', 'Paste notes', 'Add rnd note'])
+        })
+
+        it('right-click on empty cell opens notes menu with step label', () => {
+            setupCmd()
+            const cell = document.querySelector('.pp-cell[data-pos="3"]')
+
+            openMenu(cell)
+
+            expect(document.querySelector('.pp-context-menu-header').textContent).toBe('KICK @ 1.4')
+            expect(menuLabels()).toEqual(['Copy notes', 'Paste notes', 'Add rnd note'])
+        })
+
+        it('Paste notes is disabled when clipboard has no notes', () => {
+            setupCmd()
+            openMenu(document.querySelector('.pp-cell'))
+
+            const paste = menuItem('Paste notes')
+            expect(paste.disabled).toBe(true)
+            paste.click()
+            expect(serviceRegistry.cmd.pasteStepNotes).not.toHaveBeenCalled()
+        })
+
+        it('Copy notes copies notes at the right-clicked step', () => {
+            setupCmd()
+            openMenu(document.querySelector('.pp-cell[data-pos="1"]'))
+
+            clickItem('Copy notes')
+
+            expect(panel.clipboard.type).toBe('step')
+            expect(panel.clipboard.notes).toHaveLength(1)
+            expect(panel.clipboard.notes[0]).toEqual(expect.objectContaining({ beat: 0, beatStep: 1 }))
+            expect(showToast).toHaveBeenCalledWith('Copied 1 note — KICK @ beat 1.2', 'success')
+        })
+
+        it('Paste notes is enabled after Copy notes and pastes at target step', () => {
+            setupCmd()
+            openMenu(document.querySelector('.pp-cell[data-pos="0"]'))
+            clickItem('Copy notes')
+            vi.clearAllMocks()
+
+            openMenu(document.querySelector('.pp-cell[data-pos="3"]'))
+            expect(menuItem('Paste notes').disabled).toBe(false)
+            clickItem('Paste notes')
+
+            expect(serviceRegistry.cmd.pasteStepNotes).toHaveBeenCalledWith(
+                appState.patterns[0].tracks['T1'],
+                0,
+                3,
+                expect.arrayContaining([expect.objectContaining({ beatStep: 0 })]),
+            )
+            expect(showToast).toHaveBeenCalledWith('Pasted 1 note — KICK @ beat 1.4', 'success')
+        })
+
+        it('Add rnd note adds a note with a random pitch in range', () => {
+            setupCmd()
+            const track = appState.patterns[0].tracks['T1']
+            track.pitch_range = 12
+
+            openMenu(document.querySelector('.pp-cell[data-pos="2"]'))
+            clickItem('Add rnd note')
+
+            expect(serviceRegistry.cmd.addNote).toHaveBeenCalledTimes(1)
+            const [t, beat, step, pitch] = serviceRegistry.cmd.addNote.mock.calls[0]
+            expect(t).toBe(track)
+            expect(beat).toBe(0)
+            expect(step).toBe(2)
+            expect(pitch).toBeGreaterThanOrEqual(-12)
+            expect(pitch).toBeLessThanOrEqual(12)
+            expect(track.notes.some((n) => n.beat === 0 && n.beatStep === 2)).toBe(true)
+            expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Added note (pitch'), 'success')
         })
     })
 })

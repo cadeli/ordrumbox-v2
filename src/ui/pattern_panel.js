@@ -740,18 +740,23 @@ export default class PatternPanel extends BasePanel {
         const trackIdx = parseInt(trackNameEl?.dataset.track, 10)
         if (isNaN(trackIdx)) return
 
+        const cellEl = e.target.closest('.pp-cell')
+        if (cellEl) {
+            const beat = parseInt(cellEl.dataset.beat, 10)
+            const beatStep = parseInt(cellEl.dataset.step, 10)
+            if (!isNaN(beat) && !isNaN(beatStep)) {
+                e.preventDefault()
+                this.#showCellContextMenu(trackIdx, beat, beatStep, e.clientX, e.clientY)
+                return
+            }
+        }
+
         e.preventDefault()
         this.#showContextMenu(trackIdx, e.clientX, e.clientY)
     }
 
-    #showContextMenu(trackIdx, x, y) {
+    #buildContextMenu(headerText, actions, x, y) {
         this.#hideContextMenu()
-        const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
-        if (!pattern) return
-        const tracks = Utils.getTracksArray(pattern)
-        const track = tracks[trackIdx]
-        if (!track) return
-
         const menu = document.createElement('div')
         menu.className = 'pp-context-menu'
         menu.setAttribute('role', 'menu')
@@ -760,26 +765,12 @@ export default class PatternPanel extends BasePanel {
 
         const header = document.createElement('div')
         header.className = 'pp-context-menu-header'
-        header.textContent = track.name ?? 'Track'
+        header.textContent = headerText
         menu.appendChild(header)
 
         const sep = document.createElement('div')
         sep.className = 'pp-context-menu-sep'
         menu.appendChild(sep)
-
-        const canPasteTrack = this.#clipboard?.type === 'track'
-        const actions = [
-            { label: 'Copy track', run: () => this.#menuCopyTrack(tracks, trackIdx) },
-            {
-                label: 'Paste tracks',
-                disabled: !canPasteTrack,
-                run: () => this.#menuPasteTrack(pattern, tracks, trackIdx),
-            },
-            { label: 'Duplicate track', run: () => this.#menuDuplicateTrack(pattern, tracks, trackIdx) },
-            { label: 'Delete track', run: () => this.#menuDeleteTrack(pattern, tracks, trackIdx) },
-            { label: 'Randomize', run: () => this.#menuRandomizeTrack(track, pattern) },
-            { label: 'Clear notes', run: () => this.#menuClearTrackNotes(track, pattern, trackIdx) },
-        ]
 
         for (const item of actions) {
             const btn = document.createElement('button')
@@ -803,6 +794,52 @@ export default class PatternPanel extends BasePanel {
         this.#contextMenuEl = menu
         this.#clampContextMenu()
         this.#bindContextMenuDismiss()
+    }
+
+    #showCellContextMenu(trackIdx, beat, beatStep, x, y) {
+        this.#hideContextMenu()
+        const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
+        if (!pattern) return
+        const tracks = Utils.getTracksArray(pattern)
+        const track = tracks[trackIdx]
+        if (!track) return
+
+        const canPasteNotes = this.#clipboard?.type === 'step' && (this.#clipboard.notes?.length ?? 0) > 0
+        const header = `${track.name ?? 'Track'} @ ${beat + 1}.${beatStep + 1}`
+        const actions = [
+            { label: 'Copy notes', run: () => this.#menuCopyNotes(tracks, trackIdx, beat, beatStep) },
+            {
+                label: 'Paste notes',
+                disabled: !canPasteNotes,
+                run: () => this.#menuPasteNotes(pattern, tracks, trackIdx, beat, beatStep),
+            },
+            { label: 'Add rnd note', run: () => this.#menuAddRndNote(pattern, tracks, trackIdx, beat, beatStep) },
+        ]
+        this.#buildContextMenu(header, actions, x, y)
+    }
+
+    #showContextMenu(trackIdx, x, y) {
+        this.#hideContextMenu()
+        const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
+        if (!pattern) return
+        const tracks = Utils.getTracksArray(pattern)
+        const track = tracks[trackIdx]
+        if (!track) return
+
+        const canPasteTrack = this.#clipboard?.type === 'track'
+        const actions = [
+            { label: 'Copy track', run: () => this.#menuCopyTrack(tracks, trackIdx) },
+            {
+                label: 'Paste tracks',
+                disabled: !canPasteTrack,
+                run: () => this.#menuPasteTrack(pattern, tracks, trackIdx),
+            },
+            { label: 'Duplicate track', run: () => this.#menuDuplicateTrack(pattern, tracks, trackIdx) },
+            { label: 'Delete track', run: () => this.#menuDeleteTrack(pattern, tracks, trackIdx) },
+            { label: 'Randomize', run: () => this.#menuRandomizeTrack(track, pattern) },
+            { label: 'Clear notes', run: () => this.#menuClearTrackNotes(track, pattern, trackIdx) },
+        ]
+        this.#buildContextMenu(track.name ?? 'Track', actions, x, y)
     }
 
     #clampContextMenu() {
@@ -903,6 +940,65 @@ export default class PatternPanel extends BasePanel {
             this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE)
         })
         showToast(`Cleared notes on "${track.name}"`, 'success')
+    }
+
+    #menuCopyNotes(tracks, trackIdx, beat, beatStep) {
+        const track = tracks[trackIdx]
+        if (!track) return
+        const notes = (track.notes ?? [])
+            .filter((n) => n.beat === beat && n.beatStep === beatStep)
+            .map((n) => ({ ...n }))
+        this.#clipboard = { type: 'step', notes }
+        this.#cursorTrackIdx = trackIdx
+        this.#cursorBeat = beat
+        this.#cursorBeatStep = beatStep
+        const stepLabel = `beat ${beat + 1}.${beatStep + 1}`
+        showToast(
+            notes.length > 0
+                ? `Copied ${this.#notesLabel(notes.length)} — ${track.name} @ ${stepLabel}`
+                : `Copied empty step — ${track.name} @ ${stepLabel}`,
+            'success',
+        )
+    }
+
+    #menuPasteNotes(pattern, tracks, trackIdx, beat, beatStep) {
+        if (!this.#clipboard || this.#clipboard.type !== 'step' || (this.#clipboard.notes?.length ?? 0) === 0) {
+            showToast('Clipboard has no notes', 'info')
+            return
+        }
+        const track = tracks[trackIdx]
+        if (!track) return
+        const notes = this.#clipboard.notes
+        this.#serviceRegistry.cmd.pasteStepNotes(track, beat, beatStep, notes)
+        this.#cursorTrackIdx = trackIdx
+        this.#cursorBeat = beat
+        this.#cursorBeatStep = beatStep
+        this.#updateTrackCellsInPlace(trackIdx, track, pattern)
+        this.#applySelection()
+        this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+        const stepLabel = `beat ${beat + 1}.${beatStep + 1}`
+        showToast(`Pasted ${this.#notesLabel(notes.length)} — ${track.name} @ ${stepLabel}`, 'success')
+    }
+
+    #menuAddRndNote(pattern, tracks, trackIdx, beat, beatStep) {
+        const track = tracks[trackIdx]
+        if (!track) return
+        const range = Math.max(1, track.pitch_range ?? 12)
+        const pitch = Math.floor(Math.random() * (range * 2 + 1)) - range
+        const note = this.#serviceRegistry.cmd.addNote(track, beat, beatStep, pitch)
+        this.#cursorTrackIdx = trackIdx
+        this.#cursorBeat = beat
+        this.#cursorBeatStep = beatStep
+        this.#selNote = note ?? null
+        this.#selTrackIdx = trackIdx
+        this.#updateTrackCellsInPlace(trackIdx, track, pattern)
+        this.#applySelection()
+        this.#playbackEvents.batch(() => {
+            this.#playbackEvents.emit(EVENTS.NOTE_CHANGE)
+            this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
+        })
+        this.#serviceRegistry.seq?.simpleBeep(trackIdx, note)
+        showToast(`Added note (pitch ${pitch}) — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`, 'success')
     }
 
     #onClick(e) {
