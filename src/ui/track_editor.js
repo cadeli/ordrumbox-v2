@@ -148,7 +148,9 @@ export default class TrackEditor extends BasePanel {
             if (!this._track) return
             const pattern = this._appState.patterns[this._appState.selectedPatternNum]
             if (!pattern?.tracks) return
-            const newIdx = pattern.tracks.findIndex((t) => t?.name === this._track.name)
+            const currentTrack = this._track
+            let newIdx = pattern.tracks.findIndex((t) => t === currentTrack)
+            if (newIdx === -1) newIdx = pattern.tracks.findIndex((t) => t?.name === currentTrack.name)
             if (newIdx === -1) {
                 this._track = null
                 this._trackIdx = -1
@@ -555,6 +557,8 @@ export default class TrackEditor extends BasePanel {
 
         this.container.addEventListener('change', (e) => {
             const target = e.target
+            // the nested note editor owns its own selects (arpScale, arpType…)
+            if (target.closest('#ne-container')) return
             if (target.classList.contains('te-load-input')) {
                 this._onSampleFileSelected(e)
                 return

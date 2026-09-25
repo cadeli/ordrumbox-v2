@@ -73,17 +73,22 @@ test.describe('E2E-A : Cold start → first sound', () => {
 
         await page.locator('button.tb-start').click()
         await page.waitForFunction(() => window.__e2e.serviceRegistry.transport?.isRunning === true, { timeout: 5_000 })
-        await page.waitForTimeout(500)
 
-        const result = await page.evaluate(() => {
-            const patterns = window.__e2e.appState.patterns
-            if (!patterns.length) return { trackCount: 0, assignedCount: 0 }
-            const tracks = patterns[0].tracks ?? []
-            const assigned = tracks.filter((t) => t.soundId && t.soundId !== 'NOT_DEFINED' && t.soundId !== 'NOT_FOUND')
-            return { trackCount: tracks.length, assignedCount: assigned.length }
-        })
+        // the auto-assign runs asynchronously after the first start
+        await expect
+            .poll(
+                () =>
+                    page.evaluate(() => {
+                        const tracks = window.__e2e.appState.patterns[0]?.tracks ?? []
+                        return tracks.filter(
+                            (t) => t.soundId && t.soundId !== 'NOT_DEFINED' && t.soundId !== 'NOT_FOUND',
+                        ).length
+                    }),
+                { timeout: 15_000 },
+            )
+            .toBeGreaterThan(0)
 
-        expect(result.trackCount).toBeGreaterThan(0)
-        expect(result.assignedCount).toBeGreaterThan(0)
+        const trackCount = await page.evaluate(() => (window.__e2e.appState.patterns[0]?.tracks ?? []).length)
+        expect(trackCount).toBeGreaterThan(0)
     })
 })

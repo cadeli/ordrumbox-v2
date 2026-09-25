@@ -15,6 +15,9 @@ const ROUND_2D = new Set([
 
 const round2 = (v) => (typeof v === 'number' ? Math.round(v * 100) / 100 : v)
 
+/** Runtime-only pattern fields (undo/audio cache counter), never part of a saved file. */
+const PATTERN_RUNTIME_KEYS = new Set(['_version'])
+
 export class PatternExporter {
     static isDefaultValue(value, defaultVal) {
         if (value === defaultVal) return true
@@ -81,6 +84,7 @@ export class PatternExporter {
     static cleanPattern(pattern) {
         const cleaned = {}
         for (const [key, val] of Object.entries(pattern)) {
+            if (PATTERN_RUNTIME_KEYS.has(key)) continue
             if (!(key in Utils.PATTERN_DEFAULTS) || !this.isDefaultValue(val, Utils.PATTERN_DEFAULTS[key])) {
                 if (key === 'tracks') {
                     cleaned[key] = val.map((t) => this.cleanTrack(t))

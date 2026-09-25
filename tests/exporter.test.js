@@ -90,6 +90,12 @@ describe('PatternExporter', () => {
             expect(cleaned).not.toHaveProperty('loopPointStep')
         })
 
+        it('strips the runtime _occupiedSet step cache', () => {
+            const track = { ...Utils.TRACK_DEFAULTS, _occupiedSet: new Set([0, 4]), notes: [] }
+            const cleaned = PatternExporter.cleanTrack(track)
+            expect(cleaned).not.toHaveProperty('_occupiedSet')
+        })
+
         it('keeps unknown keys not in TRACK_DEFAULTS', () => {
             const track = { ...Utils.TRACK_DEFAULTS, notes: [], myMeta: 'session1' }
             const cleaned = PatternExporter.cleanTrack(track)
@@ -126,6 +132,12 @@ describe('PatternExporter', () => {
             const cleaned = PatternExporter.cleanPattern(pattern)
             expect(cleaned.bpm).toBe(145)
             expect(cleaned.nbBeats).toBe(8)
+        })
+
+        it('strips the runtime _version counter', () => {
+            const pattern = { ...Utils.PATTERN_DEFAULTS, _version: 7, tracks: [] }
+            const cleaned = PatternExporter.cleanPattern(pattern)
+            expect(cleaned).not.toHaveProperty('_version')
         })
 
         it('cleans tracks inside the pattern', () => {

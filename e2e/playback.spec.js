@@ -43,10 +43,11 @@ test.describe('Playback and AudioContext', () => {
         await expect(playhead).toBeVisible({ timeout: 3_000 })
 
         const pos1 = await playhead.evaluate((el) => el.getBoundingClientRect().left)
-        await page.waitForTimeout(500)
-        const pos2 = await playhead.evaluate((el) => el.getBoundingClientRect().left)
-
-        expect(pos2).not.toBe(pos1)
+        await expect
+            .poll(() => playhead.evaluate((el, start) => el.getBoundingClientRect().left !== start, pos1), {
+                timeout: 10_000,
+            })
+            .toBe(true)
 
         await playBtn.click()
     })

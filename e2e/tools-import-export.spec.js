@@ -144,8 +144,8 @@ test.describe('Tools panel — Import / Export', () => {
         await patternTab.click()
 
         const rndBtn = page.locator('#tp-rnd')
+        // randomize() is synchronous (pattern_section.js), no wait needed
         await rndBtn.click()
-        await page.waitForTimeout(500)
 
         const noteCount = await page.evaluate(() => {
             const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
@@ -163,7 +163,6 @@ test.describe('Tools panel — Import / Export', () => {
 
         const rndBtn = page.locator('#tp-rnd')
         await rndBtn.click()
-        await page.waitForTimeout(300)
 
         const countBefore = await page.evaluate(() => {
             const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
@@ -171,8 +170,8 @@ test.describe('Tools panel — Import / Export', () => {
         })
 
         const compactBtn = page.locator('#tp-compact')
+        // compact() is synchronous (pattern_section.js), no wait needed
         await compactBtn.click()
-        await page.waitForTimeout(300)
 
         const countAfter = await page.evaluate(() => {
             const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []

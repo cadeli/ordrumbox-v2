@@ -5,6 +5,7 @@
 // Tests the complete application cycle, including APP_VERSION cache invalidation.
 
 import { test, expect } from '@playwright/test'
+import { waitForPatternsPersisted } from './helpers/ui_session.js'
 
 test.describe('E2E-B: Persistence between sessions', () => {
     test('state saved in IndexedDB is restored after reload', async ({ page }) => {
@@ -13,11 +14,7 @@ test.describe('E2E-B: Persistence between sessions', () => {
         await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
         await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 })
 
-        await page.evaluate(() => {
-            const ps = window.__e2e.serviceRegistry.patterns
-            if (ps?.persistPatterns) ps.persistPatterns()
-        })
-        await page.waitForTimeout(800)
+        await waitForPatternsPersisted(page)
 
         const snapshot = await page.evaluate(() => ({
             patternCount: window.__e2e.appState.patterns.length,
@@ -52,11 +49,7 @@ test.describe('E2E-B: Persistence between sessions', () => {
         await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
         await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 })
 
-        await page.evaluate(() => {
-            const ps = window.__e2e.serviceRegistry.patterns
-            if (ps?.persistPatterns) ps.persistPatterns()
-        })
-        await page.waitForTimeout(800)
+        await waitForPatternsPersisted(page)
 
         const corrupted = await page.evaluate(async () => {
             const bogusVersion = '1.0.0'

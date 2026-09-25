@@ -5,6 +5,28 @@
 
 import { test, expect } from '@playwright/test'
 
+// startAfterFirstPaint() ends with an unawaited setSelectedDrumkitNum()
+// (src/bootstrap/startup.js), so window.__e2e.ready does not mean the boot
+// tail is done: wait for the grid to render AND for the auto-assign to land
+// instead of trusting a fixed grace period.
+async function waitForBootSettle(page) {
+    await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 15_000 })
+    await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
+    await expect(page.locator('.pp-cell').first()).toBeVisible({ timeout: 15_000 })
+    await expect
+        .poll(
+            () =>
+                page.evaluate(() => {
+                    const tracks = window.__e2e.appState.patterns[0]?.tracks ?? []
+                    return tracks
+                        .filter((t) => t.useAutoAssignSound)
+                        .filter((t) => t.soundId && t.soundId !== 'NOT_DEFINED' && t.soundId !== 'NOT_FOUND').length
+                }),
+            { timeout: 15_000 },
+        )
+        .toBeGreaterThan(0)
+}
+
 test.describe('Waiting screen', () => {
     test('button is visible with correct text on page load', async ({ page }) => {
         await page.goto('/')
@@ -63,8 +85,7 @@ test.describe('Waiting screen', () => {
             btn.click()
         })
 
-        await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 15_000 })
-        await page.waitForTimeout(1_000)
+        await waitForBootSettle(page)
         expect(errors).toEqual([])
     })
 
@@ -76,9 +97,9 @@ test.describe('Waiting screen', () => {
 
         const screen = page.locator('#waiting-screen')
         await expect(screen).toBeHidden({ timeout: 5_000 })
-        await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 })
+        await waitForBootSettle(page)
 
-        await page.waitForTimeout(1_000)
+        // the screen must stay hidden through the whole boot tail
         await expect(screen).toBeHidden()
     })
 

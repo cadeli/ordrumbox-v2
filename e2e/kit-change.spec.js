@@ -29,7 +29,24 @@ test.describe('E2E-C: Kit change mid-playback', () => {
             })
         }
 
-        await page.waitForTimeout(300)
+        // setSelectedDrumkitNum() awaits sample loading + auto-assign before
+        // emitting drumkitChange, so wait for its actual outcome.
+        const orphanedAutoTracks = () =>
+            page.evaluate(() => {
+                const { appState, soundRegistry } = window.__e2e
+                const tracks = appState.patterns[0]?.tracks ?? []
+                return tracks
+                    .filter((t) => t.useAutoAssignSound)
+                    .filter(
+                        (t) =>
+                            !t.soundId ||
+                            t.soundId === 'NOT_DEFINED' ||
+                            t.soundId === 'NOT_FOUND' ||
+                            !soundRegistry.sounds[t.soundId],
+                    )
+                    .map((t) => t.name)
+            })
+        await expect.poll(orphanedAutoTracks, { timeout: 15_000 }).toEqual([])
 
         const afterChange = await page.evaluate(() => {
             const { appState, soundRegistry } = window.__e2e
@@ -45,6 +62,7 @@ test.describe('E2E-C: Kit change mid-playback', () => {
             }
         })
 
+        expect(afterChange.tracks.filter((t) => t.autoAssign).length).toBeGreaterThan(0)
         for (const track of afterChange.tracks) {
             if (track.autoAssign) {
                 expect(track.soundId).not.toBe('NOT_DEFINED')
@@ -63,10 +81,19 @@ test.describe('E2E-C: Kit change mid-playback', () => {
         await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
         await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 })
 
+        // applyFlatNotes() assigns a brand new Map (patterns/manager.js),
+        // so an identity change proves the rebuild ran for this kit change.
+        await page.evaluate(() => {
+            window.__flatNotesBefore = window.__e2e.appState.flatNotes
+        })
         await page.evaluate(() => {
             window.__e2e.serviceRegistry.cmd.setSelectedDrumkitNum(1)
         })
-        await page.waitForTimeout(300)
+        await expect
+            .poll(() => page.evaluate(() => window.__e2e.appState.flatNotes !== window.__flatNotesBefore), {
+                timeout: 15_000,
+            })
+            .toBe(true)
 
         const afterFlatNotes = await page.evaluate(() => {
             const fn = window.__e2e.appState.flatNotes

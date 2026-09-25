@@ -65,41 +65,37 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
                 },
             )
 
-            await page.waitForTimeout(200)
-
-            const pageLabel = await page.locator('.tb-page-label').textContent()
-            const match = pageLabel.match(/(\d+)\/(\d+)/)
-            expect(match, `toolbar label "${pageLabel}" should match X/Y`).toBeTruthy()
-            const toolbarPages = parseInt(match[2], 10)
-            expect(toolbarPages).toBe(expectedPages)
+            // The batch emit is synchronous: poll the toolbar label until it
+            // reflects the new page total instead of sleeping first.
+            await expect(page.locator('.tb-page-label')).toHaveText(new RegExp(`\\d+/${expectedPages}$`))
 
             const gridCells = await page.locator('.pp-cell').count()
             expect(gridCells).toBeGreaterThan(0)
 
-            const maxBeatOnPage0 = await page.evaluate(() => {
-                const cells = document.querySelectorAll('.pp-cell')
-                let max = -1
-                for (const c of cells) {
-                    const b = parseInt(c.dataset.beat, 10)
-                    if (!isNaN(b) && b > max) max = b
-                }
-                return max
-            })
-            expect(maxBeatOnPage0).toBe(Math.min(nbBeats - 1, 3))
+            const expectedMaxBeat = Math.min(nbBeats - 1, 3)
+            await expect
+                .poll(
+                    () =>
+                        page.evaluate(() => {
+                            const cells = document.querySelectorAll('.pp-cell')
+                            let max = -1
+                            for (const c of cells) {
+                                const b = parseInt(c.dataset.beat, 10)
+                                if (!isNaN(b) && b > max) max = b
+                            }
+                            return max
+                        }),
+                    { timeout: 5_000 },
+                )
+                .toBe(expectedMaxBeat)
 
             for (let p = 1; p < expectedPages; p++) {
                 await page.locator('.tb-next-page').click()
-                await page.waitForTimeout(100)
+                await expect.poll(() => page.evaluate(() => window.__e2e.appState.currentPage)).toBe(p)
+                await expect(page.locator('.tb-page-label')).toHaveText(`${p + 1}/${expectedPages}`)
 
-                const currentPage = await page.evaluate(() => window.__e2e.appState.currentPage)
-                expect(currentPage).toBe(p)
-
-                const label = await page.locator('.tb-page-label').textContent()
-                expect(label).toBe(`${p + 1}/${expectedPages}`)
-
-                const nextDisabled = await page.locator('.tb-next-page').getAttribute('disabled')
                 if (p === expectedPages - 1) {
-                    expect(nextDisabled).not.toBeNull()
+                    await expect(page.locator('.tb-next-page')).toBeDisabled()
                 }
             }
 

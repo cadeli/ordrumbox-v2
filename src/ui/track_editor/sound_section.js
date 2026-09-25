@@ -89,7 +89,7 @@ export default class SoundSection {
         const firstSample = this._getPreferredSampleForInstrument(newName)
         if (firstSample) {
             if (!editor._soundRegistry.sounds[firstSample.url]?.buffer) {
-                await editor.resourcesLoader.loadSample(firstSample, firstSample.kitName)
+                await editor._serviceRegistry.resourcesLoader.loadSample(firstSample, firstSample.kitName)
             }
             editor._serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
         }

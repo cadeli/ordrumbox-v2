@@ -5,6 +5,33 @@
 import { test, expect } from '@playwright/test'
 import { bootApp } from './fixtures.js'
 
+// Generation runs through async generators (view_switch.js), so every
+// assertion below polls the model instead of trusting a fixed delay.
+const GEN = { timeout: 15_000 }
+
+const autoNoteCount = (page) =>
+    page.evaluate(() => {
+        const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
+        return tracks.filter((t) => t.auto === true).reduce((n, t) => n + (t.notes ?? []).length, 0)
+    })
+
+const autoTrackCount = (page) =>
+    page.evaluate(() => (window.__e2e?.appState?.patterns?.[0]?.tracks ?? []).filter((t) => t.auto === true).length)
+
+const drumAutoCount = (page) =>
+    page.evaluate(() => {
+        const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
+        return tracks
+            .filter((t) => ['KICK', 'SNARE', 'HI_HAT', 'HAT', 'CLAP', 'COWBELL', 'PERC'].includes(t.name))
+            .filter((t) => t.auto === true).length
+    })
+
+const trackNoteCount = (page, name) =>
+    page.evaluate((trackName) => {
+        const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
+        return tracks.find((t) => t.name === trackName)?.notes?.length ?? 0
+    }, name)
+
 test.describe('Auto-generation', () => {
     test.beforeEach(async ({ page }) => {
         await bootApp(page)
@@ -31,78 +58,38 @@ test.describe('Auto-generation', () => {
     test('drum generation creates notes in drum tracks', async ({ page }) => {
         const drumBtn = page.locator('.tb-gen-btn[data-gen="drum"]')
         await drumBtn.click()
-        await page.waitForTimeout(1_000)
 
-        const noteCount = await page.evaluate(() => {
-            const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
-            return tracks.filter((t) => t.auto === true).reduce((n, t) => n + (t.notes ?? []).length, 0)
-        })
-
-        expect(noteCount).toBeGreaterThan(0)
+        await expect.poll(() => autoNoteCount(page), GEN).toBeGreaterThan(0)
     })
 
     test('drum generation marks tracks as auto', async ({ page }) => {
         const drumBtn = page.locator('.tb-gen-btn[data-gen="drum"]')
         await drumBtn.click()
-        await page.waitForTimeout(1_000)
 
-        const autoTracks = await page.evaluate(() => {
-            const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
-            return tracks
-                .filter((t) => ['KICK', 'SNARE', 'HI_HAT', 'HAT', 'CLAP', 'COWBELL', 'PERC'].includes(t.name))
-                .filter((t) => t.auto === true)
-                .map((t) => t.name)
-        })
-
-        expect(autoTracks.length).toBeGreaterThan(0)
+        await expect.poll(() => drumAutoCount(page), GEN).toBeGreaterThan(0)
     })
 
     test('bass generation creates notes in BASS track', async ({ page }) => {
         const bassBtn = page.locator('.tb-gen-btn[data-gen="bass"]')
         await bassBtn.click()
-        await page.waitForTimeout(1_000)
 
-        const noteCount = await page.evaluate(() => {
-            const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
-            const bass = tracks.find((t) => t.name === 'BASS')
-            return bass?.notes?.length ?? 0
-        })
-
-        expect(noteCount).toBeGreaterThan(0)
+        await expect.poll(() => trackNoteCount(page, 'BASS'), GEN).toBeGreaterThan(0)
     })
 
     test('chords generation creates notes in PIANO track', async ({ page }) => {
         const chordsBtn = page.locator('.tb-gen-btn[data-gen="chords"]')
         await chordsBtn.click()
-        await page.waitForTimeout(1_000)
 
-        const noteCount = await page.evaluate(() => {
-            const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
-            const piano = tracks.find((t) => t.name === 'PIANO')
-            return piano?.notes?.length ?? 0
-        })
-
-        expect(noteCount).toBeGreaterThan(0)
+        await expect.poll(() => trackNoteCount(page, 'PIANO'), GEN).toBeGreaterThan(0)
     })
 
     test('clicking drum button again toggles generation off', async ({ page }) => {
         const drumBtn = page.locator('.tb-gen-btn[data-gen="drum"]')
         await drumBtn.click()
-        await page.waitForTimeout(1_000)
-
-        const autoBefore = await page.evaluate(() => {
-            const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
-            return tracks.filter((t) => t.auto === true).length
-        })
+        await expect.poll(() => autoTrackCount(page), GEN).toBeGreaterThan(0)
+        const autoBefore = await autoTrackCount(page)
 
         await drumBtn.click()
-        await page.waitForTimeout(500)
-
-        const autoAfter = await page.evaluate(() => {
-            const tracks = window.__e2e?.appState?.patterns?.[0]?.tracks ?? []
-            return tracks.filter((t) => t.auto === true).length
-        })
-
-        expect(autoAfter).toBeLessThan(autoBefore)
+        await expect.poll(() => autoTrackCount(page), GEN).toBeLessThan(autoBefore)
     })
 })

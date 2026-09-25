@@ -561,6 +561,24 @@ describe('E2E Flow 6 — Export to JSON and roundtrip', () => {
         expect(importedBass.notes[0].pitch).toBe(7)
     })
 
+    it('raw pattern import keeps the note ARP editor fields', () => {
+        const pat = cmd.addPattern('Arp Fields')
+        const bass = cmd.addTrack(pat, 'BASS', 4)
+        const note = cmd.addNote(bass, 0, 0, 0)
+        note.arpRange = 7
+        note._arpScale = 'minor'
+        note._arpType = 'updown'
+        note.arp = { intervals: [0, 3, 7], mode: 'updown' }
+
+        const imported = cmd.importPatternFromJson(structuredClone(pat))
+        const importedBass = getTrackFromType(imported, 'BASS')
+
+        expect(importedBass.notes[0].arpRange).toBe(7)
+        expect(importedBass.notes[0]._arpScale).toBe('minor')
+        expect(importedBass.notes[0]._arpType).toBe('updown')
+        expect(importedBass.notes[0].arp).toEqual({ intervals: [0, 3, 7], mode: 'updown' })
+    })
+
     it('JSON roundtrip preserves BPM', () => {
         const pat = cmd.addPattern('BPM RT')
         cmd.setPatternBpm(pat, 140)

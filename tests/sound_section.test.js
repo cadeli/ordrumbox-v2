@@ -43,7 +43,6 @@ function makeMockEditor(overrides = {}) {
         },
         _playbackEvents: { batch: vi.fn((fn) => fn()), emit: vi.fn() },
         synthEditor: { getGeneratedSoundKeys: vi.fn(() => ['BASS1', 'PIANO']), ensureGeneratedSoundsLoaded: vi.fn() },
-        resourcesLoader: { loadSample: vi.fn() },
         sync: vi.fn(),
         esc: (s) => s,
         ...overrides,
@@ -194,7 +193,7 @@ describe('SoundSection', () => {
             editor._soundRegistry.sounds['kick_1.wav'].buffer = undefined
             section = new SoundSection(editor)
             await section.onInstrumentChange({ value: 'KICK' })
-            expect(editor.resourcesLoader.loadSample).toHaveBeenCalled()
+            expect(editor._serviceRegistry.resourcesLoader.loadSample).toHaveBeenCalled()
         })
 
         it('does not load sample if buffer exists', async () => {
@@ -202,7 +201,7 @@ describe('SoundSection', () => {
             editor._soundRegistry.sounds['kick_1.wav'].buffer = {}
             section = new SoundSection(editor)
             await section.onInstrumentChange({ value: 'KICK' })
-            expect(editor.resourcesLoader.loadSample).not.toHaveBeenCalled()
+            expect(editor._serviceRegistry.resourcesLoader.loadSample).not.toHaveBeenCalled()
         })
 
         it('calls changeTrackSound with first sample url', async () => {
