@@ -4,6 +4,7 @@ import Utils from '../core/utils.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import FlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
+import ContextMenu from './components/context_menu.js'
 import { TICK } from '../core/constants.js'
 import { formatNoteTooltip } from './components/ui_utils.js'
 import NoteParams from '../patterns/note_params.js'
@@ -47,8 +48,7 @@ export default class PianoRollPanel extends BasePanel {
     #gridDirty
     #boundOnKeyDown
     #boundOnWheel
-    #contextMenuEl
-    #contextMenuDismiss
+    #contextMenu
     #sequenceIdx
 
     constructor() {
@@ -68,8 +68,7 @@ export default class PianoRollPanel extends BasePanel {
         this.#litNoteEls = []
         this.#keysDirty = true
         this.#gridDirty = true
-        this.#contextMenuEl = null
-        this.#contextMenuDismiss = null
+        this.#contextMenu = new ContextMenu()
         this.#sequenceIdx = 0
     }
 
@@ -184,7 +183,7 @@ export default class PianoRollPanel extends BasePanel {
         if (this.#playhead) this.#playhead.style.display = 'none'
         this.#clearIllumination()
         this.#clearSelection()
-        this.#hideContextMenu()
+        this.#contextMenu.hide()
         document.removeEventListener('keydown', this.#boundOnKeyDown)
         this.container?.removeEventListener('wheel', this.#boundOnWheel)
     }
@@ -568,7 +567,7 @@ export default class PianoRollPanel extends BasePanel {
 
         const gridEl = e.target.closest('#pp-piano-grid')
         if (!gridEl) {
-            this.#hideContextMenu()
+            this.#contextMenu.hide()
             return
         }
         e.preventDefault()
@@ -596,7 +595,7 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     #showKeyboardContextMenu(tonic, keyLabel, x, y) {
-        this.#hideContextMenu()
+        this.#contextMenu.hide()
         const track = this.#track
         if (!track) return
         const sequence = getSequence(this.#sequenceIdx)
@@ -605,11 +604,11 @@ export default class PianoRollPanel extends BasePanel {
             { label: 'Clear all', run: () => this.#menuClearAll() },
             { label: 'Add sequence', run: () => this.#menuAddSequence(tonic) },
         ]
-        this.#buildContextMenu(header, actions, x, y)
+        this.#contextMenu.show(header, actions, x, y)
     }
 
     #showGridContextMenu(ctx, x, y) {
-        this.#hideContextMenu()
+        this.#contextMenu.hide()
         const track = this.#track
         if (!track) return
         const { beat, beatStep, relativePitch, hit } = ctx
@@ -634,88 +633,7 @@ export default class PianoRollPanel extends BasePanel {
                 run: () => this.#menuAddChord(beat, beatStep, relativePitch, [0, 4, 7], 'major'),
             },
         ]
-        this.#buildContextMenu(header, actions, x, y)
-    }
-
-    #buildContextMenu(headerText, actions, x, y) {
-        this.#hideContextMenu()
-        const menu = document.createElement('div')
-        menu.className = 'pp-context-menu'
-        menu.setAttribute('role', 'menu')
-        menu.style.left = `${x}px`
-        menu.style.top = `${y}px`
-
-        const header = document.createElement('div')
-        header.className = 'pp-context-menu-header'
-        header.textContent = headerText
-        menu.appendChild(header)
-
-        const sep = document.createElement('div')
-        sep.className = 'pp-context-menu-sep'
-        menu.appendChild(sep)
-
-        for (const item of actions) {
-            const btn = document.createElement('button')
-            btn.type = 'button'
-            btn.className = 'pp-context-menu-item'
-            btn.setAttribute('role', 'menuitem')
-            btn.textContent = item.label
-            if (item.disabled) {
-                btn.disabled = true
-                btn.setAttribute('aria-disabled', 'true')
-            } else {
-                btn.addEventListener('click', () => {
-                    this.#hideContextMenu()
-                    item.run()
-                })
-            }
-            menu.appendChild(btn)
-        }
-
-        document.body.appendChild(menu)
-        this.#contextMenuEl = menu
-        this.#clampContextMenu()
-        this.#bindContextMenuDismiss()
-    }
-
-    #clampContextMenu() {
-        const menu = this.#contextMenuEl
-        if (!menu) return
-        const rect = menu.getBoundingClientRect()
-        const maxLeft = Math.max(0, window.innerWidth - rect.width - 4)
-        const maxTop = Math.max(0, window.innerHeight - rect.height - 4)
-        const left = Math.min(parseFloat(menu.style.left) || 0, maxLeft)
-        const top = Math.min(parseFloat(menu.style.top) || 0, maxTop)
-        menu.style.left = `${left}px`
-        menu.style.top = `${top}px`
-    }
-
-    #bindContextMenuDismiss() {
-        const dismiss = (e) => {
-            if (this.#contextMenuEl && !this.#contextMenuEl.contains(e.target)) this.#hideContextMenu()
-        }
-        const onKey = (e) => {
-            if (e.key === 'Escape') this.#hideContextMenu()
-        }
-        document.addEventListener('click', dismiss, true)
-        document.addEventListener('contextmenu', dismiss, true)
-        document.addEventListener('keydown', onKey, true)
-        this.#contextMenuDismiss = () => {
-            document.removeEventListener('click', dismiss, true)
-            document.removeEventListener('contextmenu', dismiss, true)
-            document.removeEventListener('keydown', onKey, true)
-        }
-    }
-
-    #hideContextMenu() {
-        if (this.#contextMenuDismiss) {
-            this.#contextMenuDismiss()
-            this.#contextMenuDismiss = null
-        }
-        if (this.#contextMenuEl) {
-            this.#contextMenuEl.remove()
-            this.#contextMenuEl = null
-        }
+        this.#contextMenu.show(header, actions, x, y)
     }
 
     #menuAddNote(beat, beatStep, relativePitch) {

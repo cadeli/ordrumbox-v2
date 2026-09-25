@@ -36,6 +36,7 @@ vi.mock('../src/state/playback_events.js', async () => {
 })
 
 import HistoryManager from '../src/logic/history_manager.js'
+import { logger } from '../src/core/logger.js'
 
 describe('HistoryManager', () => {
     let history
@@ -122,6 +123,8 @@ describe('HistoryManager', () => {
         })
 
         it('re-pushes command on undo failure', () => {
+            // Expected failure path: silence the deliberate logger.error output.
+            const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
             const cmd = {
                 execute: vi.fn(),
                 undo: vi.fn(() => {
@@ -132,6 +135,8 @@ describe('HistoryManager', () => {
             const result = history.undo()
             expect(result).toBe(false)
             expect(history.canUndo).toBe(true)
+            expect(errorSpy).toHaveBeenCalled()
+            errorSpy.mockRestore()
         })
     })
 
@@ -158,6 +163,8 @@ describe('HistoryManager', () => {
         })
 
         it('re-pushes command on redo failure', () => {
+            // Expected failure path: silence the deliberate logger.error output.
+            const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
             const cmd = {
                 execute: vi.fn(() => {
                     throw new Error('fail')
@@ -169,6 +176,8 @@ describe('HistoryManager', () => {
             const result = history.redo()
             expect(result).toBe(false)
             expect(history.canRedo).toBe(true)
+            expect(errorSpy).toHaveBeenCalled()
+            errorSpy.mockRestore()
         })
     })
 

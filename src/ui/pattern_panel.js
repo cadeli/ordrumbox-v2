@@ -16,6 +16,7 @@ import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
 import { downloadJson, formatNoteTooltip } from './components/panel_helpers.js'
+import ContextMenu from './components/context_menu.js'
 
 import HeaderSection from './pattern_panel/header_section.js'
 
@@ -54,8 +55,7 @@ export default class PatternPanel extends BasePanel {
     #layoutCache
     #clipboard
     #rangeAnchor
-    #contextMenuEl
-    #contextMenuDismiss
+    #contextMenu
 
     /**
      * @param {object} [deps]  Optional dependency overrides (DI).
@@ -82,8 +82,7 @@ export default class PatternPanel extends BasePanel {
         this.#cachedVersion = -1
         this.#clipboard = null
         this.#rangeAnchor = null
-        this.#contextMenuEl = null
-        this.#contextMenuDismiss = null
+        this.#contextMenu = new ContextMenu()
 
         this.#header = new HeaderSection(this)
         this.#grid = new GridSection(this)
@@ -733,7 +732,7 @@ export default class PatternPanel extends BasePanel {
     #onContextMenu(e) {
         const trackEl = e.target.closest('.pp-track:not(.pp-master-track)')
         if (!trackEl) {
-            this.#hideContextMenu()
+            this.#contextMenu.hide()
             return
         }
         const trackNameEl = trackEl.querySelector('.pp-track-name[data-track]')
@@ -755,49 +754,8 @@ export default class PatternPanel extends BasePanel {
         this.#showContextMenu(trackIdx, e.clientX, e.clientY)
     }
 
-    #buildContextMenu(headerText, actions, x, y) {
-        this.#hideContextMenu()
-        const menu = document.createElement('div')
-        menu.className = 'pp-context-menu'
-        menu.setAttribute('role', 'menu')
-        menu.style.left = `${x}px`
-        menu.style.top = `${y}px`
-
-        const header = document.createElement('div')
-        header.className = 'pp-context-menu-header'
-        header.textContent = headerText
-        menu.appendChild(header)
-
-        const sep = document.createElement('div')
-        sep.className = 'pp-context-menu-sep'
-        menu.appendChild(sep)
-
-        for (const item of actions) {
-            const btn = document.createElement('button')
-            btn.type = 'button'
-            btn.className = 'pp-context-menu-item'
-            btn.setAttribute('role', 'menuitem')
-            btn.textContent = item.label
-            if (item.disabled) {
-                btn.disabled = true
-                btn.setAttribute('aria-disabled', 'true')
-            } else {
-                btn.addEventListener('click', () => {
-                    this.#hideContextMenu()
-                    item.run()
-                })
-            }
-            menu.appendChild(btn)
-        }
-
-        document.body.appendChild(menu)
-        this.#contextMenuEl = menu
-        this.#clampContextMenu()
-        this.#bindContextMenuDismiss()
-    }
-
     #showCellContextMenu(trackIdx, beat, beatStep, x, y) {
-        this.#hideContextMenu()
+        this.#contextMenu.hide()
         const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
         if (!pattern) return
         const tracks = Utils.getTracksArray(pattern)
@@ -821,11 +779,11 @@ export default class PatternPanel extends BasePanel {
             },
             { label: 'Add rnd note', run: () => this.#menuAddRndNote(pattern, tracks, trackIdx, beat, beatStep) },
         ]
-        this.#buildContextMenu(header, actions, x, y)
+        this.#contextMenu.show(header, actions, x, y)
     }
 
     #showContextMenu(trackIdx, x, y) {
-        this.#hideContextMenu()
+        this.#contextMenu.hide()
         const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
         if (!pattern) return
         const tracks = Utils.getTracksArray(pattern)
@@ -845,47 +803,7 @@ export default class PatternPanel extends BasePanel {
             { label: 'Randomize', run: () => this.#menuRandomizeTrack(track, pattern) },
             { label: 'Clear notes', run: () => this.#menuClearTrackNotes(track, pattern, trackIdx) },
         ]
-        this.#buildContextMenu(track.name ?? 'Track', actions, x, y)
-    }
-
-    #clampContextMenu() {
-        const menu = this.#contextMenuEl
-        if (!menu) return
-        const rect = menu.getBoundingClientRect()
-        const maxLeft = Math.max(0, window.innerWidth - rect.width - 4)
-        const maxTop = Math.max(0, window.innerHeight - rect.height - 4)
-        const left = Math.min(parseFloat(menu.style.left) || 0, maxLeft)
-        const top = Math.min(parseFloat(menu.style.top) || 0, maxTop)
-        menu.style.left = `${left}px`
-        menu.style.top = `${top}px`
-    }
-
-    #bindContextMenuDismiss() {
-        const dismiss = (e) => {
-            if (this.#contextMenuEl && !this.#contextMenuEl.contains(e.target)) this.#hideContextMenu()
-        }
-        const onKey = (e) => {
-            if (e.key === 'Escape') this.#hideContextMenu()
-        }
-        document.addEventListener('click', dismiss, true)
-        document.addEventListener('contextmenu', dismiss, true)
-        document.addEventListener('keydown', onKey, true)
-        this.#contextMenuDismiss = () => {
-            document.removeEventListener('click', dismiss, true)
-            document.removeEventListener('contextmenu', dismiss, true)
-            document.removeEventListener('keydown', onKey, true)
-        }
-    }
-
-    #hideContextMenu() {
-        if (this.#contextMenuDismiss) {
-            this.#contextMenuDismiss()
-            this.#contextMenuDismiss = null
-        }
-        if (this.#contextMenuEl) {
-            this.#contextMenuEl.remove()
-            this.#contextMenuEl = null
-        }
+        this.#contextMenu.show(track.name ?? 'Track', actions, x, y)
     }
 
     #menuCopyTrack(tracks, trackIdx) {

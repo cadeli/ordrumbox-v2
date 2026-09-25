@@ -13,6 +13,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { showToast } from '../src/core/notify.js'
+import { logger } from '../src/core/logger.js'
 import { EVENTS } from '../src/core/events.js'
 import ToolsPanel from '../src/ui/tools_panel.js'
 
@@ -81,6 +82,8 @@ describe('ExportSection MIDI branches', () => {
     })
 
     it('shows an error toast when download throws', async () => {
+        // Expected failure path: silence the deliberate logger.error output.
+        const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
         const toolsPanel = makeToolsPanel()
         appState.patterns = [{ name: 'Bad', tracks: [] }]
         appState.selectedPatternNum = 0
@@ -91,5 +94,7 @@ describe('ExportSection MIDI branches', () => {
         await toolsPanel.exportMidi()
 
         expect(showToast).toHaveBeenCalledWith(expect.stringContaining('MIDI Export failed'), 'error')
+        expect(errorSpy).toHaveBeenCalled()
+        errorSpy.mockRestore()
     })
 })

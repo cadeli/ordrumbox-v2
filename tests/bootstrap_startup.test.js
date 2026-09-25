@@ -6,6 +6,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { appState } from '../src/state/app_state.js'
 import { showToast } from '../src/core/notify.js'
+import { logger } from '../src/core/logger.js'
 
 vi.mock('../src/core/notify.js', () => ({
     showToast: vi.fn(),
@@ -102,6 +103,8 @@ describe('bootstrap/startup', () => {
     })
 
     it('shows error toast when resource loading fails', async () => {
+        // Expected failure path: silence the deliberate logger.error output.
+        const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
         const loader = makeResourcesLoader({
             loadSettings: vi.fn(async () => {
                 throw new Error('boom')
@@ -111,5 +114,7 @@ describe('bootstrap/startup', () => {
 
         expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Failed to load resources'), 'error')
         expect(window.__e2e?.ready).toBe(true)
+        expect(errorSpy).toHaveBeenCalled()
+        errorSpy.mockRestore()
     })
 })

@@ -214,6 +214,8 @@ describe('Keyboard shortcuts', () => {
     })
 
     it('KeyH shows error toast when generated sounds fail to load', async () => {
+        // Expected failure path: silence the deliberate logger.error output.
+        const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
         serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
         serviceRegistry.resourcesLoader = {
             loadGeneratedSounds: vi.fn(() => Promise.reject(new Error('boom'))),
@@ -225,6 +227,7 @@ describe('Keyboard shortcuts', () => {
 
         expect(showToast).toHaveBeenCalledWith('Failed to load generated sounds', 'error')
         expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
+        expect(errorSpy).toHaveBeenCalled()
     })
 
     // ── KeyB / KeyJ / KeyK ─────────────────────────────────────────
