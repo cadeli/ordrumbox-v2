@@ -243,7 +243,11 @@
                     </tr>
                     <tr>
                         <td><strong>Kit</strong></td>
-                        <td>Dropdown to switch drumkits (samples load on first use).</td>
+                        <td>
+                            Dropdown to switch drumkits (samples load on first use). Only tracks with
+                            <strong>auto</strong> enabled are re-assigned; manually assigned samples keep their sound,
+                            even when it belongs to another drumkit — it is loaded on demand, also after a restart.
+                        </td>
                     </tr>
                     <tr>
                         <td><strong>Auto Gen</strong></td>
@@ -445,6 +449,19 @@
                     <tr>
                         <td>Click track name</td>
                         <td>Opens Track Editor for that track</td>
+                    </tr>
+                    <tr>
+                        <td>Right-click cell</td>
+                        <td>
+                            Cell menu: Copy notes, Paste notes (enabled when the clipboard holds notes), Delete note,
+                            Add rnd note
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Right-click track row</td>
+                        <td>
+                            Track menu: Copy track, Paste tracks, Duplicate track, Delete track, Randomize, Clear notes
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -794,17 +811,25 @@
                     <tr>
                         <td><strong>autoassign</strong></td>
                         <td>
-                            LED toggle (green = active). When on, automatically assigns the best sample from the drumkit
-                            based on track name.
+                            LED toggle (green = active). When on, automatically assigns the best sample from the
+                            selected drumkit based on the track name. When off, the assignment stays manual (the sample
+                            can belong to any drumkit).
                         </td>
                     </tr>
                     <tr>
                         <td><strong>Instr</strong></td>
-                        <td>Instrument type selector</td>
+                        <td>
+                            Instrument type selector. Picking an instrument renames the track and assigns the preferred
+                            sample for it (from the selected drumkit when available, from another kit otherwise).
+                        </td>
                     </tr>
                     <tr>
                         <td><strong>Sample</strong></td>
-                        <td>Specific sample file selector</td>
+                        <td>
+                            Sample file selector — lists the samples of the current instrument across
+                            <strong>all</strong> drumkits, selected kit first. A sample from another kit is loaded the
+                            moment it is selected, and again automatically after a restart.
+                        </td>
                     </tr>
                     <tr>
                         <td><strong>Synth</strong></td>
@@ -1099,13 +1124,53 @@
                 </tbody>
             </table>
 
-            <p><strong>Export filenames:</strong> <code>ordrumbox-{patternName}.{ext}</code></p>
+            <p>
+                <strong>Exports apply to the selected pattern.</strong> Filenames:
+                <code>ordrumbox-{patternName}.{ext}</code>
+            </p>
+            <p>
+                <strong>Which tracks are exported:</strong> the same rule as playback — if at least one track is soloed,
+                only the soloed tracks are exported, otherwise every track that is not muted.
+            </p>
+
             <p><strong>MIDI Export details:</strong></p>
             <ul>
-                <li>Track 0: Tempo + time signature</li>
-                <li>Track 1+: One MIDI track per instrument</li>
-                <li>Drum tracks &rarr; MIDI channel 10</li>
-                <li>Muted tracks are excluded</li>
+                <li>Standard MIDI File, <strong>Type 1</strong>, resolution 96 PPQN (1 engine tick = 3 MIDI ticks)</li>
+                <li>
+                    Track 0 (conductor): track name <code>orDrumbox Pattern</code>, 4/4 time signature and the tempo of
+                    the pattern
+                </li>
+                <li>
+                    Track 1+: one MIDI track per exported track, named after the track (a track without notes is
+                    omitted)
+                </li>
+                <li>
+                    Drum instruments &rarr; MIDI channel 10; melodic instruments get their own channel plus a Program
+                    Change
+                </li>
+                <li>
+                    Base note = the instrument's GM key, otherwise C3 (48); melodic samples with a root note use it as
+                    base. Pitch = track pitch + note pitch (+ pitch LFO)
+                </li>
+                <li>Velocity (0&ndash;127) is the note velocity &times; 127; a velocity LFO replaces it</li>
+                <li>Every note is written as a fixed 16th-note (24 MIDI ticks) note on/off pair</li>
+                <li>Not exported: pan, filter LFOs and other parameters without a MIDI equivalent</li>
+                <li><strong>Loops</strong> repeats the pattern in the file (each loop offset by the pattern length)</li>
+            </ul>
+
+            <p><strong>WAV Export details:</strong></p>
+            <ul>
+                <li>
+                    Rendered offline (OfflineAudioContext) with the same engine and mixer as playback, including track
+                    effects
+                </li>
+                <li>Format: 16-bit PCM, stereo, 44.1 kHz</li>
+                <li>Length = <code>beats &times; 60 / BPM &times; loops</code> (8 beats at 120 BPM = 4 s per loop)</li>
+                <li>The button label changes to <strong>Exporting...</strong> until the file download starts</li>
+                <li>
+                    The sounds of the exported tracks must be loaded — samples belonging to another drumkit are loaded
+                    on demand (see Track Editor &rarr; Sound)
+                </li>
             </ul>
 
             <h3>Import Tab</h3>
@@ -1270,7 +1335,9 @@
             </table>
             <p>
                 <strong>Knob interaction:</strong> Vertical drag to change value. Arrow keys for precision (±step).
-                Shift+drag or Shift+arrows for fine mode (±0.1 step). Double-click to reset to default.
+                Shift+drag or Shift+arrows for fine mode (±0.1 step). Double-click to reset to default. Right-click
+                opens a numeric input to type an exact value (clamped to min/max and snapped to step). The same applies
+                to the sliders (Loops, BPM, pattern settings).
             </p>
 
             <h3>Spectrum Analyzer</h3>
@@ -1904,7 +1971,10 @@
                     <tr>
                         <td><strong>Drumkit</strong></td>
                         <td>all kits</td>
-                        <td>Switch drumkit for all tracks in the pattern</td>
+                        <td>
+                            Switch drumkit — same rule as the toolbar Kit control (only tracks with
+                            <strong>auto</strong> enabled are re-assigned)
+                        </td>
                     </tr>
                     <tr>
                         <td><strong>Pattern</strong></td>
@@ -2224,7 +2294,7 @@
                         <td>Paste clipboard (step notes, or track when clipboard holds a track)</td>
                     </tr>
                     <tr>
-                        <td><strong>Right-click track name</strong></td>
+                        <td><strong>Right-click track row</strong></td>
                         <td>
                             Track menu: Copy track, Paste tracks, Duplicate track, Delete track, Randomize, Clear notes
                         </td>
@@ -2233,8 +2303,17 @@
                         <td><strong>Right-click cell</strong></td>
                         <td>Cell menu: Copy notes, Paste notes, Delete note, Add rnd note</td>
                     </tr>
+                    <tr>
+                        <td><strong>Right-click knob / slider</strong></td>
+                        <td>Numeric input: type an exact value instead of dragging</td>
+                    </tr>
                 </tbody>
             </table>
+            <p>
+                <strong>Context menus</strong> (pattern grid, piano roll) show their target in the header — track name,
+                step or key. Entries that do not apply (empty clipboard, no note under the cursor) are greyed out. A
+                menu closes on outside click, on another right-click or on <strong>Escape</strong>.
+            </p>
 
             <hr />
 
