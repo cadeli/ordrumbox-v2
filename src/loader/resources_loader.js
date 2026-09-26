@@ -135,6 +135,13 @@ export default class ResourcesLoader {
             }
             await this._samplesLoadingPromise
         }
+
+        // 3b. Load the samples referenced by the patterns: an explicitly
+        // assigned sound can live in another drumkit than the one loaded above,
+        // and without this step those tracks stay silent after a reload.
+        if (appState.patterns.length > 0) {
+            await this.loadSamplesForPatterns(appState.patterns)
+        }
     }
 
     async loadJsonResource(file) {
@@ -324,8 +331,43 @@ export default class ResourcesLoader {
     }
 
     loadMissingSamplesFromDrumkits = async (drumkits) => {
-        const samplesToLoad = this.getUnloadedSamplesFromDrumkits(drumkits)
+        return this.#loadSampleEntries(this.getUnloadedSamplesFromDrumkits(drumkits))
+    }
 
+    /**
+     * Loads every sample referenced by the given patterns that is not in the
+     * registry yet. The samples are searched in all drumkits, because a track
+     * can keep an explicit sound assigned from a kit that is not the selected
+     * one (kit switches and reloads do not rewrite those ids).
+     *
+     * @param {object[] | object} patterns pattern or list of patterns
+     * @returns {Promise<object[]>} the loaded sounds
+     */
+    loadSamplesForPatterns = async (patterns) => {
+        const wanted = new Set()
+        const patternList = patterns?.tracks ? [patterns] : Object.values(patterns ?? {})
+        for (const pattern of patternList) {
+            for (const track of Object.values(pattern?.tracks ?? {})) {
+                const soundId = track?.soundId
+                if (soundId && soundId !== 'NOT_DEFINED' && !soundRegistry.sounds[soundId]?.buffer) {
+                    wanted.add(soundId)
+                }
+            }
+        }
+        if (wanted.size === 0) return []
+
+        const samplesToLoad = []
+        for (const drumkit of soundRegistry.drumkitList) {
+            for (const sample of Object.values(drumkit?.instruments ?? {})) {
+                if (wanted.delete(sample.url)) {
+                    samplesToLoad.push({ sample, kitName: drumkit.name })
+                }
+            }
+        }
+        return this.#loadSampleEntries(samplesToLoad)
+    }
+
+    #loadSampleEntries = async (samplesToLoad) => {
         let nbLoad = 0
         const nbToLoad = samplesToLoad.length
 

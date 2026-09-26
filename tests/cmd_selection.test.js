@@ -11,6 +11,7 @@ const { mocks } = vi.hoisted(() => ({
     mocks: {
         setBpm: vi.fn(),
         loadMissingSamplesFromDrumkits: vi.fn().mockResolvedValue(undefined),
+        loadSamplesForPatterns: vi.fn().mockResolvedValue([]),
         autoAssignSounds: vi.fn(),
         applyFlatNotes: vi.fn(),
         invalidateCache: vi.fn(),
@@ -22,7 +23,10 @@ vi.mock('../src/state/service_registry.js', () => ({
         seq: { setBpm: mocks.setBpm },
         patterns: { applyFlatNotes: mocks.applyFlatNotes },
         audioEngine: { invalidateCache: mocks.invalidateCache },
-        resourcesLoader: { loadMissingSamplesFromDrumkits: mocks.loadMissingSamplesFromDrumkits },
+        resourcesLoader: {
+            loadMissingSamplesFromDrumkits: mocks.loadMissingSamplesFromDrumkits,
+            loadSamplesForPatterns: mocks.loadSamplesForPatterns,
+        },
     },
 }))
 
@@ -50,7 +54,10 @@ describe('cmd_selection', () => {
         serviceRegistry.seq = { setBpm: mocks.setBpm }
         serviceRegistry.patterns = { applyFlatNotes: mocks.applyFlatNotes }
         serviceRegistry.audioEngine = { invalidateCache: mocks.invalidateCache }
-        serviceRegistry.resourcesLoader = { loadMissingSamplesFromDrumkits: mocks.loadMissingSamplesFromDrumkits }
+        serviceRegistry.resourcesLoader = {
+            loadMissingSamplesFromDrumkits: mocks.loadMissingSamplesFromDrumkits,
+            loadSamplesForPatterns: mocks.loadSamplesForPatterns,
+        }
 
         cmd = new Commander()
         serviceRegistry.cmd = cmd
@@ -89,6 +96,13 @@ describe('cmd_selection', () => {
             appState.patterns = [{ name: 'A', bpm: 120 }]
             await cmd.setSelectedPatternNum(0)
             expect(mocks.applyFlatNotes).toHaveBeenCalled()
+        })
+
+        it('loads the samples referenced by the selected pattern', async () => {
+            const pattern = { name: 'A', bpm: 120, tracks: [{ soundId: 'real/bass-c2.wav' }] }
+            appState.patterns = [pattern]
+            await cmd.setSelectedPatternNum(0)
+            expect(mocks.loadSamplesForPatterns).toHaveBeenCalledWith([pattern])
         })
 
         it('emits selectedPatternChange', async () => {

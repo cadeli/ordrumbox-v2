@@ -59,15 +59,19 @@ function parseMTrkEvents(bytes, dataOffset, length) {
             })
             pos += 2 + lv.bytesRead + lv.value
         } else {
+            const status = b0 & 0xf0
+            // 0xC0 (Program Change) and 0xD0 (Channel Pressure) carry a single
+            // data byte — reading two would desync the whole track.
+            const dataBytes = status === 0xc0 || status === 0xd0 ? 1 : 2
             events.push({
                 absTick: cursor,
                 type: 'midi',
-                status: b0 & 0xf0,
+                status,
                 channel: b0 & 0x0f,
-                note: bytes[pos + 1],
-                velocity: bytes[pos + 2],
+                note: dataBytes === 2 ? bytes[pos + 1] : undefined,
+                velocity: dataBytes === 2 ? bytes[pos + 2] : undefined,
             })
-            pos += 3
+            pos += 1 + dataBytes
         }
     }
     return events

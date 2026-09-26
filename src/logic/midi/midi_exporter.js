@@ -19,9 +19,9 @@
  *
  * Timing bridge
  * ─────────────
- *   Engine TICK = 32 steps/beat
- *   MIDI  PPQN = 96 ticks/beat, 4 beats/beat → 384 ticks/beat
- *   Ratio = 384 / 32 = 12  →  midi_tick = engine_tick * 12
+ *   Engine TICK = 32 ticks/beat
+ *   MIDI  PPQN = 96 ticks/beat
+ *   Ratio = 96 / 32 = 3  →  midi_tick = engine_tick * 3
  */
 
 import InstrumentsManager from '../services/instrument_manager/index.js'
@@ -35,8 +35,8 @@ import { downloadBlob } from '../../core/download.js'
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const PPQN = 96
-const TICKS_PER_BAR = PPQN * 1 // 384
-const MIDI_RATIO = TICKS_PER_BAR / TICK // 12
+const TICKS_PER_BEAT = PPQN // 96 MIDI ticks per beat (quarter note)
+const MIDI_RATIO = TICKS_PER_BEAT / TICK // 3 midi ticks per engine tick
 const DRUM_CHANNEL = 9 // 0-indexed = MIDI channel 10
 const NOTE_DURATION = 24 // ticks (1/16th at PPQN=96)
 const DEFAULT_MIDI_NOTE = 36 // Bass Drum 1 fallback

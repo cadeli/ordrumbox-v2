@@ -398,6 +398,66 @@ describe('ResourcesLoader', () => {
         })
     })
 
+    describe('loadSamplesForPatterns', () => {
+        const makeLoader = () => {
+            const mockCtx = { decodeAudioData: vi.fn().mockResolvedValue({ duration: 1 }) }
+            return new ResourcesLoader(mockCtx)
+        }
+
+        it('loads referenced samples from any drumkit and skips already loaded ones', async () => {
+            const { soundRegistry } = await import('../src/state/sound_registry.js')
+            loader = makeLoader()
+            soundRegistry.drumkitList = [
+                { name: 'real', instruments: [{ url: 'real/bass-c2.wav', key: 'BASS' }] },
+                { name: 'matt', instruments: [{ url: 'matt/CHH.wav', key: 'CHH' }] },
+            ]
+            soundRegistry.sounds = { 'matt/CHH.wav': { buffer: {} } }
+            fetchSpy.mockResolvedValue({
+                ok: true,
+                arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+            })
+
+            const patterns = [{ tracks: [{ soundId: 'real/bass-c2.wav' }, { soundId: 'matt/CHH.wav' }] }]
+            const loaded = await loader.loadSamplesForPatterns(patterns)
+
+            expect(loaded.map((s) => s.url)).toEqual(['real/bass-c2.wav'])
+            expect(fetchSpy).toHaveBeenCalledTimes(1)
+            expect(soundRegistry.sounds['real/bass-c2.wav'].isLoad).toBe(true)
+        })
+
+        it('accepts a single pattern object and track maps', async () => {
+            const { soundRegistry } = await import('../src/state/sound_registry.js')
+            loader = makeLoader()
+            soundRegistry.drumkitList = [{ name: 'real', instruments: [{ url: 'real/kick.wav' }] }]
+            soundRegistry.sounds = {}
+            fetchSpy.mockResolvedValue({
+                ok: true,
+                arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+            })
+
+            const loaded = await loader.loadSamplesForPatterns({
+                tracks: { t1: { soundId: 'real/kick.wav' } },
+            })
+
+            expect(loaded.map((s) => s.url)).toEqual(['real/kick.wav'])
+        })
+
+        it('ignores NOT_DEFINED, unknown soundIds and empty patterns', async () => {
+            const { soundRegistry } = await import('../src/state/sound_registry.js')
+            loader = makeLoader()
+            soundRegistry.drumkitList = [{ name: 'real', instruments: [{ url: 'real/kick.wav' }] }]
+            soundRegistry.sounds = {}
+
+            const loaded = await loader.loadSamplesForPatterns([
+                { tracks: [{ soundId: 'NOT_DEFINED' }, { soundId: 'ghost.wav' }, {}] },
+            ])
+
+            expect(loaded).toEqual([])
+            expect(fetchSpy).not.toHaveBeenCalled()
+            expect(await loader.loadSamplesForPatterns([])).toEqual([])
+        })
+    })
+
     describe('onSoundsProgress', () => {
         it('does nothing without document', () => {
             expect(() => loader.onSoundsProgress(50)).not.toThrow()

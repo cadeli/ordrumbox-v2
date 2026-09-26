@@ -49,6 +49,16 @@ export function createSelectionMethods(_cmd) {
                         autoAssign.autoAssignSounds(selPattern)
                     }
                     serviceRegistry.patterns.applyFlatNotes(selPattern)
+                    // Explicit sound assignments can point to samples of another
+                    // drumkit than the selected one — load them on demand so the
+                    // pattern is audible right after a switch or a reload.
+                    // Isolated: a missing loader or a failed fetch must never
+                    // abort the switch itself (the emit below still has to run).
+                    try {
+                        await serviceRegistry.resourcesLoader?.loadSamplesForPatterns([selPattern])
+                    } catch (err) {
+                        logger.warn('Commander', 'cmd::setSelectedPatternNum sample loading failed', err)
+                    }
                     playbackEvents.emit(EVENTS.SELECTED_PATTERN_CHANGE)
                 }
             } catch (err) {

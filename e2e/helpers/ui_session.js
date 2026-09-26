@@ -193,6 +193,36 @@ export async function waitForSynthSoundPersisted(page, key) {
 }
 
 /**
+ * Waits until every sample referenced by a pattern's tracks is present in the
+ * registry. Samples can belong to any drumkit (explicit assignments survive
+ * kit switches), and after a reload the boot loads them on demand — the load
+ * is fire-and-forget from the UI point of view, so polling is the only
+ * deterministic signal. Tracks without a concrete sound (NOT_DEFINED) and
+ * synth tracks (generatedSounds) are skipped.
+ */
+export async function waitForPatternSoundsLoaded(page, patternIdx) {
+    await expect
+        .poll(
+            () =>
+                page.evaluate((idx) => {
+                    const { appState, soundRegistry } = window.__e2e
+                    const pattern = appState.patterns[idx]
+                    const missing = []
+                    for (const track of Object.values(pattern?.tracks ?? {})) {
+                        const soundId = track?.soundId
+                        if (!soundId || soundId === 'NOT_DEFINED') continue
+                        if (soundRegistry.sounds?.[soundId]?.buffer) continue
+                        if (soundRegistry.generatedSounds?.[soundId]) continue
+                        missing.push(soundId)
+                    }
+                    return missing
+                }, patternIdx),
+            { timeout: 30_000 },
+        )
+        .toEqual([])
+}
+
+/**
  * Fields that cannot be compared between two exports taken at different
  * moments, for three documented reasons:
  *

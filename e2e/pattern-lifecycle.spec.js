@@ -17,6 +17,7 @@
 import { test, expect } from '@playwright/test'
 import fs from 'node:fs'
 import { bootApp } from './fixtures.js'
+import { findAllNotes, parseMidi } from '../tests/helpers/midi_reader.js'
 import {
     alignedRange,
     diffPatterns,
@@ -34,6 +35,7 @@ import {
     trackAt,
     trackField,
     tracksOf,
+    waitForPatternSoundsLoaded,
     waitForPatternsPersisted,
     waitForSynthSoundPersisted,
     VOLATILE_NOTE_KEYS,
@@ -101,6 +103,43 @@ const TRACK_KEYS = [
 // re-randomizes them in place on every flat-notes computation.
 const NOTE_KEYS = ['beat', 'beatStep', 'velocity', 'pitch', 'pan', 'every', 'pos', 'arpTriggerProbability', 'arp']
 
+// midi_tick = engine_tick * MIDI_RATIO with PPQN 96 / TICK 32 (midi_exporter.js)
+const MIDI_TICKS_PER_ENGINE_TICK = 3
+
+/**
+ * Minimal 16-bit PCM WAV reader: validates the RIFF header written by
+ * src/audio/export/wav_encoder.js and measures the audio content (peak level
+ * and number of non-silent samples) so an all-silent render cannot pass.
+ */
+function parseWav(buffer) {
+    expect(buffer.length).toBeGreaterThanOrEqual(44)
+    const header = {
+        riff: buffer.toString('ascii', 0, 4),
+        wave: buffer.toString('ascii', 8, 12),
+        fmtTag: buffer.toString('ascii', 12, 16),
+        fmtSize: buffer.readUInt32LE(16),
+        audioFormat: buffer.readUInt16LE(20),
+        channels: buffer.readUInt16LE(22),
+        sampleRate: buffer.readUInt32LE(24),
+        byteRate: buffer.readUInt32LE(28),
+        blockAlign: buffer.readUInt16LE(32),
+        bitsPerSample: buffer.readUInt16LE(34),
+        dataTag: buffer.toString('ascii', 36, 40),
+        dataSize: buffer.readUInt32LE(40),
+    }
+    expect(header.dataSize).toBe(buffer.length - 44)
+
+    let peak = 0
+    let nonZero = 0
+    const sampleCount = header.dataSize / 2
+    for (let i = 0; i < sampleCount; i++) {
+        const value = Math.abs(buffer.readInt16LE(44 + i * 2))
+        if (value > peak) peak = value
+        if (value > 0) nonZero++
+    }
+    return { header, peak, nonZero }
+}
+
 test.setTimeout(300_000)
 
 test.describe.serial('Full session lifecycle', () => {
@@ -122,6 +161,18 @@ test.describe.serial('Full session lifecycle', () => {
     const noteAt = async (trackIdx, noteIdx) => {
         const track = await trackAt(page, trackIdx)
         return track?.notes?.[noteIdx]
+    }
+
+    /** Opens the Tools panel on its Export tab (idempotent). */
+    const openToolsExportTab = async () => {
+        const panel = page.locator('#tools-panel')
+        if (!(await panel.isVisible())) {
+            await page.locator('button.tb-tools').click()
+            await expect(panel).toBeVisible()
+        }
+        await page.locator('.ne-tab-btn[data-ne-tab="export"]').click()
+        await expect(page.locator('#tp-export-midi')).toBeVisible()
+        await expect(page.locator('#tp-export-wav')).toBeVisible()
     }
 
     test.beforeAll(async ({ browser }) => {
@@ -725,6 +776,11 @@ test.describe.serial('Full session lifecycle', () => {
         await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 30_000 })
         await page.waitForSelector('#waiting-screen', { state: 'hidden' })
 
+        // the boot reloads the samples referenced by the pattern, including the
+        // ones that belong to another drumkit than the selected one (they used
+        // to be skipped, which silently muted those tracks after a reload)
+        await waitForPatternSoundsLoaded(page, newIdx)
+
         const after = await snapshotState(page)
         const beforePattern = beforeReload.patterns[newIdx]
         const afterPattern = after.patterns[newIdx]
@@ -828,5 +884,160 @@ test.describe.serial('Full session lifecycle', () => {
 
         const importedExport = await exportPatternAt(page, baseCount + 1)
         expect(importedExport).toEqual(liveExport)
+    })
+
+    test('T4 — export MIDI and verify the file content', async () => {
+        const selectedIdx = await page.evaluate(() => window.__e2e.appState.selectedPatternNum)
+        const selectedName = await page.evaluate((i) => window.__e2e.appState.patterns[i]?.name, selectedIdx)
+        expect(selectedName).toBe(NEW_PATTERN)
+
+        // What the pattern engine produces right now for the tracks that
+        // actually play (Utils.shouldTrackPlay) — the exact input the exporter
+        // feeds into the file. velocityLfo values are resolved by the exporter
+        // itself, so they are marked as "unknown" here.
+        const reference = await page.evaluate(
+            async ({ patternIdx, ratio }) => {
+                const { appState } = window.__e2e
+                const Utils = (await import('/src/core/utils.js')).default
+                const { recomputeFlatNotes } = await import('/src/patterns/engine.js')
+
+                const pattern = appState.patterns[patternIdx]
+                const tracks = Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks ?? {})
+                const anySolo = Utils.hasAnySolo(tracks)
+                const playing = tracks.filter((t) => Utils.shouldTrackPlay(t, anySolo))
+
+                const notes = []
+                const countByTrack = {}
+                for (const [engineTick, flatNotes] of recomputeFlatNotes(pattern, 0)) {
+                    for (const flatNote of flatNotes) {
+                        if (!playing.some((t) => t.name === flatNote.track.name)) continue
+                        countByTrack[flatNote.track.name] = (countByTrack[flatNote.track.name] ?? 0) + 1
+                        notes.push({
+                            absTick: engineTick * ratio,
+                            velocity: flatNote.track.velocityLfo
+                                ? null
+                                : Math.round((flatNote.note.velocity ?? 0.8) * 127),
+                        })
+                    }
+                }
+                return {
+                    bpm: pattern.bpm,
+                    playingNames: playing.map((t) => t.name),
+                    countByTrack,
+                    notes,
+                }
+            },
+            { patternIdx: selectedIdx, ratio: MIDI_TICKS_PER_ENGINE_TICK },
+        )
+
+        // phase 3g soloed T2: the solo set is the only material that may be exported
+        expect(reference.playingNames).toEqual([(await trackAt(page, 1)).name])
+        expect(reference.notes.length).toBeGreaterThan(0)
+
+        await openToolsExportTab()
+        const downloadPromise = page.waitForEvent('download')
+        await page.locator('#tp-export-midi').click()
+        const download = await downloadPromise
+        expect(download.suggestedFilename()).toBe(`ordrumbox-${NEW_PATTERN}.mid`)
+
+        const midiPath = await download.path()
+        expect(midiPath).toBeTruthy()
+        const midi = parseMidi(new Uint8Array(fs.readFileSync(midiPath)))
+
+        expect(midi.header.format).toBe(1)
+        expect(midi.header.division).toBe(96)
+        expect(midi.tracks).toHaveLength(midi.header.numTracks)
+
+        // conductor track: name, 4/4 time signature and the pattern tempo
+        expect(midi.trackNames[0]).toBe('orDrumbox Pattern')
+        const tempoEvents = midi.tracks[0].filter((e) => e.type === 'meta' && e.metaType === 0x51)
+        expect(tempoEvents).toHaveLength(1)
+        const [hi, mid, lo] = tempoEvents[0].data
+        expect(((hi << 16) | (mid << 8) | lo) >>> 0).toBe(Math.round(60_000_000 / reference.bpm))
+        const timeSig = midi.tracks[0].find((e) => e.type === 'meta' && e.metaType === 0x58)
+        expect(timeSig?.data?.[0]).toBe(4)
+
+        // one instrument track per playing track that has events, in model order
+        const expectedTrackNames = reference.playingNames.filter((name) => reference.countByTrack[name] > 0)
+        expect(midi.trackNames.slice(1)).toEqual(expectedTrackNames)
+
+        const noteOns = findAllNotes(midi)
+        expect(noteOns).toHaveLength(reference.notes.length)
+
+        const byTickThenVelocity = (a, b) => a.absTick - b.absTick || (a.velocity ?? -1) - (b.velocity ?? -1)
+        const exported = noteOns
+            .map((n) => ({ absTick: n.absTick, velocity: n.velocity, note: n.note }))
+            .sort(byTickThenVelocity)
+        const expected = [...reference.notes].sort(byTickThenVelocity)
+        exported.forEach((note, i) => {
+            expect(note.absTick).toBe(expected[i].absTick)
+            // engine ticks are whole ticks, converted at MIDI_TICKS_PER_ENGINE_TICK each
+            expect(note.absTick % MIDI_TICKS_PER_ENGINE_TICK).toBe(0)
+            expect(note.note).toBeGreaterThanOrEqual(0)
+            expect(note.note).toBeLessThanOrEqual(127)
+            expect(note.velocity).toBeGreaterThanOrEqual(1)
+            expect(note.velocity).toBeLessThanOrEqual(127)
+            if (expected[i].velocity !== null) expect(note.velocity).toBe(expected[i].velocity)
+        })
+
+        // every note-on is paired with a note-off
+        const noteOffs = midi.tracks
+            .slice(1)
+            .flatMap((trackEvents) =>
+                trackEvents.filter(
+                    (e) => e.type === 'midi' && (e.status === 0x80 || (e.status === 0x90 && e.velocity === 0)),
+                ),
+            )
+        expect(noteOffs).toHaveLength(noteOns.length)
+    })
+
+    test('T5 — export WAV and verify the file content', async () => {
+        const selectedIdx = await page.evaluate(() => window.__e2e.appState.selectedPatternNum)
+        const meta = await page.evaluate((i) => {
+            const pattern = window.__e2e.appState.patterns[i]
+            return { name: pattern.name, bpm: pattern.bpm, nbBeats: pattern.nbBeats }
+        }, selectedIdx)
+        expect(meta.name).toBe(NEW_PATTERN)
+
+        // samples can belong to a non-selected drumkit: wait until the boot
+        // finished loading them, otherwise the render would be silent
+        await waitForPatternSoundsLoaded(page, selectedIdx)
+
+        await openToolsExportTab()
+        const downloadPromise = page.waitForEvent('download', { timeout: 120_000 })
+        await page.locator('#tp-export-wav').click()
+        const download = await downloadPromise
+        expect(download.suggestedFilename()).toBe(`ordrumbox-${NEW_PATTERN}.wav`)
+
+        const wavPath = await download.path()
+        expect(wavPath).toBeTruthy()
+        const buffer = fs.readFileSync(wavPath)
+        const { header, peak, nonZero } = parseWav(buffer)
+
+        // container: 16-bit PCM stereo @ 44.1 kHz (wav_encoder.js)
+        expect(header.riff).toBe('RIFF')
+        expect(header.wave).toBe('WAVE')
+        expect(header.fmtTag).toBe('fmt ')
+        expect(header.fmtSize).toBe(16)
+        expect(header.audioFormat).toBe(1)
+        expect(header.channels).toBe(2)
+        expect(header.sampleRate).toBe(44_100)
+        expect(header.bitsPerSample).toBe(16)
+        expect(header.blockAlign).toBe(4)
+        expect(header.byteRate).toBe(44_100 * 4)
+        expect(header.dataTag).toBe('data')
+
+        // one loop of the pattern: nbBeats beats at the pattern tempo
+        const duration = header.dataSize / header.byteRate
+        const musicalDuration = (meta.nbBeats * 60) / meta.bpm
+        expect(duration).toBeCloseTo(musicalDuration, 3)
+        // OfflineAudioContext length = floor(sampleRate * duration) — one
+        // sample of rounding slack either way
+        const sampleCount = header.dataSize / header.blockAlign
+        expect(Math.abs(sampleCount - Math.floor(44_100 * musicalDuration))).toBeLessThanOrEqual(1)
+
+        // the render must actually contain audio (the soloed track playing)
+        expect(peak).toBeGreaterThan(500)
+        expect(nonZero).toBeGreaterThan(1_000)
     })
 })
