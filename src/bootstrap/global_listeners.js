@@ -1,4 +1,5 @@
 import { showToast } from '../core/notify.js'
+import { initClickBursts } from '../core/click_bursts.js'
 import { clamp } from '../audio/math.js'
 import Utils from '../core/utils.js'
 import { serviceRegistry } from '../state/service_registry.js'
@@ -48,15 +49,27 @@ export function initGlobalListeners() {
         }
     })
 
+    // --tb-h drives the panel offsets below the fixed toolbar. #tb is rendered
+    // after this module runs, so watch for its insertion before observing it.
+    const watchToolbarHeight = (el) => {
+        const setHeight = () => {
+            document.documentElement.style.setProperty('--tb-h', `${Math.round(el.getBoundingClientRect().height)}px`)
+        }
+        const ro = new ResizeObserver(setHeight)
+        ro.observe(el)
+        setHeight()
+    }
     const tbEl = document.getElementById('tb')
     if (tbEl) {
-        const ro = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                document.documentElement.style.setProperty('--tb-h', `${entry.contentRect.height}px`)
-            }
+        watchToolbarHeight(tbEl)
+    } else if (document.body) {
+        const mo = new MutationObserver(() => {
+            const el = document.getElementById('tb')
+            if (!el) return
+            mo.disconnect()
+            watchToolbarHeight(el)
         })
-        ro.observe(tbEl)
-        document.documentElement.style.setProperty('--tb-h', `${tbEl.getBoundingClientRect().height}px`)
+        mo.observe(document.body, { childList: true, subtree: true })
     }
 
     // Delegated range-slider arrow-key stepping — kept in sync with tests/slider_keyboard.test.js
@@ -99,4 +112,5 @@ export function initGlobalListeners() {
 
     initKeyboardShortcuts()
     initServiceWorker()
+    initClickBursts()
 }

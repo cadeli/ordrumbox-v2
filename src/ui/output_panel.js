@@ -14,7 +14,7 @@ const CURVE_X_MAX = 0
 const CURVE_Y_MIN = -60
 const CURVE_Y_MAX = 12
 import BasePanel from './base_panel.js'
-import { color } from './theme.js'
+import { color, rgba } from './theme.js'
 
 const COMPRESSOR_PARAMS = [
     { key: 'threshold', label: 'Threshold', min: -40, max: 0, step: 1, default: -18, unit: 'dB' },
@@ -317,24 +317,43 @@ export default class OutputPanel extends BasePanel {
         const w = canvas.width
         const h = canvas.height
         if (!this.#bgColor) {
-            this.#bgColor = color('surface-2')
+            this.#bgColor = color('scope-bg')
         }
         const data = serviceRegistry.audioEngine?.getAnalyserData?.()
-        if (!data) {
-            ctx.fillStyle = this.#bgColor
-            ctx.fillRect(0, 0, w, h)
-            return
-        }
-        data.analyser.getByteFrequencyData(data.gFftData)
-        const bins = data.gFftData
-        const beatCount = Math.min(bins.length, w)
 
         ctx.fillStyle = this.#bgColor
         ctx.fillRect(0, 0, w, h)
 
+        // Oscilloscope graticule
+        ctx.save()
+        ctx.strokeStyle = rgba('toy-cyan', 0.16)
+        ctx.lineWidth = 1
         ctx.beginPath()
-        ctx.strokeStyle = '#202321'
+        const gridX = w / 8
+        const gridY = h / 4
+        for (let x = gridX; x < w; x += gridX) {
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, h)
+        }
+        for (let y = gridY; y < h; y += gridY) {
+            ctx.moveTo(0, y)
+            ctx.lineTo(w, y)
+        }
+        ctx.stroke()
+        ctx.restore()
+
+        // Idle scope: graticule only until the engine exposes analyser data
+        if (!data) return
+        data.analyser.getByteFrequencyData(data.gFftData)
+        const bins = data.gFftData
+        const beatCount = Math.min(bins.length, w)
+
+        // Phosphor trace
+        ctx.beginPath()
+        ctx.strokeStyle = color('phosphor')
         ctx.lineWidth = 1.5
+        ctx.shadowColor = color('phosphor')
+        ctx.shadowBlur = 8
         for (let i = 0; i < beatCount; i++) {
             const val = bins[i] / 255
             const x = (i / beatCount) * w
@@ -343,6 +362,7 @@ export default class OutputPanel extends BasePanel {
             else ctx.lineTo(x, y)
         }
         ctx.stroke()
+        ctx.shadowBlur = 0
     }
 
     /**

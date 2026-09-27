@@ -18,7 +18,7 @@ import BasePanel from './base_panel.js'
 import { TICK, isMobileViewport } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
 import LfoUiBridge from '../logic/lfo_ui_bridge.js'
-import { color } from './theme.js'
+import { sampleWaveformTheme } from './theme.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
 import { logger } from '../core/logger.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
@@ -64,6 +64,8 @@ export default class TrackEditor extends BasePanel {
         this._knobs = []
         this._fxKnobs = []
         this._noteEditor = null
+        this._waveObserver = null
+        this._waveObservedCanvas = null
 
         // ── Sub-components ───────────────────────────────────────────
         this.synthEditor = new SynthEditor(this)
@@ -371,9 +373,11 @@ export default class TrackEditor extends BasePanel {
                         min: def.min,
                         max: def.max,
                         step: def.step,
+                        scale: def.scale,
                         format: knobFormat(def),
-                        unit:
-                            def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : def.key === 'decay' ? 'ms' : '',
+                        // decay's formatter already appends "ms" — a unit here
+                        // would render the value as "5000 ms ms".
+                        unit: def.key === 'velocity' ? '%' : def.key === 'pitch' ? 'st' : '',
                         onChange: (v) => {
                             if (isDecay) {
                                 if (sound) sound.decay = v
@@ -428,20 +432,49 @@ export default class TrackEditor extends BasePanel {
         if (!sound?.buffer) return
         const analysis = analyzeSample(sound.buffer)
         if (!analysis?.envelope?.length) return
+
+        // The canvas box is set by CSS (66% of the sample bar), so the fixed
+        // 500px backing store was scaled down and the curve landed on
+        // sub-pixel lines. Match the backing store to the rendered size.
+        const dpr = window.devicePixelRatio || 1
+        const w = canvas.clientWidth > 0 ? Math.max(1, Math.round(canvas.clientWidth * dpr)) : canvas.width
+        const h = canvas.clientHeight > 0 ? Math.max(1, Math.round(canvas.clientHeight * dpr)) : canvas.height
+        if (canvas.width !== w || canvas.height !== h) {
+            canvas.width = w
+            canvas.height = h
+        }
+        this._observeWaveformCanvas(canvas)
+
         const ctx = canvas.getContext('2d')
-        drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, color('text'))
-        const decaySec = (sound.decay ?? 0) / 1000
+        const theme = sampleWaveformTheme(2 * dpr)
+        drawEnvelope(ctx, analysis.envelope, w, h, theme)
+
         const totalSec = sound.buffer.duration
         if (totalSec > 0) {
-            const ratio = Math.min(decaySec / totalSec, 1)
-            const x = ratio * canvas.width
-            ctx.strokeStyle = color('muted')
-            ctx.lineWidth = 2
+            const ratio = Math.min((sound.decay ?? 0) / 1000 / totalSec, 1)
+            const x = ratio * w
             ctx.beginPath()
+            ctx.setLineDash([4 * dpr, 4 * dpr])
+            ctx.strokeStyle = theme.marker
+            ctx.shadowColor = theme.marker
+            ctx.shadowBlur = 6 * dpr
+            ctx.lineWidth = theme.lineWidth
             ctx.moveTo(x, 0)
-            ctx.lineTo(x, canvas.height)
+            ctx.lineTo(x, h)
             ctx.stroke()
+            ctx.setLineDash([])
+            ctx.shadowBlur = 0
+            ctx.shadowColor = 'transparent'
         }
+    }
+
+    /** Redraw the waveform when its CSS box changes (window / panel resize). */
+    _observeWaveformCanvas(canvas) {
+        if (typeof ResizeObserver !== 'function' || this._waveObservedCanvas === canvas) return
+        this._waveObserver?.disconnect()
+        this._waveObservedCanvas = canvas
+        this._waveObserver = new ResizeObserver(() => this._drawSampleWaveform())
+        this._waveObserver.observe(canvas)
     }
 
     _onLoadSample() {

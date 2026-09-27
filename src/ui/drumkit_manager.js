@@ -8,7 +8,7 @@ import { formatNote } from '../core/hz_to_note.js'
 import { showToast } from '../core/notify.js'
 import { downloadJson, renderOptions, knobFormat } from './components/panel_helpers.js'
 import { syncKnobs } from './components/sync_helpers.js'
-import { color } from './theme.js'
+import { sampleWaveformTheme } from './theme.js'
 import BasePanel from './base_panel.js'
 import { logger } from '../core/logger.js'
 import WavImportService from '../logic/services/wav_import_service.js'
@@ -30,7 +30,16 @@ const SOUND_KNOB_DEFS = [
         unit: 'st',
         format: (v) => `${v >= 0 ? '+' : ''}${v.toFixed(1)}`,
     },
-    { key: 'decay', label: 'Decay', min: 0, max: 5000, step: 10, unit: '', format: knobFormat({ key: 'decay' }) },
+    {
+        key: 'decay',
+        label: 'Decay',
+        min: 20,
+        max: 5000,
+        step: 10,
+        scale: 'log',
+        unit: '',
+        format: knobFormat({ key: 'decay' }),
+    },
 ]
 
 export default class DrumkitManager extends BasePanel {
@@ -393,26 +402,35 @@ export default class DrumkitManager extends BasePanel {
         const draw = () => {
             const ctx = canvas.getContext('2d')
             if (!ctx) return
-            drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, color('text'))
+            const dpr = window.devicePixelRatio || 1
+            const theme = sampleWaveformTheme(2 * dpr)
+            drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, theme)
 
             const decaySec = (sound.decay ?? 0) / 1000
             const totalSec = sound.buffer?.duration ?? 0
             if (totalSec > 0) {
                 const ratio = Math.min(decaySec / totalSec, 1)
                 const x = ratio * canvas.width
-                ctx.strokeStyle = color('muted')
-                ctx.lineWidth = 2
                 ctx.beginPath()
+                ctx.setLineDash([4 * dpr, 4 * dpr])
+                ctx.strokeStyle = theme.marker
+                ctx.shadowColor = theme.marker
+                ctx.shadowBlur = 6 * dpr
+                ctx.lineWidth = theme.lineWidth
                 ctx.moveTo(x, 0)
                 ctx.lineTo(x, canvas.height)
                 ctx.stroke()
+                ctx.setLineDash([])
+                ctx.shadowBlur = 0
+                ctx.shadowColor = 'transparent'
             }
         }
 
         if (resize) {
             requestAnimationFrame(() => {
-                const w = canvas.clientWidth && canvas.clientWidth > 0 ? canvas.clientWidth : 300
-                const h = canvas.clientHeight && canvas.clientHeight > 0 ? canvas.clientHeight : 80
+                const dpr = window.devicePixelRatio || 1
+                const w = canvas.clientWidth && canvas.clientWidth > 0 ? Math.round(canvas.clientWidth * dpr) : 300
+                const h = canvas.clientHeight && canvas.clientHeight > 0 ? Math.round(canvas.clientHeight * dpr) : 80
                 canvas.width = w
                 canvas.height = h
                 draw()

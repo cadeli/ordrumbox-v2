@@ -6,6 +6,7 @@ import { EVENTS } from '../core/events.js'
 
 const APP_NAME = 'OrDrumbox'
 const APP_LICENSE = 'GPL-3.0-only'
+const APP_FONT = 'Press Start 2P (SIL OFL 1.1)'
 const APP_REPO = 'https://github.com/cadeli/ordrumbox-v2'
 const APP_WEBSITE = 'https://www.ordrumbox.com'
 
@@ -60,6 +61,10 @@ export default class AboutPanel extends BasePanel {
                 <div class="ne-row no-cursor">
                     <label>License</label>
                     <span class="ne-val">${APP_LICENSE}</span>
+                </div>
+                <div class="ne-row no-cursor">
+                    <label>Font</label>
+                    <span class="ne-val">${APP_FONT}</span>
                 </div>
             </div>
             <div class="ne-tab-panel ne-tab-panel-hidden" data-tab-panel="pwa">

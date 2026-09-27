@@ -9,6 +9,8 @@ import { idbReport } from '../core/idb.js'
 import { isMobileViewport } from '../core/constants.js'
 import { EVENTS, VIEW_TOGGLE } from '../core/events.js'
 
+const WELCOME_MESSAGE = 'software drum machine'
+
 function scheduleAfterFirstPaint(callback) {
     requestAnimationFrame(() => {
         const scheduleIdle = window.requestIdleCallback ?? ((idleCallback) => window.setTimeout(idleCallback, 0))
@@ -97,5 +99,11 @@ export function startAfterFirstPaint() {
         restoreInitialView()
         installE2eHook()
         void logIdbReport()
+
+        // Welcome line carried over from the splash screen. Skipped under
+        // automation so a toast can never cover the UI e2e specs are clicking.
+        if (typeof navigator === 'undefined' || navigator.webdriver !== true) {
+            showToast(WELCOME_MESSAGE, 'info')
+        }
     })
 }

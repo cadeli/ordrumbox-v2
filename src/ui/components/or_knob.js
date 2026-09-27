@@ -41,7 +41,7 @@ export class OrKnob {
     #boundOnMousedown
     #boundOnDblClick
     #boundOnContextMenu
-    #scale
+    #useLog
     #logMin
     #logRange
 
@@ -58,9 +58,11 @@ export class OrKnob {
         this.#value = cfg.value ?? cfg.min
         this.#defaultValue = cfg.defaultValue ?? cfg.value ?? cfg.min
         this.#unit = cfg.unit ?? ''
-        this.#scale = cfg.scale ?? 'linear'
-        this.#logMin = Math.log10(this.#min)
-        this.#logRange = Math.log10(this.#max) - this.#logMin
+        // A log scale is only defined for min > 0 (log10(0) = -Infinity, which
+        // would yield a NaN arc). Fall back to linear instead of breaking.
+        this.#useLog = cfg.scale === 'log' && this.#min > 0 && this.#max > this.#min
+        this.#logMin = this.#useLog ? Math.log10(this.#min) : 0
+        this.#logRange = this.#useLog ? Math.log10(this.#max) - this.#logMin : 0
 
         this.el = null
         this.#valSpan = null
@@ -82,7 +84,7 @@ export class OrKnob {
 
     /** Returns 0–100 percentage of current value within range. */
     #pct() {
-        if (this.#scale === 'log' && this.#logRange > 0) {
+        if (this.#useLog) {
             const logPos = (Math.log10(Math.max(this.#min, this.#value)) - this.#logMin) / this.#logRange
             return Math.max(0, Math.min(100, logPos * 100))
         }
@@ -199,7 +201,7 @@ export class OrKnob {
         this.#dragStartVal = this.#value
         this.#knobEl.classList.add('dragging')
 
-        const isLog = this.#scale === 'log' && this.#logRange > 0
+        const isLog = this.#useLog
         const baseSensitivity = isLog ? this.#logRange / 200 : (this.#max - this.#min) / 200
         const startLogPos = isLog
             ? (Math.log10(Math.max(this.#min, this.#dragStartVal)) - this.#logMin) / this.#logRange

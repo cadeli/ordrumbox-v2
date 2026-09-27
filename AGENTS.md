@@ -108,6 +108,7 @@ import { bootApp } from './fixtures.js'
 - **Naming**: `snake_case` for files, `camelCase` for variables/functions, `PascalCase` for classes
 - **Generators**: imported dynamically via `service_loader.js`
 - **Worklet code**: processor source files in `src/audio/worklets/processors/` are template strings (not ES modules)
+- **Fonts**: `--font` = system monospace stack (no licence, no files); `--font-pixel` = bundled Press Start 2P (SIL OFL 1.1, `src/ui/fonts/` + `OFL-PressStart2P.txt` notice, `@font-face` in `src/ui/fonts.css` linked from `index.html` so the splash gets it) — use it only at multiples of 8px (8/16/24/32px) so glyphs stay on the 8px grid, data/paragraph text stays on `--font`; the font has a single weight, so pixel rules set `font-weight: 400` + `font-synthesis: none` (never fake-bold it)
 
 ## JavaScript Guidelines (Vanilla JS)
 

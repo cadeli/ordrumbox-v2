@@ -51,7 +51,10 @@ export const KNOB_PROPS = [
     { key: 'velocity', label: 'Vel', min: 0, max: 1, step: 0.01, lfo: 'velocityLfo' },
     { key: 'pan', label: 'Pan', min: -1, max: 1, step: 0.01, lfo: 'panLfo' },
     { key: 'pitch', label: 'Pitch', min: -24, max: 24, step: 1, lfo: 'pitchLfo' },
-    { key: 'decay', label: 'Decay', min: 0, max: 5000, step: 10 },
+    // Log scale: most of the arc covers 20–500 ms where the ear is sensitive,
+    // instead of spending 90% of the travel above 1 s. min is 20 (not 0)
+    // because SampleVoice floors the decay at 20 ms — and log10(0) is -Inf.
+    { key: 'decay', label: 'Decay', min: 20, max: 5000, step: 10, scale: 'log' },
 ]
 
 // ── Tabs ──────────────────────────────────────────────────────────────

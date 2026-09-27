@@ -42,7 +42,10 @@ export function clearAnalysisCache(audioBuffer) {
  * @param {number[]} envelope – array of amplitude values (0..1)
  * @param {number} width
  * @param {number} height
- * @param {string|object} [strokeOrColors] – CSS color string (legacy) or { stroke, background, fill }
+ * @param {string|object} [strokeOrColors] – CSS color string (legacy) or
+ *        { stroke, background, fill, lineWidth }. `lineWidth` is in canvas
+ *        pixels (default 1.5) — pass a devicePixelRatio-scaled value when the
+ *        backing store is scaled.
  */
 export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
     if (!envelope?.length) return
@@ -52,6 +55,7 @@ export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
     const stroke = colors.stroke ?? '#202321'
     const background = colors.background ?? '#D1D2CE'
     const fill = colors.fill ?? 'rgba(32,35,33,0.08)'
+    const lineWidth = colors.lineWidth ?? 1.5
 
     ctx.clearRect(0, 0, width, height)
     ctx.fillStyle = background
@@ -59,7 +63,7 @@ export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
 
     ctx.beginPath()
     ctx.strokeStyle = stroke
-    ctx.lineWidth = 1.5
+    ctx.lineWidth = lineWidth
 
     const step = width / (envelope.length - 1)
     for (let i = 0; i < envelope.length; i++) {

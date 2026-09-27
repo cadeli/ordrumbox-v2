@@ -187,6 +187,12 @@ MasterGain: 1.0
 
 orDrumbox is maintained by the community under the GPL V3 License.
 
+The bundled UI display font **Press Start 2P** by CodeMan38 is not covered by
+that licence: © 2012 The Press Start 2P Project Authors (cody@zone38.net), with
+Reserved Font Name "Press Start 2P", licensed under the **SIL Open Font License
+1.1**. The full license text ships with the font binary in
+[`src/ui/fonts/OFL-PressStart2P.txt`](src/ui/fonts/OFL-PressStart2P.txt).
+
 ---
 
 Copyright 2026 OrDrumbox Team

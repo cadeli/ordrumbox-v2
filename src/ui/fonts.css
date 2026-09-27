@@ -1,0 +1,17 @@
+/* Press Start 2P — pixel display font for orDrumbox.
+   Copyright 2012 The Press Start 2P Project Authors (cody@zone38.net),
+   with Reserved Font Name "Press Start 2P".
+   Licensed under the SIL Open Font License 1.1 — full text and copyright
+   notice shipped next to the binary: src/ui/fonts/OFL-PressStart2P.txt.
+   The font is not modified (no Reserved Font Name issue).
+   Design grid: 8 pixels per em → use font-size in multiples of 8px
+   (8/16/24/32px) so glyphs stay on the device pixel grid. One weight only
+   (400): the UI sets `font-synthesis: none` so the browser never fake-bolds
+   the pixels. */
+@font-face {
+    font-family: 'PressStart2P';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/PressStart2P-latin-400.woff2') format('woff2');
+}

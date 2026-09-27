@@ -1,32 +1,50 @@
 /* ========================================
    OrDrumbox UI Styles
+   Game Boy × experimental synth × oscilloscope × toy instrument
    ======================================== */
 
+/* ---- Fonts: --font = system UI monospace stack (no licence issues),
+   --font-pixel = bundled Press Start 2P (SIL OFL 1.1, src/ui/fonts) used
+   for display/branding text, always at multiples of 8px (8px design grid).
+   @font-face lives in src/ui/fonts.css so the splash screen gets it too. ---- */
+
 :root {
-    /* ── Colors (canonical palette) ── */
-    --bg: #e7e8e4;
-    --surface: #d9dad6;
-    --surface-2: #cfd0cc;
-    --line: #a9aaa6;
-    --muted: #686a67;
-    --text: #202321;
-    --black: #151716;
-    --accent: #596b61;
+    /* ── Colors (canonical palette): deep scope ink + phosphor green ── */
+    --bg: #14163e;
+    --surface: #1d2157;
+    --surface-2: #262b68;
+    --line: #3f47ad;
+    --muted: #9ba4ee;
+    --text: #eaffd0;
+    --black: #06071b;
+    --accent: #9bbc0f;
 
     /* ── Accent variants ── */
-    --accent-400: #6a7d73;
-    --accent-600: #4a5c52;
+    --accent-400: #c6e93a;
+    --accent-600: #6f9200;
 
-    /* ── Semantic (for dark mode overrides) ── */
-    --color-success: var(--accent);
-    --color-success-dark: var(--accent-600);
-    --color-warning: var(--muted);
-    --color-danger: var(--muted);
-    --color-danger-light: var(--line);
-    --color-info: var(--accent);
-    --bg-success: var(--accent);
+    /* ── Toy plastics (candy buttons, per-track colours) ── */
+    --toy-pink: #ff4fa3;
+    --toy-cyan: #37e0ff;
+    --toy-yellow: #ffe14d;
+    --toy-violet: #a97bff;
+    --toy-orange: #ff9040;
+    --toy-lime: #b7ff3c;
+    --phosphor: #b6ff2e;
+    --scope-bg: #050a14;
+
+    /* ── Semantic (candy signals) ── */
+    --color-success: #4dffb2;
+    --color-success-dark: #17c98a;
+    --color-warning: #ffe14d;
+    --color-danger: #ff4fa3;
+    --color-danger-light: #ff9ec7;
+    --color-info: #37e0ff;
+    --bg-success: #17c98a;
 
     /* ── Typography ── */
+    --font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+    --font-pixel: 'PressStart2P', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
     --fs-xs: 9px;
     --fs-sm: 10px;
     --fs-base: 11px;
@@ -48,19 +66,26 @@
     --radius-sm: 4px;
 
     /* ── Border variants ── */
-    --border-subtle: #c1c2be;
+    --border-subtle: #4d56c4;
 
     /* ── Canvas / Waveform ── */
-    --canvas-shadow: rgba(0, 0, 0, 0.1);
-    --toast-shadow: rgba(0, 0, 0, 0.15);
+    --canvas-shadow: rgba(0, 0, 0, 0.5);
+    --toast-shadow: rgba(0, 0, 0, 0.55);
 }
 
 /* ---- Global ---- */
 body {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: var(--font);
     line-height: 1.5;
     color: var(--text);
-    background: var(--bg);
+    /* Neon glows + oscilloscope graticule behind the whole machine */
+    background:
+        radial-gradient(1100px 700px at 6% -18%, rgba(255, 79, 163, 0.3), transparent 62%),
+        radial-gradient(1000px 760px at 102% -6%, rgba(55, 224, 255, 0.26), transparent 60%),
+        radial-gradient(900px 900px at 50% 118%, rgba(169, 123, 255, 0.3), transparent 60%),
+        repeating-linear-gradient(to right, rgba(183, 255, 60, 0.07) 0 1px, transparent 1px 48px),
+        repeating-linear-gradient(to bottom, rgba(183, 255, 60, 0.07) 0 1px, transparent 1px 48px),
+        linear-gradient(180deg, var(--bg) 0%, #0a0b26 55%, var(--bg) 100%);
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -179,7 +204,7 @@ body {
     overflow: visible;
 }
 #tb button {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: var(--font);
     font-size: var(--fs-md);
     padding: 5px 8px;
     border: 1px solid var(--line);
@@ -194,7 +219,7 @@ body {
     touch-action: manipulation;
 }
 #tb select {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: var(--font);
     font-size: var(--fs-md);
     padding: 5px 6px;
     border: 1px solid var(--line);
@@ -211,7 +236,7 @@ body {
 }
 #tb button:active {
     background: var(--black);
-    color: var(--bg);
+    color: var(--text);
 }
 #tb .tb-brand {
     font-size: 15px;
@@ -403,7 +428,7 @@ body {
     gap: 3px;
 }
 .tb-view-btn {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: var(--font);
     font-size: var(--fs-sm);
     padding: 3px 6px;
     border: 1px solid var(--line);
@@ -421,7 +446,7 @@ body {
 }
 #tb .tb-view-btn.active {
     background: var(--black);
-    color: var(--bg);
+    color: var(--text);
     border-color: var(--black);
 }
 
@@ -437,7 +462,7 @@ body {
 }
 #tb .tb-gen-btn.active {
     background: var(--black);
-    color: var(--bg);
+    color: var(--text);
     border-color: var(--black);
 }
 
@@ -1075,7 +1100,7 @@ body {
     color: var(--text);
     padding: 4px 8px;
     border-radius: var(--radius-sm);
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: var(--font);
     font-size: var(--fs-base);
     white-space: pre-wrap;
     pointer-events: none;
@@ -1869,7 +1894,7 @@ body {
 
 /* ---- Buttons ---- */
 .ne-btn {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: var(--font);
     font-size: var(--fs-sm);
     padding: 2px 8px;
     border: 1px solid var(--line);
@@ -1889,7 +1914,7 @@ body {
 .ne-btn.active {
     background: var(--black);
     border-color: var(--black);
-    color: var(--bg);
+    color: var(--text);
 }
 
 /* Tools actions are independent commands, not form fields.  Keeping their
@@ -2141,7 +2166,7 @@ body {
     vertical-align: middle;
 }
 #soft-synth-panel .ss-wave-tab {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: var(--font);
     font-size: var(--fs-xs);
     padding: 2px 6px;
     border: none;
@@ -2243,7 +2268,7 @@ body {
 }
 #soft-synth-panel .ss-mod-pill.active {
     background: var(--black);
-    color: var(--bg);
+    color: var(--text);
 }
 /* Shared row styles for selects, booleans, icon rows */
 #soft-synth-panel .ne-row {
@@ -2424,6 +2449,11 @@ body {
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
+    /* The grid wrapper stretches every card to the same height; the leftover
+       space would otherwise be shared between the flex lines (default
+       align-content: stretch) and push the title row off the first line of
+       the shorter cards (FM, FltEnv, ModEnv, Master…). */
+    align-content: flex-start;
     gap: 3px;
     padding: 3px 6px;
     background: rgba(255, 255, 255, 0.04);
@@ -2648,7 +2678,7 @@ body {
 .dm-list-item.dm-selected {
     background: var(--black);
     border: 1px solid var(--black);
-    color: var(--bg);
+    color: var(--text);
 }
 
 .dm-play-btn,
@@ -2982,6 +3012,1117 @@ body {
     color: var(--line);
     text-align: center;
     padding: 40px;
+}
+
+/* ========================================
+   TOY SHELL — Game Boy × experimental synth × oscilloscope
+   Layered on top of the base palette: candy plastics, chunky
+   borders, phosphor traces and CRT scanlines.
+   ======================================== */
+
+/* ---- 1. CRT scanlines over the whole machine ---- */
+#app-main::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9000;
+    background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.14) 0 1px, rgba(0, 0, 0, 0) 1px 3px);
+}
+
+/* ---- 2. Panel shells: translucent screens + colour zones ---- */
+#tb,
+#pattern-panel,
+#piano-roll-panel,
+#soft-synth-panel,
+.ne-panel,
+.workspace-panel,
+#ne-container {
+    background-color: color-mix(in srgb, var(--bg) 86%, transparent);
+}
+#tb {
+    font-family: var(--font);
+    border-bottom: 2px solid var(--toy-pink);
+    box-shadow: 0 4px 26px rgba(255, 79, 163, 0.38);
+}
+#pattern-panel {
+    box-shadow:
+        0 3px 0 var(--toy-cyan),
+        0 0 26px rgba(55, 224, 255, 0.16);
+}
+#piano-roll-panel {
+    border-bottom: 2px solid var(--toy-cyan);
+    box-shadow: 0 3px 0 var(--toy-cyan);
+}
+#soft-synth-panel {
+    border-bottom: 2px solid var(--toy-violet);
+    box-shadow: 0 3px 0 var(--toy-violet);
+}
+.workspace-panel {
+    border-bottom: 2px solid var(--toy-orange);
+    box-shadow: 0 3px 0 var(--toy-orange);
+}
+.ne-panel {
+    border-bottom: 2px solid var(--toy-yellow);
+    box-shadow: 0 3px 0 var(--toy-yellow);
+}
+.ne-panel.pp-split {
+    border-left: 2px solid var(--toy-violet);
+}
+#ne-container {
+    border-top: 2px solid var(--toy-lime);
+}
+.ne-header {
+    border-bottom: 1px solid var(--toy-cyan);
+    box-shadow: 0 3px 12px -6px var(--toy-cyan);
+}
+#pattern-panel .pp-header {
+    border-bottom: 1px solid var(--toy-pink);
+    box-shadow: 0 3px 12px -6px var(--toy-pink);
+}
+#pattern-panel .pp-name {
+    color: var(--toy-pink);
+    text-shadow: 0 0 10px rgba(255, 79, 163, 0.6);
+}
+.ne-track {
+    color: var(--toy-pink);
+    text-shadow: 0 0 12px rgba(255, 79, 163, 0.55);
+}
+#soft-synth-panel .ss-title {
+    color: var(--toy-yellow);
+    text-shadow: 0 0 10px rgba(255, 225, 77, 0.5);
+    border-bottom: 1px solid rgba(255, 225, 77, 0.45);
+}
+#soft-synth-panel .ss-group-label {
+    color: var(--group-c, var(--text));
+}
+.op-comp-title {
+    font-family: var(--font-pixel);
+    font-weight: 700;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--toy-pink);
+    text-shadow: 0 0 10px rgba(255, 79, 163, 0.5);
+}
+
+/* ---- 3. Chunky toy buttons ---- */
+#tb button,
+.tb-view-btn,
+.tb-undo-btn,
+.ne-btn,
+.ne-toggle,
+.pp-action-btn,
+.te-load-btn,
+.dm-play-btn,
+.dm-icon-btn,
+.fx-icon-btn,
+#soft-synth-panel .ss-tb-btn,
+#soft-synth-panel .ss-wave-icon,
+#soft-synth-panel .ss-ft-icon,
+#soft-synth-panel .ss-fm-icon,
+.pp-pr-page-btn,
+.op-comp-bypass,
+.ss-bypass-btn {
+    border-radius: 5px;
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+        2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+#tb button:active,
+.tb-view-btn:active,
+.tb-undo-btn:active,
+.ne-btn:active,
+.ne-toggle:active,
+.pp-action-btn:active,
+.te-load-btn:active,
+.dm-play-btn:active,
+.dm-icon-btn:active,
+.fx-icon-btn:active,
+#soft-synth-panel .ss-tb-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+#tb button {
+    background: color-mix(in srgb, var(--toy-cyan) 16%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    font-weight: 600;
+}
+#tb button:hover {
+    background: color-mix(in srgb, var(--toy-cyan) 34%, transparent);
+}
+#tb button:active {
+    background: var(--black);
+    color: var(--text);
+}
+#tb select {
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    background: color-mix(in srgb, var(--black) 55%, var(--surface-2));
+    font-weight: 600;
+}
+select option {
+    background: var(--bg);
+    color: var(--text);
+}
+.tb-view-btn {
+    background: color-mix(in srgb, var(--toy-violet) 18%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    color: var(--text);
+}
+#tb .tb-view-btn.active {
+    background: var(--toy-pink);
+    color: var(--black);
+    border-color: var(--black);
+}
+.tb-gen-btn {
+    background: color-mix(in srgb, var(--toy-yellow) 14%, transparent);
+    border-color: rgba(0, 0, 0, 0.55);
+    color: var(--toy-yellow);
+}
+.tb-gen-btn:hover {
+    background: color-mix(in srgb, var(--toy-yellow) 30%, transparent);
+}
+#tb .tb-gen-btn.active {
+    background: var(--toy-yellow);
+    color: var(--black);
+    border-color: var(--black);
+}
+#tb .tb-auto-gen {
+    background: color-mix(in srgb, var(--toy-violet) 24%, transparent);
+    border-color: rgba(0, 0, 0, 0.55);
+    color: var(--toy-violet);
+}
+#tb .tb-auto-gen.active {
+    background: var(--toy-violet);
+    border-color: var(--black);
+    color: var(--black);
+}
+.tb-undo-btn {
+    background: color-mix(in srgb, var(--toy-violet) 45%, var(--surface));
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    color: var(--black);
+    font-weight: 700;
+}
+#tb .tb-start {
+    background: var(--accent);
+    color: var(--black);
+    border: none;
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+        2px 2px 0 rgba(0, 0, 0, 0.45),
+        0 0 16px rgba(155, 188, 15, 0.6);
+}
+#tb .tb-start:hover {
+    background: var(--accent-400);
+}
+#tb .tb-start.running {
+    background: var(--toy-pink);
+    color: var(--black);
+    border: none;
+    animation: od-pulse 1.2s ease-in-out infinite;
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+        2px 2px 0 rgba(0, 0, 0, 0.45),
+        0 0 22px rgba(255, 79, 163, 0.9);
+}
+@keyframes od-pulse {
+    0%,
+    100% {
+        box-shadow:
+            inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+            2px 2px 0 rgba(0, 0, 0, 0.45),
+            0 0 10px rgba(255, 79, 163, 0.55);
+    }
+    50% {
+        box-shadow:
+            inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+            2px 2px 0 rgba(0, 0, 0, 0.45),
+            0 0 26px rgba(255, 79, 163, 1);
+    }
+}
+#tb .tb-label {
+    color: var(--toy-cyan);
+}
+#tb .tb-page-label {
+    color: var(--toy-yellow);
+}
+#tb .tb-brand {
+    font-family: var(--font-pixel);
+    font-weight: 400;
+    font-synthesis: none;
+    font-size: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, var(--toy-pink), var(--toy-yellow) 55%, var(--toy-cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 6px rgba(255, 225, 77, 0.5));
+}
+@supports not (background-clip: text) {
+    #tb .tb-brand {
+        background: none;
+        color: var(--toy-yellow);
+    }
+}
+
+/* ---- 4. Small controls, toggles, tabs ---- */
+.pp-action-btn,
+.te-load-btn,
+.dm-play-btn,
+.dm-icon-btn {
+    background: color-mix(in srgb, var(--toy-violet) 34%, var(--surface-2));
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    color: var(--text);
+}
+.pp-action-btn:hover,
+.te-load-btn:hover,
+.dm-play-btn:hover,
+.dm-icon-btn:hover {
+    background: var(--toy-pink);
+    color: var(--black);
+    border-color: var(--black);
+}
+.ne-btn {
+    background: color-mix(in srgb, var(--toy-cyan) 15%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    color: var(--text);
+    font-weight: 600;
+}
+.ne-btn:hover {
+    background: color-mix(in srgb, var(--toy-cyan) 32%, transparent);
+    color: var(--text);
+}
+.ne-btn.active {
+    background: var(--accent);
+    border-color: var(--black);
+    color: var(--black);
+}
+.ne-toggle {
+    background: color-mix(in srgb, var(--toy-violet) 22%, var(--surface-2));
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    color: var(--text);
+}
+.ne-toggle:hover {
+    border-color: var(--toy-cyan);
+    color: var(--toy-cyan);
+}
+.ne-toggle.active {
+    background: var(--toy-cyan);
+    border-color: var(--black);
+    color: var(--black);
+}
+.ne-tab-btn:hover {
+    color: var(--toy-cyan);
+}
+.ne-tab-btn.active {
+    color: var(--toy-yellow);
+    border-bottom-color: var(--toy-yellow);
+    background: linear-gradient(to top, rgba(255, 225, 77, 0.2), transparent);
+}
+#soft-synth-panel .ss-wave-tab.active {
+    color: var(--toy-yellow);
+    border-bottom-color: var(--toy-yellow);
+}
+.ne-tab-bar,
+.ne-tab-panel {
+    background: color-mix(in srgb, var(--surface-2) 92%, transparent);
+    border-color: rgba(0, 0, 0, 0.45);
+}
+.fx-icon-btn {
+    background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    color: var(--color-success);
+}
+.fx-icon-btn.selected {
+    background: var(--bg-success);
+    border-color: var(--black);
+    color: var(--black);
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+        0 0 10px rgba(23, 201, 138, 0.7);
+}
+#soft-synth-panel .ss-tb-btn {
+    background: color-mix(in srgb, var(--toy-orange) 20%, var(--surface-2));
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    color: var(--text);
+    font-weight: 600;
+}
+#soft-synth-panel .ss-tb-btn.active {
+    background: var(--toy-orange);
+    color: var(--black);
+    border-color: var(--black);
+}
+#soft-synth-panel .ss-wave-icon,
+#soft-synth-panel .ss-ft-icon,
+#soft-synth-panel .ss-fm-icon {
+    background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    color: var(--color-success);
+}
+#soft-synth-panel .ss-wave-icon.selected,
+#soft-synth-panel .ss-ft-icon.selected,
+#soft-synth-panel .ss-fm-icon.selected {
+    background: var(--bg-success);
+    border-color: var(--black);
+    color: var(--black);
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+        0 0 10px rgba(23, 201, 138, 0.7);
+}
+#soft-synth-panel .ss-mod-pill {
+    background: color-mix(in srgb, var(--black) 55%, var(--surface-2));
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+#soft-synth-panel .ss-mod-pill.active {
+    background: var(--toy-violet);
+    color: var(--black);
+}
+.te-mod-btn {
+    border-color: rgba(0, 0, 0, 0.55);
+    background: color-mix(in srgb, var(--toy-lime) 12%, transparent);
+}
+.te-mod-btn.active {
+    color: var(--black);
+    border-color: var(--black);
+    background: var(--toy-lime);
+}
+.ss-bypass-btn,
+.op-comp-bypass {
+    border-color: rgba(0, 0, 0, 0.55);
+    background: color-mix(in srgb, var(--surface-2) 85%, transparent);
+}
+.ss-bypass-btn.active,
+.op-comp-bypass.active {
+    background: var(--toy-lime);
+    border-color: var(--black);
+    color: var(--black);
+    box-shadow: 0 0 12px rgba(183, 255, 60, 0.8);
+}
+.ne-close {
+    background: var(--toy-pink);
+    color: var(--black);
+    font-weight: 700;
+}
+.ne-row select,
+.ne-row .ne-input,
+#soft-synth-panel select,
+#soft-synth-panel .ss-preset-select,
+.sg-modal-select {
+    background: color-mix(in srgb, var(--black) 55%, var(--surface-2));
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    color: var(--text);
+}
+.ne-row label,
+#soft-synth-panel .ss-param-label {
+    color: color-mix(in srgb, var(--muted) 85%, var(--toy-cyan));
+}
+
+/* ---- 5. Knobs: moulded plastic with a phosphor arc ---- */
+.or-knob-arc {
+    background: conic-gradient(
+        from -135deg,
+        var(--toy-cyan) 0deg,
+        var(--toy-cyan) var(--arc-deg),
+        transparent var(--arc-deg),
+        transparent 270deg,
+        var(--line) 270deg,
+        var(--line) 360deg
+    );
+    filter: drop-shadow(0 0 4px rgba(55, 224, 255, 0.7));
+}
+.or-knob-disc {
+    background: radial-gradient(
+        circle at 34% 28%,
+        color-mix(in srgb, var(--surface-2) 55%, #ffffff),
+        var(--surface) 58%,
+        color-mix(in srgb, var(--black) 78%, var(--surface))
+    );
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+        0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.or-knob.dragging {
+    outline: 2px solid var(--toy-pink);
+    filter: drop-shadow(0 0 8px rgba(255, 79, 163, 0.85));
+}
+.or-knob-label {
+    color: var(--toy-cyan);
+    font-weight: 600;
+}
+.ne-row .ne-val,
+.ne-knob-bar .ne-row-knob .ne-val,
+.te-knob-bar .ne-row-knob .ne-val,
+.op-comp-knobs .ne-val {
+    color: var(--toy-yellow);
+}
+.ne-knob-bar,
+.te-knob-bar {
+    background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.45);
+}
+
+/* ---- 6. Synth cards: one candy colour per module ---- */
+#soft-synth-panel .ss-group {
+    background: color-mix(in srgb, var(--group-c, var(--line)) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--group-c, var(--line)) 62%, transparent);
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.45),
+        2px 2px 0 rgba(0, 0, 0, 0.35);
+    border-radius: 7px;
+}
+#soft-synth-panel .ss-group[data-ss-card='scope'] {
+    --group-c: var(--phosphor);
+}
+#soft-synth-panel .ss-group[data-ss-card='vco1'] {
+    --group-c: var(--toy-pink);
+}
+#soft-synth-panel .ss-group[data-ss-card='vco2'] {
+    --group-c: var(--toy-cyan);
+}
+#soft-synth-panel .ss-group[data-ss-card='vco3'] {
+    --group-c: var(--toy-violet);
+}
+#soft-synth-panel .ss-group[data-ss-card='fm'] {
+    --group-c: var(--toy-orange);
+}
+#soft-synth-panel .ss-group[data-ss-card='filter'] {
+    --group-c: var(--toy-yellow);
+}
+#soft-synth-panel .ss-group[data-ss-card='filterEnv'] {
+    --group-c: var(--toy-lime);
+}
+#soft-synth-panel .ss-group[data-ss-card='lfo'] {
+    --group-c: var(--toy-cyan);
+}
+#soft-synth-panel .ss-group[data-ss-card='lfo2'] {
+    --group-c: var(--toy-violet);
+}
+#soft-synth-panel .ss-group[data-ss-card='noise'] {
+    --group-c: var(--toy-pink);
+}
+#soft-synth-panel .ss-group[data-ss-card='master'] {
+    --group-c: var(--color-success);
+}
+#soft-synth-panel .ss-group[data-ss-card='envelope'] {
+    --group-c: var(--toy-orange);
+}
+#soft-synth-panel .ss-group[data-ss-card='modEnvelope'] {
+    --group-c: var(--toy-yellow);
+}
+#soft-synth-panel .ss-group.bypassed {
+    opacity: 0.45;
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
+/* ---- 7. Oscilloscope screens (canvases) ---- */
+#soft-synth-panel .ss-waveform,
+#soft-synth-panel .ss-env-canvas,
+#soft-synth-panel .ss-filter-curve,
+#op-spectrum,
+#op-comp-curve,
+.dm-waveform {
+    border: 1px solid color-mix(in srgb, var(--toy-cyan) 55%, transparent);
+    background: var(--scope-bg);
+    box-shadow:
+        inset 0 0 20px rgba(55, 224, 255, 0.16),
+        0 0 14px rgba(55, 224, 255, 0.3);
+}
+.te-waveform {
+    background: var(--scope-bg);
+    border: 1px solid color-mix(in srgb, var(--toy-cyan) 45%, transparent);
+    box-shadow: inset 0 0 16px rgba(55, 224, 255, 0.2);
+}
+
+/* ---- 8. Pattern grid: candy steps + per-track colours ---- */
+#pattern-panel .pp-track-name {
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+#pattern-panel .pp-track:nth-child(6n + 1) .pp-track-name {
+    box-shadow: inset 4px 0 0 var(--toy-pink);
+}
+#pattern-panel .pp-track:nth-child(6n + 2) .pp-track-name {
+    box-shadow: inset 4px 0 0 var(--toy-cyan);
+}
+#pattern-panel .pp-track:nth-child(6n + 3) .pp-track-name {
+    box-shadow: inset 4px 0 0 var(--toy-yellow);
+}
+#pattern-panel .pp-track:nth-child(6n + 4) .pp-track-name {
+    box-shadow: inset 4px 0 0 var(--toy-violet);
+}
+#pattern-panel .pp-track:nth-child(6n + 5) .pp-track-name {
+    box-shadow: inset 4px 0 0 var(--toy-orange);
+}
+#pattern-panel .pp-track:nth-child(6n + 6) .pp-track-name {
+    box-shadow: inset 4px 0 0 var(--toy-lime);
+}
+#pattern-panel .pp-track:nth-child(6n + 1) .pp-note-slice {
+    background: var(--toy-pink);
+}
+#pattern-panel .pp-track:nth-child(6n + 2) .pp-note-slice {
+    background: var(--toy-cyan);
+}
+#pattern-panel .pp-track:nth-child(6n + 3) .pp-note-slice {
+    background: var(--toy-yellow);
+}
+#pattern-panel .pp-track:nth-child(6n + 4) .pp-note-slice {
+    background: var(--toy-violet);
+}
+#pattern-panel .pp-track:nth-child(6n + 5) .pp-note-slice {
+    background: var(--toy-orange);
+}
+#pattern-panel .pp-track:nth-child(6n + 6) .pp-note-slice {
+    background: var(--toy-lime);
+}
+#pattern-panel .pp-track-name.selected {
+    color: var(--toy-yellow);
+}
+#pattern-panel .pp-vu {
+    background: rgba(0, 0, 0, 0.45);
+}
+#pattern-panel .pp-vu-fill {
+    background: linear-gradient(to top, var(--toy-lime), var(--toy-yellow) 50%, var(--toy-pink));
+}
+#pattern-panel .pp-divider {
+    background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.55);
+}
+#pattern-panel .pp-divider.muted {
+    background: var(--color-danger);
+    border-color: var(--black);
+}
+#pattern-panel .pp-divider:hover {
+    background: var(--toy-cyan);
+    border-color: var(--black);
+}
+#pattern-panel .pp-solo {
+    background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.55);
+}
+#pattern-panel .pp-solo.active {
+    background: var(--toy-yellow);
+    border-color: var(--black);
+    box-shadow: 0 0 10px rgba(255, 225, 77, 0.75);
+}
+#pattern-panel .pp-track.pp-selected {
+    background: color-mix(in srgb, var(--toy-pink) 26%, transparent);
+    box-shadow: inset 0 0 0 1px var(--toy-pink);
+}
+#pattern-panel .pp-beat {
+    background: rgba(55, 224, 255, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.45);
+}
+#pattern-panel .pp-beat:nth-child(odd) {
+    background: rgba(255, 79, 163, 0.05);
+}
+#pattern-panel .pp-cell {
+    background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+}
+#pattern-panel .pp-cell.filled {
+    background: color-mix(in srgb, var(--black) 70%, var(--surface-2));
+    border-color: var(--black);
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+        0 0 8px rgba(255, 255, 255, 0.12);
+}
+#pattern-panel .pp-cell.pp-triggered,
+#pattern-panel .pp-cell.pp-triggered .pp-note-slice {
+    background: var(--toy-yellow);
+    border-color: var(--toy-yellow);
+    box-shadow: 0 0 16px rgba(255, 225, 77, 0.95);
+}
+#pattern-panel .pp-cell.cursor {
+    outline: 2px solid var(--toy-yellow);
+}
+#pattern-panel .pp-cell.selected {
+    outline: 2px solid var(--toy-pink);
+}
+#pattern-panel .pp-cell.pp-loop {
+    border-right: 4px solid var(--toy-cyan);
+}
+#pattern-panel .pp-playhead {
+    width: 3px;
+    background: var(--toy-pink);
+    box-shadow: 0 0 12px var(--toy-pink);
+}
+#pattern-panel .pp-add-track,
+#pattern-panel .pp-delete-track {
+    border: 1px dashed color-mix(in srgb, var(--toy-cyan) 70%, transparent);
+    color: var(--toy-cyan);
+    background: color-mix(in srgb, var(--toy-cyan) 8%, transparent);
+}
+#pattern-panel .pp-delete-track:hover {
+    background: color-mix(in srgb, var(--color-danger) 30%, transparent);
+    border-color: var(--color-danger);
+    color: var(--color-danger-light);
+}
+#pattern-panel .pp-master-track {
+    background: color-mix(in srgb, var(--toy-lime) 14%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.55);
+}
+#pattern-panel .pp-master-track:hover {
+    background: color-mix(in srgb, var(--toy-lime) 28%, transparent);
+    border-color: var(--black);
+}
+#pattern-panel .pp-track-url {
+    color: color-mix(in srgb, var(--muted) 75%, var(--toy-violet));
+}
+
+/* ---- 9. Piano roll: candy keys ---- */
+.pp-pr-key {
+    color: var(--muted);
+    border-bottom-color: rgba(0, 0, 0, 0.4);
+}
+.pp-pr-key.white {
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+}
+.pp-pr-key.white:hover {
+    background: color-mix(in srgb, var(--toy-cyan) 34%, var(--surface));
+}
+.pp-pr-key.black {
+    background: color-mix(in srgb, var(--black) 72%, var(--surface-2));
+}
+.pp-pr-key.black:hover {
+    background: color-mix(in srgb, var(--toy-violet) 42%, var(--surface-2));
+}
+.pp-pr-key.is-c {
+    color: var(--toy-yellow);
+}
+#pp-piano-grid {
+    background: color-mix(in srgb, var(--surface-2) 92%, transparent);
+}
+.pp-pr-note {
+    background: var(--toy-cyan);
+    box-shadow: 0 0 6px rgba(55, 224, 255, 0.6);
+}
+.pp-pr-note.selected {
+    outline: 3px solid var(--toy-yellow);
+}
+.pp-pr-note.playing {
+    background: var(--toy-yellow);
+    box-shadow: 0 0 14px rgba(255, 225, 77, 0.95);
+}
+.pp-pr-playhead {
+    background: var(--toy-pink);
+    box-shadow: 0 0 10px var(--toy-pink);
+}
+.pp-pr-loop-point {
+    background: var(--toy-violet);
+    box-shadow: 0 0 8px rgba(169, 123, 255, 0.8);
+}
+.pp-pr-page-btn {
+    background: color-mix(in srgb, var(--toy-violet) 30%, var(--surface-2));
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    color: var(--text);
+}
+.pp-pr-page-btn:hover:not(:disabled) {
+    background: var(--toy-violet);
+    color: var(--black);
+}
+
+/* ---- 10. LEDs, indicators, modals, lists ---- */
+.lfo-led {
+    background: color-mix(in srgb, var(--black) 70%, var(--surface-2));
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+.lfo-led.on {
+    background: var(--toy-lime);
+    border-color: rgba(0, 0, 0, 0.6);
+    box-shadow:
+        0 0 12px var(--toy-lime),
+        inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+.lfo-led.on:hover {
+    background: var(--toy-lime);
+    border-color: rgba(0, 0, 0, 0.6);
+    box-shadow:
+        0 0 18px var(--toy-lime),
+        inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+.midi-indicator-on {
+    background: var(--toy-cyan);
+    box-shadow: 0 0 12px var(--toy-cyan);
+    border: 1px solid var(--black);
+}
+.midi-indicator-off {
+    background: color-mix(in srgb, var(--black) 70%, var(--surface-2));
+    border: 1px solid rgba(0, 0, 0, 0.6);
+}
+.pp-context-menu {
+    background: var(--surface);
+    border: 1px solid rgba(0, 0, 0, 0.65);
+    border-radius: 7px;
+    box-shadow:
+        4px 4px 0 rgba(0, 0, 0, 0.5),
+        0 0 22px rgba(169, 123, 255, 0.4);
+}
+.pp-context-menu-item:hover {
+    background: color-mix(in srgb, var(--toy-cyan) 26%, transparent);
+}
+.pp-context-menu-sep {
+    background: color-mix(in srgb, var(--line) 70%, var(--toy-violet));
+}
+.tp-json-modal,
+.sg-modal {
+    background: var(--surface);
+    border: 2px solid rgba(0, 0, 0, 0.65);
+    border-radius: 8px;
+    box-shadow:
+        6px 6px 0 rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(55, 224, 255, 0.35);
+}
+.tp-json-modal-overlay,
+.sg-modal-overlay {
+    background: rgba(6, 7, 27, 0.75);
+}
+.dm-list {
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+.dm-list-item:hover {
+    background: color-mix(in srgb, var(--toy-cyan) 22%, transparent);
+}
+.dm-list-item.dm-selected {
+    background: var(--toy-pink);
+    border: 1px solid var(--black);
+    color: var(--black);
+    font-weight: 600;
+}
+.dm-detail-filename {
+    color: var(--toy-yellow);
+}
+.dm-detail-info,
+.dm-list-empty,
+.dm-detail-empty,
+.ss-body-empty,
+.pp-empty,
+.sg-num {
+    color: var(--muted);
+}
+.dm-danger:hover {
+    background: var(--color-danger) !important;
+    color: var(--black) !important;
+}
+.sg-item:hover {
+    background: color-mix(in srgb, var(--toy-cyan) 22%, transparent);
+}
+.sg-item.sg-selected {
+    background: var(--toy-pink);
+    border-left: 3px solid var(--black);
+    color: var(--black);
+}
+.sg-name:hover {
+    color: var(--toy-yellow);
+}
+.sg-song-name {
+    color: var(--toy-cyan);
+}
+.sg-rename-input {
+    background: var(--toy-yellow);
+    color: var(--black);
+    border-color: var(--black);
+}
+.sg-del-btn:hover {
+    color: var(--toy-pink);
+    background: color-mix(in srgb, var(--toy-pink) 22%, transparent);
+}
+.sg-danger {
+    border-color: var(--color-danger) !important;
+}
+.sg-danger:hover {
+    background: var(--color-danger) !important;
+    color: var(--black) !important;
+}
+
+/* ---- 11. Range sliders, tracks, focus, scrollbars ---- */
+.or-range::-webkit-slider-thumb,
+#tb .tb-bpm-panel input[type='range']::-webkit-slider-thumb,
+#pattern-panel .pp-volume::-webkit-slider-thumb,
+#pattern-panel .pp-master-volume::-webkit-slider-thumb,
+.ne-row input[type='range']::-webkit-slider-thumb {
+    background: var(--toy-pink);
+    box-shadow:
+        inset 0 0 0 1px var(--black),
+        0 0 6px rgba(255, 79, 163, 0.75);
+}
+.or-range::-moz-range-thumb,
+#tb .tb-bpm-panel input[type='range']::-moz-range-thumb,
+#pattern-panel .pp-volume::-moz-range-thumb,
+#pattern-panel .pp-master-volume::-moz-range-thumb,
+.ne-row input[type='range']::-moz-range-thumb {
+    background: var(--toy-pink);
+    box-shadow:
+        inset 0 0 0 1px var(--black),
+        0 0 6px rgba(255, 79, 163, 0.75);
+}
+.or-range::-webkit-slider-runnable-track,
+#tb .tb-bpm-panel input[type='range']::-webkit-slider-runnable-track,
+#pattern-panel .pp-volume::-webkit-slider-runnable-track,
+#pattern-panel .pp-master-volume::-webkit-slider-runnable-track,
+.ne-row input[type='range']::-webkit-slider-runnable-track {
+    background: color-mix(in srgb, var(--toy-cyan) 60%, var(--line));
+}
+.or-range::-moz-range-track,
+#tb .tb-bpm-panel input[type='range']::-moz-range-track,
+#pattern-panel .pp-volume::-moz-range-track,
+#pattern-panel .pp-master-volume::-moz-range-track,
+.ne-row input[type='range']::-moz-range-track {
+    background: color-mix(in srgb, var(--toy-cyan) 60%, var(--line));
+}
+#te-panel .ne-row.has-lfo {
+    box-shadow: inset 3px 0 0 var(--toy-cyan);
+}
+#te-panel .ne-row.selected {
+    outline: 1px solid var(--toy-yellow);
+    background: color-mix(in srgb, var(--toy-yellow) 10%, transparent);
+}
+::selection {
+    background: var(--toy-pink);
+    color: var(--black);
+}
+:focus-visible {
+    outline: 2px solid var(--toy-yellow);
+    outline-offset: 1px;
+}
+* {
+    scrollbar-color: var(--toy-violet) rgba(0, 0, 0, 0.45);
+    scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.45);
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--toy-pink), var(--toy-violet));
+    border: 2px solid var(--black);
+    border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--toy-cyan);
+}
+
+/* ---- 12. Click bursts: every click answers back ---- */
+.click-burst {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9001;
+    background: var(--burst-color, var(--toy-pink));
+    box-shadow: 0 0 14px var(--burst-color, var(--toy-pink));
+    animation: od-click-burst 620ms cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+.click-burst::after {
+    content: '';
+    position: absolute;
+    inset: -7px;
+    border: 2px solid var(--burst-color, var(--toy-pink));
+    border-radius: 50%;
+    opacity: 0.75;
+}
+@keyframes od-click-burst {
+    0% {
+        transform: scale(0.35);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(5);
+        opacity: 0;
+    }
+}
+
+/* ---- 13. Toasts clear the mobile tab bar ----
+   Clause order is (max-height, max-width) on purpose: the mobile block below is
+   pinned by tests/mobile_panel_display.test.js, which matches that exact order. */
+@media (max-height: 480px), (max-width: 768px) {
+    body {
+        --toast-bottom-offset: 60px;
+    }
+}
+
+/* ---- 14. Selects: drop the native chrome, match the candy shell ----
+   Without appearance:none the OS draws its own light control and the <select>
+   looks foreign next to the toy buttons (toolbar Pattern/Drumkit, panels…). */
+select,
+#tb select,
+.ne-row select,
+#te-panel .ne-row select,
+#soft-synth-panel select,
+#soft-synth-panel .ss-preset-select,
+.sg-modal-select {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    color: var(--text);
+    font-family: var(--font);
+    font-weight: 600;
+    background-color: color-mix(in srgb, var(--toy-cyan) 16%, var(--surface-2));
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2337e0ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 5px center;
+    background-size: 9px 6px;
+    border: 1px solid rgba(0, 0, 0, 0.55);
+    border-radius: 4px;
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.3),
+        2px 2px 0 rgba(0, 0, 0, 0.45);
+    padding-right: 16px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+select:hover,
+#tb select:hover,
+.ne-row select:hover,
+#te-panel .ne-row select:hover,
+#soft-synth-panel select:hover,
+#soft-synth-panel .ss-preset-select:hover,
+.sg-modal-select:hover {
+    background-color: color-mix(in srgb, var(--toy-cyan) 34%, var(--surface-2));
+}
+select:focus-visible,
+#tb select:focus-visible,
+.ne-row select:focus-visible,
+#soft-synth-panel select:focus-visible,
+.sg-modal-select:focus-visible {
+    outline: 2px solid var(--toy-pink);
+    outline-offset: 1px;
+}
+select option {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-weight: 600;
+}
+select option:checked,
+select option:hover {
+    background: var(--toy-cyan);
+    color: var(--black);
+}
+select optgroup {
+    background: var(--surface);
+    color: var(--toy-yellow);
+    font-family: var(--font);
+    font-style: normal;
+    font-weight: 700;
+}
+
+/* ---- 15. Custom select popup (ui/select_dropdown.js) ----
+   The OS-drawn list cannot be themed (it is a native window), so every select
+   opens this in-page listbox instead. The <select> itself stays in the DOM. */
+.od-select-popup {
+    position: fixed;
+    z-index: 9998;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding: 4px;
+    background: linear-gradient(180deg, var(--surface), var(--bg));
+    border: 2px solid var(--black);
+    border-radius: 6px;
+    box-shadow:
+        6px 6px 0 rgba(0, 0, 0, 0.5),
+        0 0 24px rgba(55, 224, 255, 0.25);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    -webkit-overflow-scrolling: touch;
+}
+.od-select-group {
+    padding: 6px 8px 3px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    color: var(--toy-yellow);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.od-select-option {
+    padding: 5px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.od-select-option:hover,
+.od-select-option.is-active {
+    background: color-mix(in srgb, var(--toy-cyan) 30%, transparent);
+}
+.od-select-option.is-selected {
+    background: var(--toy-cyan);
+    color: var(--black);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.od-select-option.is-disabled {
+    cursor: default;
+    opacity: 0.45;
+}
+
+/* Mobile: the popup becomes a centered modal list (bigger tap targets, never
+   clipped by the viewport edge). Clause order is (max-height, max-width) so the
+   pinned mobile block below still matches first in tests/mobile_panel_display. */
+@media (max-height: 480px), (max-width: 768px) {
+    .od-select-popup {
+        top: 50% !important;
+        left: 50% !important;
+        right: auto;
+        bottom: auto;
+        transform: translate(-50%, -50%);
+        width: min(86vw, 380px) !important;
+        min-width: 0 !important;
+        max-width: calc(100vw - 24px);
+        max-height: min(72vh, 460px) !important;
+        padding: 6px;
+        border-radius: 10px;
+        box-shadow:
+            8px 8px 0 rgba(0, 0, 0, 0.55),
+            0 0 40px rgba(55, 224, 255, 0.35);
+    }
+    .od-select-option {
+        padding: 12px 12px;
+        font-size: 15px;
+        border-radius: 6px;
+    }
+    .od-select-group {
+        padding: 9px 12px 5px;
+        font-size: 11px;
+    }
+}
+
+/* ---- 16. Pixel display type: bundled Press Start 2P (SIL OFL 1.1) ----
+   8px design grid → only 8/16/24/32px sizes keep glyphs on the pixel grid.
+   8px here ≈ the width of the old 12px system text, so rows keep their size;
+   data readouts and paragraph copy stay on --font (system stack).
+   One weight only: force 400 + font-synthesis:none so the browser never
+   fake-bolds the pixels (a synthetic bold smears the 8px grid).
+   @font-face lives in src/ui/fonts.css (loaded by index.html for the splash). */
+.ne-track,
+.ne-tab-btn,
+#soft-synth-panel .ss-group-label,
+.op-comp-title {
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    font-weight: 400;
+    font-synthesis: none;
+    letter-spacing: 1px;
+}
+/* Tabs keep their tight tracking (fixed 70px cells). */
+.ne-tab-btn {
+    letter-spacing: 0;
 }
 
 /* ========================================

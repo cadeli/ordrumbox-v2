@@ -16,7 +16,8 @@ function ensureContainer() {
     c = document.createElement('div')
     c.id = CONTAINER_ID
     c.style.cssText = `
-        position:fixed; bottom:20px; right:20px; z-index:var(--z-toast);
+        position:fixed; bottom:calc(20px + var(--toast-bottom-offset, 0px)); right:20px;
+        z-index:var(--z-toast);
         display:flex; flex-direction:column-reverse; gap:8px;
         pointer-events:none; font-family:var(--font);
     `

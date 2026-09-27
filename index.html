@@ -28,6 +28,7 @@
         <meta name="twitter:image" content="https://www.ordrumbox.com/assets/images/ordrumbox-online-screenshot.png" />
         <link rel="canonical" href="https://www.ordrumbox.com" />
 
+        <link rel="stylesheet" href="./src/ui/fonts.css" />
         <link rel="manifest" href="manifest.json" />
         <script type="application/ld+json">
             {
@@ -73,39 +74,304 @@
                     align-items: center;
                     padding: 24px;
                     box-sizing: border-box;
-                    background-color: #e7e8e4;
+                    overflow: hidden;
                     z-index: 9999;
+                    color: #eaffd0;
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+                    background:
+                        radial-gradient(900px 620px at 12% -12%, rgba(255, 79, 163, 0.38), transparent 62%),
+                        radial-gradient(900px 620px at 92% 6%, rgba(55, 224, 255, 0.32), transparent 60%),
+                        repeating-linear-gradient(to right, rgba(183, 255, 60, 0.07) 0 1px, transparent 1px 48px),
+                        repeating-linear-gradient(to bottom, rgba(183, 255, 60, 0.07) 0 1px, transparent 1px 48px),
+                        linear-gradient(180deg, #14163e 0%, #0a0b26 55%, #14163e 100%);
                 }
-                #waiting-screen-start-btn {
+                #waiting-screen::after {
+                    content: '';
                     position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    padding: 16px 36px;
-                    font-size: 14px;
-                    font-weight: bold;
-                    border: 2px solid #202321;
+                    inset: 0;
+                    pointer-events: none;
+                    background: repeating-linear-gradient(
+                        to bottom,
+                        rgba(0, 0, 0, 0.16) 0 1px,
+                        rgba(0, 0, 0, 0) 1px 3px
+                    );
+                }
+
+                .ws-console {
+                    position: relative;
+                    z-index: 1;
+                    width: min(760px, 100%);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 16px;
+                    padding: 20px 22px 24px;
+                    box-sizing: border-box;
+                    background: linear-gradient(180deg, rgba(38, 43, 104, 0.94), rgba(20, 22, 62, 0.96));
+                    border: 3px solid #06071b;
+                    border-radius: 14px;
+                    box-shadow:
+                        8px 8px 0 rgba(0, 0, 0, 0.55),
+                        0 0 48px rgba(55, 224, 255, 0.35);
+                }
+
+                .ws-screen {
+                    position: relative;
+                    width: 100%;
+                    height: min(220px, 34vh);
+                    min-height: 150px;
+                    overflow: hidden;
+                    border: 3px solid #06071b;
                     border-radius: 8px;
+                    background:
+                        repeating-linear-gradient(to right, rgba(155, 188, 15, 0.16) 0 1px, transparent 1px 40px),
+                        repeating-linear-gradient(to bottom, rgba(155, 188, 15, 0.16) 0 1px, transparent 1px 40px),
+                        radial-gradient(120% 140% at 50% 50%, #0e2a12 0%, #04120b 72%);
+                    box-shadow: inset 0 0 34px rgba(183, 255, 60, 0.28);
+                }
+                .ws-scope {
+                    position: absolute;
+                    inset: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .ws-wave-shift {
+                    animation: ws-shift 4.2s linear infinite;
+                }
+                .ws-wave {
+                    fill: none;
+                    stroke: #b6ff2e;
+                    stroke-width: 3;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
+                    vector-effect: non-scaling-stroke;
+                }
+                .ws-wave-glow {
+                    stroke: rgba(183, 255, 60, 0.45);
+                    stroke-width: 9;
+                    filter: blur(4px);
+                }
+                @keyframes ws-shift {
+                    from {
+                        transform: translateX(0);
+                    }
+                    to {
+                        transform: translateX(-120px);
+                    }
+                }
+                .ws-beam {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    width: 2px;
+                    background: rgba(55, 224, 255, 0.85);
+                    box-shadow: 0 0 12px rgba(55, 224, 255, 0.9);
+                    animation: ws-beam 3.6s linear infinite;
+                }
+                @keyframes ws-beam {
+                    from {
+                        left: -2%;
+                    }
+                    to {
+                        left: 102%;
+                    }
+                }
+                .ws-title {
+                    position: absolute;
+                    left: 16px;
+                    top: 14px;
+                    margin: 0;
+                    font-family:
+                        'PressStart2P', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+                        monospace;
+                    font-weight: 400;
+                    font-synthesis: none;
+                    font-size: 32px;
+                    line-height: 1.4;
+                    letter-spacing: 2px;
+                    text-transform: uppercase;
+                    color: #b6ff2e;
+                    text-shadow:
+                        0 0 14px rgba(183, 255, 60, 0.75),
+                        3px 3px 0 rgba(0, 0, 0, 0.65);
+                }
+                .ws-title span {
+                    color: #ff4fa3;
+                    text-shadow:
+                        0 0 14px rgba(255, 79, 163, 0.75),
+                        3px 3px 0 rgba(0, 0, 0, 0.65);
+                }
+                .ws-screen-label {
+                    position: absolute;
+                    right: 14px;
+                    bottom: 10px;
+                    font-family:
+                        'PressStart2P', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+                        monospace;
+                    font-size: 8px;
+                    letter-spacing: 2px;
+                    color: rgba(183, 255, 60, 0.85);
+                }
+                .ws-screen-dots {
+                    position: absolute;
+                    left: 16px;
+                    bottom: 10px;
+                    display: flex;
+                    gap: 6px;
+                }
+                .ws-screen-dots i {
+                    width: 9px;
+                    height: 9px;
+                    border: 1px solid #06071b;
+                    box-shadow: 0 0 8px currentColor;
+                }
+                .ws-screen-dots i:nth-child(1) {
+                    background: #ff4fa3;
+                    color: #ff4fa3;
+                }
+                .ws-screen-dots i:nth-child(2) {
+                    background: #37e0ff;
+                    color: #37e0ff;
+                }
+                .ws-screen-dots i:nth-child(3) {
+                    background: #ffe14d;
+                    color: #ffe14d;
+                }
+                .ws-screen-dots i:nth-child(4) {
+                    background: #a97bff;
+                    color: #a97bff;
+                }
+
+                .ws-tagline {
+                    margin: 0;
+                    padding: 12px 18px;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                    font-size: clamp(13px, 2.1vw, 17px);
+                    font-weight: 600;
+                    line-height: 1.45;
+                    text-align: center;
+                    color: #06071b;
+                    background: linear-gradient(90deg, #ffe14d, #ff9040 48%, #ff4fa3);
+                    border: 3px solid #06071b;
+                    border-radius: 9px;
+                    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.55);
+                    transform: rotate(-1.1deg);
+                }
+                .ws-tagline::after {
+                    content: '▌';
+                    margin-left: 4px;
+                    animation: ws-blink 1s steps(2, start) infinite;
+                }
+                @keyframes ws-blink {
+                    to {
+                        visibility: hidden;
+                    }
+                }
+
+                #waiting-screen-start-btn {
+                    padding: 16px 34px;
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+                    font-size: clamp(11px, 2.2vw, 17px);
+                    font-weight: bold;
+                    letter-spacing: 1px;
+                    border: 3px solid #06071b;
+                    border-radius: 10px;
                     cursor: pointer;
-                    background-color: #686a67;
-                    color: #e7e8e4;
                     touch-action: manipulation;
+                    background-color: #3f47ad;
+                    color: #eaffd0;
+                    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.55);
                     transition:
                         background-color 0.2s,
+                        box-shadow 0.12s,
                         transform 0.1s;
                     z-index: 1;
                 }
                 #waiting-screen-start-btn:hover {
-                    transform: translate(-50%, -50%) scale(1.02);
+                    transform: translate(-2px, -2px);
+                    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.55);
+                }
+                #waiting-screen-start-btn:active {
+                    transform: translate(4px, 4px);
+                    box-shadow: 0 0 0 rgba(0, 0, 0, 0.55);
                 }
                 #waiting-screen-start-btn.ready {
-                    background-color: #596b61;
-                    color: #e7e8e4;
-                    border-color: #596b61;
+                    background-color: #9bbc0f;
+                    color: #06071b;
+                    border-color: #06071b;
+                    box-shadow:
+                        6px 6px 0 rgba(0, 0, 0, 0.55),
+                        0 0 28px rgba(155, 188, 15, 0.75);
+                }
+                #waiting-screen-start-btn.ready:hover {
+                    background-color: #c6e93a;
+                    box-shadow:
+                        8px 8px 0 rgba(0, 0, 0, 0.55),
+                        0 0 38px rgba(198, 233, 58, 0.9);
+                }
+
+                .ws-meta {
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 6px 14px;
+                    font-size: 10px;
+                    letter-spacing: 2px;
+                    text-transform: uppercase;
+                    color: #9ba4ee;
+                }
+                .ws-meta span::before {
+                    content: '▸';
+                    margin-right: 6px;
+                    color: #37e0ff;
+                }
+
+                @media (max-width: 560px) {
+                    .ws-console {
+                        gap: 12px;
+                        padding: 14px 14px 18px;
+                    }
+                    .ws-title {
+                        left: 12px;
+                        top: 10px;
+                        font-size: 16px;
+                    }
+                    #waiting-screen-start-btn {
+                        padding: 14px 18px;
+                    }
                 }
             </style>
             <div id="waiting-screen">
-                <button id="waiting-screen-start-btn">Start orDrumbox V2</button>
+                <div class="ws-console">
+                    <div class="ws-screen">
+                        <svg class="ws-scope" viewBox="0 0 600 180" preserveAspectRatio="none" aria-hidden="true">
+                            <g class="ws-wave-shift">
+                                <path
+                                    class="ws-wave ws-wave-glow"
+                                    d="M-240 90.0 L-236 80.4 L-232 71.3 L-228 63.0 L-224 55.8 L-220 50.2 L-216 46.3 L-212 44.3 L-208 44.3 L-204 46.3 L-200 50.2 L-196 55.8 L-192 63.0 L-188 71.3 L-184 80.4 L-180 90.0 L-176 99.6 L-172 108.7 L-168 117.0 L-164 124.2 L-160 129.8 L-156 133.7 L-152 135.7 L-148 135.7 L-144 133.7 L-140 129.8 L-136 124.2 L-132 117.0 L-128 108.7 L-124 99.6 L-120 90.0 L-116 80.4 L-112 71.3 L-108 63.0 L-104 55.8 L-100 50.2 L-96 46.3 L-92 44.3 L-88 44.3 L-84 46.3 L-80 50.2 L-76 55.8 L-72 63.0 L-68 71.3 L-64 80.4 L-60 90.0 L-56 99.6 L-52 108.7 L-48 117.0 L-44 124.2 L-40 129.8 L-36 133.7 L-32 135.7 L-28 135.7 L-24 133.7 L-20 129.8 L-16 124.2 L-12 117.0 L-8 108.7 L-4 99.6 L0 90.0 L4 80.4 L8 71.3 L12 63.0 L16 55.8 L20 50.2 L24 46.3 L28 44.3 L32 44.3 L36 46.3 L40 50.2 L44 55.8 L48 63.0 L52 71.3 L56 80.4 L60 90.0 L64 99.6 L68 108.7 L72 117.0 L76 124.2 L80 129.8 L84 133.7 L88 135.7 L92 135.7 L96 133.7 L100 129.8 L104 124.2 L108 117.0 L112 108.7 L116 99.6 L120 90.0 L124 80.4 L128 71.3 L132 63.0 L136 55.8 L140 50.2 L144 46.3 L148 44.3 L152 44.3 L156 46.3 L160 50.2 L164 55.8 L168 63.0 L172 71.3 L176 80.4 L180 90.0 L184 99.6 L188 108.7 L192 117.0 L196 124.2 L200 129.8 L204 133.7 L208 135.7 L212 135.7 L216 133.7 L220 129.8 L224 124.2 L228 117.0 L232 108.7 L236 99.6 L240 90.0 L244 80.4 L248 71.3 L252 63.0 L256 55.8 L260 50.2 L264 46.3 L268 44.3 L272 44.3 L276 46.3 L280 50.2 L284 55.8 L288 63.0 L292 71.3 L296 80.4 L300 90.0 L304 99.6 L308 108.7 L312 117.0 L316 124.2 L320 129.8 L324 133.7 L328 135.7 L332 135.7 L336 133.7 L340 129.8 L344 124.2 L348 117.0 L352 108.7 L356 99.6 L360 90.0 L364 80.4 L368 71.3 L372 63.0 L376 55.8 L380 50.2 L384 46.3 L388 44.3 L392 44.3 L396 46.3 L400 50.2 L404 55.8 L408 63.0 L412 71.3 L416 80.4 L420 90.0 L424 99.6 L428 108.7 L432 117.0 L436 124.2 L440 129.8 L444 133.7 L448 135.7 L452 135.7 L456 133.7 L460 129.8 L464 124.2 L468 117.0 L472 108.7 L476 99.6 L480 90.0 L484 80.4 L488 71.3 L492 63.0 L496 55.8 L500 50.2 L504 46.3 L508 44.3 L512 44.3 L516 46.3 L520 50.2 L524 55.8 L528 63.0 L532 71.3 L536 80.4 L540 90.0 L544 99.6 L548 108.7 L552 117.0 L556 124.2 L560 129.8 L564 133.7 L568 135.7 L572 135.7 L576 133.7 L580 129.8 L584 124.2 L588 117.0 L592 108.7 L596 99.6 L600 90.0 L604 80.4 L608 71.3 L612 63.0 L616 55.8 L620 50.2 L624 46.3 L628 44.3 L632 44.3 L636 46.3 L640 50.2 L644 55.8 L648 63.0 L652 71.3 L656 80.4 L660 90.0 L664 99.6 L668 108.7 L672 117.0 L676 124.2 L680 129.8 L684 133.7 L688 135.7 L692 135.7 L696 133.7 L700 129.8 L704 124.2 L708 117.0 L712 108.7 L716 99.6 L720 90.0 L724 80.4 L728 71.3 L732 63.0 L736 55.8 L740 50.2 L744 46.3 L748 44.3 L752 44.3 L756 46.3 L760 50.2 L764 55.8 L768 63.0 L772 71.3 L776 80.4 L780 90.0 L784 99.6 L788 108.7 L792 117.0 L796 124.2 L800 129.8 L804 133.7 L808 135.7 L812 135.7 L816 133.7 L820 129.8 L824 124.2 L828 117.0 L832 108.7 L836 99.6 L840 90.0"
+                                />
+                                <path
+                                    class="ws-wave"
+                                    d="M-240 90.0 L-236 80.4 L-232 71.3 L-228 63.0 L-224 55.8 L-220 50.2 L-216 46.3 L-212 44.3 L-208 44.3 L-204 46.3 L-200 50.2 L-196 55.8 L-192 63.0 L-188 71.3 L-184 80.4 L-180 90.0 L-176 99.6 L-172 108.7 L-168 117.0 L-164 124.2 L-160 129.8 L-156 133.7 L-152 135.7 L-148 135.7 L-144 133.7 L-140 129.8 L-136 124.2 L-132 117.0 L-128 108.7 L-124 99.6 L-120 90.0 L-116 80.4 L-112 71.3 L-108 63.0 L-104 55.8 L-100 50.2 L-96 46.3 L-92 44.3 L-88 44.3 L-84 46.3 L-80 50.2 L-76 55.8 L-72 63.0 L-68 71.3 L-64 80.4 L-60 90.0 L-56 99.6 L-52 108.7 L-48 117.0 L-44 124.2 L-40 129.8 L-36 133.7 L-32 135.7 L-28 135.7 L-24 133.7 L-20 129.8 L-16 124.2 L-12 117.0 L-8 108.7 L-4 99.6 L0 90.0 L4 80.4 L8 71.3 L12 63.0 L16 55.8 L20 50.2 L24 46.3 L28 44.3 L32 44.3 L36 46.3 L40 50.2 L44 55.8 L48 63.0 L52 71.3 L56 80.4 L60 90.0 L64 99.6 L68 108.7 L72 117.0 L76 124.2 L80 129.8 L84 133.7 L88 135.7 L92 135.7 L96 133.7 L100 129.8 L104 124.2 L108 117.0 L112 108.7 L116 99.6 L120 90.0 L124 80.4 L128 71.3 L132 63.0 L136 55.8 L140 50.2 L144 46.3 L148 44.3 L152 44.3 L156 46.3 L160 50.2 L164 55.8 L168 63.0 L172 71.3 L176 80.4 L180 90.0 L184 99.6 L188 108.7 L192 117.0 L196 124.2 L200 129.8 L204 133.7 L208 135.7 L212 135.7 L216 133.7 L220 129.8 L224 124.2 L228 117.0 L232 108.7 L236 99.6 L240 90.0 L244 80.4 L248 71.3 L252 63.0 L256 55.8 L260 50.2 L264 46.3 L268 44.3 L272 44.3 L276 46.3 L280 50.2 L284 55.8 L288 63.0 L292 71.3 L296 80.4 L300 90.0 L304 99.6 L308 108.7 L312 117.0 L316 124.2 L320 129.8 L324 133.7 L328 135.7 L332 135.7 L336 133.7 L340 129.8 L344 124.2 L348 117.0 L352 108.7 L356 99.6 L360 90.0 L364 80.4 L368 71.3 L372 63.0 L376 55.8 L380 50.2 L384 46.3 L388 44.3 L392 44.3 L396 46.3 L400 50.2 L404 55.8 L408 63.0 L412 71.3 L416 80.4 L420 90.0 L424 99.6 L428 108.7 L432 117.0 L436 124.2 L440 129.8 L444 133.7 L448 135.7 L452 135.7 L456 133.7 L460 129.8 L464 124.2 L468 117.0 L472 108.7 L476 99.6 L480 90.0 L484 80.4 L488 71.3 L492 63.0 L496 55.8 L500 50.2 L504 46.3 L508 44.3 L512 44.3 L516 46.3 L520 50.2 L524 55.8 L528 63.0 L532 71.3 L536 80.4 L540 90.0 L544 99.6 L548 108.7 L552 117.0 L556 124.2 L560 129.8 L564 133.7 L568 135.7 L572 135.7 L576 133.7 L580 129.8 L584 124.2 L588 117.0 L592 108.7 L596 99.6 L600 90.0 L604 80.4 L608 71.3 L612 63.0 L616 55.8 L620 50.2 L624 46.3 L628 44.3 L632 44.3 L636 46.3 L640 50.2 L644 55.8 L648 63.0 L652 71.3 L656 80.4 L660 90.0 L664 99.6 L668 108.7 L672 117.0 L676 124.2 L680 129.8 L684 133.7 L688 135.7 L692 135.7 L696 133.7 L700 129.8 L704 124.2 L708 117.0 L712 108.7 L716 99.6 L720 90.0 L724 80.4 L728 71.3 L732 63.0 L736 55.8 L740 50.2 L744 46.3 L748 44.3 L752 44.3 L756 46.3 L760 50.2 L764 55.8 L768 63.0 L772 71.3 L776 80.4 L780 90.0 L784 99.6 L788 108.7 L792 117.0 L796 124.2 L800 129.8 L804 133.7 L808 135.7 L812 135.7 L816 133.7 L820 129.8 L824 124.2 L828 117.0 L832 108.7 L836 99.6 L840 90.0"
+                                />
+                            </g>
+                        </svg>
+                        <div class="ws-beam" aria-hidden="true"></div>
+                        <h1 class="ws-title">orDrumbox <span>V2</span></h1>
+                        <div class="ws-screen-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                        <div class="ws-screen-label">CH1 · SCOPE</div>
+                    </div>
+
+                    <p class="ws-tagline">software drum machine</p>
+
+                    <button id="waiting-screen-start-btn">Start orDrumbox V2</button>
+
+                    <div class="ws-meta">
+                        <span>Experimental Synth</span>
+                        <span>Toy Instrument</span>
+                    </div>
+                </div>
             </div>
         </main>
         <script type="module">

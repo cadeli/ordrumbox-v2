@@ -14,26 +14,39 @@
 // Fallback hex values — must stay in sync with styles.css :root
 const TOKENS = {
     // Palette
-    bg: '#E7E8E4',
-    surface: '#D9DAD6',
-    'surface-2': '#CFD0CC',
-    line: '#A9AAA6',
-    muted: '#686A67',
-    text: '#202321',
-    accent: '#596B61',
+    bg: '#14163E',
+    surface: '#1D2157',
+    'surface-2': '#262B68',
+    line: '#3F47AD',
+    muted: '#9BA4EE',
+    text: '#EAFFD0',
+    accent: '#9BBC0F',
 
     // Accent variants
-    'accent-400': '#6a7d73',
-    'accent-600': '#4a5c52',
+    'accent-400': '#C6E93A',
+    'accent-600': '#6F9200',
+
+    // Toy plastics
+    'toy-pink': '#FF4FA3',
+    'toy-cyan': '#37E0FF',
+    'toy-yellow': '#FFE14D',
+    'toy-violet': '#A97BFF',
+    'toy-orange': '#FF9040',
+    'toy-lime': '#B7FF3C',
+    phosphor: '#B6FF2E',
+    'scope-bg': '#050A14',
 
     // Borders
-    'border-subtle': '#C1C2BE',
+    'border-subtle': '#4D56C4',
 
-    // Semantic (mapped to palette, for dark mode overrides)
-    'color-success': '#596B61',
-    'color-warning': '#686A67',
-    'color-danger': '#686A67',
-    'color-info': '#596B61',
+    // Semantic (candy signals)
+    'color-success': '#4DFFB2',
+    'color-success-dark': '#17C98A',
+    'color-warning': '#FFE14D',
+    'color-danger': '#FF4FA3',
+    'color-danger-light': '#FF9EC7',
+    'color-info': '#37E0FF',
+    'bg-success': '#17C98A',
 
     // Shadows
     'canvas-shadow': '#000000',
@@ -78,4 +91,21 @@ export function color(key) {
 export function rgba(key, alpha) {
     const t = _resolve()[key]
     return t ? `rgba(${t.r},${t.g},${t.b},${alpha})` : `rgba(0,0,0,${alpha})`
+}
+
+/**
+ * Canvas colors for the sample envelope graphs (track editor + drumkit manager).
+ * Near-black scope background, phosphor curve and pink decay marker keep the
+ * graph readable at a glance — both call sites share this so a sample looks
+ * identical wherever it is edited.
+ * @returns {{ background: string, stroke: string, fill: string, marker: string, lineWidth: number }}
+ */
+export function sampleWaveformTheme(lineWidth = 2) {
+    return {
+        background: color('scope-bg'),
+        stroke: color('phosphor'),
+        fill: rgba('phosphor', 0.16),
+        marker: color('toy-pink'),
+        lineWidth,
+    }
 }
