@@ -3,6 +3,7 @@
 
 import { WAVE_BUFFER } from './constants.js'
 import { color, rgba } from '../theme.js'
+import Utils from '../../core/utils.js'
 
 const FM_DEPTH_SCALE = 0.08
 
@@ -91,7 +92,7 @@ export default class WaveformSection {
             const vcoKey = `vco${i + 1}`
             if (draft.lfo?.target === `${vcoKey}.gain`) g += lfo1Mod
             if (draft.lfo2?.target === `${vcoKey}.gain`) g += lfo2Mod
-            return Math.max(0, Math.min(1, g))
+            return Utils.clamp(g, 0, 1)
         })
 
         const baseInc = cycles / sampleRate
@@ -285,8 +286,8 @@ export default class WaveformSection {
         const draft = editor.draft
         const flt = draft.filter ?? {}
         const type = flt.type ?? 'lowpass'
-        let fc = Math.max(20, Math.min(20000, flt.freq ?? 400))
-        let Q = Math.max(0.1, Math.min(24, flt.Q ?? 1))
+        let fc = Utils.clamp(flt.freq ?? 400, 20, 20000)
+        let Q = Utils.clamp(flt.Q ?? 1, 0.1, 24)
 
         const now = editor.serviceRegistry?.audioCtx?.currentTime ?? 0
         const lfo1 = draft.bypassLfo1 ? null : draft.lfo
@@ -295,8 +296,8 @@ export default class WaveformSection {
         if (lfo2?.target === 'filter.freq') fc += editor.computeSynthLfoMod(lfo2, now)
         if (lfo1?.target === 'filter.Q') Q += editor.computeSynthLfoMod(lfo1, now)
         if (lfo2?.target === 'filter.Q') Q += editor.computeSynthLfoMod(lfo2, now)
-        fc = Math.max(20, Math.min(20000, fc))
-        Q = Math.max(0.1, Math.min(24, Q))
+        fc = Utils.clamp(fc, 20, 20000)
+        Q = Utils.clamp(Q, 0.1, 24)
 
         ctx.fillStyle = color('surface-2')
         ctx.fillRect(0, 0, w, h)
@@ -348,7 +349,7 @@ export default class WaveformSection {
                 }
                 const db = 20 * Math.log10(Math.max(mag, 1e-10))
                 const x = (i / N) * w
-                const y = toY(Math.max(dbMin, Math.min(dbMax, db)))
+                const y = toY(Utils.clamp(db, dbMin, dbMax))
                 if (first) {
                     ctx.moveTo(x, y)
                     first = false

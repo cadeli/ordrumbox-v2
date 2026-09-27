@@ -327,7 +327,7 @@ export default class SynthEditor {
                 const meta = SYNTH_PARAM_META[path]
                 const min = meta?.min ?? -Infinity
                 const max = meta?.max ?? Infinity
-                knob.setValue(Math.max(min, Math.min(max, base + totalMod)))
+                knob.setValue(Utils.clamp(base + totalMod, min, max))
             }
         }
     }

@@ -1,6 +1,5 @@
 import { showToast } from '../core/notify.js'
 import { initClickBursts } from '../core/click_bursts.js'
-import { clamp } from '../audio/math.js'
 import Utils from '../core/utils.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
@@ -86,7 +85,7 @@ export function initGlobalListeners() {
         const dir = e.key === 'ArrowRight' ? 1 : -1
         let next = cur + dir * step
         next = Math.round((next - min) / step) * step + min
-        next = clamp(next, min, max)
+        next = Utils.clamp(next, min, max)
 
         if (next === cur) {
             e.preventDefault()

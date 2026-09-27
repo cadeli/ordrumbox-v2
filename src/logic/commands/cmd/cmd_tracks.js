@@ -93,7 +93,7 @@ export function createTrackMethods(cmd) {
             clone.name = name
             clone.notes = (sourceTrack.notes ?? []).map((note) => ({ ...note }))
 
-            const idx = Math.max(0, Math.min(insertIdx, tracks.length))
+            const idx = Utils.clamp(insertIdx, 0, tracks.length)
             tracks.splice(idx, 0, clone)
             cmd.persist()
             cmd.record(

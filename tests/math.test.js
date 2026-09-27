@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
     safeDisconnect,
-    clamp,
-    toFiniteNumber,
     computeOscFrequency,
     computeNoteRatio,
     computeLfoValue,
@@ -35,42 +33,6 @@ describe('safeDisconnect', () => {
         }
         safeDisconnect(node)
         expect(node.disconnect).toHaveBeenCalledOnce()
-    })
-})
-
-describe('clamp', () => {
-    it('returns value within range', () => {
-        expect(clamp(5, 0, 10)).toBe(5)
-    })
-
-    it('clamps to min', () => {
-        expect(clamp(-1, 0, 10)).toBe(0)
-    })
-
-    it('clamps to max', () => {
-        expect(clamp(15, 0, 10)).toBe(10)
-    })
-})
-
-describe('toFiniteNumber', () => {
-    it('returns number if finite', () => {
-        expect(toFiniteNumber(42)).toBe(42)
-    })
-
-    it('returns fallback for NaN', () => {
-        expect(toFiniteNumber(NaN)).toBe(0)
-    })
-
-    it('returns fallback for Infinity', () => {
-        expect(toFiniteNumber(Infinity)).toBe(0)
-    })
-
-    it('returns custom fallback', () => {
-        expect(toFiniteNumber(NaN, 99)).toBe(99)
-    })
-
-    it('parses string numbers', () => {
-        expect(toFiniteNumber('3.14')).toBe(3.14)
     })
 })
 

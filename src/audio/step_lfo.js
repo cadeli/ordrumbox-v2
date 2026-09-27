@@ -1,6 +1,7 @@
 // src/audio/step_lfo.js — Per-step LFO modulation push to mixer strips.
 
 import { computeTrackLfoValues } from '../logic/lfo_engine.js'
+import Utils from '../core/utils.js'
 
 const LFO_SMOOTHING = 0.005
 
@@ -39,25 +40,25 @@ export async function pushStepLfo(mixer, pattern, tick, atTime, TICK) {
         const lfoValues = computeTrackLfoValues(track, tick, nbTicks, bpm)
 
         if (track.velocityLfo) {
-            const finalVelo = Math.max(0, Math.min(2, lfoValues.velocity))
+            const finalVelo = Utils.clamp(lfoValues.velocity, 0, 2)
             strip.output.gain.setTargetAtTime(finalVelo, atTime, LFO_SMOOTHING)
         }
 
         if (track.panLfo) {
             const basePan = track.pan ?? 0
-            const finalPan = Math.max(-1, Math.min(1, basePan + lfoValues.pan))
+            const finalPan = Utils.clamp(basePan + lfoValues.pan, -1, 1)
             strip.pan.pan.setTargetAtTime(finalPan, atTime, LFO_SMOOTHING)
         }
 
         if (track.filterFreqLfo) {
             const baseFreq = track.filterFreq ?? 20
-            const finalFreq = Math.max(20, Math.min(20000, baseFreq + lfoValues.filterFreq))
+            const finalFreq = Utils.clamp(baseFreq + lfoValues.filterFreq, 20, 20000)
             strip.stripNode.parameters.get('cutoff')?.setTargetAtTime(finalFreq, atTime, LFO_SMOOTHING)
         }
 
         if (track.filterQLfo) {
             const baseQ = track.filterQ ?? 0.707
-            const finalQ = Math.max(0.707, Math.min(18.707, baseQ + lfoValues.filterQ))
+            const finalQ = Utils.clamp(baseQ + lfoValues.filterQ, 0.707, 18.707)
             strip.stripNode.parameters.get('q')?.setTargetAtTime(finalQ, atTime, LFO_SMOOTHING)
         }
     }

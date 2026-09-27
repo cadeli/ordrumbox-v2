@@ -1,4 +1,5 @@
 import { logger } from '../core/logger.js'
+import Utils from '../core/utils.js'
 export default class AudioAnalyzer {
     static TAG = 'AudioAnalyzer'
     static DEFAULTS = Object.freeze({
@@ -186,7 +187,7 @@ export default class AudioAnalyzer {
     }
 
     computeEnvelope(samples, envelopePoints) {
-        const points = Math.max(1, Math.min(envelopePoints, samples.length))
+        const points = Utils.clamp(envelopePoints, 1, samples.length)
         const envelope = []
 
         for (let pointIndex = 0; pointIndex < points; pointIndex++) {
@@ -313,12 +314,12 @@ export default class AudioAnalyzer {
 
         return {
             fundamentalHz: Number((sampleRate / bestLag).toFixed(3)),
-            pitchConfidence: Number(Math.min(1, Math.max(0, bestCorrelation)).toFixed(4)),
+            pitchConfidence: Number(Utils.clamp(bestCorrelation, 0, 1).toFixed(4)),
         }
     }
 
     computeSpectralMetrics(frame, sampleRate, fundamentalHz) {
-        const fftSize = Math.max(64, Math.min(1024, this.nextPowerOfTwo(frame.length)))
+        const fftSize = Utils.clamp(this.nextPowerOfTwo(frame.length), 64, 1024)
         const windowedFrame = this.applyHannWindow(frame, fftSize)
         const spectrum = this.computeMagnitudeSpectrum(windowedFrame)
         const binHz = sampleRate / fftSize

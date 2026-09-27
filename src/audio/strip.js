@@ -143,7 +143,7 @@ export default class Strip {
         const time = this.audioCtx.currentTime
         const params = this.stripNode.parameters
 
-        const normalizedAmount = Math.min(1, Math.max(0, Utils.toFiniteNumber(amount, 0, 'amount')))
+        const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
         this.currentSaturationType = SATURATION_TYPES.includes(type) ? type : 'soft'
         this.currentSaturationAmount = normalizedAmount
 
@@ -164,7 +164,7 @@ export default class Strip {
         const params = this.stripNode.parameters
 
         const normalizedType = REVERB_PRESETS[type] ? type : 'none'
-        const normalizedAmount = Math.min(1, Math.max(0, Utils.toFiniteNumber(amount, 0, 'amount')))
+        const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
 
         this.currentReverbType = normalizedType
         this.currentReverbAmount = normalizedAmount
@@ -184,7 +184,7 @@ export default class Strip {
         const params = this.stripNode.parameters
 
         const normalizedType = Object.hasOwn(DELAY_MODES, type) ? type : 'tape'
-        const normalizedAmount = Math.min(1, Math.max(0, Utils.toFiniteNumber(amount, 0, 'amount')))
+        const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
 
         this.currentDelayType = normalizedType
         this.currentDelayAmount = normalizedAmount

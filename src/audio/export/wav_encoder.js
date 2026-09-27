@@ -1,3 +1,4 @@
+import Utils from '../../core/utils.js'
 export function bufferToWav(abuffer) {
     const numOfChan = abuffer.numberOfChannels,
         length = abuffer.length * numOfChan * 2 + 44,
@@ -29,7 +30,7 @@ export function bufferToWav(abuffer) {
 
     while (pos < length) {
         for (i = 0; i < numOfChan; i++) {
-            sample = Math.max(-1, Math.min(1, channels[i][offset]))
+            sample = Utils.clamp(channels[i][offset], -1, 1)
             sample = (sample < 0 ? sample * 0x8000 : sample * 0x7fff) | 0
             view.setInt16(pos, sample, true)
             pos += 2

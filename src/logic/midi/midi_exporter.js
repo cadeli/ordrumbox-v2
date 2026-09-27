@@ -28,7 +28,7 @@ import InstrumentsManager from '../services/instrument_manager/index.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { recomputeFlatNotes, computeNbTickForPattern } from '../../patterns/engine.js'
 import { TICK } from '../../core/constants.js'
-import { computeLfoValue, clamp } from '../../audio/math.js'
+import { computeLfoValue } from '../../audio/math.js'
 import Utils from '../../core/utils.js'
 import { downloadBlob } from '../../core/download.js'
 
@@ -264,7 +264,7 @@ export default class MidiExporter {
                     let velocity = fn.note.velocity ?? 0.8
                     if (fn.track.velocityLfo) {
                         const lfoVal = computeLfoValue(fn.track.velocityLfo, engineTick, nbTickForPattern)
-                        velocity = clamp(lfoVal, 0, 1)
+                        velocity = Utils.clamp(lfoVal, 0, 1)
                     }
 
                     let pitchOffset = fn.track.pitchLfo
@@ -274,7 +274,7 @@ export default class MidiExporter {
                     // Include track pitch (base pitch for the track)
                     pitchOffset += fn.track.pitch ?? 0
 
-                    const noteNum = clamp(td.midiNote + pitchOffset, 0, 127)
+                    const noteNum = Utils.clamp(td.midiNote + pitchOffset, 0, 127)
                     const midiVel = Math.round(velocity * 127)
                     td.events.push({ absMidiTick, noteNum, velocity: midiVel })
                 }

@@ -11,39 +11,15 @@ export function safeDisconnect(node) {
     }
 }
 
-let _lastClampWarnAt = 0
-
-export function clamp(value, min, max) {
-    const clamped = Math.min(max, Math.max(min, value))
-    if (clamped !== value) {
-        const now = Date.now()
-        // Rate-limit: hot-path sliders can hit the bound every frame — warn at most once per second.
-        if (now - _lastClampWarnAt >= 1000) {
-            _lastClampWarnAt = now
-            logger.warn('Math', `clamp: ${value} outside [${min}, ${max}] → ${clamped}`)
-        }
-    }
-    return clamped
-}
-
-export function toFiniteNumber(value, fallback = 0, label = null) {
-    const num = Number(value)
-    if (!Number.isFinite(num)) {
-        if (label) logger.warn('Math', 'toFiniteNumber', label, fallback, value)
-        return fallback
-    }
-    return num
-}
-
 export function computeOscFrequency(noteRatio, octave = 0, detune = 0) {
     const nRatio = computeNoteRatio(noteRatio)
-    const oct = clamp(toFiniteNumber(octave, 0), -4, 4)
-    const det = clamp(toFiniteNumber(detune, 0), -100, 100)
+    const oct = Utils.clamp(Utils.toFiniteNumber(octave, 0), -4, 4)
+    const det = Utils.clamp(Utils.toFiniteNumber(detune, 0), -100, 100)
     return C3_FREQ * nRatio * Math.pow(2, oct + det / 100)
 }
 
 export function computeNoteRatio(fpitch) {
-    return Math.max(MIN_NOTE_RATIO, toFiniteNumber(fpitch, 1))
+    return Math.max(MIN_NOTE_RATIO, Utils.toFiniteNumber(fpitch, 1))
 }
 
 /**

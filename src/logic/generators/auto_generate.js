@@ -185,7 +185,7 @@ export default class AutoGenerate {
         // ±0.08 jitter around the genre default so regenerated tracks do not
         // all feel identically quantized.
         const jittered = (swing.swingAmount ?? 0) + (Math.random() * 2 - 1) * 0.08
-        track.swingAmount = Number(Math.min(0.45, Math.max(0, jittered)).toFixed(2))
+        track.swingAmount = Number(Utils.clamp(jittered, 0, 0.45).toFixed(2))
         track.swingResolution = swing.swingResolution
     }
 

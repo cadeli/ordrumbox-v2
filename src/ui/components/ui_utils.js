@@ -4,6 +4,7 @@
  */
 
 import { downloadBlob } from '../../core/download.js'
+import Utils from '../../core/utils.js'
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
@@ -23,7 +24,7 @@ export function promptNumericInput(label, min, max, current, unit, clampFn) {
     if (raw === null || raw.trim() === '') return null
     const num = parseFloat(raw)
     if (Number.isNaN(num)) return null
-    return clampFn ? clampFn(num) : Math.min(max, Math.max(min, num))
+    return clampFn ? clampFn(num) : Utils.clamp(num, min, max)
 }
 
 /**

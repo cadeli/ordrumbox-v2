@@ -788,7 +788,7 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     #clampPage() {
-        serviceRegistry.cmd.setCurrentPage(Math.max(0, Math.min(appState.currentPage, this.#totalPages() - 1)))
+        serviceRegistry.cmd.setCurrentPage(Utils.clamp(appState.currentPage, 0, this.#totalPages() - 1))
     }
 
     #prevPage() {
