@@ -47,12 +47,36 @@ function previewTrack(trackIndex) {
 }
 
 async function generatePattern() {
+    const cmd = serviceRegistry.cmd
+    if (!cmd?.addPattern) return
+
+    // B always starts from a brand new pattern instead of overwriting the
+    // currently selected one.
+    const previousIdx = appState.selectedPatternNum
+    const newIdx = appState.patterns.length
+    cmd.addPattern()
+    await cmd.setSelectedPatternNum(newIdx)
+    cmd.resetPage?.()
+    emitPatternStructureChange()
+
     const autoGen = await getAutoGenerateService()
-    await autoGen.generatePattern()
+    const generated = await autoGen.generatePattern()
+
+    if (!generated) {
+        cmd.removePattern?.(newIdx)
+        await cmd.setSelectedPatternNum(Math.min(previousIdx, appState.patterns.length - 1))
+        emitPatternStructureChange()
+        showToast('Pattern generation failed', 'error')
+        return
+    }
+
+    emitPatternStructureChange()
+    showToast(`Pattern "${generated.name ?? 'pattern'}" generated`, 'success')
 }
 
 function toggleVus() {
     serviceRegistry.cmd?.toggleShowVus()
+    showToast(appState.showVus ? 'VU meters on' : 'VU meters off', 'info')
 }
 
 function toggleStartStop() {
@@ -75,6 +99,7 @@ function saveCurrentPattern() {
     const data = PatternExporter.export(pattern)
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     downloadBlob(blob, `ordrumbox-${pattern.name ?? 'pattern'}.json`)
+    showToast(`Pattern "${pattern.name ?? 'pattern'}" exported`, 'success')
 }
 
 function addNewPattern() {
@@ -101,13 +126,25 @@ async function duplicateCurrentPattern() {
 }
 
 function selectRandomPattern() {
-    const num = Math.floor(Math.random() * appState.patterns.length)
+    const patterns = appState.patterns ?? []
+    if (patterns.length === 0) {
+        showToast('No pattern selected', 'info')
+        return
+    }
+    const num = Math.floor(Math.random() * patterns.length)
     serviceRegistry.cmd.setSelectedPatternNum(num)
+    showToast(`Pattern "${patterns[num]?.name ?? num + 1}" selected`, 'success')
 }
 
 function selectRandomDrumkit() {
-    const num = Math.floor(Math.random() * soundRegistry.drumkitList.length)
+    const drumkits = soundRegistry.drumkitList ?? []
+    if (drumkits.length === 0) {
+        showToast('No drumkit available', 'info')
+        return
+    }
+    const num = Math.floor(Math.random() * drumkits.length)
     serviceRegistry.cmd.setSelectedDrumkitNum(num)
+    showToast(`Drumkit "${drumkits[num]?.name ?? num + 1}" selected`, 'success')
 }
 
 const SYNTH_SOUND_MAP = {
@@ -154,7 +191,10 @@ async function convertToGeneratedSounds() {
 
 function assignRandomSampleAllTracks() {
     const selPattern = getSelectedPattern()
-    if (!selPattern) return
+    if (!selPattern) {
+        showToast('No pattern selected', 'info')
+        return
+    }
 
     const allSounds = Object.keys(soundRegistry.sounds)
     if (allSounds.length === 0) {
@@ -176,7 +216,10 @@ function assignRandomSampleAllTracks() {
 
 async function autoAssignAllTracks() {
     const selPattern = getSelectedPattern()
-    if (!selPattern) return
+    if (!selPattern) {
+        showToast('No pattern selected', 'info')
+        return
+    }
 
     Object.values(selPattern.tracks).forEach((track) => {
         track.useAutoAssignSound = true

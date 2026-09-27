@@ -2,7 +2,7 @@ import Utils from '../../core/utils.js'
 export default class StructureSong {
     static TAG = 'StructureSong'
 
-    static GENRES = ['techno', 'house', 'drumandbass', 'hiphop', 'rock']
+    static GENRES = ['techno', 'house', 'drumandbass', 'hiphop', 'rock', 'funk', 'disco', 'reggae']
 
     static STYLE_TO_GENRE = Object.freeze({
         rock: 'rock',
@@ -10,7 +10,7 @@ export default class StructureSong {
         electro: 'techno',
         techno: 'techno',
         house: 'house',
-        disco: 'house',
+        disco: 'disco',
         hiphop: 'hiphop',
         hip: 'hiphop',
         rap: 'hiphop',
@@ -24,9 +24,9 @@ export default class StructureSong {
         merengue: 'house',
         bossa: 'house',
         tango: 'house',
-        funk: 'hiphop',
-        reggae: 'hiphop',
-        ragga: 'hiphop',
+        funk: 'funk',
+        reggae: 'reggae',
+        ragga: 'reggae',
     })
 
     static resolveGenreFromTags = (tags) => {
@@ -47,6 +47,9 @@ export default class StructureSong {
         drumandbass: [0, 10, 8, 7],
         hiphop: [0, 5, 7, 10],
         rock: [0, 5, 7, 0],
+        funk: [0, 5, 7, 10],
+        disco: [0, 7, 9, 7],
+        reggae: [0, 5, 7, 5],
     })
 
     static HARMONIC_TABLE = Object.freeze({
@@ -74,6 +77,9 @@ export default class StructureSong {
         drumandbass: { swingAmount: 0.05, swingResolution: 4 },
         hiphop: { swingAmount: 0.12, swingResolution: 4 },
         rock: { swingAmount: 0, swingResolution: 4 },
+        funk: { swingAmount: 0.22, swingResolution: 4 },
+        disco: { swingAmount: 0.1, swingResolution: 4 },
+        reggae: { swingAmount: 0.05, swingResolution: 4 },
     })
 
     getGenreSwing = (genre) => {
@@ -147,7 +153,151 @@ export default class StructureSong {
             HI_TOM: 'fill',
             CRASH: 'crash',
         },
+        funk: {
+            KICK: 'syncopated',
+            SNARE: 'ghost',
+            CHH: 'chhDense',
+            OHH: 'ohhOffbeat',
+            CLAP: 'syncopated',
+            BASS: 'groove',
+            PIANO: 'chordStab',
+            ORGAN: 'walking',
+            PERC: 'conversation',
+            COWBELL: 'sparse',
+            CRASH: 'crash',
+        },
+        disco: {
+            KICK: 'fourOnFloor',
+            SNARE: 'basic',
+            CHH: 'chh16thLocked',
+            OHH: 'ohhShaker',
+            CLAP: 'fourOnFloor',
+            BASS: 'stepping',
+            PIANO: 'arpeggio',
+            ORGAN: 'chordStab',
+            PERC: 'shaker44',
+            COWBELL: 'dense',
+            CRASH: 'crash',
+        },
+        reggae: {
+            KICK: 'basic',
+            SNARE: 'basic',
+            CHH: 'chhSparse',
+            OHH: 'ohhBasic',
+            CLAP: 'offbeat',
+            BASS: 'hypnotic',
+            PIANO: 'sparse',
+            ORGAN: 'reggae',
+            PERC: 'sparse',
+            COWBELL: 'sparse',
+            CRASH: 'crash',
+        },
     }
+
+    /**
+     * Variant pools per structure key (falling back to the detected track
+     * type). Only variant names that actually exist in the generators are
+     * listed — an unknown name would make BaseGenerator pick one at random,
+     * which is fine, but explicit pools keep the musical intent.
+     */
+    static VARIANT_POOLS = Object.freeze({
+        KICK: ['basic', 'fourOnFloor', 'syncopated'],
+        SNARE: ['basic', 'ghost', 'syncopated', 'roll'],
+        CHH: ['chh16thLocked', 'chhBasic', 'chhDense', 'chhSparse'],
+        OHH: ['ohhOffbeat', 'ohhShaker', 'ohhRide', 'ohhBasic'],
+        CLAP: ['backbeat', 'offbeat', 'sparse', 'fourOnFloor', 'syncopated', 'dense'],
+        BASS: ['basic', 'stepping', 'groove', 'melodic', 'hypnotic', 'arpege', 'acid'],
+        PIANO: ['chordStab', 'arpeggio', 'sparse', 'walking', 'reggae'],
+        ORGAN: ['chordStab', 'arpeggio', 'sparse', 'walking', 'reggae'],
+        PERC: ['basic', 'shaker44', 'tambourine44', 'clap44', 'conversation', 'sparse', 'texture', 'fill'],
+        COWBELL: ['basic', 'offbeat', 'dense', 'sparse', 'syncopated'],
+        HI_TOM: ['fill', 'basic', 'groove', 'sparse', 'conversation'],
+        CRASH: ['crash'],
+    })
+
+    /** Fallback pools keyed by detected track type (CRASH, HI_TOM, CONGAS…). */
+    static VARIANT_POOLS_BY_TYPE = Object.freeze({
+        PERC: StructureSong.VARIANT_POOLS.PERC,
+        CLAP: StructureSong.VARIANT_POOLS.CLAP,
+        COWBELL: StructureSong.VARIANT_POOLS.COWBELL,
+    })
+
+    /** Never dropped by randomization — the backbone of every groove. */
+    static CORE_TRACKS = Object.freeze(['KICK', 'SNARE', 'BASS'])
+
+    /** Chance of dropping an optional track (hats are dropped less often). */
+    static DROP_CHANCE = Object.freeze({ CHH: 0.12, OHH: 0.12, default: 0.25 })
+
+    /** Extra instruments that can be added on top of the genre template. */
+    static OPTIONAL_EXTRAS = Object.freeze(['PERC', 'CLAP', 'COWBELL', 'PIANO', 'ORGAN', 'OHH', 'CHH'])
+
+    /** Tonal centres (semitone offsets) — 0 favoured, the rest transpose the pattern. */
+    static KEY_OFFSETS = Object.freeze([0, 0, 0, 2, 3, 5, 7, 9, 10])
+
+    /** Scales available in assets/data/scales.json — random pick per pattern. */
+    static SCALES = Object.freeze([
+        'natural minor',
+        'major',
+        'dorian',
+        'mixolydian',
+        'phrygian',
+        'pentatonic minor',
+        'pentatonic major',
+        'blues scale',
+        'harmonic minor',
+    ])
+
+    static pick = (list) => list[Math.floor(Math.random() * list.length)]
+
+    static poolFor = (trackName, trackType) => {
+        const key = String(trackName ?? '').toUpperCase()
+        if (StructureSong.VARIANT_POOLS[key]) return StructureSong.VARIANT_POOLS[key]
+        return StructureSong.VARIANT_POOLS_BY_TYPE[trackType] ?? null
+    }
+
+    /**
+     * Derive a fresh variation of a genre template: drops some optional
+     * tracks, swaps variants inside curated pools and may add an extra
+     * instrument. Core tracks (KICK/SNARE/BASS) are always kept, and the
+     * source structure is never mutated.
+     * @param {Object} base  result of generateStructure(genre)
+     * @returns {Object} randomized copy
+     */
+    static randomizeStructure = (base) => {
+        const result = { ...base }
+
+        for (const trackName of Object.keys(result)) {
+            if (StructureSong.CORE_TRACKS.includes(trackName)) continue
+
+            const dropChance = StructureSong.DROP_CHANCE[trackName] ?? StructureSong.DROP_CHANCE.default
+            if (Math.random() < dropChance) {
+                delete result[trackName]
+                continue
+            }
+
+            if (Math.random() < 0.55) {
+                const pool = StructureSong.poolFor(trackName, Utils.detectTrackType(trackName))
+                if (pool) result[trackName] = StructureSong.pick(pool)
+            }
+        }
+
+        if (Math.random() < 0.3) {
+            const missing = StructureSong.OPTIONAL_EXTRAS.filter((name) => !(name in result))
+            if (missing.length > 0) {
+                const trackName = StructureSong.pick(missing)
+                const pool = StructureSong.poolFor(trackName, Utils.detectTrackType(trackName))
+                if (pool) result[trackName] = StructureSong.pick(pool)
+            }
+        }
+
+        return result
+    }
+
+    /** Random tonal centre for a generated pattern (semitone offset). */
+    static randomKeyOffset = () => StructureSong.pick(StructureSong.KEY_OFFSETS)
+
+    /** Random scale (name from assets/data/scales.json) for a generated pattern. */
+    static randomScale = () => StructureSong.pick(StructureSong.SCALES)
 
     constructor(structure = null) {
         this.structure = structure ?? [

@@ -3,6 +3,7 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import AutoGenerate from '../src/logic/generators/auto_generate.js'
+import StructureSong from '../src/logic/generators/structure_song.js'
 import KickGenerate from '../src/logic/generators/kick_generate.js'
 import SnareGenerate from '../src/logic/generators/snare_generate.js'
 import HatGenerate from '../src/logic/generators/hat_generate.js'
@@ -624,7 +625,7 @@ describe('Generators', () => {
             const pattern = appState.patterns[appState.selectedPatternNum]
             pattern.tags = { style: 'unknown_style', type: 'default' }
             await autoGen.generatePattern()
-            expect(['techno', 'house', 'drumandbass', 'hiphop', 'rock']).toContain(pattern._autoGenGenre)
+            expect(StructureSong.GENRES).toContain(pattern._autoGenGenre)
         })
 
         it('genre falls back to random when pattern has no tags', async () => {
@@ -633,6 +634,75 @@ describe('Generators', () => {
             pattern.tags = null
             await autoGen.generatePattern()
             expect(typeof pattern._autoGenGenre).toBe('string')
+        })
+    })
+
+    // ── Generation variety ──────────────────────────────────────────
+
+    describe('generation variety', () => {
+        beforeEach(() => {
+            if (appState.patterns.length === 0) {
+                cmd.addPattern('TestPattern')
+            }
+        })
+
+        it('generatePattern stores a randomized key offset and scale', async () => {
+            const autoGen = new AutoGenerate()
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            await autoGen.generatePattern()
+
+            expect(StructureSong.KEY_OFFSETS).toContain(pattern._autoGenKeyOffset)
+            expect(StructureSong.SCALES).toContain(pattern._autoGenScale)
+        })
+
+        it('reuses the pattern key when the pattern is regenerated', async () => {
+            const autoGen = new AutoGenerate()
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            await autoGen.generatePattern()
+            const key = pattern._autoGenKeyOffset
+            const scale = pattern._autoGenScale
+
+            await autoGen.generatePattern()
+
+            expect(pattern._autoGenKeyOffset).toBe(key)
+            expect(pattern._autoGenScale).toBe(scale)
+        })
+
+        it('randomizes the genre structure instead of using the raw template', async () => {
+            const spy = vi.spyOn(StructureSong, 'randomizeStructure')
+            const autoGen = new AutoGenerate()
+
+            try {
+                await autoGen.generatePattern()
+                expect(spy).toHaveBeenCalledTimes(1)
+            } finally {
+                spy.mockRestore()
+            }
+        })
+
+        it('generates each track with a jittered density', async () => {
+            const autoGen = new AutoGenerate()
+            const spy = vi.spyOn(autoGen, 'generateTrack')
+
+            await autoGen.generatePattern()
+
+            expect(spy.mock.calls.length).toBeGreaterThan(0)
+            for (const call of spy.mock.calls) {
+                expect(call[2]).toBeGreaterThanOrEqual(0.6)
+                expect(call[2]).toBeLessThanOrEqual(1.2)
+            }
+        })
+
+        it('jitters the swing amount of every track within bounds', async () => {
+            const autoGen = new AutoGenerate()
+            const pattern = appState.patterns[appState.selectedPatternNum]
+            await autoGen.generatePattern()
+
+            for (const track of Object.values(pattern.tracks)) {
+                expect(track.swingAmount).toBeGreaterThanOrEqual(0)
+                expect(track.swingAmount).toBeLessThanOrEqual(0.45)
+                expect(track.swingResolution).toBeGreaterThanOrEqual(1)
+            }
         })
     })
 

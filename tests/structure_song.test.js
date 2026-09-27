@@ -41,7 +41,7 @@ describe('StructureSong', () => {
         })
 
         it('can return each genre over multiple calls', () => {
-            const results = new Set(Array.from({ length: 100 }, () => structure.getRandomGenre()))
+            const results = new Set(Array.from({ length: 500 }, () => structure.getRandomGenre()))
             StructureSong.GENRES.forEach((genre) => {
                 expect(results.has(genre)).toBe(true)
             })
@@ -65,6 +65,65 @@ describe('StructureSong', () => {
         it('defaults to techno for unknown genre', () => {
             const result = structure.generateStructure('unknown')
             expect(result).toEqual(StructureSong.STRUCTURES.techno)
+        })
+    })
+
+    describe('randomizeStructure', () => {
+        it('always keeps the core tracks of the genre template', () => {
+            for (let i = 0; i < 20; i++) {
+                const base = structure.generateStructure('techno')
+                const result = StructureSong.randomizeStructure(base)
+                StructureSong.CORE_TRACKS.forEach((trackName) => {
+                    expect(result).toHaveProperty(trackName)
+                })
+                expect(Object.keys(result).length).toBeGreaterThan(0)
+            }
+        })
+
+        it('does not mutate the source structure', () => {
+            const base = structure.generateStructure('house')
+            const snapshot = JSON.stringify(base)
+            StructureSong.randomizeStructure(base)
+            expect(JSON.stringify(base)).toBe(snapshot)
+        })
+
+        it('only produces non-empty variant strings', () => {
+            const base = structure.generateStructure('hiphop')
+            const result = StructureSong.randomizeStructure(base)
+            Object.values(result).forEach((variant) => {
+                expect(typeof variant).toBe('string')
+                expect(variant.length).toBeGreaterThan(0)
+            })
+        })
+
+        it('produces variations different from the raw template', () => {
+            const base = structure.generateStructure('techno')
+            const results = Array.from({ length: 10 }, () => JSON.stringify(StructureSong.randomizeStructure(base)))
+            expect(results.some((json) => json !== JSON.stringify(base))).toBe(true)
+        })
+
+        it('keeps every randomized variant inside a known pool', () => {
+            const base = structure.generateStructure('rock')
+            const result = StructureSong.randomizeStructure(base)
+            Object.entries(result).forEach(([trackName, variant]) => {
+                const pool = StructureSong.poolFor(trackName, 'PERC')
+                if (pool) expect(pool).toContain(variant)
+                else expect(typeof variant).toBe('string')
+            })
+        })
+    })
+
+    describe('tonal randomization', () => {
+        it('randomKeyOffset returns a supported semitone offset', () => {
+            for (let i = 0; i < 50; i++) {
+                expect(StructureSong.KEY_OFFSETS).toContain(StructureSong.randomKeyOffset())
+            }
+        })
+
+        it('randomScale returns a supported scale name', () => {
+            for (let i = 0; i < 50; i++) {
+                expect(StructureSong.SCALES).toContain(StructureSong.randomScale())
+            }
         })
     })
 

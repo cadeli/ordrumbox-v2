@@ -60,6 +60,29 @@ export default class AutoGenerate {
         return config
     }
 
+    /**
+     * Resolve the harmony for a section, applying the pattern's own tonal
+     * centre and scale (randomized once per generated pattern) so every
+     * generation lands in a different key while staying internally coherent.
+     */
+    #resolveHarmony = (pattern, genre, sectionName, loopInElement = 0) => {
+        const base = this.structureGen.resolveHarmony(genre, sectionName, loopInElement)
+        const offset = pattern?._autoGenKeyOffset ?? 0
+        const scale = pattern?._autoGenScale ?? base.scale
+        return { root: (((base.root + offset) % 12) + 12) % 12, scale }
+    }
+
+    /**
+     * Per-track density jitter: core tracks stay close to full density while
+     * optional parts vary a lot between generations.
+     */
+    #randomDensity = (track) => {
+        const type = Utils.detectTrackType(track.name)
+        const min = type === 'KICK' || type === 'SNARE' || type === 'BASS' ? 0.85 : 0.6
+        const max = type === 'KICK' || type === 'SNARE' || type === 'BASS' ? 1.05 : 1.2
+        return Number((min + Math.random() * (max - min)).toFixed(2))
+    }
+
     generatePattern = async (options = {}) => {
         try {
             let pattern = appState.patterns[appState.selectedPatternNum]
@@ -69,30 +92,34 @@ export default class AutoGenerate {
 
             const genre =
                 options.genre ?? StructureSong.resolveGenreFromTags(pattern.tags) ?? this.structureGen.getRandomGenre()
-            const structure = options.structure ?? this.structureGen.generateStructure(genre)
+            const structure =
+                options.structure ?? StructureSong.randomizeStructure(this.structureGen.generateStructure(genre))
 
             pattern._autoGenGenre = genre
+            pattern._autoGenKeyOffset =
+                options.keyOffset ?? pattern._autoGenKeyOffset ?? StructureSong.randomKeyOffset()
+            pattern._autoGenScale = options.scale ?? pattern._autoGenScale ?? StructureSong.randomScale()
 
             const firstElement = this.structureGen.getElement(0)
-            const harmony = this.structureGen.resolveHarmony(genre, firstElement.name, firstElement.loopInElement)
+            const harmony = this.#resolveHarmony(pattern, genre, firstElement.name, firstElement.loopInElement)
 
             logger.info(
                 AutoGenerate.TAG,
-                `generatePattern: genre=${genre}, harmony=${JSON.stringify(harmony)}, tracks=${Object.keys(structure).join(',')}`,
+                `generatePattern: genre=${genre}, key=${pattern._autoGenKeyOffset}, scale=${pattern._autoGenScale}, harmony=${JSON.stringify(harmony)}, tracks=${Object.keys(structure).join(',')}`,
             )
 
             if (!pattern.tracks || pattern.tracks.length === 0) {
                 for (const [trackName, config] of Object.entries(structure)) {
                     const track = serviceRegistry.cmd.addTrack(pattern, trackName)
                     logger.info(AutoGenerate.TAG, `  track=${trackName}, variant=${config}`)
-                    await this.generateTrack(track, config, 1, pattern, harmony)
+                    await this.generateTrack(track, config, this.#randomDensity(track), pattern, harmony)
                 }
             } else {
                 for (const track of pattern.tracks) {
                     const config = this.#findTrackConfig(structure, track)
                     if (config) {
                         logger.info(AutoGenerate.TAG, `  track=${track.name}, variant=${config}`)
-                        await this.generateTrack(track, config, 1, pattern, harmony)
+                        await this.generateTrack(track, config, this.#randomDensity(track), pattern, harmony)
                     }
                 }
             }
@@ -155,7 +182,10 @@ export default class AutoGenerate {
     #applyGenreSwing = (track, pattern) => {
         const genre = pattern?._autoGenGenre ?? this.structureGen.getRandomGenre()
         const swing = this.structureGen.getGenreSwing(genre)
-        track.swingAmount = swing.swingAmount
+        // ±0.08 jitter around the genre default so regenerated tracks do not
+        // all feel identically quantized.
+        const jittered = (swing.swingAmount ?? 0) + (Math.random() * 2 - 1) * 0.08
+        track.swingAmount = Number(Math.min(0.45, Math.max(0, jittered)).toFixed(2))
         track.swingResolution = swing.swingResolution
     }
 
@@ -171,7 +201,7 @@ export default class AutoGenerate {
                     : isSectionEnd
                       ? 0.2
                       : (SECTION_DENSITY[element.name] ?? 0.7)
-            const harmony = this.structureGen.resolveHarmony(genre, element.name, element.loopInElement)
+            const harmony = this.#resolveHarmony(pattern, genre, element.name, element.loopInElement)
 
             logger.info(
                 AutoGenerate.TAG,

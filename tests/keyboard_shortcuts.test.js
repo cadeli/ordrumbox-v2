@@ -76,6 +76,10 @@ describe('Keyboard shortcuts', () => {
                 appState.patterns.push(pattern)
                 return pattern
             }),
+            removePattern: vi.fn((idx) => {
+                appState.patterns.splice(idx, 1)
+                return true
+            }),
             resetPage: vi.fn(),
         }
         soundRegistry.drumkitList = [{ name: '8bits' }, { name: 'real' }]
@@ -126,15 +130,47 @@ describe('Keyboard shortcuts', () => {
         expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalled()
     })
 
+    it('KeyF confirms the new pattern with a toast', () => {
+        fireKeydown('KeyF')
+        expect(showToast).toHaveBeenCalledWith('Pattern "P1" selected', 'success')
+    })
+
+    it('KeyF shows info toast when there is no pattern', () => {
+        appState.patterns = []
+        fireKeydown('KeyF')
+        expect(serviceRegistry.cmd.setSelectedPatternNum).not.toHaveBeenCalled()
+        expect(showToast).toHaveBeenCalledWith('No pattern selected', 'info')
+    })
+
     it('KeyG calls cmd.setSelectedDrumkitNum', () => {
         fireKeydown('KeyG')
         expect(serviceRegistry.cmd.setSelectedDrumkitNum).toHaveBeenCalled()
+    })
+
+    it('KeyG confirms the new drumkit with a toast', () => {
+        fireKeydown('KeyG')
+        expect(showToast).toHaveBeenCalledWith(expect.stringMatching(/^Drumkit "(8bits|real)" selected$/), 'success')
+    })
+
+    it('KeyG shows info toast when no drumkit is loaded', () => {
+        soundRegistry.drumkitList = []
+        fireKeydown('KeyG')
+        expect(serviceRegistry.cmd.setSelectedDrumkitNum).not.toHaveBeenCalled()
+        expect(showToast).toHaveBeenCalledWith('No drumkit available', 'info')
     })
 
     it('KeyV toggles showVus', () => {
         expect(appState.showVus).toBe(false)
         fireKeydown('KeyV')
         expect(appState.showVus).toBe(true)
+        expect(showToast).toHaveBeenCalledWith('VU meters on', 'info')
+    })
+
+    it('KeyV toasts the off state when toggling back', () => {
+        appState.showVus = true
+        fireKeydown('KeyV')
+        expect(appState.showVus).toBe(false)
+        expect(showToast).toHaveBeenCalledWith('VU meters off', 'info')
     })
 
     it('KeyQ calls seq.simpleBeep for track 0', () => {
@@ -232,15 +268,53 @@ describe('Keyboard shortcuts', () => {
 
     // ── KeyB / KeyJ / KeyK ─────────────────────────────────────────
 
-    it('KeyB triggers auto-generate pattern', async () => {
-        const mockGen = { generatePattern: vi.fn() }
+    it('KeyB creates a new pattern and selects it before generating', async () => {
+        const mockGen = {
+            generatePattern: vi.fn(async () => appState.patterns[appState.patterns.length - 1]),
+        }
         getAutoGenerateService.mockImplementation(async () => mockGen)
 
         fireKeydown('KeyB')
         await flushAsyncShortcut()
 
-        expect(getAutoGenerateService).toHaveBeenCalled()
-        expect(mockGen.generatePattern).toHaveBeenCalled()
+        expect(serviceRegistry.cmd.addPattern).toHaveBeenCalledTimes(1)
+        expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalledWith(1)
+        expect(serviceRegistry.cmd.resetPage).toHaveBeenCalled()
+        expect(appState.patterns).toHaveLength(2)
+        expect(mockGen.generatePattern).toHaveBeenCalledTimes(1)
+        expect(showToast).toHaveBeenCalledWith('Pattern "NewPat_1" generated', 'success')
+
+        // the pattern is created first, generation happens afterwards
+        const createdOrder = serviceRegistry.cmd.addPattern.mock.invocationCallOrder[0]
+        const generatedOrder = mockGen.generatePattern.mock.invocationCallOrder[0]
+        expect(createdOrder).toBeLessThan(generatedOrder)
+    })
+
+    it('KeyB does not overwrite the previously selected pattern', async () => {
+        const previousPattern = appState.patterns[0]
+        previousPattern.tracks.push({ name: 'KICK', mute: false })
+        const mockGen = {
+            generatePattern: vi.fn(async () => appState.patterns[appState.patterns.length - 1]),
+        }
+        getAutoGenerateService.mockImplementation(async () => mockGen)
+
+        fireKeydown('KeyB')
+        await flushAsyncShortcut()
+
+        expect(appState.patterns[0]).toBe(previousPattern)
+        expect(appState.patterns[0].tracks).toHaveLength(3)
+        expect(appState.patterns[1].tracks).toHaveLength(0)
+    })
+
+    it('KeyB removes the new pattern when generation fails', async () => {
+        getAutoGenerateService.mockImplementation(async () => ({ generatePattern: vi.fn(async () => null) }))
+
+        fireKeydown('KeyB')
+        await flushAsyncShortcut()
+
+        expect(showToast).toHaveBeenCalledWith('Pattern generation failed', 'error')
+        expect(serviceRegistry.cmd.removePattern).toHaveBeenCalledWith(1)
+        expect(appState.patterns).toHaveLength(1)
     })
 
     it('plain KeyS does nothing (shortcut removed)', () => {
@@ -278,6 +352,7 @@ describe('Keyboard shortcuts', () => {
 
         expect(serviceRegistry.patterns.applyFlatNotes).not.toHaveBeenCalled()
         expect(showToast).not.toHaveBeenCalledWith('All tracks auto-assigned', 'success')
+        expect(showToast).toHaveBeenCalledWith('No pattern selected', 'info')
     })
 
     it('KeyK assigns a random sample to all tracks', async () => {
@@ -313,6 +388,7 @@ describe('Keyboard shortcuts', () => {
         fireKeydown('KeyK')
 
         expect(showToast).not.toHaveBeenCalledWith('Random samples assigned', 'success')
+        expect(showToast).toHaveBeenCalledWith('No pattern selected', 'info')
     })
 
     // ── Preview keys KeyT / KeyY / KeyU / KeyI / KeyO / KeyP ──────
@@ -345,6 +421,7 @@ describe('Keyboard shortcuts', () => {
         const text = await blob.text()
         const data = JSON.parse(text)
         expect(data.name).toBe('P1')
+        expect(showToast).toHaveBeenCalledWith('Pattern "P1" exported', 'success')
     })
 
     it('Ctrl+S preventDefault', () => {
