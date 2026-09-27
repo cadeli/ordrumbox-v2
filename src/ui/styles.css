@@ -3257,17 +3257,8 @@ select option {
     font-size: 16px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    background: linear-gradient(90deg, var(--toy-pink), var(--toy-yellow) 55%, var(--toy-cyan));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0 0 6px rgba(255, 225, 77, 0.5));
-}
-@supports not (background-clip: text) {
-    #tb .tb-brand {
-        background: none;
-        color: var(--toy-yellow);
-    }
+    color: var(--phosphor);
+    filter: drop-shadow(0 0 6px rgba(182, 255, 46, 0.55));
 }
 
 /* ---- 4. Small controls, toggles, tabs ---- */
