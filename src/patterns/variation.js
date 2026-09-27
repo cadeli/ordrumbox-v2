@@ -16,12 +16,6 @@ function weightedShuffle(ops, weightFn) {
     return ops
 }
 
-function tickForStep(step, stepsPerBeat, nbTickForLoop, tick) {
-    const beat = Math.floor(step / stepsPerBeat)
-    const beatStep = step % stepsPerBeat
-    return beat * tick + Math.round((beatStep * tick) / stepsPerBeat)
-}
-
 function removeNote(flatNotes, fn) {
     const notes = flatNotes.get(fn.tick)
     if (!notes) return
@@ -227,7 +221,7 @@ export default class TrackVariation {
             const byStep = new Map()
 
             for (let step = 0; step < totalStepsInLoop; step++) {
-                const t = loop * nbTickForLoop + tickForStep(step, stepsPerBeat, nbTickForLoop, tick)
+                const t = loop * nbTickForLoop + Utils.stepToTick(step, stepsPerBeat, tick)
                 if (t >= nbTickForPattern) continue
 
                 const existing = flatNotes.get(t)
@@ -254,7 +248,7 @@ export default class TrackVariation {
                 const hasNext = nextStep >= 0 && occupied.has(nextStep)
 
                 if (!hasPrev && nextStep >= 0 && !occupied.has(nextStep)) {
-                    const t = loop * nbTickForLoop + tickForStep(nextStep, stepsPerBeat, nbTickForLoop, tick)
+                    const t = loop * nbTickForLoop + Utils.stepToTick(nextStep, stepsPerBeat, tick)
                     ops.push({
                         type: 'anticipation',
                         cost: COST_ADD,
@@ -271,7 +265,7 @@ export default class TrackVariation {
                 ops.push({ type: 'pitch', cost: COST_PITCH, fn })
 
                 if (!hasNext && nextStep >= 0 && !occupied.has(nextStep)) {
-                    const t = loop * nbTickForLoop + tickForStep(nextStep, stepsPerBeat, nbTickForLoop, tick)
+                    const t = loop * nbTickForLoop + Utils.stepToTick(nextStep, stepsPerBeat, tick)
                     ops.push({
                         type: 'double',
                         cost: COST_ADD,
@@ -286,7 +280,7 @@ export default class TrackVariation {
                 if (gap < 3) continue
 
                 const midStep = sortedSteps[i] + Math.floor(gap / 2)
-                const t = loop * nbTickForLoop + tickForStep(midStep, stepsPerBeat, nbTickForLoop, tick)
+                const t = loop * nbTickForLoop + Utils.stepToTick(midStep, stepsPerBeat, tick)
 
                 ops.push({
                     type: 'ghost',

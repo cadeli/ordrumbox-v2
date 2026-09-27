@@ -192,6 +192,16 @@ export default class Utils {
         return Math.floor(beat * stepsPerBeat + beatStep)
     }
 
+    /**
+     * Canonical step → tick conversion: the single source of the
+     * `beat * tick + Math.round((beatStep * tick) / stepsPerBeat)` formula.
+     */
+    static stepToTick = (step, stepsPerBeat, tick) => {
+        const beat = Math.floor(step / stepsPerBeat)
+        const beatStep = step % stepsPerBeat
+        return beat * tick + Math.round((beatStep * tick) / stepsPerBeat)
+    }
+
     static getAudibleNoteSignature = (note) => {
         const audibleProps = {}
         Object.keys(note ?? {})

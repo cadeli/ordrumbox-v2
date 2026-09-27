@@ -16,8 +16,10 @@ import {
     computeTickSpacing,
     computeNbTickForLoop,
     expandLoopOccurrences,
+    computeTickForNote,
 } from '../src/patterns/engine.js'
 import { createStepResolver } from '../src/patterns/step_resolver.js'
+import Utils from '../src/core/utils.js'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -945,6 +947,34 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
         expect(countNotes(pattern, 0)).toBe(4)
         expect(countNotes(pattern, 1)).toBe(0)
         expect(countNotes(pattern, 2)).toBe(4)
+    })
+})
+
+describe('computeTickForNote', () => {
+    it('is exactly Utils.stepToTick (single tick formula, no local copy)', () => {
+        const cases = [
+            [0, 0, 4, 32],
+            [1, 0, 4, 32],
+            [0, 3, 4, 32],
+            [3, 7, 8, 32],
+            [2, 1, 2, 32],
+            [5, 0, 4, 16],
+            [0, 9, 4, 32],
+            [2, 0, 1, 32],
+        ]
+        for (const [beat, beatStep, stepsPerBeat, tick] of cases) {
+            const note = { beat, beatStep }
+            const track = { stepsPerBeat }
+            const legacy = beat * tick + Math.round((beatStep * tick) / stepsPerBeat)
+            expect(computeTickForNote(note, track, tick)).toBe(legacy)
+            expect(computeTickForNote(note, track, tick)).toBe(
+                Utils.stepToTick(Utils.getNoteAbsoluteStep(note, stepsPerBeat), stepsPerBeat, tick),
+            )
+        }
+    })
+
+    it('normalizes an invalid beat to 0 instead of producing NaN', () => {
+        expect(computeTickForNote({ beat: 'x', beatStep: 0 }, { stepsPerBeat: 4 }, 32)).toBe(0)
     })
 })
 

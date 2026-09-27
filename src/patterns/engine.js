@@ -74,9 +74,7 @@ export function getArpNoteCount(note) {
 }
 
 export function computeTickForNote(note, track, tick = TICK) {
-    const beat = note.beat ?? 0
-    const beatStep = note.beatStep ?? 0
-    return beat * tick + Math.round((beatStep * tick) / track.stepsPerBeat)
+    return Utils.stepToTick(Utils.getNoteAbsoluteStep(note, track.stepsPerBeat), track.stepsPerBeat, tick)
 }
 
 export function computeNbTickForPattern(nbBeats, tick = TICK) {
