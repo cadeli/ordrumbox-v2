@@ -1057,7 +1057,7 @@ export default class PatternPanel extends BasePanel {
                 this.#selNote = note
                 this.#selTrackIdx = trackIdx
                 this.#applySelection()
-                const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
+                const pos = Utils.getNoteAbsoluteStep({ beat, beatStep }, track.stepsPerBeat ?? 4)
                 this.#playbackEvents.batch(() => {
                     this.#playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
                     this.#playbackEvents.emit(EVENTS.NOTE_SELECT, { track, trackIdx, note, pos, beat, beatStep })
@@ -1073,7 +1073,7 @@ export default class PatternPanel extends BasePanel {
         this.#updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#applySelection()
 
-        const pos = beat * (track.stepsPerBeat ?? 4) + beatStep
+        const pos = Utils.getNoteAbsoluteStep({ beat, beatStep }, track.stepsPerBeat ?? 4)
         this.#playbackEvents.batch(() => {
             this.#playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx })
             this.#playbackEvents.emit(EVENTS.NOTE_SELECT, { track, trackIdx, note: newNote, pos, beat, beatStep })

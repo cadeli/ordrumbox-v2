@@ -16,6 +16,8 @@ import {
     computeTickSpacing,
     computeNbTickForLoop,
     expandLoopOccurrences,
+    buildDefaultResolver,
+    computeNextStepForNote,
 } from '../src/patterns/engine.js'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -379,7 +381,9 @@ describe('note properties preserved in flat notes', () => {
 
 describe('Euclidean Fill (generateSubNotesWithEuclidean)', () => {
     const mockTrack = { stepsPerBeat: 4 }
-    const mockNote = { beat: 0, beatStep: 0, euclidianFill: 1 }
+    // euclidianFill = total pulses k over the span, base note included:
+    // k=2 on 4 steps → onsets at steps 0 and 2 → one extra note at tick 16
+    const mockNote = { beat: 0, beatStep: 0, euclidianFill: 2 }
     const mockComputeNextStep = () => 4
 
     it('adds extra notes between current and next note', () => {
@@ -417,7 +421,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        N1: { beat: 0, beatStep: 0, euclidianFill: 1, every: 1, prob: 1 },
+                        N1: { beat: 0, beatStep: 0, euclidianFill: 2, every: 1, prob: 1 },
                         N2: { beat: 0, beatStep: 2, every: 1, prob: 1 },
                     },
                 },
@@ -441,7 +445,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        N1: { beat: 0, beatStep: 0, euclidianFill: 3, every: 1, prob: 1 },
+                        N1: { beat: 0, beatStep: 0, euclidianFill: 4, every: 1, prob: 1 },
                         N2: { beat: 1, beatStep: 0, every: 1, prob: 1 },
                     },
                 },
@@ -472,10 +476,52 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
         }
         const result = recomputeFlatNotes(pattern, 0, null, 32)
 
-        expect(result.has(0)).toBe(true)
-        expect(result.has(21)).toBe(true)
+        // k=5 pulses over the 16 step span → onsets at steps 0,3,6,9,12;
+        // only step 3 (tick 24) fits inside the 1 beat pattern.
         const ticks = [...result.keys()].sort((a, b) => a - b)
-        expect(ticks).toEqual([0, 21])
+        expect(ticks).toEqual([0, 24])
+    })
+
+    it('clamps k >= span to a full roll without duplicates', () => {
+        const pattern = {
+            nbBeats: 4,
+            tracks: {
+                T1: {
+                    name: 'T1',
+                    stepsPerBeat: 4,
+                    notes: {
+                        N1: { beat: 0, beatStep: 0, euclidianFill: 16, every: 1, prob: 1 },
+                        N2: { beat: 1, beatStep: 0, every: 1, prob: 1 },
+                    },
+                },
+            },
+        }
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
+
+        // base + every step of the 4 step span → 5 ticks, no repeated positions
+        const ticks = [...result.keys()].sort((a, b) => a - b)
+        expect(ticks).toEqual([0, 8, 16, 24, 32])
+    })
+
+    it('euclidianRotation shifts the fill positions by whole steps', () => {
+        const pattern = {
+            nbBeats: 4,
+            tracks: {
+                T1: {
+                    name: 'T1',
+                    stepsPerBeat: 4,
+                    notes: {
+                        N1: { beat: 0, beatStep: 0, euclidianFill: 2, euclidianRotation: 1, every: 1, prob: 1 },
+                        N2: { beat: 1, beatStep: 0, every: 1, prob: 1 },
+                    },
+                },
+            },
+        }
+        const result = recomputeFlatNotes(pattern, 0, null, 32)
+
+        // k=2 on 4 steps → onset at step 2, rotated by 1 → step 3 (tick 24)
+        const ticks = [...result.keys()].sort((a, b) => a - b)
+        expect(ticks).toEqual([0, 24, 32])
     })
 
     it('euclidian fill with arp applies pitch offsets', () => {
@@ -489,7 +535,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
                         N1: {
                             beat: 0,
                             beatStep: 0,
-                            euclidianFill: 1,
+                            euclidianFill: 2,
                             arp: { intervals: [0, 7], mode: 'up' },
                             retriggerNum: 1,
                             every: 1,
@@ -900,5 +946,84 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
         expect(countNotes(pattern, 0)).toBe(4)
         expect(countNotes(pattern, 1)).toBe(0)
         expect(countNotes(pattern, 2)).toBe(4)
+    })
+})
+
+describe('span resolver (buildDefaultResolver / computeNextStepForNote)', () => {
+    const makeTrack = (notes, opts = {}) => ({
+        name: 'T1',
+        nbBeats: 4,
+        stepsPerBeat: 4,
+        loopAtStep: 16,
+        notes,
+        ...opts,
+    })
+
+    it('returns the next occupied step', () => {
+        const track = makeTrack([
+            { beat: 0, beatStep: 0 },
+            { beat: 2, beatStep: 0 },
+        ])
+        expect(buildDefaultResolver(track)({ beat: 0, beatStep: 0 })).toBe(8)
+    })
+
+    it('clamps the span at the loop point when it sits before the next note', () => {
+        const track = makeTrack(
+            [
+                { beat: 0, beatStep: 0 },
+                { beat: 2, beatStep: 2 },
+            ],
+            { loopAtStep: 6 },
+        )
+        expect(buildDefaultResolver(track)({ beat: 0, beatStep: 0 })).toBe(6)
+    })
+
+    it('keeps the next note when it comes before the loop point', () => {
+        const track = makeTrack(
+            [
+                { beat: 0, beatStep: 0 },
+                { beat: 1, beatStep: 0 },
+            ],
+            { loopAtStep: 12 },
+        )
+        expect(buildDefaultResolver(track)({ beat: 0, beatStep: 0 })).toBe(4)
+    })
+
+    it('returns the track end when nothing follows', () => {
+        const track = makeTrack([{ beat: 0, beatStep: 0 }])
+        expect(buildDefaultResolver(track)({ beat: 0, beatStep: 0 })).toBe(16)
+    })
+
+    it('ignores a loop point before the note', () => {
+        const track = makeTrack([{ beat: 3, beatStep: 0 }], { loopAtStep: 4 })
+        expect(buildDefaultResolver(track)({ beat: 3, beatStep: 0 })).toBe(16)
+    })
+
+    it('supports notes stored as a map', () => {
+        const track = makeTrack({
+            '0:0': { beat: 0, beatStep: 0 },
+            '1:2': { beat: 1, beatStep: 2 },
+        })
+        expect(buildDefaultResolver(track)({ beat: 0, beatStep: 0 })).toBe(6)
+    })
+
+    it('computeNextStepForNote matches the fresh resolver', () => {
+        const track = makeTrack(
+            [
+                { beat: 0, beatStep: 0 },
+                { beat: 2, beatStep: 2 },
+            ],
+            { loopAtStep: 6 },
+        )
+        expect(computeNextStepForNote(track.notes[0], track)).toBe(buildDefaultResolver(track)(track.notes[0]))
+    })
+
+    it('recomputes the cached occupied set after an invalidation', () => {
+        const track = makeTrack([{ beat: 0, beatStep: 0 }], { loopAtStep: 16 })
+        expect(computeNextStepForNote(track.notes[0], track)).toBe(16)
+        track.notes.push({ beat: 2, beatStep: 0 })
+        expect(computeNextStepForNote(track.notes[0], track)).toBe(16)
+        track._occupiedSet = null
+        expect(computeNextStepForNote(track.notes[0], track)).toBe(8)
     })
 })

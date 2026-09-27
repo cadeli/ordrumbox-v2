@@ -4,6 +4,9 @@
 
 import { soundRegistry } from '../../state/sound_registry.js'
 import { nameOr } from '../../core/logger.js'
+import { computeEuclideanFillPositions } from '../../core/euclidean.js'
+import Utils from '../../core/utils.js'
+import { buildDefaultResolver, getArpNoteCount, normalizeArp } from '../../patterns/engine.js'
 
 export default class GridSection {
     #editor
@@ -14,7 +17,7 @@ export default class GridSection {
     }
 
     /** Build noteMap + ghostMap for a track (cached by coordinator). */
-    buildTrackData(track, startBeat, endBeatPage, pattern) {
+    buildTrackData(track, startBeat, endBeatPage, _pattern) {
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const notes = Array.isArray(track.notes)
             ? track.notes
@@ -28,9 +31,10 @@ export default class GridSection {
         })
 
         const ghostMap = new Map()
+        const resolveSpanEnd = buildDefaultResolver(track)
         noteMap.forEach((notes) => {
             for (const note of notes) {
-                this.#getSubPositions(note, track, pattern).forEach(({ pos, type }) => {
+                this.#getSubPositions(note, track, resolveSpanEnd).forEach(({ pos, type }) => {
                     const stepAbs = Math.floor(pos)
                     const beat = Math.floor(stepAbs / stepsPerBeat)
                     if (beat >= startBeat && beat < endBeatPage) {
@@ -244,24 +248,19 @@ export default class GridSection {
         return cellMap
     }
 
-    #getSubPositions(note, track, _pattern) {
+    #getSubPositions(note, track, resolveSpanEnd) {
         const stepsPerBeat = track.stepsPerBeat ?? 4
-        const basePos = note.beat * stepsPerBeat + note.beatStep
-        const retriggerNum = note.retriggerNum ?? 1
+        const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
         const rate = note.rate ?? 1
         const euclidianFill = note.euclidianFill ?? 0
-        const hasArp =
-            note.arp &&
-            (typeof note.arp === 'string' ||
-                (typeof note.arp === 'object' &&
-                    !Array.isArray(note.arp) &&
-                    Array.isArray(note.arp.intervals) &&
-                    note.arp.intervals.length > 0))
+        const arpConfig = normalizeArp(note.arp)
+        // The engine clamps the arp note count: keep the ghosts on the same steps.
+        const retriggerNum = arpConfig ? getArpNoteCount(note) : (note.retriggerNum ?? 1)
         const totalSteps = (track.nbBeats ?? 4) * stepsPerBeat
 
         const positions = []
-        const stepSpacing = rate < 8 ? rate / 8 : rate - 7
-        const count = hasArp || retriggerNum > 1 ? retriggerNum : 0
+        const stepSpacing = Utils.getStepSpacing(rate)
+        const count = arpConfig || retriggerNum > 1 ? retriggerNum : 0
 
         for (let i = 1; i < count; i++) {
             const pos = Math.round(basePos + i * stepSpacing)
@@ -269,23 +268,14 @@ export default class GridSection {
         }
 
         if (euclidianFill > 0) {
-            const endStep = (() => {
-                const currentPatternPos = basePos
-                let nextNotePos = totalSteps
-                for (const n of track.notes ?? []) {
-                    const nPos = n.beat * stepsPerBeat + n.beatStep
-                    if (nPos > currentPatternPos && nPos < nextNotePos) {
-                        nextNotePos = nPos
-                    }
-                }
-                return track.loopAtStep && track.loopAtStep > currentPatternPos && track.loopAtStep < nextNotePos
-                    ? track.loopAtStep
-                    : nextNotePos
-            })()
-
-            const stepsSpan = endStep - basePos
-            for (let i = 1; i <= euclidianFill; i++) {
-                const pos = Math.round(basePos + (i * stepsSpan) / (euclidianFill + 1))
+            const stepsSpan = resolveSpanEnd(note) - basePos
+            const euclideanPositions = computeEuclideanFillPositions(
+                basePos,
+                stepsSpan,
+                euclidianFill,
+                note.euclidianRotation ?? 0,
+            )
+            for (const pos of euclideanPositions) {
                 if (pos < totalSteps) positions.push({ pos, type: 'euclidian' })
             }
         }

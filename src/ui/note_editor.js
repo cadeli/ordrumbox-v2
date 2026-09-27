@@ -19,6 +19,7 @@ const DEFAULT_NOTE = {
     retriggerNum: 1,
     rate: 1,
     euclidianFill: 0,
+    euclidianRotation: 0,
     arpTriggerProbability: 0,
     arpRange: 0,
 }
@@ -76,6 +77,7 @@ const GROUPS = [
             { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
             { key: 'rate', label: 'Rate', min: 1, max: 16, step: 1 },
             { key: 'euclidianFill', label: 'Eucl', min: 0, max: 16, step: 1 },
+            { key: 'euclidianRotation', label: 'Rot', min: 0, max: 15, step: 1 },
             { key: 'arpTriggerProbability', label: 'Prob', min: 0, max: 1, step: 0.01 },
         ],
     },

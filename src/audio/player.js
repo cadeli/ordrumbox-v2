@@ -174,6 +174,7 @@ export default class Player {
             retriggerNum: note?.retriggerNum ?? 1,
             rate: note?.rate ?? 1,
             euclidianFill: note?.euclidianFill ?? 0,
+            euclidianRotation: note?.euclidianRotation ?? 0,
         }
         const flatNote = new FlatNote(0, track, previewNote)
         NoteParams.applyNoteParams(flatNote, this.secondsPerBeat ?? 60 / 120)

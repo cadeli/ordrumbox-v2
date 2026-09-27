@@ -3,6 +3,7 @@ import FlatNote from '../model/flatnote.js'
 import Defaults from './defaults.js'
 import TrackVariation from './variation.js'
 import { MAX_LOOP_RETRY, TICK } from '../core/constants.js'
+import { computeEuclideanFillPositions } from '../core/euclidean.js'
 
 export function isTriggered(pos, every, loop) {
     pos %= every
@@ -141,7 +142,6 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
     const rate = note.rate ?? 1
     const arpTriggerProb = note.arpTriggerProbability ?? 1
     const retriggerNum = note.retriggerNum ?? 1
-    const euclidianFill = note.euclidianFill ?? 0
 
     if (arpConfig && arpConfig.sequence.length > 0) {
         const totalNotes = getArpNoteCount(note)
@@ -169,11 +169,6 @@ export function generateSubNotes(flatNotes, baseTick, track, note, nbTickForPatt
             }
         }
     }
-
-    if (euclidianFill > 0) {
-        // euclidianFill needs computeNextPatternStepNote which depends on cmd
-        // so we handle it separately
-    }
 }
 
 export function generateSubNotesWithEuclidean(
@@ -193,18 +188,21 @@ export function generateSubNotesWithEuclidean(
     const arpConfig = normalizeArp(note.arp)
     const arpTriggerProb = note.arpTriggerProbability ?? 1
 
-    const startStep = note.beat * track.stepsPerBeat + note.beatStep
+    // Positions are computed in discrete steps first (identical to the UI
+    // views), then converted to ticks — never the other way around.
+    const startStep = Utils.getNoteAbsoluteStep(note, track.stepsPerBeat ?? 4)
     const endStep = computeNextStep(note, track)
     const stepsSpan = endStep - startStep
+    const ticksPerStep = tick / track.stepsPerBeat
+    const positions = computeEuclideanFillPositions(startStep, stepsSpan, euclidianFill, note.euclidianRotation ?? 0)
 
-    for (let i = 1; i <= euclidianFill; i++) {
-        const tickOffset = Math.round((i * stepsSpan * (tick / track.stepsPerBeat)) / (euclidianFill + 1))
-        const tickPos = baseTick + tickOffset
+    for (let i = 0; i < positions.length; i++) {
+        const tickPos = baseTick + Math.round((positions[i] - startStep) * ticksPerStep)
 
         if (tickPos < nbTickForPattern) {
             if (arpConfig) {
                 const totalArpNotes = getArpNoteCount(note)
-                const arpIndex = totalArpNotes + i - 1
+                const arpIndex = totalArpNotes + i
                 if (isProbabilityTriggered(arpTriggerProb)) {
                     const semitoneOffset = arpConfig.sequence[arpIndex % arpConfig.sequence.length]
                     addFlatNote(flatNotes, tickPos, createArpFlatNote(tickPos, track, note, semitoneOffset))
@@ -256,27 +254,59 @@ export function recomputeFlatNotes(djtPattern, loop = 0, computeNextStep = null,
     return flatNotes
 }
 
-function buildOccupiedSet(track) {
+/**
+ * Absolute steps occupied by the track notes (supports array or map notes).
+ */
+export function buildOccupiedSet(track) {
     const set = new Set()
     const notes = track.notes
     if (!notes) return set
-    const q = track.stepsPerBeat
+    const stepsPerBeat = track.stepsPerBeat ?? 4
     const values = Array.isArray(notes) ? notes : Object.values(notes)
     for (let i = 0; i < values.length; i++) {
-        const n = values[i]
-        set.add(n.beat * q + n.beatStep)
+        set.add(Utils.getNoteAbsoluteStep(values[i], stepsPerBeat))
     }
     return set
 }
 
-function buildDefaultResolver(track) {
-    const last = track.stepsPerBeat * (track.nbBeats ?? 4)
-    const occupied = buildOccupiedSet(track)
-    return (note) => {
-        const first = note.beat * track.stepsPerBeat + note.beatStep
-        for (let i = first + 1; i < last; i++) {
-            if (occupied.has(i)) return i
+/**
+ * End of the sub-note span of a note: the next occupied step inside the
+ * track, clamped by the loop point when it falls inside the span, otherwise
+ * the end of the track. Single source of truth shared by the audio engine,
+ * the pattern grid and the piano roll so that the ghosts and the rendered
+ * audio always stay on the same steps.
+ */
+export function resolveSpanEndStep(note, track, occupied) {
+    const stepsPerBeat = track.stepsPerBeat ?? 4
+    const last = stepsPerBeat * (track.nbBeats ?? 4)
+    const first = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
+
+    let end = last
+    for (let i = first + 1; i < last; i++) {
+        if (occupied.has(i)) {
+            end = i
+            break
         }
-        return track.loopAtStep ?? last
     }
+
+    const loopAtStep = Number(track.loopAtStep)
+    if (Number.isFinite(loopAtStep) && loopAtStep > first && loopAtStep < end) end = loopAtStep
+    return end
+}
+
+/**
+ * Resolver bound to a snapshot of the track (build once per recompute/render).
+ */
+export function buildDefaultResolver(track) {
+    const occupied = buildOccupiedSet(track)
+    return (note) => resolveSpanEndStep(note, track, occupied)
+}
+
+/**
+ * Cached resolver for hot paths: the occupied set lives on the track and is
+ * invalidated by applyFlatNotes().
+ */
+export function computeNextStepForNote(note, track) {
+    if (!track._occupiedSet) track._occupiedSet = buildOccupiedSet(track)
+    return resolveSpanEndStep(note, track, track._occupiedSet)
 }

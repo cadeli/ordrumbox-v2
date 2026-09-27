@@ -1,6 +1,6 @@
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { recomputeFlatNotes } from './engine.js'
+import { buildOccupiedSet, recomputeFlatNotes, resolveSpanEndStep } from './engine.js'
 import { TICK } from '../core/constants.js'
 import { EVENTS } from '../core/events.js'
 
@@ -21,27 +21,10 @@ export function applyFlatNotes(djtPattern, loop = 0) {
 }
 
 /**
- * Find the next occupied step after the given note in the same track.
+ * Find where the sub-note span of a given note ends (next occupied step,
+ * clamped by the loop point). The occupied set is cached on the track.
  */
 export function computeNextPatternStepNote(note, track) {
-    const last = track.stepsPerBeat * (track.nbBeats ?? 4)
-    const first = note.beat * track.stepsPerBeat + note.beatStep
-
-    if (!track._occupiedSet) {
-        const set = new Set()
-        const notes = track.notes
-        const q = track.stepsPerBeat
-        if (notes) {
-            const noteList = Array.isArray(notes) ? notes : Object.values(notes)
-            for (let i = 0; i < noteList.length; i++) {
-                set.add(noteList[i].beat * q + noteList[i].beatStep)
-            }
-        }
-        track._occupiedSet = set
-    }
-
-    for (let i = first + 1; i < last; i++) {
-        if (track._occupiedSet.has(i)) return i
-    }
-    return track.loopAtStep ?? last
+    if (!track._occupiedSet) track._occupiedSet = buildOccupiedSet(track)
+    return resolveSpanEndStep(note, track, track._occupiedSet)
 }

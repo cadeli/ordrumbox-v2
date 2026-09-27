@@ -1099,12 +1099,12 @@ describe('MidiExporter — functional end-to-end', () => {
     // ── 11. Euclidian fill ─────────────────────────────────────────────────────
 
     describe('Case 11: euclidian fill distributes notes', () => {
-        it('euclidianFill=1 on each note doubles the note count', () => {
+        it('euclidianFill=2 adds one euclidean pulse after each note', () => {
             const basePattern = {
                 name: 'EuclidBase',
                 bpm: 120,
                 nbBeats: 1,
-                tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0), makeNote(0, 1), makeNote(0, 2), makeNote(0, 3)])],
+                tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0), makeNote(0, 2)])],
             }
             const euclidPattern = {
                 name: 'EuclidFill',
@@ -1112,10 +1112,8 @@ describe('MidiExporter — functional end-to-end', () => {
                 nbBeats: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [
-                        makeNote(0, 0, { euclidianFill: 1 }),
-                        makeNote(0, 1, { euclidianFill: 1 }),
-                        makeNote(0, 2, { euclidianFill: 1 }),
-                        makeNote(0, 3, { euclidianFill: 1 }),
+                        makeNote(0, 0, { euclidianFill: 2 }),
+                        makeNote(0, 2, { euclidianFill: 2 }),
                     ]),
                 ],
             }
@@ -1125,8 +1123,8 @@ describe('MidiExporter — functional end-to-end', () => {
                 countEucl = 0
             for (const v of fmBase.values()) countBase += v.length
             for (const v of fmEucl.values()) countEucl += v.length
-            expect(countBase).toBe(4)
-            expect(countEucl).toBeGreaterThan(4)
+            expect(countBase).toBe(2)
+            expect(countEucl).toBe(4)
         })
     })
 

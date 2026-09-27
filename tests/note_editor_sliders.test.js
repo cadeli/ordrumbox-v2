@@ -118,6 +118,7 @@ describe('NoteEditor — OrSlider integration', () => {
             'pos',
             'prob',
             'euclidianFill',
+            'euclidianRotation',
             'retriggerNum',
             'rate',
             'arpRange',

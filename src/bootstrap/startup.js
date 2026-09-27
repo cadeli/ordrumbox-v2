@@ -78,6 +78,10 @@ function installE2eHook() {
 }
 
 async function logIdbReport() {
+    // Dev diagnostic only: dropped from prod builds by terser (drop_console)
+    // and skipped under vitest so the report never pollutes the test output.
+    if (import.meta.env.MODE === 'test') return
+
     const report = await idbReport()
     console.group('%c IndexedDB Report', 'color: #e94560; font-weight: bold')
     logger.info(

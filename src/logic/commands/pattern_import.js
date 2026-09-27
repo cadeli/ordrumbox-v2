@@ -113,6 +113,7 @@ export function copyNoteProps(note, sourceNote, track) {
         'retriggerNum',
         'rate',
         'euclidianFill',
+        'euclidianRotation',
         'steppc',
     ]
 

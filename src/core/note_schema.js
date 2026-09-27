@@ -44,6 +44,7 @@ export const NOTE_KEY_ORDER = [
     'arp',
     'arpTriggerProbability',
     'euclidianFill',
+    'euclidianRotation',
     'pos',
 ]
 
@@ -63,7 +64,8 @@ export const NOTE_KEY_ORDER = [
  * @property {number} retriggerNum          - Number of retriggers per step (1=no retrigger). Default: 1
  * @property {Array|null} arp               - Arpeggio intervals (e.g. [0, 4, 7]). Default: null (disabled)
  * @property {number} arpTriggerProbability - Probability of arpeggio trigger (0–1). Default: 1
- * @property {number} euclidianFill         - Euclidean fill amount (0–16). Default: 0 (disabled)
+ * @property {number} euclidianFill         - Euclidean pulses k over the span to the next note, base note included (0–16, 0=disabled). Default: 0 (disabled)
+ * @property {number} euclidianRotation     - Phase offset of the euclidean pattern in steps (0–15). Default: 0
  * @property {number} pos                   - Position within the step for micro-timing. Default: 0
  */
 export const NOTE_DEFAULTS = {
@@ -79,6 +81,7 @@ export const NOTE_DEFAULTS = {
     arp: null,
     arpTriggerProbability: 1,
     euclidianFill: 0,
+    euclidianRotation: 0,
     pos: 0,
 }
 
@@ -191,6 +194,7 @@ export function normalizeNote(note) {
         arp: note.arp ?? NOTE_DEFAULTS.arp,
         arpTriggerProbability: note.arpTriggerProbability ?? NOTE_DEFAULTS.arpTriggerProbability,
         euclidianFill: note.euclidianFill ?? NOTE_DEFAULTS.euclidianFill,
+        euclidianRotation: note.euclidianRotation ?? NOTE_DEFAULTS.euclidianRotation,
         pos: note.pos ?? NOTE_DEFAULTS.pos,
         ...note,
     }

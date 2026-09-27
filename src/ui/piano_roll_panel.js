@@ -6,6 +6,8 @@ import FlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
 import ContextMenu from './components/context_menu.js'
 import { TICK } from '../core/constants.js'
+import { computeEuclideanFillPositions } from '../core/euclidean.js'
+import { computeNextStepForNote, getArpNoteCount, normalizeArp } from '../patterns/engine.js'
 import { formatNoteTooltip } from './components/ui_utils.js'
 import NoteParams from '../patterns/note_params.js'
 import { EVENTS } from '../core/events.js'
@@ -370,7 +372,7 @@ export default class PianoRollPanel extends BasePanel {
         const fragment = document.createDocumentFragment()
 
         notes.forEach((note, noteIdx) => {
-            const step = (note.beat ?? 0) * stepsPerBeat + (note.beatStep ?? 0)
+            const step = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
             if (step < pageStartStep || step >= pageEndStep) return
             const row = MIDDLE_C + trackPitchOffset + (note.pitch ?? 0) - MIDI_MIN
             if (row < 0 || row >= TOTAL_KEYS) return
@@ -435,17 +437,18 @@ export default class PianoRollPanel extends BasePanel {
 
     #getSubPositions(note, track, totalSteps) {
         const stepsPerBeat = track.stepsPerBeat ?? 4
-        const basePos = (note.beat ?? 0) * stepsPerBeat + (note.beatStep ?? 0)
-        const retriggerNum = note.retriggerNum ?? 1
+        const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
         const rate = note.rate ?? 1
         const euclidianFill = note.euclidianFill ?? 0
-        const arpConfig = this.#normalizeArp(note.arp)
+        const arpConfig = normalizeArp(note.arp)
+        // The engine clamps the arp note count: keep the ghosts on the same steps.
+        const retriggerNum = arpConfig ? getArpNoteCount(note) : (note.retriggerNum ?? 1)
         const hasTriggers = arpConfig || retriggerNum > 1 || euclidianFill > 0
 
         const positions = []
         if (!hasTriggers) return positions
 
-        const stepSpacing = rate < 8 ? rate / 8 : rate - 7
+        const stepSpacing = Utils.getStepSpacing(rate)
         const seq = arpConfig?.sequence
 
         for (let i = 1; i < retriggerNum; i++) {
@@ -454,48 +457,25 @@ export default class PianoRollPanel extends BasePanel {
         }
 
         if (euclidianFill > 0) {
-            let endStep = totalSteps
-            for (const n of track.notes ?? []) {
-                const nPos = (n.beat ?? 0) * stepsPerBeat + (n.beatStep ?? 0)
-                if (nPos > basePos && nPos < endStep) endStep = nPos
-            }
-            if (track.loopAtStep && track.loopAtStep > basePos && track.loopAtStep < endStep) endStep = track.loopAtStep
-            const stepsSpan = endStep - basePos
-            for (let i = 1; i <= euclidianFill; i++) {
-                const pos = Math.round(basePos + (i * stepsSpan) / (euclidianFill + 1))
+            const stepsSpan = computeNextStepForNote(note, track) - basePos
+            const euclideanPositions = computeEuclideanFillPositions(
+                basePos,
+                stepsSpan,
+                euclidianFill,
+                note.euclidianRotation ?? 0,
+            )
+            let euclidIndex = 0
+            for (const pos of euclideanPositions) {
                 if (pos < totalSteps)
                     positions.push({
                         pos,
                         type: 'euclidian',
-                        pitchOffset: seq ? seq[(retriggerNum + i - 1) % seq.length] : 0,
+                        pitchOffset: seq ? seq[(retriggerNum + euclidIndex) % seq.length] : 0,
                     })
+                euclidIndex++
             }
         }
         return positions
-    }
-
-    #normalizeArp(arp) {
-        if (arp == null) return null
-        let intervals,
-            mode = 'up'
-        if (Array.isArray(arp)) {
-            intervals = arp
-        } else if (typeof arp === 'string') {
-            if (!/\d/.test(arp)) return null
-            intervals = arp.split(',').map(Number).filter(Number.isFinite)
-        } else if (typeof arp === 'object') {
-            intervals = Array.isArray(arp.intervals) ? arp.intervals : []
-            mode = String(arp.mode ?? mode).toLowerCase()
-        } else {
-            return null
-        }
-        const filtered = intervals.map(Number).filter(Number.isFinite)
-        if (filtered.length === 0) return null
-        if (!filtered.includes(0)) filtered.unshift(0)
-        const asc = [...filtered].sort((a, b) => a - b)
-        const sequence =
-            mode === 'down' ? [...asc].reverse() : mode === 'updown' ? asc.concat(asc.slice(1, -1).reverse()) : asc
-        return { sequence }
     }
 
     #onGridClick(e, gridEl) {
@@ -1038,7 +1018,7 @@ export default class PianoRollPanel extends BasePanel {
         for (const el of gridEl.querySelectorAll('.pp-pr-note')) {
             const note = notes[parseInt(el.dataset.note, 10)]
             if (!note) continue
-            const basePos = (note.beat ?? 0) * stepsPerBeat + (note.beatStep ?? 0)
+            const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
             if (basePos >= loopAtStep) continue
             const matchesBase = absStep % loopAtStep === basePos
             const matchesSub = this.#getSubPositions(note, track, totalSteps).some(

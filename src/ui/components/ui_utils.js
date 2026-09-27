@@ -109,7 +109,10 @@ export function formatNoteTooltip(note, trackPitch = 0) {
     if (arpTriggerProb !== 1) parts.push(`arpProb:${fmt(arpTriggerProb)}`)
 
     const euclidianFill = note.euclidianFill ?? 0
-    if (euclidianFill > 0) parts.push(`eucl:${euclidianFill}`)
+    if (euclidianFill > 0) {
+        const rotation = note.euclidianRotation ?? 0
+        parts.push(rotation ? `eucl:${euclidianFill}@${rotation}` : `eucl:${euclidianFill}`)
+    }
 
     const rate = note.rate ?? 1
     if (rate !== 1) parts.push(`rate:${fmt(rate)}`)
