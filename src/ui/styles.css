@@ -40,6 +40,7 @@
     --color-danger: #ff4fa3;
     --color-danger-light: #ff9ec7;
     --color-info: #37e0ff;
+    --color-selection: #ffffff;
     --bg-success: #17c98a;
 
     /* ── Typography ── */
@@ -1033,18 +1034,22 @@ body {
     background: var(--accent);
 }
 #pattern-panel .pp-cell.selected {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--color-selection);
     outline-offset: -1px;
     z-index: var(--z-overlay);
 }
 #pattern-panel .pp-cell.selected.filled {
-    outline: 2px solid var(--bg);
+    outline: 2px solid var(--color-selection);
     border-color: var(--black);
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+        0 0 12px rgba(255, 255, 255, 0.85);
 }
 #pattern-panel .pp-note-slice.selected {
-    outline: 2px solid var(--bg);
+    outline: 2px solid var(--color-selection);
     outline-offset: -1px;
     background: var(--accent);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
     z-index: var(--z-content);
 }
 #pattern-panel .pp-cell.pp-range {
@@ -1305,7 +1310,7 @@ body {
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
 }
 .pp-pr-note.selected {
-    outline: 3px solid var(--text);
+    outline: 3px solid var(--color-selection);
     outline-offset: -1px;
     z-index: var(--z-content);
     filter: brightness(1.3);
@@ -3637,7 +3642,8 @@ select option {
     outline: 2px solid var(--toy-yellow);
 }
 #pattern-panel .pp-cell.selected {
-    outline: 2px solid var(--toy-pink);
+    outline: 2px solid var(--color-selection);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.85);
 }
 #pattern-panel .pp-cell.pp-loop {
     border-right: 4px solid var(--toy-cyan);
@@ -3698,7 +3704,8 @@ select option {
     box-shadow: 0 0 6px rgba(55, 224, 255, 0.6);
 }
 .pp-pr-note.selected {
-    outline: 3px solid var(--toy-yellow);
+    outline: 3px solid var(--color-selection);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
 }
 .pp-pr-note.playing {
     background: var(--toy-yellow);
