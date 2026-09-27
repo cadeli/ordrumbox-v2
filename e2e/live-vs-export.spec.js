@@ -94,7 +94,6 @@ test.describe('Live vs Export equivalence', () => {
                 patterns: [pattern],
                 selectedPatternNum: 0,
                 getSelectedPatternNum: () => 0,
-                computeNextStep: (note, track) => serviceRegistry.patterns.computeNextPatternStepNote(note, track),
                 getAutoGenerate: () => null,
                 uiState: {},
                 TICK,

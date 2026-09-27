@@ -3,7 +3,7 @@
  *
  * The euclidean / retrigger ghosts must always land on the steps the audio
  * engine actually plays: grid, piano roll and pattern engine all share the
- * same span resolver (buildDefaultResolver / computeNextStepForNote).
+ * same pass-scoped step resolver (patterns/step_resolver.js).
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import PatternPanel from '../src/ui/pattern_panel.js'

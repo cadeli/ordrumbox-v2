@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import * as patternsManager from '../src/patterns/manager.js'
 import { hasArp, getArpNoteCount, generateSubNotes, createArpFlatNote } from '../src/patterns/engine.js'
 import { makeNote, makeTrack, PARAM_SETS } from './helpers/make_pattern.js'
+import * as stepResolver from '../src/patterns/step_resolver.js'
 import { EVENTS } from '../src/core/events.js'
 
 vi.mock('../src/state/app_state.js', () => {
@@ -180,16 +181,16 @@ describe('PatternManager', () => {
         })
     })
 
-    // ── Parameterized: computeNextPatternStepNote across subdivisions ─────────
+    // ── Parameterized: step resolver across subdivisions ──────────────────────
 
-    describe.each(PARAM_SETS)('computeNextPatternStepNote — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat) => {
+    describe.each(PARAM_SETS)('createStepResolver — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat) => {
         it('finds next note in same beat', () => {
             const track = makeTrack('KICK', [makeNote(0, 0), makeNote(0, 2)], {
                 nbBeats: 2,
                 stepsPerBeat,
                 loopAtStep: 2 * stepsPerBeat,
             })
-            const result = mgr.computeNextPatternStepNote(track.notes[0], track)
+            const result = stepResolver.createStepResolver(track)(track.notes[0])
             expect(result).toBe(2)
         })
 
@@ -199,7 +200,7 @@ describe('PatternManager', () => {
                 stepsPerBeat,
                 loopAtStep: 2 * stepsPerBeat,
             })
-            const result = mgr.computeNextPatternStepNote(track.notes[0], track)
+            const result = stepResolver.createStepResolver(track)(track.notes[0])
             expect(result).toBe(stepsPerBeat)
         })
 
@@ -210,7 +211,7 @@ describe('PatternManager', () => {
                 stepsPerBeat,
                 loopAtStep: loopAt,
             })
-            const result = mgr.computeNextPatternStepNote(track.notes[0], track)
+            const result = stepResolver.createStepResolver(track)(track.notes[0])
             expect(result).toBe(loopAt)
         })
 
@@ -222,7 +223,7 @@ describe('PatternManager', () => {
                 loopAtStep: totalSteps,
             })
             delete track.loopAtStep
-            const result = mgr.computeNextPatternStepNote(track.notes[0], track)
+            const result = stepResolver.createStepResolver(track)(track.notes[0])
             expect(result).toBe(totalSteps)
         })
 
@@ -233,7 +234,7 @@ describe('PatternManager', () => {
                 stepsPerBeat,
                 loopAtStep: loopAt,
             })
-            const result = mgr.computeNextPatternStepNote(track.notes[0], track)
+            const result = stepResolver.createStepResolver(track)(track.notes[0])
             expect(result).toBe(2 * stepsPerBeat)
         })
     })

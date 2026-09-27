@@ -7,7 +7,8 @@ import BasePanel from './base_panel.js'
 import ContextMenu from './components/context_menu.js'
 import { TICK } from '../core/constants.js'
 import { computeEuclideanFillPositions } from '../core/euclidean.js'
-import { computeNextStepForNote, getArpNoteCount, normalizeArp } from '../patterns/engine.js'
+import { getArpNoteCount, normalizeArp } from '../patterns/engine.js'
+import { createStepResolver } from '../patterns/step_resolver.js'
 import { formatNoteTooltip } from './components/ui_utils.js'
 import NoteParams from '../patterns/note_params.js'
 import { EVENTS } from '../core/events.js'
@@ -369,6 +370,7 @@ export default class PianoRollPanel extends BasePanel {
         const { stepsPerBeat, totalSteps, pageStartStep, pageEndStep, visibleSteps } = this.#pageInfo()
         const trackPitchOffset = track.pitch ?? 0
         const notes = track.notes ?? []
+        const resolveSpanEnd = createStepResolver(track)
         const fragment = document.createDocumentFragment()
 
         notes.forEach((note, noteIdx) => {
@@ -401,7 +403,7 @@ export default class PianoRollPanel extends BasePanel {
             }
             fragment.appendChild(el)
 
-            this.#getSubPositions(note, track, totalSteps).forEach(({ pos, type, pitchOffset }) => {
+            this.#getSubPositions(note, track, totalSteps, resolveSpanEnd).forEach(({ pos, type, pitchOffset }) => {
                 const ghStep = pos - pageStartStep
                 if (ghStep < 0 || ghStep >= visibleSteps) return
                 const ghRow = row + (pitchOffset ?? 0)
@@ -435,7 +437,7 @@ export default class PianoRollPanel extends BasePanel {
         gridEl.appendChild(fragment)
     }
 
-    #getSubPositions(note, track, totalSteps) {
+    #getSubPositions(note, track, totalSteps, resolveSpanEnd = createStepResolver(track)) {
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
         const rate = note.rate ?? 1
@@ -457,7 +459,7 @@ export default class PianoRollPanel extends BasePanel {
         }
 
         if (euclidianFill > 0) {
-            const stepsSpan = computeNextStepForNote(note, track) - basePos
+            const stepsSpan = resolveSpanEnd(note) - basePos
             const euclideanPositions = computeEuclideanFillPositions(
                 basePos,
                 stepsSpan,
@@ -1015,13 +1017,14 @@ export default class PianoRollPanel extends BasePanel {
         const { stepsPerBeat, totalSteps } = this.#pageInfo()
         const loopAtStep = track.loopAtStep ?? totalSteps
         const notes = track.notes ?? []
+        const resolveSpanEnd = createStepResolver(track)
         for (const el of gridEl.querySelectorAll('.pp-pr-note')) {
             const note = notes[parseInt(el.dataset.note, 10)]
             if (!note) continue
             const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
             if (basePos >= loopAtStep) continue
             const matchesBase = absStep % loopAtStep === basePos
-            const matchesSub = this.#getSubPositions(note, track, totalSteps).some(
+            const matchesSub = this.#getSubPositions(note, track, totalSteps, resolveSpanEnd).some(
                 (s) => s.pos < loopAtStep && absStep % loopAtStep === s.pos,
             )
             if (matchesBase || matchesSub) {

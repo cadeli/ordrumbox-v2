@@ -125,9 +125,8 @@ export function normalizeTrack(track = {}) {
 /**
  * Properties that are recalculated on the fly (derived).
  * Never exported or imported in the compact format.
- * `_occupiedSet` is the pattern-grid step cache built by patterns/manager.js.
  */
-export const TRACK_RECALCULATED = ['loopPointBeat', 'loopPointStep', '_occupiedSet']
+export const TRACK_RECALCULATED = ['loopPointBeat', 'loopPointStep']
 
 /**
  * Numeric range constraints for track properties.

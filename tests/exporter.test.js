@@ -90,12 +90,6 @@ describe('PatternExporter', () => {
             expect(cleaned).not.toHaveProperty('loopPointStep')
         })
 
-        it('strips the runtime _occupiedSet step cache', () => {
-            const track = { ...Utils.TRACK_DEFAULTS, _occupiedSet: new Set([0, 4]), notes: [] }
-            const cleaned = PatternExporter.cleanTrack(track)
-            expect(cleaned).not.toHaveProperty('_occupiedSet')
-        })
-
         it('keeps unknown keys not in TRACK_DEFAULTS', () => {
             const track = { ...Utils.TRACK_DEFAULTS, notes: [], myMeta: 'session1' }
             const cleaned = PatternExporter.cleanTrack(track)

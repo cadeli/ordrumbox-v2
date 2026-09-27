@@ -57,7 +57,6 @@ export default class Sequencer {
             patterns: this.appState.patterns,
             selectedPatternNum: this.appState.selectedPatternNum,
             getSelectedPatternNum: () => this.appState.selectedPatternNum,
-            computeNextStep: (note, track) => this.serviceRegistry.patterns.computeNextPatternStepNote(note, track),
             getAutoGenerate: getAutoGenerateService,
             uiState: {}, // UI state removed
             TICK,

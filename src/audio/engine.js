@@ -32,7 +32,6 @@ export default class AudioEngine {
         this.getAutoGenerate = config.getAutoGenerate
         this.TICK = config.TICK
         this.secondsPerBeat = config.secondsPerBeat
-        this.computeNextStep = config.computeNextStep
         this.instrumentsManager = instrumentsManager
         this.isOffline = !!config.isOffline
 
@@ -93,7 +92,7 @@ export default class AudioEngine {
     // ─── Pattern / flat-note helpers ────────────────────────────────────────────
 
     computeFlatNotes = (pattern, loop) => {
-        this.flatNotes = recomputeFlatNotes(pattern, loop, this.computeNextStep, this.TICK)
+        this.flatNotes = recomputeFlatNotes(pattern, loop, this.TICK)
         // Update cache so getFlatNotesForCurrentPattern doesn't recompute.
         // Without this, every loop start calls recomputeFlatNotes TWICE,
         // causing double TrackVariation.applyNoteVariation mutations.
@@ -115,7 +114,7 @@ export default class AudioEngine {
         this.#cachedPatternRef = pattern
         this.#cachedLoop = loop
         this.#cachedVersion = patternVersion
-        this.flatNotes = recomputeFlatNotes(pattern, loop, this.computeNextStep, this.TICK)
+        this.flatNotes = recomputeFlatNotes(pattern, loop, this.TICK)
         return this.flatNotes
     }
 

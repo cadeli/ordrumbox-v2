@@ -4,6 +4,7 @@ import Defaults from './defaults.js'
 import TrackVariation from './variation.js'
 import { MAX_LOOP_RETRY, TICK } from '../core/constants.js'
 import { computeEuclideanFillPositions } from '../core/euclidean.js'
+import { createStepResolver } from './step_resolver.js'
 
 export function isTriggered(pos, every, loop) {
     pos %= every
@@ -177,7 +178,7 @@ export function generateSubNotesWithEuclidean(
     track,
     note,
     nbTickForPattern,
-    computeNextStep,
+    computeNextStep = null,
     tick = TICK,
 ) {
     generateSubNotes(flatNotes, baseTick, track, note, nbTickForPattern, tick)
@@ -191,7 +192,7 @@ export function generateSubNotesWithEuclidean(
     // Positions are computed in discrete steps first (identical to the UI
     // views), then converted to ticks — never the other way around.
     const startStep = Utils.getNoteAbsoluteStep(note, track.stepsPerBeat ?? 4)
-    const endStep = computeNextStep(note, track)
+    const endStep = (computeNextStep ?? createStepResolver(track))(note, track)
     const stepsSpan = endStep - startStep
     const ticksPerStep = tick / track.stepsPerBeat
     const positions = computeEuclideanFillPositions(startStep, stepsSpan, euclidianFill, note.euclidianRotation ?? 0)
@@ -216,7 +217,7 @@ export function generateSubNotesWithEuclidean(
     }
 }
 
-export function recomputeFlatNotes(djtPattern, loop = 0, computeNextStep = null, tick = TICK) {
+export function recomputeFlatNotes(djtPattern, loop = 0, tick = TICK) {
     const flatNotes = new Map()
     const nbTickForPattern = computeNbTickForPattern(djtPattern.nbBeats, tick)
 
@@ -225,7 +226,7 @@ export function recomputeFlatNotes(djtPattern, loop = 0, computeNextStep = null,
 
         TrackVariation.applyNoteVariation(track)
 
-        const resolver = computeNextStep ?? buildDefaultResolver(track)
+        const resolver = createStepResolver(track)
 
         for (const note of Object.values(track.notes)) {
             const pos = note.pos ?? 0
@@ -252,61 +253,4 @@ export function recomputeFlatNotes(djtPattern, loop = 0, computeNextStep = null,
     }
 
     return flatNotes
-}
-
-/**
- * Absolute steps occupied by the track notes (supports array or map notes).
- */
-export function buildOccupiedSet(track) {
-    const set = new Set()
-    const notes = track.notes
-    if (!notes) return set
-    const stepsPerBeat = track.stepsPerBeat ?? 4
-    const values = Array.isArray(notes) ? notes : Object.values(notes)
-    for (let i = 0; i < values.length; i++) {
-        set.add(Utils.getNoteAbsoluteStep(values[i], stepsPerBeat))
-    }
-    return set
-}
-
-/**
- * End of the sub-note span of a note: the next occupied step inside the
- * track, clamped by the loop point when it falls inside the span, otherwise
- * the end of the track. Single source of truth shared by the audio engine,
- * the pattern grid and the piano roll so that the ghosts and the rendered
- * audio always stay on the same steps.
- */
-export function resolveSpanEndStep(note, track, occupied) {
-    const stepsPerBeat = track.stepsPerBeat ?? 4
-    const last = stepsPerBeat * (track.nbBeats ?? 4)
-    const first = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
-
-    let end = last
-    for (let i = first + 1; i < last; i++) {
-        if (occupied.has(i)) {
-            end = i
-            break
-        }
-    }
-
-    const loopAtStep = Number(track.loopAtStep)
-    if (Number.isFinite(loopAtStep) && loopAtStep > first && loopAtStep < end) end = loopAtStep
-    return end
-}
-
-/**
- * Resolver bound to a snapshot of the track (build once per recompute/render).
- */
-export function buildDefaultResolver(track) {
-    const occupied = buildOccupiedSet(track)
-    return (note) => resolveSpanEndStep(note, track, occupied)
-}
-
-/**
- * Cached resolver for hot paths: the occupied set lives on the track and is
- * invalidated by applyFlatNotes().
- */
-export function computeNextStepForNote(note, track) {
-    if (!track._occupiedSet) track._occupiedSet = buildOccupiedSet(track)
-    return resolveSpanEndStep(note, track, track._occupiedSet)
 }

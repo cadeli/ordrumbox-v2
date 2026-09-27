@@ -6,7 +6,8 @@ import { soundRegistry } from '../../state/sound_registry.js'
 import { nameOr } from '../../core/logger.js'
 import { computeEuclideanFillPositions } from '../../core/euclidean.js'
 import Utils from '../../core/utils.js'
-import { buildDefaultResolver, getArpNoteCount, normalizeArp } from '../../patterns/engine.js'
+import { getArpNoteCount, normalizeArp } from '../../patterns/engine.js'
+import { createStepResolver } from '../../patterns/step_resolver.js'
 
 export default class GridSection {
     #editor
@@ -31,7 +32,7 @@ export default class GridSection {
         })
 
         const ghostMap = new Map()
-        const resolveSpanEnd = buildDefaultResolver(track)
+        const resolveSpanEnd = createStepResolver(track)
         noteMap.forEach((notes) => {
             for (const note of notes) {
                 this.#getSubPositions(note, track, resolveSpanEnd).forEach(({ pos, type }) => {

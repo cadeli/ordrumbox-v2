@@ -23,7 +23,6 @@ export default class WavExporter {
             patterns: [pattern],
             selectedPatternNum: 0,
             getSelectedPatternNum: () => 0,
-            computeNextStep: (note, track) => serviceRegistry.patterns.computeNextPatternStepNote(note, track),
             getAutoGenerate: getAutoGenerateService,
             uiState: {},
             TICK,
