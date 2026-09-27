@@ -89,3 +89,57 @@ describe('showToast', () => {
         expect(document.querySelector('#odbox-toast-container > div')).toBeNull()
     })
 })
+
+describe('toast placement (always inside the browser window)', () => {
+    beforeEach(() => {
+        document.body.innerHTML = ''
+        vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+        vi.useRealTimers()
+    })
+
+    it('anchors the container as a full-width bottom band', () => {
+        showToast('hello')
+        const c = document.getElementById('odbox-toast-container')
+        expect(c.style.position).toBe('fixed')
+        expect(c.style.left).toBe('0px')
+        expect(c.style.right).toBe('0px')
+        expect(c.style.alignItems).toBe('center')
+        expect(c.style.bottom).toContain('20px')
+    })
+
+    it('keeps each toast inside that band (480px cap, shrinks on narrow screens)', () => {
+        showToast('hello')
+        const toast = document.querySelector('#odbox-toast-container > div')
+        expect(toast.style.width).toBe('480px')
+        expect(toast.style.maxWidth).toBe('100%')
+        expect(toast.style.boxSizing).toBe('border-box')
+    })
+
+    it('drops the oldest toasts when the stack would leave the top of the viewport', () => {
+        showToast('a')
+        showToast('b')
+        showToast('c')
+        const c = document.getElementById('odbox-toast-container')
+        // Fake layout: 400px base + 100px per toast → the 4th one overflows 768px.
+        c.getBoundingClientRect = () => ({
+            x: 0,
+            y: 0,
+            width: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 400 + 100 * c.childElementCount,
+            toJSON: () => ({}),
+        })
+        showToast('d')
+
+        expect(c.children.length).toBeLessThan(4)
+        expect(c.children.length).toBeGreaterThan(1)
+        expect(c.lastElementChild.textContent).toBe('d') // newest survives
+        expect(c.firstElementChild.textContent).toBe('b') // oldest dropped
+    })
+})

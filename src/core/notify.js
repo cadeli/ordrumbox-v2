@@ -15,15 +15,37 @@ function ensureContainer() {
     if (c) return c
     c = document.createElement('div')
     c.id = CONTAINER_ID
+    // Bottom-centre band, full width so it can never fall outside the window:
+    // the stack grows upward from the bottom edge (the page never scrolls) and
+    // clampStack() drops the oldest toast if it would reach the top of the view.
     c.style.cssText = `
-        position:fixed; bottom:calc(20px + var(--toast-bottom-offset, 0px)); right:20px;
+        position:fixed; left:0; right:0;
+        bottom:calc(20px + env(safe-area-inset-bottom, 0px) + var(--toast-bottom-offset, 0px));
         z-index:var(--z-toast);
-        display:flex; flex-direction:column-reverse; gap:8px;
+        display:flex; flex-direction:column-reverse; align-items:center; gap:8px;
+        padding-inline:16px;
         pointer-events:none; font-family:var(--font);
     `
     document.body.appendChild(c)
     ensureStyles()
     return c
+}
+
+/**
+ * Keeps the toast stack inside the viewport: toasts are appended upward from
+ * the bottom edge and the page cannot scroll, so a long stack would leave the
+ * top of the window. Drops the oldest toasts (bottom of the column) until the
+ * remaining ones fit.
+ * @param {HTMLElement} container
+ */
+function clampStack(container) {
+    if (typeof window === 'undefined' || !container) return
+    const offset = parseFloat(getComputedStyle(container).bottom) || 20
+    const maxHeight = Math.max(120, window.innerHeight - offset - 16)
+    let guard = 0
+    while (container.childElementCount > 1 && container.getBoundingClientRect().height > maxHeight && guard++ < 30) {
+        container.firstElementChild.remove()
+    }
 }
 
 function ensureStyles() {
@@ -52,7 +74,8 @@ export function showToast(message, type = 'info', { actions, dismissible } = {})
         background:${bg}; color:var(--text); padding:12px 20px;
         border-radius:8px; border:1px solid ${border};
         box-shadow:0 4px 12px var(--toast-shadow);
-        pointer-events:auto; max-width:400px; word-break:break-word;
+        pointer-events:auto; width:480px; max-width:100%;
+        box-sizing:border-box; word-break:break-word;
         display:flex; align-items:center; gap:12px;
         animation:odbox-toast-in 0.3s ease-out;
         font-size:var(--fs-base);
@@ -92,6 +115,7 @@ export function showToast(message, type = 'info', { actions, dismissible } = {})
     }
 
     container.appendChild(el)
+    clampStack(container)
 
     function dismiss() {
         el.style.transition = 'opacity 0.25s'
