@@ -5,7 +5,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { recalcLoopDerived } from '../model/track_schema.js'
 import { MAX_BEATS } from '../core/constants.js'
-import { prevPage, nextPage } from '../core/page_nav.js'
+import { prevPage, nextPage } from './page_nav.js'
 import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
 

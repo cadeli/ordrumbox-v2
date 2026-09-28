@@ -94,8 +94,8 @@ export default class AudioEngine {
     computeFlatNotes = (pattern, loop) => {
         this.flatNotes = recomputeFlatNotes(pattern, loop, this.TICK)
         // Update cache so getFlatNotesForCurrentPattern doesn't recompute.
-        // Without this, every loop start calls recomputeFlatNotes TWICE,
-        // causing double TrackVariation.applyNoteVariation mutations.
+        // Without this, every loop start would build flat notes (including the
+        // variation2 layer) twice.
         this.#cachedPatternRef = pattern
         this.#cachedLoop = loop
         this.#cachedVersion = pattern._version ?? 0

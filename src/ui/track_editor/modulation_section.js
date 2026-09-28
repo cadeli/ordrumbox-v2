@@ -101,35 +101,40 @@ export default class ModulationSection {
 
     onToggleBtn(targetKey) {
         this._editor._selectedLfoTarget = targetKey
-        this._toggleLfoForTarget(targetKey)
+        return this._toggleLfoForTarget(targetKey)
     }
 
+    /**
+     * Computes the track updates flipping the LFO for a target on/off.
+     * Turning off yields `undefined` (same as the previous `delete`): readers
+     * only test truthiness and JSON output drops the key.
+     * @returns {{updates: object}|null} null when the target supports no LFO
+     */
     _toggleLfoForTarget(targetKey) {
         const editor = this._editor
         const track = editor._track
         const prop = this._lfoProps().find((p) => p.key === targetKey)
-        if (!prop) return
-        if (track[prop.lfo]) {
-            delete track[prop.lfo]
-        } else {
-            track[prop.lfo] = this._getDefaultLfo(prop)
-        }
+        if (!prop) return null
+        if (track[prop.lfo]) return { updates: { [prop.lfo]: undefined } }
+        return { updates: { [prop.lfo]: this._getDefaultLfo(prop) } }
     }
 
+    /**
+     * Computes the track updates for an LFO param slider (creating the LFO
+     * object on first touch). The stored object is never mutated: a fresh
+     * clone carries the new value so undo can restore the previous reference.
+     * Also updates the DOM labels next to the input.
+     * @returns {{updates: object, created: boolean}|null}
+     */
     onSlider(input) {
         const editor = this._editor
         editor._isDragging = true
         const track = editor._track
         const prop = this._lfoProps().find((p) => p.key === editor._selectedLfoTarget)
-        if (!prop) return false
-        let lfo = track[prop.lfo]
-        let needsSync = false
-        if (!lfo) {
-            lfo = track[prop.lfo] = this._getDefaultLfo(prop)
-            needsSync = true
-        }
+        if (!prop) return null
+        const current = track[prop.lfo]
         const key = input.dataset.lfoKey
-        lfo[key] = parseFloat(input.value)
+        const lfo = { ...(current ?? this._getDefaultLfo(prop)), [key]: parseFloat(input.value) }
 
         if (key === 'min' || key === 'max') {
             const row = input.closest?.('.ne-row')
@@ -140,18 +145,20 @@ export default class ModulationSection {
                 input.nextElementSibling.textContent = fmt(input.value)
             }
         }
-        return needsSync
+        return { updates: { [prop.lfo]: lfo }, created: !current }
     }
 
+    /**
+     * Computes the track updates for the LFO type select.
+     * @returns {{updates: object, created: boolean}|null}
+     */
     onSelect(sel) {
         const editor = this._editor
         const track = editor._track
         const prop = this._lfoProps().find((p) => p.key === editor._selectedLfoTarget)
-        if (!prop) return
-        let lfo = track[prop.lfo]
-        if (!lfo) {
-            lfo = track[prop.lfo] = this._getDefaultLfo(prop, sel.value)
-        }
-        lfo.type = sel.value
+        if (!prop) return null
+        const current = track[prop.lfo]
+        const lfo = { ...(current ?? this._getDefaultLfo(prop, sel.value)), type: sel.value }
+        return { updates: { [prop.lfo]: lfo }, created: !current }
     }
 }

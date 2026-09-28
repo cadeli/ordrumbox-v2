@@ -7,6 +7,9 @@ import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
 
 export default class HistoryManager {
+    /** Window in which two records with the same coalesceKey merge into one undo step. */
+    static COALESCE_WINDOW_MS = 400
+
     #past
     #future
     #maxSize
@@ -39,11 +42,32 @@ export default class HistoryManager {
 
     /**
      * Record a command with execute and undo functions.
-     * @param {object} command - { execute: Function, undo: Function, meta: object }
+     * @param {object} command - { execute: Function, undo: Function, meta: object, coalesceKey?: string }
+     *
+     * With a coalesceKey matching the last past entry inside
+     * COALESCE_WINDOW_MS, the two records merge into ONE entry: the first
+     * entry's undo is kept (it restores the pre-gesture state) while
+     * execute/meta are replaced by the newest values — so a whole slider
+     * drag is a single undo step instead of one per input tick.
      */
     record(command) {
         if (this._isUndoing || this._isRedoing) return
 
+        const last = this.#past.at(-1)
+        if (
+            command.coalesceKey &&
+            last &&
+            last.coalesceKey === command.coalesceKey &&
+            Date.now() - (last.coalesceAt ?? 0) < HistoryManager.COALESCE_WINDOW_MS
+        ) {
+            last.execute = command.execute
+            last.meta = command.meta
+            last.coalesceAt = Date.now()
+            this.#emitChange()
+            return
+        }
+
+        command.coalesceAt = Date.now()
         this.#past.push(command)
         if (this.#past.length > this.#maxSize) {
             this.#past.shift()

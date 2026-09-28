@@ -6,9 +6,8 @@ import FlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
 import ContextMenu from './components/context_menu.js'
 import { TICK } from '../core/constants.js'
-import { computeEuclideanFillPositions } from '../core/euclidean.js'
-import { getArpNoteCount, normalizeArp } from '../patterns/engine.js'
 import { createStepResolver } from '../patterns/step_resolver.js'
+import { getNoteSubPositions } from '../patterns/note_positions.js'
 import { formatNoteTooltip } from './components/ui_utils.js'
 import NoteParams from '../patterns/note_params.js'
 import { EVENTS } from '../core/events.js'
@@ -403,7 +402,7 @@ export default class PianoRollPanel extends BasePanel {
             }
             fragment.appendChild(el)
 
-            this.#getSubPositions(note, track, totalSteps, resolveSpanEnd).forEach(({ pos, type, pitchOffset }) => {
+            getNoteSubPositions(note, track, totalSteps, resolveSpanEnd).forEach(({ pos, type, pitchOffset }) => {
                 const ghStep = pos - pageStartStep
                 if (ghStep < 0 || ghStep >= visibleSteps) return
                 const ghRow = row + (pitchOffset ?? 0)
@@ -435,49 +434,6 @@ export default class PianoRollPanel extends BasePanel {
         }
 
         gridEl.appendChild(fragment)
-    }
-
-    #getSubPositions(note, track, totalSteps, resolveSpanEnd = createStepResolver(track)) {
-        const stepsPerBeat = track.stepsPerBeat ?? 4
-        const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
-        const rate = note.rate ?? 1
-        const euclidianFill = note.euclidianFill ?? 0
-        const arpConfig = normalizeArp(note.arp)
-        // The engine clamps the arp note count: keep the ghosts on the same steps.
-        const retriggerNum = arpConfig ? getArpNoteCount(note) : (note.retriggerNum ?? 1)
-        const hasTriggers = arpConfig || retriggerNum > 1 || euclidianFill > 0
-
-        const positions = []
-        if (!hasTriggers) return positions
-
-        const stepSpacing = Utils.getStepSpacing(rate)
-        const seq = arpConfig?.sequence
-
-        for (let i = 1; i < retriggerNum; i++) {
-            const pos = Math.round(basePos + i * stepSpacing)
-            if (pos < totalSteps) positions.push({ pos, type: 'retrigger', pitchOffset: seq ? seq[i % seq.length] : 0 })
-        }
-
-        if (euclidianFill > 0) {
-            const stepsSpan = resolveSpanEnd(note) - basePos
-            const euclideanPositions = computeEuclideanFillPositions(
-                basePos,
-                stepsSpan,
-                euclidianFill,
-                note.euclidianRotation ?? 0,
-            )
-            let euclidIndex = 0
-            for (const pos of euclideanPositions) {
-                if (pos < totalSteps)
-                    positions.push({
-                        pos,
-                        type: 'euclidian',
-                        pitchOffset: seq ? seq[(retriggerNum + euclidIndex) % seq.length] : 0,
-                    })
-                euclidIndex++
-            }
-        }
-        return positions
     }
 
     #onGridClick(e, gridEl) {
@@ -1024,7 +980,7 @@ export default class PianoRollPanel extends BasePanel {
             const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
             if (basePos >= loopAtStep) continue
             const matchesBase = absStep % loopAtStep === basePos
-            const matchesSub = this.#getSubPositions(note, track, totalSteps, resolveSpanEnd).some(
+            const matchesSub = getNoteSubPositions(note, track, totalSteps, resolveSpanEnd).some(
                 (s) => s.pos < loopAtStep && absStep % loopAtStep === s.pos,
             )
             if (matchesBase || matchesSub) {
@@ -1105,7 +1061,7 @@ export default class PianoRollPanel extends BasePanel {
         this.#ensurePlayhead()
     }
     getSubPositions(note, track, totalSteps) {
-        return this.#getSubPositions(note, track, totalSteps)
+        return getNoteSubPositions(note, track, totalSteps)
     }
     illuminateStep(step, tick) {
         this.#illuminateStep(step, tick)

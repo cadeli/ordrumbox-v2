@@ -224,15 +224,12 @@ export async function waitForPatternSoundsLoaded(page, patternIdx) {
 
 /**
  * Fields that cannot be compared between two exports taken at different
- * moments, for three documented reasons:
+ * moments, for two documented reasons:
  *
  *  1. track.pan is rewritten from PAN_MAP on every load (patterns/fixer.js)
  *     and track.soundId of an auto track is discarded on load
  *     (loader/resources_loader.js) then re-derived by the boot auto-assign;
- *  2. prob/rate/retriggerNum/euclidianFill are re-randomized in place by
- *     TrackVariation.applyNoteVariation (patterns/variation.js) on every
- *     flat-notes computation while track.variation2 > 0;
- *  3. arpRange/_arpScale/_arpType live on the note root but are absent from
+ *  2. arpRange/_arpScale/_arpType live on the note root but are absent from
  *     NOTE_KEY_ORDER (core/note_schema.js), so PatternExporter drops them
  *     from the JSON file.
  *
@@ -241,7 +238,7 @@ export async function waitForPatternSoundsLoaded(page, patternIdx) {
  */
 export function stripForComparison(data) {
     const clone = structuredClone(data)
-    const noteKeys = [...VOLATILE_NOTE_KEYS, ...EXPORT_DROPPED_NOTE_KEYS]
+    const noteKeys = [...EXPORT_DROPPED_NOTE_KEYS]
     const tracks = Array.isArray(clone.tracks) ? clone.tracks : Object.values(clone.tracks ?? {})
     for (const track of tracks) {
         delete track.pan
@@ -266,13 +263,6 @@ export function stripForComparison(data) {
     }
     return clone
 }
-
-/**
- * Note fields rewritten in place by TrackVariation.applyNoteVariation()
- * (src/patterns/variation.js) every time flat notes are recomputed while
- * track.variation2 > 0: re-randomized on each computation.
- */
-export const VOLATILE_NOTE_KEYS = ['prob', 'rate', 'retriggerNum', 'euclidianFill']
 
 /**
  * ARP tab state kept on the note root but absent from NOTE_KEY_ORDER

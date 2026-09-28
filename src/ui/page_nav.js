@@ -1,10 +1,10 @@
-// src/core/page_nav.js — Shared page navigation for pattern panels.
+// src/ui/page_nav.js — Shared page navigation for pattern panels.
 
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import Utils from './utils.js'
-import { EVENTS } from './events.js'
+import Utils from '../core/utils.js'
+import { EVENTS } from '../core/events.js'
 
 /**
  * Navigate to the previous page of steps.

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 vi.mock('../src/state/playback_events.js', async () => {
     const { EventEmitter } = await import('events')
@@ -37,6 +37,8 @@ vi.mock('../src/state/playback_events.js', async () => {
 
 import HistoryManager from '../src/logic/history_manager.js'
 import { logger } from '../src/core/logger.js'
+import { playbackEvents } from '../src/state/playback_events.js'
+import { EVENTS } from '../src/core/events.js'
 
 describe('HistoryManager', () => {
     let history
@@ -209,6 +211,84 @@ describe('HistoryManager', () => {
             expect(history.canRedo).toBe(false)
             expect(history.pastLength).toBe(0)
             expect(history.futureLength).toBe(0)
+        })
+    })
+
+    describe('coalescing', () => {
+        let now
+        let nowSpy
+
+        beforeEach(() => {
+            now = 1_000_000
+            nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => now)
+        })
+
+        afterEach(() => {
+            nowSpy.mockRestore()
+        })
+
+        it('merges same-key records inside the window into ONE undo step', () => {
+            const undoFirst = vi.fn()
+            const executeFirst = vi.fn()
+            const executeSecond = vi.fn()
+
+            history.record({
+                coalesceKey: 'track:1:velocity',
+                execute: executeFirst,
+                undo: undoFirst,
+                meta: { desc: 'drag' },
+            })
+            now += 50
+            history.record({
+                coalesceKey: 'track:1:velocity',
+                execute: executeSecond,
+                undo: vi.fn(),
+                meta: { desc: 'drop' },
+            })
+
+            expect(history.pastLength).toBe(1)
+
+            // Undo restores the PRE-gesture state (first entry's undo kept).
+            expect(history.undo()).toBe(true)
+            expect(undoFirst).toHaveBeenCalledTimes(1)
+
+            // Redo replays the LAST state (execute was replaced).
+            expect(history.redo()).toBe(true)
+            expect(executeSecond).toHaveBeenCalledTimes(1)
+            expect(executeFirst).not.toHaveBeenCalled()
+        })
+
+        it('starts a new entry once the window has elapsed', () => {
+            history.record({ coalesceKey: 'k', execute: vi.fn(), undo: vi.fn() })
+            now += HistoryManager.COALESCE_WINDOW_MS
+            history.record({ coalesceKey: 'k', execute: vi.fn(), undo: vi.fn() })
+
+            expect(history.pastLength).toBe(2)
+        })
+
+        it('never merges records with different keys', () => {
+            history.record({ coalesceKey: 'track:1:velocity', execute: vi.fn(), undo: vi.fn() })
+            history.record({ coalesceKey: 'track:2:velocity', execute: vi.fn(), undo: vi.fn() })
+
+            expect(history.pastLength).toBe(2)
+        })
+
+        it('never merges records without a coalesceKey', () => {
+            history.record({ execute: vi.fn(), undo: vi.fn() })
+            history.record({ execute: vi.fn(), undo: vi.fn() })
+
+            expect(history.pastLength).toBe(2)
+        })
+
+        it('keeps only the newest meta so the undo hint matches the last tick', () => {
+            history.record({ coalesceKey: 'k', execute: vi.fn(), undo: vi.fn(), meta: { desc: 'first' } })
+            now += 100
+            history.record({ coalesceKey: 'k', execute: vi.fn(), undo: vi.fn(), meta: { desc: 'second' } })
+
+            const lastEmit = playbackEvents.emit.mock.calls.at(-1)
+            expect(lastEmit[0]).toBe(EVENTS.HISTORY_CHANGE)
+            expect(lastEmit[1].nextUndoDesc).toBe('second')
+            expect(history.pastLength).toBe(1)
         })
     })
 

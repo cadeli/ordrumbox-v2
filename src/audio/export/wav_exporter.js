@@ -39,11 +39,17 @@ export default class WavExporter {
         // engine.start() applies track effects but never calls mixer.setBpm().
         exporterAudioEngine.mixer.setBpm(pattern.bpm)
 
-        // Ensure serviceRegistry.transport has the correct BPM so synth voice
-        // auto-release timing matches the pattern tempo. WorkletSynthVoice.start()
-        // reads serviceRegistry.transport?.bpm for the step duration calculation.
+        // Synth voices read serviceRegistry.transport.bpm for auto-release and
+        // LFO-sync timing (worklet_synth_voice), and other services keep
+        // reading start/tick/isRunning on the live transport — so never swap
+        // the object: only the bpm value is changed in place, then restored.
         const savedTransport = serviceRegistry.transport
-        serviceRegistry.transport = { bpm: pattern.bpm }
+        const savedBpm = savedTransport?.bpm
+        if (savedTransport) {
+            savedTransport.bpm = pattern.bpm
+        } else {
+            serviceRegistry.transport = { bpm: pattern.bpm }
+        }
 
         try {
             // Simple offline scheduling
@@ -53,8 +59,12 @@ export default class WavExporter {
                 await exporterAudioEngine.playNotes(t, t * TICK_TIME)
             }
         } finally {
-            // Always restore original transport, even on render/schedule failure
-            serviceRegistry.transport = savedTransport
+            // Always restore, even on render/schedule failure
+            if (savedTransport) {
+                savedTransport.bpm = savedBpm
+            } else {
+                serviceRegistry.transport = null
+            }
         }
 
         const renderedBuffer = await offlineCtx.startRendering()

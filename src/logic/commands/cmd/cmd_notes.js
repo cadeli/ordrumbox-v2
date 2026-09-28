@@ -84,6 +84,49 @@ export function createNoteMethods(cmd) {
             return note
         },
 
+        /**
+         * Apply a partial note update (velocity, pitch, prob, arp, …), persist
+         * and record one undoable entry. Diffed against the current values so
+         * no-op updates never reach the history.
+         * @param {object} track - owning track (version bump + persistence)
+         * @param {object} note - the note object being edited
+         * @param {object} updates - key → value
+         * @param {object} [opts]
+         * @param {string} [opts.desc] - history label
+         * @param {boolean} [opts.coalesce] - merge rapid same-key updates of
+         *   this note into ONE undo step (continuous sliders/knobs)
+         * @returns {object} the note
+         */
+        updateNote(track, note, updates, { desc, coalesce = false } = {}) {
+            if (!note || !updates || typeof updates !== 'object') return note
+
+            const oldValues = {}
+            const newValues = {}
+            for (const [k, v] of Object.entries(updates)) {
+                if (Object.is(note[k], v)) continue
+                oldValues[k] = note[k]
+                newValues[k] = v
+            }
+            if (Object.keys(newValues).length === 0) return note
+
+            const applyValues = (values) => {
+                Object.assign(note, values)
+                cmd.incrementPatternVersionByTrack(track)
+                cmd.persist()
+            }
+            const coalesceKey = coalesce
+                ? `note:${cmd.coalesceId(note)}:${Object.keys(newValues).sort().join(',')}`
+                : undefined
+            applyValues(newValues)
+            cmd.record({
+                desc: desc ?? `Edit note on ${track?.name ?? 'track'}`,
+                coalesceKey,
+                execute: () => applyValues(newValues),
+                undo: () => applyValues(oldValues),
+            })
+            return note
+        },
+
         pasteStepNotes(track, beat, beatStep, sourceNotes) {
             if (!track || !Array.isArray(sourceNotes)) return
             const spb = track.stepsPerBeat ?? 4

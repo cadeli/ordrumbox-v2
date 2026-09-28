@@ -482,19 +482,24 @@ export default class PatternPanel extends BasePanel {
     #toggleTrackProp(idx, prop) {
         const track = this.#resolveTrack(idx)
         if (!track) return
-        track[prop] = track[prop] !== true
+        const newVal = track[prop] !== true
+        this.#serviceRegistry.cmd?.updateTrack(
+            track,
+            { [prop]: newVal },
+            {
+                desc: `${prop} on ${track.name}`,
+            },
+        )
 
         const trackEl = this.container.querySelector(`.pp-track-name[data-track="${idx}"]`)?.closest('.pp-track')
         if (trackEl) {
             if (prop === 'mute') {
-                const isMuted = track.mute === true
-                trackEl.classList.toggle('pp-muted', isMuted)
+                trackEl.classList.toggle('pp-muted', newVal)
                 const divider = trackEl.querySelector('.pp-divider')
-                divider?.classList.toggle('muted', isMuted)
+                divider?.classList.toggle('muted', newVal)
             } else if (prop === 'solo') {
-                const isSolo = track.solo === true
                 const solo = trackEl.querySelector('.pp-solo')
-                solo?.classList.toggle('active', isSolo)
+                solo?.classList.toggle('active', newVal)
             }
         }
         this.#playbackEvents.batch(() => {
@@ -1012,7 +1017,7 @@ export default class PatternPanel extends BasePanel {
             if (!pattern) return
             const trackNum = Utils.getTracksArray(pattern).length + 1
             this.#serviceRegistry.cmd?.addTrack(pattern, `T${trackNum}`)
-            this.sync()
+            this.#emitStructureChange()
             return
         }
 
@@ -1025,7 +1030,7 @@ export default class PatternPanel extends BasePanel {
             if (trackIdx < 0 || trackIdx >= tracks.length) return
             this.#serviceRegistry.cmd?.removeTrack(pattern, trackIdx)
             this.#selTrackIdx = -1
-            this.sync()
+            this.#emitStructureChange()
             return
         }
 

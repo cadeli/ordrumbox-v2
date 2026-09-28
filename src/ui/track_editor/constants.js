@@ -2,6 +2,7 @@
 // Shared constants for TrackEditor sections — extracted from the monolith.
 
 import Utils from '../../core/utils.js'
+import { TRACK_VALUE_RANGES } from '../../model/track_schema.js'
 
 // ── Format helpers ────────────────────────────────────────────────────
 
@@ -22,6 +23,17 @@ export const fmtVal = (key, v) => {
     return v
 }
 
+/**
+ * Fills min/max from the model's TRACK_VALUE_RANGES (single source of truth
+ * with updateTrack's clamp) whenever the key has a range there. UI-only knobs
+ * without a model range (decay, probability) keep their own literals.
+ */
+const withRange = (props) =>
+    props.map((p) => {
+        const r = TRACK_VALUE_RANGES[p.key]
+        return r ? { ...p, min: r.min, max: r.max } : p
+    })
+
 // ── Filter ────────────────────────────────────────────────────────────
 
 export const FILTER_TYPE_ICONS = {
@@ -30,11 +42,11 @@ export const FILTER_TYPE_ICONS = {
     bandpass: 'BP',
 }
 
-const FILTER_PROPS = [
+const FILTER_PROPS = withRange([
     { key: 'filterType', label: 'Type', type: 'icon', options: ['lowpass', 'highpass', 'bandpass'] },
-    { key: 'filterFreq', label: 'Freq', min: 20, max: 20000, step: 1, lfo: 'filterFreqLfo' },
-    { key: 'filterQ', label: 'Q', min: 0.707, max: 18.707, step: 0.01, lfo: 'filterQLfo' },
-]
+    { key: 'filterFreq', label: 'Freq', step: 1, lfo: 'filterFreqLfo' },
+    { key: 'filterQ', label: 'Q', step: 0.01, lfo: 'filterQLfo' },
+])
 
 // ── FX definitions ────────────────────────────────────────────────────
 
@@ -47,15 +59,16 @@ export const FX_DEFS = [
 
 // ── Knob bar definitions ──────────────────────────────────────────────
 
-export const KNOB_PROPS = [
-    { key: 'velocity', label: 'Vel', min: 0, max: 1, step: 0.01, lfo: 'velocityLfo' },
-    { key: 'pan', label: 'Pan', min: -1, max: 1, step: 0.01, lfo: 'panLfo' },
-    { key: 'pitch', label: 'Pitch', min: -24, max: 24, step: 1, lfo: 'pitchLfo' },
+export const KNOB_PROPS = withRange([
+    { key: 'velocity', label: 'Vel', step: 0.01, lfo: 'velocityLfo' },
+    { key: 'pan', label: 'Pan', step: 0.01, lfo: 'panLfo' },
+    { key: 'pitch', label: 'Pitch', step: 1, lfo: 'pitchLfo' },
     // Log scale: most of the arc covers 20–500 ms where the ear is sensitive,
     // instead of spending 90% of the travel above 1 s. min is 20 (not 0)
     // because SampleVoice floors the decay at 20 ms — and log10(0) is -Inf.
+    // decay lives in the sound registry (not the track) → no model range.
     { key: 'decay', label: 'Decay', min: 20, max: 5000, step: 10, scale: 'log' },
-]
+])
 
 // ── Tabs ──────────────────────────────────────────────────────────────
 
@@ -72,24 +85,24 @@ export const TAB_DEFS = [
 export const GROUPS = [
     {
         label: 'Basic / Transport',
-        props: [
+        props: withRange([
             { key: 'auto', label: 'Auto', type: 'boolean' },
-            { key: 'variation', label: 'Var Pos', min: 0, max: 100, step: 1 },
-            { key: 'variation2', label: 'Var Prop', min: 0, max: 100, step: 1 },
+            { key: 'variation', label: 'Var Pos', step: 1 },
+            { key: 'variation2', label: 'Var Prop', step: 1 },
             { key: 'probability', label: 'Prob', min: 0, max: 1, step: 0.01 },
-        ],
+        ]),
     },
     {
         label: 'Effects',
-        props: [
-            { key: 'reverbAmount', label: 'Depth', min: 0, max: 1, step: 0.01 },
+        props: withRange([
+            { key: 'reverbAmount', label: 'Depth', step: 0.01 },
             {
                 key: 'reverbType',
                 label: 'Type',
                 type: 'select',
                 options: ['none', 'room', 'hall', 'plate', 'spring', 'gated'],
             },
-            { key: 'delayDepth', label: 'Depth', min: 0, max: 1, step: 0.01 },
+            { key: 'delayDepth', label: 'Depth', step: 0.01 },
             {
                 key: 'delayTime',
                 label: 'Time',
@@ -98,9 +111,9 @@ export const GROUPS = [
                 labels: Utils.delayTimeLabels,
             },
             { key: 'delayType', label: 'Type', type: 'select', options: ['none', 'slap', 'tape', 'pingpong'] },
-            { key: 'saturationAmount', label: 'Depth', min: 0, max: 1, step: 0.01 },
+            { key: 'saturationAmount', label: 'Depth', step: 0.01 },
             { key: 'saturationType', label: 'Type', type: 'select', options: ['soft', 'hard', 'tape'] },
-        ],
+        ]),
     },
     {
         label: 'Sound',
@@ -119,21 +132,21 @@ export const GEN_SUBTAB_DEFS = [
     { id: 'engine', label: 'Engine' },
 ]
 
-export const GEN_GROOVE_PROPS = [
-    { key: 'prob_pitch', label: 'Pitch', min: 0, max: 100, step: 1 },
-    { key: 'prob_velocity', label: 'Velocity', min: 0, max: 100, step: 1 },
-    { key: 'prob_silence', label: 'Silence', min: 0, max: 100, step: 1 },
-    { key: 'prob_fill', label: 'Fill', min: 0, max: 100, step: 1 },
-    { key: 'prob_ghost', label: 'Ghost', min: 0, max: 100, step: 1 },
-    { key: 'pitch_range', label: 'Pitch Rng', min: 1, max: 24, step: 1 },
+export const GEN_GROOVE_PROPS = withRange([
+    { key: 'prob_pitch', label: 'Pitch', step: 1 },
+    { key: 'prob_velocity', label: 'Velocity', step: 1 },
+    { key: 'prob_silence', label: 'Silence', step: 1 },
+    { key: 'prob_fill', label: 'Fill', step: 1 },
+    { key: 'prob_ghost', label: 'Ghost', step: 1 },
+    { key: 'pitch_range', label: 'Pitch Rng', step: 1 },
     { key: 'pitch_scale_lock', label: 'Scale Lock', type: 'boolean' },
-]
+])
 
-export const GEN_ENGINE_PROPS = [
-    { key: 'prob_retrig', label: 'Retrig', min: 0, max: 100, step: 1 },
-    { key: 'prob_euclid', label: 'Euclid', min: 0, max: 100, step: 1 },
-    { key: 'prob_note', label: 'Note Prob', min: 0, max: 100, step: 1 },
-    { key: 'prob_arp', label: 'Arp', min: 0, max: 100, step: 1 },
+export const GEN_ENGINE_PROPS = withRange([
+    { key: 'prob_retrig', label: 'Retrig', step: 1 },
+    { key: 'prob_euclid', label: 'Euclid', step: 1 },
+    { key: 'prob_note', label: 'Note Prob', step: 1 },
+    { key: 'prob_arp', label: 'Arp', step: 1 },
     {
         key: 'auto_variant',
         label: 'Variant',
@@ -143,12 +156,10 @@ export const GEN_ENGINE_PROPS = [
     {
         key: 'auto_density',
         label: 'Density',
-        min: -1,
-        max: 1,
         step: 0.01,
         format: (v) => (v < 0 ? 'Auto' : v.toFixed(2)),
     },
-]
+])
 
 // ── Derived ───────────────────────────────────────────────────────────
 

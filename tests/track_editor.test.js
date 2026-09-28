@@ -172,6 +172,17 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
 })
 
 describe('TrackEditor loop slider events', () => {
+    beforeEach(() => {
+        serviceRegistry.cmd = {
+            updateTrack: vi.fn((track, updates) => Object.assign(track, updates)),
+            setStepsPerBeat: vi.fn((track, value) => {
+                track.stepsPerBeat = value
+                const maxSteps = (track.nbBeats ?? 4) * value
+                if (track.loopAtStep > maxSteps) track.loopAtStep = maxSteps
+            }),
+        }
+    })
+
     it('should fire onLoopPointChange when loopAtStep changes without throwing', () => {
         const track = {
             name: 'Test Track',

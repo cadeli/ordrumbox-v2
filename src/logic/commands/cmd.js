@@ -17,6 +17,8 @@ export default class Commander {
     _history
     #suppressRecord
     #genSnapshot
+    #coalesceIds = new WeakMap()
+    #coalesceSeq = 1
 
     constructor() {
         this._history = null
@@ -42,12 +44,14 @@ export default class Commander {
      * @param {Function} command.execute - re-applies the change (redo)
      * @param {Function} command.undo - reverts the change
      * @param {string} [command.desc] - human-readable label (toolbar tooltips)
+     * @param {string} [command.coalesceKey] - same key within the coalesce
+     *   window merges with the previous entry (one undo step per gesture)
      *
      * The change is ALREADY applied when record() is called — execute only
      * replays it on redo. A missing execute degrades to "undo works, redo is
      * blocked loudly" (never a silent no-op that corrupts the stack).
      */
-    record({ execute, undo, desc = '' } = {}) {
+    record({ execute, undo, desc = '', coalesceKey } = {}) {
         if (this.#suppressRecord) return
         if (typeof undo !== 'function') {
             logger.error('Commander', 'record skipped: missing undo closure', desc)
@@ -62,7 +66,24 @@ export default class Commander {
             execute: typeof execute === 'function' ? execute : null,
             undo,
             meta: { desc },
+            coalesceKey,
         })
+    }
+
+    /**
+     * Stable identity for a mutable object (note, track, …) used to build
+     * coalesce keys: continuous UI gestures must never merge edits belonging
+     * to two different objects.
+     * @param {object} obj
+     * @returns {number} id unique for the lifetime of obj
+     */
+    coalesceId(obj) {
+        let id = this.#coalesceIds.get(obj)
+        if (id === undefined) {
+            id = this.#coalesceSeq++
+            this.#coalesceIds.set(obj, id)
+        }
+        return id
     }
 
     /**
@@ -143,7 +164,18 @@ export default class Commander {
         }
     }
 
-    updateTrack = (track, updates) => {
+    /**
+     * Apply a partial track update (known keys only, range-clamped), persist
+     * and record one undoable entry.
+     * @param {object} track
+     * @param {object} updates - key → value (unknown/derived keys skipped)
+     * @param {object} [opts]
+     * @param {string} [opts.desc] - history label (defaults to "Update <name>")
+     * @param {boolean} [opts.coalesce] - merge rapid same-key updates of this
+     *   track into ONE undo step (slider/knob drags)
+     * @returns {object} the track
+     */
+    updateTrack = (track, updates, { desc, coalesce = false } = {}) => {
         if (!track || !updates || typeof updates !== 'object') {
             return track
         }
@@ -177,9 +209,13 @@ export default class Commander {
                 this.incrementPatternVersionByTrack(track)
                 this.persist()
             }
+            const coalesceKey = coalesce
+                ? `track:${this.coalesceId(track)}:${Object.keys(newValues).sort().join(',')}`
+                : undefined
             applyValues(newValues)
             this.record({
-                desc: `Update ${track.name}`,
+                desc: desc ?? `Update ${track.name}`,
+                coalesceKey,
                 execute: () => applyValues(newValues),
                 undo: () => applyValues(oldValues),
             })
@@ -200,17 +236,61 @@ export default class Commander {
         return track
     }
 
+    /** Shallow-clones one state value: arrays/objects get a fresh container. */
+    #cloneStateValue(value) {
+        if (Array.isArray(value)) return value.map((v) => (v && typeof v === 'object' ? { ...v } : v))
+        if (value && typeof value === 'object') return { ...value }
+        return value
+    }
+
+    /**
+     * Snapshot of EVERY own key of a track (notes, swing, LFOs, genre flags…)
+     * — generators mutate far more than the note list.
+     */
+    #trackStateOf(track) {
+        const state = {}
+        for (const key of Object.keys(track)) {
+            state[key] = this.#cloneStateValue(track[key])
+        }
+        return state
+    }
+
+    /** Restores a full track snapshot; keys created after the snapshot are deleted. */
+    #restoreTrackState(track, state) {
+        for (const key of Object.keys(track)) {
+            if (!(key in state)) delete track[key]
+        }
+        for (const [key, value] of Object.entries(state)) {
+            track[key] = this.#cloneStateValue(value)
+        }
+    }
+
+    /** Snapshot of every own pattern key except the tracks array and _version. */
+    #patternStateOf(pattern) {
+        const state = {}
+        for (const key of Object.keys(pattern)) {
+            if (key === 'tracks' || key === '_version') continue
+            state[key] = this.#cloneStateValue(pattern[key])
+        }
+        return state
+    }
+
+    /** Restores a pattern-level snapshot (_autoGenGenre, tags, bpm…); new keys are deleted. */
+    #restorePatternState(pattern, state) {
+        for (const key of Object.keys(pattern)) {
+            if (key === 'tracks' || key === '_version') continue
+            if (!(key in state)) delete pattern[key]
+        }
+        for (const [key, value] of Object.entries(state)) {
+            pattern[key] = this.#cloneStateValue(value)
+        }
+    }
+
     beginGenerationUndo = (pattern) => {
         this.#genSnapshot = {
             pattern,
-            savedTracksLength: (pattern.tracks ?? []).length,
-            trackSnapshots: (pattern.tracks ?? []).map((t) => ({
-                ref: t,
-                notes: t.notes.map((n) => ({ ...n })),
-                loopPointStep: t.loopPointStep,
-                loopPointBeat: t.loopPointBeat,
-                loopAtStep: t.loopAtStep,
-            })),
+            patternState: this.#patternStateOf(pattern),
+            trackSnapshots: (pattern.tracks ?? []).map((t) => ({ ref: t, state: this.#trackStateOf(t) })),
         }
         this.#suppressRecord = true
     }
@@ -219,29 +299,22 @@ export default class Commander {
         const snap = this.#genSnapshot
         if (!snap) return
         this.#suppressRecord = false
-        const cloneState = (pattern) => ({
-            tracks: pattern.tracks.slice(),
-            trackStates: pattern.tracks.map((t) => ({
-                ref: t,
-                notes: t.notes.map((n) => ({ ...n })),
-                loopPointStep: t.loopPointStep,
-                loopPointBeat: t.loopPointBeat,
-                loopAtStep: t.loopAtStep,
-            })),
+
+        const capture = () => ({
+            patternState: this.#patternStateOf(snap.pattern),
+            trackStates: snap.pattern.tracks.map((t) => ({ ref: t, state: this.#trackStateOf(t) })),
         })
-        const before = { tracks: snap.trackSnapshots.map((st) => st.ref), trackStates: snap.trackSnapshots }
-        const after = cloneState(snap.pattern)
-        const applySnapshot = ({ tracks, trackStates }) => {
-            snap.pattern.tracks.splice(0, snap.pattern.tracks.length, ...tracks)
+        const applySnapshot = ({ patternState, trackStates }) => {
+            snap.pattern.tracks.splice(0, snap.pattern.tracks.length, ...trackStates.map((st) => st.ref))
             for (const st of trackStates) {
-                st.ref.notes = st.notes.map((n) => ({ ...n }))
-                st.ref.loopPointStep = st.loopPointStep
-                st.ref.loopPointBeat = st.loopPointBeat
-                st.ref.loopAtStep = st.loopAtStep
+                this.#restoreTrackState(st.ref, st.state)
             }
+            this.#restorePatternState(snap.pattern, patternState)
             snap.pattern._version = (snap.pattern._version ?? 0) + 1
             this.persist()
         }
+        const before = { patternState: snap.patternState, trackStates: snap.trackSnapshots }
+        const after = capture()
         this.record({
             desc,
             execute: () => applySnapshot(after),

@@ -1,6 +1,6 @@
 import Utils from '../../../core/utils.js'
 import { NOT_FOUND } from '../../../core/constants.js'
-import { normalizeTrack, recalcLoopDerived } from '../../../model/track_schema.js'
+import { normalizeTrack, recalcLoopDerived, TRACK_VALUE_RANGES } from '../../../model/track_schema.js'
 import { soundRegistry } from '../../../state/sound_registry.js'
 import RandomGenerate from '../../generators/random_generate.js'
 
@@ -29,8 +29,9 @@ export function createTrackMethods(cmd) {
      * Snapshot track keys, run mutate, record undo that restores the snapshot.
      * mutate may return false to skip recording (no-op).
      * options.persist: call cmd.persist() after mutate.
+     * options.coalesceKey: merge rapid same-key updates into one undo step.
      */
-    function withUndo(track, keys, desc, mutate, { persist = false } = {}) {
+    function withUndo(track, keys, desc, mutate, { persist = false, coalesceKey } = {}) {
         const before = snapshotTrack(track, keys)
         const recordable = mutate() !== false
         if (persist) cmd.persist()
@@ -38,6 +39,7 @@ export function createTrackMethods(cmd) {
             const after = snapshotTrack(track, keys)
             cmd.record({
                 desc,
+                coalesceKey,
                 execute: () => restoreTrack(track, after, keys),
                 undo: () => restoreTrack(track, before, keys),
             })
@@ -142,30 +144,53 @@ export function createTrackMethods(cmd) {
             return newTrack
         },
 
-        incrNbStepPerBar(track) {
+        /**
+         * Set stepsPerBeat to an absolute value (clamped 1..8) and migrate the
+         * notes / loop point proportionally:
+         * - notes: steppc (absolute position) is preserved → beatStep rescaled
+         * - loopAtStep is clamped to the new bar length, loop point re-derived
+         * @param {object} track
+         * @param {number} value - target steps per beat
+         * @param {object} [opts]
+         * @param {boolean} [opts.coalesce] - merge rapid changes into one undo step
+         * @returns {boolean} true when a change was applied
+         */
+        setStepsPerBeat(track, value, { coalesce = false } = {}) {
+            const range = TRACK_VALUE_RANGES.stepsPerBeat
+            const target = Math.round(Utils.clamp(value, range.min, range.max))
+            if (!track || !Number.isFinite(target) || target === track.stepsPerBeat) return false
+
             withUndo(
                 track,
-                ['stepsPerBeat', 'loopPointStep', 'loopAtStep', 'notes'],
+                ['stepsPerBeat', 'loopPointStep', 'loopPointBeat', 'loopAtStep', 'notes'],
                 `Steps per bar on ${track.name}`,
                 () => {
-                    const loopStepPc = Math.round((track.loopPointStep * 100) / track.stepsPerBeat)
-                    track.stepsPerBeat++
-                    if (track.stepsPerBeat > 8) {
-                        // Cyclic wrap: 8 → 1 (intentional, not a bug)
-                        track.stepsPerBeat = 1
+                    const oldStepsPerBeat = track.stepsPerBeat
+                    track.stepsPerBeat = target
+
+                    if (track.notes) {
+                        for (const note of track.notes) {
+                            const steppc = note.steppc ?? Math.round((note.beatStep * 100) / (oldStepsPerBeat ?? 4))
+                            note.beatStep = Math.min(Math.round((steppc / 100) * target), target - 1)
+                        }
                     }
 
-                    for (const note of track.notes) {
-                        note.beatStep = Math.min(
-                            Math.round((note.steppc / 100) * track.stepsPerBeat),
-                            track.stepsPerBeat - 1,
-                        )
-                    }
-                    track.loopPointStep = Math.floor((loopStepPc / 100) * track.stepsPerBeat)
-                    track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
+                    const maxSteps = (track.nbBeats ?? 4) * target
+                    if (track.loopAtStep > maxSteps) track.loopAtStep = maxSteps
+                    recalcLoopDerived(track)
                 },
-                { persist: true },
+                {
+                    persist: true,
+                    coalesceKey: coalesce ? `track:${cmd.coalesceId(track)}:stepsPerBeat` : undefined,
+                },
             )
+            return true
+        },
+
+        incrNbStepPerBar(track) {
+            // Cyclic wrap: 8 → 1 (intentional, not a bug)
+            const next = track.stepsPerBeat >= 8 ? 1 : track.stepsPerBeat + 1
+            this.setStepsPerBeat(track, next)
         },
 
         incrLoopPoint(track) {

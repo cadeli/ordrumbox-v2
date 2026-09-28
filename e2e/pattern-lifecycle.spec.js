@@ -38,7 +38,6 @@ import {
     waitForPatternSoundsLoaded,
     waitForPatternsPersisted,
     waitForSynthSoundPersisted,
-    VOLATILE_NOTE_KEYS,
 } from './helpers/ui_session.js'
 
 const NEW_PATTERN = 'LifecyclePat'
@@ -838,14 +837,14 @@ test.describe.serial('Full session lifecycle', () => {
         expect(afterNote0._arpType).toBe(beforeNote0._arpType)
         expect(afterNote0.arp).toEqual(beforeNote0.arp)
 
-        // variation2 > 0 rewrites these note fields in place on every
-        // flat-notes computation: only their type can be checked after a reload
+        // variation2 > 0 computes its layer on clones: the source note fields
+        // it used to rewrite in place (prob/rate/retriggerNum/euclidianFill)
+        // must survive a raw reload untouched
         expect(afterTracks[0].variation2).toBe(65)
-        for (const note of afterTracks[0].notes ?? []) {
-            for (const key of VOLATILE_NOTE_KEYS) {
-                expect(typeof note[key]).toBe('number')
-            }
-        }
+        const VOLATILE_KEYS = ['prob', 'rate', 'retriggerNum', 'euclidianFill']
+        expect((afterTracks[0].notes ?? []).map((n) => VOLATILE_KEYS.map((k) => n[k]))).toEqual(
+            (beforeTracks[0].notes ?? []).map((n) => VOLATILE_KEYS.map((k) => n[k])),
+        )
 
         // synth preset (BASS1) survived in IndexedDB
         expect(after.bass1).toEqual(beforeReload.bass1)

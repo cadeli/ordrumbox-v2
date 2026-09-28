@@ -211,6 +211,58 @@ describe('Undo Roundtrip & State Inversion', () => {
             expect(current).toEqual(preGenSnapshot)
         })
 
+        it('rolls back generator-mutated track and pattern keys (swing, genre flags)', () => {
+            const clone = (v) => JSON.parse(JSON.stringify(v))
+            const pattern = cmd.addPattern('Gen_FullState')
+            const kick = cmd.addTrack(pattern, 'KICK', 4)
+            cmd.addNote(kick, 0, 0, 0)
+
+            // Pre-generation state including generator-owned keys.
+            kick.swingAmount = 0.1
+            kick.swingResolution = 2
+            kick.velocity = 0.8
+            pattern._autoGenGenre = 'rock'
+            pattern.tags = ['groovy']
+            const preGen = clone(pattern)
+            delete preGen._version
+
+            cmd.beginGenerationUndo(pattern)
+
+            // Simulate what auto_generate really mutates.
+            kick.swingAmount = 0.33
+            kick.swingResolution = 3
+            kick.velocity = 0.4
+            kick.mute = true
+            kick.customGenFlag = 'set' // key created during generation
+            pattern._autoGenGenre = 'hiphop'
+            pattern._autoGenScale = 'minor' // key created during generation
+            pattern.bpm = 90
+            cmd.addNote(kick, 2, 1, 0)
+
+            cmd.commitGenerationUndo('Full state generation')
+
+            // Undo → exact pre-generation state (new keys deleted, values restored).
+            expect(history.undo()).toBe(true)
+            const afterUndo = clone(pattern)
+            delete afterUndo._version
+            expect(afterUndo).toEqual(preGen)
+            expect(kick.swingAmount).toBe(0.1)
+            expect(kick.swingResolution).toBe(2)
+            expect(pattern._autoGenGenre).toBe('rock')
+
+            // Redo → exact post-generation state (including newly created keys).
+            expect(history.redo()).toBe(true)
+            expect(kick.swingAmount).toBe(0.33)
+            expect(kick.swingResolution).toBe(3)
+            expect(kick.velocity).toBe(0.4)
+            expect(kick.mute).toBe(true)
+            expect(kick.customGenFlag).toBe('set')
+            expect(pattern._autoGenGenre).toBe('hiphop')
+            expect(pattern._autoGenScale).toBe('minor')
+            expect(pattern.bpm).toBe(90)
+            expect(kick.notes).toHaveLength(2)
+        })
+
         it('cancelGenerationUndo re-enables record after a failed generation', () => {
             const pattern = cmd.addPattern('Cancel_Test')
             const kick = cmd.addTrack(pattern, 'KICK', 4)

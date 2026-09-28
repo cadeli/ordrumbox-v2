@@ -22,7 +22,6 @@ import LfoUiBridge from '../logic/lfo_ui_bridge.js'
 import { sampleWaveformTheme } from './theme.js'
 import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
 import { logger } from '../core/logger.js'
-import { recalcLoopDerived } from '../model/track_schema.js'
 
 // ── Section imports ───────────────────────────────────────────────────
 import GenerationSection from './track_editor/generation_section.js'
@@ -383,7 +382,12 @@ export default class TrackEditor extends BasePanel {
                             if (isDecay) {
                                 if (sound) sound.decay = v
                             } else {
-                                this._track[def.key] = v
+                                // Continuous knob: coalesce the drag into ONE undo step.
+                                this._serviceRegistry.cmd?.updateTrack(
+                                    this._track,
+                                    { [def.key]: v },
+                                    { desc: `${def.label} on ${this._track.name}`, coalesce: true },
+                                )
                             }
                             this._emitTrackChange()
                             if (isDecay) this._drawSampleWaveform()
@@ -518,13 +522,23 @@ export default class TrackEditor extends BasePanel {
     }
 
     _toggleFxByKey(key) {
-        this._fxSection.toggleFxByKey(key)
+        const updates = this._fxSection.toggleFxByKey(key)
+        if (updates) {
+            this._serviceRegistry.cmd?.updateTrack(this._track, updates, {
+                desc: `Toggle ${key} on ${this._track.name}`,
+            })
+        }
         this.sync()
         this._emitTrackChange()
     }
 
     _onFxIcon(target) {
-        this._fxSection.onFxIcon(target)
+        const updates = this._fxSection.onFxIcon(target)
+        if (updates) {
+            this._serviceRegistry.cmd?.updateTrack(this._track, updates, {
+                desc: `Filter type on ${this._track.name}`,
+            })
+        }
         this.sync()
         this._emitTrackChange()
     }
@@ -546,24 +560,45 @@ export default class TrackEditor extends BasePanel {
     }
 
     _onLfoToggleBtn(k) {
-        this._modSection.onToggleBtn(k)
+        const res = this._modSection.onToggleBtn(k)
+        if (res) {
+            this._serviceRegistry.cmd?.updateTrack(this._track, res.updates, {
+                desc: `LFO ${k} on ${this._track.name}`,
+            })
+        }
         this.sync()
         this._emitTrackChange()
     }
 
     _onLfoSlider(input) {
-        const needsSync = this._modSection.onSlider(input)
-        if (needsSync) this.sync()
+        const res = this._modSection.onSlider(input)
+        if (res) {
+            this._serviceRegistry.cmd?.updateTrack(this._track, res.updates, {
+                desc: `LFO ${input.dataset.lfoKey} on ${this._track.name}`,
+                coalesce: true,
+            })
+        }
+        if (res?.created) this.sync()
         this._emitTrackChange()
     }
 
     _onLfoSelect(sel) {
-        this._modSection.onSelect(sel)
+        const res = this._modSection.onSelect(sel)
+        if (res) {
+            this._serviceRegistry.cmd?.updateTrack(this._track, res.updates, {
+                desc: `LFO type on ${this._track.name}`,
+            })
+        }
         this._emitTrackChange()
     }
 
     _toggleLfoForTarget(k) {
-        this._modSection._toggleLfoForTarget(k)
+        const res = this._modSection._toggleLfoForTarget(k)
+        if (res) {
+            this._serviceRegistry.cmd?.updateTrack(this._track, res.updates, {
+                desc: `LFO ${k} on ${this._track.name}`,
+            })
+        }
         this.sync()
         this._emitTrackChange()
     }
@@ -679,14 +714,26 @@ export default class TrackEditor extends BasePanel {
         const key = sel.dataset.key
         let val = sel.value
         if (key === 'delayTime') val = parseFloat(val)
-        this._track[key] = val
+        this._serviceRegistry.cmd?.updateTrack(
+            this._track,
+            { [key]: val },
+            {
+                desc: `${key} on ${this._track.name}`,
+            },
+        )
         this._emitTrackChange()
     }
 
     _onToggle(btn) {
         if (!this._track) return
         const key = btn.dataset.key
-        this._track[key] = !this._track[key]
+        this._serviceRegistry.cmd?.updateTrack(
+            this._track,
+            { [key]: !this._track[key] },
+            {
+                desc: `${key} on ${this._track.name}`,
+            },
+        )
         btn.textContent = this._track[key] ? 'ON' : 'OFF'
         btn.classList.toggle('active', this._track[key])
         this._emitTrackChange()
@@ -697,28 +744,25 @@ export default class TrackEditor extends BasePanel {
         this._isDragging = true
         const key = input.dataset.loop
         const val = key === 'swingAmount' ? parseFloat(input.value) : parseInt(input.value)
-        const oldStepsPerBeat = this._track.stepsPerBeat
-
-        this._track[key] = val
+        const cmd = this._serviceRegistry.cmd
+        // Continuous control: coalesce the drag into ONE undo step.
+        const opts = { desc: `${key} on ${this._track.name}`, coalesce: true }
 
         if (key === 'stepsPerBeat') {
-            if (this._track.notes) {
-                this._track.notes.forEach((note) => {
-                    const steppc = note.steppc ?? Math.round((note.beatStep * 100) / (oldStepsPerBeat ?? 4))
-                    note.beatStep = Math.min(Math.round((steppc / 100) * val), val - 1)
-                })
-            }
+            cmd?.setStepsPerBeat(this._track, val, { coalesce: true })
+        } else if (key === 'loopAtStep') {
+            // The end step can never pass the bar length.
+            const maxSteps = (this._track.nbBeats ?? 4) * (this._track.stepsPerBeat ?? 4)
+            cmd?.updateTrack(this._track, { loopAtStep: Math.min(val, maxSteps) }, opts)
+        } else {
+            cmd?.updateTrack(this._track, { [key]: val }, opts)
         }
-
-        const maxSteps = (this._track.nbBeats ?? 4) * (this._track.stepsPerBeat ?? 4)
-        if (this._track.loopAtStep > maxSteps) this._track.loopAtStep = maxSteps
-
-        recalcLoopDerived(this._track)
 
         if (input.nextElementSibling) {
             input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
         }
 
+        const maxSteps = (this._track.nbBeats ?? 4) * (this._track.stepsPerBeat ?? 4)
         const loopSlider = this._sliders.get('loopAtStep')
         if (loopSlider) {
             loopSlider.setMax?.(maxSteps)

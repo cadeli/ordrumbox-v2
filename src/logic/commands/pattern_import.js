@@ -55,7 +55,7 @@ export function validatePatternJson(data) {
  * Handles derived properties (loopPointBeat/Step), optional FX props,
  * and beats/nbBeats alias.
  */
-export function copyTrackProps(track, sourceTrack) {
+function copyTrackProps(track, sourceTrack) {
     const derivedKeys = new Set(['loopPointBeat', 'loopPointStep', 'notes', 'noteKeys'])
 
     for (const prop of Object.keys(TRACK_DEFAULTS)) {
@@ -96,7 +96,7 @@ export function copyTrackProps(track, sourceTrack) {
 /**
  * Copy note properties from sourceNote to note.
  */
-export function copyNoteProps(note, sourceNote, track) {
+function copyNoteProps(note, sourceNote, track) {
     const props = [
         'beat',
         'velocity',

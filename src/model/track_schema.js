@@ -142,7 +142,8 @@ export const TRACK_VALUE_RANGES = {
     swingResolution: { min: 1, max: 8 },
     swingAmount: { min: 0, max: 1 },
     filterFreq: { min: 20, max: 20000 },
-    filterQ: { min: 0.1, max: 24 },
+    // Q range shared by the UI knobs and the LFO clamp (step_lfo.js).
+    filterQ: { min: 0.707, max: 18.707 },
     reverbAmount: { min: 0, max: 1 },
     delayTime: { min: 0, max: 4 },
     delayDepth: { min: 0, max: 1 },

@@ -31,10 +31,6 @@ export const MAX_IMPORT_NOTES = 10_000
 export const MIDI_MAX_BEATS = 32
 export const MIDI_MAX_PATTERNS = 16
 
-// ── Loop / Pattern ─────────────────────────────────────────────────
-export const MAX_LOOP_RETRY = 20
-export const MAX_EXPORT_LOOPS = 16
-
 // ── Mobile breakpoint thresholds ───────────────────────────────────
 const MOBILE_MAX_WIDTH = 768
 const MOBILE_MAX_HEIGHT = 480

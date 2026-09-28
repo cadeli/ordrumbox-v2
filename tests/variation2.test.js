@@ -42,19 +42,48 @@ describe('Track variation2', () => {
         expect(track.variation2).toBe(0)
     })
 
-    it('does nothing when variation2 is 0', () => {
+    it('returns null and leaves notes alone when variation2 is 0', () => {
         const track = {
             stepsPerBeat: 4,
             variation2: 0,
             notes: [{ beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 }],
         }
-        TrackVariation.applyNoteVariation(track)
+        expect(TrackVariation.applyNoteVariation(track)).toBeNull()
         expect(track.notes[0].retriggerNum).toBe(1)
         expect(track.notes[0].rate).toBe(1)
         expect(track.notes[0].euclidianFill).toBe(0)
     })
 
-    it('modifies retrig+rate (sum < 5), euclidianFill (< 3), prob (>= 0.2)', () => {
+    it('never mutates the source notes (variation2 is a virtual layer)', () => {
+        const notes = [
+            {
+                beat: 0,
+                beatStep: 0,
+                velocity: 0.8,
+                pitch: 0,
+                every: 1,
+                pos: 0,
+                prob: 1,
+                retriggerNum: 1,
+                rate: 1,
+                euclidianFill: 0,
+                arp: [0, 4, 7],
+            },
+        ]
+        const pristine = structuredClone(notes)
+        const t = { stepsPerBeat: 4, variation2: 100, notes }
+        const varied = TrackVariation.applyNoteVariation(t)
+
+        expect(varied).toBeInstanceOf(Map)
+        expect(varied.size).toBeGreaterThanOrEqual(1)
+        expect(notes).toEqual(pristine)
+        // the varied clone is a different object than the source
+        const clone = varied.get(notes[0])
+        expect(clone).toBeDefined()
+        expect(clone).not.toBe(notes[0])
+    })
+
+    it('modifies retrig+rate (sum < 5), euclidianFill (< 3), prob (>= 0.2) on clones', () => {
         let changed = false
         for (let i = 0; i < 20; i++) {
             const notes = [
@@ -72,8 +101,8 @@ describe('Track variation2', () => {
                 },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
-            TrackVariation.applyNoteVariation(t)
-            const r = notes[0]
+            const varied = TrackVariation.applyNoteVariation(t)
+            const r = varied.get(notes[0])
             if (r.retriggerNum !== 1 || r.rate !== 1 || r.euclidianFill !== 0 || r.prob !== 1) {
                 changed = true
                 expect(r.retriggerNum).toBeGreaterThanOrEqual(1)
@@ -91,14 +120,14 @@ describe('Track variation2', () => {
         expect(changed).toBe(true)
     })
 
-    it('arp range is modified only when arp exists', () => {
+    it('arp range is modified only when arp exists (on the clone)', () => {
         const trackNoArp = {
             stepsPerBeat: 4,
             variation2: 100,
             notes: [{ beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arp: null }],
         }
-        TrackVariation.applyNoteVariation(trackNoArp)
-        expect(trackNoArp.notes[0].arp).toBeNull()
+        const variedNoArp = TrackVariation.applyNoteVariation(trackNoArp)
+        expect(variedNoArp.get(trackNoArp.notes[0]).arp).toBeNull()
 
         let arpChanged = false
         for (let i = 0; i < 20; i++) {
@@ -106,30 +135,34 @@ describe('Track variation2', () => {
                 { beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arp: [0, 4, 7] },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
-            TrackVariation.applyNoteVariation(t)
-            if (notes[0].arp[0] !== 0) {
+            const varied = TrackVariation.applyNoteVariation(t)
+            const clone = varied.get(notes[0])
+            if (clone.arp[0] !== 0) {
                 arpChanged = true
-                expect(notes[0].arp[0]).toBeGreaterThanOrEqual(6)
-                expect(notes[0].arp[0]).toBeLessThanOrEqual(12)
-                expect(notes[0].arp[1]).toBe(4)
-                expect(notes[0].arp[2]).toBe(7)
+                expect(clone.arp[0]).toBeGreaterThanOrEqual(6)
+                expect(clone.arp[0]).toBeLessThanOrEqual(12)
+                expect(clone.arp[1]).toBe(4)
+                expect(clone.arp[2]).toBe(7)
+                // source arp untouched
+                expect(notes[0].arp).toEqual([0, 4, 7])
                 break
             }
         }
         expect(arpChanged).toBe(true)
     })
 
-    it('does NOT modify trigger props (every, pos) but CAN modify prob', () => {
+    it('clone keeps trigger props (every, pos) but gets a varied prob', () => {
         for (let i = 0; i < 20; i++) {
             const notes = [
                 { beat: 0, beatStep: 0, every: 1, pos: 0, prob: 1, retriggerNum: 1, rate: 1, euclidianFill: 0 },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
-            TrackVariation.applyNoteVariation(t)
-            expect(notes[0].every).toBe(1)
-            expect(notes[0].pos).toBe(0)
-            expect(notes[0].prob).toBeGreaterThanOrEqual(0.2)
-            expect(notes[0].prob).toBeLessThanOrEqual(1)
+            const clone = TrackVariation.applyNoteVariation(t).get(notes[0])
+            expect(clone.every).toBe(1)
+            expect(clone.pos).toBe(0)
+            expect(clone.prob).toBeGreaterThanOrEqual(0.2)
+            expect(clone.prob).toBeLessThanOrEqual(1)
+            expect(notes[0].prob).toBe(1)
         }
     })
 
@@ -151,14 +184,27 @@ describe('Track variation2', () => {
                 },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
-            TrackVariation.applyNoteVariation(t)
-            expect(notes[0].beat).toBe(2)
-            expect(notes[0].beatStep).toBe(3)
-            expect(notes[0].velocity).toBe(0.9)
-            expect(notes[0].pitch).toBe(5)
-            expect(notes[0].pan).toBe(0.3)
-            expect(notes[0].every).toBe(1)
-            expect(notes[0].pos).toBe(0)
+            const clone = TrackVariation.applyNoteVariation(t).get(notes[0])
+            expect(clone.beat).toBe(2)
+            expect(clone.beatStep).toBe(3)
+            expect(clone.velocity).toBe(0.9)
+            expect(clone.pitch).toBe(5)
+            expect(clone.pan).toBe(0.3)
+            expect(clone.every).toBe(1)
+            expect(clone.pos).toBe(0)
+            expect(notes[0]).toEqual({
+                beat: 2,
+                beatStep: 3,
+                velocity: 0.9,
+                pitch: 5,
+                pan: 0.3,
+                every: 1,
+                pos: 0,
+                prob: 1,
+                retriggerNum: 1,
+                rate: 1,
+                euclidianFill: 0,
+            })
         }
     })
 
@@ -169,11 +215,14 @@ describe('Track variation2', () => {
             { beat: 2, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 },
         ]
         const t = { stepsPerBeat: 4, variation2: 100, notes }
-        TrackVariation.applyNoteVariation(t)
+        const varied = TrackVariation.applyNoteVariation(t)
 
         let changed = 0
-        for (const n of notes) {
-            if (n.retriggerNum !== 1 || n.rate !== 1 || n.euclidianFill !== 0 || n.prob !== 1) changed++
+        for (const source of notes) {
+            const clone = varied.get(source)
+            if (clone.retriggerNum !== 1 || clone.rate !== 1 || clone.euclidianFill !== 0 || clone.prob !== 1) {
+                changed++
+            }
         }
         expect(changed).toBeGreaterThanOrEqual(1)
     })

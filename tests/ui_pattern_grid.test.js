@@ -1,10 +1,12 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import PatternPanel from '../src/ui/pattern_panel.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import { playbackEvents } from '../src/state/playback_events.js'
+import { EVENTS } from '../src/core/events.js'
 import { showToast } from '../src/core/notify.js'
 
 vi.mock('../src/core/notify.js', () => ({
@@ -41,6 +43,9 @@ describe('Pattern Panel UI Grid', () => {
 
         // Mock dependencies
         serviceRegistry.transport = { isRunning: false, tick: 0 }
+        serviceRegistry.cmd = {
+            updateTrack: vi.fn((track, updates) => Object.assign(track, updates)),
+        }
 
         // Setup DOM
         document.body.innerHTML = ''
@@ -155,6 +160,56 @@ describe('Pattern Panel UI Grid', () => {
         expect(document.querySelector('.pp-divider').classList.contains('muted')).toBe(true)
         document.querySelector('.pp-divider').click()
         expect(document.querySelector('.pp-divider').classList.contains('muted')).toBe(false)
+    })
+
+    describe('structure change on add/delete track buttons', () => {
+        let offs
+        let structureSpy
+        let patternSpy
+
+        beforeEach(() => {
+            offs = []
+            structureSpy = vi.fn()
+            patternSpy = vi.fn()
+            offs.push(playbackEvents.on(EVENTS.PATTERN_STRUCTURE_CHANGE, structureSpy))
+            offs.push(playbackEvents.on(EVENTS.PATTERN_CHANGE, patternSpy))
+            serviceRegistry.cmd = {
+                ...serviceRegistry.cmd,
+                addTrack: vi.fn(() => ({ name: 'T2', notes: [] })),
+                removeTrack: vi.fn(() => ({ name: 'T1', notes: [] })),
+            }
+        })
+
+        afterEach(() => {
+            offs.forEach((off) => off())
+            offs = []
+        })
+
+        it('add-track button emits structure + pattern change like the menu path', () => {
+            document.querySelector('#pp-add-track').click()
+
+            expect(serviceRegistry.cmd.addTrack).toHaveBeenCalledTimes(1)
+            expect(structureSpy).toHaveBeenCalledTimes(1)
+            expect(patternSpy).toHaveBeenCalledTimes(1)
+        })
+
+        it('delete-track button emits structure + pattern change like the menu path', () => {
+            appState.patterns[0].tracks['T2'] = { name: 'SNARE', nbBeats: 1, stepsPerBeat: 4, notes: [] }
+            appState.selectedTrackNum = 0
+
+            document.querySelector('#pp-delete-track').click()
+
+            expect(serviceRegistry.cmd.removeTrack).toHaveBeenCalledTimes(1)
+            expect(structureSpy).toHaveBeenCalledTimes(1)
+            expect(patternSpy).toHaveBeenCalledTimes(1)
+        })
+
+        it('delete-track button is a no-op on the last remaining track', () => {
+            document.querySelector('#pp-delete-track').click()
+
+            expect(serviceRegistry.cmd.removeTrack).not.toHaveBeenCalled()
+            expect(structureSpy).not.toHaveBeenCalled()
+        })
     })
 
     it('clicking an empty cell adds a note surgically and previews audio', () => {

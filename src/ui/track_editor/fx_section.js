@@ -23,7 +23,10 @@ export default class FxSection {
         return Number.isFinite(amount) && amount > 0
     }
 
-    /** Toggle an FX on/off. */
+    /**
+     * Computes the track updates toggling an FX on/off (no mutation).
+     * @returns {object} partial track updates (filterType or an amount key)
+     */
     toggleFxByKey(key) {
         const editor = this._editor
         const track = editor._track
@@ -32,27 +35,29 @@ export default class FxSection {
             const isOn = cur != null && cur !== 'allpass'
             if (isOn) {
                 editor._prevFilterType = cur
-                track.filterType = 'allpass'
-            } else {
-                track.filterType = editor._prevFilterType ?? 'lowpass'
+                return { filterType: 'allpass' }
             }
-        } else {
-            const isOn = Number(track[key] ?? 0) > 0
-            track[key] = isOn ? 0 : 0.5
+            return { filterType: editor._prevFilterType ?? 'lowpass' }
         }
+        const isOn = Number(track[key] ?? 0) > 0
+        return { [key]: isOn ? 0 : 0.5 }
     }
 
-    /** Render FX icon (filter type) selector. */
+    /**
+     * Computes the track updates for a filter-type icon click (no mutation).
+     * @returns {object|null} null when the icon is outside the filter row
+     */
     onFxIcon(target) {
         const editor = this._editor
         const track = editor._track
         const val = target.dataset.fxIconVal
-        if (!val) return
+        if (!val) return null
         if (target.closest('[data-prop="filterType"]')) {
             const cur = track.filterType
-            track.filterType = cur === val ? 'allpass' : val
             editor._prevFilterType = cur === val ? undefined : cur
+            return { filterType: cur === val ? 'allpass' : val }
         }
+        return null
     }
 
     /** Switch the active FX sub-tab. */
@@ -122,7 +127,12 @@ export default class FxSection {
                             extraClass: `${isSelected} ${hasLfo}`.trim(),
                             format: (v) => fmtVal(ck, v),
                             onChange: (v) => {
-                                editor._track[ck] = v
+                                // Continuous knob: coalesce the drag into ONE undo step.
+                                editor._serviceRegistry.cmd?.updateTrack(
+                                    editor._track,
+                                    { [ck]: v },
+                                    { desc: `${prop.label} on ${editor._track.name}`, coalesce: true },
+                                )
                                 editor._playbackEvents.batch(() => {
                                     editor._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, editor._track)
                                     editor._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [editor._track])

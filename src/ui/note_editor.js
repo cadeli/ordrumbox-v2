@@ -1,4 +1,5 @@
 import { playbackEvents } from '../state/playback_events.js'
+import { serviceRegistry } from '../state/service_registry.js'
 import { fmt, pitchToNoteName, knobFormat, renderOptions } from './components/panel_helpers.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrTab } from './components/or_tab.js'
@@ -381,19 +382,29 @@ export default class NoteEditor extends BasePanel {
         this.#track = null
     }
 
-    /** Builds note.arp from scale intervals + mode, or nulls it if range <= 0. */
-    #composeArp() {
-        if (!this.#note) return
-        const scale = this.#note._arpScale ?? 'major'
-        const type = this.#note._arpType ?? 'up'
-        const range = this.#note.arpRange ?? this.#getArpState(this.#note).range
-        this.#note.arp = range > 0 ? { intervals: getScaleIntervals(scale, range), mode: type } : null
+    /**
+     * Computes note.arp from scale intervals + mode, or null if range <= 0
+     * (pure). Overrides model the NEW value of a control being edited, since
+     * the note itself is only updated once the command runs.
+     * @param {{range?: number, scale?: string, type?: string}} [overrides]
+     */
+    #arpValue(overrides = {}) {
+        if (!this.#note) return null
+        const scale = overrides.scale ?? this.#note._arpScale ?? 'major'
+        const type = overrides.type ?? this.#note._arpType ?? 'up'
+        const range = overrides.range ?? this.#note.arpRange ?? this.#getArpState(this.#note).range
+        return range > 0 ? { intervals: getScaleIntervals(scale, range), mode: type } : null
     }
 
     #onSlider(key, val) {
         if (!this.#note || !this.#track) return
-        this.#note[key] = val
-        if (key === 'arpRange') this.#composeArp()
+        const updates = { [key]: val }
+        if (key === 'arpRange') updates.arp = this.#arpValue({ range: val })
+        // Continuous control: coalesce the whole drag into ONE undo step.
+        serviceRegistry.cmd?.updateNote(this.#track, this.#note, updates, {
+            desc: `Edit note ${key} on ${this.#track.name}`,
+            coalesce: true,
+        })
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [this.#track])
             playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.#track])
@@ -402,8 +413,12 @@ export default class NoteEditor extends BasePanel {
 
     #onSelect(sel) {
         if (!this.#note || !this.#track) return
-        this.#note['_' + sel.dataset.key] = sel.value
-        this.#composeArp()
+        const key = sel.dataset.key
+        const overrides = key === 'arpScale' ? { scale: sel.value } : key === 'arpType' ? { type: sel.value } : {}
+        const updates = { ['_' + key]: sel.value, arp: this.#arpValue(overrides) }
+        serviceRegistry.cmd?.updateNote(this.#track, this.#note, updates, {
+            desc: `Edit note ${key} on ${this.#track.name}`,
+        })
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [this.#track])
             playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.#track])

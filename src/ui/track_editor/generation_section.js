@@ -65,7 +65,12 @@ export default class GenerationSection {
                         denormalize: p.denormalize ?? ((v) => v),
                         onChange: (v, key) => {
                             editor._isDragging = true
-                            editor._track[key] = v
+                            // Continuous slider: coalesce the drag into ONE undo step.
+                            editor._serviceRegistry.cmd?.updateTrack(
+                                editor._track,
+                                { [key]: v },
+                                { desc: `${key} on ${editor._track.name}`, coalesce: true },
+                            )
                             editor._playbackEvents.batch(() => {
                                 editor._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, editor._track)
                                 editor._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [editor._track])

@@ -136,8 +136,25 @@ const COST_RATE = 1
 const COST_ARP_RANGE = 1
 const COST_PROB = 1
 
+/** Returns (creating once) the working clone for a source note inside this pass. */
+function cloneVaried(varied, source) {
+    let clone = varied.get(source)
+    if (!clone) {
+        clone = { ...source }
+        varied.set(source, clone)
+    }
+    return clone
+}
+
+/**
+ * Computes the variation2 layer for the given notes WITHOUT touching them.
+ * Every applied op lands on a shallow clone of its source note; the return
+ * value is a Map<sourceNote, variedClone> so callers can look up the varied
+ * variant while source data stays pristine (it is never persisted).
+ */
 function applyNoteVariation(sourceNotes, budget, track) {
-    if (budget <= 0 || !sourceNotes || sourceNotes.length === 0) return
+    const varied = new Map()
+    if (budget <= 0 || !sourceNotes || sourceNotes.length === 0) return varied
 
     const ops = []
     for (let i = 0; i < sourceNotes.length; i++) {
@@ -182,28 +199,37 @@ function applyNoteVariation(sourceNotes, budget, track) {
 
     for (const op of ops) {
         if (op.cost > remaining) continue
-        const note = sourceNotes[op.idx]
+        const source = sourceNotes[op.idx]
 
         switch (op.type) {
-            case 'retrigRate':
+            case 'retrigRate': {
+                const note = cloneVaried(varied, source)
                 note.retriggerNum = op.newRetrig
                 note.rate = op.newRate
                 remaining -= op.cost
                 break
-            case 'euclidianFill':
+            }
+            case 'euclidianFill': {
+                const note = cloneVaried(varied, source)
                 note.euclidianFill = op.newValue
                 remaining -= op.cost
                 break
-            case 'prob':
+            }
+            case 'prob': {
+                const note = cloneVaried(varied, source)
                 note.prob = op.newValue
                 remaining -= op.cost
                 break
-            case 'arpRange':
+            }
+            case 'arpRange': {
+                const note = cloneVaried(varied, source)
                 note.arp = [op.newValue, ...note.arp.slice(1)]
                 remaining -= op.cost
                 break
+            }
         }
     }
+    return varied
 }
 
 export default class TrackVariation {
@@ -294,12 +320,17 @@ export default class TrackVariation {
         }
     }
 
+    /**
+     * variation2 layer for a track's source notes.
+     * @returns {Map<object, object>|null} Map<sourceNote, variedClone>, or
+     * null when variation2 is disabled. Source notes are never modified.
+     */
     static applyNoteVariation(track) {
         const variation2 = track.variation2 ?? 0
-        if (variation2 <= 0) return
+        if (variation2 <= 0) return null
 
         const budget = Math.round((variation2 * 16) / 100)
         const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? {})
-        applyNoteVariation(notes, budget, track)
+        return applyNoteVariation(notes, budget, track)
     }
 }

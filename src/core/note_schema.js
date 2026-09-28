@@ -31,7 +31,7 @@
  *
  * @typedef {string} NoteKey
  */
-export const NOTE_KEY_ORDER = [
+const NOTE_KEY_ORDER = [
     'velocity',
     'beat',
     'beatStep',

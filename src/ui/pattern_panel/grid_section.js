@@ -4,9 +4,7 @@
 
 import { soundRegistry } from '../../state/sound_registry.js'
 import { nameOr } from '../../core/logger.js'
-import { computeEuclideanFillPositions } from '../../core/euclidean.js'
-import Utils from '../../core/utils.js'
-import { getArpNoteCount, normalizeArp } from '../../patterns/engine.js'
+import { getNoteSubPositions } from '../../patterns/note_positions.js'
 import { createStepResolver } from '../../patterns/step_resolver.js'
 
 export default class GridSection {
@@ -33,9 +31,10 @@ export default class GridSection {
 
         const ghostMap = new Map()
         const resolveSpanEnd = createStepResolver(track)
+        const totalSteps = (track.nbBeats ?? 4) * stepsPerBeat
         noteMap.forEach((notes) => {
             for (const note of notes) {
-                this.#getSubPositions(note, track, resolveSpanEnd).forEach(({ pos, type }) => {
+                getNoteSubPositions(note, track, totalSteps, resolveSpanEnd).forEach(({ pos, type }) => {
                     const stepAbs = Math.floor(pos)
                     const beat = Math.floor(stepAbs / stepsPerBeat)
                     if (beat >= startBeat && beat < endBeatPage) {
@@ -247,39 +246,5 @@ export default class GridSection {
             cellMap.set(key, cell)
         }
         return cellMap
-    }
-
-    #getSubPositions(note, track, resolveSpanEnd) {
-        const stepsPerBeat = track.stepsPerBeat ?? 4
-        const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
-        const rate = note.rate ?? 1
-        const euclidianFill = note.euclidianFill ?? 0
-        const arpConfig = normalizeArp(note.arp)
-        // The engine clamps the arp note count: keep the ghosts on the same steps.
-        const retriggerNum = arpConfig ? getArpNoteCount(note) : (note.retriggerNum ?? 1)
-        const totalSteps = (track.nbBeats ?? 4) * stepsPerBeat
-
-        const positions = []
-        const stepSpacing = Utils.getStepSpacing(rate)
-        const count = arpConfig || retriggerNum > 1 ? retriggerNum : 0
-
-        for (let i = 1; i < count; i++) {
-            const pos = Math.round(basePos + i * stepSpacing)
-            if (pos < totalSteps) positions.push({ pos, type: 'retrigger' })
-        }
-
-        if (euclidianFill > 0) {
-            const stepsSpan = resolveSpanEnd(note) - basePos
-            const euclideanPositions = computeEuclideanFillPositions(
-                basePos,
-                stepsSpan,
-                euclidianFill,
-                note.euclidianRotation ?? 0,
-            )
-            for (const pos of euclideanPositions) {
-                if (pos < totalSteps) positions.push({ pos, type: 'euclidian' })
-            }
-        }
-        return positions
     }
 }

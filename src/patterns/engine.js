@@ -2,7 +2,7 @@ import Utils from '../core/utils.js'
 import FlatNote from '../model/flatnote.js'
 import Defaults from './defaults.js'
 import TrackVariation from './variation.js'
-import { MAX_LOOP_RETRY, TICK } from '../core/constants.js'
+import { TICK } from '../core/constants.js'
 import { computeEuclideanFillPositions } from '../core/euclidean.js'
 import { createStepResolver } from './step_resolver.js'
 
@@ -86,16 +86,6 @@ export function computeNbTickForLoop(track, tick = TICK) {
     const trackBeats = Defaults.getTrackProp(track, 'nbBeats')
     const loopPointStepPc = (track.loopPointStep ?? 0) / stepsPerBeat
     return Math.floor((loopPointStepPc + (track.loopPointBeat ?? trackBeats)) * tick)
-}
-
-export function adjustLoopToPattern(nbTickForPattern, nbTickForLoop) {
-    let adjusted = nbTickForLoop
-    let ii = 0
-    while (nbTickForPattern % adjusted !== 0 && ii < MAX_LOOP_RETRY) {
-        adjusted++
-        ii++
-    }
-    return adjusted
 }
 
 export function expandLoopOccurrences(baseTick, nbTickForLoop, nbTickForPattern) {
@@ -222,11 +212,13 @@ export function recomputeFlatNotes(djtPattern, loop = 0, tick = TICK) {
     for (const track of Object.values(djtPattern.tracks)) {
         const nbTickForLoop = computeNbTickForLoop(track, tick)
 
-        TrackVariation.applyNoteVariation(track)
+        // variation2 layer: lookup of per-source-note clones, source data untouched
+        const variedNotes = TrackVariation.applyNoteVariation(track)
 
         const resolver = createStepResolver(track)
 
-        for (const note of Object.values(track.notes)) {
+        for (const sourceNote of Object.values(track.notes)) {
+            const note = variedNotes?.get(sourceNote) ?? sourceNote
             const pos = note.pos ?? 0
             const every = note.every ?? 1
             if (

@@ -19,7 +19,7 @@ function buildDefaultVisibility() {
     }
 }
 
-export class AppState {
+class AppState {
     static DEFAULTS = {
         patterns: [],
         selectedPatternNum: 0,

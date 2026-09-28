@@ -61,6 +61,12 @@ function setup() {
         loop: false,
         lfo: true,
     }
+    serviceRegistry.cmd = {
+        updateTrack: vi.fn((track, updates) => Object.assign(track, updates)),
+        setStepsPerBeat: vi.fn((track, value) => {
+            track.stepsPerBeat = value
+        }),
+    }
     HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
         fillRect: vi.fn(),
         clearRect: vi.fn(),
