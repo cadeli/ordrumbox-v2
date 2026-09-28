@@ -122,7 +122,7 @@ export default class AudioEngine {
         this.#cachedPatternRef = null
         this.#cachedVersion = -1
         if (this.player) {
-            this.player._lastFlatNotesLoop = -1
+            this.player.invalidateCache()
         }
     }
 

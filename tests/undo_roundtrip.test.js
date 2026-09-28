@@ -300,4 +300,216 @@ describe('Undo Roundtrip & State Inversion', () => {
             expect(smallHistory.pastLength).toBe(0)
         })
     })
+
+    describe('Roundtrip 5: Redo must re-apply the exact state (P0 regression)', () => {
+        const clone = (v) => JSON.parse(JSON.stringify(v))
+
+        it('survives double undo → double redo without note loss or duplication', () => {
+            const pattern = cmd.addPattern('Redo_Basic')
+            const kick = cmd.addTrack(pattern, 'KICK', 4)
+            cmd.addNote(kick, 0, 0, 0)
+            history.clear()
+
+            cmd.addNote(kick, 1, 0, 0) // action 1
+            cmd.addNote(kick, 2, 0, 0) // action 2
+            expect(kick.notes).toHaveLength(3)
+
+            // Double undo
+            expect(history.undo()).toBe(true)
+            expect(history.undo()).toBe(true)
+            expect(kick.notes).toHaveLength(1)
+
+            // Double redo (was a no-op before: history never re-applied state)
+            expect(history.redo()).toBe(true)
+            expect(history.redo()).toBe(true)
+            expect(kick.notes).toHaveLength(3)
+            expect(kick.notes.map((n) => n.beat)).toEqual([0, 1, 2])
+
+            // Another full cycle must be lossless too
+            expect(history.undo()).toBe(true)
+            expect(history.undo()).toBe(true)
+            expect(kick.notes).toHaveLength(1)
+            expect(history.redo()).toBe(true)
+            expect(history.redo()).toBe(true)
+            expect(kick.notes).toHaveLength(3)
+            expect(history.canRedo).toBe(false)
+        })
+
+        it('re-applies note commands (add, delete, paste step)', () => {
+            const pattern = cmd.addPattern('Redo_Notes')
+            const kick = cmd.addTrack(pattern, 'KICK', 4)
+            history.clear()
+
+            // addNote
+            const added = cmd.addNote(kick, 1, 2, 0)
+            const afterAdd = clone(kick.notes)
+            expect(history.undo()).toBe(true)
+            expect(kick.notes).toHaveLength(0)
+            expect(history.redo()).toBe(true)
+            expect(clone(kick.notes)).toEqual(afterAdd)
+
+            // deleteNote
+            cmd.deleteNote(kick, added)
+            const afterDelete = clone(kick.notes)
+            expect(afterDelete).toHaveLength(0)
+            expect(history.undo()).toBe(true)
+            expect(kick.notes).toHaveLength(1)
+            expect(history.redo()).toBe(true)
+            expect(clone(kick.notes)).toEqual(afterDelete)
+
+            // pasteStepNotes
+            cmd.addNote(kick, 3, 0, 0)
+            cmd.pasteStepNotes(kick, 3, 0, [{ pitch: 5, velocity: 0.8 }])
+            const afterPaste = clone(kick.notes)
+            expect(kick.notes).toHaveLength(1)
+            expect(kick.notes[0].pitch).toBe(5)
+            expect(history.undo()).toBe(true)
+            expect(kick.notes[0].pitch).toBe(0)
+            expect(history.redo()).toBe(true)
+            expect(clone(kick.notes)).toEqual(afterPaste)
+        })
+
+        it('re-applies track commands (add, remove, paste, rename, clean)', () => {
+            const pattern = cmd.addPattern('Redo_Tracks')
+            const kick = cmd.addTrack(pattern, 'KICK', 4)
+            cmd.addNote(kick, 0, 0, 0)
+            history.clear()
+
+            // addTrack
+            const snare = cmd.addTrack(pattern, 'SNARE', 4)
+            expect(pattern.tracks).toHaveLength(2)
+            expect(history.undo()).toBe(true)
+            expect(pattern.tracks).toHaveLength(1)
+            expect(history.redo()).toBe(true)
+            expect(pattern.tracks).toHaveLength(2)
+            expect(pattern.tracks[1]).toBe(snare)
+
+            // removeTrack
+            cmd.removeTrack(pattern, 1)
+            expect(pattern.tracks).toHaveLength(1)
+            expect(history.undo()).toBe(true)
+            expect(pattern.tracks).toHaveLength(2)
+            expect(history.redo()).toBe(true)
+            expect(pattern.tracks).toHaveLength(1)
+
+            // pasteTrack
+            cmd.pasteTrack(pattern, 0, kick)
+            expect(pattern.tracks).toHaveLength(2)
+            expect(history.undo()).toBe(true)
+            expect(pattern.tracks).toHaveLength(1)
+            expect(history.redo()).toBe(true)
+            expect(pattern.tracks).toHaveLength(2)
+            expect(pattern.tracks[0].name).toContain('copy')
+
+            // changeTrackName (withUndo family)
+            const target = pattern.tracks[1]
+            cmd.changeTrackName(target, 'RENAMED')
+            expect(history.undo()).toBe(true)
+            expect(target.name).toBe('KICK')
+            expect(history.redo()).toBe(true)
+            expect(target.name).toBe('RENAMED')
+
+            // cleanTrack (withUndo family, snapshots notes + loop)
+            cmd.addNote(target, 2, 0, 0)
+            cmd.cleanTrack(target)
+            expect(target.notes).toHaveLength(0)
+            expect(history.undo()).toBe(true)
+            expect(target.notes).toHaveLength(2)
+            expect(history.redo()).toBe(true)
+            expect(target.notes).toHaveLength(0)
+        })
+
+        it('re-applies pattern commands (rename, bpm, description, add, remove)', () => {
+            const pattern = cmd.addPattern('Redo_Patterns')
+            history.clear()
+
+            cmd.renamePattern(0, 'Renamed_Pat')
+            expect(history.undo()).toBe(true)
+            expect(appState.patterns[0].name).toBe('Redo_Patterns')
+            expect(history.redo()).toBe(true)
+            expect(appState.patterns[0].name).toBe('Renamed_Pat')
+
+            cmd.setPatternBpm(pattern, 148)
+            expect(history.undo()).toBe(true)
+            expect(pattern.bpm).toBe(120)
+            expect(history.redo()).toBe(true)
+            expect(pattern.bpm).toBe(148)
+
+            cmd.setPatternDescription(pattern, 'redo me')
+            expect(history.undo()).toBe(true)
+            expect(pattern.description).toBe('')
+            expect(history.redo()).toBe(true)
+            expect(pattern.description).toBe('redo me')
+
+            const added = cmd.addPattern('Redo_Patterns_2')
+            expect(history.undo()).toBe(true)
+            expect(appState.patterns).toHaveLength(1)
+            expect(history.redo()).toBe(true)
+            expect(appState.patterns).toHaveLength(2)
+            expect(appState.patterns[1]).toBe(added)
+
+            cmd.removePattern(1)
+            expect(appState.patterns).toHaveLength(1)
+            expect(history.undo()).toBe(true)
+            expect(appState.patterns).toHaveLength(2)
+            expect(history.redo()).toBe(true)
+            expect(appState.patterns).toHaveLength(1)
+        })
+
+        it('re-applies updateTrack with the exact resulting values', () => {
+            const pattern = cmd.addPattern('Redo_Update')
+            const kick = cmd.addTrack(pattern, 'KICK', 4)
+            history.clear()
+
+            cmd.updateTrack(kick, { velocity: 0.9, pan: -0.25, filterQ: 5 })
+            const after = { velocity: kick.velocity, pan: kick.pan, filterQ: kick.filterQ }
+
+            expect(history.undo()).toBe(true)
+            expect({ velocity: kick.velocity, pan: kick.pan, filterQ: kick.filterQ }).not.toEqual(after)
+
+            expect(history.redo()).toBe(true)
+            expect({ velocity: kick.velocity, pan: kick.pan, filterQ: kick.filterQ }).toEqual(after)
+        })
+
+        it('redo restores the full post-generation state, undo the pre-generation state', () => {
+            const pattern = cmd.addPattern('Redo_Gen')
+            const kick = cmd.addTrack(pattern, 'KICK', 4)
+            const snare = cmd.addTrack(pattern, 'SNARE', 4)
+            cmd.addNote(kick, 0, 0, 0)
+            history.clear()
+            const preGen = clone(pattern)
+
+            cmd.beginGenerationUndo(pattern)
+            cmd.addNote(kick, 1, 0, 0)
+            cmd.addNote(kick, 2, 0, 0)
+            cmd.addNote(snare, 1, 2, 0)
+            cmd.addTrack(pattern, 'HIHAT', 4)
+            cmd.commitGenerationUndo('Generative Redo Test')
+
+            const postGen = clone(pattern)
+            expect(pattern.tracks).toHaveLength(3)
+
+            // undo → pre-generation (2 tracks, 1 note)
+            expect(history.undo()).toBe(true)
+            const afterUndo = clone(pattern)
+            delete afterUndo._version
+            const pre = clone(preGen)
+            delete pre._version
+            expect(afterUndo).toEqual(pre)
+
+            // redo → post-generation again (including the generated track)
+            expect(history.redo()).toBe(true)
+            const afterRedo = clone(pattern)
+            delete afterRedo._version
+            const post = clone(postGen)
+            delete post._version
+            expect(afterRedo).toEqual(post)
+
+            // and undo once more stays coherent
+            expect(history.undo()).toBe(true)
+            const finalUndo = clone(pattern)
+            delete finalUndo._version
+            expect(finalUndo).toEqual(pre)
+        })
+    })
 })

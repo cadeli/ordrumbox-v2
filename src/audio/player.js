@@ -14,6 +14,20 @@ export default class Player {
     #lastFlatNotesLoop = -1
     #trackIdxMap = null
     #trackIdxMapRef = null
+    #trackIdxMapCount = -1
+
+    /**
+     * Drop every playback-derived cache. Called by AudioEngine.invalidateCache()
+     * after state mutations (pattern switch, track add/remove/paste, history
+     * undo/redo) so the next tick recomputes from fresh state.
+     */
+    invalidateCache() {
+        this.#lastFlatNotesMap = null
+        this.#lastFlatNotesLoop = -1
+        this.#trackIdxMap = null
+        this.#trackIdxMapRef = null
+        this.#trackIdxMapCount = -1
+    }
 
     constructor(config) {
         this.audioCtx = config.audioCtx
@@ -115,11 +129,16 @@ export default class Player {
             const secondsPerBeat = this.secondsPerBeat
             const sound = this.sound
 
-            // Cache trackIdxMap (only rebuild when tracks object changes)
-            if (this.#trackIdxMapRef !== selPat.tracks) {
-                const trackKeys = Object.keys(selPat.tracks)
-                this.#trackIdxMap = new Map(trackKeys.map((k, i) => [selPat.tracks[k], i]))
-                this.#trackIdxMapRef = selPat.tracks
+            // Cache trackIdxMap: rebuild when the tracks container changes OR
+            // when its size changes in place (splice keeps the same array ref,
+            // so a ref-only check mapped NOTE_TRIGGER to stale row indices).
+            const tracks = selPat.tracks
+            const trackCount = Array.isArray(tracks) ? tracks.length : Object.keys(tracks).length
+            if (this.#trackIdxMapRef !== tracks || this.#trackIdxMapCount !== trackCount) {
+                const trackKeys = Object.keys(tracks)
+                this.#trackIdxMap = new Map(trackKeys.map((k, i) => [tracks[k], i]))
+                this.#trackIdxMapRef = tracks
+                this.#trackIdxMapCount = trackCount
             }
             const trackIdxMap = this.#trackIdxMap
 

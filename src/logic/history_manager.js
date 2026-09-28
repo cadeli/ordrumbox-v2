@@ -90,12 +90,22 @@ export default class HistoryManager {
 
     /**
      * Perform redo - re-executes the most recently undone command.
+     * A command without an execute closure can never be re-applied: it is kept
+     * in #future (NOT pushed to #past — undoing it again would re-run its undo
+     * on stale state) and redo stays blocked until history is cleared.
      */
     redo() {
         if (!this.canRedo) return false
 
+        const command = this.#future.at(-1)
+        if (typeof command.execute !== 'function') {
+            logger.error('HistoryManager', 'redo: command has no execute closure', command.meta?.desc)
+            showToast('Redo unavailable', 'error')
+            return false
+        }
+
         this._isRedoing = true
-        const command = this.#future.pop()
+        this.#future.pop()
         try {
             command.execute()
             this.#past.push(command)

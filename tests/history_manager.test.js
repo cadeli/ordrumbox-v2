@@ -179,6 +179,25 @@ describe('HistoryManager', () => {
             expect(errorSpy).toHaveBeenCalled()
             errorSpy.mockRestore()
         })
+
+        it('blocks redo without execute closure and never re-runs its undo', () => {
+            // Regression: a no-op execute let a 2nd undo re-run the undo
+            // closure on stale state (note loss/duplication).
+            const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
+            const undo = vi.fn()
+            history.record({ execute: null, undo })
+            expect(history.undo()).toBe(true)
+            expect(history.canRedo).toBe(true)
+
+            expect(history.redo()).toBe(false)
+            expect(undo).toHaveBeenCalledTimes(1)
+            // Must stay in future (blocked), NOT move to past where a later
+            // undo would corrupt state.
+            expect(history.canRedo).toBe(true)
+            expect(history.canUndo).toBe(false)
+            expect(errorSpy).toHaveBeenCalled()
+            errorSpy.mockRestore()
+        })
     })
 
     describe('clear', () => {

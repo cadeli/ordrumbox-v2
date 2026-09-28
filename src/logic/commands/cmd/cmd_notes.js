@@ -26,14 +26,20 @@ export function createNoteMethods(cmd) {
                     cmd.incrementPatternVersionByTrack(track)
                     cmd.persist()
                     const patName = _findPatternForTrack(track)?.name ?? ''
-                    cmd.record(
-                        () => {
+                    cmd.record({
+                        desc: `Delete note on ${track.name} in "${patName}"`,
+                        execute: () => {
+                            const i = track.notes.indexOf(deletedNote)
+                            track.notes.splice(i >= 0 ? i : noteIndex, 1)
+                            cmd.incrementPatternVersionByTrack(track)
+                            cmd.persist()
+                        },
+                        undo: () => {
                             track.notes.splice(noteIndex, 0, deletedNote)
                             cmd.incrementPatternVersionByTrack(track)
                             cmd.persist()
                         },
-                        { desc: `Delete note on ${track.name} in "${patName}"` },
-                    )
+                    })
                     return
                 }
             }
@@ -57,14 +63,24 @@ export function createNoteMethods(cmd) {
             cmd.incrementPatternVersionByTrack(track)
             cmd.persist()
             const patName = _findPatternForTrack(track)?.name ?? ''
-            cmd.record(
-                () => {
-                    track.notes.splice(noteIndex, 1)
-                    cmd.incrementPatternVersionByTrack(track)
-                    cmd.persist()
+            cmd.record({
+                desc: `Add note on ${track.name} in "${patName}"`,
+                execute: () => {
+                    if (track.notes.indexOf(note) === -1) {
+                        track.notes.splice(Math.min(noteIndex, track.notes.length), 0, note)
+                        cmd.incrementPatternVersionByTrack(track)
+                        cmd.persist()
+                    }
                 },
-                { desc: `Add note on ${track.name} in "${patName}"` },
-            )
+                undo: () => {
+                    const i = track.notes.indexOf(note)
+                    if (i >= 0) {
+                        track.notes.splice(i, 1)
+                        cmd.incrementPatternVersionByTrack(track)
+                        cmd.persist()
+                    }
+                },
+            })
             return note
         },
 
@@ -89,15 +105,21 @@ export function createNoteMethods(cmd) {
             cmd.incrementPatternVersionByTrack(track)
             cmd.persist()
             const patName = _findPatternForTrack(track)?.name ?? ''
-            cmd.record(
-                () => {
+            cmd.record({
+                desc: `Paste step on ${track.name} in "${patName}"`,
+                execute: () => {
+                    track.notes = (track.notes ?? []).filter((n) => !(n.beat === beat && n.beatStep === beatStep))
+                    track.notes.push(...added.map((n) => ({ ...n })))
+                    cmd.incrementPatternVersionByTrack(track)
+                    cmd.persist()
+                },
+                undo: () => {
                     track.notes = (track.notes ?? []).filter((n) => !(n.beat === beat && n.beatStep === beatStep))
                     track.notes.push(...before.map((n) => ({ ...n })))
                     cmd.incrementPatternVersionByTrack(track)
                     cmd.persist()
                 },
-                { desc: `Paste step on ${track.name} in "${patName}"` },
-            )
+            })
         },
     }
 }

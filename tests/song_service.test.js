@@ -28,6 +28,7 @@ describe('SongService', () => {
             resetPage: vi.fn(() => {
                 appState.currentPage = 0
             }),
+            recordTransaction: (_desc, fn) => fn(),
         }
     })
 

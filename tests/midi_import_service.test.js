@@ -35,6 +35,7 @@ vi.mock('../src/state/service_registry.js', () => ({
             addTrack: (...a) => mockAddTrack(...a),
             addNote: (...a) => mockAddNote(...a),
             setSelectedPatternNum: (...a) => mockSetSelectedPatternNum(...a),
+            recordTransaction: (_desc, fn) => fn(),
         },
         audioEngine: { invalidateCache: vi.fn() },
     },

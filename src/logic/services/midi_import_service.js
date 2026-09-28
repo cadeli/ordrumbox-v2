@@ -301,44 +301,47 @@ export default class MidiImportService {
             `maxTick=${maxTick}, PPQN=${PPQN}, TICK_RATIO=${TICK_RATIO.toFixed(3)}, totalBeats=${totalBeats}, patterns=${numPatterns}, beatsPerPattern=${beatsPerPattern}`,
         )
 
-        for (let p = 0; p < numPatterns; p++) {
-            const patStartBeat = p * beatsPerPattern
-            const patEndBeat = patStartBeat + beatsPerPattern
+        // The whole import is ONE undoable history entry (not one per note).
+        cmd.recordTransaction('Import MIDI file', () => {
+            for (let p = 0; p < numPatterns; p++) {
+                const patStartBeat = p * beatsPerPattern
+                const patEndBeat = patStartBeat + beatsPerPattern
 
-            const suffix = numPatterns > 1 ? ` ${p + 1}/${numPatterns}` : ''
-            const pattern = cmd.addPattern(`${baseName}${suffix}`)
-            pattern.nbBeats = beatsPerPattern
-            pattern.bpm = bpm
+                const suffix = numPatterns > 1 ? ` ${p + 1}/${numPatterns}` : ''
+                const pattern = cmd.addPattern(`${baseName}${suffix}`)
+                pattern.nbBeats = beatsPerPattern
+                pattern.bpm = bpm
 
-            const patStartTick = patStartBeat * TICK
-            const patEndTick = patEndBeat * TICK
+                const patStartTick = patStartBeat * TICK
+                const patEndTick = patEndBeat * TICK
 
-            for (const def of trackDefs) {
-                const track = cmd.addTrack(pattern, def.trackName)
-                const ticksPerStep = TICK / (track.stepsPerBeat ?? 4)
+                for (const def of trackDefs) {
+                    const track = cmd.addTrack(pattern, def.trackName)
+                    const ticksPerStep = TICK / (track.stepsPerBeat ?? 4)
 
-                let noteCount = 0
-                for (const note of def.groupNotes) {
-                    const engineTicks = Math.round(note.absTick / TICK_RATIO)
-                    if (engineTicks < patStartTick || engineTicks >= patEndTick) continue
+                    let noteCount = 0
+                    for (const note of def.groupNotes) {
+                        const engineTicks = Math.round(note.absTick / TICK_RATIO)
+                        if (engineTicks < patStartTick || engineTicks >= patEndTick) continue
 
-                    const beat = Math.floor(engineTicks / TICK) - patStartBeat
-                    const beatStep = Math.round((engineTicks % TICK) / ticksPerStep)
-                    const pitch = note.note - def.baseNote
+                        const beat = Math.floor(engineTicks / TICK) - patStartBeat
+                        const beatStep = Math.round((engineTicks % TICK) / ticksPerStep)
+                        const pitch = note.note - def.baseNote
 
-                    cmd.addNote(track, beat, beatStep, pitch)
-                    const addedNote = track.notes.at(-1)
-                    if (addedNote) {
-                        addedNote.velocity = midiVelocityToNormalized(note.velocity)
+                        cmd.addNote(track, beat, beatStep, pitch)
+                        const addedNote = track.notes.at(-1)
+                        if (addedNote) {
+                            addedNote.velocity = midiVelocityToNormalized(note.velocity)
+                        }
+                        noteCount++
                     }
-                    noteCount++
+                    logger.debug(
+                        'MidiImport',
+                        `pattern "${pattern.name}" track "${def.trackName}": ${noteCount} notes placed`,
+                    )
                 }
-                logger.debug(
-                    'MidiImport',
-                    `pattern "${pattern.name}" track "${def.trackName}": ${noteCount} notes placed`,
-                )
             }
-        }
+        })
 
         return numPatterns
     }

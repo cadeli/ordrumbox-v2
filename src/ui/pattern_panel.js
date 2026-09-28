@@ -1163,7 +1163,7 @@ export default class PatternPanel extends BasePanel {
                             showToast(`Invalid pattern: ${validation.error}`, 'error')
                             return
                         }
-                        cmd.importPatternFromJson(data)
+                        cmd.recordTransaction('Import pattern', () => cmd.importPatternFromJson(data))
                         this.#emitStructureChange()
                     } catch (err) {
                         logger.error('PatternPanel', 'Import failed', err)

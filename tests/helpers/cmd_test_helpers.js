@@ -22,14 +22,17 @@ export function getTrackFromType(pattern, type) {
 }
 
 export function setNbBeats(cmd, pattern, newBeats) {
+    const readTrackStates = () =>
+        Utils.getTracksArray(pattern).map((track) => ({
+            track,
+            nbBeats: track.nbBeats,
+            loopAtStep: track.loopAtStep,
+            loopPointBeat: track.loopPointBeat,
+            loopPointStep: track.loopPointStep,
+        }))
+
     const oldNbBeats = pattern.nbBeats
-    const oldTrackStates = Utils.getTracksArray(pattern).map((track) => ({
-        track,
-        nbBeats: track.nbBeats,
-        loopAtStep: track.loopAtStep,
-        loopPointBeat: track.loopPointBeat,
-        loopPointStep: track.loopPointStep,
-    }))
+    const oldTrackStates = readTrackStates()
 
     const oldBeats = pattern.nbBeats * (Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4)
     pattern.nbBeats = newBeats * 4
@@ -41,19 +44,24 @@ export function setNbBeats(cmd, pattern, newBeats) {
         track.nbBeats = pattern.nbBeats
     })
     cmd.persist()
-    cmd.record(
-        () => {
-            pattern.nbBeats = oldNbBeats
-            for (const { track, nbBeats, loopAtStep, loopPointBeat, loopPointStep } of oldTrackStates) {
-                track.nbBeats = nbBeats
-                track.loopAtStep = loopAtStep
-                track.loopPointBeat = loopPointBeat
-                track.loopPointStep = loopPointStep
-            }
-            cmd.persist()
-        },
-        { desc: 'Set nb beats' },
-    )
+
+    const newNbBeats = pattern.nbBeats
+    const newTrackStates = readTrackStates()
+    const applyState = (nbBeats, trackStates) => {
+        pattern.nbBeats = nbBeats
+        for (const { track, nbBeats: tnb, loopAtStep, loopPointBeat, loopPointStep } of trackStates) {
+            track.nbBeats = tnb
+            track.loopAtStep = loopAtStep
+            track.loopPointBeat = loopPointBeat
+            track.loopPointStep = loopPointStep
+        }
+        cmd.persist()
+    }
+    cmd.record({
+        desc: 'Set nb beats',
+        execute: () => applyState(newNbBeats, newTrackStates),
+        undo: () => applyState(oldNbBeats, oldTrackStates),
+    })
 }
 
 export function getAllSoundsForType(soundKey) {

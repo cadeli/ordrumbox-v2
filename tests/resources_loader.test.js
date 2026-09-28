@@ -89,7 +89,10 @@ describe('ResourcesLoader', () => {
         vi.spyOn(logger, 'error').mockImplementation(() => {})
         vi.spyOn(logger, 'info').mockImplementation(() => {})
         const { serviceRegistry } = await import('../src/state/service_registry.js')
-        serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
+        serviceRegistry.cmd = {
+            importPatternFromJson: vi.fn(),
+            withSuppressedRecord: (fn) => fn(),
+        }
     })
 
     afterEach(() => {
@@ -137,7 +140,10 @@ describe('ResourcesLoader', () => {
         it('loads patterns into appState', async () => {
             const { appState } = await import('../src/state/app_state.js')
             const { serviceRegistry } = await import('../src/state/service_registry.js')
-            serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
+            serviceRegistry.cmd = {
+                importPatternFromJson: vi.fn(),
+                withSuppressedRecord: (fn) => fn(),
+            }
 
             const song = {
                 infos: { name: 'Test', description: '', date: '2025-01-01' },
@@ -153,7 +159,10 @@ describe('ResourcesLoader', () => {
 
         it('resets soundId when useAutoAssignSound is not false', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
-            serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
+            serviceRegistry.cmd = {
+                importPatternFromJson: vi.fn(),
+                withSuppressedRecord: (fn) => fn(),
+            }
             const song = {
                 infos: {},
                 patterns: [
@@ -175,7 +184,10 @@ describe('ResourcesLoader', () => {
 
         it('keeps soundId when useAutoAssignSound is false', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
-            serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
+            serviceRegistry.cmd = {
+                importPatternFromJson: vi.fn(),
+                withSuppressedRecord: (fn) => fn(),
+            }
             const song = {
                 infos: {},
                 patterns: [
@@ -197,7 +209,10 @@ describe('ResourcesLoader', () => {
 
         it('skips tracks with soundId NOT_DEFINED', async () => {
             const { serviceRegistry } = await import('../src/state/service_registry.js')
-            serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
+            serviceRegistry.cmd = {
+                importPatternFromJson: vi.fn(),
+                withSuppressedRecord: (fn) => fn(),
+            }
             const song = {
                 infos: {},
                 patterns: [
@@ -215,6 +230,32 @@ describe('ResourcesLoader', () => {
 
             const imported = serviceRegistry.cmd.importPatternFromJson.mock.calls[0][0]
             expect(imported.tracks[0].soundId).toBe('NOT_DEFINED')
+        })
+
+        it('imports under record suppression and clears history after boot', async () => {
+            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const importPatternFromJson = vi.fn()
+            const withSuppressedRecord = vi.fn((fn) => fn())
+            const clear = vi.fn()
+            serviceRegistry.cmd = { importPatternFromJson, withSuppressedRecord }
+            serviceRegistry.history = { clear }
+
+            const song = {
+                infos: { name: 'Boot' },
+                patterns: [
+                    { name: 'P1', bpm: 120, nbBeats: 4, tracks: [{ name: 'KICK', notes: [] }] },
+                    { name: 'P2', bpm: 120, nbBeats: 4, tracks: [] },
+                ],
+            }
+            fetchSpy.mockResolvedValue(makeJsonResponse(song))
+
+            await loader.loadSong('song.json')
+
+            // Boot must not fill the undo stack (was: one entry per note/track)
+            expect(withSuppressedRecord).toHaveBeenCalledTimes(1)
+            expect(importPatternFromJson).toHaveBeenCalledTimes(2)
+            expect(clear).toHaveBeenCalledTimes(1)
+            serviceRegistry.history = null
         })
     })
 
@@ -247,7 +288,10 @@ describe('ResourcesLoader', () => {
             const { appState } = await import('../src/state/app_state.js')
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             const { soundRegistry } = await import('../src/state/sound_registry.js')
-            serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
+            serviceRegistry.cmd = {
+                importPatternFromJson: vi.fn(),
+                withSuppressedRecord: (fn) => fn(),
+            }
             appState.patterns.length = 0
             soundRegistry.drumkitList.length = 0
             soundRegistry.settings._loaded = false
@@ -290,7 +334,10 @@ describe('ResourcesLoader', () => {
             const { appState } = await import('../src/state/app_state.js')
             const { soundRegistry } = await import('../src/state/sound_registry.js')
             const { serviceRegistry } = await import('../src/state/service_registry.js')
-            serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
+            serviceRegistry.cmd = {
+                importPatternFromJson: vi.fn(),
+                withSuppressedRecord: (fn) => fn(),
+            }
             appState.patterns = [{ name: 'p' }]
             soundRegistry.drumkitList = [{ name: 'real', samples: [] }]
             soundRegistry.settings._loaded = true
@@ -305,7 +352,10 @@ describe('ResourcesLoader', () => {
         it('second caller awaits the same in-flight pattern load', async () => {
             const { appState } = await import('../src/state/app_state.js')
             const { serviceRegistry } = await import('../src/state/service_registry.js')
-            serviceRegistry.cmd = { importPatternFromJson: vi.fn() }
+            serviceRegistry.cmd = {
+                importPatternFromJson: vi.fn(),
+                withSuppressedRecord: (fn) => fn(),
+            }
             appState.patterns.length = 0
 
             let resolveLoad

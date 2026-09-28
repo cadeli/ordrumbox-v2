@@ -63,15 +63,18 @@ class SongService {
     applyToAppState(data, fallbackName) {
         const name = data.name ?? fallbackName
 
-        appState.patterns.length = 0
-        for (const pat of data.patterns) appState.patterns.push(pat)
+        // One undoable history entry for the whole song load/import.
+        serviceRegistry.cmd.recordTransaction('Load song', () => {
+            appState.patterns.length = 0
+            for (const pat of data.patterns) appState.patterns.push(pat)
 
-        appState.songInfos.name = name
-        appState.songInfos.description = data.description ?? ''
-        appState.songInfos.date = data.date ?? ''
+            appState.songInfos.name = name
+            appState.songInfos.description = data.description ?? ''
+            appState.songInfos.date = data.date ?? ''
 
-        serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
-        serviceRegistry.cmd.resetPage()
+            serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
+            serviceRegistry.cmd.resetPage()
+        })
 
         return name
     }

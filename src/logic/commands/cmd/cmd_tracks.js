@@ -31,13 +31,18 @@ export function createTrackMethods(cmd) {
      * options.persist: call cmd.persist() after mutate.
      */
     function withUndo(track, keys, desc, mutate, { persist = false } = {}) {
-        const snap = snapshotTrack(track, keys)
+        const before = snapshotTrack(track, keys)
         const recordable = mutate() !== false
         if (persist) cmd.persist()
         if (recordable) {
-            cmd.record(() => restoreTrack(track, snap, keys), { desc })
+            const after = snapshotTrack(track, keys)
+            cmd.record({
+                desc,
+                execute: () => restoreTrack(track, after, keys),
+                undo: () => restoreTrack(track, before, keys),
+            })
         }
-        return snap
+        return before
     }
 
     return {
@@ -46,13 +51,20 @@ export function createTrackMethods(cmd) {
             const trackIndex = pattern.tracks.length
             pattern.tracks.push(track)
             cmd.persist()
-            cmd.record(
-                () => {
-                    pattern.tracks.splice(trackIndex, 1)
+            cmd.record({
+                desc: `Add track ${track.name}`,
+                execute: () => {
+                    if (!pattern.tracks.includes(track)) {
+                        pattern.tracks.splice(Math.min(trackIndex, pattern.tracks.length), 0, track)
+                        cmd.persist()
+                    }
+                },
+                undo: () => {
+                    const i = pattern.tracks.indexOf(track)
+                    if (i >= 0) pattern.tracks.splice(i, 1)
                     cmd.persist()
                 },
-                { desc: `Add track ${track.name}` },
-            )
+            })
             return track
         },
 
@@ -66,14 +78,19 @@ export function createTrackMethods(cmd) {
             const removedNotes = removed.notes.map((n) => ({ ...n }))
             tracks.splice(trackIdx, 1)
             cmd.persist()
-            cmd.record(
-                () => {
-                    tracks.splice(trackIdx, 0, removed)
+            cmd.record({
+                desc: `Remove track ${removed.name}`,
+                execute: () => {
+                    const i = tracks.indexOf(removed)
+                    tracks.splice(i >= 0 ? i : trackIdx, 1)
+                    cmd.persist()
+                },
+                undo: () => {
+                    tracks.splice(Math.min(trackIdx, tracks.length), 0, removed)
                     removed.notes = removedNotes
                     cmd.persist()
                 },
-                { desc: `Remove track ${removed.name}` },
-            )
+            })
         },
 
         pasteTrack(pattern, insertIdx, sourceTrack) {
@@ -96,14 +113,20 @@ export function createTrackMethods(cmd) {
             const idx = Utils.clamp(insertIdx, 0, tracks.length)
             tracks.splice(idx, 0, clone)
             cmd.persist()
-            cmd.record(
-                () => {
+            cmd.record({
+                desc: `Paste track ${name}`,
+                execute: () => {
+                    if (!tracks.includes(clone)) {
+                        tracks.splice(Math.min(idx, tracks.length), 0, clone)
+                        cmd.persist()
+                    }
+                },
+                undo: () => {
                     const i = tracks.indexOf(clone)
                     if (i >= 0) tracks.splice(i, 1)
                     cmd.persist()
                 },
-                { desc: `Paste track ${name}` },
-            )
+            })
             return clone
         },
 
@@ -177,10 +200,15 @@ export function createTrackMethods(cmd) {
         },
 
         compactTrack(track) {
-            const snap = snapshotTrack(track, TRACK_STATE_KEYS)
+            const before = snapshotTrack(track, TRACK_STATE_KEYS)
             const result = Utils.addLoopToTrackIfPossible(track)
             if (result.changed) {
-                cmd.record(() => restoreTrack(track, snap, TRACK_STATE_KEYS), { desc: `Compact ${track.name}` })
+                const after = snapshotTrack(track, TRACK_STATE_KEYS)
+                cmd.record({
+                    desc: `Compact ${track.name}`,
+                    execute: () => restoreTrack(track, after, TRACK_STATE_KEYS),
+                    undo: () => restoreTrack(track, before, TRACK_STATE_KEYS),
+                })
             }
             return result
         },

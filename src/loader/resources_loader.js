@@ -303,18 +303,23 @@ export default class ResourcesLoader {
         }
         const fixedPatterns = this.fix(Array.isArray(patterns) ? patterns : Object.values(patterns))
         appState.patterns.length = 0
-        fixedPatterns.forEach((pattern) => {
-            if (pattern?.tracks) {
-                Utils.getTracksArray(pattern).forEach((trk) => {
-                    if (trk?.soundId && trk.soundId !== 'NOT_DEFINED') {
-                        if (trk.useAutoAssignSound !== false) {
-                            trk.soundId = 'NOT_DEFINED'
+        // Boot must not fill the undo stack: suppress per-pattern recording,
+        // then reset history so the first Ctrl+Z can never wipe a loaded note.
+        serviceRegistry.cmd.withSuppressedRecord(() => {
+            fixedPatterns.forEach((pattern) => {
+                if (pattern?.tracks) {
+                    Utils.getTracksArray(pattern).forEach((trk) => {
+                        if (trk?.soundId && trk.soundId !== 'NOT_DEFINED') {
+                            if (trk.useAutoAssignSound !== false) {
+                                trk.soundId = 'NOT_DEFINED'
+                            }
                         }
-                    }
-                })
-            }
-            serviceRegistry.cmd.importPatternFromJson(pattern)
+                    })
+                }
+                serviceRegistry.cmd.importPatternFromJson(pattern)
+            })
         })
+        serviceRegistry.history?.clear()
         this.#autoPersistEnabled = true
     }
 
