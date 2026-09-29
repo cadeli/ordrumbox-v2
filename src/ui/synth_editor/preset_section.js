@@ -7,20 +7,22 @@ import { SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META } from './constants.js'
 import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
 
 export default class PresetSection {
+    #editor
+
     /** @param {import('./synth_editor.js').default} editor */
     constructor(editor) {
-        this._editor = editor
+        this.#editor = editor
     }
 
     /** @returns {string[]} sorted keys of loaded synth presets. */
     getGeneratedSoundKeys() {
-        const sr = this._editor.soundRegistry
+        const sr = this.#editor.soundRegistry
         return Object.keys(sr.generatedSounds ?? {}).sort((a, b) => a.localeCompare(b))
     }
 
     /** Loads generated sounds from disk if not already loaded. */
     async ensureGeneratedSoundsLoaded() {
-        const editor = this._editor
+        const editor = this.#editor
         if (editor.loadFailed) return
         if (this.getGeneratedSoundKeys().length > 0) return
         if (editor.loadPromise) return editor.loadPromise
@@ -47,7 +49,7 @@ export default class PresetSection {
      * @returns {boolean} whether the preset was loaded
      */
     loadPreset(key) {
-        const editor = this._editor
+        const editor = this.#editor
         const sound = editor.soundRegistry.generatedSounds?.[key]
         if (!sound) return false
         editor.editKey = key
@@ -59,20 +61,20 @@ export default class PresetSection {
 
     /** Commits a sound to the registry and notifies the audio engine. */
     commitSound(key, sound) {
-        const editor = this._editor
+        const editor = this.#editor
         editor.soundRegistry.generatedSounds[key] = structuredClone(sound)
         editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
         this._persist()
     }
 
     _persist() {
-        const sr = this._editor.soundRegistry
+        const sr = this.#editor.soundRegistry
         cacheGeneratedSounds(sr.generatedSounds).catch?.(() => {})
     }
 
     /** @returns {string} footer HTML with preset selector and action buttons. */
     renderFooter() {
-        const editor = this._editor
+        const editor = this.#editor
         const keys = this.getGeneratedSoundKeys()
         const currentKey = editor.editKey ?? ''
         const options = renderOptions(keys, currentKey, { escape: escapeHtml })
@@ -95,7 +97,7 @@ export default class PresetSection {
     // ─── Preset actions ────────────────────────────────────────────────
 
     navigatePreset(dir) {
-        const editor = this._editor
+        const editor = this.#editor
         const keys = this.getGeneratedSoundKeys()
         if (keys.length === 0) return
         const idx = keys.indexOf(editor.editKey)
@@ -105,14 +107,14 @@ export default class PresetSection {
     }
 
     selectPreset(key) {
-        const editor = this._editor
+        const editor = this.#editor
         if (!key || key === editor.editKey) return
         if (!this.loadPreset(key)) return
         editor.renderEditor()
     }
 
     duplicatePreset() {
-        const editor = this._editor
+        const editor = this.#editor
         if (!editor.draft || !editor.editKey) return
         const newKey = `${editor.editKey}_copy`
         this.commitSound(newKey, editor.draft)
@@ -122,7 +124,7 @@ export default class PresetSection {
     }
 
     newPreset() {
-        const editor = this._editor
+        const editor = this.#editor
         const keys = this.getGeneratedSoundKeys()
         let base = 1
         let name = 'new_preset'
@@ -140,7 +142,7 @@ export default class PresetSection {
     }
 
     deletePreset() {
-        const editor = this._editor
+        const editor = this.#editor
         if (!editor.editKey) return
         const keys = this.getGeneratedSoundKeys()
         if (keys.length <= 1) {
@@ -163,7 +165,7 @@ export default class PresetSection {
     }
 
     renamePreset() {
-        const editor = this._editor
+        const editor = this.#editor
         if (!editor.editKey) return
         const newName = prompt('Rename preset:', editor.editKey)
         if (!newName || newName === editor.editKey) return
@@ -177,7 +179,7 @@ export default class PresetSection {
     }
 
     randomizePreset() {
-        const editor = this._editor
+        const editor = this.#editor
         if (!editor.draft) return
         const randomize = (obj, prefix = '') => {
             for (const [key, val] of Object.entries(obj)) {

@@ -45,14 +45,16 @@ const GROUP_TAB = {
 }
 
 export default class GroupsSection {
+    #editor
+
     /** @param {import('./synth_editor.js').default} editor */
     constructor(editor) {
-        this._editor = editor
+        this.#editor = editor
     }
 
     /** Ordered group names derived from draft keys. */
     getOrderedGroupNames() {
-        const draft = this._editor.draft
+        const draft = this.#editor.draft
         if (!draft) return SYNTH_GROUP_ORDER.slice()
 
         const mergedKeys = new Set(Object.values(SYNTH_GROUP_MERGE).flat())
@@ -87,7 +89,7 @@ export default class GroupsSection {
      * @returns {string} HTML
      */
     render(knobConfigs) {
-        const editor = this._editor
+        const editor = this.#editor
         const draft = editor.draft
         if (!draft) return ''
 
@@ -114,7 +116,7 @@ export default class GroupsSection {
             const hidden = first ? '' : ' ne-tab-panel-hidden'
             body += `<div class="ne-tab-panel${hidden}" data-tab-panel="${t.id}">`
             for (const groupName of names) {
-                body += this._renderGroupCard(groupName, knobConfigs, draft, editor)
+                body += this.#renderGroupCard(groupName, knobConfigs, draft, editor)
             }
             body += '</div>'
             first = false
@@ -124,8 +126,8 @@ export default class GroupsSection {
         return tabBar + body + '<div class="ss-module-trace" data-ss-module-trace></div>'
     }
 
-    _renderGroupCard(groupName, knobConfigs, draft, editor) {
-        const content = this._buildGroupContent(groupName, knobConfigs)
+    #renderGroupCard(groupName, knobConfigs, draft, editor) {
+        const content = this.#buildGroupContent(groupName, knobConfigs)
         const label = this.getGroupLabel(groupName)
         const isBypassed = editor.cardBypassed[groupName] ?? false
 
@@ -189,16 +191,16 @@ export default class GroupsSection {
     }
 
     /** Builds inner content for a single group. */
-    _buildGroupContent(groupName, knobConfigs) {
-        const editor = this._editor
+    #buildGroupContent(groupName, knobConfigs) {
+        const editor = this.#editor
         const draft = editor.draft
         const merged = SYNTH_GROUP_MERGE[groupName]
         const groupDefaults = SYNTH_GROUP_DEFAULTS[groupName]
         const fields = merged
             ? merged.map((key) => ({ path: [key], key, val: draft[key] }))
-            : this._isPlainObject(draft[groupName])
+            : this.#isPlainObject(draft[groupName])
               ? Object.entries(draft[groupName])
-                    .filter(([key]) => !this._isPlainObject(groupDefaults) || key in groupDefaults)
+                    .filter(([key]) => !this.#isPlainObject(groupDefaults) || key in groupDefaults)
                     .map(([key, val]) => ({ path: [groupName, key], key, val }))
               : [{ path: [groupName], key: groupName, val: draft[groupName] }]
 
@@ -206,7 +208,7 @@ export default class GroupsSection {
             .map(({ path, key, val }) => {
                 const pathStr = path.join('.')
                 const paramLabel = SYNTH_PARAM_META[pathStr]?.label ?? key
-                return this._buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName)
+                return this.#buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName)
             })
             .join('')
 
@@ -217,12 +219,12 @@ export default class GroupsSection {
     }
 
     /** Builds HTML for a single field (knob placeholder, icon row, select, or boolean). */
-    _buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName) {
-        const options = this._getOptions(path, key, path)
+    #buildField(path, key, val, pathStr, paramLabel, knobConfigs, groupName) {
+        const options = this.#getOptions(path, key, path)
 
         if (key === 'wave' && options) {
             if (groupName && (VCO_RE.test(groupName) || LFO_RE.test(groupName))) return ''
-            return this._buildIconRow(paramLabel, pathStr, val, 'ss-wave-icon', WAVE_ICONS)
+            return this.#buildIconRow(paramLabel, pathStr, val, 'ss-wave-icon', WAVE_ICONS)
         }
         if ((pathStr === 'filter.type' || pathStr === 'noise.filterType') && options) {
             return ''
@@ -231,7 +233,7 @@ export default class GroupsSection {
             return ''
         }
         if (options) {
-            return this._buildSelectRow(paramLabel, pathStr, val, options)
+            return this.#buildSelectRow(paramLabel, pathStr, val, options)
         }
         if (typeof val === 'number') {
             knobConfigs.push({ path, val, key: pathStr, label: paramLabel })
@@ -247,17 +249,17 @@ export default class GroupsSection {
     }
 
     /** @returns {string} icon button row HTML. */
-    _buildIconRow(paramLabel, pathStr, val, cssClass, icons) {
-        const options = this._getIconOptions(pathStr)
+    #buildIconRow(paramLabel, pathStr, val, cssClass, icons) {
+        const options = this.#getIconOptions(pathStr)
         const isVcoWave = pathStr.startsWith('vco') && pathStr.endsWith('.wave')
         return `<div class="ne-row ss-icon-row">
             ${isVcoWave ? '' : `<span class="ss-param-label">${escapeHtml(paramLabel)}</span>`}
-            ${this._renderIconRow(options, pathStr, val, cssClass, icons)}
+            ${this.#renderIconRow(options, pathStr, val, cssClass, icons)}
         </div>`
     }
 
     /** Resolves icon options from path. */
-    _getIconOptions(pathStr) {
+    #getIconOptions(pathStr) {
         if (pathStr.startsWith('vco') && pathStr.endsWith('.wave')) return Utils.waveList
         if (pathStr === 'filter.type' || pathStr === 'noise.filterType') return Utils.filterTypeList
         if (pathStr === 'fm.algo') return [0, 1, 2, 3, 4]
@@ -265,7 +267,7 @@ export default class GroupsSection {
     }
 
     /** @returns {string} select dropdown row HTML. */
-    _buildSelectRow(paramLabel, pathStr, val, options) {
+    #buildSelectRow(paramLabel, pathStr, val, options) {
         return `<div class="ne-row">
             <span class="ss-param-label">${escapeHtml(paramLabel)}</span>
             <select data-synth-path="${escapeHtml(pathStr)}">${renderOptions(options, val, { escape: escapeHtml })}</select>
@@ -273,7 +275,7 @@ export default class GroupsSection {
     }
 
     /** Renders icon buttons (wave shapes, filter types). */
-    _renderIconRow(options, pathStr, val, cssClass, icons) {
+    #renderIconRow(options, pathStr, val, cssClass, icons) {
         return renderIconChoices(options, val, icons, {
             cssClass,
             valueDataAttr: 'data-wave-val',
@@ -286,7 +288,7 @@ export default class GroupsSection {
      * Returns option list for a given path/key, or null if it's a direct value.
      * @returns {Array|null}
      */
-    _getOptions(path, key, pathArr) {
+    #getOptions(path, key, pathArr) {
         const isLfo = pathArr[0] === 'lfo' || pathArr[0] === 'lfo2'
         if (key === 'wave') return Utils.waveList
         if (pathArr[0] === 'filter' && key === 'type') return Utils.filterTypeList
@@ -301,7 +303,7 @@ export default class GroupsSection {
     }
 
     /** @returns {boolean} true if value is a plain object (not array, not null). */
-    _isPlainObject(val) {
+    #isPlainObject(val) {
         return val != null && typeof val === 'object' && !Array.isArray(val)
     }
 }

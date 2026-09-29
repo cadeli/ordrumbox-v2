@@ -35,6 +35,18 @@ import { FX_DEFS, TAB_DEFS, ALL_TRACK_PROPS, KNOB_PROPS } from './track_editor/c
 import { EVENTS } from '../core/events.js'
 
 export default class TrackEditor extends BasePanel {
+    #rafId
+    #lastTick
+    #isSelecting
+    #lfoBridge
+    #delegationBound
+    #noteEditor
+    #waveObserver
+    #waveObservedCanvas
+    #genSection
+    #fxSection
+    #modSection
+
     /**
      * @param {object} [deps]  Optional dependency overrides (DI).
      *   When omitted the module-level singletons are used.
@@ -52,20 +64,20 @@ export default class TrackEditor extends BasePanel {
         this._track = null
         this._trackIdx = -1
         this._selectedPropKey = null
-        this._rafId = null
-        this._lastTick = -1
+        this.#rafId = null
+        this.#lastTick = -1
         this._isDragging = false
-        this._isSelecting = false
+        this.#isSelecting = false
         this._sliders = new Map()
-        this._lfoBridge = null
+        this.#lfoBridge = null
         this._selectedLfoTarget = null
-        this._delegationBound = false
+        this.#delegationBound = false
         this._prevFilterType = undefined
         this._knobs = []
         this._fxKnobs = []
-        this._noteEditor = null
-        this._waveObserver = null
-        this._waveObservedCanvas = null
+        this.#noteEditor = null
+        this.#waveObserver = null
+        this.#waveObservedCanvas = null
 
         // ── Sub-components ───────────────────────────────────────────
         this.synthEditor = new SynthEditor(this)
@@ -88,17 +100,17 @@ export default class TrackEditor extends BasePanel {
         })
 
         // ── Sections ─────────────────────────────────────────────────
-        this._genSection = new GenerationSection(this)
-        this._fxSection = new FxSection(this)
+        this.#genSection = new GenerationSection(this)
+        this.#fxSection = new FxSection(this)
         this._sndSection = new SoundSection(this)
-        this._modSection = new ModulationSection(this)
+        this.#modSection = new ModulationSection(this)
         this._loopSection = new LoopSection(this)
     }
 
     // ── Lifecycle ──────────────────────────────────────────────────
 
     setNoteEditor(editor) {
-        this._noteEditor = editor
+        this.#noteEditor = editor
     }
 
     createDOM() {
@@ -111,13 +123,13 @@ export default class TrackEditor extends BasePanel {
     }
 
     _showNoteEditorForTrack(track, trackIdx) {
-        if (!this._noteEditor) return
-        this._noteEditor.container.style.display = 'block'
+        if (!this.#noteEditor) return
+        this.#noteEditor.container.style.display = 'block'
         const firstNote = track.notes?.[0]
         if (firstNote) {
             const stepsPerBeat = track.stepsPerBeat ?? 4
             const pos = Utils.getNoteAbsoluteStep(firstNote, stepsPerBeat)
-            this._noteEditor.showInline({
+            this.#noteEditor.showInline({
                 track,
                 trackIdx,
                 note: firstNote,
@@ -126,13 +138,13 @@ export default class TrackEditor extends BasePanel {
                 beatStep: firstNote.beatStep ?? 0,
             })
         } else {
-            this._noteEditor.showEmptyInline({ track, trackIdx })
+            this.#noteEditor.showEmptyInline({ track, trackIdx })
         }
     }
 
     subscribe() {
         this._playbackEvents.on(EVENTS.ORIENTATION_CHANGE, () => {
-            if (this.container) this._syncMobileLayout()
+            if (this.container) this.#syncMobileLayout()
         })
         this._playbackEvents.on(EVENTS.TRACK_SELECT, (data) => {
             if (!data) return
@@ -143,13 +155,13 @@ export default class TrackEditor extends BasePanel {
                 this._showNoteEditorForTrack(data.track, data.trackIdx)
             }
         })
-        this._playbackEvents.on(EVENTS.PLAYBACK_START, () => this._startStepWatch())
-        this._playbackEvents.on(EVENTS.PLAYBACK_STOP, () => this._stopStepWatch())
+        this._playbackEvents.on(EVENTS.PLAYBACK_START, () => this.#startStepWatch())
+        this._playbackEvents.on(EVENTS.PLAYBACK_STOP, () => this.#stopStepWatch())
         this._playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => {
             if (this._track) this.sync()
         })
         this._playbackEvents.on(EVENTS.PATTERN_CHANGE, () => {
-            if (this._isDragging || this._isSelecting) return
+            if (this._isDragging || this.#isSelecting) return
             if (!this._track) return
             const pattern = this._appState.patterns[this._appState.selectedPatternNum]
             if (!pattern?.tracks) return
@@ -170,47 +182,47 @@ export default class TrackEditor extends BasePanel {
 
     // ── Step watch (LFO animation) ─────────────────────────────────
 
-    _startStepWatch() {
-        if (this._rafId) return
-        this._lastTick = -1
+    #startStepWatch() {
+        if (this.#rafId) return
+        this.#lastTick = -1
         const tick = () => {
             const transport = this._serviceRegistry.transport
             if (!transport?.isRunning) {
-                this._rafId = null
+                this.#rafId = null
                 return
             }
-            this._rafId = requestAnimationFrame(tick)
+            this.#rafId = requestAnimationFrame(tick)
             const currentTick = transport.tick
-            if (currentTick !== this._lastTick) {
-                this._lastTick = currentTick
+            if (currentTick !== this.#lastTick) {
+                this.#lastTick = currentTick
                 this._updateLfoSliders()
             }
         }
-        this._rafId = requestAnimationFrame(tick)
+        this.#rafId = requestAnimationFrame(tick)
     }
 
-    _stopStepWatch() {
-        if (this._rafId) {
-            cancelAnimationFrame(this._rafId)
-            this._rafId = null
+    #stopStepWatch() {
+        if (this.#rafId) {
+            cancelAnimationFrame(this.#rafId)
+            this.#rafId = null
         }
-        this._lastTick = -1
-        if (this._lfoBridge) {
-            this._lfoBridge.destroy()
-            this._lfoBridge = null
+        this.#lastTick = -1
+        if (this.#lfoBridge) {
+            this.#lfoBridge.destroy()
+            this.#lfoBridge = null
         }
     }
 
-    _lfoValuesForTick(tick) {
+    #lfoValuesForTick(tick) {
         if (!this._track) return null
         const pattern = this._appState.patterns[this._appState.selectedPatternNum]
         if (!pattern) return null
         const nbTicks = TICK * pattern.nbBeats
-        if (!this._lfoBridge) this._lfoBridge = new LfoUiBridge(this._serviceRegistry.audioCtx)
-        return this._lfoBridge.compute(this._track, tick, nbTicks)
+        if (!this.#lfoBridge) this.#lfoBridge = new LfoUiBridge(this._serviceRegistry.audioCtx)
+        return this.#lfoBridge.compute(this._track, tick, nbTicks)
     }
 
-    _applyLfoValues(lfoValues) {
+    #applyLfoValues(lfoValues) {
         if (!lfoValues || !this._track) return
         ALL_TRACK_PROPS.forEach((p) => {
             if (!p.lfo || !this._track[p.lfo]) return
@@ -232,10 +244,10 @@ export default class TrackEditor extends BasePanel {
         const transport = this._serviceRegistry.transport
         if (!transport) return
         const tick = transport.tick
-        const result = this._lfoValuesForTick(tick)
+        const result = this.#lfoValuesForTick(tick)
         if (!result) return
         const values = result instanceof Promise ? await result : result
-        if (values && transport.tick === tick) this._applyLfoValues(values)
+        if (values && transport.tick === tick) this.#applyLfoValues(values)
     }
 
     // ── Show / Sync / Hide ─────────────────────────────────────────
@@ -246,7 +258,7 @@ export default class TrackEditor extends BasePanel {
         this.container.style.display = isMobileViewport() ? 'flex' : 'block'
         this.sync()
         void this.synthEditor.ensureGeneratedSoundsLoaded()
-        if (this._serviceRegistry.transport?.isRunning) this._startStepWatch()
+        if (this._serviceRegistry.transport?.isRunning) this.#startStepWatch()
         setViewBtn('edit', true)
     }
 
@@ -259,8 +271,8 @@ export default class TrackEditor extends BasePanel {
             <span class="ne-track">Track: ${this.esc(this._track.name)}${soundInfo ? ' - ' + this.esc(soundInfo) : ''}</span>
         </div>`
 
-        const sampleBarHtml = this._renderSampleBar()
-        const knobBarHtml = this._renderKnobBar()
+        const sampleBarHtml = this.#renderSampleBar()
+        const knobBarHtml = this.#renderKnobBar()
 
         // ── Snapshot existing instances for reuse ──────────────────
         const prevSliders = new Map(this._sliders)
@@ -273,10 +285,10 @@ export default class TrackEditor extends BasePanel {
         let panelsHtml = ''
 
         const TAB_PANEL_MAP = {
-            gen: () => this._genSection.render(),
-            fx: () => this._fxSection.render(),
+            gen: () => this.#genSection.render(),
+            fx: () => this.#fxSection.render(),
             snd: () => this._sndSection.render(),
-            mod: () => this._modSection.render(),
+            mod: () => this.#modSection.render(),
             loop: () => this._loopSection.render(),
         }
 
@@ -289,11 +301,11 @@ export default class TrackEditor extends BasePanel {
 
         // Detach ne-container before innerHTML wipe (it lives in #te-panel,
         // not inside .track-editor, but innerHTML on #te-panel would destroy it)
-        const neC = this._preserveNeContainer()
+        const neC = this.#preserveNeContainer()
 
         this.container.innerHTML = `<div class="track-editor">${headerHtml + sampleBarHtml + knobBarHtml + tabBarHtml + `<div class="te-scroll">${panelsHtml}</div>`}</div>`
 
-        this._restoreNeContainer(neC)
+        this.#restoreNeContainer(neC)
         const teElement = this.container.querySelector('.track-editor') ?? this.container
         this._tab.bindTo(teElement)
 
@@ -306,8 +318,8 @@ export default class TrackEditor extends BasePanel {
                 if (input) {
                     input.addEventListener('change', () => {
                         this._isDragging = false
-                        this._isSelecting = false
-                        this._emitTrackChange()
+                        this.#isSelecting = false
+                        this.#emitTrackChange()
                     })
                 }
             }
@@ -333,26 +345,26 @@ export default class TrackEditor extends BasePanel {
         if (this.synthEditor?.panel?.style?.display !== 'block') {
             this.container.style.display = isMobileViewport() ? 'flex' : 'block'
         }
-        this._bindEvents()
+        this.#bindEvents()
         this._drawSampleWaveform()
 
-        this._syncMobileLayout()
+        this.#syncMobileLayout()
     }
 
     /** Detach ne-container from DOM so innerHTML wipe doesn't destroy it. */
-    _preserveNeContainer() {
+    #preserveNeContainer() {
         const neC = this._neContainer
         if (neC?.parentNode) neC.parentNode.removeChild(neC)
         return neC
     }
 
     /** Re-attach previously preserved ne-container after innerHTML wipe. */
-    _restoreNeContainer(neC) {
+    #restoreNeContainer(neC) {
         if (neC) this.container.appendChild(neC)
     }
 
     /** Apply mobile-specific layout if on a mobile viewport. */
-    _syncMobileLayout() {
+    #syncMobileLayout() {
         if (isMobileLandscape()) {
             applyLayout(this.container)
             if (this._track) this._showNoteEditorForTrack(this._track, this._trackIdx)
@@ -392,7 +404,7 @@ export default class TrackEditor extends BasePanel {
                                     { desc: `${def.label} on ${this._track.name}`, coalesce: true },
                                 )
                             }
-                            this._emitTrackChange()
+                            this.#emitTrackChange()
                             if (isDecay) this._drawSampleWaveform()
                         },
                     }
@@ -404,7 +416,7 @@ export default class TrackEditor extends BasePanel {
 
     // ── Sample bar ─────────────────────────────────────────────────
 
-    _renderSampleBar() {
+    #renderSampleBar() {
         const track = this._track
         if (track.useSoftSynth) return ''
         const soundId = track.soundId ?? ''
@@ -424,7 +436,7 @@ export default class TrackEditor extends BasePanel {
         </div>`
     }
 
-    _renderKnobBar() {
+    #renderKnobBar() {
         return `<div class="te-knob-bar">
             <div data-or-knob="velocity"></div>
             <div data-or-knob="pan"></div>
@@ -451,7 +463,7 @@ export default class TrackEditor extends BasePanel {
             canvas.width = w
             canvas.height = h
         }
-        this._observeWaveformCanvas(canvas)
+        this.#observeWaveformCanvas(canvas)
 
         const ctx = canvas.getContext('2d')
         const theme = sampleWaveformTheme(2 * dpr)
@@ -477,20 +489,20 @@ export default class TrackEditor extends BasePanel {
     }
 
     /** Redraw the waveform when its CSS box changes (window / panel resize). */
-    _observeWaveformCanvas(canvas) {
-        if (typeof ResizeObserver !== 'function' || this._waveObservedCanvas === canvas) return
-        this._waveObserver?.disconnect()
-        this._waveObservedCanvas = canvas
-        this._waveObserver = new ResizeObserver(() => this._drawSampleWaveform())
-        this._waveObserver.observe(canvas)
+    #observeWaveformCanvas(canvas) {
+        if (typeof ResizeObserver !== 'function' || this.#waveObservedCanvas === canvas) return
+        this.#waveObserver?.disconnect()
+        this.#waveObservedCanvas = canvas
+        this.#waveObserver = new ResizeObserver(() => this._drawSampleWaveform())
+        this.#waveObserver.observe(canvas)
     }
 
-    _onLoadSample() {
+    #onLoadSample() {
         const input = this.container?.querySelector('.te-load-input')
         if (input) input.click()
     }
 
-    async _onSampleFileSelected(e) {
+    async #onSampleFileSelected(e) {
         const file = e.target.files?.[0]
         if (!file || !this._track) return
         const ctx = this._serviceRegistry.audioCtx
@@ -516,7 +528,7 @@ export default class TrackEditor extends BasePanel {
                 }
             }
             this.sync()
-            this._emitTrackChange()
+            this.#emitTrackChange()
         } catch (err) {
             logger.warn('TrackEditor', `Sample import failed: ${err.message}`)
             showToast('Sample import failed: ' + err.message, 'error')
@@ -524,57 +536,57 @@ export default class TrackEditor extends BasePanel {
         e.target.value = ''
     }
 
-    _toggleFxByKey(key) {
-        const updates = this._fxSection.toggleFxByKey(key)
+    #toggleFxByKey(key) {
+        const updates = this.#fxSection.toggleFxByKey(key)
         if (updates) {
             this._serviceRegistry.cmd?.updateTrack(this._track, updates, {
                 desc: `Toggle ${key} on ${this._track.name}`,
             })
         }
         this.sync()
-        this._emitTrackChange()
+        this.#emitTrackChange()
     }
 
-    _onFxIcon(target) {
-        const updates = this._fxSection.onFxIcon(target)
+    #onFxIcon(target) {
+        const updates = this.#fxSection.onFxIcon(target)
         if (updates) {
             this._serviceRegistry.cmd?.updateTrack(this._track, updates, {
                 desc: `Filter type on ${this._track.name}`,
             })
         }
         this.sync()
-        this._emitTrackChange()
+        this.#emitTrackChange()
     }
 
-    _onFxTab(btn) {
-        this._fxSection.onFxTab(btn)
+    #onFxTab(btn) {
+        this.#fxSection.onFxTab(btn)
     }
 
-    _onGenTab(genTabId) {
+    #onGenTab(genTabId) {
         if (!genTabId) return
-        this._genSection._genSubTab.setActive(genTabId)
+        this.#genSection._genSubTab.setActive(genTabId)
         this.sync()
     }
 
-    _onLfoSelectBtn(k) {
-        this._modSection.onSelectBtn(k)
+    #onLfoSelectBtn(k) {
+        this.#modSection.onSelectBtn(k)
         this.sync()
-        this._emitTrackChange()
+        this.#emitTrackChange()
     }
 
-    _onLfoToggleBtn(k) {
-        const res = this._modSection.onToggleBtn(k)
+    #onLfoToggleBtn(k) {
+        const res = this.#modSection.onToggleBtn(k)
         if (res) {
             this._serviceRegistry.cmd?.updateTrack(this._track, res.updates, {
                 desc: `LFO ${k} on ${this._track.name}`,
             })
         }
         this.sync()
-        this._emitTrackChange()
+        this.#emitTrackChange()
     }
 
-    _onLfoSlider(input) {
-        const res = this._modSection.onSlider(input)
+    #onLfoSlider(input) {
+        const res = this.#modSection.onSlider(input)
         if (res) {
             this._serviceRegistry.cmd?.updateTrack(this._track, res.updates, {
                 desc: `LFO ${input.dataset.lfoKey} on ${this._track.name}`,
@@ -582,49 +594,49 @@ export default class TrackEditor extends BasePanel {
             })
         }
         if (res?.created) this.sync()
-        this._emitTrackChange()
+        this.#emitTrackChange()
     }
 
-    _onLfoSelect(sel) {
-        const res = this._modSection.onSelect(sel)
+    #onLfoSelect(sel) {
+        const res = this.#modSection.onSelect(sel)
         if (res) {
             this._serviceRegistry.cmd?.updateTrack(this._track, res.updates, {
                 desc: `LFO type on ${this._track.name}`,
             })
         }
-        this._emitTrackChange()
+        this.#emitTrackChange()
     }
 
     _toggleLfoForTarget(k) {
-        const res = this._modSection._toggleLfoForTarget(k)
+        const res = this.#modSection._toggleLfoForTarget(k)
         if (res) {
             this._serviceRegistry.cmd?.updateTrack(this._track, res.updates, {
                 desc: `LFO ${k} on ${this._track.name}`,
             })
         }
         this.sync()
-        this._emitTrackChange()
+        this.#emitTrackChange()
     }
 
     // ── Event delegation ───────────────────────────────────────────
 
-    _bindEvents() {
-        if (this._delegationBound) return
+    #bindEvents() {
+        if (this.#delegationBound) return
 
         // LFO sliders are plain <input> elements (not OrSlider instances)
         // and require delegated input handling.
         this.container.addEventListener('input', (e) => {
             const target = e.target
             if (target.dataset.lfoKey) {
-                this._onLfoSlider(target)
+                this.#onLfoSlider(target)
             }
         })
 
         this.container.addEventListener('focusin', (e) => {
-            if (e.target.tagName === 'SELECT') this._isSelecting = true
+            if (e.target.tagName === 'SELECT') this.#isSelecting = true
         })
         this.container.addEventListener('focusout', (e) => {
-            if (e.target.tagName === 'SELECT') this._isSelecting = false
+            if (e.target.tagName === 'SELECT') this.#isSelecting = false
         })
 
         this.container.addEventListener('change', (e) => {
@@ -632,12 +644,12 @@ export default class TrackEditor extends BasePanel {
             // the nested note editor owns its own selects (arpScale, arpType…)
             if (target.closest('#ne-container')) return
             if (target.classList.contains('te-load-input')) {
-                this._onSampleFileSelected(e)
+                this.#onSampleFileSelected(e)
                 return
             }
             if (target.tagName === 'SELECT') {
-                if (target.dataset.key) this._onSelect(target)
-                else if (target.dataset.lfoTypeSelect) this._onLfoSelect(target)
+                if (target.dataset.key) this.#onSelect(target)
+                else if (target.dataset.lfoTypeSelect) this.#onLfoSelect(target)
                 else if (target.dataset.sound) {
                     const soundType = target.dataset.sound
                     const p =
@@ -650,7 +662,7 @@ export default class TrackEditor extends BasePanel {
                                 : null
                     if (p)
                         p.finally(() => {
-                            this._isSelecting = false
+                            this.#isSelecting = false
                         })
                 }
             }
@@ -659,34 +671,34 @@ export default class TrackEditor extends BasePanel {
         this.container.addEventListener('click', (e) => {
             const target = e.target
             if (target.dataset.lfoToggleBtn) {
-                this._onLfoToggleBtn(target.dataset.lfoToggleBtn)
+                this.#onLfoToggleBtn(target.dataset.lfoToggleBtn)
                 return
             }
             if (target.dataset.lfoSelectBtn) {
-                this._onLfoSelectBtn(target.dataset.lfoSelectBtn)
+                this.#onLfoSelectBtn(target.dataset.lfoSelectBtn)
                 return
             }
             if (target.dataset.fxToggleBtn) {
-                this._toggleFxByKey(target.dataset.fxToggleBtn)
+                this.#toggleFxByKey(target.dataset.fxToggleBtn)
                 return
             }
             if (target.dataset.fxTab) {
-                this._onFxTab({ dataset: { fxTab: target.dataset.fxTab } })
+                this.#onFxTab({ dataset: { fxTab: target.dataset.fxTab } })
                 return
             }
             if (target.dataset.genTab) {
-                this._onGenTab(target.dataset.genTab)
+                this.#onGenTab(target.dataset.genTab)
                 return
             }
             {
                 const genTabEl = target.closest?.('[data-gen-tab]')
                 if (genTabEl) {
-                    this._onGenTab(genTabEl.dataset.genTab)
+                    this.#onGenTab(genTabEl.dataset.genTab)
                     return
                 }
             }
             if (target.dataset.fxIconVal) {
-                this._onFxIcon(target)
+                this.#onFxIcon(target)
                 return
             }
 
@@ -694,25 +706,25 @@ export default class TrackEditor extends BasePanel {
             if (!btn) {
                 const row = target.closest('.ne-row[data-prop]')
                 if (row && target.tagName !== 'INPUT' && target.tagName !== 'SELECT') {
-                    this._onRowClick(row.dataset.prop)
+                    this.#onRowClick(row.dataset.prop)
                 }
                 return
             }
 
-            if (btn.dataset.key) this._onToggle(btn)
+            if (btn.dataset.key) this.#onToggle(btn)
             else if (btn.dataset.action === 'toggle-auto') this._sndSection.toggleAuto()
-            else if (btn.dataset.action === 'load-sample') this._onLoadSample()
+            else if (btn.dataset.action === 'load-sample') this.#onLoadSample()
         })
 
-        this._delegationBound = true
+        this.#delegationBound = true
     }
 
-    _onRowClick(propKey) {
+    #onRowClick(propKey) {
         this._selectedPropKey = propKey
         this.sync()
     }
 
-    _onSelect(sel) {
+    #onSelect(sel) {
         if (!this._track) return
         const key = sel.dataset.key
         let val = sel.value
@@ -724,10 +736,10 @@ export default class TrackEditor extends BasePanel {
                 desc: `${key} on ${this._track.name}`,
             },
         )
-        this._emitTrackChange()
+        this.#emitTrackChange()
     }
 
-    _onToggle(btn) {
+    #onToggle(btn) {
         if (!this._track) return
         const key = btn.dataset.key
         this._serviceRegistry.cmd?.updateTrack(
@@ -739,7 +751,7 @@ export default class TrackEditor extends BasePanel {
         )
         btn.textContent = this._track[key] ? 'ON' : 'OFF'
         btn.classList.toggle('active', this._track[key])
-        this._emitTrackChange()
+        this.#emitTrackChange()
     }
 
     _onLoopSlider(input) {
@@ -778,21 +790,21 @@ export default class TrackEditor extends BasePanel {
                     trackIdx: this._trackIdx,
                     loopAtStep: this._track.loopAtStep,
                 })
-                this._emitTrackChange()
+                this.#emitTrackChange()
             })
         } else if (key === 'stepsPerBeat') {
             // Structure change: grid cell count per beat and piano-roll columns
             // must rebuild — TRACK_PARAM_CHANGE alone only updates cell content.
             this._playbackEvents.batch(() => {
                 this._playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-                this._emitTrackChange()
+                this.#emitTrackChange()
             })
         } else {
-            this._emitTrackChange()
+            this.#emitTrackChange()
         }
     }
 
-    _emitTrackChange() {
+    #emitTrackChange() {
         this._playbackEvents.batch(() => {
             this._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, this._track)
             this._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this._track])
@@ -812,16 +824,16 @@ export default class TrackEditor extends BasePanel {
         this._track = null
         this._trackIdx = -1
         this._selectedPropKey = null
-        this._lastTick = -1
+        this.#lastTick = -1
         this._knobs.forEach((k) => k.destroy())
         this._knobs = []
         this._fxKnobs.forEach((k) => k.destroy())
         this._fxKnobs = []
-        if (this._lfoBridge) {
-            this._lfoBridge.destroy()
-            this._lfoBridge = null
+        if (this.#lfoBridge) {
+            this.#lfoBridge.destroy()
+            this.#lfoBridge = null
         }
-        if (this._noteEditor) this._noteEditor.hide()
+        if (this.#noteEditor) this.#noteEditor.hide()
         setViewBtn('edit', false)
     }
 }

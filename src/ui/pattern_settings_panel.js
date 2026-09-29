@@ -33,15 +33,6 @@ export default class PatternSettingsPanel {
     get _patternSelect() {
         return this.#patternSelect
     }
-    get _drumBtn() {
-        return this.#drumBtn
-    }
-    get _bassBtn() {
-        return this.#bassBtn
-    }
-    get _chordsBtn() {
-        return this.#chordsBtn
-    }
     get _pageLabel() {
         return this.#pageLabel
     }

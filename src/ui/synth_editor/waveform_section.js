@@ -8,20 +8,22 @@ import Utils from '../../core/utils.js'
 const FM_DEPTH_SCALE = 0.08
 
 export default class WaveformSection {
+    #editor
+
     /** @param {import('./synth_editor.js').default} editor */
     constructor(editor) {
-        this._editor = editor
+        this.#editor = editor
     }
 
     /** Draw all canvases (waveform + ADSR + filter curve). */
     draw() {
-        this._drawWaveform()
-        this._drawEnvCanvas()
-        this._drawFilterResponse()
+        this.#drawWaveform()
+        this.#drawEnvCanvas()
+        this.#drawFilterResponse()
     }
 
-    _drawWaveform() {
-        const editor = this._editor
+    #drawWaveform() {
+        const editor = this.#editor
         const canvas = editor.panel.querySelector('.ss-waveform')
         if (!canvas || !editor.draft) return
         const ctx = canvas.getContext('2d')
@@ -40,13 +42,13 @@ export default class WaveformSection {
         ctx.stroke()
 
         if (editor.waveTab === 'wave') {
-            this._drawOscillators(ctx, w, mid)
+            this.#drawOscillators(ctx, w, mid)
         }
-        this._updateModuleTrace()
+        this.#updateModuleTrace()
     }
 
     /** Returns wave value [-1,1] for a given normalized phase [0,1). */
-    _waveAtPhase(wave, p) {
+    #waveAtPhase(wave, p) {
         switch (wave) {
             case 'sine':
                 return Math.sin(2 * Math.PI * p)
@@ -61,20 +63,20 @@ export default class WaveformSection {
         }
     }
 
-    _drawOscillators(ctx, w, mid) {
-        const vcos = this._buildVcoArray()
-        const draft = this._editor.draft
+    #drawOscillators(ctx, w, mid) {
+        const vcos = this.#buildVcoArray()
+        const draft = this.#editor.draft
         const masterVol = draft.masterVolume ?? 1.0
         const fmAmount = draft.fm?.amount ?? 0
         const fmAlgo = draft.fm?.algo ?? 0
         const cycles = 4
         const sampleRate = WAVE_BUFFER.length
 
-        const now = this._editor.serviceRegistry?.audioCtx?.currentTime ?? 0
+        const now = this.#editor.serviceRegistry?.audioCtx?.currentTime ?? 0
         const lfo1 = draft.bypassLfo1 ? null : draft.lfo
         const lfo2 = draft.bypassLfo2 ? null : draft.lfo2
-        const lfo1Mod = lfo1 ? this._editor.computeSynthLfoMod(lfo1, now) : 0
-        const lfo2Mod = lfo2 ? this._editor.computeSynthLfoMod(lfo2, now) : 0
+        const lfo1Mod = lfo1 ? this.#editor.computeSynthLfoMod(lfo1, now) : 0
+        const lfo2Mod = lfo2 ? this.#editor.computeSynthLfoMod(lfo2, now) : 0
 
         const freqMult = vcos.map((v, i) => {
             let octave = v.octave
@@ -100,8 +102,8 @@ export default class WaveformSection {
         const fmDepth = fmAmount * FM_DEPTH_SCALE
         const phase = [0, 0, 0]
         for (let i = 0; i < sampleRate; i++) {
-            const rawO2 = this._waveAtPhase(vcos[1].wave, phase[1])
-            const rawO3 = this._waveAtPhase(vcos[2].wave, phase[2])
+            const rawO2 = this.#waveAtPhase(vcos[1].wave, phase[1])
+            const rawO3 = this.#waveAtPhase(vcos[2].wave, phase[2])
 
             let f1 = inc[0],
                 f2 = inc[1]
@@ -122,7 +124,7 @@ export default class WaveformSection {
                         f1 += (rawO2 + rawO3) * fmDepth
                         break
                     case 4: {
-                        const rawO1 = this._waveAtPhase(vcos[0].wave, phase[0])
+                        const rawO1 = this.#waveAtPhase(vcos[0].wave, phase[0])
                         f1 += rawO2 * fmDepth
                         f2 += rawO1 * fmDepth
                         break
@@ -137,10 +139,10 @@ export default class WaveformSection {
             phase[1] -= Math.floor(phase[1])
             phase[2] -= Math.floor(phase[2])
 
-            const val0 = this._waveAtPhase(vcos[0].wave, phase[0])
-            const val1 = this._waveAtPhase(vcos[1].wave, phase[1])
-            const val2 = this._waveAtPhase(vcos[2].wave, phase[2])
-            const sub = (draft.subGain ?? 0) > 0 ? this._waveAtPhase('sine', (phase[0] * 0.5) % 1) * draft.subGain : 0
+            const val0 = this.#waveAtPhase(vcos[0].wave, phase[0])
+            const val1 = this.#waveAtPhase(vcos[1].wave, phase[1])
+            const val2 = this.#waveAtPhase(vcos[2].wave, phase[2])
+            const sub = (draft.subGain ?? 0) > 0 ? this.#waveAtPhase('sine', (phase[0] * 0.5) % 1) * draft.subGain : 0
 
             let sample = val0 * gainMod[0] + val1 * gainMod[1] + val2 * gainMod[2] + sub
             const drive = draft.filter?.drive ?? draft.drive ?? 0
@@ -173,8 +175,8 @@ export default class WaveformSection {
         ctx.stroke()
     }
 
-    _buildVcoArray() {
-        const draft = this._editor.draft
+    #buildVcoArray() {
+        const draft = this.#editor.draft
         return [1, 2, 3].map((n) => {
             const v = draft[`vco${n}`] ?? {}
             return {
@@ -186,10 +188,10 @@ export default class WaveformSection {
         })
     }
 
-    _getActiveModules() {
-        const d = this._editor.draft
+    #getActiveModules() {
+        const d = this.#editor.draft
         if (!d) return []
-        const vcos = this._buildVcoArray()
+        const vcos = this.#buildVcoArray()
         const lfo1Target = d.lfo?.target ?? 'NOT'
         const lfo2Target = d.lfo2?.target ?? 'NOT'
         const modTgt = d.modEnvelope?.target ?? 'off'
@@ -210,17 +212,17 @@ export default class WaveformSection {
         return mods
     }
 
-    _updateModuleTrace() {
-        const el = this._editor.panel?.querySelector('[data-ss-module-trace]')
+    #updateModuleTrace() {
+        const el = this.#editor.panel?.querySelector('[data-ss-module-trace]')
         if (!el) return
-        const mods = this._getActiveModules()
+        const mods = this.#getActiveModules()
         el.innerHTML = mods
             .map((m) => `<span class="ss-mod-pill${m.active ? ' active' : ''}">${m.label}</span>`)
             .join('')
     }
 
-    _drawEnvCanvas() {
-        const editor = this._editor
+    #drawEnvCanvas() {
+        const editor = this.#editor
         const canvas = editor.panel.querySelector('.ss-env-canvas')
         if (!canvas || !editor.draft) return
         const ctx = canvas.getContext('2d')
@@ -238,18 +240,18 @@ export default class WaveformSection {
         ctx.lineTo(w, mid)
         ctx.stroke()
 
-        this._drawAdsrEnvelope(ctx, w, mid)
+        this.#drawAdsrEnvelope(ctx, w, mid)
     }
 
-    _drawAdsrPath(ctx, pts, scaleX, scaleY) {
+    #drawAdsrPath(ctx, pts, scaleX, scaleY) {
         ctx.moveTo(scaleX(pts[0].t), scaleY(pts[0].v))
         for (let i = 1; i < pts.length; i++) {
             ctx.lineTo(scaleX(pts[i].t), scaleY(pts[i].v))
         }
     }
 
-    _drawAdsrEnvelope(ctx, w, mid) {
-        const { attack = 0, decay = 0.12, sustain = 1, release = 0.05 } = this._editor.draft.envelope ?? {}
+    #drawAdsrEnvelope(ctx, w, mid) {
+        const { attack = 0, decay = 0.12, sustain = 1, release = 0.05 } = this.#editor.draft.envelope ?? {}
         const totalTime = Math.max(attack + decay + 0.3 + release, 0.5)
 
         const scaleX = (t) => (t / totalTime) * w
@@ -265,18 +267,18 @@ export default class WaveformSection {
         ctx.beginPath()
         ctx.strokeStyle = color('accent')
         ctx.lineWidth = 1.5
-        this._drawAdsrPath(ctx, pts, scaleX, scaleY)
+        this.#drawAdsrPath(ctx, pts, scaleX, scaleY)
         ctx.stroke()
 
         ctx.fillStyle = rgba('accent', 0.15)
         ctx.beginPath()
-        this._drawAdsrPath(ctx, pts, scaleX, scaleY)
+        this.#drawAdsrPath(ctx, pts, scaleX, scaleY)
         ctx.closePath()
         ctx.fill()
     }
 
-    _drawFilterResponse() {
-        const editor = this._editor
+    #drawFilterResponse() {
+        const editor = this.#editor
         const canvas = editor.panel.querySelector('.ss-filter-curve')
         if (!canvas || !editor.draft) return
         const ctx = canvas.getContext('2d')

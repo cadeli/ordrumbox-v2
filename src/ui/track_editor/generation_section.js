@@ -8,9 +8,11 @@ import { GROUPS, GEN_SUBTAB_DEFS, GEN_GROOVE_PROPS, GEN_ENGINE_PROPS, fmtVal } f
 import { EVENTS } from '../../core/events.js'
 
 export default class GenerationSection {
+    #editor
+
     /** @param {import('./track_editor.js').default} editor */
     constructor(editor) {
-        this._editor = editor
+        this.#editor = editor
         this._genSubTab = new OrTab({
             tabs: GEN_SUBTAB_DEFS,
             defaultTab: 'groove',
@@ -27,7 +29,7 @@ export default class GenerationSection {
 
     /** Render a group of props as slider/boolean/select rows. */
     #renderProps(props, track) {
-        const editor = this._editor
+        const editor = this.#editor
         let html = ''
 
         props.forEach((p) => {
@@ -88,7 +90,7 @@ export default class GenerationSection {
 
     /** Generate HTML for the generation tab. */
     render() {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         if (!track) return ''
 

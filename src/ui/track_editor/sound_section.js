@@ -7,15 +7,17 @@ import AutoAssign from '../../logic/services/auto_assign.js'
 import { EVENTS } from '../../core/events.js'
 
 export default class SoundSection {
+    #editor
+
     /** @param {import('./track_editor.js').default} editor */
     constructor(editor) {
-        this._editor = editor
+        this.#editor = editor
     }
 
     // ── Render ─────────────────────────────────────────────────────
 
     render() {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         if (!track) return ''
 
@@ -82,7 +84,7 @@ export default class SoundSection {
     // ── Event handlers ─────────────────────────────────────────────
 
     async onInstrumentChange(target) {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         const newName = target.value
         editor._serviceRegistry.cmd.changeTrackName(track, newName)
@@ -101,7 +103,7 @@ export default class SoundSection {
     }
 
     async onSampleChange(target) {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         const url = target.value
         if (!editor._soundRegistry.sounds[url]?.buffer) {
@@ -126,7 +128,7 @@ export default class SoundSection {
     }
 
     async onGeneratedChange(target) {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         const key = target.value
         if (key === 'none') {
@@ -147,7 +149,7 @@ export default class SoundSection {
     }
 
     toggleAuto() {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         track.useAutoAssignSound = track.useAutoAssignSound === false
         if (track.useAutoAssignSound) {
@@ -166,12 +168,12 @@ export default class SoundSection {
     // ── Helpers ──
 
     _getSelectedDrumkitName() {
-        const editor = this._editor
+        const editor = this.#editor
         return editor._soundRegistry.drumkitList[editor._appState.selectedDrumkitNum]?.name ?? ''
     }
 
     _getAllKitSamples() {
-        const editor = this._editor
+        const editor = this.#editor
         return editor._soundRegistry.drumkitList.flatMap((kit) =>
             kit.instruments.map((s) => ({ ...s, kitName: kit.name })),
         )
@@ -200,18 +202,18 @@ export default class SoundSection {
     }
 
     _getCurrentSoundUrl() {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         const soundId = track.soundId ?? ''
         return editor._soundRegistry.sounds[soundId]?.url ?? soundId
     }
 
     _getSoundInfo() {
-        const track = this._editor._track
+        const track = this.#editor._track
         if (track.useSoftSynth === true) {
             return track.synthSoundKey ?? null
         }
-        const sound = this._editor._soundRegistry.sounds[track.soundId]
+        const sound = this.#editor._soundRegistry.sounds[track.soundId]
         if (!sound) return null
         const kit = sound.kit_name ?? ''
         const name = sound.display_name ?? sound.key ?? sound.url ?? ''
@@ -219,7 +221,7 @@ export default class SoundSection {
     }
 
     _getCurrentInstrumentName(instrumentIds, keysWithSamples) {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         const sr = editor._soundRegistry
         const soundKey = sr.sounds[this._getCurrentSoundUrl()]?.key

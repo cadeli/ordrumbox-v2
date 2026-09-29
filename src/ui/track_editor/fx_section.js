@@ -7,14 +7,16 @@ import { FX_DEFS, FILTER_TYPE_ICONS, PROP_BY_KEY, fmtVal } from './constants.js'
 import { EVENTS } from '../../core/events.js'
 
 export default class FxSection {
+    #editor
+
     /** @param {import('./track_editor.js').default} editor */
     constructor(editor) {
-        this._editor = editor
+        this.#editor = editor
     }
 
     /** Returns true if the given FX definition is "on". */
     isFxOn(fx) {
-        const track = this._editor._track
+        const track = this.#editor._track
         if (fx.key === 'filterFreq') {
             const ft = track.filterType
             return ft != null && ft !== 'allpass'
@@ -28,7 +30,7 @@ export default class FxSection {
      * @returns {object} partial track updates (filterType or an amount key)
      */
     toggleFxByKey(key) {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         if (key === 'filterFreq') {
             const cur = track.filterType
@@ -48,7 +50,7 @@ export default class FxSection {
      * @returns {object|null} null when the icon is outside the filter row
      */
     onFxIcon(target) {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         const val = target.dataset.fxIconVal
         if (!val) return null
@@ -62,7 +64,7 @@ export default class FxSection {
 
     /** Switch the active FX sub-tab. */
     onFxTab(btn) {
-        const editor = this._editor
+        const editor = this.#editor
         const tabIdx = parseInt(btn.dataset.fxTab, 10)
         if (Number.isNaN(tabIdx)) return
         const activeTab = String(tabIdx)
@@ -76,7 +78,7 @@ export default class FxSection {
 
     /** Generate the full FX tab HTML. */
     render() {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         if (!track) return ''
 

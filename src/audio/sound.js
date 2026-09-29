@@ -12,7 +12,7 @@ const MAX_POLYPHONY = 16
 
 export default class Sound {
     _activeVoiceSet
-    _stripParamCache
+    #stripParamCache
     _activeNoteCount
 
     constructor(audioCtx, mixer, sounds, generatedSounds, isOffline = false) {
@@ -52,7 +52,7 @@ export default class Sound {
 
         // Track-level strip parameter cache to avoid redundant Web Audio API calls.
         // Key: track.name, Value: { _version, velocity, pan, filterType, ... }
-        this._stripParamCache = new Map()
+        this.#stripParamCache = new Map()
         this._activeNoteCount = 0
     }
 
@@ -236,9 +236,9 @@ export default class Sound {
      */
     invalidateStripCache = (trackName) => {
         if (trackName) {
-            this._stripParamCache.delete(trackName)
+            this.#stripParamCache.delete(trackName)
         } else {
-            this._stripParamCache.clear()
+            this.#stripParamCache.clear()
         }
     }
 
@@ -255,15 +255,15 @@ export default class Sound {
 
         // Fast path: if the track has a version counter and it hasn't changed, skip
         if (version !== null) {
-            const cached = this._stripParamCache.get(name)
+            const cached = this.#stripParamCache.get(name)
             if (cached && cached._version === version) return
-            this._stripParamCache.set(name, { _version: version })
+            this.#stripParamCache.set(name, { _version: version })
         } else {
             // Fallback fingerprint for tracks without _version
             const fp = `${track.filterType}|${track.filterFreq}|${track.filterQ}|${track.saturationType}|${track.saturationAmount}|${track.sat}|${track.reverbType}|${track.reverbAmount}|${track.reverbOn}|${track.delayType}|${track.delayTime}|${track.delayDepth}|${track.delayOn}|${track.velocity}|${track.pan}`
-            const cached = this._stripParamCache.get(name)
+            const cached = this.#stripParamCache.get(name)
             if (cached && cached.fp === fp) return
-            this._stripParamCache.set(name, { fp })
+            this.#stripParamCache.set(name, { fp })
         }
 
         applyTrackToStrip(strip, track, time)

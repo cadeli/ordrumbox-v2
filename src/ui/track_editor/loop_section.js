@@ -4,15 +4,17 @@
 import { OrSlider } from '../components/or_slider.js'
 
 export default class LoopSection {
+    #editor
+
     /** @param {import('./track_editor.js').default} editor */
     constructor(editor) {
-        this._editor = editor
+        this.#editor = editor
     }
 
     // ── Render ─────────────────────────────────────────────────────
 
     render() {
-        const editor = this._editor
+        const editor = this.#editor
         const track = editor._track
         if (!track) return ''
 

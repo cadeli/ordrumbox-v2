@@ -45,7 +45,7 @@ export default class Utils {
     }
 
     /** Rate-limit state for out-of-range warnings (hot-path sliders clamp every frame). */
-    static _lastClampWarnAt = 0
+    static #lastClampWarnAt = 0
 
     /** Clamp `value` into `[min, max]` — the canonical bound check for the whole app. */
     static clamp(value, min, max) {
@@ -53,8 +53,8 @@ export default class Utils {
         if (clamped !== value) {
             const now = Date.now()
             // Rate-limit: hot-path sliders can hit the bound every frame — warn at most once per second.
-            if (now - Utils._lastClampWarnAt >= 1000) {
-                Utils._lastClampWarnAt = now
+            if (now - Utils.#lastClampWarnAt >= 1000) {
+                Utils.#lastClampWarnAt = now
                 logger.warn(Utils.TAG, `clamp: ${value} outside [${min}, ${max}] -> ${clamped}`)
             }
         }
