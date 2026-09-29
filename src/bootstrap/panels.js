@@ -16,7 +16,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 /**
  * Construct, init, and mount all app panels, then register the ViewManager.
  * Construction order matters: noteEditor/trackEditor cross-wiring requires
- * trackEditor.init() first so _neContainer exists.
+ * trackEditor.init() first so neContainer exists.
  */
 export function createAndInitPanels() {
     const toolbar = new Toolbar()

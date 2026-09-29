@@ -115,7 +115,7 @@ function assignChannels(instrumentsManager, trackNames, soundRegistry = null) {
             let midiNote = Number.isFinite(rawKey) ? rawKey : C3_MIDI_NOTE
 
             if (soundRegistry && !isDrum) {
-                const sampleRootMidi = _resolveRootMidiFromSounds(name, soundRegistry)
+                const sampleRootMidi = resolveRootMidiFromSounds(name, soundRegistry)
                 if (sampleRootMidi != null) midiNote = sampleRootMidi
             }
 
@@ -128,7 +128,7 @@ function assignChannels(instrumentsManager, trackNames, soundRegistry = null) {
     return channelMap
 }
 
-function _resolveRootMidiFromSounds(trackName, soundRegistry) {
+function resolveRootMidiFromSounds(trackName, soundRegistry) {
     const upper = trackName?.trim().toUpperCase() ?? ''
     for (const sound of Object.values(soundRegistry.sounds ?? {})) {
         if (sound.rootMidi != null && upper.includes(sound.key?.toUpperCase() ?? '')) {

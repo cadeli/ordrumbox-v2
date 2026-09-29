@@ -391,7 +391,7 @@ export default class DrumkitManager extends BasePanel {
     }
 
     // ── Waveform ───────────────────────────────────────────────────────
-    // Mirrors track_editor's drawSampleWaveform(): same envelope colors and
+    // Mirrors track_editor's #drawSampleWaveform(): same envelope colors and
     // the same decay-cutoff marker line, so a sample looks the same whether
     // it's being tuned from a track or from the drumkit manager.
 

@@ -210,7 +210,7 @@ export default class PatternSettingsPanel {
     // Drum toggles auto-gen on several existing percussion track types at
     // once and never creates a track. Bass/Chords each drive a single
     // melodic track type and create it on first use — that shared shape
-    // lives in _toggleMelodicAutoGen().
+    // lives in #toggleMelodicAutoGen().
 
     #bindGenerationButtons() {
         this.#drumBtn.addEventListener('click', () => this.#onDrumClick())

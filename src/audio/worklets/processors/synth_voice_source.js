@@ -40,7 +40,7 @@
  *   successive notes hear the LFO where it currently is, and the synth-editor
  *   knob animation (audioCtx.currentTime * freq) shows exactly what is heard.
  *   Waveforms come from getLfoWaveformValue() (src/audio/math.js): keep
- *   _lfoWave() below in sync with it. An LFO with freq <= 0 is inactive.
+ *   lfoWave() below in sync with it. An LFO with freq <= 0 is inactive.
  *
  * Trigger model:
  *   The host sends messages via `port`:
@@ -85,21 +85,21 @@ const LN2_OVER_1200 = 0.0005776226504666211; // Math.LN2 / 1200
 
 // Sine lookup table (4096 entries)
 const SINE_TABLE_SIZE = 4096;
-const _sineTable = new Float32Array(SINE_TABLE_SIZE);
+const sineTable = new Float32Array(SINE_TABLE_SIZE);
 for (let i = 0; i < SINE_TABLE_SIZE; i++) {
-    _sineTable[i] = Math.sin(TWO_PI * i / SINE_TABLE_SIZE);
+    sineTable[i] = Math.sin(TWO_PI * i / SINE_TABLE_SIZE);
 }
-function _sinLookup(phase) {
+function sinLookup(phase) {
     const p = ((phase % 1) + 1) % 1;
     const idx = p * SINE_TABLE_SIZE;
     const i = idx | 0;
     const f = idx - i;
-    return _sineTable[i & (SINE_TABLE_SIZE - 1)] * (1 - f) + _sineTable[(i + 1) & (SINE_TABLE_SIZE - 1)] * f;
+    return sineTable[i & (SINE_TABLE_SIZE - 1)] * (1 - f) + sineTable[(i + 1) & (SINE_TABLE_SIZE - 1)] * f;
 }
 
 // PolyBLEP anti-aliasing: smooths discontinuities at waveform transition points
 // t = current phase [0,1), dt = phase increment (freq / sampleRate)
-function _polyBLEP(t, dt) {
+function polyBLEP(t, dt) {
     if (dt <= 0.00001 || dt >= 0.5) return 0.0;
     if (t < dt) {
         const n = t / dt;
@@ -115,7 +115,7 @@ function _polyBLEP(t, dt) {
 // LFO waveform in [-1, 1]. Inlined copy of getLfoWaveformValue() (src/audio/math.js),
 // the single source of truth also used by the synth-editor knob animation.
 // 'phase' is NOT wrapped: S&H (wave 4) needs the integer cycle index.
-function _lfoWave(phase, wave) {
+function lfoWave(phase, wave) {
     const p = (phase - 0.25) - Math.floor(phase - 0.25);
     if (wave < 0.5) return Math.sin(TWO_PI * p);
     if (wave < 1.5) return p < 0.25 ? p * 4 - 1 : (p < 0.75 ? 3 - p * 4 : p * 4 - 5);
@@ -129,14 +129,14 @@ function _lfoWave(phase, wave) {
 }
 
 // Cheap xorshift32 PRNG (replaces Math.random for noise)
-function _xorshift32(state) {
+function xorshift32(state) {
     state ^= state << 13;
     state ^= state >> 17;
     state ^= state << 5;
     return state | 0;
 }
 
-class _TptState {
+class TptState {
     constructor() { this.z1 = 0; this.z2 = 0; }
 }
 
@@ -222,7 +222,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
 
     constructor() {
         super();
-        this.filt = new _TptState();
+        this.filt = new TptState();
         this.startTime = -1;
         this.releaseTime = -1;
         this.releaseStartLevel = 0;
@@ -260,7 +260,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this.#modEnvReleaseStartLevel = 0;
         this.#overrides = undefined;
         this.#pooled = false;
-        this.#noiseFilt = new _TptState();
+        this.#noiseFilt = new TptState();
         this.port.onmessage = (e) => this.#onMessage(e.data);
     }
 
@@ -330,7 +330,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
     }
 
     #v(shape, phase, dt) {
-        if (shape < 0.5) return _sinLookup(phase);
+        if (shape < 0.5) return sinLookup(phase);
         if (shape < 1.5) {
             if (phase < 0.25) return phase * 4;
             if (phase < 0.75) return 2 - phase * 4;
@@ -338,10 +338,10 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         }
         if (shape < 2.5) {
             const saw = phase * 2 - 1;
-            return saw - _polyBLEP(phase, dt);
+            return saw - polyBLEP(phase, dt);
         }
         const sq = phase < 0.5 ? 1 : -1;
-        return sq + _polyBLEP(phase, dt) - _polyBLEP((phase + 0.5) % 1, dt);
+        return sq + polyBLEP(phase, dt) - polyBLEP((phase + 0.5) % 1, dt);
     }
 
     #lfoValue(target, depth, phase, det, gain, out, wave) {
@@ -349,7 +349,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         gain[0] = 0; gain[1] = 0; gain[2] = 0;
         for (let i = 0; i < 20; i++) out[i] = 0;
         if (target === 0) return;
-        const raw = _lfoWave(phase, wave) * depth;
+        const raw = lfoWave(phase, wave) * depth;
         if (target === 1)  { out[0] = raw * 1000; return; }
         if (target === 2)  { det[0] = raw * 1000; return; }
         if (target === 3)  { det[1] = raw * 1000; return; }
@@ -635,7 +635,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
 
             // LFO phases: free-running on the AudioContext clock (phase = currentTime * freq),
             // seeded on the first audible sample of the note, then accumulated. Not wrapped:
-            // _lfoWave() wraps internally and S&H needs the cycle index.
+            // lfoWave() wraps internally and S&H needs the cycle index.
             if (!this.#lfoSeeded) {
                 this.lfoPhase1 = currentTime * lfo1Freq;
                 this.lfoPhase2 = currentTime * lfo2Freq;
@@ -854,13 +854,13 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             let sub = 0;
             if (subGainMod > 0.001) {
                 const subPhase = (this.phase1 * 0.5) % 1.0;
-                sub = _sinLookup(subPhase) * subGainMod;
+                sub = sinLookup(subPhase) * subGainMod;
             }
 
             const oscSum = (o1 + o2 + o3 + sub) * oscMix;
 
             // Noise (cheap PRNG)
-            this.#rngState = _xorshift32(this.#rngState);
+            this.#rngState = xorshift32(this.#rngState);
             let noise = 0;
             if (!bypassNoise) {
                 const noiseMod = noiseMix + lfo1Noise + lfo2Noise;

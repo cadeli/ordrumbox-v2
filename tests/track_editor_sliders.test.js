@@ -103,7 +103,6 @@ describe('TrackEditor — OrSlider integration', () => {
         setup()
         editor = new TrackEditor()
         editor.init()
-        editor.tab.setActive('fx')
         editor.fxTab.setActive('3')
     })
 
@@ -224,7 +223,6 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         setup()
         editor = new TrackEditor()
         editor.init()
-        editor.tab.setActive('fx')
         editor.fxTab.setActive('3')
     })
 
@@ -256,13 +254,13 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         let freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
 
-        editor.toggleLfoForTarget(editor.selectedLfoTarget)
+        editor.container.querySelector('[data-lfo-toggle-btn="filterFreq"]').click()
         freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
         expect(freqRow).not.toBeNull()
         expect(freqRow.classList.contains('has-lfo')).toBe(true)
         expect(editor.track.filterFreqLfo).toBeDefined()
 
-        editor.toggleLfoForTarget(editor.selectedLfoTarget)
+        editor.container.querySelector('[data-lfo-toggle-btn="filterFreq"]').click()
         freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
         expect(editor.track.filterFreqLfo).toBeUndefined()
@@ -329,8 +327,8 @@ describe('TrackEditor — modulation sub-tab selection & toggle', () => {
 
     function showModTab(track) {
         editor.track = track
-        editor.tab.setActive('mod')
         editor.sync()
+        editor.container.querySelector('[data-ne-tab="mod"]').click()
     }
 
     it('renders all LFO sub-tab buttons (filterFreq, filterQ, Vel, Pan, Pitch)', () => {
@@ -541,7 +539,6 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
 
     function showFxTab(track) {
         editor.track = track
-        editor.tab.setActive('fx')
         editor.fxTab.setActive('3')
         editor.sync()
     }
@@ -646,18 +643,26 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
     })
 })
 
-describe('TrackEditor — _updateLfoSliders uses setValue', () => {
+describe('TrackEditor — LFO live update uses setValue', () => {
     let editor
 
     beforeEach(() => {
         setup()
         editor = new TrackEditor()
         editor.init()
-        editor.tab.setActive('fx')
         editor.fxTab.setActive('3')
     })
 
-    it('LFO live update: replace semantics via setValue (Hz display)', () => {
+    // Drives the LFO step watch (private): PLAYBACK_START starts it, two
+    // animation frames let the async update apply, PLAYBACK_STOP cleans up.
+    async function runStepWatch() {
+        playbackEvents.emit(EVENTS.PLAYBACK_START)
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+        playbackEvents.emit(EVENTS.PLAYBACK_STOP)
+    }
+
+    it('LFO live update: replace semantics via setValue (Hz display)', async () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         editor.track = makeTrack({
             filterFreq: 632,
@@ -667,14 +672,14 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
         appState.selectedPatternNum = 0
         editor.sync()
 
-        editor.updateLfoSliders()
+        await runStepWatch()
 
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         expect(valEl).not.toBeNull()
         expect(valEl.textContent).toBe('158Hz')
     })
 
-    it('LFO live update: writes the value to the track (displayed), not the base', () => {
+    it('LFO live update: writes the value to the track (displayed), not the base', async () => {
         serviceRegistry.transport = { isRunning: true, tick: 0 }
         editor.track = makeTrack({
             filterFreq: 632,
@@ -684,7 +689,7 @@ describe('TrackEditor — _updateLfoSliders uses setValue', () => {
         appState.selectedPatternNum = 0
         editor.sync()
 
-        editor.updateLfoSliders()
+        await runStepWatch()
 
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         expect(valEl.textContent).toBe('5.0k')

@@ -200,7 +200,7 @@ export const knobFormat = (def) => KNOB_FORMATTERS.get(def.key) ?? fmt
 
 // ─── Option / Icon rendering helpers ──────────────────────────────────────
 
-const _eq = (a, b) => String(a) === String(b)
+const eq = (a, b) => String(a) === String(b)
 
 /**
  * Builds <option> tags with correct `selected` marking.
@@ -217,7 +217,7 @@ export function renderOptions(options, currentValue, { labels, escape: esc } = {
         .map((opt, i) => {
             const value = typeof opt === 'object' ? opt.value : opt
             const label = labels?.[i] ?? (typeof opt === 'object' ? opt.label : opt)
-            const sel = _eq(value, currentValue) ? ' selected' : ''
+            const sel = eq(value, currentValue) ? ' selected' : ''
             const dVal = esc ? esc(value) : value
             const dLbl = esc ? esc(label) : label
             return `<option value="${dVal}"${sel}>${dLbl}</option>`
@@ -247,7 +247,7 @@ export function renderIconChoices(
     return options
         .map((opt) => {
             const value = typeof opt === 'object' ? opt.value : opt
-            const sel = _eq(value, currentValue) ? ' selected' : ''
+            const sel = eq(value, currentValue) ? ' selected' : ''
             const dVal = esc ? esc(value) : value
             const icon = iconMap[value] ?? value
             const extra = extraAttrs ? extraAttrs(value) : ''

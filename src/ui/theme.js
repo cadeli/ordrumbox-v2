@@ -55,7 +55,7 @@ const TOKENS = {
 
 import { logger } from '../core/logger.js'
 
-function _cssVar(name) {
+function cssVar(name) {
     try {
         return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim()
     } catch (e) {
@@ -64,32 +64,32 @@ function _cssVar(name) {
     }
 }
 
-function _hexToRgb(hex) {
+function hexToRgb(hex) {
     const h = hex.replace('#', '')
     return [parseInt(h.substring(0, 2), 16), parseInt(h.substring(2, 4), 16), parseInt(h.substring(4, 6), 16)]
 }
 
-let _cache = null
+let cache = null
 
-function _resolve() {
-    if (_cache) return _cache
-    _cache = {}
+function resolve() {
+    if (cache) return cache
+    cache = {}
     for (const [key, fallback] of Object.entries(TOKENS)) {
-        const hex = _cssVar(key) || fallback
-        const [r, g, b] = _hexToRgb(hex)
-        _cache[key] = { hex, r, g, b }
+        const hex = cssVar(key) || fallback
+        const [r, g, b] = hexToRgb(hex)
+        cache[key] = { hex, r, g, b }
     }
-    return _cache
+    return cache
 }
 
 /** Returns the hex color string for a token. */
 export function color(key) {
-    return _resolve()[key]?.hex ?? '#000'
+    return resolve()[key]?.hex ?? '#000'
 }
 
 /** Returns an rgba() string with the given alpha. */
 export function rgba(key, alpha) {
-    const t = _resolve()[key]
+    const t = resolve()[key]
     return t ? `rgba(${t.r},${t.g},${t.b},${alpha})` : `rgba(0,0,0,${alpha})`
 }
 

@@ -14,33 +14,63 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 
 const ENVELOPE = [0.1, 0.9, 0.4]
 
+// sync() wipes the panel HTML, canvas included, so a spy installed on one
+// canvas would never see the draw it is meant to observe. Every canvas
+// therefore shares a single instrumented context.
+let ctx, blurs, colors
+
+function instrumentContext() {
+    const stub = document.createElement('canvas').getContext('2d')
+    blurs = []
+    colors = []
+    // shadow* are plain properties on the stub — spy on their writes to prove
+    // the glow was applied and then cleaned up.
+    Object.defineProperty(stub, 'shadowBlur', {
+        configurable: true,
+        get: () => blurs.at(-1),
+        set: (v) => {
+            blurs.push(v)
+        },
+    })
+    Object.defineProperty(stub, 'shadowColor', {
+        configurable: true,
+        get: () => colors.at(-1),
+        set: (v) => {
+            colors.push(v)
+        },
+    })
+    return stub
+}
+
 function makeEditor({ decay = 100, duration = 0.5 } = {}) {
     const editor = new TrackEditor()
-    editor.container = document.createElement('div')
+    editor.init()
     editor.track = { soundId: 'real/kick.wav', useSoftSynth: false }
     soundRegistry.sounds = { 'real/kick.wav': { buffer: { duration }, decay } }
-    editor.container.innerHTML = '<canvas class="te-waveform" width="500" height="48"></canvas>'
+    vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
+    editor.sync()
     return { editor, canvas: editor.container.querySelector('.te-waveform') }
 }
 
 const markerCalls = (canvas) => {
-    const ctx = canvas.getContext('2d')
-    return { ctx, x: ctx.moveTo.mock.calls[0]?.[0], y: ctx.moveTo.mock.calls[0]?.[1] }
+    const c = canvas.getContext('2d')
+    return { ctx: c, x: c.moveTo.mock.calls[0]?.[0], y: c.moveTo.mock.calls[0]?.[1] }
 }
 
 describe('TrackEditor — sample waveform contrast', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         soundRegistry.reset()
+        ctx = instrumentContext()
+        vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctx)
     })
 
     it('draws the envelope with the dark scope background and phosphor curve', () => {
-        const { editor, canvas } = makeEditor()
-        editor.drawSampleWaveform()
+        const { canvas } = makeEditor()
 
         const dpr = window.devicePixelRatio || 1
         const theme = sampleWaveformTheme(2 * dpr)
-        expect(drawEnvelope).toHaveBeenCalledWith(canvas.getContext('2d'), ENVELOPE, canvas.width, canvas.height, theme)
+        expect(drawEnvelope).toHaveBeenCalledWith(ctx, ENVELOPE, canvas.width, canvas.height, theme)
         // Legacy default was a light gray panel with a pale green line — the
         // two colors the graph was unreadable with.
         expect(theme.background).not.toBe('#D1D2CE')
@@ -49,28 +79,7 @@ describe('TrackEditor — sample waveform contrast', () => {
     })
 
     it('draws the decay cutoff as a glowing pink dashed marker', () => {
-        const { editor, canvas } = makeEditor({ decay: 100, duration: 0.5 })
-        const ctx = canvas.getContext('2d')
-        // shadow* are plain properties on the stub — spy on their writes to
-        // prove the glow was applied and then cleaned up.
-        const blurs = []
-        const colors = []
-        Object.defineProperty(ctx, 'shadowBlur', {
-            configurable: true,
-            get: () => blurs.at(-1),
-            set: (v) => {
-                blurs.push(v)
-            },
-        })
-        Object.defineProperty(ctx, 'shadowColor', {
-            configurable: true,
-            get: () => colors.at(-1),
-            set: (v) => {
-                colors.push(v)
-            },
-        })
-
-        editor.drawSampleWaveform()
+        const { canvas } = makeEditor({ decay: 100, duration: 0.5 })
 
         const theme = sampleWaveformTheme(2)
         const { x, y } = markerCalls(canvas)
@@ -85,17 +94,15 @@ describe('TrackEditor — sample waveform contrast', () => {
     })
 
     it('clamps the marker to the right edge when decay exceeds the sample length', () => {
-        const { editor, canvas } = makeEditor({ decay: 5000, duration: 0.2 })
-        editor.drawSampleWaveform()
+        const { canvas } = makeEditor({ decay: 5000, duration: 0.2 })
 
-        const { ctx, x } = markerCalls(canvas)
+        const { ctx: drawCtx, x } = markerCalls(canvas)
         expect(x).toBe(500)
-        expect(ctx.lineTo).toHaveBeenCalledWith(500, 48)
+        expect(drawCtx.lineTo).toHaveBeenCalledWith(500, 48)
     })
 
     it('keeps the backing store when the canvas is not laid out (jsdom fallback)', () => {
-        const { editor, canvas } = makeEditor()
-        editor.drawSampleWaveform()
+        const { canvas } = makeEditor()
         expect(canvas.width).toBe(500)
         expect(canvas.height).toBe(48)
     })

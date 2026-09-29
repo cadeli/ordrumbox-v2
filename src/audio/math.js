@@ -45,7 +45,7 @@ export function computeNoteRatio(fpitch) {
  * @param {number|null} bpm         Current BPM (for time-based mode)
  * @returns {number} LFO value in base units
  */
-export function computeLfoValue(lfo, tick, _nbTicks = TICK * 4, _controlKey = null, audioTime = null, bpm = null) {
+export function computeLfoValue(lfo, tick, nbTicks, controlKey, audioTime = null, bpm = null) {
     if (!lfo) return 0
     const freqVal = Utils.toFiniteNumber(parseFloat(lfo.freq), 1, 'lfo.freq')
     const min = Utils.toFiniteNumber(parseFloat(lfo.min), 0, 'lfo.min')
@@ -61,7 +61,7 @@ export function computeLfoValue(lfo, tick, _nbTicks = TICK * 4, _controlKey = nu
 
     let currentPhase
     if (audioTime != null && bpm != null) {
-        // Time-based: matches worklet _computeLfo exactly
+        // Time-based: matches worklet computeLfo exactly
         const patternDuration = 16 * (60 / bpm) // 4 beats = 16 beats in seconds
         currentPhase = (audioTime / patternDuration) * freqClamped + phase
     } else {

@@ -52,13 +52,13 @@ const LFO_TARGET_TO_INT = {
 const MOD_ENV_TARGET_TO_INT = { off: 0, filter: 1, pitch: 2, fm: 3, shape: 4 }
 
 /** Map an enum string to its int; warn once per unknown value (import/typo boundary). */
-const _enumWarned = new Set()
+const enumWarned = new Set()
 function mapEnum(map, value, label, fallback = 0) {
     if (value == null) return fallback
     if (Object.prototype.hasOwnProperty.call(map, value)) return map[value]
     const key = `${label}:${value}`
-    if (!_enumWarned.has(key)) {
-        _enumWarned.add(key)
+    if (!enumWarned.has(key)) {
+        enumWarned.add(key)
         logger.warn('WorkletSynthVoice', `Unknown ${label} "${value}" → ${fallback}`, value)
     }
     return fallback

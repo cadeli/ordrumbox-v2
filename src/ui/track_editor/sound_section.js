@@ -5,6 +5,12 @@ import { renderOptions } from '../components/panel_helpers.js'
 import InstrumentsManager from '../../logic/services/instrument_manager/index.js'
 import AutoAssign from '../../logic/services/auto_assign.js'
 import { EVENTS } from '../../core/events.js'
+import {
+    getCurrentInstrumentName,
+    getCurrentSoundUrl,
+    getPreferredSampleForInstrument,
+    getSamplesForInstrument,
+} from './sound_queries.js'
 
 export default class SoundSection {
     #editor
@@ -32,9 +38,9 @@ export default class SoundSection {
             .map((i) => i.id)
             .filter((id) => keysWithSamples.has(id))
             .sort()
-        const currentName = this.getCurrentInstrumentName(instrumentIds, keysWithSamples)
-        const currentSoundId = this.getCurrentSoundUrl()
-        const matchingSounds = this.getSamplesForInstrument(currentName)
+        const currentName = getCurrentInstrumentName(editor, instrumentIds, keysWithSamples)
+        const currentSoundId = getCurrentSoundUrl(editor)
+        const matchingSounds = getSamplesForInstrument(editor, currentName)
 
         const NL = '&#10;'
         const currentSound = sr.sounds[currentSoundId]
@@ -88,7 +94,7 @@ export default class SoundSection {
         const track = editor.track
         const newName = target.value
         editor.serviceRegistry.cmd.changeTrackName(track, newName)
-        const firstSample = this.getPreferredSampleForInstrument(newName)
+        const firstSample = getPreferredSampleForInstrument(editor, newName)
         if (firstSample) {
             if (!editor.soundRegistry.sounds[firstSample.url]?.buffer) {
                 await editor.serviceRegistry.resourcesLoader.loadSample(firstSample, firstSample.kitName)
@@ -167,47 +173,6 @@ export default class SoundSection {
 
     // ── Helpers ──
 
-    getSelectedDrumkitName() {
-        const editor = this.#editor
-        return editor.soundRegistry.drumkitList[editor.appState.selectedDrumkitNum]?.name ?? ''
-    }
-
-    getAllKitSamples() {
-        const editor = this.#editor
-        return editor.soundRegistry.drumkitList.flatMap((kit) =>
-            kit.instruments.map((s) => ({ ...s, kitName: kit.name })),
-        )
-    }
-
-    sortSamplesForCurrentKit(samples) {
-        const selectedKitName = this.getSelectedDrumkitName()
-        return [...samples].sort((a, b) => {
-            const aSelected = a.kitName === selectedKitName ? 0 : 1
-            const bSelected = b.kitName === selectedKitName ? 0 : 1
-            if (aSelected !== bSelected) return aSelected - bSelected
-            const kitCompare = String(a.kitName ?? '').localeCompare(String(b.kitName ?? ''))
-            if (kitCompare !== 0) return kitCompare
-            const sortKeyA = a.display_name ?? a.url ?? ''
-            const sortKeyB = b.display_name ?? b.url ?? ''
-            return sortKeyA.localeCompare(sortKeyB)
-        })
-    }
-
-    getSamplesForInstrument(instrumentId) {
-        return this.sortSamplesForCurrentKit(this.getAllKitSamples().filter((s) => s.key === instrumentId))
-    }
-
-    getPreferredSampleForInstrument(instrumentId) {
-        return this.getSamplesForInstrument(instrumentId)[0] ?? null
-    }
-
-    getCurrentSoundUrl() {
-        const editor = this.#editor
-        const track = editor.track
-        const soundId = track.soundId ?? ''
-        return editor.soundRegistry.sounds[soundId]?.url ?? soundId
-    }
-
     getSoundInfo() {
         const track = this.#editor.track
         if (track.useSoftSynth === true) {
@@ -218,15 +183,5 @@ export default class SoundSection {
         const kit = sound.kit_name ?? ''
         const name = sound.display_name ?? sound.key ?? sound.url ?? ''
         return kit ? `${kit}/${name}` : name
-    }
-
-    getCurrentInstrumentName(instrumentIds, keysWithSamples) {
-        const editor = this.#editor
-        const track = editor.track
-        const sr = editor.soundRegistry
-        const soundKey = sr.sounds[this.getCurrentSoundUrl()]?.key
-        if (soundKey && keysWithSamples.has(soundKey)) return soundKey
-        if (keysWithSamples.has(track.name)) return track.name
-        return instrumentIds[0] ?? 'KICK'
     }
 }

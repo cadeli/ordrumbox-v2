@@ -130,7 +130,7 @@ export default class TrackEditor extends BasePanel {
         this.#loopSection = new LoopSection(this)
     }
 
-    // ── Public API (used by sections, view manager and tests) ──────
+    // ── Public API (cross-class: sections, view manager, bootstrap) ─
 
     get track() {
         return this.#track
@@ -174,26 +174,14 @@ export default class TrackEditor extends BasePanel {
     get sliders() {
         return this.#sliders
     }
-    get knobs() {
-        return this.#knobs
-    }
     get fxKnobs() {
         return this.#fxKnobs
-    }
-    get tab() {
-        return this.#tab
     }
     get fxTab() {
         return this.#fxTab
     }
     get neContainer() {
         return this.#neContainer
-    }
-    get soundSection() {
-        return this.#sndSection
-    }
-    get loopSection() {
-        return this.#loopSection
     }
 
     get appState() {
@@ -297,7 +285,7 @@ export default class TrackEditor extends BasePanel {
             const currentTick = transport.tick
             if (currentTick !== this.#lastTick) {
                 this.#lastTick = currentTick
-                this.updateLfoSliders()
+                this.#updateLfoSliders()
             }
         }
         this.#rafId = requestAnimationFrame(tick)
@@ -341,7 +329,7 @@ export default class TrackEditor extends BasePanel {
         })
     }
 
-    async updateLfoSliders() {
+    async #updateLfoSliders() {
         if (!this.#track || !this.isVisible) return
         const transport = this.#serviceRegistry.transport
         if (!transport) return
@@ -448,7 +436,7 @@ export default class TrackEditor extends BasePanel {
             this.container.style.display = isMobileViewport() ? 'flex' : 'block'
         }
         this.#bindEvents()
-        this.drawSampleWaveform()
+        this.#drawSampleWaveform()
 
         this.#syncMobileLayout()
     }
@@ -507,7 +495,7 @@ export default class TrackEditor extends BasePanel {
                                 )
                             }
                             this.#emitTrackChange()
-                            if (isDecay) this.drawSampleWaveform()
+                            if (isDecay) this.#drawSampleWaveform()
                         },
                     }
                 }),
@@ -547,7 +535,7 @@ export default class TrackEditor extends BasePanel {
         </div>`
     }
 
-    drawSampleWaveform() {
+    #drawSampleWaveform() {
         const canvas = this.container?.querySelector('.te-waveform')
         if (!canvas) return
         const sound = this.#soundRegistry.sounds[this.#track?.soundId]
@@ -595,7 +583,7 @@ export default class TrackEditor extends BasePanel {
         if (typeof ResizeObserver !== 'function' || this.#waveObservedCanvas === canvas) return
         this.#waveObserver?.disconnect()
         this.#waveObservedCanvas = canvas
-        this.#waveObserver = new ResizeObserver(() => this.drawSampleWaveform())
+        this.#waveObserver = new ResizeObserver(() => this.#drawSampleWaveform())
         this.#waveObserver.observe(canvas)
     }
 
@@ -706,17 +694,6 @@ export default class TrackEditor extends BasePanel {
                 desc: `LFO type on ${this.#track.name}`,
             })
         }
-        this.#emitTrackChange()
-    }
-
-    toggleLfoForTarget(k) {
-        const res = this.#modSection.toggleLfoForTarget(k)
-        if (res) {
-            this.#serviceRegistry.cmd?.updateTrack(this.#track, res.updates, {
-                desc: `LFO ${k} on ${this.#track.name}`,
-            })
-        }
-        this.sync()
         this.#emitTrackChange()
     }
 

@@ -1,8 +1,8 @@
 import AudioAnalyzer from './analyze.js'
 import { hzToNote } from '../core/hz_to_note.js'
 
-const _analyzer = new AudioAnalyzer()
-const _cache = new Map()
+const analyzer = new AudioAnalyzer()
+const cache = new Map()
 
 /**
  * Analyze an AudioBuffer and return metrics + note info.
@@ -13,14 +13,14 @@ const _cache = new Map()
 export function analyzeSample(audioBuffer) {
     if (!audioBuffer) return null
 
-    if (_cache.has(audioBuffer)) {
-        return _cache.get(audioBuffer)
+    if (cache.has(audioBuffer)) {
+        return cache.get(audioBuffer)
     }
 
-    const result = _analyzer.analyzeAudioBuffer(audioBuffer)
+    const result = analyzer.analyzeAudioBuffer(audioBuffer)
     result.noteInfo = result.fundamentalHz ? hzToNote(result.fundamentalHz) : null
 
-    _cache.set(audioBuffer, result)
+    cache.set(audioBuffer, result)
     return result
 }
 
@@ -30,9 +30,9 @@ export function analyzeSample(audioBuffer) {
  */
 export function clearAnalysisCache(audioBuffer) {
     if (audioBuffer) {
-        _cache.delete(audioBuffer)
+        cache.delete(audioBuffer)
     } else {
-        _cache.clear()
+        cache.clear()
     }
 }
 

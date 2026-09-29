@@ -25,22 +25,22 @@ const DEFAULT_NOTE = {
     arpRange: 0,
 }
 
-let _scalesCache = null
+let scalesCache = null
 
 async function loadScales() {
-    if (_scalesCache) return _scalesCache
+    if (scalesCache) return scalesCache
     try {
         const res = await fetch(SCALES_URL)
-        _scalesCache = await res.json()
+        scalesCache = await res.json()
     } catch (err) {
         logger.warn('NoteEditor', 'failed to load scales, using empty defaults', err)
-        _scalesCache = {}
+        scalesCache = {}
     }
-    return _scalesCache
+    return scalesCache
 }
 
 function getScaleIntervals(scaleName, range) {
-    const steps = _scalesCache?.[scaleName]?.scaleSteps
+    const steps = scalesCache?.[scaleName]?.scaleSteps
     if (!steps?.length) return [0]
     const intervals = []
     for (let i = 0; i < range; i++) {
@@ -194,10 +194,10 @@ export default class NoteEditor extends BasePanel {
         const mode = typeof note.arp.mode === 'string' ? note.arp.mode.toLowerCase() : 'up'
         const type = ARP_TYPES.includes(mode) ? mode : 'up'
         const intervals = Array.isArray(note.arp.intervals) ? note.arp.intervals : []
-        const scaleNames = Object.keys(_scalesCache ?? {})
+        const scaleNames = Object.keys(scalesCache ?? {})
         let scale = scaleNames[0] ?? 'major'
         for (const name of scaleNames) {
-            const steps = _scalesCache[name]?.scaleSteps
+            const steps = scalesCache[name]?.scaleSteps
             if (!steps?.length || intervals.length === 0) continue
             const match = intervals.every((iv, i) => {
                 return steps[i % steps.length] + Math.floor(i / steps.length) * 12 === iv
@@ -263,7 +263,7 @@ export default class NoteEditor extends BasePanel {
             return
         }
 
-        const scaleKeys = Object.keys(_scalesCache ?? {})
+        const scaleKeys = Object.keys(scalesCache ?? {})
         const arpState = this.#getArpState(this.#note)
 
         const headerHtml = `<div class="ne-header">

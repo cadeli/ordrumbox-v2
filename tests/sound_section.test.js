@@ -1,6 +1,15 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import SoundSection from '../src/ui/track_editor/sound_section.js'
+import {
+    getAllKitSamples,
+    getCurrentInstrumentName,
+    getCurrentSoundUrl,
+    getPreferredSampleForInstrument,
+    getSamplesForInstrument,
+    getSelectedDrumkitName,
+    sortSamplesForCurrentKit,
+} from '../src/ui/track_editor/sound_queries.js'
 
 vi.mock('../src/logic/services/auto_assign.js', () => {
     const mockAutoAssignTrackSounds = vi.fn()
@@ -411,14 +420,14 @@ describe('SoundSection', () => {
         it('returns correct kit name for selected index', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            expect(section.getSelectedDrumkitName()).toBe('808')
+            expect(getSelectedDrumkitName(editor)).toBe('808')
         })
 
         it('returns empty string when drumkitList is empty', () => {
             const editor = makeMockEditor()
             editor.soundRegistry.drumkitList = []
             section = new SoundSection(editor)
-            expect(section.getSelectedDrumkitName()).toBe('')
+            expect(getSelectedDrumkitName(editor)).toBe('')
         })
 
         it('returns correct name for different index', () => {
@@ -426,7 +435,7 @@ describe('SoundSection', () => {
             editor.soundRegistry.drumkitList.push({ name: 'TRAP' })
             editor.appState.selectedDrumkitNum = 1
             section = new SoundSection(editor)
-            expect(section.getSelectedDrumkitName()).toBe('TRAP')
+            expect(getSelectedDrumkitName(editor)).toBe('TRAP')
         })
     })
 
@@ -438,7 +447,7 @@ describe('SoundSection', () => {
                 instruments: [{ key: 'HIT', url: 'trap_hit.wav', display_name: 'Trap Hit' }],
             })
             section = new SoundSection(editor)
-            const samples = section.getAllKitSamples()
+            const samples = getAllKitSamples(editor)
             expect(samples).toHaveLength(3)
             expect(samples.map((s) => s.url)).toContain('kick_1.wav')
             expect(samples.map((s) => s.url)).toContain('snare_1.wav')
@@ -448,7 +457,7 @@ describe('SoundSection', () => {
         it('adds kitName to each sample', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            const samples = section.getAllKitSamples()
+            const samples = getAllKitSamples(editor)
             expect(samples.every((s) => s.kitName === '808')).toBe(true)
         })
 
@@ -456,7 +465,7 @@ describe('SoundSection', () => {
             const editor = makeMockEditor()
             editor.soundRegistry.drumkitList = []
             section = new SoundSection(editor)
-            expect(section.getAllKitSamples()).toEqual([])
+            expect(getAllKitSamples(editor)).toEqual([])
         })
     })
 
@@ -475,8 +484,8 @@ describe('SoundSection', () => {
             }
             editor.appState.selectedDrumkitNum = 1
             section = new SoundSection(editor)
-            const samples = section.getAllKitSamples()
-            const sorted = section.sortSamplesForCurrentKit(samples)
+            const samples = getAllKitSamples(editor)
+            const sorted = sortSamplesForCurrentKit(editor, samples)
             expect(sorted[0].kitName).toBe('808')
             expect(sorted[1].kitName).toBe('TRAP')
         })
@@ -501,8 +510,8 @@ describe('SoundSection', () => {
             }
             editor.appState.selectedDrumkitNum = 0
             section = new SoundSection(editor)
-            const samples = section.getAllKitSamples()
-            const sorted = section.sortSamplesForCurrentKit(samples)
+            const samples = getAllKitSamples(editor)
+            const sorted = sortSamplesForCurrentKit(editor, samples)
             expect(sorted[0].kitName).toBe('ZOOM')
             expect(sorted[1].kitName).toBe('ALPHA')
         })
@@ -531,8 +540,8 @@ describe('SoundSection', () => {
                 display_name: 'A Kick',
             }
             section = new SoundSection(editor)
-            const samples = section.getAllKitSamples()
-            const sorted = section.sortSamplesForCurrentKit(samples)
+            const samples = getAllKitSamples(editor)
+            const sorted = sortSamplesForCurrentKit(editor, samples)
             expect(sorted[0].display_name).toBe('A Kick')
             expect(sorted[1].display_name).toBe('B Kick')
         })
@@ -542,7 +551,7 @@ describe('SoundSection', () => {
         it('filters samples by instrument key', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            const samples = section.getSamplesForInstrument('SNARE')
+            const samples = getSamplesForInstrument(editor, 'SNARE')
             expect(samples).toHaveLength(1)
             expect(samples[0].key).toBe('SNARE')
         })
@@ -550,7 +559,7 @@ describe('SoundSection', () => {
         it('returns empty array when no samples match', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            const samples = section.getSamplesForInstrument('TOM')
+            const samples = getSamplesForInstrument(editor, 'TOM')
             expect(samples).toHaveLength(0)
         })
 
@@ -567,7 +576,7 @@ describe('SoundSection', () => {
                 display_name: 'Trap Snare',
             }
             section = new SoundSection(editor)
-            const samples = section.getSamplesForInstrument('SNARE')
+            const samples = getSamplesForInstrument(editor, 'SNARE')
             expect(samples).toHaveLength(2)
         })
     })
@@ -576,7 +585,7 @@ describe('SoundSection', () => {
         it('returns first sample for the instrument', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            const sample = section.getPreferredSampleForInstrument('KICK')
+            const sample = getPreferredSampleForInstrument(editor, 'KICK')
             expect(sample).toBeDefined()
             expect(sample.key).toBe('KICK')
         })
@@ -584,7 +593,7 @@ describe('SoundSection', () => {
         it('returns null when no samples match', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            expect(section.getPreferredSampleForInstrument('TOM')).toBeNull()
+            expect(getPreferredSampleForInstrument(editor, 'TOM')).toBeNull()
         })
     })
 
@@ -592,19 +601,19 @@ describe('SoundSection', () => {
         it('returns url when soundId maps to a sound entry', () => {
             const editor = makeMockEditor()
             section = new SoundSection(editor)
-            expect(section.getCurrentSoundUrl()).toBe('kick_1.wav')
+            expect(getCurrentSoundUrl(editor)).toBe('kick_1.wav')
         })
 
         it('returns soundId directly when not found in sounds registry', () => {
             const editor = makeMockEditor({ track: { soundId: 'unknown_id' } })
             section = new SoundSection(editor)
-            expect(section.getCurrentSoundUrl()).toBe('unknown_id')
+            expect(getCurrentSoundUrl(editor)).toBe('unknown_id')
         })
 
         it('returns empty string when soundId is empty', () => {
             const editor = makeMockEditor({ track: { soundId: '' } })
             section = new SoundSection(editor)
-            expect(section.getCurrentSoundUrl()).toBe('')
+            expect(getCurrentSoundUrl(editor)).toBe('')
         })
     })
 
@@ -647,7 +656,7 @@ describe('SoundSection', () => {
             section = new SoundSection(editor)
             const ids = ['KICK', 'SNARE']
             const keys = new Set(['KICK', 'SNARE'])
-            expect(section.getCurrentInstrumentName(ids, keys)).toBe('KICK')
+            expect(getCurrentInstrumentName(editor, ids, keys)).toBe('KICK')
         })
 
         it('falls back to track.name when sound key not in keysWithSamples', () => {
@@ -656,7 +665,7 @@ describe('SoundSection', () => {
             section = new SoundSection(editor)
             const ids = ['KICK', 'SNARE']
             const keys = new Set(['KICK', 'SNARE'])
-            expect(section.getCurrentInstrumentName(ids, keys)).toBe('SNARE')
+            expect(getCurrentInstrumentName(editor, ids, keys)).toBe('SNARE')
         })
 
         it('falls back to first instrument id when neither matches', () => {
@@ -665,7 +674,7 @@ describe('SoundSection', () => {
             section = new SoundSection(editor)
             const ids = ['KICK', 'SNARE']
             const keys = new Set(['KICK', 'SNARE'])
-            expect(section.getCurrentInstrumentName(ids, keys)).toBe('KICK')
+            expect(getCurrentInstrumentName(editor, ids, keys)).toBe('KICK')
         })
 
         it('returns KICK as final fallback when instrumentIds is empty', () => {
@@ -674,7 +683,7 @@ describe('SoundSection', () => {
             section = new SoundSection(editor)
             const ids = []
             const keys = new Set(['KICK', 'SNARE'])
-            expect(section.getCurrentInstrumentName(ids, keys)).toBe('KICK')
+            expect(getCurrentInstrumentName(editor, ids, keys)).toBe('KICK')
         })
     })
 })

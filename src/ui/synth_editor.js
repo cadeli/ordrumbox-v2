@@ -604,7 +604,7 @@ export default class SynthEditor {
                     }
                 }
                 this.#serviceRegistry.audioEngine?.updateGeneratedSounds(sr.generatedSounds)
-                this.#presets._persist()
+                this.#presets.persist()
                 this.#presets.ensureGeneratedSoundsLoaded()
                 this.#renderEditor()
                 showToast(`Imported ${count} synth sound(s)`, 'success')

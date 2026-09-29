@@ -16,7 +16,7 @@ const ALLPASS_TUNINGS_L = [556, 441, 341, 225];
 const ALLPASS_TUNINGS_R = [579, 464, 364, 248];
 const PI = Math.PI;
 
-class _Comb {
+class Comb {
     constructor(len) { this.buf = new Float32Array(len); this.idx = 0; this.len = len; this.store = 0; }
     process(inp, d1, d2, fb) {
         const out = this.buf[this.idx];
@@ -27,7 +27,7 @@ class _Comb {
         return out;
     }
 }
-class _Allpass {
+class Allpass {
     constructor(len) { this.buf = new Float32Array(len); this.idx = 0; this.len = len; }
     process(inp) {
         const bout = this.buf[this.idx];
@@ -38,7 +38,7 @@ class _Allpass {
         return out;
     }
 }
-class _DelayLine {
+class DelayLine {
     constructor(maxSec) {
         this.buf = new Float32Array(Math.ceil(maxSec * 48000));
         this.idx = 0;
@@ -104,12 +104,12 @@ class StripProcessor extends AudioWorkletProcessor {
         super();
         this.#z1L = 0; this.#z2L = 0; 
         this.#z1R = 0; this.#z2R = 0; 
-        this.#combsL = COMB_TUNINGS_L.map(l => new _Comb(l));
-        this.#combsR = COMB_TUNINGS_R.map(l => new _Comb(l));
-        this.#apL = ALLPASS_TUNINGS_L.map(l => new _Allpass(l));
-        this.#apR = ALLPASS_TUNINGS_R.map(l => new _Allpass(l));
-        this.#dlyL = new _DelayLine(2.1);
-        this.#dlyR = new _DelayLine(2.1);
+        this.#combsL = COMB_TUNINGS_L.map(l => new Comb(l));
+        this.#combsR = COMB_TUNINGS_R.map(l => new Comb(l));
+        this.#apL = ALLPASS_TUNINGS_L.map(l => new Allpass(l));
+        this.#apR = ALLPASS_TUNINGS_R.map(l => new Allpass(l));
+        this.#dlyL = new DelayLine(2.1);
+        this.#dlyR = new DelayLine(2.1);
         this.#dlyFiltL = 0; this.#dlyFiltR = 0;
     }
 

@@ -2,7 +2,7 @@ import Utils from '../../../core/utils.js'
 import { appState } from '../../../state/app_state.js'
 import { logger } from '../../../core/logger.js'
 
-function _findPatternForTrack(track) {
+function findPatternForTrack(track) {
     return appState.patterns.find((p) => Utils.getTracksArray(p).includes(track))
 }
 
@@ -25,7 +25,7 @@ export function createNoteMethods(cmd) {
                     track.notes.splice(noteIndex, 1)
                     cmd.incrementPatternVersionByTrack(track)
                     cmd.persist()
-                    const patName = _findPatternForTrack(track)?.name ?? ''
+                    const patName = findPatternForTrack(track)?.name ?? ''
                     cmd.record({
                         desc: `Delete note on ${track.name} in "${patName}"`,
                         params: {
@@ -68,7 +68,7 @@ export function createNoteMethods(cmd) {
             track.notes.push(note)
             cmd.incrementPatternVersionByTrack(track)
             cmd.persist()
-            const patName = _findPatternForTrack(track)?.name ?? ''
+            const patName = findPatternForTrack(track)?.name ?? ''
             cmd.record({
                 desc: `Add note on ${track.name} in "${patName}"`,
                 params: { track: track.name, beat, beatStep, pitch },
@@ -156,7 +156,7 @@ export function createNoteMethods(cmd) {
 
             cmd.incrementPatternVersionByTrack(track)
             cmd.persist()
-            const patName = _findPatternForTrack(track)?.name ?? ''
+            const patName = findPatternForTrack(track)?.name ?? ''
             cmd.record({
                 desc: `Paste step on ${track.name} in "${patName}"`,
                 params: { track: track.name, beat, beatStep, notes: added.length },

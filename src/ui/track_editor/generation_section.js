@@ -56,7 +56,7 @@ export default class GenerationSection {
                 let s = editor.sliders.get(p.key)
                 if (s) {
                     s.setValue(val ?? p.min)
-                    s._hasLfo = !!(p.lfo && track[p.lfo])
+                    s.setHasLfo(!!(p.lfo && track[p.lfo]))
                 } else {
                     s = new OrSlider({
                         key: p.key,

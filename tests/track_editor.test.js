@@ -2,7 +2,17 @@
  * @vitest-environment jsdom
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+// The panel render also draws the sample bar, whose fixtures carry dummy
+// buffers ({}), so the analyzer must not run on them.
+vi.mock('../src/audio/sample_analyzer.js', () => ({
+    analyzeSample: vi.fn(() => ({ envelope: [0.1, 0.9, 0.4], noteInfo: null, length: 0.5, peakDb: -3 })),
+    clearAnalysisCache: vi.fn(),
+    drawEnvelope: vi.fn(),
+}))
+
 import TrackEditor from '../src/ui/track_editor.js'
+import { getPreferredSampleForInstrument } from '../src/ui/track_editor/sound_queries.js'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
@@ -29,16 +39,16 @@ describe('TrackEditor sound panel', () => {
     it('prefers the sample from the selected drumkit when an instrument is chosen', () => {
         const editor = new TrackEditor()
 
-        expect(editor.soundSection.getPreferredSampleForInstrument('KICK').url).toBe('real/kick.wav')
+        expect(getPreferredSampleForInstrument(editor, 'KICK').url).toBe('real/kick.wav')
     })
 
     function renderSoundPanelHtml(track) {
         const editor = new TrackEditor()
+        editor.init()
         editor.track = track
         vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
-        const wrapper = document.createElement('div')
-        wrapper.innerHTML = editor.soundSection.render()
-        return wrapper
+        editor.sync()
+        return editor.container
     }
 
     it('renders selected-kit samples first in the sample dropdown', () => {
@@ -76,7 +86,6 @@ describe('TrackEditor filterFreq display', () => {
         const editor = new TrackEditor()
         editor.init()
         editor.track = track
-        editor.tab.setActive('fx')
         editor.fxTab.setActive('3')
         editor.sync()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
@@ -99,19 +108,17 @@ describe('TrackEditor filterFreq display', () => {
 describe('TrackEditor loop panel', () => {
     it('renders loop properties correctly', () => {
         const editor = new TrackEditor()
+        editor.init()
         editor.track = {
             nbBeats: 8,
             stepsPerBeat: 4,
             loopAtStep: 16,
         }
+        editor.sync()
 
-        const html = editor.loopSection.render()
-        const wrapper = document.createElement('div')
-        wrapper.innerHTML = html
-
-        const qInput = wrapper.querySelector('input[data-loop="stepsPerBeat"]')
-        const lInput = wrapper.querySelector('input[data-loop="loopAtStep"]')
-        const sInput = wrapper.querySelector('input[data-loop="swingAmount"]')
+        const qInput = editor.container.querySelector('input[data-loop="stepsPerBeat"]')
+        const lInput = editor.container.querySelector('input[data-loop="loopAtStep"]')
+        const sInput = editor.container.querySelector('input[data-loop="swingAmount"]')
 
         expect(qInput.value).toBe('4')
         expect(lInput).not.toBeNull()

@@ -10,8 +10,19 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
+import { playbackEvents } from '../src/state/playback_events.js'
+import { EVENTS } from '../src/core/events.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
 import { parseMidi, findAllNotes } from './helpers/midi_reader.js'
+
+// Drives the private LFO step watch: PLAYBACK_START starts its rAF loop,
+// two frames let the async update apply, PLAYBACK_STOP cleans the loop up.
+async function runLfoStepWatch() {
+    playbackEvents.emit(EVENTS.PLAYBACK_START)
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+    playbackEvents.emit(EVENTS.PLAYBACK_STOP)
+}
 
 function allNoteOns(bytes) {
     return findAllNotes(parseMidi(bytes))
@@ -22,7 +33,7 @@ describe('LFO Velocity Sync Verification', () => {
         let editor, track
         const lfoConfig = { freq: 2, phase: 0, min: 0, max: 1, waveform: 0 }
 
-        const knobOf = (key) => editor.knobs.find((k) => k.key === key)
+        const valueOf = (key) => parseFloat(editor.container.querySelector(`.ne-val[data-key="${key}"]`).textContent)
 
         beforeEach(() => {
             document.body.innerHTML = ''
@@ -41,16 +52,16 @@ describe('LFO Velocity Sync Verification', () => {
             serviceRegistry.transport = { isRunning: true, tick: 0 }
         })
 
-        it('animates to 1.0 (Peak) at tick 32 (freq=2, phase=0)', () => {
+        it('animates to 1.0 (Peak) at tick 32 (freq=2, phase=0)', async () => {
             serviceRegistry.transport.tick = 32
-            editor.updateLfoSliders()
-            expect(knobOf('velocity').getValue()).toBeCloseTo(1, 5)
+            await runLfoStepWatch()
+            expect(valueOf('velocity')).toBe(100)
         })
 
-        it('animates to 0.0 (trough) at tick 64 (freq=2, phase=0)', () => {
+        it('animates to 0.0 (trough) at tick 64 (freq=2, phase=0)', async () => {
             serviceRegistry.transport.tick = 64
-            editor.updateLfoSliders()
-            expect(knobOf('velocity').getValue()).toBeCloseTo(0, 5)
+            await runLfoStepWatch()
+            expect(valueOf('velocity')).toBe(0)
         })
     })
 
@@ -120,7 +131,7 @@ describe('LFO Pitch Replacement Semantics', () => {
     describe('TrackEditor Integration', () => {
         let editor, track
 
-        const knobOf = (key) => editor.knobs.find((k) => k.key === key)
+        const valueOf = (key) => parseFloat(editor.container.querySelector(`.ne-val[data-key="${key}"]`).textContent)
 
         beforeEach(() => {
             document.body.innerHTML = ''
@@ -140,7 +151,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             }
         })
 
-        it('pitch slider shows LFO value directly, not track.pitch + LFO', () => {
+        it('pitch slider shows LFO value directly, not track.pitch + LFO', async () => {
             track = {
                 name: 'KICK',
                 velocity: 0.8,
@@ -178,14 +189,13 @@ describe('LFO Pitch Replacement Semantics', () => {
             editor.sync()
 
             // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0+0.5*6=3
-            editor.updateLfoSliders()
+            await runLfoStepWatch()
 
-            const slider = knobOf('pitch')
             // Replacement: slider shows LFO value (3), NOT track.pitch + LFO (5 + 3 = 8)
-            expect(slider.getValue()).toBeCloseTo(3, 5)
+            expect(valueOf('pitch')).toBeCloseTo(3, 5)
         })
 
-        it('pitch slider uses LFO value, ignoring track.pitch', () => {
+        it('pitch slider uses LFO value, ignoring track.pitch', async () => {
             track = {
                 name: 'KICK',
                 velocity: 0.8,
@@ -223,14 +233,13 @@ describe('LFO Pitch Replacement Semantics', () => {
             editor.sync()
 
             // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0+0.5*12=6
-            editor.updateLfoSliders()
+            await runLfoStepWatch()
 
-            const slider = knobOf('pitch')
             // Replacement: 6, NOT -10 + 6 = -4
-            expect(slider.getValue()).toBeCloseTo(6, 5)
+            expect(valueOf('pitch')).toBeCloseTo(6, 5)
         })
 
-        it('velocity slider uses LFO value directly', () => {
+        it('velocity slider uses LFO value directly', async () => {
             track = {
                 name: 'KICK',
                 velocity: 0.5,
@@ -268,9 +277,9 @@ describe('LFO Pitch Replacement Semantics', () => {
             editor.sync()
 
             // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0.6+0.5*0.4=0.8
-            editor.updateLfoSliders()
+            await runLfoStepWatch()
 
-            expect(knobOf('velocity').getValue()).toBeCloseTo(0.8, 5)
+            expect(valueOf('velocity')).toBe(80)
         })
     })
 
