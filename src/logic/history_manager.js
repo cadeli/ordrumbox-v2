@@ -6,6 +6,23 @@ import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
 
+/** Max parameter lines shown in an undo/redo report toast. */
+const REPORT_MAX_PARAMS = 8
+/** Values longer than this are truncated in the report toast. */
+const REPORT_VALUE_MAX = 120
+
+function formatParamValue(value) {
+    if (value === null) return 'null'
+    if (value === undefined) return '—'
+    if (Array.isArray(value)) return `[${value.length} item${value.length === 1 ? '' : 's'}]`
+    if (typeof value === 'object') {
+        const json = JSON.stringify(value)
+        return json.length > REPORT_VALUE_MAX ? `${json.slice(0, REPORT_VALUE_MAX - 1)}…` : json
+    }
+    const str = String(value)
+    return str.length > REPORT_VALUE_MAX ? `${str.slice(0, REPORT_VALUE_MAX - 1)}…` : str
+}
+
 export default class HistoryManager {
     /** Window in which two records with the same coalesceKey merge into one undo step. */
     static COALESCE_WINDOW_MS = 400
@@ -109,6 +126,7 @@ export default class HistoryManager {
         }
         this._isUndoing = false
         this.#emitBatchedRefresh()
+        this.#toastReport('Undo', command)
         return true
     }
 
@@ -142,7 +160,38 @@ export default class HistoryManager {
         }
         this._isRedoing = false
         this.#emitBatchedRefresh()
+        this.#toastReport('Redo', command)
         return true
+    }
+
+    /**
+     * Explicit report toast for a successful undo/redo: command name, its
+     * parameters (with "current → restored" arrows when prev values are
+     * known) and the resulting stack sizes.
+     * @param {'Undo'|'Redo'} action
+     * @param {object} command - the history entry that was applied
+     */
+    #toastReport(action, command) {
+        const meta = command.meta ?? {}
+        const params = meta.params && typeof meta.params === 'object' ? meta.params : null
+        const prev = meta.prev && typeof meta.prev === 'object' ? meta.prev : null
+        const lines = [`${action} — ${meta.desc || 'Unnamed command'}`]
+        if (params) {
+            const entries = Object.entries(params)
+            for (const [key, value] of entries.slice(0, REPORT_MAX_PARAMS)) {
+                const hasPrev = prev && Object.prototype.hasOwnProperty.call(prev, key)
+                const current = formatParamValue(value)
+                const restored = formatParamValue(prev?.[key])
+                if (hasPrev && action === 'Undo') lines.push(`${key}: ${current} → ${restored}`)
+                else if (hasPrev && action === 'Redo') lines.push(`${key}: ${restored} → ${current}`)
+                else lines.push(`${key}: ${current}`)
+            }
+            if (entries.length > REPORT_MAX_PARAMS) {
+                lines.push(`+${entries.length - REPORT_MAX_PARAMS} more…`)
+            }
+        }
+        lines.push(`history: ${this.#past.length} undo · ${this.#future.length} redo`)
+        showToast(lines.join('\n'), 'info', { duration: 4500 })
     }
 
     #emitBatchedRefresh() {

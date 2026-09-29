@@ -28,6 +28,12 @@ export function createNoteMethods(cmd) {
                     const patName = _findPatternForTrack(track)?.name ?? ''
                     cmd.record({
                         desc: `Delete note on ${track.name} in "${patName}"`,
+                        params: {
+                            track: track.name,
+                            beat: deletedNote.beat,
+                            beatStep: deletedNote.beatStep,
+                            pitch: deletedNote.pitch ?? 0,
+                        },
                         execute: () => {
                             const i = track.notes.indexOf(deletedNote)
                             track.notes.splice(i >= 0 ? i : noteIndex, 1)
@@ -65,6 +71,7 @@ export function createNoteMethods(cmd) {
             const patName = _findPatternForTrack(track)?.name ?? ''
             cmd.record({
                 desc: `Add note on ${track.name} in "${patName}"`,
+                params: { track: track.name, beat, beatStep, pitch },
                 execute: () => {
                     if (track.notes.indexOf(note) === -1) {
                         track.notes.splice(Math.min(noteIndex, track.notes.length), 0, note)
@@ -121,6 +128,8 @@ export function createNoteMethods(cmd) {
             cmd.record({
                 desc: desc ?? `Edit note on ${track?.name ?? 'track'}`,
                 coalesceKey,
+                params: { track: track?.name ?? '', ...newValues },
+                prev: { ...oldValues },
                 execute: () => applyValues(newValues),
                 undo: () => applyValues(oldValues),
             })
@@ -150,6 +159,7 @@ export function createNoteMethods(cmd) {
             const patName = _findPatternForTrack(track)?.name ?? ''
             cmd.record({
                 desc: `Paste step on ${track.name} in "${patName}"`,
+                params: { track: track.name, beat, beatStep, notes: added.length },
                 execute: () => {
                     track.notes = (track.notes ?? []).filter((n) => !(n.beat === beat && n.beatStep === beatStep))
                     track.notes.push(...added.map((n) => ({ ...n })))

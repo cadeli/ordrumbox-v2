@@ -14,6 +14,9 @@ import { playbackEvents } from '../src/state/playback_events.js'
 import { EVENTS } from '../src/core/events.js'
 import Commander from '../src/logic/commands/cmd.js'
 import HistoryManager from '../src/logic/history_manager.js'
+import { showToast } from '../src/core/notify.js'
+
+vi.mock('../src/core/notify.js', () => ({ showToast: vi.fn() }))
 
 function makeTrack(overrides = {}) {
     return {
@@ -243,6 +246,61 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
             expect(history.pastLength).toBe(1)
             history.undo()
             expect(track.stepsPerBeat).toBe(4)
+        })
+    })
+
+    describe('meta params for the undo/redo report toast', () => {
+        it('updateTrack records params (track + changes) and prev values', () => {
+            const track = makeTrack()
+            const spy = vi.spyOn(history, 'record')
+
+            cmd.updateTrack(track, { velocity: 0.5 })
+
+            expect(spy).toHaveBeenCalledTimes(1)
+            const { meta } = spy.mock.calls[0][0]
+            expect(meta.desc).toBe('Update KICK')
+            expect(meta.params).toEqual({ track: 'KICK', velocity: 0.5 })
+            expect(meta.prev).toEqual({ velocity: 1 })
+        })
+
+        it('updateNote records changed note values with prev values', () => {
+            const track = makeTrack()
+            const note = makeNote({ velocity: 1 })
+            const spy = vi.spyOn(history, 'record')
+
+            cmd.updateNote(track, note, { velocity: 0.7 })
+
+            expect(spy).toHaveBeenCalledTimes(1)
+            const { meta } = spy.mock.calls[0][0]
+            expect(meta.params).toEqual({ track: 'KICK', velocity: 0.7 })
+            expect(meta.prev).toEqual({ velocity: 1 })
+        })
+
+        it('setStepsPerBeat records a track params diff', () => {
+            const track = makeTrack()
+            const spy = vi.spyOn(history, 'record')
+
+            cmd.setStepsPerBeat(track, 8)
+
+            const { meta } = spy.mock.calls[0][0]
+            expect(meta.desc).toBe('Steps per bar on KICK')
+            expect(meta.params).toMatchObject({ track: 'KICK', stepsPerBeat: 8 })
+            expect(meta.prev).toMatchObject({ stepsPerBeat: 4 })
+        })
+
+        it('undo after updateTrack toasts the full report', () => {
+            const track = makeTrack()
+            cmd.updateTrack(track, { velocity: 0.5 })
+            vi.mocked(showToast).mockClear()
+
+            history.undo()
+
+            const [message, type, opts] = vi.mocked(showToast).mock.calls[0]
+            expect(message).toBe(
+                ['Undo — Update KICK', 'track: KICK', 'velocity: 0.5 → 1', 'history: 0 undo · 1 redo'].join('\n'),
+            )
+            expect(type).toBe('info')
+            expect(opts).toEqual({ duration: 4500 })
         })
     })
 })

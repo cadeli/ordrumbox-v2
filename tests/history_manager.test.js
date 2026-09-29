@@ -39,6 +39,9 @@ import HistoryManager from '../src/logic/history_manager.js'
 import { logger } from '../src/core/logger.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { EVENTS } from '../src/core/events.js'
+import { showToast } from '../src/core/notify.js'
+
+vi.mock('../src/core/notify.js', () => ({ showToast: vi.fn() }))
 
 describe('HistoryManager', () => {
     let history
@@ -341,6 +344,98 @@ describe('HistoryManager', () => {
             expect(history.canRedo).toBe(true)
             history.record({ execute: vi.fn(), undo: vi.fn() })
             expect(history.canRedo).toBe(false)
+        })
+    })
+
+    describe('undo/redo report toast', () => {
+        const makeCommand = () => ({
+            execute: vi.fn(),
+            undo: vi.fn(),
+            meta: {
+                desc: 'Update KICK',
+                params: { track: 'KICK', velocity: 0.6 },
+                prev: { velocity: 0.9 },
+            },
+        })
+
+        beforeEach(() => {
+            vi.mocked(showToast).mockClear()
+        })
+
+        it('undo reports command name, parameters and stack sizes', () => {
+            history.record(makeCommand())
+            history.undo()
+
+            expect(showToast).toHaveBeenCalledTimes(1)
+            const [message, type, opts] = vi.mocked(showToast).mock.calls[0]
+            expect(message).toBe(
+                ['Undo — Update KICK', 'track: KICK', 'velocity: 0.6 → 0.9', 'history: 0 undo · 1 redo'].join('\n'),
+            )
+            expect(type).toBe('info')
+            expect(opts).toEqual({ duration: 4500 })
+        })
+
+        it('redo reports parameters in the forward direction', () => {
+            history.record(makeCommand())
+            history.undo()
+            vi.mocked(showToast).mockClear()
+            history.redo()
+
+            expect(showToast).toHaveBeenCalledTimes(1)
+            const [message] = vi.mocked(showToast).mock.calls[0]
+            expect(message).toContain('Redo — Update KICK')
+            expect(message).toContain('velocity: 0.9 → 0.6')
+        })
+
+        it('commands without params only show name and stack sizes', () => {
+            history.record({ execute: vi.fn(), undo: vi.fn() })
+            history.undo()
+
+            const [message] = vi.mocked(showToast).mock.calls[0]
+            expect(message).toBe('Undo — Unnamed command\nhistory: 0 undo · 1 redo')
+        })
+
+        it('caps the parameter list at 8 entries with a "+N more" line', () => {
+            const params = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`k${i}`, i]))
+            history.record({ execute: vi.fn(), undo: vi.fn(), meta: { desc: 'Big', params } })
+            history.undo()
+
+            const [message] = vi.mocked(showToast).mock.calls[0]
+            const lines = message.split('\n')
+            expect(lines[0]).toBe('Undo — Big')
+            expect(lines).toHaveLength(1 + 8 + 1 + 1)
+            expect(lines.at(-2)).toBe('+4 more…')
+            expect(lines.at(-1)).toBe('history: 0 undo · 1 redo')
+        })
+
+        it('summarizes arrays as item counts instead of dumping them', () => {
+            history.record({
+                execute: vi.fn(),
+                undo: vi.fn(),
+                meta: { desc: 'Add note', params: { notes: [{ beat: 0 }, { beat: 1 }] } },
+            })
+            history.undo()
+
+            const [message] = vi.mocked(showToast).mock.calls[0]
+            expect(message).toContain('notes: [2 items]')
+        })
+
+        it('failed undo shows the error toast instead of a report', () => {
+            const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
+            history.record({
+                execute: vi.fn(),
+                undo: () => {
+                    throw new Error('boom')
+                },
+                meta: { desc: 'Bad' },
+            })
+            history.undo()
+
+            expect(showToast).toHaveBeenCalledTimes(1)
+            const [message, type] = vi.mocked(showToast).mock.calls[0]
+            expect(message).toBe('Undo failed')
+            expect(type).toBe('error')
+            errorSpy.mockRestore()
         })
     })
 })

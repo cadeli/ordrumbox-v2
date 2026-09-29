@@ -46,12 +46,16 @@ export default class Commander {
      * @param {string} [command.desc] - human-readable label (toolbar tooltips)
      * @param {string} [command.coalesceKey] - same key within the coalesce
      *   window merges with the previous entry (one undo step per gesture)
+     * @param {object} [command.params] - parameter snapshot shown in the
+     *   undo/redo report toast (key → value)
+     * @param {object} [command.prev] - values the undo restores, for the
+     *   "new → old" arrows in the report toast
      *
      * The change is ALREADY applied when record() is called — execute only
      * replays it on redo. A missing execute degrades to "undo works, redo is
      * blocked loudly" (never a silent no-op that corrupts the stack).
      */
-    record({ execute, undo, desc = '', coalesceKey } = {}) {
+    record({ execute, undo, desc = '', coalesceKey, params, prev } = {}) {
         if (this.#suppressRecord) return
         if (typeof undo !== 'function') {
             logger.error('Commander', 'record skipped: missing undo closure', desc)
@@ -65,7 +69,7 @@ export default class Commander {
         history.record({
             execute: typeof execute === 'function' ? execute : null,
             undo,
-            meta: { desc },
+            meta: { desc, params: params ?? null, prev: prev ?? null },
             coalesceKey,
         })
     }
@@ -106,9 +110,10 @@ export default class Commander {
      * instead (used by MIDI/JSON/song imports).
      * @param {string} desc - history label
      * @param {Function} fn - synchronous action to run
+     * @param {object} [params] - parameter snapshot for the undo/redo report toast
      * @returns {any} fn's return value (partial mutations are still recorded if it throws)
      */
-    recordTransaction(desc, fn) {
+    recordTransaction(desc, fn, params = null) {
         const before = this.#snapshotState()
         let result
         try {
@@ -118,6 +123,7 @@ export default class Commander {
             if (before.keyJson !== after.keyJson) {
                 this.record({
                     desc,
+                    params,
                     execute: () => this.#restoreState(after),
                     undo: () => this.#restoreState(before),
                 })
@@ -216,6 +222,8 @@ export default class Commander {
             this.record({
                 desc: desc ?? `Update ${track.name}`,
                 coalesceKey,
+                params: { track: track.name, ...newValues },
+                prev: { ...oldValues },
                 execute: () => applyValues(newValues),
                 undo: () => applyValues(oldValues),
             })
@@ -317,6 +325,7 @@ export default class Commander {
         const after = capture()
         this.record({
             desc,
+            params: { pattern: snap.pattern?.name ?? '' },
             execute: () => applySnapshot(after),
             undo: () => applySnapshot(before),
         })

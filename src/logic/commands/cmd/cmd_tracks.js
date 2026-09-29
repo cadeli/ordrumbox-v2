@@ -30,6 +30,9 @@ export function createTrackMethods(cmd) {
      * mutate may return false to skip recording (no-op).
      * options.persist: call cmd.persist() after mutate.
      * options.coalesceKey: merge rapid same-key updates into one undo step.
+     *
+     * The changed keys (before → after) are recorded as meta.params/prev so
+     * the undo/redo report toast can show exactly what this command touched.
      */
     function withUndo(track, keys, desc, mutate, { persist = false, coalesceKey } = {}) {
         const before = snapshotTrack(track, keys)
@@ -37,9 +40,22 @@ export function createTrackMethods(cmd) {
         if (persist) cmd.persist()
         if (recordable) {
             const after = snapshotTrack(track, keys)
+            const params = { track: track.name }
+            const prev = {}
+            for (const key of keys) {
+                const b = before[key]
+                const a = after[key]
+                const changed = Array.isArray(b) || Array.isArray(a) ? JSON.stringify(b) !== JSON.stringify(a) : b !== a
+                if (changed) {
+                    params[key] = a
+                    prev[key] = b
+                }
+            }
             cmd.record({
                 desc,
                 coalesceKey,
+                params,
+                prev,
                 execute: () => restoreTrack(track, after, keys),
                 undo: () => restoreTrack(track, before, keys),
             })
@@ -55,6 +71,7 @@ export function createTrackMethods(cmd) {
             cmd.persist()
             cmd.record({
                 desc: `Add track ${track.name}`,
+                params: { track: track.name, index: trackIndex, type, stepsPerBeat },
                 execute: () => {
                     if (!pattern.tracks.includes(track)) {
                         pattern.tracks.splice(Math.min(trackIndex, pattern.tracks.length), 0, track)
@@ -82,6 +99,7 @@ export function createTrackMethods(cmd) {
             cmd.persist()
             cmd.record({
                 desc: `Remove track ${removed.name}`,
+                params: { track: removed.name, index: trackIdx, notes: removedNotes.length },
                 execute: () => {
                     const i = tracks.indexOf(removed)
                     tracks.splice(i >= 0 ? i : trackIdx, 1)
@@ -117,6 +135,7 @@ export function createTrackMethods(cmd) {
             cmd.persist()
             cmd.record({
                 desc: `Paste track ${name}`,
+                params: { track: name, index: idx, from: sourceTrack.name },
                 execute: () => {
                     if (!tracks.includes(clone)) {
                         tracks.splice(Math.min(idx, tracks.length), 0, clone)
@@ -231,6 +250,7 @@ export function createTrackMethods(cmd) {
                 const after = snapshotTrack(track, TRACK_STATE_KEYS)
                 cmd.record({
                     desc: `Compact ${track.name}`,
+                    params: { track: track.name },
                     execute: () => restoreTrack(track, after, TRACK_STATE_KEYS),
                     undo: () => restoreTrack(track, before, TRACK_STATE_KEYS),
                 })

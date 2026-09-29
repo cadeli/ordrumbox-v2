@@ -15,6 +15,7 @@ export function createPatternMethods(cmd) {
             cmd.persist()
             cmd.record({
                 desc: `Add pattern "${pattern.name}"`,
+                params: { pattern: pattern.name, index: patternIndex },
                 execute: () => {
                     if (!appState.patterns.includes(pattern)) {
                         appState.patterns.splice(Math.min(patternIndex, appState.patterns.length), 0, pattern)
@@ -40,6 +41,7 @@ export function createPatternMethods(cmd) {
             cmd.persist()
             cmd.record({
                 desc: `Remove pattern "${removedPattern.name}"`,
+                params: { pattern: removedPattern.name, index: idx },
                 execute: () => {
                     const i = appState.patterns.indexOf(removedPattern)
                     appState.patterns.splice(i >= 0 ? i : idx, 1)
@@ -65,6 +67,7 @@ export function createPatternMethods(cmd) {
             cmd.persist()
             cmd.record({
                 desc: `Rename pattern → "${appliedName}"`,
+                params: { pattern: appliedName, from: oldName },
                 execute: () => {
                     pat.name = appliedName
                     cmd.persist()
@@ -96,6 +99,8 @@ export function createPatternMethods(cmd) {
             cmd.persist()
             cmd.record({
                 desc: `Set BPM → ${appliedBpm}`,
+                params: { bpm: appliedBpm },
+                prev: { bpm: oldBpm },
                 execute: () => {
                     pattern.bpm = appliedBpm
                     cmd.persist()
@@ -115,6 +120,8 @@ export function createPatternMethods(cmd) {
             cmd.persist()
             cmd.record({
                 desc: `Set description on "${pattern.name}"`,
+                params: { pattern: pattern.name, description: appliedDescription },
+                prev: { description: oldDescription },
                 execute: () => {
                     pattern.description = appliedDescription
                     cmd.persist()

@@ -63,8 +63,9 @@ function ensureStyles() {
  * @param {Object} [opts]
  * @param {Array<{label:string, onClick:Function}>} [opts.actions]  Action buttons (disables auto-dismiss)
  * @param {boolean} [opts.dismissible]  Show a × close button (disables auto-dismiss)
+ * @param {number} [opts.duration]  Auto-dismiss delay in ms (overrides the type default)
  */
-export function showToast(message, type = 'info', { actions, dismissible } = {}) {
+export function showToast(message, type = 'info', { actions, dismissible, duration } = {}) {
     if (typeof document === 'undefined') return
     const container = ensureContainer()
     const { bg, border } = TOAST_STYLES[type] ?? TOAST_STYLES.info
@@ -83,6 +84,9 @@ export function showToast(message, type = 'info', { actions, dismissible } = {})
 
     const msgSpan = document.createElement('span')
     msgSpan.style.flex = '1'
+    // Multi-line messages (undo/redo reports) keep their newlines; single-line
+    // toasts contain no \n so this is a no-op for them.
+    msgSpan.style.whiteSpace = 'pre-line'
     msgSpan.textContent = message
     el.appendChild(msgSpan)
 
@@ -124,6 +128,6 @@ export function showToast(message, type = 'info', { actions, dismissible } = {})
     }
 
     if (!actions && !dismissible) {
-        setTimeout(dismiss, DURATIONS[type] ?? DURATIONS.info)
+        setTimeout(dismiss, duration ?? DURATIONS[type] ?? DURATIONS.info)
     }
 }
