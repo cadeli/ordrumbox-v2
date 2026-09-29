@@ -12,7 +12,7 @@ export default class ModulationSection {
     /** @param {import('./track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
-        editor._selectedLfoTarget = null
+        editor.selectedLfoTarget = null
     }
 
     /** All props that support LFO. */
@@ -25,10 +25,10 @@ export default class ModulationSection {
         const editor = this.#editor
         const props = this.#lfoProps()
         if (!props.length) return null
-        if (!editor._selectedLfoTarget || !props.find((p) => p.key === editor._selectedLfoTarget)) {
-            editor._selectedLfoTarget = props[0].key
+        if (!editor.selectedLfoTarget || !props.find((p) => p.key === editor.selectedLfoTarget)) {
+            editor.selectedLfoTarget = props[0].key
         }
-        return props.find((p) => p.key === editor._selectedLfoTarget) ?? props[0]
+        return props.find((p) => p.key === editor.selectedLfoTarget) ?? props[0]
     }
 
     #getDefaultLfo(prop, type = 'sine') {
@@ -39,7 +39,7 @@ export default class ModulationSection {
 
     render() {
         const editor = this.#editor
-        const track = editor._track
+        const track = editor.track
         if (!track) return ''
 
         const prop = this.#ensureTarget()
@@ -56,7 +56,7 @@ export default class ModulationSection {
 
         let content = `<div class="te-mod-targets">`
         this.#lfoProps().forEach((p) => {
-            const isActive = p.key === editor._selectedLfoTarget
+            const isActive = p.key === editor.selectedLfoTarget
             const lfoOn = !!track[p.lfo]
             const ledCls = lfoOn ? 'lfo-led on' : 'lfo-led'
             const activeClass = isActive ? ' active' : ''
@@ -98,12 +98,12 @@ export default class ModulationSection {
     // ── Event handlers ─────────────────────────────────────────────
 
     onSelectBtn(targetKey) {
-        this.#editor._selectedLfoTarget = targetKey
+        this.#editor.selectedLfoTarget = targetKey
     }
 
     onToggleBtn(targetKey) {
-        this.#editor._selectedLfoTarget = targetKey
-        return this._toggleLfoForTarget(targetKey)
+        this.#editor.selectedLfoTarget = targetKey
+        return this.toggleLfoForTarget(targetKey)
     }
 
     /**
@@ -112,9 +112,9 @@ export default class ModulationSection {
      * only test truthiness and JSON output drops the key.
      * @returns {{updates: object}|null} null when the target supports no LFO
      */
-    _toggleLfoForTarget(targetKey) {
+    toggleLfoForTarget(targetKey) {
         const editor = this.#editor
-        const track = editor._track
+        const track = editor.track
         const prop = this.#lfoProps().find((p) => p.key === targetKey)
         if (!prop) return null
         if (track[prop.lfo]) return { updates: { [prop.lfo]: undefined } }
@@ -130,9 +130,9 @@ export default class ModulationSection {
      */
     onSlider(input) {
         const editor = this.#editor
-        editor._isDragging = true
-        const track = editor._track
-        const prop = this.#lfoProps().find((p) => p.key === editor._selectedLfoTarget)
+        editor.isDragging = true
+        const track = editor.track
+        const prop = this.#lfoProps().find((p) => p.key === editor.selectedLfoTarget)
         if (!prop) return null
         const current = track[prop.lfo]
         const key = input.dataset.lfoKey
@@ -156,8 +156,8 @@ export default class ModulationSection {
      */
     onSelect(sel) {
         const editor = this.#editor
-        const track = editor._track
-        const prop = this.#lfoProps().find((p) => p.key === editor._selectedLfoTarget)
+        const track = editor.track
+        const prop = this.#lfoProps().find((p) => p.key === editor.selectedLfoTarget)
         if (!prop) return null
         const current = track[prop.lfo]
         const lfo = { ...(current ?? this.#getDefaultLfo(prop, sel.value)), type: sel.value }

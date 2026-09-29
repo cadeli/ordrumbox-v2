@@ -64,10 +64,10 @@ export default class PresetSection {
         const editor = this.#editor
         editor.soundRegistry.generatedSounds[key] = structuredClone(sound)
         editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
-        this._persist()
+        this.persist()
     }
 
-    _persist() {
+    persist() {
         const sr = this.#editor.soundRegistry
         cacheGeneratedSounds(sr.generatedSounds).catch?.(() => {})
     }
@@ -153,7 +153,7 @@ export default class PresetSection {
         const idx = keys.indexOf(editor.editKey)
         delete editor.soundRegistry.generatedSounds[editor.editKey]
         editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
-        this._persist()
+        this.persist()
         const nextIdx = idx < keys.length - 1 ? idx : idx - 1
         const nextKey = keys[nextIdx] === deletedName ? keys[(idx + 1) % keys.length] : keys[nextIdx]
         editor.editKey = null
@@ -172,7 +172,7 @@ export default class PresetSection {
         this.commitSound(newName, editor.draft)
         delete editor.soundRegistry.generatedSounds[editor.editKey]
         editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
-        this._persist()
+        this.persist()
         editor.editKey = newName
         editor.original = structuredClone(editor.draft)
         editor.renderEditor()

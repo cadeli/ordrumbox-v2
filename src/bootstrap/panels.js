@@ -34,7 +34,7 @@ export function createAndInitPanels() {
     patternPanel.init()
     pianoRollPanel.init()
     trackEditor.init()
-    noteEditor.setContainer(trackEditor._neContainer)
+    noteEditor.setContainer(trackEditor.neContainer)
     noteEditor.init()
     trackEditor.setNoteEditor(noteEditor)
     toolsPanel.init()

@@ -356,7 +356,7 @@ export default class DrumkitManager extends BasePanel {
 
     // ── Gain / Tune / Decay knobs ─────────────────────────────────────
     // Same OrKnob widget and keep-alive pattern as track_editor's knob bar
-    // (see track_editor.js _syncKnobs / sync_helpers.js), so this panel
+    // (see track_editor.js #syncKnobs / sync_helpers.js), so this panel
     // looks and behaves like the rest of the app instead of raw <input
     // type="range"> sliders.
 
@@ -391,7 +391,7 @@ export default class DrumkitManager extends BasePanel {
     }
 
     // ── Waveform ───────────────────────────────────────────────────────
-    // Mirrors track_editor's _drawSampleWaveform(): same envelope colors and
+    // Mirrors track_editor's drawSampleWaveform(): same envelope colors and
     // the same decay-cutoff marker line, so a sample looks the same whether
     // it's being tuned from a track or from the drumkit manager.
 

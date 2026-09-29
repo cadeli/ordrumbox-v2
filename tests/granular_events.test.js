@@ -127,8 +127,8 @@ describe('Granular patternChange events', () => {
             const te = new TrackEditor()
             te.init()
             const track = appState.patterns[0].tracks[0]
-            te._track = track
-            te._trackIdx = 0
+            te.track = track
+            te.trackIdx = 0
             playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
             expect(cap.trackParamChange).toHaveBeenCalled()
         })

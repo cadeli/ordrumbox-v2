@@ -15,7 +15,7 @@ export default class LoopSection {
 
     render() {
         const editor = this.#editor
-        const track = editor._track
+        const track = editor.track
         if (!track) return ''
 
         const beats = track.nbBeats ?? 4
@@ -46,7 +46,7 @@ export default class LoopSection {
         ]
 
         loopProps.forEach((p) => {
-            let s = editor._sliders.get(p.key)
+            let s = editor.sliders.get(p.key)
             if (s) {
                 s.setValue(p.val)
                 if (p.key === 'loopAtStep') s.setMax?.(maxSteps)
@@ -60,9 +60,9 @@ export default class LoopSection {
                     value: p.val,
                     format: p.format,
                     dataAttr: 'data-loop',
-                    onChange: (v, key) => editor._onLoopSlider({ dataset: { loop: key }, value: v }),
+                    onChange: (v, key) => editor.onLoopSlider({ dataset: { loop: key }, value: v }),
                 })
-                editor._sliders.set(p.key, s)
+                editor.sliders.set(p.key, s)
             }
             content += s.toHTML()
         })

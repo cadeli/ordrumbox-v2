@@ -45,7 +45,7 @@ describe('SynthEditor sub-panel toolbar', () => {
         })
 
         host = {
-            _track: { synthSoundKey: 'BASS1' },
+            track: { synthSoundKey: 'BASS1' },
             container: document.getElementById('te-panel'),
             sync: vi.fn(),
         }

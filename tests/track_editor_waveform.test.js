@@ -17,7 +17,7 @@ const ENVELOPE = [0.1, 0.9, 0.4]
 function makeEditor({ decay = 100, duration = 0.5 } = {}) {
     const editor = new TrackEditor()
     editor.container = document.createElement('div')
-    editor._track = { soundId: 'real/kick.wav', useSoftSynth: false }
+    editor.track = { soundId: 'real/kick.wav', useSoftSynth: false }
     soundRegistry.sounds = { 'real/kick.wav': { buffer: { duration }, decay } }
     editor.container.innerHTML = '<canvas class="te-waveform" width="500" height="48"></canvas>'
     return { editor, canvas: editor.container.querySelector('.te-waveform') }
@@ -36,7 +36,7 @@ describe('TrackEditor — sample waveform contrast', () => {
 
     it('draws the envelope with the dark scope background and phosphor curve', () => {
         const { editor, canvas } = makeEditor()
-        editor._drawSampleWaveform()
+        editor.drawSampleWaveform()
 
         const dpr = window.devicePixelRatio || 1
         const theme = sampleWaveformTheme(2 * dpr)
@@ -70,7 +70,7 @@ describe('TrackEditor — sample waveform contrast', () => {
             },
         })
 
-        editor._drawSampleWaveform()
+        editor.drawSampleWaveform()
 
         const theme = sampleWaveformTheme(2)
         const { x, y } = markerCalls(canvas)
@@ -86,7 +86,7 @@ describe('TrackEditor — sample waveform contrast', () => {
 
     it('clamps the marker to the right edge when decay exceeds the sample length', () => {
         const { editor, canvas } = makeEditor({ decay: 5000, duration: 0.2 })
-        editor._drawSampleWaveform()
+        editor.drawSampleWaveform()
 
         const { ctx, x } = markerCalls(canvas)
         expect(x).toBe(500)
@@ -95,7 +95,7 @@ describe('TrackEditor — sample waveform contrast', () => {
 
     it('keeps the backing store when the canvas is not laid out (jsdom fallback)', () => {
         const { editor, canvas } = makeEditor()
-        editor._drawSampleWaveform()
+        editor.drawSampleWaveform()
         expect(canvas.width).toBe(500)
         expect(canvas.height).toBe(48)
     })

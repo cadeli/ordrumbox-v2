@@ -143,8 +143,8 @@ export default class ViewManager {
             const idx = appState.selectedTrackNum
             const track = pattern?.tracks?.[idx]
             if (track) {
-                this.#trackEditor._track = track
-                this.#trackEditor._trackIdx = idx
+                this.#trackEditor.track = track
+                this.#trackEditor.trackIdx = idx
                 this.#trackEditor.sync()
             }
         }
@@ -157,7 +157,7 @@ export default class ViewManager {
         const idx = appState.selectedTrackNum
         const track = pattern?.tracks?.[idx]
         if (track && this.#trackEditor.isVisible) {
-            this.#trackEditor._showNoteEditorForTrack(track, idx)
+            this.#trackEditor.showNoteEditorForTrack(track, idx)
         }
     }
 

@@ -16,7 +16,7 @@ export default class FxSection {
 
     /** Returns true if the given FX definition is "on". */
     isFxOn(fx) {
-        const track = this.#editor._track
+        const track = this.#editor.track
         if (fx.key === 'filterFreq') {
             const ft = track.filterType
             return ft != null && ft !== 'allpass'
@@ -31,15 +31,15 @@ export default class FxSection {
      */
     toggleFxByKey(key) {
         const editor = this.#editor
-        const track = editor._track
+        const track = editor.track
         if (key === 'filterFreq') {
             const cur = track.filterType
             const isOn = cur != null && cur !== 'allpass'
             if (isOn) {
-                editor._prevFilterType = cur
+                editor.prevFilterType = cur
                 return { filterType: 'allpass' }
             }
-            return { filterType: editor._prevFilterType ?? 'lowpass' }
+            return { filterType: editor.prevFilterType ?? 'lowpass' }
         }
         const isOn = Number(track[key] ?? 0) > 0
         return { [key]: isOn ? 0 : 0.5 }
@@ -51,12 +51,12 @@ export default class FxSection {
      */
     onFxIcon(target) {
         const editor = this.#editor
-        const track = editor._track
+        const track = editor.track
         const val = target.dataset.fxIconVal
         if (!val) return null
         if (target.closest('[data-prop="filterType"]')) {
             const cur = track.filterType
-            editor._prevFilterType = cur === val ? undefined : cur
+            editor.prevFilterType = cur === val ? undefined : cur
             return { filterType: cur === val ? 'allpass' : val }
         }
         return null
@@ -68,8 +68,8 @@ export default class FxSection {
         const tabIdx = parseInt(btn.dataset.fxTab, 10)
         if (Number.isNaN(tabIdx)) return
         const activeTab = String(tabIdx)
-        editor._fxTab.setActive(activeTab)
-        editor._fxTab.togglePanels(editor.container)
+        editor.fxTab.setActive(activeTab)
+        editor.fxTab.togglePanels(editor.container)
         editor.container.querySelectorAll('.te-mod-btn').forEach((tab) => {
             const tabButton = tab.querySelector('[data-fx-tab]')
             tab.classList.toggle('active', tabButton?.dataset.fxTab === activeTab)
@@ -79,14 +79,14 @@ export default class FxSection {
     /** Generate the full FX tab HTML. */
     render() {
         const editor = this.#editor
-        const track = editor._track
+        const track = editor.track
         if (!track) return ''
 
         let tabsHtml = '<div class="te-mod-targets">'
         FX_DEFS.forEach((fx, i) => {
             const on = this.isFxOn(fx)
             const ledClass = on ? 'lfo-led on' : 'lfo-led'
-            const activeClass = editor._fxTab.isHidden(String(i)) ? '' : ' active'
+            const activeClass = editor.fxTab.isHidden(String(i)) ? '' : ' active'
             tabsHtml += `<div class="te-mod-btn${activeClass}">
                 <span class="${ledClass}" data-fx-toggle-btn="${fx.key}"></span>
                 <span data-fx-tab="${i}">${fx.label}</span></div>`
@@ -95,7 +95,7 @@ export default class FxSection {
 
         let content = tabsHtml
         FX_DEFS.forEach((fx, idx) => {
-            const isHidden = editor._fxTab.isHidden(String(idx))
+            const isHidden = editor.fxTab.isHidden(String(idx))
 
             content += `<div class="fx-tab-panel ${isHidden ? 'fx-tab-panel-hidden' : ''}" data-fx-panel="${idx}">`
 
@@ -114,8 +114,8 @@ export default class FxSection {
                         <select data-key="${ck}">${renderOptions(prop.options, val, { labels: prop.labels })}</select></div>`
                 } else {
                     const hasLfo = prop.lfo && track[prop.lfo] ? 'has-lfo' : ''
-                    const isSelected = editor._selectedPropKey === ck ? 'selected' : ''
-                    let knob = editor._fxKnobs.find((k) => k.key === ck)
+                    const isSelected = editor.selectedPropKey === ck ? 'selected' : ''
+                    let knob = editor.fxKnobs.find((k) => k.key === ck)
                     if (knob) {
                         knob.setValue(val ?? prop.min)
                     } else {
@@ -130,19 +130,19 @@ export default class FxSection {
                             format: (v) => fmtVal(ck, v),
                             onChange: (v) => {
                                 // Continuous knob: coalesce the drag into ONE undo step.
-                                editor._serviceRegistry.cmd?.updateTrack(
-                                    editor._track,
+                                editor.serviceRegistry.cmd?.updateTrack(
+                                    editor.track,
                                     { [ck]: v },
-                                    { desc: `${prop.label} on ${editor._track.name}`, coalesce: true },
+                                    { desc: `${prop.label} on ${editor.track.name}`, coalesce: true },
                                 )
-                                editor._playbackEvents.batch(() => {
-                                    editor._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, editor._track)
-                                    editor._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [editor._track])
+                                editor.playbackEvents.batch(() => {
+                                    editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, editor.track)
+                                    editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [editor.track])
                                 })
                             },
                         })
                     }
-                    editor._fxKnobs.push(knob)
+                    editor.fxKnobs.push(knob)
                     content += knob.toHTML()
                 }
             })

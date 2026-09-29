@@ -52,11 +52,10 @@ function makeTrack(overrides = {}) {
 
 function setupEditor(track) {
     const host = {
-        _track: track,
         track: track,
         container: document.createElement('div'),
         sync: vi.fn(),
-        _appState: appState,
+        appState: appState,
     }
     const deps = {
         playbackEvents: playbackEvents,

@@ -9,11 +9,12 @@ import { EVENTS } from '../../core/events.js'
 
 export default class GenerationSection {
     #editor
+    #genSubTab
 
     /** @param {import('./track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
-        this._genSubTab = new OrTab({
+        this.#genSubTab = new OrTab({
             tabs: GEN_SUBTAB_DEFS,
             defaultTab: 'groove',
             css: {
@@ -27,6 +28,10 @@ export default class GenerationSection {
         })
     }
 
+    get subTab() {
+        return this.#genSubTab
+    }
+
     /** Render a group of props as slider/boolean/select rows. */
     #renderProps(props, track) {
         const editor = this.#editor
@@ -34,7 +39,7 @@ export default class GenerationSection {
 
         props.forEach((p) => {
             const val = track[p.key]
-            const isSelected = editor._selectedPropKey === p.key ? 'selected' : ''
+            const isSelected = editor.selectedPropKey === p.key ? 'selected' : ''
             const hasLfo = p.lfo && track[p.lfo] ? 'has-lfo' : ''
 
             if (p.type === 'boolean') {
@@ -48,7 +53,7 @@ export default class GenerationSection {
                     <label>${p.label}</label>
                     <select data-key="${p.key}">${renderOptions(p.options, val, { labels: p.labels })}</select></div>`
             } else {
-                let s = editor._sliders.get(p.key)
+                let s = editor.sliders.get(p.key)
                 if (s) {
                     s.setValue(val ?? p.min)
                     s._hasLfo = !!(p.lfo && track[p.lfo])
@@ -66,20 +71,20 @@ export default class GenerationSection {
                         normalize: p.normalize ?? ((v) => v),
                         denormalize: p.denormalize ?? ((v) => v),
                         onChange: (v, key) => {
-                            editor._isDragging = true
+                            editor.isDragging = true
                             // Continuous slider: coalesce the drag into ONE undo step.
-                            editor._serviceRegistry.cmd?.updateTrack(
-                                editor._track,
+                            editor.serviceRegistry.cmd?.updateTrack(
+                                editor.track,
                                 { [key]: v },
-                                { desc: `${key} on ${editor._track.name}`, coalesce: true },
+                                { desc: `${key} on ${editor.track.name}`, coalesce: true },
                             )
-                            editor._playbackEvents.batch(() => {
-                                editor._playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, editor._track)
-                                editor._playbackEvents.emit(EVENTS.PATTERN_CHANGE, [editor._track])
+                            editor.playbackEvents.batch(() => {
+                                editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, editor.track)
+                                editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [editor.track])
                             })
                         },
                     })
-                    editor._sliders.set(p.key, s)
+                    editor.sliders.set(p.key, s)
                 }
                 html += s.toHTML()
             }
@@ -91,17 +96,17 @@ export default class GenerationSection {
     /** Generate HTML for the generation tab. */
     render() {
         const editor = this.#editor
-        const track = editor._track
+        const track = editor.track
         if (!track) return ''
 
         const group = GROUPS[0]
         let html = this.#renderProps(group.props, track)
 
-        const subTabBar = this._genSubTab.renderBar()
+        const subTabBar = this.#genSubTab.renderBar()
         html += subTabBar
 
-        const grooveHidden = this._genSubTab.isHidden('groove')
-        const engineHidden = this._genSubTab.isHidden('engine')
+        const grooveHidden = this.#genSubTab.isHidden('groove')
+        const engineHidden = this.#genSubTab.isHidden('engine')
 
         html += `<div class="gen-tab-panel ${grooveHidden ? 'gen-tab-panel-hidden' : ''}" data-gen-panel="groove">`
         html += this.#renderProps(GEN_GROOVE_PROPS, track)

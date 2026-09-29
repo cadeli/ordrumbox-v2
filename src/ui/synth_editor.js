@@ -142,7 +142,7 @@ export default class SynthEditor {
     /** Opens the editor for the current track's synth sound. */
     async openEditor() {
         try {
-            const track = this.host._track
+            const track = this.host.track
             if (!track) return
             await this.ensureGeneratedSoundsLoaded()
 
@@ -164,7 +164,7 @@ export default class SynthEditor {
             await this.ensureGeneratedSoundsLoaded()
             this.#showSynthPanel()
 
-            const track = this.host._track
+            const track = this.host.track
             const key = track?.synthSoundKey
             const generatedSound = key ? this.#soundRegistry.generatedSounds?.[key] : null
 
@@ -196,7 +196,7 @@ export default class SynthEditor {
             this.#closeEditor(true)
         } else {
             this.#hideSynthPanel()
-            if (this.host._track) {
+            if (this.host.track) {
                 this.host.sync()
             }
         }
@@ -556,8 +556,8 @@ export default class SynthEditor {
             this.#renderEditor()
             this.#serviceRegistry.audioEngine?.invalidateCache?.()
             this.#playbackEvents.batch(() => {
-                this.#playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, this.host._track)
-                this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.host._track])
+                this.#playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, this.host.track)
+                this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.host.track])
             })
         } catch (e) {
             logger.error('SynthEditor', '_revertPreset failed', e)
@@ -621,15 +621,15 @@ export default class SynthEditor {
                 this.#presets.commitSound(this.#editKey, this.#draft)
                 this.#serviceRegistry.audioEngine?.invalidateCache?.()
                 this.#playbackEvents.batch(() => {
-                    this.#playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, this.host._track)
-                    this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.host._track])
+                    this.#playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, this.host.track)
+                    this.#playbackEvents.emit(EVENTS.PATTERN_CHANGE, [this.host.track])
                 })
             } else if (!shouldSave && this.#editKey && this.#original) {
                 this.#presets.commitSound(this.#editKey, this.#original)
             }
 
             this.#hideSynthPanel()
-            if (this.host._track) {
+            if (this.host.track) {
                 this.host.sync()
             }
         } catch (e) {

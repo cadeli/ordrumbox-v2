@@ -109,7 +109,7 @@ describe('Mobile tab bar', () => {
         // Attach synth panel to app-content
         document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
         noteEditor = new NoteEditor()
-        noteEditor.setContainer(trackEditor._neContainer)
+        noteEditor.setContainer(trackEditor.neContainer)
         noteEditor.init()
         trackEditor.setNoteEditor(noteEditor)
         toolsPanel = new ToolsPanel()

@@ -126,7 +126,7 @@ describe('SynthEditor — OrKnob integration', () => {
         trackEditor.init()
         // Attach synth panel to app-content
         document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
-        trackEditor._track = mockTrack
+        trackEditor.track = mockTrack
     })
 
     it('renders each numeric parameter as an OrKnob row', async () => {
@@ -334,7 +334,7 @@ describe('SynthEditor — LFO animation', () => {
         trackEditor = new TrackEditor()
         trackEditor.init()
         document.getElementById('app-content').appendChild(trackEditor.synthEditor.panel)
-        trackEditor._track = mockTrack
+        trackEditor.track = mockTrack
     })
 
     it('_computeSynthLfoMod returns correct modulation for vco1.octave target', async () => {

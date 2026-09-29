@@ -29,15 +29,15 @@ describe('TrackEditor sound panel', () => {
     it('prefers the sample from the selected drumkit when an instrument is chosen', () => {
         const editor = new TrackEditor()
 
-        expect(editor._sndSection._getPreferredSampleForInstrument('KICK').url).toBe('real/kick.wav')
+        expect(editor.soundSection.getPreferredSampleForInstrument('KICK').url).toBe('real/kick.wav')
     })
 
     function renderSoundPanelHtml(track) {
         const editor = new TrackEditor()
-        editor._track = track
+        editor.track = track
         vi.spyOn(editor.synthEditor, 'getGeneratedSoundKeys').mockReturnValue([])
         const wrapper = document.createElement('div')
-        wrapper.innerHTML = editor._sndSection.render()
+        wrapper.innerHTML = editor.soundSection.render()
         return wrapper
     }
 
@@ -75,9 +75,9 @@ describe('TrackEditor filterFreq display', () => {
     function getFreqDisplay(track) {
         const editor = new TrackEditor()
         editor.init()
-        editor._track = track
-        editor._tab.setActive('fx')
-        editor._fxTab.setActive('3')
+        editor.track = track
+        editor.tab.setActive('fx')
+        editor.fxTab.setActive('3')
         editor.sync()
         const valEl = editor.container.querySelector('.ne-val[data-key="filterFreq"]')
         return valEl?.textContent
@@ -99,13 +99,13 @@ describe('TrackEditor filterFreq display', () => {
 describe('TrackEditor loop panel', () => {
     it('renders loop properties correctly', () => {
         const editor = new TrackEditor()
-        editor._track = {
+        editor.track = {
             nbBeats: 8,
             stepsPerBeat: 4,
             loopAtStep: 16,
         }
 
-        const html = editor._loopSection.render()
+        const html = editor.loopSection.render()
         const wrapper = document.createElement('div')
         wrapper.innerHTML = html
 
@@ -127,8 +127,8 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
         editor.init()
         const oldTrack = { name: 'KICK', velocity: 0.7 }
         const newTrack = { name: 'KICK', velocity: 0.3 }
-        editor._track = oldTrack
-        editor._trackIdx = 0
+        editor.track = oldTrack
+        editor.trackIdx = 0
         appState.patterns = [{ tracks: [newTrack] }]
         appState.selectedPatternNum = 0
         editor.show({ track: oldTrack, trackIdx: 0 })
@@ -137,26 +137,26 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
 
         playbackEvents.emit(EVENTS.PATTERN_CHANGE)
 
-        expect(editor._track).toBe(newTrack)
-        expect(editor._trackIdx).toBe(0)
+        expect(editor.track).toBe(newTrack)
+        expect(editor.trackIdx).toBe(0)
         expect(syncSpy).toHaveBeenCalled()
     })
 
     it('clears the track and re-syncs when the track no longer exists in the new pattern (does not auto-hide)', () => {
         const editor = new TrackEditor()
         editor.init()
-        editor._track = { name: 'KICK', velocity: 0.7 }
-        editor._trackIdx = 0
+        editor.track = { name: 'KICK', velocity: 0.7 }
+        editor.trackIdx = 0
         appState.patterns = [{ tracks: [{ name: 'SNARE' }] }]
         appState.selectedPatternNum = 0
-        editor.show({ track: editor._track, trackIdx: 0 })
+        editor.show({ track: editor.track, trackIdx: 0 })
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
 
         playbackEvents.emit(EVENTS.PATTERN_CHANGE)
 
-        expect(editor._track).toBeNull()
-        expect(editor._trackIdx).toBe(-1)
+        expect(editor.track).toBeNull()
+        expect(editor.trackIdx).toBe(-1)
         expect(syncSpy).toHaveBeenCalled()
     })
 
@@ -208,10 +208,10 @@ describe('TrackEditor loop slider events', () => {
 
         // Simulate the onChange call that happens during drag/input
         // This is what _renderLoopPanel does:
-        // onChange: (v, key) => this._onLoopSlider({ dataset: { loop: key }, value: v })
+        // onChange: (v, key) => editor.onLoopSlider({ dataset: { loop: key }, value: v })
 
         expect(() => {
-            editor._onLoopSlider({ dataset: { loop: 'loopAtStep' }, value: 32 })
+            editor.onLoopSlider({ dataset: { loop: 'loopAtStep' }, value: 32 })
         }).not.toThrow()
 
         expect(track.loopAtStep).toBe(32)
@@ -248,7 +248,7 @@ describe('TrackEditor loop slider events', () => {
         const offMeta = playbackEvents.on(EVENTS.PATTERN_META_CHANGE, metaSpy)
         const offParam = playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, paramSpy)
 
-        editor._onLoopSlider({ dataset: { loop: 'stepsPerBeat' }, value: 8 })
+        editor.onLoopSlider({ dataset: { loop: 'stepsPerBeat' }, value: 8 })
 
         expect(track.stepsPerBeat).toBe(8)
         expect(metaSpy).toHaveBeenCalled()
@@ -282,7 +282,7 @@ describe('TrackEditor loop slider events', () => {
         const metaSpy = vi.fn()
         const offMeta = playbackEvents.on(EVENTS.PATTERN_META_CHANGE, metaSpy)
 
-        editor._onLoopSlider({ dataset: { loop: 'swingAmount' }, value: 0.5 })
+        editor.onLoopSlider({ dataset: { loop: 'swingAmount' }, value: 0.5 })
 
         expect(track.swingAmount).toBe(0.5)
         expect(metaSpy).not.toHaveBeenCalled()

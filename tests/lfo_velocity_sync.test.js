@@ -22,7 +22,7 @@ describe('LFO Velocity Sync Verification', () => {
         let editor, track
         const lfoConfig = { freq: 2, phase: 0, min: 0, max: 1, waveform: 0 }
 
-        const knobOf = (key) => editor._knobs.find((k) => k.key === key)
+        const knobOf = (key) => editor.knobs.find((k) => k.key === key)
 
         beforeEach(() => {
             document.body.innerHTML = ''
@@ -35,7 +35,7 @@ describe('LFO Velocity Sync Verification', () => {
 
             editor = new TrackEditor()
             editor.init()
-            editor._track = track
+            editor.track = track
             editor.sync()
 
             serviceRegistry.transport = { isRunning: true, tick: 0 }
@@ -43,13 +43,13 @@ describe('LFO Velocity Sync Verification', () => {
 
         it('animates to 1.0 (Peak) at tick 32 (freq=2, phase=0)', () => {
             serviceRegistry.transport.tick = 32
-            editor._updateLfoSliders()
+            editor.updateLfoSliders()
             expect(knobOf('velocity').getValue()).toBeCloseTo(1, 5)
         })
 
         it('animates to 0.0 (trough) at tick 64 (freq=2, phase=0)', () => {
             serviceRegistry.transport.tick = 64
-            editor._updateLfoSliders()
+            editor.updateLfoSliders()
             expect(knobOf('velocity').getValue()).toBeCloseTo(0, 5)
         })
     })
@@ -120,7 +120,7 @@ describe('LFO Pitch Replacement Semantics', () => {
     describe('TrackEditor Integration', () => {
         let editor, track
 
-        const knobOf = (key) => editor._knobs.find((k) => k.key === key)
+        const knobOf = (key) => editor.knobs.find((k) => k.key === key)
 
         beforeEach(() => {
             document.body.innerHTML = ''
@@ -174,11 +174,11 @@ describe('LFO Pitch Replacement Semantics', () => {
 
             editor = new TrackEditor()
             editor.init()
-            editor._track = track
+            editor.track = track
             editor.sync()
 
             // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0+0.5*6=3
-            editor._updateLfoSliders()
+            editor.updateLfoSliders()
 
             const slider = knobOf('pitch')
             // Replacement: slider shows LFO value (3), NOT track.pitch + LFO (5 + 3 = 8)
@@ -219,11 +219,11 @@ describe('LFO Pitch Replacement Semantics', () => {
 
             editor = new TrackEditor()
             editor.init()
-            editor._track = track
+            editor.track = track
             editor.sync()
 
             // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0+0.5*12=6
-            editor._updateLfoSliders()
+            editor.updateLfoSliders()
 
             const slider = knobOf('pitch')
             // Replacement: 6, NOT -10 + 6 = -4
@@ -264,11 +264,11 @@ describe('LFO Pitch Replacement Semantics', () => {
 
             editor = new TrackEditor()
             editor.init()
-            editor._track = track
+            editor.track = track
             editor.sync()
 
             // At tick 0, phase 0.25: localPhase=0.25, p=0, sin(0)=0, normalized=0.5, val=0.6+0.5*0.4=0.8
-            editor._updateLfoSliders()
+            editor.updateLfoSliders()
 
             expect(knobOf('velocity').getValue()).toBeCloseTo(0.8, 5)
         })

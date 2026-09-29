@@ -183,7 +183,7 @@ function setupApp(viewport) {
     trackEditor.init()
 
     const noteEditor = new NoteEditor()
-    noteEditor.setContainer(trackEditor._neContainer)
+    noteEditor.setContainer(trackEditor.neContainer)
     noteEditor.init()
     trackEditor.setNoteEditor(noteEditor)
 

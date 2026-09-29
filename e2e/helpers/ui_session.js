@@ -171,7 +171,7 @@ export async function waitForPatternsPersisted(page) {
 
 /**
  * Waits until generatedSounds[key] is stored in IndexedDB. Synth commits are
- * fire-and-forget (preset_section.js _persist()), so there is no event to
+ * fire-and-forget (preset_section.js persist()), so there is no event to
  * await — polling the stored value is the only deterministic signal.
  * Returns false while the sound does not exist yet, so a missing sound fails
  * instead of passing vacuously.
