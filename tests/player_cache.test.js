@@ -1,20 +1,17 @@
 /**
  * @vitest-environment jsdom
  *
- * Player cache invalidation (Lot A):
- *   1. Player.invalidateCache() must actually drop the flatNotes cache — the
- *      old AudioEngine.invalidateCache() wrote `player._lastFlatNotesLoop`,
- *      a dead property (the real field is private #lastFlatNotesLoop), so the
- *      next tick kept serving a stale map.
- *   2. NOTE_TRIGGER trackIdx must stay correct after in-place track splices:
- *      removeTrack/pasteTrack mutate the SAME array, so the old ref-only check
- *      kept a stale track → row mapping and lit up the wrong grid row.
+ * Playback cache invalidation — observed through the public behaviour only:
+ *   1. flatNotes must be fetched once per loop and served again from cache
+ *      until Player.invalidateCache() / AudioEngine.invalidateCache() runs.
+ *   2. NOTE_TRIGGER trackIdx must stay correct when the tracks container
+ *      changes: in-place splice/push (same array) and array replacement
+ *      (new array, same size) must both rebuild the track -> index mapping,
+ *      otherwise the wrong grid row lights up.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
+import AudioEngine from '../src/audio/engine.js'
 import Player from '../src/audio/player.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { EVENTS } from '../src/core/events.js'
@@ -25,8 +22,6 @@ vi.mock('../src/audio/sound.js', () => ({
         play = vi.fn(() => Promise.resolve())
     },
 }))
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 function makeTrack(name) {
     return { name, mute: false, solo: false, pan: 0, pitch: 0, velocity: 1, notes: [] }
@@ -142,20 +137,78 @@ describe('Player cache invalidation', () => {
         expect(triggers[0].trackIdx).toBe(1)
         expect(errorSpy).not.toHaveBeenCalled()
     })
+
+    it('rebuilds the trackIdx map when the tracks array is replaced (new ref, same size)', async () => {
+        const t0 = makeTrack('A')
+        const t1 = makeTrack('B')
+        const pattern = makePattern([t0, t1])
+        const flatNote = { track: t0, note: { beat: 0, beatStep: 1 }, swingTime: 0 }
+        const flatNotes = new Map([[1, [flatNote]]])
+
+        const player = makePlayer(pattern, () => flatNotes)
+
+        await player.playNotes(1, 0)
+        expect(triggers).toHaveLength(1)
+        expect(triggers[0].trackIdx).toBe(0)
+
+        // Array replacement keeps the size but changes both the ref and the order
+        pattern.tracks = [t1, t0]
+        triggers.length = 0
+
+        await player.playNotes(1, 0)
+        expect(triggers).toHaveLength(1)
+        expect(triggers[0].trackIdx).toBe(1)
+        expect(errorSpy).not.toHaveBeenCalled()
+    })
 })
 
-describe('AudioEngine.invalidateCache wiring', () => {
-    const engineSrc = readFileSync(join(ROOT, 'src/audio/engine.js'), 'utf8')
-    const playerSrc = readFileSync(join(ROOT, 'src/audio/player.js'), 'utf8')
+describe('AudioEngine cache wiring', () => {
+    let warnSpy
+    let errorSpy
 
-    it('delegates to Player.invalidateCache instead of a dead property', () => {
-        expect(engineSrc).toContain('this.player.invalidateCache()')
-        expect(engineSrc).not.toMatch(/_lastFlatNotesLoop/)
-        expect(playerSrc).toMatch(/invalidateCache\(\)\s*\{/)
+    beforeEach(() => {
+        // The fake AudioContext cannot build a worklet mixer: the async init
+        // failure is logged (never asserted, mocked only to keep output clean)
+        warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+        errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
     })
 
-    it('rebuilds the trackIdx map on size change, not only on ref change', () => {
-        // The rebuild condition must include the size comparison
-        expect(playerSrc).toMatch(/#trackIdxMapRef !== tracks \|\| this\.#trackIdxMapCount !== trackCount/)
+    afterEach(() => {
+        warnSpy.mockRestore()
+        errorSpy.mockRestore()
+    })
+
+    function makeEngine(patterns = []) {
+        return new AudioEngine({
+            audioCtx: { currentTime: 0, createBuffer: () => ({}) },
+            sounds: {},
+            patterns,
+            getAutoGenerate: vi.fn(() => Promise.resolve({ changeTrack: vi.fn() })),
+            TICK: 32,
+            secondsPerBeat: 0.25,
+            isOffline: true,
+        })
+    }
+
+    it('drops the cached flatNotes map for the current pattern', () => {
+        const pattern = makePattern([makeTrack('A')])
+        const engine = makeEngine([pattern])
+
+        const first = engine.getFlatNotesForCurrentPattern(0)
+        expect(engine.getFlatNotesForCurrentPattern(0)).toBe(first)
+
+        engine.invalidateCache()
+        expect(engine.getFlatNotesForCurrentPattern(0)).not.toBe(first)
+    })
+
+    it('delegates to the wired player and tolerates a missing one', () => {
+        const engine = makeEngine()
+        expect(engine.player).toBeNull()
+        expect(() => engine.invalidateCache()).not.toThrow()
+
+        const invalidateCache = vi.fn()
+        engine.player = { invalidateCache }
+        engine.invalidateCache()
+        expect(invalidateCache).toHaveBeenCalledTimes(1)
     })
 })

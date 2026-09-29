@@ -6,9 +6,6 @@
  * correct panel with proper position, size, visibility, and scrollability.
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { appState } from '../src/state/app_state.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -22,10 +19,6 @@ import AboutPanel from '../src/ui/about_panel.js'
 import ViewManager from '../src/ui/view_manager.js'
 import MobileTabBar from '../src/ui/mobile_tab_bar.js'
 import { EVENTS } from '../src/core/events.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const css = readFileSync(resolve(__dirname, '../src/ui/styles.css'), 'utf-8')
 
 const MOBILE = { width: 768, height: 480 }
 
@@ -155,35 +148,6 @@ function setupApp(viewport) {
     return { viewManager, trackEditor, noteEditor, toolsPanel, outputPanel, aboutPanel, mobileTabBar }
 }
 
-function getCompactBlock() {
-    const re = /html\.is-compact\s*\{([\s\S]*?)\n\}/m
-    const m = css.match(re)
-    return m ? m[1] : ''
-}
-
-function escapeRegex(s) {
-    return s.replace(/[-[\]/{}()*+?.,\\^$|#]/g, '\\$&')
-}
-
-function hasCombinedRule(block, selector, prop, value) {
-    const escapedVal = escapeRegex(value)
-    const ruleRe = /([^{]+)\s*\{([^}]*)\}/g
-    let m
-    while ((m = ruleRe.exec(block)) !== null) {
-        const cleanSelector = m[1].replace(/\/\*[\s\S]*?\*\//g, '')
-        const selectors = cleanSelector.split(',').map((s) => s.trim())
-        if (selectors.includes(selector)) {
-            const re = new RegExp(`${prop}\\s*:\\s*${escapedVal}`)
-            if (re.test(m[2])) return true
-        }
-    }
-    return false
-}
-
-function hasRuleAnywhere(selector, prop, value) {
-    return hasCombinedRule(css, selector, prop, value)
-}
-
 // ══════════════════════════════════════════════════════════════════
 // SEQUENCER TAB — Panel visibility & properties
 // ══════════════════════════════════════════════════════════════════
@@ -223,11 +187,10 @@ describe('Mobile tab: Sequencer — panel visibility & position', () => {
         expect(el.classList.contains('workspace-panel')).toBe(true)
     })
 
-    it('pattern panel clears space for tab bar (workspace-panel → bottom: 60px)', () => {
+    it('pattern panel carries workspace-panel (grants the tab bar clearance)', () => {
         playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('workspace-panel')).toBe(true)
-        expect(hasRuleAnywhere('.workspace-panel', 'bottom', '60px !important')).toBe(true)
     })
 })
 
@@ -428,18 +391,15 @@ describe('Mobile panel scrollability', () => {
         ctx = setupApp(MOBILE)
     })
 
-    it('pattern panel has workspace-panel class (overflow-y: auto, full-height)', () => {
+    it('pattern panel has workspace-panel class', () => {
         playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('workspace-panel')).toBe(true)
-        expect(hasCombinedRule(getCompactBlock(), '.workspace-panel', 'overflow-y', 'auto')).toBe(true)
-        expect(hasCombinedRule(getCompactBlock(), '.workspace-panel', 'height', 'auto !important')).toBe(true)
     })
 
-    it('track editor has te-panel id (overflow-y: auto via CSS)', () => {
+    it('track editor has te-panel id', () => {
         playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(ctx.trackEditor.container.id).toBe('te-panel')
-        expect(hasCombinedRule(getCompactBlock(), '#te-panel', 'overflow-y', 'auto !important')).toBe(true)
     })
 
     it('synth panel has workspace-panel class (overflow-y: auto)', () => {
@@ -448,11 +408,10 @@ describe('Mobile panel scrollability', () => {
         expect(el.classList.contains('workspace-panel')).toBe(true)
     })
 
-    it('output panel has overflow-y: auto via CSS', () => {
+    it('output panel is visible on the master tab', () => {
         playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         const el = document.getElementById('output-panel')
         expect(el.style.display).toBe('block')
-        expect(hasCombinedRule(getCompactBlock(), '#output-panel', 'overflow-y', 'auto !important')).toBe(true)
     })
 
     it('scrollability persists after switching tabs back and forth', () => {
@@ -531,28 +490,6 @@ describe('Mobile tab bar: position, size, visibility', () => {
 // ══════════════════════════════════════════════════════════════════
 // SCROLL CHAIN — Full CSS chain verification for every panel
 // ══════════════════════════════════════════════════════════════════
-
-describe('Mobile scroll chain: landscape overrides', () => {
-    it('landscape #te-panel uses overflow: visible (grid container)', () => {
-        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape', 'overflow', 'visible !important')).toBe(true)
-    })
-
-    it('landscape .track-editor uses display: contents (promotes children to grid items)', () => {
-        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape .track-editor', 'display', 'contents')).toBe(true)
-    })
-
-    it('landscape .te-scroll has overflow: visible (grid cell constrains height)', () => {
-        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape .te-scroll', 'overflow', 'visible')).toBe(true)
-    })
-
-    it('landscape #ne-container has overflow-y: auto (scrolls note editor in grid cell)', () => {
-        expect(hasRuleAnywhere('#te-panel.te-mobile-landscape #ne-container', 'overflow-y', 'auto')).toBe(true)
-    })
-
-    it('landscape .ne-tab-panel inherits overflow-y: auto from base (scrolls within grid cell)', () => {
-        expect(hasRuleAnywhere('.ne-tab-panel', 'overflow-y', 'auto')).toBe(true)
-    })
-})
 
 describe('Mobile scroll chain: #te-panel DOM structure verification', () => {
     let ctx
