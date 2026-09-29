@@ -1,3 +1,5 @@
+import { isCompactDevice } from './device.js'
+
 export const NOT_FOUND = 'NOT_FOUND'
 
 // ── App version (bump to invalidate IndexedDB cache) ───────────────
@@ -35,10 +37,15 @@ export const MIDI_MAX_PATTERNS = 16
 const MOBILE_MAX_WIDTH = 768
 const MOBILE_MAX_HEIGHT = 480
 
-/** True when viewport matches mobile criteria (portrait or landscape) */
+/**
+ * True when the app must use its compact (mobile) layout.
+ * Union of two signals:
+ *  - device class from the user agent (phones AND tablets, whatever the
+ *    window size — large tablets used to slip through the size check)
+ *  - viewport size (a narrow desktop window keeps the compact layout so
+ *    the CSS never breaks — same criterion the CSS `.is-compact` class uses)
+ */
 export function isMobileViewport() {
-    return (
-        typeof window !== 'undefined' &&
-        (window.innerWidth <= MOBILE_MAX_WIDTH || window.innerHeight <= MOBILE_MAX_HEIGHT)
-    )
+    if (typeof window === 'undefined') return false
+    return isCompactDevice() || window.innerWidth <= MOBILE_MAX_WIDTH || window.innerHeight <= MOBILE_MAX_HEIGHT
 }

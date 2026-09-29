@@ -155,8 +155,8 @@ function setupApp(viewport) {
     return { viewManager, trackEditor, noteEditor, toolsPanel, outputPanel, aboutPanel, mobileTabBar }
 }
 
-function getMobileMediaBlock() {
-    const re = /@media\s*\(max-width:\s*768px\),\s*\(max-height:\s*480px\)\s*\{([\s\S]*?)\n\}/m
+function getCompactBlock() {
+    const re = /html\.is-compact\s*\{([\s\S]*?)\n\}/m
     const m = css.match(re)
     return m ? m[1] : ''
 }
@@ -432,14 +432,14 @@ describe('Mobile panel scrollability', () => {
         playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
         const el = document.getElementById('pattern-panel')
         expect(el.classList.contains('workspace-panel')).toBe(true)
-        expect(hasCombinedRule(getMobileMediaBlock(), '.workspace-panel', 'overflow-y', 'auto')).toBe(true)
-        expect(hasCombinedRule(getMobileMediaBlock(), '.workspace-panel', 'height', 'auto !important')).toBe(true)
+        expect(hasCombinedRule(getCompactBlock(), '.workspace-panel', 'overflow-y', 'auto')).toBe(true)
+        expect(hasCombinedRule(getCompactBlock(), '.workspace-panel', 'height', 'auto !important')).toBe(true)
     })
 
     it('track editor has te-panel id (overflow-y: auto via CSS)', () => {
         playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
         expect(ctx.trackEditor.container.id).toBe('te-panel')
-        expect(hasCombinedRule(getMobileMediaBlock(), '#te-panel', 'overflow-y', 'auto !important')).toBe(true)
+        expect(hasCombinedRule(getCompactBlock(), '#te-panel', 'overflow-y', 'auto !important')).toBe(true)
     })
 
     it('synth panel has workspace-panel class (overflow-y: auto)', () => {
@@ -452,7 +452,7 @@ describe('Mobile panel scrollability', () => {
         playbackEvents.emit(EVENTS.MASTER_TOGGLE, true)
         const el = document.getElementById('output-panel')
         expect(el.style.display).toBe('block')
-        expect(hasCombinedRule(getMobileMediaBlock(), '#output-panel', 'overflow-y', 'auto !important')).toBe(true)
+        expect(hasCombinedRule(getCompactBlock(), '#output-panel', 'overflow-y', 'auto !important')).toBe(true)
     })
 
     it('scrollability persists after switching tabs back and forth', () => {

@@ -131,6 +131,9 @@ export default class TrackEditor extends BasePanel {
     }
 
     subscribe() {
+        this._playbackEvents.on(EVENTS.ORIENTATION_CHANGE, () => {
+            if (this.container) this._syncMobileLayout()
+        })
         this._playbackEvents.on(EVENTS.TRACK_SELECT, (data) => {
             if (!data) return
             if (this.isVisible) {

@@ -3942,11 +3942,6 @@ select option {
 /* ---- 13. Toasts clear the mobile tab bar ----
    Clause order is (max-height, max-width) on purpose: the mobile block below is
    pinned by tests/mobile_panel_display.test.js, which matches that exact order. */
-@media (max-height: 480px), (max-width: 768px) {
-    body {
-        --toast-bottom-offset: 60px;
-    }
-}
 
 /* ---- 14. Selects: drop the native chrome, match the candy shell ----
    Without appearance:none the OS draws its own light control and the <select>
@@ -4073,33 +4068,6 @@ select optgroup {
 /* Mobile: the popup becomes a centered modal list (bigger tap targets, never
    clipped by the viewport edge). Clause order is (max-height, max-width) so the
    pinned mobile block below still matches first in tests/mobile_panel_display. */
-@media (max-height: 480px), (max-width: 768px) {
-    .od-select-popup {
-        top: 50% !important;
-        left: 50% !important;
-        right: auto;
-        bottom: auto;
-        transform: translate(-50%, -50%);
-        width: min(86vw, 380px) !important;
-        min-width: 0 !important;
-        max-width: calc(100vw - 24px);
-        max-height: min(72vh, 460px) !important;
-        padding: 6px;
-        border-radius: 10px;
-        box-shadow:
-            8px 8px 0 rgba(0, 0, 0, 0.55),
-            0 0 40px rgba(55, 224, 255, 0.35);
-    }
-    .od-select-option {
-        padding: 12px 12px;
-        font-size: 15px;
-        border-radius: 6px;
-    }
-    .od-select-group {
-        padding: 9px 12px 5px;
-        font-size: 11px;
-    }
-}
 
 /* ---- 16. Pixel display type: bundled Press Start 2P (SIL OFL 1.1) ----
    8px design grid → only 8/16/24/32px sizes keep glyphs on the pixel grid.
@@ -4127,7 +4095,37 @@ select optgroup {
    Mobile Responsive Styles
    ======================================== */
 
-@media (max-width: 768px), (max-height: 480px) {
+html.is-compact {
+    /* Toast clears the mobile bottom tab bar */
+    body {
+        --toast-bottom-offset: 60px;
+    }
+    /* Centred popup on compact viewports */
+    .od-select-popup {
+        top: 50% !important;
+        left: 50% !important;
+        right: auto;
+        bottom: auto;
+        transform: translate(-50%, -50%);
+        width: min(86vw, 380px) !important;
+        min-width: 0 !important;
+        max-width: calc(100vw - 24px);
+        max-height: min(72vh, 460px) !important;
+        padding: 6px;
+        border-radius: 10px;
+        box-shadow:
+            8px 8px 0 rgba(0, 0, 0, 0.55),
+            0 0 40px rgba(55, 224, 255, 0.35);
+    }
+    .od-select-option {
+        padding: 12px 12px;
+        font-size: 15px;
+        border-radius: 6px;
+    }
+    .od-select-group {
+        padding: 9px 12px 5px;
+        font-size: 11px;
+    }
     /* Hide desktop-only toolbar elements on mobile */
     #tb .tb-hide-mobile {
         display: none !important;
@@ -4607,8 +4605,8 @@ select optgroup {
     background: var(--surface-2);
 }
 
-/* Tablet and larger */
-@media (min-width: 769px) and (min-height: 481px) {
+/* Desktop only (JS verdict: not compact) — hide the mobile chrome */
+html:not(.is-compact) {
     #mobile-tab-bar {
         display: none;
     }

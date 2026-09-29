@@ -1,6 +1,8 @@
 import { showToast } from '../core/notify.js'
 import { initClickBursts } from '../core/click_bursts.js'
 import Utils from '../core/utils.js'
+import { isMobileViewport } from '../core/constants.js'
+import { isLandscape, watchOrientation } from '../core/device.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { logger } from '../core/logger.js'
@@ -10,6 +12,21 @@ import { initServiceWorker } from '../service_worker.js'
 
 /** Global window/DOM listeners and bus subscriptions. Call once at startup. */
 export function initGlobalListeners() {
+    // Device/orientation classes: `html.is-compact` mirrors isMobileViewport()
+    // so the CSS (converted media queries) and the JS verdict can never
+    // diverge — updated synchronously on every resize (no debounce), while
+    // ORIENTATION_CHANGE (debounced, flip only) drives layout re-application.
+    const syncDeviceClasses = () => {
+        document.documentElement.classList.toggle('is-compact', isMobileViewport())
+        document.documentElement.dataset.orientation = isLandscape() ? 'landscape' : 'portrait'
+    }
+    syncDeviceClasses()
+    window.addEventListener('resize', syncDeviceClasses)
+    watchOrientation(({ landscape }) => {
+        syncDeviceClasses()
+        playbackEvents.emit(EVENTS.ORIENTATION_CHANGE, { landscape })
+    })
+
     window.addEventListener('unhandledrejection', (event) => {
         logger.error('Main', 'Unhandled promise rejection', event.reason)
         showToast('Unexpected error: ' + (event.reason?.message ?? event.reason), 'error')

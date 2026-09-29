@@ -24,6 +24,7 @@ export const EVENTS = Object.freeze({
     LOOP_POINT_CHANGE: 'loopPointChange',
     HISTORY_CHANGE: 'historyChange',
     DRUMKIT_CHANGE: 'drumkitChange',
+    ORIENTATION_CHANGE: 'orientationChange',
 
     // View / panel toggles
     EDIT_TOGGLE: 'editToggle',

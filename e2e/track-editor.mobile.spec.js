@@ -41,3 +41,24 @@ test('track editor and note editor remain accessible on mobile', async ({ page }
         await expect(neContainer).toBeInViewport()
     }
 })
+
+test('html.is-compact is set on mobile and rotation toggles the landscape layout', async ({ page }) => {
+    await page.goto('/')
+    await dismissWaitingScreen(page)
+
+    // UA (Pixel 7) + viewport → compact verdict shared with the CSS
+    await expect(page.locator('html')).toHaveClass(/is-compact/)
+
+    await page.locator('.mtb-btn[data-tab="track"]').click()
+    const tePanel = page.locator('#te-panel')
+    await expect(tePanel).toBeVisible({ timeout: 8_000 })
+
+    // Portrait → landscape: the debounced watcher fires ORIENTATION_CHANGE,
+    // the track editor re-applies the 3-column layout live (no sync needed)
+    await page.setViewportSize({ width: 915, height: 412 })
+    await expect(tePanel).toHaveClass(/te-mobile-landscape/, { timeout: 3_000 })
+
+    // Landscape → portrait: the layout class is removed again
+    await page.setViewportSize({ width: 412, height: 915 })
+    await expect(tePanel).not.toHaveClass(/te-mobile-landscape/, { timeout: 3_000 })
+})
