@@ -37,8 +37,7 @@ const listJsFiles = (dir) =>
         return entry.name.endsWith('.js') ? [full] : []
     })
 
-const stripComments = (code) =>
-    code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
+const stripComments = (code) => code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1')
 
 // group 1 = static edge (from '...' | import '...'), group 2 = dynamic import('...')
 const IMPORT_RE = /(?:\bfrom\s*|\bimport\s+)['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]/g
@@ -83,8 +82,7 @@ for (const file of files) {
     }
 }
 
-const describeEdge = (edge) =>
-    `${path.relative(SRC_DIR, edge.from)} -> ${path.relative(SRC_DIR, edge.to)}`
+const describeEdge = (edge) => `${path.relative(SRC_DIR, edge.from)} -> ${path.relative(SRC_DIR, edge.to)}`
 
 describe('module graph', () => {
     it('finds source files across the whole tree', () => {
@@ -126,18 +124,19 @@ describe('module graph', () => {
             if (!state.get(file) && visit(file)) break
         }
 
-        const pretty = cycle
-            ? cycle.map((f) => path.relative(SRC_DIR, f)).join('\n  <- ')
-            : ''
+        const pretty = cycle ? cycle.map((f) => path.relative(SRC_DIR, f)).join('\n  <- ') : ''
         expect(pretty).toBe('')
     })
 
-    it.each(Object.entries(ALLOWED_STATIC))('layer "%s" only statically imports allowed layers (%j)', (layer, allowed) => {
-        const violations = staticEdges
-            .filter((edge) => layerOf(edge.from) === layer && !allowed.includes(layerOf(edge.to)))
-            .map(describeEdge)
-        expect(violations).toEqual([])
-    })
+    it.each(Object.entries(ALLOWED_STATIC))(
+        'layer "%s" only statically imports allowed layers (%j)',
+        (layer, allowed) => {
+            const violations = staticEdges
+                .filter((edge) => layerOf(edge.from) === layer && !allowed.includes(layerOf(edge.to)))
+                .map(describeEdge)
+            expect(violations).toEqual([])
+        },
+    )
 
     it('ui modules are never imported from outside ui/bootstrap/root', () => {
         const violations = staticEdges

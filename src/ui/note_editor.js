@@ -58,6 +58,7 @@ const KNOB_PROPS = [
 const TAB_DEFS = [
     { id: 'triggers', label: 'Trig' },
     { id: 'retrig', label: 'Retr' },
+    { id: 'eucl', label: 'Eucl' },
     { id: 'arp', label: 'Arp' },
 ]
 
@@ -77,9 +78,15 @@ const GROUPS = [
         props: [
             { key: 'retriggerNum', label: 'Retrig', min: 1, max: 16, step: 1 },
             { key: 'rate', label: 'Rate', min: 1, max: 16, step: 1 },
+            { key: 'arpTriggerProbability', label: 'Prob', min: 0, max: 1, step: 0.01 },
+        ],
+    },
+    {
+        id: 'eucl',
+        label: 'Euclidean',
+        props: [
             { key: 'euclidianFill', label: 'Eucl', min: 0, max: 16, step: 1 },
             { key: 'euclidianRotation', label: 'Rot', min: 0, max: 15, step: 1 },
-            { key: 'arpTriggerProbability', label: 'Prob', min: 0, max: 1, step: 0.01 },
         ],
     },
     {

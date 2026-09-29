@@ -442,12 +442,14 @@ test.describe.serial('Full session lifecycle', () => {
             await ne.locator('button[data-ne-tab="retrig"]').click()
             await fillInput(ne.locator('input[data-key="retriggerNum"]'), 3)
             await fillInput(ne.locator('input[data-key="rate"]'), 2)
-            await fillInput(ne.locator('input[data-key="euclidianFill"]'), 6)
             await fillInput(ne.locator('input[data-key="arpTriggerProbability"]'), 0.5)
             await expectNum(async () => (await noteAt(0, 0))?.retriggerNum, 3)
             await expectNum(async () => (await noteAt(0, 0))?.rate, 2)
-            await expectNum(async () => (await noteAt(0, 0))?.euclidianFill, 6)
             await expectNum(async () => (await noteAt(0, 0))?.arpTriggerProbability, 0.5)
+
+            await ne.locator('button[data-ne-tab="eucl"]').click()
+            await fillInput(ne.locator('input[data-key="euclidianFill"]'), 6)
+            await expectNum(async () => (await noteAt(0, 0))?.euclidianFill, 6)
 
             await ne.locator('button[data-ne-tab="arp"]').click()
             const scaleSel = ne.locator('select[data-key="arpScale"]')
