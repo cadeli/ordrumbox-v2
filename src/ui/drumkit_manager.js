@@ -50,20 +50,20 @@ export default class DrumkitManager extends BasePanel {
     #wavImportService
     #drumkitChangeDebounce
 
-    get _knobs() {
+    get knobs() {
         return this.#knobs
     }
-    get _selectedSoundKey() {
+    get selectedSoundKey() {
         return this.#selectedSoundKey
     }
-    set _selectedSoundKey(v) {
+    set selectedSoundKey(v) {
         this.#selectedSoundKey = v
     }
 
-    _onKnobChange(sound, key, value) {
+    onKnobChange(sound, key, value) {
         this.#onKnobChange(sound, key, value)
     }
-    _selectSound(key) {
+    selectSound(key) {
         this.#selectSound(key)
     }
 

@@ -124,7 +124,7 @@ export default class ViewSwitch {
         })
 
         tb.drumBtn.addEventListener('click', async () => {
-            await this._toggleAutoGen(Utils.DRUM_TYPES, async (pattern, autoGen) => {
+            await this.toggleAutoGen(Utils.DRUM_TYPES, async (pattern, autoGen) => {
                 serviceRegistry.cmd.beginGenerationUndo(pattern)
                 await autoGen.generatePattern()
 
@@ -142,7 +142,7 @@ export default class ViewSwitch {
         })
 
         tb.bassBtn.addEventListener('click', async () => {
-            await this._toggleAutoGen('BASS', async (pattern, autoGen) => {
+            await this.toggleAutoGen('BASS', async (pattern, autoGen) => {
                 let bassTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'BASS')
 
                 serviceRegistry.cmd.beginGenerationUndo(pattern)
@@ -173,7 +173,7 @@ export default class ViewSwitch {
         })
 
         tb.chordsBtn.addEventListener('click', async () => {
-            await this._toggleAutoGen('PIANO', async (pattern, autoGen) => {
+            await this.toggleAutoGen('PIANO', async (pattern, autoGen) => {
                 let pianoTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'PIANO')
 
                 serviceRegistry.cmd.beginGenerationUndo(pattern)
@@ -204,8 +204,8 @@ export default class ViewSwitch {
         })
     }
 
-    async _toggleAutoGen(typeOrTypes, generateFn) {
-        const pattern = appState.patterns[appState.selectedPatternNum]
+    async toggleAutoGen(typeOrTypes, generateFn) {
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return
 
         const types =

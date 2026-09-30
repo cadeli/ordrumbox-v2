@@ -45,7 +45,7 @@ function makeMockEditor(overrides = {}) {
             ],
             generatedSounds: { BASS1: {}, PIANO: {} },
         },
-        appState: { selectedDrumkitNum: 0 },
+        appState: { selectedDrumkitIdx: 0 },
         serviceRegistry: {
             cmd: { changeTrackName: vi.fn(), changeTrackSound: vi.fn() },
             resourcesLoader: { loadSample: vi.fn() },
@@ -433,7 +433,7 @@ describe('SoundSection', () => {
         it('returns correct name for different index', () => {
             const editor = makeMockEditor()
             editor.soundRegistry.drumkitList.push({ name: 'TRAP' })
-            editor.appState.selectedDrumkitNum = 1
+            editor.appState.selectedDrumkitIdx = 1
             section = new SoundSection(editor)
             expect(getSelectedDrumkitName(editor)).toBe('TRAP')
         })
@@ -482,7 +482,7 @@ describe('SoundSection', () => {
                 kit_name: 'TRAP',
                 display_name: 'Trap Kick',
             }
-            editor.appState.selectedDrumkitNum = 1
+            editor.appState.selectedDrumkitIdx = 1
             section = new SoundSection(editor)
             const samples = getAllKitSamples(editor)
             const sorted = sortSamplesForCurrentKit(editor, samples)
@@ -508,7 +508,7 @@ describe('SoundSection', () => {
                 kit_name: 'ALPHA',
                 display_name: 'A Kick',
             }
-            editor.appState.selectedDrumkitNum = 0
+            editor.appState.selectedDrumkitIdx = 0
             section = new SoundSection(editor)
             const samples = getAllKitSamples(editor)
             const sorted = sortSamplesForCurrentKit(editor, samples)

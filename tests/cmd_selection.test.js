@@ -63,45 +63,45 @@ describe('cmd_selection', () => {
         serviceRegistry.cmd = cmd
     })
 
-    describe('setSelectedPatternNum', () => {
-        it('sets appState.selectedPatternNum', async () => {
+    describe('setSelectedPatternIdx', () => {
+        it('sets appState.selectedPatternIdx', async () => {
             appState.patterns = [
                 { name: 'A', bpm: 120 },
                 { name: 'B', bpm: 140 },
             ]
-            await cmd.setSelectedPatternNum(1)
-            expect(appState.selectedPatternNum).toBe(1)
+            await cmd.setSelectedPatternIdx(1)
+            expect(appState.selectedPatternIdx).toBe(1)
         })
 
         it('calls seq.setBpm with pattern bpm', async () => {
             appState.patterns = [{ name: 'A', bpm: 130 }]
-            await cmd.setSelectedPatternNum(0)
+            await cmd.setSelectedPatternIdx(0)
             expect(mocks.setBpm).toHaveBeenCalledWith(130)
         })
 
         it('auto-assigns sounds when sounds are loaded', async () => {
             appState.patterns = [{ name: 'A', bpm: 120 }]
             soundRegistry.sounds = { KICK: {} }
-            await cmd.setSelectedPatternNum(0)
+            await cmd.setSelectedPatternIdx(0)
             expect(mocks.autoAssignSounds).toHaveBeenCalled()
         })
 
         it('skips auto-assign when no sounds loaded', async () => {
             appState.patterns = [{ name: 'A', bpm: 120 }]
-            await cmd.setSelectedPatternNum(0)
+            await cmd.setSelectedPatternIdx(0)
             expect(mocks.autoAssignSounds).not.toHaveBeenCalled()
         })
 
         it('computes flat notes after selection', async () => {
             appState.patterns = [{ name: 'A', bpm: 120 }]
-            await cmd.setSelectedPatternNum(0)
+            await cmd.setSelectedPatternIdx(0)
             expect(mocks.applyFlatNotes).toHaveBeenCalled()
         })
 
         it('loads the samples referenced by the selected pattern', async () => {
             const pattern = { name: 'A', bpm: 120, tracks: [{ soundId: 'real/bass-c2.wav' }] }
             appState.patterns = [pattern]
-            await cmd.setSelectedPatternNum(0)
+            await cmd.setSelectedPatternIdx(0)
             expect(mocks.loadSamplesForPatterns).toHaveBeenCalledWith([pattern])
         })
 
@@ -109,27 +109,27 @@ describe('cmd_selection', () => {
             appState.patterns = [{ name: 'A', bpm: 120 }]
             const spy = vi.fn()
             playbackEvents.on(EVENTS.SELECTED_PATTERN_CHANGE, spy)
-            await cmd.setSelectedPatternNum(0)
+            await cmd.setSelectedPatternIdx(0)
             expect(spy).toHaveBeenCalled()
         })
 
         it('does nothing when patterns is empty', async () => {
             appState.patterns = []
-            await cmd.setSelectedPatternNum(0)
+            await cmd.setSelectedPatternIdx(0)
             expect(mocks.setBpm).not.toHaveBeenCalled()
         })
     })
 
-    describe('setSelectedDrumkitNum', () => {
-        it('sets appState.selectedDrumkitNum', async () => {
+    describe('setSelectedDrumkitIdx', () => {
+        it('sets appState.selectedDrumkitIdx', async () => {
             soundRegistry.drumkitList = [{ name: 'kit1' }, { name: 'kit2' }]
-            await cmd.setSelectedDrumkitNum(1)
-            expect(appState.selectedDrumkitNum).toBe(1)
+            await cmd.setSelectedDrumkitIdx(1)
+            expect(appState.selectedDrumkitIdx).toBe(1)
         })
 
         it('loads missing samples for the drumkit', async () => {
             soundRegistry.drumkitList = [{ name: 'kit1' }]
-            await cmd.setSelectedDrumkitNum(0)
+            await cmd.setSelectedDrumkitIdx(0)
             expect(mocks.loadMissingSamplesFromDrumkits).toHaveBeenCalledWith([soundRegistry.drumkitList[0]])
         })
 
@@ -137,7 +137,7 @@ describe('cmd_selection', () => {
             soundRegistry.drumkitList = [{ name: 'kit1' }]
             const spy = vi.fn()
             playbackEvents.on(EVENTS.DRUMKIT_CHANGE, spy)
-            await cmd.setSelectedDrumkitNum(0)
+            await cmd.setSelectedDrumkitIdx(0)
             expect(spy).toHaveBeenCalled()
         })
     })

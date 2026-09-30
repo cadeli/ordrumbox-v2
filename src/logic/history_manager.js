@@ -30,15 +30,15 @@ export default class HistoryManager {
     #past
     #future
     #maxSize
-    _isUndoing
-    _isRedoing
+    #isUndoing
+    #isRedoing
 
     constructor(maxSize = 50) {
         this.#past = []
         this.#future = []
         this.#maxSize = maxSize
-        this._isUndoing = false
-        this._isRedoing = false
+        this.#isUndoing = false
+        this.#isRedoing = false
     }
 
     get canUndo() {
@@ -68,7 +68,7 @@ export default class HistoryManager {
      * drag is a single undo step instead of one per input tick.
      */
     record(command) {
-        if (this._isUndoing || this._isRedoing) return
+        if (this.#isUndoing || this.#isRedoing) return
 
         const last = this.#past.at(-1)
         if (
@@ -112,7 +112,7 @@ export default class HistoryManager {
     undo() {
         if (!this.canUndo) return false
 
-        this._isUndoing = true
+        this.#isUndoing = true
         const command = this.#past.pop()
         try {
             command.undo()
@@ -121,10 +121,10 @@ export default class HistoryManager {
             logger.error('HistoryManager', 'undo failed', err)
             showToast('Undo failed', 'error')
             this.#past.push(command)
-            this._isUndoing = false
+            this.#isUndoing = false
             return false
         }
-        this._isUndoing = false
+        this.#isUndoing = false
         this.#emitBatchedRefresh()
         this.#toastReport('Undo', command)
         return true
@@ -146,7 +146,7 @@ export default class HistoryManager {
             return false
         }
 
-        this._isRedoing = true
+        this.#isRedoing = true
         this.#future.pop()
         try {
             command.execute()
@@ -155,10 +155,10 @@ export default class HistoryManager {
             logger.error('HistoryManager', 'redo failed', err)
             showToast('Redo failed', 'error')
             this.#future.push(command)
-            this._isRedoing = false
+            this.#isRedoing = false
             return false
         }
-        this._isRedoing = false
+        this.#isRedoing = false
         this.#emitBatchedRefresh()
         this.#toastReport('Redo', command)
         return true

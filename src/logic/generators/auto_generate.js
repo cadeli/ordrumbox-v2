@@ -85,7 +85,7 @@ export default class AutoGenerate {
 
     generatePattern = async (options = {}) => {
         try {
-            let pattern = appState.patterns[appState.selectedPatternNum]
+            let pattern = appState.patterns[appState.selectedPatternIdx]
             if (!pattern) {
                 pattern = serviceRegistry.cmd.addPattern('Generated')
             }

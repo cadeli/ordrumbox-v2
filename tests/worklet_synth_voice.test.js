@@ -1350,3 +1350,117 @@ describe('SynthVoiceProcessor source', () => {
         expect(Math.sqrt(rms2 / 4310)).toBeGreaterThan(0.1)
     })
 })
+
+describe('random waveform (sample & hold)', () => {
+    beforeEach(() => {
+        globalScope.currentFrame = 0
+    })
+
+    const ENV = {
+        attack: 0.001,
+        decay: 0.01,
+        sustain: 1,
+        release: 5,
+        velocity: 1,
+        master: 1,
+        noiseMix: 0,
+        filterFreq: 20000,
+        filterQ: 0.7,
+        filterType: 0,
+    }
+
+    function renderWave(wave, frames = 8820) {
+        globalScope.currentFrame = 0
+        const proc = makeProc()
+        proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+        return runProcess(proc, { ...ENV, osc1Gain: 1, osc1Wave: wave }, frames)[0]
+    }
+
+    function meanAbsDiff(a, b) {
+        let sum = 0
+        for (let i = 0; i < a.length; i++) sum += Math.abs(a[i] - b[i])
+        return sum / a.length
+    }
+
+    it('wave AudioParams expose maxValue 4 so random (shape 4) is never clamped', () => {
+        const proc = makeProc()
+        const descs = proc.constructor.parameterDescriptors
+        for (const name of ['osc1Wave', 'osc2Wave', 'osc3Wave', 'lfo1Wave', 'lfo2Wave']) {
+            const desc = descs.find((d) => d.name === name)
+            expect(desc, `${name} descriptor`).toBeDefined()
+            expect(desc.maxValue, `${name} maxValue`).toBe(4)
+        }
+        for (const name of ['filterType', 'noiseFilterType']) {
+            const desc = descs.find((d) => d.name === name)
+            expect(desc.maxValue, `${name} maxValue`).toBe(3)
+        }
+    })
+
+    it('osc1 random sounds different from square', () => {
+        const square = renderWave(3)
+        const random = renderWave(4)
+        expect(meanAbsDiff(square, random)).toBeGreaterThan(1e-3)
+    })
+
+    it('osc1 random output is deterministic (seeded S&H)', () => {
+        const a = renderWave(4)
+        const b = renderWave(4)
+        let mismatches = 0
+        for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) mismatches++
+        expect(mismatches).toBe(0)
+    })
+
+    it('osc1 random steps to a new value at each oscillator cycle', () => {
+        const out = renderWave(4)
+        const distinct = new Set()
+        // osc1Freq defaults to 440 Hz → one cycle ≈ 100.2 samples; sampling
+        // every 100 samples walks through consecutive cycles.
+        for (let i = 300; i < out.length; i += 100) distinct.add(out[i].toFixed(4))
+        expect(distinct.size).toBeGreaterThanOrEqual(3)
+    })
+
+    it('osc1 random is not a constant and stays within the waveform range', () => {
+        const out = renderWave(4)
+        let min = Infinity
+        let max = -Infinity
+        for (let i = 100; i < out.length; i++) {
+            if (out[i] < min) min = out[i]
+            if (out[i] > max) max = out[i]
+        }
+        expect(max).toBeGreaterThan(min)
+        expect(max).toBeLessThanOrEqual(1.5)
+        expect(min).toBeGreaterThanOrEqual(-1.5)
+    })
+
+    it('LFO random differs from LFO square (lfoWave shape 4)', () => {
+        const renderLfo = (wave) => {
+            globalScope.currentFrame = 0
+            const proc = makeProc()
+            proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+            proc.port.onmessage({
+                data: { type: 'update', lfo1Target: 5, lfo1Depth: 1, lfo1Freq: 10, lfo1Wave: wave },
+            })
+            return runProcess(proc, { ...ENV, osc1Gain: 1, osc1Wave: 0 }, 44100)[0]
+        }
+        const square = renderLfo(3)
+        const random = renderLfo(4)
+        expect(meanAbsDiff(square, random)).toBeGreaterThan(1e-3)
+    })
+
+    it('LFO random output is deterministic (seeded S&H)', () => {
+        const renderLfo = () => {
+            globalScope.currentFrame = 0
+            const proc = makeProc()
+            proc.port.onmessage({ data: { type: 'trigger', startTime: 0 } })
+            proc.port.onmessage({
+                data: { type: 'update', lfo1Target: 5, lfo1Depth: 1, lfo1Freq: 10, lfo1Wave: 4 },
+            })
+            return runProcess(proc, { ...ENV, osc1Gain: 1, osc1Wave: 0 }, 44100)[0]
+        }
+        const a = renderLfo()
+        const b = renderLfo()
+        let mismatches = 0
+        for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) mismatches++
+        expect(mismatches).toBe(0)
+    })
+})

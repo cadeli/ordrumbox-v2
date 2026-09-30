@@ -18,7 +18,7 @@ function makeCtx({ midiMap = new Map(), pattern, resolveMapping } = {}) {
     return {
         audioCtx: { currentTime: 0 },
         patterns: [pat],
-        getSelectedPatternNum: () => 0,
+        getSelectedPatternIdx: () => 0,
         TICK: 32,
         player: { getCurrentFlatNotesMap: () => flatNotes, loop: 0 },
         getFlatNotes: () => flatNotes,

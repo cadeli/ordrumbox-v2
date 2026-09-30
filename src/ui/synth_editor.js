@@ -110,11 +110,6 @@ export default class SynthEditor {
         this.#lfoRafId = null
     }
 
-    /** @returns {OrKnob[]} flat array of current knob instances. */
-    get _knobs() {
-        return [...this.#knobMap.values()]
-    }
-
     createDOM() {
         this.panel = document.createElement('div')
         this.panel.id = 'soft-synth-panel'

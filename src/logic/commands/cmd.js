@@ -14,14 +14,14 @@ export default class Commander {
     static #TRACK_KEY_SET = new Set(Object.keys(TRACK_DEFAULTS))
     static TRACK_VALUE_RANGES = TRACK_VALUE_RANGES
 
-    _history
+    #history
     #suppressRecord
     #genSnapshot
     #coalesceIds = new WeakMap()
     #coalesceSeq = 1
 
     constructor() {
-        this._history = null
+        this.#history = null
         this.#suppressRecord = false
 
         // Bind methods from sub-modules
@@ -32,10 +32,10 @@ export default class Commander {
     }
 
     getHistory() {
-        if (!this._history) {
-            this._history = serviceRegistry.history
+        if (!this.#history) {
+            this.#history = serviceRegistry.history
         }
-        return this._history
+        return this.#history
     }
 
     /**
@@ -136,8 +136,8 @@ export default class Commander {
         const state = {
             patterns: structuredClone(appState.patterns),
             songInfos: structuredClone(appState.songInfos ?? {}),
-            selectedPatternNum: appState.selectedPatternNum,
-            selectedTrackNum: appState.selectedTrackNum,
+            selectedPatternIdx: appState.selectedPatternIdx,
+            selectedTrackIdx: appState.selectedTrackIdx,
         }
         return { ...state, keyJson: JSON.stringify(state) }
     }
@@ -147,13 +147,13 @@ export default class Commander {
         if (snap.songInfos) {
             appState.songInfos = { ...snap.songInfos }
         }
-        appState.selectedPatternNum = Utils.clamp(
-            snap.selectedPatternNum ?? 0,
+        appState.selectedPatternIdx = Utils.clamp(
+            snap.selectedPatternIdx ?? 0,
             0,
             Math.max(0, appState.patterns.length - 1),
         )
-        const tracks = Utils.getTracksArray(appState.patterns[appState.selectedPatternNum] ?? {})
-        appState.selectedTrackNum = Utils.clamp(snap.selectedTrackNum ?? 0, 0, Math.max(0, tracks.length - 1))
+        const tracks = Utils.getTracksArray(appState.patterns[appState.selectedPatternIdx] ?? {})
+        appState.selectedTrackIdx = Utils.clamp(snap.selectedTrackIdx ?? 0, 0, Math.max(0, tracks.length - 1))
         this.persist()
     }
 

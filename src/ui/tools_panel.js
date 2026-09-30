@@ -19,7 +19,7 @@ export default class ToolsPanel extends BasePanel {
     #midi
     #cache
 
-    get _wavLoops() {
+    get wavLoops() {
         return this.#export.wavLoops
     }
 

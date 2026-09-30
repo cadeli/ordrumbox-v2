@@ -156,7 +156,7 @@ export default class BaseGenerator {
                 const absoluteStep = beat * stepsPerBeat + step
                 if (absoluteStep >= loopPointAbsolute) continue
 
-                const required = requiredSteps ? this._isRequiredStep(beat, step, requiredSteps) : false
+                const required = requiredSteps ? this.#isRequiredStep(beat, step, requiredSteps) : false
                 const probability = config.probabilities?.[step % config.probabilities.length] ?? 0
 
                 if (!required && Math.random() >= probability * density) continue
@@ -317,7 +317,7 @@ export default class BaseGenerator {
         }
     }
 
-    _isRequiredStep = (beat, step, requiredSteps = []) => {
+    #isRequiredStep = (beat, step, requiredSteps = []) => {
         return requiredSteps.some((requiredStep) => {
             const beatMatches =
                 requiredStep.beatModulo === undefined || beat % requiredStep.beatModulo === requiredStep.beatModulo - 1

@@ -38,7 +38,7 @@ function makePlayer(pattern, getFlatNotes) {
         sounds: {},
         generatedSounds: {},
         patterns: [pattern],
-        getSelectedPatternNum: () => 0,
+        getSelectedPatternIdx: () => 0,
         computeFlatNotes: vi.fn(),
         getAutoGenerate: vi.fn(() => Promise.resolve({ changeTrack: vi.fn() })),
         getFlatNotes,

@@ -21,7 +21,7 @@ vi.mock('../src/state/service_registry.js', () => ({
 vi.mock('../src/state/app_state.js', () => ({
     appState: {
         patterns: [],
-        selectedPatternNum: 0,
+        selectedPatternIdx: 0,
     },
     __esModule: true,
 }))

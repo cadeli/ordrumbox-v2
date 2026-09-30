@@ -98,7 +98,7 @@ export default class PlaybackOverlaySection {
         }
         const strips = mixer.strips
         const vuEls = this.#vuElCache
-        const currentPattern = appState.patterns[appState.selectedPatternNum]
+        const currentPattern = appState.patterns[appState.selectedPatternIdx]
         const tracks = Utils.getTracksArray(currentPattern)
         for (let i = 0; i < vuEls.length; i++) {
             const vuEl = vuEls[i]
@@ -165,7 +165,7 @@ export default class PlaybackOverlaySection {
         const transport = editor.serviceRegistry.transport
         if (!transport?.isRunning) return
 
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern || !editor.container || !editor.layoutCache) return
         this.ensurePlayhead()
 

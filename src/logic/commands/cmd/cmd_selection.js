@@ -12,25 +12,25 @@ import { EVENTS } from '../../../core/events.js'
  */
 export function createSelectionMethods(_cmd) {
     return {
-        async setSelectedDrumkitNum(num) {
+        async setSelectedDrumkitIdx(num) {
             try {
-                appState.selectedDrumkitNum = num
+                appState.selectedDrumkitIdx = num
                 await serviceRegistry.resourcesLoader.loadMissingSamplesFromDrumkits([soundRegistry.drumkitList[num]])
                 await this.autoAssignSoundsForNewDrumkit()
                 playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
             } catch (err) {
-                logger.error('Commander', 'cmd::setSelectedDrumkitNum failed', err)
+                logger.error('Commander', 'cmd::setSelectedDrumkitIdx failed', err)
                 showToast('Drumkit switch failed', 'error')
             }
         },
 
         async autoAssignSoundsForNewDrumkit() {
             try {
-                const selPattern = appState.patterns[appState.selectedPatternNum]
-                serviceRegistry.seq.setBpm(selPattern.bpm)
+                const selectedPattern = appState.patterns[appState.selectedPatternIdx]
+                serviceRegistry.seq.setBpm(selectedPattern.bpm)
                 const autoAssign = await getAutoAssignService()
-                autoAssign.autoAssignSounds(selPattern)
-                serviceRegistry.patterns.applyFlatNotes(selPattern)
+                autoAssign.autoAssignSounds(selectedPattern)
+                serviceRegistry.patterns.applyFlatNotes(selectedPattern)
                 serviceRegistry.audioEngine?.invalidateCache()
             } catch (err) {
                 logger.error('Commander', 'cmd::autoAssignSoundsForNewDrumkit failed', err)
@@ -38,37 +38,37 @@ export function createSelectionMethods(_cmd) {
             }
         },
 
-        async setSelectedPatternNum(num) {
+        async setSelectedPatternIdx(num) {
             try {
                 if (appState.patterns.length > 0) {
-                    appState.selectedPatternNum = num
-                    const selPattern = appState.patterns[appState.selectedPatternNum]
-                    serviceRegistry.seq.setBpm(selPattern.bpm)
+                    appState.selectedPatternIdx = num
+                    const selectedPattern = appState.patterns[appState.selectedPatternIdx]
+                    serviceRegistry.seq.setBpm(selectedPattern.bpm)
                     if (Object.keys(soundRegistry.sounds).length > 0) {
                         const autoAssign = await getAutoAssignService()
-                        autoAssign.autoAssignSounds(selPattern)
+                        autoAssign.autoAssignSounds(selectedPattern)
                     }
-                    serviceRegistry.patterns.applyFlatNotes(selPattern)
+                    serviceRegistry.patterns.applyFlatNotes(selectedPattern)
                     // Explicit sound assignments can point to samples of another
                     // drumkit than the selected one — load them on demand so the
                     // pattern is audible right after a switch or a reload.
                     // Isolated: a missing loader or a failed fetch must never
                     // abort the switch itself (the emit below still has to run).
                     try {
-                        await serviceRegistry.resourcesLoader?.loadSamplesForPatterns([selPattern])
+                        await serviceRegistry.resourcesLoader?.loadSamplesForPatterns([selectedPattern])
                     } catch (err) {
-                        logger.warn('Commander', 'cmd::setSelectedPatternNum sample loading failed', err)
+                        logger.warn('Commander', 'cmd::setSelectedPatternIdx sample loading failed', err)
                     }
                     playbackEvents.emit(EVENTS.SELECTED_PATTERN_CHANGE)
                 }
             } catch (err) {
-                logger.error('Commander', 'cmd::setSelectedPatternNum failed', err)
+                logger.error('Commander', 'cmd::setSelectedPatternIdx failed', err)
                 showToast('Pattern switch failed', 'error')
             }
         },
 
-        setSelectedTrackNum(num) {
-            appState.selectedTrackNum = num
+        setSelectedTrackIdx(num) {
+            appState.selectedTrackIdx = num
         },
 
         setCurrentPage(page) {

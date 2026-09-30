@@ -21,25 +21,25 @@ export default class PatternSettingsPanel {
     #bassBtn
     #chordsBtn
 
-    get _isOpen() {
+    get isOpen() {
         return this.#isOpen
     }
-    get _beatsSelect() {
+    get beatsSelect() {
         return this.#beatsSelect
     }
-    get _drumkitSelect() {
+    get drumkitSelect() {
         return this.#drumkitSelect
     }
-    get _patternSelect() {
+    get patternSelect() {
         return this.#patternSelect
     }
-    get _pageLabel() {
+    get pageLabel() {
         return this.#pageLabel
     }
-    get _prevPageBtn() {
+    get prevPageBtn() {
         return this.#prevPageBtn
     }
-    get _nextPageBtn() {
+    get nextPageBtn() {
         return this.#nextPageBtn
     }
 
@@ -161,7 +161,7 @@ export default class PatternSettingsPanel {
     #onBeatsChange() {
         const val = parseInt(this.#beatsSelect.value, 10)
         if (isNaN(val)) return
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return
         pattern.nbBeats = val
         Utils.getTracksArray(pattern).forEach((track) => {
@@ -186,7 +186,7 @@ export default class PatternSettingsPanel {
     #onDrumkitChange() {
         const num = parseInt(this.#drumkitSelect.value, 10)
         if (!isNaN(num)) {
-            serviceRegistry.cmd.setSelectedDrumkitNum(num)
+            serviceRegistry.cmd.setSelectedDrumkitIdx(num)
         }
     }
 
@@ -197,7 +197,7 @@ export default class PatternSettingsPanel {
     #onPatternChange() {
         const num = parseInt(this.#patternSelect.value, 10)
         if (!isNaN(num)) {
-            serviceRegistry.cmd.setSelectedPatternNum(num)
+            serviceRegistry.cmd.setSelectedPatternIdx(num)
             serviceRegistry.cmd.resetPage()
             playbackEvents.batch(() => {
                 playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
@@ -223,7 +223,7 @@ export default class PatternSettingsPanel {
     }
 
     async #onDrumClick() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return
         const drumTypes = new Set(['KICK', 'SNARE', 'HAT', 'CLAP', 'COWBELL', 'PERC'])
         const hasDrumAuto = (pattern.tracks ?? []).some((t) => t.auto && drumTypes.has(Utils.detectTrackType(t.name)))
@@ -259,7 +259,7 @@ export default class PatternSettingsPanel {
     // turns auto off if already active, otherwise creates the track (if
     // missing) from the current genre's structure and turns auto on.
     async #toggleMelodicAutoGen(trackType, { synthSoundKey, defaultVariant }) {
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return
         const hasAuto = (pattern.tracks ?? []).some((t) => t.auto && Utils.detectTrackType(t.name) === trackType)
         if (hasAuto) {
@@ -315,7 +315,7 @@ export default class PatternSettingsPanel {
     }
 
     sync() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return
 
         this.#beatsSelect.value = pattern.nbBeats ?? 4
@@ -337,7 +337,7 @@ export default class PatternSettingsPanel {
             this.#drumkitSelect.appendChild(opt)
         })
         if (this.#drumkitSelect.options.length > 0) {
-            const idx = Math.min(appState.selectedDrumkitNum, this.#drumkitSelect.options.length - 1)
+            const idx = Math.min(appState.selectedDrumkitIdx, this.#drumkitSelect.options.length - 1)
             this.#drumkitSelect.selectedIndex = idx
         }
 
@@ -347,7 +347,7 @@ export default class PatternSettingsPanel {
             opt.value = i
             opt.textContent = pat.name ?? `Pattern ${i}`
             this.#patternSelect.appendChild(opt)
-            if (i === appState.selectedPatternNum) opt.selected = true
+            if (i === appState.selectedPatternIdx) opt.selected = true
         })
     }
 

@@ -111,7 +111,7 @@ describe('sample_analyzer', () => {
         it('uses legacy string color as stroke', () => {
             const ctx = makeMockCtx()
             drawEnvelope(ctx, [0, 1], 100, 50, '#ff0000')
-            expect(ctx._strokeStyle).toBe('#ff0000')
+            expect(ctx.strokeStyle).toBe('#ff0000')
         })
 
         it('uses colors object for stroke, background, fill', () => {
@@ -121,7 +121,7 @@ describe('sample_analyzer', () => {
                 background: 'rgba(0,0,0,0.5)',
                 fill: 'rgba(255,0,0,0.3)',
             })
-            expect(ctx._strokeStyle).toBe('#ff0000')
+            expect(ctx.strokeStyle).toBe('#ff0000')
         })
 
         it('draws correct number of line segments', () => {

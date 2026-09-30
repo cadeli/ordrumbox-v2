@@ -12,7 +12,7 @@ test.describe('Undo / Redo', () => {
         page.evaluate(() => {
             const { appState, serviceRegistry } = window.__e2e
             const h = serviceRegistry.history
-            const pat = appState.patterns[appState.selectedPatternNum]
+            const pat = appState.patterns[appState.selectedPatternIdx]
             const notes = (pat?.tracks ?? []).flatMap((t) => t.notes ?? [])
             return {
                 pastLength: h.pastLength,
@@ -28,7 +28,7 @@ test.describe('Undo / Redo', () => {
     const findTwoEmptyCells = (page) =>
         page.evaluate(() => {
             const { appState } = window.__e2e
-            const track = appState.patterns[appState.selectedPatternNum].tracks[0]
+            const track = appState.patterns[appState.selectedPatternIdx].tracks[0]
             const filled = new Set((track.notes ?? []).map((n) => `${n.beat}/${n.beatStep}`))
             const out = []
             const nbBeats = track.nbBeats ?? 4

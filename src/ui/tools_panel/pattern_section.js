@@ -34,7 +34,7 @@ export default class PatternSection {
     }
 
     compact() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern || !pattern.tracks) return
 
         Utils.getTracksArray(pattern).forEach((track) => {
@@ -49,7 +49,7 @@ export default class PatternSection {
     }
 
     randomize() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return
         const tracks = Utils.getTracksArray(pattern)
         for (const track of tracks) {

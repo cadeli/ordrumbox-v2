@@ -82,7 +82,7 @@ export default class Toolbar {
         this.startBtn.textContent = running ? '■' : '▶'
         this.startBtn.classList.toggle('running', running)
 
-        const pat = appState.patterns[appState.selectedPatternNum]
+        const pat = appState.patterns[appState.selectedPatternIdx]
         const bpm = this.#bpmOverride ?? pat?.bpm ?? 120
         this.#bpmOverride = null
         this.bpmSlider.value = bpm
@@ -130,7 +130,7 @@ export default class Toolbar {
         this.#patternNav.rebuildDrumkitSelect()
 
         if (pat && this.patternNameMobile) {
-            this.patternNameMobile.textContent = pat.name ?? `Pattern ${appState.selectedPatternNum + 1}`
+            this.patternNameMobile.textContent = pat.name ?? `Pattern ${appState.selectedPatternIdx + 1}`
         }
     }
 

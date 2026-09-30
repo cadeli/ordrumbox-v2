@@ -33,9 +33,9 @@ async function openLoopTab(page) {
 function readTrack(page) {
     return page.evaluate(() => {
         const { appState } = window.__e2e
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         const tracks = Array.isArray(pattern?.tracks) ? pattern.tracks : Object.values(pattern?.tracks ?? {})
-        const idx = appState.selectedTrackNum ?? 0
+        const idx = appState.selectedTrackIdx ?? 0
         const t = tracks[idx] ?? tracks[0]
         return {
             idx: tracks.indexOf(t) >= 0 ? tracks.indexOf(t) : idx,

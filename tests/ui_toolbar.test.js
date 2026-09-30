@@ -22,8 +22,8 @@ describe('Toolbar UI Layout', () => {
             setBpm: vi.fn(),
         }
         serviceRegistry.cmd = {
-            setSelectedPatternNum: vi.fn(),
-            setSelectedDrumkitNum: vi.fn(),
+            setSelectedPatternIdx: vi.fn(),
+            setSelectedDrumkitIdx: vi.fn(),
             cleanPattern: vi.fn(),
             resetPage: vi.fn(() => {
                 appState.currentPage = 0
@@ -118,7 +118,7 @@ describe('Toolbar UI Layout', () => {
     it('updates pattern.nbBeats and emits events when beats select changes', () => {
         const track = { name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 }
         appState.patterns = [{ name: 'Test', bpm: 120, nbBeats: 4, tracks: [track] }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
 
         const beatsSelect = document.querySelector('.tb-beats-group select')
         expect(beatsSelect).not.toBeNull()
@@ -137,7 +137,7 @@ describe('Toolbar UI Layout', () => {
     it('clamps track.loopAtStep when beats decrease', () => {
         const track = { name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 }
         appState.patterns = [{ name: 'Test', bpm: 120, nbBeats: 4, tracks: [track] }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
 
         const beatsSelect = document.querySelector('.tb-beats-group select')
         beatsSelect.value = '2'

@@ -313,7 +313,7 @@ export default class MidiManager extends EventTarget {
     }
 
     triggerMappedTrack = async (noteNumber) => {
-        const pattern = appState.patterns?.[appState.selectedPatternNum]
+        const pattern = appState.patterns?.[appState.selectedPatternIdx]
         if (!pattern) {
             logger.info('MidiManager', `${MidiManager.TAG}: No current pattern available`)
             return

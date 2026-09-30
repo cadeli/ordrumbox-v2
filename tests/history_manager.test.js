@@ -81,18 +81,29 @@ describe('HistoryManager', () => {
 
         it('does not record during undo', () => {
             history.record({ execute: vi.fn(), undo: vi.fn() })
-            history.record({ execute: vi.fn(), undo: vi.fn() })
-            history._isUndoing = true
-            history.record({ execute: vi.fn(), undo: vi.fn() })
-            history._isUndoing = false
-            expect(history.pastLength).toBe(2)
+            // An undo closure that records again must be dropped
+            history.record({
+                execute: vi.fn(),
+                undo: () => history.record({ execute: vi.fn(), undo: vi.fn() }),
+            })
+
+            history.undo()
+
+            expect(history.pastLength).toBe(1)
+            expect(history.canRedo).toBe(true)
         })
 
         it('does not record during redo', () => {
-            history.record({ execute: vi.fn(), undo: vi.fn() })
-            history._isRedoing = true
-            history.record({ execute: vi.fn(), undo: vi.fn() })
-            history._isRedoing = false
+            history.record({
+                execute: () => history.record({ execute: vi.fn(), undo: vi.fn() }),
+                undo: vi.fn(),
+            })
+            history.undo()
+            expect(history.pastLength).toBe(0)
+
+            history.redo()
+
+            // The nested record fired by the redo closure was dropped
             expect(history.pastLength).toBe(1)
         })
     })

@@ -60,13 +60,13 @@ function makeCmd() {
             track.notes.push(note)
             return note
         }),
-        deleteNote: vi.fn((track, selNote) => {
+        deleteNote: vi.fn((track, selectedNote) => {
             for (let i = track.notes.length - 1; i >= 0; i--) {
                 const n = track.notes[i]
                 if (
-                    n.beat === selNote.beat &&
-                    n.beatStep === selNote.beatStep &&
-                    (n.pitch ?? 0) === (selNote.pitch ?? 0)
+                    n.beat === selectedNote.beat &&
+                    n.beatStep === selectedNote.beatStep &&
+                    (n.pitch ?? 0) === (selectedNote.pitch ?? 0)
                 ) {
                     track.notes.splice(i, 1)
                     return
@@ -106,8 +106,8 @@ describe('PianoRollPanel', () => {
         serviceRegistry.reset()
 
         appState.patterns = [structuredClone(TEST_PATTERN)]
-        appState.selectedPatternNum = 0
-        appState.selectedTrackNum = 0
+        appState.selectedPatternIdx = 0
+        appState.selectedTrackIdx = 0
 
         serviceRegistry.transport = { isRunning: false, tick: 0 }
         serviceRegistry.cmd = makeCmd()
@@ -128,6 +128,10 @@ describe('PianoRollPanel', () => {
 
     function getGrid() {
         return panel.container.querySelector('#pp-piano-grid')
+    }
+
+    function trackLabel() {
+        return panel.container.querySelector('#pp-pr-track-name')?.textContent ?? null
     }
 
     function getNotes() {
@@ -286,7 +290,7 @@ describe('PianoRollPanel', () => {
             const note = track.notes[0]
             const step = note.beat * track.stepsPerBeat + note.beatStep
             clickNoteAtStepPitch(step, note.pitch ?? 0)
-            expect(panel.selNote).toBe(note)
+            expect(panel.selectedNote).toBe(note)
         })
 
         it('applies selected class to clicked note', () => {
@@ -303,19 +307,19 @@ describe('PianoRollPanel', () => {
             const note = track.notes[0]
             const step = note.beat * track.stepsPerBeat + note.beatStep
             clickNoteAtStepPitch(step, note.pitch ?? 0)
-            expect(panel.selNote).toBe(note)
+            expect(panel.selectedNote).toBe(note)
 
             clickNoteAtStepPitch(step, note.pitch ?? 0)
-            expect(panel.selNote).toBeNull()
+            expect(panel.selectedNote).toBeNull()
             expect(track.notes).not.toContain(note)
         })
 
         it('clears selection on hide', () => {
             const track = getTrack()
             const note = track.notes[0]
-            panel.selNote = note
+            panel.selectedNote = note
             panel.hide()
-            expect(panel.selNote).toBeNull()
+            expect(panel.selectedNote).toBeNull()
         })
     })
 
@@ -485,7 +489,7 @@ describe('PianoRollPanel', () => {
             panel.cursorStep = note.beat * spb + note.beatStep
             panel.cursorRow = noteRow(note, track.pitch ?? 0)
             pressKey('Enter')
-            expect(panel.selNote).toBe(note)
+            expect(panel.selectedNote).toBe(note)
         })
 
         it('Enter deletes note when cursor is on already selected note', () => {
@@ -496,28 +500,28 @@ describe('PianoRollPanel', () => {
             panel.cursorRow = noteRow(note, track.pitch ?? 0)
 
             pressKey('Enter')
-            expect(panel.selNote).toBe(note)
+            expect(panel.selectedNote).toBe(note)
 
             pressKey('Enter')
-            expect(panel.selNote).toBeNull()
+            expect(panel.selectedNote).toBeNull()
             expect(track.notes).not.toContain(note)
         })
 
         it('Delete removes selected note', () => {
             const track = getTrack()
             const note = track.notes[0]
-            panel.selNote = note
+            panel.selectedNote = note
             pressKey('Delete')
-            expect(panel.selNote).toBeNull()
+            expect(panel.selectedNote).toBeNull()
             expect(track.notes).not.toContain(note)
         })
 
         it('Backspace removes selected note', () => {
             const track = getTrack()
             const note = track.notes[0]
-            panel.selNote = note
+            panel.selectedNote = note
             pressKey('Backspace')
-            expect(panel.selNote).toBeNull()
+            expect(panel.selectedNote).toBeNull()
             expect(track.notes).not.toContain(note)
         })
     })
@@ -744,30 +748,39 @@ describe('PianoRollPanel', () => {
     describe('async pattern load (grid populates after patternStructureChange)', () => {
         it('re-resolves track and renders grid when patterns load after show()', () => {
             appState.patterns = []
-            appState.selectedPatternNum = 0
-            appState.selectedTrackNum = 0
+            appState.selectedPatternIdx = 0
+            appState.selectedTrackIdx = 0
 
             panel.hide()
-            panel._track = null
-            panel._trackIdx = -1
+            panel.container?.remove()
+            // fresh instance: nothing resolved yet
+            panel = new PianoRollPanel()
+            panel.init()
             panel.show()
 
-            expect(panel._track).toBeNull()
-            expect(panel._gridDirty).toBe(false)
+            expect(trackLabel()).toBe('')
+            expect(panel.container.querySelectorAll('.pp-pr-col').length).toBe(0)
+            expect(panel.container.querySelectorAll('.pp-pr-note').length).toBe(0)
 
-            appState.patterns = [structuredClone(TEST_PATTERN)]
-            appState.selectedPatternNum = 0
-            appState.selectedTrackNum = 0
+            const pattern = structuredClone(TEST_PATTERN)
+            pattern.tracks.push({ name: 'SNARE', nbBeats: 8, stepsPerBeat: 4, pitch: 0, notes: [] })
+            appState.patterns = [pattern]
+            appState.selectedPatternIdx = 0
+            appState.selectedTrackIdx = 0
             playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
 
-            expect(panel._track).not.toBeNull()
-            expect(panel._trackIdx).toBe(0)
-            const notes = panel.container.querySelectorAll('.pp-pr-note')
-            expect(notes.length).toBeGreaterThan(0)
+            expect(trackLabel()).toBe(' — KICK')
+            expect(panel.container.querySelectorAll('.pp-pr-col').length).toBeGreaterThan(0)
+            expect(panel.container.querySelectorAll('.pp-pr-note').length).toBeGreaterThan(0)
+
+            // the next structure event follows the selected track index
+            appState.selectedTrackIdx = 1
+            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
+            expect(trackLabel()).toBe(' — SNARE')
         })
 
         it('show() resolves track immediately so grid renders on first sync()', () => {
-            expect(panel._track).not.toBeNull()
+            expect(trackLabel()).toBe(' — KICK')
             expect(panel.container.querySelectorAll('.pp-pr-col').length).toBeGreaterThan(0)
             expect(panel.container.querySelectorAll('.pp-pr-note').length).toBeGreaterThan(0)
         })
@@ -845,7 +858,7 @@ describe('PianoRollPanel', () => {
 
             expect(track.notes).toHaveLength(0)
             expect(serviceRegistry.cmd.cleanTrack).toHaveBeenCalledWith(track)
-            expect(panel.selNote).toBeNull()
+            expect(panel.selectedNote).toBeNull()
             expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Cleared notes'), 'success')
             expect(menu()).toBeNull()
         })
@@ -945,7 +958,7 @@ describe('PianoRollPanel', () => {
             expect(added.beat).toBe(7)
             expect(added.beatStep).toBe(0)
             expect(added.pitch).toBe(5)
-            expect(panel.selNote).toBe(added)
+            expect(panel.selectedNote).toBe(added)
             expect(serviceRegistry.cmd.addNote).toHaveBeenCalled()
             expect(showToast).toHaveBeenCalledWith(expect.stringContaining('Added note (pitch 5)'), 'success')
             expect(menu()).toBeNull()

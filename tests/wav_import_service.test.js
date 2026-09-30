@@ -42,8 +42,8 @@ vi.mock('../src/state/service_registry.js', () => ({
 
 const sharedAppState = {
     patterns: [],
-    selectedPatternNum: 0,
-    selectedDrumkitNum: 0,
+    selectedPatternIdx: 0,
+    selectedDrumkitIdx: 0,
 }
 
 vi.mock('../src/state/app_state.js', () => ({
@@ -77,9 +77,9 @@ describe('WavImportService', () => {
         sharedSoundRegistry.sounds = {}
         sharedSoundRegistry.drumkitList = []
         sharedSoundRegistry.drumkits = {}
-        sharedAppState.selectedDrumkitNum = 0
+        sharedAppState.selectedDrumkitIdx = 0
         sharedAppState.patterns = []
-        sharedAppState.selectedPatternNum = 0
+        sharedAppState.selectedPatternIdx = 0
 
         const mod = await import('../src/logic/services/wav_import_service.js')
         WavImportService = mod.default
@@ -123,12 +123,12 @@ describe('WavImportService', () => {
         expect(kit.instruments).toHaveLength(2)
     })
 
-    it('updates selectedDrumkitNum', async () => {
+    it('updates selectedDrumkitIdx', async () => {
         const files = [makeWavFile('kick.wav', 'my_drums/kick.wav')]
         const service = new WavImportService()
         await service.importDirectory(files)
 
-        expect(sharedAppState.selectedDrumkitNum).toBeGreaterThanOrEqual(0)
+        expect(sharedAppState.selectedDrumkitIdx).toBeGreaterThanOrEqual(0)
     })
 
     it('decodes audio data for each file', async () => {
@@ -199,7 +199,7 @@ describe('WavImportService', () => {
 
         const kit = sharedSoundRegistry.drumkitList.find((d) => d.name === 'my_drums')
         expect(kit.instruments).toHaveLength(1)
-        expect(sharedAppState.selectedDrumkitNum).toBe(0)
+        expect(sharedAppState.selectedDrumkitIdx).toBe(0)
     })
 
     it('assigns instrument keys via InstrumentsManager', async () => {

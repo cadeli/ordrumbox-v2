@@ -96,11 +96,11 @@ function setupServices() {
         setTick: vi.fn(),
     }
     serviceRegistry.cmd = {
-        setSelectedPatternNum: vi.fn((num) => {
-            appState.selectedPatternNum = num
+        setSelectedPatternIdx: vi.fn((num) => {
+            appState.selectedPatternIdx = num
         }),
-        setSelectedDrumkitNum: vi.fn(),
-        setSelectedTrackNum: vi.fn(),
+        setSelectedDrumkitIdx: vi.fn(),
+        setSelectedTrackIdx: vi.fn(),
         cleanPattern: vi.fn(),
         addPattern: vi.fn(),
         removePattern: vi.fn(),
@@ -156,7 +156,7 @@ describe('Page navigation E2E — Toolbar', () => {
         setupServices()
         const pat = makeMultiPagePattern(8)
         appState.patterns = [pat]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
         toolbar = initToolbar()
     })
@@ -223,7 +223,7 @@ describe('Page navigation E2E — Toolbar single-page', () => {
         setupServices()
         const pat = make4BeatPattern()
         appState.patterns = [pat]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
         toolbar = initToolbar()
     })
@@ -255,7 +255,7 @@ describe('Page navigation E2E — beats change updates pages', () => {
         setupServices()
         const pat = make4BeatPattern()
         appState.patterns = [pat]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
         toolbar = initToolbar()
     })
@@ -294,7 +294,7 @@ describe('Page navigation E2E — Toolbar ↔ PatternPanel grid', () => {
         setupServices()
         const pat = makeMultiPagePattern(8)
         appState.patterns = [pat]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
         toolbar = initToolbar()
         patternPanel = initPatternPanel()
@@ -350,8 +350,8 @@ describe('Page navigation E2E — Toolbar ↔ PianoRoll', () => {
         setupServices()
         const pat = makeMultiPagePattern(8)
         appState.patterns = [pat]
-        appState.selectedPatternNum = 0
-        appState.selectedTrackNum = 0
+        appState.selectedPatternIdx = 0
+        appState.selectedTrackIdx = 0
         appState.currentPage = 0
         toolbar = initToolbar()
         pianoRoll = initPianoRollPanel()
@@ -411,7 +411,7 @@ describe('Page navigation E2E — playback auto-page (grid)', () => {
         serviceRegistry.audioEngine = { mixer: { strips: [] } }
         const pat = makeMultiPagePattern(8)
         appState.patterns = [pat]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
         toolbar = initToolbar()
         patternPanel = initPatternPanel()
@@ -469,8 +469,8 @@ describe('Page navigation E2E — playback auto-page (piano roll)', () => {
         serviceRegistry.audioEngine = { mixer: { strips: [] } }
         const pat = makeMultiPagePattern(8)
         appState.patterns = [pat]
-        appState.selectedPatternNum = 0
-        appState.selectedTrackNum = 0
+        appState.selectedPatternIdx = 0
+        appState.selectedTrackIdx = 0
         appState.currentPage = 0
         toolbar = initToolbar()
         pianoRoll = initPianoRollPanel()
@@ -525,7 +525,7 @@ describe('Page navigation E2E — pattern switch resets page', () => {
         const pat8 = makeMultiPagePattern(8)
         const pat4 = make4BeatPattern()
         appState.patterns = [pat8, pat4]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
         toolbar = initToolbar()
     })
@@ -567,7 +567,7 @@ describe('Page navigation E2E — 16-beat pattern (4 pages)', () => {
         setupServices()
         const pat = makeMultiPagePattern(16)
         appState.patterns = [pat]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
         toolbar = initToolbar()
     })

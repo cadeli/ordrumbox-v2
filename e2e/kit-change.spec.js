@@ -25,11 +25,11 @@ test.describe('E2E-C: Kit change mid-playback', () => {
         } else {
             await page.evaluate(() => {
                 const { serviceRegistry } = window.__e2e
-                serviceRegistry.cmd.setSelectedDrumkitNum(1)
+                serviceRegistry.cmd.setSelectedDrumkitIdx(1)
             })
         }
 
-        // setSelectedDrumkitNum() awaits sample loading + auto-assign before
+        // setSelectedDrumkitIdx() awaits sample loading + auto-assign before
         // emitting drumkitChange, so wait for its actual outcome.
         const orphanedAutoTracks = () =>
             page.evaluate(() => {
@@ -87,7 +87,7 @@ test.describe('E2E-C: Kit change mid-playback', () => {
             window.__flatNotesBefore = window.__e2e.appState.flatNotes
         })
         await page.evaluate(() => {
-            window.__e2e.serviceRegistry.cmd.setSelectedDrumkitNum(1)
+            window.__e2e.serviceRegistry.cmd.setSelectedDrumkitIdx(1)
         })
         await expect
             .poll(() => page.evaluate(() => window.__e2e.appState.flatNotes !== window.__flatNotesBefore), {

@@ -95,7 +95,7 @@ export default class SongPanel extends BasePanel {
     }
 
     sync() {
-        this.#selectedIdx = appState.selectedPatternNum
+        this.#selectedIdx = appState.selectedPatternIdx
         if (appState.songInfos?.name) this.#songName = appState.songInfos.name
         this.#songNameEl.textContent = this.#songName
         this.#songDateEl.textContent = appState.songInfos?.date ?? ''
@@ -221,7 +221,7 @@ export default class SongPanel extends BasePanel {
     }
 
     #selectPattern(idx) {
-        serviceRegistry.cmd.setSelectedPatternNum(idx)
+        serviceRegistry.cmd.setSelectedPatternIdx(idx)
         serviceRegistry.cmd.resetPage()
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
@@ -240,7 +240,7 @@ export default class SongPanel extends BasePanel {
         if (!confirm(`Delete "${name}"?`)) return
 
         serviceRegistry.cmd.removePattern(idx)
-        this.#selectedIdx = appState.selectedPatternNum
+        this.#selectedIdx = appState.selectedPatternIdx
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             playbackEvents.emit(EVENTS.PATTERN_CHANGE)

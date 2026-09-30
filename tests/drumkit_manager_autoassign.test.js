@@ -13,7 +13,7 @@ const SOUND_ID = 'custom/one-shot.wav'
 function setupRegistry() {
     appState.reset()
     soundRegistry.reset()
-    appState.selectedDrumkitNum = 0
+    appState.selectedDrumkitIdx = 0
     soundRegistry.sounds = {
         [SOUND_ID]: {
             url: SOUND_ID,
@@ -37,7 +37,7 @@ describe('DrumkitManager instrument mapping', () => {
     it('persists the selected instrument for a subsequent auto-assign', () => {
         const manager = new DrumkitManager()
         manager.init()
-        manager._selectSound(SOUND_ID)
+        manager.selectSound(SOUND_ID)
 
         const instrumentSelect = manager.container.querySelector('#dm-inst-select')
         expect(instrumentSelect.value).toBe('CLAP')
@@ -59,10 +59,10 @@ describe('DrumkitManager instrument mapping', () => {
     it('persists per-sample gain, tune, and decay settings', () => {
         const manager = new DrumkitManager()
         manager.init()
-        manager._selectSound(SOUND_ID)
+        manager.selectSound(SOUND_ID)
 
         const setKnob = (key, value) => {
-            manager._knobs.find((k) => k.key === key).setValue(value, true)
+            manager.knobs.find((k) => k.key === key).setValue(value, true)
         }
 
         setKnob('gain', -3.5)

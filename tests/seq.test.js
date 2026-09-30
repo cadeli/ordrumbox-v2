@@ -5,7 +5,12 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 
 vi.mock('../src/audio/engine.js', () => ({ default: vi.fn() }))
-vi.mock('../src/audio/stall_detector.js', () => ({ default: vi.fn() }))
+vi.mock('../src/audio/stall_detector.js', () => ({
+    default: class {
+        start() {}
+        stop() {}
+    },
+}))
 vi.mock('../src/core/timerworker.js', () => ({}))
 
 class MockWorker {
@@ -71,7 +76,7 @@ describe('Sequencer', () => {
         }
         serviceRegistry.autoGenerate = null
         appState.patterns = [makePattern()]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
 
         Sequencer = (await import('../src/logic/seq.js')).default
     })
@@ -195,38 +200,43 @@ describe('Sequencer', () => {
 
     // ── race condition: start/stop TOCTOU ─────────────────────────────
 
-    it('start() sets _pendingStop when called while already starting', async () => {
+    it('start() called while starting enters the loading path only once and honors the pending stop', async () => {
         const seq = new Sequencer()
-        // Make _startInner take time
-        seq._startInner = vi.fn(() => new Promise(() => {})) // never resolves
-        seq.start()
-        expect(seq._starting).toBe(true)
+        serviceRegistry.audioEngine = { start: vi.fn().mockResolvedValue(undefined), stop: vi.fn() }
 
-        // Call start() again while _starting — should set _pendingStop
-        seq.start()
-        expect(seq._pendingStop).toBe(true)
-
-        // Abort the never-resolving promise to unblock
-        seq._starting = false
-        seq._pendingStop = false
-    })
-
-    it('start() calls stop() after _startInner if _pendingStop was set', async () => {
-        const seq = new Sequencer()
-        seq._startInner = vi.fn(async () => {
-            // Simulate user clicking stop during async init
-            seq._pendingStop = true
-        })
+        // Hold resource loading open so the first start() stays in flight
+        let releaseResources
+        serviceRegistry.resourcesLoader.ensureResourcesLoaded.mockReturnValue(
+            new Promise((resolve) => {
+                releaseResources = resolve
+            }),
+        )
         seq.stop = vi.fn()
-        await seq.start()
+
+        const first = seq.start()
+        expect(serviceRegistry.resourcesLoader.ensureResourcesLoaded).toHaveBeenCalledTimes(1)
+
+        // Second call while the first is in flight: no second loading pass
+        const second = seq.start()
+        expect(serviceRegistry.resourcesLoader.ensureResourcesLoaded).toHaveBeenCalledTimes(1)
+
+        releaseResources()
+        await first
+        await second
+
+        // The stop requested while starting is honored once startup finished
         expect(seq.stop).toHaveBeenCalledOnce()
     })
 
-    it('start() does not call stop() when _pendingStop is false', async () => {
+    it('start() runs the full startup and does not stop when nothing was requested', async () => {
         const seq = new Sequencer()
-        seq._startInner = vi.fn(async () => {})
+        serviceRegistry.audioEngine = { start: vi.fn().mockResolvedValue(undefined), stop: vi.fn() }
         seq.stop = vi.fn()
+
         await seq.start()
+
+        expect(serviceRegistry.resourcesLoader.ensureResourcesLoaded).toHaveBeenCalledTimes(1)
+        expect(serviceRegistry.transport.start).toHaveBeenCalled()
         expect(seq.stop).not.toHaveBeenCalled()
     })
 

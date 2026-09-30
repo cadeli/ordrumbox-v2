@@ -101,12 +101,10 @@ function makeVoice() {
     }
 }
 
-function makeVoiceFactory(voice = null) {
-    const v = voice ?? makeVoice()
+function makeVoiceFactory() {
     return {
-        createVoice: vi.fn(() => v),
+        createVoice: vi.fn(() => makeVoice()),
         generatedSounds: {},
-        _voice: v,
     }
 }
 
@@ -242,8 +240,7 @@ describe('Sound', () => {
     // ── playSample ────────────────────────────────────────────────────
 
     it('playSample calls voice.setup and voice.start', async () => {
-        await sound.playSample(makeFlatNote(), 1.0)
-        const v = sound.voiceFactory._voice
+        const v = await sound.playSample(makeFlatNote(), 1.0)
         expect(v.setup).toHaveBeenCalled()
         expect(v.start).toHaveBeenCalledWith(1.0)
     })
@@ -264,10 +261,10 @@ describe('Sound', () => {
                 stepsPerBeat: 4,
             },
         })
-        await sound.playSample(fn, 1.0)
+        const voice = await sound.playSample(fn, 1.0)
         // voice should have been stored — trigger stop via stopPreviousVoice
         sound.stopPreviousVoice(fn.track, 2.0)
-        expect(sound.voiceFactory._voice.stop).toHaveBeenCalledWith(2.0)
+        expect(voice.stop).toHaveBeenCalledWith(2.0)
     })
 
     // ── playGenerated ─────────────────────────────────────────────────
@@ -290,8 +287,8 @@ describe('Sound', () => {
                 stepsPerBeat: 4,
             },
         })
-        await sound.playGenerated(fn, 1.0)
-        expect(sound.voiceFactory._voice.start).toHaveBeenCalledWith(1.0)
+        const voice = await sound.playGenerated(fn, 1.0)
+        expect(voice.start).toHaveBeenCalledWith(1.0)
     })
     it('playGenerated returns early when strip is null', async () => {
         mixer.getOrCreateStrip.mockReturnValue(null)
@@ -374,18 +371,18 @@ describe('Sound', () => {
         expect(voice.updateGeneratedSound).not.toHaveBeenCalled()
     })
 
-    // ── _playVoice ────────────────────────────────────────────────────
+    // ── voice playback path ───────────────────────────────────────────
 
-    it('_playVoice returns null when strip is null', async () => {
+    it('playSample returns null when strip is null', async () => {
         mixer.getOrCreateStrip.mockReturnValue(null)
-        const result = await sound._playVoice(makeFlatNote(), 1.0)
+        const result = await sound.playSample(makeFlatNote(), 1.0)
         expect(result).toBeNull()
     })
 
-    it('_playVoice calls updateStripFromTrack (non-mono) or stopPreviousVoice (mono)', async () => {
+    it('playSample calls updateStripFromTrack (non-mono) or stopPreviousVoice (mono)', async () => {
         const updateSpy = vi.spyOn(sound, 'updateStripFromTrack')
         // Non-mono: stopPreviousVoice is not called (only called for mono tracks)
-        await sound._playVoice(makeFlatNote(), 1.0)
+        await sound.playSample(makeFlatNote(), 1.0)
         expect(updateSpy).toHaveBeenCalled()
         // Mono: stopPreviousVoice is called after setup()
         const monoFn = makeFlatNote({
@@ -400,42 +397,30 @@ describe('Sound', () => {
             },
         })
         const stopSpy = vi.spyOn(sound, 'stopPreviousVoice')
-        await sound._playVoice(monoFn, 1.0)
+        await sound.playSample(monoFn, 1.0)
         expect(stopSpy).toHaveBeenCalled()
     })
 
-    it('_playVoice creates, sets up and starts voice', async () => {
-        const voice = await sound._playVoice(makeFlatNote(), 1.0)
-        expect(voice.setup).toHaveBeenCalled()
-        expect(voice.start).toHaveBeenCalledWith(1.0)
-    })
-
-    it('_playVoice registers voice for mono track', async () => {
+    it('playGenerated syncs voiceFactory.generatedSounds', async () => {
         const fn = makeFlatNote({
             track: {
-                name: 'KICK',
-                useSoftSynth: false,
-                mono: true,
+                name: 'BASS',
+                useSoftSynth: true,
+                mono: false,
                 velocity: 0.8,
                 pan: 0,
                 nbBeats: 4,
                 stepsPerBeat: 4,
             },
         })
-        await sound._playVoice(fn, 1.0)
-        sound.stopPreviousVoice(fn.track, 2.0)
-        expect(sound.voiceFactory._voice.stop).toHaveBeenCalledWith(2.0)
-    })
-
-    it('_playVoice syncs voiceFactory.generatedSounds when opts.syncGeneratedSounds=true', async () => {
-        await sound._playVoice(makeFlatNote(), 1.0, { syncGeneratedSounds: true })
+        await sound.playGenerated(fn, 1.0)
         expect(sound.voiceFactory.generatedSounds).toBe(sound.generatedSounds)
     })
 
-    it('_playVoice returns null on error without re-throwing', async () => {
+    it('playSample returns null on error without re-throwing', async () => {
         const spy = vi.spyOn(logger, 'error').mockImplementation(() => {})
         sound.mixer.getOrCreateStrip.mockRejectedValue(new Error('boom'))
-        const result = await sound._playVoice(makeFlatNote(), 1.0)
+        const result = await sound.playSample(makeFlatNote(), 1.0)
         expect(result).toBeNull()
         spy.mockRestore()
     })
@@ -470,60 +455,47 @@ describe('Sound', () => {
         expect(strip.updateFilter.mock.calls.length).toBeGreaterThan(firstCallCount)
     })
 
-    // ── _activeNoteCount accuracy ──────────────────────────────────────
+    // ── active voice bookkeeping ──────────────────────────────────────
 
-    it('_activeNoteCount stays accurate after play + stopVoice cycle', async () => {
-        const fn = makeFlatNote()
-        await sound._playVoice(fn, 1.0)
-        const voice = sound.voiceFactory._voice
+    it('stopVoice releases the voice so a global stop does not stop it again', async () => {
+        const voice = await sound.playSample(makeFlatNote(), 1.0)
 
-        // After play, voice is in the set
-        expect(sound._activeVoiceSet.has(voice)).toBe(true)
-        expect(sound._activeNoteCount).toBeGreaterThanOrEqual(1)
-
-        const countBefore = sound._activeNoteCount
         sound.stopVoice(voice, 2.0)
-        // stopVoice decrements once
-        expect(sound._activeVoiceSet.has(voice)).toBe(false)
-        expect(sound._activeNoteCount).toBe(countBefore - 1)
+        expect(voice.stop).toHaveBeenCalledTimes(1)
 
-        // Simulate onEnded firing (from cleanup timer) — should NOT double-decrement
-        if (voice.onEnded) voice.onEnded()
-        expect(sound._activeNoteCount).toBe(countBefore - 1)
+        // A released voice is no longer tracked, so stopAllVoices skips it
+        sound.stopAllVoices()
+        expect(voice.stop).toHaveBeenCalledTimes(1)
     })
 
-    it('_activeNoteCount stays accurate after multiple play + stopVoice cycles', async () => {
-        const fn = makeFlatNote()
-        const initialCount = sound._activeNoteCount
+    it('onEnded after stopVoice does not release the voice twice', async () => {
+        const voice = await sound.playSample(makeFlatNote(), 1.0)
 
-        // Create a factory that returns a different voice each time
+        sound.stopVoice(voice, 2.0)
+        if (voice.onEnded) voice.onEnded()
+
+        sound.stopAllVoices()
+        expect(voice.stop).toHaveBeenCalledTimes(1)
+    })
+
+    it('stopAllVoices stops each remaining tracked voice exactly once', async () => {
         const voices = [makeVoice(), makeVoice(), makeVoice()]
-        let voiceIdx = 0
-        sound.voiceFactory = { createVoice: vi.fn(() => voices[voiceIdx++]), generatedSounds: {} }
+        let idx = 0
+        sound.voiceFactory = { createVoice: vi.fn(() => voices[idx++]), generatedSounds: {} }
 
-        // Play 3 voices
-        await sound._playVoice(fn, 1.0)
-        const v1 = voices[0]
-        await sound._playVoice(fn, 1.1)
-        const v2 = voices[1]
-        await sound._playVoice(fn, 1.2)
-        const v3 = voices[2]
+        for (const name of ['A', 'B', 'C']) {
+            const fn = makeFlatNote({
+                track: { name, useSoftSynth: false, mono: false, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 },
+            })
+            await sound.playSample(fn, 1.0)
+        }
 
-        expect(sound._activeNoteCount).toBe(initialCount + 3)
+        sound.stopVoice(voices[0], 2.0)
+        sound.stopAllVoices()
 
-        // Stop first two
-        sound.stopVoice(v1, 2.0)
-        sound.stopVoice(v2, 2.0)
-        expect(sound._activeNoteCount).toBe(initialCount + 1)
-
-        // onEnded for v1 and v2 should be no-ops (already removed from set)
-        if (v1.onEnded) v1.onEnded()
-        if (v2.onEnded) v2.onEnded()
-        expect(sound._activeNoteCount).toBe(initialCount + 1)
-
-        // Stop last one
-        sound.stopVoice(v3, 2.0)
-        expect(sound._activeNoteCount).toBe(initialCount)
+        expect(voices[0].stop).toHaveBeenCalledTimes(1)
+        expect(voices[1].stop).toHaveBeenCalledTimes(1)
+        expect(voices[2].stop).toHaveBeenCalledTimes(1)
     })
 
     // ── onEnded called exactly once ────────────────────────────────────
@@ -540,8 +512,7 @@ describe('Sound', () => {
                 stepsPerBeat: 4,
             },
         })
-        await sound._playVoice(fn, 1.0)
-        const voice = sound.voiceFactory._voice
+        const voice = await sound.playSample(fn, 1.0)
 
         let callCount = 0
         const prevOnEnded = voice.onEnded
@@ -562,27 +533,11 @@ describe('Sound', () => {
         // wrapper itself was called, and the set guard prevented double-decrement.
     })
 
-    it('onEnded does not double-decrement _activeNoteCount when called after stopVoice', async () => {
-        const fn = makeFlatNote()
-        await sound._playVoice(fn, 1.0)
-        const voice = sound.voiceFactory._voice
-        const countBeforeStop = sound._activeNoteCount
-
-        sound.stopVoice(voice, 2.0)
-        expect(sound._activeNoteCount).toBe(countBeforeStop - 1)
-
-        // Simulate cleanup timer firing (onEnded called after stopVoice already cleaned up)
-        if (voice.onEnded) voice.onEnded()
-        // Count should NOT have changed — the guard prevents double-decrement
-        expect(sound._activeNoteCount).toBe(countBeforeStop - 1)
-    })
-
     // ── race condition guards ──────────────────────────────────────────
 
     it('start() is no-op when stopped flag is set (race: stop during setup)', async () => {
         const fn = makeFlatNote()
-        await sound._playVoice(fn, 1.0)
-        const voice = sound.voiceFactory._voice
+        const voice = await sound.playSample(fn, 1.0)
 
         // Simulate stop() being called while setup() was pending
         voice.stopped = true
@@ -619,12 +574,12 @@ describe('Sound', () => {
         const fn2 = makeFlatNote({ track })
 
         // First call registers voice1
-        await sound._playVoice(fn1, 1.0)
+        await sound.playSample(fn1, 1.0)
         expect(sound.activeVoices.get(track)).toBe(voice1)
         expect(voice1.start).toHaveBeenCalled()
 
         // Second call: stopPreviousVoice stops voice1, registers voice2
-        await sound._playVoice(fn2, 1.1)
+        await sound.playSample(fn2, 1.1)
         expect(sound.activeVoices.get(track)).toBe(voice2)
         expect(voice2.start).toHaveBeenCalled()
         // voice1 should have been stopped
@@ -632,8 +587,7 @@ describe('Sound', () => {
     })
 
     it('polyphony limit is enforced after async createVoice', async () => {
-        // Fill up to MAX_POLYPHONY with mock voices
-        const tracks = []
+        const voices = []
         for (let i = 0; i < 16; i++) {
             const track = {
                 name: `T${i}`,
@@ -644,15 +598,15 @@ describe('Sound', () => {
                 nbBeats: 4,
                 stepsPerBeat: 4,
             }
-            tracks.push(track)
-            const v = makeVoice()
-            sound.voiceFactory = { createVoice: vi.fn(() => v), generatedSounds: {} }
-            await sound._playVoice(makeFlatNote({ track }), 1.0)
+            const voice = makeVoice()
+            voices.push(voice)
+            sound.voiceFactory = { createVoice: vi.fn(() => voice), generatedSounds: {} }
+            await sound.playSample(makeFlatNote({ track }), 1.0)
         }
 
-        expect(sound._activeVoiceSet.size).toBe(16)
+        // Pool is full: no voice has been stolen yet
+        expect(voices.filter((v) => v.stop.mock.calls.length > 0)).toHaveLength(0)
 
-        // Add one more — should trigger polyphony steal via the while loop
         const overflowTrack = {
             name: 'OVER',
             useSoftSynth: false,
@@ -664,9 +618,14 @@ describe('Sound', () => {
         }
         const overflowVoice = makeVoice()
         sound.voiceFactory = { createVoice: vi.fn(() => overflowVoice), generatedSounds: {} }
-        await sound._playVoice(makeFlatNote({ track: overflowTrack }), 1.0)
+        await sound.playSample(makeFlatNote({ track: overflowTrack }), 1.0)
 
-        // After overflow, the while loop steals one + we add one = still 16
-        expect(sound._activeVoiceSet.size).toBe(16)
+        // The oldest voice was stolen to make room, and the newcomer is live
+        expect(voices.filter((v) => v.stop.mock.calls.length > 0)).toHaveLength(1)
+        expect(voices[0].stop).toHaveBeenCalledTimes(1)
+        expect(overflowVoice.stop).not.toHaveBeenCalled()
+
+        sound.stopAllVoices()
+        expect(overflowVoice.stop).toHaveBeenCalledTimes(1)
     })
 })

@@ -3,7 +3,7 @@
  *
  * Inlined as a string and loaded via Blob URL by WorkletLoader.
  * Implements a complete monophonic synth voice in DSP:
- *   - 3 VCOs (sine / triangle / saw / square) with per-osc gain, detune, octave
+ *   - 3 VCOs (sine / triangle / saw / square / random) with per-osc gain, detune, octave
  *   - 1 white noise generator with mix
  *   - 1 LP/HP/BP/Notch filter (TPT SVF) with Q
  *   - 1 ADSR envelope (attack, decay, sustain, release)
@@ -40,7 +40,9 @@
  *   successive notes hear the LFO where it currently is, and the synth-editor
  *   knob animation (audioCtx.currentTime * freq) shows exactly what is heard.
  *   Waveforms come from getLfoWaveformValue() (src/audio/math.js): keep
- *   lfoWave() below in sync with it. An LFO with freq <= 0 is inactive.
+ *   lfoWave() below in sync with it. Wave codes are 0=sine, 1=tri, 2=saw,
+ *   3=square, 4=random (sample & hold, one value per LFO cycle; lfo1Wave /
+ *   lfo2Wave declare maxValue 4). An LFO with freq <= 0 is inactive.
  *
  * Trigger model:
  *   The host sends messages via `port`:
@@ -61,7 +63,7 @@
  *   - 6:  osc1Detune (cents, -1200..1200)
  *   - 7:  osc2Detune (cents, -1200..1200)
  *   - 8:  osc3Detune (cents, -1200..1200)
- *   - 9:  osc1Wave  (0=sine, 1=tri, 2=saw, 3=square)
+ *   - 9:  osc1Wave  (0=sine, 1=tri, 2=saw, 3=square, 4=random S&H per osc cycle)
  *   - 10: osc2Wave
  *   - 11: osc3Wave
  *   - 12: noiseMix  (0..1)
@@ -112,6 +114,17 @@ function polyBLEP(t, dt) {
     return 0.0;
 }
 
+// Deterministic sample & hold: one pseudo-random value in [-1, 1) per cycle
+// index. Same formula as getLfoWaveformValue() (src/audio/math.js) so the
+// synth-editor previews and the AudioWorklet render identical values.
+function sampleAndHold(cycle) {
+    let rng = ((cycle * 1234567 + 890123) | 0);
+    rng ^= rng << 13;
+    rng ^= rng >> 17;
+    rng ^= rng << 5;
+    return (rng | 0) / 2147483648;
+}
+
 // LFO waveform in [-1, 1]. Inlined copy of getLfoWaveformValue() (src/audio/math.js),
 // the single source of truth also used by the synth-editor knob animation.
 // 'phase' is NOT wrapped: S&H (wave 4) needs the integer cycle index.
@@ -121,11 +134,7 @@ function lfoWave(phase, wave) {
     if (wave < 1.5) return p < 0.25 ? p * 4 - 1 : (p < 0.75 ? 3 - p * 4 : p * 4 - 5);
     if (wave < 2.5) return p * 2 - 1;
     if (wave < 3.5) return p < 0.5 ? 1 : -1;
-    let rng = ((Math.floor(phase) * 1234567 + 890123) | 0);
-    rng ^= rng << 13;
-    rng ^= rng >> 17;
-    rng ^= rng << 5;
-    return (rng | 0) / 2147483648;
+    return sampleAndHold(Math.floor(phase));
 }
 
 // Cheap xorshift32 PRNG (replaces Math.random for noise)
@@ -184,9 +193,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             { name: 'osc1Detune', defaultValue: 0,    minValue: -1200, maxValue: 1200,  automationRate: 'k-rate' },
             { name: 'osc2Detune', defaultValue: 0,    minValue: -1200, maxValue: 1200,  automationRate: 'k-rate' },
             { name: 'osc3Detune', defaultValue: 0,    minValue: -1200, maxValue: 1200,  automationRate: 'k-rate' },
-            { name: 'osc1Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
-            { name: 'osc2Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
-            { name: 'osc3Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
+            { name: 'osc1Wave',   defaultValue: 0,    minValue: 0,     maxValue: 4,     automationRate: 'k-rate' },
+            { name: 'osc2Wave',   defaultValue: 0,    minValue: 0,     maxValue: 4,     automationRate: 'k-rate' },
+            { name: 'osc3Wave',   defaultValue: 0,    minValue: 0,     maxValue: 4,     automationRate: 'k-rate' },
             { name: 'noiseMix',   defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
             { name: 'noiseFilterType', defaultValue: 0, minValue: 0, maxValue: 3, automationRate: 'k-rate' },
             { name: 'noiseFilterFreq', defaultValue: 1000, minValue: 20, maxValue: 20000, automationRate: 'k-rate' },
@@ -202,11 +211,11 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             { name: 'pan',        defaultValue: 0,    minValue: -1,    maxValue: 1,     automationRate: 'k-rate' },
             { name: 'velocity',   defaultValue: 0.8,  minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
             { name: 'lfo1Target', defaultValue: 0,    minValue: 0,     maxValue: 8,     automationRate: 'k-rate' },
-            { name: 'lfo1Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
+            { name: 'lfo1Wave',   defaultValue: 0,    minValue: 0,     maxValue: 4,     automationRate: 'k-rate' },
             { name: 'lfo1Freq',   defaultValue: 1,    minValue: 0,     maxValue: 20,    automationRate: 'k-rate' },
             { name: 'lfo1Depth',  defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
             { name: 'lfo2Target', defaultValue: 0,    minValue: 0,     maxValue: 8,     automationRate: 'k-rate' },
-            { name: 'lfo2Wave',   defaultValue: 0,    minValue: 0,     maxValue: 3,     automationRate: 'k-rate' },
+            { name: 'lfo2Wave',   defaultValue: 0,    minValue: 0,     maxValue: 4,     automationRate: 'k-rate' },
             { name: 'lfo2Freq',   defaultValue: 1,    minValue: 0,     maxValue: 20,    automationRate: 'k-rate' },
             { name: 'lfo2Depth',  defaultValue: 0,    minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
             { name: 'filterEnvAmt', defaultValue: 0,  minValue: 0,     maxValue: 1,     automationRate: 'k-rate' },
@@ -229,6 +238,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         this.phase1 = 0;
         this.phase2 = 0;
         this.phase3 = 0;
+        this.oscCycle1 = 0;
+        this.oscCycle2 = 0;
+        this.oscCycle3 = 0;
         this.#rngState = 54321;
         this.lfoPhase1 = 0;
         this.lfoPhase2 = 0;
@@ -309,6 +321,9 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             this.phase1 = 0;
             this.phase2 = 0;
             this.phase3 = 0;
+            this.oscCycle1 = 0;
+            this.oscCycle2 = 0;
+            this.oscCycle3 = 0;
             this.lfoPhase1 = 0;
             this.lfoPhase2 = 0;
             this.#lfoSeeded = false;
@@ -329,7 +344,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
         }
     }
 
-    #v(shape, phase, dt) {
+    #v(shape, phase, dt, cycle) {
         if (shape < 0.5) return sinLookup(phase);
         if (shape < 1.5) {
             if (phase < 0.25) return phase * 4;
@@ -340,8 +355,11 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const saw = phase * 2 - 1;
             return saw - polyBLEP(phase, dt);
         }
-        const sq = phase < 0.5 ? 1 : -1;
-        return sq + polyBLEP(phase, dt) - polyBLEP((phase + 0.5) % 1, dt);
+        if (shape < 3.5) {
+            const sq = phase < 0.5 ? 1 : -1;
+            return sq + polyBLEP(phase, dt) - polyBLEP((phase + 0.5) % 1, dt);
+        }
+        return sampleAndHold(cycle);
     }
 
     #lfoValue(target, depth, phase, det, gain, out, wave) {
@@ -785,8 +803,8 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             // FM algorithm routing
             let f1fm = f1d, f2fm = f2d;
             if (!bypassFm && fmAmountMod > 0.001) {
-                const rawO2 = this.#v(w2, this.phase2, Math.min(0.49, f2d / sr));
-                const rawO3 = this.#v(w3, this.phase3, Math.min(0.49, f3d / sr));
+                const rawO2 = this.#v(w2, this.phase2, Math.min(0.49, f2d / sr), this.oscCycle2);
+                const rawO3 = this.#v(w3, this.phase3, Math.min(0.49, f3d / sr), this.oscCycle3);
                 const fmDepth = fmAmountMod * 1000;
                 if (fmAlgoMod === 0) {
                     f1fm = f1d + rawO2 * fmDepth;
@@ -798,7 +816,7 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 } else if (fmAlgoMod === 3) {
                     f1fm = f1d + (rawO2 + rawO3) * fmDepth;
                 } else if (fmAlgoMod === 4) {
-                    const rawO1 = this.#v(w1, this.phase1, Math.min(0.49, f1d / sr));
+                    const rawO1 = this.#v(w1, this.phase1, Math.min(0.49, f1d / sr), this.oscCycle1);
                     f1fm = f1d + rawO2 * fmDepth;
                     f2fm = f2d + rawO1 * fmDepth;
                 }
@@ -817,15 +835,15 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
                 } else if (mTgt === 3 && !bypassFm) {
                     const fmMod = fmAmountMod * mDepth * mEnv;
                     if (fmMod > 0.001) {
-                        const rawO2 = this.#v(w2, this.phase2, Math.min(0.49, f2d / sr));
-                        const rawO3 = this.#v(w3, this.phase3, Math.min(0.49, f3d / sr));
+                        const rawO2 = this.#v(w2, this.phase2, Math.min(0.49, f2d / sr), this.oscCycle2);
+                        const rawO3 = this.#v(w3, this.phase3, Math.min(0.49, f3d / sr), this.oscCycle3);
                         const fmDepthM = fmMod * 1000;
                         if (fmAlgoMod === 0) { f1fm += rawO2 * fmDepthM; }
                         else if (fmAlgoMod === 1) { f1fm += rawO3 * fmDepthM; }
                         else if (fmAlgoMod === 2) { f1fm += rawO2 * fmDepthM; f2fm += rawO3 * fmDepthM; }
                         else if (fmAlgoMod === 3) { f1fm += (rawO2 + rawO3) * fmDepthM; }
                         else if (fmAlgoMod === 4) {
-                            const rawO1 = this.#v(w1, this.phase1, Math.min(0.49, f1d / sr));
+                            const rawO1 = this.#v(w1, this.phase1, Math.min(0.49, f1d / sr), this.oscCycle1);
                             f1fm += rawO2 * fmDepthM;
                             f2fm += rawO1 * fmDepthM;
                         }
@@ -842,13 +860,19 @@ class SynthVoiceProcessor extends AudioWorkletProcessor {
             const dt2 = Math.min(0.49, Math.max(0, f2fm / sr));
             const dt3 = Math.min(0.49, Math.max(0, f3d / sr));
 
-            this.phase1 = (this.phase1 + dt1) % 1.0;
-            this.phase2 = (this.phase2 + dt2) % 1.0;
-            this.phase3 = (this.phase3 + dt3) % 1.0;
+            const adv1 = this.phase1 + dt1;
+            const adv2 = this.phase2 + dt2;
+            const adv3 = this.phase3 + dt3;
+            this.oscCycle1 += adv1 >= 1 ? 1 : 0;
+            this.oscCycle2 += adv2 >= 1 ? 1 : 0;
+            this.oscCycle3 += adv3 >= 1 ? 1 : 0;
+            this.phase1 = adv1 % 1.0;
+            this.phase2 = adv2 % 1.0;
+            this.phase3 = adv3 % 1.0;
 
-            const o1 = this.#v(w1, this.phase1, dt1) * g1c;
-            const o2 = this.#v(w2, this.phase2, dt2) * g2c;
-            const o3 = this.#v(w3, this.phase3, dt3) * g3c;
+            const o1 = this.#v(w1, this.phase1, dt1, this.oscCycle1) * g1c;
+            const o2 = this.#v(w2, this.phase2, dt2, this.oscCycle2) * g2c;
+            const o3 = this.#v(w3, this.phase3, dt3, this.oscCycle3) * g3c;
 
             // Optional sub-oscillator (pure sine 1 octave below osc1)
             let sub = 0;

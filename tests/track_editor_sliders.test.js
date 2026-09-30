@@ -245,7 +245,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     it('toggling the LFO on preserves the LFO mode (has-lfo re-applied after sync)', () => {
         const track = makeTrack({ filterFreq: 632 })
         appState.patterns = [{ tracks: [track] }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         editor.track = track
         editor.trackIdx = 0
         editor.selectedLfoTarget = 'filterFreq'
@@ -669,7 +669,7 @@ describe('TrackEditor — LFO live update uses setValue', () => {
             filterFreqLfo: { freq: 0, min: 158, max: 158, phase: 0 },
         })
         appState.patterns = [{ tracks: [editor.track], nbBeats: 4 }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         editor.sync()
 
         await runStepWatch()
@@ -686,7 +686,7 @@ describe('TrackEditor — LFO live update uses setValue', () => {
             filterFreqLfo: { freq: 0, min: 5000, max: 5000, phase: 0 },
         })
         appState.patterns = [{ tracks: [editor.track], nbBeats: 4 }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         editor.sync()
 
         await runStepWatch()

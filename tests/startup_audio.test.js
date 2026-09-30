@@ -4,7 +4,7 @@
  * Verifies:
  * 1. toggleStartStop creates AudioContext synchronously (user-gesture context).
  * 2. toggleStartStop resumes a suspended AudioContext.
- * 3. Concurrent start() calls are guarded (_starting flag).
+ * 3. Concurrent start() calls are guarded (#starting flag).
  * 4. mixer.start() does not create duplicate connections.
  */
 import { describe, it, expect, vi } from 'vitest'
@@ -203,12 +203,12 @@ describe('toggleStartStop — start guard', () => {
                 resourcesLoader: fakeLoader,
                 transport: fakeTransport,
                 audioEngine: null,
-                cmd: { setSelectedPatternNum: vi.fn() },
+                cmd: { setSelectedPatternIdx: vi.fn() },
             },
         })
 
-        // Mock _startInner to track calls
-        seq._startInner = vi.fn().mockImplementation(async () => {})
+        // Hold loading open so the first start() stays in flight
+        fakeLoader.ensureResourcesLoaded.mockReturnValue(new Promise(() => {}))
 
         // First call
         seq.toggleStartStop()
@@ -218,8 +218,8 @@ describe('toggleStartStop — start guard', () => {
         // Give microtasks time to settle
         await new Promise((r) => setTimeout(r, 50))
 
-        // _startInner should only be entered once (second call skipped)
-        expect(seq._startInner).toHaveBeenCalledTimes(1)
+        // The startup path must have been entered only once (second call skipped)
+        expect(fakeLoader.ensureResourcesLoaded).toHaveBeenCalledTimes(1)
     })
 })
 

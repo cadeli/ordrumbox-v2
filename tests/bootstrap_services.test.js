@@ -15,7 +15,7 @@ describe('bootstrap/services', () => {
         await import('../src/bootstrap/services.js')
 
         expect(serviceRegistry.cmd).toBeTruthy()
-        expect(typeof serviceRegistry.cmd.setSelectedPatternNum).toBe('function')
+        expect(typeof serviceRegistry.cmd.setSelectedPatternIdx).toBe('function')
         expect(serviceRegistry.resourcesLoader).toBeTruthy()
         expect(typeof serviceRegistry.resourcesLoader.loadSong).toBe('function')
         expect(serviceRegistry.seq).toBeTruthy()

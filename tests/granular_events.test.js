@@ -39,7 +39,7 @@ describe('Granular patternChange events', () => {
         serviceRegistry.reset()
 
         appState.patterns = [structuredClone(PATTERN_2BEAT)]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
 
         cmd = new Commander()

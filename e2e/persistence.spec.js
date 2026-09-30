@@ -21,7 +21,7 @@ test.describe('E2E-B: Persistence between sessions', () => {
             patternNames: window.__e2e.appState.patterns.map((p) => p.name),
             trackCounts: window.__e2e.appState.patterns.map((p) => (p.tracks ?? []).length),
             selectedDrumkit: window.__e2e.appState.selectedDrumkit,
-            selectedPatternNum: window.__e2e.appState.selectedPatternNum,
+            selectedPatternIdx: window.__e2e.appState.selectedPatternIdx,
         }))
 
         await page.reload()
@@ -34,7 +34,7 @@ test.describe('E2E-B: Persistence between sessions', () => {
             patternNames: window.__e2e.appState.patterns.map((p) => p.name),
             trackCounts: window.__e2e.appState.patterns.map((p) => (p.tracks ?? []).length),
             selectedDrumkit: window.__e2e.appState.selectedDrumkit,
-            selectedPatternNum: window.__e2e.appState.selectedPatternNum,
+            selectedPatternIdx: window.__e2e.appState.selectedPatternIdx,
         }))
 
         expect(restored.patternCount).toBe(snapshot.patternCount)

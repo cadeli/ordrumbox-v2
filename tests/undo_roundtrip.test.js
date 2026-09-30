@@ -327,7 +327,6 @@ describe('Undo Roundtrip & State Inversion', () => {
         it('maintains maximum history size without crashing on empty undo', () => {
             const smallHistory = new HistoryManager(3)
             serviceRegistry.history = smallHistory
-            cmd._history = smallHistory
 
             const pattern = cmd.addPattern('Small_History')
             const kick = cmd.addTrack(pattern, 'KICK', 4)

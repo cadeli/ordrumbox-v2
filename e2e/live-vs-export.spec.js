@@ -57,7 +57,7 @@ test.describe('Live vs Export equivalence', () => {
             const { appState, serviceRegistry, soundRegistry } = window.__e2e
             const { TICK } = await import('/src/core/constants.js')
 
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             if (!pattern || !pattern.tracks?.length) return null
 
             const computeRms = (data) => {
@@ -92,8 +92,8 @@ test.describe('Live vs Export equivalence', () => {
                 sounds: soundRegistry.sounds,
                 generatedSounds: soundRegistry.generatedSounds,
                 patterns: [pattern],
-                selectedPatternNum: 0,
-                getSelectedPatternNum: () => 0,
+                selectedPatternIdx: 0,
+                getSelectedPatternIdx: () => 0,
                 getAutoGenerate: () => null,
                 uiState: {},
                 TICK,
@@ -187,7 +187,7 @@ test.describe('Live vs Export equivalence', () => {
             }
 
             appState.patterns = [pattern]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
 
             const exporter = new WavExporter()
             const wavBlob = await exporter.exportPatternToWav(pattern, 1)

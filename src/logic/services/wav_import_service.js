@@ -57,10 +57,10 @@ export default class WavImportService {
         const existingIdx = soundRegistry.drumkitList.findIndex((d) => d.name === kitName)
         if (existingIdx >= 0) {
             soundRegistry.drumkitList[existingIdx] = { name: kitName, instruments }
-            appState.selectedDrumkitNum = existingIdx
+            appState.selectedDrumkitIdx = existingIdx
         } else {
             soundRegistry.drumkitList.push({ name: kitName, instruments })
-            appState.selectedDrumkitNum = soundRegistry.drumkitList.length - 1
+            appState.selectedDrumkitIdx = soundRegistry.drumkitList.length - 1
         }
 
         await cacheDrumkits(Object.fromEntries(soundRegistry.drumkitList.map((d) => [d.name, d])))
@@ -71,7 +71,7 @@ export default class WavImportService {
     }
 
     async autoAssignSounds() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) {
             return { warning: 'No pattern selected' }
         }

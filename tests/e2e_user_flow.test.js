@@ -18,7 +18,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { PatternExporter } from '../src/patterns/exporter.js'
 import MidiExporter from '../src/logic/midi/midi_exporter.js'
@@ -33,13 +32,12 @@ import HistoryManager from '../src/logic/history_manager.js'
 
 function resetAll() {
     appState.patterns.length = 0
-    appState.selectedPatternNum = 0
-    appState.selectedTrackNum = 0
+    appState.selectedPatternIdx = 0
+    appState.selectedTrackIdx = 0
     appState.flatNotes = null
     serviceRegistry.reset()
     serviceRegistry.history = new HistoryManager(50)
     soundRegistry.reset()
-    playbackEvents._listeners = {}
 }
 
 // ─── PHASE 1: Create a pattern from scratch ─────────────────────────────────

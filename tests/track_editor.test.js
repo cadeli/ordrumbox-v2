@@ -33,7 +33,7 @@ describe('TrackEditor sound panel', () => {
         soundRegistry.sounds = {
             'real/kick.wav': { key: 'KICK', url: 'real/kick.wav', buffer: {} },
         }
-        appState.selectedDrumkitNum = 1
+        appState.selectedDrumkitIdx = 1
     })
 
     it('prefers the sample from the selected drumkit when an instrument is chosen', () => {
@@ -137,7 +137,7 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
         editor.track = oldTrack
         editor.trackIdx = 0
         appState.patterns = [{ tracks: [newTrack] }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         editor.show({ track: oldTrack, trackIdx: 0 })
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
@@ -155,7 +155,7 @@ describe('TrackEditor PATTERN_CHANGE handling', () => {
         editor.track = { name: 'KICK', velocity: 0.7 }
         editor.trackIdx = 0
         appState.patterns = [{ tracks: [{ name: 'SNARE' }] }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         editor.show({ track: editor.track, trackIdx: 0 })
 
         const syncSpy = vi.spyOn(editor, 'sync').mockImplementation(() => {})
@@ -204,7 +204,7 @@ describe('TrackEditor loop slider events', () => {
             nbBeats: 4,
         }
         appState.patterns = [pattern]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
 
         const editor = new TrackEditor()
         editor.init()
@@ -244,7 +244,7 @@ describe('TrackEditor loop slider events', () => {
             nbBeats: 4,
         }
         appState.patterns = [pattern]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
 
         const editor = new TrackEditor()
         editor.init()
@@ -280,7 +280,7 @@ describe('TrackEditor loop slider events', () => {
             nbBeats: 4,
         }
         appState.patterns = [pattern]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
 
         const editor = new TrackEditor()
         editor.init()

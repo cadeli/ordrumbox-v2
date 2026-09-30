@@ -1,5 +1,5 @@
 import { appState as _appState } from '../../state/app_state.js'
-import { soundRegistry as _soundRegistry } from '../../state/sound_registry.js'
+import { soundRegistry as soundRegistrySingleton } from '../../state/sound_registry.js'
 import InstrumentsManager, { instrumentsManager } from './instrument_manager/index.js'
 import Utils from '../../core/utils.js'
 import { NOT_FOUND } from '../../core/constants.js'
@@ -12,17 +12,17 @@ export default class AutoAssign {
     static NOT_FOUND = NOT_FOUND
 
     #appState
-    _soundRegistry
+    #soundRegistry
 
     constructor({ appState, soundRegistry } = {}) {
         this.#appState = appState ?? _appState
-        this._soundRegistry = soundRegistry ?? _soundRegistry
+        this.#soundRegistry = soundRegistry ?? soundRegistrySingleton
     }
 
     autoAssignSounds = (pattern) => {
-        if (Object.keys(this._soundRegistry.sounds).length > 0) {
-            const drumkitList = this._soundRegistry.drumkitList
-            const selectedIdx = this.#appState.selectedDrumkitNum
+        if (Object.keys(this.#soundRegistry.sounds).length > 0) {
+            const drumkitList = this.#soundRegistry.drumkitList
+            const selectedIdx = this.#appState.selectedDrumkitIdx
             const kitName = drumkitList?.[selectedIdx]?.name ?? '?'
             logger.warn(TAG, `── Auto-assign: kit="${kitName}", pattern="${pattern?.name ?? '?'}" ──`)
             Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
@@ -46,62 +46,62 @@ export default class AutoAssign {
             }
         }
 
-        const drumkitList = this._soundRegistry.drumkitList
-        const selectedIdx = this.#appState.selectedDrumkitNum
+        const drumkitList = this.#soundRegistry.drumkitList
+        const selectedIdx = this.#appState.selectedDrumkitIdx
         if (!drumkitList || drumkitList.length <= selectedIdx) return
 
-        const selDrumkitName = drumkitList[selectedIdx].name
+        const selectedDrumkitName = drumkitList[selectedIdx].name
 
-        let soundId = this.getSoundIdFromKitAndTrackname(selDrumkitName, track.name)
+        let soundId = this.getSoundIdFromKitAndTrackname(selectedDrumkitName, track.name)
         if (soundId !== NOT_FOUND) {
-            const matchedKey = this._soundRegistry.sounds[soundId]?.key
-            const url = this._soundRegistry.sounds[soundId]?.url
+            const matchedKey = this.#soundRegistry.sounds[soundId]?.key
+            const url = this.#soundRegistry.sounds[soundId]?.url
             const method = matchedKey === track.name ? `exact match` : `contains (key="${matchedKey}")`
-            logger.warn(TAG, `  ${originalName} [${selDrumkitName}] => ${url}  (${method}, tier1: same kit)`)
+            logger.warn(TAG, `  ${originalName} [${selectedDrumkitName}] => ${url}  (${method}, tier1: same kit)`)
             track.soundId = soundId
             return
         }
 
         soundId = this.getSoundIdFromTrackname(track.name)
         if (soundId !== NOT_FOUND) {
-            const matchedKey = this._soundRegistry.sounds[soundId]?.key
-            const url = this._soundRegistry.sounds[soundId]?.url
-            const matchedKit = this._soundRegistry.sounds[soundId]?.kit_name
+            const matchedKey = this.#soundRegistry.sounds[soundId]?.key
+            const url = this.#soundRegistry.sounds[soundId]?.url
+            const matchedKit = this.#soundRegistry.sounds[soundId]?.kit_name
             const method = matchedKey === track.name ? `exact match` : `contains (key="${matchedKey}")`
             logger.warn(
                 TAG,
-                `  ${originalName} [${selDrumkitName}] => ${url}  (${method}, tier2: other kit "${matchedKit}")`,
+                `  ${originalName} [${selectedDrumkitName}] => ${url}  (${method}, tier2: other kit "${matchedKit}")`,
             )
             track.soundId = soundId
             return
         }
 
-        const eqResult = this.findSoundEquivalence(soundId, selDrumkitName, track)
+        const eqResult = this.findSoundEquivalence(soundId, selectedDrumkitName, track)
         if (eqResult !== NOT_FOUND) {
-            const matchedKey = this._soundRegistry.sounds[eqResult]?.key
-            const url = this._soundRegistry.sounds[eqResult]?.url
-            const matchedKit = this._soundRegistry.sounds[eqResult]?.kit_name
-            const inSameKit = matchedKit === selDrumkitName
+            const matchedKey = this.#soundRegistry.sounds[eqResult]?.key
+            const url = this.#soundRegistry.sounds[eqResult]?.url
+            const matchedKit = this.#soundRegistry.sounds[eqResult]?.kit_name
+            const inSameKit = matchedKit === selectedDrumkitName
             logger.warn(
                 TAG,
-                `🟡 ${originalName} [${selDrumkitName}] => ${url}  (substitution to key="${matchedKey}", ${inSameKit ? 'same kit' : `other kit "${matchedKit}"`}, tier3)`,
+                `🟡 ${originalName} [${selectedDrumkitName}] => ${url}  (substitution to key="${matchedKey}", ${inSameKit ? 'same kit' : `other kit "${matchedKit}"`}, tier3)`,
             )
             track.soundId = eqResult
             return
         }
 
-        soundId = Utils.getRandomKey(this._soundRegistry.sounds)
+        soundId = Utils.getRandomKey(this.#soundRegistry.sounds)
         if (soundId !== null && soundId !== '' && soundId !== NOT_FOUND) {
-            const url = this._soundRegistry.sounds[soundId]?.url
-            logger.warn(TAG, `🔴 ${originalName} [${selDrumkitName}] => ${url}  (random, tier4)`)
+            const url = this.#soundRegistry.sounds[soundId]?.url
+            logger.warn(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => ${url}  (random, tier4)`)
             track.soundId = soundId
         } else {
-            logger.warn(TAG, `🔴 ${originalName} [${selDrumkitName}] => NOT_DEFINED  (no match)`)
+            logger.warn(TAG, `🔴 ${originalName} [${selectedDrumkitName}] => NOT_DEFINED  (no match)`)
             track.soundId = 'NOT_DEFINED'
         }
     }
 
-    findSoundEquivalence = (soundId, selDrumkitName, track) => {
+    findSoundEquivalence = (soundId, selectedDrumkitName, track) => {
         if (soundId !== NOT_FOUND) return soundId
 
         const instData = InstrumentsManager.DATA?.instruments?.find((i) => i.id === track.name)
@@ -109,7 +109,7 @@ export default class AutoAssign {
 
         if (replacements) {
             for (const targetKey of replacements) {
-                let candidateId = this.getSoundIdFromKitAndTrackname(selDrumkitName, targetKey)
+                let candidateId = this.getSoundIdFromKitAndTrackname(selectedDrumkitName, targetKey)
                 if (candidateId !== NOT_FOUND) {
                     return candidateId
                 }
@@ -125,7 +125,7 @@ export default class AutoAssign {
                         // Use simple string synonyms (not regex patterns)
                         if (!syn.includes('.') && !syn.includes('*') && !syn.includes('^') && !syn.includes('$')) {
                             // Check if any sound key includes this synonym (reverse direction)
-                            candidateId = this.getSoundIdByKeyContaining(selDrumkitName, syn)
+                            candidateId = this.getSoundIdByKeyContaining(selectedDrumkitName, syn)
                             if (candidateId !== NOT_FOUND) return candidateId
                             candidateId = this.getSoundIdByKeyContaining(null, syn)
                             if (candidateId !== NOT_FOUND) return candidateId
@@ -140,7 +140,7 @@ export default class AutoAssign {
     getSoundIdByKeyContaining = (drumkitName, searchStr) => {
         const upperSearch = searchStr.toUpperCase().trim()
         if (!upperSearch) return NOT_FOUND
-        for (const [key, value] of Object.entries(this._soundRegistry.sounds)) {
+        for (const [key, value] of Object.entries(this.#soundRegistry.sounds)) {
             if (drumkitName && value.kit_name !== drumkitName) continue
             if (value.key?.toUpperCase().includes(upperSearch)) {
                 return key
@@ -151,7 +151,7 @@ export default class AutoAssign {
 
     getSoundIdFromKitAndTrackname = (drumkitName, trackName) => {
         let ret = NOT_FOUND
-        for (const [key, value] of Object.entries(this._soundRegistry.sounds)) {
+        for (const [key, value] of Object.entries(this.#soundRegistry.sounds)) {
             if (value.kit_name === drumkitName) {
                 if (trackName.toUpperCase().trim().includes(value.key.toUpperCase().trim())) {
                     ret = key
@@ -164,7 +164,7 @@ export default class AutoAssign {
 
     getSoundIdFromTrackname = (trackName) => {
         let ret = NOT_FOUND
-        for (const [key, sound] of Object.entries(this._soundRegistry.sounds)) {
+        for (const [key, sound] of Object.entries(this.#soundRegistry.sounds)) {
             if (trackName.toUpperCase().trim().includes(sound.key.toUpperCase().trim())) {
                 ret = key
                 return ret

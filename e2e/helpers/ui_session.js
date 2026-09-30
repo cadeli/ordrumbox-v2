@@ -51,7 +51,7 @@ export function teHeader(page) {
 export async function trackAt(page, idx) {
     return page.evaluate((trackIdx) => {
         const { appState } = window.__e2e
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         const tracks = Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks ?? {})
         const track = tracks[trackIdx]
         return track ? JSON.parse(JSON.stringify(track)) : null
@@ -63,7 +63,7 @@ export function trackField(page, idx, key) {
     return page.evaluate(
         ({ trackIdx, field }) => {
             const { appState } = window.__e2e
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             const tracks = Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks ?? {})
             return tracks[trackIdx]?.[field]
         },
@@ -76,7 +76,7 @@ export function lfoField(page, idx, lfoKey, field) {
     return page.evaluate(
         ({ trackIdx, lfo, sub }) => {
             const { appState } = window.__e2e
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             const tracks = Array.isArray(pattern.tracks) ? pattern.tracks : Object.values(pattern.tracks ?? {})
             return tracks[trackIdx]?.[lfo]?.[sub]
         },
@@ -129,8 +129,8 @@ export async function snapshotState(page) {
         return JSON.parse(
             JSON.stringify({
                 patterns: appState.patterns,
-                selectedPatternNum: appState.selectedPatternNum,
-                selectedDrumkitNum: appState.selectedDrumkitNum,
+                selectedPatternIdx: appState.selectedPatternIdx,
+                selectedDrumkitIdx: appState.selectedDrumkitIdx,
                 bass1: soundRegistry.generatedSounds['BASS1'] ?? null,
             }),
         )

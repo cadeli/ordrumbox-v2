@@ -42,7 +42,7 @@ describe('ExportSection MIDI branches', () => {
 
     it('warns when no pattern is selected and does not download', async () => {
         appState.patterns = []
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
 
         const toolsPanel = makeToolsPanel()
         await toolsPanel.exportMidi()
@@ -58,7 +58,7 @@ describe('ExportSection MIDI branches', () => {
         input.dispatchEvent(new Event('input', { bubbles: true }))
 
         appState.patterns = [{ name: 'Groove', tracks: [] }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         downloadMock.mockClear()
 
         await toolsPanel.exportMidi()
@@ -73,7 +73,7 @@ describe('ExportSection MIDI branches', () => {
     it('falls back to "pattern" in the filename when pattern.name is missing', async () => {
         const toolsPanel = makeToolsPanel()
         appState.patterns = [{ tracks: [] }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         downloadMock.mockClear()
 
         await toolsPanel.exportMidi()
@@ -86,7 +86,7 @@ describe('ExportSection MIDI branches', () => {
         const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
         const toolsPanel = makeToolsPanel()
         appState.patterns = [{ name: 'Bad', tracks: [] }]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         downloadMock.mockImplementationOnce(() => {
             throw new Error('encode fail')
         })

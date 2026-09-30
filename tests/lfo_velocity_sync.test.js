@@ -42,7 +42,7 @@ describe('LFO Velocity Sync Verification', () => {
 
             track = { name: 'KICK', velocity: 0.5, velocityLfo: lfoConfig, stepsPerBeat: 4, nbBeats: 8 }
             appState.patterns = [{ tracks: [track], nbBeats: 8, bpm: 120 }]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
 
             editor = new TrackEditor()
             editor.init()
@@ -180,7 +180,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 swingAmount: 0,
             }
             appState.patterns = [{ tracks: [track], nbBeats: 4 }]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
             editor = new TrackEditor()
@@ -224,7 +224,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 swingAmount: 0,
             }
             appState.patterns = [{ tracks: [track], nbBeats: 4 }]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
             editor = new TrackEditor()
@@ -268,7 +268,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 swingAmount: 0,
             }
             appState.patterns = [{ tracks: [track], nbBeats: 4 }]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
             editor = new TrackEditor()

@@ -4,6 +4,7 @@
 import { WAVE_BUFFER } from './constants.js'
 import { color, rgba } from '../theme.js'
 import Utils from '../../core/utils.js'
+import { getLfoWaveformValue } from '../../audio/math.js'
 
 const FM_DEPTH_SCALE = 0.08
 
@@ -48,7 +49,7 @@ export default class WaveformSection {
     }
 
     /** Returns wave value [-1,1] for a given normalized phase [0,1). */
-    #waveAtPhase(wave, p) {
+    #waveAtPhase(wave, p, cycle = 0) {
         switch (wave) {
             case 'sine':
                 return Math.sin(2 * Math.PI * p)
@@ -58,6 +59,8 @@ export default class WaveformSection {
                 return 2 * p - 1
             case 'triangle':
                 return 4 * Math.abs(p - 0.5) - 1
+            case 'random':
+                return getLfoWaveformValue(cycle + p, 4)
             default:
                 return Math.sin(2 * Math.PI * p)
         }
@@ -101,9 +104,10 @@ export default class WaveformSection {
         const inc = freqMult.map((fm) => baseInc * fm)
         const fmDepth = fmAmount * FM_DEPTH_SCALE
         const phase = [0, 0, 0]
+        const cycle = [0, 0, 0]
         for (let i = 0; i < sampleRate; i++) {
-            const rawO2 = this.#waveAtPhase(vcos[1].wave, phase[1])
-            const rawO3 = this.#waveAtPhase(vcos[2].wave, phase[2])
+            const rawO2 = this.#waveAtPhase(vcos[1].wave, phase[1], cycle[1])
+            const rawO3 = this.#waveAtPhase(vcos[2].wave, phase[2], cycle[2])
 
             let f1 = inc[0],
                 f2 = inc[1]
@@ -124,7 +128,7 @@ export default class WaveformSection {
                         f1 += (rawO2 + rawO3) * fmDepth
                         break
                     case 4: {
-                        const rawO1 = this.#waveAtPhase(vcos[0].wave, phase[0])
+                        const rawO1 = this.#waveAtPhase(vcos[0].wave, phase[0], cycle[0])
                         f1 += rawO2 * fmDepth
                         f2 += rawO1 * fmDepth
                         break
@@ -135,13 +139,19 @@ export default class WaveformSection {
             phase[0] += f1
             phase[1] += f2
             phase[2] += f3
-            phase[0] -= Math.floor(phase[0])
-            phase[1] -= Math.floor(phase[1])
-            phase[2] -= Math.floor(phase[2])
+            const step0 = Math.floor(phase[0])
+            const step1 = Math.floor(phase[1])
+            const step2 = Math.floor(phase[2])
+            cycle[0] += step0
+            cycle[1] += step1
+            cycle[2] += step2
+            phase[0] -= step0
+            phase[1] -= step1
+            phase[2] -= step2
 
-            const val0 = this.#waveAtPhase(vcos[0].wave, phase[0])
-            const val1 = this.#waveAtPhase(vcos[1].wave, phase[1])
-            const val2 = this.#waveAtPhase(vcos[2].wave, phase[2])
+            const val0 = this.#waveAtPhase(vcos[0].wave, phase[0], cycle[0])
+            const val1 = this.#waveAtPhase(vcos[1].wave, phase[1], cycle[1])
+            const val2 = this.#waveAtPhase(vcos[2].wave, phase[2], cycle[2])
             const sub = (draft.subGain ?? 0) > 0 ? this.#waveAtPhase('sine', (phase[0] * 0.5) % 1) * draft.subGain : 0
 
             let sample = val0 * gainMod[0] + val1 * gainMod[1] + val2 * gainMod[2] + sub

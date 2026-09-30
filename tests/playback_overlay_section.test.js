@@ -65,7 +65,7 @@ describe('PlaybackOverlaySection', () => {
     beforeEach(() => {
         pattern = makeMockPattern(4)
         appState.patterns = [pattern]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         editor = makeMockEditor(pattern)
         overlay = new PlaybackOverlaySection(editor)
     })
@@ -173,7 +173,7 @@ describe('PlaybackOverlaySection', () => {
         it('changes currentPage when beat is outside visible page', () => {
             const bigPattern = makeMockPattern(8)
             appState.patterns = [bigPattern]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
             appState.currentPage = 0
 
             editor.beatRectsCache = Array.from({ length: 8 }, () => ({
@@ -207,7 +207,7 @@ describe('PlaybackOverlaySection', () => {
         it('hides playhead when beat is on a different page', () => {
             const bigPattern = makeMockPattern(8)
             appState.patterns = [bigPattern]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
             appState.currentPage = 0
 
             editor.beatRectsCache = Array.from({ length: 8 }, () => ({
@@ -243,7 +243,7 @@ describe('PlaybackOverlaySection', () => {
         it('shows playhead when beat is within current page', () => {
             const bigPattern = makeMockPattern(8)
             appState.patterns = [bigPattern]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
             appState.currentPage = 1
 
             editor.beatRectsCache = Array.from({ length: 8 }, (_, i) => ({

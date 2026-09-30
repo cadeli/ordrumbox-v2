@@ -209,7 +209,7 @@ test.describe.serial('Full session lifecycle', () => {
             await expect
                 .poll(() => page.evaluate((i) => window.__e2e.appState.patterns[i]?.name, newIdx))
                 .toBe(NEW_PATTERN)
-            await expect.poll(() => page.evaluate(() => window.__e2e.appState.selectedPatternNum)).toBe(newIdx)
+            await expect.poll(() => page.evaluate(() => window.__e2e.appState.selectedPatternIdx)).toBe(newIdx)
 
             const tracks = await page.evaluate((i) => window.__e2e.appState.patterns[i].tracks?.length ?? 0, newIdx)
             expect(tracks).toBe(0)
@@ -494,7 +494,7 @@ test.describe.serial('Full session lifecycle', () => {
                 .locator('.tb-group', { has: page.locator('.tb-label:text-is("Drumkit")') })
                 .locator('select')
             await kitSelect.selectOption('1')
-            await expectVal(() => page.evaluate(() => window.__e2e.appState.selectedDrumkitNum), 1)
+            await expectVal(() => page.evaluate(() => window.__e2e.appState.selectedDrumkitIdx), 1)
             // auto-assign runs for every auto track: T4 must get a concrete sound
             await expect
                 .poll(async () => (await trackAt(page, 3))?.soundId, { timeout: 30_000 })
@@ -765,8 +765,8 @@ test.describe.serial('Full session lifecycle', () => {
 
             beforeReload = await snapshotState(page)
             exportBeforeReload = await exportPatternAt(page, newIdx)
-            expect(beforeReload.selectedPatternNum).toBe(newIdx)
-            expect(beforeReload.selectedDrumkitNum).toBe(1)
+            expect(beforeReload.selectedPatternIdx).toBe(newIdx)
+            expect(beforeReload.selectedDrumkitIdx).toBe(1)
         })
     })
 
@@ -787,8 +787,8 @@ test.describe.serial('Full session lifecycle', () => {
         const afterPattern = after.patterns[newIdx]
 
         // session state
-        expect(after.selectedPatternNum).toBe(newIdx)
-        expect(after.selectedDrumkitNum).toBe(1)
+        expect(after.selectedPatternIdx).toBe(newIdx)
+        expect(after.selectedDrumkitIdx).toBe(1)
         expect(after.patterns.length).toBe(baseCount + 1)
         expect(afterPattern.name).toBe(NEW_PATTERN)
         expect(afterPattern.nbBeats).toBe(8)
@@ -888,7 +888,7 @@ test.describe.serial('Full session lifecycle', () => {
     })
 
     test('T4 — export MIDI and verify the file content', async () => {
-        const selectedIdx = await page.evaluate(() => window.__e2e.appState.selectedPatternNum)
+        const selectedIdx = await page.evaluate(() => window.__e2e.appState.selectedPatternIdx)
         const selectedName = await page.evaluate((i) => window.__e2e.appState.patterns[i]?.name, selectedIdx)
         expect(selectedName).toBe(NEW_PATTERN)
 
@@ -993,7 +993,7 @@ test.describe.serial('Full session lifecycle', () => {
     })
 
     test('T5 — export WAV and verify the file content', async () => {
-        const selectedIdx = await page.evaluate(() => window.__e2e.appState.selectedPatternNum)
+        const selectedIdx = await page.evaluate(() => window.__e2e.appState.selectedPatternIdx)
         const meta = await page.evaluate((i) => {
             const pattern = window.__e2e.appState.patterns[i]
             return { name: pattern.name, bpm: pattern.bpm, nbBeats: pattern.nbBeats }

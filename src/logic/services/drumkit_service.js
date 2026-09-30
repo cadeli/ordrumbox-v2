@@ -16,7 +16,7 @@ class DrumkitService {
     }
 
     currentKitName() {
-        return soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? null
+        return soundRegistry.drumkitList[appState.selectedDrumkitIdx]?.name ?? null
     }
 
     exportCurrentKit() {
@@ -71,7 +71,7 @@ class DrumkitService {
         }
 
         const kitIndex = soundRegistry.drumkitList.findIndex((entry) => entry.name === kit.name)
-        appState.selectedDrumkitNum = kitIndex
+        appState.selectedDrumkitIdx = kitIndex
         appState.selectedDrumkit = kit.name
         try {
             await serviceRegistry.resourcesLoader?.loadMissingSamplesFromDrumkits([kit])
@@ -177,7 +177,7 @@ class DrumkitService {
     async addSample(file, buffer) {
         const instrument = instrumentsManager.findInstrumentFromFileName(file.name)
         const key = instrument.id
-        const kitName = soundRegistry.drumkitList[appState.selectedDrumkitNum]?.name ?? 'imported'
+        const kitName = soundRegistry.drumkitList[appState.selectedDrumkitIdx]?.name ?? 'imported'
 
         soundRegistry.sounds[file.name] = {
             kit_name: kitName,
@@ -235,7 +235,7 @@ class DrumkitService {
     }
 
     async autoDetectAll() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return false
         const autoAssign = await getAutoAssignService()
         autoAssign.autoAssignSounds(pattern)

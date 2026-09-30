@@ -234,16 +234,31 @@ describe('Generators', () => {
             }
         })
 
-        it('_isRequiredStep returns true when beatModulo matches', () => {
-            const gen = new SnareGenerate()
-            const required = [{ beatModulo: 2, step: 0 }]
-            expect(gen._isRequiredStep(1, 0, required)).toBe(true)
+        it('required steps force a note when the probability gate would drop it', () => {
+            const track = makeTrack('SNARE', [], { nbBeats: 4, stepsPerBeat: 4 })
+            const random = vi.spyOn(Math, 'random').mockReturnValue(1)
+            try {
+                new SnareGenerate().generateNewSnare(track, 'syncopated')
+            } finally {
+                random.mockRestore()
+            }
+
+            // syncopated requires beatModulo 2 step 0 → only beat 1 step 0 survives
+            expect(track.notes).toHaveLength(1)
+            expect(track.notes[0].beat).toBe(1)
+            expect(track.notes[0].beatStep).toBe(0)
         })
 
-        it('_isRequiredStep returns false when step does not match', () => {
-            const gen = new SnareGenerate()
-            const required = [{ beatModulo: 2, step: 0 }]
-            expect(gen._isRequiredStep(1, 2, required)).toBe(false)
+        it('steps that are not required are never forced', () => {
+            const track = makeTrack('SNARE', [], { nbBeats: 4, stepsPerBeat: 4 })
+            const random = vi.spyOn(Math, 'random').mockReturnValue(1)
+            try {
+                new SnareGenerate().generateNewSnare(track, 'syncopated')
+            } finally {
+                random.mockRestore()
+            }
+
+            expect(track.notes.every((n) => n.beatStep === 0 && n.beat % 2 === 1)).toBe(true)
         })
 
         it('all variants produce velocity in [0, 1]', () => {
@@ -576,7 +591,7 @@ describe('Generators', () => {
 
         it('generatePattern stores the genre used on the pattern', async () => {
             const autoGen = new AutoGenerate()
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
             expect(typeof pattern._autoGenGenre).toBe('string')
             expect(pattern._autoGenGenre.length).toBeGreaterThan(0)
@@ -584,7 +599,7 @@ describe('Generators', () => {
 
         it('changeTrack uses the same genre as generatePattern', async () => {
             const autoGen = new AutoGenerate()
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
             const genreFromPattern = pattern._autoGenGenre
@@ -599,7 +614,7 @@ describe('Generators', () => {
 
         it('changeTrack does not pick a new random genre when _autoGenGenre is set', async () => {
             const autoGen = new AutoGenerate()
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
             const fixedGenre = pattern._autoGenGenre
@@ -614,7 +629,7 @@ describe('Generators', () => {
 
         it('genre is derived from pattern tags when available', async () => {
             const autoGen = new AutoGenerate()
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             pattern.tags = { style: 'rock', type: 'default' }
             await autoGen.generatePattern()
             expect(pattern._autoGenGenre).toBe('rock')
@@ -622,7 +637,7 @@ describe('Generators', () => {
 
         it('genre falls back to random when tags have no matching style', async () => {
             const autoGen = new AutoGenerate()
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             pattern.tags = { style: 'unknown_style', type: 'default' }
             await autoGen.generatePattern()
             expect(StructureSong.GENRES).toContain(pattern._autoGenGenre)
@@ -630,7 +645,7 @@ describe('Generators', () => {
 
         it('genre falls back to random when pattern has no tags', async () => {
             const autoGen = new AutoGenerate()
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             pattern.tags = null
             await autoGen.generatePattern()
             expect(typeof pattern._autoGenGenre).toBe('string')
@@ -648,7 +663,7 @@ describe('Generators', () => {
 
         it('generatePattern stores a randomized key offset and scale', async () => {
             const autoGen = new AutoGenerate()
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
             expect(StructureSong.KEY_OFFSETS).toContain(pattern._autoGenKeyOffset)
@@ -657,7 +672,7 @@ describe('Generators', () => {
 
         it('reuses the pattern key when the pattern is regenerated', async () => {
             const autoGen = new AutoGenerate()
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
             const key = pattern._autoGenKeyOffset
             const scale = pattern._autoGenScale
@@ -695,7 +710,7 @@ describe('Generators', () => {
 
         it('jitters the swing amount of every track within bounds', async () => {
             const autoGen = new AutoGenerate()
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             await autoGen.generatePattern()
 
             for (const track of Object.values(pattern.tracks)) {
@@ -1031,7 +1046,7 @@ describe('Generators', () => {
             const pattern = cmd.addPattern('ParamAutoGen')
             pattern.bpm = bpm
             pattern.nbBeats = nbBeats
-            appState.selectedPatternNum = appState.patterns.length - 1
+            appState.selectedPatternIdx = appState.patterns.length - 1
 
             const autoGen = new AutoGenerate()
             const result = await autoGen.generatePattern()

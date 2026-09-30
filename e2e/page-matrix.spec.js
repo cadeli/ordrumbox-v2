@@ -40,7 +40,7 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
             await page.evaluate(
                 ({ nbBeats, stepsPerBeat, patternMetaEvent, patternChangeEvent }) => {
                     const { appState, playbackEvents } = window.__e2e
-                    const pattern = appState.patterns[appState.selectedPatternNum]
+                    const pattern = appState.patterns[appState.selectedPatternIdx]
                     if (!pattern) return
 
                     pattern.nbBeats = nbBeats

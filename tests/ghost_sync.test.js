@@ -111,8 +111,8 @@ function boot(pattern, { withPiano = true } = {}) {
     global.window.innerHeight = 800
 
     appState.patterns = [structuredClone(pattern)]
-    appState.selectedPatternNum = 0
-    appState.selectedTrackNum = 0
+    appState.selectedPatternIdx = 0
+    appState.selectedTrackIdx = 0
 
     const grid = new PatternPanel()
     grid.init()

@@ -11,14 +11,14 @@ function findPatternForTrack(track) {
  */
 export function createNoteMethods(cmd) {
     return {
-        deleteNote(track, selNote) {
+        deleteNote(track, selectedNote) {
             const values = Object.values(track.notes)
             for (let i = values.length - 1; i >= 0; i--) {
                 const note = values[i]
                 if (
-                    note.beatStep === selNote.beatStep &&
-                    note.beat === selNote.beat &&
-                    (note.pitch ?? 0) === (selNote.pitch ?? 0)
+                    note.beatStep === selectedNote.beatStep &&
+                    note.beat === selectedNote.beat &&
+                    (note.pitch ?? 0) === (selectedNote.pitch ?? 0)
                 ) {
                     const deletedNote = { ...note }
                     const noteIndex = track.notes.indexOf(note)

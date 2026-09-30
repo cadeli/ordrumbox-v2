@@ -74,7 +74,7 @@ export default class MidiImportService {
         const patternCount = this.#createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN)
 
         const newIdx = appState.patterns.length - 1
-        await serviceRegistry.cmd.setSelectedPatternNum(newIdx)
+        await serviceRegistry.cmd.setSelectedPatternIdx(newIdx)
 
         serviceRegistry.audioEngine?.invalidateCache()
         const message =
@@ -243,11 +243,14 @@ export default class MidiImportService {
 
     #logImportSummary(trackDefs) {
         const drumkitList = soundRegistry.drumkitList
-        const selDrumkitName = drumkitList?.[appState.selectedDrumkitNum]?.name ?? ''
+        const selectedDrumkitName = drumkitList?.[appState.selectedDrumkitIdx]?.name ?? ''
 
         const resolveSampleUrl = (trackName) => {
             for (const sound of Object.values(soundRegistry.sounds)) {
-                if (sound.kit_name === selDrumkitName && trackName.toUpperCase().includes(sound.key.toUpperCase())) {
+                if (
+                    sound.kit_name === selectedDrumkitName &&
+                    trackName.toUpperCase().includes(sound.key.toUpperCase())
+                ) {
                     return sound.url
                 }
             }
@@ -256,7 +259,7 @@ export default class MidiImportService {
                     return sound.url
                 }
             }
-            logger.warn('MidiImport', `No sample found for track "${trackName}" in drumkit "${selDrumkitName}"`)
+            logger.warn('MidiImport', `No sample found for track "${trackName}" in drumkit "${selectedDrumkitName}"`)
             return null
         }
 

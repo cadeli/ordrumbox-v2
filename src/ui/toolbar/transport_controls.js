@@ -95,7 +95,7 @@ export default class TransportControls {
         tb.beatsSelect.addEventListener('change', () => {
             const val = parseInt(tb.beatsSelect.value, 10)
             if (isNaN(val)) return
-            const pattern = appState.patterns[appState.selectedPatternNum]
+            const pattern = appState.patterns[appState.selectedPatternIdx]
             if (!pattern) return
             pattern.nbBeats = val
             Utils.getTracksArray(pattern).forEach((track) => {

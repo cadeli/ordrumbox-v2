@@ -25,8 +25,8 @@ import { EVENTS } from '../src/core/events.js'
 
 function cleanState() {
     appState.patterns.length = 0
-    appState.selectedPatternNum = 0
-    appState.selectedTrackNum = 0
+    appState.selectedPatternIdx = 0
+    appState.selectedTrackIdx = 0
     for (const key of Object.keys(playbackEvents)) {
         if (Array.isArray(playbackEvents[key])) {
             playbackEvents[key].length = 0
@@ -508,7 +508,7 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
             },
         })
         appState.patterns = [testPattern]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
 
         serviceRegistry.transport = { isRunning: false, tick: 0 }
@@ -577,7 +577,6 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
         kick.notes = [...kick.notes, { beat: 1, beatStep: 2, pitch: 0, velocity: 0.5 }]
         kick._version = (kick._version ?? 0) + 1
 
-        panel._trackDataDirty = true
         panel.sync()
 
         const filled = panel.container.querySelectorAll('.pp-cell.filled')

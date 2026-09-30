@@ -79,7 +79,7 @@ export default class PatternNav {
         tb.patternSelect.addEventListener('change', () => {
             const num = parseInt(tb.patternSelect.value, 10)
             if (!isNaN(num)) {
-                serviceRegistry.cmd.setSelectedPatternNum(num)
+                serviceRegistry.cmd.setSelectedPatternIdx(num)
                 serviceRegistry.cmd.resetPage()
                 playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
             }
@@ -88,7 +88,7 @@ export default class PatternNav {
         tb.drumkitSelect.addEventListener('change', () => {
             const num = parseInt(tb.drumkitSelect.value, 10)
             if (!isNaN(num)) {
-                serviceRegistry.cmd.setSelectedDrumkitNum(num)
+                serviceRegistry.cmd.setSelectedDrumkitIdx(num)
             }
         })
 
@@ -114,7 +114,7 @@ export default class PatternNav {
             tb.patternSelect.appendChild(opt)
         })
         if (tb.patternSelect.options.length > 0) {
-            const idx = Math.min(appState.selectedPatternNum, tb.patternSelect.options.length - 1)
+            const idx = Math.min(appState.selectedPatternIdx, tb.patternSelect.options.length - 1)
             tb.patternSelect.selectedIndex = idx
         }
     }
@@ -129,7 +129,7 @@ export default class PatternNav {
             tb.drumkitSelect.appendChild(opt)
         })
         if (tb.drumkitSelect.options.length > 0) {
-            const idx = Math.min(appState.selectedDrumkitNum, tb.drumkitSelect.options.length - 1)
+            const idx = Math.min(appState.selectedDrumkitIdx, tb.drumkitSelect.options.length - 1)
             tb.drumkitSelect.selectedIndex = idx
         }
     }

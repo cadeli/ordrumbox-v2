@@ -22,7 +22,6 @@ import nodeWaa from 'node-web-audio-api'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
-import { playbackEvents } from '../src/state/playback_events.js'
 import Commander from '../src/logic/commands/cmd.js'
 import WavExporter from '../src/audio/export/wav_exporter.js'
 import AudioAnalyzer from '../src/audio/analyze.js'
@@ -43,7 +42,7 @@ beforeEach(() => {
     _origError = console.error
     console.error = (...args) => {
         const msg = args[0]?.toString?.() ?? ''
-        if (msg.includes('Mixer') || msg.includes('Sound') || msg.includes('_playVoice')) return
+        if (msg.includes('Mixer') || msg.includes('Sound')) return
         _origError(...args)
     }
 })
@@ -55,11 +54,10 @@ afterEach(() => {
 
 function resetAll() {
     appState.patterns.length = 0
-    appState.selectedPatternNum = 0
+    appState.selectedPatternIdx = 0
     appState.flatNotes = null
     serviceRegistry.reset()
     soundRegistry.reset()
-    playbackEvents._listeners = {}
 }
 
 function createDrumBuffer(frequency, decaySec, durationSec) {

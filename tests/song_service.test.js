@@ -24,7 +24,7 @@ describe('SongService', () => {
         idbGet.mockClear()
         idbKeys.mockClear()
         serviceRegistry.cmd = {
-            setSelectedPatternNum: vi.fn(),
+            setSelectedPatternIdx: vi.fn(),
             resetPage: vi.fn(() => {
                 appState.currentPage = 0
             }),
@@ -35,7 +35,7 @@ describe('SongService', () => {
     describe('buildSongData', () => {
         it('serializes current appState into song data', () => {
             appState.patterns = [{ name: 'A', tracks: [], bpm: 120, nbBeats: 4 }]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
             appState.songInfos.description = 'My song'
             appState.songInfos.date = '2025-01-01'
 
@@ -123,7 +123,7 @@ describe('SongService', () => {
             expect(appState.songInfos.name).toBe('Loaded')
             expect(appState.songInfos.description).toBe('desc')
             expect(appState.songInfos.date).toBe('2025-06-01')
-            expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalledWith(1)
+            expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
             expect(appState.currentPage).toBe(0)
         })
 
@@ -137,7 +137,7 @@ describe('SongService', () => {
         it('defaults selectedPatternNum to 0 when missing', () => {
             const data = { patterns: [{ name: 'A' }] }
             songService.applyToAppState(data, 'X')
-            expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalledWith(0)
+            expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(0)
         })
     })
 

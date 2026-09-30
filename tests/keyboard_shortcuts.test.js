@@ -61,13 +61,13 @@ describe('Keyboard shortcuts', () => {
                 ],
             },
         ]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.showVus = false
 
         serviceRegistry.seq = { toggleStartStop: vi.fn(), simpleBeep: vi.fn() }
         serviceRegistry.cmd = {
-            setSelectedPatternNum: vi.fn(),
-            setSelectedDrumkitNum: vi.fn(),
+            setSelectedPatternIdx: vi.fn(),
+            setSelectedDrumkitIdx: vi.fn(),
             toggleShowVus: vi.fn(() => {
                 appState.showVus = !appState.showVus
             }),
@@ -125,9 +125,9 @@ describe('Keyboard shortcuts', () => {
         expect(serviceRegistry.seq.toggleStartStop).toHaveBeenCalled()
     })
 
-    it('KeyF calls cmd.setSelectedPatternNum', () => {
+    it('KeyF calls cmd.setSelectedPatternIdx', () => {
         fireKeydown('KeyF')
-        expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalled()
+        expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalled()
     })
 
     it('KeyF confirms the new pattern with a toast', () => {
@@ -138,13 +138,13 @@ describe('Keyboard shortcuts', () => {
     it('KeyF shows info toast when there is no pattern', () => {
         appState.patterns = []
         fireKeydown('KeyF')
-        expect(serviceRegistry.cmd.setSelectedPatternNum).not.toHaveBeenCalled()
+        expect(serviceRegistry.cmd.setSelectedPatternIdx).not.toHaveBeenCalled()
         expect(showToast).toHaveBeenCalledWith('No pattern selected', 'info')
     })
 
-    it('KeyG calls cmd.setSelectedDrumkitNum', () => {
+    it('KeyG calls cmd.setSelectedDrumkitIdx', () => {
         fireKeydown('KeyG')
-        expect(serviceRegistry.cmd.setSelectedDrumkitNum).toHaveBeenCalled()
+        expect(serviceRegistry.cmd.setSelectedDrumkitIdx).toHaveBeenCalled()
     })
 
     it('KeyG confirms the new drumkit with a toast', () => {
@@ -155,7 +155,7 @@ describe('Keyboard shortcuts', () => {
     it('KeyG shows info toast when no drumkit is loaded', () => {
         soundRegistry.drumkitList = []
         fireKeydown('KeyG')
-        expect(serviceRegistry.cmd.setSelectedDrumkitNum).not.toHaveBeenCalled()
+        expect(serviceRegistry.cmd.setSelectedDrumkitIdx).not.toHaveBeenCalled()
         expect(showToast).toHaveBeenCalledWith('No drumkit available', 'info')
     })
 
@@ -278,7 +278,7 @@ describe('Keyboard shortcuts', () => {
         await flushAsyncShortcut()
 
         expect(serviceRegistry.cmd.addPattern).toHaveBeenCalledTimes(1)
-        expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalledWith(1)
+        expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
         expect(serviceRegistry.cmd.resetPage).toHaveBeenCalled()
         expect(appState.patterns).toHaveLength(2)
         expect(mockGen.generatePattern).toHaveBeenCalledTimes(1)
@@ -431,7 +431,7 @@ describe('Keyboard shortcuts', () => {
 
     it('Ctrl+S shows info toast when no pattern is selected', () => {
         appState.patterns = []
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
 
         fireKeydown('KeyS', 's', { ctrlKey: true })
 
@@ -450,7 +450,7 @@ describe('Keyboard shortcuts', () => {
         await flushAsyncShortcut()
 
         expect(serviceRegistry.cmd.addPattern).toHaveBeenCalled()
-        expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalledWith(1)
+        expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
         expect(serviceRegistry.cmd.resetPage).toHaveBeenCalled()
         expect(appState.patterns).toHaveLength(2)
         expect(showToast).toHaveBeenCalledWith('Pattern added', 'success')
@@ -471,7 +471,7 @@ describe('Keyboard shortcuts', () => {
         expect(appState.patterns).toHaveLength(2)
         expect(appState.patterns[1].name).toBe('P1 copy')
         expect(appState.patterns[1].tracks).toHaveLength(3)
-        expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalledWith(1)
+        expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
         expect(showToast).toHaveBeenCalledWith('Pattern duplicated', 'success')
     })
 

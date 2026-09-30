@@ -23,7 +23,7 @@ export function prevPage() {
  * Navigate to the next page of steps.
  */
 export function nextPage() {
-    const pattern = appState.patterns[appState.selectedPatternNum]
+    const pattern = appState.patterns[appState.selectedPatternIdx]
     if (!pattern) return
     const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4
     const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat

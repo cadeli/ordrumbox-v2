@@ -66,8 +66,8 @@ describe('Mobile tab bar', () => {
         serviceRegistry.reset()
 
         appState.patterns = [TEST_PATTERN]
-        appState.selectedPatternNum = 0
-        appState.selectedTrackNum = 0
+        appState.selectedPatternIdx = 0
+        appState.selectedTrackIdx = 0
 
         document.body.innerHTML = ''
         const appContent = document.createElement('div')
@@ -121,7 +121,7 @@ describe('Mobile tab bar', () => {
             pianoRollPanel: { hide: vi.fn(), show: vi.fn() },
             noteEditor,
             toolsPanel,
-            patternSettingsPanel: { hide: vi.fn(), show: vi.fn(), _isOpen: false },
+            patternSettingsPanel: { hide: vi.fn(), show: vi.fn(), isOpen: false },
         })
         viewManager.init()
 

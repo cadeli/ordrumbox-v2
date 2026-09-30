@@ -244,7 +244,7 @@ describe('DrumkitManager E2E', () => {
             const detail = manager.container.querySelector('#dm-detail')
             const selectRow = detail.querySelector('.dm-select-row')
             expect(selectRow).not.toBeNull()
-            expect(manager._knobs.length).toBeGreaterThanOrEqual(0)
+            expect(manager.knobs.length).toBeGreaterThanOrEqual(0)
         })
     })
 
@@ -368,24 +368,24 @@ describe('DrumkitManager E2E', () => {
     })
 
     describe('selected sound validation on sync', () => {
-        it('clears _selectedSoundKey if it no longer exists', () => {
+        it('clears selectedSoundKey if it no longer exists', () => {
             setupSounds()
             const manager = createManager()
             manager.sync()
-            manager._selectedSoundKey = 'http://example.com/nonexistent.wav'
+            manager.selectedSoundKey = 'http://example.com/nonexistent.wav'
 
             manager.sync()
 
-            expect(manager._selectedSoundKey).toBe('http://example.com/kick.wav')
+            expect(manager.selectedSoundKey).toBe('http://example.com/kick.wav')
         })
 
-        it('selects first kit sound if _selectedSoundKey is null', () => {
+        it('selects first kit sound if selectedSoundKey is null', () => {
             setupSounds()
             const manager = createManager()
-            manager._selectedSoundKey = null
+            manager.selectedSoundKey = null
             manager.sync()
 
-            expect(manager._selectedSoundKey).toBe('http://example.com/kick.wav')
+            expect(manager.selectedSoundKey).toBe('http://example.com/kick.wav')
         })
     })
 
@@ -408,7 +408,7 @@ describe('DrumkitManager E2E', () => {
             manager.sync()
 
             const sound = soundRegistry.sounds['http://example.com/kick.wav']
-            manager._onKnobChange(sound, 'gain', -6)
+            manager.onKnobChange(sound, 'gain', -6)
 
             expect(sound.gainDb).toBe(-6)
         })
@@ -419,7 +419,7 @@ describe('DrumkitManager E2E', () => {
             manager.sync()
 
             const sound = soundRegistry.sounds['http://example.com/kick.wav']
-            manager._onKnobChange(sound, 'tune', 3)
+            manager.onKnobChange(sound, 'tune', 3)
 
             expect(sound.tune).toBe(3)
         })
@@ -430,7 +430,7 @@ describe('DrumkitManager E2E', () => {
             manager.sync()
 
             const sound = soundRegistry.sounds['http://example.com/kick.wav']
-            manager._onKnobChange(sound, 'decay', 500)
+            manager.onKnobChange(sound, 'decay', 500)
 
             expect(sound.decay).toBe(500)
         })

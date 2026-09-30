@@ -28,7 +28,7 @@ const PHYSICAL_TRACK_PREVIEW_KEYS = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'Ke
 const PHYSICAL_KEYS_PREVENTING_BROWSER_DEFAULT = new Set(['Space'])
 
 function getSelectedPattern() {
-    return appState.patterns[appState.selectedPatternNum]
+    return appState.patterns[appState.selectedPatternIdx]
 }
 
 function toggleTrackMute(trackIndex) {
@@ -52,10 +52,10 @@ async function generatePattern() {
 
     // B always starts from a brand new pattern instead of overwriting the
     // currently selected one.
-    const previousIdx = appState.selectedPatternNum
+    const previousIdx = appState.selectedPatternIdx
     const newIdx = appState.patterns.length
     cmd.addPattern()
-    await cmd.setSelectedPatternNum(newIdx)
+    await cmd.setSelectedPatternIdx(newIdx)
     cmd.resetPage?.()
     emitPatternStructureChange()
 
@@ -64,7 +64,7 @@ async function generatePattern() {
 
     if (!generated) {
         cmd.removePattern?.(newIdx)
-        await cmd.setSelectedPatternNum(Math.min(previousIdx, appState.patterns.length - 1))
+        await cmd.setSelectedPatternIdx(Math.min(previousIdx, appState.patterns.length - 1))
         emitPatternStructureChange()
         showToast('Pattern generation failed', 'error')
         return
@@ -107,7 +107,7 @@ function addNewPattern() {
     if (!cmd?.addPattern) return
     const newIdx = appState.patterns.length
     cmd.addPattern()
-    cmd.setSelectedPatternNum(newIdx)
+    cmd.setSelectedPatternIdx(newIdx)
     cmd.resetPage?.()
     emitPatternStructureChange()
     showToast('Pattern added', 'success')
@@ -120,7 +120,7 @@ async function duplicateCurrentPattern() {
     const clone = cmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
     Object.assign(clone, structuredClone(pattern))
     clone.name = (pattern.name ?? 'Pattern') + ' copy'
-    await cmd.setSelectedPatternNum(appState.patterns.length - 1)
+    await cmd.setSelectedPatternIdx(appState.patterns.length - 1)
     emitPatternStructureChange()
     showToast('Pattern duplicated', 'success')
 }
@@ -132,7 +132,7 @@ function selectRandomPattern() {
         return
     }
     const num = Math.floor(Math.random() * patterns.length)
-    serviceRegistry.cmd.setSelectedPatternNum(num)
+    serviceRegistry.cmd.setSelectedPatternIdx(num)
     showToast(`Pattern "${patterns[num]?.name ?? num + 1}" selected`, 'success')
 }
 
@@ -143,7 +143,7 @@ function selectRandomDrumkit() {
         return
     }
     const num = Math.floor(Math.random() * drumkits.length)
-    serviceRegistry.cmd.setSelectedDrumkitNum(num)
+    serviceRegistry.cmd.setSelectedDrumkitIdx(num)
     showToast(`Drumkit "${drumkits[num]?.name ?? num + 1}" selected`, 'success')
 }
 
@@ -159,8 +159,8 @@ const SYNTH_SOUND_MAP = {
 }
 
 async function convertToGeneratedSounds() {
-    const selPattern = getSelectedPattern()
-    if (!selPattern) {
+    const selectedPattern = getSelectedPattern()
+    if (!selectedPattern) {
         showToast('No pattern selected', 'info')
         return
     }
@@ -175,14 +175,14 @@ async function convertToGeneratedSounds() {
         }
     }
 
-    Object.values(selPattern.tracks).forEach((track) => {
+    Object.values(selectedPattern.tracks).forEach((track) => {
         const type = Utils.detectTrackType(track.name)
         track.useSoftSynth = true
         track.useAutoAssignSound = false
         track.synthSoundKey = SYNTH_SOUND_MAP[type] ?? 'BASS1'
     })
 
-    serviceRegistry.patterns.applyFlatNotes(selPattern)
+    serviceRegistry.patterns.applyFlatNotes(selectedPattern)
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     logger.info('KeyboardShortcuts', 'All tracks converted to generated sounds')
@@ -190,8 +190,8 @@ async function convertToGeneratedSounds() {
 }
 
 function assignRandomSampleAllTracks() {
-    const selPattern = getSelectedPattern()
-    if (!selPattern) {
+    const selectedPattern = getSelectedPattern()
+    if (!selectedPattern) {
         showToast('No pattern selected', 'info')
         return
     }
@@ -202,33 +202,33 @@ function assignRandomSampleAllTracks() {
         return
     }
 
-    Object.values(selPattern.tracks).forEach((track) => {
+    Object.values(selectedPattern.tracks).forEach((track) => {
         track.useAutoAssignSound = false
         track.useSoftSynth = false
         track.soundId = allSounds[Math.floor(Math.random() * allSounds.length)]
     })
 
-    serviceRegistry.patterns.applyFlatNotes(selPattern)
+    serviceRegistry.patterns.applyFlatNotes(selectedPattern)
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     showToast('Random samples assigned', 'success')
 }
 
 async function autoAssignAllTracks() {
-    const selPattern = getSelectedPattern()
-    if (!selPattern) {
+    const selectedPattern = getSelectedPattern()
+    if (!selectedPattern) {
         showToast('No pattern selected', 'info')
         return
     }
 
-    Object.values(selPattern.tracks).forEach((track) => {
+    Object.values(selectedPattern.tracks).forEach((track) => {
         track.useAutoAssignSound = true
         track.useSoftSynth = false
     })
 
     const autoAssign = await getAutoAssignService()
-    autoAssign.autoAssignSounds(selPattern)
-    serviceRegistry.patterns.applyFlatNotes(selPattern)
+    autoAssign.autoAssignSounds(selectedPattern)
+    serviceRegistry.patterns.applyFlatNotes(selectedPattern)
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     showToast('All tracks auto-assigned', 'success')

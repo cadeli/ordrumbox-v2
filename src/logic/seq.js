@@ -16,16 +16,16 @@ export default class Sequencer {
     static TAG = 'Sequencer'
 
     #stallDetector
-    _starting
-    _pendingStop
+    #starting
+    #pendingStop
 
     constructor(options = {}) {
         this.serviceRegistry = options.serviceRegistry ?? serviceRegistry
         this.appState = options.appState ?? appState
         this.soundRegistry = options.soundRegistry ?? soundRegistry
         this.playbackEvents = options.playbackEvents ?? playbackEvents
-        this._starting = false
-        this._pendingStop = false
+        this.#starting = false
+        this.#pendingStop = false
 
         this.ensureTransport()
     }
@@ -55,8 +55,8 @@ export default class Sequencer {
             sounds: this.soundRegistry.sounds,
             generatedSounds: this.soundRegistry.generatedSounds,
             patterns: this.appState.patterns,
-            selectedPatternNum: this.appState.selectedPatternNum,
-            getSelectedPatternNum: () => this.appState.selectedPatternNum,
+            selectedPatternIdx: this.appState.selectedPatternIdx,
+            getSelectedPatternIdx: () => this.appState.selectedPatternIdx,
             getAutoGenerate: getAutoGenerateService,
             uiState: {}, // UI state removed
             TICK,
@@ -65,23 +65,23 @@ export default class Sequencer {
         this.playbackEvents.on(EVENTS.PATTERN_CHANGE, (changedTracks) => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
-                const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
+                const selectedPattern = this.appState.patterns[this.appState.selectedPatternIdx]
                 if (changedTracks?.length) {
                     for (const track of changedTracks) {
                         this.serviceRegistry.audioEngine.syncTrack(track)
                     }
                 } else {
-                    this.serviceRegistry.audioEngine.syncAllTracks(selPattern)
+                    this.serviceRegistry.audioEngine.syncAllTracks(selectedPattern)
                 }
             }
         })
         this.playbackEvents.on(EVENTS.SELECTED_PATTERN_CHANGE, () => {
             if (this.serviceRegistry.audioEngine) {
                 this.serviceRegistry.audioEngine.invalidateCache()
-                const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
-                if (selPattern) {
-                    this.serviceRegistry.audioEngine.syncAllTracks(selPattern)
-                    this.serviceRegistry.seq?.setBpm(selPattern.bpm)
+                const selectedPattern = this.appState.patterns[this.appState.selectedPatternIdx]
+                if (selectedPattern) {
+                    this.serviceRegistry.audioEngine.syncAllTracks(selectedPattern)
+                    this.serviceRegistry.seq?.setBpm(selectedPattern.bpm)
                 }
                 if (this.serviceRegistry.transport?.isRunning) {
                     this.serviceRegistry.transport.tick = 0
@@ -107,28 +107,28 @@ export default class Sequencer {
     }
 
     start = async () => {
-        if (this._starting) {
+        if (this.#starting) {
             // If stop() was requested while start() was in-flight, honor it.
-            this._pendingStop = true
+            this.#pendingStop = true
             return
         }
-        this._pendingStop = false
-        this._starting = true
+        this.#pendingStop = false
+        this.#starting = true
         try {
-            await this._startInner()
+            await this.#startInner()
             // If the user clicked stop while we were starting, honor it now.
-            if (this._pendingStop) {
-                this._pendingStop = false
+            if (this.#pendingStop) {
+                this.#pendingStop = false
                 this.stop()
             }
         } catch (error) {
             logger.error('Sequencer', 'Sequencer::start: unexpected error', error)
         } finally {
-            this._starting = false
+            this.#starting = false
         }
     }
 
-    _startInner = async () => {
+    #startInner = async () => {
         try {
             await this.serviceRegistry.resourcesLoader.ensureResourcesLoaded()
             this.playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
@@ -138,8 +138,8 @@ export default class Sequencer {
             return
         }
 
-        const selPattern = this.appState.patterns[this.appState.selectedPatternNum]
-        if (!selPattern) {
+        const selectedPattern = this.appState.patterns[this.appState.selectedPatternIdx]
+        if (!selectedPattern) {
             logger.warn('Sequencer', 'Sequencer::start: No selected pattern')
             showToast('No pattern selected', 'warning')
             return
@@ -152,13 +152,13 @@ export default class Sequencer {
             return
         }
         this.ensureTransport()
-        this.serviceRegistry.transport.setBpm(selPattern.bpm)
+        this.serviceRegistry.transport.setBpm(selectedPattern.bpm)
         const autoAssign = await getAutoAssignService()
-        await autoAssign.autoAssignSounds(selPattern)
-        this.serviceRegistry.patterns.applyFlatNotes(selPattern)
+        await autoAssign.autoAssignSounds(selectedPattern)
+        this.serviceRegistry.patterns.applyFlatNotes(selectedPattern)
 
         this.ensureAudioEngine()
-        await this.serviceRegistry.audioEngine.start(selPattern)
+        await this.serviceRegistry.audioEngine.start(selectedPattern)
         this.serviceRegistry.transport.start()
         this.#stallDetector = new AudioStallDetector({
             audioCtx: this.serviceRegistry.audioCtx,
@@ -207,8 +207,8 @@ export default class Sequencer {
 
     setBpm = (bpm) => {
         this.serviceRegistry.transport?.setBpm(bpm)
-        const selPat = this.appState.patterns[this.appState.selectedPatternNum]
-        if (selPat) selPat.bpm = bpm
+        const selectedPattern = this.appState.patterns[this.appState.selectedPatternIdx]
+        if (selectedPattern) selectedPattern.bpm = bpm
         if (this.serviceRegistry.audioEngine) {
             this.serviceRegistry.audioEngine.setBpm(bpm)
         }
@@ -235,7 +235,7 @@ export default class Sequencer {
         }
         this.ensureTransport()
         this.ensureAudioEngine()
-        const pat = this.appState.patterns[this.appState.selectedPatternNum]
+        const pat = this.appState.patterns[this.appState.selectedPatternIdx]
         if (!pat) return
         const tracks = Utils.getTracksArray(pat)
         const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]

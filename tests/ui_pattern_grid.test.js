@@ -38,7 +38,7 @@ describe('Pattern Panel UI Grid', () => {
             },
         }
         appState.patterns = [testPattern]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
         appState.currentPage = 0
 
         // Mock dependencies
@@ -195,7 +195,7 @@ describe('Pattern Panel UI Grid', () => {
 
         it('delete-track button emits structure + pattern change like the menu path', () => {
             appState.patterns[0].tracks['T2'] = { name: 'SNARE', nbBeats: 1, stepsPerBeat: 4, notes: [] }
-            appState.selectedTrackNum = 0
+            appState.selectedTrackIdx = 0
 
             document.querySelector('#pp-delete-track').click()
 
@@ -313,7 +313,7 @@ describe('Pattern Panel UI Grid', () => {
             pressKey('Delete')
 
             expect(track.notes).not.toContain(note)
-            expect(panel.selNote).toBeNull()
+            expect(panel.selectedNote).toBeNull()
             const cell = document.querySelector('.pp-cell[data-pos="0"]')
             expect(cell.classList.contains('filled')).toBe(false)
             expect(cell.classList.contains('selected')).toBe(false)
@@ -327,7 +327,7 @@ describe('Pattern Panel UI Grid', () => {
             pressKey('Backspace')
 
             expect(track.notes).not.toContain(note)
-            expect(panel.selNote).toBeNull()
+            expect(panel.selectedNote).toBeNull()
             const cell = document.querySelector('.pp-cell[data-pos="0"]')
             expect(cell.classList.contains('filled')).toBe(false)
         })
@@ -338,14 +338,14 @@ describe('Pattern Panel UI Grid', () => {
             const note = track.notes[0]
 
             document.querySelector('.pp-cell[data-pos="0"]').click()
-            expect(panel.selNote).toBe(note)
+            expect(panel.selectedNote).toBe(note)
             expect(document.querySelector('.pp-cell[data-pos="0"]').classList.contains('selected')).toBe(true)
 
             pressKey('Delete')
 
             expect(track.notes).not.toContain(note)
-            expect(panel.selNote).toBeNull()
-            expect(panel.selTrackIdx).toBe(-1)
+            expect(panel.selectedNote).toBeNull()
+            expect(panel.selectedTrackIdx).toBe(-1)
             expect(document.querySelector('.pp-cell[data-pos="0"]').classList.contains('selected')).toBe(false)
         })
 
@@ -355,7 +355,7 @@ describe('Pattern Panel UI Grid', () => {
             const initialCount = track.notes.length
 
             document.querySelector('.pp-cell[data-pos="0"]').click()
-            expect(panel.selNote).not.toBeNull()
+            expect(panel.selectedNote).not.toBeNull()
 
             panel.container.dispatchEvent(
                 new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
@@ -366,7 +366,7 @@ describe('Pattern Panel UI Grid', () => {
             pressKey('Delete')
 
             expect(track.notes.length).toBe(initialCount)
-            expect(panel.selNote).toBeNull()
+            expect(panel.selectedNote).toBeNull()
         })
 
         it('Delete preventDefault stops browser back navigation', () => {
@@ -418,13 +418,13 @@ describe('Pattern Panel UI Grid', () => {
             expect(panel.cursorTrackIdx).toBe(0)
 
             document.querySelector('.pp-cell[data-pos="0"]').click()
-            expect(panel.selNote).not.toBeNull()
+            expect(panel.selectedNote).not.toBeNull()
 
             pressKey('Escape')
 
             expect(panel.cursorTrackIdx).toBe(-1)
-            expect(panel.selNote).toBeNull()
-            expect(panel.selTrackIdx).toBe(-1)
+            expect(panel.selectedNote).toBeNull()
+            expect(panel.selectedTrackIdx).toBe(-1)
         })
 
         it('Escape removes cursor and selected classes from the grid', () => {

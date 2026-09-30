@@ -39,7 +39,7 @@ const setupKit = (selectedKitName = 'punchy') => {
     soundRegistry.reset()
     soundRegistry.sounds = { ...realSounds }
     soundRegistry.drumkitList = drumkits.map((k) => ({ name: k.name, instruments: [] }))
-    appState.selectedDrumkitNum = drumkits.findIndex((k) => k.name === selectedKitName)
+    appState.selectedDrumkitIdx = drumkits.findIndex((k) => k.name === selectedKitName)
 }
 
 const findByNameDetailed = (gmName) => {

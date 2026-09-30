@@ -20,7 +20,7 @@ describe('Functional: Auto-assign sounds', () => {
             snd_ohh: { key: 'OHH', kit_name: 'real', url: 'kits/real/ohh.wav' },
         }
         soundRegistry.drumkitList = [{ name: 'real', instruments: [] }]
-        appState.selectedDrumkitNum = 0
+        appState.selectedDrumkitIdx = 0
     })
 
     it('autoAssignTrackSounds finds sound by track name', () => {
@@ -135,7 +135,7 @@ describe('Functional: Auto-assign sounds', () => {
     })
 
     it('autoAssignSounds with empty sounds does not crash', () => {
-        autoAssign._soundRegistry.sounds = {}
+        soundRegistry.sounds = {}
         const pattern = cmd.addPattern('Test')
         const track = cmd.addTrack(pattern, 'KICK', 4)
         track.useAutoAssignSound = true

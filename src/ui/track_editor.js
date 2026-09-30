@@ -253,7 +253,7 @@ export default class TrackEditor extends BasePanel {
         this.#playbackEvents.on(EVENTS.PATTERN_CHANGE, () => {
             if (this.#isDragging || this.#isSelecting) return
             if (!this.#track) return
-            const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
+            const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
             if (!pattern?.tracks) return
             const currentTrack = this.#track
             let newIdx = pattern.tracks.findIndex((t) => t === currentTrack)
@@ -305,7 +305,7 @@ export default class TrackEditor extends BasePanel {
 
     #lfoValuesForTick(tick) {
         if (!this.#track) return null
-        const pattern = this.#appState.patterns[this.#appState.selectedPatternNum]
+        const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
         if (!pattern) return null
         const nbTicks = TICK * pattern.nbBeats
         if (!this.#lfoBridge) this.#lfoBridge = new LfoUiBridge(this.#serviceRegistry.audioCtx)

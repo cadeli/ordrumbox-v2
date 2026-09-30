@@ -56,8 +56,8 @@ describe('bootstrap/startup', () => {
     async function startWith(loader = makeResourcesLoader()) {
         serviceRegistry.resourcesLoader = loader
         serviceRegistry.cmd = {
-            setSelectedDrumkitNum: vi.fn(),
-            setSelectedPatternNum: vi.fn(),
+            setSelectedDrumkitIdx: vi.fn(),
+            setSelectedPatternIdx: vi.fn(),
         }
         const { startAfterFirstPaint } = await import('../src/bootstrap/startup.js')
         startAfterFirstPaint()
@@ -86,8 +86,8 @@ describe('bootstrap/startup', () => {
         appState.patterns = [{ name: 'P1', tracks: [] }]
         const loader = await startWith()
         expect(loader.restoreSession).toHaveBeenCalled()
-        expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalled()
-        expect(serviceRegistry.cmd.setSelectedDrumkitNum).toHaveBeenCalled()
+        expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalled()
+        expect(serviceRegistry.cmd.setSelectedDrumkitIdx).toHaveBeenCalled()
     })
 
     it('loads drumkit list when empty', async () => {

@@ -268,7 +268,7 @@ function buildComplexProject() {
             description: 'A 3-part electronic journey with live synths and acoustic drums',
             date: '2026-09-17',
         },
-        selectedPatternNum: 1,
+        selectedPatternIdx: 1,
     }
 }
 
@@ -302,7 +302,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             appState.songInfos.name = project.songInfos.name
             appState.songInfos.description = project.songInfos.description
             appState.songInfos.date = project.songInfos.date
-            appState.selectedPatternNum = project.selectedPatternNum
+            appState.selectedPatternIdx = project.selectedPatternIdx
 
             // 2. Persist to storage via SongService
             await songService.save('Cyberpunk Odyssey')
@@ -311,7 +311,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             appState.reset()
             expect(appState.patterns).toEqual([])
             expect(appState.songInfos.name).toBe('')
-            expect(appState.selectedPatternNum).toBe(0)
+            expect(appState.selectedPatternIdx).toBe(0)
 
             // 4. Load from storage via SongService
             const loadedData = await songService.load('Cyberpunk Odyssey')
@@ -325,7 +325,7 @@ describe('Song & Project Persistence Roundtrip', () => {
 
             // 6. Deep assertions: Verify zero data loss across all dimensions
             expect(appState.patterns).toHaveLength(3)
-            expect(appState.selectedPatternNum).toBe(1)
+            expect(appState.selectedPatternIdx).toBe(1)
             expect(appState.songInfos.name).toBe('Cyberpunk Odyssey')
             expect(appState.songInfos.description).toBe(project.songInfos.description)
             expect(appState.songInfos.date).toBe(project.songInfos.date)
@@ -393,7 +393,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             appState.songInfos.name = 'Techno Project 2026'
             appState.songInfos.description = 'Full export test'
             appState.songInfos.date = '2026-09-17'
-            appState.selectedPatternNum = 2
+            appState.selectedPatternIdx = 2
 
             // 1. Export to file format
             const { data, filename } = songService.exportToFile('Techno Project 2026')
@@ -418,7 +418,7 @@ describe('Song & Project Persistence Roundtrip', () => {
 
             // 6. Assert fidelity
             expect(appState.patterns).toHaveLength(3)
-            expect(appState.selectedPatternNum).toBe(2)
+            expect(appState.selectedPatternIdx).toBe(2)
             expect(appState.patterns[0].name).toBe('Intro_Beat')
             expect(appState.patterns[1].name).toBe('Drop_Poly')
             expect(appState.patterns[2].name).toBe('Outro_Ambient')

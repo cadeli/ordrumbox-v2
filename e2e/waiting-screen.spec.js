@@ -5,7 +5,7 @@
 
 import { test, expect } from '@playwright/test'
 
-// startAfterFirstPaint() ends with an unawaited setSelectedDrumkitNum()
+// startAfterFirstPaint() ends with an unawaited setSelectedDrumkitIdx()
 // (src/bootstrap/startup.js), so window.__e2e.ready does not mean the boot
 // tail is done: wait for the grid to render AND for the auto-assign to land
 // instead of trusting a fixed grace period.

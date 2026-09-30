@@ -6,9 +6,6 @@
 //
 // Some controls are gated by other params being non-default (e.g. vco3.octave
 // needs vco3.gain > 0). We set those prerequisites in the overrides.
-//
-// "random" waveform is not implemented in the DSP (falls through to square),
-// so we skip the square→random pair in the waveform test.
 
 import { test, expect } from '@playwright/test'
 import { renderSynthBatch, rmsWindow } from './helpers/synth_render.js'
@@ -97,12 +94,8 @@ test.describe('Synth listboxes', () => {
         )
         const waves = Object.keys(WAVE_ICONS)
 
-        // Build pairs, skipping "random" → "random" (random is not implemented —
-        // falls through to square in the DSP processor #v(), making square↔random
-        // produce identical audio).
         const pairs = []
         for (let i = 0; i < waves.length - 1; i++) {
-            if (waves[i] === 'random' || waves[i + 1] === 'random') continue
             pairs.push([waves[i], waves[i + 1]])
         }
 
@@ -126,6 +119,30 @@ test.describe('Synth listboxes', () => {
             const differs = meanAbsDiff > 1e-4 || Math.abs(rmsA - rmsB) > 1e-4
             expect(differs, `${pairs[i][0]} vs ${pairs[i][1]} sound identical`).toBe(true)
         }
+    })
+
+    test('LFO random wave differs from square (wave AudioParam maxValue)', async ({ page }) => {
+        const base = {
+            vco1: { wave: 'sawtooth', gain: 1 },
+            lfo: { target: 'masterVolume', freq: 4, depth: 1, sync: 'off' },
+        }
+        const configs = [
+            { synthOverrides: { ...base, lfo: { ...base.lfo, wave: 'square' } } },
+            { synthOverrides: { ...base, lfo: { ...base.lfo, wave: 'random' } } },
+        ]
+
+        const results = await renderSynthBatch(page, configs, { durationPerNote: 1.0, gapSec: 0.05 })
+
+        const a = results[0]
+        const b = results[1]
+        const n = Math.min(a.channelData[0].length, b.channelData[0].length)
+        let sumAbsDiff = 0
+        for (let j = 0; j < n; j++) sumAbsDiff += Math.abs(a.channelData[0][j] - b.channelData[0][j])
+        const meanAbsDiff = sumAbsDiff / n
+        const rmsA = rmsWindow(a.channelData[0], a.sampleRate, 0.05, 0.8)
+        const rmsB = rmsWindow(b.channelData[0], b.sampleRate, 0.05, 0.8)
+        const differs = meanAbsDiff > 1e-4 || Math.abs(rmsA - rmsB) > 1e-4
+        expect(differs, 'LFO square vs random sound identical (wave maxValue still clamping?)').toBe(true)
     })
 
     test('each filter type has a distinct effect on a rich signal', async ({ page }) => {

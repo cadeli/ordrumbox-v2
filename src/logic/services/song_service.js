@@ -19,7 +19,7 @@ class SongService {
             description: appState.songInfos?.description ?? '',
             date: appState.songInfos?.date ?? '',
             patterns: JSON.parse(JSON.stringify(appState.patterns)),
-            selectedPatternNum: appState.selectedPatternNum,
+            selectedPatternNum: appState.selectedPatternIdx,
         }
     }
 
@@ -72,7 +72,7 @@ class SongService {
             appState.songInfos.description = data.description ?? ''
             appState.songInfos.date = data.date ?? ''
 
-            serviceRegistry.cmd.setSelectedPatternNum(data.selectedPatternNum ?? 0)
+            serviceRegistry.cmd.setSelectedPatternIdx(data.selectedPatternNum ?? 0)
             serviceRegistry.cmd.resetPage()
         })
 

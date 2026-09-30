@@ -126,12 +126,12 @@ export default class GridSection {
     /**
      * @param {Array} tracks
      * @param {object} pattern
-     * @param {object} opts  { startBeat, endBeatPage, selTrackIdx, selectedTrackNum, cachedPage, cachedVersion, trackDataDirty, trackDataCache }
+     * @param {object} opts  { startBeat, endBeatPage, activeTrackIdx, cachedPage, cachedVersion, trackDataDirty, trackDataCache }
      * @returns {string} tracks HTML (including toolbar row + waveform canvas)
      */
     render(tracks, pattern, opts) {
         const editor = this.#editor
-        const { startBeat, endBeatPage } = opts
+        const { startBeat, endBeatPage, activeTrackIdx } = opts
         const totalSteps = (track) => (track.nbBeats ?? 4) * (track.stepsPerBeat ?? 4)
 
         let html = '<div class="pp-tracks">'
@@ -185,9 +185,7 @@ export default class GridSection {
             }
             beatsHtml += '</div>'
 
-            const currentTrackIdx =
-                editor.selTrackIdx !== -1 ? editor.selTrackIdx : (editor.appState.selectedTrackNum ?? -1)
-            const isSelected = currentTrackIdx === tIdx
+            const isSelected = activeTrackIdx === tIdx
             const isMuted = track.mute === true
             const isSolo = track.solo === true
             const soundUrl =

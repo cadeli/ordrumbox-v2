@@ -8,6 +8,7 @@ class SoundRegistry {
         leds: {},
         settings: {
             version: 1,
+            loaded: false,
             sampleDirs: [],
             maxSampleDirs: 10,
             master: {

@@ -83,31 +83,31 @@ export default class ResourcesLoader {
     patternsLoadFailed = false
     samplesLoadFailed = false
     /** @type {Promise<void> | null} In-flight single-flight promise for pattern loading */
-    _patternsLoadingPromise = null
+    #patternsLoadingPromise = null
     /** @type {Promise<void> | null} In-flight single-flight promise for sample loading */
-    _samplesLoadingPromise = null
+    #samplesLoadingPromise = null
 
     async ensureResourcesLoaded() {
         // 1. Load Patterns if missing
         if (appState.patterns.length === 0) {
             if (this.patternsLoadFailed) return
-            if (!this._patternsLoadingPromise) {
-                this._patternsLoadingPromise = this.loadSong(ResourcesLoader.SONG_URL)
+            if (!this.#patternsLoadingPromise) {
+                this.#patternsLoadingPromise = this.loadSong(ResourcesLoader.SONG_URL)
                     .catch((err) => {
                         this.patternsLoadFailed = true
                         throw err
                     })
                     .finally(() => {
-                        this._patternsLoadingPromise = null
+                        this.#patternsLoadingPromise = null
                     })
             }
-            await this._patternsLoadingPromise
+            await this.#patternsLoadingPromise
         }
 
         // 1b. Load Settings from localStorage (or fallback to JSON file)
-        if (!soundRegistry.settings._loaded) {
+        if (!soundRegistry.settings.loaded) {
             await this.loadSettings()
-            soundRegistry.settings._loaded = true
+            soundRegistry.settings.loaded = true
         }
 
         // 2. Load Drumkit List if missing (needed for samples)
@@ -123,17 +123,17 @@ export default class ResourcesLoader {
                 this.samplesLoadFailed = true
                 return
             }
-            if (!this._samplesLoadingPromise) {
-                this._samplesLoadingPromise = this.loadSamplesFromDrumkit(drumkit)
+            if (!this.#samplesLoadingPromise) {
+                this.#samplesLoadingPromise = this.loadSamplesFromDrumkit(drumkit)
                     .catch((err) => {
                         this.samplesLoadFailed = true
                         throw err
                     })
                     .finally(() => {
-                        this._samplesLoadingPromise = null
+                        this.#samplesLoadingPromise = null
                     })
             }
-            await this._samplesLoadingPromise
+            await this.#samplesLoadingPromise
         }
 
         // 3b. Load the samples referenced by the patterns: an explicitly
@@ -248,9 +248,9 @@ export default class ResourcesLoader {
         // Persist session snapshot from appState (authoritative runtime source).
         // soundRegistry.settings.session is a serialization buffer for IDB only.
         const s = (soundRegistry.settings.session ??= {})
-        s.selectedDrumkitNum = appState.selectedDrumkitNum
-        s.selectedPatternNum = appState.selectedPatternNum
-        s.selectedTrackNum = appState.selectedTrackNum
+        s.selectedDrumkitNum = appState.selectedDrumkitIdx
+        s.selectedPatternNum = appState.selectedPatternIdx
+        s.selectedTrackNum = appState.selectedTrackIdx
         s.currentView = serviceRegistry.viewManager?.currentView ?? appState.currentView ?? 'edit'
         appState.currentView = s.currentView
         this.saveSettings()
@@ -259,9 +259,9 @@ export default class ResourcesLoader {
     restoreSession = () => {
         const s = soundRegistry.settings.session
         if (!s) return
-        if (typeof s.selectedDrumkitNum === 'number') appState.selectedDrumkitNum = s.selectedDrumkitNum
-        if (typeof s.selectedPatternNum === 'number') appState.selectedPatternNum = s.selectedPatternNum
-        if (typeof s.selectedTrackNum === 'number') appState.selectedTrackNum = s.selectedTrackNum
+        if (typeof s.selectedDrumkitNum === 'number') appState.selectedDrumkitIdx = s.selectedDrumkitNum
+        if (typeof s.selectedPatternNum === 'number') appState.selectedPatternIdx = s.selectedPatternNum
+        if (typeof s.selectedTrackNum === 'number') appState.selectedTrackIdx = s.selectedTrackNum
         if (typeof s.currentView === 'string') appState.currentView = s.currentView
     }
 

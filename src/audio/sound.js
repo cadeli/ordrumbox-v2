@@ -11,9 +11,8 @@ import { TICK } from '../core/constants.js'
 const MAX_POLYPHONY = 16
 
 export default class Sound {
-    _activeVoiceSet
+    #activeVoiceSet
     #stripParamCache
-    _activeNoteCount
 
     constructor(audioCtx, mixer, sounds, generatedSounds, isOffline = false) {
         this.audioCtx = audioCtx
@@ -22,7 +21,7 @@ export default class Sound {
         this.generatedSounds = generatedSounds ?? {}
         this.activeVoices = new WeakMap()
         this.activeSynthVoices = new Set()
-        this._activeVoiceSet = new Set()
+        this.#activeVoiceSet = new Set()
         this.nodePool = new NodePool(audioCtx)
         // The synth-voice pool releases nodes on a JS `setTimeout` keyed to
         // wall-clock time (see synth_voice_pool.js / worklet_synth_voice.js).
@@ -53,7 +52,6 @@ export default class Sound {
         // Track-level strip parameter cache to avoid redundant Web Audio API calls.
         // Key: track.name, Value: { _version, velocity, pan, filterType, ... }
         this.#stripParamCache = new Map()
-        this._activeNoteCount = 0
     }
 
     getStrip = async (track) => {
@@ -89,9 +87,8 @@ export default class Sound {
         // is freed right away. In offline export, onended never fires
         // during the scheduling loop, so without this the set fills up
         // and steals voices far too aggressively.
-        if (this._activeVoiceSet.has(voice)) {
-            this._activeNoteCount = Math.max(0, this._activeNoteCount - 1)
-            this._activeVoiceSet.delete(voice)
+        if (this.#activeVoiceSet.has(voice)) {
+            this.#activeVoiceSet.delete(voice)
         }
         if (this.activeSynthVoices.has(voice)) {
             this.activeSynthVoices.delete(voice)
@@ -122,15 +119,15 @@ export default class Sound {
         }
     }
 
-    _playVoice = async (flatNote, time, opts = {}) => {
+    #playVoice = async (flatNote, time, opts = {}) => {
         try {
             const strip = await this.mixer.getOrCreateStrip(flatNote.track.name)
             if (!strip) return null
             this.updateStripFromTrack(strip, flatNote.track, time)
 
             // Polyphony limit: steal oldest voice when at capacity
-            if (this._activeVoiceSet.size >= MAX_POLYPHONY) {
-                const oldest = this._activeVoiceSet.values().next().value
+            if (this.#activeVoiceSet.size >= MAX_POLYPHONY) {
+                const oldest = this.#activeVoiceSet.values().next().value
                 if (oldest) {
                     this.stopVoice(oldest, time)
                 }
@@ -143,19 +140,15 @@ export default class Sound {
             if (voice) {
                 // Re-check polyphony after await — concurrent play() calls
                 // may have added voices while createVoice() was pending.
-                while (this._activeVoiceSet.size >= MAX_POLYPHONY) {
-                    const oldest = this._activeVoiceSet.values().next().value
+                while (this.#activeVoiceSet.size >= MAX_POLYPHONY) {
+                    const oldest = this.#activeVoiceSet.values().next().value
                     if (oldest) this.stopVoice(oldest, time)
                     else break
                 }
-                this._activeNoteCount++
-                this._activeVoiceSet.add(voice)
+                this.#activeVoiceSet.add(voice)
                 const prevOnEnded = voice.onEnded
                 voice.onEnded = () => {
-                    if (this._activeVoiceSet.has(voice)) {
-                        this._activeNoteCount = Math.max(0, this._activeNoteCount - 1)
-                        this._activeVoiceSet.delete(voice)
-                    }
+                    this.#activeVoiceSet.delete(voice)
                     prevOnEnded?.()
                 }
                 let lfoContext = null
@@ -178,8 +171,7 @@ export default class Sound {
                 // Extra guard: if another play() call registered a different
                 // voice for this track while we were awaiting setup(), skip.
                 if (flatNote.track.mono && this.activeVoices.get(flatNote.track) !== voice) {
-                    this._activeVoiceSet.delete(voice)
-                    this._activeNoteCount = Math.max(0, this._activeNoteCount - 1)
+                    this.#activeVoiceSet.delete(voice)
                     voice.cleanup()
                     return null
                 }
@@ -187,14 +179,14 @@ export default class Sound {
             }
             return voice
         } catch (e) {
-            logger.error('Sound', 'Error in _playVoice:', e)
+            logger.error('Sound', 'Error in playVoice:', e)
             return null
         }
     }
 
     playSample = async (flatNote, time) => {
         if (!flatNote) return
-        return await this._playVoice(flatNote, time)
+        return await this.#playVoice(flatNote, time)
     }
 
     playGenerated = async (flatNote, time) => {
@@ -206,7 +198,7 @@ export default class Sound {
                 logger.warn('Sound', 'playGenerated: no flatNote or generatedSounds available')
                 return null
             }
-            return await this._playVoice(flatNote, time, { syncGeneratedSounds: true, registerSynth: true })
+            return await this.#playVoice(flatNote, time, { syncGeneratedSounds: true, registerSynth: true })
         } catch (e) {
             logger.error('Sound', 'playGenerated failed', e)
             return null
@@ -271,7 +263,7 @@ export default class Sound {
 
     stopAllVoices = () => {
         const time = this.audioCtx?.currentTime ?? 0
-        for (const voice of this._activeVoiceSet) {
+        for (const voice of this.#activeVoiceSet) {
             try {
                 if (voice && typeof voice.stop === 'function') {
                     voice.stop(time)
@@ -280,10 +272,9 @@ export default class Sound {
                 logger.warn('Sound', 'stopAllVoices: voice.stop failed', e)
             }
         }
-        this._activeVoiceSet.clear()
+        this.#activeVoiceSet.clear()
         this.activeSynthVoices.clear()
         this.activeVoices = new WeakMap()
-        this._activeNoteCount = 0
     }
 
     updateGeneratedSounds = (generatedSounds) => {

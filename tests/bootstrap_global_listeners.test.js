@@ -37,16 +37,16 @@ describe('bootstrap/global_listeners', () => {
     })
 
     it('TRACK_SELECT sets the selected track index', () => {
-        serviceRegistry.cmd = { setSelectedTrackNum: vi.fn() }
+        serviceRegistry.cmd = { setSelectedTrackIdx: vi.fn() }
         playbackEvents.emit(EVENTS.TRACK_SELECT, { trackIdx: 3 })
-        expect(serviceRegistry.cmd.setSelectedTrackNum).toHaveBeenCalledWith(3)
+        expect(serviceRegistry.cmd.setSelectedTrackIdx).toHaveBeenCalledWith(3)
     })
 
     it('TRACK_SELECT without trackIdx does not call cmd', () => {
-        serviceRegistry.cmd = { setSelectedTrackNum: vi.fn() }
+        serviceRegistry.cmd = { setSelectedTrackIdx: vi.fn() }
         playbackEvents.emit(EVENTS.TRACK_SELECT, {})
         playbackEvents.emit(EVENTS.TRACK_SELECT, null)
-        expect(serviceRegistry.cmd.setSelectedTrackNum).not.toHaveBeenCalled()
+        expect(serviceRegistry.cmd.setSelectedTrackIdx).not.toHaveBeenCalled()
     })
 
     it('STALL context-suspended shows resume warning', () => {

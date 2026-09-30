@@ -681,8 +681,8 @@
                     const testPattern = buildTestPattern()
                     appState.patterns.length = 0
                     appState.patterns.push(testPattern)
-                    appState.selectedPatternNum = 0
-                    appState.selectedDrumkitNum = 0
+                    appState.selectedPatternIdx = 0
+                    appState.selectedDrumkitIdx = 0
                     const autoAssign = await getAutoAssignService()
                     autoAssign.autoAssignSounds(testPattern)
                     for (const t of testPattern.tracks) log(`  ${t.name.padEnd(8)} → ${t.soundId}`, '')
@@ -718,8 +718,8 @@
                         sounds: soundRegistry.sounds,
                         generatedSounds: soundRegistry.generatedSounds,
                         patterns: [testPattern],
-                        selectedPatternNum: 0,
-                        getSelectedPatternNum: () => 0,
+                        selectedPatternIdx: 0,
+                        getSelectedPatternIdx: () => 0,
                         computeNextStep: (note, track) =>
                             serviceRegistry.patterns.computeNextPatternStepNote?.(note, track) ?? track.loopAtStep,
                         TICK,

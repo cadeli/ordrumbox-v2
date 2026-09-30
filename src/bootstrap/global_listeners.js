@@ -48,7 +48,7 @@ export function initGlobalListeners() {
 
     playbackEvents.on(EVENTS.TRACK_SELECT, (data) => {
         if (data && data.trackIdx !== undefined) {
-            serviceRegistry.cmd.setSelectedTrackNum(data.trackIdx)
+            serviceRegistry.cmd.setSelectedTrackIdx(data.trackIdx)
         }
     })
 

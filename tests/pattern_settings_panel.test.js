@@ -36,7 +36,7 @@ function makeTrack(overrides = {}) {
 function setupPattern(tracks) {
     const pattern = { name: 'Test', nbBeats: 4, tracks }
     appState.patterns = [pattern]
-    appState.selectedPatternNum = 0
+    appState.selectedPatternIdx = 0
     return pattern
 }
 
@@ -45,8 +45,8 @@ describe('PatternSettingsPanel', () => {
 
     beforeEach(() => {
         serviceRegistry.cmd = {
-            setSelectedDrumkitNum: vi.fn(),
-            setSelectedPatternNum: vi.fn(),
+            setSelectedDrumkitIdx: vi.fn(),
+            setSelectedPatternIdx: vi.fn(),
             beginGenerationUndo: vi.fn(),
             commitGenerationUndo: vi.fn(),
             cancelGenerationUndo: vi.fn(),
@@ -69,7 +69,7 @@ describe('PatternSettingsPanel', () => {
         })
 
         it('renders beats select with options 1 to MAX_BEATS', () => {
-            const opts = panel._beatsSelect.querySelectorAll('option')
+            const opts = panel.beatsSelect.querySelectorAll('option')
             expect(opts.length).toBe(MAX_BEATS)
             expect(opts[0].value).toBe('1')
             expect(opts[MAX_BEATS - 1].value).toBe(String(MAX_BEATS))
@@ -115,14 +115,14 @@ describe('PatternSettingsPanel', () => {
             setupPattern(tracks)
             appState.currentPage = 0
             panel.sync()
-            expect(panel._pageLabel.textContent).toBe('1/1')
+            expect(panel.pageLabel.textContent).toBe('1/1')
         })
 
         it('disables prev button on page 0', () => {
             setupPattern([makeTrack()])
             appState.currentPage = 0
             panel.sync()
-            expect(panel._prevPageBtn.disabled).toBe(true)
+            expect(panel.prevPageBtn.disabled).toBe(true)
         })
 
         it('updates beats select to match pattern nbBeats', () => {
@@ -130,7 +130,7 @@ describe('PatternSettingsPanel', () => {
             const pattern = setupPattern(tracks)
             pattern.nbBeats = 8
             panel.sync()
-            expect(panel._beatsSelect.value).toBe('8')
+            expect(panel.beatsSelect.value).toBe('8')
         })
     })
 
@@ -140,9 +140,9 @@ describe('PatternSettingsPanel', () => {
                 { name: 'Kit A', instruments: [] },
                 { name: 'Kit B', instruments: [] },
             ]
-            appState.selectedDrumkitNum = 0
+            appState.selectedDrumkitIdx = 0
             panel.syncDrumkits()
-            const opts = panel._drumkitSelect.querySelectorAll('option')
+            const opts = panel.drumkitSelect.querySelectorAll('option')
             expect(opts.length).toBe(2)
             expect(opts[0].textContent).toBe('Kit A')
         })
@@ -153,7 +153,7 @@ describe('PatternSettingsPanel', () => {
                 { name: 'Pattern 2', nbBeats: 4, tracks: [] },
             ]
             panel.syncDrumkits()
-            const opts = panel._patternSelect.querySelectorAll('option')
+            const opts = panel.patternSelect.querySelectorAll('option')
             expect(opts.length).toBe(2)
         })
     })
@@ -163,7 +163,7 @@ describe('PatternSettingsPanel', () => {
             const track = makeTrack({ nbBeats: 8, stepsPerBeat: 4, loopAtStep: 32 })
             const pattern = { name: 'Big', nbBeats: 8, tracks: [track] }
             appState.patterns = [pattern]
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
             return pattern
         }
 
@@ -171,7 +171,7 @@ describe('PatternSettingsPanel', () => {
             setupBigPattern()
             appState.currentPage = 1
             panel.sync()
-            panel._prevPageBtn.click()
+            panel.prevPageBtn.click()
             expect(appState.currentPage).toBe(0)
         })
 
@@ -179,7 +179,7 @@ describe('PatternSettingsPanel', () => {
             setupBigPattern()
             appState.currentPage = 0
             panel.sync()
-            panel._prevPageBtn.click()
+            panel.prevPageBtn.click()
             expect(appState.currentPage).toBe(0)
         })
 
@@ -187,7 +187,7 @@ describe('PatternSettingsPanel', () => {
             setupBigPattern()
             appState.currentPage = 0
             panel.sync()
-            panel._nextPageBtn.click()
+            panel.nextPageBtn.click()
             expect(appState.currentPage).toBe(1)
         })
 
@@ -195,9 +195,9 @@ describe('PatternSettingsPanel', () => {
             setupBigPattern()
             appState.currentPage = 0
             panel.sync()
-            panel._nextPageBtn.click()
+            panel.nextPageBtn.click()
             expect(appState.currentPage).toBe(1)
-            panel._nextPageBtn.click()
+            panel.nextPageBtn.click()
             expect(appState.currentPage).toBe(1)
         })
 
@@ -207,7 +207,7 @@ describe('PatternSettingsPanel', () => {
             panel.sync()
             const spy = vi.fn()
             playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
-            panel._nextPageBtn.click()
+            panel.nextPageBtn.click()
             expect(spy).toHaveBeenCalled()
         })
     })
@@ -219,8 +219,8 @@ describe('PatternSettingsPanel', () => {
             setupPattern([t1, t2])
             panel.sync()
 
-            panel._beatsSelect.value = '8'
-            panel._beatsSelect.dispatchEvent(new Event('change'))
+            panel.beatsSelect.value = '8'
+            panel.beatsSelect.dispatchEvent(new Event('change'))
 
             const pattern = appState.patterns[0]
             expect(pattern.nbBeats).toBe(8)
@@ -234,8 +234,8 @@ describe('PatternSettingsPanel', () => {
             pattern.nbBeats = 8
             panel.sync()
 
-            panel._beatsSelect.value = '4'
-            panel._beatsSelect.dispatchEvent(new Event('change'))
+            panel.beatsSelect.value = '4'
+            panel.beatsSelect.dispatchEvent(new Event('change'))
 
             expect(track.loopAtStep).toBe(16)
         })
@@ -245,8 +245,8 @@ describe('PatternSettingsPanel', () => {
             setupPattern([track])
             panel.sync()
 
-            panel._beatsSelect.value = '8'
-            panel._beatsSelect.dispatchEvent(new Event('change'))
+            panel.beatsSelect.value = '8'
+            panel.beatsSelect.dispatchEvent(new Event('change'))
 
             expect(track.loopAtStep).toBe(16)
         })
@@ -256,8 +256,8 @@ describe('PatternSettingsPanel', () => {
             appState.currentPage = 1
             panel.sync()
 
-            panel._beatsSelect.value = '6'
-            panel._beatsSelect.dispatchEvent(new Event('change'))
+            panel.beatsSelect.value = '6'
+            panel.beatsSelect.dispatchEvent(new Event('change'))
 
             expect(appState.currentPage).toBe(0)
         })
@@ -267,35 +267,35 @@ describe('PatternSettingsPanel', () => {
             panel.sync()
             const spy = vi.fn()
             playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
-            panel._beatsSelect.value = '2'
-            panel._beatsSelect.dispatchEvent(new Event('change'))
+            panel.beatsSelect.value = '2'
+            panel.beatsSelect.dispatchEvent(new Event('change'))
             expect(spy).toHaveBeenCalled()
         })
     })
 
     describe('drumkit change', () => {
-        it('calls cmd.setSelectedDrumkitNum', () => {
+        it('calls cmd.setSelectedDrumkitIdx', () => {
             soundRegistry.drumkitList = [
                 { name: 'Kit A', instruments: [] },
                 { name: 'Kit B', instruments: [] },
             ]
             panel.syncDrumkits()
-            panel._drumkitSelect.value = '1'
-            panel._drumkitSelect.dispatchEvent(new Event('change'))
-            expect(serviceRegistry.cmd.setSelectedDrumkitNum).toHaveBeenCalledWith(1)
+            panel.drumkitSelect.value = '1'
+            panel.drumkitSelect.dispatchEvent(new Event('change'))
+            expect(serviceRegistry.cmd.setSelectedDrumkitIdx).toHaveBeenCalledWith(1)
         })
     })
 
     describe('pattern change', () => {
-        it('calls cmd.setSelectedPatternNum', () => {
+        it('calls cmd.setSelectedPatternIdx', () => {
             appState.patterns = [
                 { name: 'P1', nbBeats: 4, tracks: [] },
                 { name: 'P2', nbBeats: 4, tracks: [] },
             ]
             panel.syncDrumkits()
-            panel._patternSelect.value = '1'
-            panel._patternSelect.dispatchEvent(new Event('change'))
-            expect(serviceRegistry.cmd.setSelectedPatternNum).toHaveBeenCalledWith(1)
+            panel.patternSelect.value = '1'
+            panel.patternSelect.dispatchEvent(new Event('change'))
+            expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
         })
 
         it('resets currentPage to 0', () => {
@@ -305,8 +305,8 @@ describe('PatternSettingsPanel', () => {
             ]
             appState.currentPage = 1
             panel.syncDrumkits()
-            panel._patternSelect.value = '1'
-            panel._patternSelect.dispatchEvent(new Event('change'))
+            panel.patternSelect.value = '1'
+            panel.patternSelect.dispatchEvent(new Event('change'))
             expect(appState.currentPage).toBe(0)
         })
     })
@@ -316,27 +316,27 @@ describe('PatternSettingsPanel', () => {
             setupPattern([makeTrack({ nbBeats: 6 })])
             appState.patterns[0].nbBeats = 6
             playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            expect(panel._beatsSelect.value).toBe('6')
+            expect(panel.beatsSelect.value).toBe('6')
         })
 
         it('syncs on patternStructureChange', () => {
             setupPattern([makeTrack({ nbBeats: 10 })])
             appState.patterns[0].nbBeats = 10
             playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-            expect(panel._beatsSelect.value).toBe('10')
+            expect(panel.beatsSelect.value).toBe('10')
         })
 
         it('rebuilds drumkit selects on drumkitChange', () => {
             soundRegistry.drumkitList = [{ name: 'Initial', instruments: [] }]
             panel.syncDrumkits()
-            expect(panel._drumkitSelect.options.length).toBe(1)
+            expect(panel.drumkitSelect.options.length).toBe(1)
 
             soundRegistry.drumkitList = [
                 { name: 'A', instruments: [] },
                 { name: 'B', instruments: [] },
             ]
             playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
-            expect(panel._drumkitSelect.options.length).toBe(2)
+            expect(panel.drumkitSelect.options.length).toBe(2)
         })
     })
 })

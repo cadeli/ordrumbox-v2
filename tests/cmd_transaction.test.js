@@ -93,35 +93,35 @@ describe('Commander history API', () => {
         it('restores selection on undo/redo', () => {
             cmd.addPattern('Base')
             cmd.addTrack(appState.patterns[0], 'KICK', 4)
-            appState.selectedPatternNum = 0
+            appState.selectedPatternIdx = 0
             history.clear()
 
             cmd.recordTransaction('Import two patterns', () => {
                 cmd.addPattern('P2')
                 cmd.addPattern('P3')
-                appState.selectedPatternNum = 2
+                appState.selectedPatternIdx = 2
             })
-            expect(appState.selectedPatternNum).toBe(2)
+            expect(appState.selectedPatternIdx).toBe(2)
 
             history.undo()
-            expect(appState.selectedPatternNum).toBe(0)
+            expect(appState.selectedPatternIdx).toBe(0)
             history.redo()
-            expect(appState.selectedPatternNum).toBe(2)
+            expect(appState.selectedPatternIdx).toBe(2)
         })
 
         it('clamps a stale selection index when restoring', () => {
             cmd.addPattern('Base')
-            appState.selectedPatternNum = 5 // stale index (out of range)
+            appState.selectedPatternIdx = 5 // stale index (out of range)
             history.clear()
 
             cmd.recordTransaction('Load song', () => {
-                appState.selectedPatternNum = 0
+                appState.selectedPatternIdx = 0
                 cmd.addPattern('Imported')
             })
             expect(history.pastLength).toBe(1)
 
             history.undo()
-            expect(appState.selectedPatternNum).toBe(0)
+            expect(appState.selectedPatternIdx).toBe(0)
         })
 
         it('still records the partial mutation when the transaction throws', () => {

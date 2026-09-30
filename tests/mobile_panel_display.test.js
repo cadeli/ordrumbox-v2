@@ -99,8 +99,8 @@ function setupApp(viewport) {
             tracks: [structuredClone(MOCK_TRACK)],
         },
     ]
-    appState.selectedPatternNum = 0
-    appState.selectedTrackNum = 0
+    appState.selectedPatternIdx = 0
+    appState.selectedTrackIdx = 0
 
     setupCanvas()
 
@@ -136,7 +136,7 @@ function setupApp(viewport) {
         pianoRollPanel: { hide: vi.fn(), show: vi.fn() },
         noteEditor,
         toolsPanel,
-        patternSettingsPanel: { hide: vi.fn(), show: vi.fn(), _isOpen: false },
+        patternSettingsPanel: { hide: vi.fn(), show: vi.fn(), isOpen: false },
         outputPanel,
         aboutPanel,
     })

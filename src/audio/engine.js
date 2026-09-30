@@ -28,7 +28,7 @@ export default class AudioEngine {
         this.sounds = config.sounds
         this.generatedSounds = nameOr(config.generatedSounds, {}, 'AudioEngine', 'generatedSounds fallback')
         this.patterns = config.patterns
-        this.getSelectedPatternNum = config.getSelectedPatternNum ?? (() => config.selectedPatternNum ?? 0)
+        this.getSelectedPatternIdx = config.getSelectedPatternIdx ?? (() => config.selectedPatternIdx ?? 0)
         this.getAutoGenerate = config.getAutoGenerate
         this.TICK = config.TICK
         this.secondsPerBeat = config.secondsPerBeat
@@ -57,7 +57,7 @@ export default class AudioEngine {
                     sounds: this.sounds,
                     generatedSounds: this.generatedSounds,
                     patterns: this.patterns,
-                    getSelectedPatternNum: this.getSelectedPatternNum,
+                    getSelectedPatternIdx: this.getSelectedPatternIdx,
                     computeFlatNotes: this.computeFlatNotes.bind(this),
                     getAutoGenerate: this.getAutoGenerate,
                     getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
@@ -103,7 +103,7 @@ export default class AudioEngine {
     }
 
     getFlatNotesForCurrentPattern = (loop = 0) => {
-        const pattern = this.patterns[this.getSelectedPatternNum()]
+        const pattern = this.patterns[this.getSelectedPatternIdx()]
         if (!pattern) return this.flatNotes
 
         const patternVersion = pattern._version ?? 0
@@ -178,14 +178,14 @@ export default class AudioEngine {
     playNotes = async (tick, atTime) => {
         if (!this.isRunning) return
         if (!this.player) return
-        const pattern = this.patterns[this.getSelectedPatternNum()]
+        const pattern = this.patterns[this.getSelectedPatternIdx()]
         await pushStepLfo(this.mixer, pattern, tick, atTime, this.TICK)
         await this.player.playNotes(tick, atTime)
         sendMidiNotes(
             {
                 audioCtx: this.audioCtx,
                 patterns: this.patterns,
-                getSelectedPatternNum: this.getSelectedPatternNum,
+                getSelectedPatternIdx: this.getSelectedPatternIdx,
                 TICK: this.TICK,
                 player: this.player,
                 getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
@@ -208,7 +208,7 @@ export default class AudioEngine {
 
         const midi = serviceRegistry.midiManager
         if (midi && midi.isReady && midi.selectedOutputId) {
-            const pat = this.patterns[this.getSelectedPatternNum()]
+            const pat = this.patterns[this.getSelectedPatternIdx()]
             const tracks = Utils.getTracksArray(pat)
             const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat?.tracks?.[indexTrack]
             sendTriggerMidi({ track, note, resolveMapping: this.#resolveMidiMapping })

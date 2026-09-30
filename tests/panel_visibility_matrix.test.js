@@ -128,8 +128,8 @@ function setupApp(viewport) {
             tracks: [structuredClone(MOCK_TRACK), SECOND_TRACK],
         },
     ]
-    appState.selectedPatternNum = 0
-    appState.selectedTrackNum = 0
+    appState.selectedPatternIdx = 0
+    appState.selectedTrackIdx = 0
 
     global.fetch = vi.fn().mockResolvedValue({
         json: () => Promise.resolve({ major: { scaleSteps: [0, 2, 4, 5, 7, 9, 11] } }),
@@ -528,9 +528,9 @@ describe('Panel visibility matrix — Mobile (768×480)', () => {
     describe('PatternSettingsPanel auto-hides on view switch', () => {
         it('hides when switching tabs', () => {
             ctx.patternSettingsPanel.show()
-            expect(ctx.patternSettingsPanel._isOpen).toBe(true)
+            expect(ctx.patternSettingsPanel.isOpen).toBe(true)
             playbackEvents.emit(EVENTS.MOBILE_TRACK_TOGGLE)
-            expect(ctx.patternSettingsPanel._isOpen).toBe(false)
+            expect(ctx.patternSettingsPanel.isOpen).toBe(false)
         })
     })
 })

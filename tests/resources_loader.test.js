@@ -284,7 +284,7 @@ describe('ResourcesLoader', () => {
     })
 
     describe('ensureResourcesLoaded', () => {
-        it('loads patterns when empty', async () => {
+        it('loads patterns when empty and releases the in-flight guard', async () => {
             const { appState } = await import('../src/state/app_state.js')
             const { serviceRegistry } = await import('../src/state/service_registry.js')
             const { soundRegistry } = await import('../src/state/sound_registry.js')
@@ -294,30 +294,59 @@ describe('ResourcesLoader', () => {
             }
             appState.patterns.length = 0
             soundRegistry.drumkitList.length = 0
-            soundRegistry.settings._loaded = false
+            soundRegistry.settings.loaded = false
             Object.keys(soundRegistry.sounds).forEach((k) => delete soundRegistry.sounds[k])
 
-            fetchSpy.mockResolvedValueOnce(makeJsonResponse([])).mockResolvedValueOnce(makeJsonResponse({}))
+            const loadSongSpy = vi.spyOn(loader, 'loadSong').mockResolvedValue(undefined)
+            vi.spyOn(loader, 'loadDrumkitList').mockResolvedValue(undefined)
 
             await loader.ensureResourcesLoaded()
+            expect(loadSongSpy).toHaveBeenCalledTimes(1)
 
-            expect(loader._patternsLoadingPromise).toBe(null)
+            // guard released: the next run starts a fresh load
+            await loader.ensureResourcesLoaded()
+            expect(loadSongSpy).toHaveBeenCalledTimes(2)
         })
 
-        it('skips loading if already loading', async () => {
+        it('concurrent callers share the in-flight pattern load', async () => {
             const { appState } = await import('../src/state/app_state.js')
+            const { serviceRegistry } = await import('../src/state/service_registry.js')
+            const { soundRegistry } = await import('../src/state/sound_registry.js')
+            serviceRegistry.cmd = {
+                importPatternFromJson: vi.fn(),
+                withSuppressedRecord: (fn) => fn(),
+            }
             appState.patterns.length = 0
-            const pending = new Promise(() => {})
-            loader._patternsLoadingPromise = pending
+            soundRegistry.settings.loaded = true
+            vi.spyOn(loader, 'loadDrumkitList').mockResolvedValue(undefined)
 
-            let settled = false
-            loader.ensureResourcesLoaded().then(() => {
-                settled = true
+            let resolveLoad
+            const loadSongSpy = vi.spyOn(loader, 'loadSong').mockImplementation(
+                () =>
+                    new Promise((resolve) => {
+                        resolveLoad = resolve
+                    }),
+            )
+
+            let firstDone = false
+            let secondDone = false
+            const first = loader.ensureResourcesLoaded().then(() => {
+                firstDone = true
+            })
+            const second = loader.ensureResourcesLoaded().then(() => {
+                secondDone = true
             })
 
             await new Promise((r) => setTimeout(r, 10))
-            expect(settled).toBe(false)
+            expect(loadSongSpy).toHaveBeenCalledTimes(1)
+            expect(firstDone).toBe(false)
+            expect(secondDone).toBe(false)
             expect(fetchSpy).not.toHaveBeenCalled()
+
+            resolveLoad()
+            await Promise.all([first, second])
+            expect(firstDone).toBe(true)
+            expect(secondDone).toBe(true)
         })
 
         it('skips if patternsLoadFailed', async () => {
@@ -330,7 +359,7 @@ describe('ResourcesLoader', () => {
             expect(fetchSpy).not.toHaveBeenCalled()
         })
 
-        it('skips sample loading if already loading', async () => {
+        it('concurrent callers share the in-flight sample load', async () => {
             const { appState } = await import('../src/state/app_state.js')
             const { soundRegistry } = await import('../src/state/sound_registry.js')
             const { serviceRegistry } = await import('../src/state/service_registry.js')
@@ -340,41 +369,29 @@ describe('ResourcesLoader', () => {
             }
             appState.patterns = [{ name: 'p' }]
             soundRegistry.drumkitList = [{ name: 'real', samples: [] }]
-            soundRegistry.settings._loaded = true
+            soundRegistry.settings.loaded = true
             Object.keys(soundRegistry.sounds).forEach((k) => delete soundRegistry.sounds[k])
-            loader._samplesLoadingPromise = Promise.resolve()
 
-            await loader.ensureResourcesLoaded()
+            const loadSamplesSpy = vi
+                .spyOn(loader, 'loadSamplesFromDrumkit')
+                .mockImplementation(() => new Promise(() => {}))
+            vi.spyOn(loader, 'loadSamplesForPatterns').mockResolvedValue([])
 
-            expect(fetchSpy).not.toHaveBeenCalled()
-        })
-
-        it('second caller awaits the same in-flight pattern load', async () => {
-            const { appState } = await import('../src/state/app_state.js')
-            const { serviceRegistry } = await import('../src/state/service_registry.js')
-            serviceRegistry.cmd = {
-                importPatternFromJson: vi.fn(),
-                withSuppressedRecord: (fn) => fn(),
-            }
-            appState.patterns.length = 0
-
-            let resolveLoad
-            const loadPromise = new Promise((r) => {
-                resolveLoad = r
-            })
-            loader._patternsLoadingPromise = loadPromise
-
-            let settled = false
+            let firstDone = false
+            let secondDone = false
             loader.ensureResourcesLoaded().then(() => {
-                settled = true
+                firstDone = true
+            })
+            loader.ensureResourcesLoaded().then(() => {
+                secondDone = true
             })
 
             await new Promise((r) => setTimeout(r, 10))
-            expect(settled).toBe(false)
 
-            resolveLoad()
-            await new Promise((r) => setTimeout(r, 10))
-            expect(settled).toBe(true)
+            expect(loadSamplesSpy).toHaveBeenCalledTimes(1)
+            expect(firstDone).toBe(false)
+            expect(secondDone).toBe(false)
+            expect(fetchSpy).not.toHaveBeenCalled()
         })
     })
 

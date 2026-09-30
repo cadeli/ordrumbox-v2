@@ -8,7 +8,7 @@
  * @returns {string} name of the selected drumkit, or '' when none
  */
 export function getSelectedDrumkitName(editor) {
-    return editor.soundRegistry.drumkitList[editor.appState.selectedDrumkitNum]?.name ?? ''
+    return editor.soundRegistry.drumkitList[editor.appState.selectedDrumkitIdx]?.name ?? ''
 }
 
 /**

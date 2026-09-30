@@ -35,8 +35,8 @@ export function createPatternMethods(cmd) {
             if (appState.patterns.length <= 1) return false
             const removedPattern = appState.patterns[idx]
             appState.patterns.splice(idx, 1)
-            if (appState.selectedPatternNum >= appState.patterns.length) {
-                appState.selectedPatternNum = appState.patterns.length - 1
+            if (appState.selectedPatternIdx >= appState.patterns.length) {
+                appState.selectedPatternIdx = appState.patterns.length - 1
             }
             cmd.persist()
             cmd.record({
@@ -45,8 +45,8 @@ export function createPatternMethods(cmd) {
                 execute: () => {
                     const i = appState.patterns.indexOf(removedPattern)
                     appState.patterns.splice(i >= 0 ? i : idx, 1)
-                    if (appState.selectedPatternNum >= appState.patterns.length) {
-                        appState.selectedPatternNum = Math.max(0, appState.patterns.length - 1)
+                    if (appState.selectedPatternIdx >= appState.patterns.length) {
+                        appState.selectedPatternIdx = Math.max(0, appState.patterns.length - 1)
                     }
                     cmd.persist()
                 },

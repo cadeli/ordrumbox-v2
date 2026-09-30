@@ -35,7 +35,7 @@ export default class Player {
         this.sounds = config.sounds
         this.generatedSounds = nameOr(config.generatedSounds, {}, 'Player', 'generatedSounds fallback')
         this.patterns = config.patterns
-        this.getSelectedPatternNum = config.getSelectedPatternNum ?? (() => config.selectedPatternNum ?? 0)
+        this.getSelectedPatternIdx = config.getSelectedPatternIdx ?? (() => config.selectedPatternIdx ?? 0)
         this.computeFlatNotes = config.computeFlatNotes
         this.getAutoGenerate = config.getAutoGenerate
         this.getFlatNotes = config.getFlatNotes
@@ -47,13 +47,13 @@ export default class Player {
         this.lastDisplayBeats = 0
     }
 
-    #handleLoopStart = async (selPat) => {
+    #handleLoopStart = async (selectedPattern) => {
         this.#lastFlatNotesLoop = -1
 
-        const tracks = selPat.tracks
+        const tracks = selectedPattern.tracks
         const trackKeys = Object.keys(tracks)
 
-        if (selPat.autoGen) {
+        if (selectedPattern.autoGen) {
             const autoGen = await getAutoGenerateService()
             const element = autoGen.structureGen.getElement(this.loop)
             const isSectionStart = element.loopInElement === 0
@@ -63,7 +63,7 @@ export default class Player {
                 const tag = isSectionEnd ? 'break' : 'generate'
                 logger.info(
                     'Player',
-                    `[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selPat._autoGenGenre}`,
+                    `[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selectedPattern._autoGenGenre}`,
                 )
             }
 
@@ -75,7 +75,7 @@ export default class Player {
                     const type = Utils.detectTrackType(track.name)
                     if (type !== 'BASS' && type !== 'PIANO' && type !== 'ORGAN') continue
                 }
-                promises.push(autoGen.changeTrack(this.loop, selPat, track))
+                promises.push(autoGen.changeTrack(this.loop, selectedPattern, track))
             }
             await Promise.all(promises)
         } else {
@@ -86,7 +86,7 @@ export default class Player {
                     promises.push(
                         (async () => {
                             const autoGen = await this.getAutoGenerate()
-                            return autoGen.changeTrack(this.loop, selPat, track)
+                            return autoGen.changeTrack(this.loop, selectedPattern, track)
                         })(),
                     )
                 }
@@ -94,17 +94,17 @@ export default class Player {
             await Promise.all(promises)
         }
 
-        this.computeFlatNotes(selPat, this.loop)
+        this.computeFlatNotes(selectedPattern, this.loop)
     }
 
     playNotes = async (tick, atTime) => {
         try {
-            const selPat = this.patterns[this.getSelectedPatternNum()]
-            const nbTickForPattern = this.TICK * (selPat.nbBeats ?? 4)
+            const selectedPattern = this.patterns[this.getSelectedPatternIdx()]
+            const nbTickForPattern = this.TICK * (selectedPattern.nbBeats ?? 4)
             const loopStep = tick % nbTickForPattern
 
             if (loopStep === 0) {
-                await this.#handleLoopStart(selPat)
+                await this.#handleLoopStart(selectedPattern)
             }
 
             // Use cached flatNotes map when loop hasn't changed
@@ -132,7 +132,7 @@ export default class Player {
             // Cache trackIdxMap: rebuild when the tracks container changes OR
             // when its size changes in place (splice keeps the same array ref,
             // so a ref-only check mapped NOTE_TRIGGER to stale row indices).
-            const tracks = selPat.tracks
+            const tracks = selectedPattern.tracks
             const trackCount = Array.isArray(tracks) ? tracks.length : Object.keys(tracks).length
             if (this.#trackIdxMapRef !== tracks || this.#trackIdxMapCount !== trackCount) {
                 const trackKeys = Object.keys(tracks)
@@ -144,7 +144,7 @@ export default class Player {
 
             // Trigger all notes at the same tick concurrently
             const promises = []
-            const anySolo = Utils.hasAnySolo(selPat.tracks)
+            const anySolo = Utils.hasAnySolo(selectedPattern.tracks)
             for (let i = 0; i < notesToPlay.length; i++) {
                 const flatNote = notesToPlay[i]
                 if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
@@ -170,7 +170,7 @@ export default class Player {
 
     simpleBeep = async (indexTrack, note = null) => {
         if (this.audioCtx == null) return
-        const pat = this.patterns[this.getSelectedPatternNum()]
+        const pat = this.patterns[this.getSelectedPatternIdx()]
         if (!pat) return
         const tracks = Utils.getTracksArray(pat)
         const track = typeof indexTrack === 'number' ? tracks[indexTrack] : pat.tracks?.[indexTrack]

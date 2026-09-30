@@ -32,7 +32,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
         serviceRegistry.reset()
 
         appState.patterns = [structuredClone(TEST_PATTERN)]
-        appState.selectedPatternNum = 0
+        appState.selectedPatternIdx = 0
 
         serviceRegistry.cmd = new Commander()
 
@@ -109,7 +109,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
             const spy = vi.fn()
             playbackEvents.on(EVENTS.PATTERN_CHANGE, spy)
             appState.patterns = []
-            appState.selectedPatternNum = -1
+            appState.selectedPatternIdx = -1
             toolsPanel.container.querySelector('#tp-rnd').click()
             expect(spy).not.toHaveBeenCalled()
         })

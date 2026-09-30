@@ -41,7 +41,7 @@ export default class PianoRollPanel extends BasePanel {
     #playhead
     #rafId
     #prevLoopTick
-    #selNote
+    #selectedNote
     #cursorStep
     #cursorRow
     #prevLitTick
@@ -63,7 +63,7 @@ export default class PianoRollPanel extends BasePanel {
         this.#playhead = null
         this.#rafId = null
         this.#prevLoopTick = -1
-        this.#selNote = null
+        this.#selectedNote = null
         this.#cursorStep = -1
         this.#cursorRow = -1
         this.#prevLitTick = -1
@@ -148,8 +148,8 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     #resolveTrack() {
-        const pattern = appState.patterns[appState.selectedPatternNum]
-        const idx = appState.selectedTrackNum
+        const pattern = appState.patterns[appState.selectedPatternIdx]
+        const idx = appState.selectedTrackIdx
         const track = Utils.getTracksArray(pattern)?.[idx]
         if (track) {
             this.#track = track
@@ -205,7 +205,7 @@ export default class PianoRollPanel extends BasePanel {
 
     #pageInfo() {
         const track = this.#track
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         const stepsPerBeat = track?.stepsPerBeat ?? 4
         const nbBeats = pattern?.nbBeats ?? 4
         const totalSteps = nbBeats * stepsPerBeat
@@ -281,14 +281,14 @@ export default class PianoRollPanel extends BasePanel {
     #applySelection() {
         if (!this.container) return
         this.container.querySelectorAll('.pp-pr-note.selected').forEach((el) => el.classList.remove('selected'))
-        if (!this.#selNote) return
-        const idx = (this.#track?.notes ?? []).indexOf(this.#selNote)
+        if (!this.#selectedNote) return
+        const idx = (this.#track?.notes ?? []).indexOf(this.#selectedNote)
         if (idx < 0) return
         this.container.querySelector(`.pp-pr-note[data-note="${idx}"]`)?.classList.add('selected')
     }
 
     #clearSelection() {
-        this.#selNote = null
+        this.#selectedNote = null
         this.#cursorStep = -1
         this.#cursorRow = -1
         playbackEvents.emit(EVENTS.NOTE_SELECT, null)
@@ -382,7 +382,7 @@ export default class PianoRollPanel extends BasePanel {
             const vel = note.velocity ?? 0.8
 
             const el = document.createElement('div')
-            el.className = `pp-pr-note${this.#selNote === note ? ' selected' : ''}`
+            el.className = `pp-pr-note${this.#selectedNote === note ? ' selected' : ''}`
             el.style.left = `${pageStep * this.#cellWidth + 1}px`
             el.style.width = `${this.#cellWidth - 2}px`
             el.style.bottom = `${row * NOTE_HEIGHT + 1}px`
@@ -422,7 +422,7 @@ export default class PianoRollPanel extends BasePanel {
             this.#cursorStep < pageEndStep &&
             this.#cursorRow >= 0 &&
             this.#cursorRow < TOTAL_KEYS &&
-            !this.#selNote
+            !this.#selectedNote
         ) {
             const cursor = document.createElement('div')
             cursor.className = 'pp-pr-cursor'
@@ -461,13 +461,13 @@ export default class PianoRollPanel extends BasePanel {
         )
 
         if (hit) {
-            if (this.#selNote === hit) {
+            if (this.#selectedNote === hit) {
                 cmd.deleteNote(track, hit)
                 this.#clearSelection()
                 playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
                 playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
             } else {
-                this.#selNote = hit
+                this.#selectedNote = hit
                 this.#cursorStep = step
                 this.#cursorRow = row
                 this.#applySelection()
@@ -477,7 +477,7 @@ export default class PianoRollPanel extends BasePanel {
             }
         } else {
             const newNote = cmd.addNote(track, beat, beatStep, relativePitch)
-            this.#selNote = newNote
+            this.#selectedNote = newNote
             this.#cursorStep = step
             this.#cursorRow = row
             this.#applySelection()
@@ -579,7 +579,7 @@ export default class PianoRollPanel extends BasePanel {
         const cmd = serviceRegistry.cmd
         if (!track || !cmd) return
         const newNote = cmd.addNote(track, beat, beatStep, relativePitch)
-        this.#selNote = newNote
+        this.#selectedNote = newNote
         this.#cursorStep = beat * (track.stepsPerBeat ?? 4) + beatStep
         this.#cursorRow = MIDDLE_C + (track.pitch ?? 0) + relativePitch - MIDI_MIN
         this.#applySelection()
@@ -604,7 +604,7 @@ export default class PianoRollPanel extends BasePanel {
         const cmd = serviceRegistry.cmd
         if (!track || !cmd || !hit) return
         cmd.deleteNote(track, hit)
-        if (this.#selNote === hit) this.#clearSelection()
+        if (this.#selectedNote === hit) this.#clearSelection()
         else this.#applySelection()
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
@@ -630,7 +630,7 @@ export default class PianoRollPanel extends BasePanel {
             showToast('Chord already present', 'info')
             return
         }
-        this.#selNote = added[0]
+        this.#selectedNote = added[0]
         this.#cursorStep = beat * (track.stepsPerBeat ?? 4) + beatStep
         this.#cursorRow = MIDDLE_C + (track.pitch ?? 0) + rootPitch - MIDI_MIN
         this.#applySelection()
@@ -641,7 +641,7 @@ export default class PianoRollPanel extends BasePanel {
             playbackEvents.emit(EVENTS.NOTE_SELECT, {
                 track,
                 trackIdx: this.#trackIdx,
-                note: this.#selNote,
+                note: this.#selectedNote,
                 beat,
                 beatStep,
             })
@@ -673,7 +673,7 @@ export default class PianoRollPanel extends BasePanel {
     #menuAddSequence(tonic) {
         const track = this.#track
         const cmd = serviceRegistry.cmd
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!track || !cmd || !pattern) return
 
         const sequence = getSequence(this.#sequenceIdx)
@@ -696,7 +696,7 @@ export default class PianoRollPanel extends BasePanel {
         this.#sequenceIdx++
         if (addedCount === 0) return
 
-        this.#selNote = firstNote
+        this.#selectedNote = firstNote
         this.#cursorStep = 0
         this.#cursorRow = MIDDLE_C + (track.pitch ?? 0) + tonic - MIDI_MIN
         this.#applySelection()
@@ -739,7 +739,7 @@ export default class PianoRollPanel extends BasePanel {
 
     #totalPages() {
         if (!this.#track) return 1
-        const nbBeats = appState.patterns[appState.selectedPatternNum]?.nbBeats ?? 4
+        const nbBeats = appState.patterns[appState.selectedPatternIdx]?.nbBeats ?? 4
         return Math.max(1, Math.ceil(nbBeats / PAGE_BEATS))
     }
 
@@ -768,7 +768,7 @@ export default class PianoRollPanel extends BasePanel {
     #onKeyDown(e) {
         if (!this.isVisible) return
         const track = this.#track
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!track || !pattern) return
         const cmd = serviceRegistry.cmd
         const { stepsPerBeat, totalSteps, pageStartStep } = this.#pageInfo()
@@ -822,33 +822,33 @@ export default class PianoRollPanel extends BasePanel {
             )
 
             if (note) {
-                if (this.#selNote === note) {
+                if (this.#selectedNote === note) {
                     cmd.deleteNote(track, note)
                     this.#clearSelection()
                     playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
                     playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
                     return
                 }
-                this.#selNote = note
+                this.#selectedNote = note
             } else {
-                this.#selNote = cmd.addNote(track, beat, beatStep, relativePitch)
+                this.#selectedNote = cmd.addNote(track, beat, beatStep, relativePitch)
                 playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
                 playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
             }
             this.#applySelection()
-            if (this.#selNote)
+            if (this.#selectedNote)
                 playbackEvents.emit(EVENTS.NOTE_SELECT, {
                     track,
                     trackIdx: this.#trackIdx,
-                    note: this.#selNote,
+                    note: this.#selectedNote,
                     beat,
                     beatStep,
                 })
             return
         }
 
-        if (this.#selNote && cmd) {
-            cmd.deleteNote(track, this.#selNote)
+        if (this.#selectedNote && cmd) {
+            cmd.deleteNote(track, this.#selectedNote)
             this.#clearSelection()
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
             playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
@@ -872,7 +872,7 @@ export default class PianoRollPanel extends BasePanel {
         const note = (track.notes ?? []).find(
             (n) => n.beat === beat && n.beatStep === beatStep && MIDDLE_C + trackPitchOffset + (n.pitch ?? 0) === midi,
         )
-        this.#selNote = note ?? null
+        this.#selectedNote = note ?? null
         this.#applySelection()
         playbackEvents.emit(
             EVENTS.NOTE_SELECT,
@@ -924,7 +924,7 @@ export default class PianoRollPanel extends BasePanel {
     #updatePlayhead() {
         const transport = serviceRegistry.transport
         if (!transport?.isRunning) return
-        const pattern = appState.patterns[appState.selectedPatternNum]
+        const pattern = appState.patterns[appState.selectedPatternIdx]
         const track = this.#track
         if (!pattern || !track || !this.container) return
         this.#ensurePlayhead()
@@ -1003,12 +1003,12 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     /** @returns {Object|null} currently selected note */
-    get selNote() {
-        return this.#selNote
+    get selectedNote() {
+        return this.#selectedNote
     }
     /** @param {Object|null} n */
-    set selNote(n) {
-        this.#selNote = n
+    set selectedNote(n) {
+        this.#selectedNote = n
     }
 
     /** @returns {number} cursor column step */
@@ -1071,24 +1071,5 @@ export default class PianoRollPanel extends BasePanel {
     }
     syncNotes() {
         this.#syncNotes()
-    }
-
-    get _track() {
-        return this.#track
-    }
-    set _track(v) {
-        this.#track = v
-    }
-    get _trackIdx() {
-        return this.#trackIdx
-    }
-    set _trackIdx(v) {
-        this.#trackIdx = v
-    }
-    get _gridDirty() {
-        return this.#gridDirty
-    }
-    set _gridDirty(v) {
-        this.#gridDirty = v
     }
 }

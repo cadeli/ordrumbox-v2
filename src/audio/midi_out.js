@@ -26,7 +26,7 @@ export function createMidiMappingResolver() {
  * @param {object} ctx
  * @param {AudioContext} ctx.audioCtx
  * @param {object[]} ctx.patterns
- * {Function} ctx.getSelectedPatternNum
+ * {Function} ctx.getSelectedPatternIdx
  * @param {number} ctx.TICK
  * @param {object} ctx.player
  * @param {(loop: number) => Map} ctx.getFlatNotes
@@ -35,15 +35,15 @@ export function createMidiMappingResolver() {
  * @param {number} atTime — AudioContext time
  */
 export function sendMidiNotes(ctx, tick, atTime) {
-    const { audioCtx, patterns, getSelectedPatternNum, TICK, player, getFlatNotes, resolveMapping } = ctx
+    const { audioCtx, patterns, getSelectedPatternIdx, TICK, player, getFlatNotes, resolveMapping } = ctx
 
     const midi = serviceRegistry.midiManager
     if (!midi || !midi.isReady || !midi.selectedOutputId) return
 
-    const selPat = patterns[getSelectedPatternNum()]
-    if (!selPat) return
+    const selectedPattern = patterns[getSelectedPatternIdx()]
+    if (!selectedPattern) return
 
-    const nbTickForPattern = TICK * selPat.nbBeats
+    const nbTickForPattern = TICK * selectedPattern.nbBeats
     const loopStep = tick % nbTickForPattern
     const flatNotesMap = player.getCurrentFlatNotesMap() ?? getFlatNotes(player.loop)
 
@@ -55,7 +55,7 @@ export function sendMidiNotes(ctx, tick, atTime) {
     const audioNow = audioCtx.currentTime
     const midiTime = perfNow + (atTime - audioNow) * 1000
 
-    const anySolo = Utils.hasAnySolo(selPat.tracks)
+    const anySolo = Utils.hasAnySolo(selectedPattern.tracks)
     notesToPlay.forEach((flatNote) => {
         if (Utils.shouldTrackPlay(flatNote.track, anySolo)) {
             const mapping = resolveMapping(flatNote.track.id)

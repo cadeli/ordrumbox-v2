@@ -22,9 +22,9 @@ function buildDefaultVisibility() {
 class AppState {
     static DEFAULTS = {
         patterns: [],
-        selectedPatternNum: 0,
-        selectedTrackNum: 0,
-        selectedDrumkitNum: 0,
+        selectedPatternIdx: 0,
+        selectedTrackIdx: 0,
+        selectedDrumkitIdx: 0,
         selectedDrumkit: 'real',
         selectedLfo: 'pitchLfo',
         displayBeats: 1,

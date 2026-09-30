@@ -3,8 +3,8 @@ import { buildMidi, buildDrumMidi, buildEmptyMidi } from './helpers/midi_builder
 
 const sharedState = {
     patterns: [],
-    selectedPatternNum: 0,
-    selectedDrumkitNum: 0,
+    selectedPatternIdx: 0,
+    selectedDrumkitIdx: 0,
 }
 
 const mockAddPattern = vi.fn((name) => {
@@ -25,7 +25,7 @@ const mockAddNote = vi.fn((track, beat, beatStep, pitch) => {
     return note
 })
 
-const mockSetSelectedPatternNum = vi.fn().mockResolvedValue(undefined)
+const mockSetSelectedPatternIdx = vi.fn().mockResolvedValue(undefined)
 
 vi.mock('../src/state/service_registry.js', () => ({
     serviceRegistry: {
@@ -34,7 +34,7 @@ vi.mock('../src/state/service_registry.js', () => ({
             addPattern: (...a) => mockAddPattern(...a),
             addTrack: (...a) => mockAddTrack(...a),
             addNote: (...a) => mockAddNote(...a),
-            setSelectedPatternNum: (...a) => mockSetSelectedPatternNum(...a),
+            setSelectedPatternIdx: (...a) => mockSetSelectedPatternIdx(...a),
             recordTransaction: (_desc, fn) => fn(),
         },
         audioEngine: { invalidateCache: vi.fn() },
@@ -70,10 +70,10 @@ describe('MidiImportService', () => {
         mockAddPattern.mockClear()
         mockAddTrack.mockClear()
         mockAddNote.mockClear()
-        mockSetSelectedPatternNum.mockClear()
+        mockSetSelectedPatternIdx.mockClear()
 
         sharedState.patterns = []
-        sharedState.selectedPatternNum = 0
+        sharedState.selectedPatternIdx = 0
 
         const mod = await import('../src/logic/services/midi_import_service.js')
         MidiImportService = mod.default
@@ -171,8 +171,8 @@ describe('MidiImportService', () => {
         const service = new MidiImportService()
         await service.importFile(file)
 
-        expect(mockSetSelectedPatternNum).toHaveBeenCalled()
-        const lastIdx = mockSetSelectedPatternNum.mock.calls.at(-1)[0]
+        expect(mockSetSelectedPatternIdx).toHaveBeenCalled()
+        const lastIdx = mockSetSelectedPatternIdx.mock.calls.at(-1)[0]
         expect(lastIdx).toBeGreaterThanOrEqual(0)
     })
 
