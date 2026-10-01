@@ -157,7 +157,7 @@ function buildComplexProject() {
                         pitch: 0,
                         filterCutoff: 15000,
                         filterResonance: 1,
-                        filterType: 'off',
+                        filterType: 'allpass',
                         mute: false,
                         solo: false,
                         notes: [

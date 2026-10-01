@@ -38,16 +38,29 @@ const analyzer = new AudioAnalyzer()
 
 // Suppress worklet mixer errors in node environment (AudioWorklet not available)
 let _origError
+let _origWarn
 beforeEach(() => {
+    // Offline export drives the mixer through a minimal ctx, so Mixer.start
+    // trips on its first missing call and reports through reportUserError —
+    // which writes to console directly, hence warn as well as error.
+    const isExpectedNoise = (args) => {
+        const msg = args.map((a) => a?.toString?.() ?? '').join(' ')
+        return msg.includes('Mixer') || msg.includes('Sound')
+    }
     _origError = console.error
     console.error = (...args) => {
-        const msg = args[0]?.toString?.() ?? ''
-        if (msg.includes('Mixer') || msg.includes('Sound')) return
+        if (isExpectedNoise(args)) return
         _origError(...args)
+    }
+    _origWarn = console.warn
+    console.warn = (...args) => {
+        if (isExpectedNoise(args)) return
+        _origWarn(...args)
     }
 })
 afterEach(() => {
     console.error = _origError
+    console.warn = _origWarn
 })
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

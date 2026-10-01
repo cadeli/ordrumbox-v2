@@ -25,6 +25,10 @@ beforeEach(() => {
     postMessageMock.mockClear()
     workletNodeMock.connect.mockClear()
     workletNodeMock.disconnect.mockClear()
+    // Two tests assert that a missing preset is reported rather than silently
+    // falling back to another sound; reportUserError logs the cause outside
+    // production.
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
 
 function lastPostByType(type) {

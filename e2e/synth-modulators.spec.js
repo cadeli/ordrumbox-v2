@@ -51,6 +51,15 @@ test.describe('Static coherence of modulation targets', () => {
     })
 })
 
+// Modulating a modEnvelope.* parameter is only observable if the mod envelope
+// itself runs. The processor gates that whole branch on
+// `!bypassModEnv && mTgt > 0 && mDepth > 0.001`, and no shipped preset
+// enables it (target 'off' everywhere, and PIANO sets bypassModEnv). Both
+// gates have to be opened explicitly. Applied to both sides of the pair so the
+// LFO target stays the only difference.
+const enableModEnv = (target) =>
+    target.startsWith('modEnvelope.') ? { modEnvelope: { target: 'filter' }, bypassModEnv: false } : {}
+
 test.describe('Real modulator effect on sound (per target)', () => {
     test.beforeEach(async ({ page }) => {
         await bootApp(page)
@@ -65,15 +74,6 @@ test.describe('Real modulator effect on sound (per target)', () => {
         const targets = SYNTH_LFO_TARGETS.filter((t) => t !== 'NOT')
         const durationSec = 1.2
         const lfoFreqHz = 3
-
-        // Modulating a modEnvelope.* parameter is only observable if the mod
-        // envelope itself runs: the processor gates that whole branch on
-        // `mTgt > 0 && mDepth > 0.001`, and mDepth is derived by
-        // worklet_synth_voice.js from `modEnvelope.target !== 'off'` — the base
-        // patch picked by the render helper ships it disabled. Enable it
-        // identically on both sides so the LFO target stays the only difference.
-        const enableModEnv = (target) =>
-            target.startsWith('modEnvelope.') ? { modEnvelope: { target: 'filter' } } : {}
 
         const configs = []
         for (const target of targets) {
@@ -135,11 +135,13 @@ test.describe('Real modulator effect on sound (per target)', () => {
         for (const target of targets) {
             configs.push({
                 synthOverrides: {
+                    ...enableModEnv(target),
                     lfo2: { target, wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
                 },
             })
             configs.push({
                 synthOverrides: {
+                    ...enableModEnv(target),
                     lfo2: { target: 'NOT', wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
                 },
             })

@@ -24,6 +24,11 @@ function srcFiles(dir = 'src', out = []) {
 describe('P1b — visible degradations', () => {
     beforeEach(() => {
         resetUserErrorReports()
+        // Several tests here blow up listeners and trip degradation guards on
+        // purpose; the EventBus and notify layers log the cause, which prints
+        // expected stack traces that read like real failures.
+        vi.spyOn(console, 'error').mockImplementation(() => {})
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
     })
 
     afterEach(() => {

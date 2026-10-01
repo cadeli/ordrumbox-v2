@@ -42,6 +42,10 @@ describe('P1a — silent failure guards', () => {
         cmd = new Commander()
         serviceRegistry.cmd = cmd
         serviceRegistry.history = new HistoryManager(50)
+        // Every test in this file trips a guard on purpose. reportUserError()
+        // attaches the cause to console.warn outside production, so without
+        // this the suite prints expected stack traces that read like failures.
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
     })
 
     afterEach(() => {

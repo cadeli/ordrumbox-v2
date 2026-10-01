@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import Strip from '../src/audio/strip.js'
 import WorkletLoader from '../src/audio/worklets/loader.js'
 import { makeParam, makeNode, installWorkletMocks } from './helpers/worklet_mocks.js'
+import * as notify from '../src/core/notify.js'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,9 @@ describe('Strip (Unified Worklet)', () => {
     beforeEach(() => {
         ctx = makeAudioCtx()
         installWorkletMocks()
+        // The unknown-enum test trips reportUserError on purpose, which logs
+        // its cause outside production.
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
     })
 
     it('create() instantiates the unified strip worklet node', async () => {
@@ -140,5 +144,38 @@ describe('Strip (Unified Worklet)', () => {
         expect(node.disconnect).toHaveBeenCalled()
         expect(strip.stripNode).toBeNull()
         expect(strip.voicesInput.disconnect).toHaveBeenCalled()
+    })
+
+    // P1 guard: unknown enum values must surface to the user instead of being
+    // silently swapped for a default. The trap this pins down is the reverse
+    // mistake — reporting a LEGITIMATE value. 'allpass' is the schema default
+    // for "filter off" (track_schema.js) and what fx_section toggles back to,
+    // so it must never reach reportUserError; a real song using it used to
+    // raise a bogus toast and resolve to lowpass.
+    it('updateFilter does not report the legitimate "allpass" (filter off) type', async () => {
+        const spy = vi.spyOn(notify, 'reportUserError')
+        notify.resetUserErrorReports()
+        const strip = await Strip.create('KICK', ctx)
+
+        for (const type of ['allpass', 'lowpass', 'highpass', 'bandpass', 'notch']) {
+            strip.updateFilter(type)
+        }
+
+        expect(spy).not.toHaveBeenCalled()
+    })
+
+    it('updateFilter reports a genuinely unknown type and falls back', async () => {
+        const spy = vi.spyOn(notify, 'reportUserError')
+        notify.resetUserErrorReports()
+        const strip = await Strip.create('KICK', ctx)
+        const params = strip.stripNode.parameters
+
+        strip.updateFilter('off')
+
+        expect(spy).toHaveBeenCalledTimes(1)
+        expect(spy.mock.calls[0][0]).toBe('Strip.enum')
+        // Falls back to lowpass (FILTER_MODES.lowpass === 0).
+        expect(params.get('filterMode').setTargetAtTime).toHaveBeenCalledWith(0, expect.any(Number), expect.any(Number))
+        expect(strip.currentFilterType).toBe('lowpass')
     })
 })

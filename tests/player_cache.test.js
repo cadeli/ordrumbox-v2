@@ -165,17 +165,23 @@ describe('Player cache invalidation', () => {
 describe('AudioEngine cache wiring', () => {
     let warnSpy
     let errorSpy
+    let consoleWarnSpy
 
     beforeEach(() => {
-        // The fake AudioContext cannot build a worklet mixer: the async init
-        // failure is logged (never asserted, mocked only to keep output clean)
+        // The fake AudioContext cannot build a worklet mixer, so Mixer.start
+        // fails on its first missing ctx call. The failure is reported through
+        // reportUserError, which writes straight to console and bypasses the
+        // logger entirely — silencing only the logger still leaked the report.
+        // The mixer is irrelevant to the cache wiring under test.
         warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
         errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
+        consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     })
 
     afterEach(() => {
         warnSpy.mockRestore()
         errorSpy.mockRestore()
+        consoleWarnSpy.mockRestore()
     })
 
     function makeEngine(patterns = []) {

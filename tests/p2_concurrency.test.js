@@ -30,6 +30,14 @@ describe('P2 — concurrency regressions', () => {
         serviceRegistry.history = history
     })
 
+    beforeEach(() => {
+        // Two tests here fail a listener and a pattern switch on purpose; the
+        // EventBus and Commander layers log the cause, printing expected stack
+        // traces that read like real failures.
+        vi.spyOn(console, 'error').mockImplementation(() => {})
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
+    })
+
     afterEach(() => {
         vi.restoreAllMocks()
     })
@@ -125,21 +133,59 @@ describe('P2 — concurrency regressions', () => {
             const cmd2 = new Commander()
             serviceRegistry.cmd = cmd2
             cmd2.addPattern('only')
+            // serviceRegistry.patterns is a core service: without it the switch
+            // aborts and rolls the index back, so the clamp went untested.
+            const applied = []
+            serviceRegistry.patterns = {
+                applyFlatNotes(p) {
+                    applied.push(p)
+                },
+            }
+
             await cmd2.setSelectedPatternIdx(999)
+
             expect(appState.selectedPatternIdx).toBe(0)
+            expect(applied).toHaveLength(1)
         })
 
+        // previousIdx must differ from target, otherwise restoring it is
+        // indistinguishable from never having moved (the pattern list is left
+        // holding a stale index, which every later appState.patterns[idx] reads).
         it('restores the previous index when the switch throws', async () => {
             const cmd2 = new Commander()
             serviceRegistry.cmd = cmd2
-            cmd2.addPattern('only')
-            appState.selectedPatternIdx = 0
+            cmd2.addPattern('A')
+            cmd2.addPattern('B')
+            appState.selectedPatternIdx = 1
             serviceRegistry.patterns = {
                 applyFlatNotes() {
                     throw new Error('apply failed')
                 },
             }
+
             await cmd2.setSelectedPatternIdx(0)
+
+            expect(appState.selectedPatternIdx).toBe(1)
+            expect(appState.patterns[appState.selectedPatternIdx]).toBeDefined()
+        })
+
+        it('completes the switch when the sequencer is not up yet', async () => {
+            const cmd2 = new Commander()
+            serviceRegistry.cmd = cmd2
+            cmd2.addPattern('only')
+            serviceRegistry.seq = null
+            let applied = 0
+            serviceRegistry.patterns = {
+                applyFlatNotes() {
+                    applied += 1
+                },
+            }
+
+            await cmd2.setSelectedPatternIdx(0)
+
+            // A missing seq used to throw before anything else ran, which
+            // aborted the switch and rolled the index back.
+            expect(applied).toBe(1)
             expect(appState.selectedPatternIdx).toBe(0)
         })
     })

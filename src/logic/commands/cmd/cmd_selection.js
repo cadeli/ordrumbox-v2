@@ -52,7 +52,10 @@ export default class SelectionCommands {
                 appState.selectedPatternIdx = target
                 const selectedPattern = appState.patterns[target]
                 if (!selectedPattern) throw new Error(`No pattern at index ${target}`)
-                serviceRegistry.seq.setBpm(selectedPattern.bpm)
+                // Same defensive treatment as the rest of the switch: a missing
+                // sequencer must not roll the whole selection back (which would
+                // abort the sample loading and the change event below).
+                serviceRegistry.seq?.setBpm(selectedPattern.bpm)
                 if (Object.keys(soundRegistry.sounds).length > 0) {
                     const autoAssign = await getAutoAssignService()
                     autoAssign.autoAssignSounds(selectedPattern)
