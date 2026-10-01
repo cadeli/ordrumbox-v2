@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/piano_roll/playback_section.js
 // Playhead, rAF loop and note illumination during playback.
 

@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/piano_roll/render_section.js
 // Renders the piano roll: key column, grid, loop point, notes and cursor.
 

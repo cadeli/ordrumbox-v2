@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/pattern_panel/HeaderSection.js
 // Pattern header: name, BPM/meta, page info, action buttons.
 
@@ -7,13 +8,13 @@ import { nameOr } from '../../core/logger.js'
 export default class HeaderSection {
     #editor
 
-    /** @param {import('./pattern_panel.js').default} editor */
+    /** @param {import('../pattern_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }
 
     /**
-     * @param {object} pattern
+     * @param {any} pattern
      * @param {number} currentPage
      * @returns {string} header HTML
      */

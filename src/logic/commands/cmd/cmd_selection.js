@@ -1,3 +1,4 @@
+// @ts-check
 import { appState } from '../../../state/app_state.js'
 import { serviceRegistry } from '../../../state/service_registry.js'
 import { soundRegistry } from '../../../state/sound_registry.js'

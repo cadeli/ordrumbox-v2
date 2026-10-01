@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/piano_roll/viewport_section.js
 // Piano roll paging, cell-width measurement and page navigation UI.
 

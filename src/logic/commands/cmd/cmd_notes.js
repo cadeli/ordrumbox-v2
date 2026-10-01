@@ -1,3 +1,4 @@
+// @ts-check
 import Utils from '../../../core/utils.js'
 import { appState } from '../../../state/app_state.js'
 import { logger } from '../../../core/logger.js'
@@ -101,8 +102,8 @@ export default class NoteCommands {
      * Apply a partial note update (velocity, pitch, prob, arp, …), persist
      * and record one undoable entry. Diffed against the current values so
      * no-op updates never reach the history.
-     * @param {object} track - owning track (version bump + persistence)
-     * @param {object} note - the note object being edited
+     * @param {any} track - owning track (version bump + persistence)
+     * @param {any} note - the note object being edited
      * @param {object} updates - key → value
      * @param {object} [opts]
      * @param {string} [opts.desc] - history label

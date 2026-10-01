@@ -1,3 +1,4 @@
+// @ts-check
 import { appState } from '../../../state/app_state.js'
 import Defaults from '../../../patterns/defaults.js'
 import { importPatternFromJson } from '../pattern_import.js'

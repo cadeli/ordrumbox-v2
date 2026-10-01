@@ -40,6 +40,44 @@ class AppState {
         songInfos: { name: '', description: '', date: '' },
     }
 
+    // Declared for TypeScript consumers (Object.assign is not modelled by tsc).
+    /** @type {any[]} */
+    patterns
+    /** @type {number} */
+    selectedPatternIdx
+    /** @type {number} */
+    selectedTrackIdx
+    /** @type {number} */
+    selectedDrumkitIdx
+    /** @type {string} */
+    selectedDrumkit
+    /** @type {string} */
+    selectedLfo
+    /** @type {number} */
+    displayBeats
+    /** @type {number} */
+    currentPage
+    /** @type {string} */
+    currentView
+    /** @type {boolean} */
+    autoMode
+    /** @type {boolean} */
+    textInput
+    /** @type {number} */
+    secondsPerBeat
+    /** @type {any} */
+    flatNotes
+    /** @type {string} */
+    workletStatus
+    /** @type {boolean} */
+    showVus
+    /** @type {any} */
+    songInfos
+    /** @type {any} */
+    trackEditorVisibility
+    /** @type {any} */
+    noteEditorVisibility
+
     constructor() {
         Object.assign(this, structuredClone(AppState.DEFAULTS), buildDefaultVisibility())
     }

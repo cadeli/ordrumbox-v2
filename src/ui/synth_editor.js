@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/synth_editor.js — Coordinator
 //
 // Thin coordinator that delegates rendering to section modules.
@@ -105,7 +106,7 @@ export default class SynthEditor {
         this.#cardBypassed = {}
         this.#waveTab = 'wave'
 
-        /** @type {Map<string, OrKnob>} knob instances kept alive between renders */
+        /** @type {Map<string, import('./components/or_knob.js').OrKnob>} knob instances kept alive between renders */
         this.#knobMap = new Map()
 
         this.#groups = new GroupsSection(this)
@@ -336,7 +337,7 @@ export default class SynthEditor {
 
     /**
      * Computes the LFO modulation amount for a synth LFO config.
-     * @param {object} lfo  LFO config { target, wave, freq, depth, sync }
+     * @param {any} lfo  LFO config { target, wave, freq, depth, sync }
      * @param {number} audioTime  AudioContext.currentTime
      * @returns {number} modulation amount in the target's display units
      */
@@ -390,7 +391,7 @@ export default class SynthEditor {
 
         this.panel.addEventListener('click', (e) => this.#handleClick(e))
         this.panel.addEventListener('change', (e) => {
-            const { target } = e
+            const target = /** @type {HTMLInputElement} */ (e.target)
             if (target.tagName === 'SELECT' && target.dataset.synthPath) {
                 this.#setValue(target.dataset.synthPath, target.value)
                 this.#updateLfoIndicators()
@@ -596,7 +597,9 @@ export default class SynthEditor {
             const value = this.#getValue(p)
             const knob = this.#knobMap.get(p)
             if (knob) knob.setValue(value)
-            const select = this.panel?.querySelector(`select[data-synth-path="${p}"]`)
+            const select = /** @type {HTMLSelectElement} */ (
+                this.panel?.querySelector(`select[data-synth-path="${p}"]`)
+            )
             if (select) select.value = String(value)
         }
     }
@@ -862,7 +865,7 @@ export default class SynthEditor {
         return this.#cardBypassed
     }
 
-    /** @returns {OrKnob[]} current knob instances */
+    /** @returns {import('./components/or_knob.js').OrKnob[]} current knob instances */
     get knobs() {
         return [...this.#knobMap.values()]
     }

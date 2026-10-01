@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/synth_editor/PresetSection.js
 // Preset CRUD operations and footer rendering.
 
@@ -9,7 +10,7 @@ import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
 export default class PresetSection {
     #editor
 
-    /** @param {import('./synth_editor.js').default} editor */
+    /** @param {import('../synth_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }

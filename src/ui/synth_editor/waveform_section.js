@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/synth_editor/WaveformSection.js
 // Waveform canvas drawing: oscillators + ADSR envelope preview.
 
@@ -11,7 +12,7 @@ const FM_DEPTH_SCALE = 0.08
 export default class WaveformSection {
     #editor
 
-    /** @param {import('./synth_editor.js').default} editor */
+    /** @param {import('../synth_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }

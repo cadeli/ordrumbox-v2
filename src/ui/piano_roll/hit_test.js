@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/piano_roll/hit_test.js
 // Shared hit-testing helpers: pointer position to grid cell, cell to note.
 

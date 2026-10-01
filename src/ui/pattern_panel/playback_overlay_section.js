@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/pattern_panel/PlaybackOverlaySection.js
 // Playhead animation, VU meter updates, RAF loop.
 
@@ -9,7 +10,7 @@ import { color } from '../theme.js'
 import { EVENTS } from '../../core/events.js'
 
 export default class PlaybackOverlaySection {
-    /** @type {import('./pattern_panel.js').default} */
+    /** @type {import('../pattern_panel.js').default} */
     #editor
     /** @type {number | null} */
     #rafId
@@ -19,10 +20,10 @@ export default class PlaybackOverlaySection {
     #prevLoopTick
     /** @type {HTMLCanvasElement | null} */
     #waveformCanvas
-    /** @type {NodeListOf<HTMLElement> | null} */
+    /** @type {any} */
     #vuElCache
 
-    /** @param {import('./pattern_panel.js').default} editor */
+    /** @param {import('../pattern_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
         this.#rafId = null
@@ -149,7 +150,7 @@ export default class PlaybackOverlaySection {
                 fill.style.height = '0%'
             }
         }
-        const canvas = editor.container.querySelector('.pp-waveform-overlay')
+        const canvas = /** @type {HTMLCanvasElement} */ (editor.container.querySelector('.pp-waveform-overlay'))
         if (canvas) {
             const ctx = canvas.getContext('2d')
             if (ctx) {

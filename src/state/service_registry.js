@@ -15,6 +15,34 @@ export class ServiceRegistry {
         history: null,
     }
 
+    // Declared for TypeScript consumers (Object.assign is not modelled by tsc).
+    /** @type {any} */
+    cmd
+    /** @type {any} */
+    patterns
+    /** @type {any} */
+    midiManager
+    /** @type {any} */
+    resourcesLoader
+    /** @type {any} */
+    seq
+    /** @type {any} */
+    autoGenerate
+    /** @type {any} */
+    autoAssign
+    /** @type {any} */
+    wavExporter
+    /** @type {any} */
+    audioCtx
+    /** @type {any} */
+    audioEngine
+    /** @type {any} */
+    transport
+    /** @type {any} */
+    viewManager
+    /** @type {any} */
+    history
+
     constructor() {
         Object.assign(this, ServiceRegistry.DEFAULTS)
     }

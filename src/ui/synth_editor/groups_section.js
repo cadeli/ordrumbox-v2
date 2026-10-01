@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/synth_editor/GroupsSection.js
 // Renders synth parameter groups: VCOs, filter, FM, LFO, noise, envelope.
 // Manages knob placeholders and icon rows.
@@ -47,7 +48,7 @@ const GROUP_TAB = {
 export default class GroupsSection {
     #editor
 
-    /** @param {import('./synth_editor.js').default} editor */
+    /** @param {import('../synth_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }

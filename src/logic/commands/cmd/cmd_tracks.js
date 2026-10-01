@@ -1,3 +1,4 @@
+// @ts-check
 import Utils from '../../../core/utils.js'
 import { NOT_FOUND } from '../../../core/constants.js'
 import { normalizeTrack, recalcLoopDerived, TRACK_VALUE_RANGES } from '../../../model/track_schema.js'
@@ -40,6 +41,12 @@ export default class TrackCommands {
      *
      * The changed keys (before → after) are recorded as meta.params/prev so
      * the undo/redo report toast can show exactly what this command touched.
+     *
+     * @param {any} track
+     * @param {string[]} keys
+     * @param {string} desc
+     * @param {() => false | void} mutate
+     * @param {{persist?: boolean, coalesceKey?: string}} [opts]
      */
     #withUndo(track, keys, desc, mutate, { persist = false, coalesceKey } = {}) {
         const before = this.#snapshotTrack(track, keys)
@@ -174,7 +181,7 @@ export default class TrackCommands {
      * notes / loop point proportionally:
      * - notes: steppc (absolute position) is preserved → beatStep rescaled
      * - loopAtStep is clamped to the new bar length, loop point re-derived
-     * @param {object} track
+     * @param {any} track
      * @param {number} value - target steps per beat
      * @param {object} [opts]
      * @param {boolean} [opts.coalesce] - merge rapid changes into one undo step

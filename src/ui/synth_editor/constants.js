@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/synth_editor/constants.js
 // Shared constants for the SynthEditor sub-modules.
 

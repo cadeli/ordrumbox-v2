@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/pattern_panel/GridSection.js
 // Track grid: rows, beat cells, note slices, ghosts, dividers, solo,
 // volume sliders, vu meters, master track, add-track button.
@@ -10,7 +11,7 @@ import { createStepResolver } from '../../patterns/step_resolver.js'
 export default class GridSection {
     #editor
 
-    /** @param {import('./pattern_panel.js').default} editor */
+    /** @param {import('../pattern_panel.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }
@@ -124,9 +125,9 @@ export default class GridSection {
     }
 
     /**
-     * @param {Array} tracks
-     * @param {object} pattern
-     * @param {object} opts  { startBeat, endBeatPage, activeTrackIdx, cachedPage, cachedVersion, trackDataDirty, trackDataCache }
+     * @param {any[]} tracks
+     * @param {any} pattern
+     * @param {{startBeat: number, endBeatPage: number, activeTrackIdx: number, cachedPage?: any, cachedVersion?: any, trackDataDirty?: any, trackDataCache: Map<number, any>}} opts
      * @returns {string} tracks HTML (including toolbar row + waveform canvas)
      */
     render(tracks, pattern, opts) {

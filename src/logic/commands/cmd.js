@@ -1,3 +1,4 @@
+// @ts-check
 import Utils from '../../core/utils.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
@@ -88,7 +89,7 @@ export default class Commander {
         this.#notes = new NoteCommands(this)
         this.#tracks = new TrackCommands(this)
         this.#patterns = new PatternCommands(this)
-        this.#selection = new SelectionCommands(this)
+        this.#selection = new SelectionCommands()
 
         // Own-property arrow delegates: every MIXIN_METHODS entry must be an
         // own enumerable function so {...cmd} copies keep driving THIS instance.
@@ -138,8 +139,8 @@ export default class Commander {
     /**
      * Record a reversible command.
      * @param {object} command
-     * @param {Function} command.execute - re-applies the change (redo)
-     * @param {Function} command.undo - reverts the change
+     * @param {Function} [command.execute] - re-applies the change (redo)
+     * @param {Function} [command.undo] - reverts the change
      * @param {string} [command.desc] - human-readable label (toolbar tooltips)
      * @param {string} [command.coalesceKey] - same key within the coalesce
      *   window merges with the previous entry (one undo step per gesture)
@@ -270,7 +271,7 @@ export default class Commander {
     /**
      * Apply a partial track update (known keys only, range-clamped), persist
      * and record one undoable entry.
-     * @param {object} track
+     * @param {any} track
      * @param {object} updates - key → value (unknown/derived keys skipped)
      * @param {object} [opts]
      * @param {string} [opts.desc] - history label (defaults to "Update <name>")

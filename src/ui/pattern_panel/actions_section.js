@@ -1,3 +1,4 @@
+// @ts-check
 // src/ui/pattern_panel/actions_section.js
 // Pattern toolbar actions: new/delete/duplicate/rename/clean/save/import.
 
@@ -72,7 +73,7 @@ export default class ActionsSection {
                 input.type = 'file'
                 input.accept = '.json'
                 input.onchange = async (e) => {
-                    const file = e.target.files?.[0]
+                    const file = /** @type {HTMLInputElement} */ (e.target).files?.[0]
                     if (!file) return
                     try {
                         const text = await file.text()

@@ -236,6 +236,7 @@ export function renderOptions(options, currentValue, { labels, escape: esc } = {
  * @param {string}  [opts.valueDataAttr] data-* attribute carrying the value (e.g. 'data-wave-val')
  * @param {function}[opts.escape]        HTML-escape function
  * @param {function}[opts.extraAttrs]    (value) => string — extra HTML attributes per button
+ * @param {Object}  [opts.titleMap]      value → tooltip title
  * @returns {string} HTML
  */
 export function renderIconChoices(

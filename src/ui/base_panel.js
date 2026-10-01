@@ -1,3 +1,4 @@
+// @ts-check
 import { injectUiCss, escapeHtml } from './components/panel_helpers.js'
 
 /**

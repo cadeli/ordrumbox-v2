@@ -72,7 +72,7 @@ Standalone worker (not part of the module graph), registered by `src/service_wor
 - **Setup**: `tests/setup.js` — stubs canvas, ResizeObserver, injects CSS for jsdom
 - Unit tests live in `tests/`
 - **Run**: `npm test` or `npx vitest run`
-- **Type check**: `npm run typecheck` — `tsc -p jsconfig.json --noEmit` with `checkJs: false`; only files starting with `// @ts-check` are checked (currently `src/state/app_state.js`, `src/state/playback_events.js`, `src/model/track_schema.js`, `src/audio/mixer.js`)
+- **Type check**: `npm run typecheck` — `tsc -p jsconfig.json --noEmit` with `checkJs: false`; only files starting with `// @ts-check` are checked (31 files: `app_state.js`, `playback_events.js`, `track_schema.js`, `mixer.js`, `base_panel.js`, all of `logic/commands/cmd*.js`, `ui/pattern_panel/*`, `ui/piano_roll/*`, `ui/synth_editor.js` + `ui/synth_editor/*`). To opt in a new file: add the pragma, then fix every reported error with JSDoc-only changes (type cast annotations `/** @type {X} */ (…)`, `@param`/`@field` types — no runtime changes)
 
 Test helpers in `tests/helpers/`:
 
