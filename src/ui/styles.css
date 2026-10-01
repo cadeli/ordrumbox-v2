@@ -2393,7 +2393,6 @@ body {
 }
 
 /* ---- Synth groups: fixed blocks with bypass ---- */
-.ne-body,
 #soft-synth-panel .ss-body {
     display: flex;
     flex-direction: row;
@@ -2481,12 +2480,6 @@ body {
     flex-direction: column;
     gap: 4px;
 }
-.ne-grid.ne-grid-2col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px 12px;
-}
-
 /* ── Spectrum Analyzer ── */
 #op-analyzer-group {
     padding: 8px;
@@ -2603,12 +2596,6 @@ body {
 }
 .op-comp-pregain .or-knob-label {
     font-size: var(--fs-xs);
-}
-
-.fx-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
 
 /* ── Drumkit Manager ───────────────────────────────────── */
