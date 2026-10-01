@@ -35,7 +35,7 @@ export default class MobileTabBar {
             const btn = document.createElement('button')
             btn.className = 'mtb-btn'
             btn.dataset.tab = tab.id
-            btn.innerHTML = `<span>${tab.label}</span>`
+            btn.textContent = tab.label
             this.container.appendChild(btn)
         })
 

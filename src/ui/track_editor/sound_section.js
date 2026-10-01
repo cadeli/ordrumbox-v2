@@ -43,12 +43,15 @@ export default class SoundSection {
         const matchingSounds = getSamplesForInstrument(editor, currentName)
 
         const NL = '&#10;'
+        const esc = editor.esc
         const currentSound = sr.sounds[currentSoundId]
+        // Kit/sample names come from user-imported drumkits: escape them so a
+        // quote inside a name cannot break out of the title attribute.
         const sampleTooltip = currentSound
             ? [
-                  `Kit: ${currentSound.kit_name ?? '?'}`,
-                  `URL: ${currentSound.url ?? '?'}`,
-                  `Instrument: ${currentSound.key ?? '?'}`,
+                  `Kit: ${esc(currentSound.kit_name ?? '?')}`,
+                  `URL: ${esc(currentSound.url ?? '?')}`,
+                  `Instrument: ${esc(currentSound.key ?? '?')}`,
                   `Synth: ${track.useSoftSynth === true ? 'yes' : 'no'}`,
                   `Size: ${currentSound.buffer?.length != null ? currentSound.buffer.length.toLocaleString() + ' samples' : '?'}`,
                   `Length: ${currentSound.duration != null ? currentSound.duration + ' ms' : '?'}`,
@@ -56,7 +59,7 @@ export default class SoundSection {
             : ''
 
         let content = ''
-        content += `<div class="ne-row"><label>Instr</label><select data-sound="instrument">${renderOptions(instrumentIds, currentName)}</select></div>
+        content += `<div class="ne-row"><label>Instr</label><select data-sound="instrument">${renderOptions(instrumentIds, currentName, { escape: esc })}</select></div>
         <div class="ne-row"><label title="${sampleTooltip}">Sample</label><select data-sound="sample">`
         if (matchingSounds.length === 0) {
             content += `<option value="">— no samples —</option>`
@@ -67,7 +70,7 @@ export default class SoundSection {
                 const name = s.display_name ?? s.url ?? '??'
                 return kit ? `${kit}/${name}` : name
             })
-            content += renderOptions(sampleValues, currentSoundId, { labels: sampleLabels })
+            content += renderOptions(sampleValues, currentSoundId, { labels: sampleLabels, escape: esc })
         }
         const synthOpts = ['none', ...generatedSoundKeys]
         if (track.useSoftSynth === true && !generatedSoundKeys.includes(currentGeneratedSound)) {

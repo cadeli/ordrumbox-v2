@@ -7,6 +7,7 @@ import { drawEnvelope } from '../audio/sample_analyzer.js'
 import { formatNote } from '../core/hz_to_note.js'
 import { showToast } from '../core/notify.js'
 import { downloadJson, renderOptions, knobFormat } from './components/panel_helpers.js'
+import { escapeHtml } from './components/ui_utils.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { sampleWaveformTheme } from './theme.js'
 import BasePanel from './base_panel.js'
@@ -278,12 +279,13 @@ export default class DrumkitManager extends BasePanel {
         if (sound.kit_name && !kitNames.includes(sound.kit_name)) {
             kitNames.unshift(sound.kit_name)
         }
-        const kitOptions = renderOptions(kitNames, sound.kit_name)
+        const kitOptions = renderOptions(kitNames, sound.kit_name, { escape: escapeHtml })
 
         const instOptions = InstrumentsManager.DATA?.instruments
             ? renderOptions(
                   InstrumentsManager.DATA.instruments.map((i) => i.id),
                   sound.key,
+                  { escape: escapeHtml },
               )
             : ''
 
