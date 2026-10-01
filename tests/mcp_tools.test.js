@@ -3,21 +3,7 @@ import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import { isNoteAt } from './helpers/cmd_test_helpers.js'
-
-function ensureTrack(cmd, pattern, trackName, stepsPerBeat) {
-    let track = pattern.tracks.find((t) => t.name === trackName)
-    if (!track) {
-        track = cmd.addTrack(pattern, trackName, stepsPerBeat)
-    }
-    return track
-}
-
-function ensurePatternHasEnoughBeats(cmd, pattern, requiredBeat) {
-    if (requiredBeat >= pattern.nbBeats) {
-        const newNbBeats = Math.ceil((requiredBeat + 1) / 4) * 4
-        pattern.nbBeats = newNbBeats
-    }
-}
+import { ensureTrack, ensurePatternHasEnoughBeats, stepToBeat, upsertNoteOnTrack } from '../ordrumboxMcpserver.mjs'
 
 describe('Functional: MCP tools flow', () => {
     let cmd
@@ -41,8 +27,8 @@ describe('Functional: MCP tools flow', () => {
 
     it('addNotesToPattern converts step to beat/beatStep correctly', () => {
         const pattern = cmd.addPattern('MyBeat')
-        const kick = cmd.addTrack(pattern, 'KICK', 4)
-        const snare = cmd.addTrack(pattern, 'SNARE', 4)
+        const kick = ensureTrack(cmd, pattern, 'KICK', 4)
+        const snare = ensureTrack(cmd, pattern, 'SNARE', 4)
 
         const notes = [
             { trackName: 'KICK', step: 0 },
@@ -52,8 +38,7 @@ describe('Functional: MCP tools flow', () => {
 
         for (const noteData of notes) {
             const track = ensureTrack(cmd, pattern, noteData.trackName, 4)
-            const beat = Math.floor(noteData.step / 4)
-            const beatStep = noteData.step % 4
+            const { beat, beatStep } = stepToBeat(noteData.step, 4)
             ensurePatternHasEnoughBeats(cmd, pattern, beat)
             cmd.addNote(track, beat, beatStep)
         }
@@ -79,7 +64,35 @@ describe('Functional: MCP tools flow', () => {
 
         ensurePatternHasEnoughBeats(cmd, pattern, 5)
 
-        expect(pattern.nbBeats).toBeGreaterThanOrEqual(6)
+        // Beat 5 needs 6 beats → rounded up to a 4-beat group
+        expect(pattern.nbBeats).toBe(8)
+    })
+
+    it('upsertNoteOnTrack creates a note, then updates it in place', () => {
+        const pattern = cmd.addPattern('Upsert')
+        const kick = ensureTrack(cmd, pattern, 'KICK', 4)
+
+        const created = upsertNoteOnTrack(cmd, kick, {
+            beat: 0,
+            beatStep: 1,
+            velocity: 0.9,
+            euclidianRotation: 3,
+        })
+        expect(created).toBe('created')
+        expect(kick.notes).toHaveLength(1)
+        expect(kick.notes[0].velocity).toBe(0.9)
+        expect(kick.notes[0].euclidianRotation).toBe(3)
+
+        const updated = upsertNoteOnTrack(cmd, kick, {
+            beat: 0,
+            beatStep: 1,
+            velocity: 0.5,
+            prob: 0.5,
+        })
+        expect(updated).toBe('updated')
+        expect(kick.notes).toHaveLength(1)
+        expect(kick.notes[0].velocity).toBe(0.5)
+        expect(kick.notes[0].prob).toBe(0.5)
     })
 
     it('full MCP workflow: create → add notes → update → verify', () => {

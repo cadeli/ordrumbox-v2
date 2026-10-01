@@ -7,20 +7,13 @@ import { fileURLToPath } from 'node:url'
 
 import { PatternExporter } from './src/patterns/exporter.js'
 
-// Log to stderr to preserve JSON-RPC stream on stdout
-const mcpLogger = new console.Console({
-    stdout: process.stderr,
-    stderr: process.stderr,
-})
-
-console.log = (...args) => mcpLogger.log(...args)
-console.warn = (...args) => mcpLogger.warn(...args)
-console.error = (...args) => mcpLogger.error(...args)
-
 import Commander from './src/logic/commands/cmd.js'
 import { appState } from './src/state/app_state.js'
 import AudioAnalyzer from './src/audio/analyze.js'
 import InstrumentsManager from './src/logic/services/instrument_manager/index.js'
+import Utils from './src/core/utils.js'
+import { normalizeTrack, recalcLoopDerived, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
+import { compactArrayToNote, normalizeNote } from './src/core/note_schema.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -30,6 +23,32 @@ const KITS_DIR = resolve(__dirname, 'assets/kits')
 // Format patterns with notes on single line
 function formatPatternsWithNotesOnLine(patterns) {
     return JSON.stringify(patterns, null, 2) + '\n'
+}
+
+/**
+ * song.json is `{ infos, patterns }` in current releases (older files were a
+ * bare pattern array) — same `json.patterns ?? json` rule as loadSong().
+ */
+function songPatternsOf(doc) {
+    return Array.isArray(doc) ? doc : (doc.patterns ?? [])
+}
+
+async function readSongIndex() {
+    const patternsPath = resolve(__dirname, 'assets/data/song.json')
+    const data = await readFile(patternsPath, 'utf-8')
+    let doc
+    try {
+        doc = JSON.parse(data)
+    } catch (e) {
+        throw new Error(`Corrupt song.json: ${e.message}`, { cause: e })
+    }
+    return { doc, patterns: songPatternsOf(doc) }
+}
+
+async function writeSongIndex(doc, patterns) {
+    const patternsPath = resolve(__dirname, 'assets/data/song.json')
+    const next = Array.isArray(doc) ? patterns : { ...doc, patterns }
+    await writeFile(patternsPath, formatPatternsWithNotesOnLine(next), 'utf8')
 }
 
 // --- Utility functions ---
@@ -91,15 +110,70 @@ async function savePatternToDisk(pattern) {
     return filePath
 }
 
+function normalizePattern(source) {
+    const pattern = { ...source }
+    delete pattern.loopPointBeat
+    delete pattern.loopPointStep
+    pattern.tracks = Utils.getTracksArray(source).map((t) => {
+        const track = normalizeTrack(t)
+        delete track.loopPointBeat
+        delete track.loopPointStep
+        track.notes = (t.notes ?? []).map((n) => {
+            const decoded = Array.isArray(n) ? compactArrayToNote(n, t.noteKeys) : n
+            return { ...normalizeNote(decoded) }
+        })
+        return track
+    })
+    return pattern
+}
+
 function findPatternByName(patternName) {
     return appState.patterns.find(
         (pattern) => pattern?.name?.toUpperCase() === String(patternName).trim().toUpperCase(),
     )
 }
 
-function ensureTrack(cmd, pattern, trackName, stepsPerBeat = 4, loopAtStep = null) {
+function getTrackFromType(pattern, type) {
+    return Utils.getTracksArray(pattern).find((track) => track.name === type) ?? null
+}
+
+function isNoteAt(track, beat, beatStep) {
+    return Object.values(track.notes).filter((n) => n.beatStep === beatStep && n.beat === beat)
+}
+
+/**
+ * Set the pattern length in beats and resync every track (mirrors the
+ * transport select: track nbBeats follow the pattern, loop points clamp
+ * to the new length).
+ * @returns {number} the new beat count
+ */
+function setPatternNbBeats(pattern, nbBeats) {
+    const value = Math.round(Number(nbBeats))
+    if (!Number.isFinite(value) || value < 1) throw new Error(`Invalid nbBeats value: ${nbBeats}`)
+    pattern.nbBeats = value
+    for (const track of Utils.getTracksArray(pattern)) {
+        track.nbBeats = value
+        const maxSteps = value * (track.stepsPerBeat ?? 4)
+        if (track.loopAtStep > maxSteps) {
+            track.loopAtStep = maxSteps
+            recalcLoopDerived(track)
+        }
+    }
+    return value
+}
+
+/**
+ * Convert an absolute step number to `{ beat, beatStep }` on the track grid.
+ * Exported for tests — this is the conversion addNotesToPattern applies.
+ */
+export function stepToBeat(step, stepsPerBeat) {
+    const absoluteStep = Number(step)
+    return { beat: Math.floor(absoluteStep / stepsPerBeat), beatStep: absoluteStep % stepsPerBeat }
+}
+
+export function ensureTrack(cmd, pattern, trackName, stepsPerBeat = 4, loopAtStep = null) {
     const normalizedTrackName = String(trackName).trim().toUpperCase()
-    let track = cmd.getTrackFromType(pattern, normalizedTrackName)
+    let track = getTrackFromType(pattern, normalizedTrackName)
     if (!track) {
         track = cmd.addTrack(pattern, normalizedTrackName, stepsPerBeat)
         if (loopAtStep !== null) {
@@ -110,24 +184,24 @@ function ensureTrack(cmd, pattern, trackName, stepsPerBeat = 4, loopAtStep = nul
     return track
 }
 
-function ensurePatternHasEnoughBeats(cmd, pattern, noteBeat) {
+export function ensurePatternHasEnoughBeats(cmd, pattern, noteBeat) {
     const requiredBeats = Number(noteBeat) + 1
     if (Number.isNaN(requiredBeats) || requiredBeats < 1) {
         throw new Error(`Invalid beat value: ${noteBeat}`)
     }
     if (requiredBeats > pattern.nbBeats) {
-        cmd.setNbBeats(pattern, Math.ceil(requiredBeats / 4))
+        setPatternNbBeats(pattern, Math.ceil(requiredBeats / 4) * 4)
     }
 }
 
-function upsertNoteOnTrack(cmd, track, noteInput) {
+export function upsertNoteOnTrack(cmd, track, noteInput) {
     const beat = Number(noteInput.beat)
     const beatStep = Number(noteInput.beatStep ?? noteInput.step)
 
     if (!Number.isInteger(beat) || beat < 0) throw new Error(`Invalid beat value: ${noteInput.beat}`)
     if (!Number.isInteger(beatStep) || beatStep < 0) throw new Error(`Invalid step value: ${beatStep}`)
 
-    const existingNote = cmd.isNoteAt(track, beat, beatStep)[0]
+    const existingNote = isNoteAt(track, beat, beatStep)[0]
     const note = existingNote ?? cmd.addNote(track, beat, beatStep, Number(noteInput.pitch ?? 0))
 
     note.name = noteInput.name ?? note.name
@@ -135,328 +209,358 @@ function upsertNoteOnTrack(cmd, track, noteInput) {
     note.pan = Number(noteInput.pan ?? note.pan ?? 0)
     note.pitch = Number(noteInput.pitch ?? note.pitch ?? 0)
     note.arp = noteInput.arp ?? note.arp ?? null
-    note.every = Number(noteInput.every ?? note.every ?? 1)
-    note.pos = Number(noteInput.pos ?? note.pos ?? 0)
+    note.every = Math.min(Math.max(Number(noteInput.every ?? note.every ?? 1), 1), 16)
+    note.pos = Math.min(Math.max(Number(noteInput.pos ?? note.pos ?? 0), 0), 15)
     note.prob = Math.min(Math.max(Number(noteInput.prob ?? note.prob ?? 1), 0), 1)
     note.arpTriggerProbability = Math.min(
         Math.max(Number(noteInput.arpTriggerProbability ?? note.arpTriggerProbability ?? 1), 0),
         1,
     )
-    note.retriggerNum = Number(noteInput.retriggerNum ?? note.retriggerNum ?? 1)
-    note.rate = Number(noteInput.rate ?? note.rate ?? 1)
-    note.euclidianFill = Number(noteInput.euclidianFill ?? note.euclidianFill ?? 0)
+    note.retriggerNum = Math.min(Math.max(Number(noteInput.retriggerNum ?? note.retriggerNum ?? 1), 1), 16)
+    note.rate = Math.min(Math.max(Number(noteInput.rate ?? note.rate ?? 1), 1), 16)
+    note.euclidianFill = Math.min(Math.max(Number(noteInput.euclidianFill ?? note.euclidianFill ?? 0), 0), 16)
+    note.euclidianRotation = Math.min(
+        Math.max(Number(noteInput.euclidianRotation ?? note.euclidianRotation ?? 0), 0),
+        15,
+    )
 
     return existingNote ? 'updated' : 'created'
 }
 
-// --- Server initialisation ---
+// --- Tool catalog (importable by tests — stdio wiring only when run as main) ---
 
-const server = new Server(
+const num = (key, description) => {
+    const range = TRACK_VALUE_RANGES[key]
+    return range
+        ? { type: 'number', minimum: range.min, maximum: range.max, description }
+        : { type: 'number', description }
+}
+const int = (key, description) => ({ ...num(key, description), type: 'integer' })
+const bool = (description) => ({ type: 'boolean', description })
+const lfo = (description) => ({
+    type: ['object', 'null'],
+    description,
+    properties: {
+        type: { type: 'string', enum: Utils.waveList },
+        freq: { type: 'number', description: 'Cycles per pattern' },
+        min: { type: 'number', description: 'Modulation floor' },
+        max: { type: 'number', description: 'Modulation ceiling' },
+        phase: { type: 'number', description: 'Phase offset (0-1)' },
+    },
+})
+
+export const tools = [
     {
-        name: 'ordrumbox-mcp-server',
-        version: '1.0.0',
+        name: 'createNewPattern',
+        description: 'Creates a new empty pattern',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string', minLength: 1 },
+            },
+            required: ['patternName'],
+        },
     },
     {
-        capabilities: { tools: {} },
-    },
-)
-
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: [
-        {
-            name: 'createNewPattern',
-            description: 'Creates a new empty pattern',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    patternName: { type: 'string', minLength: 1 },
-                },
-                required: ['patternName'],
-            },
-        },
-        {
-            name: 'addNotesToPattern',
-            description:
-                'Adds multiple notes to a pattern using absolute step numbers. Converts step to beat/beatStep internally.',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    patternName: { type: 'string', description: 'Name of the pattern' },
-                    notes: {
-                        type: 'array',
-                        description: 'Array of notes to add',
-                        items: {
-                            type: 'object',
-                            properties: {
-                                trackName: { type: 'string', description: 'Instrument name (e.g., KICK, SNARE)' },
-                                step: { type: 'integer', minimum: 0, description: 'Absolute step number (0-based)' },
-                                velocity: { type: 'number', minimum: 0, maximum: 1, default: 0.8 },
-                                pan: { type: 'number', minimum: -1, maximum: 1, default: 0 },
-                                pitch: { type: 'number', default: 0 },
-                                every: {
-                                    type: 'integer',
-                                    minimum: 1,
-                                    maximum: 16,
-                                    description: 'Play every N-th loop',
-                                },
-                                pos: {
-                                    type: 'integer',
-                                    minimum: 0,
-                                    maximum: 15,
-                                    description: 'Phase offset for trigger frequency',
-                                },
-                                prob: { type: 'number', minimum: 0, maximum: 1, default: 1 },
-                                arpTriggerProbability: { type: 'number', minimum: 0, maximum: 1, default: 1 },
-                                retriggerNum: {
-                                    type: 'integer',
-                                    minimum: 1,
-                                    maximum: 16,
-                                    description: 'Number of retriggers (1-16)',
-                                },
-                                rate: {
-                                    type: 'integer',
-                                    minimum: 1,
-                                    maximum: 16,
-                                    description: 'Retrigger step spacing (1-16)',
-                                },
-                                arp: {
-                                    type: 'string',
-                                    description: 'Arpeggio pattern (up, down, upDown, random, or custom indices)',
-                                },
-                                euclidianFill: {
-                                    type: 'integer',
-                                    minimum: 0,
-                                    maximum: 100,
-                                    description: 'Euclidean fill percentage (0-100)',
-                                },
-                            },
-                            required: ['trackName', 'step'],
-                        },
-                    },
-                },
-                required: ['patternName', 'notes'],
-            },
-        },
-        {
-            name: 'updateTrack',
-            description: 'Updates or creates a track with global properties and per-note overrides',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    patternName: { type: 'string' },
-                    trackName: { type: 'string' },
-                    updates: {
+        name: 'addNotesToPattern',
+        description:
+            'Adds multiple notes to a pattern using absolute step numbers. Converts step to beat/beatStep internally.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string', description: 'Name of the pattern' },
+                notes: {
+                    type: 'array',
+                    description: 'Array of notes to add',
+                    items: {
                         type: 'object',
-                        description:
-                            'Track-level properties to set. See MCP_TOOLS.md for the full list of valid fields.',
                         properties: {
-                            velocity: { type: 'number', minimum: 0, maximum: 1, description: 'Global track velocity' },
-                            pan: { type: 'number', minimum: -1, maximum: 1, description: 'Stereo pan' },
-                            pitch: { type: 'number', description: 'Pitch offset in semitones' },
-                            mute: { type: 'boolean', description: 'Mute the track' },
-                            solo: { type: 'boolean', description: 'Solo the track' },
-                            auto: { type: 'boolean', description: 'Auto mode' },
-                            useSoftSynth: { type: 'boolean', description: 'Use software synthesis instead of samples' },
-                            mono: { type: 'boolean', description: 'Mono mode (cut previous note on same track)' },
-                            filterType: {
-                                type: 'string',
-                                enum: [
-                                    'lowpass',
-                                    'highpass',
-                                    'bandpass',
-                                    'notch',
-                                    'peaking',
-                                    'lowshelf',
-                                    'highshelf',
-                                    'allpass',
-                                ],
-                                description: 'Filter type',
+                            trackName: { type: 'string', description: 'Instrument name (e.g., KICK, SNARE)' },
+                            step: { type: 'integer', minimum: 0, description: 'Absolute step number (0-based)' },
+                            velocity: { type: 'number', minimum: 0, maximum: 1, default: 0.8 },
+                            pan: { type: 'number', minimum: -1, maximum: 1, default: 0 },
+                            pitch: { type: 'number', default: 0 },
+                            every: {
+                                type: 'integer',
+                                minimum: 1,
+                                maximum: 16,
+                                description: 'Play every N-th loop',
                             },
-                            filterFreq: {
-                                type: 'number',
-                                minimum: 20,
-                                maximum: 20000,
-                                description: 'Filter cutoff frequency in Hz',
-                            },
-                            filterQ: {
-                                type: 'number',
-                                minimum: 0.707,
-                                maximum: 21,
-                                description: 'Filter resonance / Q factor',
-                            },
-                            reverbType: {
-                                type: 'string',
-                                enum: ['none', 'room', 'hall', 'plate', 'spring', 'gated'],
-                                description: 'Reverb preset',
-                            },
-                            reverbAmount: { type: 'number', minimum: 0, maximum: 1, description: 'Reverb wet/dry mix' },
-                            saturationType: {
-                                type: 'string',
-                                enum: ['soft', 'hard', 'tape'],
-                                description: 'Saturation / distortion type',
-                            },
-                            saturationAmount: {
-                                type: 'number',
-                                minimum: 0,
-                                maximum: 1,
-                                description: 'Saturation amount',
-                            },
-                            delayType: {
-                                type: 'string',
-                                enum: ['tape', 'analog', 'digital'],
-                                description: 'Delay type',
-                            },
-                            delayTime: { type: 'number', description: 'Delay time in beats' },
-                            delayAmount: {
-                                type: 'number',
-                                minimum: 0,
-                                maximum: 1,
-                                description: 'Delay feedback amount',
-                            },
-                            loopAtStep: {
+                            pos: {
                                 type: 'integer',
                                 minimum: 0,
-                                description: 'Loop point (absolute step index)',
+                                maximum: 15,
+                                description: 'Phase offset for trigger frequency',
                             },
-                            stepsPerBeat: { type: 'integer', enum: [4, 8, 16], description: 'Steps per beat' },
-                            nbBeats: { type: 'integer', minimum: 1, description: 'Number of beats for this track' },
-                            variation: {
-                                type: 'number',
-                                minimum: 0,
-                                maximum: 100,
-                                description: 'Track variation (randomization budget 0-100)',
+                            prob: { type: 'number', minimum: 0, maximum: 1, default: 1 },
+                            arpTriggerProbability: { type: 'number', minimum: 0, maximum: 1, default: 1 },
+                            retriggerNum: {
+                                type: 'integer',
+                                minimum: 1,
+                                maximum: 16,
+                                description: 'Number of retriggers (1-16)',
                             },
-                            variation2: {
-                                type: 'number',
+                            rate: {
+                                type: 'integer',
+                                minimum: 1,
+                                maximum: 16,
+                                description: 'Retrigger step spacing (1-16)',
+                            },
+                            arp: {
+                                type: 'string',
+                                description: 'Arpeggio pattern (up, down, upDown, random, or custom indices)',
+                            },
+                            euclidianFill: {
+                                type: 'integer',
                                 minimum: 0,
-                                maximum: 100,
-                                description: 'Second variation pass (budget 0-100)',
+                                maximum: 16,
+                                description: 'Euclidean pulses (0-16, 0=disabled)',
+                            },
+                            euclidianRotation: {
+                                type: 'integer',
+                                minimum: 0,
+                                maximum: 15,
+                                description: 'Euclidean phase rotation in steps (0-15)',
                             },
                         },
+                        required: ['trackName', 'step'],
                     },
-                    noteUpdates: {
-                        type: 'object',
-                        description: 'Note-level properties to apply to all notes in the track',
-                        properties: {
-                            every: { type: 'number', minimum: 1, maximum: 16 },
-                            pos: { type: 'number', minimum: 0, maximum: 15 },
-                            prob: { type: 'number', minimum: 0, maximum: 1 },
-                            arpTriggerProbability: { type: 'number', minimum: 0, maximum: 1 },
-                            retriggerNum: { type: 'number', minimum: 1, maximum: 16 },
-                            rate: { type: 'number', minimum: 1, maximum: 16 },
-                            arp: { type: 'string' },
-                            euclidianFill: { type: 'number', minimum: 0, maximum: 100 },
-                            velocity: { type: 'number', minimum: 0, maximum: 1 },
-                            pan: { type: 'number', minimum: -1, maximum: 1 },
-                            pitch: { type: 'number' },
+                },
+            },
+            required: ['patternName', 'notes'],
+        },
+    },
+    {
+        name: 'updateTrack',
+        description: 'Updates or creates a track with global properties and per-note overrides',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string' },
+                trackName: { type: 'string' },
+                updates: {
+                    type: 'object',
+                    description:
+                        'Track-level properties to set. Numeric ranges come from TRACK_VALUE_RANGES (the app clamps out-of-range values). See MCP_TOOLS.md for details.',
+                    properties: {
+                        velocity: num('velocity', 'Global track velocity'),
+                        pan: num('pan', 'Stereo pan'),
+                        pitch: num('pitch', 'Pitch offset in semitones'),
+                        mute: bool('Mute the track'),
+                        solo: bool('Solo the track'),
+                        auto: bool('Auto (generator) mode'),
+                        useSoftSynth: bool('Use software synthesis instead of samples'),
+                        mono: bool('Mono mode (cut previous note on same track)'),
+                        useAutoAssignSound: bool('Auto-assign the sound matching the track name'),
+                        soundId: { type: 'string', description: 'Assigned sound URL/id' },
+                        synthSoundKey: {
+                            type: ['string', 'null'],
+                            description: 'Synth preset key (e.g. "BASS1"); null unlinks',
                         },
+                        filterType: {
+                            type: 'string',
+                            enum: [
+                                'lowpass',
+                                'highpass',
+                                'bandpass',
+                                'notch',
+                                'peaking',
+                                'lowshelf',
+                                'highshelf',
+                                'allpass',
+                            ],
+                            description: 'Filter type',
+                        },
+                        filterFreq: num('filterFreq', 'Filter cutoff frequency in Hz'),
+                        filterQ: num('filterQ', 'Filter resonance / Q factor'),
+                        reverbType: {
+                            type: 'string',
+                            enum: ['none', 'room', 'hall', 'plate', 'spring', 'gated'],
+                            description: 'Reverb preset',
+                        },
+                        reverbAmount: num('reverbAmount', 'Reverb wet/dry mix'),
+                        reverbOn: bool('Reverb enabled'),
+                        delayType: {
+                            type: 'string',
+                            enum: ['none', 'slap', 'tape', 'pingpong'],
+                            description: 'Delay type',
+                        },
+                        delayTime: num('delayTime', 'Delay time (beat multiplier, e.g. 1 = one beat)'),
+                        delayDepth: num('delayDepth', 'Delay wet/dry mix'),
+                        delayOn: bool('Delay enabled'),
+                        saturationType: {
+                            type: 'string',
+                            enum: ['soft', 'hard', 'tape'],
+                            description: 'Saturation / distortion type',
+                        },
+                        saturationAmount: num('saturationAmount', 'Saturation drive'),
+                        sat: bool('Saturation enabled'),
+                        fxSelected: {
+                            type: 'string',
+                            description: 'FX slot selected in the track editor (default "reverb")',
+                        },
+                        loopAtStep: int('loopAtStep', 'Loop point (absolute step index)'),
+                        stepsPerBeat: int('stepsPerBeat', 'Steps per beat (subdivision)'),
+                        nbBeats: int('nbBeats', 'Number of beats for this track'),
+                        swingResolution: int('swingResolution', 'Swing grid resolution (1-8)'),
+                        swingAmount: num('swingAmount', 'Swing intensity'),
+                        variation: num('variation', 'Track variation (randomization budget 0-100)'),
+                        variation2: num('variation2', 'Second variation pass (budget 0-100)'),
+                        probability: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 1,
+                            description: 'Generation probability',
+                        },
+                        ...Object.fromEntries(
+                            [
+                                'prob_pitch',
+                                'prob_velocity',
+                                'prob_silence',
+                                'prob_fill',
+                                'prob_ghost',
+                                'prob_retrig',
+                                'prob_euclid',
+                                'prob_note',
+                                'prob_arp',
+                            ].map((key) => [key, num(key, 'Generation weight (%)')]),
+                        ),
+                        pitch_range: int('pitch_range', 'Generation pitch range (semitones)'),
+                        pitch_scale_lock: bool('Lock generated pitches to the scale'),
+                        auto_variant: {
+                            type: 'string',
+                            enum: ['', 'basic', 'fill', 'roll', 'sparse', 'dense'],
+                            description: 'Auto-generate variant',
+                        },
+                        auto_density: num('auto_density', 'Auto-generate density (-1 = auto)'),
+                        velocityLfo: lfo('LFO modulating velocity'),
+                        pitchLfo: lfo('LFO modulating pitch'),
+                        panLfo: lfo('LFO modulating pan'),
+                        filterFreqLfo: lfo('LFO modulating filter cutoff'),
+                        filterQLfo: lfo('LFO modulating filter Q'),
                     },
                 },
-                required: ['patternName', 'trackName', 'updates'],
+                noteUpdates: {
+                    type: 'object',
+                    description: 'Note-level properties to apply to all notes in the track',
+                    properties: {
+                        every: { type: 'number', minimum: 1, maximum: 16 },
+                        pos: { type: 'number', minimum: 0, maximum: 15 },
+                        prob: { type: 'number', minimum: 0, maximum: 1 },
+                        arpTriggerProbability: { type: 'number', minimum: 0, maximum: 1 },
+                        retriggerNum: { type: 'number', minimum: 1, maximum: 16 },
+                        rate: { type: 'number', minimum: 1, maximum: 16 },
+                        arp: { type: 'string' },
+                        euclidianFill: { type: 'integer', minimum: 0, maximum: 16 },
+                        euclidianRotation: { type: 'integer', minimum: 0, maximum: 15 },
+                        velocity: { type: 'number', minimum: 0, maximum: 1 },
+                        pan: { type: 'number', minimum: -1, maximum: 1 },
+                        pitch: { type: 'number' },
+                    },
+                },
             },
+            required: ['patternName', 'trackName', 'updates'],
         },
-        {
-            name: 'savePatternToJson',
-            description: 'Saves a pattern to a JSON file',
-            inputSchema: {
-                type: 'object',
-                properties: { patternName: { type: 'string' } },
-                required: ['patternName'],
-            },
+    },
+    {
+        name: 'savePatternToJson',
+        description: 'Saves a pattern to a JSON file',
+        inputSchema: {
+            type: 'object',
+            properties: { patternName: { type: 'string' } },
+            required: ['patternName'],
         },
+    },
 
-        {
-            name: 'listAllInstrumentsNames',
-            description: 'Returns the list of all instrument IDs from InstrumentsManager (valid track names for MCP)',
-            inputSchema: { type: 'object', properties: {} },
-        },
-        {
-            name: 'listPatterns',
-            description: 'Returns the list of all patterns from song.json',
-            inputSchema: { type: 'object', properties: {} },
-        },
-        {
-            name: 'loadPattern',
-            description: 'Loads a pattern by name and returns its full data',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    patternName: { type: 'string', minLength: 1 },
-                },
-                required: ['patternName'],
+    {
+        name: 'listAllInstrumentsNames',
+        description: 'Returns the list of all instrument IDs from InstrumentsManager (valid track names for MCP)',
+        inputSchema: { type: 'object', properties: {} },
+    },
+    {
+        name: 'listPatterns',
+        description: 'Returns the list of all patterns from song.json',
+        inputSchema: { type: 'object', properties: {} },
+    },
+    {
+        name: 'loadPattern',
+        description: 'Loads a pattern by name and returns its full data',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string', minLength: 1 },
             },
+            required: ['patternName'],
         },
-        {
-            name: 'listKitSamples',
-            description: 'Lists all WAV samples in the kits directory',
-            inputSchema: { type: 'object', properties: {} },
-        },
-        {
-            name: 'analyzeSamples',
-            description: 'Audio analysis on a list of samples',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    samples: { type: 'array', items: { type: 'string' } },
-                },
-                required: ['samples'],
+    },
+    {
+        name: 'listKitSamples',
+        description: 'Lists all WAV samples in the kits directory',
+        inputSchema: { type: 'object', properties: {} },
+    },
+    {
+        name: 'analyzeSamples',
+        description: 'Audio analysis on a list of samples',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                samples: { type: 'array', items: { type: 'string' } },
             },
+            required: ['samples'],
         },
-        {
-            name: 'setPatternBpm',
-            description: 'Sets the BPM (tempo) of a pattern',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    patternName: { type: 'string' },
-                    bpm: { type: 'number', minimum: 20, maximum: 300 },
-                },
-                required: ['patternName', 'bpm'],
+    },
+    {
+        name: 'setPatternBpm',
+        description: 'Sets the BPM (tempo) of a pattern',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string' },
+                bpm: { type: 'number', minimum: 20, maximum: 300 },
             },
+            required: ['patternName', 'bpm'],
         },
-        {
-            name: 'setPatternTags',
-            description: 'Sets tags (categories/genre) for a pattern',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    patternName: { type: 'string' },
-                    tags: { type: 'array', items: { type: 'string' } },
-                },
-                required: ['patternName', 'tags'],
+    },
+    {
+        name: 'setPatternTags',
+        description: 'Sets tags (categories/genre) for a pattern',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string' },
+                tags: { type: 'array', items: { type: 'string' } },
             },
+            required: ['patternName', 'tags'],
         },
-        {
-            name: 'setPatternNbBeats',
-            description: 'Sets the number of beats for a pattern',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    patternName: { type: 'string' },
-                    nbBeats: { type: 'integer', minimum: 1, maximum: 64 },
-                },
-                required: ['patternName', 'nbBeats'],
+    },
+    {
+        name: 'setPatternNbBeats',
+        description: 'Sets the number of beats for a pattern',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string' },
+                nbBeats: { type: 'integer', minimum: 1, maximum: 64 },
             },
+            required: ['patternName', 'nbBeats'],
         },
-        {
-            name: 'setPatternDescription',
-            description: 'Sets the description text for a pattern',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    patternName: { type: 'string' },
-                    description: { type: 'string' },
-                },
-                required: ['patternName', 'description'],
+    },
+    {
+        name: 'setPatternDescription',
+        description: 'Sets the description text for a pattern',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string' },
+                description: { type: 'string' },
             },
+            required: ['patternName', 'description'],
         },
-    ],
-}))
+    },
+]
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+export async function handleToolCall(toolName, args, onError) {
     try {
-        const { name: toolName, arguments: args } = request.params
-
         if (toolName === 'createNewPattern') {
             const { patternName } = args
             if (!patternName) throw new Error('patternName is required')
@@ -465,16 +569,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             const pattern = cmd.addPattern(String(patternName).trim())
             const filePath = await savePatternToDisk(pattern)
 
-            const patternsPath = resolve(__dirname, 'assets/data/song.json')
-            const data = await readFile(patternsPath, 'utf-8')
-            let patterns
-            try {
-                patterns = JSON.parse(data)
-            } catch (e) {
-                throw new Error(`Corrupt song.json: ${e.message}`, { cause: e })
-            }
+            const { doc, patterns } = await readSongIndex()
             patterns.push(pattern)
-            await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns))
+            await writeSongIndex(doc, patterns)
 
             return {
                 content: [{ type: 'text', text: JSON.stringify({ message: 'Pattern created', pattern, filePath }) }],
@@ -507,8 +604,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 }
 
                 const track = ensureTrack(cmd, pattern, trackName, stepsPerBeat)
-                const beat = Math.floor(Number(n.step) / stepsPerBeat)
-                const beatStep = Number(n.step) % stepsPerBeat
+                const { beat, beatStep } = stepToBeat(n.step, stepsPerBeat)
 
                 ensurePatternHasEnoughBeats(cmd, pattern, beat)
 
@@ -527,6 +623,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     rate: n.rate,
                     arp: n.arp,
                     euclidianFill: n.euclidianFill,
+                    euclidianRotation: n.euclidianRotation,
                 }
 
                 const status = upsertNoteOnTrack(cmd, track, noteInput)
@@ -535,19 +632,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
             const filePath = await savePatternToDisk(pattern)
 
-            const patternsPath = resolve(__dirname, 'assets/data/song.json')
-            const data = await readFile(patternsPath, 'utf-8')
-            let patterns
-            try {
-                patterns = JSON.parse(data)
-            } catch (e) {
-                throw new Error(`Corrupt song.json: ${e.message}`, { cause: e })
-            }
+            const { doc, patterns } = await readSongIndex()
             const idx = patterns.findIndex((p) => p.name === patternName)
             if (idx >= 0) {
                 patterns[idx] = pattern
             }
-            await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns))
+            await writeSongIndex(doc, patterns)
 
             return {
                 content: [{ type: 'text', text: JSON.stringify({ message: 'Notes added', cNotes, uNotes, filePath }) }],
@@ -575,7 +665,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
             if (!track) throw new Error(`Could not create track: ${normalizedTrackName}`)
 
-            cmd.setTrackProps(track, updates)
+            cmd.updateTrack(track, updates, { desc: 'MCP updateTrack' })
 
             let notesUpdated = 0
             if (noteUpdates) {
@@ -596,8 +686,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
                 if (hasNoteProps && track.notes) {
                     for (const note of track.notes) {
-                        if (noteUpdates.every !== undefined) note.every = Number(noteUpdates.every)
-                        if (noteUpdates.pos !== undefined) note.pos = Number(noteUpdates.pos)
+                        if (noteUpdates.every !== undefined)
+                            note.every = Math.min(Math.max(Number(noteUpdates.every), 1), 16)
+                        if (noteUpdates.pos !== undefined) note.pos = Math.min(Math.max(Number(noteUpdates.pos), 0), 15)
                         if (noteUpdates.prob !== undefined)
                             note.prob = Math.min(Math.max(Number(noteUpdates.prob), 0), 1)
                         if (noteUpdates.arpTriggerProbability !== undefined)
@@ -605,11 +696,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                                 Math.max(Number(noteUpdates.arpTriggerProbability), 0),
                                 1,
                             )
-                        if (noteUpdates.retriggerNum !== undefined) note.retriggerNum = Number(noteUpdates.retriggerNum)
-                        if (noteUpdates.rate !== undefined) note.rate = Number(noteUpdates.rate)
+                        if (noteUpdates.retriggerNum !== undefined)
+                            note.retriggerNum = Math.min(Math.max(Number(noteUpdates.retriggerNum), 1), 16)
+                        if (noteUpdates.rate !== undefined)
+                            note.rate = Math.min(Math.max(Number(noteUpdates.rate), 1), 16)
                         if (noteUpdates.arp !== undefined) note.arp = noteUpdates.arp
                         if (noteUpdates.euclidianFill !== undefined)
-                            note.euclidianFill = Number(noteUpdates.euclidianFill)
+                            note.euclidianFill = Math.min(Math.max(Number(noteUpdates.euclidianFill), 0), 16)
+                        if (noteUpdates.euclidianRotation !== undefined)
+                            note.euclidianRotation = Math.min(Math.max(Number(noteUpdates.euclidianRotation), 0), 15)
                         if (noteUpdates.velocity !== undefined) note.velocity = Number(noteUpdates.velocity)
                         if (noteUpdates.pan !== undefined) note.pan = Number(noteUpdates.pan)
                         if (noteUpdates.pitch !== undefined) note.pitch = Number(noteUpdates.pitch)
@@ -671,9 +766,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         if (toolName === 'listPatterns') {
             try {
-                const patternsPath = resolve(__dirname, 'assets/data/song.json')
-                const data = await readFile(patternsPath, 'utf-8')
-                const patterns = JSON.parse(data)
+                const { patterns } = await readSongIndex()
                 const patternNames = patterns.map((p) => p.name).sort()
                 return {
                     content: [
@@ -688,70 +781,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (toolName === 'loadPattern') {
             const { patternName } = args
             try {
-                const patternsPath = resolve(__dirname, 'assets/data/song.json')
-                const data = await readFile(patternsPath, 'utf-8')
-                const patterns = JSON.parse(data)
-                const pattern = patterns.find((p) => p.name === patternName)
-                if (!pattern) {
+                const { patterns } = await readSongIndex()
+                const source = patterns.find((p) => p.name === patternName)
+                if (!source) {
                     return {
                         content: [
                             { type: 'text', text: JSON.stringify({ error: `Pattern not found: ${patternName}` }) },
                         ],
                     }
                 }
+                // Normalize through the model so compact / default-omitted data
+                // comes back complete — read-only, app state untouched.
                 return {
-                    content: [
-                        {
-                            type: 'text',
-                            text: JSON.stringify({
-                                name: pattern.name,
-                                description: pattern.description ?? '',
-                                tags: pattern.tags,
-                                bpm: pattern.bpm,
-                                nbBeats: pattern.nbBeats,
-                                tracks:
-                                    pattern.tracks?.map((t) => ({
-                                        name: t.name,
-                                        soundId: t.soundId,
-                                        useAutoAssignSound: t.useAutoAssignSound,
-                                        nbBeats: t.nbBeats,
-                                        stepsPerBeat: t.stepsPerBeat,
-                                        loopAtStep: t.loopAtStep,
-                                        velocity: t.velocity,
-                                        pitch: t.pitch,
-                                        pan: t.pan,
-                                        mute: t.mute,
-                                        solo: t.solo,
-                                        auto: t.auto,
-                                        useSoftSynth: t.useSoftSynth,
-                                        filterType: t.filterType,
-                                        filterFreq: t.filterFreq,
-                                        filterQ: t.filterQ,
-                                        reverbType: t.reverbType,
-                                        reverbAmount: t.reverbAmount,
-                                        saturationType: t.saturationType,
-                                        saturationAmount: t.saturationAmount,
-                                        notes:
-                                            t.notes?.map((n) => ({
-                                                name: n.name,
-                                                beat: n.beat,
-                                                beatStep: n.beatStep,
-                                                velocity: n.velocity,
-                                                pan: n.pan,
-                                                pitch: n.pitch,
-                                                arp: n.arp,
-                                                every: n.every,
-                                                pos: n.pos,
-                                                prob: n.prob,
-                                                arpTriggerProbability: n.arpTriggerProbability,
-                                                retriggerNum: n.retriggerNum,
-                                                rate: n.rate,
-                                                euclidianFill: n.euclidianFill,
-                                            })) ?? [],
-                                    })) ?? [],
-                            }),
-                        },
-                    ],
+                    content: [{ type: 'text', text: JSON.stringify(normalizePattern(source)) }],
                 }
             } catch (err) {
                 return { content: [{ type: 'text', text: JSON.stringify({ error: err.message }) }] }
@@ -782,14 +824,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         async function loadPatternFromJson(patternName) {
             let pattern = findPatternByName(patternName)
             if (!pattern) {
-                const patternsPath = resolve(__dirname, 'assets/data/song.json')
-                const data = await readFile(patternsPath, 'utf-8')
-                let patterns
-                try {
-                    patterns = JSON.parse(data)
-                } catch (e) {
-                    throw new Error(`Corrupt song.json: ${e.message}`, { cause: e })
-                }
+                const { patterns } = await readSongIndex()
                 const sourcePattern = patterns.find((p) => p.name === patternName)
                 if (sourcePattern) {
                     const cmd = new Commander()
@@ -800,19 +835,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
 
         async function updatePatternInIndex(pattern) {
-            const patternsPath = resolve(__dirname, 'assets/data/song.json')
-            const data = await readFile(patternsPath, 'utf-8')
-            let patterns
-            try {
-                patterns = JSON.parse(data)
-            } catch (e) {
-                throw new Error(`Corrupt song.json: ${e.message}`, { cause: e })
-            }
+            const { doc, patterns } = await readSongIndex()
             const idx = patterns.findIndex((p) => p.name === pattern.name)
             if (idx >= 0) {
                 patterns[idx] = pattern
             }
-            await writeFile(patternsPath, formatPatternsWithNotesOnLine(patterns))
+            await writeSongIndex(doc, patterns)
         }
 
         if (toolName === 'setPatternBpm') {
@@ -915,8 +943,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         throw new Error(`Unknown tool: ${toolName}`)
     } catch (error) {
-        // Critical error handling with stack trace for debugging
-        console.error(`ERROR in ${request.params.name}:`, error.stack)
+        if (onError) onError(error)
 
         return {
             isError: true,
@@ -926,7 +953,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     text: JSON.stringify(
                         {
                             status: 'error',
-                            tool: request.params.name,
+                            tool: toolName,
                             message: error.message,
                         },
                         null,
@@ -936,7 +963,41 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             ],
         }
     }
-})
+}
 
-const transport = new StdioServerTransport()
-await server.connect(transport)
+// --- Stdio wiring (only when spawned as `node ordrumboxMcpserver.mjs`) ---
+
+const isMain = Boolean(process.argv[1] && resolve(process.argv[1]) === __filename)
+
+if (isMain) {
+    // Log to stderr to preserve the JSON-RPC stream on stdout
+    const mcpLogger = new console.Console({
+        stdout: process.stderr,
+        stderr: process.stderr,
+    })
+    console.log = (...logArgs) => mcpLogger.log(...logArgs)
+    console.warn = (...warnArgs) => mcpLogger.warn(...warnArgs)
+    console.error = (...errorArgs) => mcpLogger.error(...errorArgs)
+
+    const server = new Server(
+        {
+            name: 'ordrumbox-mcp-server',
+            version: '1.1.0',
+        },
+        {
+            capabilities: { tools: {} },
+        },
+    )
+
+    server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }))
+    server.setRequestHandler(CallToolRequestSchema, async (request) => {
+        const toolName = request.params.name
+        // Log stack traces to stderr (JSON-RPC owns stdout)
+        return handleToolCall(toolName, request.params.arguments ?? {}, (error) =>
+            console.error(`ERROR in ${toolName}:`, error.stack),
+        )
+    })
+
+    const transport = new StdioServerTransport()
+    await server.connect(transport)
+}

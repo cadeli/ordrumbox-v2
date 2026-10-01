@@ -24,7 +24,7 @@ Creates a new empty pattern.
 {
     "message": "Pattern created",
     "pattern": { "name": "My Pattern", "nbBeats": 4, "tracks": [] },
-    "filePath": "public/assets/data/patterns/my-pattern.json"
+    "filePath": "assets/data/patterns/my-pattern.json"
 }
 ```
 
@@ -44,6 +44,8 @@ Reads a pattern from the patterns index and returns its full data. Does NOT modi
 
 **Output:**
 
+Every track field is returned with its model default filled in (`TRACK_DEFAULTS`), compact-format notes are decoded, and derived keys (`loopPointBeat`, `loopPointStep`) are omitted.
+
 ```json
 {
     "name": "My Beat",
@@ -54,28 +56,39 @@ Reads a pattern from the patterns index and returns its full data. Does NOT modi
     "tracks": [
         {
             "name": "KICK",
-            "soundId": null,
+            "soundId": "NOT_DEFINED",
             "useAutoAssignSound": true,
             "nbBeats": 8,
             "stepsPerBeat": 4,
             "loopAtStep": 32,
-            "velocity": 0.8,
-            "pitch": 0,
+            "swingResolution": 1,
+            "swingAmount": 0,
+            "velocity": 1,
             "pan": 0,
+            "pitch": 0,
             "mute": false,
             "solo": false,
-            "auto": true,
+            "auto": false,
             "useSoftSynth": false,
             "filterType": "lowpass",
             "filterFreq": 1000,
             "filterQ": 0.707,
             "reverbType": "none",
             "reverbAmount": 0,
+            "reverbOn": true,
+            "delayType": "tape",
+            "delayTime": 1,
+            "delayDepth": 0,
+            "delayOn": true,
             "saturationType": "soft",
             "saturationAmount": 0,
+            "sat": true,
+            "fxSelected": "reverb",
+            "variation": 0,
+            "variation2": 0,
+            "synthSoundKey": null,
             "notes": [
                 {
-                    "name": "",
                     "beat": 0,
                     "beatStep": 0,
                     "velocity": 0.8,
@@ -88,7 +101,8 @@ Reads a pattern from the patterns index and returns its full data. Does NOT modi
                     "arpTriggerProbability": 1,
                     "retriggerNum": 1,
                     "rate": 1,
-                    "euclidianFill": 0
+                    "euclidianFill": 0,
+                    "euclidianRotation": 0
                 }
             ]
         }
@@ -96,11 +110,9 @@ Reads a pattern from the patterns index and returns its full data. Does NOT modi
 }
 ```
 
----
-
 ### savePatternToJson
 
-Saves the current pattern to an individual JSON file under `public/assets/data/patterns/`.
+Saves the current pattern to an individual JSON file under `assets/data/patterns/`.
 
 **Input:**
 
@@ -115,7 +127,7 @@ Saves the current pattern to an individual JSON file under `public/assets/data/p
 ```json
 {
     "message": "Saved",
-    "filePath": "public/assets/data/patterns/my-pattern.json"
+    "filePath": "assets/data/patterns/my-pattern.json"
 }
 ```
 
@@ -143,7 +155,8 @@ Adds multiple notes to a pattern
 | `retriggerNum`          | integer     | 1-16         | 1        | Number of retriggers                                              |
 | `rate`                  | integer     | 1-16         | 1        | Retrigger step spacing                                            |
 | `arp`                   | string/null |              | null     | Arpeggio pattern ("up", "down", "upDown", "random", or "0,1,2,3") |
-| `euclidianFill`         | integer     | 0-100        | 0        | Euclidean fill percentage                                         |
+| `euclidianFill`         | integer     | 0-16         | 0        | Euclidean pulses (0-16, 0=disabled)                               |
+| `euclidianRotation`     | integer     | 0-15         | 0        | Euclidean phase rotation in steps                                 |
 
 **Input:**
 
@@ -172,34 +185,53 @@ Adds multiple notes to a pattern
 
 ### updateTrack
 
-Updates or creates a track with global properties. Optionally applies note-level overrides to all notes in the track via `noteUpdates`.
+Updates or creates a track with global properties (numeric values are range-clamped like in the app). Optionally applies note-level overrides to all notes in the track via `noteUpdates`.
 
 **Track Properties available (`updates`):**
 
-| Property           | Type    | Range                                                                     | Description                                 |
-| ------------------ | ------- | ------------------------------------------------------------------------- | ------------------------------------------- |
-| `velocity`         | number  | 0-1                                                                       | Global track velocity                       |
-| `pan`              | number  | -1 to 1                                                                   | Stereo pan                                  |
-| `pitch`            | number  |                                                                           | Pitch offset in semitones                   |
-| `mute`             | boolean |                                                                           | Mute the track                              |
-| `solo`             | boolean |                                                                           | Solo the track                              |
-| `auto`             | boolean |                                                                           | Auto mode                                   |
-| `useSoftSynth`     | boolean |                                                                           | Use software synthesis instead of samples   |
-| `mono`             | boolean |                                                                           | Mono mode (cut previous note on same track) |
-| `filterType`       | string  | lowpass, highpass, bandpass, notch, peaking, lowshelf, highshelf, allpass | Filter type                                 |
-| `filterFreq`       | number  | 20-20000                                                                  | Filter cutoff frequency in Hz               |
-| `filterQ`          | number  | 0.707-21                                                                  | Filter resonance / Q factor                 |
-| `reverbType`       | string  | none, room, hall, plate, spring, gated                                    | Reverb preset                               |
-| `reverbAmount`     | number  | 0-1                                                                       | Reverb wet/dry mix                          |
-| `saturationType`   | string  | soft, hard, tape                                                          | Saturation / distortion type                |
-| `saturationAmount` | number  | 0-1                                                                       | Saturation amount                           |
-| `delayType`        | string  | tape, analog, digital                                                     | Delay type                                  |
-| `delayTime`        | number  |                                                                           | Delay time in beats                         |
-| `delayDepth`       | number  | 0-1                                                                       | Delay feedback amount                       |
-| `loopAtStep`       | integer | >=0                                                                       | Loop point (absolute step index)            |
-| `stepsPerBeat`     | integer | 4, 8, 16                                                                  | Steps per beat                              |
-| `nbBeats`          | integer | >=1                                                                       | Number of beats for this track              |
-| `variation`        | number  | 0-100                                                                     | Track variation intensity (%)               |
+Numeric ranges come from the app model (`TRACK_VALUE_RANGES` in `src/model/track_schema.js`) — out-of-range values are clamped.
+
+| Property                                                                                                                        | Type        | Range                                                                     | Description                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `velocity`                                                                                                                      | number      | 0-1                                                                       | Global track velocity                                                                                                 |
+| `pan`                                                                                                                           | number      | -1 to 1                                                                   | Stereo pan                                                                                                            |
+| `pitch`                                                                                                                         | number      | -24 to 24                                                                 | Pitch offset in semitones                                                                                             |
+| `mute`                                                                                                                          | boolean     |                                                                           | Mute the track                                                                                                        |
+| `solo`                                                                                                                          | boolean     |                                                                           | Solo the track                                                                                                        |
+| `auto`                                                                                                                          | boolean     |                                                                           | Auto (generator) mode                                                                                                 |
+| `useSoftSynth`                                                                                                                  | boolean     |                                                                           | Use software synthesis instead of samples                                                                             |
+| `mono`                                                                                                                          | boolean     |                                                                           | Mono mode (cut previous note on same track)                                                                           |
+| `useAutoAssignSound`                                                                                                            | boolean     |                                                                           | Auto-assign the sound matching the track name                                                                         |
+| `soundId`                                                                                                                       | string      |                                                                           | Assigned sound URL/id                                                                                                 |
+| `synthSoundKey`                                                                                                                 | string/null |                                                                           | Synth preset key (e.g. "BASS1"); `null` unlinks                                                                       |
+| `filterType`                                                                                                                    | string      | lowpass, highpass, bandpass, notch, peaking, lowshelf, highshelf, allpass | Filter type                                                                                                           |
+| `filterFreq`                                                                                                                    | number      | 20-20000                                                                  | Filter cutoff frequency in Hz                                                                                         |
+| `filterQ`                                                                                                                       | number      | 0.707-18.707                                                              | Filter resonance / Q factor                                                                                           |
+| `reverbType`                                                                                                                    | string      | none, room, hall, plate, spring, gated                                    | Reverb preset                                                                                                         |
+| `reverbAmount`                                                                                                                  | number      | 0-1                                                                       | Reverb wet/dry mix                                                                                                    |
+| `reverbOn`                                                                                                                      | boolean     |                                                                           | Reverb enabled                                                                                                        |
+| `delayType`                                                                                                                     | string      | none, slap, tape, pingpong                                                | Delay type                                                                                                            |
+| `delayTime`                                                                                                                     | number      | 0-4                                                                       | Delay time (beat multiplier, 1 = one beat)                                                                            |
+| `delayDepth`                                                                                                                    | number      | 0-1                                                                       | Delay wet/dry mix                                                                                                     |
+| `delayOn`                                                                                                                       | boolean     |                                                                           | Delay enabled                                                                                                         |
+| `saturationType`                                                                                                                | string      | soft, hard, tape                                                          | Saturation / distortion type                                                                                          |
+| `saturationAmount`                                                                                                              | number      | 0-1                                                                       | Saturation drive                                                                                                      |
+| `sat`                                                                                                                           | boolean     |                                                                           | Saturation enabled                                                                                                    |
+| `fxSelected`                                                                                                                    | string      |                                                                           | FX slot selected in the track editor (default reverb)                                                                 |
+| `loopAtStep`                                                                                                                    | integer     | 0-1024                                                                    | Loop point (absolute step index)                                                                                      |
+| `stepsPerBeat`                                                                                                                  | integer     | 1-8                                                                       | Steps per beat (subdivision)                                                                                          |
+| `nbBeats`                                                                                                                       | integer     | 1-16                                                                      | Number of beats for this track                                                                                        |
+| `swingResolution`                                                                                                               | integer     | 1-8                                                                       | Swing grid resolution                                                                                                 |
+| `swingAmount`                                                                                                                   | number      | 0-1                                                                       | Swing intensity                                                                                                       |
+| `variation`                                                                                                                     | number      | 0-100                                                                     | Track variation (randomization budget)                                                                                |
+| `variation2`                                                                                                                    | number      | 0-100                                                                     | Second variation pass (budget)                                                                                        |
+| `probability`                                                                                                                   | number      | 0-1                                                                       | Generation probability                                                                                                |
+| `prob_pitch`, `prob_velocity`, `prob_silence`, `prob_fill`, `prob_ghost`, `prob_retrig`, `prob_euclid`, `prob_note`, `prob_arp` | number      | 0-100                                                                     | Generation weights for the auto-generate engine (%)                                                                   |
+| `pitch_range`                                                                                                                   | integer     | 1-24                                                                      | Generation pitch range (semitones)                                                                                    |
+| `pitch_scale_lock`                                                                                                              | boolean     |                                                                           | Lock generated pitches to the scale                                                                                   |
+| `auto_variant`                                                                                                                  | string      | "", basic, fill, roll, sparse, dense                                      | Auto-generate variant                                                                                                 |
+| `auto_density`                                                                                                                  | number      | -1 to 1                                                                   | Auto-generate density (-1 = auto)                                                                                     |
+| `velocityLfo`, `pitchLfo`, `panLfo`, `filterFreqLfo`, `filterQLfo`                                                              | object/null |                                                                           | LFO per target: `{ type, freq, min, max, phase }` (`type`: sine, triangle, sawtooth, square, random; `null` disables) |
 
 **Note Properties available (`noteUpdates`):**
 
@@ -212,7 +244,8 @@ Updates or creates a track with global properties. Optionally applies note-level
 | `retriggerNum`          | integer     | 1-16    | 1       | Number of retriggers                                              |
 | `rate`                  | integer     | 1-16    | 1       | Retrigger step spacing                                            |
 | `arp`                   | string/null |         | null    | Arpeggio pattern ("up", "down", "upDown", "random", or "0,1,2,3") |
-| `euclidianFill`         | integer     | 0-100   | 0       | Euclidean fill percentage                                         |
+| `euclidianFill`         | integer     | 0-16    | 0       | Euclidean pulses (0-16, 0=disabled)                               |
+| `euclidianRotation`     | integer     | 0-15    | 0       | Euclidean phase rotation in steps                                 |
 | `velocity`              | number      | 0-1     |         | Note velocity override                                            |
 | `pan`                   | number      | -1 to 1 |         | Note pan override                                                 |
 | `pitch`                 | number      |         |         | Note pitch override                                               |
