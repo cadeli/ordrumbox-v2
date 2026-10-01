@@ -408,7 +408,12 @@ describe('IDB Cache', () => {
     it('cachePatterns rethrows when idbPut fails', async () => {
         const idb = await import('../src/core/idb.js')
         const spy = vi.spyOn(idb, 'idbPut').mockRejectedValueOnce(new Error('quota exceeded'))
+        // vi.resetModules() in beforeEach gives idb_cache a fresh logger instance
+        const { logger: freshLogger } = await import('../src/core/logger.js')
+        const warnSpy = vi.spyOn(freshLogger, 'warn').mockImplementation(() => {})
         await expect(cache.cachePatterns({ patterns: [] })).rejects.toThrow('quota exceeded')
+        expect(warnSpy).toHaveBeenCalledWith('IdbCache', 'Failed to cache patterns', expect.any(Error))
         spy.mockRestore()
+        warnSpy.mockRestore()
     })
 })
