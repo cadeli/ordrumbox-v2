@@ -97,6 +97,7 @@ describe('SynthEditor sub-panel toolbar', () => {
 
         const masterKnob = editor.knobs.find((k) => k.key === 'masterVolume')
         masterKnob.setValue(0.25, true)
+        editor.flushPreview()
         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBe(0.25)
 
         revertButton.click()

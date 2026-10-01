@@ -4,150 +4,155 @@ import { importPatternFromJson } from '../pattern_import.js'
 import { logger } from '../../../core/logger.js'
 
 /**
- * Pattern CRUD commands — returns an object of methods bound to the Commander instance.
+ * Pattern commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
  */
-export function createPatternMethods(cmd) {
-    return {
-        addPattern(name) {
-            const pattern = this.createPattern(name)
-            const patternIndex = appState.patterns.length
-            appState.patterns.push(pattern)
-            cmd.persist()
-            cmd.record({
-                desc: `Add pattern "${pattern.name}"`,
-                params: { pattern: pattern.name, index: patternIndex },
-                execute: () => {
-                    if (!appState.patterns.includes(pattern)) {
-                        appState.patterns.splice(Math.min(patternIndex, appState.patterns.length), 0, pattern)
-                        cmd.persist()
-                    }
-                },
-                undo: () => {
-                    const i = appState.patterns.indexOf(pattern)
-                    if (i >= 0) appState.patterns.splice(i, 1)
-                    cmd.persist()
-                },
-            })
-            return pattern
-        },
+export default class PatternCommands {
+    #host
 
-        removePattern(idx) {
-            if (appState.patterns.length <= 1) return false
-            const removedPattern = appState.patterns[idx]
-            appState.patterns.splice(idx, 1)
-            if (appState.selectedPatternIdx >= appState.patterns.length) {
-                appState.selectedPatternIdx = appState.patterns.length - 1
-            }
-            cmd.persist()
-            cmd.record({
-                desc: `Remove pattern "${removedPattern.name}"`,
-                params: { pattern: removedPattern.name, index: idx },
-                execute: () => {
-                    const i = appState.patterns.indexOf(removedPattern)
-                    appState.patterns.splice(i >= 0 ? i : idx, 1)
-                    if (appState.selectedPatternIdx >= appState.patterns.length) {
-                        appState.selectedPatternIdx = Math.max(0, appState.patterns.length - 1)
-                    }
-                    cmd.persist()
-                },
-                undo: () => {
-                    appState.patterns.splice(Math.min(idx, appState.patterns.length), 0, removedPattern)
-                    cmd.persist()
-                },
-            })
-            return true
-        },
+    /** @param {import('../cmd.js').CommanderHost} host */
+    constructor(host) {
+        this.#host = host
+    }
 
-        renamePattern(idx, newName) {
-            const pat = appState.patterns[idx]
-            if (!pat) return
-            const oldName = pat.name
-            pat.name = String(newName ?? '').trim() || pat.name
-            const appliedName = pat.name
-            cmd.persist()
-            cmd.record({
-                desc: `Rename pattern → "${appliedName}"`,
-                params: { pattern: appliedName, from: oldName },
-                execute: () => {
-                    pat.name = appliedName
-                    cmd.persist()
-                },
-                undo: () => {
-                    pat.name = oldName
-                    cmd.persist()
-                },
-            })
-        },
+    addPattern(name) {
+        const pattern = this.createPattern(name)
+        const patternIndex = appState.patterns.length
+        appState.patterns.push(pattern)
+        this.#host.persist()
+        this.#host.record({
+            desc: `Add pattern "${pattern.name}"`,
+            params: { pattern: pattern.name, index: patternIndex },
+            execute: () => {
+                if (!appState.patterns.includes(pattern)) {
+                    appState.patterns.splice(Math.min(patternIndex, appState.patterns.length), 0, pattern)
+                    this.#host.persist()
+                }
+            },
+            undo: () => {
+                const i = appState.patterns.indexOf(pattern)
+                if (i >= 0) appState.patterns.splice(i, 1)
+                this.#host.persist()
+            },
+        })
+        return pattern
+    }
 
-        getPatternByName(name) {
-            const normalizedName = String(name ?? '')
-                .trim()
-                .toUpperCase()
-            return appState.patterns.find((pattern) => pattern?.name?.toUpperCase() === normalizedName) ?? null
-        },
+    removePattern(idx) {
+        if (appState.patterns.length <= 1) return false
+        const removedPattern = appState.patterns[idx]
+        appState.patterns.splice(idx, 1)
+        if (appState.selectedPatternIdx >= appState.patterns.length) {
+            appState.selectedPatternIdx = appState.patterns.length - 1
+        }
+        this.#host.persist()
+        this.#host.record({
+            desc: `Remove pattern "${removedPattern.name}"`,
+            params: { pattern: removedPattern.name, index: idx },
+            execute: () => {
+                const i = appState.patterns.indexOf(removedPattern)
+                appState.patterns.splice(i >= 0 ? i : idx, 1)
+                if (appState.selectedPatternIdx >= appState.patterns.length) {
+                    appState.selectedPatternIdx = Math.max(0, appState.patterns.length - 1)
+                }
+                this.#host.persist()
+            },
+            undo: () => {
+                appState.patterns.splice(Math.min(idx, appState.patterns.length), 0, removedPattern)
+                this.#host.persist()
+            },
+        })
+        return true
+    }
 
-        setPatternBpm(pattern, bpm) {
-            const bpmNum = Number(bpm)
-            const oldBpm = pattern.bpm
-            if (!Number.isFinite(bpmNum) || bpmNum === 0) {
-                logger.warn('Command', 'bpm NaN/0', bpm)
-                pattern.bpm = Defaults.getPatternProp({}, 'bpm')
-            } else {
-                pattern.bpm = bpmNum
-            }
-            const appliedBpm = pattern.bpm
-            cmd.persist()
-            cmd.record({
-                desc: `Set BPM → ${appliedBpm}`,
-                params: { bpm: appliedBpm },
-                prev: { bpm: oldBpm },
-                execute: () => {
-                    pattern.bpm = appliedBpm
-                    cmd.persist()
-                },
-                undo: () => {
-                    pattern.bpm = oldBpm
-                    cmd.persist()
-                },
-            })
-            return pattern
-        },
+    renamePattern(idx, newName) {
+        const pat = appState.patterns[idx]
+        if (!pat) return
+        const oldName = pat.name
+        pat.name = String(newName ?? '').trim() || pat.name
+        const appliedName = pat.name
+        this.#host.persist()
+        this.#host.record({
+            desc: `Rename pattern → "${appliedName}"`,
+            params: { pattern: appliedName, from: oldName },
+            execute: () => {
+                pat.name = appliedName
+                this.#host.persist()
+            },
+            undo: () => {
+                pat.name = oldName
+                this.#host.persist()
+            },
+        })
+    }
 
-        setPatternDescription(pattern, description) {
-            const oldDescription = pattern.description
-            pattern.description = String(description ?? '')
-            const appliedDescription = pattern.description
-            cmd.persist()
-            cmd.record({
-                desc: `Set description on "${pattern.name}"`,
-                params: { pattern: pattern.name, description: appliedDescription },
-                prev: { description: oldDescription },
-                execute: () => {
-                    pattern.description = appliedDescription
-                    cmd.persist()
-                },
-                undo: () => {
-                    pattern.description = oldDescription
-                    cmd.persist()
-                },
-            })
-            return pattern
-        },
+    getPatternByName(name) {
+        const normalizedName = String(name ?? '')
+            .trim()
+            .toUpperCase()
+        return appState.patterns.find((pattern) => pattern?.name?.toUpperCase() === normalizedName) ?? null
+    }
 
-        importPatternFromJson(sourcePattern) {
-            const result = importPatternFromJson(
-                sourcePattern,
-                (name) => this.addPattern(name),
-                (pattern, name) => this.addTrack(pattern, name),
-                (track, beat, beatStep, pitch) => this.addNote(track, beat, beatStep, pitch),
-            )
-            cmd.persist()
-            return result
-        },
+    setPatternBpm(pattern, bpm) {
+        const bpmNum = Number(bpm)
+        const oldBpm = pattern.bpm
+        if (!Number.isFinite(bpmNum) || bpmNum === 0) {
+            logger.warn('Command', 'bpm NaN/0', bpm)
+            pattern.bpm = Defaults.getPatternProp({}, 'bpm')
+        } else {
+            pattern.bpm = bpmNum
+        }
+        const appliedBpm = pattern.bpm
+        this.#host.persist()
+        this.#host.record({
+            desc: `Set BPM → ${appliedBpm}`,
+            params: { bpm: appliedBpm },
+            prev: { bpm: oldBpm },
+            execute: () => {
+                pattern.bpm = appliedBpm
+                this.#host.persist()
+            },
+            undo: () => {
+                pattern.bpm = oldBpm
+                this.#host.persist()
+            },
+        })
+        return pattern
+    }
 
-        createPattern(name) {
-            name ??= `NewPat_${appState.patterns.length}`
-            return { name, description: '', tracks: [], bpm: 120, nbBeats: 4 }
-        },
+    setPatternDescription(pattern, description) {
+        const oldDescription = pattern.description
+        pattern.description = String(description ?? '')
+        const appliedDescription = pattern.description
+        this.#host.persist()
+        this.#host.record({
+            desc: `Set description on "${pattern.name}"`,
+            params: { pattern: pattern.name, description: appliedDescription },
+            prev: { description: oldDescription },
+            execute: () => {
+                pattern.description = appliedDescription
+                this.#host.persist()
+            },
+            undo: () => {
+                pattern.description = oldDescription
+                this.#host.persist()
+            },
+        })
+        return pattern
+    }
+
+    importPatternFromJson(sourcePattern) {
+        const result = importPatternFromJson(
+            sourcePattern,
+            (name) => this.addPattern(name),
+            (pattern, name) => this.#host.addTrack(pattern, name),
+            (track, beat, beatStep, pitch) => this.#host.addNote(track, beat, beatStep, pitch),
+        )
+        this.#host.persist()
+        return result
+    }
+
+    createPattern(name) {
+        name ??= `NewPat_${appState.patterns.length}`
+        return { name, description: '', tracks: [], bpm: 120, nbBeats: 4 }
     }
 }

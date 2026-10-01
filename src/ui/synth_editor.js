@@ -58,6 +58,10 @@ export const LFO_TARGET_SCALE = {
     'modEnvelope.release': 0.25,
 }
 
+const VCO_ENABLE_KEYS = new Set(['octave', 'detune', 'wave'])
+const LFO_ENABLE_KEYS = new Set(['wave', 'freq', 'depth', 'sync'])
+const MOD_ENV_ENABLE_KEYS = new Set(['attack', 'decay', 'sustain', 'release'])
+
 /**
  * SynthEditor — soft-synth parameter editor sub-panel.
  * Renders rotary knobs, wave icon selectors, and ADSR waveform preview.
@@ -81,6 +85,7 @@ export default class SynthEditor {
     #waveform
     #presets
     #lfoRafId
+    #previewRafId
 
     constructor(host, deps = {}) {
         this.host = host
@@ -108,6 +113,7 @@ export default class SynthEditor {
         this.#presets = new PresetSection(this)
 
         this.#lfoRafId = null
+        this.#previewRafId = null
     }
 
     createDOM() {
@@ -214,6 +220,7 @@ export default class SynthEditor {
     /** Renders the full editor: groups, footer, knobs, waveform. */
     #renderEditor() {
         if (!this.#draft || !this.#editKey) return
+        this.#hydrateCardBypass()
         try {
             const knobConfigs = []
             let html = this.#presets.renderFooter()
@@ -248,7 +255,7 @@ export default class SynthEditor {
     }
 
     #onKnobChange(pathStr, value) {
-        this.#setValue(pathStr, Number.isNaN(value) ? 0 : value)
+        this.#setValue(pathStr, Number.isNaN(value) ? 0 : value, true)
         this.#updateLfoIndicators()
         this.#waveform.draw()
     }
@@ -416,10 +423,7 @@ export default class SynthEditor {
         if (!powerBtn) return false
         e.stopPropagation()
         const groupName = powerBtn.dataset.powerCard
-        this.#cardBypassed[groupName] = !this.#cardBypassed[groupName]
-        const card = this.panel.querySelector(`[data-ss-card="${groupName}"]`)
-        if (card) card.classList.toggle('bypassed', this.#cardBypassed[groupName])
-        powerBtn.classList.toggle('active', !this.#cardBypassed[groupName])
+        this.#setCardBypass(groupName, !this.#cardBypassed[groupName])
 
         const draftGroup = this.#draft?.[groupName]
         if (groupName.startsWith('vco') && draftGroup && typeof draftGroup === 'object') {
@@ -520,8 +524,8 @@ export default class SynthEditor {
         return pathString.split('.').reduce((obj, key) => obj?.[key], this.#draft)
     }
 
-    /** Sets a nested draft value and triggers preview. */
-    #setValue(pathString, value) {
+    /** Sets a nested draft value and triggers preview (deferred for knob drags). */
+    #setValue(pathString, value, deferPreview = false) {
         try {
             const path = pathString.split('.')
             let target = this.#draft
@@ -529,16 +533,136 @@ export default class SynthEditor {
                 target = target?.[path[i]]
                 if (target === undefined || target === null) return
             }
+            const enabled = this.#implicitEnable(pathString)
             target[path.at(-1)] = value
-            this.#previewDraft()
+            if (enabled.length) this.#refreshSynthControls(enabled)
+            this.#previewDraft(deferPreview)
         } catch (e) {
             logger.warn('SynthEditor', '_setValue failed', e)
         }
     }
 
-    #previewDraft() {
+    /**
+     * Implicitly enables a "dead by default" group when one of its controls is touched
+     * (e.g. picking an LFO wave while lfo.target is 'NOT'). Presets are never modified.
+     * @param {string} pathString dot-separated path being edited
+     * @returns {string[]} draft paths whose values changed (for control refresh)
+     */
+    #implicitEnable(pathString) {
+        const d = this.#draft
+        if (!d) return []
+        const dot = pathString.indexOf('.')
+        if (dot < 1) return []
+        const group = pathString.slice(0, dot)
+        const key = pathString.slice(dot + 1)
+        const changed = []
+
+        if ((group === 'vco2' || group === 'vco3') && VCO_ENABLE_KEYS.has(key) && (d[group]?.gain ?? 0) === 0) {
+            d[group].gain = 0.5
+            delete d[group]._savedGain
+            this.#setCardBypass(group, false)
+            changed.push(`${group}.gain`)
+        } else if (group === 'fm' && key === 'algo' && (d.fm?.amount ?? 0) === 0) {
+            d.fm.amount = 0.3
+            d.bypassFm = false
+            this.#setCardBypass('fm', false)
+            changed.push('fm.amount')
+        } else if (group === 'noise' && key.startsWith('filter') && (d.noise?.mix ?? 0) === 0) {
+            d.noise.mix = 0.15
+            d.bypassNoise = false
+            this.#setCardBypass('noise', false)
+            changed.push('noise.mix')
+        } else if ((group === 'lfo' || group === 'lfo2') && LFO_ENABLE_KEYS.has(key) && d[group]?.target === 'NOT') {
+            d[group].target = 'filter.freq'
+            d[group === 'lfo' ? 'bypassLfo1' : 'bypassLfo2'] = false
+            if (key !== 'depth' && (d[group].depth ?? 0) === 0) {
+                d[group].depth = 0.5
+                changed.push(`${group}.depth`)
+            }
+            this.#setCardBypass(group, false)
+            changed.push(`${group}.target`)
+        } else if (group === 'modEnvelope' && MOD_ENV_ENABLE_KEYS.has(key) && d.modEnvelope?.target === 'off') {
+            d.modEnvelope.target = 'filter'
+            d.bypassModEnv = false
+            this.#setCardBypass('modEnvelope', false)
+            changed.push('modEnvelope.target')
+        }
+        return changed
+    }
+
+    /** Updates knob instances and selects for paths changed by implicit enable (no re-trigger). */
+    #refreshSynthControls(paths) {
+        for (const p of paths) {
+            const value = this.#getValue(p)
+            const knob = this.#knobMap.get(p)
+            if (knob) knob.setValue(value)
+            const select = this.panel?.querySelector(`select[data-synth-path="${p}"]`)
+            if (select) select.value = String(value)
+        }
+    }
+
+    /** Derives #cardBypassed from the draft so bypassed cards render correctly on preset load. */
+    #hydrateCardBypass() {
+        const d = this.#draft
+        if (!d) return
+        for (const vco of ['vco1', 'vco2', 'vco3']) {
+            this.#cardBypassed[vco] = d[vco]?.gain === 0
+        }
+        const flagMap = {
+            noise: 'bypassNoise',
+            filter: 'bypassFilter',
+            filterEnv: 'bypassFilterEnv',
+            envelope: 'bypassEnv',
+            lfo: 'bypassLfo1',
+            lfo2: 'bypassLfo2',
+            fm: 'bypassFm',
+            modEnvelope: 'bypassModEnv',
+        }
+        for (const [group, flag] of Object.entries(flagMap)) {
+            this.#cardBypassed[group] = Boolean(d[flag])
+        }
+    }
+
+    /** Applies card bypass state to the model and the card/power-button DOM. */
+    #setCardBypass(groupName, bypassed) {
+        this.#cardBypassed[groupName] = bypassed
+        const card = this.panel?.querySelector(`[data-ss-card="${groupName}"]`)
+        card?.classList.toggle('bypassed', bypassed)
+        const btn = this.panel?.querySelector(`[data-power-card="${groupName}"]`)
+        btn?.classList.toggle('active', !bypassed)
+    }
+
+    /**
+     * Commits the live-edited draft to the sound registry: immediately for
+     * clicks/selections, coalesced on the next animation frame for knob drags
+     * (a drag emits one change per mousemove — one commit per frame instead).
+     */
+    #previewDraft(defer = false) {
         if (!this.#editKey || !this.#draft) return
-        this.#presets.commitSound(this.#editKey, this.#draft)
+        if (!defer) {
+            this.#cancelPreview()
+            this.#presets.commitSound(this.#editKey, this.#draft)
+            return
+        }
+        if (this.#previewRafId) return
+        this.#previewRafId = requestAnimationFrame(() => {
+            this.#previewRafId = null
+            if (this.#editKey && this.#draft) this.#presets.commitSound(this.#editKey, this.#draft)
+        })
+    }
+
+    #cancelPreview() {
+        if (this.#previewRafId) {
+            cancelAnimationFrame(this.#previewRafId)
+            this.#previewRafId = null
+        }
+    }
+
+    /** Commits a pending frame-coalesced preview synchronously (before preset switch/close). */
+    flushPreview() {
+        if (!this.#previewRafId) return
+        this.#cancelPreview()
+        if (this.#editKey && this.#draft) this.#presets.commitSound(this.#editKey, this.#draft)
     }
 
     // ─── Close / save / revert ─────────────────────────────────────────
@@ -546,6 +670,7 @@ export default class SynthEditor {
     #revertPreset() {
         if (!this.#editKey || !this.#original) return
         try {
+            this.#cancelPreview()
             this.#presets.commitSound(this.#editKey, this.#original)
             this.#draft = structuredClone(this.#original)
             this.#renderEditor()
@@ -612,6 +737,7 @@ export default class SynthEditor {
 
     #closeEditor(shouldSave) {
         try {
+            this.#cancelPreview()
             if (shouldSave && this.#editKey && this.#draft) {
                 this.#presets.commitSound(this.#editKey, this.#draft)
                 this.#serviceRegistry.audioEngine?.invalidateCache?.()
@@ -639,6 +765,7 @@ export default class SynthEditor {
     reset() {
         this.panel.style.display = 'none'
         this.#stopLfoWatch()
+        this.#cancelPreview()
         this.#editKey = null
         this.#original = null
         this.#draft = null

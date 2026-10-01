@@ -179,6 +179,7 @@ describe('SynthEditor — OrKnob integration', () => {
         expect(knob).not.toBeNull()
 
         knob.setValue(0.42, true)
+        trackEditor.synthEditor.flushPreview()
         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBeCloseTo(0.42, 5)
         const panel = document.getElementById('soft-synth-panel')
         const valSpan = panel.querySelector(`[data-or-slider="masterVolume"] .ne-val`)
@@ -192,6 +193,7 @@ describe('SynthEditor — OrKnob integration', () => {
         expect(knob).not.toBeNull()
 
         knob.setValue(2500, true)
+        trackEditor.synthEditor.flushPreview()
         expect(soundRegistry.generatedSounds.BASS1.filter.freq).toBe(2500)
         const panel = document.getElementById('soft-synth-panel')
         const valSpan = panel.querySelector(`[data-or-slider="filter.freq"] .ne-val`)

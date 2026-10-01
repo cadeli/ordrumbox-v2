@@ -86,10 +86,10 @@ export default class SongPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on(EVENTS.PATTERN_STRUCTURE_CHANGE, () => {
+        this.sub(playbackEvents, EVENTS.PATTERN_STRUCTURE_CHANGE, () => {
             if (this.isVisible) this.sync()
         })
-        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => {
+        this.sub(playbackEvents, EVENTS.DRUMKIT_CHANGE, () => {
             if (this.isVisible) this.sync()
         })
     }

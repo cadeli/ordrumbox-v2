@@ -50,6 +50,7 @@ export default class PresetSection {
      */
     loadPreset(key) {
         const editor = this.#editor
+        editor.flushPreview()
         const sound = editor.soundRegistry.generatedSounds?.[key]
         if (!sound) return false
         editor.editKey = key
@@ -125,6 +126,7 @@ export default class PresetSection {
 
     newPreset() {
         const editor = this.#editor
+        editor.flushPreview()
         const keys = this.getGeneratedSoundKeys()
         let base = 1
         let name = 'new_preset'
@@ -144,6 +146,7 @@ export default class PresetSection {
     deletePreset() {
         const editor = this.#editor
         if (!editor.editKey) return
+        editor.flushPreview()
         const keys = this.getGeneratedSoundKeys()
         if (keys.length <= 1) {
             showToast('Cannot delete the last preset', 'warning')

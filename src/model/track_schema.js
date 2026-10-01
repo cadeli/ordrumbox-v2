@@ -1,3 +1,4 @@
+// @ts-check
 import { nameOr } from '../core/logger.js'
 /**
  * track_schema.js — Single source of truth for the track structure.
@@ -113,6 +114,7 @@ export const TRACK_DEFAULTS = {
 /**
  * Normalizes a track object by applying default values
  * for missing properties.
+ * @param {Partial<TrackDefaults>} [track]
  */
 export function normalizeTrack(track = {}) {
     const t = nameOr(track, {}, 'TrackSchema', 'track null/undefined')

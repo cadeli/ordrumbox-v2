@@ -3,10 +3,25 @@ import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES, recalcLoopDerived } from '../../model/track_schema.js'
-import { createNoteMethods } from './cmd/cmd_notes.js'
-import { createTrackMethods } from './cmd/cmd_tracks.js'
-import { createPatternMethods } from './cmd/cmd_patterns.js'
-import { createSelectionMethods } from './cmd/cmd_selection.js'
+import NoteCommands from './cmd/cmd_notes.js'
+import TrackCommands from './cmd/cmd_tracks.js'
+import PatternCommands from './cmd/cmd_patterns.js'
+import SelectionCommands from './cmd/cmd_selection.js'
+
+/**
+ * Host contract consumed by the command sub-modules in ./cmd/*.js.
+ * Each sub-module class receives the Commander instance as `host` and may
+ * only reach the outside world through these members.
+ *
+ * @typedef {Object} CommanderHost
+ * @property {(command: object) => void} record - record a reversible command
+ * @property {() => void} persist - persist patterns to storage
+ * @property {(obj: object) => number} coalesceId - stable id for coalesce keys
+ * @property {(track: object) => void} incrementPatternVersionByTrack - bump owning pattern version
+ * @property {(name?: string) => object} addPattern - cross-module (patterns)
+ * @property {(pattern: object, type: string, stepsPerBeat?: number) => object} addTrack - cross-module (tracks)
+ * @property {(track: object, beat: number, beatStep: number, pitch?: number) => object} addNote - cross-module (notes)
+ */
 
 export default class Commander {
     static TAG = 'Commander'
@@ -14,21 +29,103 @@ export default class Commander {
     static #TRACK_KEY_SET = new Set(Object.keys(TRACK_DEFAULTS))
     static TRACK_VALUE_RANGES = TRACK_VALUE_RANGES
 
+    /**
+     * Names of the 34 methods supplied by the ./cmd/*.js sub-modules.
+     * Guarded by tests/cmd_mixin_contract.test.js: every entry must stay an
+     * own, spread-safe function property of each Commander instance.
+     */
+    static MIXIN_METHODS = [
+        'deleteNote',
+        'addNote',
+        'updateNote',
+        'pasteStepNotes',
+        'addTrack',
+        'removeTrack',
+        'pasteTrack',
+        'createTrack',
+        'setStepsPerBeat',
+        'incrNbStepPerBar',
+        'incrLoopPoint',
+        'cleanPattern',
+        'cleanTrack',
+        'compactTrack',
+        'randomizeTrack',
+        'changeTrackSound',
+        'changeTrackName',
+        'getSoundIdFromUrl',
+        'addPattern',
+        'removePattern',
+        'renamePattern',
+        'getPatternByName',
+        'setPatternBpm',
+        'setPatternDescription',
+        'importPatternFromJson',
+        'createPattern',
+        'setSelectedDrumkitIdx',
+        'autoAssignSoundsForNewDrumkit',
+        'setSelectedPatternIdx',
+        'setSelectedTrackIdx',
+        'setCurrentPage',
+        'resetPage',
+        'setCurrentView',
+        'toggleShowVus',
+    ]
+
     #history
     #suppressRecord
     #genSnapshot
     #coalesceIds = new WeakMap()
     #coalesceSeq = 1
+    #notes
+    #tracks
+    #patterns
+    #selection
 
     constructor() {
         this.#history = null
         this.#suppressRecord = false
 
-        // Bind methods from sub-modules
-        Object.assign(this, createNoteMethods(this))
-        Object.assign(this, createTrackMethods(this))
-        Object.assign(this, createPatternMethods(this))
-        Object.assign(this, createSelectionMethods(this))
+        this.#notes = new NoteCommands(this)
+        this.#tracks = new TrackCommands(this)
+        this.#patterns = new PatternCommands(this)
+        this.#selection = new SelectionCommands(this)
+
+        // Own-property arrow delegates: every MIXIN_METHODS entry must be an
+        // own enumerable function so {...cmd} copies keep driving THIS instance.
+        this.deleteNote = (...args) => this.#notes.deleteNote(...args)
+        this.addNote = (...args) => this.#notes.addNote(...args)
+        this.updateNote = (...args) => this.#notes.updateNote(...args)
+        this.pasteStepNotes = (...args) => this.#notes.pasteStepNotes(...args)
+        this.addTrack = (...args) => this.#tracks.addTrack(...args)
+        this.removeTrack = (...args) => this.#tracks.removeTrack(...args)
+        this.pasteTrack = (...args) => this.#tracks.pasteTrack(...args)
+        this.createTrack = (...args) => this.#tracks.createTrack(...args)
+        this.setStepsPerBeat = (...args) => this.#tracks.setStepsPerBeat(...args)
+        this.incrNbStepPerBar = (...args) => this.#tracks.incrNbStepPerBar(...args)
+        this.incrLoopPoint = (...args) => this.#tracks.incrLoopPoint(...args)
+        this.cleanPattern = (...args) => this.#tracks.cleanPattern(...args)
+        this.cleanTrack = (...args) => this.#tracks.cleanTrack(...args)
+        this.compactTrack = (...args) => this.#tracks.compactTrack(...args)
+        this.randomizeTrack = (...args) => this.#tracks.randomizeTrack(...args)
+        this.changeTrackSound = (...args) => this.#tracks.changeTrackSound(...args)
+        this.changeTrackName = (...args) => this.#tracks.changeTrackName(...args)
+        this.getSoundIdFromUrl = (...args) => this.#tracks.getSoundIdFromUrl(...args)
+        this.addPattern = (...args) => this.#patterns.addPattern(...args)
+        this.removePattern = (...args) => this.#patterns.removePattern(...args)
+        this.renamePattern = (...args) => this.#patterns.renamePattern(...args)
+        this.getPatternByName = (...args) => this.#patterns.getPatternByName(...args)
+        this.setPatternBpm = (...args) => this.#patterns.setPatternBpm(...args)
+        this.setPatternDescription = (...args) => this.#patterns.setPatternDescription(...args)
+        this.importPatternFromJson = (...args) => this.#patterns.importPatternFromJson(...args)
+        this.createPattern = (...args) => this.#patterns.createPattern(...args)
+        this.setSelectedDrumkitIdx = (...args) => this.#selection.setSelectedDrumkitIdx(...args)
+        this.autoAssignSoundsForNewDrumkit = (...args) => this.#selection.autoAssignSoundsForNewDrumkit(...args)
+        this.setSelectedPatternIdx = (...args) => this.#selection.setSelectedPatternIdx(...args)
+        this.setSelectedTrackIdx = (...args) => this.#selection.setSelectedTrackIdx(...args)
+        this.setCurrentPage = (...args) => this.#selection.setCurrentPage(...args)
+        this.resetPage = (...args) => this.#selection.resetPage(...args)
+        this.setCurrentView = (...args) => this.#selection.setCurrentView(...args)
+        this.toggleShowVus = (...args) => this.#selection.toggleShowVus(...args)
     }
 
     getHistory() {

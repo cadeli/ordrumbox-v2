@@ -143,9 +143,13 @@ export default class DrumkitManager extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => {
+        this.sub(playbackEvents, EVENTS.DRUMKIT_CHANGE, () => {
             if (this.isVisible) this.sync()
         })
+    }
+
+    onDestroy() {
+        clearTimeout(this.#drumkitChangeDebounce)
     }
 
     sync() {

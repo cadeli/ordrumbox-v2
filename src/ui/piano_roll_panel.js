@@ -4,33 +4,15 @@ import Utils from '../core/utils.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import FlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
-import ContextMenu from './components/context_menu.js'
-import { TICK } from '../core/constants.js'
-import { createStepResolver } from '../patterns/step_resolver.js'
 import { getNoteSubPositions } from '../patterns/note_positions.js'
-import { formatNoteTooltip } from './components/ui_utils.js'
+import { MIDDLE_C, MIDI_MIN, PAGE_BEATS, TOTAL_KEYS } from './piano_roll/constants.js'
+import { pointToCell, findNoteAt } from './piano_roll/hit_test.js'
+import ViewportSection from './piano_roll/viewport_section.js'
+import RenderSection from './piano_roll/render_section.js'
+import MenuSection from './piano_roll/menu_section.js'
+import PlaybackSection from './piano_roll/playback_section.js'
 import NoteParams from '../patterns/note_params.js'
 import { EVENTS } from '../core/events.js'
-import { showToast } from '../core/notify.js'
-import { getSequence, buildSequenceNotes } from '../logic/composition.js'
-
-const NOTE_HEIGHT = 14
-const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-const BLACK_KEY_INDICES = new Set([1, 3, 6, 8, 10])
-
-const MIDI_MIN = 12
-const MIDI_MAX = 108
-const TOTAL_KEYS = MIDI_MAX - MIDI_MIN + 1
-const MIDDLE_C = 60
-const GRID_HEIGHT = TOTAL_KEYS * NOTE_HEIGHT
-
-const MIN_CELL_WIDTH = 16
-const KEYS_COLUMN_WIDTH = 80
-const PAGE_BEATS = 4
-
-function midiName(midi) {
-    return `${NOTE_NAMES[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`
-}
 
 export default class PianoRollPanel extends BasePanel {
     #track
@@ -38,20 +20,17 @@ export default class PianoRollPanel extends BasePanel {
     #cellWidth
     #firstShow
     #resizeObserver
-    #playhead
-    #rafId
-    #prevLoopTick
     #selectedNote
     #cursorStep
     #cursorRow
-    #prevLitTick
-    #litNoteEls
     #keysDirty
     #gridDirty
     #boundOnKeyDown
     #boundOnWheel
-    #contextMenu
-    #sequenceIdx
+    #viewport
+    #render
+    #menu
+    #playback
 
     constructor() {
         super('piano-roll-panel')
@@ -60,18 +39,15 @@ export default class PianoRollPanel extends BasePanel {
         this.#cellWidth = 24
         this.#firstShow = true
         this.#resizeObserver = null
-        this.#playhead = null
-        this.#rafId = null
-        this.#prevLoopTick = -1
         this.#selectedNote = null
         this.#cursorStep = -1
         this.#cursorRow = -1
-        this.#prevLitTick = -1
-        this.#litNoteEls = []
         this.#keysDirty = true
         this.#gridDirty = true
-        this.#contextMenu = new ContextMenu()
-        this.#sequenceIdx = 0
+        this.#viewport = new ViewportSection(this)
+        this.#render = new RenderSection(this)
+        this.#menu = new MenuSection(this)
+        this.#playback = new PlaybackSection(this)
     }
 
     createDOM() {
@@ -97,15 +73,15 @@ export default class PianoRollPanel extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on(EVENTS.NOTE_CHANGE, () => this.syncNotes())
-        playbackEvents.on(EVENTS.TRACK_PARAM_CHANGE, () => this.syncNotes())
-        playbackEvents.on(EVENTS.PATTERN_STRUCTURE_CHANGE, () => {
+        this.sub(playbackEvents, EVENTS.NOTE_CHANGE, () => this.syncNotes())
+        this.sub(playbackEvents, EVENTS.TRACK_PARAM_CHANGE, () => this.syncNotes())
+        this.sub(playbackEvents, EVENTS.PATTERN_STRUCTURE_CHANGE, () => {
             this.#resolveTrack()
             this.#keysDirty = true
             this.#gridDirty = true
             this.sync()
         })
-        playbackEvents.on(EVENTS.TRACK_SELECT, (data) => {
+        this.sub(playbackEvents, EVENTS.TRACK_SELECT, (data) => {
             if (!data) return
             const trackChanged = data.track !== this.#track || data.trackIdx !== this.#trackIdx
             this.#track = data.track
@@ -114,21 +90,21 @@ export default class PianoRollPanel extends BasePanel {
                 this.#firstShow = true
                 this.#keysDirty = true
                 this.#gridDirty = true
-                this.#sync()
+                this.sync()
             }
         })
-        playbackEvents.on(EVENTS.PATTERN_META_CHANGE, () => {
+        this.sub(playbackEvents, EVENTS.PATTERN_META_CHANGE, () => {
             if (!this.isVisible) return
-            this.#clampPage()
+            this.#viewport.clampPage()
             this.#gridDirty = true
             this.#keysDirty = true
-            this.#sync()
+            this.sync()
         })
-        playbackEvents.on(EVENTS.PLAYBACK_START, () => this.#startRafLoop())
-        playbackEvents.on(EVENTS.PLAYBACK_STOP, () => {
-            this.#stopRafLoop()
-            if (this.#playhead) this.#playhead.style.display = 'none'
-            this.#prevLoopTick = -1
+        this.sub(playbackEvents, EVENTS.PLAYBACK_START, () => this.#playback.start())
+        this.sub(playbackEvents, EVENTS.PLAYBACK_STOP, () => {
+            this.#playback.stop()
+            this.#playback.hidePlayhead()
+            this.#playback.resetPrevLoopTick()
         })
         this.container?.addEventListener('click', (e) => {
             const key = e.target.closest('.pp-pr-key')
@@ -139,12 +115,12 @@ export default class PianoRollPanel extends BasePanel {
             const gridEl = e.target.closest('#pp-piano-grid')
             if (gridEl) this.#onGridClick(e, gridEl)
         })
-        this.container?.addEventListener('contextmenu', (e) => this.#onContextMenu(e))
-        this.#resizeObserver = new ResizeObserver(() => this.#onResize())
+        this.container?.addEventListener('contextmenu', (e) => this.#menu.onContextMenu(e))
+        this.#resizeObserver = new ResizeObserver(() => this.#viewport.onResize())
         this.#boundOnKeyDown = (e) => this.#onKeyDown(e)
-        this.#boundOnWheel = (e) => this.#onWheel(e)
-        this.container?.querySelector('#pp-pr-prev')?.addEventListener('click', () => this.#prevPage())
-        this.container?.querySelector('#pp-pr-next')?.addEventListener('click', () => this.#nextPage())
+        this.#boundOnWheel = (e) => this.#viewport.onWheel(e)
+        this.container?.querySelector('#pp-pr-prev')?.addEventListener('click', () => this.#viewport.prevPage())
+        this.container?.querySelector('#pp-pr-next')?.addEventListener('click', () => this.#viewport.nextPage())
     }
 
     #resolveTrack() {
@@ -175,35 +151,33 @@ export default class PianoRollPanel extends BasePanel {
         }
         document.addEventListener('keydown', this.#boundOnKeyDown)
         this.container?.addEventListener('wheel', this.#boundOnWheel, { passive: false })
-        if (serviceRegistry.transport?.isRunning) this.#startRafLoop()
+        if (serviceRegistry.transport?.isRunning) this.#playback.start()
     }
 
     hide() {
         super.hide()
         this.#resizeObserver?.disconnect()
-        this.#stopRafLoop()
-        if (this.#playhead) this.#playhead.style.display = 'none'
-        this.#clearIllumination()
+        this.#playback.stop()
+        this.#playback.hidePlayhead()
+        this.#playback.clearIllumination()
         this.#clearSelection()
-        this.#contextMenu.hide()
+        this.#menu.hide()
         document.removeEventListener('keydown', this.#boundOnKeyDown)
         this.container?.removeEventListener('wheel', this.#boundOnWheel)
     }
 
+    onDestroy() {
+        this.#resizeObserver?.disconnect()
+        this.#playback.stop()
+        this.#menu.hide()
+        if (this.#boundOnKeyDown) document.removeEventListener('keydown', this.#boundOnKeyDown)
+    }
+
     sync() {
-        this.#sync()
+        this.#render.sync()
     }
 
-    #onResize() {
-        const prev = this.#cellWidth
-        this.#measureCellWidth()
-        if (this.#cellWidth !== prev) {
-            this.#gridDirty = true
-            this.#sync()
-        }
-    }
-
-    #pageInfo() {
+    pageInfo() {
         const track = this.#track
         const pattern = appState.patterns[appState.selectedPatternIdx]
         const stepsPerBeat = track?.stepsPerBeat ?? 4
@@ -221,64 +195,7 @@ export default class PianoRollPanel extends BasePanel {
         }
     }
 
-    #sync() {
-        if (!this.container) return
-        this.#clampPage()
-        this.#measureCellWidth()
-        if (this.#keysDirty) {
-            this.#renderKeys()
-            this.#keysDirty = false
-        }
-        if (this.#gridDirty) {
-            this.#renderGrid()
-            this.#gridDirty = false
-        }
-        this.#renderLoopPoint()
-        this.#renderNotes()
-        this.#updateTrackName()
-        this.#updatePageInfo()
-        if (this.#playhead) {
-            this.container.querySelector('#pp-piano-grid')?.appendChild(this.#playhead)
-        }
-        if (this.#firstShow) {
-            this.#scrollToTrackCenter()
-            this.#firstShow = false
-        }
-    }
-
-    #syncNotes() {
-        if (!this.container || !this.isVisible) return
-        this.#clampPage()
-        this.#renderLoopPoint()
-        this.#renderNotes()
-        if (this.#playhead) {
-            this.container.querySelector('#pp-piano-grid')?.appendChild(this.#playhead)
-        }
-    }
-
-    #updateTrackName() {
-        const label = this.container.querySelector('#pp-pr-track-name')
-        if (label) label.textContent = this.#track?.name ? ` — ${this.#track.name}` : ''
-    }
-
-    #updatePageInfo() {
-        const nav = this.container.querySelector('#pp-pr-page-nav')
-        const info = this.container.querySelector('#pp-pr-page-info')
-        if (!info || !nav) return
-        const total = this.#totalPages()
-        if (total <= 1) {
-            nav.style.display = 'none'
-            return
-        }
-        nav.style.display = 'flex'
-        info.textContent = `${appState.currentPage + 1}/${total}`
-        const prev = this.container.querySelector('#pp-pr-prev')
-        const next = this.container.querySelector('#pp-pr-next')
-        if (prev) prev.disabled = appState.currentPage <= 0
-        if (next) next.disabled = appState.currentPage >= total - 1
-    }
-
-    #applySelection() {
+    applySelection() {
         if (!this.container) return
         this.container.querySelectorAll('.pp-pr-note.selected').forEach((el) => el.classList.remove('selected'))
         if (!this.#selectedNote) return
@@ -294,171 +211,16 @@ export default class PianoRollPanel extends BasePanel {
         playbackEvents.emit(EVENTS.NOTE_SELECT, null)
     }
 
-    #measureCellWidth() {
-        const scrollEl = this.container.querySelector('#pp-piano-scroll')
-        if (!scrollEl || !this.#track) {
-            this.#cellWidth = 24
-            return
-        }
-        const pageSteps = PAGE_BEATS * (this.#track.stepsPerBeat ?? 4)
-        this.#cellWidth = Math.max(MIN_CELL_WIDTH, (scrollEl.clientWidth - KEYS_COLUMN_WIDTH) / pageSteps)
-    }
-
-    #renderKeys() {
-        const el = this.container.querySelector('#pp-piano-keys')
-        if (!el) return
-        el.style.height = `${GRID_HEIGHT}px`
-        let html = ''
-        for (let i = 0; i < TOTAL_KEYS; i++) {
-            const midi = MIDI_MIN + i
-            const mod = ((midi % 12) + 12) % 12
-            const isBlack = BLACK_KEY_INDICES.has(mod)
-            const isC = mod === 0
-            html += `<div class="pp-pr-key ${isBlack ? 'black' : 'white'} ${isC ? 'is-c' : ''}" data-midi="${midi}" title="${midiName(midi)}">${isC ? midiName(midi) : ''}</div>`
-        }
-        el.innerHTML = html
-    }
-
-    #renderGrid() {
-        const gridEl = this.container.querySelector('#pp-piano-grid')
-        if (!gridEl || !this.#track) return
-        const { stepsPerBeat, pageStartStep, visibleSteps } = this.#pageInfo()
-        const gridWidth = visibleSteps * this.#cellWidth
-        gridEl.style.height = `${GRID_HEIGHT}px`
-        gridEl.style.width = `${gridWidth}px`
-
-        let html = ''
-        for (let s = 0; s < visibleSteps; s++) {
-            const stepInBeat = (pageStartStep + s) % stepsPerBeat
-            const cls =
-                stepInBeat === 0 ? 'beat' : stepsPerBeat >= 4 && stepInBeat === stepsPerBeat / 2 ? 'half' : 'step'
-            html += `<div class="pp-pr-col ${cls}" style="left:${s * this.#cellWidth}px;width:${this.#cellWidth}px"></div>`
-        }
-        for (let i = 0; i < TOTAL_KEYS; i++) {
-            const isC = (((MIDI_MIN + i) % 12) + 12) % 12 === 0
-            html += `<div class="pp-pr-row ${isC ? 'octave' : ''}" style="bottom:${i * NOTE_HEIGHT}px;height:${NOTE_HEIGHT}px;width:${gridWidth}px"></div>`
-        }
-        gridEl.innerHTML = html
-
-        this.#renderLoopPoint(gridEl)
-    }
-
-    #renderLoopPoint(gridEl) {
-        if (!gridEl) gridEl = this.container?.querySelector('#pp-piano-grid')
-        if (!gridEl) return
-        gridEl.querySelectorAll('.pp-pr-loop-point').forEach((el) => el.remove())
-        const track = this.#track
-        if (!track) return
-        const { pageStartStep, visibleSteps } = this.#pageInfo()
-        const loopAtStep = track.loopAtStep ?? this.#pageInfo().totalSteps
-        if (loopAtStep > pageStartStep && loopAtStep <= pageStartStep + visibleSteps) {
-            const lpEl = document.createElement('div')
-            lpEl.className = 'pp-pr-loop-point'
-            lpEl.style.left = `${(loopAtStep - pageStartStep) * this.#cellWidth}px`
-            lpEl.style.height = `${GRID_HEIGHT}px`
-            gridEl.appendChild(lpEl)
-        }
-    }
-
-    #renderNotes() {
-        const gridEl = this.container.querySelector('#pp-piano-grid')
-        if (!gridEl) return
-        gridEl.querySelectorAll('.pp-pr-note, .pp-pr-ghost, .pp-pr-cursor').forEach((n) => n.remove())
-        const track = this.#track
-        if (!track) return
-        const { stepsPerBeat, totalSteps, pageStartStep, pageEndStep, visibleSteps } = this.#pageInfo()
-        const trackPitchOffset = track.pitch ?? 0
-        const notes = track.notes ?? []
-        const resolveSpanEnd = createStepResolver(track)
-        const fragment = document.createDocumentFragment()
-
-        notes.forEach((note, noteIdx) => {
-            const step = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
-            if (step < pageStartStep || step >= pageEndStep) return
-            const row = MIDDLE_C + trackPitchOffset + (note.pitch ?? 0) - MIDI_MIN
-            if (row < 0 || row >= TOTAL_KEYS) return
-
-            const pageStep = step - pageStartStep
-            const vel = note.velocity ?? 0.8
-
-            const el = document.createElement('div')
-            el.className = `pp-pr-note${this.#selectedNote === note ? ' selected' : ''}`
-            el.style.left = `${pageStep * this.#cellWidth + 1}px`
-            el.style.width = `${this.#cellWidth - 2}px`
-            el.style.bottom = `${row * NOTE_HEIGHT + 1}px`
-            el.style.height = `${NOTE_HEIGHT - 2}px`
-            el.style.opacity = (0.25 + vel * 0.75).toFixed(2)
-            el.title = formatNoteTooltip(note, trackPitchOffset)
-            el.dataset.note = String(noteIdx)
-
-            const prob = note.prob ?? 1
-            const every = note.every ?? 1
-            if (prob < 1) {
-                el.classList.add('pp-pr-trig-rand')
-                el.dataset.trig = String(Math.round(prob * 10))
-            } else if (every > 1) {
-                el.classList.add('pp-pr-trig-fixed')
-                el.dataset.trig = String(every)
-            }
-            fragment.appendChild(el)
-
-            getNoteSubPositions(note, track, totalSteps, resolveSpanEnd).forEach(({ pos, type, pitchOffset }) => {
-                const ghStep = pos - pageStartStep
-                if (ghStep < 0 || ghStep >= visibleSteps) return
-                const ghRow = row + (pitchOffset ?? 0)
-                if (ghRow < 0 || ghRow >= TOTAL_KEYS) return
-                const gh = document.createElement('div')
-                gh.className = `pp-pr-ghost pp-pr-ghost-${type}`
-                gh.style.left = `${ghStep * this.#cellWidth}px`
-                gh.style.bottom = `${ghRow * NOTE_HEIGHT}px`
-                gh.style.width = `${this.#cellWidth}px`
-                gh.style.height = `${NOTE_HEIGHT}px`
-                fragment.appendChild(gh)
-            })
-        })
-
-        if (
-            this.#cursorStep >= pageStartStep &&
-            this.#cursorStep < pageEndStep &&
-            this.#cursorRow >= 0 &&
-            this.#cursorRow < TOTAL_KEYS &&
-            !this.#selectedNote
-        ) {
-            const cursor = document.createElement('div')
-            cursor.className = 'pp-pr-cursor'
-            cursor.style.left = `${(this.#cursorStep - pageStartStep) * this.#cellWidth}px`
-            cursor.style.bottom = `${this.#cursorRow * NOTE_HEIGHT}px`
-            cursor.style.width = `${this.#cellWidth}px`
-            cursor.style.height = `${NOTE_HEIGHT}px`
-            fragment.appendChild(cursor)
-        }
-
-        gridEl.appendChild(fragment)
-    }
-
     #onGridClick(e, gridEl) {
         const track = this.#track
         const cmd = serviceRegistry.cmd
         if (!track || !cmd) return
-        const { stepsPerBeat, totalSteps, pageStartStep } = this.#pageInfo()
-        const rect = gridEl.getBoundingClientRect()
-        const pageStep = Math.floor((e.clientX - rect.left) / this.#cellWidth)
-        const step = pageStartStep + pageStep
-        const row = TOTAL_KEYS - 1 - Math.floor((e.clientY - rect.top) / NOTE_HEIGHT)
-        if (step < 0 || step >= totalSteps || row < 0 || row >= TOTAL_KEYS) return
-
-        const beat = Math.floor(step / stepsPerBeat)
-        const beatStep = step % stepsPerBeat
-        const trackPitchOffset = track.pitch ?? 0
+        const cell = pointToCell(e, gridEl, this.#cellWidth, this.pageInfo())
+        if (!cell) return
+        const { step, row, beat, beatStep } = cell
         const clickedMidi = MIDI_MIN + row
-        const relativePitch = clickedMidi - MIDDLE_C - trackPitchOffset
-
-        const hit = (track.notes ?? []).find(
-            (n) =>
-                n.beat === beat &&
-                n.beatStep === beatStep &&
-                MIDDLE_C + trackPitchOffset + (n.pitch ?? 0) === clickedMidi,
-        )
+        const relativePitch = clickedMidi - MIDDLE_C - (track.pitch ?? 0)
+        const hit = findNoteAt(track, beat, beatStep, clickedMidi)
 
         if (hit) {
             if (this.#selectedNote === hit) {
@@ -470,7 +232,7 @@ export default class PianoRollPanel extends BasePanel {
                 this.#selectedNote = hit
                 this.#cursorStep = step
                 this.#cursorRow = row
-                this.#applySelection()
+                this.applySelection()
                 playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#trackIdx })
                 playbackEvents.emit(EVENTS.NOTE_SELECT, { track, trackIdx: this.#trackIdx, note: hit, beat, beatStep })
                 serviceRegistry.seq?.simpleBeep(this.#trackIdx, hit)
@@ -480,251 +242,13 @@ export default class PianoRollPanel extends BasePanel {
             this.#selectedNote = newNote
             this.#cursorStep = step
             this.#cursorRow = row
-            this.#applySelection()
+            this.applySelection()
             playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
             playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
             playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#trackIdx })
             playbackEvents.emit(EVENTS.NOTE_SELECT, { track, trackIdx: this.#trackIdx, note: newNote, beat, beatStep })
             serviceRegistry.seq?.simpleBeep(this.#trackIdx, newNote)
         }
-    }
-
-    #onContextMenu(e) {
-        const track = this.#track
-        const cmd = serviceRegistry.cmd
-        if (!track || !cmd) return
-
-        const keyEl = e.target.closest('.pp-pr-key')
-        if (keyEl) {
-            e.preventDefault()
-            const midi = parseInt(keyEl.dataset.midi, 10)
-            const relativePitch = Number.isFinite(midi) ? midi - MIDDLE_C - (track.pitch ?? 0) : 0
-            this.#showKeyboardContextMenu(relativePitch, midiName(midi), e.clientX, e.clientY)
-            return
-        }
-
-        const gridEl = e.target.closest('#pp-piano-grid')
-        if (!gridEl) {
-            this.#contextMenu.hide()
-            return
-        }
-        e.preventDefault()
-
-        const { stepsPerBeat, totalSteps, pageStartStep } = this.#pageInfo()
-        const rect = gridEl.getBoundingClientRect()
-        const pageStep = Math.floor((e.clientX - rect.left) / this.#cellWidth)
-        const step = pageStartStep + pageStep
-        const row = TOTAL_KEYS - 1 - Math.floor((e.clientY - rect.top) / NOTE_HEIGHT)
-        if (step < 0 || step >= totalSteps || row < 0 || row >= TOTAL_KEYS) return
-
-        const beat = Math.floor(step / stepsPerBeat)
-        const beatStep = step % stepsPerBeat
-        const trackPitchOffset = track.pitch ?? 0
-        const clickedMidi = MIDI_MIN + row
-        const relativePitch = clickedMidi - MIDDLE_C - trackPitchOffset
-        const hit = (track.notes ?? []).find(
-            (n) =>
-                n.beat === beat &&
-                n.beatStep === beatStep &&
-                MIDDLE_C + trackPitchOffset + (n.pitch ?? 0) === clickedMidi,
-        )
-
-        this.#showGridContextMenu({ beat, beatStep, relativePitch, hit }, e.clientX, e.clientY)
-    }
-
-    #showKeyboardContextMenu(tonic, keyLabel, x, y) {
-        this.#contextMenu.hide()
-        const track = this.#track
-        if (!track) return
-        const sequence = getSequence(this.#sequenceIdx)
-        const header = `${track.name ?? 'Track'} — ${keyLabel} ${sequence?.name ?? ''}`.trim()
-        const actions = [
-            { label: 'Clear all', run: () => this.#menuClearAll() },
-            { label: 'Add sequence', run: () => this.#menuAddSequence(tonic) },
-        ]
-        this.#contextMenu.show(header, actions, x, y)
-    }
-
-    #showGridContextMenu(ctx, x, y) {
-        this.#contextMenu.hide()
-        const track = this.#track
-        if (!track) return
-        const { beat, beatStep, relativePitch, hit } = ctx
-        const header = `${track.name ?? 'Track'} @ ${beat + 1}.${beatStep + 1}`
-        const actions = [
-            {
-                label: 'Add note',
-                disabled: Boolean(hit),
-                run: () => this.#menuAddNote(beat, beatStep, relativePitch),
-            },
-            {
-                label: 'Delete note',
-                disabled: !hit,
-                run: () => this.#menuDeleteNote(hit, beat, beatStep),
-            },
-            {
-                label: 'Add minor chord',
-                run: () => this.#menuAddChord(beat, beatStep, relativePitch, [0, 3, 7], 'minor'),
-            },
-            {
-                label: 'Add major chord',
-                run: () => this.#menuAddChord(beat, beatStep, relativePitch, [0, 4, 7], 'major'),
-            },
-        ]
-        this.#contextMenu.show(header, actions, x, y)
-    }
-
-    #menuAddNote(beat, beatStep, relativePitch) {
-        const track = this.#track
-        const cmd = serviceRegistry.cmd
-        if (!track || !cmd) return
-        const newNote = cmd.addNote(track, beat, beatStep, relativePitch)
-        this.#selectedNote = newNote
-        this.#cursorStep = beat * (track.stepsPerBeat ?? 4) + beatStep
-        this.#cursorRow = MIDDLE_C + (track.pitch ?? 0) + relativePitch - MIDI_MIN
-        this.#applySelection()
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#trackIdx })
-            playbackEvents.emit(EVENTS.NOTE_SELECT, {
-                track,
-                trackIdx: this.#trackIdx,
-                note: newNote,
-                beat,
-                beatStep,
-            })
-        })
-        serviceRegistry.seq?.simpleBeep(this.#trackIdx, newNote)
-        showToast(`Added note (pitch ${relativePitch}) — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`, 'success')
-    }
-
-    #menuDeleteNote(hit, beat, beatStep) {
-        const track = this.#track
-        const cmd = serviceRegistry.cmd
-        if (!track || !cmd || !hit) return
-        cmd.deleteNote(track, hit)
-        if (this.#selectedNote === hit) this.#clearSelection()
-        else this.#applySelection()
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
-        showToast(`Deleted note — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`, 'success')
-    }
-
-    #menuAddChord(beat, beatStep, rootPitch, intervals, quality) {
-        const track = this.#track
-        const cmd = serviceRegistry.cmd
-        if (!track || !cmd) return
-        const existing = new Set(
-            (track.notes ?? []).filter((n) => n.beat === beat && n.beatStep === beatStep).map((n) => n.pitch ?? 0),
-        )
-        const added = []
-        for (const interval of intervals) {
-            const pitch = rootPitch + interval
-            if (existing.has(pitch)) continue
-            added.push(cmd.addNote(track, beat, beatStep, pitch))
-        }
-        if (added.length === 0) {
-            showToast('Chord already present', 'info')
-            return
-        }
-        this.#selectedNote = added[0]
-        this.#cursorStep = beat * (track.stepsPerBeat ?? 4) + beatStep
-        this.#cursorRow = MIDDLE_C + (track.pitch ?? 0) + rootPitch - MIDI_MIN
-        this.#applySelection()
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#trackIdx })
-            playbackEvents.emit(EVENTS.NOTE_SELECT, {
-                track,
-                trackIdx: this.#trackIdx,
-                note: this.#selectedNote,
-                beat,
-                beatStep,
-            })
-        })
-        showToast(
-            `Added ${quality} chord (${added.length} note${added.length === 1 ? '' : 's'}) — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`,
-            'success',
-        )
-    }
-
-    #menuClearAll() {
-        const track = this.#track
-        const cmd = serviceRegistry.cmd
-        if (!track || !cmd) return
-        const count = (track.notes ?? []).length
-        if (count === 0) {
-            showToast('No notes to clear', 'info')
-            return
-        }
-        cmd.cleanTrack(track)
-        this.#clearSelection()
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
-        showToast(`Cleared notes on "${track.name}"`, 'success')
-    }
-
-    #menuAddSequence(tonic) {
-        const track = this.#track
-        const cmd = serviceRegistry.cmd
-        const pattern = appState.patterns[appState.selectedPatternIdx]
-        if (!track || !cmd || !pattern) return
-
-        const sequence = getSequence(this.#sequenceIdx)
-        if (!sequence) return
-        const beatCount = pattern.nbBeats ?? track.nbBeats ?? 4
-        const planned = buildSequenceNotes(sequence, tonic, beatCount)
-        if (planned.length === 0) return
-
-        const hadNotes = (track.notes ?? []).length > 0
-        if (hadNotes) cmd.cleanTrack(track)
-
-        let addedCount = 0
-        let firstNote = null
-        for (const { beat, beatStep, pitch } of planned) {
-            const note = cmd.addNote(track, beat, beatStep, pitch)
-            if (!firstNote) firstNote = note
-            addedCount++
-        }
-
-        this.#sequenceIdx++
-        if (addedCount === 0) return
-
-        this.#selectedNote = firstNote
-        this.#cursorStep = 0
-        this.#cursorRow = MIDDLE_C + (track.pitch ?? 0) + tonic - MIDI_MIN
-        this.#applySelection()
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-            playbackEvents.emit(EVENTS.TRACK_SELECT, { track, trackIdx: this.#trackIdx })
-            if (firstNote) {
-                playbackEvents.emit(EVENTS.NOTE_SELECT, {
-                    track,
-                    trackIdx: this.#trackIdx,
-                    note: firstNote,
-                    beat: firstNote.beat,
-                    beatStep: firstNote.beatStep ?? 0,
-                })
-            }
-        })
-        showToast(
-            `Replaced with sequence "${sequence.name}" (${addedCount} note${addedCount === 1 ? '' : 's'}, 1 chord/measure) — ${track.name}`,
-            'success',
-        )
-    }
-
-    #scrollToTrackCenter() {
-        const scrollEl = this.container.querySelector('#pp-piano-scroll')
-        if (!scrollEl) return
-        const row = MIDDLE_C + (this.#track?.pitch ?? 0) - MIDI_MIN
-        scrollEl.scrollTop = Math.max(0, (TOTAL_KEYS - 1 - row) * NOTE_HEIGHT - scrollEl.clientHeight / 2)
     }
 
     #playKey(midi) {
@@ -737,41 +261,13 @@ export default class PianoRollPanel extends BasePanel {
         serviceRegistry.audioEngine?.sound?.play(flatNote, serviceRegistry.audioEngine.audioCtx.currentTime)
     }
 
-    #totalPages() {
-        if (!this.#track) return 1
-        const nbBeats = appState.patterns[appState.selectedPatternIdx]?.nbBeats ?? 4
-        return Math.max(1, Math.ceil(nbBeats / PAGE_BEATS))
-    }
-
-    #clampPage() {
-        serviceRegistry.cmd.setCurrentPage(Utils.clamp(appState.currentPage, 0, this.#totalPages() - 1))
-    }
-
-    #prevPage() {
-        if (appState.currentPage <= 0) return
-        serviceRegistry.cmd.setCurrentPage(appState.currentPage - 1)
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
-    }
-
-    #nextPage() {
-        if (appState.currentPage >= this.#totalPages() - 1) return
-        serviceRegistry.cmd.setCurrentPage(appState.currentPage + 1)
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
-    }
-
     #onKeyDown(e) {
         if (!this.isVisible) return
         const track = this.#track
         const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!track || !pattern) return
         const cmd = serviceRegistry.cmd
-        const { stepsPerBeat, totalSteps, pageStartStep } = this.#pageInfo()
+        const { stepsPerBeat, totalSteps, pageStartStep } = this.pageInfo()
 
         const isArrow = e.key.startsWith('Arrow')
         const isAction = e.key === 'Enter' || e.key === 'Delete' || e.key === 'Backspace'
@@ -813,13 +309,9 @@ export default class PianoRollPanel extends BasePanel {
             if (this.#cursorStep < 0 || this.#cursorRow < 0) return
             const beat = Math.floor(this.#cursorStep / stepsPerBeat)
             const beatStep = this.#cursorStep % stepsPerBeat
-            const trackPitchOffset = track.pitch ?? 0
             const midi = MIDI_MIN + this.#cursorRow
-            const relativePitch = midi - MIDDLE_C - trackPitchOffset
-            const note = (track.notes ?? []).find(
-                (n) =>
-                    n.beat === beat && n.beatStep === beatStep && MIDDLE_C + trackPitchOffset + (n.pitch ?? 0) === midi,
-            )
+            const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
+            const note = findNoteAt(track, beat, beatStep, midi)
 
             if (note) {
                 if (this.#selectedNote === note) {
@@ -835,7 +327,7 @@ export default class PianoRollPanel extends BasePanel {
                 playbackEvents.emit(EVENTS.NOTE_CHANGE, [track])
                 playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
             }
-            this.#applySelection()
+            this.applySelection()
             if (this.#selectedNote)
                 playbackEvents.emit(EVENTS.NOTE_SELECT, {
                     track,
@@ -867,133 +359,17 @@ export default class PianoRollPanel extends BasePanel {
         if (!track) return
         const beat = Math.floor(this.#cursorStep / stepsPerBeat)
         const beatStep = this.#cursorStep % stepsPerBeat
-        const trackPitchOffset = track.pitch ?? 0
         const midi = MIDI_MIN + this.#cursorRow
-        const note = (track.notes ?? []).find(
-            (n) => n.beat === beat && n.beatStep === beatStep && MIDDLE_C + trackPitchOffset + (n.pitch ?? 0) === midi,
-        )
-        this.#selectedNote = note ?? null
-        this.#applySelection()
+        const note = findNoteAt(track, beat, beatStep, midi)
+        this.#selectedNote = note
+        this.applySelection()
         playbackEvents.emit(
             EVENTS.NOTE_SELECT,
             note
                 ? { track, trackIdx: this.#trackIdx, note, beat, beatStep }
                 : { track, trackIdx: this.#trackIdx, note: null, beat, beatStep },
         )
-        this.#sync()
-    }
-
-    #onWheel(e) {
-        if (!this.isVisible || !e.shiftKey) return
-        if (e.deltaY > 0 || e.deltaX > 0) this.#nextPage()
-        else if (e.deltaY < 0 || e.deltaX < 0) this.#prevPage()
-        e.preventDefault()
-    }
-
-    #ensurePlayhead() {
-        if (this.#playhead && this.container?.contains(this.#playhead)) return
-        this.#playhead = document.createElement('div')
-        this.#playhead.className = 'pp-pr-playhead'
-        this.#playhead.style.display = 'none'
-        this.container?.querySelector('#pp-piano-grid')?.appendChild(this.#playhead)
-    }
-
-    #startRafLoop() {
-        if (this.#rafId) return
-        const loop = () => {
-            const transport = serviceRegistry.transport
-            if (!transport?.isRunning || !this.container || !this.isVisible) {
-                this.#rafId = null
-                if (this.#playhead) this.#playhead.style.display = 'none'
-                this.#clearIllumination()
-                return
-            }
-            this.#updatePlayhead()
-            this.#rafId = requestAnimationFrame(loop)
-        }
-        this.#rafId = requestAnimationFrame(loop)
-    }
-
-    #stopRafLoop() {
-        if (this.#rafId) {
-            cancelAnimationFrame(this.#rafId)
-            this.#rafId = null
-        }
-    }
-
-    #updatePlayhead() {
-        const transport = serviceRegistry.transport
-        if (!transport?.isRunning) return
-        const pattern = appState.patterns[appState.selectedPatternIdx]
-        const track = this.#track
-        if (!pattern || !track || !this.container) return
-        this.#ensurePlayhead()
-
-        const { stepsPerBeat } = this.#pageInfo()
-        const nbTicks = TICK * (pattern.nbBeats ?? 4)
-        if (nbTicks <= 0) return
-        const loopTick = (transport.tick ?? 0) % nbTicks
-        if (loopTick === this.#prevLoopTick && this.#playhead.style.display !== 'none') return
-        this.#prevLoopTick = loopTick
-
-        const absStep =
-            Math.floor(loopTick / TICK) * stepsPerBeat + Math.floor((loopTick % TICK) / (TICK / stepsPerBeat))
-        const pageStartStep = appState.currentPage * PAGE_BEATS * stepsPerBeat
-        const pageEndStep = pageStartStep + PAGE_BEATS * stepsPerBeat
-
-        if (absStep < pageStartStep || absStep >= pageEndStep) {
-            const newPage = Math.floor(absStep / stepsPerBeat / PAGE_BEATS)
-            if (newPage !== appState.currentPage) {
-                serviceRegistry.cmd.setCurrentPage(newPage)
-                this.#clampPage()
-                this.#gridDirty = true
-                this.#sync()
-                this.#illuminateStep(absStep, transport.tick)
-                playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            }
-            if (this.#playhead.style.display !== 'none') this.#playhead.style.display = 'none'
-            return
-        }
-
-        if (this.#playhead.style.display !== 'block') this.#playhead.style.display = 'block'
-        this.#playhead.style.left = `${(absStep - pageStartStep) * this.#cellWidth}px`
-        this.#playhead.style.width = '2px'
-        this.#illuminateStep(absStep, transport.tick)
-    }
-
-    #illuminateStep(absStep, rawTick) {
-        if (rawTick === this.#prevLitTick) return
-        for (const el of this.#litNoteEls) el.classList.remove('playing')
-        this.#litNoteEls.length = 0
-        this.#prevLitTick = rawTick
-        const gridEl = this.container?.querySelector('#pp-piano-grid')
-        if (!gridEl) return
-        const track = this.#track
-        if (!track) return
-        const { stepsPerBeat, totalSteps } = this.#pageInfo()
-        const loopAtStep = track.loopAtStep ?? totalSteps
-        const notes = track.notes ?? []
-        const resolveSpanEnd = createStepResolver(track)
-        for (const el of gridEl.querySelectorAll('.pp-pr-note')) {
-            const note = notes[parseInt(el.dataset.note, 10)]
-            if (!note) continue
-            const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
-            if (basePos >= loopAtStep) continue
-            const matchesBase = absStep % loopAtStep === basePos
-            const matchesSub = getNoteSubPositions(note, track, totalSteps, resolveSpanEnd).some(
-                (s) => s.pos < loopAtStep && absStep % loopAtStep === s.pos,
-            )
-            if (matchesBase || matchesSub) {
-                el.classList.add('playing')
-                this.#litNoteEls.push(el)
-            }
-        }
-    }
-
-    #clearIllumination() {
-        for (const el of this.#litNoteEls) el.classList.remove('playing')
-        this.#litNoteEls.length = 0
-        this.#prevLitTick = -1
+        this.sync()
     }
 
     // ─── Public API ───────────────────────────────────────────────────────
@@ -1029,19 +405,72 @@ export default class PianoRollPanel extends BasePanel {
         this.#cursorRow = r
     }
 
+    /** @param {number} w */
+    set cellWidth(w) {
+        this.#cellWidth = w
+    }
+
+    get track() {
+        return this.#track
+    }
+
+    get trackIdx() {
+        return this.#trackIdx
+    }
+
+    get firstShow() {
+        return this.#firstShow
+    }
+    /** @param {boolean} v */
+    set firstShow(v) {
+        this.#firstShow = v
+    }
+
+    get keysDirty() {
+        return this.#keysDirty
+    }
+    /** @param {boolean} v */
+    set keysDirty(v) {
+        this.#keysDirty = v
+    }
+
+    get gridDirty() {
+        return this.#gridDirty
+    }
+    /** @param {boolean} v */
+    set gridDirty(v) {
+        this.#gridDirty = v
+    }
+
+    get viewport() {
+        return this.#viewport
+    }
+
+    get render() {
+        return this.#render
+    }
+
+    get menu() {
+        return this.#menu
+    }
+
+    get playback() {
+        return this.#playback
+    }
+
     /** Advance to next page of steps. */
     nextPage() {
-        this.#nextPage()
+        this.#viewport.nextPage()
     }
 
     /** Go back to previous page of steps. */
     prevPage() {
-        this.#prevPage()
+        this.#viewport.prevPage()
     }
 
     /** Recalculate cell width from container. */
     measureCellWidth() {
-        this.#measureCellWidth()
+        this.#viewport.measureCellWidth()
     }
 
     /** Handle keyboard event. */
@@ -1051,25 +480,25 @@ export default class PianoRollPanel extends BasePanel {
 
     /** Start the playhead animation loop. */
     startRafLoop() {
-        this.#startRafLoop()
+        this.#playback.start()
     }
 
     clearSelection() {
         this.#clearSelection()
     }
     ensurePlayhead() {
-        this.#ensurePlayhead()
+        this.#playback.ensurePlayhead()
     }
     getSubPositions(note, track, totalSteps) {
         return getNoteSubPositions(note, track, totalSteps)
     }
     illuminateStep(step, tick) {
-        this.#illuminateStep(step, tick)
+        this.#playback.illuminateStep(step, tick)
     }
     clearIllumination() {
-        this.#clearIllumination()
+        this.#playback.clearIllumination()
     }
     syncNotes() {
-        this.#syncNotes()
+        this.#render.syncNotes()
     }
 }

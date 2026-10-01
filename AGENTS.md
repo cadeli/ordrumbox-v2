@@ -15,6 +15,7 @@ npx playwright test    # e2e tests (auto-starts dev server)
 npx playwright test --project=desktop-chromium   # desktop only
 npx playwright test --project=mobile-chromium    # mobile only
 npm run build          # vite build → dist/
+npm run typecheck      # tsc --noEmit (jsconfig.json, // @ts-check files)
 ```
 
 ## Architecture
@@ -41,7 +42,8 @@ index.html → src/main.js (bootstrap after "Start" click)
         ui/                      ← vanilla JS panel components
         ui/synth_editor/         ← soft synth UI
         ui/track_editor/         ← track editor UI
-        ui/pattern_panel/        ← pattern grid
+        ui/pattern_panel/        ← pattern grid (coordinator + 10 section modules)
+        ui/piano_roll/           ← piano roll (coordinator + 6 section modules)
         ui/toolbar/              ← transport + view switch
 ```
 
@@ -60,7 +62,7 @@ Standalone worker (not part of the module graph), registered by `src/service_wor
 - `DB_VERSION = 4` / `MIGRATIONS` — IndexedDB schema (`src/core/idb.js`). When persisted data changes shape: bump `DB_VERSION` **and** add `MIGRATIONS[N]` (`N` = the new `DB_VERSION`, signature `(db, tx)`); `runUpgrades` creates any missing store first, then runs entries whose key lies in `(oldVersion, newVersion]`. The connection is shared for the whole session (`openDb()`) and reopened once when a transaction fails with `InvalidStateError`.
 - `LFO_TARGET_TO_INT` — maps LFO target strings to integers for worklet processor (`src/audio/voices/worklet_synth_voice.js:14`)
 - `WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3, random: 4 }` — `random` (shape=4) is a deterministic sample & hold (new value per oscillator cycle for VCOs, per LFO cycle for LFOs; same formula as `getLfoWaveformValue()` in `src/audio/math.js`); the `osc*Wave`/`lfo*Wave` AudioParams declare `maxValue: 4` — the host currently sends waves via port messages (no AudioParam clamping), but an AudioParam-driven path with `maxValue: 3` would clamp 4→3 and degrade to square
-- `SYNTH_GROUP_DEFAULTS` — many params gated by other defaults: `vco3.gain=0`, `fm.amount=0`, `lfo.target='NOT'`, `noise.mix=0` (`src/ui/synth_editor/constants.js:34-49`)
+- `SYNTH_GROUP_DEFAULTS` — many params gated by other defaults: `vco3.gain=0`, `fm.amount=0`, `lfo.target='NOT'`, `noise.mix=0` (`src/ui/synth_editor/constants.js:39-54`). The synth UI powers a gated group on implicitly at interaction (`#implicitEnable`, `tests/synth_editor_implicit.test.js`) — presets on disk are never modified.
 
 ## Testing
 
@@ -70,6 +72,7 @@ Standalone worker (not part of the module graph), registered by `src/service_wor
 - **Setup**: `tests/setup.js` — stubs canvas, ResizeObserver, injects CSS for jsdom
 - Unit tests live in `tests/`
 - **Run**: `npm test` or `npx vitest run`
+- **Type check**: `npm run typecheck` — `tsc -p jsconfig.json --noEmit` with `checkJs: false`; only files starting with `// @ts-check` are checked (currently `src/state/app_state.js`, `src/state/playback_events.js`, `src/model/track_schema.js`, `src/audio/mixer.js`)
 
 Test helpers in `tests/helpers/`:
 
@@ -107,6 +110,14 @@ import { bootApp } from './fixtures.js'
 
 - `e2e/helpers/synth_render.js` — `renderSynthBatch(overrides, noteCount, options)` renders N notes in one OfflineAudioContext
 - `e2e/fixtures.js` — `bootApp(page)`, `audioContextState(page)`
+
+## Undo policy
+
+Guarded by `tests/undo_policy.test.js`.
+
+- **Track parameters are undoable**: track-editor knobs/sliders go through `cmd.updateTrack(track, updates, { desc, coalesce })` — values are clamped to `TRACK_VALUE_RANGES`, unknown/derived keys are skipped, and one `HistoryManager` entry is recorded per effective change (with `meta.params`/`meta.prev` for the undo report toast). `coalesce: true` merges rapid same-key updates (400 ms window) into a single undo step so a whole drag undoes as one gesture.
+- **Master/mixer is NOT undoable**: the output panel and the pattern panel master shortcut write straight to `serviceRegistry.audioEngine.mixer.setMasterBus()` — never through `cmd`/`HistoryManager`. Reverting = move the slider back.
+- **Synth preset edits are NOT undoable**: live edits commit to `soundRegistry.generatedSounds` + IndexedDB via `commitSound` (frame-coalesced for knob drags, `flushPreview()` flushes a pending frame). Only the preset's own **Revert** button restores the original.
 
 ## Code conventions
 

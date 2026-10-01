@@ -233,10 +233,10 @@ export default class TrackEditor extends BasePanel {
     }
 
     subscribe() {
-        this.#playbackEvents.on(EVENTS.ORIENTATION_CHANGE, () => {
+        this.sub(this.#playbackEvents, EVENTS.ORIENTATION_CHANGE, () => {
             if (this.container) this.#syncMobileLayout()
         })
-        this.#playbackEvents.on(EVENTS.TRACK_SELECT, (data) => {
+        this.sub(this.#playbackEvents, EVENTS.TRACK_SELECT, (data) => {
             if (!data) return
             if (this.isVisible) {
                 this.#track = data.track
@@ -245,12 +245,12 @@ export default class TrackEditor extends BasePanel {
                 this.showNoteEditorForTrack(data.track, data.trackIdx)
             }
         })
-        this.#playbackEvents.on(EVENTS.PLAYBACK_START, () => this.#startStepWatch())
-        this.#playbackEvents.on(EVENTS.PLAYBACK_STOP, () => this.#stopStepWatch())
-        this.#playbackEvents.on(EVENTS.DRUMKIT_CHANGE, () => {
+        this.sub(this.#playbackEvents, EVENTS.PLAYBACK_START, () => this.#startStepWatch())
+        this.sub(this.#playbackEvents, EVENTS.PLAYBACK_STOP, () => this.#stopStepWatch())
+        this.sub(this.#playbackEvents, EVENTS.DRUMKIT_CHANGE, () => {
             if (this.#track) this.sync()
         })
-        this.#playbackEvents.on(EVENTS.PATTERN_CHANGE, () => {
+        this.sub(this.#playbackEvents, EVENTS.PATTERN_CHANGE, () => {
             if (this.#isDragging || this.#isSelecting) return
             if (!this.#track) return
             const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
@@ -268,6 +268,12 @@ export default class TrackEditor extends BasePanel {
             this.#trackIdx = newIdx
             if (this.isVisible) this.sync()
         })
+    }
+
+    onDestroy() {
+        this.#stopStepWatch()
+        this.#waveObserver?.disconnect()
+        this.#waveObserver = null
     }
 
     // ── Step watch (LFO animation) ─────────────────────────────────

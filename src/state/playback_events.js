@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Generic EventBus - simple pub/sub for internal events.
  */

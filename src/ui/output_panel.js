@@ -271,6 +271,12 @@ export default class OutputPanel extends BasePanel {
 
     subscribe() {}
 
+    onDestroy() {
+        if (this.#saveTimer) clearTimeout(this.#saveTimer)
+        this.#saveTimer = null
+        this.#stopAnimation()
+    }
+
     show() {
         super.show()
         this.#visible = true

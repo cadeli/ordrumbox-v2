@@ -1,3 +1,4 @@
+// @ts-check
 import Strip from './strip.js'
 import WorkletLoader from './worklets/loader.js'
 import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js'
@@ -202,6 +203,22 @@ export default class Mixer {
 
     // ─── Master bus control ──────────────────────────────────────────────────────
 
+    /**
+     * @typedef {Object} MasterBusOptions
+     * @property {number} [lowcut]    High-pass filter frequency
+     * @property {number} [hicut]     Low-pass filter frequency
+     * @property {number} [master]    Master output gain (0–1)
+     * @property {number} [threshold] Compressor threshold (dB)
+     * @property {number} [ratio]     Compressor ratio
+     * @property {number} [knee]      Compressor knee (dB)
+     * @property {number} [attack]    Compressor attack (s)
+     * @property {number} [release]   Compressor release (s)
+     * @property {number} [makeup]    Compressor makeup gain (dB)
+     * @property {number} [preGain]   Pre-limiter gain (dB)
+     * @property {boolean} [bypass]   Bypass the limiter stage
+     */
+
+    /** @param {MasterBusOptions} options */
     setMasterBus = (options = {}) => {
         if (!this.busWorklet) return
         const time = this.audioCtx.currentTime

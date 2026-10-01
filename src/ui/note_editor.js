@@ -137,6 +137,7 @@ export default class NoteEditor extends BasePanel {
     }
 
     init() {
+        this.beginInit()
         this.injectCSS()
         if (!this.#externalContainer) {
             this.createDOM()
@@ -145,6 +146,13 @@ export default class NoteEditor extends BasePanel {
             this.container.style.display = 'none'
         }
         this.subscribe()
+    }
+
+    onDestroy() {
+        this.#knobs.forEach((k) => k.destroy())
+        this.#knobs = []
+        this.#sliders.forEach((s) => s.destroy())
+        this.#sliders = []
     }
 
     createDOM() {
@@ -160,7 +168,7 @@ export default class NoteEditor extends BasePanel {
     }
 
     subscribe() {
-        playbackEvents.on(EVENTS.NOTE_SELECT, (data) => {
+        this.sub(playbackEvents, EVENTS.NOTE_SELECT, (data) => {
             if (!data) return
             if (data.note) {
                 if (this.isVisible) this.show(data)
