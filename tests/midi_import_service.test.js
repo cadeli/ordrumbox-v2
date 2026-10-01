@@ -8,7 +8,7 @@ const sharedState = {
 }
 
 const mockAddPattern = vi.fn((name) => {
-    const pattern = { name, nbBeats: 32, bpm: 120, tracks: [] }
+    const pattern = { name, beatCount: 32, bpm: 120, tracks: [] }
     sharedState.patterns.push(pattern)
     return pattern
 })
@@ -211,7 +211,7 @@ describe('MidiImportService', () => {
         }
     })
 
-    it('sets correct nbBeats on created pattern', async () => {
+    it('sets correct beatCount on created pattern', async () => {
         const midiBytes = buildMidi({
             format: 1,
             division: 96,
@@ -233,7 +233,7 @@ describe('MidiImportService', () => {
 
         const pattern = mockAddPattern.mock.results[0]?.value
         if (pattern) {
-            expect(pattern.nbBeats).toBeGreaterThanOrEqual(4)
+            expect(pattern.beatCount).toBeGreaterThanOrEqual(4)
         }
     })
 

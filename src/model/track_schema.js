@@ -18,7 +18,7 @@ import { nameOr } from '../core/logger.js'
  * @property {string}  name                 - Track display name (e.g. "KICK", "SNARE"). Default: ""
  * @property {boolean} useAutoAssignSound   - Auto-assign sound by name. Default: true
  * @property {string}  soundId              - Assigned sound URL. Default: "NOT_DEFINED"
- * @property {number}  nbBeats              - Number of beats in the track. Default: 4
+ * @property {number}  beatCount              - Number of beats in the track. Default: 4
  * @property {number}  stepsPerBeat         - Steps per beat (subdivision). Default: 4
  * @property {number|null} loopAtStep       - Loop point in steps (null = auto). Default: null
  * @property {number}  swingResolution      - Swing grid resolution (1–8). Default: 1
@@ -59,7 +59,7 @@ export const TRACK_DEFAULTS = {
     name: '',
     useAutoAssignSound: true,
     soundId: 'NOT_DEFINED',
-    nbBeats: 4,
+    beatCount: 4,
     stepsPerBeat: 4,
     loopAtStep: null,
     swingResolution: 1,
@@ -138,7 +138,7 @@ export const TRACK_VALUE_RANGES = {
     velocity: { min: 0, max: 1 },
     pan: { min: -1, max: 1 },
     pitch: { min: -24, max: 24 },
-    nbBeats: { min: 1, max: 16 },
+    beatCount: { min: 1, max: 16 },
     stepsPerBeat: { min: 1, max: 8 },
     loopAtStep: { min: 0, max: 1024 },
     swingResolution: { min: 1, max: 8 },
@@ -191,8 +191,8 @@ export function clampStepsPerBeat(track) {
         note.beatStep = Math.min(Math.round((steppc / 100) * target), target - 1)
     }
     track.stepsPerBeat = target
-    if (typeof track.nbBeats === 'number' && track.loopAtStep > track.nbBeats * target) {
-        track.loopAtStep = track.nbBeats * target
+    if (typeof track.beatCount === 'number' && track.loopAtStep > track.beatCount * target) {
+        track.loopAtStep = track.beatCount * target
     }
     recalcLoopDerived(track)
     return true

@@ -29,7 +29,7 @@ async function showNote(ne, overrides = {}) {
         arpTriggerProbability: 1,
         ...overrides,
     }
-    const track = { name: 'SNARE', notes: [note], nbBeats: 1, stepsPerBeat: 4 }
+    const track = { name: 'SNARE', notes: [note], beatCount: 1, stepsPerBeat: 4 }
     await ne.show({ track, note, pos: 0, beat: 0, beatStep: 0 })
     return { note, track }
 }

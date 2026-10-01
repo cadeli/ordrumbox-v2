@@ -12,7 +12,7 @@
             "tracks": [
                 {
                     "name": "KICK_01",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "velocity": 0.5,
                     "notes": [
@@ -34,7 +34,7 @@
                 },
                 {
                     "name": "SNARE",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 0.3,
                     "reverbType": "room",
@@ -59,7 +59,7 @@
                 },
                 {
                     "name": "RIM",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 0.5,
                     "reverbType": "room",
@@ -74,7 +74,7 @@
                 },
                 {
                     "name": "CLAP",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "swingAmount": 0.3,
                     "pan": -0.4,
@@ -102,7 +102,7 @@
                 },
                 {
                     "name": "COWBELL",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 4,
                     "velocity": 0.3,
                     "pan": 0.4,
@@ -122,7 +122,7 @@
                 },
                 {
                     "name": "CHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 4,
                     "swingAmount": 0.2,
                     "velocity": 0.3,
@@ -146,7 +146,7 @@
                 },
                 {
                     "name": "OHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 4,
                     "velocity": 0.9,
                     "pan": -0.2,
@@ -167,7 +167,7 @@
                 },
                 {
                     "name": "CRASH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 1,
                     "reverbType": "hall",
@@ -181,7 +181,7 @@
                     ]
                 }
             ],
-            "nbBeats": 8,
+            "beatCount": 8,
             "tags": {
                 "style": "rock",
                 "type": "default"
@@ -832,7 +832,7 @@
             "tracks": [
                 {
                     "name": "KICK",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "velocity": 0.6,
                     "notes": [
@@ -863,7 +863,7 @@
                 },
                 {
                     "name": "SNARE",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 16,
                     "pan": 0.3,
                     "reverbType": "room",
@@ -882,7 +882,7 @@
                 },
                 {
                     "name": "TOM",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 0.5,
                     "reverbType": "room",
@@ -897,7 +897,7 @@
                 },
                 {
                     "name": "CLAP",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": -0.4,
                     "reverbType": "room",
@@ -905,7 +905,7 @@
                 },
                 {
                     "name": "COWBELL",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 0.4,
                     "reverbType": "room",
@@ -920,7 +920,7 @@
                 },
                 {
                     "name": "CHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 2,
                     "velocity": 0.3,
                     "velocityLfo": {
@@ -942,7 +942,7 @@
                 },
                 {
                     "name": "OHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "velocity": 0.4,
                     "pan": -0.2,
@@ -962,7 +962,7 @@
                 },
                 {
                     "name": "CRASH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "velocity": 0.1,
                     "pan": 1,
@@ -971,7 +971,7 @@
                 }
             ],
             "bpm": 100,
-            "nbBeats": 8,
+            "beatCount": 8,
             "tags": {
                 "style": "electro",
                 "type": "default"
@@ -3385,7 +3385,7 @@
             "tracks": [
                 {
                     "name": "KICK",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "swingAmount": 0.2,
                     "velocity": 0.5,
@@ -3410,7 +3410,7 @@
                 },
                 {
                     "name": "SNARE",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 0.3,
                     "reverbType": "room",
@@ -3431,7 +3431,7 @@
                 },
                 {
                     "name": "TOM",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 0.5,
                     "reverbType": "room",
@@ -3446,7 +3446,7 @@
                 },
                 {
                     "name": "CLAP",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": -0.4,
                     "reverbType": "room",
@@ -3468,7 +3468,7 @@
                 },
                 {
                     "name": "COWBELL",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 0.4,
                     "reverbType": "room",
@@ -3476,7 +3476,7 @@
                 },
                 {
                     "name": "CHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "swingAmount": 0.2,
                     "velocity": 0.3,
@@ -3510,7 +3510,7 @@
                 },
                 {
                     "name": "OHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": -0.2,
                     "notes": [
@@ -3528,7 +3528,7 @@
                 },
                 {
                     "name": "CRASH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 1,
                     "reverbType": "hall",
@@ -3545,7 +3545,7 @@
                 }
             ],
             "bpm": 60,
-            "nbBeats": 8,
+            "beatCount": 8,
             "tags": {
                 "style": "funk",
                 "type": "default"
@@ -3685,7 +3685,7 @@
             "tracks": [
                 {
                     "name": "KICK",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "velocity": 0.5,
                     "notes": [
@@ -3705,7 +3705,7 @@
                 },
                 {
                     "name": "SNARE",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 8,
                     "pan": 0.3,
                     "reverbType": "room",
@@ -3724,7 +3724,7 @@
                 },
                 {
                     "name": "TOM",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 0.5,
                     "reverbType": "room",
@@ -3742,7 +3742,7 @@
                 },
                 {
                     "name": "CLAP",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 8,
                     "pan": -0.4,
                     "reverbType": "room",
@@ -3763,7 +3763,7 @@
                 },
                 {
                     "name": "COWBELL",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 0.4,
                     "reverbType": "room",
@@ -3771,7 +3771,7 @@
                 },
                 {
                     "name": "CHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 4,
                     "swingAmount": 0.4,
                     "velocity": 0.4,
@@ -3795,7 +3795,7 @@
                 },
                 {
                     "name": "OHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 4,
                     "velocity": 0.2,
                     "pan": -0.2,
@@ -3811,7 +3811,7 @@
                 },
                 {
                     "name": "CRASH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "pan": 1,
                     "reverbType": "hall",
@@ -3826,7 +3826,7 @@
                 }
             ],
             "bpm": 110,
-            "nbBeats": 8,
+            "beatCount": 8,
             "tags": {
                 "style": "funk",
                 "type": "default"
@@ -5076,7 +5076,7 @@
             "tracks": [
                 {
                     "name": "KICK",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 4,
                     "velocity": 0.5,
                     "notes": [
@@ -5089,7 +5089,7 @@
                 },
                 {
                     "name": "SNARE",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 4,
                     "pan": 0.3,
                     "reverbType": "room",
@@ -5106,7 +5106,7 @@
                 },
                 {
                     "name": "TOM",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "velocity": 0.55,
                     "pan": 0.5,
@@ -5132,7 +5132,7 @@
                 },
                 {
                     "name": "CLAP",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 8,
                     "pan": -0.4,
                     "reverbType": "room",
@@ -5149,7 +5149,7 @@
                 },
                 {
                     "name": "COWBELL",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 8,
                     "velocity": 0.3,
                     "pan": 0.4,
@@ -5168,7 +5168,7 @@
                 },
                 {
                     "name": "CHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 1,
                     "swingAmount": 0.3,
                     "velocity": 0.2,
@@ -5195,7 +5195,7 @@
                 },
                 {
                     "name": "OHH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 4,
                     "swingAmount": 0.3,
                     "velocity": 0.2,
@@ -5219,7 +5219,7 @@
                 },
                 {
                     "name": "CRASH",
-                    "nbBeats": 8,
+                    "beatCount": 8,
                     "loopAtStep": 32,
                     "velocity": 0.5,
                     "pitch": 8,
@@ -5236,7 +5236,7 @@
                 }
             ],
             "bpm": 80,
-            "nbBeats": 8,
+            "beatCount": 8,
             "tags": {
                 "style": "funk",
                 "type": "default"
@@ -5249,7 +5249,7 @@
                 {
                     "name": "KICK",
                     "soundId": "punchy/kick.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "notes": [
                         [0.95],
@@ -5270,7 +5270,7 @@
                 {
                     "name": "SNARE",
                     "soundId": "punchy/snare.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": 0.3,
                     "notes": [
@@ -5289,7 +5289,7 @@
                 {
                     "name": "CHH",
                     "soundId": "punchy/chh.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": 0.5,
                     "notes": [
@@ -5310,7 +5310,7 @@
                 {
                     "name": "OHH",
                     "soundId": "punchy/ohh.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": -0.4,
                     "notes": [
@@ -5329,7 +5329,7 @@
                     "name": "CHH",
                     "useAutoAssignSound": false,
                     "soundId": "real/chh.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": 0.4,
                     "filterType": "lowpass",
@@ -5363,7 +5363,7 @@
                     "name": "CONGAS",
                     "useAutoAssignSound": false,
                     "soundId": "real/congas.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": -0.3,
                     "notes": [
@@ -5392,7 +5392,7 @@
                     "name": "COWBELL",
                     "useAutoAssignSound": false,
                     "soundId": "vintage/cow.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": -0.2,
                     "notes": [
@@ -5421,7 +5421,7 @@
                     "name": "CLAP",
                     "useAutoAssignSound": false,
                     "soundId": "real/rim.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "pan": 1,
                     "notes": [
@@ -5448,7 +5448,7 @@
                     "name": "HIT",
                     "useAutoAssignSound": false,
                     "soundId": "punchy/hit.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "velocity": 0.45,
                     "pitch": -12,
@@ -5480,7 +5480,7 @@
                     "name": "HIT",
                     "useAutoAssignSound": false,
                     "soundId": "delagrange/hit.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 8,
                     "useSoftSynth": true,
                     "notes": [
@@ -5505,7 +5505,7 @@
                     "name": "RIMSHOT",
                     "useAutoAssignSound": false,
                     "soundId": "matt/RIMSHOT.wav",
-                    "nbBeats": 16,
+                    "beatCount": 16,
                     "loopAtStep": 64,
                     "notes": [
                         [0.6,3],
@@ -5525,7 +5525,7 @@
                 }
             ],
             "bpm": 75,
-            "nbBeats": 16,
+            "beatCount": 16,
             "tags": {
                 "0": "dub",
                 "1": "roots",

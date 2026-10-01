@@ -73,12 +73,12 @@ describe('simpleBeep — real audio rendering', () => {
         const pattern = {
             name: 'Beep Test',
             bpm: 120,
-            nbBeats: 1,
+            beatCount: 1,
             tracks: [
                 {
                     name: 'KICK',
                     soundId: 'kick.wav',
-                    nbBeats: 1,
+                    beatCount: 1,
                     stepsPerBeat: 4,
                     mute: false,
                     notes: [{ beat: 0, beatStep: 0, velocity: 1, pitch: 0 }],
@@ -128,12 +128,12 @@ describe('simpleBeep — real audio rendering', () => {
         const pattern = {
             name: 'Silent Test',
             bpm: 120,
-            nbBeats: 1,
+            beatCount: 1,
             tracks: [
                 {
                     name: 'KICK',
                     soundId: 'kick.wav',
-                    nbBeats: 1,
+                    beatCount: 1,
                     stepsPerBeat: 4,
                     mute: false,
                     notes: [],

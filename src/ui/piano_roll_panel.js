@@ -184,13 +184,13 @@ export default class PianoRollPanel extends BasePanel {
         const track = this.#track
         const pattern = appState.patterns[appState.selectedPatternIdx]
         const stepsPerBeat = track?.stepsPerBeat ?? 4
-        const nbBeats = pattern?.nbBeats ?? 4
-        const totalSteps = nbBeats * stepsPerBeat
+        const beatCount = pattern?.beatCount ?? 4
+        const totalSteps = beatCount * stepsPerBeat
         const pageStartStep = appState.currentPage * BEATS_PER_PAGE * stepsPerBeat
         const pageEndStep = Math.min(pageStartStep + BEATS_PER_PAGE * stepsPerBeat, totalSteps)
         return {
             stepsPerBeat,
-            nbBeats,
+            beatCount,
             totalSteps,
             pageStartStep,
             pageEndStep,

@@ -28,21 +28,21 @@ afterEach(() => {
     delete globalThis.cancelAnimationFrame
 })
 
-function makeMultiPagePattern(nbBeats = 8) {
-    const totalSteps = nbBeats * 4
+function makeMultiPagePattern(beatCount = 8) {
+    const totalSteps = beatCount * 4
     const notes = []
     for (let i = 0; i < totalSteps; i += 4) {
         notes.push({ pos: i, pitch: 60, vel: 100, len: 1 })
     }
     return {
         name: 'MultiPage',
-        nbBeats,
+        beatCount,
         bpm: 120,
         tracks: [
             {
                 name: 'KICK',
                 notes: [...notes],
-                nbBeats,
+                beatCount,
                 stepsPerBeat: 4,
                 loopAtStep: totalSteps,
                 mute: false,
@@ -53,7 +53,7 @@ function makeMultiPagePattern(nbBeats = 8) {
             {
                 name: 'SNARE',
                 notes: notes.filter((_, i) => i % 2 === 1).map((n) => ({ ...n, pitch: 62 })),
-                nbBeats,
+                beatCount,
                 stepsPerBeat: 4,
                 loopAtStep: totalSteps,
                 mute: false,
@@ -72,13 +72,13 @@ function make4BeatPattern() {
     }
     return {
         name: 'FourBeat',
-        nbBeats: 4,
+        beatCount: 4,
         bpm: 120,
         tracks: [
             {
                 name: 'KICK',
                 notes,
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
                 loopAtStep: 16,
                 mute: false,
@@ -98,7 +98,7 @@ function setupServices() {
     }
     const realCmd = new Commander()
     serviceRegistry.cmd = {
-        setPatternNbBeats: (pattern, nbBeats) => realCmd.setPatternNbBeats(pattern, nbBeats),
+        setPatternBeatCount: (pattern, beatCount) => realCmd.setPatternBeatCount(pattern, beatCount),
         setSelectedPatternIdx: vi.fn((num) => {
             appState.selectedPatternIdx = num
         }),

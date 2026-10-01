@@ -41,7 +41,7 @@ describe('Undo Roundtrip & State Inversion', () => {
             // ── Baseline Pattern P0 ──────────────────────────────────────────
             const pattern = cmd.addPattern('Baseline_Pattern')
             pattern.bpm = 120
-            pattern.nbBeats = 4
+            pattern.beatCount = 4
             pattern.description = 'Original clean pattern'
 
             const kick = cmd.addTrack(pattern, 'KICK', 4)
@@ -129,7 +129,7 @@ describe('Undo Roundtrip & State Inversion', () => {
             // Structure
             expect(pattern.name).toBe(p0Snapshot.name)
             expect(pattern.bpm).toBe(p0Snapshot.bpm)
-            expect(pattern.nbBeats).toBe(p0Snapshot.nbBeats)
+            expect(pattern.beatCount).toBe(p0Snapshot.beatCount)
             expect(pattern.description).toBe(p0Snapshot.description)
             expect(pattern.tracks).toHaveLength(p0Snapshot.tracks.length)
 

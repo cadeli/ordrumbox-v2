@@ -111,7 +111,7 @@ describe('TrackEditor loop panel', () => {
         const editor = new TrackEditor()
         editor.init()
         editor.track = {
-            nbBeats: 8,
+            beatCount: 8,
             stepsPerBeat: 4,
             loopAtStep: 16,
         }
@@ -185,7 +185,7 @@ describe('TrackEditor loop slider events', () => {
             updateTrack: vi.fn((track, updates) => Object.assign(track, updates)),
             setStepsPerBeat: vi.fn((track, value) => {
                 track.stepsPerBeat = value
-                const maxSteps = (track.nbBeats ?? 4) * value
+                const maxSteps = (track.beatCount ?? 4) * value
                 if (track.loopAtStep > maxSteps) track.loopAtStep = maxSteps
             }),
         }
@@ -194,7 +194,7 @@ describe('TrackEditor loop slider events', () => {
     it('should fire onLoopPointChange when loopAtStep changes without throwing', () => {
         const track = {
             name: 'Test Track',
-            nbBeats: 4,
+            beatCount: 4,
             stepsPerBeat: 16,
             loopAtStep: 16,
             notes: [],
@@ -202,7 +202,7 @@ describe('TrackEditor loop slider events', () => {
         const pattern = {
             name: 'Test Pattern',
             tracks: [track],
-            nbBeats: 4,
+            beatCount: 4,
         }
         appState.patterns = [pattern]
         appState.selectedPatternIdx = 0
@@ -234,7 +234,7 @@ describe('TrackEditor loop slider events', () => {
     it('emits PATTERN_META_CHANGE when stepsPerBeat changes', () => {
         const track = {
             name: 'Test Track',
-            nbBeats: 4,
+            beatCount: 4,
             stepsPerBeat: 4,
             loopAtStep: 16,
             notes: [],
@@ -242,7 +242,7 @@ describe('TrackEditor loop slider events', () => {
         const pattern = {
             name: 'Test Pattern',
             tracks: [track],
-            nbBeats: 4,
+            beatCount: 4,
         }
         appState.patterns = [pattern]
         appState.selectedPatternIdx = 0
@@ -269,7 +269,7 @@ describe('TrackEditor loop slider events', () => {
     it('does not emit PATTERN_META_CHANGE for non-structural loop keys', () => {
         const track = {
             name: 'Test Track',
-            nbBeats: 4,
+            beatCount: 4,
             stepsPerBeat: 4,
             loopAtStep: 16,
             swingAmount: 0,
@@ -278,7 +278,7 @@ describe('TrackEditor loop slider events', () => {
         const pattern = {
             name: 'Test Pattern',
             tracks: [track],
-            nbBeats: 4,
+            beatCount: 4,
         }
         appState.patterns = [pattern]
         appState.selectedPatternIdx = 0

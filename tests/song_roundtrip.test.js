@@ -118,7 +118,7 @@ function buildComplexProject() {
             {
                 name: 'Intro_Beat',
                 bpm: 124,
-                nbBeats: 4,
+                beatCount: 4,
                 description: 'Smooth intro with filtered hats',
                 tracks: [
                     {
@@ -126,7 +126,7 @@ function buildComplexProject() {
                         soundId: 'acoustic/kick_01.wav',
                         useAutoAssignSound: true,
                         useSoftSynth: false,
-                        nbBeats: 4,
+                        beatCount: 4,
                         stepsPerBeat: 4,
                         loopAtStep: 16,
                         velocity: 0.95,
@@ -149,7 +149,7 @@ function buildComplexProject() {
                         soundId: 'acoustic/snare_01.wav',
                         useAutoAssignSound: true,
                         useSoftSynth: false,
-                        nbBeats: 4,
+                        beatCount: 4,
                         stepsPerBeat: 4,
                         loopAtStep: 16,
                         velocity: 0.8,
@@ -171,7 +171,7 @@ function buildComplexProject() {
                         useAutoAssignSound: false,
                         useSoftSynth: true,
                         synthSoundKey: 'SUB_BASS_V1',
-                        nbBeats: 4,
+                        beatCount: 4,
                         stepsPerBeat: 4,
                         loopAtStep: 16,
                         velocity: 0.75,
@@ -194,7 +194,7 @@ function buildComplexProject() {
             {
                 name: 'Drop_Poly',
                 bpm: 132,
-                nbBeats: 8,
+                beatCount: 8,
                 description: 'Polyrhythmic drop with euclidean fill',
                 tracks: [
                     {
@@ -202,7 +202,7 @@ function buildComplexProject() {
                         soundId: 'electronic/kick_909.wav',
                         useAutoAssignSound: true,
                         useSoftSynth: false,
-                        nbBeats: 8,
+                        beatCount: 8,
                         stepsPerBeat: 4,
                         loopAtStep: 32,
                         velocity: 1.0,
@@ -226,7 +226,7 @@ function buildComplexProject() {
                         soundId: 'electronic/conga.wav',
                         useAutoAssignSound: false,
                         useSoftSynth: false,
-                        nbBeats: 8,
+                        beatCount: 8,
                         stepsPerBeat: 3,
                         loopAtStep: 24,
                         velocity: 0.7,
@@ -244,7 +244,7 @@ function buildComplexProject() {
             {
                 name: 'Outro_Ambient',
                 bpm: 100,
-                nbBeats: 2,
+                beatCount: 2,
                 description: 'Minimal ambient outro',
                 tracks: [
                     {
@@ -253,7 +253,7 @@ function buildComplexProject() {
                         useAutoAssignSound: false,
                         useSoftSynth: true,
                         synthSoundKey: 'WARM_PAD',
-                        nbBeats: 2,
+                        beatCount: 2,
                         stepsPerBeat: 4,
                         loopAtStep: 8,
                         velocity: 0.5,
@@ -341,7 +341,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             const p0 = appState.patterns[0]
             expect(p0.name).toBe('Intro_Beat')
             expect(p0.bpm).toBe(124)
-            expect(p0.nbBeats).toBe(4)
+            expect(p0.beatCount).toBe(4)
             expect(p0.description).toBe('Smooth intro with filtered hats')
             expect(p0.tracks).toHaveLength(3)
 
@@ -377,7 +377,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             const p1 = appState.patterns[1]
             expect(p1.name).toBe('Drop_Poly')
             expect(p1.bpm).toBe(132)
-            expect(p1.nbBeats).toBe(8)
+            expect(p1.beatCount).toBe(8)
             expect(p1.tracks[0].solo).toBe(true)
             expect(p1.tracks[1].stepsPerBeat).toBe(3) // Triplet grid
             expect(p1.tracks[1].loopAtStep).toBe(24)
@@ -387,7 +387,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             const p2 = appState.patterns[2]
             expect(p2.name).toBe('Outro_Ambient')
             expect(p2.bpm).toBe(100)
-            expect(p2.nbBeats).toBe(2)
+            expect(p2.beatCount).toBe(2)
             expect(p2.tracks[0].synthSoundKey).toBe('WARM_PAD')
         })
     })
@@ -437,14 +437,14 @@ describe('Song & Project Persistence Roundtrip', () => {
         it('keeps separate songs isolated in IndexedDB without cross-contamination', async () => {
             // Save Song Alpha
             appState.patterns = [
-                { name: 'Alpha_1', bpm: 110, nbBeats: 4, tracks: [] },
-                { name: 'Alpha_2', bpm: 115, nbBeats: 4, tracks: [] },
+                { name: 'Alpha_1', bpm: 110, beatCount: 4, tracks: [] },
+                { name: 'Alpha_2', bpm: 115, beatCount: 4, tracks: [] },
             ]
             appState.songInfos.description = 'Alpha project'
             await songService.save('Song_Alpha')
 
             // Save Song Beta with completely different patterns
-            appState.patterns = [{ name: 'Beta_Heavy', bpm: 150, nbBeats: 8, tracks: [] }]
+            appState.patterns = [{ name: 'Beta_Heavy', bpm: 150, beatCount: 8, tracks: [] }]
             appState.songInfos.description = 'Beta project'
             await songService.save('Song_Beta')
 
@@ -467,7 +467,7 @@ describe('Song & Project Persistence Roundtrip', () => {
 
             // Overwrite Song Alpha: ensure Song Beta is unchanged
             await songService.applyToAppState(alphaData)
-            appState.patterns.push({ name: 'Alpha_3', bpm: 120, nbBeats: 4, tracks: [] })
+            appState.patterns.push({ name: 'Alpha_3', bpm: 120, beatCount: 4, tracks: [] })
             await songService.save('Song_Alpha')
 
             const reloadedAlpha = await songService.load('Song_Alpha')
@@ -485,7 +485,7 @@ describe('Song & Project Persistence Roundtrip', () => {
 
         it('handles song names with special characters, slashes, and unicode correctly', async () => {
             const specialName = 'D&B / Bass-Boosted #1 (2026) 🚀'
-            appState.patterns = [{ name: 'P1', bpm: 174, nbBeats: 4, tracks: [] }]
+            appState.patterns = [{ name: 'P1', bpm: 174, beatCount: 4, tracks: [] }]
             appState.songInfos.description = 'Special characters test'
 
             // Save and load via IDB

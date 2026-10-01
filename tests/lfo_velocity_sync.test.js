@@ -40,8 +40,8 @@ describe('LFO Velocity Sync Verification', () => {
             vi.spyOn(WorkletLoader, 'isSupported').mockReturnValue(true)
             vi.spyOn(WorkletLoader, 'ensureLoaded').mockResolvedValue(true)
 
-            track = { name: 'KICK', velocity: 0.5, velocityLfo: lfoConfig, stepsPerBeat: 4, nbBeats: 8 }
-            appState.patterns = [{ tracks: [track], nbBeats: 8, bpm: 120 }]
+            track = { name: 'KICK', velocity: 0.5, velocityLfo: lfoConfig, stepsPerBeat: 4, beatCount: 8 }
+            appState.patterns = [{ tracks: [track], beatCount: 8, bpm: 120 }]
             appState.selectedPatternIdx = 0
 
             editor = new TrackEditor()
@@ -71,7 +71,7 @@ describe('LFO Velocity Sync Verification', () => {
             const track = {
                 name: 'KICK',
                 stepsPerBeat: 4,
-                nbBeats: 4,
+                beatCount: 4,
                 velocityLfo: lfoConfig,
                 notes: [
                     { beat: 0, beatStep: 0, velocity: 1.0 }, // tick 0   -> LFO 0.0 -> Vel 0
@@ -79,7 +79,7 @@ describe('LFO Velocity Sync Verification', () => {
                     { beat: 2, beatStep: 0, velocity: 1.0 }, // tick 64  -> LFO 1.0 -> Vel 127
                 ],
             }
-            const pattern = { name: 'MidiTest', nbBeats: 4, tracks: [track], bpm: 120 }
+            const pattern = { name: 'MidiTest', beatCount: 4, tracks: [track], bpm: 120 }
 
             const exporter = new MidiExporter()
             const midiBytes = exporter.export(pattern)
@@ -159,7 +159,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 pan: 0,
                 pitchLfo: { freq: 1, min: 0, max: 6, phase: 0.25, type: 'sine' },
                 stepsPerBeat: 4,
-                nbBeats: 4,
+                beatCount: 4,
                 loopAtStep: 16,
                 filterType: 'lowpass',
                 filterFreq: 0.5,
@@ -179,7 +179,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 soundId: '',
                 swingAmount: 0,
             }
-            appState.patterns = [{ tracks: [track], nbBeats: 4 }]
+            appState.patterns = [{ tracks: [track], beatCount: 4 }]
             appState.selectedPatternIdx = 0
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
@@ -203,7 +203,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 pan: 0,
                 pitchLfo: { freq: 1, min: 0, max: 12, phase: 0.25, type: 'sine' },
                 stepsPerBeat: 4,
-                nbBeats: 4,
+                beatCount: 4,
                 loopAtStep: 16,
                 filterType: 'lowpass',
                 filterFreq: 0.5,
@@ -223,7 +223,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 soundId: '',
                 swingAmount: 0,
             }
-            appState.patterns = [{ tracks: [track], nbBeats: 4 }]
+            appState.patterns = [{ tracks: [track], beatCount: 4 }]
             appState.selectedPatternIdx = 0
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
@@ -247,7 +247,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 pan: 0,
                 velocityLfo: { freq: 1, min: 0.6, max: 1, phase: 0.25, type: 'sine' },
                 stepsPerBeat: 4,
-                nbBeats: 4,
+                beatCount: 4,
                 loopAtStep: 16,
                 filterType: 'lowpass',
                 filterFreq: 0.5,
@@ -267,7 +267,7 @@ describe('LFO Pitch Replacement Semantics', () => {
                 soundId: '',
                 swingAmount: 0,
             }
-            appState.patterns = [{ tracks: [track], nbBeats: 4 }]
+            appState.patterns = [{ tracks: [track], beatCount: 4 }]
             appState.selectedPatternIdx = 0
             serviceRegistry.transport = { isRunning: true, tick: 0 }
 
@@ -288,7 +288,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             return {
                 name,
                 stepsPerBeat: 4,
-                nbBeats: 4,
+                beatCount: 4,
                 mute: false,
                 velocity: 0.8,
                 pitch: opts.pitch ?? 0,
@@ -303,7 +303,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             const pattern = {
                 name: 'PitchReplace',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     makeTrack('KICK', {
                         pitchLfo: { freq: 1, min: 0, max: 12, phase: 0.25 },
@@ -326,7 +326,7 @@ describe('LFO Pitch Replacement Semantics', () => {
             const pattern = {
                 name: 'NoLfoPitch',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     makeTrack('KICK', {
                         pitchLfo: null,

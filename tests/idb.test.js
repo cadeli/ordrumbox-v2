@@ -343,4 +343,125 @@ describe('IndexedDB helpers', () => {
             delete idbModule.MIGRATIONS[91]
         }
     })
+
+    // ─── MIGRATIONS[5]: nbBeats → beatCount ─────────────────────────────────
+
+    /**
+     * Fake cursor walk that mimics IDB: the request fires only once the caller
+     * has assigned onsuccess, and continue() re-enters it with the next row.
+     */
+    function fakeStoreWith(entries) {
+        let fire = null
+        const store = {
+            openCursor: () => {
+                const request = { onsuccess: null, result: null }
+                let i = 0
+                const step = () => {
+                    if (i >= entries.length) {
+                        request.result = null
+                        request.onsuccess?.()
+                        return
+                    }
+                    request.result = {
+                        key: entries[i].key,
+                        value: entries[i].value,
+                        update: (v) => {
+                            entries[i].value = v
+                        },
+                        continue: () => {
+                            i += 1
+                            step()
+                        },
+                    }
+                    request.onsuccess?.()
+                }
+                fire = step
+                return request
+            },
+        }
+        return { store, start: () => fire?.() }
+    }
+
+    function runMigration5(storesByName) {
+        const handles = []
+        const db = { objectStoreNames: { contains: (n) => Object.hasOwn(storesByName, n) } }
+        const tx = {
+            objectStore: (name) => {
+                const h = fakeStoreWith(storesByName[name])
+                handles.push(h)
+                return h.store
+            },
+        }
+        idbModule.MIGRATIONS[5](db, tx)
+        for (const h of handles) h.start()
+    }
+
+    describe('MIGRATIONS[5] renames nbBeats to beatCount', () => {
+        it('rewrites songs stored raw, on patterns and their tracks', () => {
+            const songs = [
+                {
+                    key: 'my song',
+                    value: {
+                        name: 'my song',
+                        patterns: [
+                            { name: 'A', nbBeats: 8, tracks: [{ name: 'KICK', nbBeats: 8 }] },
+                            { name: 'B', nbBeats: 3, tracks: [{ name: 'SNARE', nbBeats: 3 }] },
+                        ],
+                    },
+                },
+            ]
+
+            runMigration5({ songs })
+
+            const song = songs[0].value
+            expect(song.patterns[0].beatCount).toBe(8)
+            expect(song.patterns[0].tracks[0].beatCount).toBe(8)
+            expect(song.patterns[1].beatCount).toBe(3)
+            expect(song.patterns[1].tracks[0].beatCount).toBe(3)
+            expect(JSON.stringify(song)).not.toContain('nbBeats')
+        })
+
+        it('rewrites the {data} envelope used by the patterns cache', () => {
+            const patterns = [
+                {
+                    key: 'song.json',
+                    value: {
+                        data: { patterns: [{ nbBeats: 16, tracks: [{ nbBeats: 16 }] }] },
+                        savedAt: 1700000000000,
+                        store: 'patterns',
+                    },
+                },
+            ]
+
+            runMigration5({ patterns })
+
+            const entry = patterns[0].value
+            expect(entry.data.patterns[0].beatCount).toBe(16)
+            expect(entry.data.patterns[0].tracks[0].beatCount).toBe(16)
+            // The cache TTL must not be refreshed by the migration.
+            expect(entry.savedAt).toBe(1700000000000)
+        })
+
+        it('leaves already-migrated data alone', () => {
+            const songs = [{ key: 'ok', value: { patterns: [{ beatCount: 4, tracks: [{ beatCount: 4 }] }] } }]
+
+            runMigration5({ songs })
+
+            expect(songs[0].value.patterns[0].beatCount).toBe(4)
+        })
+
+        it('does not overwrite a beatCount already present', () => {
+            const songs = [{ key: 'both', value: { patterns: [{ nbBeats: 8, beatCount: 6, tracks: [] }] } }]
+
+            runMigration5({ songs })
+
+            expect(songs[0].value.patterns[0].beatCount).toBe(6)
+            expect(songs[0].value.patterns[0].nbBeats).toBeUndefined()
+        })
+
+        it('is a no-op when there is no transaction', () => {
+            const db = { objectStoreNames: { contains: () => true } }
+            expect(() => idbModule.MIGRATIONS[5](db, null)).not.toThrow()
+        })
+    })
 })

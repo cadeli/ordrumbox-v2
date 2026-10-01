@@ -198,7 +198,7 @@ export default class MenuSection {
 
         const sequence = getSequence(this.#sequenceIdx)
         if (!sequence) return
-        const beatCount = pattern.nbBeats ?? track.nbBeats ?? 4
+        const beatCount = pattern.beatCount ?? track.beatCount ?? 4
         const planned = buildSequenceNotes(sequence, tonic, beatCount)
         if (planned.length === 0) return
 

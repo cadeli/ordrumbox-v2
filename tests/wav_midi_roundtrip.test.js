@@ -15,7 +15,7 @@
  * - Variations (frozen at export)
  * - Note velocity / pitch
  * - Probability (prob, every) - frozen at export
- * - Track patterns (stepsPerBeat, nbBeats, loopAtStep)
+ * - Track patterns (stepsPerBeat, beatCount, loopAtStep)
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
@@ -175,11 +175,11 @@ function createComplexPattern() {
     return {
         name: 'RoundTripTest',
         bpm: 120,
-        nbBeats: 4,
+        beatCount: 4,
         tracks: [
             {
                 name: 'KICK',
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
                 velocity: 1.0, // No track base velocity
                 pitch: 0, // No track base pitch
@@ -213,7 +213,7 @@ function createComplexPattern() {
             },
             {
                 name: 'SNARE',
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
                 velocity: 1.0,
                 pitch: 0,
@@ -263,7 +263,7 @@ function createComplexPattern() {
             },
             {
                 name: 'CHH',
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
                 velocity: 1.0,
                 pitch: 0,
@@ -313,7 +313,7 @@ function createComplexPattern() {
             },
             {
                 name: 'TOM',
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
                 velocity: 1.0,
                 pitch: 0,
@@ -345,7 +345,7 @@ function createComplexPattern() {
             },
             {
                 name: 'CLAP',
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
                 velocity: 1.0,
                 pitch: 0,
@@ -704,15 +704,15 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
 
     // ── Parameterized: MIDI roundtrip across different subdivisions ───────────────
 
-    describe.each(PARAM_SETS)('MIDI roundtrip — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    describe.each(PARAM_SETS)('MIDI roundtrip — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
         it('note positions survive MIDI export → import', () => {
             const pat = cmd.addPattern('ParamRT')
             pat.bpm = bpm
-            pat.nbBeats = nbBeats
+            pat.beatCount = beatCount
             const track = cmd.addTrack(pat, 'KICK', stepsPerBeat)
 
             // Place notes at beat boundaries
-            const nBeats = Math.min(nbBeats, 4)
+            const nBeats = Math.min(beatCount, 4)
             for (let b = 0; b < nBeats; b++) {
                 cmd.addNote(track, b, 0, 0)
             }
@@ -733,7 +733,7 @@ describe('MIDI Round-trip: Pattern → MIDI → Import → Compare', () => {
         it('retriggers produce correct note count', () => {
             const pat = cmd.addPattern('ParamRetrig')
             pat.bpm = bpm
-            pat.nbBeats = nbBeats
+            pat.beatCount = beatCount
             const track = cmd.addTrack(pat, 'SNARE', stepsPerBeat)
             cmd.addNote(track, 0, 0, 0)
             // Set retriggerNum on the note

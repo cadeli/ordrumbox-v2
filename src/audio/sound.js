@@ -154,7 +154,7 @@ export default class Sound {
                 let lfoContext = null
                 if (flatNote.track.pitchLfo) {
                     const tick = serviceRegistry.transport?.tick ?? 0
-                    const nbTicks = TICK * (flatNote.track.nbBeats ?? 4)
+                    const nbTicks = TICK * (flatNote.track.beatCount ?? 4)
                     lfoContext = { tick, nbTicks }
                 }
                 await voice.setup(flatNote, time, lfoContext)

@@ -184,7 +184,7 @@ export default class PatternSettingsPanel {
         if (isNaN(val)) return
         const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return
-        serviceRegistry.cmd.setPatternNbBeats(pattern, val)
+        serviceRegistry.cmd.setPatternBeatCount(pattern, val)
         serviceRegistry.cmd.resetPage()
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
@@ -331,7 +331,7 @@ export default class PatternSettingsPanel {
         const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return
 
-        this.#beatsSelect.value = pattern.nbBeats ?? 4
+        this.#beatsSelect.value = pattern.beatCount ?? 4
 
         const maxPage = maxPageFor(pattern)
         this.#pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`

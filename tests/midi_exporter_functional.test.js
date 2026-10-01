@@ -49,7 +49,7 @@ function allNoteOns(bytes) {
 // ─── Pattern builders ─────────────────────────────────────────────────────────
 
 function track(name, stepsPerBeat, beats, loopPointBeat, notes, opts = {}) {
-    return makeTrack(name, notes, { stepsPerBeat, nbBeats: beats, loopPointBeat: loopPointBeat ?? beats, ...opts })
+    return makeTrack(name, notes, { stepsPerBeat, beatCount: beats, loopPointBeat: loopPointBeat ?? beats, ...opts })
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -63,7 +63,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const pattern = {
             name: 'FourOnFloor',
             bpm: 120,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 track('KICK', 4, 4, 4, [
                     makeNote(0, 0, { velocity: 1.0 }),
@@ -147,7 +147,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const pattern = {
             name: 'ShortLoop',
             bpm: 120,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 track('KICK', 4, 4, 2 /* loopPointBeat */, [
                     makeNote(0, 0, { velocity: 0.8 }),
@@ -188,7 +188,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const pattern = {
             name: 'TrigFreq',
             bpm: 120,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 track('KICK', 4, 4, 4, [
                     makeNote(0, 0, { velocity: 1.0 }), // always
@@ -252,7 +252,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const pattern = {
             name: 'Retrigger',
             bpm: 120,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [track('KICK', 4, 4, 4, [makeNote(0, 0, { velocity: 0.8, retriggerNum: 4, rate: 1 })])],
         }
 
@@ -307,7 +307,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const pattern = {
             name: 'RetrigCoarse',
             bpm: 120,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [track('SNARE', 4, 4, 4, [makeNote(0, 0, { velocity: 0.9, retriggerNum: 3, rate: 4 })])],
         }
 
@@ -341,7 +341,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const pattern = {
             name: 'Arp',
             bpm: 120,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 track('SNARE', 4, 4, 4, [
                     makeNote(0, 0, {
@@ -403,7 +403,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const pattern = {
             name: 'ArpDown',
             bpm: 120,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 track('SNARE', 4, 4, 4, [
                     makeNote(0, 0, {
@@ -446,7 +446,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const pattern = {
             name: 'ArpUpDown',
             bpm: 120,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 track('SNARE', 4, 4, 4, [
                     makeNote(0, 0, {
@@ -479,7 +479,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const pattern = {
             name: 'Melodic',
             bpm: 100,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 track('SNARE', 4, 4, 4, [
                     makeNote(0, 0, { velocity: 0.7, pitch: -5 }),
@@ -530,7 +530,7 @@ describe('MidiExporter — functional end-to-end', () => {
         const complexPattern = {
             name: 'Complex',
             bpm: 130,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 // KICK: four-on-the-floor, 2-beat loop
                 track('KICK', 4, 4, 2, [makeNote(0, 0, { velocity: 1.0 }), makeNote(1, 0, { velocity: 0.85 })]),
@@ -685,7 +685,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'Edge',
                 bpm: 120,
-                nbBeats: 4,
+                beatCount: 4,
                 tracks: [track('KICK', 4, 4, 4, [makeNote(3, 3, { velocity: 0.5 })])],
             }
             const fm = recomputeFlatNotes(pattern, 0)
@@ -705,7 +705,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'MuteTest',
                 bpm: 120,
-                nbBeats: 4,
+                beatCount: 4,
                 tracks: [
                     track('KICK', 4, 4, 4, [makeNote(0, 0)], { mute: false }),
                     track('SNARE', 4, 4, 4, [makeNote(1, 0)], { mute: true }),
@@ -723,7 +723,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'Truncate',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 3, { velocity: 0.8, retriggerNum: 10, rate: 2 })])],
             }
             const fm = recomputeFlatNotes(pattern, 0)
@@ -745,7 +745,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'Always',
                 bpm: 120,
-                nbBeats: 4,
+                beatCount: 4,
                 tracks: [track('KICK', 4, 4, 4, [makeNote(0, 0, { prob: 1 })])],
             }
             for (let i = 0; i < 10; i++) {
@@ -760,7 +760,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'Never',
                 bpm: 120,
-                nbBeats: 4,
+                beatCount: 4,
                 tracks: [track('KICK', 4, 4, 4, [makeNote(0, 0, { prob: 0 })])],
             }
             for (let i = 0; i < 10; i++) {
@@ -770,7 +770,7 @@ describe('MidiExporter — functional end-to-end', () => {
         })
 
         it('pattern with 0 tracks exports valid but empty MIDI', () => {
-            const pattern = { name: 'Empty', bpm: 120, nbBeats: 4, tracks: [] }
+            const pattern = { name: 'Empty', bpm: 120, beatCount: 4, tracks: [] }
             const im = new InstrumentsManager()
             const exporter = new MidiExporter(im)
             const midiBytes = Array.from(exporter.export(pattern, { loops: 1 }))
@@ -793,7 +793,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LfoVelo',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 1.0 })], {
                         velocityLfo: { freq: 1, min: 0, max: 1, phase: 0.25 },
@@ -815,7 +815,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LfoVeloPeak',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track(
                         'KICK',
@@ -845,7 +845,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LfoVeloTrough',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 1.0 })], {
                         velocityLfo: { freq: 1, min: 0, max: 1, phase: 0 },
@@ -865,7 +865,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LfoPitch',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: 0 })], {
                         pitchLfo: { freq: 1, min: 0, max: 12, phase: 0.25 },
@@ -883,7 +883,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LfoPitchAdd',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: 5 })], {
                         pitchLfo: { freq: 1, min: 0, max: 12, phase: 0.25 },
@@ -901,7 +901,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'NoVeloLfo',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 0.5 })], { velocityLfo: null })],
             }
             const im = new InstrumentsManager()
@@ -915,7 +915,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'NoPitchLfo',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: 5 })], { pitchLfo: null })],
             }
             const im = new InstrumentsManager()
@@ -939,7 +939,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LfoVeloPerStep',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track(
                         'KICK',
@@ -973,7 +973,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LfoPitchClamp',
                 bpm: 120,
-                nbBeats: 4,
+                beatCount: 4,
                 tracks: [
                     track('KICK', 4, 4, 4, [makeNote(0, 0, { pitch: 0 }), makeNote(1, 0, { pitch: 0 })], {
                         pitchLfo: { freq: 1 / 64, min: 50, max: 200, phase: 0.5 },
@@ -993,7 +993,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const basePattern = {
                 name: 'NoLfo',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 0.8 })])],
             }
             const withFilterLfos = {
@@ -1018,7 +1018,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'VeloLfoReplace',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 1.0 })], {
                         velocityLfo: { freq: 1, min: 0, max: 1, phase: 0.25 },
@@ -1036,7 +1036,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LfoPitchNeg',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: -3 })], {
                         pitchLfo: { freq: 1, min: 0, max: 12, phase: 0.25 },
@@ -1054,7 +1054,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LfoPitchClampLow',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: 0 })], {
                         pitchLfo: { freq: 1, min: -50, max: -10, phase: 0 },
@@ -1076,7 +1076,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const base = {
                 name: 'PanLfoBase',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 0.8 })])],
             }
             const withPan = {
@@ -1103,13 +1103,13 @@ describe('MidiExporter — functional end-to-end', () => {
             const basePattern = {
                 name: 'EuclidBase',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0), makeNote(0, 2)])],
             }
             const euclidPattern = {
                 name: 'EuclidFill',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [
                         makeNote(0, 0, { euclideanFill: 2 }),
@@ -1135,7 +1135,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'ArpNoFire',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('SNARE', 4, 1, 1, [
                         makeNote(0, 0, {
@@ -1162,7 +1162,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'LoopStep',
                 bpm: 120,
-                nbBeats: 4,
+                beatCount: 4,
                 tracks: [
                     track('KICK', 4, 4, 2, [makeNote(0, 0, { velocity: 0.8 }), makeNote(1, 0, { velocity: 0.8 })], {
                         loopPointStep: 4,
@@ -1183,7 +1183,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'HalfBar',
                 bpm: 120,
-                nbBeats: 4,
+                beatCount: 4,
                 tracks: [track('KICK', 2, 4, 4, [makeNote(0, 0, { velocity: 0.8 })])],
             }
             const im = new InstrumentsManager()
@@ -1200,7 +1200,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'DoubleTime',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('SNARE', 8, 1, 1, [makeNote(0, 0, { velocity: 0.9 }), makeNote(0, 4, { velocity: 0.9 })]),
                 ],
@@ -1220,7 +1220,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'RetrigLfo',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 0.5, retriggerNum: 3, rate: 4 })], {
                         velocityLfo: { freq: 2.0, min: 0.3, max: 1.0, phase: 0 },
@@ -1246,7 +1246,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'RetrigPitchLfo',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: 2, retriggerNum: 2, rate: 4 })], {
                         pitchLfo: { freq: 1 / 32, min: 0, max: 6, phase: 0 },
@@ -1271,7 +1271,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'Unknown',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('ZZZ_QQQ_UNRECOGNIZED', 4, 1, 1, [makeNote(0, 0, { velocity: 0.8 })])],
             }
             const im = new InstrumentsManager()
@@ -1291,7 +1291,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'BpmTest',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0)])],
             }
             const im = new InstrumentsManager()
@@ -1312,7 +1312,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'MultiLfo',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 1.0 })], {
                         velocityLfo: { freq: 1, min: 0, max: 1, phase: 0.25 },
@@ -1341,7 +1341,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'OneBar',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0), makeNote(0, 1), makeNote(0, 2), makeNote(0, 3)])],
             }
             const im = new InstrumentsManager()
@@ -1355,7 +1355,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'OneBar',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0), makeNote(0, 1), makeNote(0, 2), makeNote(0, 3)])],
             }
             const im = new InstrumentsManager()
@@ -1373,7 +1373,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'PitchHigh',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: 91 })])],
             }
             const im = new InstrumentsManager()
@@ -1387,7 +1387,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'PitchLow',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0, { pitch: -40 })])],
             }
             const im = new InstrumentsManager()
@@ -1405,7 +1405,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'VeloZero',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 0 })])],
             }
             const im = new InstrumentsManager()
@@ -1419,7 +1419,7 @@ describe('MidiExporter — functional end-to-end', () => {
             const pattern = {
                 name: 'VeloHalf',
                 bpm: 120,
-                nbBeats: 1,
+                beatCount: 1,
                 tracks: [track('KICK', 4, 1, 1, [makeNote(0, 0, { velocity: 0.5 })])],
             }
             const im = new InstrumentsManager()
@@ -1431,13 +1431,13 @@ describe('MidiExporter — functional end-to-end', () => {
     })
 })
 
-describe.each(PARAM_SETS)('MIDI functional — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+describe.each(PARAM_SETS)('MIDI functional — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
     it('exports correct note count', () => {
-        const nBeats = Math.max(2, nbBeats)
+        const nBeats = Math.max(2, beatCount)
         const p = makePattern({
             name: 'ParamMidiFunc',
             bpm,
-            nbBeats: nBeats,
+            beatCount: nBeats,
             tracks: [
                 track('KICK', stepsPerBeat, nBeats, nBeats, [
                     makeNote(0, 0, { velocity: 1.0 }),

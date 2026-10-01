@@ -242,7 +242,7 @@ export default class MelodyGenerate extends BaseGenerator {
 
         const strongIntervals = config.strongBeatIntervals ?? [0, 4, 7]
 
-        for (let beat = 0; beat < (melodyTrack.nbBeats ?? 1); beat++) {
+        for (let beat = 0; beat < (melodyTrack.beatCount ?? 1); beat++) {
             let lastStepNote = pitchBias
             for (let step = 0; step < stepsPerBeat; step++) {
                 const absoluteStep = beat * stepsPerBeat + step
@@ -293,7 +293,7 @@ export default class MelodyGenerate extends BaseGenerator {
         const retriggerNum = config.retriggerNum ?? 1
         const rate = config.rate ?? 1
 
-        for (let beat = 0; beat < (melodyTrack.nbBeats ?? 1); beat++) {
+        for (let beat = 0; beat < (melodyTrack.beatCount ?? 1); beat++) {
             let step = 0
             let noteIndex = 0
 

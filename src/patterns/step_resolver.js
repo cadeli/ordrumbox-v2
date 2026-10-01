@@ -46,7 +46,7 @@ export function buildOccupiedSet(track) {
  */
 export function resolveSpanEnd(note, track, occupied) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
-    const last = stepsPerBeat * (track.nbBeats ?? 4)
+    const last = stepsPerBeat * (track.beatCount ?? 4)
     const first = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
 
     let end = last

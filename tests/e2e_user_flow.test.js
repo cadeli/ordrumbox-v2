@@ -56,7 +56,7 @@ describe('E2E Flow 1 — Create pattern and build beat', () => {
         expect(appState.patterns).toContain(pat)
         expect(pat.name).toBe('My Beat')
         expect(pat.bpm).toBe(120)
-        expect(pat.nbBeats).toBe(4)
+        expect(pat.beatCount).toBe(4)
         expect(pat.tracks).toEqual([])
     })
 
@@ -81,7 +81,7 @@ describe('E2E Flow 1 — Create pattern and build beat', () => {
         expect(bass.name).toBe('BASS')
 
         for (const t of pat.tracks) {
-            expect(t.nbBeats).toBe(4)
+            expect(t.beatCount).toBe(4)
             expect(t.stepsPerBeat).toBe(4)
             expect(t.loopAtStep).toBe(16)
             expect(t.notes).toEqual([])
@@ -878,11 +878,11 @@ describe('E2E Flow 9 — Full user session simulation', () => {
         const originalJson = {
             name: 'Imported Beat',
             bpm: 135,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 {
                     name: 'KICK',
-                    nbBeats: 4,
+                    beatCount: 4,
                     stepsPerBeat: 4,
                     loopAtStep: 16,
                     notes: [
@@ -894,7 +894,7 @@ describe('E2E Flow 9 — Full user session simulation', () => {
                 },
                 {
                     name: 'SNARE',
-                    nbBeats: 4,
+                    beatCount: 4,
                     stepsPerBeat: 4,
                     loopAtStep: 16,
                     notes: [

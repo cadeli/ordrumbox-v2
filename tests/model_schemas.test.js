@@ -92,7 +92,7 @@ describe('Instrument', () => {
 describe('track_schema', () => {
     it('TRACK_DEFAULTS pins the canonical core defaults', () => {
         expect(TRACK_DEFAULTS.name).toBe('')
-        expect(TRACK_DEFAULTS.nbBeats).toBe(4)
+        expect(TRACK_DEFAULTS.beatCount).toBe(4)
         expect(TRACK_DEFAULTS.stepsPerBeat).toBe(4)
         expect(TRACK_DEFAULTS.loopAtStep).toBeNull()
         expect(TRACK_DEFAULTS.velocity).toBe(1)
@@ -110,7 +110,7 @@ describe('track_schema', () => {
         expect(input).toEqual({ name: 'KICK', velocity: 0.5 })
         expect(normalized.name).toBe('KICK')
         expect(normalized.velocity).toBe(0.5)
-        expect(normalized.nbBeats).toBe(4)
+        expect(normalized.beatCount).toBe(4)
         expect(normalized.filterQ).toBe(0.707)
         expect(normalized.notes).toEqual([])
     })
@@ -140,7 +140,7 @@ describe('track_schema', () => {
     it('TRACK_VALUE_RANGES documents the clamp ranges used by updateTrack', () => {
         expect(TRACK_VALUE_RANGES.velocity).toEqual({ min: 0, max: 1 })
         expect(TRACK_VALUE_RANGES.pan).toEqual({ min: -1, max: 1 })
-        expect(TRACK_VALUE_RANGES.nbBeats).toEqual({ min: 1, max: 16 })
+        expect(TRACK_VALUE_RANGES.beatCount).toEqual({ min: 1, max: 16 })
         expect(TRACK_VALUE_RANGES.stepsPerBeat).toEqual({ min: 1, max: 8 })
         expect(TRACK_VALUE_RANGES.filterQ).toEqual({ min: 0.707, max: 18.707 })
         expect(TRACK_VALUE_RANGES.variation).toEqual({ min: 0, max: 100 })

@@ -27,7 +27,7 @@ describe('Commander mixin contract', () => {
     it('a spread copy still drives the real instance', () => {
         const cmd = new Commander()
         const copy = { ...cmd }
-        const track = { name: 'T', stepsPerBeat: 4, nbBeats: 4, notes: [] }
+        const track = { name: 'T', stepsPerBeat: 4, beatCount: 4, notes: [] }
         copy.addNote(track, 0, 0, 5)
         expect(track.notes).toHaveLength(1)
         expect(track.notes[0].beat).toBe(0)

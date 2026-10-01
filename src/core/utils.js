@@ -28,7 +28,7 @@ export default class Utils {
     static TRACK_RECALCULATED = TRACK_RECALCULATED
 
     static PATTERN_DEFAULTS = {
-        nbBeats: 4,
+        beatCount: 4,
         bpm: 120,
         description: '',
         tags: [],
@@ -134,7 +134,7 @@ export default class Utils {
 
     static getTrackStepLength = (track) => {
         const stepsPerBeat = Number(track?.stepsPerBeat)
-        const beats = Number(track?.nbBeats)
+        const beats = Number(track?.beatCount)
         const declaredSteps =
             Number.isFinite(beats) && beats > 0 && Number.isFinite(stepsPerBeat) && stepsPerBeat > 0
                 ? Math.floor(beats * stepsPerBeat)

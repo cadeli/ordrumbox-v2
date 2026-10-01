@@ -79,8 +79,8 @@ describe('Undo policy — track parameters (cmd.updateTrack)', () => {
         expect(track.loopPointStep).toBeUndefined()
         expect(history.pastLength).toBe(0)
 
-        cmd.updateTrack(track, { nbBeats: 8 })
-        expect(track.nbBeats).toBe(8)
+        cmd.updateTrack(track, { beatCount: 8 })
+        expect(track.beatCount).toBe(8)
         expect(history.pastLength).toBe(1)
     })
 

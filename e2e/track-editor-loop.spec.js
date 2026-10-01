@@ -40,9 +40,9 @@ function readTrack(page) {
         return {
             idx: tracks.indexOf(t) >= 0 ? tracks.indexOf(t) : idx,
             stepsPerBeat: t?.stepsPerBeat ?? 4,
-            loopAtStep: t?.loopAtStep ?? (t?.nbBeats ?? 4) * (t?.stepsPerBeat ?? 4),
-            nbBeats: t?.nbBeats ?? 4,
-            patternNbBeats: pattern?.nbBeats ?? 4,
+            loopAtStep: t?.loopAtStep ?? (t?.beatCount ?? 4) * (t?.stepsPerBeat ?? 4),
+            beatCount: t?.beatCount ?? 4,
+            patternBeatCount: pattern?.beatCount ?? 4,
         }
     })
 }
@@ -84,7 +84,7 @@ test.describe('Track Editor loop tab — Steps/Beat & Loop Point', () => {
         const input = page.locator('#te-panel input[data-loop="loopAtStep"]')
         const display = page.locator('#te-panel .ne-val[data-loop="loopAtStep"]')
 
-        const maxSteps = before.nbBeats * before.stepsPerBeat
+        const maxSteps = before.beatCount * before.stepsPerBeat
         // Pick a loop point strictly inside the track (1..maxSteps), different from current.
         const after = before.loopAtStep === Math.min(8, maxSteps) ? Math.min(4, maxSteps) : Math.min(8, maxSteps)
         expect(after).toBeGreaterThanOrEqual(1)
@@ -110,7 +110,7 @@ test.describe('Track Editor loop tab — Steps/Beat & Loop Point', () => {
 
         const before = await readTrack(page)
         // Force a high loop point, then drop stepsPerBeat so maxSteps shrinks.
-        const maxBefore = before.nbBeats * before.stepsPerBeat
+        const maxBefore = before.beatCount * before.stepsPerBeat
         if (before.loopAtStep !== maxBefore) {
             await page.locator('#te-panel input[data-loop="loopAtStep"]').fill(String(maxBefore))
             await expect.poll(async () => (await readTrack(page)).loopAtStep, { timeout: 3_000 }).toBe(maxBefore)
@@ -119,7 +119,7 @@ test.describe('Track Editor loop tab — Steps/Beat & Loop Point', () => {
         const newSpb = before.stepsPerBeat === 1 ? 2 : 1
         await page.locator('#te-panel input[data-loop="stepsPerBeat"]').fill(String(newSpb))
 
-        const maxAfter = before.nbBeats * newSpb
+        const maxAfter = before.beatCount * newSpb
         await expect.poll(async () => (await readTrack(page)).stepsPerBeat, { timeout: 3_000 }).toBe(newSpb)
         await expect
             .poll(async () => (await readTrack(page)).loopAtStep, { timeout: 3_000 })

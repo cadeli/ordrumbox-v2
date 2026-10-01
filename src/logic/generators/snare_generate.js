@@ -150,7 +150,7 @@ export default class SnareGenerate extends BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 1)
         const stepsPerBeat = snareTrack.stepsPerBeat ?? 4
 
-        const lastBar = Math.max(0, (snareTrack.nbBeats ?? 1) - 1)
+        const lastBar = Math.max(0, (snareTrack.beatCount ?? 1) - 1)
         const lastStep = Math.max(0, stepsPerBeat - 1)
         const retriggerNum = config.retriggerNum ?? 4
         const rate = config.rate ?? 1
@@ -187,8 +187,8 @@ export default class SnareGenerate extends BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(snareTrack, config, 2)
         const stepsPerBeat = snareTrack.stepsPerBeat ?? 4
 
-        const startBar = Math.max(0, (snareTrack.nbBeats ?? 1) - (config.startBarOffset ?? 1))
-        for (let beat = startBar; beat < (snareTrack.nbBeats ?? 1); beat++) {
+        const startBar = Math.max(0, (snareTrack.beatCount ?? 1) - (config.startBarOffset ?? 1))
+        for (let beat = startBar; beat < (snareTrack.beatCount ?? 1); beat++) {
             config.steps.forEach((step) => {
                 if (step >= stepsPerBeat || Math.random() >= config.density * density) return
 
@@ -212,8 +212,8 @@ export default class SnareGenerate extends BaseGenerator {
 
     generateBreakCrescendo = (snareTrack, config) => {
         const stepsPerBeat = snareTrack.stepsPerBeat ?? 4
-        const nbBeats = snareTrack.nbBeats ?? 1
-        const patternLength = nbBeats * stepsPerBeat
+        const beatCount = snareTrack.beatCount ?? 1
+        const patternLength = beatCount * stepsPerBeat
         const stepsBack = config.stepsBack ?? 16
         const startStep = Math.max(0, patternLength - stepsBack)
         const retriggerNumMax = config.retriggerNumMax ?? 0

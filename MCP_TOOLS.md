@@ -23,7 +23,7 @@ Creates a new empty pattern.
 ```json
 {
     "message": "Pattern created",
-    "pattern": { "name": "My Pattern", "nbBeats": 4, "tracks": [] },
+    "pattern": { "name": "My Pattern", "beatCount": 4, "tracks": [] },
     "filePath": "assets/data/patterns/my-pattern.json"
 }
 ```
@@ -52,13 +52,13 @@ Every track field is returned with its model default filled in (`TRACK_DEFAULTS`
     "description": "",
     "tags": [],
     "bpm": 120,
-    "nbBeats": 8,
+    "beatCount": 8,
     "tracks": [
         {
             "name": "KICK",
             "soundId": "NOT_DEFINED",
             "useAutoAssignSound": true,
-            "nbBeats": 8,
+            "beatCount": 8,
             "stepsPerBeat": 4,
             "loopAtStep": 32,
             "swingResolution": 1,
@@ -220,7 +220,7 @@ Numeric ranges come from the app model (`TRACK_VALUE_RANGES` in `src/model/track
 | `fxSelected`                                                                                                                    | string      |                                                                           | FX slot selected in the track editor (default reverb)                                                                 |
 | `loopAtStep`                                                                                                                    | integer     | 0-1024                                                                    | Loop point (absolute step index)                                                                                      |
 | `stepsPerBeat`                                                                                                                  | integer     | 1-8                                                                       | Steps per beat (subdivision)                                                                                          |
-| `nbBeats`                                                                                                                       | integer     | 1-16                                                                      | Number of beats for this track                                                                                        |
+| `beatCount`                                                                                                                     | integer     | 1-16                                                                      | Number of beats for this track                                                                                        |
 | `swingResolution`                                                                                                               | integer     | 1-8                                                                       | Swing grid resolution                                                                                                 |
 | `swingAmount`                                                                                                                   | number      | 0-1                                                                       | Swing intensity                                                                                                       |
 | `variation`                                                                                                                     | number      | 0-100                                                                     | Track variation (randomization budget)                                                                                |
@@ -366,16 +366,16 @@ Sets tags (categories/genre) for a pattern.
 
 ---
 
-### setPatternNbBeats
+### setPatternBeatCount
 
-Sets the number of beats for a pattern (1-16, `MAX_BEATS`). Every track follows: track `nbBeats` are resynced and loop points beyond the new length are clamped.
+Sets the number of beats for a pattern (1-16, `MAX_BEATS`). Every track follows: track `beatCount` are resynced and loop points beyond the new length are clamped.
 
 **Input:**
 
 ```json
 {
     "patternName": "My Beat",
-    "nbBeats": 8
+    "beatCount": 8
 }
 ```
 
@@ -385,7 +385,7 @@ Sets the number of beats for a pattern (1-16, `MAX_BEATS`). Every track follows:
 {
     "message": "Number of beats updated",
     "patternName": "My Beat",
-    "nbBeats": 8,
+    "beatCount": 8,
     "filePath": "..."
 }
 ```
@@ -529,7 +529,7 @@ Samples are resolved relative to `public/assets/kits/`.
 A track is divided into **beats**, and each beat is divided into **steps**.
 
 ```
-nbBeats: 4, stepsPerBeat: 4
+beatCount: 4, stepsPerBeat: 4
 
 Beat:    0         1         2         3
 Step:    0 1 2 3   0 1 2 3   0 1 2 3   0 1 2 3
@@ -540,9 +540,9 @@ Abs:     0 1 2 3   4 5 6 7   8 9 10 11 12 13 14 15
 
 - **`beat`** — beat index within the track (0-based). E.g. beat `0` = 1st beat, beat `3` = 4th beat.
 - **`beatStep`** — step index within the beat (0-based). E.g. beatStep `2` = 3rd step of the current beat.
-- **`nbBeats`** — total number of beats in the track.
+- **`beatCount`** — total number of beats in the track.
 - **`stepsPerBeat`** — number of steps per beat (e.g. 4 = 16th notes, 8 = 32nd notes).
-- **Total steps** = `nbBeats × stepsPerBeat`
+- **Total steps** = `beatCount × stepsPerBeat`
 
 ### Step Duration Calculation
 

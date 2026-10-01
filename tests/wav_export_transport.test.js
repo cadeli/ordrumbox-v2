@@ -44,7 +44,7 @@ class MockOfflineAudioContext {
 globalThis.OfflineAudioContext = MockOfflineAudioContext
 
 describe('WAV export — live transport preservation', () => {
-    const pattern = { name: 'TransportTest', bpm: 128, nbBeats: 1, tracks: [] }
+    const pattern = { name: 'TransportTest', bpm: 128, beatCount: 1, tracks: [] }
 
     beforeEach(() => {
         serviceRegistry.reset()

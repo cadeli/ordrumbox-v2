@@ -1,7 +1,7 @@
 // e2e/page-matrix.spec.js
 //
 // E2E-D: stepsPerBeat × page navigation matrix.
-// it.each on stepsPerBeat ∈ {1,2,4,8} × nbBeats ∈ {1,3,4,8}:
+// it.each on stepsPerBeat ∈ {1,2,4,8} × beatCount ∈ {1,3,4,8}:
 // toolbar announced page count equals actual rendered grid pages,
 // and the last page contains the last beat.
 
@@ -10,27 +10,27 @@ import { EVENTS } from '../src/core/events.js'
 import { BEATS_PER_PAGE } from '../src/core/constants.js'
 
 const COMBOS = [
-    { stepsPerBeat: 1, nbBeats: 1 },
-    { stepsPerBeat: 1, nbBeats: 3 },
-    { stepsPerBeat: 1, nbBeats: 4 },
-    { stepsPerBeat: 1, nbBeats: 8 },
-    { stepsPerBeat: 2, nbBeats: 1 },
-    { stepsPerBeat: 2, nbBeats: 3 },
-    { stepsPerBeat: 2, nbBeats: 4 },
-    { stepsPerBeat: 2, nbBeats: 8 },
-    { stepsPerBeat: 4, nbBeats: 1 },
-    { stepsPerBeat: 4, nbBeats: 3 },
-    { stepsPerBeat: 4, nbBeats: 4 },
-    { stepsPerBeat: 4, nbBeats: 8 },
-    { stepsPerBeat: 8, nbBeats: 1 },
-    { stepsPerBeat: 8, nbBeats: 3 },
-    { stepsPerBeat: 8, nbBeats: 4 },
-    { stepsPerBeat: 8, nbBeats: 8 },
+    { stepsPerBeat: 1, beatCount: 1 },
+    { stepsPerBeat: 1, beatCount: 3 },
+    { stepsPerBeat: 1, beatCount: 4 },
+    { stepsPerBeat: 1, beatCount: 8 },
+    { stepsPerBeat: 2, beatCount: 1 },
+    { stepsPerBeat: 2, beatCount: 3 },
+    { stepsPerBeat: 2, beatCount: 4 },
+    { stepsPerBeat: 2, beatCount: 8 },
+    { stepsPerBeat: 4, beatCount: 1 },
+    { stepsPerBeat: 4, beatCount: 3 },
+    { stepsPerBeat: 4, beatCount: 4 },
+    { stepsPerBeat: 4, beatCount: 8 },
+    { stepsPerBeat: 8, beatCount: 1 },
+    { stepsPerBeat: 8, beatCount: 3 },
+    { stepsPerBeat: 8, beatCount: 4 },
+    { stepsPerBeat: 8, beatCount: 8 },
 ]
 
-test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
-    for (const { stepsPerBeat, nbBeats } of COMBOS) {
-        test(`spb=${stepsPerBeat} beats=${nbBeats} → toolbar pages = rendered pages`, async ({ page }) => {
+test.describe('E2E-D : stepsPerBeat × beatCount page matrix', () => {
+    for (const { stepsPerBeat, beatCount } of COMBOS) {
+        test(`spb=${stepsPerBeat} beats=${beatCount} → toolbar pages = rendered pages`, async ({ page }) => {
             await page.goto('/')
             await page.locator('#waiting-screen-start-btn').click()
             await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
@@ -38,23 +38,23 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
 
             // A page is BEATS_PER_PAGE beats — stepsPerBeat subdivides a beat,
             // it does not change how many beats fit on a page. The old formula
-            // (ceil(nbBeats*spb/16)) counted steps per page, so at spb=8 the
+            // (ceil(beatCount*spb/16)) counted steps per page, so at spb=8 the
             // toolbar offered pages the grid could not render.
-            const expectedPages = Math.max(1, Math.ceil(nbBeats / BEATS_PER_PAGE))
+            const expectedPages = Math.max(1, Math.ceil(beatCount / BEATS_PER_PAGE))
 
             await page.evaluate(
-                ({ nbBeats, stepsPerBeat, patternMetaEvent, patternChangeEvent }) => {
+                ({ beatCount, stepsPerBeat, patternMetaEvent, patternChangeEvent }) => {
                     const { appState, playbackEvents } = window.__e2e
                     const pattern = appState.patterns[appState.selectedPatternIdx]
                     if (!pattern) return
 
-                    pattern.nbBeats = nbBeats
+                    pattern.beatCount = beatCount
                     const tracks = pattern.tracks ?? []
                     for (const track of tracks) {
-                        track.nbBeats = nbBeats
+                        track.beatCount = beatCount
                         track.stepsPerBeat = stepsPerBeat
-                        track.loopAtStep = nbBeats * stepsPerBeat
-                        if (track.loopPointBeat > nbBeats) track.loopPointBeat = nbBeats
+                        track.loopAtStep = beatCount * stepsPerBeat
+                        if (track.loopPointBeat > beatCount) track.loopPointBeat = beatCount
                     }
                     appState.currentPage = 0
                     playbackEvents.batch(() => {
@@ -63,7 +63,7 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
                     })
                 },
                 {
-                    nbBeats,
+                    beatCount,
                     stepsPerBeat,
                     patternMetaEvent: EVENTS.PATTERN_META_CHANGE,
                     patternChangeEvent: EVENTS.PATTERN_CHANGE,
@@ -77,7 +77,7 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
             const gridCells = await page.locator('.pp-cell').count()
             expect(gridCells).toBeGreaterThan(0)
 
-            const expectedMaxBeat = Math.min(nbBeats - 1, BEATS_PER_PAGE - 1)
+            const expectedMaxBeat = Math.min(beatCount - 1, BEATS_PER_PAGE - 1)
             const lastBeatOnPage = () =>
                 expect.poll(
                     () =>
@@ -102,7 +102,9 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
                 // Pages are full except the last: only the last page may be
                 // short, and it must end on the pattern's last beat.
                 const isLast = p === expectedPages - 1
-                await lastBeatOnPage().toBe(isLast ? nbBeats - 1 : Math.min(nbBeats - 1, (p + 1) * BEATS_PER_PAGE - 1))
+                await lastBeatOnPage().toBe(
+                    isLast ? beatCount - 1 : Math.min(beatCount - 1, (p + 1) * BEATS_PER_PAGE - 1),
+                )
 
                 if (isLast) {
                     await expect(page.locator('.tb-next-page')).toBeDisabled()

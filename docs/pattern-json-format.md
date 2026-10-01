@@ -18,7 +18,7 @@ Source of truth files:
 | ------------- | ---------- | ----------------------------- | ------------------------------------------------------------- |
 | `application` | `string`   | `"online-ordrumbox"`          | Application identifier. Stamped on export, not user-settable. |
 | `url`         | `string`   | `"https://www.ordrumbox.com"` | Application URL. Stamped on export, not user-settable.        |
-| `nbBeats`     | `integer`  | `4`                           | Beats per pattern (not per track). Range: 1–16.               |
+| `beatCount`   | `integer`  | `4`                           | Beats per pattern (not per track). Range: 1–16.               |
 | `bpm`         | `number`   | `120`                         | Tempo in beats per minute.                                    |
 | `description` | `string`   | `""`                          | Free-text description.                                        |
 | `tags`        | `string[]` | `[]`                          | Arbitrary tags for categorization.                            |
@@ -39,8 +39,8 @@ Source of truth files:
 | `name`               | `string`          | `""`            | —                                                    | Display name (e.g. `"KICK"`, `"SNARE"`).                                                |
 | `soundId`            | `string`          | `"NOT_DEFINED"` | —                                                    | URL or key of the assigned sample. `"NOT_DEFINED"` = no sound.                          |
 | `useAutoAssignSound` | `boolean`         | `true`          | —                                                    | Auto-assign sound by track name on load. Forced to `false` if `useSoftSynth` is `true`. |
-| `nbBeats`            | `integer`         | `4`             | 1–16                                                 | Beats in this track. Independent of the pattern-level `nbBeats`.                        |
-| `stepsPerBeat`       | `integer`         | `4`             | 1–8                                                  | Subdivision per beat. Total steps = `nbBeats × stepsPerBeat`.                           |
+| `beatCount`          | `integer`         | `4`             | 1–16                                                 | Beats in this track. Independent of the pattern-level `beatCount`.                      |
+| `stepsPerBeat`       | `integer`         | `4`             | 1–8                                                  | Subdivision per beat. Total steps = `beatCount × stepsPerBeat`.                         |
 | `loopAtStep`         | `integer \| null` | `null`          | 0–1024                                               | Loop point in steps. `null` = no loop (full track).                                     |
 | `swingResolution`    | `integer`         | `1`             | 1–8                                                  | Swing grid resolution.                                                                  |
 | `swingAmount`        | `number`          | `0`             | 0–1                                                  | Swing intensity.                                                                        |
@@ -219,7 +219,7 @@ All properties are optional. Missing values are filled from defaults.
 {
     "application": "online-ordrumbox",
     "url": "https://www.ordrumbox.com",
-    "nbBeats": 4,
+    "beatCount": 4,
     "bpm": 128,
     "description": "A test pattern",
     "tags": ["test", "demo"],
@@ -228,7 +228,7 @@ All properties are optional. Missing values are filled from defaults.
             "name": "KICK",
             "soundId": "samples/kick.wav",
             "useAutoAssignSound": false,
-            "nbBeats": 4,
+            "beatCount": 4,
             "stepsPerBeat": 4,
             "velocity": 0.9,
             "pitch": -2,
@@ -274,7 +274,7 @@ All properties are optional. Missing values are filled from defaults.
             "name": "SNARE",
             "soundId": "samples/snare.wav",
             "useAutoAssignSound": false,
-            "nbBeats": 4,
+            "beatCount": 4,
             "stepsPerBeat": 4,
             "notes": [
                 {
@@ -294,7 +294,7 @@ All properties are optional. Missing values are filled from defaults.
             "name": "SYNTH",
             "useSoftSynth": true,
             "synthSoundKey": "saw_pad",
-            "nbBeats": 4,
+            "beatCount": 4,
             "stepsPerBeat": 8,
             "pitchLfo": {
                 "freq": 4,
@@ -337,7 +337,7 @@ Applied by `updateTrack()` and MCP tools. Out-of-range values are clamped:
 | `velocity`         | 0   | 1     |
 | `pan`              | -1  | 1     |
 | `pitch`            | -24 | 24    |
-| `nbBeats`          | 1   | 16    |
+| `beatCount`        | 1   | 16    |
 | `stepsPerBeat`     | 1   | 8     |
 | `loopAtStep`       | 0   | 1024  |
 | `swingResolution`  | 1   | 8     |

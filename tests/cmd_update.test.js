@@ -21,7 +21,7 @@ vi.mock('../src/core/notify.js', () => ({ showToast: vi.fn() }))
 function makeTrack(overrides = {}) {
     return {
         name: 'KICK',
-        nbBeats: 4,
+        beatCount: 4,
         stepsPerBeat: 4,
         loopAtStep: 16,
         loopPointBeat: 4,
@@ -201,7 +201,7 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
         })
 
         it('clamps loopAtStep to the new bar length and re-derives the loop point', () => {
-            const track = makeTrack({ nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 })
+            const track = makeTrack({ beatCount: 4, stepsPerBeat: 4, loopAtStep: 16 })
 
             cmd.setStepsPerBeat(track, 2)
 

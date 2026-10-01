@@ -43,7 +43,7 @@ export default class BaseGenerator {
     }
 
     applyLoopPoint = (track, config) => {
-        const loopPointBeat = config.loopPointBeat ?? track.nbBeats ?? 1
+        const loopPointBeat = config.loopPointBeat ?? track.beatCount ?? 1
         const loopPointStep = config.loopPointStep ?? 0
         track.loopPointBeat = loopPointBeat
         track.loopPointStep = loopPointStep
@@ -151,7 +151,7 @@ export default class BaseGenerator {
         const pitchResolver = opts.pitchResolver ?? null
         const requiredSteps = config.requiredSteps ?? null
 
-        for (let beat = 0; beat < (track.nbBeats ?? 1); beat++) {
+        for (let beat = 0; beat < (track.beatCount ?? 1); beat++) {
             for (let step = 0; step < stepsPerBeat; step++) {
                 const absoluteStep = beat * stepsPerBeat + step
                 if (absoluteStep >= loopPointAbsolute) continue

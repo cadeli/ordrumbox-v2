@@ -118,7 +118,7 @@ describe('Soft Synth Editor display', () => {
             saturationActive: false,
             swingAmount: 0,
             swingMode: 'off',
-            nbBeats: 4,
+            beatCount: 4,
             stepsPerBeat: 4,
             loopLength: 4,
             loopEnabled: false,

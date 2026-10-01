@@ -217,7 +217,7 @@ export default class PercGenerate extends BaseGenerator {
             const pitchPattern = config.pitchPattern ?? []
             const accentEvery = config.accentEvery ?? 4
 
-            for (let beat = 0; beat < (percTrack.nbBeats ?? 1); beat++) {
+            for (let beat = 0; beat < (percTrack.beatCount ?? 1); beat++) {
                 for (let step = 0; step < 16; step++) {
                     const absoluteStep = beat * 16 + step
                     if (absoluteStep >= loopPointAbsolute) continue
@@ -252,7 +252,7 @@ export default class PercGenerate extends BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const stepsPerBeat = percTrack.stepsPerBeat ?? 4
 
-        for (let beat = 0; beat < (percTrack.nbBeats ?? 1); beat++) {
+        for (let beat = 0; beat < (percTrack.beatCount ?? 1); beat++) {
             const steps = beat % 2 === 0 ? config.callSteps : config.responseSteps
             steps.forEach((step) => {
                 if (step >= stepsPerBeat || Math.random() >= config.density * density) return
@@ -280,7 +280,7 @@ export default class PercGenerate extends BaseGenerator {
         const loopPointAbsolute = this.getLoopPointAbsolute(percTrack, config, 2)
         const stepsPerBeat = percTrack.stepsPerBeat ?? 4
 
-        const startBar = Math.max(0, (percTrack.nbBeats ?? 1) - (config.startBarOffset ?? 1))
+        const startBar = Math.max(0, (percTrack.beatCount ?? 1) - (config.startBarOffset ?? 1))
         config.steps.forEach((step, index) => {
             if (step >= stepsPerBeat) return
 
@@ -314,7 +314,7 @@ export default class PercGenerate extends BaseGenerator {
         const stepsPerBeat = percTrack.stepsPerBeat ?? 4
         const probability = config.probability ?? 0.1
 
-        for (let beat = 0; beat < (percTrack.nbBeats ?? 1); beat++) {
+        for (let beat = 0; beat < (percTrack.beatCount ?? 1); beat++) {
             for (let step = 0; step < stepsPerBeat; step++) {
                 const absoluteStep = beat * stepsPerBeat + step
                 if (absoluteStep >= loopPointAbsolute) continue

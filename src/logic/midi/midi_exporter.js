@@ -220,9 +220,9 @@ export default class MidiExporter {
         if (!pattern) throw new Error('MidiExporter.export: pattern is required')
 
         const bpm = pattern.bpm ?? 120
-        const nbBeats = pattern.nbBeats ?? 4
+        const beatCount = pattern.beatCount ?? 4
         const tracks = pattern.tracks ?? []
-        const nbTickForPattern = computeNbTickForPattern(nbBeats, TICK)
+        const nbTickForPattern = computeNbTickForPattern(beatCount, TICK)
 
         // Collect engine events per track name
         // key: track name,  value: { midiNote, channel, events[] }

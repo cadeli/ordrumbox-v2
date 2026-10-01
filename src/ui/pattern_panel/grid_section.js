@@ -33,7 +33,7 @@ export default class GridSection {
 
         const ghostMap = new Map()
         const resolveSpanEnd = createStepResolver(track)
-        const totalSteps = (track.nbBeats ?? 4) * stepsPerBeat
+        const totalSteps = (track.beatCount ?? 4) * stepsPerBeat
         noteMap.forEach((notes) => {
             for (const note of notes) {
                 getNoteSubPositions(note, track, totalSteps, resolveSpanEnd).forEach(({ pos, type }) => {
@@ -79,8 +79,8 @@ export default class GridSection {
         if (!cellEl) return
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const absPos = b * stepsPerBeat + s
-        const isBeyondTrack = b >= (track.nbBeats ?? 4)
-        const totalSteps = (track.nbBeats ?? 4) * stepsPerBeat
+        const isBeyondTrack = b >= (track.beatCount ?? 4)
+        const totalSteps = (track.beatCount ?? 4) * stepsPerBeat
         const loopAt = track.loopAtStep ?? totalSteps
 
         const notesAtStep = cached.noteMap.get(`${b}:${s}`) ?? []
@@ -114,7 +114,7 @@ export default class GridSection {
 
         const stepsPerBeat = track.stepsPerBeat ?? 4
         for (let b = startBeat; b < endBeatPage; b++) {
-            if (b < (pattern.nbBeats ?? 4)) {
+            if (b < (pattern.beatCount ?? 4)) {
                 for (let s = 0; s < stepsPerBeat; s++) {
                     const cell = cellMap.get(`${trackIdx}:${b}:${s}`)
                     if (cell) {
@@ -134,7 +134,7 @@ export default class GridSection {
     render(tracks, pattern, opts) {
         const editor = this.#editor
         const { startBeat, endBeatPage, activeTrackIdx } = opts
-        const totalSteps = (track) => (track.nbBeats ?? 4) * (track.stepsPerBeat ?? 4)
+        const totalSteps = (track) => (track.beatCount ?? 4) * (track.stepsPerBeat ?? 4)
 
         let html = '<div class="pp-tracks">'
         tracks.forEach((track, tIdx) => {
@@ -150,8 +150,8 @@ export default class GridSection {
             let beatsHtml = '<div class="pp-beats">'
             for (let b = startBeat; b < endBeatPage; b++) {
                 let cellsHtml = ''
-                if (b < (pattern.nbBeats ?? 4)) {
-                    const trackBarCount = track.nbBeats ?? 4
+                if (b < (pattern.beatCount ?? 4)) {
+                    const trackBarCount = track.beatCount ?? 4
                     for (let s = 0; s < stepsPerBeat; s++) {
                         const absPos = b * stepsPerBeat + s
                         const isBeyondTrack = b >= trackBarCount

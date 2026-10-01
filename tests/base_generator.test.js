@@ -85,7 +85,7 @@ describe('BaseGenerator', () => {
 
     describe('applyLoopPoint', () => {
         it('sets loop point from config', () => {
-            const track = { stepsPerBeat: 4, nbBeats: 4 }
+            const track = { stepsPerBeat: 4, beatCount: 4 }
             generator.applyLoopPoint(track, { loopPointBeat: 2, loopPointStep: 0 })
             expect(track.loopPointBeat).toBe(2)
             expect(track.loopPointStep).toBe(0)
@@ -93,7 +93,7 @@ describe('BaseGenerator', () => {
         })
 
         it('falls back to track beats when no config loop point', () => {
-            const track = { stepsPerBeat: 4, nbBeats: 4 }
+            const track = { stepsPerBeat: 4, beatCount: 4 }
             generator.applyLoopPoint(track, {})
             expect(track.loopPointBeat).toBe(4)
             expect(track.loopAtStep).toBe(16)
@@ -102,7 +102,7 @@ describe('BaseGenerator', () => {
 
     describe('addNote', () => {
         it('creates note via cmd', () => {
-            const track = { name: 'TEST', stepsPerBeat: 4, nbBeats: 4, notes: [] }
+            const track = { name: 'TEST', stepsPerBeat: 4, beatCount: 4, notes: [] }
             generator.addNote(track, 0, 2, 0, 0.8)
             expect(track.notes.length).toBe(1)
         })
@@ -139,7 +139,7 @@ describe('BaseGenerator', () => {
 
     describe('generateGridVariant', () => {
         it('generates notes based on probabilities', () => {
-            const track = { name: 'TEST', stepsPerBeat: 4, nbBeats: 1, notes: [] }
+            const track = { name: 'TEST', stepsPerBeat: 4, beatCount: 1, notes: [] }
             // Use deterministic probabilities
             const originalRandom = Math.random
             let callCount = 0
@@ -163,7 +163,7 @@ describe('BaseGenerator', () => {
 
     describe('generatePhraseVariant', () => {
         it('generates notes from phrases', () => {
-            const track = { name: 'TEST', stepsPerBeat: 4, nbBeats: 4, notes: [] }
+            const track = { name: 'TEST', stepsPerBeat: 4, beatCount: 4, notes: [] }
             generator.generatePhraseVariant(
                 track,
                 testConfigs.basic,

@@ -90,7 +90,7 @@ export default class Toolbar {
         this.bpmValue.textContent = bpm
         this.bpmToggle.textContent = bpm
 
-        this.beatsSelect.value = pat?.nbBeats ?? 4
+        this.beatsSelect.value = pat?.beatCount ?? 4
 
         if (pat) {
             const maxPage = maxPageFor(pat)

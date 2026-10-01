@@ -312,7 +312,7 @@ export default class MidiImportService {
 
                 const suffix = numPatterns > 1 ? ` ${p + 1}/${numPatterns}` : ''
                 const pattern = cmd.addPattern(`${baseName}${suffix}`)
-                pattern.nbBeats = beatsPerPattern
+                pattern.beatCount = beatsPerPattern
                 pattern.bpm = bpm
 
                 const patStartTick = patStartBeat * TICK

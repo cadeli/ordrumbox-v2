@@ -242,7 +242,7 @@ export default class HatGenerate extends BaseGenerator {
             const velocityPattern = config.velocityPattern ?? []
             const accentEvery = config.accentEvery ?? 4
 
-            for (let beat = 0; beat < (hatTrack.nbBeats ?? 1); beat++) {
+            for (let beat = 0; beat < (hatTrack.beatCount ?? 1); beat++) {
                 for (let step = 0; step < 16; step++) {
                     const absoluteStep = beat * 16 + step
                     if (absoluteStep >= loopPointAbsolute) continue
@@ -281,7 +281,7 @@ export default class HatGenerate extends BaseGenerator {
         const velocityPattern = config.velocityPattern ?? []
         const accentEvery = config.accentEvery ?? 4
 
-        for (let beat = 0; beat < (hatTrack.nbBeats ?? 1); beat++) {
+        for (let beat = 0; beat < (hatTrack.beatCount ?? 1); beat++) {
             for (let step = 0; step < stepsPerBeat; step++) {
                 const absoluteStep = beat * stepsPerBeat + step
                 if (absoluteStep >= loopPointAbsolute) continue
@@ -310,7 +310,7 @@ export default class HatGenerate extends BaseGenerator {
     }
 
     generateHatTransitionVariant = (hatTrack, config, trackType) => {
-        const lastBar = Math.max(0, (hatTrack.nbBeats ?? 1) - (config.startBarOffset ?? 1))
+        const lastBar = Math.max(0, (hatTrack.beatCount ?? 1) - (config.startBarOffset ?? 1))
         const stepsPerBeat = hatTrack.stepsPerBeat ?? 4
         const interval = trackType === 'OHH' ? 2 : 1
 
@@ -342,7 +342,7 @@ export default class HatGenerate extends BaseGenerator {
     generateHatRollVariant = (hatTrack, config) => {
         const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 4)
         const stepsPerBeat = hatTrack.stepsPerBeat ?? 4
-        const rollBar = config.rollBar ?? Math.max(0, (hatTrack.nbBeats ?? 1) - 1)
+        const rollBar = config.rollBar ?? Math.max(0, (hatTrack.beatCount ?? 1) - 1)
         const retriggerNum = config.retriggerNum ?? 4
         const rate = config.rate ?? 1
 

@@ -9,7 +9,7 @@ vi.mock('../src/core/download.js', () => ({
 import { downloadBlob } from '../src/core/download.js'
 
 function makeSimplePattern(name = 'Pat') {
-    const track = makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 1, stepsPerBeat: 4 })
+    const track = makeTrack('KICK', [makeNote(0, 0)], { beatCount: 1, stepsPerBeat: 4 })
     return makePattern({ name, tracks: [track] })
 }
 

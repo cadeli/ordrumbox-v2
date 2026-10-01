@@ -184,7 +184,7 @@
             // ── Deterministic audio scenario (no global state mutation) ────────
 
             const BPM = 110,
-                NB_BEATS = 8
+                BEAT_COUNT = 8
 
             function makeNote(beat, vel = 0.8, pitch = 0) {
                 return {
@@ -208,10 +208,10 @@
             function makeTrack(name, notes, overrides = {}) {
                 return {
                     name,
-                    nbBeats: NB_BEATS,
+                    beatCount: BEAT_COUNT,
                     stepsPerBeat: 4,
-                    loopAtStep: NB_BEATS * 4,
-                    loopPointBeat: NB_BEATS,
+                    loopAtStep: BEAT_COUNT * 4,
+                    loopPointBeat: BEAT_COUNT,
                     loopPointStep: 0,
                     velocity: 1,
                     pan: 0,
@@ -248,7 +248,7 @@
                     name: 'LiveVsExport',
                     description: '',
                     bpm: BPM,
-                    nbBeats: NB_BEATS,
+                    beatCount: BEAT_COUNT,
                     _version: 0,
                     tracks: [
                         makeTrack('KICK', [makeNote(0, 0.9), makeNote(2, 0.85), makeNote(4, 0.9), makeNote(6, 0.8)]),
@@ -730,8 +730,8 @@
                     await liveEngine.start(testPattern)
                     liveEngine.mixer.setBpm(BPM)
                     serviceRegistry.audioEngine = liveEngine
-                    const patternDurationMs = NB_BEATS * (60 / BPM) * 1000
-                    log(`  Pattern: ${NB_BEATS} beats @ ${BPM} BPM = ${(patternDurationMs / 1000).toFixed(1)}s`, '')
+                    const patternDurationMs = BEAT_COUNT * (60 / BPM) * 1000
+                    log(`  Pattern: ${BEAT_COUNT} beats @ ${BPM} BPM = ${(patternDurationMs / 1000).toFixed(1)}s`, '')
 
                     const capture = await armWorkletCapture(liveAudioCtx, liveEngine.mixer, signal)
                     liveTransport.start()

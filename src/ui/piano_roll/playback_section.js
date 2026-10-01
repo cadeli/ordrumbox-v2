@@ -69,7 +69,7 @@ export default class PlaybackSection {
         this.ensurePlayhead()
 
         const { stepsPerBeat } = this.#editor.pageInfo()
-        const nbTicks = TICK * (pattern.nbBeats ?? 4)
+        const nbTicks = TICK * (pattern.beatCount ?? 4)
         if (nbTicks <= 0) return
         const loopTick = (transport.tick ?? 0) % nbTicks
         if (loopTick === this.#prevLoopTick && this.#playhead.style.display !== 'none') return

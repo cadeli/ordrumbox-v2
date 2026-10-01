@@ -132,10 +132,10 @@ function mixToMono(channels) {
     return mono
 }
 
-function makeTestPattern(cmd, name, bpm, nbBeats, tracks) {
+function makeTestPattern(cmd, name, bpm, beatCount, tracks) {
     const pat = cmd.addPattern(name)
     pat.bpm = bpm
-    pat.nbBeats = nbBeats
+    pat.beatCount = beatCount
     for (const t of tracks) {
         const track = cmd.addTrack(pat, t.name, 4)
         track.soundId = t.soundId ?? `${t.name.toLowerCase()}_test.wav`
@@ -345,7 +345,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
     it('retrigger produces more flat notes', () => {
         const pat = cmd.addPattern('Retrig')
         pat.bpm = 120
-        pat.nbBeats = 4
+        pat.beatCount = 4
         const kick = cmd.addTrack(pat, 'KICK', 4)
         const note = cmd.addNote(kick, 0, 0, 0)
         note.retriggerNum = 4
@@ -360,7 +360,7 @@ describe('E2E Audio 4 — Flat notes computation matches export structure', () =
     it('arp with retrigger produces multiple flat notes', () => {
         const pat = cmd.addPattern('Arp')
         pat.bpm = 120
-        pat.nbBeats = 1
+        pat.beatCount = 1
         const bass = cmd.addTrack(pat, 'BASS', 4)
         const note = cmd.addNote(bass, 0, 0, 0)
         note.arp = [0, 7, 12]

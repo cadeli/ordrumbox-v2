@@ -84,7 +84,7 @@ export default class KeyboardSection {
         }
 
         const stepsPerBeat = tracks[this.#editor.cursorTrackIdx]?.stepsPerBeat ?? 4
-        const nbBeats = pattern.nbBeats ?? 4
+        const beatCount = pattern.beatCount ?? 4
 
         switch (e.key) {
             case 'ArrowRight':
@@ -93,7 +93,7 @@ export default class KeyboardSection {
                 if (this.#editor.cursorBeatStep >= stepsPerBeat) {
                     this.#editor.cursorBeatStep = 0
                     this.#editor.cursorBeat++
-                    if (this.#editor.cursorBeat >= nbBeats) {
+                    if (this.#editor.cursorBeat >= beatCount) {
                         this.#editor.cursorBeat = 0
                     }
                 }
@@ -105,7 +105,7 @@ export default class KeyboardSection {
                     this.#editor.cursorBeatStep = stepsPerBeat - 1
                     this.#editor.cursorBeat--
                     if (this.#editor.cursorBeat < 0) {
-                        this.#editor.cursorBeat = nbBeats - 1
+                        this.#editor.cursorBeat = beatCount - 1
                     }
                 }
                 break

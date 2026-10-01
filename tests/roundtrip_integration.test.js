@@ -150,7 +150,7 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
 
         cmd.cleanTrack(track)
         expect(track.notes).toHaveLength(0)
-        expect(track.loopPointBeat).toBe(track.nbBeats)
+        expect(track.loopPointBeat).toBe(track.beatCount)
         expect(track.loopPointStep).toBe(0)
     })
 
@@ -170,12 +170,12 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
         const json = makePattern({
             name: 'Imported',
             bpm: 128,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [
                 makeTrack(
                     'KICK',
                     [makeNote(0, 0, { pitch: 0, velocity: 0.9 }), makeNote(1, 0, { pitch: 0, velocity: 0.7 })],
-                    { nbBeats: 4, stepsPerBeat: 4 },
+                    { beatCount: 4, stepsPerBeat: 4 },
                 ),
             ],
         })
@@ -204,13 +204,13 @@ describe('Roundtrip 1 — Command → Pattern → State lifecycle', () => {
             name: pat.name + '_copy',
             tracks: pat.tracks.map((trk) => ({
                 name: trk.name,
-                nbBeats: trk.nbBeats,
+                beatCount: trk.beatCount,
                 stepsPerBeat: trk.stepsPerBeat,
                 loopAtStep: trk.loopAtStep,
                 notes: trk.notes.map((n) => ({ ...n })),
             })),
             bpm: pat.bpm,
-            nbBeats: pat.nbBeats,
+            beatCount: pat.beatCount,
         }
 
         const imported = cmd.importPatternFromJson(json)
@@ -489,7 +489,7 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
 
         const testPattern = makePattern({
             name: 'RenderTest',
-            nbBeats: 2,
+            beatCount: 2,
             bpm: 120,
             tracks: {
                 KICK: makeTrack(
@@ -499,10 +499,10 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
                         makeNote(0, 2, { pitch: 2, velocity: 0.6 }),
                         makeNote(1, 0, { pitch: -1, velocity: 0.8 }),
                     ],
-                    { nbBeats: 2, stepsPerBeat: 4 },
+                    { beatCount: 2, stepsPerBeat: 4 },
                 ),
                 SNARE: makeTrack('SNARE', [makeNote(0, 0, { pitch: 0, velocity: 0.9 })], {
-                    nbBeats: 2,
+                    beatCount: 2,
                     stepsPerBeat: 4,
                 }),
             },
@@ -584,7 +584,7 @@ describe('Roundtrip 5 — Pattern rendering roundtrip (DOM)', () => {
     })
 })
 
-describe.each(PARAM_SETS)('Lifecycle — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+describe.each(PARAM_SETS)('Lifecycle — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
     let cmd
 
     beforeEach(() => {
@@ -597,10 +597,10 @@ describe.each(PARAM_SETS)('Lifecycle — spb=%i bpm=%i beats=%i (%s)', (stepsPer
     it('creates pattern, adds track with correct stepsPerBeat', () => {
         const pat = cmd.addPattern('ParamLife')
         cmd.setPatternBpm(pat, bpm)
-        pat.nbBeats = nbBeats
+        pat.beatCount = beatCount
         const track = cmd.addTrack(pat, 'KICK', stepsPerBeat)
         expect(track.stepsPerBeat).toBe(stepsPerBeat)
         expect(pat.bpm).toBe(bpm)
-        expect(pat.nbBeats).toBe(nbBeats)
+        expect(pat.beatCount).toBe(beatCount)
     })
 })

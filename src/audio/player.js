@@ -97,7 +97,7 @@ export default class Player {
     playNotes = async (tick, atTime) => {
         try {
             const selectedPattern = this.patterns[this.getSelectedPatternIdx()]
-            const nbTickForPattern = this.TICK * (selectedPattern.nbBeats ?? 4)
+            const nbTickForPattern = this.TICK * (selectedPattern.beatCount ?? 4)
             const loopStep = tick % nbTickForPattern
 
             if (loopStep === 0) {

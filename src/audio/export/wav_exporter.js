@@ -13,7 +13,7 @@ export default class WavExporter {
 
     exportPatternToWav = async (pattern, loopsCount = 1) => {
         const TICK_TIME = ((60 * 4) / (pattern.bpm * TICK)) * 0.25 // Match Transport.js timing
-        const duration = pattern.nbBeats * TICK * loopsCount * TICK_TIME
+        const duration = pattern.beatCount * TICK * loopsCount * TICK_TIME
         const sampleRate = 44100
         const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * duration), sampleRate)
 
@@ -54,7 +54,7 @@ export default class WavExporter {
 
         try {
             // Simple offline scheduling
-            const totalTicks = pattern.nbBeats * TICK * loopsCount
+            const totalTicks = pattern.beatCount * TICK * loopsCount
 
             for (let t = 0; t < totalTicks; t++) {
                 await exporterAudioEngine.playNotes(t, t * TICK_TIME)

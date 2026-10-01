@@ -19,7 +19,7 @@ export default class LoopSection {
         const track = editor.track
         if (!track) return ''
 
-        const beats = track.nbBeats ?? 4
+        const beats = track.beatCount ?? 4
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const loopAtStep = track.loopAtStep ?? beats * stepsPerBeat
         const maxSteps = beats * stepsPerBeat

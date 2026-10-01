@@ -116,7 +116,7 @@ function makeFlatNote(overrides = {}) {
             mono: false,
             velocity: 0.8,
             pan: 0,
-            nbBeats: 4,
+            beatCount: 4,
             stepsPerBeat: 4,
         },
         note: { velocity: 0.8, pitch: 0 },
@@ -230,7 +230,7 @@ describe('Sound', () => {
                 mono: false,
                 velocity: 0.8,
                 pan: 0,
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
             },
         })
@@ -257,7 +257,7 @@ describe('Sound', () => {
                 mono: true,
                 velocity: 0.8,
                 pan: 0,
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
             },
         })
@@ -283,7 +283,7 @@ describe('Sound', () => {
                 mono: false,
                 velocity: 0.8,
                 pan: 0,
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
             },
         })
@@ -392,7 +392,7 @@ describe('Sound', () => {
                 mono: true,
                 velocity: 0.8,
                 pan: 0,
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
             },
         })
@@ -409,7 +409,7 @@ describe('Sound', () => {
                 mono: false,
                 velocity: 0.8,
                 pan: 0,
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
             },
         })
@@ -485,7 +485,7 @@ describe('Sound', () => {
 
         for (const name of ['A', 'B', 'C']) {
             const fn = makeFlatNote({
-                track: { name, useSoftSynth: false, mono: false, velocity: 0.8, pan: 0, nbBeats: 4, stepsPerBeat: 4 },
+                track: { name, useSoftSynth: false, mono: false, velocity: 0.8, pan: 0, beatCount: 4, stepsPerBeat: 4 },
             })
             await sound.playSample(fn, 1.0)
         }
@@ -508,7 +508,7 @@ describe('Sound', () => {
                 mono: false,
                 velocity: 0.8,
                 pan: 0,
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
             },
         })
@@ -558,7 +558,7 @@ describe('Sound', () => {
             mono: true,
             velocity: 0.8,
             pan: 0,
-            nbBeats: 4,
+            beatCount: 4,
             stepsPerBeat: 4,
         }
 
@@ -595,7 +595,7 @@ describe('Sound', () => {
                 mono: false,
                 velocity: 0.8,
                 pan: 0,
-                nbBeats: 4,
+                beatCount: 4,
                 stepsPerBeat: 4,
             }
             const voice = makeVoice()
@@ -613,7 +613,7 @@ describe('Sound', () => {
             mono: false,
             velocity: 0.8,
             pan: 0,
-            nbBeats: 4,
+            beatCount: 4,
             stepsPerBeat: 4,
         }
         const overflowVoice = makeVoice()

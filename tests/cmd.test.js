@@ -25,7 +25,7 @@ describe('Functional: Commander operations', () => {
 
             expect(pattern.name).toBe('Test')
             expect(pattern.bpm).toBe(120)
-            expect(pattern.nbBeats).toBe(4)
+            expect(pattern.beatCount).toBe(4)
             expect(pattern.tracks).toEqual([])
             expect(pattern.description).toBe('')
         })
@@ -73,7 +73,7 @@ describe('Functional: Commander operations', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
 
             expect(track.name).toBe('KICK')
-            expect(track.nbBeats).toBe(4)
+            expect(track.beatCount).toBe(4)
             expect(track.stepsPerBeat).toBe(4)
             expect(track.loopAtStep).toBe(16)
             expect(track.loopPointBeat).toBe(4)
@@ -123,9 +123,9 @@ describe('Functional: Commander operations', () => {
 
         it('updateTrack applies whitelisted properties only', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
-            cmd.updateTrack(track, { nbBeats: 8, mute: true, unknownProp: 'test' })
+            cmd.updateTrack(track, { beatCount: 8, mute: true, unknownProp: 'test' })
 
-            expect(track.nbBeats).toBe(8)
+            expect(track.beatCount).toBe(8)
             expect(track.mute).toBe(true)
             expect(track.unknownProp).toBeUndefined()
         })
@@ -149,7 +149,7 @@ describe('Functional: Commander operations', () => {
             const track = cmd.createTrack(4, 'KICK', 4)
             const source = {
                 soundId: 'snd_1',
-                nbBeats: 8,
+                beatCount: 8,
                 stepsPerBeat: 8,
                 loopAtStep: 32,
                 swingResolution: 2,
@@ -177,7 +177,7 @@ describe('Functional: Commander operations', () => {
             cmd.updateTrack(track, source)
 
             expect(track.soundId).toBe('snd_1')
-            expect(track.nbBeats).toBe(8)
+            expect(track.beatCount).toBe(8)
             expect(track.stepsPerBeat).toBe(8)
             expect(track.loopAtStep).toBe(32)
             expect(track.swingResolution).toBe(2)
@@ -453,14 +453,14 @@ describe('Functional: Commander operations', () => {
         })
     })
 
-    describe('setPatternNbBeats', () => {
-        it('changes pattern nbBeats and updates tracks', () => {
+    describe('setPatternBeatCount', () => {
+        it('changes pattern beatCount and updates tracks', () => {
             const pattern = cmd.addPattern('Test')
             cmd.addTrack(pattern, 'KICK')
-            cmd.setPatternNbBeats(pattern, 8)
+            cmd.setPatternBeatCount(pattern, 8)
 
-            expect(pattern.nbBeats).toBe(8)
-            expect(pattern.tracks[0].nbBeats).toBe(8)
+            expect(pattern.beatCount).toBe(8)
+            expect(pattern.tracks[0].beatCount).toBe(8)
         })
 
         it('adjusts loopAtStep if it exceeds the new beat count', () => {
@@ -468,16 +468,16 @@ describe('Functional: Commander operations', () => {
             cmd.addTrack(pattern, 'KICK')
             pattern.tracks[0].loopAtStep = 32
 
-            cmd.setPatternNbBeats(pattern, 4)
+            cmd.setPatternBeatCount(pattern, 4)
             expect(pattern.tracks[0].loopAtStep).toBe(16)
-            expect(pattern.tracks[0].nbBeats).toBe(4)
+            expect(pattern.tracks[0].beatCount).toBe(4)
         })
 
         it('falls back to the default when out of bounds', () => {
             const pattern = cmd.addPattern('Test')
-            cmd.setPatternNbBeats(pattern, 999)
+            cmd.setPatternBeatCount(pattern, 999)
 
-            expect(pattern.nbBeats).toBe(4)
+            expect(pattern.beatCount).toBe(4)
         })
 
         it('undoes back to the previous length', () => {
@@ -485,12 +485,12 @@ describe('Functional: Commander operations', () => {
             serviceRegistry.history = history
             const pattern = cmd.addPattern('Test')
             const kick = cmd.addTrack(pattern, 'KICK')
-            cmd.setPatternNbBeats(pattern, 12)
+            cmd.setPatternBeatCount(pattern, 12)
 
             history.undo()
 
-            expect(pattern.nbBeats).toBe(4)
-            expect(kick.nbBeats).toBe(4)
+            expect(pattern.beatCount).toBe(4)
+            expect(kick.beatCount).toBe(4)
         })
     })
 

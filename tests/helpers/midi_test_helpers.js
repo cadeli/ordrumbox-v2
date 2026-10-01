@@ -12,7 +12,7 @@ const TICKS_PER_BAR = 96
 export function buildInstrumentTrack(track, midiNote, channel, patternLoops = 1) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
     const ticksPerStep = TICKS_PER_BAR / stepsPerBeat
-    const loopPointBeat = track.loopPointBeat ?? track.nbBeats ?? 4
+    const loopPointBeat = track.loopPointBeat ?? track.beatCount ?? 4
     const loopPointStep = track.loopPointStep ?? 0
     const loopTicks = Math.floor((loopPointBeat + loopPointStep / stepsPerBeat) * TICKS_PER_BAR)
 

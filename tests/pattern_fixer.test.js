@@ -220,43 +220,43 @@ describe.each(PARAM_SETS)('fixNoteStepBar — spb=%i bpm=%i beats=%i (%s)', (ste
     })
 })
 
-describe.each(PARAM_SETS)('fixTrackDefaults — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+describe.each(PARAM_SETS)('fixTrackDefaults — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
     it('sets loopPointBeat and loopPointStep from loopAtStep', () => {
-        const loopAtStep = nbBeats * stepsPerBeat
-        const track = { nbBeats, stepsPerBeat, loopAtStep }
+        const loopAtStep = beatCount * stepsPerBeat
+        const track = { beatCount, stepsPerBeat, loopAtStep }
         const fixed = fixTrackDefaults(track, 0)
-        expect(fixed.loopPointBeat).toBe(nbBeats)
+        expect(fixed.loopPointBeat).toBe(beatCount)
         expect(fixed.loopPointStep).toBe(0)
     })
 
     it('derives non-zero loopPointStep when loopAtStep is not a multiple of stepsPerBeat', () => {
         const loopAtStep = stepsPerBeat * 2 + 1
-        const track = { nbBeats, stepsPerBeat, loopAtStep }
+        const track = { beatCount, stepsPerBeat, loopAtStep }
         const fixed = fixTrackDefaults(track, 0)
         expect(fixed.loopPointBeat).toBe(Math.floor(loopAtStep / stepsPerBeat))
         expect(fixed.loopPointStep).toBe(loopAtStep % stepsPerBeat)
     })
 })
 
-describe.each(PARAM_SETS)('fixPattern — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+describe.each(PARAM_SETS)('fixPattern — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
     it('fixes a pattern with multiple tracks', () => {
-        const loopAtStep = nbBeats * stepsPerBeat
+        const loopAtStep = beatCount * stepsPerBeat
         const inputBeatStep = stepsPerBeat + 1
         const pattern = {
             name: 'ParamFix',
             bpm,
-            nbBeats,
+            beatCount,
             tracks: [
                 {
                     name: 'KICK',
-                    nbBeats,
+                    beatCount,
                     stepsPerBeat,
                     loopAtStep,
                     notes: [{ beat: 0, beatStep: inputBeatStep, velocity: 0.8, pitch: 0 }],
                 },
                 {
                     name: 'SNARE',
-                    nbBeats,
+                    beatCount,
                     stepsPerBeat,
                     loopAtStep,
                     notes: [{ beat: 1, beatStep: 0, velocity: 0.8, pitch: 0 }],

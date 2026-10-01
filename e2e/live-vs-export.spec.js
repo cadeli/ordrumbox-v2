@@ -83,7 +83,7 @@ test.describe('Live vs Export equivalence', () => {
 
             // --- Direct engine path ---
             const TICK_TIME = ((60 * 4) / (pattern.bpm * TICK)) * 0.25
-            const duration = pattern.nbBeats * TICK * TICK_TIME
+            const duration = pattern.beatCount * TICK * TICK_TIME
             const sampleRate = 44100
             const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * duration), sampleRate)
 
@@ -105,7 +105,7 @@ test.describe('Live vs Export equivalence', () => {
             serviceRegistry.transport = { bpm: pattern.bpm }
             await engine.start(pattern)
             engine.mixer.setBpm(pattern.bpm)
-            const totalTicks = pattern.nbBeats * TICK
+            const totalTicks = pattern.beatCount * TICK
             for (let t = 0; t < totalTicks; t++) {
                 await engine.playNotes(t, t * TICK_TIME)
             }
@@ -170,7 +170,7 @@ test.describe('Live vs Export equivalence', () => {
             const pattern = {
                 name: 'SynthExportTest',
                 bpm: 120,
-                nbBeats: 2,
+                beatCount: 2,
                 tracks: [
                     {
                         name: 'BASS',

@@ -28,7 +28,7 @@ function makeTrack(name) {
 }
 
 function makePattern(tracks) {
-    return { name: 'CacheTest', bpm: 120, nbBeats: 4, tracks }
+    return { name: 'CacheTest', bpm: 120, beatCount: 4, tracks }
 }
 
 function makePlayer(pattern, getFlatNotes) {

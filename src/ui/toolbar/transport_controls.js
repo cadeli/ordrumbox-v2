@@ -95,7 +95,7 @@ export default class TransportControls {
             if (isNaN(val)) return
             const pattern = appState.patterns[appState.selectedPatternIdx]
             if (!pattern) return
-            serviceRegistry.cmd.setPatternNbBeats(pattern, val)
+            serviceRegistry.cmd.setPatternBeatCount(pattern, val)
             serviceRegistry.cmd.resetPage()
             playbackEvents.batch(() => {
                 playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)

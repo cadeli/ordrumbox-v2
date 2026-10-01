@@ -421,7 +421,7 @@ describe('MidiExporter', () => {
         expect(() => exporter.export(makePattern({ tracks: [] }))).not.toThrow()
     })
 
-    it('pattern with default bpm/nbBeats is exportable', () => {
+    it('pattern with default bpm/beatCount is exportable', () => {
         const pattern = { tracks: [] }
         expect(() => exporter.export(pattern)).not.toThrow()
     })
@@ -448,7 +448,7 @@ describe('MidiExporter', () => {
     it('exported bytes are parseable as valid SMF (total length consistent)', () => {
         const pattern = makePattern({
             bpm: 110,
-            nbBeats: 8,
+            beatCount: 8,
             tracks: [
                 makeTrack('KICK', [makeNote(0, 0), makeNote(2, 0), makeNote(4, 0), makeNote(6, 0)]),
                 makeTrack('SNARE', [makeNote(1, 0), makeNote(3, 0)]),
@@ -473,13 +473,13 @@ describe('MidiExporter', () => {
 
 // ── Parameterized: MIDI export across different subdivisions ──────────────────
 
-describe.each(PARAM_SETS)('MidiExporter — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+describe.each(PARAM_SETS)('MidiExporter — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
     it('returns a valid Uint8Array', () => {
         const exporter = new MidiExporter()
         const pattern = makePattern({
             bpm,
-            nbBeats,
-            tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, nbBeats })],
+            beatCount,
+            tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, beatCount })],
         })
         const result = exporter.export(pattern)
         expect(result).toBeInstanceOf(Uint8Array)
@@ -489,8 +489,8 @@ describe.each(PARAM_SETS)('MidiExporter — spb=%i bpm=%i beats=%i (%s)', (steps
         const exporter = new MidiExporter()
         const pattern = makePattern({
             bpm,
-            nbBeats,
-            tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, nbBeats })],
+            beatCount,
+            tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, beatCount })],
         })
         const result = exporter.export(pattern)
         expect(String.fromCharCode(result[0], result[1], result[2], result[3])).toBe('MThd')
@@ -500,8 +500,8 @@ describe.each(PARAM_SETS)('MidiExporter — spb=%i bpm=%i beats=%i (%s)', (steps
         const exporter = new MidiExporter()
         const pattern = makePattern({
             bpm,
-            nbBeats,
-            tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, nbBeats })],
+            beatCount,
+            tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, beatCount })],
         })
         const result = exporter.export(pattern)
         const chunks = parseChunks(Array.from(result))
@@ -516,8 +516,8 @@ describe.each(PARAM_SETS)('MidiExporter — spb=%i bpm=%i beats=%i (%s)', (steps
         const exporter = new MidiExporter()
         const pattern = makePattern({
             bpm,
-            nbBeats,
-            tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, nbBeats })],
+            beatCount,
+            tracks: [makeTrack('KICK', [makeNote(0, 0)], { stepsPerBeat, beatCount })],
         })
         const result = exporter.export(pattern)
         const chunks = parseChunks(Array.from(result))
@@ -530,12 +530,12 @@ describe.each(PARAM_SETS)('MidiExporter — spb=%i bpm=%i beats=%i (%s)', (steps
 
     it('note count matches pattern', () => {
         const exporter = new MidiExporter()
-        const notes = Array.from({ length: Math.min(4, nbBeats) }, (_, i) => makeNote(i, 0))
-        const nBeats = Math.max(notes.length, nbBeats)
+        const notes = Array.from({ length: Math.min(4, beatCount) }, (_, i) => makeNote(i, 0))
+        const nBeats = Math.max(notes.length, beatCount)
         const pattern = makePattern({
             bpm,
-            nbBeats: nBeats,
-            tracks: [makeTrack('KICK', notes, { stepsPerBeat, nbBeats: nBeats })],
+            beatCount: nBeats,
+            tracks: [makeTrack('KICK', notes, { stepsPerBeat, beatCount: nBeats })],
         })
         const result = exporter.export(pattern)
         const chunks = parseChunks(Array.from(result))

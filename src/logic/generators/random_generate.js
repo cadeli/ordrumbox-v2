@@ -20,11 +20,11 @@ export default class RandomGenerate extends BaseGenerator {
 
         this.clearTrackNotes(track)
         this.applyLoopPoint(track, {
-            loopPointBeat: track.nbBeats ?? pattern?.nbBeats ?? 4,
+            loopPointBeat: track.beatCount ?? pattern?.beatCount ?? 4,
             loopPointStep: 0,
         })
 
-        const beats = track.nbBeats ?? pattern?.nbBeats ?? 4
+        const beats = track.beatCount ?? pattern?.beatCount ?? 4
         const stepsPerBeat = track.stepsPerBeat ?? 4
         const totalSteps = beats * stepsPerBeat
         const noteCount = Math.max(

@@ -54,7 +54,7 @@ test.describe('E2E-B: Persistence between sessions', () => {
         const corrupted = await page.evaluate(async () => {
             const bogusVersion = '1.0.0'
 
-            const dbOpen = indexedDB.open('ordrumbox', 4)
+            const dbOpen = indexedDB.open('ordrumbox')
             const db = await new Promise((res, rej) => {
                 dbOpen.onsuccess = () => res(dbOpen.result)
                 dbOpen.onerror = () => rej(dbOpen.error)
@@ -101,7 +101,7 @@ test.describe('E2E-B: Persistence between sessions', () => {
             if (ps?.persistPatterns) ps.persistPatterns()
             await new Promise((r) => setTimeout(r, 800))
 
-            const dbOpen = indexedDB.open('ordrumbox', 4)
+            const dbOpen = indexedDB.open('ordrumbox')
             const db = await new Promise((res, rej) => {
                 dbOpen.onsuccess = () => res(dbOpen.result)
                 dbOpen.onerror = () => rej(dbOpen.error)

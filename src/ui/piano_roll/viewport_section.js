@@ -56,8 +56,8 @@ export default class ViewportSection {
 
     #totalPages() {
         if (!this.#editor.track) return 1
-        const nbBeats = appState.patterns[appState.selectedPatternIdx]?.nbBeats ?? 4
-        return Math.max(1, Math.ceil(nbBeats / BEATS_PER_PAGE))
+        const beatCount = appState.patterns[appState.selectedPatternIdx]?.beatCount ?? 4
+        return Math.max(1, Math.ceil(beatCount / BEATS_PER_PAGE))
     }
 
     clampPage() {

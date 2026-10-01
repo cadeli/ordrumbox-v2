@@ -16,7 +16,7 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 
 vi.mock('../src/core/notify.js', () => ({ showToast: vi.fn() }))
 
-const NB_BEATS = 4
+const BEAT_COUNT = 4
 const STEPS_PER_BEAT = 4
 const LOOP_AT_STEP = 6
 
@@ -38,12 +38,12 @@ const makeNote = (beat, beatStep, opts = {}) => ({
 function makePattern(notes) {
     return {
         name: 'Ghost sync',
-        nbBeats: NB_BEATS,
+        beatCount: BEAT_COUNT,
         bpm: 120,
         tracks: [
             {
                 name: 'KICK',
-                nbBeats: NB_BEATS,
+                beatCount: BEAT_COUNT,
                 stepsPerBeat: STEPS_PER_BEAT,
                 loopAtStep: LOOP_AT_STEP,
                 notes,

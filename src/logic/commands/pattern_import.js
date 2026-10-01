@@ -54,7 +54,7 @@ export function validatePatternJson(data) {
 /**
  * Copy all properties from sourceTrack to track.
  * Handles derived properties (loopPointBeat/Step), optional FX props,
- * and beats/nbBeats alias.
+ * and beats/beatCount alias.
  */
 function copyTrackProps(track, sourceTrack) {
     const derivedKeys = new Set(['loopPointBeat', 'loopPointStep', 'notes', 'noteKeys'])
@@ -87,7 +87,7 @@ function copyTrackProps(track, sourceTrack) {
     }
 
     if (!('loopAtStep' in sourceTrack)) {
-        track.loopAtStep = track.nbBeats * track.stepsPerBeat
+        track.loopAtStep = track.beatCount * track.stepsPerBeat
     }
 
     recalcLoopDerived(track)
@@ -151,7 +151,7 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
 
     importedPattern.name = patternName ?? importedPattern.name ?? ''
     importedPattern.bpm = Utils.toFiniteNumber(sourcePattern?.bpm, 120, 'PatternImport bpm')
-    importedPattern.nbBeats = Utils.toFiniteNumber(sourcePattern?.nbBeats, 4, 'PatternImport nbBeats')
+    importedPattern.beatCount = Utils.toFiniteNumber(sourcePattern?.beatCount, 4, 'PatternImport beatCount')
 
     if (sourcePattern?.application) importedPattern.application = sourcePattern.application
     if (sourcePattern?.url) importedPattern.url = sourcePattern.url

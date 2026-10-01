@@ -22,12 +22,12 @@ describe('Pattern Panel UI Grid', () => {
         appState.reset()
         const testPattern = {
             name: 'Test Pattern',
-            nbBeats: 2,
+            beatCount: 2,
             bpm: 120,
             tracks: {
                 T1: {
                     name: 'KICK',
-                    nbBeats: 1,
+                    beatCount: 1,
                     stepsPerBeat: 4,
                     loopAtStep: 3, // Loop point at index 2 (4th step of 1st beat)
                     notes: [
@@ -194,7 +194,7 @@ describe('Pattern Panel UI Grid', () => {
         })
 
         it('delete-track button emits structure + pattern change like the menu path', () => {
-            appState.patterns[0].tracks['T2'] = { name: 'SNARE', nbBeats: 1, stepsPerBeat: 4, notes: [] }
+            appState.patterns[0].tracks['T2'] = { name: 'SNARE', beatCount: 1, stepsPerBeat: 4, notes: [] }
             appState.selectedTrackIdx = 0
 
             document.querySelector('#pp-delete-track').click()
@@ -753,13 +753,13 @@ describe('Pattern Panel UI Grid', () => {
             appState.patterns[0].tracks = {
                 T1: {
                     name: 'KICK',
-                    nbBeats: 1,
+                    beatCount: 1,
                     stepsPerBeat: 4,
                     notes: [{ beat: 0, beatStep: 0, pitch: 0, velocity: 1 }],
                 },
                 T2: {
                     name: 'SNARE',
-                    nbBeats: 1,
+                    beatCount: 1,
                     stepsPerBeat: 4,
                     notes: [],
                 },
@@ -843,7 +843,7 @@ describe('Pattern Panel UI Grid', () => {
             appState.patterns[0].tracks = {
                 T1: {
                     name: 'KICK',
-                    nbBeats: 1,
+                    beatCount: 1,
                     stepsPerBeat: 4,
                     notes: [
                         { beat: 0, beatStep: 0, pitch: 0, velocity: 1 },
@@ -852,7 +852,7 @@ describe('Pattern Panel UI Grid', () => {
                 },
                 T2: {
                     name: 'SNARE',
-                    nbBeats: 1,
+                    beatCount: 1,
                     stepsPerBeat: 4,
                     notes: [{ beat: 0, beatStep: 0, pitch: 2, velocity: 1 }],
                 },
@@ -1098,8 +1098,8 @@ describe('Pattern Panel UI Grid', () => {
         it('Delete track removes the track and shows toast', () => {
             setupCmd()
             appState.patterns[0].tracks = {
-                T1: { name: 'KICK', nbBeats: 1, stepsPerBeat: 4, notes: [] },
-                T2: { name: 'SNARE', nbBeats: 1, stepsPerBeat: 4, notes: [] },
+                T1: { name: 'KICK', beatCount: 1, stepsPerBeat: 4, notes: [] },
+                T2: { name: 'SNARE', beatCount: 1, stepsPerBeat: 4, notes: [] },
             }
             panel.sync()
 

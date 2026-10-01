@@ -19,7 +19,7 @@ import Utils from '../src/core/utils.js'
 function makeTrack(overrides = {}) {
     return {
         name: 'KICK',
-        nbBeats: 4,
+        beatCount: 4,
         stepsPerBeat: 4,
         loopAtStep: 16,
         loopPointBeat: 4,
@@ -193,8 +193,8 @@ describe('P1a — silent failure guards', () => {
     })
 
     describe('pattern defaults stay reachable', () => {
-        it('PATTERN_DEFAULTS still exposes nbBeats (pre-P5 rename)', () => {
-            expect(Utils.PATTERN_DEFAULTS.nbBeats).toBe(4)
+        it('PATTERN_DEFAULTS still exposes beatCount (pre-P5 rename)', () => {
+            expect(Utils.PATTERN_DEFAULTS.beatCount).toBe(4)
         })
     })
 })

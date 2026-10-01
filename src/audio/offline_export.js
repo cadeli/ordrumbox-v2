@@ -25,10 +25,10 @@ export async function exportOffline(deps, pattern, numLoops, OfflineAudioContext
     const { audioCtx, sounds, generatedSounds, TICK, computeFlatNotes } = deps
     try {
         const bpm = pattern.bpm
-        const nbBeats = pattern.nbBeats
+        const beatCount = pattern.beatCount
         const totalLoops = Math.max(1, numLoops)
         const secondsPerBeat = 60 / bpm
-        const patternDuration = nbBeats * secondsPerBeat
+        const patternDuration = beatCount * secondsPerBeat
         const sampleRate = audioCtx.sampleRate
         const samplesPerPattern = Math.round(patternDuration * sampleRate)
         const totalSamples = samplesPerPattern * totalLoops
@@ -66,7 +66,7 @@ export async function exportOffline(deps, pattern, numLoops, OfflineAudioContext
 
             for (const [tick, notesAtTick] of flatNotes.entries()) {
                 for (const flatNote of notesAtTick) {
-                    const nbTickForPattern = TICK * nbBeats
+                    const nbTickForPattern = TICK * beatCount
                     const noteTime = NoteParams.tickToTime(tick, nbTickForPattern, truePatternDuration)
                     const absoluteTime = loopStartTime + noteTime
                     NoteParams.applyNoteParams(flatNote, secondsPerBeat)

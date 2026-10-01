@@ -287,7 +287,7 @@ export default class BassGenerate extends BaseGenerator {
 
         const rootPattern = config.rootPattern
 
-        for (let beat = 0; beat < (bassTrack.nbBeats ?? 1); beat++) {
+        for (let beat = 0; beat < (bassTrack.beatCount ?? 1); beat++) {
             const rootPitch = rootPattern[beat % rootPattern.length] + rootNote
             let lastStepNote = rootPitch
             for (let step = 0; step < stepsPerBeat; step++) {
@@ -343,7 +343,7 @@ export default class BassGenerate extends BaseGenerator {
         const averageSpacing = Math.max(1, config.noteSpacing ?? 2)
         const spacingJitter = Math.max(0, config.spacingJitter ?? 0)
 
-        for (let beat = 0; beat < (bassTrack.nbBeats ?? 1); beat++) {
+        for (let beat = 0; beat < (bassTrack.beatCount ?? 1); beat++) {
             const rootPitch = rootPattern[beat % rootPattern.length] + rootNote
             let step = 0
             let noteIndex = 0

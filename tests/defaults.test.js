@@ -76,17 +76,17 @@ describe('Defaults', () => {
 
     describe('getTrackProp', () => {
         it('returns track property when present', () => {
-            const track = { nbBeats: 8 }
-            expect(Defaults.getTrackProp(track, 'nbBeats')).toBe(8)
+            const track = { beatCount: 8 }
+            expect(Defaults.getTrackProp(track, 'beatCount')).toBe(8)
         })
 
         it('returns default when property is missing', () => {
             const track = { name: 'KICK' }
-            expect(Defaults.getTrackProp(track, 'nbBeats')).toBe(Utils.TRACK_DEFAULTS.nbBeats)
+            expect(Defaults.getTrackProp(track, 'beatCount')).toBe(Utils.TRACK_DEFAULTS.beatCount)
         })
 
         it('returns default when track is null', () => {
-            expect(Defaults.getTrackProp(null, 'nbBeats')).toBe(Utils.TRACK_DEFAULTS.nbBeats)
+            expect(Defaults.getTrackProp(null, 'beatCount')).toBe(Utils.TRACK_DEFAULTS.beatCount)
         })
     })
 
@@ -104,7 +104,7 @@ describe('Defaults', () => {
         })
 
         it('returns default when pattern is null', () => {
-            expect(Defaults.getPatternProp(null, 'nbBeats')).toBe(Utils.PATTERN_DEFAULTS.nbBeats)
+            expect(Defaults.getPatternProp(null, 'beatCount')).toBe(Utils.PATTERN_DEFAULTS.beatCount)
         })
     })
 })

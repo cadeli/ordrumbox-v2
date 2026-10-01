@@ -34,7 +34,7 @@ export function makeNote(beat, beatStep, opts = {}) {
 // ─── Track ───────────────────────────────────────────────────────────────────
 
 const TRACK_DEFAULTS = {
-    nbBeats: 4,
+    beatCount: 4,
     stepsPerBeat: 4,
     velocity: 1,
     pan: 0,
@@ -65,23 +65,23 @@ const TRACK_DEFAULTS = {
 
 /**
  * Build a track object. Only name is required.
- * loopAtStep and loopPointBeat default from nbBeats * stepsPerBeat.
+ * loopAtStep and loopPointBeat default from beatCount * stepsPerBeat.
  * @param {string} name
  * @param {Array} [notes=[]]
  * @param {object} [opts] - override any track field
  */
 export function makeTrack(name, notes = [], opts = {}) {
-    const nbBeats = opts.nbBeats ?? TRACK_DEFAULTS.nbBeats
+    const beatCount = opts.beatCount ?? TRACK_DEFAULTS.beatCount
     const stepsPerBeat = opts.stepsPerBeat ?? TRACK_DEFAULTS.stepsPerBeat
-    const loopAtStep = opts.loopAtStep ?? nbBeats * stepsPerBeat
-    const loopPointBeat = opts.loopPointBeat ?? nbBeats
+    const loopAtStep = opts.loopAtStep ?? beatCount * stepsPerBeat
+    const loopPointBeat = opts.loopPointBeat ?? beatCount
 
     return {
         name,
         notes,
         ...TRACK_DEFAULTS,
         ...opts,
-        nbBeats,
+        beatCount,
         stepsPerBeat,
         loopAtStep,
         loopPointBeat,
@@ -96,14 +96,14 @@ export function makeTrack(name, notes = [], opts = {}) {
  * @param {object} [opts]
  * @param {string}  [opts.name='Test']
  * @param {number}  [opts.bpm=120]
- * @param {number}  [opts.nbBeats=4]
+ * @param {number}  [opts.beatCount=4]
  * @param {Array}   [opts.tracks=[]]
  */
 export function makePattern(opts = {}) {
     return {
         name: opts.name ?? 'Test',
         bpm: opts.bpm ?? 120,
-        nbBeats: opts.nbBeats ?? 4,
+        beatCount: opts.beatCount ?? 4,
         _version: 0,
         tracks: opts.tracks ?? [],
     }
@@ -115,7 +115,7 @@ export function makePattern(opts = {}) {
  * Canonical parameter combinations that exercise different subdivisions
  * and tempos. Use with it.each(PARAM_SETS) to multiply coverage.
  *
- * Each entry: [stepsPerBeat, bpm, nbBeats, label]
+ * Each entry: [stepsPerBeat, bpm, beatCount, label]
  */
 export const PARAM_SETS = [
     [4, 120, 4, 'standard'],

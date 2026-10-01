@@ -38,7 +38,7 @@ function makeTrack(overrides = {}) {
     return {
         name: 'KICK',
         notes: [],
-        nbBeats: 4,
+        beatCount: 4,
         stepsPerBeat: 4,
         loopAtStep: 16,
         mute: false,

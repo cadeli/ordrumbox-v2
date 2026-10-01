@@ -317,7 +317,7 @@ export default class TrackEditor extends BasePanel {
         if (!this.#track) return null
         const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
         if (!pattern) return null
-        const nbTicks = TICK * pattern.nbBeats
+        const nbTicks = TICK * pattern.beatCount
         if (!this.#lfoBridge) this.#lfoBridge = new LfoUiBridge(this.#serviceRegistry.audioCtx)
         return this.#lfoBridge.compute(this.#track, tick, nbTicks)
     }
@@ -840,7 +840,7 @@ export default class TrackEditor extends BasePanel {
             cmd?.setStepsPerBeat(this.#track, val, { coalesce: true })
         } else if (key === 'loopAtStep') {
             // The end step can never pass the bar length.
-            const maxSteps = (this.#track.nbBeats ?? 4) * (this.#track.stepsPerBeat ?? 4)
+            const maxSteps = (this.#track.beatCount ?? 4) * (this.#track.stepsPerBeat ?? 4)
             cmd?.updateTrack(this.#track, { loopAtStep: Math.min(val, maxSteps) }, opts)
         } else {
             cmd?.updateTrack(this.#track, { [key]: val }, opts)
@@ -850,7 +850,7 @@ export default class TrackEditor extends BasePanel {
             input.nextElementSibling.textContent = key === 'swingAmount' ? fmt(val) : val
         }
 
-        const maxSteps = (this.#track.nbBeats ?? 4) * (this.#track.stepsPerBeat ?? 4)
+        const maxSteps = (this.#track.beatCount ?? 4) * (this.#track.stepsPerBeat ?? 4)
         const loopSlider = this.#sliders.get('loopAtStep')
         if (loopSlider) {
             loopSlider.setMax?.(maxSteps)

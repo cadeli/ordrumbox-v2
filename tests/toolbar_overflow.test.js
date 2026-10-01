@@ -28,7 +28,7 @@ describe('Toolbar overflow (mobile single-line)', () => {
         }
         serviceRegistry.patterns = { applyFlatNotes: vi.fn() }
 
-        appState.patterns = [{ name: 'P1', bpm: 120, nbBeats: 1, stepsPerBeat: 16, tracks: [{ stepsPerBeat: 16 }] }]
+        appState.patterns = [{ name: 'P1', bpm: 120, beatCount: 1, stepsPerBeat: 16, tracks: [{ stepsPerBeat: 16 }] }]
         soundRegistry.drumkitList = [{ name: 'real', instruments: [] }]
     })
 

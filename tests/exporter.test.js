@@ -72,14 +72,14 @@ describe('PatternExporter', () => {
             const track = { ...Utils.TRACK_DEFAULTS, notes: [] }
             const cleaned = PatternExporter.cleanTrack(track)
             // Default fields that are also default-valued should be stripped
-            expect(cleaned).not.toHaveProperty('nbBeats') // beats=4 is default
+            expect(cleaned).not.toHaveProperty('beatCount') // beats=4 is default
             expect(cleaned).not.toHaveProperty('mute') // false is default
         })
 
         it('keeps non-default values', () => {
-            const track = { ...Utils.TRACK_DEFAULTS, nbBeats: 8, mute: true, notes: [] }
+            const track = { ...Utils.TRACK_DEFAULTS, beatCount: 8, mute: true, notes: [] }
             const cleaned = PatternExporter.cleanTrack(track)
-            expect(cleaned.nbBeats).toBe(8)
+            expect(cleaned.beatCount).toBe(8)
             expect(cleaned.mute).toBe(true)
         })
 
@@ -99,7 +99,7 @@ describe('PatternExporter', () => {
         it('cleans notes inside the track (compact format)', () => {
             const track = {
                 ...Utils.TRACK_DEFAULTS,
-                nbBeats: 2,
+                beatCount: 2,
                 notes: [{ ...Utils.NOTE_DEFAULTS, velocity: 0.5, pitch: 0 }],
             }
             const cleaned = PatternExporter.cleanTrack(track)
@@ -116,16 +116,16 @@ describe('PatternExporter', () => {
         it('strips default pattern values', () => {
             const pattern = { ...Utils.PATTERN_DEFAULTS }
             const cleaned = PatternExporter.cleanPattern(pattern)
-            // nbBeats=4, bpm=120 are defaults, should be stripped
-            expect(cleaned).not.toHaveProperty('nbBeats')
+            // beatCount=4, bpm=120 are defaults, should be stripped
+            expect(cleaned).not.toHaveProperty('beatCount')
             expect(cleaned).not.toHaveProperty('bpm')
         })
 
         it('keeps non-default pattern values', () => {
-            const pattern = { ...Utils.PATTERN_DEFAULTS, bpm: 145, nbBeats: 8, tracks: [] }
+            const pattern = { ...Utils.PATTERN_DEFAULTS, bpm: 145, beatCount: 8, tracks: [] }
             const cleaned = PatternExporter.cleanPattern(pattern)
             expect(cleaned.bpm).toBe(145)
-            expect(cleaned.nbBeats).toBe(8)
+            expect(cleaned.beatCount).toBe(8)
         })
 
         it('strips the runtime _version counter', () => {
@@ -138,10 +138,10 @@ describe('PatternExporter', () => {
             const pattern = {
                 ...Utils.PATTERN_DEFAULTS,
                 bpm: 130,
-                tracks: [{ ...Utils.TRACK_DEFAULTS, nbBeats: 2, notes: [] }],
+                tracks: [{ ...Utils.TRACK_DEFAULTS, beatCount: 2, notes: [] }],
             }
             const cleaned = PatternExporter.cleanPattern(pattern)
-            expect(cleaned.tracks[0].nbBeats).toBe(2)
+            expect(cleaned.tracks[0].beatCount).toBe(2)
             expect(cleaned.tracks[0]).not.toHaveProperty('mute')
         })
 

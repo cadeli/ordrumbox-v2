@@ -20,12 +20,12 @@ const MIDI_MIN = 12
 const MIDDLE_C = 60
 
 const TEST_PATTERN = {
-    nbBeats: 8,
+    beatCount: 8,
     bpm: 120,
     tracks: [
         {
             name: 'KICK',
-            nbBeats: 8,
+            beatCount: 8,
             stepsPerBeat: 4,
             pitch: 0,
             notes: [
@@ -466,7 +466,7 @@ describe('PianoRollPanel', () => {
 
         it('ArrowRight wraps to start at end of pattern', () => {
             const track = getTrack()
-            const totalSteps = track.nbBeats * track.stepsPerBeat
+            const totalSteps = track.beatCount * track.stepsPerBeat
             panel.cursorStep = totalSteps - 1
             panel.cursorRow = 48
             pressKey('ArrowRight')
@@ -603,7 +603,7 @@ describe('PianoRollPanel', () => {
             const basePos = (retrigNote.beat ?? 0) * spb + (retrigNote.beatStep ?? 0)
             if (basePos >= 4 * spb) return
 
-            const subs = panel.getSubPositions(retrigNote, track, (track.nbBeats ?? 4) * spb)
+            const subs = panel.getSubPositions(retrigNote, track, (track.beatCount ?? 4) * spb)
             if (subs.length === 0) return
             const subPos = subs[0].pos
             if (subPos >= 4 * spb) return
@@ -763,7 +763,7 @@ describe('PianoRollPanel', () => {
             expect(panel.container.querySelectorAll('.pp-pr-note').length).toBe(0)
 
             const pattern = structuredClone(TEST_PATTERN)
-            pattern.tracks.push({ name: 'SNARE', nbBeats: 8, stepsPerBeat: 4, pitch: 0, notes: [] })
+            pattern.tracks.push({ name: 'SNARE', beatCount: 8, stepsPerBeat: 4, pitch: 0, notes: [] })
             appState.patterns = [pattern]
             appState.selectedPatternIdx = 0
             appState.selectedTrackIdx = 0
@@ -867,7 +867,7 @@ describe('PianoRollPanel', () => {
             const track = getTrack()
             track.notes = [{ beat: 1, beatStep: 0, pitch: 99, velocity: 1 }]
             const pattern = appState.patterns[0]
-            const expectedMeasures = Math.ceil(pattern.nbBeats / 4)
+            const expectedMeasures = Math.ceil(pattern.beatCount / 4)
 
             const key = panel.container.querySelector('#pp-piano-keys .pp-pr-key[data-midi="60"]')
             key.dispatchEvent(

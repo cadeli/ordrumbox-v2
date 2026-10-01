@@ -17,7 +17,7 @@ const LFO_SMOOTHING = 0.005
  */
 export async function pushStepLfo(mixer, pattern, tick, atTime, TICK) {
     if (!pattern?.tracks) return
-    const nbTicks = TICK * pattern.nbBeats
+    const nbTicks = TICK * pattern.beatCount
     const bpm = pattern.bpm
     const tracks = Object.values(pattern.tracks)
 

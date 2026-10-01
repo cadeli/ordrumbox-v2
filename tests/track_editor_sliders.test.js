@@ -36,7 +36,7 @@ function makeTrack(overrides = {}) {
         useSoftSynth: false,
         synthSoundKey: null,
         soundId: '',
-        nbBeats: 4,
+        beatCount: 4,
         stepsPerBeat: 4,
         loopAtStep: 16,
         swingAmount: 0,
@@ -668,7 +668,7 @@ describe('TrackEditor — LFO live update uses setValue', () => {
             filterFreq: 632,
             filterFreqLfo: { freq: 0, min: 158, max: 158, phase: 0 },
         })
-        appState.patterns = [{ tracks: [editor.track], nbBeats: 4 }]
+        appState.patterns = [{ tracks: [editor.track], beatCount: 4 }]
         appState.selectedPatternIdx = 0
         editor.sync()
 
@@ -685,7 +685,7 @@ describe('TrackEditor — LFO live update uses setValue', () => {
             filterFreq: 632,
             filterFreqLfo: { freq: 0, min: 5000, max: 5000, phase: 0 },
         })
-        appState.patterns = [{ tracks: [editor.track], nbBeats: 4 }]
+        appState.patterns = [{ tracks: [editor.track], beatCount: 4 }]
         appState.selectedPatternIdx = 0
         editor.sync()
 

@@ -104,7 +104,7 @@ describe('validatePatternJson', () => {
         const result = validatePatternJson({
             name: 'Test',
             bpm: 120,
-            nbBeats: 4,
+            beatCount: 4,
             tracks: {},
             unknownField: true,
         })

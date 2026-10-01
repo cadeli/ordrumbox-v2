@@ -298,12 +298,12 @@ describe('real render — orDrumbox pattern', () => {
         const pattern = {
             name: 'Tempo Test',
             bpm: 120,
-            nbBeats: 1,
+            beatCount: 1,
             tracks: [
                 {
                     name: 'KICK',
                     soundId: 'kick.wav',
-                    nbBeats: 1,
+                    beatCount: 1,
                     stepsPerBeat: 4,
                     mute: false,
                     notes: [

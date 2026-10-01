@@ -31,9 +31,9 @@ test.describe('Undo / Redo', () => {
             const track = appState.patterns[appState.selectedPatternIdx].tracks[0]
             const filled = new Set((track.notes ?? []).map((n) => `${n.beat}/${n.beatStep}`))
             const out = []
-            const nbBeats = track.nbBeats ?? 4
+            const beatCount = track.beatCount ?? 4
             const spb = track.stepsPerBeat ?? 4
-            for (let beat = 0; beat < nbBeats && out.length < 2; beat++) {
+            for (let beat = 0; beat < beatCount && out.length < 2; beat++) {
                 for (let step = 0; step < spb && out.length < 2; step++) {
                     if (!filled.has(`${beat}/${step}`)) out.push({ beat, step })
                 }

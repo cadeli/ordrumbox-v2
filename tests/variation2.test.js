@@ -239,9 +239,9 @@ describe('TrackVariation.apply (position-based)', () => {
         serviceRegistry.cmd = cmd
     })
 
-    function makeTrack(name = 'KICK', nbBeats = 4, stepsPerBeat = 4) {
+    function makeTrack(name = 'KICK', beatCount = 4, stepsPerBeat = 4) {
         const pattern = cmd.addPattern('Test')
-        pattern.nbBeats = nbBeats
+        pattern.beatCount = beatCount
         return cmd.addTrack(pattern, name, stepsPerBeat)
     }
 

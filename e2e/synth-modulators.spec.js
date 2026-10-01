@@ -52,13 +52,23 @@ test.describe('Static coherence of modulation targets', () => {
 })
 
 // Modulating a modEnvelope.* parameter is only observable if the mod envelope
-// itself runs. The processor gates that whole branch on
-// `!bypassModEnv && mTgt > 0 && mDepth > 0.001`, and no shipped preset
-// enables it (target 'off' everywhere, and PIANO sets bypassModEnv). Both
-// gates have to be opened explicitly. Applied to both sides of the pair so the
-// LFO target stays the only difference.
+// itself runs AND is still running when the note is released. The processor
+// gates the branch on `!bypassModEnv && mTgt > 0 && mDepth > 0.001`, and no
+// shipped preset enables it (target 'off' everywhere, PIANO also sets
+// bypassModEnv). On top of that every preset ships sustain 0, so the envelope
+// has already decayed to zero before note-off and its release has nothing to
+// release — modulating the release then produced bit-identical audio. The
+// amplitude envelope is stretched too, so the release phase spans several RMS
+// windows instead of one. Applied to both sides of the pair, so the LFO target
+// stays the only difference.
 const enableModEnv = (target) =>
-    target.startsWith('modEnvelope.') ? { modEnvelope: { target: 'filter' }, bypassModEnv: false } : {}
+    target.startsWith('modEnvelope.')
+        ? {
+              modEnvelope: { target: 'filter', sustain: 1 },
+              bypassModEnv: false,
+              envelope: { sustain: 1, release: 1.0 },
+          }
+        : {}
 
 test.describe('Real modulator effect on sound (per target)', () => {
     test.beforeEach(async ({ page }) => {

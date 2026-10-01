@@ -14,7 +14,7 @@ function makeReadyMidi() {
 function makeCtx({ midiMap = new Map(), pattern, resolveMapping } = {}) {
     const flatNotes = midiMap
     const track = pattern?.tracks?.[0] ?? { id: 'KICK', mute: false, solo: false, velocity: 0.8 }
-    const pat = pattern ?? { nbBeats: 1, tracks: [track] }
+    const pat = pattern ?? { beatCount: 1, tracks: [track] }
     return {
         audioCtx: { currentTime: 0 },
         patterns: [pat],
@@ -102,7 +102,7 @@ describe('sendMidiNotes', () => {
         serviceRegistry.midiManager = midi
         const track = { id: 'KICK', mute: false, solo: false }
         const flatNotes = new Map([[0, [{ track, velocity: 0.5, swingTime: 0, duration: 100 }]]])
-        const ctx = makeCtx({ midiMap: flatNotes, pattern: { nbBeats: 1, tracks: [track] } })
+        const ctx = makeCtx({ midiMap: flatNotes, pattern: { beatCount: 1, tracks: [track] } })
 
         sendMidiNotes(ctx, 0, 0.1)
 
@@ -119,7 +119,7 @@ describe('sendMidiNotes', () => {
         serviceRegistry.midiManager = midi
         const track = { id: 'KICK', mute: true, solo: false }
         const flatNotes = new Map([[0, [{ track, velocity: 0.5, swingTime: 0, duration: 100 }]]])
-        const ctx = makeCtx({ midiMap: flatNotes, pattern: { nbBeats: 1, tracks: [track] } })
+        const ctx = makeCtx({ midiMap: flatNotes, pattern: { beatCount: 1, tracks: [track] } })
 
         sendMidiNotes(ctx, 0, 0)
 
@@ -140,7 +140,7 @@ describe('sendMidiNotes', () => {
                 ],
             ],
         ])
-        const ctx = makeCtx({ midiMap: flatNotes, pattern: { nbBeats: 1, tracks: [kick, snare] } })
+        const ctx = makeCtx({ midiMap: flatNotes, pattern: { beatCount: 1, tracks: [kick, snare] } })
 
         sendMidiNotes(ctx, 0, 0)
 
@@ -155,7 +155,7 @@ describe('sendMidiNotes', () => {
         const flatNotes = new Map([[0, [{ track, velocity: 1, swingTime: 0, duration: 100 }]]])
         const ctx = makeCtx({
             midiMap: flatNotes,
-            pattern: { nbBeats: 1, tracks: [track] },
+            pattern: { beatCount: 1, tracks: [track] },
             resolveMapping: () => ({ ch: 'xx', key: 'yy' }),
         })
 
@@ -171,7 +171,7 @@ describe('sendMidiNotes', () => {
         const flatNotes = new Map([[0, [{ track, velocity: 0.5, swingTime: 0, duration: 100 }]]])
         const ctx = makeCtx({
             midiMap: flatNotes,
-            pattern: { nbBeats: 1, tracks: [track] },
+            pattern: { beatCount: 1, tracks: [track] },
             resolveMapping: () => null,
         })
 
@@ -185,7 +185,7 @@ describe('sendMidiNotes', () => {
         serviceRegistry.midiManager = midi
         const track = { id: 'KICK', mute: false, solo: false }
         const flatNotes = new Map([[5, [{ track, velocity: 0.5, swingTime: 0, duration: 100 }]]])
-        const ctx = makeCtx({ midiMap: flatNotes, pattern: { nbBeats: 1, tracks: [track] } })
+        const ctx = makeCtx({ midiMap: flatNotes, pattern: { beatCount: 1, tracks: [track] } })
 
         sendMidiNotes(ctx, 5, 0)
         expect(midi.sendNoteOn).toHaveBeenCalledTimes(1)

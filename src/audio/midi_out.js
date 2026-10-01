@@ -43,7 +43,7 @@ export function sendMidiNotes(ctx, tick, atTime) {
     const selectedPattern = patterns[getSelectedPatternIdx()]
     if (!selectedPattern) return
 
-    const nbTickForPattern = TICK * selectedPattern.nbBeats
+    const nbTickForPattern = TICK * selectedPattern.beatCount
     const loopStep = tick % nbTickForPattern
     const flatNotesMap = player.getCurrentFlatNotesMap() ?? getFlatNotes(player.loop)
 

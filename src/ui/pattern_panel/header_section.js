@@ -20,7 +20,7 @@ export default class HeaderSection {
      */
     render(pattern, currentPage) {
         const tracks = Utils.getTracksArray(pattern)
-        const totalBeats = pattern.nbBeats ?? 4
+        const totalBeats = pattern.beatCount ?? 4
         const firstStepsPerBeat = tracks[0]?.stepsPerBeat ?? 4
         const totalMeasures = Math.ceil(totalBeats / firstStepsPerBeat)
 

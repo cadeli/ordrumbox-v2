@@ -70,8 +70,8 @@ describe('PatternManager', () => {
             const pattern = {
                 name: 'Test',
                 bpm: 120,
-                nbBeats: 1,
-                tracks: [makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 1, stepsPerBeat: 4, loopAtStep: 4 })],
+                beatCount: 1,
+                tracks: [makeTrack('KICK', [makeNote(0, 0)], { beatCount: 1, stepsPerBeat: 4, loopAtStep: 4 })],
             }
 
             const result = mgr.applyFlatNotes(pattern, 0)
@@ -87,8 +87,8 @@ describe('PatternManager', () => {
             const pattern = {
                 name: 'Test',
                 bpm: 120,
-                nbBeats: 1,
-                tracks: [makeTrack('KICK', [makeNote(0, 0)], { nbBeats: 1, stepsPerBeat: 4, loopAtStep: 4 })],
+                beatCount: 1,
+                tracks: [makeTrack('KICK', [makeNote(0, 0)], { beatCount: 1, stepsPerBeat: 4, loopAtStep: 4 })],
             }
 
             mgr.applyFlatNotes(pattern, 0)
@@ -186,7 +186,7 @@ describe('PatternManager', () => {
     describe.each(PARAM_SETS)('createStepResolver — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat) => {
         it('finds next note in same beat', () => {
             const track = makeTrack('KICK', [makeNote(0, 0), makeNote(0, 2)], {
-                nbBeats: 2,
+                beatCount: 2,
                 stepsPerBeat,
                 loopAtStep: 2 * stepsPerBeat,
             })
@@ -196,7 +196,7 @@ describe('PatternManager', () => {
 
         it('finds next note in next beat', () => {
             const track = makeTrack('KICK', [makeNote(0, 0), makeNote(1, 0)], {
-                nbBeats: 2,
+                beatCount: 2,
                 stepsPerBeat,
                 loopAtStep: 2 * stepsPerBeat,
             })
@@ -207,7 +207,7 @@ describe('PatternManager', () => {
         it('returns loopAtStep when no note found after', () => {
             const loopAt = stepsPerBeat + 1
             const track = makeTrack('KICK', [makeNote(0, 0)], {
-                nbBeats: 2,
+                beatCount: 2,
                 stepsPerBeat,
                 loopAtStep: loopAt,
             })
@@ -218,7 +218,7 @@ describe('PatternManager', () => {
         it('returns total steps when no loopAtStep', () => {
             const totalSteps = 2 * stepsPerBeat
             const track = makeTrack('KICK', [makeNote(0, 0)], {
-                nbBeats: 2,
+                beatCount: 2,
                 stepsPerBeat,
                 loopAtStep: totalSteps,
             })
@@ -230,7 +230,7 @@ describe('PatternManager', () => {
         it('wraps around beats correctly', () => {
             const loopAt = 3 * stepsPerBeat
             const track = makeTrack('KICK', [makeNote(1, 0), makeNote(2, 0)], {
-                nbBeats: 3,
+                beatCount: 3,
                 stepsPerBeat,
                 loopAtStep: loopAt,
             })

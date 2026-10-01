@@ -240,9 +240,9 @@ describe('Sequencer', () => {
         expect(seq.stop).not.toHaveBeenCalled()
     })
 
-    describe.each(PARAM_SETS)('Sequencer — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, nbBeats) => {
+    describe.each(PARAM_SETS)('Sequencer — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
         it('creates transport and can set bpm', () => {
-            appState.patterns = [makePattern({ bpm, nbBeats })]
+            appState.patterns = [makePattern({ bpm, beatCount })]
             const seq = new Sequencer()
             seq.setBpm(bpm + 10)
             expect(serviceRegistry.transport.bpm).toBe(bpm + 10)

@@ -147,7 +147,7 @@ function importMidiToPattern(midiBytes, cmd) {
     }
 
     const pattern = cmd.addPattern('roundtrip-midi')
-    pattern.nbBeats = 32
+    pattern.beatCount = 32
     pattern.bpm = bpm
 
     for (const def of trackDefs) {

@@ -72,7 +72,12 @@ describe('Keyboard shortcuts', () => {
                 appState.showVus = !appState.showVus
             }),
             addPattern: vi.fn((name) => {
-                const pattern = { name: name ?? `NewPat_${appState.patterns.length}`, tracks: [], bpm: 120, nbBeats: 4 }
+                const pattern = {
+                    name: name ?? `NewPat_${appState.patterns.length}`,
+                    tracks: [],
+                    bpm: 120,
+                    beatCount: 4,
+                }
                 appState.patterns.push(pattern)
                 return pattern
             }),

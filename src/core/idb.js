@@ -1,7 +1,7 @@
 import { logger } from './logger.js'
 
 const DB_NAME = 'ordrumbox'
-const DB_VERSION = 4
+const DB_VERSION = 5
 
 const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds']
 
@@ -13,12 +13,67 @@ const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'gen
  */
 
 /**
+ * Renames `nbBeats` to `beatCount` on one persisted song or pattern.
+ * Walks the shapes actually stored: a song ({patterns: [...]}) or a bare
+ * pattern, each pattern and each of its tracks. Returns true when something
+ * moved.
+ * @param {any} node
+ * @returns {boolean}
+ */
+function renameNbBeats(node) {
+    if (!node || typeof node !== 'object') return false
+    let changed = false
+    if (Object.prototype.hasOwnProperty.call(node, 'nbBeats')) {
+        if (node.beatCount === undefined) node.beatCount = node.nbBeats
+        delete node.nbBeats
+        changed = true
+    }
+    if (Array.isArray(node.patterns)) {
+        for (const pattern of node.patterns) changed = renameNbBeats(pattern) || changed
+    }
+    if (Array.isArray(node.tracks)) {
+        for (const track of node.tracks) changed = renameNbBeats(track) || changed
+    }
+    return changed
+}
+
+/**
  * Schema migrations keyed by the DB_VERSION they ship with:
- *     5: (db, tx) => { ... }
- * They run inside `onupgradeneeded` when upgrading from a version < 5, so add
+ *     6: (db, tx) => { ... }
+ * They run inside `onupgradeneeded` when upgrading from a version < 6, so add
  * an entry here (and bump DB_VERSION) whenever persisted data changes shape.
  */
-export const MIGRATIONS = {}
+export const MIGRATIONS = {
+    /**
+     * v5: `nbBeats` → `beatCount`, on every song and cached pattern.
+     *
+     * Written request-chained rather than with async/await on purpose: the
+     * versionchange transaction auto-commits as soon as the microtask queue
+     * drains, so awaiting a request here would close the store before the
+     * cursor could be read. `cursor.continue()` keeps it alive for the walk.
+     * @param {IDBDatabase} db
+     * @param {IDBTransaction|null} tx
+     */
+    5: (db, tx) => {
+        if (!tx) return
+        for (const storeName of ['songs', 'patterns']) {
+            if (!db.objectStoreNames.contains(storeName)) continue
+            const store = tx.objectStore(storeName)
+            const request = store.openCursor()
+            request.onsuccess = () => {
+                const cursor = request.result
+                if (!cursor) return
+                // Cached patterns are stored as {data, savedAt, ...} envelopes;
+                // saved songs are stored raw.
+                const value = cursor.value
+                if (renameNbBeats(value) || (value?.data && renameNbBeats(value.data))) {
+                    cursor.update(value)
+                }
+                cursor.continue()
+            }
+        }
+    },
+}
 
 /** Creates missing stores, then runs every migration in (oldVersion, newVersion]. */
 export function runUpgrades(db, oldVersion, newVersion, tx = null) {

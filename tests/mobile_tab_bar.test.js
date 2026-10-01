@@ -20,7 +20,7 @@ describe('Mobile tab bar', () => {
     const MOCK_TRACK = {
         name: 'KICK',
         notes: [],
-        nbBeats: 4,
+        beatCount: 4,
         stepsPerBeat: 4,
         loopAtStep: 16,
         mute: false,
@@ -52,7 +52,7 @@ describe('Mobile tab bar', () => {
 
     const TEST_PATTERN = {
         name: 'Test',
-        nbBeats: 4,
+        beatCount: 4,
         bpm: 120,
         tracks: [structuredClone(MOCK_TRACK)],
     }

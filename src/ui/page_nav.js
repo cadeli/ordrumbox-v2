@@ -11,8 +11,8 @@ import { BEATS_PER_PAGE } from '../core/constants.js'
  * Number of pages a pattern spans. A page is BEATS_PER_PAGE beats — the same
  * unit every renderer uses (pattern_panel slices [page*4, page*4+4) beats).
  *
- * Three variants of this formula existed (ceil(nbBeats*spb/16) in page_nav /
- * toolbar / pattern_settings_panel, ceil(nbBeats/4) in the piano roll); the
+ * Three variants of this formula existed (ceil(beatCount*spb/16) in page_nav /
+ * toolbar / pattern_settings_panel, ceil(beatCount/4) in the piano roll); the
  * steps-based one shrank the beats per page as stepsPerBeat grew, so at
  * stepsPerBeat=8 the toolbar offered twice as many pages as the grid could
  * render.
@@ -20,8 +20,8 @@ import { BEATS_PER_PAGE } from '../core/constants.js'
  * @returns {number} page count (>= 1)
  */
 export function pageCountFor(pattern) {
-    const nbBeats = pattern?.nbBeats ?? Utils.PATTERN_DEFAULTS.nbBeats
-    return Math.max(1, Math.ceil(nbBeats / BEATS_PER_PAGE))
+    const beatCount = pattern?.beatCount ?? Utils.PATTERN_DEFAULTS.beatCount
+    return Math.max(1, Math.ceil(beatCount / BEATS_PER_PAGE))
 }
 
 /** @param {object} [pattern] @returns {number} last valid page index */

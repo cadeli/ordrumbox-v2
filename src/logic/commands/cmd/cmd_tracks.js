@@ -84,7 +84,7 @@ export default class TrackCommands {
     }
 
     addTrack(pattern, type, stepsPerBeat = 4) {
-        const track = this.createTrack(pattern.nbBeats, type, stepsPerBeat)
+        const track = this.createTrack(pattern.beatCount, type, stepsPerBeat)
         // Clamp here rather than at first note: an out-of-grid track must be
         // corrected before any steppc/beatStep is derived from it.
         if (clampStepsPerBeat(track)) {
@@ -175,12 +175,12 @@ export default class TrackCommands {
         return clone
     }
 
-    createTrack(nbBeats, name, stepsPerBeat = 4) {
+    createTrack(beatCount, name, stepsPerBeat = 4) {
         const newTrack = normalizeTrack({
             name,
-            nbBeats: nbBeats,
+            beatCount: beatCount,
             stepsPerBeat,
-            loopAtStep: nbBeats * stepsPerBeat,
+            loopAtStep: beatCount * stepsPerBeat,
             pan: Utils.getPanFromTrackName(name),
         })
         recalcLoopDerived(newTrack)
@@ -218,7 +218,7 @@ export default class TrackCommands {
                     }
                 }
 
-                const maxSteps = (track.nbBeats ?? 4) * target
+                const maxSteps = (track.beatCount ?? 4) * target
                 if (track.loopAtStep > maxSteps) track.loopAtStep = maxSteps
                 recalcLoopDerived(track)
             },
@@ -244,7 +244,7 @@ export default class TrackCommands {
             () => {
                 track.loopAtStep--
                 if (track.loopAtStep < 1) {
-                    track.loopAtStep = track.stepsPerBeat * track.nbBeats
+                    track.loopAtStep = track.stepsPerBeat * track.beatCount
                 }
                 recalcLoopDerived(track)
             },
@@ -262,7 +262,7 @@ export default class TrackCommands {
         this.#withUndo(track, TRACK_STATE_KEYS, `Clean ${track.name}`, () => {
             track.notes = []
             track.loopPointStep = 0
-            track.loopPointBeat = track.nbBeats
+            track.loopPointBeat = track.beatCount
             track.loopAtStep = track.loopPointBeat * track.stepsPerBeat + track.loopPointStep
         })
     }

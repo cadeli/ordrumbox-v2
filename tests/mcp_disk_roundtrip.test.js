@@ -35,7 +35,7 @@ describe('Functional: MCP generate → disk save → import', () => {
 
         const pattern = cmd.addPattern('McpTest')
         pattern.bpm = 90
-        pattern.nbBeats = 8
+        pattern.beatCount = 8
         pattern.tags = ['hiphop', 'bass']
 
         const kick = cmd.addTrack(pattern, 'KICK')
@@ -63,13 +63,13 @@ describe('Functional: MCP generate → disk save → import', () => {
         expect(parsed).toBeInstanceOf(Object)
         expect(parsed.name).toBe('McpTest')
         expect(parsed.bpm).toBe(90)
-        expect(parsed.nbBeats).toBe(8)
+        expect(parsed.beatCount).toBe(8)
 
         const reimported = cmd.importPatternFromJson(parsed)
 
         expect(reimported.name).toBe('McpTest')
         expect(reimported.bpm).toBe(90)
-        expect(reimported.nbBeats).toBe(8)
+        expect(reimported.beatCount).toBe(8)
         expect(reimported.tags).toEqual(expect.objectContaining({ 0: 'hiphop', 1: 'bass' }))
         expect(reimported.tracks).toHaveLength(3)
 
@@ -103,7 +103,7 @@ describe('Functional: MCP generate → disk save → import', () => {
 
         const pattern = cmd.addPattern('CycleTest')
         pattern.bpm = 95
-        pattern.nbBeats = 8
+        pattern.beatCount = 8
         const kick = cmd.addTrack(pattern, 'KICK')
         cmd.addNote(kick, 0, 0, 0)
         kick.notes[0].velocity = 0.9
@@ -150,7 +150,7 @@ describe('Functional: MCP generate → disk save → import', () => {
 
         const pattern = cmd.addPattern('EmptyTest')
         pattern.bpm = 100
-        pattern.nbBeats = 8
+        pattern.beatCount = 8
         cmd.addTrack(pattern, 'KICK')
 
         const exported = PatternExporter.export(pattern)
@@ -160,12 +160,12 @@ describe('Functional: MCP generate → disk save → import', () => {
         const raw = await readFile(filePath, 'utf-8')
         const parsed = JSON.parse(raw)
         expect(parsed.bpm).toBe(100)
-        expect(parsed.nbBeats).toBe(8)
+        expect(parsed.beatCount).toBe(8)
         const reimported = cmd.importPatternFromJson(parsed)
 
         expect(reimported.name).toBe('EmptyTest')
         expect(reimported.bpm).toBe(100)
-        expect(reimported.nbBeats).toBe(8)
+        expect(reimported.beatCount).toBe(8)
         expect(reimported.tracks).toHaveLength(1)
         expect(reimported.tracks[0].notes).toEqual([])
     })
@@ -175,7 +175,7 @@ describe('Functional: MCP generate → disk save → import', () => {
 
         const pattern = cmd.addPattern('ValidJson')
         pattern.bpm = 135
-        pattern.nbBeats = 8
+        pattern.beatCount = 8
         const kick = cmd.addTrack(pattern, 'KICK')
         cmd.addNote(kick, 0, 0, 0)
         kick.notes[0].velocity = 0.9
@@ -196,10 +196,10 @@ describe('Functional: MCP generate → disk save → import', () => {
 
         const p1 = await saveAndVerify(pattern, 'initial')
         expect(p1.bpm).toBe(135)
-        expect(p1.nbBeats).toBe(8)
+        expect(p1.beatCount).toBe(8)
         const r1 = cmd.importPatternFromJson(p1)
         r1.bpm = 140
-        r1.nbBeats = 8
+        r1.beatCount = 8
         await saveAndVerify(r1, 'after bpm')
 
         const p2 = await saveAndVerify(r1, 'after tags')
@@ -212,7 +212,7 @@ describe('Functional: MCP generate → disk save → import', () => {
         expect(p3.tags).toEqual(expect.arrayContaining(['dark', 'techno']))
         const r3 = cmd.importPatternFromJson(p3)
         expect(r3.bpm).toBe(140)
-        expect(r3.nbBeats).toBe(8)
+        expect(r3.beatCount).toBe(8)
         expect(r3.tracks[0].notes[0].every).toBe(2)
     })
 })

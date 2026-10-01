@@ -15,11 +15,11 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
 
     const TEST_PATTERN = {
         name: 'Test',
-        nbBeats: 2,
+        beatCount: 2,
         bpm: 120,
         tracks: [
-            { name: 'KICK', notes: [], nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8 },
-            { name: 'SNARE', notes: [], nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8 },
+            { name: 'KICK', notes: [], beatCount: 2, stepsPerBeat: 4, loopAtStep: 8 },
+            { name: 'SNARE', notes: [], beatCount: 2, stepsPerBeat: 4, loopAtStep: 8 },
         ],
     }
 
@@ -65,7 +65,7 @@ describe('ToolsPanel — Clear / Rnd buttons', () => {
             const pattern = appState.patterns[0]
             for (const track of pattern.tracks) {
                 const stepsPerBeat = track.stepsPerBeat ?? 4
-                const beats = track.nbBeats ?? 4
+                const beats = track.beatCount ?? 4
                 for (const note of track.notes) {
                     expect(note.beat).toBeGreaterThanOrEqual(0)
                     expect(note.beat).toBeLessThan(beats)

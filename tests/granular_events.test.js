@@ -22,11 +22,11 @@ describe('Granular patternChange events', () => {
 
     const PATTERN_2BEAT = {
         name: 'Test',
-        nbBeats: 2,
+        beatCount: 2,
         bpm: 120,
         tracks: [
-            { name: 'KICK', notes: [], nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8 },
-            { name: 'SNARE', notes: [], nbBeats: 2, stepsPerBeat: 4, loopAtStep: 8 },
+            { name: 'KICK', notes: [], beatCount: 2, stepsPerBeat: 4, loopAtStep: 8 },
+            { name: 'SNARE', notes: [], beatCount: 2, stepsPerBeat: 4, loopAtStep: 8 },
         ],
     }
 
@@ -218,7 +218,7 @@ describe('Granular patternChange events', () => {
             const toolbar = new Toolbar()
             toolbar.init()
             const prevLen = toolbar.patternSelect.options.length
-            appState.patterns.push({ name: 'New', nbBeats: 4, bpm: 120, tracks: [] })
+            appState.patterns.push({ name: 'New', beatCount: 4, bpm: 120, tracks: [] })
             playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             expect(toolbar.patternSelect.options.length).toBe(prevLen + 1)
         })
@@ -299,9 +299,9 @@ describe('Granular patternChange events', () => {
             appState.patterns = [
                 {
                     name: 'Test',
-                    nbBeats: 4,
+                    beatCount: 4,
                     bpm: 120,
-                    tracks: [{ name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, soundId: 'kick_old' }],
+                    tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, soundId: 'kick_old' }],
                 },
             ]
             const pp = new PatternPanel()
@@ -324,13 +324,13 @@ describe('Granular patternChange events', () => {
             appState.patterns = [
                 {
                     name: 'Test',
-                    nbBeats: 4,
+                    beatCount: 4,
                     bpm: 120,
                     tracks: [
                         {
                             name: 'SYNTH',
                             notes: [],
-                            nbBeats: 4,
+                            beatCount: 4,
                             stepsPerBeat: 4,
                             useSoftSynth: true,
                             synthSoundKey: 'SAW1',
@@ -355,9 +355,9 @@ describe('Granular patternChange events', () => {
             appState.patterns = [
                 {
                     name: 'Test',
-                    nbBeats: 4,
+                    beatCount: 4,
                     bpm: 120,
-                    tracks: [{ name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, soundId: 'old_sound' }],
+                    tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, soundId: 'old_sound' }],
                 },
             ]
             const pp = new PatternPanel()
@@ -377,13 +377,13 @@ describe('Granular patternChange events', () => {
             appState.patterns = [
                 {
                     name: 'Test',
-                    nbBeats: 4,
+                    beatCount: 4,
                     bpm: 120,
                     tracks: [
                         {
                             name: 'SYNTH',
                             notes: [],
-                            nbBeats: 4,
+                            beatCount: 4,
                             stepsPerBeat: 4,
                             useSoftSynth: true,
                             synthSoundKey: 'SAW1',
@@ -408,9 +408,9 @@ describe('Granular patternChange events', () => {
             appState.patterns = [
                 {
                     name: 'Test',
-                    nbBeats: 4,
+                    beatCount: 4,
                     bpm: 120,
-                    tracks: [{ name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, soundId: 'samples/kick.wav' }],
+                    tracks: [{ name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, soundId: 'samples/kick.wav' }],
                 },
             ]
             soundRegistry.sounds['samples/kick.wav'] = { url: 'assets/sounds/kick_heavy.wav' }

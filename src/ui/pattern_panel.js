@@ -399,11 +399,11 @@ export default class PatternPanel extends BasePanel {
             return
         }
 
-        // Structure (stepsPerBeat/nbBeats) can change via TRACK_PARAM_CHANGE or
+        // Structure (stepsPerBeat/beatCount) can change via TRACK_PARAM_CHANGE or
         // undo without PATTERN_META_CHANGE — detect it and force a full rebuild
         // so the DOM cell count per beat matches the track.
-        const structureSig = `${pattern.nbBeats ?? 4}|${tracks
-            .map((t) => `${t?.stepsPerBeat ?? 4}:${t?.nbBeats ?? 4}`)
+        const structureSig = `${pattern.beatCount ?? 4}|${tracks
+            .map((t) => `${t?.stepsPerBeat ?? 4}:${t?.beatCount ?? 4}`)
             .join(',')}`
         if (structureSig !== this.#structureSig) {
             this.#structureSig = structureSig

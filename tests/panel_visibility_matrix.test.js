@@ -48,7 +48,7 @@ const MAIN_H = 450
 const MOCK_TRACK = {
     name: 'KICK',
     notes: [{ beat: 0, beatStep: 0, pitch: 0, velocity: 0.8 }],
-    nbBeats: 4,
+    beatCount: 4,
     stepsPerBeat: 4,
     loopAtStep: 16,
     mute: false,
@@ -124,7 +124,7 @@ function setupApp(viewport) {
     appState.patterns = [
         {
             name: 'Pattern 1',
-            nbBeats: 4,
+            beatCount: 4,
             tracks: [structuredClone(MOCK_TRACK), SECOND_TRACK],
         },
     ]

@@ -112,7 +112,7 @@ _"Add a lowpass filter to the KICK and some reverb to the SNARE."_
 | `listAllInstrumentsNames` | Get valid track names (66 instruments)                         |
 | `setPatternBpm`           | Set tempo (20-300)                                             |
 | `setPatternTags`          | Set genre/category tags                                        |
-| `setPatternNbBeats`       | Set number of beats                                            |
+| `setPatternBeatCount`     | Set number of beats                                            |
 | `setPatternDescription`   | Add description text                                           |
 | `listKitSamples`          | List available WAV samples                                     |
 | `analyzeSamples`          | Analyse audio characteristics                                  |

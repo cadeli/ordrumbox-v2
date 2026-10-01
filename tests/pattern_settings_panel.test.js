@@ -23,7 +23,7 @@ function makeTrack(overrides = {}) {
     return {
         name: 'KICK',
         notes: [],
-        nbBeats: 4,
+        beatCount: 4,
         stepsPerBeat: 4,
         loopAtStep: 16,
         mute: false,
@@ -35,7 +35,7 @@ function makeTrack(overrides = {}) {
 }
 
 function setupPattern(tracks) {
-    const pattern = { name: 'Test', nbBeats: 4, tracks }
+    const pattern = { name: 'Test', beatCount: 4, tracks }
     appState.patterns = [pattern]
     appState.selectedPatternIdx = 0
     return pattern
@@ -47,7 +47,7 @@ describe('PatternSettingsPanel', () => {
     beforeEach(() => {
         const realCmd = new Commander()
         serviceRegistry.cmd = {
-            setPatternNbBeats: (pattern, nbBeats) => realCmd.setPatternNbBeats(pattern, nbBeats),
+            setPatternBeatCount: (pattern, beatCount) => realCmd.setPatternBeatCount(pattern, beatCount),
             setSelectedDrumkitIdx: vi.fn(),
             setSelectedPatternIdx: vi.fn(),
             beginGenerationUndo: vi.fn(),
@@ -128,10 +128,10 @@ describe('PatternSettingsPanel', () => {
             expect(panel.prevPageBtn.disabled).toBe(true)
         })
 
-        it('updates beats select to match pattern nbBeats', () => {
-            const tracks = [makeTrack({ nbBeats: 8 })]
+        it('updates beats select to match pattern beatCount', () => {
+            const tracks = [makeTrack({ beatCount: 8 })]
             const pattern = setupPattern(tracks)
-            pattern.nbBeats = 8
+            pattern.beatCount = 8
             panel.sync()
             expect(panel.beatsSelect.value).toBe('8')
         })
@@ -152,8 +152,8 @@ describe('PatternSettingsPanel', () => {
 
         it('populates pattern select from appState.patterns', () => {
             appState.patterns = [
-                { name: 'Pattern 1', nbBeats: 4, tracks: [] },
-                { name: 'Pattern 2', nbBeats: 4, tracks: [] },
+                { name: 'Pattern 1', beatCount: 4, tracks: [] },
+                { name: 'Pattern 2', beatCount: 4, tracks: [] },
             ]
             panel.syncDrumkits()
             const opts = panel.patternSelect.querySelectorAll('option')
@@ -163,8 +163,8 @@ describe('PatternSettingsPanel', () => {
 
     describe('page navigation', () => {
         function setupBigPattern() {
-            const track = makeTrack({ nbBeats: 8, stepsPerBeat: 4, loopAtStep: 32 })
-            const pattern = { name: 'Big', nbBeats: 8, tracks: [track] }
+            const track = makeTrack({ beatCount: 8, stepsPerBeat: 4, loopAtStep: 32 })
+            const pattern = { name: 'Big', beatCount: 8, tracks: [track] }
             appState.patterns = [pattern]
             appState.selectedPatternIdx = 0
             return pattern
@@ -216,9 +216,9 @@ describe('PatternSettingsPanel', () => {
     })
 
     describe('beats change', () => {
-        it('updates pattern.nbBeats and all tracks nbBeats', () => {
-            const t1 = makeTrack({ nbBeats: 4 })
-            const t2 = makeTrack({ name: 'SNARE', nbBeats: 4 })
+        it('updates pattern.beatCount and all tracks beatCount', () => {
+            const t1 = makeTrack({ beatCount: 4 })
+            const t2 = makeTrack({ name: 'SNARE', beatCount: 4 })
             setupPattern([t1, t2])
             panel.sync()
 
@@ -226,15 +226,15 @@ describe('PatternSettingsPanel', () => {
             panel.beatsSelect.dispatchEvent(new Event('change'))
 
             const pattern = appState.patterns[0]
-            expect(pattern.nbBeats).toBe(8)
-            expect(t1.nbBeats).toBe(8)
-            expect(t2.nbBeats).toBe(8)
+            expect(pattern.beatCount).toBe(8)
+            expect(t1.beatCount).toBe(8)
+            expect(t2.beatCount).toBe(8)
         })
 
         it('clamps loopAtStep when beats decrease', () => {
-            const track = makeTrack({ nbBeats: 8, stepsPerBeat: 4, loopAtStep: 32 })
+            const track = makeTrack({ beatCount: 8, stepsPerBeat: 4, loopAtStep: 32 })
             const pattern = setupPattern([track])
-            pattern.nbBeats = 8
+            pattern.beatCount = 8
             panel.sync()
 
             panel.beatsSelect.value = '4'
@@ -244,7 +244,7 @@ describe('PatternSettingsPanel', () => {
         })
 
         it('does not clamp loopAtStep when beats increase', () => {
-            const track = makeTrack({ nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 })
+            const track = makeTrack({ beatCount: 4, stepsPerBeat: 4, loopAtStep: 16 })
             setupPattern([track])
             panel.sync()
 
@@ -292,8 +292,8 @@ describe('PatternSettingsPanel', () => {
     describe('pattern change', () => {
         it('calls cmd.setSelectedPatternIdx', () => {
             appState.patterns = [
-                { name: 'P1', nbBeats: 4, tracks: [] },
-                { name: 'P2', nbBeats: 4, tracks: [] },
+                { name: 'P1', beatCount: 4, tracks: [] },
+                { name: 'P2', beatCount: 4, tracks: [] },
             ]
             panel.syncDrumkits()
             panel.patternSelect.value = '1'
@@ -303,8 +303,8 @@ describe('PatternSettingsPanel', () => {
 
         it('resets currentPage to 0', () => {
             appState.patterns = [
-                { name: 'P1', nbBeats: 4, tracks: [] },
-                { name: 'P2', nbBeats: 4, tracks: [] },
+                { name: 'P1', beatCount: 4, tracks: [] },
+                { name: 'P2', beatCount: 4, tracks: [] },
             ]
             appState.currentPage = 1
             panel.syncDrumkits()
@@ -316,15 +316,15 @@ describe('PatternSettingsPanel', () => {
 
     describe('event subscriptions', () => {
         it('syncs on patternMetaChange', () => {
-            setupPattern([makeTrack({ nbBeats: 6 })])
-            appState.patterns[0].nbBeats = 6
+            setupPattern([makeTrack({ beatCount: 6 })])
+            appState.patterns[0].beatCount = 6
             playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
             expect(panel.beatsSelect.value).toBe('6')
         })
 
         it('syncs on patternStructureChange', () => {
-            setupPattern([makeTrack({ nbBeats: 10 })])
-            appState.patterns[0].nbBeats = 10
+            setupPattern([makeTrack({ beatCount: 10 })])
+            appState.patterns[0].beatCount = 10
             playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
             expect(panel.beatsSelect.value).toBe('10')
         })

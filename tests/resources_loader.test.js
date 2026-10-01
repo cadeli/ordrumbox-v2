@@ -169,7 +169,7 @@ describe('ResourcesLoader', () => {
 
             const song = {
                 infos: { name: 'Test', description: '', date: '2025-01-01' },
-                patterns: [{ name: 'P1', bpm: 120, nbBeats: 4, tracks: [] }],
+                patterns: [{ name: 'P1', bpm: 120, beatCount: 4, tracks: [] }],
             }
             fetchSpy.mockResolvedValue(makeJsonResponse(song))
 
@@ -191,7 +191,7 @@ describe('ResourcesLoader', () => {
                     {
                         name: 'P1',
                         bpm: 120,
-                        nbBeats: 4,
+                        beatCount: 4,
                         tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: true, notes: [] }],
                     },
                 ],
@@ -216,7 +216,7 @@ describe('ResourcesLoader', () => {
                     {
                         name: 'P1',
                         bpm: 120,
-                        nbBeats: 4,
+                        beatCount: 4,
                         tracks: [{ name: 'KICK', soundId: 'kick.wav', useAutoAssignSound: false, notes: [] }],
                     },
                 ],
@@ -241,7 +241,7 @@ describe('ResourcesLoader', () => {
                     {
                         name: 'P1',
                         bpm: 120,
-                        nbBeats: 4,
+                        beatCount: 4,
                         tracks: [{ name: 'KICK', soundId: 'NOT_DEFINED', notes: [] }],
                     },
                 ],
@@ -265,8 +265,8 @@ describe('ResourcesLoader', () => {
             const song = {
                 infos: { name: 'Boot' },
                 patterns: [
-                    { name: 'P1', bpm: 120, nbBeats: 4, tracks: [{ name: 'KICK', notes: [] }] },
-                    { name: 'P2', bpm: 120, nbBeats: 4, tracks: [] },
+                    { name: 'P1', bpm: 120, beatCount: 4, tracks: [{ name: 'KICK', notes: [] }] },
+                    { name: 'P2', bpm: 120, beatCount: 4, tracks: [] },
                 ],
             }
             fetchSpy.mockResolvedValue(makeJsonResponse(song))

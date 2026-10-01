@@ -24,7 +24,7 @@ describe('Toolbar UI Layout', () => {
         }
         const realCmd = new Commander()
         serviceRegistry.cmd = {
-            setPatternNbBeats: (pattern, nbBeats) => realCmd.setPatternNbBeats(pattern, nbBeats),
+            setPatternBeatCount: (pattern, beatCount) => realCmd.setPatternBeatCount(pattern, beatCount),
             setSelectedPatternIdx: vi.fn(),
             setSelectedDrumkitIdx: vi.fn(),
             cleanPattern: vi.fn(),
@@ -118,9 +118,9 @@ describe('Toolbar UI Layout', () => {
         expect(label.textContent).toBe('1/1')
     })
 
-    it('updates pattern.nbBeats and emits events when beats select changes', () => {
-        const track = { name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 }
-        appState.patterns = [{ name: 'Test', bpm: 120, nbBeats: 4, tracks: [track] }]
+    it('updates pattern.beatCount and emits events when beats select changes', () => {
+        const track = { name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, loopAtStep: 16 }
+        appState.patterns = [{ name: 'Test', bpm: 120, beatCount: 4, tracks: [track] }]
         appState.selectedPatternIdx = 0
 
         const beatsSelect = document.querySelector('.tb-beats-group select')
@@ -130,16 +130,16 @@ describe('Toolbar UI Layout', () => {
         beatsSelect.value = '6'
         beatsSelect.dispatchEvent(new Event('change'))
 
-        expect(appState.patterns[0].nbBeats).toBe(6)
-        expect(track.nbBeats).toBe(6)
+        expect(appState.patterns[0].beatCount).toBe(6)
+        expect(track.beatCount).toBe(6)
         expect(appState.currentPage).toBe(0)
         expect(emitSpy).toHaveBeenCalledWith('patternMetaChange')
         expect(emitSpy).toHaveBeenCalledWith('patternChange')
     })
 
     it('clamps track.loopAtStep when beats decrease', () => {
-        const track = { name: 'KICK', notes: [], nbBeats: 4, stepsPerBeat: 4, loopAtStep: 16 }
-        appState.patterns = [{ name: 'Test', bpm: 120, nbBeats: 4, tracks: [track] }]
+        const track = { name: 'KICK', notes: [], beatCount: 4, stepsPerBeat: 4, loopAtStep: 16 }
+        appState.patterns = [{ name: 'Test', bpm: 120, beatCount: 4, tracks: [track] }]
         appState.selectedPatternIdx = 0
 
         const beatsSelect = document.querySelector('.tb-beats-group select')

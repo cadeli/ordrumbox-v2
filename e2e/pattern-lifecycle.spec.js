@@ -45,7 +45,7 @@ const NEW_PATTERN = 'LifecyclePat'
 // Track keys that must survive a reload (pan + soundId are documented losses).
 const TRACK_KEYS = [
     'name',
-    'nbBeats',
+    'beatCount',
     'stepsPerBeat',
     'loopAtStep',
     'swingResolution',
@@ -231,8 +231,8 @@ test.describe.serial('Full session lifecycle', () => {
 
         await test.step('phase 3a — transport: 8 beats', async () => {
             await page.locator('.tb-beats-group select').selectOption('8')
-            await expect.poll(() => page.evaluate((i) => window.__e2e.appState.patterns[i]?.nbBeats, newIdx)).toBe(8)
-            await expectNum(() => trackField(page, 0, 'nbBeats'), 8)
+            await expect.poll(() => page.evaluate((i) => window.__e2e.appState.patterns[i]?.beatCount, newIdx)).toBe(8)
+            await expectNum(() => trackField(page, 0, 'beatCount'), 8)
         })
 
         await test.step('phase 3b — knob bar: velocity, pan, pitch', async () => {
@@ -791,7 +791,7 @@ test.describe.serial('Full session lifecycle', () => {
         expect(after.selectedDrumkitIdx).toBe(1)
         expect(after.patterns.length).toBe(baseCount + 1)
         expect(afterPattern.name).toBe(NEW_PATTERN)
-        expect(afterPattern.nbBeats).toBe(8)
+        expect(afterPattern.beatCount).toBe(8)
 
         // every whitelisted track key and note key must be identical
         const problems = diffPatterns(beforePattern, afterPattern, {
@@ -867,7 +867,7 @@ test.describe.serial('Full session lifecycle', () => {
         expect(fileJson).toEqual(liveExport)
         expect(fileJson.application).toBe('online-ordrumbox')
         expect(fileJson.name).toBe(NEW_PATTERN)
-        expect(fileJson.nbBeats).toBe(8)
+        expect(fileJson.beatCount).toBe(8)
         const fileTracks = Array.isArray(fileJson.tracks) ? fileJson.tracks : Object.values(fileJson.tracks ?? {})
         expect(fileTracks).toHaveLength(4)
 
@@ -996,7 +996,7 @@ test.describe.serial('Full session lifecycle', () => {
         const selectedIdx = await page.evaluate(() => window.__e2e.appState.selectedPatternIdx)
         const meta = await page.evaluate((i) => {
             const pattern = window.__e2e.appState.patterns[i]
-            return { name: pattern.name, bpm: pattern.bpm, nbBeats: pattern.nbBeats }
+            return { name: pattern.name, bpm: pattern.bpm, beatCount: pattern.beatCount }
         }, selectedIdx)
         expect(meta.name).toBe(NEW_PATTERN)
 
@@ -1028,9 +1028,9 @@ test.describe.serial('Full session lifecycle', () => {
         expect(header.byteRate).toBe(44_100 * 4)
         expect(header.dataTag).toBe('data')
 
-        // one loop of the pattern: nbBeats beats at the pattern tempo
+        // one loop of the pattern: beatCount beats at the pattern tempo
         const duration = header.dataSize / header.byteRate
-        const musicalDuration = (meta.nbBeats * 60) / meta.bpm
+        const musicalDuration = (meta.beatCount * 60) / meta.bpm
         expect(duration).toBeCloseTo(musicalDuration, 3)
         // OfflineAudioContext length = floor(sampleRate * duration) — one
         // sample of rounding slack either way

@@ -20,7 +20,7 @@ describe('Functional: MCP tools flow', () => {
 
         expect(pattern.name).toBe('MyBeat')
         expect(pattern.bpm).toBe(120)
-        expect(pattern.nbBeats).toBe(4)
+        expect(pattern.beatCount).toBe(4)
         expect(pattern.tracks).toEqual([])
         expect(appState.patterns).toContain(pattern)
     })
@@ -60,12 +60,12 @@ describe('Functional: MCP tools flow', () => {
 
     it('ensurePatternHasEnoughBeats expands pattern when needed', () => {
         const pattern = cmd.addPattern('Test')
-        expect(pattern.nbBeats).toBe(4)
+        expect(pattern.beatCount).toBe(4)
 
         ensurePatternHasEnoughBeats(cmd, pattern, 5)
 
         // Beat 5 needs 6 beats → rounded up to a 4-beat group
-        expect(pattern.nbBeats).toBe(8)
+        expect(pattern.beatCount).toBe(8)
     })
 
     it('upsertNoteOnTrack creates a note, then updates it in place', () => {

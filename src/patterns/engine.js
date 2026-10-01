@@ -77,13 +77,13 @@ export function computeTickForNote(note, track, tick = TICK) {
     return Utils.stepToTick(Utils.getNoteAbsoluteStep(note, track.stepsPerBeat), track.stepsPerBeat, tick)
 }
 
-export function computeNbTickForPattern(nbBeats, tick = TICK) {
-    return tick * nbBeats
+export function computeNbTickForPattern(beatCount, tick = TICK) {
+    return tick * beatCount
 }
 
 export function computeNbTickForLoop(track, tick = TICK) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
-    const trackBeats = Defaults.getTrackProp(track, 'nbBeats')
+    const trackBeats = Defaults.getTrackProp(track, 'beatCount')
     const loopPointStepPc = (track.loopPointStep ?? 0) / stepsPerBeat
     return Math.floor((loopPointStepPc + (track.loopPointBeat ?? trackBeats)) * tick)
 }
@@ -207,7 +207,7 @@ export function generateSubNotesWithEuclidean(
 
 export function recomputeFlatNotes(djtPattern, loop = 0, tick = TICK) {
     const flatNotes = new Map()
-    const nbTickForPattern = computeNbTickForPattern(djtPattern.nbBeats, tick)
+    const nbTickForPattern = computeNbTickForPattern(djtPattern.beatCount, tick)
 
     for (const track of Object.values(djtPattern.tracks)) {
         const nbTickForLoop = computeNbTickForLoop(track, tick)

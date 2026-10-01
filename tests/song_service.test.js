@@ -34,7 +34,7 @@ describe('SongService', () => {
 
     describe('buildSongData', () => {
         it('serializes current appState into song data', () => {
-            appState.patterns = [{ name: 'A', tracks: [], bpm: 120, nbBeats: 4 }]
+            appState.patterns = [{ name: 'A', tracks: [], bpm: 120, beatCount: 4 }]
             appState.selectedPatternIdx = 0
             appState.songInfos.description = 'My song'
             appState.songInfos.date = '2025-01-01'

@@ -30,11 +30,11 @@ afterEach(() => {
     delete globalThis.cancelAnimationFrame
 })
 
-function makeMockPattern(nbBeats = 4) {
+function makeMockPattern(beatCount = 4) {
     return {
         name: 'Test',
-        nbBeats,
-        tracks: [{ name: 'KICK', notes: [], nbBeats, stepsPerBeat: 4, loopAtStep: nbBeats * 4, mute: false }],
+        beatCount,
+        tracks: [{ name: 'KICK', notes: [], beatCount, stepsPerBeat: 4, loopAtStep: beatCount * 4, mute: false }],
     }
 }
 

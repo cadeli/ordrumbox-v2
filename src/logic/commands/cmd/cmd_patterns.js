@@ -124,38 +124,38 @@ export default class PatternCommands {
     }
 
     /**
-     * Set the pattern length in beats and resync every track: track nbBeats
+     * Set the pattern length in beats and resync every track: track beatCount
      * follow the pattern, loop points clamp to the new length.
      * @param {any} pattern
-     * @param {number} nbBeats - target length in beats (1..MAX_BEATS)
+     * @param {number} beatCount - target length in beats (1..MAX_BEATS)
      * @returns {any} the pattern
      */
-    setPatternNbBeats(pattern, nbBeats) {
-        const requested = Math.round(Number(nbBeats))
-        const appliedNbBeats =
+    setPatternBeatCount(pattern, beatCount) {
+        const requested = Math.round(Number(beatCount))
+        const appliedBeatCount =
             Number.isFinite(requested) && requested >= 1 && requested <= MAX_BEATS
                 ? requested
-                : Utils.PATTERN_DEFAULTS.nbBeats
-        if (appliedNbBeats !== requested) {
-            logger.warn('Command', 'nbBeats out of bounds', nbBeats, `→ ${appliedNbBeats}`)
+                : Utils.PATTERN_DEFAULTS.beatCount
+        if (appliedBeatCount !== requested) {
+            logger.warn('Command', 'beatCount out of bounds', beatCount, `→ ${appliedBeatCount}`)
         }
 
         const readTrackStates = () =>
             Utils.getTracksArray(pattern).map((track) => ({
                 track,
-                nbBeats: track.nbBeats,
+                beatCount: track.beatCount,
                 loopAtStep: track.loopAtStep,
                 loopPointBeat: track.loopPointBeat,
                 loopPointStep: track.loopPointStep,
             }))
 
-        const oldNbBeats = pattern.nbBeats
+        const oldBeatCount = pattern.beatCount
         const oldTrackStates = readTrackStates()
 
         const applyState = (beats, trackStates) => {
-            pattern.nbBeats = beats
-            for (const { track, nbBeats, loopAtStep, loopPointBeat, loopPointStep } of trackStates) {
-                track.nbBeats = nbBeats
+            pattern.beatCount = beats
+            for (const { track, beatCount, loopAtStep, loopPointBeat, loopPointStep } of trackStates) {
+                track.beatCount = beatCount
                 track.loopAtStep = loopAtStep
                 track.loopPointBeat = loopPointBeat
                 track.loopPointStep = loopPointStep
@@ -164,29 +164,29 @@ export default class PatternCommands {
         }
 
         const newTrackStates = Utils.getTracksArray(pattern).map((track) => {
-            const maxSteps = appliedNbBeats * (track.stepsPerBeat ?? 4)
+            const maxSteps = appliedBeatCount * (track.stepsPerBeat ?? 4)
             if (track.loopAtStep > maxSteps) {
                 track.loopAtStep = maxSteps
                 recalcLoopDerived(track)
             }
-            track.nbBeats = appliedNbBeats
+            track.beatCount = appliedBeatCount
             return {
                 track,
-                nbBeats: track.nbBeats,
+                beatCount: track.beatCount,
                 loopAtStep: track.loopAtStep,
                 loopPointBeat: track.loopPointBeat,
                 loopPointStep: track.loopPointStep,
             }
         })
-        pattern.nbBeats = appliedNbBeats
+        pattern.beatCount = appliedBeatCount
 
-        if (pattern.nbBeats !== oldNbBeats) {
+        if (pattern.beatCount !== oldBeatCount) {
             this.#host.record({
-                desc: `Set pattern length → ${appliedNbBeats} beats`,
-                params: { pattern: pattern.name, nbBeats: appliedNbBeats },
-                prev: { nbBeats: oldNbBeats },
-                execute: () => applyState(appliedNbBeats, newTrackStates),
-                undo: () => applyState(oldNbBeats, oldTrackStates),
+                desc: `Set pattern length → ${appliedBeatCount} beats`,
+                params: { pattern: pattern.name, beatCount: appliedBeatCount },
+                prev: { beatCount: oldBeatCount },
+                execute: () => applyState(appliedBeatCount, newTrackStates),
+                undo: () => applyState(oldBeatCount, oldTrackStates),
             })
         }
         this.#host.persist()
@@ -227,6 +227,6 @@ export default class PatternCommands {
 
     createPattern(name) {
         name ??= `NewPat_${appState.patterns.length}`
-        return { name, description: '', tracks: [], bpm: 120, nbBeats: 4 }
+        return { name, description: '', tracks: [], bpm: 120, beatCount: 4 }
     }
 }

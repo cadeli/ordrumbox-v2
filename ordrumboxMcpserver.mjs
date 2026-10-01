@@ -158,7 +158,7 @@ export function ensureTrack(cmd, pattern, trackName, stepsPerBeat = 4, loopAtSte
         if (loopAtStep !== null) {
             track.loopAtStep = loopAtStep
         }
-        // Default loopAtStep = nbBeats * stepsPerBeat
+        // Default loopAtStep = beatCount * stepsPerBeat
     }
     return track
 }
@@ -168,8 +168,8 @@ export function ensurePatternHasEnoughBeats(cmd, pattern, noteBeat) {
     if (Number.isNaN(requiredBeats) || requiredBeats < 1) {
         throw new Error(`Invalid beat value: ${noteBeat}`)
     }
-    if (requiredBeats > pattern.nbBeats) {
-        cmd.setPatternNbBeats(pattern, Math.ceil(requiredBeats / 4) * 4)
+    if (requiredBeats > pattern.beatCount) {
+        cmd.setPatternBeatCount(pattern, Math.ceil(requiredBeats / 4) * 4)
     }
 }
 
@@ -380,7 +380,7 @@ export const tools = [
                         },
                         loopAtStep: int('loopAtStep', 'Loop point (absolute step index)'),
                         stepsPerBeat: int('stepsPerBeat', 'Steps per beat (subdivision)'),
-                        nbBeats: int('nbBeats', 'Number of beats for this track'),
+                        beatCount: int('beatCount', 'Number of beats for this track'),
                         swingResolution: int('swingResolution', 'Swing grid resolution (1-8)'),
                         swingAmount: num('swingAmount', 'Swing intensity'),
                         variation: num('variation', 'Track variation (randomization budget 0-100)'),
@@ -513,15 +513,15 @@ export const tools = [
         },
     },
     {
-        name: 'setPatternNbBeats',
+        name: 'setPatternBeatCount',
         description: 'Sets the number of beats for a pattern',
         inputSchema: {
             type: 'object',
             properties: {
                 patternName: { type: 'string' },
-                nbBeats: { type: 'integer', minimum: 1, maximum: 16 },
+                beatCount: { type: 'integer', minimum: 1, maximum: 16 },
             },
-            required: ['patternName', 'nbBeats'],
+            required: ['patternName', 'beatCount'],
         },
     },
     {
@@ -871,13 +871,13 @@ export async function handleToolCall(toolName, args, onError) {
             }
         }
 
-        if (toolName === 'setPatternNbBeats') {
-            const { patternName, nbBeats } = args
+        if (toolName === 'setPatternBeatCount') {
+            const { patternName, beatCount } = args
             const pattern = await loadPatternFromJson(patternName)
             if (!pattern) throw new Error(`Pattern '${patternName}' not found.`)
 
             const cmd = new Commander()
-            cmd.setPatternNbBeats(pattern, Number(nbBeats))
+            cmd.setPatternBeatCount(pattern, Number(beatCount))
             const filePath = await savePatternToDisk(pattern)
             await updatePatternInIndex(pattern)
 
@@ -888,7 +888,7 @@ export async function handleToolCall(toolName, args, onError) {
                         text: JSON.stringify({
                             message: 'Number of beats updated',
                             patternName: pattern.name,
-                            nbBeats: pattern.nbBeats,
+                            beatCount: pattern.beatCount,
                             filePath,
                         }),
                     },
