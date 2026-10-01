@@ -45,9 +45,19 @@ index.html → src/main.js (bootstrap after "Start" click)
         ui/toolbar/              ← transport + view switch
 ```
 
+### Service worker (`sw.js`)
+
+Standalone worker (not part of the module graph), registered by `src/service_worker.js`.
+
+- **Cache strategy**: network-first (3 s timeout → cache → 503) for navigations, `*.json`, `*.html` and extension-less paths; cache-first for hashed JS/CSS/images, `.wav` samples and any other dotted path. Non-GET / cross-origin requests are left to the browser.
+- **Dev vs release**: `RELEASE_BUILD = false` in the repo source means the dev server is serving it, so _every_ request is network-first (HMR never serves stale code). `npm run build` runs `scripts/sw_build.mjs`, which stamps `CACHE_NAME` with an 8-hex id of `dist/index.html` **and** flips `RELEASE_BUILD` to `true` (missing token or flag ⇒ build error); `activate` then purges every other cache.
+- **Write-path quirks** (all in `putInCache`): the response is cloned before the first `await` (otherwise `respondWith` has already consumed the body), `Vary` is stripped so an entry always matches by URL (`Origin` is sent only on some requests), and a `.css` URL fetched as `destination: 'script'` (Vite dev serves it as a JS module wrapper) is keyed under `?sw=script` so it does not overwrite the stylesheet copy.
+- **Tests**: `tests/service_worker.test.js` (evaluates `sw.js?raw` with mocked `caches`/`fetch`), `tests/sw_build_id.test.js`, `e2e/offline.spec.js`.
+
 ### Key constants
 
 - `TICK = 32` — ticks per step (`src/core/constants.js`)
+- `DB_VERSION = 4` / `MIGRATIONS` — IndexedDB schema (`src/core/idb.js`). When persisted data changes shape: bump `DB_VERSION` **and** add `MIGRATIONS[N]` (`N` = the new `DB_VERSION`, signature `(db, tx)`); `runUpgrades` creates any missing store first, then runs entries whose key lies in `(oldVersion, newVersion]`. The connection is shared for the whole session (`openDb()`) and reopened once when a transaction fails with `InvalidStateError`.
 - `LFO_TARGET_TO_INT` — maps LFO target strings to integers for worklet processor (`src/audio/voices/worklet_synth_voice.js:14`)
 - `WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3, random: 4 }` — `random` (shape=4) is a deterministic sample & hold (new value per oscillator cycle for VCOs, per LFO cycle for LFOs; same formula as `getLfoWaveformValue()` in `src/audio/math.js`); the `osc*Wave`/`lfo*Wave` AudioParams declare `maxValue: 4` — the host currently sends waves via port messages (no AudioParam clamping), but an AudioParam-driven path with `maxValue: 3` would clamp 4→3 and degrade to square
 - `SYNTH_GROUP_DEFAULTS` — many params gated by other defaults: `vco3.gain=0`, `fm.amount=0`, `lfo.target='NOT'`, `noise.mix=0` (`src/ui/synth_editor/constants.js:34-49`)

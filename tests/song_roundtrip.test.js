@@ -20,6 +20,9 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import songService from '../src/logic/services/song_service.js'
 import Commander from '../src/logic/commands/cmd.js'
+import { idbClearStore } from '../src/core/idb.js'
+
+const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds']
 
 // ─── IndexedDB in-memory mock for persistence testing ───────────────────────
 
@@ -277,7 +280,7 @@ function buildComplexProject() {
 describe('Song & Project Persistence Roundtrip', () => {
     let mockIDB
 
-    beforeEach(() => {
+    beforeEach(async () => {
         appState.reset()
         soundRegistry.reset()
         serviceRegistry.reset()
@@ -291,6 +294,10 @@ describe('Song & Project Persistence Roundtrip', () => {
         // Install in-memory mock of IndexedDB
         mockIDB = createMockIDB()
         globalThis.indexedDB = mockIDB
+
+        // The connection is shared by the whole file: start from an empty DB
+        // instead of inheriting the previous test's songs.
+        await Promise.all(ALL_STORES.map((store) => idbClearStore(store)))
     })
 
     describe('Roundtrip 1: State → IndexedDB → State (Zero Data Loss)', () => {

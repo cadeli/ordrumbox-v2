@@ -4,7 +4,7 @@ import { showToast } from './core/notify.js'
 export function initServiceWorker() {
     if (!('serviceWorker' in navigator)) return
 
-    window.addEventListener('load', async () => {
+    const register = async () => {
         const swPath = './sw.js'
 
         try {
@@ -33,13 +33,29 @@ export function initServiceWorker() {
         } catch (error) {
             logger.error('Main', 'orDrumbox SW registration failed:', error)
         }
-    })
+    }
+
+    // main.js is imported after the Start click, which usually happens once the
+    // load event already fired — a listener added here would never run.
+    if (document.readyState === 'complete') {
+        register()
+    } else {
+        window.addEventListener('load', register, { once: true })
+    }
 
     let refreshing = false
+    // The first install claims the page that is already open: reloading there
+    // would throw away what the user just started, so only a later worker
+    // change (update installed / SKIP_WAITING) reloads the app.
+    let hadController = navigator.serviceWorker.controller !== null
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController) {
+            hadController = true
+            return
+        }
         if (!refreshing) {
-            window.location.reload()
             refreshing = true
+            window.location.reload()
         }
     })
 }

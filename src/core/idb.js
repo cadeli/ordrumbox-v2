@@ -5,127 +5,194 @@ const DB_VERSION = 4
 
 const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds']
 
+/**
+ * Schema migrations keyed by the DB_VERSION they ship with:
+ *     5: (db, tx) => { ... }
+ * They run inside `onupgradeneeded` when upgrading from a version < 5, so add
+ * an entry here (and bump DB_VERSION) whenever persisted data changes shape.
+ */
+export const MIGRATIONS = {}
+
+/** Creates missing stores, then runs every migration in (oldVersion, newVersion]. */
+export function runUpgrades(db, oldVersion, newVersion, tx = null) {
+    for (const name of ALL_STORES) {
+        if (!db.objectStoreNames.contains(name)) db.createObjectStore(name)
+    }
+
+    const versions = Object.keys(MIGRATIONS)
+        .map(Number)
+        .filter((version) => version > oldVersion && version <= newVersion)
+        .sort((a, b) => a - b)
+
+    for (const version of versions) {
+        MIGRATIONS[version](db, tx)
+    }
+}
+
+let dbPromise = null
+
+/**
+ * Returns the shared connection, opening it on first use. The connection lives
+ * for the whole session (one open/close per operation is wasteful); it is
+ * dropped on close / version change / failed open so the next call reopens.
+ */
 export function openDb() {
-    return new Promise((resolve, reject) => {
+    if (dbPromise) return dbPromise
+
+    const promise = new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION)
-        request.onupgradeneeded = () => {
+
+        request.onupgradeneeded = (event) => {
+            runUpgrades(request.result, event.oldVersion ?? 0, DB_VERSION, request.transaction)
+        }
+        request.onsuccess = () => {
             const db = request.result
-            for (const name of ALL_STORES) {
-                if (!db.objectStoreNames.contains(name)) {
-                    db.createObjectStore(name)
-                }
+            const invalidate = () => {
+                if (dbPromise === promise) dbPromise = null
+            }
+            db.onversionchange = () => {
+                db.close()
+                invalidate()
+            }
+            db.onclose = invalidate
+            resolve(db)
+        }
+        request.onerror = () => reject(request.error)
+        request.onblocked = () => logger.warn('Idb', 'Database open blocked by another tab')
+    })
+
+    dbPromise = promise
+    promise.catch(() => {
+        if (dbPromise === promise) dbPromise = null
+    })
+
+    return promise
+}
+
+/**
+ * Runs `run(store)` inside a transaction on the shared connection, reopening
+ * the connection once if it turns out to be closed (e.g. another tab bumped
+ * DB_VERSION and forced a version change).
+ */
+async function withStore(storeName, mode, run) {
+    const db = await openDb()
+    try {
+        return await run(db.transaction(storeName, mode).objectStore(storeName))
+    } catch (e) {
+        if (e?.name !== 'InvalidStateError') throw e
+        // The shared connection was closed under us (version change from another
+        // tab, or a connection error): drop it and retry once on a fresh one.
+        if (dbPromise !== null) {
+            dbPromise = null
+            try {
+                db.close()
+            } catch {
+                // already closed
             }
         }
-        request.onsuccess = () => resolve(request.result)
-        request.onerror = () => reject(request.error)
-    })
-}
-
-export async function idbGet(storeName, key) {
-    const db = await openDb()
-    try {
-        return await new Promise((resolve, reject) => {
-            const tx = db.transaction(storeName, 'readonly')
-            const req = tx.objectStore(storeName).get(key)
-            req.onsuccess = () => resolve(req.result)
-            req.onerror = () => reject(req.error)
-        })
-    } finally {
-        db.close()
+        const fresh = await openDb()
+        return run(fresh.transaction(storeName, mode).objectStore(storeName))
     }
 }
 
-export async function idbPut(storeName, key, value) {
-    const db = await openDb()
-    try {
-        await new Promise((resolve, reject) => {
-            const tx = db.transaction(storeName, 'readwrite')
-            const req = tx.objectStore(storeName).put(value, key)
-            req.onsuccess = () => resolve()
-            req.onerror = () => reject(req.error)
-        })
-    } finally {
-        db.close()
-    }
+export function idbGet(storeName, key) {
+    return withStore(
+        storeName,
+        'readonly',
+        (store) =>
+            new Promise((resolve, reject) => {
+                const req = store.get(key)
+                req.onsuccess = () => resolve(req.result)
+                req.onerror = () => reject(req.error)
+            }),
+    )
 }
 
-export async function idbDelete(storeName, key) {
-    const db = await openDb()
-    try {
-        await new Promise((resolve, reject) => {
-            const tx = db.transaction(storeName, 'readwrite')
-            const req = tx.objectStore(storeName).delete(key)
-            req.onsuccess = () => resolve()
-            req.onerror = () => reject(req.error)
-        })
-    } finally {
-        db.close()
-    }
+export function idbPut(storeName, key, value) {
+    return withStore(
+        storeName,
+        'readwrite',
+        (store) =>
+            new Promise((resolve, reject) => {
+                const req = store.put(value, key)
+                req.onsuccess = () => resolve()
+                req.onerror = () => reject(req.error)
+            }),
+    )
 }
 
-export async function idbKeys(storeName) {
-    const db = await openDb()
-    try {
-        return await new Promise((resolve, reject) => {
-            const tx = db.transaction(storeName, 'readonly')
-            const req = tx.objectStore(storeName).getAllKeys()
-            req.onsuccess = () => resolve(req.result)
-            req.onerror = () => reject(req.error)
-        })
-    } finally {
-        db.close()
-    }
+export function idbDelete(storeName, key) {
+    return withStore(
+        storeName,
+        'readwrite',
+        (store) =>
+            new Promise((resolve, reject) => {
+                const req = store.delete(key)
+                req.onsuccess = () => resolve()
+                req.onerror = () => reject(req.error)
+            }),
+    )
 }
 
-export async function idbClearStore(storeName) {
-    const db = await openDb()
-    try {
-        await new Promise((resolve, reject) => {
-            const tx = db.transaction(storeName, 'readwrite')
-            const req = tx.objectStore(storeName).clear()
-            req.onsuccess = () => resolve()
-            req.onerror = () => reject(req.error)
-        })
-    } finally {
-        db.close()
-    }
+export function idbKeys(storeName) {
+    return withStore(
+        storeName,
+        'readonly',
+        (store) =>
+            new Promise((resolve, reject) => {
+                const req = store.getAllKeys()
+                req.onsuccess = () => resolve(req.result)
+                req.onerror = () => reject(req.error)
+            }),
+    )
 }
 
-export async function idbGetAll(storeName) {
-    const db = await openDb()
-    try {
-        return await new Promise((resolve, reject) => {
-            const tx = db.transaction(storeName, 'readonly')
-            const req = tx.objectStore(storeName).getAll()
-            req.onsuccess = () => resolve(req.result)
-            req.onerror = () => reject(req.error)
-        })
-    } finally {
-        db.close()
-    }
+export function idbClearStore(storeName) {
+    return withStore(
+        storeName,
+        'readwrite',
+        (store) =>
+            new Promise((resolve, reject) => {
+                const req = store.clear()
+                req.onsuccess = () => resolve()
+                req.onerror = () => reject(req.error)
+            }),
+    )
 }
 
-export async function idbGetAllEntries(storeName) {
-    const db = await openDb()
-    try {
-        return await new Promise((resolve, reject) => {
-            const tx = db.transaction(storeName, 'readonly')
-            const req = tx.objectStore(storeName).openCursor()
-            const entries = []
-            req.onsuccess = () => {
-                const cursor = req.result
-                if (cursor) {
-                    entries.push({ key: cursor.key, value: cursor.value })
-                    cursor.continue()
-                } else {
-                    resolve(entries)
+export function idbGetAll(storeName) {
+    return withStore(
+        storeName,
+        'readonly',
+        (store) =>
+            new Promise((resolve, reject) => {
+                const req = store.getAll()
+                req.onsuccess = () => resolve(req.result)
+                req.onerror = () => reject(req.error)
+            }),
+    )
+}
+
+export function idbGetAllEntries(storeName) {
+    return withStore(
+        storeName,
+        'readonly',
+        (store) =>
+            new Promise((resolve, reject) => {
+                const req = store.openCursor()
+                const entries = []
+                req.onsuccess = () => {
+                    const cursor = req.result
+                    if (cursor) {
+                        entries.push({ key: cursor.key, value: cursor.value })
+                        cursor.continue()
+                    } else {
+                        resolve(entries)
+                    }
                 }
-            }
-            req.onerror = () => reject(req.error)
-        })
-    } finally {
-        db.close()
-    }
+                req.onerror = () => reject(req.error)
+            }),
+    )
 }
 
 export async function idbReport() {
@@ -145,15 +212,18 @@ export async function idbReport() {
         const db = await openDb()
         const storeNames = [...db.objectStoreNames]
         for (const name of storeNames) {
-            const keys = await new Promise((resolve, reject) => {
-                const tx = db.transaction(name, 'readonly')
-                const req = tx.objectStore(name).getAllKeys()
-                req.onsuccess = () => resolve(req.result)
-                req.onerror = () => reject(req.error)
-            })
+            const keys = await withStore(
+                name,
+                'readonly',
+                (store) =>
+                    new Promise((resolve, reject) => {
+                        const req = store.getAllKeys()
+                        req.onsuccess = () => resolve(req.result)
+                        req.onerror = () => reject(req.error)
+                    }),
+            )
             report.stores[name] = keys
         }
-        db.close()
     } catch (e) {
         logger.warn('Idb', 'IDB unavailable for store listing', e)
     }

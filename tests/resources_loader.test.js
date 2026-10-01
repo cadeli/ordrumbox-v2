@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { logger } from '../src/core/logger.js'
+import { idbClearStore } from '../src/core/idb.js'
 import ResourcesLoader from '../src/loader/resources_loader.js'
+
+const CACHE_STORES = ['patterns', 'drumkits', 'samples', 'generated_sounds']
 
 vi.mock('../src/state/app_state.js', () => {
     const state = { patterns: [] }
@@ -67,17 +70,29 @@ describe('ResourcesLoader', () => {
             })
             return req
         }
-        const mockStore = {
-            ordrumbox_settings: { version: 1, sampleDirs: [], maxSampleDirs: 10 },
+        const mockStores = {
+            settings: { ordrumbox_settings: { version: 1, sampleDirs: [], maxSampleDirs: 10 } },
+            songs: {},
+            patterns: {},
+            drumkits: {},
+            samples: {},
+            generated_sounds: {},
         }
-        const mockObjectStore = {
-            get: vi.fn((key) => makeIdbRequest(mockStore[key] ?? undefined)),
-            put: vi.fn((value, key) => {
-                mockStore[key] = value
-                return makeIdbRequest(undefined)
-            }),
+        const makeObjectStore = (storeName) => {
+            const store = (mockStores[storeName] ??= {})
+            return {
+                get: vi.fn((key) => makeIdbRequest(store[key] ?? undefined)),
+                put: vi.fn((value, key) => {
+                    store[key] = value
+                    return makeIdbRequest(undefined)
+                }),
+                clear: vi.fn(() => {
+                    Object.keys(store).forEach((k) => delete store[k])
+                    return makeIdbRequest(undefined)
+                }),
+            }
         }
-        const mockTx = { objectStore: vi.fn(() => mockObjectStore) }
+        const mockTx = { objectStore: vi.fn((storeName) => makeObjectStore(storeName)) }
         const mockDb = {
             close: vi.fn(),
             transaction: vi.fn(() => mockTx),
@@ -95,7 +110,14 @@ describe('ResourcesLoader', () => {
         }
     })
 
-    afterEach(() => {
+    afterEach(async () => {
+        // The IDB connection is shared for the whole file: drop the resource
+        // caches so one test's cached song/drumkits cannot leak into the next.
+        try {
+            await Promise.all(CACHE_STORES.map((store) => idbClearStore(store)))
+        } catch {
+            // connection already gone — the next test opens a fresh one
+        }
         vi.restoreAllMocks()
         delete globalThis.indexedDB
     })

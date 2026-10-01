@@ -1,10 +1,21 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'node:path'
+import { buildSw } from './scripts/sw_build.mjs'
 
 export default defineConfig({
     root: '.',
     base: './',
     publicDir: false,
+
+    plugins: [
+        {
+            name: 'ordrumbox-sw',
+            apply: 'build',
+            closeBundle() {
+                buildSw({ root: import.meta.dirname })
+            },
+        },
+    ],
 
     test: {
         setupFiles: ['./tests/setup.js'],

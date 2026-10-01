@@ -131,6 +131,9 @@ describe('IDB Cache', () => {
     let cache
 
     beforeEach(async () => {
+        // The shared IDB connection is module state: reset so every test talks
+        // to this test's indexedDB mock instead of the previous one's.
+        vi.resetModules()
         globalThis.indexedDB = createMockIDB()
         Object.defineProperty(globalThis, 'navigator', {
             value: { storage: { estimate: vi.fn() } },

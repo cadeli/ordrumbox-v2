@@ -112,6 +112,9 @@ describe('IndexedDB helpers', () => {
     let idbModule, mockIDB
 
     beforeEach(async () => {
+        // The shared connection is module state: reset so every test starts with
+        // a fresh openDb() against this test's indexedDB mock.
+        vi.resetModules()
         mockIDB = createMockIDB()
         globalThis.indexedDB = mockIDB
         Object.defineProperty(globalThis, 'navigator', {
@@ -219,5 +222,125 @@ describe('IndexedDB helpers', () => {
         const songKeys = await idbModule.idbKeys('songs')
         expect(patternKeys).toHaveLength(0)
         expect(songKeys).toContain('s1')
+    })
+
+    it('reuses a single connection across operations', async () => {
+        const openSpy = vi.spyOn(mockIDB, 'open')
+        await idbModule.idbPut('settings', 'a', 1)
+        await idbModule.idbGet('settings', 'a')
+        await idbModule.idbKeys('settings')
+        await idbModule.idbClearStore('settings')
+        expect(openSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('reopens the connection after a version change from another tab', async () => {
+        const openSpy = vi.spyOn(mockIDB, 'open')
+        await idbModule.idbPut('settings', 'k', 'v')
+
+        const db = await idbModule.openDb()
+        db.onversionchange()
+
+        expect(db.close).toHaveBeenCalled()
+        expect(await idbModule.idbGet('settings', 'k')).toBe('v')
+        expect(openSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('reopens the connection after the browser closed it', async () => {
+        const openSpy = vi.spyOn(mockIDB, 'open')
+        await idbModule.idbPut('settings', 'k', 'v')
+
+        const db = await idbModule.openDb()
+        db.onclose()
+
+        expect(await idbModule.idbGet('settings', 'k')).toBe('v')
+        expect(openSpy).toHaveBeenCalledTimes(2)
+    })
+
+    it('retries once when the held connection is already dead', async () => {
+        await idbModule.idbPut('settings', 'k', 'v')
+        const db = await idbModule.openDb()
+        const openSpy = vi.spyOn(mockIDB, 'open')
+        db.transaction = () => {
+            const err = new Error('database is closed')
+            err.name = 'InvalidStateError'
+            throw err
+        }
+
+        expect(await idbModule.idbGet('settings', 'k')).toBe('v')
+        expect(openSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('propagates a non-InvalidStateError without reopening', async () => {
+        await idbModule.idbPut('settings', 'k', 'v')
+        const db = await idbModule.openDb()
+        const openSpy = vi.spyOn(mockIDB, 'open')
+        db.transaction = () => {
+            const err = new Error('boom')
+            err.name = 'AbortError'
+            throw err
+        }
+
+        await expect(idbModule.idbGet('settings', 'k')).rejects.toThrow('boom')
+        expect(openSpy).not.toHaveBeenCalled()
+    })
+
+    it('creates every store on first open through onupgradeneeded', async () => {
+        const created = []
+        const fakeDb = {
+            close: vi.fn(),
+            objectStoreNames: { contains: (name) => created.includes(name) },
+            createObjectStore: (name) => created.push(name),
+        }
+        globalThis.indexedDB = {
+            open: () => {
+                const req = { result: fakeDb, error: null, onsuccess: null, onerror: null, onupgradeneeded: null }
+                queueMicrotask(() => {
+                    req.onupgradeneeded?.({ oldVersion: 0 })
+                    req.onsuccess?.()
+                })
+                return req
+            },
+        }
+
+        const db = await idbModule.openDb()
+
+        expect(db).toBe(fakeDb)
+        expect(created).toEqual(['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds'])
+    })
+
+    it('runUpgrades creates missing stores only', () => {
+        const created = ['settings']
+        const db = {
+            objectStoreNames: { contains: (name) => created.includes(name) },
+            createObjectStore: (name) => created.push(name),
+        }
+
+        idbModule.runUpgrades(db, 0, 4, null)
+
+        expect(created).toEqual(['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds'])
+    })
+
+    it('runUpgrades runs only migrations inside (oldVersion, newVersion]', () => {
+        const calls = []
+        idbModule.MIGRATIONS[90] = (db, tx) => calls.push(`90:${tx}`)
+        idbModule.MIGRATIONS[91] = () => calls.push('91')
+        try {
+            const db = { objectStoreNames: { contains: () => true }, createObjectStore: vi.fn() }
+
+            idbModule.runUpgrades(db, 89, 90, 'tx')
+            expect(calls).toEqual(['90:tx'])
+
+            calls.length = 0
+            idbModule.runUpgrades(db, 90, 91, 'tx')
+            expect(calls).toEqual(['91'])
+
+            calls.length = 0
+            idbModule.runUpgrades(db, 91, 92, 'tx')
+            expect(calls).toEqual([])
+            expect(db.createObjectStore).not.toHaveBeenCalled()
+        } finally {
+            delete idbModule.MIGRATIONS[90]
+            delete idbModule.MIGRATIONS[91]
+        }
     })
 })
