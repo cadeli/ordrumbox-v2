@@ -4,7 +4,7 @@
 import { renderOptions } from '../components/panel_helpers.js'
 import InstrumentsManager from '../../logic/services/instrument_manager/index.js'
 import AutoAssign from '../../logic/services/auto_assign.js'
-import { EVENTS } from '../../core/events.js'
+import { emitTrackChanged } from '../../state/playback_events.js'
 import {
     getCurrentInstrumentName,
     getCurrentSoundUrl,
@@ -90,6 +90,12 @@ export default class SoundSection {
         )
     }
 
+    /** Tail shared by every sound-row handler: redraw + announce the change. */
+    #afterSoundChange() {
+        this.#editor.sync()
+        emitTrackChanged(this.#editor.track, this.#editor.playbackEvents)
+    }
+
     // ── Event handlers ─────────────────────────────────────────────
 
     async onInstrumentChange(target) {
@@ -104,11 +110,7 @@ export default class SoundSection {
             }
             editor.serviceRegistry.cmd.changeTrackSound(track, firstSample.url)
         }
-        editor.sync()
-        editor.playbackEvents.batch(() => {
-            editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
-            editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
+        this.#afterSoundChange()
     }
 
     async onSampleChange(target) {
@@ -130,10 +132,7 @@ export default class SoundSection {
             }
         }
         editor.serviceRegistry.cmd.changeTrackSound(track, url)
-        editor.playbackEvents.batch(() => {
-            editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
-            editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
+        emitTrackChanged(track, editor.playbackEvents)
     }
 
     async onGeneratedChange(target) {
@@ -150,11 +149,7 @@ export default class SoundSection {
             track.useAutoAssignSound = false
             track.synthSoundKey = key
         }
-        editor.sync()
-        editor.playbackEvents.batch(() => {
-            editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
-            editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
+        this.#afterSoundChange()
     }
 
     toggleAuto() {
@@ -167,11 +162,7 @@ export default class SoundSection {
             const aa = new AutoAssign()
             aa.autoAssignTrackSounds(track)
         }
-        editor.sync()
-        editor.playbackEvents.batch(() => {
-            editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, track)
-            editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
+        this.#afterSoundChange()
     }
 
     // ── Helpers ──

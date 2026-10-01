@@ -75,16 +75,18 @@ export default class HistoryManager {
             command.coalesceKey &&
             last &&
             last.coalesceKey === command.coalesceKey &&
-            Date.now() - (last.coalesceAt ?? 0) < HistoryManager.COALESCE_WINDOW_MS
+            performance.now() - (last.coalesceAt ?? 0) < HistoryManager.COALESCE_WINDOW_MS
         ) {
             last.execute = command.execute
             last.meta = command.meta
-            last.coalesceAt = Date.now()
+            last.coalesceAt = performance.now()
             this.#emitChange()
             return
         }
 
-        command.coalesceAt = Date.now()
+        // Monotonic clock: a wall-clock step backwards (NTP, DST) would
+        // otherwise merge unrelated gestures into a single undo step.
+        command.coalesceAt = performance.now()
         this.#past.push(command)
         if (this.#past.length > this.#maxSize) {
             this.#past.shift()

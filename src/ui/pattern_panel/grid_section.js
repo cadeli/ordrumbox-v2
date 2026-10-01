@@ -3,6 +3,7 @@
 // Track grid: rows, beat cells, note slices, ghosts, dividers, solo,
 // volume sliders, vu meters, master track, add-track button.
 
+import Utils from '../../core/utils.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { nameOr } from '../../core/logger.js'
 import { getNoteSubPositions } from '../../patterns/note_positions.js'
@@ -37,7 +38,7 @@ export default class GridSection {
             for (const note of notes) {
                 getNoteSubPositions(note, track, totalSteps, resolveSpanEnd).forEach(({ pos, type }) => {
                     const stepAbs = Math.floor(pos)
-                    const beat = Math.floor(stepAbs / stepsPerBeat)
+                    const { beat } = Utils.stepToBeat(stepAbs, stepsPerBeat)
                     if (beat >= startBeat && beat < endBeatPage) {
                         if (!ghostMap.has(stepAbs)) ghostMap.set(stepAbs, [])
                         ghostMap.get(stepAbs).push({ offset: pos - stepAbs, type })

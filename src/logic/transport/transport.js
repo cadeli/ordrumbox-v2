@@ -2,6 +2,7 @@ import { TICK } from '../../core/constants.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
+import { reportUserError } from '../../core/notify.js'
 
 export default class Transport {
     #tickInFlight
@@ -88,7 +89,17 @@ export default class Transport {
         // tick is retried next time instead of being permanently lost.
         while (this.nextStepTime < audioNow + this.scheduleAheadTime) {
             if (this.isRunning && this.onSchedule && !this.#tickInFlight) {
-                const result = this.onSchedule(this.tick, this.nextStepTime)
+                let result
+                try {
+                    result = this.onSchedule(this.tick, this.nextStepTime)
+                } catch (err) {
+                    // Only async rejections were handled: a synchronous throw
+                    // escaped into the worker onmessage and froze playback.
+                    logger.error('Transport', 'onSchedule threw', err)
+                    reportUserError('Transport.onSchedule', 'Playback tick failed — audio may drop out', { cause: err })
+                    this.nextNote()
+                    continue
+                }
                 if (result && typeof result.catch === 'function') {
                     this.#tickInFlight = result
                         .catch((err) => logger.error('Transport', 'onSchedule error', err))

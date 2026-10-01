@@ -661,11 +661,12 @@ describe('VoiceFactory', () => {
         expect(voice).toBeNull()
     })
 
-    it('uses synthSoundKey = BASS1 as default when not specified', async () => {
+    it('creates no voice (and reports) when synthSoundKey is missing', async () => {
         const flatNote = makeFlatNote()
         flatNote.track.useSoftSynth = true
+        delete flatNote.track.synthSoundKey
         const voice = await factory.createVoice(flatNote)
-        expect(voice).toBeInstanceOf(WorkletSynthVoice)
+        expect(voice).toBeNull()
     })
 
     it('calls mixer.getOrCreateStrip with the track name', async () => {

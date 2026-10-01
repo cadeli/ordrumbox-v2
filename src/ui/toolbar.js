@@ -6,6 +6,7 @@ import { isMobileViewport } from '../core/constants.js'
 import Utils from '../core/utils.js'
 
 import TransportControls from './toolbar/transport_controls.js'
+import { maxPageFor } from './page_nav.js'
 import PatternNav from './toolbar/pattern_nav.js'
 import ViewSwitch from './toolbar/view_switch.js'
 import OverflowMenu from './toolbar/overflow_menu.js'
@@ -92,9 +93,7 @@ export default class Toolbar {
         this.beatsSelect.value = pat?.nbBeats ?? 4
 
         if (pat) {
-            const stepsPerBeat = Utils.getTracksArray(pat)[0]?.stepsPerBeat ?? 4
-            const totalSteps = (pat.nbBeats ?? 4) * stepsPerBeat
-            const maxPage = Math.ceil(totalSteps / 16) - 1
+            const maxPage = maxPageFor(pat)
             this.pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
             this.nextPageBtn.disabled = appState.currentPage >= maxPage
         } else {

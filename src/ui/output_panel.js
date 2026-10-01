@@ -1,6 +1,7 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { bindTabToggles } from './components/panel_helpers.js'
+import { reportUserError } from '../core/notify.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'
 
@@ -296,7 +297,13 @@ export default class OutputPanel extends BasePanel {
         this.#stopAnimation()
         const draw = () => {
             if (!this.#visible) return
-            this.#drawSpectrum()
+            try {
+                this.#drawSpectrum()
+            } catch (err) {
+                // Without this the frame id stays stale and the loop dies for
+                // the rest of the session.
+                reportUserError('OutputPanel.spectrum', 'Spectrum display stopped updating', { cause: err })
+            }
             this.#animId = requestAnimationFrame(draw)
         }
         draw()

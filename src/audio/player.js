@@ -71,10 +71,7 @@ export default class Player {
             const promises = []
             for (let i = 0; i < trackKeys.length; i++) {
                 const track = tracks[trackKeys[i]]
-                if (!isHarmonicBoundary) {
-                    const type = Utils.detectTrackType(track.name)
-                    if (type !== 'BASS' && type !== 'PIANO' && type !== 'ORGAN') continue
-                }
+                if (!isHarmonicBoundary && !Utils.isMelodicTrack(track)) continue
                 promises.push(autoGen.changeTrack(this.loop, selectedPattern, track))
             }
             await Promise.all(promises)
@@ -105,6 +102,11 @@ export default class Player {
 
             if (loopStep === 0) {
                 await this.#handleLoopStart(selectedPattern)
+                // #handleLoopStart awaits (dynamic import + auto-generate): the
+                // user may have switched pattern in the meantime. Playing on
+                // with notes resolved against the NEW pattern while trackIdxMap
+                // still described the old one emitted another pattern's notes.
+                if (this.patterns[this.getSelectedPatternIdx()] !== selectedPattern) return
             }
 
             // Use cached flatNotes map when loop hasn't changed

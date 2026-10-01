@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('../src/audio/sample_analyzer.js', () => ({
+vi.mock('../src/audio/sample_analyzer.js', async (importOriginal) => ({
     analyzeSample: vi.fn(() => ({ envelope: [0.1, 0.9, 0.4], noteInfo: null, length: 0.5, peakDb: -3 })),
     clearAnalysisCache: vi.fn(),
     drawEnvelope: vi.fn(),
+    // The decay marker moved to sample_analyzer (shared with the drumkit
+    // panel) — kept real here so these tests still assert the drawn output.
+    drawDecayMarker: (await importOriginal()).drawDecayMarker,
 }))
 
 import TrackEditor from '../src/ui/track_editor.js'

@@ -1,7 +1,8 @@
 // @ts-check
 import Utils from '../../../core/utils.js'
 import { appState } from '../../../state/app_state.js'
-import { logger } from '../../../core/logger.js'
+import { clampStepsPerBeat } from '../../../model/track_schema.js'
+import { reportUserError } from '../../../core/notify.js'
 
 function findPatternForTrack(track) {
     return appState.patterns.find((p) => Utils.getTracksArray(p).includes(track))
@@ -59,9 +60,11 @@ export default class NoteCommands {
     }
 
     addNote(track, beat, beatStep, pitch = 0) {
-        if (!Number.isInteger(track.stepsPerBeat) || track.stepsPerBeat < 1 || track.stepsPerBeat > 8) {
-            logger.warn('Cmd', `stepsPerBeat out of bounds (${track.stepsPerBeat}), resetting to 8`)
-            track.stepsPerBeat = 8
+        // Defensive: addTrack already normalises, but a direct field write can
+        // still leave the grid. Clamp + rescale (and say so) instead of
+        // silently rewriting the track to 8 and leaving earlier notes stale.
+        if (clampStepsPerBeat(track)) {
+            reportUserError('Note.stepsPerBeat', `"${track.name}" uses ${track.stepsPerBeat} steps per beat`)
         }
         const steppc = Math.round((beatStep * 100) / track.stepsPerBeat)
         const note = {

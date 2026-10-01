@@ -53,7 +53,7 @@ describe('Commander — updateNote / updateTrack opts / setStepsPerBeat', () => 
         serviceRegistry.history = history
 
         now = 1_000_000
-        nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => now)
+        nowSpy = vi.spyOn(performance, 'now').mockImplementation(() => now)
     })
 
     afterEach(() => {

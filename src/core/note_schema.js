@@ -46,6 +46,11 @@ const NOTE_KEY_ORDER = [
     'euclideanFill',
     'euclideanRotation',
     'pos',
+    // Per-note arpeggio overrides owned by the note editor. Not playback data
+    // (NOTE_DEFAULTS holds undefined), but they must survive the compact
+    // encoding — leaving them out silently reverted every arpeggio on reload.
+    '_arpScale',
+    '_arpType',
 ]
 
 /**
@@ -83,6 +88,10 @@ export const NOTE_DEFAULTS = {
     euclideanFill: 0,
     euclideanRotation: 0,
     pos: 0,
+    /** @type {string|undefined} arpeggio scale override (note editor only) */
+    _arpScale: undefined,
+    /** @type {string|undefined} arpeggio direction override (note editor only) */
+    _arpType: undefined,
 }
 
 /**
@@ -169,7 +178,28 @@ export function detectUsedKeys(notes) {
  * @returns {boolean} True if notes are arrays (compact format)
  */
 export function isCompactFormat(track) {
-    return Array.isArray(track.noteKeys) && track.notes?.length > 0 && Array.isArray(track.notes[0])
+    return (
+        Array.isArray(track.noteKeys) &&
+        track.notes?.length > 0 &&
+        Array.isArray(track.notes[0]) &&
+        areValidNoteKeys(track.noteKeys)
+    )
+}
+
+/**
+ * A compact track decodes positionally: noteKeys[i] names notes[][i]. A header
+ * carrying an unknown key (or reordering the known ones) therefore rewrites
+ * note values onto the wrong properties — silently, with no decode error.
+ * Only a header made of distinct known keys, in NOTE_KEY_ORDER, is trusted.
+ * @param {unknown} keys
+ * @returns {boolean}
+ */
+export function areValidNoteKeys(keys) {
+    if (!Array.isArray(keys)) return false
+    if (new Set(keys).size !== keys.length) return false
+    const positions = keys.map((k) => NOTE_KEY_ORDER.indexOf(k))
+    if (positions.some((i) => i < 0)) return false
+    return positions.every((pos, i) => i === 0 || pos > positions[i - 1])
 }
 
 /**

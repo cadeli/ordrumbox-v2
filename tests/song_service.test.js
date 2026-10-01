@@ -107,7 +107,7 @@ describe('SongService', () => {
     })
 
     describe('applyToAppState', () => {
-        it('replaces patterns and sets songInfos', () => {
+        it('replaces patterns and sets songInfos', async () => {
             appState.patterns = [{ name: 'old' }]
             const data = {
                 name: 'Loaded',
@@ -116,7 +116,7 @@ describe('SongService', () => {
                 patterns: [{ name: 'new1' }, { name: 'new2' }],
                 selectedPatternNum: 1,
             }
-            const name = songService.applyToAppState(data, 'fallback')
+            const name = await songService.applyToAppState(data, 'fallback')
             expect(name).toBe('Loaded')
             expect(appState.patterns).toHaveLength(2)
             expect(appState.patterns[0].name).toBe('new1')
@@ -127,16 +127,16 @@ describe('SongService', () => {
             expect(appState.currentPage).toBe(0)
         })
 
-        it('uses fallback name when data.name is null', () => {
+        it('uses fallback name when data.name is null', async () => {
             const data = { patterns: [], selectedPatternNum: 0 }
-            const name = songService.applyToAppState(data, 'FallbackName')
+            const name = await songService.applyToAppState(data, 'FallbackName')
             expect(name).toBe('FallbackName')
             expect(appState.songInfos.name).toBe('FallbackName')
         })
 
-        it('defaults selectedPatternNum to 0 when missing', () => {
+        it('defaults selectedPatternNum to 0 when missing', async () => {
             const data = { patterns: [{ name: 'A' }] }
-            songService.applyToAppState(data, 'X')
+            await songService.applyToAppState(data, 'X')
             expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(0)
         })
     })

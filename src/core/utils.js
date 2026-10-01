@@ -214,10 +214,50 @@ export default class Utils {
      * `beat * tick + Math.round((beatStep * tick) / stepsPerBeat)` formula.
      */
     static stepToTick = (step, stepsPerBeat, tick) => {
-        const beat = Math.floor(step / stepsPerBeat)
-        const beatStep = step % stepsPerBeat
+        const { beat, beatStep } = Utils.stepToBeat(step, stepsPerBeat)
         return beat * tick + Math.round((beatStep * tick) / stepsPerBeat)
     }
+
+    /**
+     * Inverse of getNoteAbsoluteStep: absolute step → { beat, beatStep }.
+     * @param {number} step
+     * @param {number} stepsPerBeat
+     * @returns {{beat: number, beatStep: number}}
+     */
+    static stepToBeat = (step, stepsPerBeat) => ({
+        beat: Math.floor(step / stepsPerBeat),
+        beatStep: step % stepsPerBeat,
+    })
+
+    /**
+     * Notes sitting at one grid position. Safe for both storage shapes
+     * (array or indexed object) — a bare `(track.notes ?? []).filter(...)`
+     * breaks on the object form.
+     * @param {any} track
+     * @param {number} beat
+     * @param {number} beatStep
+     * @returns {any[]}
+     */
+    static notesAtStep = (track, beat, beatStep) =>
+        Object.values(track?.notes ?? {}).filter((n) => n.beat === beat && n.beatStep === beatStep)
+
+    /**
+     * Track at an index or key. `pattern.tracks[i]` silently returns
+     * undefined when tracks is the indexed-object form.
+     * @param {object} pattern
+     * @param {number|string} trackIdx
+     * @returns {object|undefined}
+     */
+    static getTrackAt = (pattern, trackIdx) =>
+        typeof trackIdx === 'number'
+            ? Utils.getTracksArray(pattern)[trackIdx]
+            : (Object.values(pattern?.tracks ?? {})[trackIdx] ?? pattern?.tracks?.[trackIdx])
+
+    /** Track types treated as melodic (auto-generate + empty-track pruning). */
+    static MELODIC_TYPES = new Set(['BASS', 'PIANO', 'ORGAN'])
+
+    /** @param {object} track @returns {boolean} */
+    static isMelodicTrack = (track) => Utils.MELODIC_TYPES.has(Utils.detectTrackType(track?.name))
 
     static getAudibleNoteSignature = (note) => {
         const audibleProps = {}
@@ -307,11 +347,7 @@ export default class Utils {
      * @returns {Array} filtered tracks array (mutated in place)
      */
     static filterEmptyMelodicTracks(tracks) {
-        return tracks.filter((t) => {
-            const type = Utils.detectTrackType(t.name)
-            const isMelodic = type === 'BASS' || type === 'PIANO' || type === 'ORGAN'
-            return !isMelodic || (t.notes && t.notes.length > 0)
-        })
+        return tracks.filter((t) => !Utils.isMelodicTrack(t) || (t.notes && t.notes.length > 0))
     }
 
     /**

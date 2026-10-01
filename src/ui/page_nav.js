@@ -5,6 +5,29 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { EVENTS } from '../core/events.js'
+import { BEATS_PER_PAGE } from '../core/constants.js'
+
+/**
+ * Number of pages a pattern spans. A page is BEATS_PER_PAGE beats — the same
+ * unit every renderer uses (pattern_panel slices [page*4, page*4+4) beats).
+ *
+ * Three variants of this formula existed (ceil(nbBeats*spb/16) in page_nav /
+ * toolbar / pattern_settings_panel, ceil(nbBeats/4) in the piano roll); the
+ * steps-based one shrank the beats per page as stepsPerBeat grew, so at
+ * stepsPerBeat=8 the toolbar offered twice as many pages as the grid could
+ * render.
+ * @param {object} [pattern]
+ * @returns {number} page count (>= 1)
+ */
+export function pageCountFor(pattern) {
+    const nbBeats = pattern?.nbBeats ?? Utils.PATTERN_DEFAULTS.nbBeats
+    return Math.max(1, Math.ceil(nbBeats / BEATS_PER_PAGE))
+}
+
+/** @param {object} [pattern] @returns {number} last valid page index */
+export function maxPageFor(pattern) {
+    return pageCountFor(pattern) - 1
+}
 
 /**
  * Navigate to the previous page of steps.
@@ -25,9 +48,7 @@ export function prevPage() {
 export function nextPage() {
     const pattern = appState.patterns[appState.selectedPatternIdx]
     if (!pattern) return
-    const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4
-    const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
-    const maxPage = Math.ceil(totalSteps / 16) - 1
+    const maxPage = maxPageFor(pattern)
     if (appState.currentPage < maxPage) {
         serviceRegistry.cmd?.setCurrentPage(appState.currentPage + 1)
         playbackEvents.batch(() => {

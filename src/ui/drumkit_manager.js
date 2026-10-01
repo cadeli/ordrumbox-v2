@@ -3,7 +3,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import InstrumentsManager, { instrumentsManager } from '../logic/services/instrument_manager/index.js'
 import drumkitService from '../logic/services/drumkit_service.js'
-import { drawEnvelope } from '../audio/sample_analyzer.js'
+import { drawDecayMarker, drawEnvelope } from '../audio/sample_analyzer.js'
 import { formatNote } from '../core/hz_to_note.js'
 import { showToast } from '../core/notify.js'
 import { downloadJson, renderOptions, knobFormat } from './components/panel_helpers.js'
@@ -412,24 +412,7 @@ export default class DrumkitManager extends BasePanel {
             const theme = sampleWaveformTheme(2 * dpr)
             drawEnvelope(ctx, analysis.envelope, canvas.width, canvas.height, theme)
 
-            const decaySec = (sound.decay ?? 0) / 1000
-            const totalSec = sound.buffer?.duration ?? 0
-            if (totalSec > 0) {
-                const ratio = Math.min(decaySec / totalSec, 1)
-                const x = ratio * canvas.width
-                ctx.beginPath()
-                ctx.setLineDash([4 * dpr, 4 * dpr])
-                ctx.strokeStyle = theme.marker
-                ctx.shadowColor = theme.marker
-                ctx.shadowBlur = 6 * dpr
-                ctx.lineWidth = theme.lineWidth
-                ctx.moveTo(x, 0)
-                ctx.lineTo(x, canvas.height)
-                ctx.stroke()
-                ctx.setLineDash([])
-                ctx.shadowBlur = 0
-                ctx.shadowColor = 'transparent'
-            }
+            drawDecayMarker(ctx, sound, canvas.width, canvas.height, theme, dpr)
         }
 
         if (resize) {
@@ -481,8 +464,12 @@ export default class DrumkitManager extends BasePanel {
         try {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = await ctx.decodeAudioData(arrayBuffer)
-            await drumkitService.replaceSampleBuffer(soundKey, buffer, file.name)
-            showToast(`Replaced with "${file.name}"`, 'success')
+            const replaced = await drumkitService.replaceSampleBuffer(soundKey, buffer, file.name)
+            if (!replaced) {
+                showToast(`Sample "${soundKey}" is no longer in the kit`, 'warning')
+            } else {
+                showToast(`Replaced with "${file.name}"`, 'success')
+            }
             this.sync()
         } catch (err) {
             logger.warn(TAG, `Replace failed: ${err.message}`)

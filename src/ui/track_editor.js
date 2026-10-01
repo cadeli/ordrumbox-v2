@@ -8,7 +8,7 @@ import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { showToast } from '../core/notify.js'
+import { reportUserError, showToast } from '../core/notify.js'
 import Utils from '../core/utils.js'
 
 import SynthEditor from './synth_editor.js'
@@ -20,7 +20,7 @@ import { TICK, isMobileViewport } from '../core/constants.js'
 import { isMobileLandscape, applyLayout, removeLayout } from './mobile_track_layout.js'
 import LfoUiBridge from '../logic/lfo_ui_bridge.js'
 import { sampleWaveformTheme } from './theme.js'
-import { analyzeSample, clearAnalysisCache, drawEnvelope } from '../audio/sample_analyzer.js'
+import { analyzeSample, clearAnalysisCache, drawDecayMarker, drawEnvelope } from '../audio/sample_analyzer.js'
 import { logger } from '../core/logger.js'
 
 // ── Section imports ───────────────────────────────────────────────────
@@ -287,12 +287,16 @@ export default class TrackEditor extends BasePanel {
                 this.#rafId = null
                 return
             }
-            this.#rafId = requestAnimationFrame(tick)
-            const currentTick = transport.tick
-            if (currentTick !== this.#lastTick) {
-                this.#lastTick = currentTick
-                this.#updateLfoSliders()
+            try {
+                const currentTick = transport.tick
+                if (currentTick !== this.#lastTick) {
+                    this.#lastTick = currentTick
+                    this.#updateLfoSliders()
+                }
+            } catch (err) {
+                reportUserError('TrackEditor.lfoLoop', 'LFO meters stopped updating', { cause: err })
             }
+            this.#rafId = requestAnimationFrame(tick)
         }
         this.#rafId = requestAnimationFrame(tick)
     }
@@ -565,23 +569,7 @@ export default class TrackEditor extends BasePanel {
         const theme = sampleWaveformTheme(2 * dpr)
         drawEnvelope(ctx, analysis.envelope, w, h, theme)
 
-        const totalSec = sound.buffer.duration
-        if (totalSec > 0) {
-            const ratio = Math.min((sound.decay ?? 0) / 1000 / totalSec, 1)
-            const x = ratio * w
-            ctx.beginPath()
-            ctx.setLineDash([4 * dpr, 4 * dpr])
-            ctx.strokeStyle = theme.marker
-            ctx.shadowColor = theme.marker
-            ctx.shadowBlur = 6 * dpr
-            ctx.lineWidth = theme.lineWidth
-            ctx.moveTo(x, 0)
-            ctx.lineTo(x, h)
-            ctx.stroke()
-            ctx.setLineDash([])
-            ctx.shadowBlur = 0
-            ctx.shadowColor = 'transparent'
-        }
+        drawDecayMarker(ctx, sound, w, h, theme, dpr)
     }
 
     /** Redraw the waveform when its CSS box changes (window / panel resize). */

@@ -7,6 +7,7 @@
 
 import { test, expect } from '@playwright/test'
 import { EVENTS } from '../src/core/events.js'
+import { BEATS_PER_PAGE } from '../src/core/constants.js'
 
 const COMBOS = [
     { stepsPerBeat: 1, nbBeats: 1 },
@@ -35,7 +36,11 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
             await page.locator('#waiting-screen').waitFor({ state: 'hidden', timeout: 15_000 })
             await page.waitForFunction(() => window.__e2e?.ready === true, { timeout: 10_000 })
 
-            const expectedPages = Math.max(1, Math.ceil((nbBeats * stepsPerBeat) / 16))
+            // A page is BEATS_PER_PAGE beats — stepsPerBeat subdivides a beat,
+            // it does not change how many beats fit on a page. The old formula
+            // (ceil(nbBeats*spb/16)) counted steps per page, so at spb=8 the
+            // toolbar offered pages the grid could not render.
+            const expectedPages = Math.max(1, Math.ceil(nbBeats / BEATS_PER_PAGE))
 
             await page.evaluate(
                 ({ nbBeats, stepsPerBeat, patternMetaEvent, patternChangeEvent }) => {
@@ -72,9 +77,9 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
             const gridCells = await page.locator('.pp-cell').count()
             expect(gridCells).toBeGreaterThan(0)
 
-            const expectedMaxBeat = Math.min(nbBeats - 1, 3)
-            await expect
-                .poll(
+            const expectedMaxBeat = Math.min(nbBeats - 1, BEATS_PER_PAGE - 1)
+            const lastBeatOnPage = () =>
+                expect.poll(
                     () =>
                         page.evaluate(() => {
                             const cells = document.querySelectorAll('.pp-cell')
@@ -87,14 +92,19 @@ test.describe('E2E-D : stepsPerBeat × nbBeats page matrix', () => {
                         }),
                     { timeout: 5_000 },
                 )
-                .toBe(expectedMaxBeat)
+            await lastBeatOnPage().toBe(expectedMaxBeat)
 
             for (let p = 1; p < expectedPages; p++) {
                 await page.locator('.tb-next-page').click()
                 await expect.poll(() => page.evaluate(() => window.__e2e.appState.currentPage)).toBe(p)
                 await expect(page.locator('.tb-page-label')).toHaveText(`${p + 1}/${expectedPages}`)
 
-                if (p === expectedPages - 1) {
+                // Pages are full except the last: only the last page may be
+                // short, and it must end on the pattern's last beat.
+                const isLast = p === expectedPages - 1
+                await lastBeatOnPage().toBe(isLast ? nbBeats - 1 : Math.min(nbBeats - 1, (p + 1) * BEATS_PER_PAGE - 1))
+
+                if (isLast) {
                     await expect(page.locator('.tb-next-page')).toBeDisabled()
                 }
             }

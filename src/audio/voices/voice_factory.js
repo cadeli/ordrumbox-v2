@@ -1,6 +1,7 @@
 import SampleVoice from './sample_voice.js'
 import WorkletSynthVoice from './worklet_synth_voice.js'
-import { logger, nameOr } from '../../core/logger.js'
+import { logger } from '../../core/logger.js'
+import { reportUserError } from '../../core/notify.js'
 
 export default class VoiceFactory {
     constructor(audioCtx, mixer, sounds, generatedSounds, nodePool = null, synthNodePool = null) {
@@ -18,9 +19,22 @@ export default class VoiceFactory {
         if (!strip) return null
 
         if (track.useSoftSynth === true) {
-            const soundKey = nameOr(track?.synthSoundKey, 'BASS1', 'VoiceFactory', 'synthSoundKey fallback')
+            // No silent 'BASS1' substitution: a track with useSoftSynth and no
+            // synthSoundKey used to play a bass patch for every note.
+            const soundKey = track?.synthSoundKey ?? null
+            if (!soundKey) {
+                reportUserError('VoiceFactory.synthSoundKey', `"${track.name}" has no synth preset assigned`, {
+                    cause: new Error(`track "${track.name}" has no synthSoundKey`),
+                })
+                return null
+            }
             const generatedSound = this.generatedSounds?.[soundKey]
-            if (!generatedSound) return null
+            if (!generatedSound) {
+                reportUserError('VoiceFactory.synthPresetMissing', `Unknown synth preset "${soundKey}"`, {
+                    cause: new Error(`generatedSounds has no "${soundKey}"`),
+                })
+                return null
+            }
 
             return new WorkletSynthVoice(
                 this.audioCtx,

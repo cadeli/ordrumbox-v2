@@ -144,7 +144,7 @@ export default class ViewSwitch {
 
         this.listen(tb.drumBtn, 'click', async () => {
             await this.toggleAutoGen(Utils.DRUM_TYPES, async (pattern, autoGen) => {
-                serviceRegistry.cmd.beginGenerationUndo(pattern)
+                if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
                 await autoGen.generatePattern()
 
                 if (pattern.tracks) {
@@ -164,7 +164,7 @@ export default class ViewSwitch {
             await this.toggleAutoGen('BASS', async (pattern, autoGen) => {
                 let bassTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'BASS')
 
-                serviceRegistry.cmd.beginGenerationUndo(pattern)
+                if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
                 if (!bassTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre
@@ -195,7 +195,7 @@ export default class ViewSwitch {
             await this.toggleAutoGen('PIANO', async (pattern, autoGen) => {
                 let pianoTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'PIANO')
 
-                serviceRegistry.cmd.beginGenerationUndo(pattern)
+                if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
                 if (!pianoTrack) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
                     const genre = pattern._autoGenGenre

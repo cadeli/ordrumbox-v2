@@ -53,11 +53,13 @@ describe('MCP server stays aligned with the app model', () => {
     })
 
     it('note schemas cover every NOTE_DEFAULTS field', () => {
+        // '_'-prefixed keys are note-editor overrides, not part of the note
+        // contract exposed to MCP clients.
         const positional = new Set(['beat', 'beatStep'])
         const item = noteItemProps()
         const updates = noteUpdateProps()
         for (const key of Object.keys(NOTE_DEFAULTS)) {
-            if (positional.has(key)) continue
+            if (positional.has(key) || key.startsWith('_')) continue
             expect(item, `missing notes.${key}`).toHaveProperty(key)
             expect(updates, `missing noteUpdates.${key}`).toHaveProperty(key)
         }

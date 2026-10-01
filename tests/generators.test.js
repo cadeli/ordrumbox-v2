@@ -23,10 +23,13 @@ describe('Generators', () => {
     let seed
     let originalRandom
 
-    beforeEach(() => {
+    beforeEach(async () => {
         serviceRegistry.reset()
         cmd = new Commander()
         serviceRegistry.cmd = cmd
+        // generatePattern() calls serviceRegistry.patterns.applyFlatNotes();
+        // it used to be missing here and the failure was swallowed.
+        serviceRegistry.patterns = await import('../src/patterns/manager.js')
         seed = 42
         originalRandom = Math.random
         Math.random = () => {

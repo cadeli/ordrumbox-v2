@@ -1,4 +1,5 @@
 import { logger } from '../core/logger.js'
+import { reportUserError } from '../core/notify.js'
 import WorkletLoader from '../audio/worklets/loader.js'
 import LFO_UI_SOURCE from '../audio/worklets/processors/lfo_ui_source.js'
 import { LFO_MAP } from './lfo_engine.js'
@@ -62,9 +63,26 @@ export default class LfoUiBridge {
             return values
         }
 
+        // Without a timeout, a worklet that never answered left this promise
+        // pending forever — the awaiting rAF loop simply stopped updating.
         return new Promise((resolve) => {
             const id = this.#nextId++
-            this.#pending.set(id, resolve)
+            const timeoutMs = 250
+            let settled = false
+            const settle = (values) => {
+                if (settled) return
+                settled = true
+                clearTimeout(timer)
+                this.#pending.delete(id)
+                resolve(values)
+            }
+            const timer = setTimeout(() => {
+                reportUserError('LfoBridge.timeout', 'LFO meters stopped responding', {
+                    cause: new Error(`lfo bridge request ${id} timed out after ${timeoutMs}ms`),
+                })
+                settle(null)
+            }, timeoutMs)
+            this.#pending.set(id, settle)
             this.#node.port.postMessage({ id, lfos, tick, nbTicks })
         })
     }

@@ -1,6 +1,7 @@
 // src/ui/tools_panel/cache_section.js — Tools "Cache" tab (stats, clear, JSON viewer).
 
 import { showToast } from '../../core/notify.js'
+import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
 import { escapeHtml } from '../components/panel_helpers.js'
 import { idbGet } from '../../core/idb.js'
@@ -52,6 +53,7 @@ export default class CacheSection {
 
         root.querySelector('#tp-cache-refresh').addEventListener('click', () => this.refresh())
         root.querySelector('#tp-cache-clear-patterns').addEventListener('click', async () => {
+            serviceRegistry.resourcesLoader?.cancelPendingPersist?.()
             await clearPatternsCache()
             showToast('Patterns cache cleared', 'success')
             this.refresh()
@@ -67,6 +69,7 @@ export default class CacheSection {
             this.refresh()
         })
         root.querySelector('#tp-cache-clear-all').addEventListener('click', async () => {
+            serviceRegistry.resourcesLoader?.cancelPendingPersist?.()
             await clearAllCache()
             showToast('All cache cleared', 'success')
             this.refresh()

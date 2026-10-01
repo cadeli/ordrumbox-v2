@@ -1,7 +1,13 @@
 // @ts-check
 import Utils from '../../../core/utils.js'
 import { NOT_FOUND } from '../../../core/constants.js'
-import { normalizeTrack, recalcLoopDerived, TRACK_VALUE_RANGES } from '../../../model/track_schema.js'
+import {
+    clampStepsPerBeat,
+    normalizeTrack,
+    recalcLoopDerived,
+    TRACK_VALUE_RANGES,
+} from '../../../model/track_schema.js'
+import { reportUserError } from '../../../core/notify.js'
 import { soundRegistry } from '../../../state/sound_registry.js'
 import RandomGenerate from '../../generators/random_generate.js'
 
@@ -79,6 +85,11 @@ export default class TrackCommands {
 
     addTrack(pattern, type, stepsPerBeat = 4) {
         const track = this.createTrack(pattern.nbBeats, type, stepsPerBeat)
+        // Clamp here rather than at first note: an out-of-grid track must be
+        // corrected before any steppc/beatStep is derived from it.
+        if (clampStepsPerBeat(track)) {
+            reportUserError('Track.stepsPerBeat', `"${track.name}" uses ${track.stepsPerBeat} steps per beat`)
+        }
         const trackIndex = pattern.tracks.length
         pattern.tracks.push(track)
         this.#host.persist()

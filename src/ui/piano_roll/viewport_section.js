@@ -7,15 +7,8 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import Utils from '../../core/utils.js'
 import { EVENTS } from '../../core/events.js'
-import {
-    KEYS_COLUMN_WIDTH,
-    MIDI_MIN,
-    MIN_CELL_WIDTH,
-    MIDDLE_C,
-    NOTE_HEIGHT,
-    PAGE_BEATS,
-    TOTAL_KEYS,
-} from './constants.js'
+import { BEATS_PER_PAGE } from '../../core/constants.js'
+import { KEYS_COLUMN_WIDTH, MIDI_MIN, MIN_CELL_WIDTH, MIDDLE_C, NOTE_HEIGHT, TOTAL_KEYS } from './constants.js'
 
 export default class ViewportSection {
     #editor
@@ -40,7 +33,7 @@ export default class ViewportSection {
             this.#editor.cellWidth = 24
             return
         }
-        const pageSteps = PAGE_BEATS * (this.#editor.track.stepsPerBeat ?? 4)
+        const pageSteps = BEATS_PER_PAGE * (this.#editor.track.stepsPerBeat ?? 4)
         this.#editor.cellWidth = Math.max(MIN_CELL_WIDTH, (scrollEl.clientWidth - KEYS_COLUMN_WIDTH) / pageSteps)
     }
 
@@ -64,7 +57,7 @@ export default class ViewportSection {
     #totalPages() {
         if (!this.#editor.track) return 1
         const nbBeats = appState.patterns[appState.selectedPatternIdx]?.nbBeats ?? 4
-        return Math.max(1, Math.ceil(nbBeats / PAGE_BEATS))
+        return Math.max(1, Math.ceil(nbBeats / BEATS_PER_PAGE))
     }
 
     clampPage() {

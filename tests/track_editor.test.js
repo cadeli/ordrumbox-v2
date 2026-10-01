@@ -9,6 +9,7 @@ vi.mock('../src/audio/sample_analyzer.js', () => ({
     analyzeSample: vi.fn(() => ({ envelope: [0.1, 0.9, 0.4], noteInfo: null, length: 0.5, peakDb: -3 })),
     clearAnalysisCache: vi.fn(),
     drawEnvelope: vi.fn(),
+    drawDecayMarker: vi.fn(),
 }))
 
 import TrackEditor from '../src/ui/track_editor.js'

@@ -66,7 +66,7 @@ export default class PointerSection {
         const tracks = Utils.getTracksArray(pattern)
         const track = tracks[trackIdx]
         if (!track) return null
-        const notesAtStep = (track.notes ?? []).filter((n) => n.beat === beat && n.beatStep === beatStep)
+        const notesAtStep = Utils.notesAtStep(track, beat, beatStep)
         return { track, notesAtStep, pattern }
     }
 

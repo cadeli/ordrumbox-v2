@@ -11,7 +11,7 @@ import { serviceRegistry as _serviceRegistrySingleton } from '../state/service_r
 import { playbackEvents as _playbackEventsSingleton } from '../state/playback_events.js'
 import { logger } from '../core/logger.js'
 import { syncKnobs } from './components/sync_helpers.js'
-import { showToast } from '../core/notify.js'
+import { reportUserError, showToast } from '../core/notify.js'
 import { bindTabToggles, downloadJson } from './components/panel_helpers.js'
 import { getLfoWaveformValue, syncToHz } from '../audio/math.js'
 import Utils from '../core/utils.js'
@@ -290,9 +290,13 @@ export default class SynthEditor {
                 this.#lfoRafId = null
                 return
             }
+            try {
+                this.#updateLfoKnobs()
+                this.#waveform.draw()
+            } catch (err) {
+                reportUserError('SynthEditor.lfoLoop', 'Synth LFO meters stopped updating', { cause: err })
+            }
             this.#lfoRafId = requestAnimationFrame(tick)
-            this.#updateLfoKnobs()
-            this.#waveform.draw()
         }
         this.#lfoRafId = requestAnimationFrame(tick)
     }
@@ -515,6 +519,10 @@ export default class SynthEditor {
         const nav = target.closest('[data-preset-nav]')
         if (!nav) return
         const dir = parseInt(nav.dataset.presetNav, 10)
+        // Without this guard a malformed dataset value reaches navigatePreset
+        // as NaN → keys[NaN] is undefined → loadPreset(undefined) fails
+        // silently and the ◀/▶ buttons stop working.
+        if (!Number.isInteger(dir) || dir === 0) return
         this.#presets.navigatePreset(dir)
     }
 

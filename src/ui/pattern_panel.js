@@ -9,6 +9,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { BEATS_PER_PAGE } from '../core/constants.js'
+import { maxPageFor } from './page_nav.js'
 
 import Utils from '../core/utils.js'
 import BasePanel from './base_panel.js'
@@ -158,8 +159,7 @@ export default class PatternPanel extends BasePanel {
         this.sub(this.#playbackEvents, EVENTS.SELECTED_PATTERN_CHANGE, () => {
             this.#rangeAnchor = null
             const pattern = this.#appState.patterns[this.#appState.selectedPatternIdx]
-            const nbBeats = pattern?.nbBeats ?? 4
-            const maxPage = Math.floor((nbBeats - 1) / BEATS_PER_PAGE)
+            const maxPage = maxPageFor(pattern)
             if (this.#appState.currentPage > maxPage) {
                 this.#serviceRegistry.cmd.resetPage()
             }

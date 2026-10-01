@@ -15,12 +15,16 @@ export default class SelectionCommands {
     // no host access needed: every member works through appState/serviceRegistry
 
     async setSelectedDrumkitIdx(num) {
+        const previousIdx = appState.selectedDrumkitIdx
         try {
             appState.selectedDrumkitIdx = num
             await serviceRegistry.resourcesLoader.loadMissingSamplesFromDrumkits([soundRegistry.drumkitList[num]])
+            if (appState.selectedDrumkitIdx !== num) return
             await this.autoAssignSoundsForNewDrumkit()
+            if (appState.selectedDrumkitIdx !== num) return
             playbackEvents.emit(EVENTS.DRUMKIT_CHANGE)
         } catch (err) {
+            appState.selectedDrumkitIdx = previousIdx
             logger.error('Commander', 'cmd::setSelectedDrumkitIdx failed', err)
             showToast('Drumkit switch failed', 'error')
         }
@@ -41,15 +45,22 @@ export default class SelectionCommands {
     }
 
     async setSelectedPatternIdx(num) {
+        const previousIdx = appState.selectedPatternIdx
         try {
             if (appState.patterns.length > 0) {
-                appState.selectedPatternIdx = num
-                const selectedPattern = appState.patterns[appState.selectedPatternIdx]
+                const target = Math.max(0, Math.min(Math.trunc(Number(num)) || 0, appState.patterns.length - 1))
+                appState.selectedPatternIdx = target
+                const selectedPattern = appState.patterns[target]
+                if (!selectedPattern) throw new Error(`No pattern at index ${target}`)
                 serviceRegistry.seq.setBpm(selectedPattern.bpm)
                 if (Object.keys(soundRegistry.sounds).length > 0) {
                     const autoAssign = await getAutoAssignService()
                     autoAssign.autoAssignSounds(selectedPattern)
                 }
+                // The awaits above give the user time to select another pattern:
+                // finishing this one would re-assign sounds on the pattern they
+                // just left and then announce "pattern changed" for it.
+                if (appState.selectedPatternIdx !== target) return
                 serviceRegistry.patterns.applyFlatNotes(selectedPattern)
                 // Explicit sound assignments can point to samples of another
                 // drumkit than the selected one — load them on demand so the
@@ -61,9 +72,13 @@ export default class SelectionCommands {
                 } catch (err) {
                     logger.warn('Commander', 'cmd::setSelectedPatternIdx sample loading failed', err)
                 }
+                if (appState.selectedPatternIdx !== target) return
                 playbackEvents.emit(EVENTS.SELECTED_PATTERN_CHANGE)
             }
         } catch (err) {
+            // The index was written before anything could fail and was never
+            // restored, leaving every later appState.patterns[idx] undefined.
+            appState.selectedPatternIdx = previousIdx
             logger.error('Commander', 'cmd::setSelectedPatternIdx failed', err)
             showToast('Pattern switch failed', 'error')
         }

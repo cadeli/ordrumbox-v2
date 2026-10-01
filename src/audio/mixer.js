@@ -4,6 +4,7 @@ import WorkletLoader from './worklets/loader.js'
 import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js'
 import { logger } from '../core/logger.js'
 import { soundRegistry } from '../state/sound_registry.js'
+import { reportUserError } from '../core/notify.js'
 
 // Register master bus processor at module load (idempotent)
 WorkletLoader.register('master-bus', MASTER_BUS_SOURCE)
@@ -21,20 +22,34 @@ export default class Mixer {
         this.analyser = null
         this.busInput = null // GainNode — all strip pans connect here
         this.busWorklet = null // master-bus AudioWorkletNode
+        /** @type {boolean} true when the master-bus worklet could not be created */
+        this.degraded = false
     }
 
     /**
      * Async factory — loads the master-bus worklet then wires the graph.
      */
     static async create(audioCtx) {
+        const mixer = new Mixer(audioCtx)
         try {
-            const mixer = new Mixer(audioCtx)
+            // ensureLoaded() resolving false used to be ignored: start() then
+            // wired no bus, so nothing reached ctx.destination and the app was
+            // mute with no error anywhere. start() still runs (it builds the
+            // graph objects the UI needs), then the missing bus is reported.
             await WorkletLoader.ensureLoaded(audioCtx)
             mixer.start()
+            if (!mixer.busWorklet) {
+                mixer.degraded = true
+                reportUserError('Mixer.masterBus', 'Master audio engine unavailable — no sound', {
+                    cause: new Error('master-bus worklet not created'),
+                })
+            }
             return mixer
         } catch (err) {
             logger.error('Mixer', 'Mixer::create failed', err)
-            return new Mixer(audioCtx)
+            mixer.degraded = true
+            reportUserError('Mixer.masterBus', 'Master audio engine unavailable — no sound', { cause: err })
+            return mixer
         }
     }
 
@@ -220,7 +235,13 @@ export default class Mixer {
 
     /** @param {MasterBusOptions} options */
     setMasterBus = (options = {}) => {
-        if (!this.busWorklet) return
+        if (!this.busWorklet) {
+            // The master controls are persisted from settings.master: without
+            // this the sliders look applied and reload "remembered" values that
+            // never reached the audio graph.
+            reportUserError('Mixer.masterBus.set', 'Master controls are inactive — audio engine unavailable')
+            return
+        }
         const time = this.audioCtx.currentTime
         const ramp = 0.02
         const params = this.busWorklet.parameters

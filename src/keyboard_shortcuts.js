@@ -175,18 +175,30 @@ async function convertToGeneratedSounds() {
         }
     }
 
+    // Unmapped types used to fall back to 'BASS1', so e.g. COWBELL became a
+    // bass patch with a "converted" toast and no mention of it.
+    const unmapped = new Set()
     Object.values(selectedPattern.tracks).forEach((track) => {
         const type = Utils.detectTrackType(track.name)
+        const synthKey = SYNTH_SOUND_MAP[type]
+        if (!synthKey) {
+            unmapped.add(type || track.name)
+            return
+        }
         track.useSoftSynth = true
         track.useAutoAssignSound = false
-        track.synthSoundKey = SYNTH_SOUND_MAP[type] ?? 'BASS1'
+        track.synthSoundKey = synthKey
     })
 
     serviceRegistry.patterns.applyFlatNotes(selectedPattern)
     serviceRegistry.audioEngine?.invalidateCache()
     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
     logger.info('KeyboardShortcuts', 'All tracks converted to generated sounds')
-    showToast('All tracks converted to generated sounds', 'success')
+    if (unmapped.size > 0) {
+        showToast(`No synth patch for: ${[...unmapped].join(', ')} — those tracks were left on samples`, 'warning')
+    } else {
+        showToast('All tracks converted to generated sounds', 'success')
+    }
 }
 
 function assignRandomSampleAllTracks() {

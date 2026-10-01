@@ -5,6 +5,7 @@ import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
 import { MAX_BEATS } from '../core/constants.js'
 import { prevPage, nextPage } from './page_nav.js'
+import { maxPageFor } from './page_nav.js'
 import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
 
@@ -246,7 +247,7 @@ export default class PatternSettingsPanel {
         } else {
             const { getAutoGenerateService } = await import('../state/service_loader.js')
             const autoGen = await getAutoGenerateService()
-            serviceRegistry.cmd.beginGenerationUndo(pattern)
+            if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
             try {
                 await autoGen.generatePattern()
                 if (pattern.tracks) {
@@ -282,7 +283,7 @@ export default class PatternSettingsPanel {
             let track = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === trackType)
             const { getAutoGenerateService } = await import('../state/service_loader.js')
             const autoGen = await getAutoGenerateService()
-            serviceRegistry.cmd.beginGenerationUndo(pattern)
+            if (!serviceRegistry.cmd.beginGenerationUndo(pattern)) return
             try {
                 if (!track) {
                     if (!pattern._autoGenGenre) pattern._autoGenGenre = autoGen.structureGen.getRandomGenre()
@@ -332,9 +333,7 @@ export default class PatternSettingsPanel {
 
         this.#beatsSelect.value = pattern.nbBeats ?? 4
 
-        const stepsPerBeat = Utils.getTracksArray(pattern)[0]?.stepsPerBeat ?? 4 // we use only track 0 for the polyrhythms
-        const totalSteps = (pattern.nbBeats ?? 4) * stepsPerBeat
-        const maxPage = Math.ceil(totalSteps / 16) - 1
+        const maxPage = maxPageFor(pattern)
         this.#pageLabel.textContent = `${appState.currentPage + 1}/${maxPage + 1}`
         this.#prevPageBtn.disabled = appState.currentPage === 0
         this.#nextPageBtn.disabled = appState.currentPage >= maxPage

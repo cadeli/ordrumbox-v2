@@ -114,7 +114,6 @@ body {
 }
 
 /* ---- Shared range input styling ---- */
-.or-range,
 #tb .tb-bpm-panel input[type='range'],
 #pattern-panel .pp-volume,
 #pattern-panel .pp-master-volume,
@@ -127,7 +126,6 @@ body {
     cursor: pointer;
     height: 16px;
 }
-.or-range::-webkit-slider-runnable-track,
 #tb .tb-bpm-panel input[type='range']::-webkit-slider-runnable-track,
 #pattern-panel .pp-volume::-webkit-slider-runnable-track,
 #pattern-panel .pp-master-volume::-webkit-slider-runnable-track,
@@ -136,7 +134,6 @@ body {
     background: var(--line);
     border-radius: 0;
 }
-.or-range::-webkit-slider-thumb,
 #tb .tb-bpm-panel input[type='range']::-webkit-slider-thumb,
 #pattern-panel .pp-volume::-webkit-slider-thumb,
 #pattern-panel .pp-master-volume::-webkit-slider-thumb,
@@ -151,7 +148,6 @@ body {
     border: none;
     cursor: pointer;
 }
-.or-range::-moz-range-track,
 #tb .tb-bpm-panel input[type='range']::-moz-range-track,
 #pattern-panel .pp-volume::-moz-range-track,
 #pattern-panel .pp-master-volume::-moz-range-track,
@@ -161,7 +157,6 @@ body {
     border-radius: 0;
     border: none;
 }
-.or-range::-moz-range-thumb,
 #tb .tb-bpm-panel input[type='range']::-moz-range-thumb,
 #pattern-panel .pp-volume::-moz-range-thumb,
 #pattern-panel .pp-master-volume::-moz-range-thumb,
@@ -173,12 +168,10 @@ body {
     border: none;
     cursor: pointer;
 }
-.or-range:focus::-webkit-slider-thumb,
 #tb .tb-bpm-panel input[type='range']:focus::-webkit-slider-thumb,
 .ne-row input[type='range']:focus::-webkit-slider-thumb {
     box-shadow: 0 0 0 2px var(--accent);
 }
-.or-range:focus::-moz-range-thumb,
 #tb .tb-bpm-panel input[type='range']:focus::-moz-range-thumb,
 .ne-row input[type='range']:focus::-moz-range-thumb {
     box-shadow: 0 0 0 2px var(--accent);
@@ -3836,7 +3829,6 @@ select option {
 }
 
 /* ---- 11. Range sliders, tracks, focus, scrollbars ---- */
-.or-range::-webkit-slider-thumb,
 #tb .tb-bpm-panel input[type='range']::-webkit-slider-thumb,
 #pattern-panel .pp-volume::-webkit-slider-thumb,
 #pattern-panel .pp-master-volume::-webkit-slider-thumb,
@@ -3846,7 +3838,6 @@ select option {
         inset 0 0 0 1px var(--black),
         0 0 6px rgba(255, 79, 163, 0.75);
 }
-.or-range::-moz-range-thumb,
 #tb .tb-bpm-panel input[type='range']::-moz-range-thumb,
 #pattern-panel .pp-volume::-moz-range-thumb,
 #pattern-panel .pp-master-volume::-moz-range-thumb,
@@ -3856,14 +3847,12 @@ select option {
         inset 0 0 0 1px var(--black),
         0 0 6px rgba(255, 79, 163, 0.75);
 }
-.or-range::-webkit-slider-runnable-track,
 #tb .tb-bpm-panel input[type='range']::-webkit-slider-runnable-track,
 #pattern-panel .pp-volume::-webkit-slider-runnable-track,
 #pattern-panel .pp-master-volume::-webkit-slider-runnable-track,
 .ne-row input[type='range']::-webkit-slider-runnable-track {
     background: color-mix(in srgb, var(--toy-cyan) 60%, var(--line));
 }
-.or-range::-moz-range-track,
 #tb .tb-bpm-panel input[type='range']::-moz-range-track,
 #pattern-panel .pp-volume::-moz-range-track,
 #pattern-panel .pp-master-volume::-moz-range-track,

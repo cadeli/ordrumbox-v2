@@ -327,7 +327,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             expect(loadedData.savedAt).toBeTypeOf('number')
 
             // 5. Apply loaded data back to appState
-            const appliedName = songService.applyToAppState(loadedData, 'Fallback')
+            const appliedName = await songService.applyToAppState(loadedData, 'Fallback')
             expect(appliedName).toBe('Cyberpunk Odyssey')
 
             // 6. Deep assertions: Verify zero data loss across all dimensions
@@ -393,7 +393,7 @@ describe('Song & Project Persistence Roundtrip', () => {
     })
 
     describe('Roundtrip 2: State → .odbox File (JSON export) → State', () => {
-        it('exports to a downloadable .odbox file and re-imports with full fidelity', () => {
+        it('exports to a downloadable .odbox file and re-imports with full fidelity', async () => {
             const project = buildComplexProject()
 
             appState.patterns = structuredClone(project.patterns)
@@ -420,7 +420,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             expect(parsedData).not.toBeNull()
 
             // 5. Apply back to state
-            const loadedName = songService.applyToAppState(parsedData, 'Default')
+            const loadedName = await songService.applyToAppState(parsedData, 'Default')
             expect(loadedName).toBe('Techno Project 2026')
 
             // 6. Assert fidelity
@@ -466,7 +466,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             expect(betaData.description).toBe('Beta project')
 
             // Overwrite Song Alpha: ensure Song Beta is unchanged
-            songService.applyToAppState(alphaData)
+            await songService.applyToAppState(alphaData)
             appState.patterns.push({ name: 'Alpha_3', bpm: 120, nbBeats: 4, tracks: [] })
             await songService.save('Song_Alpha')
 

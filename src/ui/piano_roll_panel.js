@@ -5,7 +5,7 @@ import { serviceRegistry } from '../state/service_registry.js'
 import FlatNote from '../model/flatnote.js'
 import BasePanel from './base_panel.js'
 import { getNoteSubPositions } from '../patterns/note_positions.js'
-import { MIDDLE_C, MIDI_MIN, PAGE_BEATS, TOTAL_KEYS } from './piano_roll/constants.js'
+import { MIDDLE_C, MIDI_MIN, TOTAL_KEYS } from './piano_roll/constants.js'
 import { pointToCell, findNoteAt } from './piano_roll/hit_test.js'
 import ViewportSection from './piano_roll/viewport_section.js'
 import RenderSection from './piano_roll/render_section.js'
@@ -13,6 +13,7 @@ import MenuSection from './piano_roll/menu_section.js'
 import PlaybackSection from './piano_roll/playback_section.js'
 import NoteParams from '../patterns/note_params.js'
 import { EVENTS } from '../core/events.js'
+import { BEATS_PER_PAGE } from '../core/constants.js'
 
 export default class PianoRollPanel extends BasePanel {
     #track
@@ -185,8 +186,8 @@ export default class PianoRollPanel extends BasePanel {
         const stepsPerBeat = track?.stepsPerBeat ?? 4
         const nbBeats = pattern?.nbBeats ?? 4
         const totalSteps = nbBeats * stepsPerBeat
-        const pageStartStep = appState.currentPage * PAGE_BEATS * stepsPerBeat
-        const pageEndStep = Math.min(pageStartStep + PAGE_BEATS * stepsPerBeat, totalSteps)
+        const pageStartStep = appState.currentPage * BEATS_PER_PAGE * stepsPerBeat
+        const pageEndStep = Math.min(pageStartStep + BEATS_PER_PAGE * stepsPerBeat, totalSteps)
         return {
             stepsPerBeat,
             nbBeats,
@@ -309,8 +310,7 @@ export default class PianoRollPanel extends BasePanel {
 
         if (e.key === 'Enter') {
             if (this.#cursorStep < 0 || this.#cursorRow < 0) return
-            const beat = Math.floor(this.#cursorStep / stepsPerBeat)
-            const beatStep = this.#cursorStep % stepsPerBeat
+            const { beat, beatStep } = Utils.stepToBeat(this.#cursorStep, stepsPerBeat)
             const midi = MIDI_MIN + this.#cursorRow
             const relativePitch = midi - MIDDLE_C - (track.pitch ?? 0)
             const note = findNoteAt(track, beat, beatStep, midi)
@@ -351,16 +351,15 @@ export default class PianoRollPanel extends BasePanel {
 
     #syncCursor() {
         const stepsPerBeat = this.#track?.stepsPerBeat ?? 4
-        const pageStartStep = appState.currentPage * PAGE_BEATS * stepsPerBeat
-        const pageEndStep = pageStartStep + PAGE_BEATS * stepsPerBeat
+        const pageStartStep = appState.currentPage * BEATS_PER_PAGE * stepsPerBeat
+        const pageEndStep = pageStartStep + BEATS_PER_PAGE * stepsPerBeat
         if (this.#cursorStep < pageStartStep || this.#cursorStep >= pageEndStep) {
-            serviceRegistry.cmd.setCurrentPage(Math.floor(this.#cursorStep / stepsPerBeat / PAGE_BEATS))
+            serviceRegistry.cmd.setCurrentPage(Math.floor(this.#cursorStep / stepsPerBeat / BEATS_PER_PAGE))
             this.#gridDirty = true
         }
         const track = this.#track
         if (!track) return
-        const beat = Math.floor(this.#cursorStep / stepsPerBeat)
-        const beatStep = this.#cursorStep % stepsPerBeat
+        const { beat, beatStep } = Utils.stepToBeat(this.#cursorStep, stepsPerBeat)
         const midi = MIDI_MIN + this.#cursorRow
         const note = findNoteAt(track, beat, beatStep, midi)
         this.#selectedNote = note

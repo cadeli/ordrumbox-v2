@@ -131,3 +131,43 @@ export function showToast(message, type = 'info', { actions, dismissible, durati
         setTimeout(dismiss, duration ?? DURATIONS[type] ?? DURATIONS.info)
     }
 }
+
+/**
+ * Keys already reported in this session — a degraded path that fires per tick
+ * or per note must not spam the user with identical toasts.
+ * @type {Set<string>}
+ */
+const reportedOnce = new Set()
+
+/**
+ * Single user-visible channel for degraded/failed paths.
+ *
+ * Production builds drop `console.*` (vite.config.js `drop_console`), so a
+ * logger call alone is invisible to users: every "keep playing but something is
+ * wrong" branch must go through here instead.
+ *
+ * @param {string} context   stable identifier, used as dedup key (e.g. 'Mixer.worklet')
+ * @param {string} message   user-facing text (no technical detail)
+ * @param {Object} [opts]
+ * @param {string} [opts.type]       'info' | 'success' | 'error' | 'warning' (default 'warning')
+ * @param {boolean} [opts.once]      report only the first time per session (default true)
+ * @param {Error} [opts.cause]       logged for developers (dev builds only)
+ * @param {Array<{label:string, onClick:Function}>} [opts.actions]
+ * @returns {boolean} true when a report was actually emitted
+ */
+export function reportUserError(context, message, { type = 'warning', once = true, cause, actions } = {}) {
+    if (once) {
+        if (reportedOnce.has(context)) return false
+        reportedOnce.add(context)
+    }
+    if (cause && import.meta.env?.MODE !== 'production') {
+        console.warn(`[${context}]`, cause)
+    }
+    showToast(message, type, actions ? { actions } : {})
+    return true
+}
+
+/** Test helper: forget which contexts were already reported. */
+export function resetUserErrorReports() {
+    reportedOnce.clear()
+}

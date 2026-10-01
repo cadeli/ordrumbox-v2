@@ -52,7 +52,7 @@ export default class ContextMenuSection {
         if (!track) return
 
         const canPasteNotes = this.#editor.clipboard?.type === 'step' && (this.#editor.clipboard.notes?.length ?? 0) > 0
-        const notesAtStep = (track.notes ?? []).filter((n) => n.beat === beat && n.beatStep === beatStep)
+        const notesAtStep = Utils.notesAtStep(track, beat, beatStep)
         const header = `${track.name ?? 'Track'} @ ${beat + 1}.${beatStep + 1}`
         const actions = [
             { label: 'Copy notes', run: () => this.#menuCopyNotes(tracks, trackIdx, beat, beatStep) },
@@ -200,7 +200,7 @@ export default class ContextMenuSection {
     #menuDeleteNote(pattern, tracks, trackIdx, beat, beatStep) {
         const track = tracks[trackIdx]
         if (!track) return
-        const notes = (track.notes ?? []).filter((n) => n.beat === beat && n.beatStep === beatStep)
+        const notes = Utils.notesAtStep(track, beat, beatStep)
         if (notes.length === 0) {
             showToast('No note to delete', 'info')
             return

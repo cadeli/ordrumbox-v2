@@ -8,6 +8,7 @@ import { appState } from '../../state/app_state.js'
 import Utils from '../../core/utils.js'
 import { color } from '../theme.js'
 import { EVENTS } from '../../core/events.js'
+import { reportUserError } from '../../core/notify.js'
 
 export default class PlaybackOverlaySection {
     /** @type {import('../pattern_panel.js').default} */
@@ -74,9 +75,12 @@ export default class PlaybackOverlaySection {
                 return
             }
 
-            this.#updateVus(mixer)
-            this.#updatePlayhead()
-
+            try {
+                this.#updateVus(mixer)
+                this.#updatePlayhead()
+            } catch (err) {
+                reportUserError('PatternPanel.overlayLoop', 'Pattern meters stopped updating', { cause: err })
+            }
             this.#rafId = requestAnimationFrame(loop)
         }
         this.#rafId = requestAnimationFrame(loop)

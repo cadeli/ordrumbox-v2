@@ -124,6 +124,6 @@ export const PARAM_SETS = [
     [3, 145, 4, 'triplet + odd bpm'],
     [4, 80, 8, 'slow + long pattern'],
     [4, 200, 2, 'fast + short pattern'],
-    [16, 120, 1, '16th-note + 1 beat'],
+    [4, 120, 1, '16th-note steps + 1 beat'],
     [8, 93, 3, 'odd beats + odd bpm'],
 ]

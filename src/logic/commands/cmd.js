@@ -3,6 +3,7 @@ import Utils from '../../core/utils.js'
 import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
+import { reportUserError } from '../../core/notify.js'
 import { TRACK_DEFAULTS, TRACK_VALUE_RANGES, recalcLoopDerived } from '../../model/track_schema.js'
 import NoteCommands from './cmd/cmd_notes.js'
 import TrackCommands from './cmd/cmd_tracks.js'
@@ -208,27 +209,53 @@ export default class Commander {
      * Run fn as ONE undoable history entry: inner cmd.record calls are
      * suppressed and a single before/after snapshot command is recorded
      * instead (used by MIDI/JSON/song imports).
+     *
+     * Async-aware: when fn returns a thenable the "after" snapshot is taken
+     * after it settles. It used to be taken immediately, so a transaction whose
+     * body awaits (song load → setSelectedPatternIdx → auto-assign) recorded a
+     * redo state missing everything the async tail had written.
+     *
      * @param {string} desc - history label
-     * @param {Function} fn - synchronous action to run
+     * @param {Function} fn - action to run (may return a promise)
      * @param {object} [params] - parameter snapshot for the undo/redo report toast
-     * @returns {any} fn's return value (partial mutations are still recorded if it throws)
+     * @returns {any} fn's return value, or a promise of it when fn is async
+     *   (partial mutations are still recorded if it throws)
      */
     recordTransaction(desc, fn, params = null) {
         const before = this.#snapshotState()
+        const recordAfter = () => {
+            const after = this.#snapshotState()
+            if (before.keyJson === after.keyJson) return
+            this.record({
+                desc,
+                params,
+                execute: () => this.#restoreState(after),
+                undo: () => this.#restoreState(before),
+            })
+        }
+
         let result
         try {
             result = this.withSuppressedRecord(fn)
-        } finally {
-            const after = this.#snapshotState()
-            if (before.keyJson !== after.keyJson) {
-                this.record({
-                    desc,
-                    params,
-                    execute: () => this.#restoreState(after),
-                    undo: () => this.#restoreState(before),
-                })
-            }
+        } catch (err) {
+            recordAfter()
+            throw err
         }
+
+        if (result && typeof result.then === 'function') {
+            return result.then(
+                (value) => {
+                    recordAfter()
+                    return value
+                },
+                (err) => {
+                    recordAfter()
+                    throw err
+                },
+            )
+        }
+
+        recordAfter()
         return result
     }
 
@@ -291,9 +318,18 @@ export default class Commander {
         let changed = false
         for (const [k, v] of Object.entries(updates)) {
             if (Commander.#DERIVED_KEYS.has(k) || !Commander.#TRACK_KEY_SET.has(k)) continue
+            // A non-finite number would survive the clamp below (it is skipped)
+            // and then be written + persisted + recorded as an undo step:
+            // NaN !== NaN always reports a change, so reject it outright.
+            if (typeof v === 'number' && !Number.isFinite(v)) {
+                reportUserError('Commander.updateTrack.nonFinite', `Ignored a non-finite value for "${k}"`, {
+                    cause: new Error(`updateTrack: ${k}=${v}`),
+                })
+                continue
+            }
             let clamped = v
             const range = TRACK_VALUE_RANGES[k]
-            if (range && typeof v === 'number' && Number.isFinite(v)) {
+            if (range && typeof v === 'number') {
                 clamped = Utils.clamp(v, range.min, range.max)
             }
             if (track[k] !== clamped) {
@@ -394,18 +430,39 @@ export default class Commander {
         }
     }
 
+    /**
+     * Open a generation transaction. Returns false when one is already open:
+     * #genSnapshot is a single slot, so a second concurrent generation used to
+     * overwrite it — the first commit then recorded the half-generated state
+     * and the second commit silently did nothing (corrupted undo stack).
+     * @param {any} pattern
+     * @returns {boolean} true when the transaction was opened
+     */
     beginGenerationUndo = (pattern) => {
+        if (this.#genSnapshot) {
+            reportUserError('Commander.generation.busy', 'A generation is already running — try again in a moment', {
+                once: false,
+            })
+            return false
+        }
         this.#genSnapshot = {
             pattern,
             patternState: this.#patternStateOf(pattern),
             trackSnapshots: (pattern.tracks ?? []).map((t) => ({ ref: t, state: this.#trackStateOf(t) })),
         }
         this.#suppressRecord = true
+        return true
     }
 
     commitGenerationUndo = (desc = 'Generate pattern') => {
         const snap = this.#genSnapshot
-        if (!snap) return
+        if (!snap) {
+            // commit without a matching begin would leave #suppressRecord stuck
+            // on, silently disabling undo for the rest of the session.
+            this.#suppressRecord = false
+            reportUserError('Commander.generation.orphanCommit', 'Generation undo was not open', { once: false })
+            return
+        }
         this.#suppressRecord = false
 
         const capture = () => ({

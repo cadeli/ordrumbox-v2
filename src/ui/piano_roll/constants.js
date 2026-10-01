@@ -14,7 +14,6 @@ export const GRID_HEIGHT = TOTAL_KEYS * NOTE_HEIGHT
 
 export const MIN_CELL_WIDTH = 16
 export const KEYS_COLUMN_WIDTH = 80
-export const PAGE_BEATS = 4
 
 export function midiName(midi) {
     return `${NOTE_NAMES[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`

@@ -298,7 +298,7 @@ export default class SongPanel extends BasePanel {
                     return
                 }
 
-                this.#songName = songService.applyToAppState(data, choice)
+                this.#songName = await songService.applyToAppState(data, choice)
                 playbackEvents.batch(() => {
                     playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
                     playbackEvents.emit(EVENTS.PATTERN_CHANGE)
@@ -334,7 +334,7 @@ export default class SongPanel extends BasePanel {
                 }
 
                 const fallbackName = file.name.replace(/\.\w+$/, '')
-                this.#songName = songService.applyToAppState(data, fallbackName)
+                this.#songName = await songService.applyToAppState(data, fallbackName)
                 playbackEvents.batch(() => {
                     playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
                     playbackEvents.emit(EVENTS.PATTERN_CHANGE)

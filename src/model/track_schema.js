@@ -166,6 +166,39 @@ export const TRACK_VALUE_RANGES = {
 }
 
 /**
+ * Clamps a track's stepsPerBeat into TRACK_VALUE_RANGES and rescales what
+ * depends on it (note steppc/beatStep, loop point). An out-of-grid value comes
+ * from imported JSON or a direct field write; deriving note positions from it
+ * would produce beatStep/steppc values nothing else can read.
+ *
+ * Pure (no logging) — callers surface the change with reportUserError().
+ * @param {any} track
+ * @returns {boolean} true when the track was corrected
+ */
+export function clampStepsPerBeat(track) {
+    if (!track) return false
+    const range = TRACK_VALUE_RANGES.stepsPerBeat
+    const current = track.stepsPerBeat
+    if (Number.isInteger(current) && current >= range.min && current <= range.max) return false
+
+    const target = Number.isFinite(current)
+        ? Math.min(Math.max(Math.round(current), range.min), range.max)
+        : TRACK_DEFAULTS.stepsPerBeat
+    const notes = Array.isArray(track.notes) ? track.notes : Object.values(track.notes ?? {})
+    for (const note of notes) {
+        const steppc = note.steppc ?? Math.round((note.beatStep * 100) / (current || 4))
+        note.steppc = steppc
+        note.beatStep = Math.min(Math.round((steppc / 100) * target), target - 1)
+    }
+    track.stepsPerBeat = target
+    if (typeof track.nbBeats === 'number' && track.loopAtStep > track.nbBeats * target) {
+        track.loopAtStep = track.nbBeats * target
+    }
+    recalcLoopDerived(track)
+    return true
+}
+
+/**
  * Recalculates loopPointBeat and loopPointStep from loopAtStep and stepsPerBeat.
  */
 export function recalcLoopDerived(track) {

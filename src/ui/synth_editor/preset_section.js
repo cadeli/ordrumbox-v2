@@ -3,7 +3,7 @@
 // Preset CRUD operations and footer rendering.
 
 import { escapeHtml, renderOptions } from '../components/panel_helpers.js'
-import { showToast } from '../../core/notify.js'
+import { reportUserError, showToast } from '../../core/notify.js'
 import { SYNTH_GROUP_DEFAULTS, SYNTH_PARAM_META } from './constants.js'
 import { cacheGeneratedSounds } from '../../cache/idb_cache.js'
 
@@ -35,8 +35,9 @@ export default class PresetSection {
                     (await import('../../loader/resources_loader.js')).default.GENERATED_SOUNDS_URL,
                 )
                 editor.serviceRegistry.audioEngine?.updateGeneratedSounds(editor.soundRegistry.generatedSounds)
-            } catch {
+            } catch (err) {
                 editor.loadFailed = true
+                reportUserError('SynthEditor.presets', 'Synth presets could not be loaded', { cause: err })
             } finally {
                 editor.loading = false
                 editor.loadPromise = null
@@ -71,7 +72,13 @@ export default class PresetSection {
 
     persist() {
         const sr = this.#editor.soundRegistry
-        cacheGeneratedSounds(sr.generatedSounds).catch?.(() => {})
+        // Was `.catch?.(() => {})`: a failed write meant the user kept editing
+        // and lost every change on reload, with no hint at all.
+        Promise.resolve(cacheGeneratedSounds(structuredClone(sr.generatedSounds))).catch((err) => {
+            reportUserError('SynthEditor.presets.persist', 'Synth preset changes are not being saved', {
+                cause: err,
+            })
+        })
     }
 
     /** @returns {string} footer HTML with preset selector and action buttons. */

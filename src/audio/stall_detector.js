@@ -76,6 +76,16 @@ export default class AudioStallDetector {
     }
 
     #check() {
+        // Runs on a bare setInterval: an uncaught throw here would kill the
+        // interval for good and no later stall would ever be detected.
+        try {
+            this.#checkOnce()
+        } catch (err) {
+            logger.error('StallDetector', 'check failed', err)
+        }
+    }
+
+    #checkOnce() {
         if (!this.#transport?.isRunning) return
 
         const currentTick = this.#transport.tick

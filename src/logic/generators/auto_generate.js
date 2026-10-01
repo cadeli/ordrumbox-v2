@@ -140,8 +140,12 @@ export default class AutoGenerate {
             logger.info(AutoGenerate.TAG, `generatePattern: done (${pattern.tracks.length} tracks)`)
             return pattern
         } catch (err) {
+            // Both callers ignore the return value and continue as if the
+            // pattern were complete, so swallow-and-return-null surfaced a
+            // half-built pattern with no error at all. Rethrow: the callers
+            // already run inside a try/catch that shows a toast.
             logger.warn(AutoGenerate.TAG, 'generatePattern failed', err)
-            return null
+            throw err instanceof Error ? err : new Error(String(err))
         }
     }
 

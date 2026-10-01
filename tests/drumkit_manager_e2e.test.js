@@ -43,6 +43,7 @@ vi.mock('../src/logic/services/instrument_manager/index.js', () => ({
 
 vi.mock('../src/audio/sample_analyzer.js', () => ({
     drawEnvelope: vi.fn(),
+    drawDecayMarker: vi.fn(),
 }))
 
 vi.mock('../src/logic/services/wav_import_service.js', () => {

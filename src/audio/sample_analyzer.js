@@ -47,6 +47,36 @@ export function clearAnalysisCache(audioBuffer) {
  *        pixels (default 1.5) — pass a devicePixelRatio-scaled value when the
  *        backing store is scaled.
  */
+/**
+ * Vertical marker at the decay position of a sample. Both sample panels drew
+ * this identical 14-line block (one even carried a comment saying it mirrored
+ * the other), so any tweak had to be made twice.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {{decay?: number, buffer?: {duration: number}, duration?: number}} sound
+ * @param {number} width canvas width in CSS px
+ * @param {number} height canvas height in CSS px
+ * @param {object} theme - { marker, lineWidth }
+ * @param {number} dpr devicePixelRatio (marker dashes are scaled by it)
+ */
+export function drawDecayMarker(ctx, sound, width, height, theme, dpr) {
+    const totalSec = sound?.buffer?.duration ?? sound?.duration ?? 0
+    if (!(totalSec > 0)) return
+    const ratio = Math.min((sound.decay ?? 0) / 1000 / totalSec, 1)
+    const x = ratio * width
+    ctx.beginPath()
+    ctx.setLineDash([4 * dpr, 4 * dpr])
+    ctx.strokeStyle = theme.marker
+    ctx.shadowColor = theme.marker
+    ctx.shadowBlur = 6 * dpr
+    ctx.lineWidth = theme.lineWidth
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, height)
+    ctx.stroke()
+    ctx.setLineDash([])
+    ctx.shadowBlur = 0
+    ctx.shadowColor = 'transparent'
+}
+
 export function drawEnvelope(ctx, envelope, width, height, strokeOrColors) {
     if (!envelope?.length) return
 

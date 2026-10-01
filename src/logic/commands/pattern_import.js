@@ -1,6 +1,7 @@
 import { fixPattern } from '../../patterns/fixer.js'
 import { TRACK_DEFAULTS, recalcLoopDerived } from '../../model/track_schema.js'
-import { compactArrayToNote, isCompactFormat } from '../../core/note_schema.js'
+import { areValidNoteKeys, compactArrayToNote, isCompactFormat } from '../../core/note_schema.js'
+import { reportUserError } from '../../core/notify.js'
 import Utils from '../../core/utils.js'
 import { logger } from '../../core/logger.js'
 import { MAX_IMPORT_TRACKS, MAX_IMPORT_NOTES } from '../../core/constants.js'
@@ -172,6 +173,17 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
 
         const notes = sourceTrack.notes ?? []
         const noteKeys = sourceTrack.noteKeys
+        const notesAreArrays = Array.isArray(notes[0])
+
+        // Compact notes decode positionally: a header with an unknown key (or a
+        // reordered one) would silently rewrite velocity/pitch/beat. Refuse
+        // that header instead of guessing which property each slot holds.
+        if (notesAreArrays && !areValidNoteKeys(noteKeys)) {
+            reportUserError('PatternImport.noteKeys', `Unreadable note data in "${sourceTrack.name}" — track skipped`, {
+                cause: new Error(`invalid noteKeys: ${JSON.stringify(noteKeys)}`),
+            })
+            continue
+        }
 
         if (isCompactFormat(sourceTrack)) {
             for (const arr of notes) {

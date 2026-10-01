@@ -60,11 +60,13 @@ class SongService {
      * @param {string} fallbackName
      * @returns {string} resolved song name
      */
-    applyToAppState(data, fallbackName) {
+    async applyToAppState(data, fallbackName) {
         const name = data.name ?? fallbackName
 
         // One undoable history entry for the whole song load/import.
-        serviceRegistry.cmd.recordTransaction('Load song', () => {
+        // Awaited: setSelectedPatternIdx is async (samples + auto-assign) and
+        // the recorded redo state must include what it writes.
+        await serviceRegistry.cmd.recordTransaction('Load song', async () => {
             appState.patterns.length = 0
             for (const pat of data.patterns) appState.patterns.push(pat)
 
@@ -72,7 +74,7 @@ class SongService {
             appState.songInfos.description = data.description ?? ''
             appState.songInfos.date = data.date ?? ''
 
-            serviceRegistry.cmd.setSelectedPatternIdx(data.selectedPatternNum ?? 0)
+            await serviceRegistry.cmd.setSelectedPatternIdx(data.selectedPatternNum ?? 0)
             serviceRegistry.cmd.resetPage()
         })
 

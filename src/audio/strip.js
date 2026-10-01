@@ -1,6 +1,7 @@
 import Utils from '../core/utils.js'
 import Defaults from '../patterns/defaults.js'
 import { RAMP_TIME } from '../core/constants.js'
+import { reportUserError } from '../core/notify.js'
 import WorkletLoader from './worklets/loader.js'
 import STRIP_SOURCE from './worklets/processors/strip_source.js'
 
@@ -28,6 +29,32 @@ const REVERB_PRESETS = Object.freeze({
 const SATURATION_TYPES_IDX = { soft: 0, hard: 1, tape: 2 }
 const FILTER_MODES = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
 const DELAY_MODES = { none: 0, slap: 0, tape: 1, pingpong: 2 }
+
+/** Unknown enum values already reported, so a bad pattern cannot spam toasts. */
+const enumWarned = new Set()
+
+/**
+ * Resolve an enum-like value, reporting an unknown one instead of silently
+ * substituting a default (an unknown reverbType used to resolve to "none",
+ * i.e. the reverb was quietly switched off).
+ * @param {object} map
+ * @param {string} value
+ * @param {string} label
+ * @param {string} fallback
+ * @returns {string}
+ */
+function mapStripEnum(map, value, label, fallback) {
+    if (value == null) return fallback
+    if (Object.prototype.hasOwnProperty.call(map, value)) return value
+    const key = `${label}:${value}`
+    if (!enumWarned.has(key)) {
+        enumWarned.add(key)
+        reportUserError('Strip.enum', `Unknown ${label} "${value}" — using "${fallback}"`, {
+            cause: new Error(`strip ${label}=${value}`),
+        })
+    }
+    return fallback
+}
 
 export default class Strip {
     static TAG = 'Strip'
@@ -124,8 +151,9 @@ export default class Strip {
             return
         }
 
-        const mode = FILTER_MODES[this.currentFilterType] ?? 0
-        params.get('filterMode')?.setTargetAtTime(mode, time, RAMP_TIME)
+        const resolvedType = mapStripEnum(FILTER_MODES, this.currentFilterType, 'filterType', 'lowpass')
+        if (resolvedType !== this.currentFilterType) this.currentFilterType = resolvedType
+        params.get('filterMode')?.setTargetAtTime(FILTER_MODES[resolvedType] ?? 0, time, RAMP_TIME)
 
         if (freq !== undefined) {
             const fFreq = Utils.toFiniteNumber(freq, 20, 'freq')
@@ -163,7 +191,7 @@ export default class Strip {
         const time = this.audioCtx.currentTime
         const params = this.stripNode.parameters
 
-        const normalizedType = REVERB_PRESETS[type] ? type : 'none'
+        const normalizedType = mapStripEnum(REVERB_PRESETS, type, 'reverbType', 'none')
         const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
 
         this.currentReverbType = normalizedType
@@ -183,7 +211,7 @@ export default class Strip {
         const time = this.audioCtx.currentTime
         const params = this.stripNode.parameters
 
-        const normalizedType = Object.hasOwn(DELAY_MODES, type) ? type : 'tape'
+        const normalizedType = mapStripEnum(DELAY_MODES, type, 'delayType', 'tape')
         const normalizedAmount = Utils.clamp(Utils.toFiniteNumber(amount, 0, 'amount'), 0, 1)
 
         this.currentDelayType = normalizedType

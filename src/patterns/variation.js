@@ -279,7 +279,7 @@ export default class TrackVariation {
                         type: 'anticipation',
                         cost: COST_ADD,
                         fn,
-                        target: { t, beat: Math.floor(nextStep / stepsPerBeat), beatStep: nextStep % stepsPerBeat },
+                        target: { t, ...Utils.stepToBeat(nextStep, stepsPerBeat) },
                     })
                 }
 
@@ -296,7 +296,7 @@ export default class TrackVariation {
                         type: 'double',
                         cost: COST_ADD,
                         fn,
-                        target: { t, beat: Math.floor(nextStep / stepsPerBeat), beatStep: nextStep % stepsPerBeat },
+                        target: { t, ...Utils.stepToBeat(nextStep, stepsPerBeat) },
                     })
                 }
             }

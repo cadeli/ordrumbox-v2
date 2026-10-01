@@ -88,6 +88,9 @@ export default class ResourcesLoader {
     /** @type {Promise<void> | null} In-flight single-flight promise for sample loading */
     #samplesLoadingPromise = null
 
+    /** @type {Promise<void> | null} In-flight settings hydration */
+    #settingsLoadingPromise = null
+
     async ensureResourcesLoaded() {
         // 1. Load Patterns if missing
         if (appState.patterns.length === 0) {
@@ -189,7 +192,18 @@ export default class ResourcesLoader {
         Object.assign(soundRegistry.generatedSounds, generatedSounds)
     }
 
-    async loadSettings() {
+    /**
+     * @param {boolean} [skipSingleFlight] internal: re-enter for the in-flight call
+     */
+    async loadSettings(skipSingleFlight = false) {
+        if (!skipSingleFlight) {
+            if (!this.#settingsLoadingPromise) {
+                this.#settingsLoadingPromise = this.loadSettings(true).finally(() => {
+                    this.#settingsLoadingPromise = null
+                })
+            }
+            return this.#settingsLoadingPromise
+        }
         const defaults = {
             version: 1,
             sampleDirs: [],
@@ -249,6 +263,17 @@ export default class ResourcesLoader {
 
     #persistTimer = null
 
+    /**
+     * Drop the pending debounced write. Called before clearing the caches and
+     * before re-importing: a write armed <500ms earlier used to fire after the
+     * clear and silently re-populate the entry the user had just wiped.
+     */
+    cancelPendingPersist = () => {
+        if (!this.#persistTimer) return
+        clearTimeout(this.#persistTimer)
+        this.#persistTimer = null
+    }
+
     persistPatterns = () => {
         if (this.#persistTimer) clearTimeout(this.#persistTimer)
         this.#persistTimer = setTimeout(async () => {
@@ -265,7 +290,20 @@ export default class ResourcesLoader {
         }, 500)
     }
 
-    async loadSong(file) {
+    /**
+     * @param {string} file
+     * @param {boolean} [skipSingleFlight] internal: re-enter for the in-flight call
+     */
+    async loadSong(file, skipSingleFlight = false) {
+        this.cancelPendingPersist()
+        if (!skipSingleFlight) {
+            if (!this.#patternsLoadingPromise) {
+                this.#patternsLoadingPromise = this.loadSong(file, true).finally(() => {
+                    this.#patternsLoadingPromise = null
+                })
+            }
+            return this.#patternsLoadingPromise
+        }
         let json = await getCachedPatterns()
         if (!json) {
             json = await this.loadJsonResource(file)

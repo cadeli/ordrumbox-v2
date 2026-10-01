@@ -59,6 +59,11 @@ export function initGlobalListeners() {
             showToast('Audio playback stalled', 'warning')
         }
     })
+    // STALL_RESUME was emitted on every recovery but had no subscriber: nothing
+    // ever told the user playback came back on its own.
+    playbackEvents.on(EVENTS.STALL_RESUME, () => {
+        showToast('Audio playback resumed', 'info')
+    })
     playbackEvents.on(EVENTS.WORKLET_STATUS_CHANGE, (status) => {
         if (status === 'unavailable') {
             showToast('Audio engine unavailable — synth and effects disabled', 'error')

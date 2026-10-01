@@ -4,7 +4,7 @@
 import { OrKnob } from '../components/or_knob.js'
 import { renderOptions, renderIconChoices } from '../components/panel_helpers.js'
 import { FX_DEFS, FILTER_TYPE_ICONS, PROP_BY_KEY, fmtVal } from './constants.js'
-import { EVENTS } from '../../core/events.js'
+import { emitTrackChanged } from '../../state/playback_events.js'
 
 export default class FxSection {
     #editor
@@ -135,10 +135,7 @@ export default class FxSection {
                                     { [ck]: v },
                                     { desc: `${prop.label} on ${editor.track.name}`, coalesce: true },
                                 )
-                                editor.playbackEvents.batch(() => {
-                                    editor.playbackEvents.emit(EVENTS.TRACK_PARAM_CHANGE, editor.track)
-                                    editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [editor.track])
-                                })
+                                emitTrackChanged(editor.track, editor.playbackEvents)
                             },
                         })
                     }

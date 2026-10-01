@@ -6,11 +6,11 @@ import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { EVENTS } from '../../core/events.js'
-import { TICK } from '../../core/constants.js'
+import { BEATS_PER_PAGE, TICK } from '../../core/constants.js'
 import Utils from '../../core/utils.js'
 import { createStepResolver } from '../../patterns/step_resolver.js'
 import { getNoteSubPositions } from '../../patterns/note_positions.js'
-import { PAGE_BEATS } from './constants.js'
+import { reportUserError } from '../../core/notify.js'
 
 export default class PlaybackSection {
     #editor
@@ -43,7 +43,11 @@ export default class PlaybackSection {
                 this.clearIllumination()
                 return
             }
-            this.#updatePlayhead()
+            try {
+                this.#updatePlayhead()
+            } catch (err) {
+                reportUserError('PianoRoll.playheadLoop', 'Playback cursor stopped updating', { cause: err })
+            }
             this.#rafId = requestAnimationFrame(loop)
         }
         this.#rafId = requestAnimationFrame(loop)
@@ -73,11 +77,11 @@ export default class PlaybackSection {
 
         const absStep =
             Math.floor(loopTick / TICK) * stepsPerBeat + Math.floor((loopTick % TICK) / (TICK / stepsPerBeat))
-        const pageStartStep = appState.currentPage * PAGE_BEATS * stepsPerBeat
-        const pageEndStep = pageStartStep + PAGE_BEATS * stepsPerBeat
+        const pageStartStep = appState.currentPage * BEATS_PER_PAGE * stepsPerBeat
+        const pageEndStep = pageStartStep + BEATS_PER_PAGE * stepsPerBeat
 
         if (absStep < pageStartStep || absStep >= pageEndStep) {
-            const newPage = Math.floor(absStep / stepsPerBeat / PAGE_BEATS)
+            const newPage = Math.floor(absStep / stepsPerBeat / BEATS_PER_PAGE)
             if (newPage !== appState.currentPage) {
                 serviceRegistry.cmd.setCurrentPage(newPage)
                 this.#editor.viewport.clampPage()
