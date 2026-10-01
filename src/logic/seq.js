@@ -220,7 +220,10 @@ export default class Sequencer {
         }
         if (!this.serviceRegistry.audioCtx && typeof window !== 'undefined') {
             try {
-                this.serviceRegistry.audioCtx = new (window.AudioContext ?? window.webkitAudioContext)()
+                const win = /** @type {Window & typeof globalThis & { webkitAudioContext?: typeof AudioContext }} */ (
+                    window
+                )
+                this.serviceRegistry.audioCtx = new (win.AudioContext ?? win.webkitAudioContext)()
             } catch (_) {
                 /* no-op */
             }

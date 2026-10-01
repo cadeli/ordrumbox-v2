@@ -15,7 +15,7 @@ import { logger } from '../core/logger.js'
  * @param {object} deps.generatedSounds
  * @param {number} deps.TICK
  * @param {(pattern: object, loop: number) => Map} deps.computeFlatNotes
- * @param {object} pattern
+ * @param {any} pattern
  * @param {number} numLoops
  * @param {typeof OfflineAudioContext} OfflineAudioContextClass
  * @param {(buffer: AudioBuffer) => Uint8Array} bufferToWavFn

@@ -19,7 +19,7 @@ import Utils from '../core/utils.js'
 
 /**
  * Absolute steps occupied by the track notes (array or map form).
- * @param {object} track
+ * @param {any} track
  * @returns {Set<number>}
  */
 export function buildOccupiedSet(track) {
@@ -40,7 +40,7 @@ export function buildOccupiedSet(track) {
  * the end of the track.
  *
  * @param {object} note
- * @param {object} track
+ * @param {any} track
  * @param {Set<number>} occupied - steps built by {@link buildOccupiedSet}
  * @returns {number} absolute step (exclusive end of the span)
  */
@@ -66,7 +66,7 @@ export function resolveSpanEnd(note, track, occupied) {
  * Pass-scoped resolver: snapshot the track once, then resolve any number of
  * notes in O(1) each. Build it at the start of a pass, never keep it longer.
  *
- * @param {object} track
+ * @param {any} track
  * @returns {(note: object) => number} end step of the note's sub-note span
  */
 export function createStepResolver(track) {

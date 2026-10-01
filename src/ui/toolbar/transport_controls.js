@@ -5,8 +5,6 @@ import { serviceRegistry } from '../../state/service_registry.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { appState } from '../../state/app_state.js'
 import { MAX_BEATS } from '../../core/constants.js'
-import Utils from '../../core/utils.js'
-import { recalcLoopDerived } from '../../model/track_schema.js'
 import { EVENTS } from '../../core/events.js'
 
 const BPM_MIN = 20
@@ -62,7 +60,7 @@ export default class TransportControls {
         tb.beatsSelect = document.createElement('select')
         for (let i = 1; i <= MAX_BEATS; i++) {
             const opt = document.createElement('option')
-            opt.value = i
+            opt.value = String(i)
             opt.textContent = i
             tb.beatsSelect.appendChild(opt)
         }
@@ -97,15 +95,7 @@ export default class TransportControls {
             if (isNaN(val)) return
             const pattern = appState.patterns[appState.selectedPatternIdx]
             if (!pattern) return
-            pattern.nbBeats = val
-            Utils.getTracksArray(pattern).forEach((track) => {
-                track.nbBeats = val
-                const maxSteps = val * (track.stepsPerBeat ?? 4)
-                if (track.loopAtStep > maxSteps) {
-                    track.loopAtStep = maxSteps
-                    recalcLoopDerived(track)
-                }
-            })
+            serviceRegistry.cmd.setPatternNbBeats(pattern, val)
             serviceRegistry.cmd.resetPage()
             playbackEvents.batch(() => {
                 playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)

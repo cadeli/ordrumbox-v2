@@ -10,7 +10,7 @@ const LFO_SMOOTHING = 0.005
  * Hot path (called every tick) — classic for-loop is deliberate.
  *
  * @param {import('./mixer.js').default} mixer
- * @param {object} pattern
+ * @param {any} pattern
  * @param {number} tick
  * @param {number} atTime — AudioContext time
  * @param {number} TICK

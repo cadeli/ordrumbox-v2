@@ -44,7 +44,7 @@ export default class MobileTabBar {
 
     #bindEvents() {
         this.container.addEventListener('click', (e) => {
-            const btn = e.target.closest('.mtb-btn')
+            const btn = /** @type {Element} */ (e.target).closest('.mtb-btn')
             if (!btn) return
             const tab = btn.dataset.tab
             this.#onTabClick(tab)
@@ -94,7 +94,7 @@ export default class MobileTabBar {
 
     #updateActive() {
         this.container?.querySelectorAll('.mtb-btn').forEach((btn) => {
-            btn.classList.toggle('active', btn.dataset.tab === this.#currentTab)
+            btn.classList.toggle('active', /** @type {HTMLElement} */ (btn).dataset.tab === this.#currentTab)
         })
     }
 

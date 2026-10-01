@@ -3,6 +3,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import Commander from '../src/logic/commands/cmd.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { MAX_BEATS } from '../src/core/constants.js'
@@ -44,7 +45,9 @@ describe('PatternSettingsPanel', () => {
     let panel
 
     beforeEach(() => {
+        const realCmd = new Commander()
         serviceRegistry.cmd = {
+            setPatternNbBeats: (pattern, nbBeats) => realCmd.setPatternNbBeats(pattern, nbBeats),
             setSelectedDrumkitIdx: vi.fn(),
             setSelectedPatternIdx: vi.fn(),
             beginGenerationUndo: vi.fn(),

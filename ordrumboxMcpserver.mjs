@@ -12,7 +12,7 @@ import { appState } from './src/state/app_state.js'
 import AudioAnalyzer from './src/audio/analyze.js'
 import InstrumentsManager from './src/logic/services/instrument_manager/index.js'
 import Utils from './src/core/utils.js'
-import { normalizeTrack, recalcLoopDerived, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
+import { normalizeTrack, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
 import { compactArrayToNote, normalizeNote } from './src/core/note_schema.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -142,27 +142,6 @@ function isNoteAt(track, beat, beatStep) {
 }
 
 /**
- * Set the pattern length in beats and resync every track (mirrors the
- * transport select: track nbBeats follow the pattern, loop points clamp
- * to the new length).
- * @returns {number} the new beat count
- */
-function setPatternNbBeats(pattern, nbBeats) {
-    const value = Math.round(Number(nbBeats))
-    if (!Number.isFinite(value) || value < 1) throw new Error(`Invalid nbBeats value: ${nbBeats}`)
-    pattern.nbBeats = value
-    for (const track of Utils.getTracksArray(pattern)) {
-        track.nbBeats = value
-        const maxSteps = value * (track.stepsPerBeat ?? 4)
-        if (track.loopAtStep > maxSteps) {
-            track.loopAtStep = maxSteps
-            recalcLoopDerived(track)
-        }
-    }
-    return value
-}
-
-/**
  * Convert an absolute step number to `{ beat, beatStep }` on the track grid.
  * Exported for tests — this is the conversion addNotesToPattern applies.
  */
@@ -190,7 +169,7 @@ export function ensurePatternHasEnoughBeats(cmd, pattern, noteBeat) {
         throw new Error(`Invalid beat value: ${noteBeat}`)
     }
     if (requiredBeats > pattern.nbBeats) {
-        setPatternNbBeats(pattern, Math.ceil(requiredBeats / 4) * 4)
+        cmd.setPatternNbBeats(pattern, Math.ceil(requiredBeats / 4) * 4)
     }
 }
 
@@ -540,7 +519,7 @@ export const tools = [
             type: 'object',
             properties: {
                 patternName: { type: 'string' },
-                nbBeats: { type: 'integer', minimum: 1, maximum: 64 },
+                nbBeats: { type: 'integer', minimum: 1, maximum: 16 },
             },
             required: ['patternName', 'nbBeats'],
         },

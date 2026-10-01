@@ -107,12 +107,12 @@ export default class PianoRollPanel extends BasePanel {
             this.#playback.resetPrevLoopTick()
         })
         this.container?.addEventListener('click', (e) => {
-            const key = e.target.closest('.pp-pr-key')
+            const key = /** @type {Element} */ (e.target).closest('.pp-pr-key')
             if (key) {
                 this.#playKey(parseInt(key.dataset.midi, 10))
                 return
             }
-            const gridEl = e.target.closest('#pp-piano-grid')
+            const gridEl = /** @type {Element} */ (e.target).closest('#pp-piano-grid')
             if (gridEl) this.#onGridClick(e, gridEl)
         })
         this.container?.addEventListener('contextmenu', (e) => this.#menu.onContextMenu(e))

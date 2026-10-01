@@ -6,6 +6,7 @@ import Toolbar from '../src/ui/toolbar.js'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import Commander from '../src/logic/commands/cmd.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 
 describe('Toolbar UI Layout', () => {
@@ -21,7 +22,9 @@ describe('Toolbar UI Layout', () => {
             toggleStartStop: vi.fn(),
             setBpm: vi.fn(),
         }
+        const realCmd = new Commander()
         serviceRegistry.cmd = {
+            setPatternNbBeats: (pattern, nbBeats) => realCmd.setPatternNbBeats(pattern, nbBeats),
             setSelectedPatternIdx: vi.fn(),
             setSelectedDrumkitIdx: vi.fn(),
             cleanPattern: vi.fn(),

@@ -3,6 +3,9 @@ import { appState } from '../../../state/app_state.js'
 import Defaults from '../../../patterns/defaults.js'
 import { importPatternFromJson } from '../pattern_import.js'
 import { logger } from '../../../core/logger.js'
+import { MAX_BEATS } from '../../../core/constants.js'
+import { recalcLoopDerived } from '../../../model/track_schema.js'
+import Utils from '../../../core/utils.js'
 
 /**
  * Pattern commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
@@ -117,6 +120,76 @@ export default class PatternCommands {
                 this.#host.persist()
             },
         })
+        return pattern
+    }
+
+    /**
+     * Set the pattern length in beats and resync every track: track nbBeats
+     * follow the pattern, loop points clamp to the new length.
+     * @param {any} pattern
+     * @param {number} nbBeats - target length in beats (1..MAX_BEATS)
+     * @returns {any} the pattern
+     */
+    setPatternNbBeats(pattern, nbBeats) {
+        const requested = Math.round(Number(nbBeats))
+        const appliedNbBeats =
+            Number.isFinite(requested) && requested >= 1 && requested <= MAX_BEATS
+                ? requested
+                : Utils.PATTERN_DEFAULTS.nbBeats
+        if (appliedNbBeats !== requested) {
+            logger.warn('Command', 'nbBeats out of bounds', nbBeats, `→ ${appliedNbBeats}`)
+        }
+
+        const readTrackStates = () =>
+            Utils.getTracksArray(pattern).map((track) => ({
+                track,
+                nbBeats: track.nbBeats,
+                loopAtStep: track.loopAtStep,
+                loopPointBeat: track.loopPointBeat,
+                loopPointStep: track.loopPointStep,
+            }))
+
+        const oldNbBeats = pattern.nbBeats
+        const oldTrackStates = readTrackStates()
+
+        const applyState = (beats, trackStates) => {
+            pattern.nbBeats = beats
+            for (const { track, nbBeats, loopAtStep, loopPointBeat, loopPointStep } of trackStates) {
+                track.nbBeats = nbBeats
+                track.loopAtStep = loopAtStep
+                track.loopPointBeat = loopPointBeat
+                track.loopPointStep = loopPointStep
+            }
+            this.#host.persist()
+        }
+
+        const newTrackStates = Utils.getTracksArray(pattern).map((track) => {
+            const maxSteps = appliedNbBeats * (track.stepsPerBeat ?? 4)
+            if (track.loopAtStep > maxSteps) {
+                track.loopAtStep = maxSteps
+                recalcLoopDerived(track)
+            }
+            track.nbBeats = appliedNbBeats
+            return {
+                track,
+                nbBeats: track.nbBeats,
+                loopAtStep: track.loopAtStep,
+                loopPointBeat: track.loopPointBeat,
+                loopPointStep: track.loopPointStep,
+            }
+        })
+        pattern.nbBeats = appliedNbBeats
+
+        if (pattern.nbBeats !== oldNbBeats) {
+            this.#host.record({
+                desc: `Set pattern length → ${appliedNbBeats} beats`,
+                params: { pattern: pattern.name, nbBeats: appliedNbBeats },
+                prev: { nbBeats: oldNbBeats },
+                execute: () => applyState(appliedNbBeats, newTrackStates),
+                undo: () => applyState(oldNbBeats, oldTrackStates),
+            })
+        }
+        this.#host.persist()
         return pattern
     }
 

@@ -319,7 +319,7 @@ export default class Utils {
      * When any track has solo=true, only soloed tracks play.
      * Otherwise, all non-muted tracks play.
      *
-     * @param {object} track    – track object with mute/solo properties
+     * @param {any} track       – track object with mute/solo properties
      * @param {boolean} anySolo – whether any track in the pattern has solo=true
      * @returns {boolean}
      */

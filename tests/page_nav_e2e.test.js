@@ -3,6 +3,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
+import Commander from '../src/logic/commands/cmd.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { playbackEvents } from '../src/state/playback_events.js'
 import { BEATS_PER_PAGE, TICK } from '../src/core/constants.js'
@@ -95,7 +96,9 @@ function setupServices() {
         setBpm: vi.fn(),
         setTick: vi.fn(),
     }
+    const realCmd = new Commander()
     serviceRegistry.cmd = {
+        setPatternNbBeats: (pattern, nbBeats) => realCmd.setPatternNbBeats(pattern, nbBeats),
         setSelectedPatternIdx: vi.fn((num) => {
             appState.selectedPatternIdx = num
         }),

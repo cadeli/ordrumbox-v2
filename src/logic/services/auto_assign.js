@@ -14,6 +14,11 @@ export default class AutoAssign {
     #appState
     #soundRegistry
 
+    /**
+     * @param {object} [deps]
+     * @param {any} [deps.appState]
+     * @param {any} [deps.soundRegistry]
+     */
     constructor({ appState, soundRegistry } = {}) {
         this.#appState = appState ?? _appState
         this.#soundRegistry = soundRegistry ?? soundRegistrySingleton
@@ -25,9 +30,9 @@ export default class AutoAssign {
             const selectedIdx = this.#appState.selectedDrumkitIdx
             const kitName = drumkitList?.[selectedIdx]?.name ?? '?'
             logger.warn(TAG, `── Auto-assign: kit="${kitName}", pattern="${pattern?.name ?? '?'}" ──`)
-            Utils.getTracksArray(pattern).forEach((track, indexTrack) => {
+            Utils.getTracksArray(pattern).forEach((track) => {
                 if (track.useAutoAssignSound === true && track.useSoftSynth === false) {
-                    this.autoAssignTrackSounds(track, indexTrack)
+                    this.autoAssignTrackSounds(track)
                 }
             })
         }

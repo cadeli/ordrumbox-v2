@@ -211,7 +211,7 @@ class DrumkitService {
 
         for (const s of sounds) {
             if (!s.buffer || !ctx) continue
-            const analysis = analyzeSample(s.buffer)
+            const analysis = /** @type {any} */ (analyzeSample(s.buffer))
             if (!analysis?.peakLinear || analysis.peakLinear <= 0) continue
 
             const gainDb = -analysis.peakDb

@@ -12,6 +12,9 @@ import {
 } from '../../core/constants.js'
 
 export default class SampleVoice extends BaseVoice {
+    /** @type {(() => void) | undefined} Voice-ended callback, assigned by Sound */
+    onEnded
+
     constructor(audioCtx, strip, buffer, nodePool = null, sample = null) {
         super(audioCtx, strip, nodePool)
         this.buffer = buffer

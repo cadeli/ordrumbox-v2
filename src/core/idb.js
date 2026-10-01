@@ -6,6 +6,13 @@ const DB_VERSION = 4
 const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds']
 
 /**
+ * Executor for the IDB request promises: `resolve` takes no value here, so
+ * TypeScript must be told `resolve()` is callable (default Promise<T> typing
+ * would otherwise require an argument).
+ * @typedef {(resolve: () => void, reject: (reason?: unknown) => void) => void} IdbExecutor
+ */
+
+/**
  * Schema migrations keyed by the DB_VERSION they ship with:
  *     5: (db, tx) => { ... }
  * They run inside `onupgradeneeded` when upgrading from a version < 5, so add
@@ -113,11 +120,15 @@ export function idbPut(storeName, key, value) {
         storeName,
         'readwrite',
         (store) =>
-            new Promise((resolve, reject) => {
-                const req = store.put(value, key)
-                req.onsuccess = () => resolve()
-                req.onerror = () => reject(req.error)
-            }),
+            new Promise(
+                /** @type {IdbExecutor} */ (
+                    (resolve, reject) => {
+                        const req = store.put(value, key)
+                        req.onsuccess = () => resolve()
+                        req.onerror = () => reject(req.error)
+                    }
+                ),
+            ),
     )
 }
 
@@ -126,11 +137,15 @@ export function idbDelete(storeName, key) {
         storeName,
         'readwrite',
         (store) =>
-            new Promise((resolve, reject) => {
-                const req = store.delete(key)
-                req.onsuccess = () => resolve()
-                req.onerror = () => reject(req.error)
-            }),
+            new Promise(
+                /** @type {IdbExecutor} */ (
+                    (resolve, reject) => {
+                        const req = store.delete(key)
+                        req.onsuccess = () => resolve()
+                        req.onerror = () => reject(req.error)
+                    }
+                ),
+            ),
     )
 }
 
@@ -152,11 +167,15 @@ export function idbClearStore(storeName) {
         storeName,
         'readwrite',
         (store) =>
-            new Promise((resolve, reject) => {
-                const req = store.clear()
-                req.onsuccess = () => resolve()
-                req.onerror = () => reject(req.error)
-            }),
+            new Promise(
+                /** @type {IdbExecutor} */ (
+                    (resolve, reject) => {
+                        const req = store.clear()
+                        req.onsuccess = () => resolve()
+                        req.onerror = () => reject(req.error)
+                    }
+                ),
+            ),
     )
 }
 

@@ -83,8 +83,10 @@ export default class AboutPanel extends BasePanel {
             </div>
         `
 
-        bindCloseButton(this.container, () => playbackEvents.emit(EVENTS.ABOUT_TOGGLE, false))
-        bindTabToggles(this.container)
+        if (this.container) {
+            bindCloseButton(this.container, () => playbackEvents.emit(EVENTS.ABOUT_TOGGLE, false))
+            bindTabToggles(this.container)
+        }
 
         this.#installBtn = this.container.querySelector('#about-pwa-install')
         this.#installBtn?.addEventListener('click', () => this.#installPwa())
@@ -100,7 +102,7 @@ export default class AboutPanel extends BasePanel {
     }
 
     #detectPwaStatus() {
-        const installRow = this.container.querySelector('#about-pwa-install-row')
+        const installRow = /** @type {HTMLElement} */ (this.container.querySelector('#about-pwa-install-row'))
 
         if (installRow && this.#deferredPrompt) {
             installRow.style.display = ''

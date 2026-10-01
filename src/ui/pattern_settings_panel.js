@@ -3,7 +3,6 @@ import { soundRegistry } from '../state/sound_registry.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import Utils from '../core/utils.js'
-import { recalcLoopDerived } from '../model/track_schema.js'
 import { MAX_BEATS } from '../core/constants.js'
 import { prevPage, nextPage } from './page_nav.js'
 import { showToast } from '../core/notify.js'
@@ -163,15 +162,7 @@ export default class PatternSettingsPanel {
         if (isNaN(val)) return
         const pattern = appState.patterns[appState.selectedPatternIdx]
         if (!pattern) return
-        pattern.nbBeats = val
-        Utils.getTracksArray(pattern).forEach((track) => {
-            track.nbBeats = val
-            const maxSteps = val * (track.stepsPerBeat ?? 4)
-            if (track.loopAtStep > maxSteps) {
-                track.loopAtStep = maxSteps
-                recalcLoopDerived(track)
-            }
-        })
+        serviceRegistry.cmd.setPatternNbBeats(pattern, val)
         serviceRegistry.cmd.resetPage()
         playbackEvents.batch(() => {
             playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
@@ -332,7 +323,7 @@ export default class PatternSettingsPanel {
         this.#drumkitSelect.innerHTML = ''
         soundRegistry.drumkitList.forEach((kit, i) => {
             const opt = document.createElement('option')
-            opt.value = i
+            opt.value = String(i)
             opt.textContent = kit.name ?? `Kit ${i}`
             this.#drumkitSelect.appendChild(opt)
         })
@@ -344,7 +335,7 @@ export default class PatternSettingsPanel {
         this.#patternSelect.innerHTML = ''
         appState.patterns.forEach((pat, i) => {
             const opt = document.createElement('option')
-            opt.value = i
+            opt.value = String(i)
             opt.textContent = pat.name ?? `Pattern ${i}`
             this.#patternSelect.appendChild(opt)
             if (i === appState.selectedPatternIdx) opt.selected = true

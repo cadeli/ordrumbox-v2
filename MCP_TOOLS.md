@@ -368,7 +368,7 @@ Sets tags (categories/genre) for a pattern.
 
 ### setPatternNbBeats
 
-Sets the number of beats for a pattern.
+Sets the number of beats for a pattern (1-16, `MAX_BEATS`). Every track follows: track `nbBeats` are resynced and loop points beyond the new length are clamped.
 
 **Input:**
 

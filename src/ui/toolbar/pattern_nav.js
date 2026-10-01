@@ -109,7 +109,7 @@ export default class PatternNav {
         tb.patternSelect.innerHTML = ''
         appState.patterns.forEach((pat, i) => {
             const opt = document.createElement('option')
-            opt.value = i
+            opt.value = String(i)
             opt.textContent = pat.name ?? `Pattern ${i}`
             tb.patternSelect.appendChild(opt)
         })
@@ -124,7 +124,7 @@ export default class PatternNav {
         tb.drumkitSelect.innerHTML = ''
         soundRegistry.drumkitList.forEach((kit, i) => {
             const opt = document.createElement('option')
-            opt.value = i
+            opt.value = String(i)
             opt.textContent = kit.name ?? `Kit ${i}`
             tb.drumkitSelect.appendChild(opt)
         })

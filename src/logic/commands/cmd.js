@@ -59,6 +59,7 @@ export default class Commander {
         'renamePattern',
         'getPatternByName',
         'setPatternBpm',
+        'setPatternNbBeats',
         'setPatternDescription',
         'importPatternFromJson',
         'createPattern',
@@ -116,6 +117,7 @@ export default class Commander {
         this.renamePattern = (...args) => this.#patterns.renamePattern(...args)
         this.getPatternByName = (...args) => this.#patterns.getPatternByName(...args)
         this.setPatternBpm = (...args) => this.#patterns.setPatternBpm(...args)
+        this.setPatternNbBeats = (...args) => this.#patterns.setPatternNbBeats(...args)
         this.setPatternDescription = (...args) => this.#patterns.setPatternDescription(...args)
         this.importPatternFromJson = (...args) => this.#patterns.importPatternFromJson(...args)
         this.createPattern = (...args) => this.#patterns.createPattern(...args)

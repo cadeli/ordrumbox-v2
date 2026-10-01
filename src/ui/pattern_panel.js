@@ -63,6 +63,9 @@ export default class PatternPanel extends BasePanel {
 
     /**
      * @param {object} [deps]  Optional dependency overrides (DI).
+     * @param {any} [deps.appState]
+     * @param {any} [deps.serviceRegistry]
+     * @param {any} [deps.playbackEvents]
      */
     constructor(deps = {}) {
         super('pattern-panel')
@@ -227,7 +230,7 @@ export default class PatternPanel extends BasePanel {
         const beatEls = this.container.querySelectorAll('.pp-beat')
         beatEls.forEach((el) => {
             const r = el.getBoundingClientRect()
-            this.#beatRectsCache[parseInt(el.dataset.beat)] = {
+            this.#beatRectsCache[parseInt(/** @type {HTMLElement} */ (el).dataset.beat)] = {
                 left: r.left - this.#layoutCache.tracksLeft,
                 absLeft: r.left,
                 absRight: r.right,
@@ -249,7 +252,7 @@ export default class PatternPanel extends BasePanel {
         this.#scheduleSync()
     }
 
-    /** @private Shared requestAnimationFrame callback for sync + bar cache update. */
+    /** Shared requestAnimationFrame callback for sync + bar cache update. */
     #scheduleSync() {
         this.#syncRafId = requestAnimationFrame(() => {
             this.sync()

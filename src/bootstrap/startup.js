@@ -68,7 +68,8 @@ function restoreInitialView() {
 }
 
 function installE2eHook() {
-    window.__e2e = {
+    const win = /** @type {Window & { __e2e?: unknown }} */ (window)
+    win.__e2e = {
         ready: true,
         appState,
         serviceRegistry,
@@ -80,7 +81,8 @@ function installE2eHook() {
 async function logIdbReport() {
     // Dev diagnostic only: dropped from prod builds by terser (drop_console)
     // and skipped under vitest so the report never pollutes the test output.
-    if (import.meta.env.MODE === 'test') return
+    const meta = /** @type {ImportMeta & { env?: { MODE?: string } }} */ (import.meta)
+    if (meta.env?.MODE === 'test') return
 
     const report = await idbReport()
     console.group('%c IndexedDB Report', 'color: #e94560; font-weight: bold')

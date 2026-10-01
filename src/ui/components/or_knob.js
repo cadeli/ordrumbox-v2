@@ -169,7 +169,6 @@ export class OrKnob {
         this.#bind(rowEl)
     }
 
-    /** @private */
     #bind(rowEl) {
         this.#unbind()
         this.el = rowEl
@@ -184,7 +183,6 @@ export class OrKnob {
         this.#valSpan?.addEventListener('contextmenu', this.#boundOnContextMenu)
     }
 
-    /** @private */
     #unbind() {
         this.#knobEl?.removeEventListener('mousedown', this.#boundOnMousedown)
         this.#knobEl?.removeEventListener('keydown', this.#boundOnKeydown)
@@ -194,7 +192,6 @@ export class OrKnob {
         this.#valSpan?.removeEventListener('contextmenu', this.#boundOnContextMenu)
     }
 
-    /** @private */
     #onMousedown(e) {
         if (e.button !== 0) return // left click only
         e.preventDefault()
@@ -236,7 +233,6 @@ export class OrKnob {
         window.addEventListener('mouseup', onUp)
     }
 
-    /** @private */
     #onKeydown(e) {
         const isUp = e.key === 'ArrowUp' || e.key === 'ArrowRight'
         const isDown = e.key === 'ArrowDown' || e.key === 'ArrowLeft'

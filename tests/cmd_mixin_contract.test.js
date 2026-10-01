@@ -5,8 +5,8 @@ import Commander from '../src/logic/commands/cmd.js'
 
 describe('Commander mixin contract', () => {
     it('declares exactly the 34 sub-module method names, unique', () => {
-        expect(Commander.MIXIN_METHODS.length).toBe(34)
-        expect(new Set(Commander.MIXIN_METHODS).size).toBe(34)
+        expect(Commander.MIXIN_METHODS.length).toBe(35)
+        expect(new Set(Commander.MIXIN_METHODS).size).toBe(35)
     })
 
     it('every mixin name is an own function property of a fresh Commander', () => {

@@ -72,7 +72,7 @@ Standalone worker (not part of the module graph), registered by `src/service_wor
 - **Setup**: `tests/setup.js` — stubs canvas, ResizeObserver, injects CSS for jsdom
 - Unit tests live in `tests/`
 - **Run**: `npm test` or `npx vitest run`
-- **Type check**: `npm run typecheck` — `tsc -p jsconfig.json --noEmit` with `checkJs: false`; only files starting with `// @ts-check` are checked (31 files: `app_state.js`, `playback_events.js`, `track_schema.js`, `mixer.js`, `base_panel.js`, all of `logic/commands/cmd*.js`, `ui/pattern_panel/*`, `ui/piano_roll/*`, `ui/synth_editor.js` + `ui/synth_editor/*`). To opt in a new file: add the pragma, then fix every reported error with JSDoc-only changes (type cast annotations `/** @type {X} */ (…)`, `@param`/`@field` types — no runtime changes)
+- **Type check**: `npm run typecheck` — `tsc -p jsconfig.json --noEmit` with `checkJs: false`; only files starting with `// @ts-check` are checked (32 files: `state/app_state.js`, `state/playback_events.js`, `model/track_schema.js`, `audio/mixer.js`, `audio/export/wav_exporter.js`, `ui/base_panel.js`, all of `logic/commands/cmd*.js`, `ui/pattern_panel/*`, `ui/piano_roll/*`, `ui/synth_editor.js` + `ui/synth_editor/*`). To opt in a new file: add the pragma, then fix every reported error with JSDoc-only changes (type cast annotations `/** @type {X} */ (…)`, `@param`/`@field` types — no runtime changes). Opt-in stays deliberately small: the rest of `src/` still has hundreds of errors (`{object}` model params, `Element` vs `HTMLElement` casts, expandos), so each file costs 1–48 errors to clean up before it can join
 
 Test helpers in `tests/helpers/`:
 

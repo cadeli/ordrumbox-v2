@@ -4,8 +4,9 @@ import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import Commander from '../src/logic/commands/cmd.js'
 import Utils from '../src/core/utils.js'
-import { isNoteAt, kitIsLoaded, getTrackFromType, setNbBeats, getAllSoundsForType } from './helpers/cmd_test_helpers.js'
+import { isNoteAt, kitIsLoaded, getTrackFromType, getAllSoundsForType } from './helpers/cmd_test_helpers.js'
 import { makePattern, makeTrack } from './helpers/make_pattern.js'
+import HistoryManager from '../src/logic/history_manager.js'
 
 describe('Functional: Commander operations', () => {
     let cmd
@@ -452,24 +453,44 @@ describe('Functional: Commander operations', () => {
         })
     })
 
-    describe('setNbBeats', () => {
+    describe('setPatternNbBeats', () => {
         it('changes pattern nbBeats and updates tracks', () => {
             const pattern = cmd.addPattern('Test')
             cmd.addTrack(pattern, 'KICK')
-            setNbBeats(cmd, pattern, 2)
+            cmd.setPatternNbBeats(pattern, 8)
 
             expect(pattern.nbBeats).toBe(8)
             expect(pattern.tracks[0].nbBeats).toBe(8)
         })
 
-        it('adjusts loopAtStep if it exceeds old beat count', () => {
+        it('adjusts loopAtStep if it exceeds the new beat count', () => {
             const pattern = cmd.addPattern('Test')
             cmd.addTrack(pattern, 'KICK')
             pattern.tracks[0].loopAtStep = 32
 
-            setNbBeats(cmd, pattern, 1)
+            cmd.setPatternNbBeats(pattern, 4)
             expect(pattern.tracks[0].loopAtStep).toBe(16)
             expect(pattern.tracks[0].nbBeats).toBe(4)
+        })
+
+        it('falls back to the default when out of bounds', () => {
+            const pattern = cmd.addPattern('Test')
+            cmd.setPatternNbBeats(pattern, 999)
+
+            expect(pattern.nbBeats).toBe(4)
+        })
+
+        it('undoes back to the previous length', () => {
+            const history = new HistoryManager(50)
+            serviceRegistry.history = history
+            const pattern = cmd.addPattern('Test')
+            const kick = cmd.addTrack(pattern, 'KICK')
+            cmd.setPatternNbBeats(pattern, 12)
+
+            history.undo()
+
+            expect(pattern.nbBeats).toBe(4)
+            expect(kick.nbBeats).toBe(4)
         })
     })
 
