@@ -167,4 +167,68 @@ describe('BasePanel lifecycle', () => {
         panel.destroy()
         expect(off).toHaveBeenCalled()
     })
+
+    it('listen() binds through the panel signal and destroy() unbinds', () => {
+        const panel = new TestPanel()
+        panel.init()
+        const btn = document.createElement('button')
+        document.body.appendChild(btn)
+        const spy = vi.fn()
+        const optionsSpy = vi.fn()
+        panel.listen(btn, 'click', spy)
+        panel.listen(btn, 'focus', optionsSpy, { capture: true })
+
+        btn.dispatchEvent(new Event('click'))
+        btn.dispatchEvent(new Event('focus'))
+        expect(spy).toHaveBeenCalledTimes(1)
+        expect(optionsSpy).toHaveBeenCalledTimes(1)
+
+        panel.destroy()
+        btn.dispatchEvent(new Event('click'))
+        btn.dispatchEvent(new Event('focus'))
+        expect(spy).toHaveBeenCalledTimes(1)
+        expect(optionsSpy).toHaveBeenCalledTimes(1)
+        btn.remove()
+    })
+
+    it('listen() tolerates a missing target (optional chaining like the raw API)', () => {
+        const panel = new TestPanel()
+        panel.init()
+        expect(() => panel.listen(null, 'click', handler)).not.toThrow()
+        expect(() => panel.listen(undefined, 'click', handler)).not.toThrow()
+        panel.destroy()
+    })
+
+    it('re-init gives a fresh signal, so listeners bound again still fire', () => {
+        const panel = new TestPanel()
+        panel.init()
+        const btn = document.createElement('button')
+        document.body.appendChild(btn)
+        const spy = vi.fn()
+
+        panel.listen(btn, 'click', spy)
+        panel.init()
+        btn.dispatchEvent(new Event('click'))
+        expect(spy).not.toHaveBeenCalled()
+
+        panel.listen(btn, 'click', spy)
+        btn.dispatchEvent(new Event('click'))
+        expect(spy).toHaveBeenCalledTimes(1)
+        panel.destroy()
+        btn.remove()
+    })
+
+    it('destroy() aborts document listeners too, not just element ones', () => {
+        const panel = new TestPanel()
+        panel.init()
+        const spy = vi.fn()
+        panel.listen(document, 'visibilitychange', spy)
+
+        document.dispatchEvent(new Event('visibilitychange'))
+        expect(spy).toHaveBeenCalledTimes(1)
+
+        panel.destroy()
+        document.dispatchEvent(new Event('visibilitychange'))
+        expect(spy).toHaveBeenCalledTimes(1)
+    })
 })

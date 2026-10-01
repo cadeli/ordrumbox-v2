@@ -59,30 +59,30 @@ export default class SongPanel extends BasePanel {
         this.#songDateEl = this.container.querySelector('#sg-song-date')
         this.#songDescEl = this.container.querySelector('#sg-song-desc')
 
-        this.#songDescEl.addEventListener('blur', () => {
+        this.listen(this.#songDescEl, 'blur', () => {
             appState.songInfos.description = this.#songDescEl.textContent.trim()
         })
-        this.#songDescEl.addEventListener('keydown', (e) => {
+        this.listen(this.#songDescEl, 'keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault()
                 this.#songDescEl.blur()
             }
         })
 
-        this.container.querySelector('#sg-rename').addEventListener('click', () => {
+        this.listen(this.container.querySelector('#sg-rename'), 'click', () => {
             this.#renameSelected()
         })
 
-        this.container.querySelector('#sg-delete').addEventListener('click', () => {
+        this.listen(this.container.querySelector('#sg-delete'), 'click', () => {
             if (this.#selectedIdx != null) this.#deletePattern(this.#selectedIdx)
         })
 
-        this.#songNameEl.addEventListener('dblclick', () => this.#renameSong())
+        this.listen(this.#songNameEl, 'dblclick', () => this.#renameSong())
 
-        this.container.querySelector('#sg-save').addEventListener('click', () => this.#saveSong())
-        this.container.querySelector('#sg-load').addEventListener('click', () => this.#loadSong())
-        this.container.querySelector('#sg-export').addEventListener('click', () => this.#exportSong())
-        this.container.querySelector('#sg-import').addEventListener('click', () => this.#importSong())
+        this.listen(this.container.querySelector('#sg-save'), 'click', () => this.#saveSong())
+        this.listen(this.container.querySelector('#sg-load'), 'click', () => this.#loadSong())
+        this.listen(this.container.querySelector('#sg-export'), 'click', () => this.#exportSong())
+        this.listen(this.container.querySelector('#sg-import'), 'click', () => this.#importSong())
     }
 
     subscribe() {
@@ -130,14 +130,14 @@ export default class SongPanel extends BasePanel {
             name.textContent = pat.name ?? `Pattern ${i}`
             name.title = 'Double-click to rename'
 
-            name.addEventListener('dblclick', (e) => {
+            this.listen(name, 'dblclick', (e) => {
                 e.stopPropagation()
                 this.#startRename(name, i)
             })
 
             item.appendChild(num)
             item.appendChild(name)
-            item.addEventListener('click', () => this.#selectPattern(i))
+            this.listen(item, 'click', () => this.#selectPattern(i))
             this.#listEl.appendChild(item)
         }
     }
@@ -167,8 +167,8 @@ export default class SongPanel extends BasePanel {
             this.sync()
         }
 
-        input.addEventListener('blur', commit)
-        input.addEventListener('keydown', (e) => {
+        this.listen(input, 'blur', commit)
+        this.listen(input, 'keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault()
                 input.blur()
@@ -207,8 +207,8 @@ export default class SongPanel extends BasePanel {
             input.replaceWith(this.#songNameEl)
         }
 
-        input.addEventListener('blur', commit)
-        input.addEventListener('keydown', (e) => {
+        this.listen(input, 'blur', commit)
+        this.listen(input, 'keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault()
                 input.blur()
@@ -283,12 +283,12 @@ export default class SongPanel extends BasePanel {
             document.body.appendChild(overlay)
 
             const close = () => overlay.remove()
-            overlay.querySelector('#sg-load-cancel').addEventListener('click', close)
-            overlay.addEventListener('click', (e) => {
+            this.listen(overlay.querySelector('#sg-load-cancel'), 'click', close)
+            this.listen(overlay, 'click', (e) => {
                 if (e.target === overlay) close()
             })
 
-            overlay.querySelector('#sg-load-ok').addEventListener('click', async () => {
+            this.listen(overlay.querySelector('#sg-load-ok'), 'click', async () => {
                 const choice = overlay.querySelector('#sg-load-select').value
                 close()
 
@@ -321,7 +321,7 @@ export default class SongPanel extends BasePanel {
         const input = document.createElement('input')
         input.type = 'file'
         input.accept = '.odbox,.json'
-        input.addEventListener('change', async () => {
+        this.listen(input, 'change', async () => {
             const file = input.files?.[0]
             if (!file) return
 

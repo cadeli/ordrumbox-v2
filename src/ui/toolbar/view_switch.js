@@ -10,10 +10,29 @@ import { EVENTS } from '../../core/events.js'
 
 export default class ViewSwitch {
     #tb
+    /** Owns every DOM listener bound through listen() — aborted by destroy(). */
+    #abortController = new AbortController()
 
     /** @param {import('../toolbar.js').default} toolbar */
     constructor(toolbar) {
         this.#tb = toolbar
+    }
+
+    /**
+     * addEventListener tied to the toolbar lifetime: destroy() aborts them all,
+     * so no handler reference is kept for removeEventListener.
+     * @param {EventTarget} target
+     * @param {string} type
+     * @param {EventListener} handler
+     * @param {AddEventListenerOptions} [options]
+     */
+    listen(target, type, handler, options) {
+        target?.addEventListener(type, handler, { ...options, signal: this.#abortController.signal })
+    }
+
+    /** Aborts every listener bound through listen(). */
+    destroy() {
+        this.#abortController.abort()
     }
 
     createDOM() {
@@ -106,24 +125,24 @@ export default class ViewSwitch {
     bindEvents() {
         const tb = this.#tb
 
-        tb.synthBtn.addEventListener('click', () => {
+        this.listen(tb.synthBtn, 'click', () => {
             playbackEvents.emit(EVENTS.SYNTH_TOGGLE)
         })
-        tb.editBtn.addEventListener('click', () => {
+        this.listen(tb.editBtn, 'click', () => {
             playbackEvents.emit(EVENTS.EDIT_TOGGLE)
         })
-        tb.prollBtn.addEventListener('click', () => {
+        this.listen(tb.prollBtn, 'click', () => {
             playbackEvents.emit(EVENTS.PROLL_TOGGLE)
         })
 
-        tb.undoBtn.addEventListener('click', () => {
+        this.listen(tb.undoBtn, 'click', () => {
             serviceRegistry.history?.undo()
         })
-        tb.redoBtn.addEventListener('click', () => {
+        this.listen(tb.redoBtn, 'click', () => {
             serviceRegistry.history?.redo()
         })
 
-        tb.drumBtn.addEventListener('click', async () => {
+        this.listen(tb.drumBtn, 'click', async () => {
             await this.toggleAutoGen(Utils.DRUM_TYPES, async (pattern, autoGen) => {
                 serviceRegistry.cmd.beginGenerationUndo(pattern)
                 await autoGen.generatePattern()
@@ -141,7 +160,7 @@ export default class ViewSwitch {
             })
         })
 
-        tb.bassBtn.addEventListener('click', async () => {
+        this.listen(tb.bassBtn, 'click', async () => {
             await this.toggleAutoGen('BASS', async (pattern, autoGen) => {
                 let bassTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'BASS')
 
@@ -172,7 +191,7 @@ export default class ViewSwitch {
             })
         })
 
-        tb.chordsBtn.addEventListener('click', async () => {
+        this.listen(tb.chordsBtn, 'click', async () => {
             await this.toggleAutoGen('PIANO', async (pattern, autoGen) => {
                 let pianoTrack = pattern.tracks?.find((t) => Utils.detectTrackType(t.name) === 'PIANO')
 

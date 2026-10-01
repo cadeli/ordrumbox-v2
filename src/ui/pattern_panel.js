@@ -113,8 +113,9 @@ export default class PatternPanel extends BasePanel {
         this.#tracksEl = document.createElement('div')
         this.#tracksEl.className = 'pp-tracks'
         this.container.append(this.#headerEl, this.#tracksEl)
-        this.container.addEventListener('focus', () => this.#keyboard.onFocus())
-        this.container.addEventListener(
+        this.listen(this.container, 'focus', () => this.#keyboard.onFocus())
+        this.listen(
+            this.container,
             'click',
             (e) => {
                 this.container.focus()
@@ -122,11 +123,11 @@ export default class PatternPanel extends BasePanel {
             },
             { passive: false },
         )
-        this.container.addEventListener('input', (e) => this.#pointer.onInput(e))
-        this.container.addEventListener('keydown', (e) => this.#keyboard.onKeyDown(e))
-        this.container.addEventListener('contextmenu', (e) => this.#menuSection.onContextMenu(e))
-        this.container.addEventListener('mouseover', (e) => this.#pointer.onMouseOver(e))
-        this.container.addEventListener('mouseout', (e) => this.#pointer.onMouseOut(e))
+        this.listen(this.container, 'input', (e) => this.#pointer.onInput(e))
+        this.listen(this.container, 'keydown', (e) => this.#keyboard.onKeyDown(e))
+        this.listen(this.container, 'contextmenu', (e) => this.#menuSection.onContextMenu(e))
+        this.listen(this.container, 'mouseover', (e) => this.#pointer.onMouseOver(e))
+        this.listen(this.container, 'mouseout', (e) => this.#pointer.onMouseOut(e))
         this.#resizeObserver = new ResizeObserver(() => this.#updateBarCache())
         this.#resizeObserver.observe(this.container)
     }

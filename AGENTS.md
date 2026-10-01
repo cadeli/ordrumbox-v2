@@ -126,6 +126,7 @@ Guarded by `tests/undo_policy.test.js`.
 - **Class pattern**: ES classes with private fields (`#field`)
 - **State**: data (patterns, selection, song) centralized in `app_state.js`; services/DI instances (cmd, seq, audioEngine…) in `service_registry.js` — they are separate, appState is not accessed via serviceRegistry
 - **UI panels**: extend `BasePanel` or follow its pattern (no framework)
+- **DOM listeners**: bind with `panel.listen(target, type, handler, options?)` — `BasePanel.destroy()` aborts one `AbortController` per instance, so panels keep no handler references for `removeEventListener` (a fresh controller is created per `init()` cycle). Keep raw `add`/`removeEventListener` only for **visibility-scoped** bindings (bound in `show()`, released in `hide()` — see `piano_roll_panel.js` keydown/wheel). Standalone panels that don't extend `BasePanel` (`pattern_settings_panel.js`, `toolbar/view_switch.js`) own their own `#abortController` + `listen()` + `destroy()`
 - **Naming**: `snake_case` for files, `camelCase` for variables/functions, `PascalCase` for classes
 - **Generators**: imported dynamically via `service_loader.js`
 - **Worklet code**: processor source files in `src/audio/worklets/processors/` are template strings (not ES modules)

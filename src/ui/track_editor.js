@@ -412,7 +412,7 @@ export default class TrackEditor extends BasePanel {
                 s.mount(row)
                 const input = row.querySelector('input')
                 if (input) {
-                    input.addEventListener('change', () => {
+                    this.listen(input, 'change', () => {
                         this.#isDragging = false
                         this.#isSelecting = false
                         this.#emitTrackChange()
@@ -710,21 +710,21 @@ export default class TrackEditor extends BasePanel {
 
         // LFO sliders are plain <input> elements (not OrSlider instances)
         // and require delegated input handling.
-        this.container.addEventListener('input', (e) => {
+        this.listen(this.container, 'input', (e) => {
             const target = e.target
             if (target.dataset.lfoKey) {
                 this.#onLfoSlider(target)
             }
         })
 
-        this.container.addEventListener('focusin', (e) => {
+        this.listen(this.container, 'focusin', (e) => {
             if (e.target.tagName === 'SELECT') this.#isSelecting = true
         })
-        this.container.addEventListener('focusout', (e) => {
+        this.listen(this.container, 'focusout', (e) => {
             if (e.target.tagName === 'SELECT') this.#isSelecting = false
         })
 
-        this.container.addEventListener('change', (e) => {
+        this.listen(this.container, 'change', (e) => {
             const target = e.target
             // the nested note editor owns its own selects (arpScale, arpType…)
             if (target.closest('#ne-container')) return
@@ -753,7 +753,7 @@ export default class TrackEditor extends BasePanel {
             }
         })
 
-        this.container.addEventListener('click', (e) => {
+        this.listen(this.container, 'click', (e) => {
             const target = e.target
             if (target.dataset.lfoToggleBtn) {
                 this.#onLfoToggleBtn(target.dataset.lfoToggleBtn)

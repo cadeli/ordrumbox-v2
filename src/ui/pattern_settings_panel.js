@@ -42,9 +42,30 @@ export default class PatternSettingsPanel {
         return this.#nextPageBtn
     }
 
+    /** Owns every DOM listener bound through listen() — aborted by destroy(). */
+    #abortController = new AbortController()
+
     constructor() {
         this.container = null
         this.#isOpen = false
+    }
+
+    /**
+     * addEventListener tied to the panel lifetime: destroy() aborts them all,
+     * so no handler reference is kept for removeEventListener.
+     * @param {EventTarget} target
+     * @param {string} type
+     * @param {EventListener} handler
+     * @param {AddEventListenerOptions} [options]
+     */
+    listen(target, type, handler, options) {
+        target?.addEventListener(type, handler, { ...options, signal: this.#abortController.signal })
+    }
+
+    /** Aborts every listener bound through listen(). */
+    destroy() {
+        this.#abortController.abort()
+        this.container?.remove()
     }
 
     init() {
@@ -137,7 +158,7 @@ export default class PatternSettingsPanel {
         this.#chordsBtn = this.container.querySelector('.ps-gen-chords')
 
         /* Close button */
-        closeBtn.addEventListener('click', () => this.hide())
+        this.listen(closeBtn, 'click', () => this.hide())
     }
 
     #bindEvents() {
@@ -149,12 +170,12 @@ export default class PatternSettingsPanel {
     }
 
     #bindPageControls() {
-        this.#prevPageBtn.addEventListener('click', () => prevPage())
-        this.#nextPageBtn.addEventListener('click', () => nextPage())
+        this.listen(this.#prevPageBtn, 'click', () => prevPage())
+        this.listen(this.#nextPageBtn, 'click', () => nextPage())
     }
 
     #bindBeatsSelect() {
-        this.#beatsSelect.addEventListener('change', () => this.#onBeatsChange())
+        this.listen(this.#beatsSelect, 'change', () => this.#onBeatsChange())
     }
 
     #onBeatsChange() {
@@ -171,7 +192,7 @@ export default class PatternSettingsPanel {
     }
 
     #bindDrumkitSelect() {
-        this.#drumkitSelect.addEventListener('change', () => this.#onDrumkitChange())
+        this.listen(this.#drumkitSelect, 'change', () => this.#onDrumkitChange())
     }
 
     #onDrumkitChange() {
@@ -182,7 +203,7 @@ export default class PatternSettingsPanel {
     }
 
     #bindPatternSelect() {
-        this.#patternSelect.addEventListener('change', () => this.#onPatternChange())
+        this.listen(this.#patternSelect, 'change', () => this.#onPatternChange())
     }
 
     #onPatternChange() {
@@ -204,11 +225,11 @@ export default class PatternSettingsPanel {
     // lives in #toggleMelodicAutoGen().
 
     #bindGenerationButtons() {
-        this.#drumBtn.addEventListener('click', () => this.#onDrumClick())
-        this.#bassBtn.addEventListener('click', () =>
+        this.listen(this.#drumBtn, 'click', () => this.#onDrumClick())
+        this.listen(this.#bassBtn, 'click', () =>
             this.#toggleMelodicAutoGen('BASS', { synthSoundKey: 'BASS1', defaultVariant: 'basic' }),
         )
-        this.#chordsBtn.addEventListener('click', () =>
+        this.listen(this.#chordsBtn, 'click', () =>
             this.#toggleMelodicAutoGen('PIANO', { synthSoundKey: 'PIANO', defaultVariant: 'chordStab' }),
         )
     }

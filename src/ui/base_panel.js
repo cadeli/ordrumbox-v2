@@ -13,6 +13,8 @@ export default class BasePanel {
     #unsubs = []
     #initialized = false
     #ownsContainer = false
+    /** Owns every DOM listener bound through listen() — aborted by destroy(). */
+    #abortController = new AbortController()
 
     constructor(id) {
         this.id = id
@@ -37,10 +39,29 @@ export default class BasePanel {
      */
     beginInit() {
         if (this.#initialized) this.destroy()
+        // Fresh controller per init cycle: destroy() aborted the previous one.
+        this.#abortController = new AbortController()
         const prev = BasePanel.#instances.get(this.id)
         if (prev && prev !== this) prev.destroy()
         BasePanel.#instances.set(this.id, this)
         this.#initialized = true
+    }
+
+    /** Signal shared by every listener bound through listen(). */
+    get signal() {
+        return this.#abortController.signal
+    }
+
+    /**
+     * addEventListener tied to the panel lifetime: destroy() aborts it, so no
+     * panel has to keep handler references around for removeEventListener.
+     * @param {EventTarget} target
+     * @param {string} type
+     * @param {EventListener} handler
+     * @param {AddEventListenerOptions} [options]
+     */
+    listen(target, type, handler, options) {
+        target?.addEventListener(type, handler, { ...options, signal: this.#abortController.signal })
     }
 
     injectCSS() {
@@ -83,11 +104,13 @@ export default class BasePanel {
     onDestroy() {}
 
     /**
-     * Unsubscribes every handler registered through sub(), runs onDestroy()
-     * and detaches the container created by createDOM().
+     * Unsubscribes every handler registered through sub(), aborts the DOM
+     * listeners bound through listen(), runs onDestroy() and detaches the
+     * container created by createDOM().
      */
     destroy() {
         for (const off of this.#unsubs.splice(0)) off()
+        this.#abortController.abort()
         this.onDestroy()
         if (this.#ownsContainer) this.container?.remove()
         if (BasePanel.#instances.get(this.id) === this) BasePanel.#instances.delete(this.id)

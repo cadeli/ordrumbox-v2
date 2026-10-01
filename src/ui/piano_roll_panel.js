@@ -106,7 +106,7 @@ export default class PianoRollPanel extends BasePanel {
             this.#playback.hidePlayhead()
             this.#playback.resetPrevLoopTick()
         })
-        this.container?.addEventListener('click', (e) => {
+        this.listen(this.container, 'click', (e) => {
             const key = /** @type {Element} */ (e.target).closest('.pp-pr-key')
             if (key) {
                 this.#playKey(parseInt(key.dataset.midi, 10))
@@ -115,12 +115,12 @@ export default class PianoRollPanel extends BasePanel {
             const gridEl = /** @type {Element} */ (e.target).closest('#pp-piano-grid')
             if (gridEl) this.#onGridClick(e, gridEl)
         })
-        this.container?.addEventListener('contextmenu', (e) => this.#menu.onContextMenu(e))
+        this.listen(this.container, 'contextmenu', (e) => this.#menu.onContextMenu(e))
         this.#resizeObserver = new ResizeObserver(() => this.#viewport.onResize())
         this.#boundOnKeyDown = (e) => this.#onKeyDown(e)
         this.#boundOnWheel = (e) => this.#viewport.onWheel(e)
-        this.container?.querySelector('#pp-pr-prev')?.addEventListener('click', () => this.#viewport.prevPage())
-        this.container?.querySelector('#pp-pr-next')?.addEventListener('click', () => this.#viewport.nextPage())
+        this.listen(this.container?.querySelector('#pp-pr-prev'), 'click', () => this.#viewport.prevPage())
+        this.listen(this.container?.querySelector('#pp-pr-next'), 'click', () => this.#viewport.nextPage())
     }
 
     #resolveTrack() {
@@ -149,6 +149,8 @@ export default class PianoRollPanel extends BasePanel {
             this.#resizeObserver.disconnect()
             this.#resizeObserver.observe(scrollEl)
         }
+        // Visibility-scoped, not panel-scoped: rebound on every show() and
+        // released by hide()/onDestroy(), so they keep manual add/remove.
         document.addEventListener('keydown', this.#boundOnKeyDown)
         this.container?.addEventListener('wheel', this.#boundOnWheel, { passive: false })
         if (serviceRegistry.transport?.isRunning) this.#playback.start()

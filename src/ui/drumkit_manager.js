@@ -108,36 +108,36 @@ export default class DrumkitManager extends BasePanel {
         this.#listEl = this.container.querySelector('#dm-list')
         this.#detailEl = this.container.querySelector('#dm-detail')
 
-        this.container.querySelector('#dm-add-sample').addEventListener('click', () => {
+        this.listen(this.container.querySelector('#dm-add-sample'), 'click', () => {
             this.container.querySelector('#dm-add-file').click()
         })
 
-        this.container.querySelector('#dm-add-file').addEventListener('change', (e) => {
+        this.listen(this.container.querySelector('#dm-add-file'), 'change', (e) => {
             this.#onAddSample(e)
         })
 
-        this.container.querySelector('#dm-auto-detect').addEventListener('click', () => {
+        this.listen(this.container.querySelector('#dm-auto-detect'), 'click', () => {
             this.#onAutoDetectAll()
         })
 
-        this.container.querySelector('#dm-normalize-all').addEventListener('click', () => {
+        this.listen(this.container.querySelector('#dm-normalize-all'), 'click', () => {
             this.#onNormalizeAll()
         })
 
-        this.container.querySelector('#dm-import-dir').addEventListener('click', () => {
+        this.listen(this.container.querySelector('#dm-import-dir'), 'click', () => {
             this.container.querySelector('#dm-import-dir-file').click()
         })
-        this.container.querySelector('#dm-import-dir-file').addEventListener('change', (e) => {
+        this.listen(this.container.querySelector('#dm-import-dir-file'), 'change', (e) => {
             this.#onImportDir(e)
         })
 
-        this.container.querySelector('#dm-save-kit').addEventListener('click', () => {
+        this.listen(this.container.querySelector('#dm-save-kit'), 'click', () => {
             this.#saveCurrentKit()
         })
-        this.container.querySelector('#dm-load-kit').addEventListener('click', () => {
+        this.listen(this.container.querySelector('#dm-load-kit'), 'click', () => {
             this.container.querySelector('#dm-load-kit-file').click()
         })
-        this.container.querySelector('#dm-load-kit-file').addEventListener('change', (e) => {
+        this.listen(this.container.querySelector('#dm-load-kit-file'), 'change', (e) => {
             this.#onLoadKitFile(e)
         })
     }
@@ -245,7 +245,7 @@ export default class DrumkitManager extends BasePanel {
             name.textContent = `${s.display_name ?? s.url} [${s.kit_name}]`
 
             item.appendChild(name)
-            item.addEventListener('click', () => this.#selectSound(s.url))
+            this.listen(item, 'click', () => this.#selectSound(s.url))
             this.#listEl.appendChild(item)
         }
     }
@@ -329,31 +329,31 @@ export default class DrumkitManager extends BasePanel {
         this.#syncKnobs(sound)
         this.#drawWaveform(sound, analysis, { resize: true })
 
-        this.#detailEl.querySelector('#dm-detail-play')?.addEventListener('click', () => {
+        this.listen(this.#detailEl.querySelector('#dm-detail-play'), 'click', () => {
             this.#audition(sound.url)
         })
 
-        this.#detailEl.querySelector('#dm-kit-select')?.addEventListener('change', (e) => {
+        this.listen(this.#detailEl.querySelector('#dm-kit-select'), 'change', (e) => {
             const displayName = drumkitService.moveToKit(key, e.target.value)
             if (displayName) showToast(`Moved "${displayName}" to kit "${e.target.value}"`, 'success')
             this.sync()
         })
 
-        this.#detailEl.querySelector('#dm-inst-select')?.addEventListener('change', (e) => {
+        this.listen(this.#detailEl.querySelector('#dm-inst-select'), 'change', (e) => {
             const displayName = drumkitService.setInstrument(key, e.target.value)
             if (displayName) showToast(`Set "${displayName}" to instrument "${e.target.value}"`, 'success')
             this.sync()
         })
 
-        this.#detailEl.querySelector('#dm-replace')?.addEventListener('click', () => {
+        this.listen(this.#detailEl.querySelector('#dm-replace'), 'click', () => {
             this.#detailEl.querySelector('#dm-replace-file').click()
         })
 
-        this.#detailEl.querySelector('#dm-replace-file')?.addEventListener('change', (e) => {
+        this.listen(this.#detailEl.querySelector('#dm-replace-file'), 'change', (e) => {
             this.#onReplaceSample(key, e)
         })
 
-        this.#detailEl.querySelector('#dm-remove')?.addEventListener('click', () => {
+        this.listen(this.#detailEl.querySelector('#dm-remove'), 'click', () => {
             this.#removeSample(key)
         })
     }
