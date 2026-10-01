@@ -14,6 +14,35 @@ export const NOTE_VELO_BALANCE = 1
 export const MIN_GAIN_VALUE = 0.001
 export const MIN_NOTE_RATIO = 0.0001
 
+// ── Settings defaults ───────────────────────────────────────────────
+/**
+ * Master bus defaults. Single source of truth: SoundRegistry seeds
+ * `settings.master` from it, and ResourcesLoader uses it as the merge
+ * baseline when hydrating persisted settings (mixer.js only maps values,
+ * it never invents them).
+ */
+export const MASTER_BUS_DEFAULTS = Object.freeze({
+    volume: 1,
+    preGain: 0,
+    lowcut: 35,
+    hicut: 18500,
+    compBypass: false,
+    threshold: -18,
+    ratio: 8,
+    attack: 0.002,
+    release: 0.08,
+    knee: 3,
+    makeup: 8,
+})
+
+/** Persisted UI session snapshot defaults (also the loader's merge baseline). */
+export const SESSION_DEFAULTS = Object.freeze({
+    selectedDrumkitNum: 0,
+    selectedPatternNum: 0,
+    selectedTrackNum: 0,
+    currentView: 'edit',
+})
+
 // ── Timing / Ramp (setTargetAtTime) ────────────────────────────────
 export const RAMP_TIME = 0.02
 export const PITCH_RAMP_TIME = 0.001

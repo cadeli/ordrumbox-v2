@@ -18,6 +18,7 @@ import Utils from '../core/utils.js'
 import { logger } from '../core/logger.js'
 import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
+import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS } from '../core/constants.js'
 
 export default class ResourcesLoader {
     static TAG = 'ResourcesLoader'
@@ -189,37 +190,18 @@ export default class ResourcesLoader {
     }
 
     async loadSettings() {
-        const masterDefaults = {
-            volume: 1,
-            preGain: 0,
-            lowcut: 35,
-            hicut: 18500,
-            compBypass: false,
-            threshold: -18,
-            ratio: 8,
-            attack: 0.002,
-            release: 0.08,
-            knee: 3,
-            makeup: 8,
-        }
-        const sessionDefaults = {
-            selectedDrumkitNum: 0,
-            selectedPatternNum: 0,
-            selectedTrackNum: 0,
-            currentView: 'edit',
-        }
         const defaults = {
             version: 1,
             sampleDirs: [],
             maxSampleDirs: 10,
-            master: masterDefaults,
-            session: sessionDefaults,
+            master: { ...MASTER_BUS_DEFAULTS },
+            session: { ...SESSION_DEFAULTS },
         }
         try {
             const raw = await idbGet('settings', ResourcesLoader.SETTINGS_KEY)
             if (raw) {
-                if (raw.master) raw.master = { ...masterDefaults, ...raw.master }
-                if (raw.session) raw.session = { ...sessionDefaults, ...raw.session }
+                if (raw.master) raw.master = { ...MASTER_BUS_DEFAULTS, ...raw.master }
+                if (raw.session) raw.session = { ...SESSION_DEFAULTS, ...raw.session }
                 Object.assign(soundRegistry.settings, defaults, raw)
                 return
             }
@@ -228,7 +210,7 @@ export default class ResourcesLoader {
         }
         try {
             const settings = await this.loadJsonResource(ResourcesLoader.SETTINGS_URL)
-            if (settings.master) settings.master = { ...masterDefaults, ...settings.master }
+            if (settings.master) settings.master = { ...MASTER_BUS_DEFAULTS, ...settings.master }
             Object.assign(soundRegistry.settings, defaults, settings)
         } catch (e) {
             logger.warn('ResourcesLoader', 'Failed to load settings from JSON, using defaults', e)
