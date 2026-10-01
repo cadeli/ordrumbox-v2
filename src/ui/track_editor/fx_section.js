@@ -2,7 +2,7 @@
 // FX tab — tab bar with LED indicators + per-FX control panels.
 
 import { OrKnob } from '../components/or_knob.js'
-import { renderOptions, renderIconChoices } from '../components/panel_helpers.js'
+import { renderOptions, renderIconChoices } from '../components/ui_utils.js'
 import { FX_DEFS, FILTER_TYPE_ICONS, PROP_BY_KEY, fmtVal } from './constants.js'
 import { emitTrackChanged } from '../../state/playback_events.js'
 

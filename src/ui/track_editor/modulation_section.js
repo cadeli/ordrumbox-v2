@@ -1,10 +1,10 @@
 // src/ui/track_editor/ModulationSection.js
 // Modulation (LFO) tab — LFO target buttons + type/freq/range/phase controls.
 
-import { renderOptions } from '../components/panel_helpers.js'
+import { renderOptions } from '../components/ui_utils.js'
 import { ALL_TRACK_PROPS, KNOB_PROPS } from './constants.js'
 import Utils from '../../core/utils.js'
-import { fmt } from '../components/panel_helpers.js'
+import { fmt } from '../components/ui_utils.js'
 
 export default class ModulationSection {
     #editor

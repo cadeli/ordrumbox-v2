@@ -3,7 +3,7 @@
 import { showToast } from '../../core/notify.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { logger } from '../../core/logger.js'
-import { escapeHtml } from '../components/panel_helpers.js'
+import { escapeHtml } from '../components/ui_utils.js'
 import { idbGet } from '../../core/idb.js'
 import { isMobileViewport } from '../../core/constants.js'
 import {

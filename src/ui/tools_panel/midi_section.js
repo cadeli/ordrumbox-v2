@@ -1,7 +1,7 @@
 // src/ui/tools_panel/midi_section.js — Tools "Status" + "MIDI" tabs and MIDI sync.
 
 import { serviceRegistry } from '../../state/service_registry.js'
-import { escapeHtml, renderOptions } from '../components/panel_helpers.js'
+import { escapeHtml, renderOptions } from '../components/ui_utils.js'
 import { showToast } from '../../core/notify.js'
 import { nameOr } from '../../core/logger.js'
 import MidiIndicatorView from '../midi_indicator_view.js'

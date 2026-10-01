@@ -7,6 +7,7 @@ import Utils from '../../core/utils.js'
 import { showToast } from '../../core/notify.js'
 import { EVENTS } from '../../core/events.js'
 import { notesLabel } from './labels.js'
+import { emitNotesChanged } from '../../state/playback_events.js'
 
 export default class ContextMenuSection {
     #editor
@@ -137,10 +138,7 @@ export default class ContextMenuSection {
         this.#editor.serviceRegistry.cmd.randomizeTrack(track, pattern)
         this.#editor.serviceRegistry.audioEngine?.invalidateCache()
         this.#editor.markTrackDataDirty()
-        this.#editor.playbackEvents.batch(() => {
-            this.#editor.playbackEvents.emit(EVENTS.NOTE_CHANGE)
-            this.#editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitNotesChanged(null, this.#editor.playbackEvents)
         this.#editor.requestSync()
         showToast(`Randomized "${track.name}"`, 'success')
     }
@@ -148,10 +146,7 @@ export default class ContextMenuSection {
     #menuClearTrackNotes(track, pattern, trackIdx) {
         this.#editor.serviceRegistry.cmd.cleanTrack(track)
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
-        this.#editor.playbackEvents.batch(() => {
-            this.#editor.playbackEvents.emit(EVENTS.NOTE_CHANGE)
-            this.#editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
+        emitNotesChanged(null, this.#editor.playbackEvents)
         showToast(`Cleared notes on "${track.name}"`, 'success')
     }
 
@@ -217,10 +212,7 @@ export default class ContextMenuSection {
         }
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#editor.applySelection()
-        this.#editor.playbackEvents.batch(() => {
-            this.#editor.playbackEvents.emit(EVENTS.NOTE_CHANGE)
-            this.#editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
+        emitNotesChanged(track, this.#editor.playbackEvents)
         const stepLabel = `beat ${beat + 1}.${beatStep + 1}`
         showToast(`Deleted ${notesLabel(notes.length)} — ${track.name} @ ${stepLabel}`, 'success')
     }
@@ -238,10 +230,7 @@ export default class ContextMenuSection {
         this.#editor.selectedTrackIdx = trackIdx
         this.#editor.updateTrackCellsInPlace(trackIdx, track, pattern)
         this.#editor.applySelection()
-        this.#editor.playbackEvents.batch(() => {
-            this.#editor.playbackEvents.emit(EVENTS.NOTE_CHANGE)
-            this.#editor.playbackEvents.emit(EVENTS.PATTERN_CHANGE, [track])
-        })
+        emitNotesChanged(track, this.#editor.playbackEvents)
         this.#editor.serviceRegistry.seq?.simpleBeep(trackIdx, note)
         showToast(`Added note (pitch ${pitch}) — ${track.name} @ beat ${beat + 1}.${beatStep + 1}`, 'success')
     }

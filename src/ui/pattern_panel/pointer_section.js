@@ -4,7 +4,7 @@
 
 import Utils from '../../core/utils.js'
 import { EVENTS } from '../../core/events.js'
-import { formatNoteTooltip } from '../components/panel_helpers.js'
+import { formatNoteTooltip } from '../components/ui_utils.js'
 
 export default class PointerSection {
     #editor

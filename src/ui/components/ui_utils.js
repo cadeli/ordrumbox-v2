@@ -124,7 +124,7 @@ export function formatNoteTooltip(note, trackPitch = 0) {
     return parts.join('  ')
 }
 
-// ─── Panel helpers (moved from panel_helpers.js) ──────────────────────────
+// ─── Panel helpers ──────────────────────────────────────────────────────────
 
 export function injectUiCss() {
     if (document.getElementById('ui-styles')) return

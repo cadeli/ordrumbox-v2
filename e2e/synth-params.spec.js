@@ -32,6 +32,12 @@ const PREREQS = {
     'noise.filterQ': { noise: { mix: 1 } },
     'noise.filterFreq': { noise: { mix: 1 } },
     'fm.algo': { fm: { amount: 0.5 } },
+    // `target` must be set, not `depth`: worklet_synth_voice.js derives
+    // modEnvDepth from `target !== 'off'` and sends it as the processor's
+    // mDepth, which gates the whole mod-envelope branch (`mDepth > 0.001`).
+    // The base patch is picked arbitrarily (realKeys[0]) and most presets ship
+    // modEnvelope disabled, so these params rendered bit-identical audio and
+    // the test failed depending on load order.
     'modEnvelope.attack': { modEnvelope: { target: 'filter', sustain: 0.5 }, envelope: { release: 1.0 } },
     'modEnvelope.decay': { modEnvelope: { target: 'filter', sustain: 0.2 }, envelope: { release: 1.0 } },
     'modEnvelope.sustain': { modEnvelope: { target: 'filter', sustain: 0.5 }, envelope: { release: 1.0 } },

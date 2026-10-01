@@ -3,7 +3,7 @@
 // Thin coordinator that delegates tab rendering/binding to section modules.
 
 import { playbackEvents } from '../state/playback_events.js'
-import { bindCloseButton, bindTabToggles } from './components/panel_helpers.js'
+import { bindCloseButton, bindTabToggles } from './components/ui_utils.js'
 import BasePanel from './base_panel.js'
 import PatternSection from './tools_panel/pattern_section.js'
 import ExportSection from './tools_panel/export_section.js'

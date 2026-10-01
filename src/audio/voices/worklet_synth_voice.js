@@ -11,7 +11,9 @@ import { logger } from '../../core/logger.js'
 WorkletLoader.register('synth-voice', SYNTH_VOICE_SOURCE)
 
 const WAVE_TO_INT = { sine: 0, triangle: 1, sawtooth: 2, square: 3, random: 4 }
+
 const FILTER_TO_INT = { lowpass: 0, highpass: 1, bandpass: 2, notch: 3 }
+const DEFAULT_ENVELOPE = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 }
 const LFO_TARGET_TO_INT = {
     NOT: 0,
     FLT: 1,
@@ -177,7 +179,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             // The processor self-terminates via `return false` when envSegment
             // reaches idle, so no JS-side cleanup is needed for offline.
             if (this.#synthNodePool) {
-                const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 } // fallback: legacy French property name from v1 data
+                const env = gs.envelope ?? DEFAULT_ENVELOPE
                 const release = Math.max(0.008, Utils.toFiniteNumber(env.release, 0.1))
                 const cleanupDelay = Math.max(0, autoReleaseTime - this.audioCtx.currentTime) + release + RELEASE_TIME
                 this.#autoReleaseTimer = setTimeout(() => {
@@ -218,7 +220,7 @@ export default class WorkletSynthVoice extends BaseVoice {
             }
 
             const gs = this.generatedSound
-            const env = gs?.envelope ?? gs?.enveloppe ?? { release: 0.1 } // fallback: legacy French property name from v1 data
+            const env = gs.envelope ?? DEFAULT_ENVELOPE
             const release = Math.max(0.008, Utils.toFiniteNumber(env.release, 0.1))
             if (this.#synthNodePool) {
                 const cleanupDelay = Math.max(0, time - this.audioCtx.currentTime) + release + RELEASE_TIME
@@ -274,7 +276,7 @@ export default class WorkletSynthVoice extends BaseVoice {
         if (!this.workletNode) return
         this.#lastPan = pan
         try {
-            const env = gs.envelope ?? gs.enveloppe ?? { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.1 } // fallback: legacy French property name from v1 data
+            const env = gs.envelope ?? DEFAULT_ENVELOPE
             const noiseCfg = gs.noise ?? {}
             const filterCfg = gs.filter ?? {}
 

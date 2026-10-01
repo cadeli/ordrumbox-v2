@@ -1,5 +1,5 @@
 import { OrKnob } from './or_knob.js'
-import { fmt } from './panel_helpers.js'
+import { fmt } from './ui_utils.js'
 
 /**
  * syncComponentMap — keep-alive helper for Knob / Slider / etc.

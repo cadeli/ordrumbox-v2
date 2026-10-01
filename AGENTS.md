@@ -131,6 +131,9 @@ Guarded by `tests/undo_policy.test.js`.
 - **Generators**: imported dynamically via `service_loader.js`
 - **Worklet code**: processor source files in `src/audio/worklets/processors/` are template strings (not ES modules)
 - **Fonts**: `--font` = system monospace stack (no licence, no files); `--font-pixel` = bundled Press Start 2P (SIL OFL 1.1, `src/ui/fonts/` + `OFL-PressStart2P.txt` notice, `@font-face` in `src/ui/fonts.css` linked from `index.html` so the splash gets it) — use it only at multiples of 8px (8/16/24/32px) so glyphs stay on the 8px grid, data/paragraph text stays on `--font`; the font has a single weight, so pixel rules set `font-weight: 400` + `font-synthesis: none` (never fake-bold it)
+- **Waiting screen CSS**: stays **inline in a `<style>` block in `index.html`**, not in `src/ui/styles.css`. It must paint before any module script (and its bundled CSS) is evaluated — the splash is the first thing the user sees and cannot flash unstyled. `styles.css` is imported by `src/main.js`, so anything moved there would arrive too late.
+- **Paging**: one page is always `BEATS_PER_PAGE` **beats** (`src/core/constants.js`). Never derive a page count from step counts — `stepsPerBeat` subdivides a beat, it does not change how many beats fit on a page. Use `pageCountFor()` / `maxPageFor()` from `src/ui/page_nav.js`.
+- **Error reporting**: never swallow a failure silently. Use `reportUserError(context, message)` from `src/core/notify.js` (user-visible toast, deduped per context) — console logging alone is stripped from production builds (`drop_console: true`).
 
 ## JavaScript Guidelines (Vanilla JS)
 

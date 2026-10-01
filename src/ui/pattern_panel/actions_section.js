@@ -5,7 +5,7 @@
 import { showToast } from '../../core/notify.js'
 import { logger } from '../../core/logger.js'
 import { validatePatternJson } from '../../logic/commands/pattern_import.js'
-import { downloadJson } from '../components/panel_helpers.js'
+import { downloadJson } from '../components/ui_utils.js'
 
 export default class ActionsSection {
     #editor

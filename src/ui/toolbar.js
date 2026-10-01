@@ -1,7 +1,7 @@
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { injectUiCss } from './components/panel_helpers.js'
+import { injectUiCss } from './components/ui_utils.js'
 import { isMobileViewport } from '../core/constants.js'
 import Utils from '../core/utils.js'
 

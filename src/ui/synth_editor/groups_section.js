@@ -4,7 +4,7 @@
 // Manages knob placeholders and icon rows.
 
 import Utils from '../../core/utils.js'
-import { escapeHtml, renderOptions, renderIconChoices } from '../components/panel_helpers.js'
+import { escapeHtml, renderOptions, renderIconChoices } from '../components/ui_utils.js'
 import {
     WAVE_ICONS,
     FILTER_ICONS,

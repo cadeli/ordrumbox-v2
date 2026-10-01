@@ -1,5 +1,5 @@
 // @ts-check
-import { injectUiCss, escapeHtml } from './components/panel_helpers.js'
+import { injectUiCss, escapeHtml } from './components/ui_utils.js'
 
 /**
  * BasePanel - Base class for all UI panels.

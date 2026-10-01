@@ -1,7 +1,7 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { setViewMode, setPatternPanelHidden } from './components/panel_helpers.js'
+import { setViewMode, setPatternPanelHidden } from './components/ui_utils.js'
 import { isMobileViewport } from '../core/constants.js'
 import { removeLayout } from './mobile_track_layout.js'
 import { EVENTS } from '../core/events.js'

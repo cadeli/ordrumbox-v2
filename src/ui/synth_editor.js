@@ -12,7 +12,7 @@ import { playbackEvents as _playbackEventsSingleton } from '../state/playback_ev
 import { logger } from '../core/logger.js'
 import { syncKnobs } from './components/sync_helpers.js'
 import { reportUserError, showToast } from '../core/notify.js'
-import { bindTabToggles, downloadJson } from './components/panel_helpers.js'
+import { bindTabToggles, downloadJson } from './components/ui_utils.js'
 import { getLfoWaveformValue, syncToHz } from '../audio/math.js'
 import Utils from '../core/utils.js'
 

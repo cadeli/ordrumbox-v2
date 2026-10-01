@@ -1,6 +1,6 @@
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
-import { bindTabToggles } from './components/panel_helpers.js'
+import { bindTabToggles } from './components/ui_utils.js'
 import { reportUserError } from '../core/notify.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrKnob } from './components/or_knob.js'

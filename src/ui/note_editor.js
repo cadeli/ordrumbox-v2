@@ -1,6 +1,6 @@
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
-import { fmt, pitchToNoteName, knobFormat, renderOptions } from './components/panel_helpers.js'
+import { fmt, pitchToNoteName, knobFormat, renderOptions } from './components/ui_utils.js'
 import { OrSlider } from './components/or_slider.js'
 import { OrTab } from './components/or_tab.js'
 import { syncComponentMap, syncKnobs } from './components/sync_helpers.js'
