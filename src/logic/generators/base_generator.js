@@ -230,14 +230,14 @@ export default class BaseGenerator {
     }
 
     /**
-     * Copy engine properties (retrigger, arp, euclidianFill, probability) from a config source to a note.
+     * Copy engine properties (retrigger, arp, euclideanFill, probability) from a config source to a note.
      * @param {object} note   - note object to mutate
      * @param {object} source - config or phrase object containing optional engine properties
      */
     applyNoteProperties = (note, source) => {
         if (typeof source.retriggerNum === 'number') note.retriggerNum = source.retriggerNum
         if (typeof source.rate === 'number') note.rate = source.rate
-        if (typeof source.euclidianFill === 'number') note.euclidianFill = source.euclidianFill
+        if (typeof source.euclideanFill === 'number') note.euclideanFill = source.euclideanFill
         if (source.arp != null) note.arp = source.arp
         if (typeof source.prob === 'number') note.prob = source.prob
         if (typeof source.arpTriggerProbability === 'number') note.arpTriggerProbability = source.arpTriggerProbability

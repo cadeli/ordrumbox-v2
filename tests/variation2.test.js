@@ -46,12 +46,12 @@ describe('Track variation2', () => {
         const track = {
             stepsPerBeat: 4,
             variation2: 0,
-            notes: [{ beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 }],
+            notes: [{ beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclideanFill: 0 }],
         }
         expect(TrackVariation.applyNoteVariation(track)).toBeNull()
         expect(track.notes[0].retriggerNum).toBe(1)
         expect(track.notes[0].rate).toBe(1)
-        expect(track.notes[0].euclidianFill).toBe(0)
+        expect(track.notes[0].euclideanFill).toBe(0)
     })
 
     it('never mutates the source notes (variation2 is a virtual layer)', () => {
@@ -66,7 +66,7 @@ describe('Track variation2', () => {
                 prob: 1,
                 retriggerNum: 1,
                 rate: 1,
-                euclidianFill: 0,
+                euclideanFill: 0,
                 arp: [0, 4, 7],
             },
         ]
@@ -83,7 +83,7 @@ describe('Track variation2', () => {
         expect(clone).not.toBe(notes[0])
     })
 
-    it('modifies retrig+rate (sum < 5), euclidianFill (< 3), prob (>= 0.2) on clones', () => {
+    it('modifies retrig+rate (sum < 5), euclideanFill (< 3), prob (>= 0.2) on clones', () => {
         let changed = false
         for (let i = 0; i < 20; i++) {
             const notes = [
@@ -97,21 +97,21 @@ describe('Track variation2', () => {
                     prob: 1,
                     retriggerNum: 1,
                     rate: 1,
-                    euclidianFill: 0,
+                    euclideanFill: 0,
                 },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
             const varied = TrackVariation.applyNoteVariation(t)
             const r = varied.get(notes[0])
-            if (r.retriggerNum !== 1 || r.rate !== 1 || r.euclidianFill !== 0 || r.prob !== 1) {
+            if (r.retriggerNum !== 1 || r.rate !== 1 || r.euclideanFill !== 0 || r.prob !== 1) {
                 changed = true
                 expect(r.retriggerNum).toBeGreaterThanOrEqual(1)
                 expect(r.retriggerNum).toBeLessThanOrEqual(4)
                 expect(r.rate).toBeGreaterThanOrEqual(1)
                 expect(r.rate).toBeLessThanOrEqual(4)
                 expect(r.retriggerNum + r.rate).toBeLessThanOrEqual(5)
-                expect(r.euclidianFill).toBeGreaterThanOrEqual(1)
-                expect(r.euclidianFill).toBeLessThanOrEqual(2)
+                expect(r.euclideanFill).toBeGreaterThanOrEqual(1)
+                expect(r.euclideanFill).toBeLessThanOrEqual(2)
                 expect(r.prob).toBeGreaterThanOrEqual(0.2)
                 expect(r.prob).toBeLessThanOrEqual(1)
                 break
@@ -124,7 +124,7 @@ describe('Track variation2', () => {
         const trackNoArp = {
             stepsPerBeat: 4,
             variation2: 100,
-            notes: [{ beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arp: null }],
+            notes: [{ beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclideanFill: 0, arp: null }],
         }
         const variedNoArp = TrackVariation.applyNoteVariation(trackNoArp)
         expect(variedNoArp.get(trackNoArp.notes[0]).arp).toBeNull()
@@ -132,7 +132,7 @@ describe('Track variation2', () => {
         let arpChanged = false
         for (let i = 0; i < 20; i++) {
             const notes = [
-                { beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclidianFill: 0, arp: [0, 4, 7] },
+                { beat: 0, beatStep: 0, every: 1, retriggerNum: 1, rate: 1, euclideanFill: 0, arp: [0, 4, 7] },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
             const varied = TrackVariation.applyNoteVariation(t)
@@ -154,7 +154,7 @@ describe('Track variation2', () => {
     it('clone keeps trigger props (every, pos) but gets a varied prob', () => {
         for (let i = 0; i < 20; i++) {
             const notes = [
-                { beat: 0, beatStep: 0, every: 1, pos: 0, prob: 1, retriggerNum: 1, rate: 1, euclidianFill: 0 },
+                { beat: 0, beatStep: 0, every: 1, pos: 0, prob: 1, retriggerNum: 1, rate: 1, euclideanFill: 0 },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
             const clone = TrackVariation.applyNoteVariation(t).get(notes[0])
@@ -180,7 +180,7 @@ describe('Track variation2', () => {
                     prob: 1,
                     retriggerNum: 1,
                     rate: 1,
-                    euclidianFill: 0,
+                    euclideanFill: 0,
                 },
             ]
             const t = { stepsPerBeat: 4, variation2: 100, notes }
@@ -203,16 +203,16 @@ describe('Track variation2', () => {
                 prob: 1,
                 retriggerNum: 1,
                 rate: 1,
-                euclidianFill: 0,
+                euclideanFill: 0,
             })
         }
     })
 
     it('multiple source notes are all candidates', () => {
         const notes = [
-            { beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 },
-            { beat: 1, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 },
-            { beat: 2, beatStep: 0, retriggerNum: 1, rate: 1, euclidianFill: 0 },
+            { beat: 0, beatStep: 0, retriggerNum: 1, rate: 1, euclideanFill: 0 },
+            { beat: 1, beatStep: 0, retriggerNum: 1, rate: 1, euclideanFill: 0 },
+            { beat: 2, beatStep: 0, retriggerNum: 1, rate: 1, euclideanFill: 0 },
         ]
         const t = { stepsPerBeat: 4, variation2: 100, notes }
         const varied = TrackVariation.applyNoteVariation(t)
@@ -220,7 +220,7 @@ describe('Track variation2', () => {
         let changed = 0
         for (const source of notes) {
             const clone = varied.get(source)
-            if (clone.retriggerNum !== 1 || clone.rate !== 1 || clone.euclidianFill !== 0 || clone.prob !== 1) {
+            if (clone.retriggerNum !== 1 || clone.rate !== 1 || clone.euclideanFill !== 0 || clone.prob !== 1) {
                 changed++
             }
         }

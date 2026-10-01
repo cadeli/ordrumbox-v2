@@ -11,7 +11,7 @@
  * - Loops / loop points
  * - Retriggers (retriggerNum, retriggerStep, retriggerRate)
  * - Arpeggios (arp intervals, mode)
- * - Euclidian fills (euclidianFill)
+ * - Euclidean fills (euclideanFill)
  * - Variations (frozen at export)
  * - Note velocity / pitch
  * - Probability (prob, every) - frozen at export
@@ -337,10 +337,10 @@ function createComplexPattern() {
                 filterFreqLfo: null,
                 panLfo: null,
                 filterQLfo: null,
-                // Euclidian fill: 5 hits in 16 steps
+                // Euclidean fill: 5 hits in 16 steps
                 notes: [
-                    { beat: 0, beatStep: 0, velocity: 0.8, pitch: -2, euclidianFill: 5, prob: 1 },
-                    { beat: 2, beatStep: 0, velocity: 0.8, pitch: 2, euclidianFill: 3, prob: 1 },
+                    { beat: 0, beatStep: 0, velocity: 0.8, pitch: -2, euclideanFill: 5, prob: 1 },
+                    { beat: 2, beatStep: 0, velocity: 0.8, pitch: 2, euclideanFill: 3, prob: 1 },
                 ],
             },
             {

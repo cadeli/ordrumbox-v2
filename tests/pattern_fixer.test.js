@@ -56,7 +56,7 @@ describe('patternFixer - fixNoteDefaults', () => {
         expect(result.pos).toBe(0)
         expect(result.prob).toBe(1)
         expect(result.arpTriggerProbability).toBe(1)
-        expect(result.euclidianFill).toBe(0)
+        expect(result.euclideanFill).toBe(0)
     })
 
     it('preserves existing non-null values', () => {

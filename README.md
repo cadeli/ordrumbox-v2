@@ -9,7 +9,7 @@ orDrumbox is a browser-based beat maker and step sequencer. It provides a creati
 - Programmable grid for note entry and track looping
 - Support for complex polyrhythm and per-track swing settings
 - Precision controls for pitch, volume, and panning per note
-- Retrigger and Euclidean Fill with visual ghost notes (blue for retrigger, yellow for euclidian)
+- Retrigger and Euclidean Fill with visual ghost notes (blue for retrigger, yellow for euclidean)
 - Real-time visual feedback with step-by-step playback
 
 ### Track Variation

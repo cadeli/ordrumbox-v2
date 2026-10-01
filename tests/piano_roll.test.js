@@ -47,7 +47,7 @@ const TEST_PATTERN = {
                     rate: 8,
                     arp: { intervals: [0, 4, 7], mode: 'up' },
                 },
-                { beat: 3, beatStep: 2, pitch: 0, velocity: 0.8, euclidianFill: 2 },
+                { beat: 3, beatStep: 2, pitch: 0, velocity: 0.8, euclideanFill: 2 },
             ],
         },
     ],
@@ -411,10 +411,10 @@ describe('PianoRollPanel', () => {
             expect(retriggerGhosts.length).toBeGreaterThan(0)
         })
 
-        it('renders euclidian ghost markers', () => {
+        it('renders euclidean ghost markers', () => {
             const ghosts = getGhosts()
-            const euclidianGhosts = Array.from(ghosts).filter((g) => g.classList.contains('pp-pr-ghost-euclidian'))
-            expect(euclidianGhosts.length).toBeGreaterThan(0)
+            const euclideanGhosts = Array.from(ghosts).filter((g) => g.classList.contains('pp-pr-ghost-euclidean'))
+            expect(euclideanGhosts.length).toBeGreaterThan(0)
         })
 
         it('ghosts for arp notes have pitch offset (different row than parent)', () => {

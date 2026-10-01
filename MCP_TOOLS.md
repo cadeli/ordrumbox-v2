@@ -101,8 +101,8 @@ Every track field is returned with its model default filled in (`TRACK_DEFAULTS`
                     "arpTriggerProbability": 1,
                     "retriggerNum": 1,
                     "rate": 1,
-                    "euclidianFill": 0,
-                    "euclidianRotation": 0
+                    "euclideanFill": 0,
+                    "euclideanRotation": 0
                 }
             ]
         }
@@ -155,8 +155,8 @@ Adds multiple notes to a pattern
 | `retriggerNum`          | integer     | 1-16         | 1        | Number of retriggers                                              |
 | `rate`                  | integer     | 1-16         | 1        | Retrigger step spacing                                            |
 | `arp`                   | string/null |              | null     | Arpeggio pattern ("up", "down", "upDown", "random", or "0,1,2,3") |
-| `euclidianFill`         | integer     | 0-16         | 0        | Euclidean pulses (0-16, 0=disabled)                               |
-| `euclidianRotation`     | integer     | 0-15         | 0        | Euclidean phase rotation in steps                                 |
+| `euclideanFill`         | integer     | 0-16         | 0        | Euclidean pulses (0-16, 0=disabled)                               |
+| `euclideanRotation`     | integer     | 0-15         | 0        | Euclidean phase rotation in steps                                 |
 
 **Input:**
 
@@ -244,8 +244,8 @@ Numeric ranges come from the app model (`TRACK_VALUE_RANGES` in `src/model/track
 | `retriggerNum`          | integer     | 1-16    | 1       | Number of retriggers                                              |
 | `rate`                  | integer     | 1-16    | 1       | Retrigger step spacing                                            |
 | `arp`                   | string/null |         | null    | Arpeggio pattern ("up", "down", "upDown", "random", or "0,1,2,3") |
-| `euclidianFill`         | integer     | 0-16    | 0       | Euclidean pulses (0-16, 0=disabled)                               |
-| `euclidianRotation`     | integer     | 0-15    | 0       | Euclidean phase rotation in steps                                 |
+| `euclideanFill`         | integer     | 0-16    | 0       | Euclidean pulses (0-16, 0=disabled)                               |
+| `euclideanRotation`     | integer     | 0-15    | 0       | Euclidean phase rotation in steps                                 |
 | `velocity`              | number      | 0-1     |         | Note velocity override                                            |
 | `pan`                   | number      | -1 to 1 |         | Note pan override                                                 |
 | `pitch`                 | number      |         |         | Note pitch override                                               |
@@ -614,7 +614,7 @@ Each note has additional properties controlling how it's played:
 | `retriggerNum`          | integer     | 1-16  | 1       | Number of repetitions after initial trigger                    |
 | `rate`                  | integer     | 1-16  | 1       | Step spacing between repetitions                               |
 | `arp`                   | string/null | -     | null    | Arpeggio pattern (up, down, upDown, random, or custom indices) |
-| `euclidianFill`         | integer     | 0-100 | 0       | Euclidean rhythm fill percentage                               |
+| `euclideanFill`         | integer     | 0-100 | 0       | Euclidean rhythm fill percentage                               |
 
 #### Trigger Mechanism
 

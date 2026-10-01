@@ -37,7 +37,7 @@ function buildPattern(noteOverrides = {}, trackOverrides = {}, nbBeats = 4) {
         arpTriggerProbability: 1,
         retriggerNum: 1,
         rate: 1,
-        euclidianFill: 0,
+        euclideanFill: 0,
         ...noteOverrides,
     }
     const track = {
@@ -382,9 +382,9 @@ describe('note properties preserved in flat notes', () => {
 
 describe('Euclidean Fill (generateSubNotesWithEuclidean)', () => {
     const mockTrack = { stepsPerBeat: 4 }
-    // euclidianFill = total pulses k over the span, base note included:
+    // euclideanFill = total pulses k over the span, base note included:
     // k=2 on 4 steps → onsets at steps 0 and 2 → one extra note at tick 16
-    const mockNote = { beat: 0, beatStep: 0, euclidianFill: 2 }
+    const mockNote = { beat: 0, beatStep: 0, euclideanFill: 2 }
     const mockComputeNextStep = () => 4
 
     it('adds extra notes between current and next note', () => {
@@ -414,7 +414,7 @@ describe('Euclidean Fill (generateSubNotesWithEuclidean)', () => {
 })
 
 describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', () => {
-    it('places euclidian fill notes between current and next note', () => {
+    it('places euclidean fill notes between current and next note', () => {
         const pattern = {
             nbBeats: 4,
             tracks: {
@@ -422,7 +422,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        N1: { beat: 0, beatStep: 0, euclidianFill: 2, every: 1, prob: 1 },
+                        N1: { beat: 0, beatStep: 0, euclideanFill: 2, every: 1, prob: 1 },
                         N2: { beat: 0, beatStep: 2, every: 1, prob: 1 },
                     },
                 },
@@ -438,7 +438,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
         expect(result.get(16).length).toBe(1)
     })
 
-    it('distributes multiple euclidian fills evenly', () => {
+    it('distributes multiple euclidean fills evenly', () => {
         const pattern = {
             nbBeats: 4,
             tracks: {
@@ -446,7 +446,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        N1: { beat: 0, beatStep: 0, euclidianFill: 4, every: 1, prob: 1 },
+                        N1: { beat: 0, beatStep: 0, euclideanFill: 4, every: 1, prob: 1 },
                         N2: { beat: 1, beatStep: 0, every: 1, prob: 1 },
                     },
                 },
@@ -470,7 +470,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        N1: { beat: 0, beatStep: 0, euclidianFill: 5, every: 1, prob: 1 },
+                        N1: { beat: 0, beatStep: 0, euclideanFill: 5, every: 1, prob: 1 },
                     },
                 },
             },
@@ -491,7 +491,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        N1: { beat: 0, beatStep: 0, euclidianFill: 16, every: 1, prob: 1 },
+                        N1: { beat: 0, beatStep: 0, euclideanFill: 16, every: 1, prob: 1 },
                         N2: { beat: 1, beatStep: 0, every: 1, prob: 1 },
                     },
                 },
@@ -504,7 +504,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
         expect(ticks).toEqual([0, 8, 16, 24, 32])
     })
 
-    it('euclidianRotation shifts the fill positions by whole steps', () => {
+    it('euclideanRotation shifts the fill positions by whole steps', () => {
         const pattern = {
             nbBeats: 4,
             tracks: {
@@ -512,7 +512,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
                     name: 'T1',
                     stepsPerBeat: 4,
                     notes: {
-                        N1: { beat: 0, beatStep: 0, euclidianFill: 2, euclidianRotation: 1, every: 1, prob: 1 },
+                        N1: { beat: 0, beatStep: 0, euclideanFill: 2, euclideanRotation: 1, every: 1, prob: 1 },
                         N2: { beat: 1, beatStep: 0, every: 1, prob: 1 },
                     },
                 },
@@ -525,7 +525,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
         expect(ticks).toEqual([0, 24, 32])
     })
 
-    it('euclidian fill with arp applies pitch offsets', () => {
+    it('euclidean fill with arp applies pitch offsets', () => {
         const pattern = {
             nbBeats: 4,
             tracks: {
@@ -536,7 +536,7 @@ describe('Euclidean Fill integration (recomputeFlatNotes with real resolver)', (
                         N1: {
                             beat: 0,
                             beatStep: 0,
-                            euclidianFill: 2,
+                            euclideanFill: 2,
                             arp: { intervals: [0, 7], mode: 'up' },
                             retriggerNum: 1,
                             every: 1,
@@ -829,7 +829,7 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
                 arpTriggerProbability: 1,
                 retriggerNum: 1,
                 rate: 1,
-                euclidianFill: 0,
+                euclideanFill: 0,
             }
         }
         const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
@@ -853,7 +853,7 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
                 arpTriggerProbability: 1,
                 retriggerNum: 1,
                 rate: 1,
-                euclidianFill: 0,
+                euclideanFill: 0,
             }
         }
         const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
@@ -880,7 +880,7 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
                 arpTriggerProbability: 1,
                 retriggerNum: 3,
                 rate: 1,
-                euclidianFill: 0,
+                euclideanFill: 0,
             }
         }
         const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
@@ -922,7 +922,7 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
                 arpTriggerProbability: 1,
                 retriggerNum: 1,
                 rate: 1,
-                euclidianFill: 0,
+                euclideanFill: 0,
             }
         }
         const pattern = { name: 'Test', bpm, nbBeats, tracks: { T1: track } }
@@ -1041,7 +1041,7 @@ describe('step resolver (patterns/step_resolver.js)', () => {
         // applyFlatNotes (randomize / compact / clean / slider edits), so WAV
         // export kept stale euclid spans while MIDI export rebuilt them.
         const track = makeTrack([
-            { beat: 0, beatStep: 0, euclidianFill: 2 },
+            { beat: 0, beatStep: 0, euclideanFill: 2 },
             { beat: 2, beatStep: 0 },
         ])
         const pattern = { name: 'P', nbBeats: 4, bpm: 120, tracks: { T1: track } }

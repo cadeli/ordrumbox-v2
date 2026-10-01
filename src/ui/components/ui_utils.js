@@ -109,10 +109,10 @@ export function formatNoteTooltip(note, trackPitch = 0) {
     const arpTriggerProb = note.arpTriggerProbability ?? 1
     if (arpTriggerProb !== 1) parts.push(`arpProb:${fmt(arpTriggerProb)}`)
 
-    const euclidianFill = note.euclidianFill ?? 0
-    if (euclidianFill > 0) {
-        const rotation = note.euclidianRotation ?? 0
-        parts.push(rotation ? `eucl:${euclidianFill}@${rotation}` : `eucl:${euclidianFill}`)
+    const euclideanFill = note.euclideanFill ?? 0
+    if (euclideanFill > 0) {
+        const rotation = note.euclideanRotation ?? 0
+        parts.push(rotation ? `eucl:${euclideanFill}@${rotation}` : `eucl:${euclideanFill}`)
     }
 
     const rate = note.rate ?? 1

@@ -16,17 +16,17 @@ import { createStepResolver } from './step_resolver.js'
  * @param {object} track
  * @param {number} totalSteps - bar length in steps (positions beyond are dropped)
  * @param {Function} [resolveSpanEnd] - note → exclusive end step (span resolver)
- * @returns {Array<{pos: number, type: 'retrigger'|'euclidian', pitchOffset: number}>}
+ * @returns {Array<{pos: number, type: 'retrigger'|'euclidean', pitchOffset: number}>}
  */
 export function getNoteSubPositions(note, track, totalSteps, resolveSpanEnd = createStepResolver(track)) {
     const stepsPerBeat = track.stepsPerBeat ?? 4
     const basePos = Utils.getNoteAbsoluteStep(note, stepsPerBeat)
     const rate = note.rate ?? 1
-    const euclidianFill = note.euclidianFill ?? 0
+    const euclideanFill = note.euclideanFill ?? 0
     const arpConfig = normalizeArp(note.arp)
     // The engine clamps the arp note count: keep the ghosts on the same steps.
     const retriggerNum = arpConfig ? getArpNoteCount(note) : (note.retriggerNum ?? 1)
-    const hasTriggers = arpConfig || retriggerNum > 1 || euclidianFill > 0
+    const hasTriggers = arpConfig || retriggerNum > 1 || euclideanFill > 0
 
     const positions = []
     if (!hasTriggers) return positions
@@ -39,20 +39,20 @@ export function getNoteSubPositions(note, track, totalSteps, resolveSpanEnd = cr
         if (pos < totalSteps) positions.push({ pos, type: 'retrigger', pitchOffset: seq ? seq[i % seq.length] : 0 })
     }
 
-    if (euclidianFill > 0) {
+    if (euclideanFill > 0) {
         const stepsSpan = resolveSpanEnd(note) - basePos
         const euclideanPositions = computeEuclideanFillPositions(
             basePos,
             stepsSpan,
-            euclidianFill,
-            note.euclidianRotation ?? 0,
+            euclideanFill,
+            note.euclideanRotation ?? 0,
         )
         let euclidIndex = 0
         for (const pos of euclideanPositions) {
             if (pos < totalSteps)
                 positions.push({
                     pos,
-                    type: 'euclidian',
+                    type: 'euclidean',
                     pitchOffset: seq ? seq[(retriggerNum + euclidIndex) % seq.length] : 0,
                 })
             euclidIndex++

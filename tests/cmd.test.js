@@ -95,7 +95,7 @@ describe('Functional: Commander operations', () => {
             expect(note.every).toBe(1)
             expect(note.pos).toBe(0)
             expect(note.retriggerNum).toBe(1)
-            expect(note.euclidianFill).toBe(0)
+            expect(note.euclideanFill).toBe(0)
         })
 
         it('deleteNote removes correct note', () => {
@@ -260,7 +260,7 @@ describe('Functional: Commander operations', () => {
             note.arpTriggerProbability = 0.9
             note.retriggerNum = 3
             note.rate = 2
-            note.euclidianFill = 2
+            note.euclideanFill = 2
 
             expect(note.beatStep).toBe(2)
             expect(note.beat).toBe(1)
@@ -274,7 +274,7 @@ describe('Functional: Commander operations', () => {
             expect(note.arpTriggerProbability).toBe(0.9)
             expect(note.retriggerNum).toBe(3)
             expect(note.rate).toBe(2)
-            expect(note.euclidianFill).toBe(2)
+            expect(note.euclideanFill).toBe(2)
         })
     })
 

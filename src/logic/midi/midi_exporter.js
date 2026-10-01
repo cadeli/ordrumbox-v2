@@ -7,7 +7,7 @@
  *
  * The exporter uses recomputeFlatNotes() — the real pattern engine —
  * so all features are faithfully reflected: track loops, every/Phase,
- * retrigger, arpeggio, and euclidian fill.
+ * retrigger, arpeggio, and euclidean fill.
  *
  * LFO modulation
  * ──────────────

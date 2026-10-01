@@ -116,7 +116,7 @@ export default class PercGenerate extends BaseGenerator {
             startBarOffset: 2,
             steps: [0, 2],
             prob: 0.3,
-            euclidianFill: 3,
+            euclideanFill: 3,
             velocity: {
                 base: 0.6,
                 accentOnBeat: 0.24,
@@ -132,10 +132,10 @@ export default class PercGenerate extends BaseGenerator {
             loopPointBeat: 4,
             loopPointStep: 0,
             phrases: [
-                { beat: 0, step: 0, source: 'root', accent: true, euclidianFill: 4 },
-                { beat: 1, step: 2, source: 'randomScale', euclidianFill: 3 },
-                { beat: 2, step: 0, source: 'root', accent: true, euclidianFill: 5 },
-                { beat: 3, step: 3, source: 'randomScale', euclidianFill: 2 },
+                { beat: 0, step: 0, source: 'root', accent: true, euclideanFill: 4 },
+                { beat: 1, step: 2, source: 'randomScale', euclideanFill: 3 },
+                { beat: 2, step: 0, source: 'root', accent: true, euclideanFill: 5 },
+                { beat: 3, step: 3, source: 'randomScale', euclideanFill: 2 },
             ],
             velocity: {
                 base: 0.58,
@@ -303,8 +303,8 @@ export default class PercGenerate extends BaseGenerator {
             if (config.prob != null) {
                 note.prob = config.prob
             }
-            if (typeof config.euclidianFill === 'number') {
-                note.euclidianFill = config.euclidianFill
+            if (typeof config.euclideanFill === 'number') {
+                note.euclideanFill = config.euclideanFill
             }
         })
     }

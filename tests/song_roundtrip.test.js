@@ -235,8 +235,8 @@ function buildComplexProject() {
                         mute: false,
                         solo: false,
                         notes: [
-                            { beat: 0, beatStep: 1, velocity: 0.6, pitch: 3, euclidianFill: 3 },
-                            { beat: 2, beatStep: 2, velocity: 0.75, pitch: 5, euclidianFill: 2 },
+                            { beat: 0, beatStep: 1, velocity: 0.6, pitch: 3, euclideanFill: 3 },
+                            { beat: 2, beatStep: 2, velocity: 0.75, pitch: 5, euclideanFill: 2 },
                         ],
                     },
                 ],
@@ -381,7 +381,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             expect(p1.tracks[0].solo).toBe(true)
             expect(p1.tracks[1].stepsPerBeat).toBe(3) // Triplet grid
             expect(p1.tracks[1].loopAtStep).toBe(24)
-            expect(p1.tracks[1].notes[0].euclidianFill).toBe(3)
+            expect(p1.tracks[1].notes[0].euclideanFill).toBe(3)
 
             // Pattern 2 (Outro_Ambient): minimal ambient outro
             const p2 = appState.patterns[2]

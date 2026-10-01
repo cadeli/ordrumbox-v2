@@ -65,7 +65,7 @@ export default class GridSection {
 
         const ghosts = (ghostsAtStep ?? [])
             .map(({ type }) => {
-                const ghostCls = type === 'euclidian' ? 'pp-ghost pp-ghost-euclidian' : 'pp-ghost pp-ghost-retrigger'
+                const ghostCls = type === 'euclidean' ? 'pp-ghost pp-ghost-euclidean' : 'pp-ghost pp-ghost-retrigger'
                 return `<div class="${ghostCls}"></div>`
             })
             .join('')

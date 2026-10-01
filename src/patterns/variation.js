@@ -166,7 +166,7 @@ function applyNoteVariation(sourceNotes, budget, track) {
         ops.push({ type: 'retrigRate', cost: COST_RETRIG + COST_RATE, idx: i, newRetrig, newRate })
 
         const newEucl = Math.floor(Math.random() * 2) + 1
-        ops.push({ type: 'euclidianFill', cost: Math.min(newEucl, budget), idx: i, newValue: newEucl })
+        ops.push({ type: 'euclideanFill', cost: Math.min(newEucl, budget), idx: i, newValue: newEucl })
 
         ops.push({
             type: 'prob',
@@ -184,7 +184,7 @@ function applyNoteVariation(sourceNotes, budget, track) {
         switch (op.type) {
             case 'retrigRate':
                 return track.prob_retrig ?? 50
-            case 'euclidianFill':
+            case 'euclideanFill':
                 return track.prob_euclid ?? 50
             case 'prob':
                 return track.prob_note ?? 50
@@ -209,9 +209,9 @@ function applyNoteVariation(sourceNotes, budget, track) {
                 remaining -= op.cost
                 break
             }
-            case 'euclidianFill': {
+            case 'euclideanFill': {
                 const note = cloneVaried(varied, source)
-                note.euclidianFill = op.newValue
+                note.euclideanFill = op.newValue
                 remaining -= op.cost
                 break
             }

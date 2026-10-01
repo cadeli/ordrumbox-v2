@@ -1177,7 +1177,7 @@ body {
     background: rgba(255, 255, 255, 0.3);
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
 }
-#pattern-panel .pp-ghost-euclidian {
+#pattern-panel .pp-ghost-euclidean {
     background: rgba(255, 255, 255, 0.25);
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
 }
@@ -1355,7 +1355,7 @@ body {
     background: rgba(255, 255, 255, 0.3);
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
 }
-.pp-pr-ghost-euclidian {
+.pp-pr-ghost-euclidean {
     background: rgba(255, 255, 255, 0.25);
     box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
 }

@@ -61,8 +61,8 @@ describe('MCP server stays aligned with the app model', () => {
             expect(item, `missing notes.${key}`).toHaveProperty(key)
             expect(updates, `missing noteUpdates.${key}`).toHaveProperty(key)
         }
-        expect(item.euclidianFill.maximum).toBe(16)
-        expect(item.euclidianRotation).toEqual(expect.objectContaining({ type: 'integer', minimum: 0, maximum: 15 }))
+        expect(item.euclideanFill.maximum).toBe(16)
+        expect(item.euclideanRotation).toEqual(expect.objectContaining({ type: 'integer', minimum: 0, maximum: 15 }))
     })
 
     it('LFO fields are nullable objects with the modelled shape', () => {

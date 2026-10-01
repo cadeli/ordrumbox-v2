@@ -98,7 +98,7 @@ const TRACK_KEYS = [
 
 // Note keys that must survive a reload (steppc/stepPercent are recalculated,
 // arpRange/_arpScale/_arpType survive a raw reload but not a JSON round-trip).
-// prob/rate/retriggerNum/euclidianFill are excluded: track.variation2 > 0
+// prob/rate/retriggerNum/euclideanFill are excluded: track.variation2 > 0
 // re-randomizes them in place on every flat-notes computation.
 const NOTE_KEYS = ['beat', 'beatStep', 'velocity', 'pitch', 'pan', 'every', 'pos', 'arpTriggerProbability', 'arp']
 
@@ -448,8 +448,8 @@ test.describe.serial('Full session lifecycle', () => {
             await expectNum(async () => (await noteAt(0, 0))?.arpTriggerProbability, 0.5)
 
             await ne.locator('button[data-ne-tab="eucl"]').click()
-            await fillInput(ne.locator('input[data-key="euclidianFill"]'), 6)
-            await expectNum(async () => (await noteAt(0, 0))?.euclidianFill, 6)
+            await fillInput(ne.locator('input[data-key="euclideanFill"]'), 6)
+            await expectNum(async () => (await noteAt(0, 0))?.euclideanFill, 6)
 
             await ne.locator('button[data-ne-tab="arp"]').click()
             const scaleSel = ne.locator('select[data-key="arpScale"]')
@@ -840,10 +840,10 @@ test.describe.serial('Full session lifecycle', () => {
         expect(afterNote0.arp).toEqual(beforeNote0.arp)
 
         // variation2 > 0 computes its layer on clones: the source note fields
-        // it used to rewrite in place (prob/rate/retriggerNum/euclidianFill)
+        // it used to rewrite in place (prob/rate/retriggerNum/euclideanFill)
         // must survive a raw reload untouched
         expect(afterTracks[0].variation2).toBe(65)
-        const VOLATILE_KEYS = ['prob', 'rate', 'retriggerNum', 'euclidianFill']
+        const VOLATILE_KEYS = ['prob', 'rate', 'retriggerNum', 'euclideanFill']
         expect((afterTracks[0].notes ?? []).map((n) => VOLATILE_KEYS.map((k) => n[k]))).toEqual(
             (beforeTracks[0].notes ?? []).map((n) => VOLATILE_KEYS.map((k) => n[k])),
         )

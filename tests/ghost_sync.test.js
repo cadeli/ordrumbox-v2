@@ -31,7 +31,7 @@ const makeNote = (beat, beatStep, opts = {}) => ({
     rate: 1,
     arp: null,
     arpTriggerProbability: 1,
-    euclidianFill: 0,
+    euclideanFill: 0,
     ...opts,
 })
 
@@ -130,7 +130,7 @@ describe('ghost sync — grid, piano roll and engine agree', () => {
 
     beforeEach(() => {
         pattern = makePattern([
-            makeNote(0, 0, { euclidianFill: 3 }),
+            makeNote(0, 0, { euclideanFill: 3 }),
             makeNote(2, 2),
             makeNote(3, 0, { retriggerNum: 3, rate: 8 }),
         ])
@@ -151,7 +151,7 @@ describe('ghost sync — grid, piano roll and engine agree', () => {
 
     it('keeps the same span when notes are stored as a map', () => {
         const mapPattern = makePattern({
-            '0:0': makeNote(0, 0, { euclidianFill: 3 }),
+            '0:0': makeNote(0, 0, { euclideanFill: 3 }),
             '2:2': makeNote(2, 2),
             '3:0': makeNote(3, 0, { retriggerNum: 3, rate: 8 }),
         })

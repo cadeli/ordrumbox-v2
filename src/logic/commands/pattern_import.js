@@ -112,8 +112,8 @@ function copyNoteProps(note, sourceNote, track) {
         'arpTriggerProbability',
         'retriggerNum',
         'rate',
-        'euclidianFill',
-        'euclidianRotation',
+        'euclideanFill',
+        'euclideanRotation',
         'steppc',
     ]
 

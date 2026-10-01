@@ -146,7 +146,7 @@ When `null`, the LFO is disabled.
 | `retriggerNum`          | `integer`          | `1`     | Retriggers per step (1 = no retrigger).                                |
 | `arp`                   | `number[] \| null` | `null`  | Arpeggio intervals in semitones (e.g. `[0, 4, 7]`). `null` = disabled. |
 | `arpTriggerProbability` | `number`           | `1`     | Probability of arpeggio trigger (0–1).                                 |
-| `euclidianFill`         | `integer`          | `0`     | Euclidean fill amount (0–16). 0 = disabled.                            |
+| `euclideanFill`         | `integer`          | `0`     | Euclidean fill amount (0–16). 0 = disabled.                            |
 | `pos`                   | `number`           | `0`     | Micro-timing position within the step.                                 |
 
 ### Properties never serialized

@@ -19,8 +19,8 @@ const DEFAULT_NOTE = {
     prob: 1,
     retriggerNum: 1,
     rate: 1,
-    euclidianFill: 0,
-    euclidianRotation: 0,
+    euclideanFill: 0,
+    euclideanRotation: 0,
     arpTriggerProbability: 0,
     arpRange: 0,
 }
@@ -85,8 +85,8 @@ const GROUPS = [
         id: 'eucl',
         label: 'Euclidean',
         props: [
-            { key: 'euclidianFill', label: 'Eucl', min: 0, max: 16, step: 1 },
-            { key: 'euclidianRotation', label: 'Rot', min: 0, max: 15, step: 1 },
+            { key: 'euclideanFill', label: 'Eucl', min: 0, max: 16, step: 1 },
+            { key: 'euclideanRotation', label: 'Rot', min: 0, max: 15, step: 1 },
         ],
     },
     {

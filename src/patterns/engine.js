@@ -171,8 +171,8 @@ export function generateSubNotesWithEuclidean(
 ) {
     generateSubNotes(flatNotes, baseTick, track, note, nbTickForPattern, tick)
 
-    const euclidianFill = note.euclidianFill ?? 0
-    if (euclidianFill <= 0) return
+    const euclideanFill = note.euclideanFill ?? 0
+    if (euclideanFill <= 0) return
 
     const arpConfig = normalizeArp(note.arp)
     const arpTriggerProb = note.arpTriggerProbability ?? 1
@@ -183,7 +183,7 @@ export function generateSubNotesWithEuclidean(
     const endStep = (computeNextStep ?? createStepResolver(track))(note, track)
     const stepsSpan = endStep - startStep
     const ticksPerStep = tick / track.stepsPerBeat
-    const positions = computeEuclideanFillPositions(startStep, stepsSpan, euclidianFill, note.euclidianRotation ?? 0)
+    const positions = computeEuclideanFillPositions(startStep, stepsSpan, euclideanFill, note.euclideanRotation ?? 0)
 
     for (let i = 0; i < positions.length; i++) {
         const tickPos = baseTick + Math.round((positions[i] - startStep) * ticksPerStep)

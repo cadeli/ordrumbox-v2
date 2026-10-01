@@ -76,12 +76,12 @@ describe('Functional: MCP tools flow', () => {
             beat: 0,
             beatStep: 1,
             velocity: 0.9,
-            euclidianRotation: 3,
+            euclideanRotation: 3,
         })
         expect(created).toBe('created')
         expect(kick.notes).toHaveLength(1)
         expect(kick.notes[0].velocity).toBe(0.9)
-        expect(kick.notes[0].euclidianRotation).toBe(3)
+        expect(kick.notes[0].euclideanRotation).toBe(3)
 
         const updated = upsertNoteOnTrack(cmd, kick, {
             beat: 0,

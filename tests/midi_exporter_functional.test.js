@@ -1096,10 +1096,10 @@ describe('MidiExporter — functional end-to-end', () => {
         })
     })
 
-    // ── 11. Euclidian fill ─────────────────────────────────────────────────────
+    // ── 11. Euclidean fill ─────────────────────────────────────────────────────
 
-    describe('Case 11: euclidian fill distributes notes', () => {
-        it('euclidianFill=2 adds one euclidean pulse after each note', () => {
+    describe('Case 11: euclidean fill distributes notes', () => {
+        it('euclideanFill=2 adds one euclidean pulse after each note', () => {
             const basePattern = {
                 name: 'EuclidBase',
                 bpm: 120,
@@ -1112,8 +1112,8 @@ describe('MidiExporter — functional end-to-end', () => {
                 nbBeats: 1,
                 tracks: [
                     track('KICK', 4, 1, 1, [
-                        makeNote(0, 0, { euclidianFill: 2 }),
-                        makeNote(0, 2, { euclidianFill: 2 }),
+                        makeNote(0, 0, { euclideanFill: 2 }),
+                        makeNote(0, 2, { euclideanFill: 2 }),
                     ]),
                 ],
             }

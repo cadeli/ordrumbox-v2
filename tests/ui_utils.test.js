@@ -148,7 +148,7 @@ describe('formatNoteTooltip', () => {
             retriggerNum: 3,
             rate: 2,
             pan: -0.5,
-            euclidianFill: 4,
+            euclideanFill: 4,
             arpTriggerProbability: 0.5,
         })
         expect(tip).toContain('vel:')

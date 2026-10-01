@@ -18,7 +18,7 @@ const NOTE_DEFAULTS = {
     rate: 1,
     arp: null,
     arpTriggerProbability: 1,
-    euclidianFill: 0,
+    euclideanFill: 0,
 }
 
 /**

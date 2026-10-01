@@ -197,9 +197,9 @@ export function upsertNoteOnTrack(cmd, track, noteInput) {
     )
     note.retriggerNum = Math.min(Math.max(Number(noteInput.retriggerNum ?? note.retriggerNum ?? 1), 1), 16)
     note.rate = Math.min(Math.max(Number(noteInput.rate ?? note.rate ?? 1), 1), 16)
-    note.euclidianFill = Math.min(Math.max(Number(noteInput.euclidianFill ?? note.euclidianFill ?? 0), 0), 16)
-    note.euclidianRotation = Math.min(
-        Math.max(Number(noteInput.euclidianRotation ?? note.euclidianRotation ?? 0), 0),
+    note.euclideanFill = Math.min(Math.max(Number(noteInput.euclideanFill ?? note.euclideanFill ?? 0), 0), 16)
+    note.euclideanRotation = Math.min(
+        Math.max(Number(noteInput.euclideanRotation ?? note.euclideanRotation ?? 0), 0),
         15,
     )
 
@@ -289,13 +289,13 @@ export const tools = [
                                 type: 'string',
                                 description: 'Arpeggio pattern (up, down, upDown, random, or custom indices)',
                             },
-                            euclidianFill: {
+                            euclideanFill: {
                                 type: 'integer',
                                 minimum: 0,
                                 maximum: 16,
                                 description: 'Euclidean pulses (0-16, 0=disabled)',
                             },
-                            euclidianRotation: {
+                            euclideanRotation: {
                                 type: 'integer',
                                 minimum: 0,
                                 maximum: 15,
@@ -430,8 +430,8 @@ export const tools = [
                         retriggerNum: { type: 'number', minimum: 1, maximum: 16 },
                         rate: { type: 'number', minimum: 1, maximum: 16 },
                         arp: { type: 'string' },
-                        euclidianFill: { type: 'integer', minimum: 0, maximum: 16 },
-                        euclidianRotation: { type: 'integer', minimum: 0, maximum: 15 },
+                        euclideanFill: { type: 'integer', minimum: 0, maximum: 16 },
+                        euclideanRotation: { type: 'integer', minimum: 0, maximum: 15 },
                         velocity: { type: 'number', minimum: 0, maximum: 1 },
                         pan: { type: 'number', minimum: -1, maximum: 1 },
                         pitch: { type: 'number' },
@@ -601,8 +601,8 @@ export async function handleToolCall(toolName, args, onError) {
                     retriggerNum: n.retriggerNum,
                     rate: n.rate,
                     arp: n.arp,
-                    euclidianFill: n.euclidianFill,
-                    euclidianRotation: n.euclidianRotation,
+                    euclideanFill: n.euclideanFill,
+                    euclideanRotation: n.euclideanRotation,
                 }
 
                 const status = upsertNoteOnTrack(cmd, track, noteInput)
@@ -656,7 +656,7 @@ export async function handleToolCall(toolName, args, onError) {
                     'retriggerNum',
                     'rate',
                     'arp',
-                    'euclidianFill',
+                    'euclideanFill',
                     'velocity',
                     'pan',
                     'pitch',
@@ -680,10 +680,10 @@ export async function handleToolCall(toolName, args, onError) {
                         if (noteUpdates.rate !== undefined)
                             note.rate = Math.min(Math.max(Number(noteUpdates.rate), 1), 16)
                         if (noteUpdates.arp !== undefined) note.arp = noteUpdates.arp
-                        if (noteUpdates.euclidianFill !== undefined)
-                            note.euclidianFill = Math.min(Math.max(Number(noteUpdates.euclidianFill), 0), 16)
-                        if (noteUpdates.euclidianRotation !== undefined)
-                            note.euclidianRotation = Math.min(Math.max(Number(noteUpdates.euclidianRotation), 0), 15)
+                        if (noteUpdates.euclideanFill !== undefined)
+                            note.euclideanFill = Math.min(Math.max(Number(noteUpdates.euclideanFill), 0), 16)
+                        if (noteUpdates.euclideanRotation !== undefined)
+                            note.euclideanRotation = Math.min(Math.max(Number(noteUpdates.euclideanRotation), 0), 15)
                         if (noteUpdates.velocity !== undefined) note.velocity = Number(noteUpdates.velocity)
                         if (noteUpdates.pan !== undefined) note.pan = Number(noteUpdates.pan)
                         if (noteUpdates.pitch !== undefined) note.pitch = Number(noteUpdates.pitch)
