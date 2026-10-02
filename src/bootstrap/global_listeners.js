@@ -33,7 +33,8 @@ export function initGlobalListeners() {
     })
 
     if (window.orientation > 1) {
-        const de = document.documentElement
+        // Prefixes vendor absents des types DOM
+        const de = /** @type {Document['documentElement'] & Record<string, () => void>} */ (document.documentElement)
         if (de.requestFullscreen) {
             de.requestFullscreen()
         } else if (de.mozRequestFullScreen) {
@@ -52,7 +53,8 @@ export function initGlobalListeners() {
         }
     })
 
-    playbackEvents.on(EVENTS.STALL, ({ reason } = {}) => {
+    playbackEvents.on(EVENTS.STALL, (/** @type {{reason?: string}} */ payload = {}) => {
+        const { reason } = payload
         if (reason === 'context-suspended') {
             showToast('Audio suspended by the browser — click Play to resume', 'warning')
         } else {
@@ -127,7 +129,7 @@ export function initGlobalListeners() {
         if (!isLabel && !isValue) return
         const row = t.closest('.ne-row')
         if (!row) return
-        const slider = row.querySelector('input[type="range"]')
+        const slider = /** @type {HTMLInputElement|null} */ (row.querySelector('input[type="range"]'))
         if (slider && !slider.disabled) slider.focus()
     })
 

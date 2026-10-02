@@ -1,4 +1,3 @@
-// @ts-check
 import { isMobileViewport } from '../core/constants.js'
 
 function buildDefaultVisibility() {

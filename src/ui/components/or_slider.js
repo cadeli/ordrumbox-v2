@@ -65,10 +65,11 @@ export class OrSlider {
      * @param {number}   cfg.max            Maximum value (normalized space)
      * @param {number}   cfg.step           Base step
      * @param {number}   cfg.value          Initial value (denormalized)
+     * @param {number}   [cfg.defaultValue] Value restored by double-click (defaults to value)
      * @param {string}   [cfg.unit]         Unit displayed after the value (e.g. 'Hz', 'ms')
-     * @param {Function} [cfg.format]       (valDenorm) => string — display format
-     * @param {Function} [cfg.normalize]    (valDenorm) => valNorm — for the input space
-     * @param {Function} [cfg.denormalize]  (valNorm)   => valDenorm — inverse
+     * @param {Function} [cfg.format]       (valDenorm) => string - display format
+     * @param {Function} [cfg.normalize]    (valDenorm) => valNorm - for the input space
+     * @param {Function} [cfg.denormalize]  (valNorm)   => valDenorm - inverse
      * @param {boolean}  [cfg.hasLfo]       Adds CSS class has-lfo
      * @param {boolean}  [cfg.noCursor]     Adds CSS class no-cursor
      * @param {string}   [cfg.dataAttr]     Name of the data-* attribute (default: 'data-key')

@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/actions_section.js
 // Pattern toolbar actions: new/delete/duplicate/rename/clean/save/import.
 

@@ -1,5 +1,24 @@
 import { logger } from '../core/logger.js'
 import Utils from '../core/utils.js'
+/**
+ * Metriques produites par AudioAnalyzer.
+ * @typedef {object} AudioAnalysis
+ * @property {number[]} envelope
+ * @property {number|null} pitch
+ * @property {number} volume
+ * @property {number} length
+ * @property {number} peakDb
+ * @property {number} rmsDb
+ * @property {number} [peakLinear]
+ * @property {number} [rmsLinear]
+ * @property {number|null} fundamentalHz
+ * @property {number} spectralCentroidHz
+ * @property {number} energySubPct
+ * @property {number} energyHighPct
+ * @property {number} harmonicRatio
+ * @property {number} pitchConfidence
+ */
+
 export default class AudioAnalyzer {
     static TAG = 'AudioAnalyzer'
     static DEFAULTS = Object.freeze({
@@ -10,6 +29,11 @@ export default class AudioAnalyzer {
         maxFundamentalHz: 2000,
     })
 
+    /**
+     * Metriques d'un echantillon. Le chemin « buffer vide » renvoie la meme
+     * forme avec des valeurs neutres, donc un seul type pour les deux.
+     * @returns {AudioAnalysis}
+     */
     analyzeAudioBuffer(audioBuffer, options = {}) {
         if (
             !audioBuffer ||

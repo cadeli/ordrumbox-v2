@@ -1,4 +1,3 @@
-// @ts-check
 import Sound from './sound.js'
 import FlatNote from '../model/flatnote.js'
 import NoteParams from '../patterns/note_params.js'

@@ -110,7 +110,7 @@ export default class PianoRollPanel extends BasePanel {
         this.listen(this.container, 'click', (e) => {
             const key = /** @type {Element} */ (e.target).closest('.pp-pr-key')
             if (key) {
-                this.#playKey(parseInt(key.dataset.midi, 10))
+                this.#playKey(parseInt(/** @type {HTMLElement} */ (key).dataset.midi, 10))
                 return
             }
             const gridEl = /** @type {Element} */ (e.target).closest('#pp-piano-grid')

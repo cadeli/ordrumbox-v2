@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/GridSection.js
 // Track grid: rows, beat cells, note slices, ghosts, dividers, solo,
 // volume sliders, vu meters, master track, add-track button.

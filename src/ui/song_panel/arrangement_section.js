@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/song_panel/arrangement_section.js
 // Song arrangement grid, laid out like a DAW arrangement view:
 //   - time runs LEFT TO RIGHT on the X axis, one cell per measure (the ruler);

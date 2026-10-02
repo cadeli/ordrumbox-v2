@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/synth_editor/WaveformSection.js
 // Waveform canvas drawing: oscillators + ADSR envelope preview.
 

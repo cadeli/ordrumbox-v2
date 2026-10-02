@@ -61,7 +61,9 @@ export function initServiceWorker() {
 }
 
 function showUpdateNotification(worker) {
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+    const isPWA =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        /** @type {{standalone?: boolean}} */ (window.navigator).standalone === true
     const label = isPWA ? 'New version available!' : 'Update available!'
     showToast(label, 'info', {
         actions: [{ label: 'Install', onClick: () => worker.postMessage('SKIP_WAITING') }],

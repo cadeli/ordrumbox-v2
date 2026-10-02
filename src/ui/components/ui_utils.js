@@ -10,17 +10,17 @@ const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 
 
 /**
  * Prompt the user for a numeric value, returning the clamped result or null if cancelled.
- * @param {string} label  – display name for the input
- * @param {number} min    – minimum allowed value
- * @param {number} max    – maximum allowed value
- * @param {number} current – default value to show
- * @param {string} [unit] – optional unit suffix
- * @param {(num: number) => number} [clampFn] – optional custom clamp; defaults to Math.min/max
+ * @param {string} label  - display name for the input
+ * @param {number} min    - minimum allowed value
+ * @param {number} max    - maximum allowed value
+ * @param {number} current - default value to show
+ * @param {string} [unit] - optional unit suffix
+ * @param {(num: number) => number} [clampFn] - optional custom clamp; defaults to Math.min/max
  * @returns {number|null}
  */
 export function promptNumericInput(label, min, max, current, unit, clampFn) {
     const title = `Enter value for ${label} (${min}–${max}${unit ? ' ' + unit : ''}):`
-    const raw = window.prompt(title, current)
+    const raw = window.prompt(title, String(current))
     if (raw === null || raw.trim() === '') return null
     const num = parseFloat(raw)
     if (Number.isNaN(num)) return null
@@ -46,8 +46,8 @@ export function escapeHtml(value) {
 
 /**
  * Convert a MIDI note number to a human-readable name (e.g. 60 → "C4").
- * @param {number} pitch    – pitch relative to base MIDI 60
- * @param {number} [trackPitch=0] – additional pitch offset from track
+ * @param {number} pitch    - pitch relative to base MIDI 60
+ * @param {number} [trackPitch=0] - additional pitch offset from track
  * @returns {string}
  */
 export function pitchToNoteName(pitch, trackPitch = 0) {
@@ -60,8 +60,8 @@ export function pitchToNoteName(pitch, trackPitch = 0) {
 
 /**
  * Compute the MIDI note number from pitch and track pitch offset.
- * @param {number} pitch – pitch relative to base MIDI 60
- * @param {number} [trackPitch=0] – additional pitch offset from track
+ * @param {number} pitch - pitch relative to base MIDI 60
+ * @param {number} [trackPitch=0] - additional pitch offset from track
  * @returns {number}
  */
 function pitchToMidi(pitch, trackPitch = 0) {
@@ -142,26 +142,31 @@ export function bindCloseButton(container, onClose) {
 /**
  * Binds click handlers on `.ne-tab-btn` elements to toggle `.ne-tab-panel` visibility.
  * @param {HTMLElement} container
- * @param {function(string): void} [onChange]  – called with the newly activated tab id
+ * @param {(id: string) => void} [onChange]  - called with the newly activated tab id
  */
 export function bindTabToggles(container, onChange) {
-    container.querySelectorAll('.ne-tab-btn[data-ne-tab]').forEach((btn) => {
+    container.querySelectorAll('.ne-tab-btn[data-ne-tab]').forEach((/** @type {any} */ btn) => {
         btn.addEventListener('click', () => {
             const id = btn.dataset.neTab
             container
                 .querySelectorAll('.ne-tab-btn')
-                .forEach((b) => b.classList.toggle('active', b.dataset.neTab === id))
+                .forEach((/** @type {any} */ b) => b.classList.toggle('active', b.dataset.neTab === id))
             container
                 .querySelectorAll('.ne-tab-panel')
-                .forEach((p) => p.classList.toggle('ne-tab-panel-hidden', p.dataset.tabPanel !== id))
+                .forEach((/** @type {any} */ p) => p.classList.toggle('ne-tab-panel-hidden', p.dataset.tabPanel !== id))
             onChange?.(id)
         })
     })
 }
 
 /**
+ * Nom de vue, tel qu'enregistre dans ViewManager#viewHandlers.
+ * @typedef {'synth' | 'edit' | 'proll' | 'song' | 'mobileSeq' | 'mobileTrack'} ViewName
+ */
+
+/**
  * Sets the active state of a toolbar view button.
- * @param {'synth' | 'edit' | 'proll'} name
+ * @param {ViewName} name
  * @param {boolean} active
  */
 export function setViewBtn(name, active) {
@@ -170,7 +175,7 @@ export function setViewBtn(name, active) {
 
 /**
  * Sets all toolbar view buttons for a given mode.
- * @param {'synth' | 'edit' | 'proll'} mode
+ * @param {ViewName} mode
  */
 export function setViewMode(mode) {
     setViewBtn('synth', mode === 'synth')
@@ -192,11 +197,13 @@ export function downloadJson(data, filename) {
 /**
  * Creates a Knob format callback for velocity/pitch/fallback.
  */
-const KNOB_FORMATTERS = new Map([
+/** @type {Array<[string, (v: number) => string | number]>} */
+const KNOB_FORMATTER_ENTRIES = [
     ['velocity', (v) => Math.round(v * 100)],
     ['pitch', (v) => `${v >= 0 ? '+' : ''}${v}`],
     ['decay', (v) => `${Math.round(v)} ms`],
-])
+]
+const KNOB_FORMATTERS = new Map(KNOB_FORMATTER_ENTRIES)
 export const knobFormat = (def) => KNOB_FORMATTERS.get(def.key) ?? fmt
 
 // ─── Option / Icon rendering helpers ──────────────────────────────────────
@@ -236,7 +243,7 @@ export function renderOptions(options, currentValue, { labels, escape: esc } = {
  * @param {string}  [opts.cssClass]      CSS class for every button
  * @param {string}  [opts.valueDataAttr] data-* attribute carrying the value (e.g. 'data-wave-val')
  * @param {function}[opts.escape]        HTML-escape function
- * @param {function}[opts.extraAttrs]    (value) => string — extra HTML attributes per button
+ * @param {function}[opts.extraAttrs]    (value) => string - extra HTML attributes per button
  * @param {Object}  [opts.titleMap]      value → tooltip title
  * @returns {string} HTML
  */

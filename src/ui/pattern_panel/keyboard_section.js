@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/keyboard_section.js
 // Keyboard navigation and note editing for the pattern grid:
 // cursor movement (arrows), copy/paste shortcuts, Enter/Delete on a cell.

@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/piano_roll/menu_section.js
 // Right-click menus of the piano roll: keyboard menu, grid menu and note actions.
 

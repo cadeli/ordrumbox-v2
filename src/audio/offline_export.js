@@ -10,7 +10,7 @@ import { logger } from '../core/logger.js'
  * Render `pattern` for `numLoops` loops in an OfflineAudioContext and encode WAV.
  *
  * @param {object} deps
- * @param {AudioContext} deps.audioCtx — live ctx (sampleRate source only)
+ * @param {AudioContext} deps.audioCtx - live ctx (sampleRate source only)
  * @param {object} deps.sounds
  * @param {object} deps.generatedSounds
  * @param {number} deps.TICK

@@ -13,6 +13,24 @@ import OverflowMenu from './toolbar/overflow_menu.js'
 import { EVENTS } from '../core/events.js'
 
 export default class Toolbar {
+    // Boutons et champs attaches par les sous-modules (transport, nav, view
+    // switch, overflow). Declares ici pour que le type les connaisse ; ils ne
+    // sont initialises qu'a l'init().
+    /** @type {HTMLButtonElement} */
+    undoBtn
+    /** @type {HTMLButtonElement} */
+    redoBtn
+    /** @type {HTMLButtonElement} */
+    drumBtn
+    /** @type {HTMLButtonElement} */
+    bassBtn
+    /** @type {HTMLButtonElement} */
+    chordsBtn
+    /** @type {HTMLSelectElement} */
+    beatsSelect
+    /** @type {HTMLDivElement} */
+    patternNameMobile
+
     #transport
     #patternNav
     #viewSwitch

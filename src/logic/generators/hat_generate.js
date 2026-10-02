@@ -275,7 +275,13 @@ export default class HatGenerate extends BaseGenerator {
         this.#generateHatVelocityVariant(hatTrack, config, density, { defaultPatternVelocity: 0.55, hasBell: true })
     }
 
-    #generateHatVelocityVariant(hatTrack, config, density, { defaultPatternVelocity, hasBell }) {
+    #generateHatVelocityVariant(
+        hatTrack,
+        config,
+        density,
+        /** @type {{defaultPatternVelocity: number, hasBell?: boolean}} */ opts,
+    ) {
+        const { defaultPatternVelocity, hasBell } = opts
         const loopPointAbsolute = this.getLoopPointAbsolute(hatTrack, config, 2)
         const stepsPerBeat = hatTrack.stepsPerBeat ?? 4
         const velocityPattern = config.velocityPattern ?? []

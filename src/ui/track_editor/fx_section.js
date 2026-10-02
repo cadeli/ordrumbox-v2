@@ -9,7 +9,7 @@ import { emitTrackChanged } from '../../state/playback_events.js'
 export default class FxSection {
     #editor
 
-    /** @param {import('./track_editor.js').default} editor */
+    /** @param {import('../track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }

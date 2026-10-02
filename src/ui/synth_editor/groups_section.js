@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/synth_editor/GroupsSection.js
 // Renders synth parameter groups: VCOs, filter, FM, LFO, noise, envelope.
 // Manages knob placeholders and icon rows.
@@ -86,7 +85,7 @@ export default class GroupsSection {
 
     /**
      * Renders all groups. Pushes knob configs to the array.
-     * @param {Array} knobConfigs — mutated, knob paths are pushed here
+     * @param {Array} knobConfigs - mutated, knob paths are pushed here
      * @returns {string} HTML
      */
     render(knobConfigs) {

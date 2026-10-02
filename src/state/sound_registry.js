@@ -1,5 +1,26 @@
 import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS } from '../core/constants.js'
 
+/**
+ * Une entree de soundRegistry.sounds : un echantillon charge, ou un preset
+ * synth. Le sous-ensemble lu par l'UI track editor.
+ * @typedef {object} SoundEntry
+ * @property {string} [url]
+ * @property {string} [key]
+ * @property {string} [kitName]
+ * @property {string} [display_name]
+ * @property {AudioBuffer} [buffer]
+ * @property {number} [index] ordre d'import, pose a l'ajout
+ * @property {boolean} [isLoad] echantillon importe depuis un fichier
+ * @property {boolean} [playStatus] etat de lecture du sample
+ * @property {any} [decay]
+ * @property {any} [duration]
+ * @property {any} [gainDb]
+ * @property {any} [kit_name]
+ * @property {any} [peakDb]
+ * @property {any} [rootMidi]
+ * @property {any} [tune]
+ */
+
 class SoundRegistry {
     static DEFAULTS = {
         sounds: {},
@@ -24,6 +45,7 @@ class SoundRegistry {
     }
 
     reset() {
+        /** @type {Record<string, SoundEntry>} */
         this.sounds = {}
         this.scales = {}
         this.generatedSounds = {}

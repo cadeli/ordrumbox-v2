@@ -10,12 +10,12 @@ import { fmt } from './ui_utils.js'
  * @param {Object}   opts
  * @param {HTMLElement} opts.container  DOM root to query placeholders from
  * @param {Array}    opts.configs       Array of config objects, each must have a `key` string
- * @param {string}   opts.selector      Data-attribute name (e.g. "or-knob" → [data-or-knob="..."])
+ * @param {string}   [opts.selector]    Data-attribute name (e.g. "or-knob" → [data-or-knob="..."])
  * @param {Map}      opts.prev          Snapshot of previous instances Map<key, instance>
- * @param {Function} opts.create        (config) => instance   — called for brand-new keys
- * @param {Function} opts.update        (instance, config) => void — called to rebind/setValue existing
- * @param {Function} [opts.postMount]   (el, config) => void   — hook after createElement, before replaceWith
- * @returns {Map<string, object>}       Map of live instances keyed by config.key
+ * @param {Function} opts.create        (config) => instance   - called for brand-new keys
+ * @param {Function} opts.update        (instance, config) => void - called to rebind/setValue existing
+ * @param {Function} [opts.postMount]   (el, config) => void   - hook after createElement, before replaceWith
+ * @returns {Map<string, any>}          Map of live instances keyed by config.key
  */
 export function syncComponentMap({ container, configs, selector, prev, create, update, postMount }) {
     const next = new Map()
@@ -58,12 +58,12 @@ export function syncComponentMap({ container, configs, selector, prev, create, u
  * @param {Object}   opts
  * @param {HTMLElement} opts.container     DOM root to query placeholders from
  * @param {Array}    opts.configs          Array of { key, val, label, min, max, step, unit, format, onChange, ... } objects
- * @param {string}   opts.selector         Data-attribute name for placeholders
+ * @param {string}   [opts.selector]       Data-attribute name for placeholders (default: or-knob)
  * @param {Map}      opts.prev             Snapshot of previous OrKnob instances
- * @param {Function} [opts.onChange]       (key, value) => void — global value change callback
+ * @param {Function} [opts.onChange]       (key, value) => void - global value change callback
  * @param {Object}   [opts.paramMeta]      Map of key → { min, max, step, unit } metadata
  * @param {string}   [opts.defaultUnit]    Unit string for knobs without metadata
- * @param {Function} [opts.postMount]      (el, config) => void — hook after createElement
+ * @param {Function} [opts.postMount]      (el, config) => void - hook after createElement
  * @returns {Map<string, OrKnob>}          Map of live OrKnob instances
  */
 export function syncKnobs({

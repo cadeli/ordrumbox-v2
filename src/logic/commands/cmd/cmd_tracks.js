@@ -1,4 +1,3 @@
-// @ts-check
 import Utils from '../../../core/utils.js'
 import { NOT_FOUND } from '../../../core/constants.js'
 import {

@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/synth_editor/PresetSection.js
 // Preset CRUD operations and footer rendering.
 

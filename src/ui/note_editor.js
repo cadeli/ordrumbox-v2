@@ -110,10 +110,6 @@ export default class NoteEditor extends BasePanel {
     #sliders
     #tab
 
-    /**
-     * @param {HTMLElement} [externalContainer] – If provided, renders into this
-     *   element instead of creating a separate fixed-position div.
-     */
     constructor() {
         super('ne-panel')
         this.#externalContainer = null
@@ -244,7 +240,6 @@ export default class NoteEditor extends BasePanel {
         this.sync()
     }
 
-    /** @private */
     async #initData(data) {
         this.#track = data.track
         this.#note = data.note
@@ -253,7 +248,6 @@ export default class NoteEditor extends BasePanel {
         await loadScales()
     }
 
-    /** @private */
     async #initEmptyData(data) {
         this.#track = data.track
         this.#beat = data.beat ?? 0
@@ -300,7 +294,7 @@ export default class NoteEditor extends BasePanel {
         this.#bindEvents()
     }
 
-    /** @private Renders a single prop as HTML (select or slider placeholder). */
+    /** Renders a single prop as HTML (select or slider placeholder). */
     #renderProp(p, arpState, scaleKeys) {
         if (p.type === 'select') {
             const val = this.#resolveSelectValue(p, arpState)
@@ -311,14 +305,13 @@ export default class NoteEditor extends BasePanel {
         return `<div data-or-slider="${p.key}"></div>`
     }
 
-    /** @private */
     #resolveSelectValue(p, arpState) {
         if (p.key === 'arpScale') return this.#note._arpScale ?? arpState.scale
         if (p.key === 'arpType') return this.#note._arpType ?? arpState.type
         return this.#note['_' + p.key] ?? p.options[0]
     }
 
-    /** @private Keep-alive: reuse existing knobs via setValue, create only new ones. */
+    /** Keep-alive: reuse existing knobs via setValue, create only new ones. */
     #syncKnobs() {
         this.#knobs = [
             ...syncKnobs({
@@ -339,7 +332,7 @@ export default class NoteEditor extends BasePanel {
         ]
     }
 
-    /** @private Keep-alive: reuse existing sliders via setValue, create only new ones. */
+    /** Keep-alive: reuse existing sliders via setValue, create only new ones. */
     #syncSliders(arpState) {
         const sliderProps = GROUPS.flatMap((g) => g.props.filter((p) => p.type !== 'select'))
         const configs = sliderProps.map((p) => ({
@@ -376,7 +369,6 @@ export default class NoteEditor extends BasePanel {
         ]
     }
 
-    /** @private */
     #bindEvents() {
         this.container.querySelectorAll('select').forEach((sel) => {
             sel.addEventListener('change', () => this.#onSelect(sel))
@@ -441,7 +433,7 @@ export default class NoteEditor extends BasePanel {
     }
 
     // ─── Public API ───────────────────────────────────────────────────────
-    /** @returns {OrKnob[]} current knob instances */
+    /** @returns {import('./components/or_knob.js').OrKnob[]} current knob instances */
     get knobs() {
         return this.#knobs
     }

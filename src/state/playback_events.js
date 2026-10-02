@@ -1,4 +1,3 @@
-// @ts-check
 import { logger } from '../core/logger.js'
 import { reportUserError } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'

@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/pointer_section.js
 // Mouse interactions on the grid: click routing, volume sliders, hover tooltip.
 

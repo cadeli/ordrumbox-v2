@@ -55,7 +55,7 @@ export function isLandscape() {
  * @param {(info: {landscape: boolean}) => void} onFlip
  * @param {object} [opts]
  * @param {number} [opts.debounceMs] - debounce window (default 150)
- * @returns {() => void} cleanup — removes every listener
+ * @returns {() => void} cleanup - removes every listener
  */
 export function watchOrientation(onFlip, { debounceMs = 150 } = {}) {
     if (typeof window === 'undefined') return () => {}

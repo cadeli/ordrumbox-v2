@@ -16,7 +16,7 @@ import { BEATS_PER_PAGE } from '../core/constants.js'
  * steps-based one shrank the beats per page as stepsPerBeat grew, so at
  * stepsPerBeat=8 the toolbar offered twice as many pages as the grid could
  * render.
- * @param {object} [pattern]
+ * @param {{beatCount?: number}} [pattern]
  * @returns {number} page count (>= 1)
  */
 export function pageCountFor(pattern) {

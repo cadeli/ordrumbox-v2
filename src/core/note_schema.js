@@ -58,19 +58,19 @@ const NOTE_KEY_ORDER = [
  * Properties at these values are omitted from the compact format.
  *
  * @typedef {Object} NoteDefaults
- * @property {number} velocity              - Playback volume (0–1). Default: 0.8
+ * @property {number} velocity              - Playback volume (0-1). Default: 0.8
  * @property {number} beat                  - Measure index within the track (0-based). Default: 0
  * @property {number} beatStep              - Step index within the measure (0-based). Default: 0
  * @property {number} pitch                 - Pitch offset in semitones. Default: 0 (no transposition)
  * @property {number} pan                   - Stereo pan (-1=left, 0=center, 1=right). Default: 0
  * @property {number} every                 - Play every N steps (1=every step, 2=every other, etc). Default: 1
- * @property {number} prob                  - Trigger probability (0–1). Default: 1 (certain)
+ * @property {number} prob                  - Trigger probability (0-1). Default: 1 (certain)
  * @property {number} rate                  - Playback rate multiplier (1=normal). Default: 1
  * @property {number} retriggerNum          - Number of retriggers per step (1=no retrigger). Default: 1
  * @property {Array|null} arp               - Arpeggio intervals (e.g. [0, 4, 7]). Default: null (disabled)
- * @property {number} arpTriggerProbability - Probability of arpeggio trigger (0–1). Default: 1
- * @property {number} euclideanFill         - Euclidean pulses k over the span to the next note, base note included (0–16, 0=disabled). Default: 0 (disabled)
- * @property {number} euclideanRotation     - Phase offset of the euclidean pattern in steps (0–15). Default: 0
+ * @property {number} arpTriggerProbability - Probability of arpeggio trigger (0-1). Default: 1
+ * @property {number} euclideanFill         - Euclidean pulses k over the span to the next note, base note included (0-16, 0=disabled). Default: 0 (disabled)
+ * @property {number} euclideanRotation     - Phase offset of the euclidean pattern in steps (0-15). Default: 0
  * @property {number} pos                   - Position within the step for micro-timing. Default: 0
  */
 export const NOTE_DEFAULTS = {

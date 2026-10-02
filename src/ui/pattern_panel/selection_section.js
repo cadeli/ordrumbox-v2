@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/selection_section.js
 // Track/note selection and shift-range selection for the pattern grid.
 

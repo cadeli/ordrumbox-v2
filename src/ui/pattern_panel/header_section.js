@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/HeaderSection.js
 // Pattern header: name, BPM/meta, page info, action buttons.
 

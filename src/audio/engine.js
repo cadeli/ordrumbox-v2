@@ -1,4 +1,3 @@
-// @ts-check
 import Player from './player.js'
 import Mixer from './mixer.js'
 import { recomputeFlatNotes } from '../patterns/engine.js'

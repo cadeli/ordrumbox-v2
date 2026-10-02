@@ -1,3 +1,23 @@
+/**
+ * Proprietes moteur copiees entre une source et une note par
+ * applyNoteProperties. Forme identique en lecture et en ecriture : c'est le
+ * contrat de la copie, pas le modele Note complet.
+ * @typedef {object} NoteEngineProps
+ * @property {number}  [retriggerNum]
+ * @property {number}  [rate]
+ * @property {number}  [euclideanFill]
+ * @property {object}  [arp]
+ * @property {number}  [prob]
+ * @property {number}  [arpTriggerProbability]
+ */
+
+/**
+ * Sections de config lues par le generateur de base.
+ * @typedef {object} GeneratorConfig
+ * @property {number} [loopPointBeat]
+ * @property {number} [loopPointStep]
+ * @property {number} [stepsPerBeat]
+ */
 import { serviceRegistry } from '../../state/service_registry.js'
 import { soundRegistry } from '../../state/sound_registry.js'
 import { TRACK_VALUE_RANGES } from '../../model/track_schema.js'
@@ -52,8 +72,8 @@ export default class BaseGenerator {
 
     /**
      * Compute the absolute loop point step from config and track.
-     * @param {object} track  - track with stepsPerBeat
-     * @param {object} config - generator config with loopPointBeat/loopPointStep
+     * @param {{stepsPerBeat?: number}} track - track with stepsPerBeat
+     * @param {GeneratorConfig} config - generator config with loopPointBeat/loopPointStep
      * @param {number} [defaultBar=1] - default loopPointBeat if not in config
      * @returns {number} absolute step index
      */
@@ -231,8 +251,8 @@ export default class BaseGenerator {
 
     /**
      * Copy engine properties (retrigger, arp, euclideanFill, probability) from a config source to a note.
-     * @param {object} note   - note object to mutate
-     * @param {object} source - config or phrase object containing optional engine properties
+     * @param {NoteEngineProps} note   - note object to mutate
+     * @param {NoteEngineProps} source - config or phrase object containing optional engine properties
      */
     applyNoteProperties = (note, source) => {
         if (typeof source.retriggerNum === 'number') note.retriggerNum = source.retriggerNum
@@ -301,7 +321,7 @@ export default class BaseGenerator {
     /**
      * Temporarily override track.stepsPerBeat, run fn, then restore the original value.
      * Uses try/finally to guarantee restoration even on exception.
-     * @param {object}   track          - track with stepsPerBeat property
+     * @param {{stepsPerBeat?: number}} track - track with stepsPerBeat property
      * @param {number}   targetQuantize - value to set during fn execution
      * @param {Function} fn             - generation function to run with overridden stepsPerBeat
      */

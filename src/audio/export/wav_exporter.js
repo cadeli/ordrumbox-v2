@@ -1,4 +1,3 @@
-// @ts-check
 import AudioEngine from '../engine.js'
 import { TICK } from '../../core/constants.js'
 import { bufferToWav } from './wav_encoder.js'

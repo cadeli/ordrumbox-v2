@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/context_menu_section.js
 // Right-click menus for the pattern grid: track menu and cell (notes) menu.
 

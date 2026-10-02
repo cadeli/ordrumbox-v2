@@ -1,4 +1,3 @@
-// @ts-check
 import Utils from '../core/utils.js'
 import AudioEngine from '../audio/engine.js'
 import AudioStallDetector from '../audio/stall_detector.js'

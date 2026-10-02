@@ -45,7 +45,7 @@ function onPointerDown(e) {
     if (optEl && popup?.contains(optEl)) {
         e.preventDefault()
         e.stopPropagation()
-        const opt = optionRefs[Number(optEl.dataset.index)]
+        const opt = optionRefs[Number(/** @type {HTMLElement} */ (optEl).dataset.index)]
         if (opt && !opt.disabled) commit(opt)
         return
     }

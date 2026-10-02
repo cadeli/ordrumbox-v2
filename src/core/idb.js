@@ -10,7 +10,7 @@ const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'gen
  * Executor for the IDB request promises: `resolve` takes no value here, so
  * TypeScript must be told `resolve()` is callable (default Promise<T> typing
  * would otherwise require an argument).
- * @typedef {(resolve: () => void, reject: (reason?: unknown) => void) => void} IdbExecutor
+ * @typedef {(resolve: (value?: any) => void, reject: (reason?: any) => void) => void} IdbExecutor
  */
 
 /**

@@ -23,6 +23,22 @@ function formatParamValue(value) {
     return str.length > REPORT_VALUE_MAX ? `${str.slice(0, REPORT_VALUE_MAX - 1)}…` : str
 }
 
+/**
+ * Une entree de la pile d'historique : la commande et son bookkeeping de
+ * fusion. `meta` porte le rapport affiche au toast d'annulation.
+ * @typedef {object} HistoryEntry
+ * @property {() => void} execute
+ * @property {() => void} undo
+ * @property {() => void} [redo]
+ * @property {string} [desc]
+ * @property {object} [meta]
+ * @property {object} [meta.params] parametres modifies, pour le rapport
+ * @property {object} [meta.prev] valeurs avant modification
+ * @property {string} [meta.desc]
+ * @property {string} [coalesceKey] regroupe les gestes repetes de meme cle
+ * @property {number} [coalesceAt] horodatage du dernier regroupement
+ */
+
 export default class HistoryManager {
     /** Window in which two records with the same coalesceKey merge into one undo step. */
     static COALESCE_WINDOW_MS = 400
@@ -67,6 +83,7 @@ export default class HistoryManager {
      * execute/meta are replaced by the newest values — so a whole slider
      * drag is a single undo step instead of one per input tick.
      */
+    /** @param {HistoryEntry} command */
     record(command) {
         if (this.#isUndoing || this.#isRedoing) return
 
@@ -97,8 +114,8 @@ export default class HistoryManager {
 
     /**
      * Execute and record a command in one step.
-     * @param {Function} executeFn - The action to perform
-     * @param {Function} undoFn - The inverse action
+     * @param {() => void} executeFn - The action to perform
+     * @param {() => void} undoFn - The inverse action
      * @param {object} [meta] - Optional metadata
      * @returns {any} Result of executeFn
      */
@@ -171,7 +188,7 @@ export default class HistoryManager {
      * parameters (with "current → restored" arrows when prev values are
      * known) and the resulting stack sizes.
      * @param {'Undo'|'Redo'} action
-     * @param {object} command - the history entry that was applied
+     * @param {HistoryEntry} command - the history entry that was applied
      */
     #toastReport(action, command) {
         const meta = command.meta ?? {}

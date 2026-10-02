@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/synth_editor.js — Coordinator
 //
 // Thin coordinator that delegates rendering to section modules.

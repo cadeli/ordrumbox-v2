@@ -110,7 +110,7 @@ export default class DrumkitManager extends BasePanel {
         this.#detailEl = this.container.querySelector('#dm-detail')
 
         this.listen(this.container.querySelector('#dm-add-sample'), 'click', () => {
-            this.container.querySelector('#dm-add-file').click()
+            ;/** @type {HTMLElement} */ (this.container.querySelector('#dm-add-file')).click()
         })
 
         this.listen(this.container.querySelector('#dm-add-file'), 'change', (e) => {
@@ -126,7 +126,7 @@ export default class DrumkitManager extends BasePanel {
         })
 
         this.listen(this.container.querySelector('#dm-import-dir'), 'click', () => {
-            this.container.querySelector('#dm-import-dir-file').click()
+            ;/** @type {HTMLElement} */ (this.container.querySelector('#dm-import-dir-file')).click()
         })
         this.listen(this.container.querySelector('#dm-import-dir-file'), 'change', (e) => {
             this.#onImportDir(e)
@@ -136,7 +136,7 @@ export default class DrumkitManager extends BasePanel {
             this.#saveCurrentKit()
         })
         this.listen(this.container.querySelector('#dm-load-kit'), 'click', () => {
-            this.container.querySelector('#dm-load-kit-file').click()
+            ;/** @type {HTMLElement} */ (this.container.querySelector('#dm-load-kit-file')).click()
         })
         this.listen(this.container.querySelector('#dm-load-kit-file'), 'change', (e) => {
             this.#onLoadKitFile(e)
@@ -336,14 +336,22 @@ export default class DrumkitManager extends BasePanel {
         })
 
         this.listen(this.#detailEl.querySelector('#dm-kit-select'), 'change', (e) => {
-            const displayName = drumkitService.moveToKit(key, e.target.value)
-            if (displayName) showToast(`Moved "${displayName}" to kit "${e.target.value}"`, 'success')
+            const displayName = drumkitService.moveToKit(key, /** @type {HTMLInputElement} */ (e.target).value)
+            if (displayName)
+                showToast(
+                    `Moved "${displayName}" to kit "${/** @type {HTMLInputElement} */ (e.target).value}"`,
+                    'success',
+                )
             this.sync()
         })
 
         this.listen(this.#detailEl.querySelector('#dm-inst-select'), 'change', (e) => {
-            const displayName = drumkitService.setInstrument(key, e.target.value)
-            if (displayName) showToast(`Set "${displayName}" to instrument "${e.target.value}"`, 'success')
+            const displayName = drumkitService.setInstrument(key, /** @type {HTMLInputElement} */ (e.target).value)
+            if (displayName)
+                showToast(
+                    `Set "${displayName}" to instrument "${/** @type {HTMLInputElement} */ (e.target).value}"`,
+                    'success',
+                )
             this.sync()
         })
 

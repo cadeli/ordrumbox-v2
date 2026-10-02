@@ -1,4 +1,3 @@
-// @ts-check
 import { nameOr } from '../core/logger.js'
 /**
  * track_schema.js — Single source of truth for the track structure.
@@ -21,9 +20,9 @@ import { nameOr } from '../core/logger.js'
  * @property {number}  beatCount              - Number of beats in the track. Default: 4
  * @property {number}  stepsPerBeat         - Steps per beat (subdivision). Default: 4
  * @property {number|null} loopAtStep       - Loop point in steps (null = auto). Default: null
- * @property {number}  swingResolution      - Swing grid resolution (1–8). Default: 1
- * @property {number}  swingAmount          - Swing intensity (0–1). Default: 0
- * @property {number}  velocity             - Track velocity multiplier (0–1). Default: 1
+ * @property {number}  swingResolution      - Swing grid resolution (1-8). Default: 1
+ * @property {number}  swingAmount          - Swing intensity (0-1). Default: 0
+ * @property {number}  velocity             - Track velocity multiplier (0-1). Default: 1
  * @property {Object|null} velocityLfo      - LFO modulating velocity. Default: null
  * @property {number}  pitch                - Track pitch offset (semitones). Default: 0
  * @property {Object|null} pitchLfo         - LFO modulating pitch. Default: null
@@ -34,21 +33,21 @@ import { nameOr } from '../core/logger.js'
  * @property {boolean} auto                 - Auto mode. Default: false
  * @property {boolean} useSoftSynth         - Use built-in synth instead of sample. Default: false
  * @property {boolean} mono                 - Mono mode. Default: false
- * @property {number}  variation            - Track variation amount (0–100). Default: 0
- * @property {number}  variation2           - Track variation 2 amount (0–100). Default: 0
+ * @property {number}  variation            - Track variation amount (0-100). Default: 0
+ * @property {number}  variation2           - Track variation 2 amount (0-100). Default: 0
  * @property {string}  filterType           - Filter type. Default: "allpass"
  * @property {Object|null} filterFreqLfo    - LFO modulating filter frequency. Default: null
  * @property {number}  filterFreq           - Filter frequency (Hz). Default: 20
  * @property {Object|null} filterQLfo       - LFO modulating filter Q. Default: null
  * @property {number}  filterQ              - Filter resonance (Q). Default: 0.707
  * @property {string}  reverbType           - Reverb algorithm. Default: "none"
- * @property {number}  reverbAmount         - Reverb wet/dry (0–1). Default: 0
+ * @property {number}  reverbAmount         - Reverb wet/dry (0-1). Default: 0
  * @property {string}  delayType            - Delay algorithm. Default: "tape"
  * @property {number}  delayTime            - Delay time multiplier. Default: 1
- * @property {number}  delayDepth           - Delay wet/dry (0–1). Default: 0
+ * @property {number}  delayDepth           - Delay wet/dry (0-1). Default: 0
  * @property {string}  fxSelected           - Selected FX slot. Default: "reverb"
  * @property {string}  saturationType       - Saturation algorithm. Default: "soft"
- * @property {number}  saturationAmount     - Saturation drive (0–1). Default: 0
+ * @property {number}  saturationAmount     - Saturation drive (0-1). Default: 0
  * @property {boolean} sat                  - Saturation enabled. Default: true
  * @property {boolean} reverbOn             - Reverb enabled. Default: true
  * @property {boolean} delayOn              - Delay enabled. Default: true

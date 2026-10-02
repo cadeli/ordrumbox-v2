@@ -4,7 +4,7 @@
 // without widening SoundSection's public surface.
 
 /**
- * @param {import('./track_editor.js').default} editor
+ * @param {import('../track_editor.js').default} editor
  * @returns {string} name of the selected drumkit, or '' when none
  */
 export function getSelectedDrumkitName(editor) {
@@ -12,8 +12,8 @@ export function getSelectedDrumkitName(editor) {
 }
 
 /**
- * @param {import('./track_editor.js').default} editor
- * @returns {Array<object>} every sample of every kit, tagged with kitName
+ * @param {import('../track_editor.js').default} editor
+ * @returns {Array<import('../../state/sound_registry.js').SoundEntry>} every sample of every kit, tagged with kitName
  */
 export function getAllKitSamples(editor) {
     return editor.soundRegistry.drumkitList.flatMap((kit) => kit.instruments.map((s) => ({ ...s, kitName: kit.name })))
@@ -21,9 +21,9 @@ export function getAllKitSamples(editor) {
 
 /**
  * Selected kit first, then by kit name, then by display name.
- * @param {import('./track_editor.js').default} editor
- * @param {Array<object>} samples
- * @returns {Array<object>} new sorted array
+ * @param {import('../track_editor.js').default} editor
+ * @param {Array<import('../../state/sound_registry.js').SoundEntry>} samples
+ * @returns {Array<import('../../state/sound_registry.js').SoundEntry>} new sorted array
  */
 export function sortSamplesForCurrentKit(editor, samples) {
     const selectedKitName = getSelectedDrumkitName(editor)
@@ -40,9 +40,9 @@ export function sortSamplesForCurrentKit(editor, samples) {
 }
 
 /**
- * @param {import('./track_editor.js').default} editor
+ * @param {import('../track_editor.js').default} editor
  * @param {string} instrumentId
- * @returns {Array<object>} sorted samples of that instrument
+ * @returns {Array<import('../../state/sound_registry.js').SoundEntry>} sorted samples of that instrument
  */
 export function getSamplesForInstrument(editor, instrumentId) {
     return sortSamplesForCurrentKit(
@@ -52,16 +52,16 @@ export function getSamplesForInstrument(editor, instrumentId) {
 }
 
 /**
- * @param {import('./track_editor.js').default} editor
+ * @param {import('../track_editor.js').default} editor
  * @param {string} instrumentId
- * @returns {object|null} first sample of that instrument, or null
+ * @returns {import('../../state/sound_registry.js').SoundEntry|null} first sample of that instrument, or null
  */
 export function getPreferredSampleForInstrument(editor, instrumentId) {
     return getSamplesForInstrument(editor, instrumentId)[0] ?? null
 }
 
 /**
- * @param {import('./track_editor.js').default} editor
+ * @param {import('../track_editor.js').default} editor
  * @returns {string} resolved sound URL (falls back to the raw sound id)
  */
 export function getCurrentSoundUrl(editor) {
@@ -72,7 +72,7 @@ export function getCurrentSoundUrl(editor) {
 
 /**
  * Instrument id of the current sound, or the track name, or the first id.
- * @param {import('./track_editor.js').default} editor
+ * @param {import('../track_editor.js').default} editor
  * @param {Array<string>} instrumentIds
  * @param {Set<string>} keysWithSamples
  * @returns {string}

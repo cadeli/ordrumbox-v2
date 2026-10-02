@@ -46,7 +46,7 @@ export default class MobileTabBar {
         this.container.addEventListener('click', (e) => {
             const btn = /** @type {Element} */ (e.target).closest('.mtb-btn')
             if (!btn) return
-            const tab = btn.dataset.tab
+            const tab = /** @type {HTMLElement} */ (btn).dataset.tab
             this.#onTabClick(tab)
         })
     }

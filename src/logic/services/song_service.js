@@ -8,11 +8,27 @@ import { showToast } from '../../core/notify.js'
 const SONGS_STORE = 'songs'
 const SONG_VERSION = 2
 
+/**
+ * Enregistrement d'un song tel que persiste par IndexedDB : les donnees du song
+ * plus sa metadonnee et l'index du pattern courant.
+ * @typedef {object} SongRecord
+ * @property {string} name
+ * @property {number} version
+ * @property {string} [description]
+ * @property {string} [date]
+ * @property {number} [savedAt]
+ * @property {number} [exportedAt]
+ * @property {Array<object & {id?: string}>} patterns
+ * @property {import('../../model/song_schema.js').Song[]} songs
+ * @property {number} [selectedPatternNum]
+ * @property {number} [selectedSongIdx]
+ */
+
 class SongService {
     /**
      * Build the serializable song data from current appState.
      * @param {string} songName
-     * @returns {object}
+     * @returns {SongRecord}
      */
     buildSongData(songName) {
         return {
@@ -50,7 +66,7 @@ class SongService {
     /**
      * Load a song from IndexedDB by key.
      * @param {string} key
-     * @returns {Promise<object|null>}
+     * @returns {Promise<SongRecord|null>}
      */
     async load(key) {
         const data = await idbGet(SONGS_STORE, key)
@@ -60,9 +76,9 @@ class SongService {
 
     /**
      * Apply loaded/imported song data to appState.
-     * @param {object} data — { name, description, date, patterns, selectedPatternNum }
+     * @param {SongRecord} data
      * @param {string} fallbackName
-     * @returns {string} resolved song name
+     * @returns {Promise<string>} resolved song name
      */
     async applyToAppState(data, fallbackName) {
         const name = data.name ?? fallbackName
@@ -112,8 +128,8 @@ class SongService {
 
     /**
      * Parse and validate an imported song file content.
-     * @param {string} text — raw JSON string
-     * @returns {object|null} parsed data or null if invalid
+     * @param {string} text - raw JSON string
+     * @returns {SongRecord|null} parsed data or null if invalid
      */
     parseImportedFile(text) {
         const data = JSON.parse(text)

@@ -1,4 +1,3 @@
-// @ts-check
 // src/model/song_schema.js
 //
 // Single source of truth for the *arrangement* format: a song is an ordered

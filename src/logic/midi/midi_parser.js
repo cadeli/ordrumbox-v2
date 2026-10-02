@@ -76,9 +76,32 @@ function parseMTrkEvents(bytes, dataOffset, length) {
 }
 
 /**
+ * En-tete MThD. `tempo` (microsecondes par noir) n'est pas produit par le
+ * parseur : le meta evenement 0x51 n'est pas lu, donc il reste absent.
+ * @typedef {object} MidiHeader
+ * @property {number} format
+ * @property {number} numTracks
+ * @property {number} division
+ */
+
+/**
+ * Un evenement de piste, meta ou MIDI.
+ * @typedef {object} MidiEvent
+ * @property {number} absTick
+ * @property {'meta'|'midi'} type
+ * @property {number} [metaType]
+ * @property {number[]} [data]
+ * @property {number} [status]
+ * @property {number} [channel]
+ * @property {number} [note]
+ * @property {number} [velocity]
+ * @property {number} [program]
+ */
+
+/**
  * Parse a MIDI Uint8Array into a structured object.
  * @param {Uint8Array} bytes - Raw MIDI file bytes
- * @returns {{ header: { format, numTracks, division }, tracks: Array<Array<event>>, trackNames: string[] }}
+ * @returns {{ header: MidiHeader, tracks: MidiEvent[][], trackNames: string[] }}
  */
 export function parseMidi(bytes) {
     const header = { format: 0, numTracks: 0, division: 96 }

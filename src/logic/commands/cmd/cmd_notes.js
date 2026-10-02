@@ -1,4 +1,3 @@
-// @ts-check
 import Utils from '../../../core/utils.js'
 import { appState } from '../../../state/app_state.js'
 import { clampStepsPerBeat } from '../../../model/track_schema.js'

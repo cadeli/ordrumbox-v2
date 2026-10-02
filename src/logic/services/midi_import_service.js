@@ -11,7 +11,7 @@ export default class MidiImportService {
     /**
      * Import a MIDI file and create patterns from it.
      * @param {File} file - MIDI file from input element
-     * @returns {Promise<{trackCount: number, patternCount: number}>}
+     * @returns {Promise<{trackCount: number, patternCount: number, warning?: string, message?: string}>}
      */
     async importFile(file) {
         logger.debug('MidiImport', `parsing "${file.name}" (${file.size} bytes)`)
@@ -20,7 +20,7 @@ export default class MidiImportService {
 
         logger.debug(
             'MidiImport',
-            `format: ${midiData.header.format}, tracks: ${midiData.tracks.length}, division: ${midiData.header.division}, tempo: ${midiData.header.tempo ?? 'none'}`,
+            `format: ${midiData.header.format}, tracks: ${midiData.tracks.length}, division: ${midiData.header.division}, tempo: ${/** @type {{tempo?: number}} */ (midiData.header).tempo ?? 'none'}`,
         )
 
         const notes = findAllNotes(midiData)
@@ -69,7 +69,11 @@ export default class MidiImportService {
         }
 
         const baseName = file.name.replace(/\.midi?$/i, '')
-        const bpm = midiData.header.tempo ? Math.round(60000000 / midiData.header.tempo) : 120
+        // Le parseur ne lit pas le meta 0x51 : tempo est toujours absent et
+        // l'import retombe sur 120 bpm. Le cast garde le comportement actuel
+        // en signalant le champ manquant.
+        const tempo = /** @type {{tempo?: number}} */ (midiData.header).tempo
+        const bpm = tempo ? Math.round(60000000 / tempo) : 120
         const PPQN = midiData.header.division ?? 96
         const patternCount = this.#createPatternsFromTrackDefs(trackDefs, baseName, bpm, PPQN)
 

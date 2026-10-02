@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/labels.js
 // Shared toast label helpers for clipboard and context menu messages.
 

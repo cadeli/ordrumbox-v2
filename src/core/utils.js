@@ -248,7 +248,7 @@ export default class Utils {
     /**
      * Track at an index or key. `pattern.tracks[i]` silently returns
      * undefined when tracks is the indexed-object form.
-     * @param {object} pattern
+     * @param {{tracks?: object|object[]}} pattern
      * @param {number|string} trackIdx
      * @returns {object|undefined}
      */
@@ -260,7 +260,7 @@ export default class Utils {
     /** Track types treated as melodic (auto-generate + empty-track pruning). */
     static MELODIC_TYPES = new Set(['BASS', 'PIANO', 'ORGAN'])
 
-    /** @param {object} track @returns {boolean} */
+    /** @param {{name?: string}} track @returns {boolean} */
     static isMelodicTrack = (track) => Utils.MELODIC_TYPES.has(Utils.detectTrackType(track?.name))
 
     static getAudibleNoteSignature = (note) => {
@@ -359,8 +359,8 @@ export default class Utils {
      * When any track has solo=true, only soloed tracks play.
      * Otherwise, all non-muted tracks play.
      *
-     * @param {any} track       – track object with mute/solo properties
-     * @param {boolean} anySolo – whether any track in the pattern has solo=true
+     * @param {any} track       - track object with mute/solo properties
+     * @param {boolean} anySolo - whether any track in the pattern has solo=true
      * @returns {boolean}
      */
     static shouldTrackPlay(track, anySolo) {
@@ -370,7 +370,7 @@ export default class Utils {
     /**
      * Compute whether any track in a tracks collection has solo enabled.
      *
-     * @param {object[]|object} tracks – array or object values of tracks
+     * @param {object[]|object} tracks - array or object values of tracks
      * @returns {boolean}
      */
     static hasAnySolo(tracks) {

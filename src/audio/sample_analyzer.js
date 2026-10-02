@@ -2,13 +2,21 @@ import AudioAnalyzer from './analyze.js'
 import { hzToNote } from '../core/hz_to_note.js'
 
 const analyzer = new AudioAnalyzer()
+/** @type {Map<AudioBuffer, SampleAnalysis>} */
 const cache = new Map()
+
+/**
+ * Analyse d'un echantillon : ce que renvoie AudioAnalyzer, plus noteInfo.
+ * @typedef {import('./analyze.js').AudioAnalysis & {
+ *     noteInfo: {note: string, octave: number, cents: number}|null,
+ * }} SampleAnalysis
+ */
 
 /**
  * Analyze an AudioBuffer and return metrics + note info.
  * Results are cached by buffer reference.
  * @param {AudioBuffer} audioBuffer
- * @returns {object} analysis result with noteInfo added
+ * @returns {SampleAnalysis|null} analysis result, or null without a buffer
  */
 export function analyzeSample(audioBuffer) {
     if (!audioBuffer) return null
@@ -17,8 +25,9 @@ export function analyzeSample(audioBuffer) {
         return cache.get(audioBuffer)
     }
 
-    const result = analyzer.analyzeAudioBuffer(audioBuffer)
-    result.noteInfo = result.fundamentalHz ? hzToNote(result.fundamentalHz) : null
+    // Etendu plutot que mute : noteInfo n'appartient pas a AudioAnalysis.
+    const base = analyzer.analyzeAudioBuffer(audioBuffer)
+    const result = { ...base, noteInfo: base.fundamentalHz ? hzToNote(base.fundamentalHz) : null }
 
     cache.set(audioBuffer, result)
     return result
@@ -26,7 +35,7 @@ export function analyzeSample(audioBuffer) {
 
 /**
  * Clear the analysis cache (e.g. after replacing a sample buffer).
- * @param {AudioBuffer} [audioBuffer] – specific buffer, or all if omitted
+ * @param {AudioBuffer} [audioBuffer] - specific buffer, or all if omitted
  */
 export function clearAnalysisCache(audioBuffer) {
     if (audioBuffer) {
@@ -39,10 +48,10 @@ export function clearAnalysisCache(audioBuffer) {
 /**
  * Draw an envelope waveform on a canvas context.
  * @param {CanvasRenderingContext2D} ctx
- * @param {number[]} envelope – array of amplitude values (0..1)
+ * @param {number[]} envelope - array of amplitude values (0..1)
  * @param {number} width
  * @param {number} height
- * @param {string|object} [strokeOrColors] – CSS color string (legacy) or
+ * @param {string|object} [strokeOrColors] - CSS color string (legacy) or
  *        { stroke, background, fill, lineWidth }. `lineWidth` is in canvas
  *        pixels (default 1.5) — pass a devicePixelRatio-scaled value when the
  *        backing store is scaled.
@@ -55,7 +64,7 @@ export function clearAnalysisCache(audioBuffer) {
  * @param {{decay?: number, buffer?: {duration: number}, duration?: number}} sound
  * @param {number} width canvas width in CSS px
  * @param {number} height canvas height in CSS px
- * @param {object} theme - { marker, lineWidth }
+ * @param {{marker: string, lineWidth: number}} theme
  * @param {number} dpr devicePixelRatio (marker dashes are scaled by it)
  */
 export function drawDecayMarker(ctx, sound, width, height, theme, dpr) {

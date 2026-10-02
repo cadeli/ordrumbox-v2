@@ -1,4 +1,3 @@
-// @ts-check
 import Strip from './strip.js'
 import WorkletLoader from './worklets/loader.js'
 import MASTER_BUS_SOURCE from './worklets/processors/master_bus_source.js'
@@ -222,7 +221,7 @@ export default class Mixer {
      * @typedef {Object} MasterBusOptions
      * @property {number} [lowcut]    High-pass filter frequency
      * @property {number} [hicut]     Low-pass filter frequency
-     * @property {number} [master]    Master output gain (0–1)
+     * @property {number} [master]    Master output gain (0-1)
      * @property {number} [threshold] Compressor threshold (dB)
      * @property {number} [ratio]     Compressor ratio
      * @property {number} [knee]      Compressor knee (dB)

@@ -61,7 +61,7 @@ export default class TransportControls {
         for (let i = 1; i <= MAX_BEATS; i++) {
             const opt = document.createElement('option')
             opt.value = String(i)
-            opt.textContent = i
+            opt.textContent = String(i)
             tb.beatsSelect.appendChild(opt)
         }
         beatsWrap.appendChild(beatsLabel)

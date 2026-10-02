@@ -45,6 +45,7 @@ export default class OutputPanel extends BasePanel {
 
     constructor() {
         super('output-panel')
+        /** @type {HTMLCanvasElement|null} */
         this.canvas = null
     }
 
@@ -75,7 +76,7 @@ export default class OutputPanel extends BasePanel {
         this.#buildCompressorSliders()
         this.#buildFilterSliders()
 
-        this.canvas = this.container.querySelector('#op-spectrum')
+        this.canvas = /** @type {HTMLCanvasElement} */ (this.container.querySelector('#op-spectrum'))
         this.canvas.width = SPECTRUM_WIDTH
         this.canvas.height = SPECTRUM_HEIGHT
 

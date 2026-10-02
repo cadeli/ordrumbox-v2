@@ -20,7 +20,7 @@ export class OrTab {
     #tabs
     /** @type {(tabId: string) => void} */
     #onChange
-    /** @type {object} */
+    /** @type {{bar: string, btn: string, panel: string, hidden: string, dataAttr: string, panelData: string}} */
     #css
 
     /**
@@ -35,16 +35,16 @@ export class OrTab {
 
     /**
      * @param {object} opts
-     * @param {Array<{id: string, label: string}>} opts.tabs
-     * @param {string} [opts.defaultTab] — defaults to first tab's id
+     * @param {Array<{id: string, label: string}>} [opts.tabs]
+     * @param {string} [opts.defaultTab] - defaults to first tab's id
      * @param {(tabId: string) => void} [opts.onChange]
-     * @param {object} [opts.css] — custom CSS class / data-attribute overrides
-     * @param {string} [opts.css.bar]        — tab bar container class (default: 'ne-tab-bar')
-     * @param {string} [opts.css.btn]        — tab button class (default: 'ne-tab-btn')
-     * @param {string} [opts.css.panel]      — panel class (default: 'ne-tab-panel')
-     * @param {string} [opts.css.hidden]     — hidden panel class (default: 'ne-tab-panel-hidden')
-     * @param {string} [opts.css.dataAttr]   — data attribute for tab id on buttons (default: 'ne-tab')
-     * @param {string} [opts.css.panelData]  — data attribute for panel id (default: 'tab-panel')
+     * @param {object} [opts.css] - custom CSS class / data-attribute overrides
+     * @param {string} [opts.css.bar]        - tab bar container class (default: 'ne-tab-bar')
+     * @param {string} [opts.css.btn]        - tab button class (default: 'ne-tab-btn')
+     * @param {string} [opts.css.panel]      - panel class (default: 'ne-tab-panel')
+     * @param {string} [opts.css.hidden]     - hidden panel class (default: 'ne-tab-panel-hidden')
+     * @param {string} [opts.css.dataAttr]   - data attribute for tab id on buttons (default: 'ne-tab')
+     * @param {string} [opts.css.panelData]  - data attribute for panel id (default: 'tab-panel')
      */
     constructor({ tabs, defaultTab, onChange, css } = {}) {
         this.#tabs = tabs ?? []
@@ -123,8 +123,8 @@ export class OrTab {
             barEl.appendChild(button)
         }
         barEl.addEventListener('click', (e) => {
-            const clicked = e.target.closest(`[data-${dataAttr}]`)
-            if (clicked) this.setActive(clicked.dataset[camelDataAttr])
+            const clicked = /** @type {HTMLElement} */ (e.target).closest(`[data-${dataAttr}]`)
+            if (clicked) this.setActive(/** @type {HTMLElement} */ (clicked).dataset[camelDataAttr])
         })
         return barEl
     }
@@ -138,14 +138,16 @@ export class OrTab {
     bindTo(root) {
         const { bar, dataAttr } = this.#css
         const camelDataAttr = OrTab.#toCamel(dataAttr)
-        const barEl = root.classList?.contains(bar)
-            ? root
-            : (root.querySelector(`:scope > .${bar}`) ?? root.querySelector(`.${bar}`))
+        const barEl = /** @type {HTMLElement|null} */ (
+            root.classList?.contains(bar)
+                ? root
+                : (root.querySelector(`:scope > .${bar}`) ?? root.querySelector(`.${bar}`))
+        )
         if (!barEl || barEl.dataset.orTabBound) return
         barEl.dataset.orTabBound = '1'
         barEl.addEventListener('click', (e) => {
-            const clicked = e.target.closest(`[data-${dataAttr}]`)
-            if (clicked) this.setActive(clicked.dataset[camelDataAttr])
+            const clicked = /** @type {HTMLElement} */ (e.target).closest(`[data-${dataAttr}]`)
+            if (clicked) this.setActive(/** @type {HTMLElement} */ (clicked).dataset[camelDataAttr])
         })
     }
 
@@ -157,7 +159,7 @@ export class OrTab {
     togglePanels(container) {
         const { panel, hidden, panelData } = this.#css
         const camelPanelData = OrTab.#toCamel(panelData)
-        container.querySelectorAll(`.${panel}`).forEach((p) => {
+        container.querySelectorAll(`.${panel}`).forEach((/** @type {any} */ p) => {
             p.classList.toggle(hidden, p.dataset[camelPanelData] !== this.#activeTab)
         })
     }

@@ -40,7 +40,7 @@ export function computeNoteRatio(fpitch) {
  * @param {Object|null} lfo  LFO config: { freq, min, max, phase }
  * @param {number|null} tick      Current tick position (for tick-based mode)
  * @param {number|null} nbTicks   Total ticks in the pattern (for tick-based mode)
- * @param {string|null} controlKey  Optional control key for normalization
+ * @param {string|null} [controlKey]  Optional control key for normalization
  * @param {number|null} audioTime   AudioContext.currentTime (for time-based mode)
  * @param {number|null} bpm         Current BPM (for time-based mode)
  * @returns {number} LFO value in base units

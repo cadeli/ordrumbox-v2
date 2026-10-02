@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/PlaybackOverlaySection.js
 // Playhead animation, VU meter updates, RAF loop.
 

@@ -12,8 +12,8 @@ import { createStepResolver } from './step_resolver.js'
  * `pitchOffset` is the arp sequence step relative to the note row — the pattern
  * grid ignores it (no pitch dimension), the piano roll renders it.
  *
- * @param {object} note
- * @param {object} track
+ * @param {{rate?: number, euclideanFill?: number, euclideanRotation?: number, arp?: object, retriggerNum?: number}} note
+ * @param {{stepsPerBeat?: number}} track
  * @param {number} totalSteps - bar length in steps (positions beyond are dropped)
  * @param {Function} [resolveSpanEnd] - note → exclusive end step (span resolver)
  * @returns {Array<{pos: number, type: 'retrigger'|'euclidean', pitchOffset: number}>}

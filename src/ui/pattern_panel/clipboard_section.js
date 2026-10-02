@@ -1,4 +1,3 @@
-// @ts-check
 // src/ui/pattern_panel/clipboard_section.js
 // Step/track clipboard: copy & paste operations triggered by keyboard
 // shortcuts (Ctrl+C/V) and by the track/cell context menus.

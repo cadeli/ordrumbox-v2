@@ -74,6 +74,13 @@ export default class TrackEditor extends BasePanel {
      * @param {object} [deps]  Optional dependency overrides (DI).
      *   When omitted the module-level singletons are used.
      */
+    /**
+     * @param {object} [deps] injected singletons, defaulting to the modules
+     * @param {object} [deps.appState]
+     * @param {object} [deps.serviceRegistry]
+     * @param {object} [deps.soundRegistry]
+     * @param {object} [deps.playbackEvents]
+     */
     constructor(deps = {}) {
         super('te-panel')
 
@@ -546,7 +553,7 @@ export default class TrackEditor extends BasePanel {
     }
 
     #drawSampleWaveform() {
-        const canvas = this.container?.querySelector('.te-waveform')
+        const canvas = /** @type {HTMLCanvasElement | null} */ (this.container?.querySelector('.te-waveform'))
         if (!canvas) return
         const sound = this.#soundRegistry.sounds[this.#track?.soundId]
         if (!sound?.buffer) return
@@ -565,7 +572,7 @@ export default class TrackEditor extends BasePanel {
         }
         this.#observeWaveformCanvas(canvas)
 
-        const ctx = canvas.getContext('2d')
+        const ctx = /** @type {HTMLCanvasElement} */ (canvas).getContext('2d')
         const theme = sampleWaveformTheme(2 * dpr)
         drawEnvelope(ctx, analysis.envelope, w, h, theme)
 
@@ -583,11 +590,11 @@ export default class TrackEditor extends BasePanel {
 
     #onLoadSample() {
         const input = this.container?.querySelector('.te-load-input')
-        if (input) input.click()
+        if (input) /** @type {HTMLElement} */ (input).click()
     }
 
     async #onSampleFileSelected(e) {
-        const file = e.target.files?.[0]
+        const file = /** @type {HTMLInputElement} */ (e.target).files?.[0]
         if (!file || !this.#track) return
         const ctx = this.#serviceRegistry.audioCtx
         if (!ctx) return
@@ -617,7 +624,8 @@ export default class TrackEditor extends BasePanel {
             logger.warn('TrackEditor', `Sample import failed: ${err.message}`)
             showToast('Sample import failed: ' + err.message, 'error')
         }
-        e.target.value = ''
+        const input = /** @type {HTMLInputElement} */ (e.target)
+        input.value = ''
     }
 
     #toggleFxByKey(key) {
@@ -699,21 +707,21 @@ export default class TrackEditor extends BasePanel {
         // LFO sliders are plain <input> elements (not OrSlider instances)
         // and require delegated input handling.
         this.listen(this.container, 'input', (e) => {
-            const target = e.target
+            const target = /** @type {HTMLElement} */ (e.target)
             if (target.dataset.lfoKey) {
                 this.#onLfoSlider(target)
             }
         })
 
         this.listen(this.container, 'focusin', (e) => {
-            if (e.target.tagName === 'SELECT') this.#isSelecting = true
+            if (/** @type {HTMLElement} */ (e.target).tagName === 'SELECT') this.#isSelecting = true
         })
         this.listen(this.container, 'focusout', (e) => {
-            if (e.target.tagName === 'SELECT') this.#isSelecting = false
+            if (/** @type {HTMLElement} */ (e.target).tagName === 'SELECT') this.#isSelecting = false
         })
 
         this.listen(this.container, 'change', (e) => {
-            const target = e.target
+            const target = /** @type {HTMLElement} */ (e.target)
             // the nested note editor owns its own selects (arpScale, arpType…)
             if (target.closest('#ne-container')) return
             if (target.classList.contains('te-load-input')) {
@@ -742,7 +750,7 @@ export default class TrackEditor extends BasePanel {
         })
 
         this.listen(this.container, 'click', (e) => {
-            const target = e.target
+            const target = /** @type {HTMLElement} */ (e.target)
             if (target.dataset.lfoToggleBtn) {
                 this.#onLfoToggleBtn(target.dataset.lfoToggleBtn)
                 return
@@ -766,7 +774,7 @@ export default class TrackEditor extends BasePanel {
             {
                 const genTabEl = target.closest?.('[data-gen-tab]')
                 if (genTabEl) {
-                    this.#onGenTab(genTabEl.dataset.genTab)
+                    this.#onGenTab(/** @type {HTMLElement} */ (genTabEl).dataset.genTab)
                     return
                 }
             }
@@ -779,7 +787,7 @@ export default class TrackEditor extends BasePanel {
             if (!btn) {
                 const row = target.closest('.ne-row[data-prop]')
                 if (row && target.tagName !== 'INPUT' && target.tagName !== 'SELECT') {
-                    this.#onRowClick(row.dataset.prop)
+                    this.#onRowClick(/** @type {HTMLElement} */ (row).dataset.prop)
                 }
                 return
             }

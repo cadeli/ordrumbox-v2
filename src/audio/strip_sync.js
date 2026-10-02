@@ -1,6 +1,31 @@
 import Defaults from '../patterns/defaults.js'
 
 /**
+ * Les seules proprietes lues par applyTrackToStrip. Modelise le contrat reel du
+ * module plutot que le type Track complet, dont le reste n'est pas utilise ici.
+ * @typedef {object} StripParams
+ * @property {string}  [filterType]
+ * @property {number}  [filterFreq]
+ * @property {boolean} [filterFreqLfo]
+ * @property {number}  [filterQ]
+ * @property {boolean} [filterQLfo]
+ * @property {string}  [saturationType]
+ * @property {boolean} [sat]
+ * @property {number}  [saturationAmount]
+ * @property {string}  [reverbType]
+ * @property {boolean} [reverbOn]
+ * @property {number}  [reverbAmount]
+ * @property {string}  [delayType]
+ * @property {boolean} [delayOn]
+ * @property {number}  [delayTime]
+ * @property {number}  [delayDepth]
+ * @property {number}  [velocity]
+ * @property {number}  [velocityLfo]
+ * @property {number}  [pan]
+ * @property {number}  [panLfo]
+ * @property {boolean} [mute]
+ */
+/**
  * Apply track/params properties to a Web Audio strip.
  *
  * Single source of truth for mapping track properties to strip method calls
@@ -9,12 +34,12 @@ import Defaults from '../patterns/defaults.js'
  * LFO values are pre-computed in JS and pushed to strip parameters
  * at each step boundary by the engine — not handled here.
  *
- * @param {Strip} strip   – target strip node
- * @param {object}  track   – track object with all parameter properties
- * @param {number}  time    – audio context currentTime for ramp scheduling
- * @param {object}  [opts]  – optional overrides
- * @param {boolean} [opts.skipVelocityPan=false] – skip velocity/pan gain ramp
- * @param {boolean} [opts.readDefaults=true]      – read missing props from Defaults
+ * @param {import('./strip.js').default} strip - target strip node
+ * @param {StripParams} track - the track properties this module reads
+ * @param {number}  time    - audio context currentTime for ramp scheduling
+ * @param {object}  [opts]  - optional overrides
+ * @param {boolean} [opts.skipVelocityPan=false] - skip velocity/pan gain ramp
+ * @param {boolean} [opts.readDefaults=true]      - read missing props from Defaults
  */
 export function applyTrackToStrip(strip, track, time, opts) {
     if (!strip || !track) return
@@ -60,9 +85,9 @@ export function applyTrackToStrip(strip, track, time, opts) {
  *
  * Delegates to applyTrackToStrip with readDefaults=false.
  *
- * @param {Strip} strip   – target strip node
- * @param {object}  params  – partial track/params object
- * @param {number}  time    – audio context currentTime
+ * @param {import('./strip.js').default} strip   - target strip node
+ * @param {object}  params  - partial track/params object
+ * @param {number}  time    - audio context currentTime
  */
 export function applyParamsToStrip(strip, params, time) {
     applyTrackToStrip(strip, params, time, { readDefaults: false })

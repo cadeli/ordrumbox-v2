@@ -212,7 +212,7 @@ export default class MidiExporter {
      * Uses the real pattern engine for every loop iteration so that
      * every, retrigger, arpeggio and loop expansion are all respected.
      *
-     * @param {object} pattern
+     * @param {{bpm?: number, beatCount?: number, tracks?: object[], name?: string}} pattern
      * @param {{ loops?: number }} [options]
      * @returns {Uint8Array}
      */
@@ -221,7 +221,7 @@ export default class MidiExporter {
 
         const bpm = pattern.bpm ?? 120
         const beatCount = pattern.beatCount ?? 4
-        const tracks = pattern.tracks ?? []
+        const tracks = /** @type {Array<{name: string}>} */ (pattern.tracks ?? [])
         const nbTickForPattern = computeNbTickForPattern(beatCount, TICK)
 
         // Collect engine events per track name
@@ -296,7 +296,7 @@ export default class MidiExporter {
 
     download(pattern, filename, options = {}) {
         const bytes = this.export(pattern, options)
-        const blob = new Blob([bytes], { type: 'audio/midi' })
+        const blob = new Blob([/** @type {BlobPart} */ (bytes)], { type: 'audio/midi' })
         downloadBlob(blob, filename ?? `${pattern.name ?? 'pattern'}.mid`)
     }
 }

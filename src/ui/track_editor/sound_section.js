@@ -15,7 +15,7 @@ import {
 export default class SoundSection {
     #editor
 
-    /** @param {import('./track_editor.js').default} editor */
+    /** @param {import('../track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
     }

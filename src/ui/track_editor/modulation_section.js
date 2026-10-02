@@ -9,7 +9,7 @@ import { fmt } from '../components/ui_utils.js'
 export default class ModulationSection {
     #editor
 
-    /** @param {import('./track_editor.js').default} editor */
+    /** @param {import('../track_editor.js').default} editor */
     constructor(editor) {
         this.#editor = editor
         editor.selectedLfoTarget = null

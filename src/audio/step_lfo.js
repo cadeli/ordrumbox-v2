@@ -12,7 +12,7 @@ const LFO_SMOOTHING = 0.005
  * @param {import('./mixer.js').default} mixer
  * @param {any} pattern
  * @param {number} tick
- * @param {number} atTime — AudioContext time
+ * @param {number} atTime - AudioContext time
  * @param {number} TICK
  */
 export async function pushStepLfo(mixer, pattern, tick, atTime, TICK) {

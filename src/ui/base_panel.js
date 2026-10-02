@@ -1,4 +1,3 @@
-// @ts-check
 import { injectUiCss, escapeHtml } from './components/ui_utils.js'
 
 /**

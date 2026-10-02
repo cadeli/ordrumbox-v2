@@ -139,10 +139,18 @@ function copyNoteProps(note, sourceNote, track) {
  *
  * Imports notes from both compact (arrays with noteKeys) and object formats.
  *
- * @param {object} sourcePattern – the JSON pattern to import
- * @param {Function} addPattern  – fn(name) => pattern  (creates + registers)
- * @param {Function} addTrack    – fn(pattern, name) => track
- * @param {Function} addNote     – fn(track, beat, beatStep, pitch) => note
+ * @param {object} sourcePattern - the JSON pattern to import
+ * @param {string} [sourcePattern.name]
+ * @param {string} [sourcePattern.id]
+ * @param {number} [sourcePattern.bpm]
+ * @param {number} [sourcePattern.beatCount]
+ * @param {string} [sourcePattern.application]
+ * @param {string} [sourcePattern.url]
+ * @param {string[]} [sourcePattern.tags]
+ * @param {object|object[]} [sourcePattern.tracks]
+ * @param {Function} addPattern  - fn(name) => pattern  (creates + registers)
+ * @param {Function} addTrack    - fn(pattern, name) => track
+ * @param {Function} addNote     - fn(track, beat, beatStep, pitch) => note
  * @returns {object} the imported pattern
  */
 export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNote) {

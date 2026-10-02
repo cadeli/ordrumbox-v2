@@ -1,4 +1,3 @@
-// @ts-check
 // src/logic/song_playback.js
 //
 // Resolves what the transport must sound at a given tick when a song

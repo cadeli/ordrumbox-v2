@@ -10,7 +10,7 @@ export function isMobileLandscape() {
 
 /**
  *
- * @param {HTMLElement} teContainer  — #te-panel
+ * @param {HTMLElement} teContainer  - #te-panel
  */
 export function applyLayout(teContainer) {
     teContainer?.classList.add('te-mobile-landscape')

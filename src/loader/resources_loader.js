@@ -20,6 +20,16 @@ import { showToast } from '../core/notify.js'
 import { EVENTS } from '../core/events.js'
 import { MASTER_BUS_DEFAULTS, SESSION_DEFAULTS } from '../core/constants.js'
 
+/**
+ * Instantané de session persiste dans soundRegistry.settings.session. Rempli
+ * champ par champ par saveSession(), donc tous optionnels a la creation.
+ * @typedef {object} SessionSnapshot
+ * @property {number} [selectedDrumkitNum]
+ * @property {number} [selectedPatternNum]
+ * @property {number} [selectedTrackNum]
+ * @property {string} [currentView]
+ */
+
 export default class ResourcesLoader {
     static TAG = 'ResourcesLoader'
     static get KITS_PATH() {
@@ -85,7 +95,7 @@ export default class ResourcesLoader {
     samplesLoadFailed = false
     /** @type {Promise<void> | null} In-flight single-flight promise for pattern loading */
     #patternsLoadingPromise = null
-    /** @type {Promise<void> | null} In-flight single-flight promise for sample loading */
+    /** @type {Promise<unknown> | null} In-flight single-flight promise for sample loading */
     #samplesLoadingPromise = null
 
     /** @type {Promise<void> | null} In-flight settings hydration */
@@ -243,7 +253,8 @@ export default class ResourcesLoader {
     saveSession = () => {
         // Persist session snapshot from appState (authoritative runtime source).
         // soundRegistry.settings.session is a serialization buffer for IDB only.
-        const s = (soundRegistry.settings.session ??= {})
+        const settings = /** @type {{session?: SessionSnapshot}} */ (soundRegistry.settings)
+        const s = (settings.session ??= {})
         s.selectedDrumkitNum = appState.selectedDrumkitIdx
         s.selectedPatternNum = appState.selectedPatternIdx
         s.selectedTrackNum = appState.selectedTrackIdx
@@ -347,7 +358,7 @@ export default class ResourcesLoader {
 
     onSoundsProgress = (progress) => {
         if (typeof document === 'undefined') return
-        const progressBar = document.getElementById('resourcesProgressBar')
+        const progressBar = /** @type {HTMLProgressElement|null} */ (document.getElementById('resourcesProgressBar'))
         if (progressBar) {
             progressBar.value = progress
         }
@@ -372,9 +383,11 @@ export default class ResourcesLoader {
      */
     loadSamplesForPatterns = async (patterns) => {
         const wanted = new Set()
-        const patternList = patterns?.tracks ? [patterns] : Object.values(patterns ?? {})
+        const one = /** @type {{tracks?: object}} */ (patterns)
+        const patternList = one?.tracks ? [one] : Object.values(one ?? {})
         for (const pattern of patternList) {
-            for (const track of Object.values(pattern?.tracks ?? {})) {
+            const tracks = /** @type {{tracks?: object}} */ (pattern)?.tracks
+            for (const track of Object.values(tracks ?? {})) {
                 const soundId = track?.soundId
                 if (soundId && soundId !== 'NOT_DEFINED' && !soundRegistry.sounds[soundId]?.buffer) {
                     wanted.add(soundId)
