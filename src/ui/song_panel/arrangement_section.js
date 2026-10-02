@@ -9,12 +9,13 @@
 // here drives the transport. It shows the arrangement and lets it be picked.
 
 import { appState } from '../../state/app_state.js'
-import { songLengthBars, songBpm } from '../../model/song_schema.js'
+import { songLengthBars, songBpm, barsForPattern } from '../../model/song_schema.js'
 import { escapeHtml } from '../components/ui_utils.js'
 import ContextMenu from '../components/context_menu.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
-import { barsForPattern } from '../../model/song_schema.js'
+import { TICK } from '../../core/constants.js'
+import { tickToSongBars } from '../../logic/song_playback.js'
 
 /** Width of the frozen pattern-name column, in px. */
 const LABEL_WIDTH = 74
@@ -121,14 +122,39 @@ export default class ArrangementSection {
         )
     }
 
-    /** Pattern name: remove every clip that places this pattern. */
+    /**
+     * Measure a right-click on a pattern name inserts at.
+     *
+     * The name column is frozen: there is no measure under the pointer there, so
+     * the playhead is the only position the user can actually aim at. Wrapped on
+     * the arrangement loop length, so the bar matches what is playing.
+     */
+    #playheadBar() {
+        const tick = serviceRegistry.seq?.tick ?? 0
+        const bar = tickToSongBars(tick, TICK * 4)
+        const total = this.#song.loopBars ?? songLengthBars(this.#song)
+        return Math.max(0, Math.floor(total > 0 ? bar % total : bar))
+    }
+
+    /** Pattern name: place it in the arrangement, or remove every clip using it. */
     #showRowMenu(nameEl, x, y) {
         const patternId = nameEl.dataset.pattern
         const indices = (this.#song.clips ?? []).map((c, i) => (c.pattern === patternId ? i : -1)).filter((i) => i >= 0)
         const label = this.#patternName(patternId)
+        const startBar = this.#playheadBar()
+        const patternObj = appState.patterns?.find((p) => p.id === patternId)
+        const bars = barsForPattern(patternObj)
         this.#menu.show(
             `${label} — ${indices.length} clip(s)`,
             [
+                {
+                    label: `Add at bar ${startBar + 1}`,
+                    run: () => {
+                        serviceRegistry.cmd.addSongClip({ pattern: patternId, startBar, bars })
+                        this.sync()
+                        showToast(`"${label}" added at bar ${startBar + 1}`, 'success')
+                    },
+                },
                 {
                     label: 'Delete row',
                     disabled: indices.length === 0,

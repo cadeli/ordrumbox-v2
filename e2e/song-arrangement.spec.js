@@ -160,7 +160,7 @@ test.describe('Song arrangement grid', () => {
 /**
  * Right-click menus on the arrangement grid:
  *   - on a clip        → Next (repeat just after) / Delete
- *   - on a pattern name → Delete row (every clip of that pattern)
+ *   - on a pattern name → Add at bar N (place that pattern) / Delete row (every clip of it)
  *   - on an empty cell  → Add here (the row's pattern at that measure)
  */
 test.describe('Song arrangement context menus', () => {
@@ -190,6 +190,57 @@ test.describe('Song arrangement context menus', () => {
 
         await expect.poll(() => clips(page)).toBe(before - 1)
         expect(await clipsWhere(page, "c.pattern === 'funkfill' && c.startBar === 11")).toBe(0)
+    })
+
+    test('on a pattern name: Add at bar places that pattern in the arrangement', async ({ page }) => {
+        await openSongView(page)
+        const before = await clips(page)
+        // a pattern that already has clips, so this adds a second placement
+        // rather than the row's first
+        await page.locator('.sa-row-name[data-pattern="cmpbeat"]').click({ button: 'right' })
+        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' })).toBeVisible()
+        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' }).click()
+
+        await expect.poll(() => clips(page)).toBe(before + 1)
+        expect(await clipsWhere(page, "c.pattern === 'cmpbeat' && c.startBar === 0")).toBe(1)
+    })
+
+    // The name column is frozen: no measure sits under the pointer there, so the
+    // item inserts at the playhead, wrapped on the arrangement loop.
+    test('on a pattern name: the insert bar follows the transport', async ({ page }) => {
+        await openSongView(page)
+        await page.evaluate(() => {
+            window.__e2e.serviceRegistry.transport.tick = 4 * 128 + 10
+        })
+        await page.locator('.sa-row-name[data-pattern="funk"]').click({ button: 'right' })
+        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 5' })).toBeVisible()
+        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 5' }).click()
+
+        expect(await clipsWhere(page, "c.pattern === 'funk' && c.startBar === 4")).toBe(1)
+    })
+
+    // Same pattern => same length wherever it is placed, and adding must not
+    // take away the removal entry.
+    test('on a pattern name: Add reuses the pattern length and keeps Delete row', async ({ page }) => {
+        await openSongView(page)
+        const before = await clips(page)
+        const barsOf = (page2, id) =>
+            page2.evaluate((p) => window.__e2e.appState.songs[0].clips.find((c) => c.pattern === p)?.bars ?? null, id)
+        const reference = await barsOf(page, 'cmpbeat')
+
+        await page.locator('.sa-row-name[data-pattern="cmpbeat"]').click({ button: 'right' })
+        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar' })).toBeVisible()
+        await expect(page.locator('.pp-context-menu-item', { hasText: 'Delete row' })).toBeVisible()
+        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' }).click()
+
+        await expect.poll(() => clips(page)).toBe(before + 1)
+        expect(await barsOf(page, 'cmpbeat')).toBe(reference)
+
+        // and the removal entry still removes every clip of that pattern
+        const ofPattern = await clipsWhere(page, "c.pattern === 'cmpbeat'")
+        await page.locator('.sa-row-name[data-pattern="cmpbeat"]').click({ button: 'right' })
+        await page.locator('.pp-context-menu-item', { hasText: 'Delete row' }).click()
+        await expect.poll(() => clips(page)).toBe(before + 1 - ofPattern)
     })
 
     test('on a pattern name: Delete row removes every clip of that pattern', async ({ page }) => {
