@@ -118,6 +118,26 @@ export function songPatterns(song, patterns) {
 }
 
 /**
+ * Where the transport sits in the arrangement, in bars (fractional).
+ *
+ * The transport keeps counting past the last bar — the song wraps inside
+ * resolveSongSources rather than resetting the transport — so the position is
+ * wrapped on the loop length. Shared by the grid playhead and the menus that
+ * insert a clip, which must agree on the bar they name.
+ *
+ * @param {import('../model/song_schema.js').Song|null|undefined} song
+ * @param {number} tick transport tick
+ * @param {number} [ticksPerBeat] 32
+ * @returns {number}
+ */
+export function songBarAtTick(song, tick, ticksPerBeat = 32) {
+    const bar = tickToSongBars(tick ?? 0, ticksPerBeat * BEATS_PER_BAR)
+    const total = song?.loopBars ?? songLengthBars(song)
+    if (!(total > 0) || bar <= 0) return Math.max(0, bar)
+    return ((bar % total) + total) % total
+}
+
+/**
  * Transport tick for a given bar, so the UI can show where the song is.
  * @param {number} bar
  * @param {number} ticksPerBeat

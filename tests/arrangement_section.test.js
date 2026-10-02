@@ -21,8 +21,9 @@ function build() {
     root.innerHTML = '<span class="t"></span><div class="l"></div>'
     document.body.appendChild(root)
     const list = root.querySelector('.l')
-    // the host panel only supplies listen() for the delegated contextmenu
-    const panel = { listen: vi.fn() }
+    // the host panel supplies listen() for the delegated contextmenu and sub()
+    // for the playback subscriptions (playhead loop)
+    const panel = { listen: vi.fn(), sub: vi.fn() }
     const section = new ArrangementSection(panel, root, root.querySelector('.t'), list)
     return { root, section, list, panel }
 }

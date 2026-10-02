@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
     PLAYBACK_MODE,
     resolveSongSources,
+    songBarAtTick,
     songPatterns,
     tickToSongBars,
     barToTick,
@@ -199,5 +200,43 @@ describe('songPatterns', () => {
         expect(songPatterns(song([{ pattern: 'lead', startBar: 0, bars: 1 }]), library).map((p) => p.id)).toEqual([
             'lead',
         ])
+    })
+})
+
+describe('songBarAtTick', () => {
+    const s8 = song([{ pattern: 'rock', startBar: 0, bars: 8 }], { loopBars: 8 })
+
+    it('turns a tick into fractional bars', () => {
+        expect(songBarAtTick(s8, 0)).toBe(0)
+        expect(songBarAtTick(s8, BAR / 2)).toBe(0.5)
+        expect(songBarAtTick(s8, BAR)).toBe(1)
+        expect(songBarAtTick(s8, 3 * BAR + 64)).toBeCloseTo(3.5, 6)
+    })
+
+    // The transport keeps counting after the arrangement wraps, so the position
+    // the menus name must stay a bar that exists.
+    it('wraps on the loop length instead of running past the last bar', () => {
+        expect(songBarAtTick(s8, 9 * BAR)).toBe(1)
+        expect(songBarAtTick(s8, 100 * BAR + 32)).toBeCloseTo(4.25, 6)
+    })
+
+    it('falls back to the arrangement length when the song has no loop', () => {
+        const noLoop = song([{ pattern: 'rock', startBar: 0, bars: 8 }])
+        expect(songBarAtTick(noLoop, 8 * BAR)).toBe(0)
+        expect(songBarAtTick(noLoop, 3 * BAR)).toBe(3)
+    })
+
+    // wrapping a negative tick would land on the LAST bar, which is not where a
+    // stopped transport is
+    it('is never negative, and survives a missing song or tick', () => {
+        expect(songBarAtTick(s8, -BAR)).toBe(0)
+        expect(songBarAtTick(s8, -100 * BAR)).toBe(0)
+        expect(songBarAtTick(null, 3 * BAR)).toBe(3)
+        expect(songBarAtTick(undefined, 0)).toBe(0)
+        expect(songBarAtTick(song([]), 0)).toBe(0)
+    })
+
+    it('follows the ticks-per-beat of the engine', () => {
+        expect(songBarAtTick(s8, 8, 8)).toBe(0.25) // 8 ticks per beat = half a bar
     })
 })

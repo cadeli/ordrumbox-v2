@@ -8,6 +8,10 @@ import songService from '../logic/services/song_service.js'
 import { downloadJson } from './components/ui_utils.js'
 import { EVENTS } from '../core/events.js'
 import ArrangementSection from './song_panel/arrangement_section.js'
+import ContextMenu from './components/context_menu.js'
+import { barsForPattern } from '../model/song_schema.js'
+import { songBarAtTick } from '../logic/song_playback.js'
+import { TICK } from '../core/constants.js'
 
 /**
  * Song view: pattern list + song metadata/actions.
@@ -21,6 +25,8 @@ export default class SongPanel extends BasePanel {
     #selectedIdx = null
     #songName = 'Untitled'
     #listEl
+    /** Menu of the pattern list, for placing a pattern in the arrangement. */
+    #listMenu = new ContextMenu()
     #songNameEl
     #songDateEl
     #songDescEl
@@ -88,6 +94,9 @@ export default class SongPanel extends BasePanel {
             this.container.querySelector('#sa-list'),
         )
 
+        // Delegated: the list is re-rendered from scratch on every change.
+        this.listen(this.#listEl, 'contextmenu', (/** @type {MouseEvent} */ e) => this.#onListContextMenu(e))
+
         this.listen(this.#songDescEl, 'blur', () => {
             appState.songInfos.description = this.#songDescEl.textContent.trim()
         })
@@ -119,6 +128,7 @@ export default class SongPanel extends BasePanel {
     }
 
     onDestroy() {
+        this.#listMenu.hide()
         this.#arrangement?.dispose()
     }
 
@@ -144,6 +154,50 @@ export default class SongPanel extends BasePanel {
         this.#arrangement?.sync()
     }
 
+    /**
+     * Right-click on the library list: place that pattern in the arrangement at
+     * the measure the transport is on.
+     *
+     * The list holds the whole library, so this is the only way to bring in a
+     * pattern the arrangement does not use yet — the grid rows only cover the
+     * patterns already placed.
+     * @param {MouseEvent} e
+     */
+    #onListContextMenu(e) {
+        const target = e.target instanceof Element ? e.target : null
+        const itemEl = /** @type {HTMLElement | null} */ (target?.closest('.sg-item'))
+        const patternId = itemEl?.dataset.pattern
+        if (!target || !patternId) return
+        e.preventDefault()
+
+        const song = appState.songs?.[appState.selectedSongIdx ?? 0]
+        if (!song) {
+            showToast('No song to add to', 'warning')
+            return
+        }
+
+        const pattern = appState.patterns?.find((p) => p.id === patternId)
+        const label = pattern?.name ?? patternId
+        const startBar = Math.floor(songBarAtTick(song, serviceRegistry.seq?.tick, TICK))
+        const bars = barsForPattern(pattern)
+
+        this.#listMenu.show(
+            label,
+            [
+                {
+                    label: `Add at bar ${startBar + 1}`,
+                    run: () => {
+                        serviceRegistry.cmd.addSongClip({ pattern: patternId, startBar, bars })
+                        showToast(`"${label}" added at bar ${startBar + 1}`, 'success')
+                        this.#arrangement?.sync()
+                    },
+                },
+            ],
+            e.clientX,
+            e.clientY,
+        )
+    }
+
     #renderList() {
         const patterns = appState.patterns
         if (!patterns.length) {
@@ -158,6 +212,9 @@ export default class SongPanel extends BasePanel {
 
             const item = document.createElement('div')
             item.className = 'sg-item' + (isSelected ? ' sg-selected' : '')
+            // clips reference patterns by stable id, so the menu needs one and
+            // the row index is not it
+            if (pat.id) item.dataset.pattern = pat.id
 
             const num = document.createElement('span')
             num.className = 'sg-num'

@@ -15,7 +15,10 @@ import ContextMenu from '../components/context_menu.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { showToast } from '../../core/notify.js'
 import { TICK } from '../../core/constants.js'
-import { tickToSongBars } from '../../logic/song_playback.js'
+import { songBarAtTick } from '../../logic/song_playback.js'
+import { playbackEvents } from '../../state/playback_events.js'
+import { EVENTS } from '../../core/events.js'
+import { reportUserError } from '../../core/notify.js'
 
 /** Width of the frozen pattern-name column, in px. */
 const LABEL_WIDTH = 74
@@ -35,6 +38,12 @@ export default class ArrangementSection {
     #menu = new ContextMenu()
     /** The patterns the arrangement uses — one row each. */
     #rows = []
+    /** @type {HTMLDivElement | null} */
+    #playheadEl = null
+    /** @type {number | null} */
+    #rafId = null
+    /** last px written, so the hot loop touches the DOM only when it moved */
+    #prevPlayheadPx = -1
 
     /**
      * @param {import('../song_panel.js').default} panel host, for listen/dispose
@@ -49,11 +58,85 @@ export default class ArrangementSection {
         this.#listEl = listEl
         // Delegated so it survives every re-render of the grid.
         this.#panel.listen(this.#listEl, 'contextmenu', (e) => this.#onContextMenu(e))
+
+        this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_START, () => this.startPlayhead())
+        this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_STOP, () => this.stopPlayhead())
+        // Leaving the view must not leave a loop running on a hidden panel, and
+        // coming back must not resume a stale position.
+        this.#panel.sub(playbackEvents, EVENTS.VIEW_CHANGED, () => {
+            if (appState.currentView === 'song') this.startPlayhead()
+            else this.stopPlayhead()
+        })
     }
 
     /** Closes the menu; called by the host panel's onDestroy. */
     dispose() {
         this.#menu.hide()
+        this.stopPlayhead()
+    }
+
+    /**
+     * Position of the transport inside the arrangement, in bars, fractional.
+     *
+     * The transport keeps counting past the end of the arrangement (the song
+     * wraps inside resolveSongSources), so the value is wrapped on the loop
+     * length to stay inside the grid.
+     * @returns {number}
+     */
+    #transportBar() {
+        return songBarAtTick(this.#song, serviceRegistry.seq?.tick, TICK)
+    }
+
+    /**
+     * Playhead animation, driven by rAF while the transport runs.
+     *
+     * Position is polled rather than pushed: the player publishes it per tick,
+     * but the visual belongs to the frame rate, and the arrangement view is not
+     * the only thing redrawing on playback.
+     */
+    startPlayhead() {
+        if (this.#rafId) return
+        const loop = () => {
+            this.#rafId = null
+            // Stops on its own once the transport does, so a STOP event that
+            // never arrives (panel torn down mid-play) cannot leak the loop.
+            if (!serviceRegistry.transport?.isRunning || !this.#song) {
+                this.#hidePlayhead()
+                return
+            }
+            try {
+                this.#updatePlayhead()
+            } catch (err) {
+                reportUserError('SongPanel.playhead', 'Song playhead stopped updating', { cause: err })
+                this.#hidePlayhead()
+                return
+            }
+            this.#rafId = requestAnimationFrame(loop)
+        }
+        this.#rafId = requestAnimationFrame(loop)
+    }
+
+    stopPlayhead() {
+        if (this.#rafId) {
+            cancelAnimationFrame(this.#rafId)
+            this.#rafId = null
+        }
+        this.#hidePlayhead()
+    }
+
+    #updatePlayhead() {
+        const el = this.#playheadEl
+        if (!el) return
+        const px = Math.round(this.#transportBar() * BAR_WIDTH)
+        if (px === this.#prevPlayheadPx) return
+        this.#prevPlayheadPx = px
+        el.style.display = ''
+        el.style.transform = `translateX(${px}px)`
+    }
+
+    #hidePlayhead() {
+        this.#prevPlayheadPx = -1
+        if (this.#playheadEl) this.#playheadEl.style.display = 'none'
     }
 
     /**
@@ -130,10 +213,7 @@ export default class ArrangementSection {
      * the arrangement loop length, so the bar matches what is playing.
      */
     #playheadBar() {
-        const tick = serviceRegistry.seq?.tick ?? 0
-        const bar = tickToSongBars(tick, TICK * 4)
-        const total = this.#song.loopBars ?? songLengthBars(this.#song)
-        return Math.max(0, Math.floor(total > 0 ? bar % total : bar))
+        return Math.floor(this.#transportBar())
     }
 
     /** Pattern name: place it in the arrangement, or remove every clip using it. */
@@ -235,6 +315,7 @@ export default class ArrangementSection {
         if (!song) {
             this.#listEl.innerHTML = '<div class="sa-empty">No arrangement — this song has no clips yet.</div>'
             this.#root?.classList.remove('sa-has-song')
+            this.#playheadEl = null
             return
         }
         this.#root?.classList.add('sa-has-song')
@@ -289,9 +370,13 @@ export default class ArrangementSection {
             `width:${totalBars * BAR_WIDTH}px;height:${rowCount * ROW_HEIGHT}px">` +
             rows +
             clips +
+            '<div class="sa-playhead" style="display:none"></div>' +
             '</div>' +
             '</div>'
 
+        // innerHTML was just rebuilt, so the reference to the old node is dead.
+        this.#playheadEl = this.#listEl.querySelector('.sa-playhead')
+        this.#prevPlayheadPx = -1
         this.#listEl.dataset.totalBars = String(totalBars)
         this.#listEl.dataset.bpm = String(songBpm(song))
     }

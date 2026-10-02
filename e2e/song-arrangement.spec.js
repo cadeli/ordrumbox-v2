@@ -304,3 +304,180 @@ test.describe('Song arrangement context menus', () => {
         expect(await clips(page)).toBe(before)
     })
 })
+
+/**
+ * Playhead: a cursor on the measure currently playing. The transport keeps
+ * counting past the end of the arrangement, so the cursor is also checked for
+ * wrapping back inside the grid instead of running off it.
+ */
+test.describe('Song arrangement playhead', () => {
+    const head = (page) => page.locator('.sa-playhead')
+    const px = (page) =>
+        page.evaluate(() => {
+            const el = document.querySelector('.sa-playhead')
+            const m = /translateX\((-?[\d.]+)px\)/.exec(el?.style.transform ?? '')
+            return m ? Number(m[1]) : null
+        })
+    const start = (page) => page.evaluate(() => window.__e2e.serviceRegistry.seq.toggleStartStop?.())
+    const tickTo = (page, tick) => page.evaluate((t) => (window.__e2e.serviceRegistry.transport.tick = t), tick)
+
+    test('stays hidden while the transport is stopped', async ({ page }) => {
+        await openSongView(page)
+        await expect(head(page)).toBeHidden()
+    })
+
+    test('appears on play and advances with the transport', async ({ page }) => {
+        await openSongView(page)
+        await start(page)
+        await expect(head(page)).toBeVisible()
+
+        const first = await px(page)
+        await page.waitForTimeout(900)
+        const later = await px(page)
+        expect(later).toBeGreaterThan(first)
+
+        await start(page)
+        await expect(head(page)).toBeHidden()
+    })
+
+    // The sequencer derives transport.tick from the audio clock and overwrites
+    // it, so a fixed tick cannot be forced while playing: the cursor is checked
+    // against the tick that is live, instead.
+    test('marks the measure the transport is on', async ({ page }) => {
+        await openSongView(page)
+        await start(page)
+        await expect(head(page)).toBeVisible()
+
+        const { px, tick, loopBars } = await page.evaluate(() => ({
+            px: Number(/translateX\((-?[\d.]+)px\)/.exec(document.querySelector('.sa-playhead').style.transform)?.[1]),
+            tick: window.__e2e.serviceRegistry.seq.tick,
+            loopBars: window.__e2e.appState.songs[0].loopBars,
+        }))
+        // one cell is 24px, 128 ticks per bar; +/-1px covers the frame the
+        // cursor was last painted on
+        expect(px).toBeCloseTo((((tick / 128) % loopBars) * 24) % 24, 0)
+        expect(Math.abs(px - (tick / 128) * 24).valueOf()).toBeLessThanOrEqual(1)
+    })
+
+    test('wraps back inside the grid instead of running off the end', async ({ page }) => {
+        await openSongView(page)
+        // a 2-bar loop makes the wrap observable in a few seconds; the grid
+        // itself stays 21 bars wide, exactly as it is with a 21-bar song
+        await page.evaluate(() => (window.__e2e.appState.songs[0].loopBars = 2))
+        await start(page)
+        await expect(head(page)).toBeVisible()
+
+        // the cursor is only painted once the loop runs, so the first sample can
+        // still be unpainted
+        const seen = []
+        for (let i = 0; i < 22; i++) {
+            const value = await px(page)
+            if (value !== null) seen.push(value)
+            await page.waitForTimeout(250)
+        }
+        await start(page)
+
+        // never past the loop, it comes back near its start...
+        expect(Math.max(...seen)).toBeLessThanOrEqual(2 * 24)
+        expect(Math.min(...seen)).toBeLessThan(24)
+        // ...so the cursor went backwards at least once instead of only creeping
+        // right for the whole sample window
+        expect(seen.some((value, i) => i > 0 && value < seen[i - 1])).toBe(true)
+    })
+
+    test('does not run a loop after leaving the view', async ({ page }) => {
+        await openSongView(page)
+        await start(page)
+        await expect(head(page)).toBeVisible()
+
+        await page.locator('.tb-view-btn[data-view="edit"]').click()
+        await page.waitForTimeout(600)
+        // transport still running, but the hidden panel must not keep painting
+        await expect(head(page)).toBeHidden()
+
+        await start(page)
+    })
+})
+
+/**
+ * The library list on the left holds every pattern, so it is the only place
+ * that can bring in a pattern the arrangement does not use yet.
+ */
+test.describe('Song pattern list context menu', () => {
+    const clips = (page) => page.evaluate(() => window.__e2e.appState.songs[0].clips.length)
+    const clipsOf = (page, id) =>
+        page.evaluate((p) => window.__e2e.appState.songs[0].clips.filter((c) => c.pattern === p).length, id)
+
+    /** A library pattern the demo arrangement never places. */
+    const UNUSED = 'hard'
+
+    test('on a library pattern: Add at bar places it in the arrangement', async ({ page }) => {
+        await openSongView(page)
+        expect(await clipsOf(page, UNUSED)).toBe(0)
+        const before = await clips(page)
+
+        await page.locator(`.sg-item[data-pattern="${UNUSED}"]`).click({ button: 'right' })
+        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' })).toBeVisible()
+        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' }).click()
+
+        await expect.poll(() => clips(page)).toBe(before + 1)
+        expect(await clipsOf(page, UNUSED)).toBe(1)
+        // and it now has a row in the grid, since the grid follows the clips
+        await expect(page.locator(`.sa-row-name[data-pattern="${UNUSED}"]`)).toHaveCount(1)
+    })
+
+    // Transport stopped: nothing overwrites the tick, so the bar is exact.
+    test('inserts at the measure the transport is on', async ({ page }) => {
+        await openSongView(page)
+        await page.evaluate(() => (window.__e2e.serviceRegistry.transport.tick = 3 * 128 + 5))
+        await page.locator(`.sg-item[data-pattern="${UNUSED}"]`).click({ button: 'right' })
+
+        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 4' })).toBeVisible()
+        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 4' }).click()
+        expect(
+            await page.evaluate(
+                () => window.__e2e.appState.songs[0].clips.filter((c) => c.pattern === 'hard')[0]?.startBar,
+            ),
+        ).toBe(3)
+    })
+
+    // A pattern already in the arrangement gets a second placement, not a no-op.
+    test('works for a pattern the arrangement already uses', async ({ page }) => {
+        await openSongView(page)
+        const before = await clipsOf(page, 'funk')
+        await page.locator('.sg-item[data-pattern="funk"]').click({ button: 'right' })
+        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' }).click()
+
+        await expect.poll(() => clipsOf(page, 'funk')).toBe(before + 1)
+    })
+
+    test('every library entry can be added', async ({ page }) => {
+        await openSongView(page)
+        const ids = await page.evaluate(() =>
+            [...document.querySelectorAll('.sg-item[data-pattern]')].map((el) => el.dataset.pattern),
+        )
+        expect(ids.length).toBeGreaterThan(8)
+        // rows only exist for patterns the arrangement uses, so the list is the
+        // only source for the rest
+        const unused = await page.evaluate(
+            (used) => used.filter((id) => !document.querySelector(`.sa-row-name[data-pattern="${id}"]`)),
+            ids,
+        )
+        expect(unused.length).toBeGreaterThan(0)
+
+        for (const id of unused.slice(0, 3)) {
+            await page.locator(`.sg-item[data-pattern="${id}"]`).click({ button: 'right' })
+            await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar' })).toBeVisible()
+            await page.keyboard.press('Escape')
+        }
+    })
+
+    test('left-click still selects the pattern', async ({ page }) => {
+        await openSongView(page)
+        await page.locator(`.sg-item[data-pattern="${UNUSED}"]`).click()
+        await expect(page.locator('.sg-item.sg-selected')).toHaveCount(1)
+        expect(await page.evaluate(() => window.__e2e.appState.selectedPatternIdx)).toBe(
+            await page.evaluate((id) => window.__e2e.appState.patterns.findIndex((p) => p.id === id), UNUSED),
+        )
+    })
+})

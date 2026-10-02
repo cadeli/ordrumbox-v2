@@ -2908,6 +2908,21 @@ body {
     border-color: var(--toy-pink);
 }
 
+/* Playhead: the measure being played, over the rows. Lives inside the scrolling
+   body so it travels with the content, and is moved with transform only. */
+.sa-playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: var(--toy-pink);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--toy-pink) 70%, transparent);
+    pointer-events: none;
+    z-index: 2;
+    will-change: transform;
+}
+
 /* ---- Song Panel ---- */
 /* Song view bounds: starts just below the toolbar, stops just above the master
    slot, and keeps the left 75% so the fixed track editor overlay (right 25%) is
