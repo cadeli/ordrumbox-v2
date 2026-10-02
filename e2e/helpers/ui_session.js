@@ -161,7 +161,13 @@ export async function waitForPatternsPersisted(page) {
                     const { getCachedPatterns } = await import('/src/cache/idb_cache.js')
                     const cached = await getCachedPatterns()
                     const { appState } = window.__e2e
-                    const expected = { infos: appState.songInfos ?? {}, patterns: appState.patterns }
+                    // Must mirror what persistPatterns() writes: infos, patterns
+                    // and the arrangements (songs).
+                    const expected = {
+                        infos: appState.songInfos ?? {},
+                        patterns: appState.patterns,
+                        songs: appState.songs ?? [],
+                    }
                     return JSON.stringify(cached ?? null) === JSON.stringify(expected)
                 }),
             { timeout: 15_000 },

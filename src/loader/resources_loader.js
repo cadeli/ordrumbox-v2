@@ -2,7 +2,7 @@ import { appState } from '../state/app_state.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
-import { fixPatterns, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
+import { fixPatterns, fixSongs, getUnloadedSamplesFromDrumkits } from '../patterns/fixer.js'
 import { idbGet, idbPut } from '../core/idb.js'
 import {
     cachePatterns,
@@ -281,6 +281,7 @@ export default class ResourcesLoader {
                 const data = {
                     infos: appState.songInfos ?? {},
                     patterns: structuredClone(appState.patterns),
+                    songs: structuredClone(appState.songs ?? []),
                 }
                 await cachePatterns(data)
             } catch (e) {
@@ -322,6 +323,7 @@ export default class ResourcesLoader {
             date: json.infos?.date ?? '',
         }
         const fixedPatterns = this.fix(Array.isArray(patterns) ? patterns : Object.values(patterns))
+        this.applySongs(json.songs, fixedPatterns)
         appState.patterns.length = 0
         // Boot must not fill the undo stack: suppress per-pattern recording,
         // then reset history so the first Ctrl+Z can never wipe a loaded note.
@@ -459,5 +461,22 @@ export default class ResourcesLoader {
 
     fix = (patterns) => {
         return fixPatterns(structuredClone(patterns))
+    }
+
+    /**
+     * Validate the arrangements against the pattern ids that were just fixed and
+     * hand them to appState. Clips pointing at a pattern id that no longer exists
+     * are dropped and reported rather than failing the whole song load.
+     * @param {any} rawSongs the `songs` array from the file, if any
+     * @param {any[]} fixedPatterns patterns after fixPatterns()
+     */
+    applySongs(rawSongs, fixedPatterns) {
+        const { songs, dropped } = fixSongs(rawSongs, fixedPatterns)
+        appState.songs = songs
+        appState.selectedSongIdx = 0
+        if (dropped.length > 0) {
+            const names = dropped.map((d) => d.pattern).join(', ')
+            showToast(`Ignored ${dropped.length} song clip(s) referencing an unknown pattern: ${names}`, 'warning')
+        }
     }
 }

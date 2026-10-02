@@ -2,9 +2,11 @@ import { appState } from '../../state/app_state.js'
 import { serviceRegistry } from '../../state/service_registry.js'
 import { idbGet, idbPut, idbKeys } from '../../core/idb.js'
 import { logger } from '../../core/logger.js'
+import { normalizeSongs } from '../../model/song_schema.js'
+import { showToast } from '../../core/notify.js'
 
 const SONGS_STORE = 'songs'
-const SONG_VERSION = 1
+const SONG_VERSION = 2
 
 class SongService {
     /**
@@ -20,6 +22,8 @@ class SongService {
             date: appState.songInfos?.date ?? '',
             patterns: JSON.parse(JSON.stringify(appState.patterns)),
             selectedPatternNum: appState.selectedPatternIdx,
+            songs: JSON.parse(JSON.stringify(appState.songs ?? [])),
+            selectedSongIdx: appState.selectedSongIdx ?? 0,
         }
     }
 
@@ -66,6 +70,11 @@ class SongService {
         // One undoable history entry for the whole song load/import.
         // Awaited: setSelectedPatternIdx is async (samples + auto-assign) and
         // the recorded redo state must include what it writes.
+        // Validated against the incoming patterns' own ids, before they are
+        // pushed: a clip can only reference an id the file actually carries.
+        const ids = new Set((data.patterns ?? []).map((p) => p?.id).filter(Boolean))
+        const { songs, dropped } = normalizeSongs(data.songs, ids)
+
         await serviceRegistry.cmd.recordTransaction('Load song', async () => {
             appState.patterns.length = 0
             for (const pat of data.patterns) appState.patterns.push(pat)
@@ -73,6 +82,13 @@ class SongService {
             appState.songInfos.name = name
             appState.songInfos.description = data.description ?? ''
             appState.songInfos.date = data.date ?? ''
+
+            appState.songs = songs
+            appState.selectedSongIdx = Math.min(Math.max(0, data.selectedSongIdx ?? 0), Math.max(0, songs.length - 1))
+            if (dropped.length > 0) {
+                const names = dropped.map((d) => d.pattern).join(', ')
+                showToast(`Ignored ${dropped.length} song clip(s) referencing an unknown pattern: ${names}`, 'warning')
+            }
 
             await serviceRegistry.cmd.setSelectedPatternIdx(data.selectedPatternNum ?? 0)
             serviceRegistry.cmd.resetPage()

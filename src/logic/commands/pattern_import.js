@@ -150,6 +150,11 @@ export function importPatternFromJson(sourcePattern, addPattern, addTrack, addNo
     const importedPattern = addPattern(patternName)
 
     importedPattern.name = patternName ?? importedPattern.name ?? ''
+    // Carry the source id over. addPattern() mints one from the name, but the
+    // caller (the loader) already ran fixPattern and settled on a stable id —
+    // discarding it here would re-derive it from the name on every reload and
+    // detach every song clip referencing this pattern after a rename.
+    if (sourcePattern?.id) importedPattern.id = String(sourcePattern.id)
     importedPattern.bpm = Utils.toFiniteNumber(sourcePattern?.bpm, 120, 'PatternImport bpm')
     importedPattern.beatCount = Utils.toFiniteNumber(sourcePattern?.beatCount, 4, 'PatternImport beatCount')
 

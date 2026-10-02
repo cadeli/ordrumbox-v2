@@ -61,6 +61,7 @@ export default class Commander {
         'getPatternByName',
         'setPatternBpm',
         'setPatternBeatCount',
+        'refreshPatternId',
         'setPatternDescription',
         'importPatternFromJson',
         'createPattern',
@@ -119,6 +120,7 @@ export default class Commander {
         this.getPatternByName = (...args) => this.#patterns.getPatternByName(...args)
         this.setPatternBpm = (...args) => this.#patterns.setPatternBpm(...args)
         this.setPatternBeatCount = (...args) => this.#patterns.setPatternBeatCount(...args)
+        this.refreshPatternId = (...args) => this.#patterns.refreshPatternId(...args)
         this.setPatternDescription = (...args) => this.#patterns.setPatternDescription(...args)
         this.importPatternFromJson = (...args) => this.#patterns.importPatternFromJson(...args)
         this.createPattern = (...args) => this.#patterns.createPattern(...args)

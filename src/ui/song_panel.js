@@ -6,6 +6,7 @@ import BasePanel from './base_panel.js'
 import songService from '../logic/services/song_service.js'
 import { downloadJson } from './components/ui_utils.js'
 import { EVENTS } from '../core/events.js'
+import ArrangementSection from './song_panel/arrangement_section.js'
 
 /**
  * Song view: pattern list + song metadata/actions.
@@ -22,6 +23,7 @@ export default class SongPanel extends BasePanel {
     #songNameEl
     #songDateEl
     #songDescEl
+    #arrangement
 
     constructor() {
         super('song-panel')
@@ -37,6 +39,13 @@ export default class SongPanel extends BasePanel {
         this.container.innerHTML = `
             <div class="ne-header">
                 <span class="ne-track">Song</span>
+            </div>
+            <div class="sa-root" id="sa-root">
+                <div class="sa-head">
+                    <span class="sa-title" id="sa-title">Arrangement</span>
+                    <span class="sa-meta" id="sa-meta"></span>
+                </div>
+                <div class="sa-list" id="sa-list"></div>
             </div>
             <div class="sg-body">
                 <div class="sg-list" id="sg-list"></div>
@@ -66,6 +75,12 @@ export default class SongPanel extends BasePanel {
         this.#songNameEl = this.container.querySelector('#sg-song-name')
         this.#songDateEl = this.container.querySelector('#sg-song-date')
         this.#songDescEl = this.container.querySelector('#sg-song-desc')
+
+        this.#arrangement = new ArrangementSection(
+            this.container.querySelector('#sa-root'),
+            this.container.querySelector('#sa-title'),
+            this.container.querySelector('#sa-list'),
+        )
 
         this.listen(this.#songDescEl, 'blur', () => {
             appState.songInfos.description = this.#songDescEl.textContent.trim()
@@ -116,6 +131,7 @@ export default class SongPanel extends BasePanel {
             this.#songDescEl.textContent = desc
         }
         this.#renderList()
+        this.#arrangement?.sync()
     }
 
     #renderList() {

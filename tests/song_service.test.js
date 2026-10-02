@@ -40,13 +40,30 @@ describe('SongService', () => {
             appState.songInfos.date = '2025-01-01'
 
             const data = songService.buildSongData('TestSong')
-            expect(data.version).toBe(1)
+            expect(data.version).toBe(2)
             expect(data.name).toBe('TestSong')
             expect(data.description).toBe('My song')
             expect(data.date).toBe('2025-01-01')
             expect(data.patterns).toHaveLength(1)
             expect(data.patterns[0].name).toBe('A')
             expect(data.selectedPatternNum).toBe(0)
+        })
+
+        // Arrangements travel with the song: v2 of the .odbox format added them.
+        it('carries the arrangements and the selected song', () => {
+            appState.songs = [{ id: 'demo', name: 'Demo', bpm: 120, clips: [{ pattern: 'a', startBar: 0, bars: 2 }] }]
+            appState.selectedSongIdx = 0
+
+            const data = songService.buildSongData('TestSong')
+
+            expect(data.songs).toHaveLength(1)
+            expect(data.songs[0].clips).toEqual([{ pattern: 'a', startBar: 0, bars: 2 }])
+            expect(data.selectedSongIdx).toBe(0)
+        })
+
+        it('writes an empty songs array when none exist', () => {
+            appState.songs = []
+            expect(songService.buildSongData('X').songs).toEqual([])
         })
 
         it('returns a deep copy of patterns', () => {
@@ -147,7 +164,7 @@ describe('SongService', () => {
             const result = songService.exportToFile('My Song!')
             expect(result.filename).toBe('My_Song_.odbox')
             expect(result.data.exportedAt).toBeTypeOf('number')
-            expect(result.data.version).toBe(1)
+            expect(result.data.version).toBe(2)
         })
 
         it('sanitizes special characters in filename', () => {
@@ -176,5 +193,59 @@ describe('SongService', () => {
         it('returns null for invalid JSON', () => {
             expect(() => songService.parseImportedFile('not json')).toThrow()
         })
+    })
+})
+
+// Arrangements (v2) survive a save / load cycle, and a stale clip reference is
+// reported instead of silently loading a broken arrangement.
+describe('SongService — arrangements', () => {
+    beforeEach(() => {
+        appState.reset()
+        serviceRegistry.cmd = {
+            setSelectedPatternIdx: vi.fn(() => Promise.resolve()),
+            resetPage: vi.fn(),
+            recordTransaction: (_desc, fn) => fn(),
+        }
+    })
+
+    it('restores arrangements whose pattern ids exist', async () => {
+        const data = songService.buildSongData('S')
+        data.songs = [{ id: 'demo', name: 'Demo', bpm: 95, clips: [{ pattern: 'a', startBar: 0, bars: 2 }] }]
+        data.patterns = [{ id: 'a', name: 'A', tracks: [], beatCount: 8 }]
+
+        await songService.applyToAppState(data, 'fallback')
+
+        expect(appState.songs).toHaveLength(1)
+        expect(appState.songs[0].bpm).toBe(95)
+        expect(appState.songs[0].clips).toEqual([{ pattern: 'a', startBar: 0, bars: 2 }])
+    })
+
+    it('drops a clip referencing an unknown pattern id but keeps the song', async () => {
+        const data = songService.buildSongData('S')
+        data.patterns = [{ id: 'a', name: 'A', tracks: [] }]
+        data.songs = [
+            {
+                id: 'demo',
+                clips: [
+                    { pattern: 'ghost', startBar: 0, bars: 1 },
+                    { pattern: 'a', startBar: 4, bars: 1 },
+                ],
+            },
+        ]
+
+        await songService.applyToAppState(data, 'fallback')
+
+        expect(appState.songs[0].clips).toEqual([{ pattern: 'a', startBar: 4, bars: 1 }])
+    })
+
+    it('clamps selectedSongIdx when the song disappears', async () => {
+        const data = songService.buildSongData('S')
+        data.patterns = [{ id: 'a', name: 'A', tracks: [] }]
+        data.songs = []
+        data.selectedSongIdx = 7
+
+        await songService.applyToAppState(data, 'fallback')
+
+        expect(appState.selectedSongIdx).toBe(0)
     })
 })

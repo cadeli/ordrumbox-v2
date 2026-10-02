@@ -159,3 +159,24 @@ describe('PatternExporter', () => {
         })
     })
 })
+
+// ── id ───────────────────────────────────────────────────────────────────────
+
+describe('PatternExporter keeps the pattern id', () => {
+    // `id` lives in PATTERN_DEFAULTS, so the default-only stripping would drop it
+    // from every exported file and leave arrangements pointing at nothing.
+    it('writes it even though the default is an empty string', () => {
+        const out = PatternExporter.export({ id: 'rock', name: 'Rock', beatCount: 4, tracks: [] })
+        expect(out.id).toBe('rock')
+    })
+
+    it('omits it when the pattern has none', () => {
+        const out = PatternExporter.export({ name: 'Rock', beatCount: 4, tracks: [] })
+        expect('id' in out).toBe(false)
+    })
+
+    it('survives a round trip through cleanPattern', () => {
+        const cleaned = PatternExporter.cleanPattern({ id: 'a-1', name: 'x', beatCount: 8 })
+        expect(cleaned.id).toBe('a-1')
+    })
+})

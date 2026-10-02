@@ -573,4 +573,39 @@ describe('Functional: Commander operations', () => {
             expect(kitIsLoaded({ name: 'electro' })).toBe(false)
         })
     })
+
+    // ── stable pattern ids ───────────────────────────────────────────────────────
+    // Song arrangements reference patterns by id, so ids must be unique in the
+    // library and must survive a rename.
+
+    describe('Pattern ids', () => {
+        it('gives a new pattern a slug id', () => {
+            const p = cmd.addPattern('Rock Pattern')
+            expect(p.id).toBe('rock-pattern')
+        })
+
+        it('does not reuse an id across same-named patterns', () => {
+            const a = cmd.addPattern('Same')
+            const b = cmd.addPattern('Same')
+            expect(b.id).not.toBe(a.id)
+        })
+
+        it('keeps the id when the pattern is renamed', () => {
+            const p = cmd.addPattern('Rock')
+            cmd.renamePattern(appState.patterns.indexOf(p), 'Something Else')
+            expect(p.id).toBe('rock')
+        })
+
+        // A clone copies every field, id included: two patterns sharing one would
+        // make an arrangement reference ambiguous.
+        it('refreshPatternId mints a new id for a clone', () => {
+            const source = cmd.addPattern('Verse')
+            const clone = cmd.addPattern('Verse copy')
+            Object.assign(clone, structuredClone(source))
+            clone.name = 'Verse copy'
+            expect(clone.id).toBe(source.id)
+            expect(cmd.refreshPatternId(clone)).not.toBe(source.id)
+            expect(source.id).toBe('verse')
+        })
+    })
 })

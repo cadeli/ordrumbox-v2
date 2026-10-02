@@ -6,8 +6,44 @@
         "application": "online-ordrumbox",
         "url": "https://www.ordrumbox.com"
     },
+    "songs": [
+        {
+            "id": "demo",
+            "name": "Demo arrangement",
+            "description": "Intro / verse / chorus built on the demo pattern library.",
+            "bpm": 120,
+            "loopBars": 21,
+            "clips": [
+                { "pattern": "rock", "startBar": 0, "bars": 2 },
+                { "pattern": "basrock", "startBar": 0, "bars": 1 },
+                { "pattern": "smrock", "startBar": 2, "bars": 1 },
+                { "pattern": "basrock", "startBar": 2, "bars": 1 },
+                { "pattern": "rockcow", "startBar": 2, "bars": 1 },
+                { "pattern": "cmpbeat", "startBar": 3, "bars": 4 },
+                { "pattern": "rock", "startBar": 3, "bars": 4 },
+                { "pattern": "basrock", "startBar": 3, "bars": 4 },
+                { "pattern": "funk", "startBar": 3, "bars": 4 },
+                { "pattern": "cmpbeat", "startBar": 7, "bars": 4 },
+                { "pattern": "rock", "startBar": 7, "bars": 4 },
+                { "pattern": "basrock", "startBar": 7, "bars": 4 },
+                { "pattern": "funk", "startBar": 7, "bars": 4 },
+                { "pattern": "funkfill", "startBar": 11, "bars": 1 },
+                { "pattern": "smrock", "startBar": 12, "bars": 2 },
+                { "pattern": "basrock", "startBar": 12, "bars": 2 },
+                { "pattern": "rockcow", "startBar": 12, "bars": 2 },
+                { "pattern": "cmpbeat", "startBar": 14, "bars": 4 },
+                { "pattern": "rock", "startBar": 14, "bars": 4 },
+                { "pattern": "basrock", "startBar": 14, "bars": 4 },
+                { "pattern": "funk", "startBar": 14, "bars": 4 },
+                { "pattern": "funkfill", "startBar": 18, "bars": 1 },
+                { "pattern": "rock", "startBar": 19, "bars": 2 },
+                { "pattern": "basrock", "startBar": 19, "bars": 2 }
+            ]
+        }
+    ],
     "patterns": [
         {
+            "id": "rock",
             "name": "rock",
             "tracks": [
                 {
@@ -188,6 +224,7 @@
             }
         },
         {
+            "id": "slrock",
             "name": "slRock",
             "tracks": [
                 {
@@ -303,6 +340,7 @@
             }
         },
         {
+            "id": "smrock",
             "name": "SmRock",
             "tracks": [
                 {
@@ -439,6 +477,7 @@
             }
         },
         {
+            "id": "rockcow",
             "name": "RockCow",
             "tracks": [
                 {
@@ -584,6 +623,7 @@
             }
         },
         {
+            "id": "basrock",
             "name": "BasRock",
             "tracks": [
                 {
@@ -711,6 +751,7 @@
             }
         },
         {
+            "id": "16beats",
             "name": "16beats",
             "tracks": [
                 {
@@ -828,6 +869,7 @@
             }
         },
         {
+            "id": "cmpbeat",
             "name": "CmpBeat",
             "tracks": [
                 {
@@ -978,6 +1020,7 @@
             }
         },
         {
+            "id": "shuffle",
             "name": "Shuffle",
             "tracks": [
                 {
@@ -1114,6 +1157,7 @@
             }
         },
         {
+            "id": "hard",
             "name": "hard",
             "tracks": [
                 {
@@ -1214,6 +1258,7 @@
             }
         },
         {
+            "id": "metal",
             "name": "metal",
             "tracks": [
                 {
@@ -1329,6 +1374,7 @@
             }
         },
         {
+            "id": "discofl",
             "name": "DiscoFl",
             "tracks": [
                 {
@@ -1458,6 +1504,7 @@
             }
         },
         {
+            "id": "discobrk",
             "name": "DiscoBrk",
             "tracks": [
                 {
@@ -1598,6 +1645,7 @@
             }
         },
         {
+            "id": "disco",
             "name": "disco",
             "tracks": [
                 {
@@ -1751,6 +1799,7 @@
             }
         },
         {
+            "id": "batuc",
             "name": "batuc",
             "tracks": [
                 {
@@ -1889,6 +1938,7 @@
             }
         },
         {
+            "id": "mambofst",
             "name": "MamboFst",
             "tracks": [
                 {
@@ -2021,6 +2071,7 @@
             }
         },
         {
+            "id": "mambo",
             "name": "mambo",
             "tracks": [
                 {
@@ -2122,6 +2173,7 @@
             }
         },
         {
+            "id": "march",
             "name": "march",
             "tracks": [
                 {
@@ -2269,6 +2321,7 @@
             }
         },
         {
+            "id": "merengue",
             "name": "merengue",
             "tracks": [
                 {
@@ -2397,6 +2450,7 @@
             }
         },
         {
+            "id": "salsa",
             "name": "salsa",
             "tracks": [
                 {
@@ -2544,6 +2598,7 @@
             }
         },
         {
+            "id": "salsagroovy",
             "name": "SalsaGroovy",
             "tracks": [
                 {
@@ -2762,6 +2817,7 @@
             "bpm": 79
         },
         {
+            "id": "bossa",
             "name": "bossa",
             "tracks": [
                 {
@@ -2901,6 +2957,7 @@
             }
         },
         {
+            "id": "tango",
             "name": "tango",
             "tracks": [
                 {
@@ -3011,6 +3068,7 @@
             }
         },
         {
+            "id": "ragga",
             "name": "ragga",
             "tracks": [
                 {
@@ -3131,6 +3189,7 @@
             }
         },
         {
+            "id": "rap",
             "name": "rap",
             "tracks": [
                 {
@@ -3261,6 +3320,7 @@
             }
         },
         {
+            "id": "funk",
             "name": "funk",
             "tracks": [
                 {
@@ -3381,6 +3441,7 @@
             }
         },
         {
+            "id": "slfunk",
             "name": "SlFunk",
             "tracks": [
                 {
@@ -3552,6 +3613,7 @@
             }
         },
         {
+            "id": "funkfill",
             "name": "FunkFill",
             "tracks": [
                 {
@@ -3681,6 +3743,7 @@
             }
         },
         {
+            "id": "hip",
             "name": "hip",
             "tracks": [
                 {
@@ -3833,6 +3896,7 @@
             }
         },
         {
+            "id": "electro",
             "name": "electro",
             "tracks": [
                 {
@@ -3968,6 +4032,7 @@
             }
         },
         {
+            "id": "house",
             "name": "house",
             "tracks": [
                 {
@@ -4132,6 +4197,7 @@
             }
         },
         {
+            "id": "house2",
             "name": "house2",
             "tracks": [
                 {
@@ -4285,6 +4351,7 @@
             }
         },
         {
+            "id": "danceit",
             "name": "DanceIt",
             "tracks": [
                 {
@@ -4413,6 +4480,7 @@
             }
         },
         {
+            "id": "smurf",
             "name": "Smurf",
             "tracks": [
                 {
@@ -4561,6 +4629,7 @@
             }
         },
         {
+            "id": "slowtrap",
             "name": "SlowTrap",
             "tracks": [
                 {
@@ -4685,6 +4754,7 @@
             }
         },
         {
+            "id": "sweet",
             "name": "sweet",
             "tracks": [
                 {
@@ -4809,6 +4879,7 @@
             }
         },
         {
+            "id": "jazz",
             "name": "jazz",
             "tracks": [
                 {
@@ -4945,6 +5016,7 @@
             }
         },
         {
+            "id": "polyrythm",
             "name": "PolyRythm",
             "tracks": [
                 {
@@ -5072,6 +5144,7 @@
             }
         },
         {
+            "id": "ltgroove",
             "name": "ltgroove",
             "tracks": [
                 {
@@ -5243,6 +5316,7 @@
             }
         },
         {
+            "id": "dub-roots",
             "name": "DUB_ROOTS",
             "description": "Dub roots heavy ",
             "tracks": [
@@ -5535,6 +5609,7 @@
             }
         },
         {
+            "id": "variations",
             "name": "Variations",
             "tracks": [
                 {

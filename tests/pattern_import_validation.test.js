@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { validatePatternJson } from '../src/logic/commands/pattern_import.js'
+import { validatePatternJson, importPatternFromJson } from '../src/logic/commands/pattern_import.js'
 
 describe('validatePatternJson', () => {
     it('accepts a valid minimal pattern', () => {
@@ -109,5 +109,35 @@ describe('validatePatternJson', () => {
             unknownField: true,
         })
         expect(result).toEqual({ ok: true })
+    })
+})
+
+// An import re-creates the pattern field by field. If the source id were not
+// carried over, addPattern() would mint a fresh one from the name — so a
+// renamed pattern would get a new id on every reload and every song clip
+// referencing it would silently dangle.
+describe('importPatternFromJson preserves the pattern id', () => {
+    const importPattern = (source) => {
+        const imported = importPatternFromJson(source, () => ({
+            name: 'tmp',
+            description: '',
+            tracks: [],
+            bpm: 120,
+            beatCount: 4,
+            id: 'minted-from-the-name',
+        }))
+        return imported
+    }
+
+    it('keeps the source id', () => {
+        expect(importPattern({ name: 'A', id: 'stable-id', tracks: [] }).id).toBe('stable-id')
+    })
+
+    it('keeps an id that does not match the name', () => {
+        expect(importPattern({ name: 'Renamed', id: 'original-slug', tracks: [] }).id).toBe('original-slug')
+    })
+
+    it('leaves the minted id alone when the source has none', () => {
+        expect(importPattern({ name: 'A', tracks: [] }).id).toBe('minted-from-the-name')
     })
 })

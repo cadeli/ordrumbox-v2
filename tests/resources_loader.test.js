@@ -34,6 +34,7 @@ vi.mock('../src/state/service_registry.js', () => {
 
 vi.mock('../src/patterns/fixer.js', () => ({
     fixPatterns: vi.fn((p) => p),
+    fixSongs: vi.fn(() => ({ songs: [], dropped: [] })),
     getUnloadedSamplesFromDrumkits: vi.fn(() => []),
 }))
 

@@ -1,12 +1,12 @@
 // tests/cmd_mixin_contract.test.js
-// Guard: the 34 command sub-module methods stay own, spread-safe delegates.
+// Guard: the 36 command sub-module methods stay own, spread-safe delegates.
 import { describe, it, expect } from 'vitest'
 import Commander from '../src/logic/commands/cmd.js'
 
 describe('Commander mixin contract', () => {
-    it('declares exactly the 34 sub-module method names, unique', () => {
-        expect(Commander.MIXIN_METHODS.length).toBe(35)
-        expect(new Set(Commander.MIXIN_METHODS).size).toBe(35)
+    it('declares exactly the 36 sub-module method names, unique', () => {
+        expect(Commander.MIXIN_METHODS.length).toBe(36)
+        expect(new Set(Commander.MIXIN_METHODS).size).toBe(36)
     })
 
     it('every mixin name is an own function property of a fresh Commander', () => {

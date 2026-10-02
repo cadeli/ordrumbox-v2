@@ -50,6 +50,9 @@ export default class ActionsSection {
                 const clone = cmd.addPattern((pattern.name ?? 'Pattern') + ' copy')
                 Object.assign(clone, structuredClone(pattern))
                 clone.name = (pattern.name ?? 'Pattern') + ' copy'
+                // Object.assign copied the source id too — two patterns sharing
+                // one would make arrangement references ambiguous.
+                cmd.refreshPatternId(clone)
                 const newIdx = editor.appState.patterns.length - 1
                 await cmd.setSelectedPatternIdx(newIdx)
                 editor.emitStructureChange()

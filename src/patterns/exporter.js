@@ -18,6 +18,14 @@ const round2 = (v) => (typeof v === 'number' ? Math.round(v * 100) / 100 : v)
 /** Runtime-only pattern fields (undo/audio cache counter), never part of a saved file. */
 const PATTERN_RUNTIME_KEYS = new Set(['_version'])
 
+/**
+ * Pattern fields that are written even when they hold their default value.
+ * `id` is in PATTERN_DEFAULTS (so the model documents it) which would make the
+ * default-only stripping below delete it from every file — an arrangement
+ * referencing that id would then dangle.
+ */
+const PATTERN_ALWAYS_KEEP = new Set(['id'])
+
 export class PatternExporter {
     static isDefaultValue(value, defaultVal) {
         if (value === defaultVal) return true
@@ -85,7 +93,12 @@ export class PatternExporter {
         const cleaned = {}
         for (const [key, val] of Object.entries(pattern)) {
             if (PATTERN_RUNTIME_KEYS.has(key)) continue
-            if (!(key in Utils.PATTERN_DEFAULTS) || !this.isDefaultValue(val, Utils.PATTERN_DEFAULTS[key])) {
+            const keepAlways = PATTERN_ALWAYS_KEEP.has(key) && typeof val === 'string' && val !== ''
+            if (
+                keepAlways ||
+                !(key in Utils.PATTERN_DEFAULTS) ||
+                !this.isDefaultValue(val, Utils.PATTERN_DEFAULTS[key])
+            ) {
                 if (key === 'tracks') {
                     cleaned[key] = val.map((t) => this.cleanTrack(t))
                 } else {

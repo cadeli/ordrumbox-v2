@@ -2786,6 +2786,115 @@ body {
     border-top: 1px solid var(--border-subtle);
 }
 
+/* ---- Song arrangement grid ---- */
+/* One column per pattern used by the arrangement, one row per measure, one
+   rectangle per clip. Rows are a static background; the clips are absolutely
+   positioned over it, so the node count follows the clip count. */
+.sa-root {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    min-height: 0;
+    margin-bottom: 8px;
+}
+.sa-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: var(--fs-sm);
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+.sa-title {
+    color: var(--toy-cyan);
+    font-weight: bold;
+}
+.sa-meta {
+    color: var(--toy-yellow);
+}
+.sa-list {
+    position: relative;
+    overflow: auto;
+    max-height: 190px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+}
+.sa-empty {
+    padding: 12px;
+    color: var(--muted);
+    font-size: var(--fs-sm);
+}
+.sa-grid {
+    position: relative;
+}
+.sa-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+}
+.sa-col-head {
+    flex: 0 0 auto;
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 3px;
+    border-right: 1px solid var(--line);
+    overflow: hidden;
+}
+.sa-col-name {
+    display: block;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    max-height: 42px;
+    font-size: 9px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sa-orphan .sa-col-name {
+    color: var(--color-danger);
+}
+.sa-body {
+    position: absolute;
+    top: 44px;
+}
+.sa-row {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--line) 35%, transparent);
+}
+.sa-row-beat {
+    border-bottom-color: var(--line);
+}
+.sa-bar-label {
+    position: absolute;
+    left: 0;
+    width: 40px;
+    text-align: right;
+    padding-right: 4px;
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 16px;
+}
+.sa-clip {
+    position: absolute;
+    background: color-mix(in srgb, var(--toy-cyan) 45%, transparent);
+    border: 1px solid var(--toy-cyan);
+    border-radius: 2px;
+    box-sizing: border-box;
+    margin-left: 2px;
+}
+.sa-clip-long {
+    background: color-mix(in srgb, var(--toy-pink) 40%, transparent);
+    border-color: var(--toy-pink);
+}
+
 /* ---- Song Panel ---- */
 /* Song view bounds: starts just below the toolbar, stops just above the master
    slot, and keeps the left 75% so the fixed track editor overlay (right 25%) is

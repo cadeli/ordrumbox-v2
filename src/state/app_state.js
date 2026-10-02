@@ -38,6 +38,9 @@ class AppState {
         workletStatus: 'unknown',
         showVus: true,
         songInfos: { name: '', description: '', date: '' },
+        /** Arrangements: each is a list of clips placing patterns on a bar timeline. */
+        songs: [],
+        selectedSongIdx: 0,
     }
 
     // Declared for TypeScript consumers (Object.assign is not modelled by tsc).
@@ -73,6 +76,10 @@ class AppState {
     showVus
     /** @type {any} */
     songInfos
+    /** @type {any[]} */
+    songs
+    /** @type {number} */
+    selectedSongIdx
     /** @type {any} */
     trackEditorVisibility
     /** @type {any} */

@@ -268,3 +268,38 @@ describe.each(PARAM_SETS)('fixPattern — spb=%i bpm=%i beats=%i (%s)', (stepsPe
         expect(fixed.tracks[0].notes[0].beatStep).toBe(inputBeatStep % stepsPerBeat)
     })
 })
+
+// ─── Stable pattern ids (song arrangements reference patterns by id) ─────────
+
+describe('fixPattern assigns stable ids', () => {
+    it('fills a missing id from the name', () => {
+        const p = fixPattern({ name: 'Rock Pattern', tracks: [] })
+        expect(p.id).toBe('rock-pattern')
+    })
+
+    // The arrangement feature rests on this: a rename must not detach every
+    // clip that referenced the pattern.
+    it('leaves an existing id alone when the pattern is renamed', () => {
+        const p = fixPattern({ id: 'rock', name: 'Rock', tracks: [] })
+        p.name = 'Renamed'
+        expect(fixPattern(p).id).toBe('rock')
+    })
+
+    it('de-duplicates two patterns with the same name', () => {
+        const [a, b] = fixPatterns([
+            { name: 'Same', tracks: [] },
+            { name: 'Same', tracks: [] },
+        ])
+        expect(a.id).toBe('same')
+        expect(b.id).toBe('same-2')
+    })
+
+    it('re-uses an id already present instead of minting a new one', () => {
+        const [a, b] = fixPatterns([
+            { id: 'taken', name: 'A', tracks: [] },
+            { name: 'Taken', tracks: [] },
+        ])
+        expect(a.id).toBe('taken')
+        expect(b.id).not.toBe('taken')
+    })
+})

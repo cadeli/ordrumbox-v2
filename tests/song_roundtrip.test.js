@@ -323,7 +323,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             // 4. Load from storage via SongService
             const loadedData = await songService.load('Cyberpunk Odyssey')
             expect(loadedData).not.toBeNull()
-            expect(loadedData.version).toBe(1)
+            expect(loadedData.version).toBe(2)
             expect(loadedData.savedAt).toBeTypeOf('number')
 
             // 5. Apply loaded data back to appState
@@ -405,7 +405,7 @@ describe('Song & Project Persistence Roundtrip', () => {
             // 1. Export to file format
             const { data, filename } = songService.exportToFile('Techno Project 2026')
             expect(filename).toBe('Techno_Project_2026.odbox')
-            expect(data.version).toBe(1)
+            expect(data.version).toBe(2)
             expect(data.exportedAt).toBeTypeOf('number')
 
             // 2. Simulate saving to disk and reading back (raw string transfer)

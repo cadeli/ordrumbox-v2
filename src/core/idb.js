@@ -1,7 +1,8 @@
 import { logger } from './logger.js'
+import { ensurePatternId } from './ids.js'
 
 const DB_NAME = 'ordrumbox'
-const DB_VERSION = 5
+const DB_VERSION = 6
 
 const ALL_STORES = ['settings', 'songs', 'patterns', 'drumkits', 'samples', 'generated_sounds']
 
@@ -38,6 +39,36 @@ function renameNbBeats(node) {
 }
 
 /**
+ * Give every pattern in a stored song or pattern-cache entry a stable id.
+ *
+ * Both shapes have to be handled: the `songs` store holds raw song blobs, the
+ * `patterns` cache holds `{data, savedAt, ...}` envelopes. Ids are only minted
+ * when absent, so re-running this is harmless.
+ * @param {any} value
+ * @returns {boolean} whether anything changed
+ */
+function assignPatternIds(value) {
+    if (!value || typeof value !== 'object') return false
+    const taken = new Set()
+    /** @param {any} node @returns {boolean} */
+    const walk = (node) => {
+        if (!node || typeof node !== 'object') return false
+        let changed = false
+        if (Array.isArray(node.patterns)) {
+            for (const pattern of node.patterns) {
+                const before = pattern?.id
+                ensurePatternId(pattern, taken)
+                if (pattern?.id !== before) changed = true
+            }
+        }
+        return changed
+    }
+    if (Array.isArray(value.patterns)) return walk(value)
+    if (value.data && typeof value.data === 'object') return walk(value.data)
+    return false
+}
+
+/**
  * Schema migrations keyed by the DB_VERSION they ship with:
  *     6: (db, tx) => { ... }
  * They run inside `onupgradeneeded` when upgrading from a version < 6, so add
@@ -69,6 +100,30 @@ export const MIGRATIONS = {
                 if (renameNbBeats(value) || (value?.data && renameNbBeats(value.data))) {
                     cursor.update(value)
                 }
+                cursor.continue()
+            }
+        }
+    },
+
+    /**
+     * v6: stable pattern ids + an (empty) `songs` array.
+     *
+     * Arrangements reference patterns by id, so every already-persisted pattern
+     * needs one. Songs stored before v6 have no `songs` key at all, which the
+     * loader already treats as "no arrangement".
+     * @param {IDBDatabase} db
+     * @param {IDBTransaction|null} tx
+     */
+    6: (db, tx) => {
+        if (!tx) return
+        for (const storeName of ['songs', 'patterns']) {
+            if (!db.objectStoreNames.contains(storeName)) continue
+            const store = tx.objectStore(storeName)
+            const request = store.openCursor()
+            request.onsuccess = () => {
+                const cursor = request.result
+                if (!cursor) return
+                if (assignPatternIds(cursor.value)) cursor.update(cursor.value)
                 cursor.continue()
             }
         }

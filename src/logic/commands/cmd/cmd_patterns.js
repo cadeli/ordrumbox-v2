@@ -6,6 +6,7 @@ import { logger } from '../../../core/logger.js'
 import { MAX_BEATS } from '../../../core/constants.js'
 import { recalcLoopDerived } from '../../../model/track_schema.js'
 import Utils from '../../../core/utils.js'
+import { ensurePatternId } from '../../../model/song_schema.js'
 
 /**
  * Pattern commands — sub-module of the Commander (see CommanderHost in ../cmd.js).
@@ -16,6 +17,24 @@ export default class PatternCommands {
     /** @param {import('../cmd.js').CommanderHost} host */
     constructor(host) {
         this.#host = host
+    }
+
+    /** Ids already used by the library, so a new pattern cannot collide. */
+    #takenIds() {
+        return new Set(appState.patterns.map((p) => p?.id).filter(Boolean))
+    }
+
+    /**
+     * Give `pattern` a fresh, non-colliding id, replacing whatever it carries.
+     * Needed after a clone: copying a pattern field-by-field also copies its id,
+     * and two patterns sharing one would make every arrangement reference
+     * ambiguous.
+     * @param {{ id?: string, name?: string }} pattern
+     * @returns {string} the new id
+     */
+    refreshPatternId(pattern) {
+        pattern.id = ''
+        return ensurePatternId(pattern, this.#takenIds())
     }
 
     addPattern(name) {
@@ -227,6 +246,8 @@ export default class PatternCommands {
 
     createPattern(name) {
         name ??= `NewPat_${appState.patterns.length}`
-        return { name, description: '', tracks: [], bpm: 120, beatCount: 4 }
+        const pattern = { name, description: '', tracks: [], bpm: 120, beatCount: 4 }
+        ensurePatternId(pattern, this.#takenIds())
+        return pattern
     }
 }

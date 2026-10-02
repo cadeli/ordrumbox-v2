@@ -382,6 +382,23 @@ describe('IndexedDB helpers', () => {
         return { store, start: () => fire?.() }
     }
 
+    /** Same cursor fake as runMigration5, parameterised by version. */
+    function runMigrationN(version, storesByName) {
+        const handles = []
+        const db = { objectStoreNames: { contains: (n) => Object.hasOwn(storesByName, n) } }
+        const tx = {
+            objectStore: (name) => {
+                const h = fakeStoreWith(storesByName[name])
+                handles.push(h)
+                return h.store
+            },
+        }
+        idbModule.MIGRATIONS[version](db, tx)
+        for (const h of handles) h.start()
+    }
+
+    const runMigration6 = (stores) => runMigrationN(6, stores)
+
     function runMigration5(storesByName) {
         const handles = []
         const db = { objectStoreNames: { contains: (n) => Object.hasOwn(storesByName, n) } }
@@ -457,6 +474,65 @@ describe('IndexedDB helpers', () => {
 
             expect(songs[0].value.patterns[0].beatCount).toBe(6)
             expect(songs[0].value.patterns[0].nbBeats).toBeUndefined()
+        })
+
+        // ─── MIGRATIONS[6]: stable pattern ids ─────────────────────────────────────
+
+        describe('MIGRATIONS[6] assigns stable pattern ids', () => {
+            it('mints ids on a raw song blob', () => {
+                const songs = [{ key: 'my song', value: { name: 'my song', patterns: [{ name: 'Rock', tracks: [] }] } }]
+
+                runMigration6({ songs })
+
+                expect(songs[0].value.patterns[0].id).toBe('rock')
+            })
+
+            it('mints ids inside the {data} envelope of the patterns cache', () => {
+                const patterns = [
+                    {
+                        key: 'song.json',
+                        value: { data: { patterns: [{ name: 'Bass Line', tracks: [] }] }, savedAt: 42 },
+                    },
+                ]
+
+                runMigration6({ patterns })
+
+                expect(patterns[0].value.data.patterns[0].id).toBe('bass-line')
+                expect(patterns[0].value.savedAt).toBe(42)
+            })
+
+            it('de-duplicates same-named patterns in one song', () => {
+                const songs = [
+                    {
+                        key: 'dup',
+                        value: {
+                            patterns: [
+                                { name: 'Same', tracks: [] },
+                                { name: 'Same', tracks: [] },
+                            ],
+                        },
+                    },
+                ]
+
+                runMigration6({ songs })
+
+                const ids = songs[0].value.patterns.map((p) => p.id)
+                expect(new Set(ids).size).toBe(2)
+            })
+
+            // Re-running must not re-slug, or a rename would silently break clips.
+            it('never overwrites an existing id', () => {
+                const songs = [{ key: 's', value: { patterns: [{ id: 'kept', name: 'Renamed', tracks: [] }] } }]
+
+                runMigration6({ songs })
+
+                expect(songs[0].value.patterns[0].id).toBe('kept')
+            })
+
+            it('is a no-op without a transaction', () => {
+                const db = { objectStoreNames: { contains: () => true } }
+                expect(() => idbModule.MIGRATIONS[6](db, null)).not.toThrow()
+            })
         })
 
         it('is a no-op when there is no transaction', () => {

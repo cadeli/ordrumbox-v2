@@ -28,6 +28,10 @@ export default class Utils {
     static TRACK_RECALCULATED = TRACK_RECALCULATED
 
     static PATTERN_DEFAULTS = {
+        // Stable id, assigned once at creation and never regenerated: song
+        // arrangements reference patterns by id (see model/song_schema.js).
+        // A rename must not change it.
+        id: '',
         beatCount: 4,
         bpm: 120,
         description: '',
