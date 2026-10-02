@@ -51,9 +51,15 @@ export function createAndInitPanels() {
     const appContent = document.createElement('div')
     appContent.id = 'app-content'
     appContent.appendChild(patternPanel.container)
+    // The song view sits among the workspace panels, BEFORE the overlay ones.
+    // #te-panel and the synth editor are position:fixed overlays; with equal
+    // z-index the later sibling paints on top, so appending the song panel last
+    // made it cover their controls (nothing in it was clickable).
+    appContent.appendChild(songPanel.container)
     appContent.appendChild(pianoRollPanel.container)
     appContent.appendChild(trackEditor.container)
     appContent.appendChild(trackEditor.synthEditor.panel)
+
     const mountTarget = document.getElementById('app-main') ?? document.body
     mountTarget.appendChild(appContent)
 
@@ -68,7 +74,7 @@ export function createAndInitPanels() {
         patternSettingsPanel,
         outputPanel,
         drumkitManager,
-        patternsPanel: songPanel,
+        songPanel,
         aboutPanel,
     })
     serviceRegistry.viewManager = viewManager

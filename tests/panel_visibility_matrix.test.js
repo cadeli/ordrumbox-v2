@@ -206,7 +206,7 @@ function setupApp(viewport) {
         patternSettingsPanel,
         outputPanel,
         drumkitManager,
-        patternsPanel: songPanel,
+        songPanel,
         aboutPanel,
     })
     viewManager.init()
@@ -353,10 +353,11 @@ describe('Panel visibility matrix — Desktop (1200×800)', () => {
             }
         })
 
+        // 'song' is deliberately absent: it became a view, so it is hidden when
+        // another view is entered, exactly like proll and the synth editor.
         for (const [name, id] of [
             ['about', 'about-panel'],
             ['dm', 'dm-panel'],
-            ['song', 'song-panel'],
             ['output', 'output-panel'],
         ]) {
             it(`${name} persists across view switches`, () => {
@@ -522,6 +523,57 @@ describe('Panel visibility matrix — Mobile (768×480)', () => {
             playbackEvents.emit(EVENTS.MOBILE_SEQ_TOGGLE)
             expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(false)
             expect(ctx.trackEditor.isVisible).toBe(false)
+        })
+    })
+
+    // The song panel moved from the slot-panel registry (opened by the
+    // toolbar's Pattern label) to the view registry (the View group's "Song"
+    // button). These pin the new behaviour: it is a view, not a slot.
+    describe('Song view (was a slot panel)', () => {
+        it('is hidden before the view is entered', () => {
+            expect(ctx.songPanel.isVisible).toBe(false)
+        })
+
+        it('shows on SONG_TOGGLE and reports song as the current view', () => {
+            playbackEvents.emit(EVENTS.SONG_TOGGLE)
+            expect(ctx.songPanel.isVisible).toBe(true)
+            expect(ctx.viewManager.currentView).toBe('song')
+        })
+
+        it('hides the pattern panel, like the other workspace views', () => {
+            playbackEvents.emit(EVENTS.SONG_TOGGLE)
+            expect(document.getElementById('pattern-panel').classList.contains('ui-hidden')).toBe(true)
+        })
+
+        it('hides again when another view is entered', () => {
+            playbackEvents.emit(EVENTS.SONG_TOGGLE)
+            playbackEvents.emit(EVENTS.PROLL_TOGGLE)
+            expect(ctx.songPanel.isVisible).toBe(false)
+            expect(ctx.viewManager.currentView).toBe('proll')
+        })
+
+        it('re-entering song while already in song does not toggle it off', () => {
+            playbackEvents.emit(EVENTS.SONG_TOGGLE)
+            playbackEvents.emit(EVENTS.SONG_TOGGLE)
+            expect(ctx.songPanel.isVisible).toBe(true)
+            expect(ctx.viewManager.currentView).toBe('song')
+        })
+
+        it('keeps its content: the list and every action button are present', () => {
+            playbackEvents.emit(EVENTS.SONG_TOGGLE)
+            const panel = document.getElementById('song-panel')
+            expect(panel.querySelector('#sg-list')).not.toBeNull()
+            for (const id of ['#sg-song-name', '#sg-song-date', '#sg-song-desc']) {
+                expect(panel.querySelector(id), id).not.toBeNull()
+            }
+            for (const id of ['#sg-save', '#sg-load', '#sg-export', '#sg-import']) {
+                expect(panel.querySelector(id), id).not.toBeNull()
+            }
+            // Rename and Delete were dropped as redundant (double-click on a
+            // name, and the x in the pattern panel header).
+            for (const id of ['#sg-rename', '#sg-delete']) {
+                expect(panel.querySelector(id), id).toBeNull()
+            }
         })
     })
 

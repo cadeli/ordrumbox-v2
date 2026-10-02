@@ -62,6 +62,15 @@
 
     /* ── Layout ── */
     --panel-height: 300px;
+    /* Vertical landmarks of the desktop layout. The song view is bounded by
+       them (it must start just under the toolbar and stop just above the
+       master slot), so they are declared once instead of being repeated. */
+    --tb-height: 64px;
+    --slot-top: 518px;
+    --workspace-height: calc(var(--slot-top) - var(--tb-height));
+    /* breathing room so a workspace view never butts flush against the slot
+       panel below it (the pattern panel leaves the same 4px) */
+    --workspace-gap: 4px;
 
     /* ── Radius ── */
     --radius-sm: 4px;
@@ -1401,10 +1410,9 @@ body {
 #about-panel,
 #tools-panel,
 #output-panel,
-#song-panel,
 #dm-panel {
     position: fixed;
-    top: 518px;
+    top: var(--slot-top);
     left: 0;
     width: 75%;
     height: var(--panel-height);
@@ -2779,12 +2787,36 @@ body {
 }
 
 /* ---- Song Panel ---- */
+/* Song view bounds: starts just below the toolbar, stops just above the master
+   slot, and keeps the left 75% so the fixed track editor overlay (right 25%) is
+   never covered. Same column layout as the pattern panel. */
+#song-panel {
+    position: fixed;
+    top: var(--tb-height);
+    left: 0;
+    width: 75%;
+    height: calc(var(--workspace-height) - var(--workspace-gap));
+    padding: 6px 12px;
+    background: var(--bg);
+    font-family: monospace;
+    font-size: var(--fs-base);
+    color: var(--muted);
+    z-index: var(--z-panel);
+    box-sizing: border-box;
+    overflow: hidden;
+}
 #song-panel .sg-body {
     display: flex;
     flex-direction: row;
     gap: 16px;
-    max-height: 180px;
-    align-items: flex-start;
+    flex: 1 1 auto;
+    min-height: 0;
+    /* stretch, not flex-start: the list must fill the body height so its
+       overflow-y: auto can actually scroll instead of growing with content */
+    align-items: stretch;
+}
+#song-panel .sg-list {
+    min-height: 0;
 }
 .sg-list {
     display: flex;
@@ -2906,26 +2938,8 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.sg-del-btn {
-    background: none;
-    border: none;
-    color: var(--line);
-    cursor: pointer;
-    font-size: var(--fs-md);
-    padding: 2px 4px;
-    border-radius: 3px;
-}
-.sg-del-btn:hover {
-    color: var(--accent);
-    background: var(--surface-2);
-}
-.sg-danger {
-    border-color: var(--accent) !important;
-}
-.sg-danger:hover {
-    background: var(--accent) !important;
-    color: var(--text) !important;
-}
+/* .sg-del-btn / .sg-danger were removed with the redundant Rename and Delete
+   buttons: .sg-del-btn was never used, .sg-danger only styled that Delete. */
 .sg-modal-overlay {
     position: fixed;
     inset: 0;
@@ -3775,17 +3789,6 @@ select option {
     color: var(--black);
     border-color: var(--black);
 }
-.sg-del-btn:hover {
-    color: var(--toy-pink);
-    background: color-mix(in srgb, var(--toy-pink) 22%, transparent);
-}
-.sg-danger {
-    border-color: var(--color-danger) !important;
-}
-.sg-danger:hover {
-    background: var(--color-danger) !important;
-    color: var(--black) !important;
-}
 
 /* ---- 11. Range sliders, tracks, focus, scrollbars ---- */
 #tb .tb-bpm-panel input[type='range']::-webkit-slider-thumb,
@@ -4285,7 +4288,8 @@ html.is-compact {
     #tools-panel,
     #about-panel,
     #output-panel,
-    #dm-panel {
+    #dm-panel,
+    #song-panel {
         position: fixed !important;
         top: var(--tb-h, 48px) !important;
         left: 0 !important;

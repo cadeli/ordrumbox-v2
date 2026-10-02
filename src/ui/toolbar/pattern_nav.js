@@ -25,8 +25,7 @@ export default class PatternNav {
         const patLabel = document.createElement('span')
         patLabel.className = 'tb-label'
         patLabel.textContent = 'Pattern'
-        patLabel.title = 'Click to open Patterns Manager'
-        patLabel.style.cursor = 'pointer'
+        patLabel.title = 'Current pattern'
         tb.patLabel = patLabel
         tb.patternSelect = document.createElement('select')
         patWrap.appendChild(patLabel)
@@ -94,10 +93,6 @@ export default class PatternNav {
 
         tb.kitLabel.addEventListener('click', () => {
             playbackEvents.emit(EVENTS.DRUMKIT_MANAGER_TOGGLE, true)
-        })
-
-        tb.patLabel.addEventListener('click', () => {
-            playbackEvents.emit(EVENTS.SONG_TOGGLE, true)
         })
 
         tb.prevPageBtn.addEventListener('click', () => prevPage())

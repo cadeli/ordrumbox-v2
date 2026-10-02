@@ -113,9 +113,15 @@ export default class ViewSwitch {
         tb.prollBtn.dataset.view = 'proll'
         tb.prollBtn.textContent = 'proll'
         tb.prollBtn.title = 'Toggle Proll'
+        tb.songBtn = document.createElement('button')
+        tb.songBtn.className = 'tb-view-btn'
+        tb.songBtn.dataset.view = 'song'
+        tb.songBtn.textContent = 'Song'
+        tb.songBtn.title = 'Toggle Song'
         viewRow.appendChild(tb.synthBtn)
         viewRow.appendChild(tb.editBtn)
         viewRow.appendChild(tb.prollBtn)
+        viewRow.appendChild(tb.songBtn)
         viewWrap.appendChild(viewLabel)
         viewWrap.appendChild(viewRow)
 
@@ -133,6 +139,9 @@ export default class ViewSwitch {
         })
         this.listen(tb.prollBtn, 'click', () => {
             playbackEvents.emit(EVENTS.PROLL_TOGGLE)
+        })
+        this.listen(tb.songBtn, 'click', () => {
+            playbackEvents.emit(EVENTS.SONG_TOGGLE)
         })
 
         this.listen(tb.undoBtn, 'click', () => {

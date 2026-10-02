@@ -7,6 +7,14 @@ import songService from '../logic/services/song_service.js'
 import { downloadJson } from './components/ui_utils.js'
 import { EVENTS } from '../core/events.js'
 
+/**
+ * Song view: pattern list + song metadata/actions.
+ *
+ * Was a fixed "slot" panel opened by clicking the toolbar's Pattern label; it
+ * is now a regular workspace view (like grid / synth / proll) reached through
+ * the View group of the toolbar. Every element below is unchanged — only the
+ * container class and the way it is shown moved.
+ */
 export default class SongPanel extends BasePanel {
     #selectedIdx = null
     #songName = 'Untitled'
@@ -21,6 +29,10 @@ export default class SongPanel extends BasePanel {
 
     createDOM() {
         super.createDOM()
+        this.container.classList.add('workspace-panel')
+        // Other workspace panels lay out as a flex column; the slot-panel CSS
+        // this replaces used position:fixed.
+        this.container.style.display = 'none'
 
         this.container.innerHTML = `
             <div class="ne-header">
@@ -38,10 +50,6 @@ export default class SongPanel extends BasePanel {
                         <span class="sg-song-date" id="sg-song-date"></span>
                     </div>
                     <div class="sg-song-desc" id="sg-song-desc" contenteditable="true" spellcheck="false" title="Double-click to edit description"></div>
-                    <div class="sg-btn-group">
-                        <button class="ne-btn" id="sg-rename" title="Rename selected pattern">Rename</button>
-                        <button class="ne-btn sg-danger" id="sg-delete" title="Delete selected pattern">Delete</button>
-                    </div>
                     <div class="sg-btn-group">
                         <button class="ne-btn" id="sg-save" title="Save song to IndexedDB">Save Song</button>
                         <button class="ne-btn" id="sg-load" title="Load song from IndexedDB">Load Song</button>
@@ -69,20 +77,24 @@ export default class SongPanel extends BasePanel {
             }
         })
 
-        this.listen(this.container.querySelector('#sg-rename'), 'click', () => {
-            this.#renameSelected()
-        })
-
-        this.listen(this.container.querySelector('#sg-delete'), 'click', () => {
-            if (this.#selectedIdx != null) this.#deletePattern(this.#selectedIdx)
-        })
-
         this.listen(this.#songNameEl, 'dblclick', () => this.#renameSong())
 
         this.listen(this.container.querySelector('#sg-save'), 'click', () => this.#saveSong())
         this.listen(this.container.querySelector('#sg-load'), 'click', () => this.#loadSong())
         this.listen(this.container.querySelector('#sg-export'), 'click', () => this.#exportSong())
         this.listen(this.container.querySelector('#sg-import'), 'click', () => this.#importSong())
+    }
+
+    /**
+     * The song view is a workspace panel, i.e. a flex column so `.sg-body` can
+     * take the remaining height. BasePanel.show() hard-codes `display: block`,
+     * which overrode .workspace-panel's `display: flex` and let `.sg-body` grow
+     * to its content — the panel then clipped the overflow and the pattern list
+     * became unreachable below the fold.
+     */
+    show() {
+        this.container.style.display = 'flex'
+        this.sync()
     }
 
     subscribe() {
@@ -180,14 +192,6 @@ export default class SongPanel extends BasePanel {
         })
     }
 
-    #renameSelected() {
-        if (this.#selectedIdx == null) return
-        const item = this.#listEl.querySelector('.sg-selected .sg-name')
-        if (item) {
-            this.#startRename(item, this.#selectedIdx)
-        }
-    }
-
     #renameSong() {
         const current = this.#songName
         const input = document.createElement('input')
@@ -229,24 +233,6 @@ export default class SongPanel extends BasePanel {
         })
         this.#selectedIdx = idx
         this.#renderList()
-    }
-
-    #deletePattern(idx) {
-        if (appState.patterns.length <= 1) {
-            showToast('Cannot delete the last pattern', 'warning')
-            return
-        }
-        const name = appState.patterns[idx]?.name ?? `Pattern ${idx}`
-        if (!confirm(`Delete "${name}"?`)) return
-
-        serviceRegistry.cmd.removePattern(idx)
-        this.#selectedIdx = appState.selectedPatternIdx
-        playbackEvents.batch(() => {
-            playbackEvents.emit(EVENTS.PATTERN_STRUCTURE_CHANGE)
-            playbackEvents.emit(EVENTS.PATTERN_CHANGE)
-        })
-        this.sync()
-        showToast(`Deleted "${name}"`, 'success')
     }
 
     async #saveSong() {

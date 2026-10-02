@@ -33,7 +33,7 @@ export const EVENTS = Object.freeze({
     TOOLS_TOGGLE: 'toolsToggle',
     MASTER_TOGGLE: 'masterToggle',
     ABOUT_TOGGLE: 'aboutToggle',
-    SONG_TOGGLE: 'songToggle',
+    SONG_TOGGLE: 'songToggle', // Song view (ViewManager), not a slot panel
     DRUMKIT_MANAGER_TOGGLE: 'drumkitManagerToggle',
     PATTERN_SETTINGS_TOGGLE: 'patternSettingsToggle',
     MOBILE_SEQ_TOGGLE: 'mobileSeqToggle',
@@ -45,6 +45,7 @@ export const VIEW_TOGGLE = Object.freeze({
     synth: EVENTS.SYNTH_TOGGLE,
     edit: EVENTS.EDIT_TOGGLE,
     proll: EVENTS.PROLL_TOGGLE,
+    song: EVENTS.SONG_TOGGLE,
     master: EVENTS.MASTER_TOGGLE,
     output: EVENTS.MASTER_TOGGLE,
 })

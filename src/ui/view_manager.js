@@ -7,11 +7,11 @@ import { removeLayout } from './mobile_track_layout.js'
 import { EVENTS } from '../core/events.js'
 
 /**
- * ViewManager — single coordinator for synth / edit / proll view switching.
- * Listens to toolbar and tab toggle events and calls panel.show() / panel.hide()
- * without touching another panel's DOM.
+ * ViewManager — single coordinator for synth / edit / proll / song view
+ * switching. Listens to toolbar and tab toggle events and calls
+ * panel.show() / panel.hide() without touching another panel's DOM.
  *
- * Slot panels (tools, master, dm, pp, about) are mutually exclusive —
+ * Slot panels (tools, master, dm, about) are mutually exclusive —
  * showing one hides all others and replaces the master panel in the same DOM slot.
  */
 export default class ViewManager {
@@ -21,6 +21,7 @@ export default class ViewManager {
     #noteEditor
     #patternSettingsPanel
     #outputPanel
+    #songPanel
     #currentView
     #slots
     #viewHandlers
@@ -34,7 +35,7 @@ export default class ViewManager {
         patternSettingsPanel,
         outputPanel,
         drumkitManager,
-        patternsPanel,
+        songPanel,
         aboutPanel,
     }) {
         this.#trackEditor = trackEditor
@@ -43,6 +44,7 @@ export default class ViewManager {
         this.#noteEditor = noteEditor
         this.#patternSettingsPanel = patternSettingsPanel
         this.#outputPanel = outputPanel
+        this.#songPanel = songPanel
         this.#currentView = null
 
         // ── Slot panel registry: short name → { event, panel } ─────────────
@@ -50,7 +52,6 @@ export default class ViewManager {
             ['tools', { event: EVENTS.TOOLS_TOGGLE, panel: toolsPanel }],
             ['master', { event: EVENTS.MASTER_TOGGLE, panel: outputPanel }],
             ['dm', { event: EVENTS.DRUMKIT_MANAGER_TOGGLE, panel: drumkitManager }],
-            ['pp', { event: EVENTS.SONG_TOGGLE, panel: patternsPanel }],
             ['about', { event: EVENTS.ABOUT_TOGGLE, panel: aboutPanel }],
         ])
 
@@ -61,6 +62,7 @@ export default class ViewManager {
             ['synth', { enter: () => this.#showSynth(), exit: () => this.#synthEditor?.hidePanel() }],
             ['edit', { enter: () => this.#showEdit() }],
             ['proll', { enter: () => this.#showProll(), exit: () => this.#pianoRollPanel?.hide() }],
+            ['song', { enter: () => this.#showSong(), exit: () => this.#songPanel?.hide() }],
             ['mobileSeq', { enter: () => this.#showMobileSeq(), exit: () => this.#exitMobileSeq() }],
             ['mobileTrack', { enter: () => this.#showMobileTrack(), exit: () => this.#exitMobileTrack() }],
         ])
@@ -71,6 +73,7 @@ export default class ViewManager {
         playbackEvents.on(EVENTS.SYNTH_TOGGLE, () => this.#switchTo('synth'))
         playbackEvents.on(EVENTS.EDIT_TOGGLE, () => this.#switchTo('edit'))
         playbackEvents.on(EVENTS.PROLL_TOGGLE, () => this.#switchTo('proll'))
+        playbackEvents.on(EVENTS.SONG_TOGGLE, () => this.#switchTo('song'))
         playbackEvents.on(EVENTS.MOBILE_SEQ_TOGGLE, () => this.#switchTo('mobileSeq'))
         playbackEvents.on(EVENTS.MOBILE_TRACK_TOGGLE, () => this.#switchTo('mobileTrack'))
 
@@ -202,6 +205,14 @@ export default class ViewManager {
         this.#synthEditor.hidePanel()
         this.#ensureEditorsVisible()
         this.#pianoRollPanel.show()
+        setPatternPanelHidden(true)
+    }
+
+    #showSong() {
+        this.#synthEditor.hidePanel()
+        this.#pianoRollPanel.hide()
+        this.#ensureEditorsVisible()
+        this.#songPanel?.show()
         setPatternPanelHidden(true)
     }
 

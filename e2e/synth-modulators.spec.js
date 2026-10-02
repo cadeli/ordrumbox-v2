@@ -76,6 +76,9 @@ test.describe('Real modulator effect on sound (per target)', () => {
     })
 
     test('each LFO target produces time-varying sound', async ({ page }) => {
+        // 29 configs x 1.25 s of audio rendered through an OfflineAudioContext:
+        // the render alone outlasts the 30 s default timeout.
+        test.setTimeout(120_000)
         const { SYNTH_LFO_TARGETS } = await page.evaluate(() =>
             import('/src/ui/synth_editor/constants.js').then((m) => ({
                 SYNTH_LFO_TARGETS: m.SYNTH_LFO_TARGETS,
@@ -132,6 +135,9 @@ test.describe('Real modulator effect on sound (per target)', () => {
     })
 
     test('each LFO2 target produces time-varying sound', async ({ page }) => {
+        // 29 configs x 1.25 s of audio rendered through an OfflineAudioContext:
+        // the render alone outlasts the 30 s default timeout.
+        test.setTimeout(120_000)
         const { SYNTH_LFO_TARGETS } = await page.evaluate(() =>
             import('/src/ui/synth_editor/constants.js').then((m) => ({
                 SYNTH_LFO_TARGETS: m.SYNTH_LFO_TARGETS,

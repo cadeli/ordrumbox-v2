@@ -176,6 +176,7 @@ export function setViewMode(mode) {
     setViewBtn('synth', mode === 'synth')
     setViewBtn('edit', mode === 'edit' || mode === 'mobileTrack')
     setViewBtn('proll', mode === 'proll')
+    setViewBtn('song', mode === 'song')
 }
 
 /**

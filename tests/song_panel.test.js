@@ -67,10 +67,19 @@ describe('SongPanel', () => {
         expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(1)
     })
 
-    it('rename button triggers inline rename on selected pattern', () => {
+    // Rename and Delete buttons were removed as redundant: renaming is the
+    // double-click on the name, deletion is the x in the pattern panel header
+    // (pattern_panel/header_section.js, data-pp-action="delete").
+    it('no longer renders the redundant rename/delete buttons', () => {
         panel.sync()
-        const renameBtn = panel.container.querySelector('#sg-rename')
-        renameBtn.click()
+        expect(panel.container.querySelector('#sg-rename')).toBeNull()
+        expect(panel.container.querySelector('#sg-delete')).toBeNull()
+    })
+
+    it('double-clicking a pattern name starts the rename', () => {
+        panel.sync()
+        const nameEl = panel.container.querySelector('.sg-item .sg-name')
+        nameEl.dispatchEvent(new Event('dblclick', { bubbles: true }))
 
         const input = panel.container.querySelector('.sg-rename-input')
         expect(input).not.toBeNull()
@@ -103,22 +112,11 @@ describe('SongPanel', () => {
         expect(serviceRegistry.cmd.renamePattern).not.toHaveBeenCalled()
     })
 
-    it('delete button removes selected pattern', () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(true)
+    it('selects a pattern when its row is clicked', () => {
         panel.sync()
-        const deleteBtn = panel.container.querySelector('#sg-delete')
-        deleteBtn.click()
-
-        expect(serviceRegistry.cmd.removePattern).toHaveBeenCalledWith(0)
-    })
-
-    it('delete button does nothing when no pattern selected', () => {
-        appState.selectedPatternIdx = null
-        panel.sync()
-        const deleteBtn = panel.container.querySelector('#sg-delete')
-        deleteBtn.click()
-
-        expect(serviceRegistry.cmd.removePattern).not.toHaveBeenCalled()
+        const item = panel.container.querySelectorAll('.sg-item')[0]
+        item.click()
+        expect(serviceRegistry.cmd.setSelectedPatternIdx).toHaveBeenCalledWith(0)
     })
 
     it('shows "No patterns" when patterns list is empty', () => {
