@@ -1,7 +1,9 @@
 // @ts-check
 // src/ui/song_panel/arrangement_section.js
-// Song arrangement grid: one column per pattern, one row per measure, one
-// rectangle per clip.
+// Song arrangement grid, laid out like a DAW arrangement view:
+//   - time runs LEFT TO RIGHT on the X axis, one cell per measure (the ruler);
+//   - each pattern is a ROW, named in a frozen first column;
+//   - each clip is a rectangle spanning its bars along X.
 //
 // Read-only for now — playback of an arrangement is not implemented, so nothing
 // here drives the transport. It shows the arrangement and lets it be picked.
@@ -9,69 +11,200 @@
 import { appState } from '../../state/app_state.js'
 import { songLengthBars, songBpm } from '../../model/song_schema.js'
 import { escapeHtml } from '../components/ui_utils.js'
+import ContextMenu from '../components/context_menu.js'
+import { serviceRegistry } from '../../state/service_registry.js'
+import { showToast } from '../../core/notify.js'
+import { barsForPattern } from '../../model/song_schema.js'
 
-/** Width of one pattern column, in px. */
-const COL_WIDTH = 74
-/** Width of the bar-number gutter, in px. */
-const GUTTER_WIDTH = 40
-/** Height of one measure row, in px. */
-const ROW_HEIGHT = 16
-/** Header height, in px. */
-const HEADER_HEIGHT = 44
+/** Width of the frozen pattern-name column, in px. */
+const LABEL_WIDTH = 74
+/** Width of one measure along X, in px. */
+const BAR_WIDTH = 24
+/** Height of one pattern row, in px. */
+const ROW_HEIGHT = 22
+/** Height of the bar ruler, in px. */
+const HEADER_HEIGHT = 18
 
 export default class ArrangementSection {
+    #panel
     #root
     #listEl
     #titleEl
     #song
-    /** Pattern ids that at least one clip uses — the columns worth showing. */
-    #columns = []
+    #menu = new ContextMenu()
+    /** The patterns the arrangement uses — one row each. */
+    #rows = []
 
     /**
+     * @param {import('../song_panel.js').default} panel host, for listen/dispose
      * @param {HTMLElement} root container to render into
      * @param {HTMLElement} titleEl element showing the current song name
      * @param {HTMLElement} listEl scrollable container for the grid
      */
-    constructor(root, titleEl, listEl) {
+    constructor(panel, root, titleEl, listEl) {
+        this.#panel = panel
         this.#root = root
         this.#titleEl = titleEl
         this.#listEl = listEl
+        // Delegated so it survives every re-render of the grid.
+        this.#panel.listen(this.#listEl, 'contextmenu', (e) => this.#onContextMenu(e))
+    }
+
+    /** Closes the menu; called by the host panel's onDestroy. */
+    dispose() {
+        this.#menu.hide()
+    }
+
+    /**
+     * One right-click target decides the menu: a clip, a pattern name, or the
+     * bare grid (which offers to add a clip where the pointer is).
+     * @param {MouseEvent} e
+     */
+    #onContextMenu(e) {
+        const target = e.target instanceof Element ? e.target : null
+        if (!target || !this.#song) return
+        const clipEl = target.closest('.sa-clip')
+        const nameEl = target.closest('.sa-row-name')
+
+        if (clipEl) {
+            e.preventDefault()
+            this.#showClipMenu(clipEl, e.clientX, e.clientY)
+            return
+        }
+        if (nameEl) {
+            e.preventDefault()
+            this.#showRowMenu(nameEl, e.clientX, e.clientY)
+            return
+        }
+        if (target.closest('.sa-grid')) {
+            e.preventDefault()
+            this.#showGridMenu(e)
+        }
+    }
+
+    #patternName(patternId) {
+        return this.#rows.find((p) => p.id === patternId)?.name ?? patternId
+    }
+
+    /** Clip: remove it, or repeat the same pattern right after it. */
+    #showClipMenu(clipEl, x, y) {
+        const index = Number(clipEl.dataset.index)
+        const clip = this.#song.clips?.[index]
+        if (!clip) return
+        const label = this.#patternName(clip.pattern)
+        this.#menu.show(
+            `${label} — bar ${clip.startBar + 1}, ${clip.bars} bar(s)`,
+            [
+                {
+                    label: 'Next',
+                    run: () => {
+                        serviceRegistry.cmd.addSongClip({
+                            pattern: clip.pattern,
+                            startBar: clip.startBar + clip.bars,
+                            bars: clip.bars,
+                        })
+                        this.sync()
+                        showToast(`"${label}" repeated at bar ${clip.startBar + clip.bars + 1}`, 'success')
+                    },
+                },
+                {
+                    label: 'Delete',
+                    run: () => {
+                        serviceRegistry.cmd.removeSongClips([index])
+                        this.sync()
+                        showToast(`Removed "${label}" at bar ${clip.startBar + 1}`, 'success')
+                    },
+                },
+            ],
+            x,
+            y,
+        )
+    }
+
+    /** Pattern name: remove every clip that places this pattern. */
+    #showRowMenu(nameEl, x, y) {
+        const patternId = nameEl.dataset.pattern
+        const indices = (this.#song.clips ?? []).map((c, i) => (c.pattern === patternId ? i : -1)).filter((i) => i >= 0)
+        const label = this.#patternName(patternId)
+        this.#menu.show(
+            `${label} — ${indices.length} clip(s)`,
+            [
+                {
+                    label: 'Delete row',
+                    disabled: indices.length === 0,
+                    run: () => {
+                        // one command, so the whole row is a single undo step
+                        serviceRegistry.cmd.removeSongClips(indices)
+                        this.sync()
+                        showToast(`Removed "${label}" from the arrangement`, 'success')
+                    },
+                },
+            ],
+            x,
+            y,
+        )
+    }
+
+    /** Bare grid: add the row's pattern at the measure under the pointer. */
+    #showGridMenu(e) {
+        const body = this.#listEl.querySelector('.sa-body')
+        if (!body) return
+        const rect = body.getBoundingClientRect()
+        const row = Math.floor((e.clientY - rect.top) / ROW_HEIGHT)
+        const pattern = this.#rows[row]
+        if (!pattern) return
+        // floor, not round: clicking a cell must place the clip in THAT cell
+        const startBar = Math.max(0, Math.floor((e.clientX - rect.left) / BAR_WIDTH))
+        const patternObj = appState.patterns?.find((p) => p.id === pattern.id)
+        const bars = barsForPattern(patternObj)
+        this.#menu.show(
+            `Add "${pattern.name ?? pattern.id}" at bar ${startBar + 1}`,
+            [
+                {
+                    label: 'Add here',
+                    run: () => {
+                        serviceRegistry.cmd.addSongClip({ pattern: pattern.id, startBar, bars })
+                        this.sync()
+                        showToast(`"${pattern.name ?? pattern.id}" added at bar ${startBar + 1}`, 'success')
+                    },
+                },
+            ],
+            e.clientX,
+            e.clientY,
+        )
     }
 
     sync() {
         this.#song = appState.songs?.[appState.selectedSongIdx] ?? null
-        this.#columns = this.#computeColumns()
+        this.#rows = this.#computeRows()
         this.render()
     }
 
     /**
-     * Columns are the patterns actually used by the arrangement. Showing all 40
-     * library patterns would leave a grid that is 95% empty and forces
-     * horizontal scrolling for nothing.
+     * Rows are the patterns actually used by the arrangement. Listing all 40
+     * library patterns would leave a grid that is 95% empty rows.
      */
-    #computeColumns() {
+    #computeRows() {
         const used = new Set((this.#song?.clips ?? []).map((c) => c.pattern))
-        const columns = []
+        const rows = []
         for (const pattern of appState.patterns ?? []) {
-            if (pattern?.id && used.has(pattern.id)) columns.push(pattern)
+            if (pattern?.id && used.has(pattern.id)) rows.push(pattern)
         }
-        // A clip whose pattern is missing from the library still gets a column,
+        // A clip whose pattern is missing from the library still gets a row,
         // otherwise the arrangement would silently hide part of itself.
         for (const id of used) {
-            if (!columns.some((p) => p.id === id)) columns.push({ id, name: id, _orphan: true })
+            if (!rows.some((p) => p.id === id)) rows.push({ id, name: id, _orphan: true })
         }
-        return columns
+        return rows
     }
 
-    #columnIndex(id) {
-        return this.#columns.findIndex((p) => p.id === id)
+    #rowIndex(id) {
+        return this.#rows.findIndex((p) => p.id === id)
     }
 
     render() {
         const song = this.#song
-        if (this.#titleEl) {
-            this.#titleEl.textContent = song ? song.name : ''
-        }
+        if (this.#titleEl) this.#titleEl.textContent = song ? song.name : ''
 
         if (!song) {
             this.#listEl.innerHTML = '<div class="sa-empty">No arrangement — this song has no clips yet.</div>'
@@ -81,48 +214,41 @@ export default class ArrangementSection {
         this.#root?.classList.add('sa-has-song')
 
         const totalBars = Math.max(1, songLengthBars(song))
-        const colCount = this.#columns.length
-        const gridWidth = GUTTER_WIDTH + colCount * COL_WIDTH
-        const gridHeight = HEADER_HEIGHT + totalBars * ROW_HEIGHT
+        const rowCount = this.#rows.length
+        const gridWidth = LABEL_WIDTH + totalBars * BAR_WIDTH
+        const gridHeight = HEADER_HEIGHT + rowCount * ROW_HEIGHT
 
-        // Header: a column per pattern, rotated so long names stay readable.
-        const headerCells = this.#columns
+        // Ruler: one measure per cell, numbered, running along X.
+        const ruler = Array.from({ length: totalBars }, (_, bar) => {
+            const marked = bar % 4 === 0
+            return `<div class="sa-bar-head${marked ? ' sa-bar-major' : ''}" style="left:${LABEL_WIDTH + bar * BAR_WIDTH}px;width:${BAR_WIDTH}px">${bar + 1}</div>`
+        }).join('')
+
+        // One row per pattern. The name lives in the frozen first column, so it
+        // is pulled left out of the scrolling body.
+        const rows = this.#rows
             .map(
-                (p) =>
-                    `<div class="sa-col-head${p._orphan ? ' sa-orphan' : ''}" style="width:${COL_WIDTH}px">` +
-                    `<span class="sa-col-name" title="${escapeHtml(p.name ?? p.id)}">${escapeHtml(p.name ?? p.id)}</span>` +
-                    `</div>`,
+                (p, index) =>
+                    `<div class="sa-row" style="top:${index * ROW_HEIGHT}px;height:${ROW_HEIGHT}px">` +
+                    `<div class="sa-row-name${p._orphan ? ' sa-orphan' : ''}" data-pattern="${escapeHtml(p.id)}" style="left:${-LABEL_WIDTH}px;width:${LABEL_WIDTH}px" title="${escapeHtml(p.name ?? p.id)}">` +
+                    `<span>${escapeHtml(p.name ?? p.id)}</span></div>` +
+                    '</div>',
             )
             .join('')
 
-        // Body: one row per measure. Rows are a plain background; the clips are
-        // absolutely-positioned rectangles over it, so the node count follows the
-        // clip count and not (columns x bars).
-        const rows = []
-        for (let bar = 0; bar < totalBars; bar++) {
-            const label = bar % 4 === 0 ? String(bar + 1) : ''
-            rows.push(
-                `<div class="sa-row${bar % 4 === 0 ? ' sa-row-beat' : ''}" style="top:${HEADER_HEIGHT + bar * ROW_HEIGHT}px;height:${ROW_HEIGHT}px">` +
-                    `<span class="sa-bar-label">${label}</span>` +
-                    '</div>',
-            )
-        }
-
         const clips = (song.clips ?? [])
-            .map((clip) => {
-                const col = this.#columnIndex(clip.pattern)
-                if (col < 0) return ''
-                // The rectangle's HEIGHT is the duration: a 4-bar clip covers
-                // four rows. A clip can also last a fraction of a bar (a 3-beat
-                // pattern is 0.75), so the height is not rounded to a row.
-                const height = Math.max(3, clip.bars * ROW_HEIGHT)
-                const left = GUTTER_WIDTH + col * COL_WIDTH
-                const top = HEADER_HEIGHT + clip.startBar * ROW_HEIGHT
-                const width = COL_WIDTH - 4
+            .map((clip, clipIndex) => {
+                const index = this.#rowIndex(clip.pattern)
+                if (index < 0) return ''
+                // Width along X is the duration; a clip may last a fraction of
+                // a bar (a 3-beat pattern is 0.75), so it is not rounded to a cell.
+                const width = Math.max(4, clip.bars * BAR_WIDTH - 2)
                 return (
                     `<div class="sa-clip${clip.bars > 1 ? ' sa-clip-long' : ''}" ` +
-                    `style="left:${left}px;top:${top}px;width:${width}px;height:${height}px" ` +
+                    `style="left:${clip.startBar * BAR_WIDTH}px;top:${index * ROW_HEIGHT + 2}px;` +
+                    `width:${width}px;height:${ROW_HEIGHT - 4}px" ` +
                     `data-pattern="${escapeHtml(clip.pattern)}" ` +
+                    `data-index="${clipIndex}" ` +
                     `data-start-bar="${clip.startBar}" ` +
                     `data-bars="${clip.bars}" ` +
                     `title="${escapeHtml(clip.pattern)} — bar ${clip.startBar + 1}, ${clip.bars} bar(s)"></div>`
@@ -132,9 +258,10 @@ export default class ArrangementSection {
 
         this.#listEl.innerHTML =
             `<div class="sa-grid" style="width:${gridWidth}px;height:${gridHeight}px">` +
-            `<div class="sa-header" style="width:${gridWidth}px;height:${HEADER_HEIGHT}px">${headerCells}</div>` +
-            `<div class="sa-body" style="top:${HEADER_HEIGHT}px;height:${totalBars * ROW_HEIGHT}px;width:${gridWidth - GUTTER_WIDTH}px;left:${GUTTER_WIDTH}px">` +
-            rows.join('') +
+            `<div class="sa-header" style="width:${gridWidth}px;height:${HEADER_HEIGHT}px">${ruler}</div>` +
+            `<div class="sa-body" style="left:${LABEL_WIDTH}px;top:${HEADER_HEIGHT}px;` +
+            `width:${totalBars * BAR_WIDTH}px;height:${rowCount * ROW_HEIGHT}px">` +
+            rows +
             clips +
             '</div>' +
             '</div>'
@@ -147,9 +274,9 @@ export default class ArrangementSection {
     clipRects() {
         const out = []
         for (const clip of this.#song?.clips ?? []) {
-            const col = this.#columnIndex(clip.pattern)
-            if (col < 0) continue
-            out.push({ pattern: clip.pattern, column: col, startBar: clip.startBar, bars: clip.bars })
+            const row = this.#rowIndex(clip.pattern)
+            if (row < 0) continue
+            out.push({ pattern: clip.pattern, row, startBar: clip.startBar, bars: clip.bars })
         }
         return out
     }

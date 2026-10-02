@@ -40,32 +40,36 @@ export default class SongPanel extends BasePanel {
             <div class="ne-header">
                 <span class="ne-track">Song</span>
             </div>
-            <div class="sa-root" id="sa-root">
-                <div class="sa-head">
-                    <span class="sa-title" id="sa-title">Arrangement</span>
-                    <span class="sa-meta" id="sa-meta"></span>
-                </div>
-                <div class="sa-list" id="sa-list"></div>
-            </div>
             <div class="sg-body">
+                <!-- Left column: the pattern library -->
                 <div class="sg-list" id="sg-list"></div>
-                <div class="sg-actions-col" id="sg-actions-col">
-                    <div class="sg-song-row">
-                        <span class="sg-song-label">Song:</span>
-                        <span class="sg-song-name" id="sg-song-name" title="Double-click to rename">Untitled</span>
+                <!-- Right column: the arrangement over the song metadata -->
+                <div class="sg-right">
+                    <div class="sa-root" id="sa-root">
+                        <div class="sa-head">
+                            <span class="sa-title" id="sa-title">Arrangement</span>
+                            <span class="sa-meta" id="sa-meta"></span>
+                        </div>
+                        <div class="sa-list" id="sa-list"></div>
                     </div>
-                    <div class="sg-song-row">
-                        <span class="sg-song-label">Date:</span>
-                        <span class="sg-song-date" id="sg-song-date"></span>
-                    </div>
-                    <div class="sg-song-desc" id="sg-song-desc" contenteditable="true" spellcheck="false" title="Double-click to edit description"></div>
-                    <div class="sg-btn-group">
-                        <button class="ne-btn" id="sg-save" title="Save song to IndexedDB">Save Song</button>
-                        <button class="ne-btn" id="sg-load" title="Load song from IndexedDB">Load Song</button>
-                    </div>
-                    <div class="sg-btn-group">
-                        <button class="ne-btn" id="sg-export" title="Export song as JSON file">Export Song</button>
-                        <button class="ne-btn" id="sg-import" title="Import song from JSON file">Import Song</button>
+                    <div class="sg-actions-col" id="sg-actions-col">
+                        <div class="sg-info-rows">
+                            <div class="sg-song-row">
+                                <span class="sg-song-label">Song</span>
+                                <span class="sg-song-name" id="sg-song-name" title="Double-click to rename">Untitled</span>
+                            </div>
+                            <div class="sg-song-row">
+                                <span class="sg-song-label">Date</span>
+                                <span class="sg-song-date" id="sg-song-date"></span>
+                            </div>
+                        </div>
+                        <div class="sg-song-desc" id="sg-song-desc" contenteditable="true" spellcheck="false" title="Double-click to edit description"></div>
+                        <div class="sg-btn-group">
+                            <button class="ne-btn" id="sg-save" title="Save song to IndexedDB">Save</button>
+                            <button class="ne-btn" id="sg-load" title="Load song from IndexedDB">Load</button>
+                            <button class="ne-btn" id="sg-export" title="Export song as JSON file">Export</button>
+                            <button class="ne-btn" id="sg-import" title="Import song from JSON file">Import</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -77,6 +81,7 @@ export default class SongPanel extends BasePanel {
         this.#songDescEl = this.container.querySelector('#sg-song-desc')
 
         this.#arrangement = new ArrangementSection(
+            this,
             this.container.querySelector('#sa-root'),
             this.container.querySelector('#sa-title'),
             this.container.querySelector('#sa-list'),
@@ -110,6 +115,10 @@ export default class SongPanel extends BasePanel {
     show() {
         this.container.style.display = 'flex'
         this.sync()
+    }
+
+    onDestroy() {
+        this.#arrangement?.dispose()
     }
 
     subscribe() {

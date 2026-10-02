@@ -608,4 +608,85 @@ describe('Functional: Commander operations', () => {
             expect(source.id).toBe('verse')
         })
     })
+
+    // ── arrangement clips ────────────────────────────────────────────────────────
+
+    describe('arrangement clips', () => {
+        let history
+
+        beforeEach(() => {
+            history = new HistoryManager(50)
+            serviceRegistry.history = history
+        })
+
+        const song = (clips) => {
+            appState.songs = [{ id: 'demo', name: 'Demo', bpm: 120, clips }]
+            appState.selectedSongIdx = 0
+            return appState.songs[0]
+        }
+
+        it('addSongClip places a clip on the selected song', () => {
+            song([])
+            expect(cmd.addSongClip({ pattern: 'rock', startBar: 4, bars: 2 })).toBe(true)
+            expect(appState.songs[0].clips).toEqual([{ pattern: 'rock', startBar: 4, bars: 2 }])
+        })
+
+        it('addSongClip coerces a bogus position and duration', () => {
+            song([])
+            cmd.addSongClip({ pattern: 'rock', startBar: -3, bars: 0 })
+            expect(appState.songs[0].clips[0]).toEqual({ pattern: 'rock', startBar: 0, bars: 1 })
+        })
+
+        it('addSongClip does nothing without a song or a pattern', () => {
+            appState.songs = []
+            expect(cmd.addSongClip({ pattern: 'rock', startBar: 0, bars: 1 })).toBe(false)
+            song([])
+            expect(cmd.addSongClip(null)).toBe(false)
+            expect(appState.songs[0].clips).toHaveLength(0)
+        })
+
+        it('addSongClip is undoable and redoable', () => {
+            song([])
+            cmd.addSongClip({ pattern: 'rock', startBar: 0, bars: 1 })
+            history.undo()
+            expect(appState.songs[0].clips).toHaveLength(0)
+            history.redo()
+            expect(appState.songs[0].clips).toHaveLength(1)
+        })
+
+        it('removeSongClips removes the given indices in one undo step', () => {
+            song([
+                { pattern: 'a', startBar: 0, bars: 1 },
+                { pattern: 'b', startBar: 1, bars: 1 },
+                { pattern: 'c', startBar: 2, bars: 1 },
+            ])
+            expect(cmd.removeSongClips([0, 2])).toBe(true)
+            expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['b'])
+
+            history.undo()
+            expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['a', 'b', 'c'])
+        })
+
+        it('removeSongClips restores the original order on undo', () => {
+            song([
+                { pattern: 'a', startBar: 0, bars: 1 },
+                { pattern: 'b', startBar: 1, bars: 1 },
+                { pattern: 'c', startBar: 2, bars: 1 },
+            ])
+            cmd.removeSongClips([1])
+            history.undo()
+            expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['a', 'b', 'c'])
+        })
+
+        it('removeSongClips ignores out-of-range indices', () => {
+            song([{ pattern: 'a', startBar: 0, bars: 1 }])
+            expect(cmd.removeSongClips([5, -1, 1.5])).toBe(false)
+            expect(appState.songs[0].clips).toHaveLength(1)
+        })
+
+        it('removeSongClips does nothing without a song', () => {
+            appState.songs = []
+            expect(cmd.removeSongClips([0])).toBe(false)
+        })
+    })
 })

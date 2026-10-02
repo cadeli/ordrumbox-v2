@@ -4,14 +4,14 @@
  * Arrangement grid geometry: one column per *used* pattern, one row per measure,
  * one rectangle per clip whose height is its duration.
  */
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import ArrangementSection from '../src/ui/song_panel/arrangement_section.js'
 
-const ROW_HEIGHT = 16
-const COL_WIDTH = 74
-const GUTTER = 40
-const HEADER = 44
+const ROW_HEIGHT = 22
+const LABEL_WIDTH = 74
+const BAR_WIDTH = 24
+const HEADER = 18
 
 // Classes, not ids: jsdom resolves a `#id` selector through a per-document id
 // cache, so a second element reusing an id (which the real app never does —
@@ -21,8 +21,10 @@ function build() {
     root.innerHTML = '<span class="t"></span><div class="l"></div>'
     document.body.appendChild(root)
     const list = root.querySelector('.l')
-    const section = new ArrangementSection(root, root.querySelector('.t'), list)
-    return { root, section, list }
+    // the host panel only supplies listen() for the delegated contextmenu
+    const panel = { listen: vi.fn() }
+    const section = new ArrangementSection(panel, root, root.querySelector('.t'), list)
+    return { root, section, list, panel }
 }
 
 const clips = () => [...build2.list.querySelectorAll('.sa-clip')]
@@ -56,52 +58,80 @@ describe('ArrangementSection', () => {
         expect(clips()).toHaveLength(3)
     })
 
-    // Showing all 40 library patterns would leave a grid 95% empty.
-    it('only makes a column for the patterns the arrangement uses', () => {
+    // Showing all 40 library patterns would leave a grid 95% empty rows.
+    it('only makes a row for the patterns the arrangement uses', () => {
         build2.section.sync()
-        const heads = [...build2.list.querySelectorAll('.sa-col-head')].map((h) => h.textContent.trim())
-        expect(heads).toEqual(['Rock', 'Bass'])
+        const names = [...build2.list.querySelectorAll('.sa-row-name')].map((h) => h.textContent.trim())
+        expect(names).toEqual(['Rock', 'Bass'])
     })
 
-    // `left` is the column origin; the 2px visual inset lives in CSS.
-    it('places a clip on its own column', () => {
+    // The first column holds the names; the ruler starts after it.
+    it('numbers the measures along X, after the name column', () => {
+        build2.section.sync()
+        const heads = [...build2.list.querySelectorAll('.sa-bar-head')]
+        const left = (el) => Number(el.style.left.replace('px', ''))
+        expect(heads).toHaveLength(12)
+        expect(left(heads[0])).toBe(LABEL_WIDTH)
+        expect(left(heads[1])).toBe(LABEL_WIDTH + BAR_WIDTH)
+        expect(heads[0].textContent).toBe('1')
+    })
+
+    it('pulls the row names into the frozen column, left of the body', () => {
+        build2.section.sync()
+        const name = build2.list.querySelector('.sa-row-name')
+        expect(Number(name.style.left.replace('px', ''))).toBe(-LABEL_WIDTH)
+        expect(Number(name.style.width.replace('px', ''))).toBe(LABEL_WIDTH)
+    })
+
+    // Clips of different patterns sit on different rows.
+    it('stacks clips of different patterns on their own row', () => {
         build2.section.sync()
         const [first, second] = clips()
-        const left = (el) => Number(el.style.left.replace('px', ''))
-        expect(left(first)).toBe(GUTTER)
-        expect(left(second)).toBe(GUTTER + COL_WIDTH)
+        const top = (el) => Number(el.style.top.replace('px', ''))
+        expect(top(first)).toBe(2)
+        expect(top(second)).toBe(ROW_HEIGHT + 2)
     })
 
-    it('offsets the row by its start bar', () => {
+    // X is time: a clip's left is its start bar.
+    it('offsets the clip along X by its start bar', () => {
         build2.section.sync()
         const atBar0 = clips()[0]
         const atBar8 = clips()[2]
-        expect(Math.round(Number(atBar0.style.top.replace('px', '')))).toBe(HEADER)
-        expect(Math.round(Number(atBar8.style.top.replace('px', '')))).toBe(HEADER + 8 * ROW_HEIGHT)
+        const left = (el) => Number(el.style.left.replace('px', ''))
+        expect(left(atBar0)).toBe(0)
+        expect(left(atBar8)).toBe(8 * BAR_WIDTH)
     })
 
-    // The height is what tells a 4-bar clip from a 1-bar one.
-    it('makes the height equal the duration', () => {
+    it('places the body right of the name column and under the ruler', () => {
+        build2.section.sync()
+        const body = build2.list.querySelector('.sa-body')
+        expect(body.style.left).toBe(`${LABEL_WIDTH}px`)
+        expect(body.style.top).toBe(`${HEADER}px`)
+    })
+
+    // The width is what tells a 4-bar clip from a 1-bar one.
+    it('makes the width equal the duration', () => {
         build2.section.sync()
         const [twoBars, oneBar, fourBars] = clips()
-        expect(Math.round(Number(twoBars.style.height.replace('px', '')))).toBe(2 * ROW_HEIGHT)
-        expect(Math.round(Number(oneBar.style.height.replace('px', '')))).toBe(ROW_HEIGHT)
-        expect(Math.round(Number(fourBars.style.height.replace('px', '')))).toBe(4 * ROW_HEIGHT)
+        const width = (el) => Number(el.style.width.replace('px', ''))
+        expect(width(twoBars)).toBe(2 * BAR_WIDTH - 2)
+        expect(width(oneBar)).toBe(BAR_WIDTH - 2)
+        expect(width(fourBars)).toBe(4 * BAR_WIDTH - 2)
     })
 
-    it('keeps a sub-bar clip shorter than a full row but visible', () => {
+    it('keeps a sub-bar clip narrower than a full cell but visible', () => {
         appState.songs[0].clips = [{ pattern: 'rock', startBar: 0, bars: 0.75 }]
         build2.section.sync()
-        expect(Number(clips()[0].style.height.replace('px', ''))).toBeGreaterThan(0)
-        expect(Number(clips()[0].style.height.replace('px', ''))).toBeLessThan(ROW_HEIGHT)
+        expect(Number(clips()[0].style.width.replace('px', ''))).toBeGreaterThan(4)
+        expect(Number(clips()[0].style.width.replace('px', ''))).toBeLessThan(BAR_WIDTH)
     })
 
     it('exposes the clip data for assertions', () => {
         build2.section.sync()
         expect(build2.section.clipRects()).toEqual([
-            { pattern: 'rock', column: 0, startBar: 0, bars: 2 },
-            { pattern: 'bass', column: 1, startBar: 0, bars: 1 },
-            { pattern: 'rock', column: 0, startBar: 8, bars: 4 },
+            { pattern: 'rock', row: 0, startBar: 0, bars: 2 },
+            { pattern: 'bass', row: 1, startBar: 0, bars: 1 },
+            { pattern: 'rock', row: 0, startBar: 8, bars: 4 },
         ])
     })
 

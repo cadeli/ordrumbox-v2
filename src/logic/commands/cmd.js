@@ -62,6 +62,8 @@ export default class Commander {
         'setPatternBpm',
         'setPatternBeatCount',
         'refreshPatternId',
+        'addSongClip',
+        'removeSongClips',
         'setPatternDescription',
         'importPatternFromJson',
         'createPattern',
@@ -121,6 +123,8 @@ export default class Commander {
         this.setPatternBpm = (...args) => this.#patterns.setPatternBpm(...args)
         this.setPatternBeatCount = (...args) => this.#patterns.setPatternBeatCount(...args)
         this.refreshPatternId = (...args) => this.#patterns.refreshPatternId(...args)
+        this.addSongClip = (...args) => this.#patterns.addSongClip(...args)
+        this.removeSongClips = (...args) => this.#patterns.removeSongClips(...args)
         this.setPatternDescription = (...args) => this.#patterns.setPatternDescription(...args)
         this.importPatternFromJson = (...args) => this.#patterns.importPatternFromJson(...args)
         this.createPattern = (...args) => this.#patterns.createPattern(...args)

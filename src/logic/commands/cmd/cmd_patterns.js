@@ -87,6 +87,88 @@ export default class PatternCommands {
         return true
     }
 
+    /** The arrangement a song command applies to, or null when there is none. */
+    #song(songIdx) {
+        const index = songIdx ?? appState.selectedSongIdx ?? 0
+        const song = appState.songs?.[index]
+        return song ? { song, index } : null
+    }
+
+    /**
+     * Place a pattern on the bar timeline of a song. One undo step.
+     * @param {{pattern: string, startBar: number, bars: number}} clip
+     * @param {number} [songIdx] defaults to the selected song
+     */
+    addSongClip(clip, songIdx) {
+        const found = this.#song(songIdx)
+        if (!found || !clip?.pattern) return false
+        const { song, index } = found
+        const added = {
+            pattern: String(clip.pattern),
+            startBar: Math.max(0, Math.floor(Number(clip.startBar) || 0)),
+            bars: Number(clip.bars) > 0 ? Number(clip.bars) : 1,
+        }
+        song.clips.push(added)
+        this.#host.persist()
+        this.#host.record({
+            desc: `Add "${added.pattern}" at bar ${added.startBar + 1}`,
+            params: { pattern: added.pattern, startBar: added.startBar, song: index },
+            execute: () => {
+                song.clips.push({ ...added })
+                this.#host.persist()
+            },
+            undo: () => {
+                const i = song.clips.lastIndexOf(added)
+                if (i >= 0) song.clips.splice(i, 1)
+                this.#host.persist()
+            },
+        })
+        return true
+    }
+
+    /**
+     * Remove clips by index. Indices are taken as one batch so a row delete is a
+     * single undo step instead of one per clip.
+     * @param {number[]} indices
+     * @param {number} [songIdx] defaults to the selected song
+     */
+    removeSongClips(indices, songIdx) {
+        const found = this.#song(songIdx)
+        if (!found) return false
+        const { song, index } = found
+        // Highest first, so the earlier removals cannot shift the later ones.
+        const targets = [...new Set(indices)]
+            .filter((i) => Number.isInteger(i) && i >= 0 && i < song.clips.length)
+            .sort((a, b) => b - a)
+        if (targets.length === 0) return false
+        // Keep each clip's original slot: re-appending them on undo would
+        // reorder the arrangement (removing a and c from [a,b,c] then undoing
+        // by pushing them back yields [b,a,c]).
+        const removed = targets.map((i) => ({ clip: song.clips[i], index: i }))
+        for (const i of targets) song.clips.splice(i, 1)
+        this.#host.persist()
+        this.#host.record({
+            desc: removed.length === 1 ? `Remove clip "${removed[0].clip.pattern}"` : `Remove ${removed.length} clips`,
+            params: { patterns: removed.map((r) => r.clip.pattern), song: index },
+            execute: () => {
+                const positions = removed
+                    .map((r) => song.clips.indexOf(r.clip))
+                    .filter((i) => i >= 0)
+                    .sort((a, b) => b - a)
+                for (const i of positions) song.clips.splice(i, 1)
+                this.#host.persist()
+            },
+            undo: () => {
+                // ascending, each back into its original slot
+                for (const { clip, index: at } of [...removed].sort((a, b) => a.index - b.index)) {
+                    song.clips.splice(Math.min(at, song.clips.length), 0, { ...clip })
+                }
+                this.#host.persist()
+            },
+        })
+        return true
+    }
+
     renamePattern(idx, newName) {
         const pat = appState.patterns[idx]
         if (!pat) return
