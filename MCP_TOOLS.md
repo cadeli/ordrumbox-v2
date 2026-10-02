@@ -522,7 +522,152 @@ Samples are resolved relative to `public/assets/kits/`.
 
 ---
 
-## 6. Concepts
+## 6. Arrangements (Songs)
+
+An **arrangement** (a "song") is an ordered list of **clips** placing patterns on a bar timeline. Arrangements live in the `songs` array of `song.json`, next to the `patterns` library.
+
+**Bars, not steps:** a bar is one 4/4 measure, 0-indexed (`startBar: 0` is the first measure). One clip lasts `bars` measures — by default as long as the pattern itself (`beatCount / 4`), so an 8-beat pattern lasts 2 bars and a 12-beat one lasts 3.
+
+**Overlapping is allowed:** several clips may cover the same bar and all of them sound together — that is what an arrangement is for. The same pattern may be placed any number of times.
+
+Pattern names are case-insensitive and are resolved to the pattern id a clip stores, so renaming a pattern does not detach its clips.
+
+### listArrangements
+
+Lists every arrangement with its clips.
+
+**Input:** `{}`
+
+**Output:**
+
+```json
+{
+    "arrangements": [
+        {
+            "index": 0,
+            "id": "my-arrangement",
+            "name": "My arrangement",
+            "description": "",
+            "bpm": 120,
+            "loopBars": null,
+            "bars": 4,
+            "clips": [{ "pattern": "verse", "patternName": "Verse", "startBar": 0, "bars": 2 }]
+        }
+    ],
+    "count": 1,
+    "selectedIdx": 0
+}
+```
+
+---
+
+### createArrangement
+
+Creates an arrangement and optionally fills it with clips — the shortest path from an empty library to a full song structure.
+
+**Input:**
+
+```json
+{
+    "name": "My arrangement",
+    "description": "Intro verse, chorus, outro",
+    "bpm": 128,
+    "loopBars": 0,
+    "clips": [
+        { "patternName": "Verse", "startBar": 0 },
+        { "patternName": "Chorus", "startBar": 2, "bars": 2 }
+    ]
+}
+```
+
+| Property      | Type    | Range    | Description                                           |
+| ------------- | ------- | -------- | ----------------------------------------------------- |
+| `name`        | string  | required | Arrangement name                                      |
+| `description` | string  |          | Free text                                             |
+| `bpm`         | number  | 20-300   | Tempo of the whole arrangement                        |
+| `loopBars`    | integer | >= 0     | Loop length in bars (0 = the whole arrangement loops) |
+| `clips`       | array   |          | Clips to place right after creation                   |
+
+Each clip takes `patternName` (required), `startBar` (default 0) and `bars` (default: the pattern length).
+
+**Output:**
+
+```json
+{
+    "message": "Arrangement created",
+    "arrangement": { "...": "as in listArrangements" },
+    "placedClips": 2,
+    "skippedClips": [{ "patternName": "Ghost", "startBar": 4 }]
+}
+```
+
+A clip naming an unknown pattern is reported in `skippedClips` instead of aborting the whole creation — the other clips are still placed.
+
+---
+
+### addPatternToArrangement
+
+Places one pattern in an arrangement.
+
+**Input:**
+
+```json
+{
+    "patternName": "Chorus",
+    "startBar": 2,
+    "bars": 2,
+    "arrangement": "My arrangement"
+}
+```
+
+| Property      | Type              | Range    | Description                                                   |
+| ------------- | ----------------- | -------- | ------------------------------------------------------------- |
+| `patternName` | string            | required | Pattern name or id                                            |
+| `startBar`    | integer           | >= 0     | 0-based measure (default 0)                                   |
+| `bars`        | number            | >= 0     | Clip length (default: the pattern length)                     |
+| `arrangement` | string or integer |          | Arrangement name or index (default: the selected arrangement) |
+
+**Output:** `{ "message", "arrangement", "clip": { "pattern", "startBar", "bars" } }`
+
+Fails with an error when the pattern or the arrangement is unknown — nothing is written in that case.
+
+---
+
+### removePatternFromArrangement
+
+Removes clips from an arrangement. Give `startBar`, `patternName`, or both.
+
+**Input:**
+
+```json
+{
+    "startBar": 0,
+    "patternName": "Verse",
+    "arrangement": "My arrangement"
+}
+```
+
+| Property      | Type           | Description                                                   |
+| ------------- | -------------- | ------------------------------------------------------------- |
+| `startBar`    | integer        | Remove every clip starting at this bar                        |
+| `patternName` | string         | Remove every clip using this pattern (name or id)             |
+| `arrangement` | string/integer | Arrangement name or index (default: the selected arrangement) |
+
+**Output:** `{ "message", "arrangement", "removed": [{ "pattern", "startBar", "bars" }] }`
+
+---
+
+### Building a whole song
+
+1. `listPatterns` to see the library, `createNewPattern` / `addNotesToPattern` / `updateTrack` to shape the patterns
+2. `createArrangement` with its `clips` list for the structure, or `createArrangement` followed by `addPatternToArrangement` calls
+3. `listArrangements` to check the result, `removePatternFromArrangement` to fix a placement
+
+Each arrangement write rewrites the `songs` array of `song.json` and leaves the pattern library untouched.
+
+---
+
+## 7. Concepts
 
 ### Step and Beat Numbering
 
@@ -653,7 +798,7 @@ Plays a sequence of pitches on a single step.
 
 ---
 
-## 7. Best Practices
+## 8. Best Practices
 
 1. **Use instrument IDs** (max 12 chars) from `listAllInstrumentsNames` - not arbitrary names
 2. **Use loop points** (`loopAtStep`) instead of repeating notes across beats
@@ -662,3 +807,4 @@ Plays a sequence of pitches on a single step.
 5. **Default stepsPerBeat is 4** - 4-on-the-floor kick uses step 0 in each beat
 6. **All indices are 0-indexed** - beat 0, beatStep 0, etc.
 7. **Use variation** (0-100) for automatic beat randomization per loop iteration
+8. **Arrange, don't copy** — place a pattern in an arrangement with `addPatternToArrangement` instead of duplicating its notes in a new pattern

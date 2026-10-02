@@ -95,6 +95,7 @@ export function makeTrack(name, notes = [], opts = {}) {
  * Build a complete pattern object.
  * @param {object} [opts]
  * @param {string}  [opts.name='Test']
+ * @param {string}  [opts.id] - stable id, only set when asked (arrangements reference it)
  * @param {number}  [opts.bpm=120]
  * @param {number}  [opts.beatCount=4]
  * @param {Array}   [opts.tracks=[]]
@@ -102,6 +103,7 @@ export function makeTrack(name, notes = [], opts = {}) {
 export function makePattern(opts = {}) {
     return {
         name: opts.name ?? 'Test',
+        ...(opts.id !== undefined ? { id: opts.id } : {}),
         bpm: opts.bpm ?? 120,
         beatCount: opts.beatCount ?? 4,
         _version: 0,

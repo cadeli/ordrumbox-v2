@@ -7,6 +7,7 @@ import { TRACK_DEFAULTS, TRACK_VALUE_RANGES, recalcLoopDerived } from '../../mod
 import NoteCommands from './cmd/cmd_notes.js'
 import TrackCommands from './cmd/cmd_tracks.js'
 import PatternCommands from './cmd/cmd_patterns.js'
+import SongCommands from './cmd/cmd_song.js'
 import SelectionCommands from './cmd/cmd_selection.js'
 
 /**
@@ -31,7 +32,7 @@ export default class Commander {
     static TRACK_VALUE_RANGES = TRACK_VALUE_RANGES
 
     /**
-     * Names of the 34 methods supplied by the ./cmd/*.js sub-modules.
+     * Names of the 45 methods supplied by the ./cmd/*.js sub-modules.
      * Guarded by tests/cmd_mixin_contract.test.js: every entry must stay an
      * own, spread-safe function property of each Commander instance.
      */
@@ -61,11 +62,18 @@ export default class Commander {
         'setPatternBpm',
         'setPatternBeatCount',
         'refreshPatternId',
-        'addSongClip',
-        'removeSongClips',
         'setPatternDescription',
         'importPatternFromJson',
         'createPattern',
+        'addSongClip',
+        'removeSongClips',
+        'addPatternAtBar',
+        'repeatPatternAtBar',
+        'removePatternAtBar',
+        'removePatternClips',
+        'addArrangement',
+        'removeArrangement',
+        'setSelectedSongIdx',
         'setSelectedDrumkitIdx',
         'autoAssignSoundsForNewDrumkit',
         'setSelectedPatternIdx',
@@ -84,6 +92,7 @@ export default class Commander {
     #notes
     #tracks
     #patterns
+    #songs
     #selection
 
     constructor() {
@@ -93,6 +102,7 @@ export default class Commander {
         this.#notes = new NoteCommands(this)
         this.#tracks = new TrackCommands(this)
         this.#patterns = new PatternCommands(this)
+        this.#songs = new SongCommands(this)
         this.#selection = new SelectionCommands()
 
         // Own-property arrow delegates: every MIXIN_METHODS entry must be an
@@ -122,11 +132,18 @@ export default class Commander {
         this.setPatternBpm = (...args) => this.#patterns.setPatternBpm(...args)
         this.setPatternBeatCount = (...args) => this.#patterns.setPatternBeatCount(...args)
         this.refreshPatternId = (...args) => this.#patterns.refreshPatternId(...args)
-        this.addSongClip = (...args) => this.#patterns.addSongClip(...args)
-        this.removeSongClips = (...args) => this.#patterns.removeSongClips(...args)
         this.setPatternDescription = (...args) => this.#patterns.setPatternDescription(...args)
         this.importPatternFromJson = (...args) => this.#patterns.importPatternFromJson(...args)
         this.createPattern = (...args) => this.#patterns.createPattern(...args)
+        this.addSongClip = (...args) => this.#songs.addSongClip(...args)
+        this.removeSongClips = (...args) => this.#songs.removeSongClips(...args)
+        this.addPatternAtBar = (...args) => this.#songs.addPatternAtBar(...args)
+        this.repeatPatternAtBar = (...args) => this.#songs.repeatPatternAtBar(...args)
+        this.removePatternAtBar = (...args) => this.#songs.removePatternAtBar(...args)
+        this.removePatternClips = (...args) => this.#songs.removePatternClips(...args)
+        this.addArrangement = (...args) => this.#songs.addArrangement(...args)
+        this.removeArrangement = (...args) => this.#songs.removeArrangement(...args)
+        this.setSelectedSongIdx = (...args) => this.#songs.setSelectedSongIdx(...args)
         this.setSelectedDrumkitIdx = (...args) => this.#selection.setSelectedDrumkitIdx(...args)
         this.autoAssignSoundsForNewDrumkit = (...args) => this.#selection.autoAssignSoundsForNewDrumkit(...args)
         this.setSelectedPatternIdx = (...args) => this.#selection.setSelectedPatternIdx(...args)

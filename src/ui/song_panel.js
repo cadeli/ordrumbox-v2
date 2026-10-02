@@ -8,7 +8,6 @@ import { downloadJson } from './components/ui_utils.js'
 import { EVENTS } from '../core/events.js'
 import ArrangementSection from './song_panel/arrangement_section.js'
 import ContextMenu from './components/context_menu.js'
-import { barsForPattern } from '../model/song_schema.js'
 import { songBarAtTick } from '../logic/song_playback.js'
 import { TICK } from '../core/constants.js'
 
@@ -178,7 +177,6 @@ export default class SongPanel extends BasePanel {
         const pattern = appState.patterns?.find((p) => p.id === patternId)
         const label = pattern?.name ?? patternId
         const startBar = Math.floor(songBarAtTick(song, serviceRegistry.seq?.tick, TICK))
-        const bars = barsForPattern(pattern)
 
         this.#listMenu.show(
             label,
@@ -186,7 +184,7 @@ export default class SongPanel extends BasePanel {
                 {
                     label: `Add at bar ${startBar + 1}`,
                     run: () => {
-                        serviceRegistry.cmd.addSongClip({ pattern: patternId, startBar, bars })
+                        serviceRegistry.cmd.addPatternAtBar(patternId, startBar)
                         showToast(`"${label}" added at bar ${startBar + 1}`, 'success')
                         this.#arrangement?.sync()
                     },

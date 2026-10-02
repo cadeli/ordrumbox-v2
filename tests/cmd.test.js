@@ -689,4 +689,126 @@ describe('Functional: Commander operations', () => {
             expect(cmd.removeSongClips([0])).toBe(false)
         })
     })
+
+    // ── placement API (pattern name/id → clip) ──────────────────────────────────
+
+    describe('arrangement placement API', () => {
+        let history
+
+        beforeEach(() => {
+            history = new HistoryManager(50)
+            serviceRegistry.history = history
+            appState.patterns = [
+                makePattern({ name: 'Verse', id: 'verse', beatCount: 8 }),
+                makePattern({ name: 'Chorus', id: 'chorus', beatCount: 12 }),
+            ]
+            appState.songs = [{ id: 'demo', name: 'Demo', bpm: 120, clips: [] }]
+            appState.selectedSongIdx = 0
+        })
+
+        it('addPatternAtBar resolves a pattern by name and derives its length', () => {
+            const clip = cmd.addPatternAtBar('Verse', 2)
+            expect(clip).toEqual({ pattern: 'verse', startBar: 2, bars: 2 })
+        })
+
+        it('addPatternAtBar accepts an id, any case, and surrounding blanks', () => {
+            expect(cmd.addPatternAtBar('  cHoRuS ', 0)).toEqual({ pattern: 'chorus', startBar: 0, bars: 3 })
+            expect(appState.songs[0].clips).toHaveLength(1)
+        })
+
+        it('addPatternAtBar honours an explicit duration', () => {
+            expect(cmd.addPatternAtBar('verse', 0, { bars: 4 })).toEqual({ pattern: 'verse', startBar: 0, bars: 4 })
+        })
+
+        it('addPatternAtBar targets the requested song', () => {
+            appState.songs.push({ id: 'other', name: 'Other', bpm: 120, clips: [] })
+            cmd.addPatternAtBar('Verse', 1, { songIdx: 1 })
+            expect(appState.songs[1].clips).toHaveLength(1)
+            expect(appState.songs[0].clips).toHaveLength(0)
+        })
+
+        it('addPatternAtBar repairs an id-less pattern instead of writing a dangling clip', () => {
+            const anonymous = makePattern({ name: 'Loop' })
+            delete anonymous.id
+            appState.patterns.push(anonymous)
+
+            const clip = cmd.addPatternAtBar('Loop', 0)
+            expect(clip.pattern).toBe('loop')
+            expect(appState.patterns.find((p) => p.name === 'Loop').id).toBe('loop')
+        })
+
+        it('addPatternAtBar refuses an unknown pattern and does nothing', () => {
+            expect(cmd.addPatternAtBar('Nope', 0)).toBeNull()
+            expect(appState.songs[0].clips).toHaveLength(0)
+        })
+
+        it('addPatternAtBar does nothing without a song', () => {
+            appState.songs = []
+            expect(cmd.addPatternAtBar('Verse', 0)).toBeNull()
+        })
+
+        it('addPatternAtBar is undoable and redoable', () => {
+            cmd.addPatternAtBar('Verse', 0)
+            history.undo()
+            expect(appState.songs[0].clips).toHaveLength(0)
+            history.redo()
+            expect(appState.songs[0].clips).toHaveLength(1)
+        })
+
+        it('repeatPatternAtBar repeats the clip starting at that bar, same length', () => {
+            cmd.addPatternAtBar('Verse', 0)
+            const repeated = cmd.repeatPatternAtBar(0)
+            expect(repeated).toEqual({ pattern: 'verse', startBar: 2, bars: 2 })
+            expect(appState.songs[0].clips).toHaveLength(2)
+        })
+
+        it('repeatPatternAtBar does nothing when the bar is empty', () => {
+            expect(cmd.repeatPatternAtBar(4)).toBeNull()
+            expect(appState.songs[0].clips).toHaveLength(0)
+        })
+
+        it('removePatternAtBar removes every clip starting at that bar', () => {
+            cmd.addPatternAtBar('Verse', 0)
+            cmd.addPatternAtBar('Chorus', 0)
+            cmd.addPatternAtBar('Verse', 2)
+
+            const removed = cmd.removePatternAtBar(0)
+            expect(removed.map((c) => c.pattern)).toEqual(['verse', 'chorus'])
+            expect(appState.songs[0].clips.map((c) => c.startBar)).toEqual([2])
+
+            history.undo()
+            expect(appState.songs[0].clips).toHaveLength(3)
+        })
+
+        it('removePatternAtBar leaves the other bars alone and reports an empty one', () => {
+            cmd.addPatternAtBar('Verse', 0)
+            expect(cmd.removePatternAtBar(7)).toEqual([])
+            expect(appState.songs[0].clips).toHaveLength(1)
+        })
+
+        it('removePatternClips removes the whole row in one undo step', () => {
+            cmd.addPatternAtBar('Verse', 0)
+            cmd.addPatternAtBar('Chorus', 1)
+            cmd.addPatternAtBar('Verse', 3)
+
+            expect(cmd.removePatternClips('Verse')).toHaveLength(2)
+            expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['chorus'])
+
+            history.undo()
+            expect(appState.songs[0].clips.map((c) => c.pattern)).toEqual(['verse', 'chorus', 'verse'])
+        })
+
+        it('removePatternClips cleans up a clip whose pattern left the library', () => {
+            cmd.addPatternAtBar('Verse', 0)
+            appState.patterns.length = 0
+            expect(cmd.removePatternClips('verse')).toHaveLength(1)
+            expect(appState.songs[0].clips).toHaveLength(0)
+        })
+
+        it('removePatternClips without a reference changes nothing', () => {
+            cmd.addPatternAtBar('Verse', 0)
+            expect(cmd.removePatternClips('  ')).toEqual([])
+            expect(appState.songs[0].clips).toHaveLength(1)
+        })
+    })
 })

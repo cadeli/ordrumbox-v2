@@ -99,23 +99,36 @@ _"Add a lowpass filter to the KICK and some reverb to the SNARE."_
 
 ---
 
+### 6. Arrange the song
+
+- `listArrangements({})` → see the arrangements and their clips
+- `createArrangement({ name: "My song", bpm: 128, clips: [{ "patternName": "Verse", "startBar": 0 }] })`
+- `addPatternToArrangement({ patternName: "Chorus", startBar: 2 })`
+- `removePatternFromArrangement({ startBar: 0 })`
+
+---
+
 ## Available Tools
 
-| Tool                      | Purpose                                                        |
-| ------------------------- | -------------------------------------------------------------- |
-| `createNewPattern`        | Create empty pattern                                           |
-| `addNotesToPattern`       | Add notes (step-based) with full trigger/retrigger/arp support |
-| `updateTrack`             | Update track properties + note overrides                       |
-| `savePatternToJson`       | Export pattern to file                                         |
-| `loadPattern`             | Read pattern data                                              |
-| `listPatterns`            | List all pattern names                                         |
-| `listAllInstrumentsNames` | Get valid track names (66 instruments)                         |
-| `setPatternBpm`           | Set tempo (20-300)                                             |
-| `setPatternTags`          | Set genre/category tags                                        |
-| `setPatternBeatCount`     | Set number of beats                                            |
-| `setPatternDescription`   | Add description text                                           |
-| `listKitSamples`          | List available WAV samples                                     |
-| `analyzeSamples`          | Analyse audio characteristics                                  |
+| Tool                           | Purpose                                                        |
+| ------------------------------ | -------------------------------------------------------------- |
+| `createNewPattern`             | Create empty pattern                                           |
+| `addNotesToPattern`            | Add notes (step-based) with full trigger/retrigger/arp support |
+| `updateTrack`                  | Update track properties + note overrides                       |
+| `savePatternToJson`            | Export pattern to file                                         |
+| `loadPattern`                  | Read pattern data                                              |
+| `listPatterns`                 | List all pattern names                                         |
+| `listAllInstrumentsNames`      | Get valid track names (66 instruments)                         |
+| `setPatternBpm`                | Set tempo (20-300)                                             |
+| `setPatternTags`               | Set genre/category tags                                        |
+| `setPatternBeatCount`          | Set number of beats                                            |
+| `setPatternDescription`        | Add description text                                           |
+| `listKitSamples`               | List available WAV samples                                     |
+| `analyzeSamples`               | Analyse audio characteristics                                  |
+| `listArrangements`             | List arrangements (songs) with their clips                     |
+| `createArrangement`            | Create an arrangement, optionally filled with clips            |
+| `addPatternToArrangement`      | Place a pattern at a bar in an arrangement                     |
+| `removePatternFromArrangement` | Remove clips by bar and/or by pattern                          |
 
 See `MCP_TOOLS.md` for full parameter details.
 

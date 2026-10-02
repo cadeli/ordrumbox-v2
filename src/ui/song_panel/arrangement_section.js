@@ -8,7 +8,7 @@
 // here drives the transport. It shows the arrangement and lets it be picked.
 
 import { appState } from '../../state/app_state.js'
-import { songLengthBars, songBpm, barsForPattern } from '../../model/song_schema.js'
+import { songLengthBars, songBpm } from '../../model/song_schema.js'
 import { escapeHtml } from '../components/ui_utils.js'
 import ContextMenu from '../components/context_menu.js'
 import { serviceRegistry } from '../../state/service_registry.js'
@@ -181,11 +181,7 @@ export default class ArrangementSection {
                 {
                     label: 'Next',
                     run: () => {
-                        serviceRegistry.cmd.addSongClip({
-                            pattern: clip.pattern,
-                            startBar: clip.startBar + clip.bars,
-                            bars: clip.bars,
-                        })
+                        serviceRegistry.cmd.repeatPatternAtBar(clip.startBar)
                         this.sync()
                         showToast(`"${label}" repeated at bar ${clip.startBar + clip.bars + 1}`, 'success')
                     },
@@ -221,15 +217,13 @@ export default class ArrangementSection {
         const indices = (this.#song.clips ?? []).map((c, i) => (c.pattern === patternId ? i : -1)).filter((i) => i >= 0)
         const label = this.#patternName(patternId)
         const startBar = this.#playheadBar()
-        const patternObj = appState.patterns?.find((p) => p.id === patternId)
-        const bars = barsForPattern(patternObj)
         this.#menu.show(
             `${label} — ${indices.length} clip(s)`,
             [
                 {
                     label: `Add at bar ${startBar + 1}`,
                     run: () => {
-                        serviceRegistry.cmd.addSongClip({ pattern: patternId, startBar, bars })
+                        serviceRegistry.cmd.addPatternAtBar(patternId, startBar)
                         this.sync()
                         showToast(`"${label}" added at bar ${startBar + 1}`, 'success')
                     },
@@ -239,7 +233,7 @@ export default class ArrangementSection {
                     disabled: indices.length === 0,
                     run: () => {
                         // one command, so the whole row is a single undo step
-                        serviceRegistry.cmd.removeSongClips(indices)
+                        serviceRegistry.cmd.removePatternClips(patternId)
                         this.sync()
                         showToast(`Removed "${label}" from the arrangement`, 'success')
                     },
@@ -260,15 +254,13 @@ export default class ArrangementSection {
         if (!pattern) return
         // floor, not round: clicking a cell must place the clip in THAT cell
         const startBar = Math.max(0, Math.floor((e.clientX - rect.left) / BAR_WIDTH))
-        const patternObj = appState.patterns?.find((p) => p.id === pattern.id)
-        const bars = barsForPattern(patternObj)
         this.#menu.show(
             `Add "${pattern.name ?? pattern.id}" at bar ${startBar + 1}`,
             [
                 {
                     label: 'Add here',
                     run: () => {
-                        serviceRegistry.cmd.addSongClip({ pattern: pattern.id, startBar, bars })
+                        serviceRegistry.cmd.addPatternAtBar(pattern.id, startBar)
                         this.sync()
                         showToast(`"${pattern.name ?? pattern.id}" added at bar ${startBar + 1}`, 'success')
                     },

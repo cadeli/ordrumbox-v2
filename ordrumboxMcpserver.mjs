@@ -14,11 +14,28 @@ import InstrumentsManager from './src/logic/services/instrument_manager/index.js
 import Utils from './src/core/utils.js'
 import { normalizeTrack, TRACK_VALUE_RANGES } from './src/model/track_schema.js'
 import { compactArrayToNote, normalizeNote } from './src/core/note_schema.js'
+import { songLengthBars } from './src/model/song_schema.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const PATTERNS_OUTPUT_DIR = resolve(__dirname, 'assets/data/patterns')
 const KITS_DIR = resolve(__dirname, 'assets/kits')
+
+/**
+ * Data directory the server reads song.json from and writes patterns to.
+ * Resolved on every access so ORDRUMBOX_MCP_DATA_DIR can redirect the whole
+ * write path (tests point it at a temp dir instead of the repo data).
+ */
+function dataDir() {
+    return resolve(__dirname, process.env.ORDRUMBOX_MCP_DATA_DIR || 'assets/data')
+}
+
+function songIndexPath() {
+    return resolve(dataDir(), 'song.json')
+}
+
+function patternsOutputDir() {
+    return resolve(dataDir(), 'patterns')
+}
 
 // Format patterns with notes on single line
 function formatPatternsWithNotesOnLine(patterns) {
@@ -26,29 +43,33 @@ function formatPatternsWithNotesOnLine(patterns) {
 }
 
 /**
- * song.json is `{ infos, patterns }` in current releases (older files were a
- * bare pattern array) — same `json.patterns ?? json` rule as loadSong().
+ * song.json is `{ infos, patterns, songs }` in current releases (older files
+ * were a bare pattern array) — same `json.patterns ?? json` rule as loadSong().
+ * `songs` is the arrangement list; a file without one simply has no
+ * arrangement yet.
  */
 function songPatternsOf(doc) {
     return Array.isArray(doc) ? doc : (doc.patterns ?? [])
 }
 
+function songArrangementsOf(doc) {
+    return Array.isArray(doc) ? [] : Array.isArray(doc.songs) ? doc.songs : []
+}
+
 async function readSongIndex() {
-    const patternsPath = resolve(__dirname, 'assets/data/song.json')
-    const data = await readFile(patternsPath, 'utf-8')
+    const data = await readFile(songIndexPath(), 'utf-8')
     let doc
     try {
         doc = JSON.parse(data)
     } catch (e) {
         throw new Error(`Corrupt song.json: ${e.message}`, { cause: e })
     }
-    return { doc, patterns: songPatternsOf(doc) }
+    return { doc, patterns: songPatternsOf(doc), songs: songArrangementsOf(doc) }
 }
 
-async function writeSongIndex(doc, patterns) {
-    const patternsPath = resolve(__dirname, 'assets/data/song.json')
-    const next = Array.isArray(doc) ? patterns : { ...doc, patterns }
-    await writeFile(patternsPath, formatPatternsWithNotesOnLine(next), 'utf8')
+async function writeSongIndex(doc, patterns, songs) {
+    const next = Array.isArray(doc) ? patterns : { ...doc, patterns, songs }
+    await writeFile(songIndexPath(), formatPatternsWithNotesOnLine(next), 'utf8')
 }
 
 // --- Utility functions ---
@@ -63,7 +84,7 @@ function sanitizePatternFileName(name) {
 
 function getPatternFilePath(patternName) {
     const fileName = `${sanitizePatternFileName(patternName)}.json`
-    return resolve(PATTERNS_OUTPUT_DIR, fileName)
+    return resolve(patternsOutputDir(), fileName)
 }
 
 function resolveKitSamplePath(samplePath) {
@@ -105,7 +126,7 @@ async function listSampleFiles(dirPath, baseDir = dirPath) {
 async function savePatternToDisk(pattern) {
     const exportedPattern = PatternExporter.export(pattern)
     const filePath = getPatternFilePath(pattern.name)
-    await mkdir(PATTERNS_OUTPUT_DIR, { recursive: true })
+    await mkdir(patternsOutputDir(), { recursive: true })
     await writeFile(filePath, `${JSON.stringify(exportedPattern, null, 2)}\n`, 'utf8')
     return filePath
 }
@@ -131,6 +152,104 @@ function findPatternByName(patternName) {
     return appState.patterns.find(
         (pattern) => pattern?.name?.toUpperCase() === String(patternName).trim().toUpperCase(),
     )
+}
+
+// --- Pattern / arrangement state shared by the tools ---------------------------
+
+/** True once every pattern of song.json has been imported into appState. */
+let libraryLoaded = false
+/** Set when importing gave an id-less pattern one, so the file must be patched. */
+let libraryIdsRepaired = false
+
+/**
+ * Import the whole pattern library of song.json into appState.
+ *
+ * Arrangements store clips as pattern **ids**, so a tool that takes a pattern
+ * *name* has to be able to resolve it. The MCP server is a short-lived process:
+ * the library is imported once, then kept in sync by the tools that write.
+ */
+async function ensureLibraryLoaded() {
+    if (libraryLoaded) return
+    const { patterns } = await readSongIndex()
+    const cmd = new Commander()
+    for (const source of patterns) {
+        const name = String(source?.name ?? '').trim()
+        if (!name || findPatternByName(name)) continue
+        const imported = cmd.importPatternFromJson(source)
+        if (!source?.id && imported?.id) libraryIdsRepaired = true
+    }
+    libraryLoaded = true
+}
+
+/**
+ * Write the in-memory state back to song.json.
+ *
+ * `patterns` is only rewritten when the library import had to mint missing ids;
+ * otherwise the file keeps its own (compact) entries and only `songs` changes.
+ */
+async function saveSongIndex(songs, patterns) {
+    const { doc, patterns: filePatterns } = await readSongIndex()
+    await writeSongIndex(doc, patterns ?? filePatterns, songs)
+}
+
+/**
+ * Index of the arrangement a tool must act on: a name (case-insensitive), an
+ * index, or nothing at all for the selected one.
+ * @param {any} songRef
+ * @returns {number} -1 when no arrangement matches
+ */
+function arrangementIndexOf(songRef) {
+    const songs = appState.songs ?? []
+    if (songRef === undefined || songRef === null || songRef === '') {
+        return appState.selectedSongIdx ?? 0
+    }
+    if (Number.isInteger(songRef)) return songRef
+    const needle = String(songRef).trim().toUpperCase()
+    return songs.findIndex(
+        (song) =>
+            String(song?.name ?? '')
+                .trim()
+                .toUpperCase() === needle,
+    )
+}
+
+/**
+ * Load song.json's arrangements into appState and select the targeted one.
+ *
+ * Cloned rather than validated: song.json is written by the app and already
+ * normalized on load, so a tool must round-trip it byte-for-byte except for
+ * what it deliberately changes.
+ *
+ * @param {any} songRef arrangement name or index
+ * @returns {number} index of the selected arrangement, -1 when there is none
+ */
+async function selectArrangement(songRef) {
+    await ensureLibraryLoaded()
+    const { songs } = await readSongIndex()
+    appState.songs = structuredClone(songs)
+    const index = arrangementIndexOf(songRef)
+    new Commander().setSelectedSongIdx(index < 0 ? 0 : index)
+    return index
+}
+
+/** Arrangement as the tools report it: clips resolved back to pattern names. */
+function arrangementToJson(song, index) {
+    const nameById = new Map(appState.patterns.map((pattern) => [pattern?.id, pattern?.name ?? pattern?.id]))
+    return {
+        index,
+        id: song.id,
+        name: song.name,
+        description: song.description ?? '',
+        bpm: song.bpm,
+        loopBars: song.loopBars ?? null,
+        bars: songLengthBars(song),
+        clips: (song.clips ?? []).map((clip) => ({
+            pattern: clip.pattern,
+            patternName: nameById.get(clip.pattern) ?? null,
+            startBar: clip.startBar,
+            bars: clip.bars,
+        })),
+    }
 }
 
 function getTrackFromType(pattern, type) {
@@ -204,6 +323,41 @@ export function upsertNoteOnTrack(cmd, track, noteInput) {
     )
 
     return existingNote ? 'updated' : 'created'
+}
+
+/**
+ * The pattern a tool must edit: already in memory, else imported from song.json.
+ * @param {string} patternName
+ * @returns {Promise<any|null>}
+ */
+async function loadPatternFromJson(patternName) {
+    let pattern = findPatternByName(patternName)
+    if (!pattern) {
+        const { patterns } = await readSongIndex()
+        const sourcePattern = patterns.find((p) => p.name === patternName)
+        if (sourcePattern) {
+            const cmd = new Commander()
+            pattern = cmd.importPatternFromJson(sourcePattern)
+        }
+    }
+    return pattern
+}
+
+/** Replace a pattern's entry in song.json, leaving the rest of the file alone. */
+async function updatePatternInIndex(pattern) {
+    const { doc, patterns, songs } = await readSongIndex()
+    const idx = patterns.findIndex((p) => p.name === pattern.name)
+    if (idx >= 0) {
+        patterns[idx] = pattern
+    }
+    await writeSongIndex(doc, patterns, songs)
+}
+
+/** Append a pattern to song.json and write it back, arrangements untouched. */
+async function addPatternToIndex(pattern) {
+    const { doc, patterns, songs } = await readSongIndex()
+    patterns.push(pattern)
+    await writeSongIndex(doc, patterns, songs)
 }
 
 // --- Tool catalog (importable by tests — stdio wiring only when run as main) ---
@@ -536,6 +690,78 @@ export const tools = [
             required: ['patternName', 'description'],
         },
     },
+
+    {
+        name: 'listArrangements',
+        description: 'Returns the arrangements (songs) of song.json with their clips, resolved to pattern names',
+        inputSchema: { type: 'object', properties: {} },
+    },
+    {
+        name: 'createArrangement',
+        description:
+            'Creates an arrangement (song) and optionally fills it with clips. Bars are 0-based measures; a clip lasts as long as its pattern unless "bars" says otherwise.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string', minLength: 1, description: 'Arrangement name' },
+                description: { type: 'string', description: 'Free text description' },
+                bpm: { type: 'number', minimum: 20, maximum: 300, description: 'Tempo of the whole arrangement' },
+                loopBars: {
+                    type: 'integer',
+                    minimum: 0,
+                    description: 'Loop length in bars (0 = the whole arrangement loops)',
+                },
+                clips: {
+                    type: 'array',
+                    description: 'Clips to place right after creation',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            patternName: { type: 'string', description: 'Pattern name (or id) to place' },
+                            startBar: { type: 'integer', minimum: 0, description: '0-based measure (default 0)' },
+                            bars: { type: 'number', minimum: 0, description: 'Clip length in bars' },
+                        },
+                        required: ['patternName'],
+                    },
+                },
+            },
+            required: ['name'],
+        },
+    },
+    {
+        name: 'addPatternToArrangement',
+        description:
+            'Places a pattern in an arrangement at a given bar. Clips may overlap, and the same pattern can be placed several times.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                patternName: { type: 'string', description: 'Pattern name (or id) to place' },
+                startBar: { type: 'integer', minimum: 0, description: '0-based measure (default 0)' },
+                bars: { type: 'number', minimum: 0, description: 'Clip length (default: the pattern length)' },
+                arrangement: {
+                    type: ['string', 'integer'],
+                    description: 'Arrangement name or index (default: the selected one)',
+                },
+            },
+            required: ['patternName'],
+        },
+    },
+    {
+        name: 'removePatternFromArrangement',
+        description:
+            'Removes clips from an arrangement: every clip starting at "startBar", every clip of "patternName", or both.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                startBar: { type: 'integer', minimum: 0, description: 'Remove every clip starting at this bar' },
+                patternName: { type: 'string', description: 'Remove every clip using this pattern (name or id)' },
+                arrangement: {
+                    type: ['string', 'integer'],
+                    description: 'Arrangement name or index (default: the selected one)',
+                },
+            },
+        },
+    },
 ]
 
 export async function handleToolCall(toolName, args, onError) {
@@ -548,9 +774,7 @@ export async function handleToolCall(toolName, args, onError) {
             const pattern = cmd.addPattern(String(patternName).trim())
             const filePath = await savePatternToDisk(pattern)
 
-            const { doc, patterns } = await readSongIndex()
-            patterns.push(pattern)
-            await writeSongIndex(doc, patterns)
+            await addPatternToIndex(pattern)
 
             return {
                 content: [{ type: 'text', text: JSON.stringify({ message: 'Pattern created', pattern, filePath }) }],
@@ -611,12 +835,7 @@ export async function handleToolCall(toolName, args, onError) {
 
             const filePath = await savePatternToDisk(pattern)
 
-            const { doc, patterns } = await readSongIndex()
-            const idx = patterns.findIndex((p) => p.name === patternName)
-            if (idx >= 0) {
-                patterns[idx] = pattern
-            }
-            await writeSongIndex(doc, patterns)
+            await updatePatternInIndex(pattern)
 
             return {
                 content: [{ type: 'text', text: JSON.stringify({ message: 'Notes added', cNotes, uNotes, filePath }) }],
@@ -800,28 +1019,6 @@ export async function handleToolCall(toolName, args, onError) {
             return { content: [{ type: 'text', text: JSON.stringify({ results }) }] }
         }
 
-        async function loadPatternFromJson(patternName) {
-            let pattern = findPatternByName(patternName)
-            if (!pattern) {
-                const { patterns } = await readSongIndex()
-                const sourcePattern = patterns.find((p) => p.name === patternName)
-                if (sourcePattern) {
-                    const cmd = new Commander()
-                    pattern = cmd.importPatternFromJson(sourcePattern)
-                }
-            }
-            return pattern
-        }
-
-        async function updatePatternInIndex(pattern) {
-            const { doc, patterns } = await readSongIndex()
-            const idx = patterns.findIndex((p) => p.name === pattern.name)
-            if (idx >= 0) {
-                patterns[idx] = pattern
-            }
-            await writeSongIndex(doc, patterns)
-        }
-
         if (toolName === 'setPatternBpm') {
             const { patternName, bpm } = args
             const pattern = await loadPatternFromJson(patternName)
@@ -914,6 +1111,128 @@ export async function handleToolCall(toolName, args, onError) {
                             patternName: pattern.name,
                             description: pattern.description,
                             filePath,
+                        }),
+                    },
+                ],
+            }
+        }
+
+        if (toolName === 'listArrangements') {
+            await ensureLibraryLoaded()
+            const { songs } = await readSongIndex()
+            appState.songs = structuredClone(songs)
+            const arrangements = appState.songs.map((song, index) => arrangementToJson(song, index))
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            arrangements,
+                            count: arrangements.length,
+                            selectedIdx: appState.selectedSongIdx ?? 0,
+                        }),
+                    },
+                ],
+            }
+        }
+
+        if (toolName === 'createArrangement') {
+            const { name, description, bpm, loopBars, clips } = args
+            if (!name) throw new Error('name is required')
+
+            await ensureLibraryLoaded()
+            const { songs } = await readSongIndex()
+            appState.songs = structuredClone(songs)
+
+            const cmd = new Commander()
+            const song = cmd.addArrangement({ name, description, bpm, loopBars })
+            if (!song) throw new Error(`Could not create arrangement "${name}"`)
+
+            const placed = []
+            const skipped = []
+            for (const clip of Array.isArray(clips) ? clips : []) {
+                const added = cmd.addPatternAtBar(clip?.patternName, clip?.startBar ?? 0, { bars: clip?.bars })
+                if (added) placed.push(added)
+                else skipped.push({ patternName: clip?.patternName, startBar: clip?.startBar ?? 0 })
+            }
+
+            await saveSongIndex(appState.songs, libraryIdsRepaired ? appState.patterns : undefined)
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            message: 'Arrangement created',
+                            arrangement: arrangementToJson(song, appState.songs.length - 1),
+                            placedClips: placed.length,
+                            skippedClips: skipped,
+                        }),
+                    },
+                ],
+            }
+        }
+
+        if (toolName === 'addPatternToArrangement') {
+            const { patternName, startBar = 0, bars, arrangement } = args
+            if (!patternName) throw new Error('patternName is required')
+
+            const index = await selectArrangement(arrangement)
+            if (index < 0 || !appState.songs?.[index]) {
+                throw new Error(`Arrangement "${arrangement ?? index}" not found`)
+            }
+
+            const cmd = new Commander()
+            const clip = cmd.addPatternAtBar(patternName, startBar, { bars, songIdx: index })
+            if (!clip) throw new Error(`Could not place "${patternName}" — is that pattern name known?`)
+
+            await saveSongIndex(appState.songs, libraryIdsRepaired ? appState.patterns : undefined)
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            message: 'Pattern placed in the arrangement',
+                            arrangement: arrangementToJson(appState.songs[index], index),
+                            clip,
+                        }),
+                    },
+                ],
+            }
+        }
+
+        if (toolName === 'removePatternFromArrangement') {
+            const { startBar, patternName, arrangement } = args
+            if (startBar === undefined && !patternName) {
+                throw new Error('Provide "startBar", "patternName", or both')
+            }
+
+            const index = await selectArrangement(arrangement)
+            if (index < 0 || !appState.songs?.[index]) {
+                throw new Error(`Arrangement "${arrangement ?? index}" not found`)
+            }
+
+            const cmd = new Commander()
+            let removed = []
+            if (startBar !== undefined) {
+                removed = removed.concat(cmd.removePatternAtBar(startBar, { songIdx: index }))
+            }
+            if (patternName) {
+                removed = removed.concat(cmd.removePatternClips(patternName, { songIdx: index }))
+            }
+            if (removed.length === 0) throw new Error('No matching clip to remove')
+
+            await saveSongIndex(appState.songs)
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            message: `${removed.length} clip(s) removed`,
+                            arrangement: arrangementToJson(appState.songs[index], index),
+                            removed,
                         }),
                     },
                 ],
