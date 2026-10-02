@@ -2,6 +2,7 @@
 // The MCP write path against a temp data dir (ORDRUMBOX_MCP_DATA_DIR), so
 // arrangement building is exercised end to end without touching assets/data.
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { resetUserErrorReports } from '../src/core/notify.js'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
@@ -36,11 +37,17 @@ beforeEach(async () => {
     dataDir = await mkdtemp(resolve(tmpdir(), 'odbox-mcp-'))
     await writeFile(resolve(dataDir, 'song.json'), JSON.stringify(LIBRARY, null, 2), 'utf8')
     process.env.ORDRUMBOX_MCP_DATA_DIR = dataDir
+    resetUserErrorReports()
+    // Two tests below drive a refusal path on purpose. reportUserError()
+    // attaches the cause to console.warn outside production, so without this
+    // the suite prints expected stack traces that read like failures.
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
     // Imported after the env var is set: the module resolves it on every access.
     handleToolCall = (await freshServer()).handleToolCall
 })
 
 afterEach(async () => {
+    vi.restoreAllMocks()
     delete process.env.ORDRUMBOX_MCP_DATA_DIR
     await rm(dataDir, { recursive: true, force: true })
 })
@@ -128,6 +135,7 @@ describe('MCP arrangement tools', () => {
         const unknownPattern = await call('addPatternToArrangement', { patternName: 'Nope' })
         expect(unknownPattern.res.isError).toBe(true)
         expect(unknownPattern.text).toContain('Nope')
+        expect(console.warn).toHaveBeenCalled()
 
         const unknownSong = await call('addPatternToArrangement', { patternName: 'Verse', arrangement: 'Nope' })
         expect(unknownSong.res.isError).toBe(true)
@@ -161,6 +169,7 @@ describe('MCP arrangement tools', () => {
         const miss = await call('removePatternFromArrangement', { startBar: 7 })
         expect(miss.res.isError).toBe(true)
         expect(miss.text).toContain('No matching clip')
+        expect(console.warn).toHaveBeenCalled()
     })
 
     it('an arrangement survives a write/reload cycle through song.json', async () => {

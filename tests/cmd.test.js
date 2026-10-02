@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
@@ -7,6 +7,7 @@ import Utils from '../src/core/utils.js'
 import { isNoteAt, kitIsLoaded, getTrackFromType, getAllSoundsForType } from './helpers/cmd_test_helpers.js'
 import { makePattern, makeTrack } from './helpers/make_pattern.js'
 import HistoryManager from '../src/logic/history_manager.js'
+import { resetUserErrorReports } from '../src/core/notify.js'
 
 describe('Functional: Commander operations', () => {
     let cmd
@@ -704,6 +705,16 @@ describe('Functional: Commander operations', () => {
             ]
             appState.songs = [{ id: 'demo', name: 'Demo', bpm: 120, clips: [] }]
             appState.selectedSongIdx = 0
+            resetUserErrorReports()
+            // Several tests below drive a refusal path on purpose.
+            // reportUserError() attaches the cause to console.warn outside
+            // production, which would print expected stack traces that read
+            // like failures.
+            vi.spyOn(console, 'warn').mockImplementation(() => {})
+        })
+
+        afterEach(() => {
+            vi.restoreAllMocks()
         })
 
         it('addPatternAtBar resolves a pattern by name and derives its length', () => {
@@ -740,11 +751,13 @@ describe('Functional: Commander operations', () => {
         it('addPatternAtBar refuses an unknown pattern and does nothing', () => {
             expect(cmd.addPatternAtBar('Nope', 0)).toBeNull()
             expect(appState.songs[0].clips).toHaveLength(0)
+            expect(console.warn).toHaveBeenCalled()
         })
 
         it('addPatternAtBar does nothing without a song', () => {
             appState.songs = []
             expect(cmd.addPatternAtBar('Verse', 0)).toBeNull()
+            expect(console.warn).toHaveBeenCalled()
         })
 
         it('addPatternAtBar is undoable and redoable', () => {
@@ -765,6 +778,7 @@ describe('Functional: Commander operations', () => {
         it('repeatPatternAtBar does nothing when the bar is empty', () => {
             expect(cmd.repeatPatternAtBar(4)).toBeNull()
             expect(appState.songs[0].clips).toHaveLength(0)
+            expect(console.warn).toHaveBeenCalled()
         })
 
         it('removePatternAtBar removes every clip starting at that bar', () => {
@@ -784,6 +798,7 @@ describe('Functional: Commander operations', () => {
             cmd.addPatternAtBar('Verse', 0)
             expect(cmd.removePatternAtBar(7)).toEqual([])
             expect(appState.songs[0].clips).toHaveLength(1)
+            expect(console.warn).toHaveBeenCalled()
         })
 
         it('removePatternClips removes the whole row in one undo step', () => {
@@ -809,6 +824,126 @@ describe('Functional: Commander operations', () => {
             cmd.addPatternAtBar('Verse', 0)
             expect(cmd.removePatternClips('  ')).toEqual([])
             expect(appState.songs[0].clips).toHaveLength(1)
+            expect(console.warn).toHaveBeenCalled()
+        })
+
+        it('removePatternClips is a no-op when the pattern is not in the arrangement', () => {
+            cmd.addPatternAtBar('Verse', 0)
+            expect(cmd.removePatternClips('Chorus')).toEqual([])
+            expect(appState.songs[0].clips).toHaveLength(1)
+        })
+    })
+
+    // ── arrangement CRUD ────────────────────────────────────────────────────────
+
+    describe('arrangement CRUD', () => {
+        let history
+
+        beforeEach(() => {
+            history = new HistoryManager(50)
+            serviceRegistry.history = history
+            appState.patterns = [makePattern({ name: 'Verse', id: 'verse' })]
+            appState.songs = []
+            appState.selectedSongIdx = 0
+            resetUserErrorReports()
+            vi.spyOn(console, 'warn').mockImplementation(() => {})
+        })
+
+        afterEach(() => {
+            vi.restoreAllMocks()
+        })
+
+        it('addArrangement creates a normalized song and selects it', () => {
+            const song = cmd.addArrangement({ name: '  My song  ', description: 'demo', bpm: 128 })
+
+            expect(song.name).toBe('My song')
+            expect(song.description).toBe('demo')
+            expect(song.bpm).toBe(128)
+            expect(song.clips).toEqual([])
+            expect(song.id).toBe('my-song')
+            expect(appState.songs).toEqual([song])
+            expect(appState.selectedSongIdx).toBe(0)
+        })
+
+        it('addArrangement falls back to a default name and a valid tempo', () => {
+            const song = cmd.addArrangement({ bpm: 9999 })
+            expect(song.name).toBe('Untitled')
+            expect(song.bpm).toBe(120)
+        })
+
+        it('addArrangement never reuses an id across arrangements', () => {
+            const first = cmd.addArrangement({ name: 'Intro' })
+            const second = cmd.addArrangement({ name: 'Intro' })
+
+            expect(first.id).toBe('intro')
+            expect(second.id).toBe('intro-2')
+            expect(appState.selectedSongIdx).toBe(1)
+        })
+
+        it('addArrangement is undoable and redoable', () => {
+            cmd.addArrangement({ name: 'Temp' })
+
+            history.undo()
+            expect(appState.songs).toHaveLength(0)
+            expect(appState.selectedSongIdx).toBe(0)
+
+            history.redo()
+            expect(appState.songs.map((s) => s.name)).toEqual(['Temp'])
+            expect(appState.selectedSongIdx).toBe(0)
+        })
+
+        it('a clip placed after creation can be undone on its own', () => {
+            cmd.addArrangement({ name: 'With clips' })
+            cmd.addPatternAtBar('Verse', 0)
+            expect(appState.songs[0].clips).toHaveLength(1)
+
+            history.undo()
+            expect(appState.songs[0].clips).toHaveLength(0)
+        })
+
+        it('removeArrangement deletes the selected one and keeps a valid selection', () => {
+            cmd.addArrangement({ name: 'First' })
+            cmd.addArrangement({ name: 'Second' })
+            appState.selectedSongIdx = 0
+
+            expect(cmd.removeArrangement()).toBe(true)
+            expect(appState.songs.map((s) => s.name)).toEqual(['Second'])
+            expect(appState.selectedSongIdx).toBe(0)
+
+            history.undo()
+            expect(appState.songs.map((s) => s.name)).toEqual(['First', 'Second'])
+        })
+
+        it('removeArrangement restores the original slot on undo', () => {
+            appState.songs = [
+                { id: 'a', name: 'A', bpm: 120, clips: [] },
+                { id: 'b', name: 'B', bpm: 120, clips: [] },
+                { id: 'c', name: 'C', bpm: 120, clips: [] },
+            ]
+            appState.selectedSongIdx = 0
+            cmd.removeArrangement(1)
+            cmd.addArrangement({ name: 'D' })
+            expect(appState.songs.map((s) => s.name)).toEqual(['A', 'C', 'D'])
+
+            history.undo() // the creation
+            history.undo() // the removal: B goes back to its own slot, not the end
+            expect(appState.songs.map((s) => s.name)).toEqual(['A', 'B', 'C'])
+
+            history.redo()
+            history.redo()
+            expect(appState.songs.map((s) => s.name)).toEqual(['A', 'C', 'D'])
+        })
+
+        it('removeArrangement reports when there is nothing at that index', () => {
+            expect(cmd.removeArrangement(3)).toBe(false)
+        })
+
+        it('setSelectedSongIdx clamps to the available arrangements', () => {
+            appState.songs = [{ id: 'a', name: 'A', bpm: 120, clips: [] }]
+
+            expect(cmd.setSelectedSongIdx(5)).toBe(0)
+            expect(cmd.setSelectedSongIdx(-2)).toBe(0)
+            expect(appState.selectedSongIdx).toBe(0)
         })
     })
 })

@@ -311,16 +311,17 @@ export default class SongCommands {
         song.id = uniqueId(song.id, taken)
         if (!appState.songs) appState.songs = []
         appState.songs.push(song)
+        const songIndex = appState.songs.length - 1
         const previousIdx = appState.selectedSongIdx ?? 0
-        appState.selectedSongIdx = appState.songs.length - 1
+        appState.selectedSongIdx = songIndex
         this.#host.persist()
         this.#host.record({
             desc: `Add arrangement "${song.name}"`,
-            params: { song: song.name, index: previousIdx + 1 },
+            params: { song: song.name, index: songIndex },
             execute: () => {
                 if (!appState.songs.includes(song)) {
-                    appState.songs.splice(appState.songs.length, 0, song)
-                    appState.selectedSongIdx = appState.songs.length - 1
+                    appState.songs.splice(Math.min(songIndex, appState.songs.length), 0, song)
+                    appState.selectedSongIdx = Math.min(songIndex, appState.songs.length - 1)
                 }
                 this.#host.persist()
             },
@@ -346,24 +347,37 @@ export default class SongCommands {
         if (!song) return false
         const previousIdx = appState.selectedSongIdx ?? 0
         appState.songs.splice(index, 1)
-        appState.selectedSongIdx = Utils.clamp(previousIdx, 0, Math.max(0, appState.songs.length - 1))
+        this.#selectClamped(previousIdx)
         this.#host.persist()
-        // Out of its slot and back into it at the same index, so a redo cannot
-        // append it after an arrangement added later.
-        const place = (selectedIdx) => {
-            const current = appState.songs.indexOf(song)
-            if (current >= 0) appState.songs.splice(current, 1)
-            appState.songs.splice(Math.min(index, appState.songs.length), 0, song)
-            appState.selectedSongIdx = Utils.clamp(selectedIdx, 0, Math.max(0, appState.songs.length - 1))
+        const selectAgain = (selectedIdx) => {
+            this.#selectClamped(selectedIdx)
             this.#host.persist()
         }
         this.#host.record({
             desc: `Remove arrangement "${song.name}"`,
             params: { song: song.name, index },
-            execute: () => place(previousIdx),
-            undo: () => place(index),
+            execute: () => {
+                const i = appState.songs.indexOf(song)
+                if (i >= 0) appState.songs.splice(i, 1)
+                selectAgain(previousIdx)
+            },
+            undo: () => {
+                const i = appState.songs.indexOf(song)
+                if (i >= 0) appState.songs.splice(i, 1)
+                appState.songs.splice(Math.min(index, appState.songs.length), 0, song)
+                selectAgain(index)
+            },
         })
         return true
+    }
+
+    /** Point the selection at an existing arrangement, clamped to the list. */
+    #selectClamped(songIdx) {
+        appState.selectedSongIdx = Utils.clamp(
+            Math.trunc(Number(songIdx)) || 0,
+            0,
+            Math.max(0, (appState.songs?.length ?? 1) - 1),
+        )
     }
 
     /**
@@ -376,8 +390,7 @@ export default class SongCommands {
      * @returns {number} the index actually selected
      */
     setSelectedSongIdx(songIdx) {
-        const target = Utils.clamp(Math.trunc(Number(songIdx)) || 0, 0, Math.max(0, (appState.songs?.length ?? 1) - 1))
-        appState.selectedSongIdx = target
-        return target
+        this.#selectClamped(songIdx)
+        return appState.selectedSongIdx
     }
 }
