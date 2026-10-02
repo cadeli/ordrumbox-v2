@@ -11,8 +11,32 @@ import { appState } from '../../state/app_state.js'
 import { BEATS_PER_BAR, songLengthBars } from '../../model/song_schema.js'
 import { songTempo } from '../../logic/song_playback.js'
 
+/** See WavExporter#flushWorklets. */
+const WORKLET_FLUSH_MS = 25
+
 export default class WavExporter {
     constructor() {}
+
+    /**
+     * Lets the audio thread drain the messages posted to it before rendering.
+     *
+     * A soft-synth note is triggered by `port.postMessage` (see
+     * WorkletSynthVoice.start), and offline there is no synth node pool
+     * (`Sound`: `isOffline ? null : new SynthVoiceNodePool(...)`), so every note
+     * builds its own AudioWorkletNode. An OfflineAudioContext starts rendering
+     * eagerly and can render past the note's time before those messages reach
+     * the processor, which yields a perfectly valid but entirely silent WAV —
+     * observed on roughly one run in four.
+     *
+     * There is no way to await an acknowledgement: the processor is only
+     * instantiated once rendering starts, so any round trip would deadlock
+     * before `startRendering()`. Yielding for a macrotask is not enough either
+     * (still 1 failure in 10), hence the small fixed delay. Sample voices are
+     * unaffected — they read an AudioBuffer directly, with no message involved.
+     */
+    async flushWorklets() {
+        await new Promise((resolve) => setTimeout(resolve, WORKLET_FLUSH_MS))
+    }
 
     exportPatternToWav = async (pattern, loopsCount = 1) => {
         const TICK_TIME = ((60 * 4) / (pattern.bpm * TICK)) * 0.25 // Match Transport.js timing
@@ -71,6 +95,7 @@ export default class WavExporter {
             }
         }
 
+        await this.flushWorklets()
         const renderedBuffer = await offlineCtx.startRendering()
         const wavBlob = bufferToWav(renderedBuffer)
 
@@ -158,6 +183,7 @@ export default class WavExporter {
             }
         }
 
+        await this.flushWorklets()
         const renderedBuffer = await offlineCtx.startRendering()
         return bufferToWav(renderedBuffer)
     }

@@ -20,6 +20,9 @@ export default class AudioStallDetector {
     #stalled
     #onCtxStateChangeBound
 
+    /**
+     * @param {{audioCtx?: AudioContext, transport?: object, checkIntervalMs?: number}} [options]
+     */
     constructor({ audioCtx, transport, checkIntervalMs = 500 } = {}) {
         this.#audioCtx = audioCtx
         this.#transport = transport

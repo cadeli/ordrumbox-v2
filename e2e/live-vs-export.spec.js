@@ -159,8 +159,11 @@ test.describe('Live vs Export equivalence', () => {
         expect(corr, `Envelope correlation: ${corr}`).toBeGreaterThan(0.95)
     })
 
+    // Rendered twice: soft-synth notes are triggered through port messages that
+    // an OfflineAudioContext can render past, so one silent render in two used to
+    // slip through — roughly one run in four went silent.
     test('export produces non-silent audio for synth patterns', async ({ page }) => {
-        const result = await page.evaluate(async () => {
+        const results = await page.evaluate(async () => {
             const { default: WavExporter } = await import('/src/audio/export/wav_exporter.js')
             const { appState, soundRegistry } = window.__e2e
 
@@ -190,18 +193,25 @@ test.describe('Live vs Export equivalence', () => {
             appState.selectedPatternIdx = 0
 
             const exporter = new WavExporter()
-            const wavBlob = await exporter.exportPatternToWav(pattern, 1)
-            const arrayBuffer = await wavBlob.arrayBuffer()
-            const audioCtx = new OfflineAudioContext(2, 1, 44100)
-            const decoded = await audioCtx.decodeAudioData(arrayBuffer)
+            const rms = []
+            for (let attempt = 0; attempt < 2; attempt++) {
+                const wavBlob = await exporter.exportPatternToWav(pattern, 1)
+                const arrayBuffer = await wavBlob.arrayBuffer()
+                const audioCtx = new OfflineAudioContext(2, 1, 44100)
+                const decoded = await audioCtx.decodeAudioData(arrayBuffer)
 
-            const ch = Array.from(decoded.getChannelData(0))
-            let sum = 0
-            for (let i = 0; i < ch.length; i++) sum += ch[i] * ch[i]
-            return { rms: Math.sqrt(sum / ch.length) }
+                const ch = Array.from(decoded.getChannelData(0))
+                let sum = 0
+                for (let i = 0; i < ch.length; i++) sum += ch[i] * ch[i]
+                rms.push(Math.sqrt(sum / ch.length))
+            }
+            return { rms, audioSeconds: rms.length }
         })
 
-        test.skip(result === null, 'No synth sounds loaded')
-        expect(result.rms, 'Synth export should produce audible audio').toBeGreaterThan(0.001)
+        test.skip(results === null, 'No synth sounds loaded')
+        expect(results.audioSeconds).toBe(2)
+        for (const rms of results.rms) {
+            expect(rms, 'Synth export should produce audible audio').toBeGreaterThan(0.001)
+        }
     })
 })

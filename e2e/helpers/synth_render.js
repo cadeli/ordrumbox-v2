@@ -24,13 +24,16 @@
  * @param {number} [opts.bpm=120]
  * @returns {Promise<Array<{channelData: number[][], sampleRate: number}>>}
  */
+/** See the note above: drain port messages before starting the render. */
+const WORKLET_FLUSH_MS = 25
+
 const PREFERRED_BASE_SYNTH_KEY = 'SYNTH2'
 
 export async function renderSynthBatch(page, configs, opts = {}) {
     const { durationPerNote = 1.0, gapSec = 0.05, pitch = 0, bpm = 120 } = opts
 
     return page.evaluate(
-        async ({ configs, durationPerNote, gapSec, pitch, bpm, preferredBaseKey }) => {
+        async ({ configs, durationPerNote, gapSec, pitch, bpm, preferredBaseKey, workletFlushMs }) => {
             const { default: AudioEngine } = await import('/src/audio/engine.js')
 
             function deepMerge(target, src) {
@@ -110,6 +113,7 @@ export async function renderSynthBatch(page, configs, opts = {}) {
                 await engine.playNotes(0, offset)
             }
 
+            await new Promise((resolve) => setTimeout(resolve, workletFlushMs))
             const rendered = await offlineCtx.startRendering()
             const results = []
             for (let i = 0; i < configs.length; i++) {
@@ -125,7 +129,15 @@ export async function renderSynthBatch(page, configs, opts = {}) {
             }
             return results
         },
-        { configs, durationPerNote, gapSec, pitch, bpm, preferredBaseKey: PREFERRED_BASE_SYNTH_KEY },
+        {
+            configs,
+            durationPerNote,
+            gapSec,
+            pitch,
+            bpm,
+            preferredBaseKey: PREFERRED_BASE_SYNTH_KEY,
+            workletFlushMs: WORKLET_FLUSH_MS,
+        },
     )
 }
 

@@ -1,3 +1,4 @@
+// @ts-check
 import Player from './player.js'
 import Mixer from './mixer.js'
 import { recomputeFlatNotes } from '../patterns/engine.js'
@@ -139,7 +140,7 @@ export default class AudioEngine {
      * Song playback layers several patterns at once, so the single-slot cache
      * above cannot serve it: each pattern needs its own map, keyed by identity
      * plus its cycle counter (which drives `every` and variation).
-     * @param {object} pattern
+     * @param {{_version?: number}} pattern
      * @param {number} [loop]
      * @returns {Map<number, any[]>}
      */

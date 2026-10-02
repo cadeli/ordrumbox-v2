@@ -1,3 +1,4 @@
+// @ts-check
 import Utils from '../core/utils.js'
 import AudioEngine from '../audio/engine.js'
 import AudioStallDetector from '../audio/stall_detector.js'
@@ -19,6 +20,13 @@ export default class Sequencer {
     #stallDetector
     #starting
     #pendingStop
+
+    /**
+     * Offline export flag: keeps the transport on the pattern's own bpm instead
+     * of the arrangement's. Nothing assigns it today, so it always reads false.
+     * @type {boolean}
+     */
+    isOffline
 
     constructor(options = {}) {
         this.serviceRegistry = options.serviceRegistry ?? serviceRegistry

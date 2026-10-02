@@ -26,7 +26,7 @@ export function createMidiMappingResolver() {
  * @param {object} ctx
  * @param {AudioContext} ctx.audioCtx
  * @param {object[]} ctx.patterns
- * {Function} ctx.getSelectedPatternIdx
+ * @param {() => number} ctx.getSelectedPatternIdx
  * @param {number} ctx.TICK
  * @param {object} ctx.player
  * @param {(loop: number) => Map} ctx.getFlatNotes

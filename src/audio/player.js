@@ -1,3 +1,4 @@
+// @ts-check
 import Sound from './sound.js'
 import FlatNote from '../model/flatnote.js'
 import NoteParams from '../patterns/note_params.js'
@@ -244,7 +245,8 @@ export default class Player {
             const notesToPlay = flatNotesMap.get(localStep)
             if (!notesToPlay) continue
 
-            const tracks = pattern.tracks
+            // a SongSource only types its pattern as {object}
+            const tracks = /** @type {{tracks: object}} */ (pattern).tracks
             const trackIdxMap = this.#trackIndexMap(tracks)
             const anySolo = Utils.hasAnySolo(tracks)
             // Only the pattern the user is looking at drives the grid playhead;
