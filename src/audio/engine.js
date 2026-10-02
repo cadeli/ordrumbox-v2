@@ -1,6 +1,7 @@
 import Player from './player.js'
 import Mixer from './mixer.js'
 import { recomputeFlatNotes } from '../patterns/engine.js'
+import { PLAYBACK_MODE, songPatterns } from '../logic/song_playback.js'
 import { serviceRegistry } from '../state/service_registry.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { instrumentsManager } from '../logic/services/instrument_manager/index.js'
@@ -19,6 +20,8 @@ export default class AudioEngine {
     #cachedPatternRef
     #cachedLoop
     #cachedVersion
+    /** pattern -> { loop, version, map }, for multi-pattern song playback */
+    #perPatternFlatNotes = new Map()
     #resolveMidiMapping
     #workletReady
     #silentBuffer
@@ -29,6 +32,11 @@ export default class AudioEngine {
         this.generatedSounds = nameOr(config.generatedSounds, {}, 'AudioEngine', 'generatedSounds fallback')
         this.patterns = config.patterns
         this.getSelectedPatternIdx = config.getSelectedPatternIdx ?? (() => config.selectedPatternIdx ?? 0)
+        // Injected like the pattern index: the audio layer reads appState only
+        // through resolvers, which keeps it testable without the store.
+        this.getCurrentView = config.getCurrentView ?? (() => 'edit')
+        this.getSongs = config.getSongs ?? (() => [])
+        this.getSelectedSongIdx = config.getSelectedSongIdx ?? (() => 0)
         this.getAutoGenerate = config.getAutoGenerate
         this.TICK = config.TICK
         this.secondsPerBeat = config.secondsPerBeat
@@ -61,6 +69,9 @@ export default class AudioEngine {
                     computeFlatNotes: this.computeFlatNotes.bind(this),
                     getAutoGenerate: this.getAutoGenerate,
                     getFlatNotes: (loop) => this.getFlatNotesForCurrentPattern(loop),
+                    getFlatNotesForPattern: (pattern, loop) => this.getFlatNotesForPattern(pattern, loop),
+                    getPlaybackMode: this.getPlaybackMode,
+                    getSong: this.getSong,
                     TICK: this.TICK,
                     secondsPerBeat: this.secondsPerBeat,
                     isOffline: this.isOffline,
@@ -91,6 +102,26 @@ export default class AudioEngine {
 
     // ─── Pattern / flat-note helpers ────────────────────────────────────────────
 
+    /**
+     * Playback mode follows the visible view: the Song view plays the
+     * arrangement, every other view loops the selected pattern.
+     * @returns {'pattern'|'song'}
+     */
+    getPlaybackMode = () => (this.getCurrentView() === 'song' ? PLAYBACK_MODE.SONG : PLAYBACK_MODE.PATTERN)
+
+    /**
+     * Patterns the current arrangement plays, so their strips get built.
+     * Empty outside song mode, where only the selected pattern is prepared.
+     * @returns {object[]}
+     */
+    songPatternsToPlay = () => {
+        if (this.getCurrentView() !== 'song') return []
+        return songPatterns(this.getSong(), this.patterns)
+    }
+
+    /** The selected song, or null when the library has none. */
+    getSong = () => this.getSongs?.()[this.getSelectedSongIdx?.() ?? 0] ?? null
+
     computeFlatNotes = (pattern, loop) => {
         this.flatNotes = recomputeFlatNotes(pattern, loop, this.TICK)
         // Update cache so getFlatNotesForCurrentPattern doesn't recompute.
@@ -100,6 +131,26 @@ export default class AudioEngine {
         this.#cachedLoop = loop
         this.#cachedVersion = pattern._version ?? 0
         return this.flatNotes
+    }
+
+    /**
+     * Flat notes for an arbitrary pattern at a given cycle.
+     *
+     * Song playback layers several patterns at once, so the single-slot cache
+     * above cannot serve it: each pattern needs its own map, keyed by identity
+     * plus its cycle counter (which drives `every` and variation).
+     * @param {object} pattern
+     * @param {number} [loop]
+     * @returns {Map<number, any[]>}
+     */
+    getFlatNotesForPattern = (pattern, loop = 0) => {
+        if (!pattern) return this.flatNotes
+        const version = pattern._version ?? 0
+        const cached = this.#perPatternFlatNotes.get(pattern)
+        if (cached && cached.loop === loop && cached.version === version) return cached.map
+        const map = recomputeFlatNotes(pattern, loop, this.TICK)
+        this.#perPatternFlatNotes.set(pattern, { loop, version, map })
+        return map
     }
 
     getFlatNotesForCurrentPattern = (loop = 0) => {
@@ -121,6 +172,7 @@ export default class AudioEngine {
     invalidateCache = () => {
         this.#cachedPatternRef = null
         this.#cachedVersion = -1
+        this.#perPatternFlatNotes.clear()
         if (this.player) {
             this.player.invalidateCache()
         }
@@ -149,9 +201,16 @@ export default class AudioEngine {
                 this.mixer.transportClock.offset.linearRampToValueAtTime(3600, time + 3600)
             }
 
-            // Re-apply every track's effect settings to its strip.
+            // Re-apply every track's effect settings to its strip. In song mode
+            // the arrangement plays patterns other than the selected one, and a
+            // strip is created lazily per track name — so they need their own
+            // pass or those patterns would play through nothing.
             if (pattern?.tracks) {
                 await this.syncAllTracks(pattern)
+            }
+            for (const songPattern of this.songPatternsToPlay()) {
+                if (songPattern === pattern) continue
+                await this.syncAllTracks(songPattern)
             }
         } catch (err) {
             logger.warn('AudioEngine', 'start failed', err)

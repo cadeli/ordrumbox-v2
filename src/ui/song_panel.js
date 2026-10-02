@@ -1,3 +1,4 @@
+// @ts-check
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
@@ -90,7 +91,7 @@ export default class SongPanel extends BasePanel {
         this.listen(this.#songDescEl, 'blur', () => {
             appState.songInfos.description = this.#songDescEl.textContent.trim()
         })
-        this.listen(this.#songDescEl, 'keydown', (e) => {
+        this.listen(this.#songDescEl, 'keydown', (/** @type {KeyboardEvent} */ e) => {
             if (e.key === 'Enter') {
                 e.preventDefault()
                 this.#songDescEl.blur()
@@ -205,7 +206,7 @@ export default class SongPanel extends BasePanel {
         }
 
         this.listen(input, 'blur', commit)
-        this.listen(input, 'keydown', (e) => {
+        this.listen(input, 'keydown', (/** @type {KeyboardEvent} */ e) => {
             if (e.key === 'Enter') {
                 e.preventDefault()
                 input.blur()
@@ -237,7 +238,7 @@ export default class SongPanel extends BasePanel {
         }
 
         this.listen(input, 'blur', commit)
-        this.listen(input, 'keydown', (e) => {
+        this.listen(input, 'keydown', (/** @type {KeyboardEvent} */ e) => {
             if (e.key === 'Enter') {
                 e.preventDefault()
                 input.blur()
@@ -300,7 +301,7 @@ export default class SongPanel extends BasePanel {
             })
 
             this.listen(overlay.querySelector('#sg-load-ok'), 'click', async () => {
-                const choice = overlay.querySelector('#sg-load-select').value
+                const choice = /** @type {HTMLSelectElement} */ (overlay.querySelector('#sg-load-select')).value
                 close()
 
                 const data = await songService.load(choice)

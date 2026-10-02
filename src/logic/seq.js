@@ -3,6 +3,7 @@ import AudioEngine from '../audio/engine.js'
 import AudioStallDetector from '../audio/stall_detector.js'
 import Transport from './transport/transport.js'
 import { TICK } from '../core/constants.js'
+import { songPatterns, songTempo } from './song_playback.js'
 import { appState } from '../state/app_state.js'
 import { playbackEvents } from '../state/playback_events.js'
 import { serviceRegistry } from '../state/service_registry.js'
@@ -57,6 +58,9 @@ export default class Sequencer {
             patterns: this.appState.patterns,
             selectedPatternIdx: this.appState.selectedPatternIdx,
             getSelectedPatternIdx: () => this.appState.selectedPatternIdx,
+            getCurrentView: () => this.appState.currentView,
+            getSongs: () => this.appState.songs ?? [],
+            getSelectedSongIdx: () => this.appState.selectedSongIdx ?? 0,
             getAutoGenerate: getAutoGenerateService,
             uiState: {}, // UI state removed
             TICK,
@@ -88,6 +92,9 @@ export default class Sequencer {
                     this.serviceRegistry.transport.nextStepTime = this.serviceRegistry.audioCtx.currentTime
                 }
             }
+        })
+        this.playbackEvents.on(EVENTS.VIEW_CHANGED, () => {
+            this.syncPlaybackMode()
         })
         this.playbackEvents.on(EVENTS.NOTE_CHANGE, () => {
             if (this.serviceRegistry.audioEngine) {
@@ -152,12 +159,25 @@ export default class Sequencer {
             return
         }
         this.ensureTransport()
-        this.serviceRegistry.transport.setBpm(selectedPattern.bpm)
+        // A song plays every pattern at one tempo; the arrangement's bpm wins.
+        // Offline export deliberately keeps the pattern's own bpm so a render
+        // never depends on which view happens to be open.
+        const songBpm = this.isOffline ? null : this.currentSongTempo()
+        this.serviceRegistry.transport.setBpm(songBpm ?? selectedPattern.bpm)
         const autoAssign = await getAutoAssignService()
-        await autoAssign.autoAssignSounds(selectedPattern)
+        // A song sounds every pattern its clips reference, not only the selected
+        // one. In pattern mode the selected pattern is the one that gets its
+        // tracks assigned; here the others would keep soundId 'NOT_DEFINED'
+        // and play nothing at all.
+        for (const pattern of this.patternsToPlay(selectedPattern)) {
+            await autoAssign.autoAssignSounds(pattern)
+        }
         this.serviceRegistry.patterns.applyFlatNotes(selectedPattern)
 
         this.ensureAudioEngine()
+        // Flat notes cache each track's soundId, so a pattern auto-assign has
+        // just re-pointed must not keep its pre-assignment map.
+        this.serviceRegistry.audioEngine.invalidateCache()
         await this.serviceRegistry.audioEngine.start(selectedPattern)
         this.serviceRegistry.transport.start()
         this.#stallDetector = new AudioStallDetector({
@@ -203,6 +223,42 @@ export default class Sequencer {
         } else {
             this.stop()
         }
+    }
+
+    /** Tempo of the arrangement when a song is selected and being played. */
+    /**
+     * Patterns that need sounds assigned before the transport runs: the selected
+     * one in pattern mode, the whole arrangement in song mode.
+     * @param {object} selectedPattern
+     * @returns {object[]}
+     */
+    patternsToPlay = (selectedPattern) => {
+        if (this.isOffline || this.appState.currentView !== 'song') return [selectedPattern]
+        const song = this.appState.songs?.[this.appState.selectedSongIdx ?? 0]
+        const patterns = songPatterns(song, this.appState.patterns)
+        return patterns.length ? patterns : [selectedPattern]
+    }
+
+    currentSongTempo = () => {
+        const song = this.appState.songs?.[this.appState.selectedSongIdx ?? 0]
+        if (!song) return null
+        const lib = new Map((this.appState.patterns ?? []).filter((p) => p?.id).map((p) => [p.id, p]))
+        return songTempo(song, lib)
+    }
+
+    /**
+     * Re-anchor the transport when the view (and so the playback mode) changes:
+     * a switch between pattern and song mode mid-playback must start the new
+     * mode from its own zero, not continue a stale tick count.
+     */
+    syncPlaybackMode = () => {
+        const transport = this.serviceRegistry.transport
+        if (!transport?.isRunning) return
+        transport.tick = 0
+        transport.nextStepTime = this.serviceRegistry.audioCtx.currentTime
+        const songBpm = this.currentSongTempo()
+        if (songBpm != null) transport.setBpm(songBpm)
+        this.serviceRegistry.audioEngine?.invalidateCache()
     }
 
     setBpm = (bpm) => {

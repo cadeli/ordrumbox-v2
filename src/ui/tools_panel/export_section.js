@@ -11,12 +11,14 @@ export default class ExportSection {
     #panel
     #wavLoops
     #wavBtn
+    #songBtn
 
     /** @param {import('../tools_panel.js').default} panel */
     constructor(panel) {
         this.#panel = panel
         this.#wavLoops = null
         this.#wavBtn = null
+        this.#songBtn = null
     }
 
     get wavLoops() {
@@ -25,6 +27,10 @@ export default class ExportSection {
 
     get wavBtn() {
         return this.#wavBtn
+    }
+
+    get songBtn() {
+        return this.#songBtn
     }
 
     html() {
@@ -37,6 +43,9 @@ export default class ExportSection {
                     <button class="ne-btn" id="tp-export-wav" title="Render the pattern to an audio WAV file">Export WAV</button>
                 </div>
                 <div id="tp-wav-loops-slot"></div>
+                <div class="ne-row">
+                    <button class="ne-btn" id="tp-export-song-wav" title="Render the whole song arrangement (every clip, layered) to a WAV file">Export Song</button>
+                </div>
             </div>
         `
     }
@@ -56,6 +65,9 @@ export default class ExportSection {
 
         this.#wavBtn = root.querySelector('#tp-export-wav')
         this.#wavBtn.addEventListener('click', () => this.exportWav())
+
+        this.#songBtn = root.querySelector('#tp-export-song-wav')
+        this.#songBtn.addEventListener('click', () => this.exportSongWav())
 
         root.querySelector('#tp-export-midi').addEventListener('click', () => this.exportMidi())
     }
@@ -77,6 +89,45 @@ export default class ExportSection {
         } catch (e) {
             logger.error('ToolsPanel', 'MIDI Export failed', e)
             showToast('MIDI Export failed: ' + e.message, 'error')
+        }
+    }
+
+    /**
+     * Render the whole arrangement to a WAV: every clip of the selected song,
+     * layered, at the song's tempo.
+     */
+    async exportSongWav() {
+        const song = appState.songs?.[appState.selectedSongIdx ?? 0]
+        if (!song) {
+            showToast('No song arrangement to export', 'warning')
+            return
+        }
+        if (!song.clips?.length) {
+            showToast(`"${nameOr(song.name, 'song', 'ToolsPanel', 'song name fallback')}" has no clip`, 'warning')
+            return
+        }
+
+        const originalText = this.#songBtn.textContent
+        this.#songBtn.disabled = true
+        this.#songBtn.textContent = 'Exporting...'
+
+        try {
+            if (!serviceRegistry.wavExporter) {
+                const { default: WavExporter } = await import('../../audio/export/wav_exporter.js')
+                serviceRegistry.wavExporter = new WavExporter()
+            }
+            const blob = await serviceRegistry.wavExporter.exportSongToWav(song)
+            serviceRegistry.wavExporter.downloadWav(
+                blob,
+                `ordrumbox-${nameOr(song.name, 'song', 'ToolsPanel', 'song wav name fallback')}.wav`,
+            )
+            showToast(`Song "${nameOr(song.name, 'song', 'ToolsPanel', 'song name fallback')}" exported`, 'success')
+        } catch (e) {
+            logger.error('ToolsPanel', 'Song WAV Export failed', e)
+            showToast('Song WAV export failed: ' + e.message, 'error')
+        } finally {
+            this.#songBtn.disabled = false
+            this.#songBtn.textContent = originalText
         }
     }
 

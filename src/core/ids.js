@@ -1,3 +1,4 @@
+// @ts-check
 // src/core/ids.js
 //
 // Stable identifiers. These live in `core` rather than `model/song_schema.js`

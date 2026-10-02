@@ -136,6 +136,9 @@ export default class ViewManager {
         this.#viewHandlers.get(view)?.enter?.()
 
         setViewMode(view)
+        // Playback mode follows the visible view: the sequencer re-anchors its
+        // transport (and picks the arrangement tempo) on the switch.
+        playbackEvents.emit(EVENTS.VIEW_CHANGED, view)
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────

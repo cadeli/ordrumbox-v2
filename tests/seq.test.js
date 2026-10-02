@@ -202,7 +202,11 @@ describe('Sequencer', () => {
 
     it('start() called while starting enters the loading path only once and honors the pending stop', async () => {
         const seq = new Sequencer()
-        serviceRegistry.audioEngine = { start: vi.fn().mockResolvedValue(undefined), stop: vi.fn() }
+        serviceRegistry.audioEngine = {
+            start: vi.fn().mockResolvedValue(undefined),
+            stop: vi.fn(),
+            invalidateCache: vi.fn(),
+        }
 
         // Hold resource loading open so the first start() stays in flight
         let releaseResources
@@ -230,7 +234,11 @@ describe('Sequencer', () => {
 
     it('start() runs the full startup and does not stop when nothing was requested', async () => {
         const seq = new Sequencer()
-        serviceRegistry.audioEngine = { start: vi.fn().mockResolvedValue(undefined), stop: vi.fn() }
+        serviceRegistry.audioEngine = {
+            start: vi.fn().mockResolvedValue(undefined),
+            stop: vi.fn(),
+            invalidateCache: vi.fn(),
+        }
         seq.stop = vi.fn()
 
         await seq.start()

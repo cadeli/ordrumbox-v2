@@ -6,6 +6,8 @@ import { playbackEvents } from '../state/playback_events.js'
 import { logger, nameOr } from '../core/logger.js'
 import Utils from '../core/utils.js'
 import { EVENTS } from '../core/events.js'
+import { BEATS_PER_BAR } from '../model/song_schema.js'
+import { PLAYBACK_MODE, resolveSongSources, songTempo, tickToSongBars } from '../logic/song_playback.js'
 
 export default class Player {
     static TAG = 'Player'
@@ -15,6 +17,8 @@ export default class Player {
     #trackIdxMap = null
     #trackIdxMapRef = null
     #trackIdxMapCount = -1
+    #patternsById = null
+    #songBar = 0
 
     /**
      * Drop every playback-derived cache. Called by AudioEngine.invalidateCache()
@@ -27,6 +31,7 @@ export default class Player {
         this.#trackIdxMap = null
         this.#trackIdxMapRef = null
         this.#trackIdxMapCount = -1
+        this.#patternsById = null
     }
 
     constructor(config) {
@@ -39,6 +44,9 @@ export default class Player {
         this.computeFlatNotes = config.computeFlatNotes
         this.getAutoGenerate = config.getAutoGenerate
         this.getFlatNotes = config.getFlatNotes
+        this.getFlatNotesForPattern = config.getFlatNotesForPattern ?? null
+        this.getPlaybackMode = config.getPlaybackMode ?? (() => PLAYBACK_MODE.PATTERN)
+        this.getSong = config.getSong ?? (() => null)
         this.TICK = config.TICK
         this.secondsPerBeat = config.secondsPerBeat
         this.isOffline = !!config.isOffline
@@ -47,7 +55,7 @@ export default class Player {
         this.lastDisplayBeats = 0
     }
 
-    #handleLoopStart = async (selectedPattern) => {
+    #handleLoopStart = async (selectedPattern, loop = this.loop) => {
         this.#lastFlatNotesLoop = -1
 
         const tracks = selectedPattern.tracks
@@ -55,7 +63,7 @@ export default class Player {
 
         if (selectedPattern.autoGen) {
             const autoGen = await getAutoGenerateService()
-            const element = autoGen.structureGen.getElement(this.loop)
+            const element = autoGen.structureGen.getElement(loop)
             const isSectionStart = element.loopInElement === 0
             const isSectionEnd = element.isLastLoopBeforeChange
 
@@ -63,7 +71,7 @@ export default class Player {
                 const tag = isSectionEnd ? 'break' : 'generate'
                 logger.info(
                     'Player',
-                    `[AutoGen] loop ${this.loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selectedPattern._autoGenGenre}`,
+                    `[AutoGen] loop ${loop} — section: ${element.name} (${element.loopInElement + 1}/${element.elementLoops}) — ${tag} — genre: ${selectedPattern._autoGenGenre}`,
                 )
             }
 
@@ -72,7 +80,7 @@ export default class Player {
             for (let i = 0; i < trackKeys.length; i++) {
                 const track = tracks[trackKeys[i]]
                 if (!isHarmonicBoundary && !Utils.isMelodicTrack(track)) continue
-                promises.push(autoGen.changeTrack(this.loop, selectedPattern, track))
+                promises.push(autoGen.changeTrack(loop, selectedPattern, track))
             }
             await Promise.all(promises)
         } else {
@@ -83,7 +91,7 @@ export default class Player {
                     promises.push(
                         (async () => {
                             const autoGen = await this.getAutoGenerate()
-                            return autoGen.changeTrack(this.loop, selectedPattern, track)
+                            return autoGen.changeTrack(loop, selectedPattern, track)
                         })(),
                     )
                 }
@@ -91,11 +99,49 @@ export default class Player {
             await Promise.all(promises)
         }
 
-        this.computeFlatNotes(selectedPattern, this.loop)
+        this.computeFlatNotes(selectedPattern, loop)
+    }
+
+    /** The pattern library indexed by stable id, for clip resolution. */
+    get patternsById() {
+        if (this.#patternsById === null) {
+            this.#patternsById = new Map()
+            for (const pattern of this.patterns ?? []) {
+                if (pattern?.id) this.#patternsById.set(pattern.id, pattern)
+            }
+        }
+        return this.#patternsById
+    }
+
+    /**
+     * Song mode only when the arrangement view is the visible one AND a song is
+     * actually selected — the engine owns that decision (see getPlaybackMode).
+     */
+    get isSongMode() {
+        return this.getPlaybackMode() === PLAYBACK_MODE.SONG && this.getSong() != null
+    }
+
+    /** Where the transport sits in the arrangement, in bars (fractional). */
+    get currentSongBar() {
+        return this.#songBar
+    }
+
+    /** The song's own tempo, or null outside song mode. */
+    getSongTempo = () => (this.isSongMode ? songTempo(this.getSong(), this.patternsById) : null)
+
+    #songBarOf = (tick) => {
+        const tickPerBar = this.TICK * BEATS_PER_BAR
+        // Measured from the clip under the playhead, so it stays unwrapped and
+        // the UI does not jump back to 0 when the arrangement loops.
+        const source = resolveSongSources(this.getSong(), this.patternsById, tick, this.TICK)[0]
+        if (!source) return tickToSongBars(tick, tickPerBar)
+        return source.clip.startBar + (tick - source.clip.startBar * tickPerBar) / tickPerBar
     }
 
     playNotes = async (tick, atTime) => {
         try {
+            if (this.isSongMode) return await this.#playSongNotes(tick, atTime)
+
             const selectedPattern = this.patterns[this.getSelectedPatternIdx()]
             const nbTickForPattern = this.TICK * (selectedPattern.beatCount ?? 4)
             const loopStep = tick % nbTickForPattern
@@ -163,6 +209,79 @@ export default class Player {
         } catch (e) {
             logger.error('Player', e)
         }
+    }
+
+    /**
+     * Sound every clip covering the current bar, at the same time.
+     *
+     * A gap is silent but still publishes the position, so the UI playhead
+     * keeps moving across empty measures of the arrangement.
+     */
+    #playSongNotes = async (tick, atTime) => {
+        const song = this.getSong()
+        const sources = resolveSongSources(song, this.patternsById, tick, this.TICK)
+        this.#songBar = this.#songBarOf(tick)
+        if (sources.length === 0) return
+
+        const secondsPerBeat = this.secondsPerBeat
+        const sound = this.sound
+        const visiblePattern = this.patterns[this.getSelectedPatternIdx()]
+        const promises = []
+
+        for (const source of sources) {
+            const { pattern, localStep, loop, patternTicks } = source
+
+            // autoGen / per-track `auto` regenerate content at a cycle boundary.
+            // Keyed on the source's own loop, not the transport's.
+            if (localStep === 0) {
+                await this.#handleLoopStart(pattern, loop)
+            }
+
+            if (!this.getFlatNotesForPattern) continue
+            const flatNotesMap = this.getFlatNotesForPattern(pattern, loop)
+            if (!(flatNotesMap instanceof Map)) continue
+
+            const notesToPlay = flatNotesMap.get(localStep)
+            if (!notesToPlay) continue
+
+            const tracks = pattern.tracks
+            const trackIdxMap = this.#trackIndexMap(tracks)
+            const anySolo = Utils.hasAnySolo(tracks)
+            // Only the pattern the user is looking at drives the grid playhead;
+            // the others are heard but must not repaint another pattern's cells.
+            const isVisible = pattern === visiblePattern
+
+            for (let i = 0; i < notesToPlay.length; i++) {
+                const flatNote = notesToPlay[i]
+                if (!Utils.shouldTrackPlay(flatNote.track, anySolo)) continue
+                NoteParams.applyNoteParams(flatNote, secondsPerBeat)
+                promises.push(sound.play(flatNote, atTime + flatNote.swingTime))
+                if (isVisible) {
+                    playbackEvents.emit(EVENTS.NOTE_TRIGGER, {
+                        trackIdx: trackIdxMap.get(flatNote.track) ?? -1,
+                        beat: flatNote.note.beat,
+                        beatStep: flatNote.note.beatStep,
+                    })
+                }
+            }
+
+            // keep this.loop advancing so pattern mode resumes coherently
+            if (localStep === patternTicks - 1) this.loop++
+        }
+
+        await Promise.all(promises)
+    }
+
+    /** Row index of every track of `pattern`, for NOTE_TRIGGER payloads. */
+    #trackIndexMap = (tracks) => {
+        const trackCount = Array.isArray(tracks) ? tracks.length : Object.keys(tracks).length
+        if (this.#trackIdxMapRef !== tracks || this.#trackIdxMapCount !== trackCount) {
+            const trackKeys = Object.keys(tracks)
+            this.#trackIdxMap = new Map(trackKeys.map((k, i) => [tracks[k], i]))
+            this.#trackIdxMapRef = tracks
+            this.#trackIdxMapCount = trackCount
+        }
+        return this.#trackIdxMap
     }
 
     /**

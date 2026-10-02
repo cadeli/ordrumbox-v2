@@ -34,6 +34,8 @@ export const EVENTS = Object.freeze({
     MASTER_TOGGLE: 'masterToggle',
     ABOUT_TOGGLE: 'aboutToggle',
     SONG_TOGGLE: 'songToggle', // Song view (ViewManager), not a slot panel
+    /** The visible view changed — playback mode follows it (pattern vs song). */
+    VIEW_CHANGED: 'viewChanged',
     DRUMKIT_MANAGER_TOGGLE: 'drumkitManagerToggle',
     PATTERN_SETTINGS_TOGGLE: 'patternSettingsToggle',
     MOBILE_SEQ_TOGGLE: 'mobileSeqToggle',

@@ -167,7 +167,6 @@ test.describe('Song arrangement context menus', () => {
     const clips = (page) => page.evaluate(() => window.__e2e.appState.songs[0].clips.length)
     const clipsWhere = (page, pred) =>
         page.evaluate((src) => {
-            // eslint-disable-next-line no-new-func
             const test = new Function('c', `return ${src}`)
             return window.__e2e.appState.songs[0].clips.filter(test).length
         }, pred)
