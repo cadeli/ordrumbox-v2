@@ -424,7 +424,7 @@ export default class TrackEditor extends BasePanel {
 
         // Mount main sliders
         this.#sliders.forEach((s) => {
-            const row = this.container.querySelector(`.ne-row[data-or-slider="${s.key}"]`)
+            const row = this.container.querySelector(`.ne-row[data-or-control="${s.key}"]`)
             if (row) {
                 s.mount(row)
                 const input = row.querySelector('input')
@@ -440,7 +440,7 @@ export default class TrackEditor extends BasePanel {
 
         // Mount FX knobs
         this.#fxKnobs.forEach((k) => {
-            const row = this.container.querySelector(`.ne-row[data-or-slider="${k.key}"]`)
+            const row = this.container.querySelector(`.ne-row[data-or-control="${k.key}"]`)
             if (row) k.mount(row)
         })
 
@@ -900,6 +900,12 @@ export default class TrackEditor extends BasePanel {
 
     // ── Hide ───────────────────────────────────────────────────────
 
+    /**
+     * Closes the editor: hides it AND throws the edit session away, including any
+     * uncommitted synth draft (`synthEditor.reset()`), so the panel comes back
+     * empty on the next `show({ track, trackIdx })`. Hiding without losing that
+     * would be a different operation — do not merge the two.
+     */
     hide() {
         if (!this.isVisible) return
         if (this.container) removeLayout(this.container)

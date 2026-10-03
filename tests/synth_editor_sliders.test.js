@@ -148,11 +148,11 @@ describe('SynthEditor — OrKnob integration', () => {
         await trackEditor.synthEditor.openEditor()
         const panel = document.getElementById('soft-synth-panel')
 
-        const masterRow = panel.querySelector(`[data-or-slider="masterVolume"]`)
+        const masterRow = panel.querySelector(`[data-or-control="masterVolume"]`)
         const masterVal = masterRow.querySelector('.ne-val')
         expect(masterVal.textContent).toBe('0.9')
 
-        const freqRow = panel.querySelector(`[data-or-slider="filter.freq"]`)
+        const freqRow = panel.querySelector(`[data-or-control="filter.freq"]`)
         const freqVal = freqRow.querySelector('.ne-val')
         expect(freqVal.textContent).toBe('1200 Hz')
     })
@@ -182,7 +182,7 @@ describe('SynthEditor — OrKnob integration', () => {
         trackEditor.synthEditor.flushPreview()
         expect(soundRegistry.generatedSounds.BASS1.masterVolume).toBeCloseTo(0.42, 5)
         const panel = document.getElementById('soft-synth-panel')
-        const valSpan = panel.querySelector(`[data-or-slider="masterVolume"] .ne-val`)
+        const valSpan = panel.querySelector(`[data-or-control="masterVolume"] .ne-val`)
         expect(valSpan.textContent).toBe('0.42')
         expect(serviceRegistry.audioEngine.updateGeneratedSounds).toHaveBeenCalled()
     })
@@ -196,7 +196,7 @@ describe('SynthEditor — OrKnob integration', () => {
         trackEditor.synthEditor.flushPreview()
         expect(soundRegistry.generatedSounds.BASS1.filter.freq).toBe(2500)
         const panel = document.getElementById('soft-synth-panel')
-        const valSpan = panel.querySelector(`[data-or-slider="filter.freq"] .ne-val`)
+        const valSpan = panel.querySelector(`[data-or-control="filter.freq"] .ne-val`)
         expect(valSpan.textContent).toBe('2500 Hz')
     })
 

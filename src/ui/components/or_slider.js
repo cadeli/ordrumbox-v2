@@ -143,7 +143,7 @@ export class OrSlider {
     toHTML() {
         const normVal = this.#toNorm(this.#value)
         const displayVal = this.#fmt(this.#value)
-        return `<div class="${this.#rowClasses()}" data-or-slider="${this.#key}" data-prop="${this.#key}">
+        return `<div class="${this.#rowClasses()}" data-or-control="${this.#key}" data-prop="${this.#key}">
             <label>${_escHtml(this.#label)}</label>
             <input type="range"
                    min="${this.#min}" max="${this.#max}" step="${this.#step}"
@@ -173,7 +173,7 @@ export class OrSlider {
     createElement() {
         const div = document.createElement('div')
         div.className = this.#rowClasses()
-        div.dataset.orSlider = this.#key
+        div.dataset.orControl = this.#key
 
         const label = document.createElement('label')
         label.textContent = this.#label

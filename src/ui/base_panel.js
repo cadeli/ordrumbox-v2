@@ -122,7 +122,15 @@ export default class BasePanel {
         this.sync()
     }
 
-    /** Standard hide logic. */
+    /**
+     * Standard hide logic: display none.
+     *
+     * Subclasses override this to release what they own, and some of them discard
+     * per-session state on the way (TrackEditor drops the edit session and the
+     * uncommitted synth draft, NoteEditor destroys its controls): hide() means
+     * "the panel is closed", not "temporarily invisible". Do not call it to keep
+     * a panel's state alive — override isVisible instead.
+     */
     hide() {
         this.container?.style.setProperty('display', 'none')
     }

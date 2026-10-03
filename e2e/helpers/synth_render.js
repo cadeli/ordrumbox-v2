@@ -3,11 +3,21 @@
 // Renders synth notes via the real AudioEngine (src/audio/engine.js) inside an
 // OfflineAudioContext — exactly like wav_exporter.js does for WAV export.
 //
-// CRITICAL: Chromium's AudioWorklet + OfflineAudioContext only produces audio
-// on the FIRST startRendering() per page. All subsequent OfflineAudioContexts
-// produce silence. The fix: batch ALL note renders into a SINGLE
-// OfflineAudioContext by scheduling notes at different time offsets, then slice
-// the rendered audio per note.
+// CRITICAL 1 — one context per batch: Chromium's AudioWorklet only produces
+// audio on the FIRST startRendering() per page, so all notes are scheduled at
+// different time offsets inside a SINGLE OfflineAudioContext and the render is
+// sliced per note afterwards.
+//
+// CRITICAL 2 — flush before rendering: an OfflineAudioContext starts rendering
+// eagerly and can render past a note's time before its port messages reach the
+// processor, which yields a valid but entirely silent buffer. This is not a
+// spec subtlety but a measured Chromium behaviour, documented (with the same
+// workaround) in src/audio/export/wav_exporter.js. The processor is only
+// instantiated once rendering starts, so no acknowledgement round trip is
+// possible — it would deadlock before startRendering(). Hence the fixed flush
+// below, plus a verification and one longer-flush retry: a silent batch is
+// retried rather than reported, because a silent batch carries no information
+// about the patch.
 
 /**
  * Render N synth notes in a SINGLE OfflineAudioContext.
@@ -67,7 +77,6 @@ export async function renderSynthBatch(page, configs, opts = {}) {
 
             const slotDuration = durationPerNote + gapSec
             const totalDuration = configs.length * slotDuration
-            const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * totalDuration), sampleRate)
 
             const pattern = {
                 bpm,
@@ -86,60 +95,70 @@ export async function renderSynthBatch(page, configs, opts = {}) {
 
             const { TICK } = await import('/src/core/constants.js')
 
-            const engine = new AudioEngine({
-                audioCtx: offlineCtx,
-                sounds: {},
-                generatedSounds: { [TEST_KEY]: structuredClone(baseSound) },
-                patterns: [pattern],
-                selectedPatternIdx: 0,
-                getSelectedPatternIdx: () => 0,
-                getAutoGenerate: () => false,
-                uiState: {},
-                TICK,
-                secondsPerBeat: 60 / bpm,
-                isOffline: true,
-            })
-
-            await engine.start(pattern)
-            engine.mixer.setBpm(bpm)
-
-            for (let i = 0; i < configs.length; i++) {
-                const offset = i * slotDuration
-                const testSound = deepMerge(structuredClone(baseSound), configs[i].synthOverrides ?? {})
-                engine.generatedSounds[TEST_KEY] = testSound
-                await engine.playNotes(0, offset)
-            }
-
-            // No sleep here: the port queue is flushed before the first render
-            // quantum, so every note posted above is in the processor by the time
-            // startRendering() runs. This used to wait a flat 25 ms, which was a
-            // guess — on a loaded runner the queue can drain later than that and
-            // the last note rendered silent.
-            const rendered = await offlineCtx.startRendering()
-            const results = []
-            for (let i = 0; i < configs.length; i++) {
-                const startSample = Math.floor(i * slotDuration * sampleRate)
-                const endSample = Math.floor((i * slotDuration + durationPerNote) * sampleRate)
-                results.push({
-                    channelData: [
-                        Array.from(rendered.getChannelData(0).slice(startSample, endSample)),
-                        Array.from(rendered.getChannelData(1).slice(startSample, endSample)),
-                    ],
-                    sampleRate,
-                })
-            }
-            // A silent batch means the messages never reached the processor (or the
-            // patch is genuinely silent): say so instead of letting each caller
-            // fail later on an unexplained RMS.
             const rms = (data) => {
                 let sum = 0
                 for (let i = 0; i < data.length; i++) sum += data[i] * data[i]
                 return Math.sqrt(sum / Math.max(1, data.length))
             }
-            const anySignal = results.some((r) => rms(r.channelData[0]) > 0)
-            if (!anySignal) {
+            const slice = (rendered) =>
+                configs.map((_, i) => {
+                    const startSample = Math.floor(i * slotDuration * sampleRate)
+                    const endSample = Math.floor((i * slotDuration + durationPerNote) * sampleRate)
+                    return {
+                        channelData: [
+                            Array.from(rendered.getChannelData(0).slice(startSample, endSample)),
+                            Array.from(rendered.getChannelData(1).slice(startSample, endSample)),
+                        ],
+                        sampleRate,
+                    }
+                })
+
+            // Schedule the whole batch, flush, render, then LOOK at the result: a
+            // batch that came out silent carries no information about the patch
+            // (the worklet never got its messages), so it is rendered again with a
+            // longer flush instead of being reported as a failure. 25 ms is the
+            // value the WAV exporter uses for the same race.
+            const flushMs = [25, 150, 400]
+            let results = null
+            for (let attempt = 0; attempt < flushMs.length; attempt++) {
+                // A fresh context per attempt: startRendering() is one-shot.
+                const offlineCtx = new OfflineAudioContext(2, Math.floor(sampleRate * totalDuration), sampleRate)
+                const engine = new AudioEngine({
+                    audioCtx: offlineCtx,
+                    sounds: {},
+                    generatedSounds: { [TEST_KEY]: structuredClone(baseSound) },
+                    patterns: [pattern],
+                    selectedPatternIdx: 0,
+                    getSelectedPatternIdx: () => 0,
+                    getAutoGenerate: () => false,
+                    uiState: {},
+                    TICK,
+                    secondsPerBeat: 60 / bpm,
+                    isOffline: true,
+                })
+                await engine.start(pattern)
+                engine.mixer.setBpm(bpm)
+
+                for (let i = 0; i < configs.length; i++) {
+                    const offset = i * slotDuration
+                    const testSound = deepMerge(structuredClone(baseSound), configs[i].synthOverrides ?? {})
+                    engine.generatedSounds[TEST_KEY] = testSound
+                    await engine.playNotes(0, offset)
+                }
+
+                await new Promise((resolve) => setTimeout(resolve, flushMs[attempt]))
+                const rendered = await offlineCtx.startRendering()
+                const candidate = slice(rendered)
+                if (candidate.some((r) => rms(r.channelData[0]) > 0)) {
+                    results = candidate
+                    break
+                }
+            }
+            if (!results) {
                 throw new Error(
-                    'renderSynthBatch produced pure silence for every note — the worklet never received its messages',
+                    `renderSynthBatch produced pure silence for all ${configs.length} notes after ` +
+                        `${flushMs.length} attempts (flushes ${flushMs.join('/')} ms) — the worklet never ` +
+                        'received its messages; this is the known Chromium OfflineAudioContext race, not a silent patch',
                 )
             }
             return results

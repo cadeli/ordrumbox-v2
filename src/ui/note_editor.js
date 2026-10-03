@@ -302,7 +302,7 @@ export default class NoteEditor extends BasePanel {
             const opts = renderOptions(options, val)
             return `<div class="ne-row"><label>${p.label}</label><select data-key="${p.key}">${opts}</select></div>`
         }
-        return `<div data-or-slider="${p.key}"></div>`
+        return `<div data-or-control="${p.key}"></div>`
     }
 
     #resolveSelectValue(p, arpState) {
@@ -344,7 +344,7 @@ export default class NoteEditor extends BasePanel {
             ...syncComponentMap({
                 container: this.container,
                 configs,
-                selector: 'or-slider',
+                selector: 'or-control',
                 prev: new Map(this.#sliders.map((s) => [s.key, s])),
                 create: (cfg) =>
                     new OrSlider({
@@ -375,6 +375,11 @@ export default class NoteEditor extends BasePanel {
         })
     }
 
+    /**
+     * Closes the editor: hides it AND destroys every control it built, so the next
+     * note re-renders the rows from scratch (the counterpart is `sync()`, called
+     * on every track selection).
+     */
     hide() {
         if (this.#externalContainer) {
             this.container.style.display = 'none'

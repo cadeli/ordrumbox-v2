@@ -100,7 +100,7 @@ export default class OutputPanel extends BasePanel {
             },
         })
         const el = this.#masterVol.createElement()
-        el.dataset.orSlider = 'op-master-vol'
+        el.dataset.orControl = 'op-master-vol'
         this.container.querySelector('#op-master-grid').appendChild(el)
     }
 

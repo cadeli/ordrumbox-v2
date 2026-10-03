@@ -54,7 +54,9 @@ export const FX_DEFS = [
     { key: 'reverbAmount', label: 'Rev', controls: ['reverbAmount', 'reverbType'] },
     { key: 'delayDepth', label: 'Dly', controls: ['delayDepth', 'delayTime', 'delayType'] },
     { key: 'saturationAmount', label: 'Sat', controls: ['saturationAmount', 'saturationType'] },
-    { key: 'filterFreq', label: 'fltr', controls: ['filterType', 'filterFreq', 'filterQ'] },
+    // The filter FX switches on filterType (allpass = off), so the key is
+    // filterType: it names what the LED reads and what the toggle writes.
+    { key: 'filterType', label: 'fltr', controls: ['filterType', 'filterFreq', 'filterQ'] },
 ]
 
 // ── Knob bar definitions ──────────────────────────────────────────────

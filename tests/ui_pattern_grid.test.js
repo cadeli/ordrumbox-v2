@@ -908,15 +908,15 @@ describe('Pattern Panel UI Grid', () => {
         }
 
         function menu() {
-            return document.querySelector('.pp-context-menu')
+            return document.querySelector('.cm-menu')
         }
 
         function menuLabels() {
-            return [...document.querySelectorAll('.pp-context-menu-item')].map((el) => el.textContent)
+            return [...document.querySelectorAll('.cm-menu-item')].map((el) => el.textContent)
         }
 
         function menuItem(label) {
-            return [...document.querySelectorAll('.pp-context-menu-item')].find((el) => el.textContent === label)
+            return [...document.querySelectorAll('.cm-menu-item')].find((el) => el.textContent === label)
         }
 
         function clickItem(label) {
@@ -972,7 +972,7 @@ describe('Pattern Panel UI Grid', () => {
 
             expect(event.defaultPrevented).toBe(true)
             expect(menu()).not.toBeNull()
-            expect(document.querySelector('.pp-context-menu-header').textContent).toBe('KICK')
+            expect(document.querySelector('.cm-menu-header').textContent).toBe('KICK')
         })
 
         it('lists Copy track, Paste tracks, Duplicate track, Delete track, Randomize, Clear notes', () => {
@@ -1166,7 +1166,7 @@ describe('Pattern Panel UI Grid', () => {
             openMenu(cell)
 
             expect(menu()).not.toBeNull()
-            expect(document.querySelector('.pp-context-menu-header').textContent).toBe('KICK @ 1.1')
+            expect(document.querySelector('.cm-menu-header').textContent).toBe('KICK @ 1.1')
             expect(menuLabels()).toEqual(['Copy notes', 'Paste notes', 'Delete note', 'Add rnd note'])
         })
 
@@ -1176,7 +1176,7 @@ describe('Pattern Panel UI Grid', () => {
 
             openMenu(cell)
 
-            expect(document.querySelector('.pp-context-menu-header').textContent).toBe('KICK @ 1.4')
+            expect(document.querySelector('.cm-menu-header').textContent).toBe('KICK @ 1.4')
             expect(menuLabels()).toEqual(['Copy notes', 'Paste notes', 'Delete note', 'Add rnd note'])
         })
 

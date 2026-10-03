@@ -1,5 +1,6 @@
 // src/ui/components/context_menu.js
-// Shared context menu used by pattern_panel.js and piano_roll_panel.js.
+// Shared context menu, used by the pattern panel, the piano roll and the song
+// view (hence the neutral `cm-` class prefix).
 // Builds a menu on document.body, clamped to the viewport, dismissed by
 // outside click / right-click / Escape (capture phase).
 
@@ -22,24 +23,24 @@ export default class ContextMenu {
     show(headerText, actions, x, y) {
         this.hide()
         const menu = document.createElement('div')
-        menu.className = 'pp-context-menu'
+        menu.className = 'cm-menu'
         menu.setAttribute('role', 'menu')
         menu.style.left = `${x}px`
         menu.style.top = `${y}px`
 
         const header = document.createElement('div')
-        header.className = 'pp-context-menu-header'
+        header.className = 'cm-menu-header'
         header.textContent = headerText
         menu.appendChild(header)
 
         const sep = document.createElement('div')
-        sep.className = 'pp-context-menu-sep'
+        sep.className = 'cm-menu-sep'
         menu.appendChild(sep)
 
         for (const item of actions) {
             const btn = document.createElement('button')
             btn.type = 'button'
-            btn.className = 'pp-context-menu-item'
+            btn.className = 'cm-menu-item'
             btn.setAttribute('role', 'menuitem')
             btn.textContent = item.label
             if (item.disabled) {

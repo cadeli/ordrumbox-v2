@@ -24,7 +24,7 @@ function build() {
     document.body.appendChild(root)
     const list = root.querySelector('.l')
     // the host panel supplies listen() for the two delegated grid listeners and
-    // sub() for the playback subscriptions (playhead loop)
+    // sub() for the playback subscriptions (cursor loop)
     const handlers = new Map()
     const panel = { listen: vi.fn((el, type, fn) => handlers.set(type, fn)), sub: vi.fn() }
     const section = new ArrangementSection(panel, root, root.querySelector('.t'), list)
@@ -38,7 +38,7 @@ const clickOn = (el) => build2.handlers.get('click')({ target: el })
 /** Clicks the ruler cell of a 0-based measure. */
 const clickBar = (bar) => clickOn(build2.list.querySelector(`.sa-bar-head[data-bar="${bar}"]`))
 const cursorPx = () => {
-    const el = build2.list.querySelector('.sa-playhead')
+    const el = build2.list.querySelector('.sa-cursor')
     return Number(/translateX\((-?[\d.]+)px\)/.exec(el?.style.transform ?? '')?.[1])
 }
 const markedBar = () => build2.list.querySelector('.sa-bar-head.sa-bar-current')?.dataset.bar
@@ -214,7 +214,7 @@ describe('ArrangementSection — ruler cursor', () => {
         build2.section.sync()
         expect(cursorPx()).toBe(0)
         expect(markedBar()).toBe('0')
-        expect(build2.list.querySelector('.sa-playhead').classList.contains('sa-cursor-idle')).toBe(true)
+        expect(build2.list.querySelector('.sa-cursor').classList.contains('sa-cursor-idle')).toBe(true)
     })
 
     it('clicking a measure aims the cursor there', () => {
@@ -265,18 +265,18 @@ describe('ArrangementSection — ruler cursor', () => {
         build2.section.sync()
         clickBar(3)
         serviceRegistry.transport = { isRunning: true, tick: 5 * BAR_TICKS }
-        build2.section.startPlayhead()
+        build2.section.startCursorLoop()
         await new Promise((resolve) => requestAnimationFrame(resolve))
 
         expect(cursorPx()).toBe(5 * BAR_WIDTH)
         expect(markedBar()).toBe('5')
-        expect(build2.list.querySelector('.sa-playhead').classList.contains('sa-cursor-idle')).toBe(false)
+        expect(build2.list.querySelector('.sa-cursor').classList.contains('sa-cursor-idle')).toBe(false)
 
         // stopping falls back on the marker the user aimed, not on where the
         // playback happened to be
         serviceRegistry.transport = { isRunning: false, tick: 9 * BAR_TICKS }
-        build2.section.stopPlayhead()
+        build2.section.stopCursorLoop()
         expect(cursorPx()).toBe(3 * BAR_WIDTH)
-        expect(build2.list.querySelector('.sa-playhead').classList.contains('sa-cursor-idle')).toBe(true)
+        expect(build2.list.querySelector('.sa-cursor').classList.contains('sa-cursor-idle')).toBe(true)
     })
 })

@@ -185,11 +185,11 @@ describe('PianoRollPanel', () => {
     }
 
     function menuLabels() {
-        return [...document.querySelectorAll('.pp-context-menu-item')].map((el) => el.textContent)
+        return [...document.querySelectorAll('.cm-menu-item')].map((el) => el.textContent)
     }
 
     function menuItem(label) {
-        return [...document.querySelectorAll('.pp-context-menu-item')].find((el) => el.textContent === label)
+        return [...document.querySelectorAll('.cm-menu-item')].find((el) => el.textContent === label)
     }
 
     function clickItem(label) {
@@ -794,11 +794,11 @@ describe('PianoRollPanel', () => {
         })
 
         function menu() {
-            return document.querySelector('.pp-context-menu')
+            return document.querySelector('.cm-menu')
         }
 
         function menuHeader() {
-            return document.querySelector('.pp-context-menu-header')?.textContent
+            return document.querySelector('.cm-menu-header')?.textContent
         }
 
         it('opens menu with note actions on right-click of grid', () => {

@@ -186,8 +186,8 @@ test.describe('Song arrangement context menus', () => {
         const before = await clips(page)
         // the demo arrangement's smrock clip: one bar long, on measure 4 (index 3)
         await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click({ button: 'right' })
-        await expect(page.locator('.pp-context-menu')).toBeVisible()
-        await page.locator('.pp-context-menu-item', { hasText: 'Next' }).click()
+        await expect(page.locator('.cm-menu')).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Next' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
         // so Next lands right after it, on measure 5
@@ -198,7 +198,7 @@ test.describe('Song arrangement context menus', () => {
         await openSongView(page)
         const before = await clips(page)
         await page.locator('.sa-clip[data-pattern="funkfill"][data-start-bar="38"]').click({ button: 'right' })
-        await page.locator('.pp-context-menu-item', { hasText: 'Delete' }).click()
+        await page.locator('.cm-menu-item', { hasText: 'Delete' }).click()
 
         await expect.poll(() => clips(page)).toBe(before - 1)
         expect(await clipsWhere(page, "c.pattern === 'funkfill' && c.startBar === 38")).toBe(0)
@@ -216,7 +216,7 @@ test.describe('Song arrangement context menus', () => {
         await page
             .locator(`.sa-clip[data-pattern="${last.pattern}"][data-start-bar="${last.startBar}"]`)
             .click({ button: 'right' })
-        await page.locator('.pp-context-menu-item', { hasText: 'Delete' }).click()
+        await page.locator('.cm-menu-item', { hasText: 'Delete' }).click()
 
         await expect.poll(() => bars()).toBeLessThan(before)
         // the playback loop followed, not only the drawing
@@ -229,15 +229,15 @@ test.describe('Song arrangement context menus', () => {
         // a pattern that already has clips, so this adds a second placement
         // rather than the row's first
         await page.locator('.sa-row-name[data-pattern="cmpbeat"]').click({ button: 'right' })
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' })).toBeVisible()
-        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar 1' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add at bar 1' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
         expect(await clipsWhere(page, "c.pattern === 'cmpbeat' && c.startBar === 0")).toBe(1)
     })
 
     // The name column is frozen: no measure sits under the pointer there, so the
-    // item inserts at the playhead, wrapped on the arrangement loop.
+    // item inserts at the cursor, wrapped on the arrangement loop.
     test('on a pattern name: the insert bar follows the transport', async ({ page }) => {
         await openSongView(page)
         await page.evaluate(
@@ -247,8 +247,8 @@ test.describe('Song arrangement context menus', () => {
             4 * BAR_TICKS + 10,
         )
         await page.locator('.sa-row-name[data-pattern="funk"]').click({ button: 'right' })
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 5' })).toBeVisible()
-        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 5' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar 5' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add at bar 5' }).click()
 
         expect(await clipsWhere(page, "c.pattern === 'funk' && c.startBar === 4")).toBe(1)
     })
@@ -263,9 +263,9 @@ test.describe('Song arrangement context menus', () => {
         const reference = await barsOf(page, 'cmpbeat')
 
         await page.locator('.sa-row-name[data-pattern="cmpbeat"]').click({ button: 'right' })
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar' })).toBeVisible()
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Delete row' })).toBeVisible()
-        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar' })).toBeVisible()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Delete row' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add at bar 1' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
         expect(await barsOf(page, 'cmpbeat')).toBe(reference)
@@ -273,7 +273,7 @@ test.describe('Song arrangement context menus', () => {
         // and the removal entry still removes every clip of that pattern
         const ofPattern = await clipsWhere(page, "c.pattern === 'cmpbeat'")
         await page.locator('.sa-row-name[data-pattern="cmpbeat"]').click({ button: 'right' })
-        await page.locator('.pp-context-menu-item', { hasText: 'Delete row' }).click()
+        await page.locator('.cm-menu-item', { hasText: 'Delete row' }).click()
         await expect.poll(() => clips(page)).toBe(before + 1 - ofPattern)
     })
 
@@ -283,8 +283,8 @@ test.describe('Song arrangement context menus', () => {
         const ofPattern = await clipsWhere(page, "c.pattern === 'cmpbeat'")
 
         await page.locator('.sa-row-name[data-pattern="cmpbeat"]').click({ button: 'right' })
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Delete row' })).toBeVisible()
-        await page.locator('.pp-context-menu-item', { hasText: 'Delete row' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Delete row' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Delete row' }).click()
 
         await expect.poll(() => clips(page)).toBe(before - ofPattern)
         expect(await clipsWhere(page, "c.pattern === 'cmpbeat'")).toBe(0)
@@ -301,8 +301,8 @@ test.describe('Song arrangement context menus', () => {
         await page.mouse.click(body.x + 1 * BAR_WIDTH + BAR_WIDTH / 2, body.y + 5 * ROW_HEIGHT + ROW_HEIGHT / 2, {
             button: 'right',
         })
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add here' })).toBeVisible()
-        await page.locator('.pp-context-menu-item', { hasText: 'Add here' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add here' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add here' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
         // cell 1 is bar 2 displayed, i.e. index 1
@@ -312,17 +312,17 @@ test.describe('Song arrangement context menus', () => {
     test('clicking a filled cell offers the clip menu, not Add here', async ({ page }) => {
         await openSongView(page)
         await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click({ button: 'right' })
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add here' })).toHaveCount(0)
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Delete' })).toBeVisible()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add here' })).toHaveCount(0)
+        await expect(page.locator('.cm-menu-item', { hasText: 'Delete' })).toBeVisible()
     })
 
     test('Escape closes the menu without changing anything', async ({ page }) => {
         await openSongView(page)
         const before = await clips(page)
         await page.locator('.sa-clip[data-pattern="smrock"][data-start-bar="3"]').click({ button: 'right' })
-        await expect(page.locator('.pp-context-menu')).toBeVisible()
+        await expect(page.locator('.cm-menu')).toBeVisible()
         await page.keyboard.press('Escape')
-        await expect(page.locator('.pp-context-menu')).toHaveCount(0)
+        await expect(page.locator('.cm-menu')).toHaveCount(0)
         expect(await clips(page)).toBe(before)
     })
 
@@ -330,7 +330,7 @@ test.describe('Song arrangement context menus', () => {
         await openSongView(page)
         const before = await clips(page)
         await page.locator('.sa-clip[data-pattern="funkfill"][data-start-bar="38"]').click({ button: 'right' })
-        await page.locator('.pp-context-menu-item', { hasText: 'Delete' }).click()
+        await page.locator('.cm-menu-item', { hasText: 'Delete' }).click()
         await expect.poll(() => clips(page)).toBe(before - 1)
 
         await page.evaluate(() => window.__e2e.serviceRegistry.history.undo())
@@ -348,11 +348,11 @@ test.describe('Song arrangement context menus', () => {
  * stopped it marks where the next play starts — clicking a measure in the ruler
  * is what moves it.
  */
-test.describe('Song arrangement playhead', () => {
-    const head = (page) => page.locator('.sa-playhead')
+test.describe('Song arrangement cursor', () => {
+    const head = (page) => page.locator('.sa-cursor')
     const px = (page) =>
         page.evaluate(() => {
-            const el = document.querySelector('.sa-playhead')
+            const el = document.querySelector('.sa-cursor')
             const m = /translateX\((-?[\d.]+)px\)/.exec(el?.style.transform ?? '')
             return m ? Number(m[1]) : null
         })
@@ -408,7 +408,7 @@ test.describe('Song arrangement playhead', () => {
         await start(page)
     })
 
-    // The playhead follows a click while playback runs, it is not a start-only
+    // The cursor follows a click while playback runs, it is not a start-only
     // marker: the transport is re-anchored on the clicked measure.
     test('clicking the ruler while playing moves the playhead there', async ({ page }) => {
         await openSongView(page)
@@ -442,7 +442,7 @@ test.describe('Song arrangement playhead', () => {
         await expect(head(page)).toBeVisible()
 
         const { px, tick, loopBars } = await page.evaluate(() => ({
-            px: Number(/translateX\((-?[\d.]+)px\)/.exec(document.querySelector('.sa-playhead').style.transform)?.[1]),
+            px: Number(/translateX\((-?[\d.]+)px\)/.exec(document.querySelector('.sa-cursor').style.transform)?.[1]),
             tick: window.__e2e.serviceRegistry.seq.tick,
             loopBars: window.__e2e.appState.songs[0].loopBars,
         }))
@@ -513,8 +513,8 @@ test.describe('Song pattern list context menu', () => {
         const before = await clips(page)
 
         await page.locator(`.sg-item[data-pattern="${UNUSED}"]`).click({ button: 'right' })
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' })).toBeVisible()
-        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar 1' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add at bar 1' }).click()
 
         await expect.poll(() => clips(page)).toBe(before + 1)
         expect(await clipsOf(page, UNUSED)).toBe(1)
@@ -528,8 +528,8 @@ test.describe('Song pattern list context menu', () => {
         await page.evaluate((t) => (window.__e2e.serviceRegistry.transport.tick = t), 3 * BAR_TICKS + 5)
         await page.locator(`.sg-item[data-pattern="${UNUSED}"]`).click({ button: 'right' })
 
-        await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 4' })).toBeVisible()
-        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 4' }).click()
+        await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar 4' })).toBeVisible()
+        await page.locator('.cm-menu-item', { hasText: 'Add at bar 4' }).click()
         expect(
             await page.evaluate(
                 () => window.__e2e.appState.songs[0].clips.filter((c) => c.pattern === 'hard')[0]?.startBar,
@@ -542,7 +542,7 @@ test.describe('Song pattern list context menu', () => {
         await openSongView(page)
         const before = await clipsOf(page, 'funk')
         await page.locator('.sg-item[data-pattern="funk"]').click({ button: 'right' })
-        await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 1' }).click()
+        await page.locator('.cm-menu-item', { hasText: 'Add at bar 1' }).click()
 
         await expect.poll(() => clipsOf(page, 'funk')).toBe(before + 1)
     })
@@ -563,7 +563,7 @@ test.describe('Song pattern list context menu', () => {
 
         for (const id of unused.slice(0, 3)) {
             await page.locator(`.sg-item[data-pattern="${id}"]`).click({ button: 'right' })
-            await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar' })).toBeVisible()
+            await expect(page.locator('.cm-menu-item', { hasText: 'Add at bar' })).toBeVisible()
             await page.keyboard.press('Escape')
         }
     })

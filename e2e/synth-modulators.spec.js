@@ -61,6 +61,16 @@ test.describe('Static coherence of modulation targets', () => {
 // amplitude envelope is stretched too, so the release phase spans several RMS
 // windows instead of one. Applied to both sides of the pair, so the LFO target
 // stays the only difference.
+// Probe depth. NOT 1: the envelope targets are added in SECONDS and clamped at
+// zero in the worklet (`mRmod = Math.max(0, R + lfo1ModR)`, same for A/D and the
+// mod envelope), so at depth 1 the sine trough drives e.g. the modulation
+// envelope release to exactly 0 and the whole note goes silent for the rest of
+// the slot — the probe then measures a muted note instead of the modulation, and
+// whether it happens depends on the LFO phase at note start (seeded from the
+// audio clock, synth_voice_source.js). 0.3 keeps every target audible (release
+// still sweeps 0.7–1.3 s) while staying far above the 2% thresholds.
+const PROBE_DEPTH = 0.3
+
 const enableModEnv = (target) =>
     target.startsWith('modEnvelope.')
         ? {
@@ -93,13 +103,13 @@ test.describe('Real modulator effect on sound (per target)', () => {
             configs.push({
                 synthOverrides: {
                     ...enableModEnv(target),
-                    lfo: { target, wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
+                    lfo: { target, wave: 'sine', freq: lfoFreqHz, depth: PROBE_DEPTH, sync: 'off' },
                 },
             })
             configs.push({
                 synthOverrides: {
                     ...enableModEnv(target),
-                    lfo: { target: 'NOT', wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
+                    lfo: { target: 'NOT', wave: 'sine', freq: lfoFreqHz, depth: PROBE_DEPTH, sync: 'off' },
                 },
             })
         }
@@ -122,7 +132,14 @@ test.describe('Real modulator effect on sound (per target)', () => {
             const baseRms = baseWindows.reduce((a, b) => a + b, 0) / baseWindows.length
             const differsFromBaseline = Math.abs(overallRms - baseRms) > baseRms * 0.02 + 1e-5
 
-            if (!timeVarying && !differsFromBaseline) {
+            if (mean < 1e-4 || baseRms < 1e-4) {
+                // Distinct from "no modulation": there is nothing to measure. With
+                // PROBE_DEPTH this should not happen — if it does, the probe no
+                // longer fits the patch and the target has to be re-examined.
+                failures.push(
+                    `${target}: slot rendered silence (modulated RMS ${mean.toFixed(5)}, unmodulated ${baseRms.toFixed(5)}) — the probe cannot measure this target`,
+                )
+            } else if (!timeVarying && !differsFromBaseline) {
                 failures.push(`${target}: no effect detected (neither time-varying nor differs from unmodulated)`)
             } else if (!timeVarying) {
                 failures.push(
@@ -152,13 +169,13 @@ test.describe('Real modulator effect on sound (per target)', () => {
             configs.push({
                 synthOverrides: {
                     ...enableModEnv(target),
-                    lfo2: { target, wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
+                    lfo2: { target, wave: 'sine', freq: lfoFreqHz, depth: PROBE_DEPTH, sync: 'off' },
                 },
             })
             configs.push({
                 synthOverrides: {
                     ...enableModEnv(target),
-                    lfo2: { target: 'NOT', wave: 'sine', freq: lfoFreqHz, depth: 1, sync: 'off' },
+                    lfo2: { target: 'NOT', wave: 'sine', freq: lfoFreqHz, depth: PROBE_DEPTH, sync: 'off' },
                 },
             })
         }
@@ -181,7 +198,14 @@ test.describe('Real modulator effect on sound (per target)', () => {
             const baseRms = baseWindows.reduce((a, b) => a + b, 0) / baseWindows.length
             const differsFromBaseline = Math.abs(overallRms - baseRms) > baseRms * 0.02 + 1e-5
 
-            if (!timeVarying && !differsFromBaseline) {
+            if (mean < 1e-4 || baseRms < 1e-4) {
+                // Distinct from "no modulation": there is nothing to measure. With
+                // PROBE_DEPTH this should not happen — if it does, the probe no
+                // longer fits the patch and the target has to be re-examined.
+                failures.push(
+                    `${target}: slot rendered silence (modulated RMS ${mean.toFixed(5)}, unmodulated ${baseRms.toFixed(5)}) — the probe cannot measure this target`,
+                )
+            } else if (!timeVarying && !differsFromBaseline) {
                 failures.push(`${target}: no effect detected (neither time-varying nor differs from unmodulated)`)
             } else if (!timeVarying) {
                 failures.push(

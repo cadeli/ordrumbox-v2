@@ -115,7 +115,7 @@ describe('TrackEditor — OrSlider integration', () => {
             expect(knob, `missing knob for ${key}`).not.toBeNull()
             const row = knob.closest('.ne-row')
             expect(row).not.toBeNull()
-            expect(row.dataset.orSlider).toBe(key)
+            expect(row.dataset.orControl).toBe(key)
         }
     })
 
@@ -229,7 +229,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     it('row with an LFO prop gets the "has-lfo" class', () => {
         editor.track = makeTrack({ filterFreq: 632, filterFreqLfo: { freq: 1, min: 0, max: 0.5 } })
         editor.sync()
-        const freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
+        const freqRow = editor.container.querySelector('.ne-row[data-or-control="filterFreq"]')
         expect(freqRow).not.toBeNull()
         expect(freqRow.classList.contains('has-lfo')).toBe(true)
     })
@@ -237,7 +237,7 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
     it('row without an LFO prop does NOT get "has-lfo"', () => {
         editor.track = makeTrack({ filterFreq: 632, filterQ: 1 })
         editor.sync()
-        const qRow = editor.container.querySelector('.ne-row[data-or-slider="filterQ"]')
+        const qRow = editor.container.querySelector('.ne-row[data-or-control="filterQ"]')
         expect(qRow).not.toBeNull()
         expect(qRow.classList.contains('has-lfo')).toBe(false)
     })
@@ -251,17 +251,17 @@ describe('TrackEditor — LFO mode preservation with OrKnob', () => {
         editor.selectedLfoTarget = 'filterFreq'
         editor.sync()
 
-        let freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
+        let freqRow = editor.container.querySelector('.ne-row[data-or-control="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
 
         editor.container.querySelector('[data-lfo-toggle-btn="filterFreq"]').click()
-        freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
+        freqRow = editor.container.querySelector('.ne-row[data-or-control="filterFreq"]')
         expect(freqRow).not.toBeNull()
         expect(freqRow.classList.contains('has-lfo')).toBe(true)
         expect(editor.track.filterFreqLfo).toBeDefined()
 
         editor.container.querySelector('[data-lfo-toggle-btn="filterFreq"]').click()
-        freqRow = editor.container.querySelector('.ne-row[data-or-slider="filterFreq"]')
+        freqRow = editor.container.querySelector('.ne-row[data-or-control="filterFreq"]')
         expect(freqRow.classList.contains('has-lfo')).toBe(false)
         expect(editor.track.filterFreqLfo).toBeUndefined()
     })
@@ -545,13 +545,13 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
 
     it('filter LED is off when filterType is allpass', () => {
         showFxTab(makeTrack({ filterType: 'allpass' }))
-        const led = editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]')
+        const led = editor.container.querySelector('[data-fx-toggle-btn="filterType"]')
         expect(led.classList.contains('on')).toBe(false)
     })
 
     it('filter LED is on when filterType is lowpass', () => {
         showFxTab(makeTrack({ filterType: 'lowpass' }))
-        const led = editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]')
+        const led = editor.container.querySelector('[data-fx-toggle-btn="filterType"]')
         expect(led.classList.contains('on')).toBe(true)
     })
 
@@ -559,8 +559,21 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
         const track = makeTrack({ filterType: 'lowpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
-        editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]').click()
+        editor.container.querySelector('[data-fx-toggle-btn="filterType"]').click()
         expect(track.filterType).toBe('allpass')
+    })
+
+    it('the filter LED writes filterType only, and says so in the undo label', () => {
+        const track = makeTrack({ filterType: 'lowpass', filterFreq: 632, filterQ: 1 })
+        showFxTab(track)
+
+        editor.container.querySelector('[data-fx-toggle-btn="filterType"]').click()
+        const [written, updates, opts] = serviceRegistry.cmd.updateTrack.mock.calls.at(-1)
+        expect(written).toBe(track)
+        expect(Object.keys(updates)).toEqual(['filterType'])
+        // The toast names what the undo step actually does: toggling filterFreq
+        // wrote filterType and filterFreq was never touched.
+        expect(opts.desc).toBe('Toggle filterType on KICK')
     })
 
     it('clicking the filter LED restores previous type when off', () => {
@@ -568,7 +581,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
         showFxTab(track)
 
         editor.prevFilterType = 'highpass'
-        editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]').click()
+        editor.container.querySelector('[data-fx-toggle-btn="filterType"]').click()
         expect(track.filterType).toBe('highpass')
     })
 
@@ -576,7 +589,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
         const track = makeTrack({ filterType: 'allpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
-        editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]').click()
+        editor.container.querySelector('[data-fx-toggle-btn="filterType"]').click()
         expect(track.filterType).toBe('lowpass')
     })
 
@@ -584,7 +597,7 @@ describe('TrackEditor — filter bypass (allpass) via LED and icons', () => {
         const track = makeTrack({ filterType: 'lowpass', filterFreq: 632, filterQ: 1 })
         showFxTab(track)
 
-        const toggle = () => editor.container.querySelector('[data-fx-toggle-btn="filterFreq"]')
+        const toggle = () => editor.container.querySelector('[data-fx-toggle-btn="filterType"]')
 
         expect(track.filterType).toBe('lowpass')
         toggle().click()

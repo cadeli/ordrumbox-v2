@@ -31,13 +31,13 @@ export default class ArrangementSection {
     /** The patterns the arrangement uses — one row each. */
     #rows = []
     /** @type {HTMLDivElement | null} */
-    #playheadEl = null
+    #cursorEl = null
     /** Ruler cells, indexed by the measure they number. */
     #barHeads = []
     /** @type {number | null} */
     #rafId = null
     /** last px written, so the hot loop touches the DOM only when it moved */
-    #prevPlayheadPx = -1
+    #prevCursorPx = -1
     /** measure the ruler currently highlights, -1 when none */
     #prevBar = -1
     /** whether the cursor is painted as parked (transport stopped) */
@@ -58,20 +58,20 @@ export default class ArrangementSection {
         this.#panel.listen(this.#listEl, 'contextmenu', (e) => this.#onContextMenu(e))
         this.#panel.listen(this.#listEl, 'click', (e) => this.#onGridClick(e))
 
-        this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_START, () => this.startPlayhead())
-        this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_STOP, () => this.stopPlayhead())
+        this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_START, () => this.startCursorLoop())
+        this.#panel.sub(playbackEvents, EVENTS.PLAYBACK_STOP, () => this.stopCursorLoop())
         // Leaving the view must not leave a loop running on a hidden panel, and
         // coming back must not resume a stale position.
         this.#panel.sub(playbackEvents, EVENTS.VIEW_CHANGED, () => {
-            if (appState.currentView === 'song') this.startPlayhead()
-            else this.stopPlayhead()
+            if (appState.currentView === 'song') this.startCursorLoop()
+            else this.stopCursorLoop()
         })
     }
 
     /** Closes the menu; called by the host panel's onDestroy. */
     dispose() {
         this.#menu.hide()
-        this.stopPlayhead()
+        this.stopCursorLoop()
     }
 
     /**
@@ -101,13 +101,13 @@ export default class ArrangementSection {
     }
 
     /**
-     * Playhead animation, driven by rAF while the transport runs.
+     * Cursor animation, driven by rAF while the transport runs.
      *
      * Position is polled rather than pushed: the player publishes it per tick,
      * but the visual belongs to the frame rate, and the arrangement view is not
      * the only thing redrawing on playback.
      */
-    startPlayhead() {
+    startCursorLoop() {
         if (this.#rafId) return
         const loop = () => {
             this.#rafId = null
@@ -120,7 +120,7 @@ export default class ArrangementSection {
         this.#rafId = requestAnimationFrame(loop)
     }
 
-    stopPlayhead() {
+    stopCursorLoop() {
         if (this.#rafId) {
             cancelAnimationFrame(this.#rafId)
             this.#rafId = null
@@ -132,22 +132,22 @@ export default class ArrangementSection {
 
     /** Paints the cursor once, reporting a failure instead of swallowing it. */
     #paintCursor() {
-        if (!this.#playheadEl) return
+        if (!this.#cursorEl) return
         try {
-            this.#updatePlayhead()
+            this.#updateCursor()
         } catch (err) {
-            reportUserError('SongPanel.playhead', 'Song playhead stopped updating', { cause: err })
-            this.#hidePlayhead()
+            reportUserError('SongPanel.cursor', 'Song cursor stopped updating', { cause: err })
+            this.#hideCursor()
         }
     }
 
-    #updatePlayhead() {
-        const el = this.#playheadEl
+    #updateCursor() {
+        const el = this.#cursorEl
         if (!el) return
         const bar = this.#cursorBar()
         const px = Math.round(bar * BAR_WIDTH)
-        if (px !== this.#prevPlayheadPx) {
-            this.#prevPlayheadPx = px
+        if (px !== this.#prevCursorPx) {
+            this.#prevCursorPx = px
             el.style.display = ''
             el.style.transform = `translateX(${px}px)`
         }
@@ -173,10 +173,10 @@ export default class ArrangementSection {
         this.#prevBar = bar
     }
 
-    #hidePlayhead() {
-        this.#prevPlayheadPx = -1
+    #hideCursor() {
+        this.#prevCursorPx = -1
         this.#markRulerBar(-1)
-        if (this.#playheadEl) this.#playheadEl.style.display = 'none'
+        if (this.#cursorEl) this.#cursorEl.style.display = 'none'
     }
 
     /**
@@ -365,7 +365,7 @@ export default class ArrangementSection {
         if (!song) {
             this.#listEl.innerHTML = '<div class="sa-empty">No arrangement — this song has no clips yet.</div>'
             this.#root?.classList.remove('sa-has-song')
-            this.#playheadEl = null
+            this.#cursorEl = null
             this.#barHeads = []
             this.#prevBar = -1
             return
@@ -424,18 +424,18 @@ export default class ArrangementSection {
             `width:${totalBars * BAR_WIDTH}px;height:${rowCount * ROW_HEIGHT}px">` +
             rows +
             clips +
-            '<div class="sa-playhead" style="display:none"></div>' +
+            '<div class="sa-cursor" style="display:none"></div>' +
             '</div>' +
             '</div>'
 
         // innerHTML was just rebuilt, so the references to the old nodes are dead.
-        this.#playheadEl = this.#listEl.querySelector('.sa-playhead')
+        this.#cursorEl = this.#listEl.querySelector('.sa-cursor')
         this.#barHeads = [...this.#listEl.querySelectorAll('.sa-bar-head')]
-        this.#prevPlayheadPx = -1
+        this.#prevCursorPx = -1
         this.#prevBar = -1
         this.#listEl.dataset.totalBars = String(totalBars)
         this.#listEl.dataset.bpm = String(songBpm(song))
-        // A re-render happens with no playhead loop running too (the arrangement
+        // A re-render happens with no cursor loop running too (the arrangement
         // was edited while stopped), so the cursor is painted again here.
         this.#paintCursor()
     }

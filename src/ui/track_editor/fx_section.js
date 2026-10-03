@@ -17,7 +17,8 @@ export default class FxSection {
     /** Returns true if the given FX definition is "on". */
     isFxOn(fx) {
         const track = this.#editor.track
-        if (fx.key === 'filterFreq') {
+        // The filter is "on" when a type other than the allpass bypass is set.
+        if (fx.key === 'filterType') {
             const ft = track.filterType
             return ft != null && ft !== 'allpass'
         }
@@ -32,7 +33,7 @@ export default class FxSection {
     toggleFxByKey(key) {
         const editor = this.#editor
         const track = editor.track
-        if (key === 'filterFreq') {
+        if (key === 'filterType') {
             const cur = track.filterType
             const isOn = cur != null && cur !== 'allpass'
             if (isOn) {

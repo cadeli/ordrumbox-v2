@@ -781,7 +781,7 @@ body {
     background: rgba(255, 80, 80, 0.15);
     border-color: var(--color-danger);
 }
-.pp-context-menu {
+.cm-menu {
     position: fixed;
     z-index: var(--z-toast);
     min-width: 170px;
@@ -794,7 +794,7 @@ body {
     flex-direction: column;
     gap: 2px;
 }
-.pp-context-menu-header {
+.cm-menu-header {
     padding: 8px 12px;
     font-weight: 600;
     font-size: var(--fs-base);
@@ -805,12 +805,12 @@ body {
     max-width: 240px;
     opacity: 0.85;
 }
-.pp-context-menu-sep {
+.cm-menu-sep {
     height: 1px;
     background: var(--line);
     margin: 2px 0;
 }
-.pp-context-menu-item {
+.cm-menu-item {
     display: block;
     width: 100%;
     padding: 8px 12px;
@@ -823,18 +823,18 @@ body {
     color: var(--text);
     cursor: pointer;
 }
-.pp-context-menu-item:hover {
+.cm-menu-item:hover {
     background: rgba(255, 255, 255, 0.08);
 }
-.pp-context-menu-item:focus-visible {
+.cm-menu-item:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: -2px;
 }
-.pp-context-menu-item:disabled {
+.cm-menu-item:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
-.pp-context-menu-item:disabled:hover {
+.cm-menu-item:disabled:hover {
     background: none;
 }
 #pattern-panel .pp-track.pp-muted .pp-cell {
@@ -2914,9 +2914,9 @@ body {
     border-color: var(--toy-pink);
 }
 
-/* Playhead: the measure being played, over the rows. Lives inside the scrolling
+/* Cursor: the measure being played, over the rows. Lives inside the scrolling
    body so it travels with the content, and is moved with transform only. */
-.sa-playhead {
+.sa-cursor {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -2930,7 +2930,7 @@ body {
 }
 /* Parked cursor (transport stopped): same line, dimmer — it marks the measure
    the next play starts from, not one that is sounding. */
-.sa-playhead.sa-cursor-idle {
+.sa-cursor.sa-cursor-idle {
     opacity: 0.5;
 }
 
@@ -3888,7 +3888,7 @@ select option {
     background: color-mix(in srgb, var(--black) 70%, var(--surface-2));
     border: 1px solid rgba(0, 0, 0, 0.6);
 }
-.pp-context-menu {
+.cm-menu {
     background: var(--surface);
     border: 1px solid rgba(0, 0, 0, 0.65);
     border-radius: 7px;
@@ -3896,10 +3896,10 @@ select option {
         4px 4px 0 rgba(0, 0, 0, 0.5),
         0 0 22px rgba(169, 123, 255, 0.4);
 }
-.pp-context-menu-item:hover {
+.cm-menu-item:hover {
     background: color-mix(in srgb, var(--toy-cyan) 26%, transparent);
 }
-.pp-context-menu-sep {
+.cm-menu-sep {
     background: color-mix(in srgb, var(--line) 70%, var(--toy-violet));
 }
 .tp-json-modal,
