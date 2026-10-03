@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import MidiExporter, { encodeVLQ, resolveTrackMidi } from '../src/logic/midi/midi_exporter.js'
+import MidiExporter, { PPQN, encodeVLQ, resolveTrackMidi } from '../src/logic/midi/midi_exporter.js'
 import { buildInstrumentTrack } from './helpers/midi_test_helpers.js'
 import InstrumentsManager from '../src/logic/services/instrument_manager/index.js'
 import { readUint32BE, readUint16BE, decodeVLQ } from './helpers/midi_reader.js'
@@ -7,7 +7,6 @@ import { makeNote, makeTrack, makePattern, PARAM_SETS } from './helpers/make_pat
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const PPQN = 96
 const TICKS_PER_BAR = PPQN * 1
 
 /** Decode all chunk types and their positions from a raw SMF Uint8Array */

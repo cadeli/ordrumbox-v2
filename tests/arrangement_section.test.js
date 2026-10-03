@@ -8,11 +8,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { appState } from '../src/state/app_state.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import ArrangementSection from '../src/ui/song_panel/arrangement_section.js'
+import { BAR_WIDTH, CLIP_INSET, HEADER_HEIGHT, LABEL_WIDTH, ROW_HEIGHT } from '../src/ui/song_panel/layout.js'
+import { BEATS_PER_BAR } from '../src/model/song_schema.js'
+import { TICK } from '../src/core/constants.js'
 
-const ROW_HEIGHT = 22
-const LABEL_WIDTH = 74
-const BAR_WIDTH = 24
-const HEADER = 18
+/** ticks in one measure — the grid's X axis */
+const BAR_TICKS = TICK * BEATS_PER_BAR
 
 // Classes, not ids: jsdom resolves a `#id` selector through a per-document id
 // cache, so a second element reusing an id (which the real app never does —
@@ -114,8 +115,8 @@ describe('ArrangementSection', () => {
         build2.section.sync()
         const [first, second] = clips()
         const top = (el) => Number(el.style.top.replace('px', ''))
-        expect(top(first)).toBe(2)
-        expect(top(second)).toBe(ROW_HEIGHT + 2)
+        expect(top(first)).toBe(CLIP_INSET / 2)
+        expect(top(second)).toBe(ROW_HEIGHT + CLIP_INSET / 2)
     })
 
     // X is time: a clip's left is its start bar.
@@ -132,7 +133,7 @@ describe('ArrangementSection', () => {
         build2.section.sync()
         const body = build2.list.querySelector('.sa-body')
         expect(body.style.left).toBe(`${LABEL_WIDTH}px`)
-        expect(body.style.top).toBe(`${HEADER}px`)
+        expect(body.style.top).toBe(`${HEADER_HEIGHT}px`)
     })
 
     // The width is what tells a 4-bar clip from a 1-bar one.
@@ -140,9 +141,9 @@ describe('ArrangementSection', () => {
         build2.section.sync()
         const [twoBars, oneBar, fourBars] = clips()
         const width = (el) => Number(el.style.width.replace('px', ''))
-        expect(width(twoBars)).toBe(2 * BAR_WIDTH - 2)
-        expect(width(oneBar)).toBe(BAR_WIDTH - 2)
-        expect(width(fourBars)).toBe(4 * BAR_WIDTH - 2)
+        expect(width(twoBars)).toBe(2 * BAR_WIDTH - CLIP_INSET)
+        expect(width(oneBar)).toBe(BAR_WIDTH - CLIP_INSET)
+        expect(width(fourBars)).toBe(4 * BAR_WIDTH - CLIP_INSET)
     })
 
     it('keeps a sub-bar clip narrower than a full cell but visible', () => {
@@ -263,7 +264,7 @@ describe('ArrangementSection — ruler cursor', () => {
     it('follows the transport while it runs, and drops the idle look', async () => {
         build2.section.sync()
         clickBar(3)
-        serviceRegistry.transport = { isRunning: true, tick: 5 * 128 }
+        serviceRegistry.transport = { isRunning: true, tick: 5 * BAR_TICKS }
         build2.section.startPlayhead()
         await new Promise((resolve) => requestAnimationFrame(resolve))
 
@@ -273,7 +274,7 @@ describe('ArrangementSection — ruler cursor', () => {
 
         // stopping falls back on the marker the user aimed, not on where the
         // playback happened to be
-        serviceRegistry.transport = { isRunning: false, tick: 9 * 128 }
+        serviceRegistry.transport = { isRunning: false, tick: 9 * BAR_TICKS }
         build2.section.stopPlayhead()
         expect(cursorPx()).toBe(3 * BAR_WIDTH)
         expect(build2.list.querySelector('.sa-playhead').classList.contains('sa-cursor-idle')).toBe(true)

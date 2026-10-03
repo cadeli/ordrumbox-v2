@@ -8,16 +8,12 @@ import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
 import PianoRollPanel from '../src/ui/piano_roll_panel.js'
 import { EVENTS } from '../src/core/events.js'
+import { MIDDLE_C, MIDI_MIN, NOTE_HEIGHT, TOTAL_KEYS } from '../src/ui/piano_roll/constants.js'
 import { showToast } from '../src/core/notify.js'
 
 vi.mock('../src/core/notify.js', () => ({
     showToast: vi.fn(),
 }))
-
-const TOTAL_KEYS = 97
-const NOTE_HEIGHT = 14
-const MIDI_MIN = 12
-const MIDDLE_C = 60
 
 const TEST_PATTERN = {
     beatCount: 8,

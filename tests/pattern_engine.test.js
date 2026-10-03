@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 import { PARAM_SETS } from './helpers/make_pattern.js'
+import { TICK } from '../src/core/constants.js'
 import {
     recomputeFlatNotes,
     isTriggered,
@@ -741,8 +742,6 @@ describe.each(PARAM_SETS)('computeTickSpacing — spb=%i bpm=%i beats=%i (%s)', 
 // ─── Parameterized: computeNbTickForLoop ──────────────────────────────────────
 
 describe.each(PARAM_SETS)('computeNbTickForLoop — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
-    const TICK = 32
-
     it('default loop equals beatCount * TICK', () => {
         const track = { beatCount, stepsPerBeat }
         expect(computeNbTickForLoop(track)).toBe(beatCount * TICK)
@@ -763,7 +762,6 @@ describe.each(PARAM_SETS)('computeNbTickForLoop — spb=%i bpm=%i beats=%i (%s)'
 // ─── Parameterized: expandLoopOccurrences ─────────────────────────────────────
 
 describe.each(PARAM_SETS)('expandLoopOccurrences — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
-    const TICK = 32
     const patternTicks = beatCount * TICK
 
     it('tiles at TICK intervals from base 0', () => {
@@ -795,8 +793,6 @@ describe.each(PARAM_SETS)('expandLoopOccurrences — spb=%i bpm=%i beats=%i (%s)
 // ─── Parameterized: recomputeFlatNotes tick positions ─────────────────────────
 
 describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', (stepsPerBeat, bpm, beatCount) => {
-    const TICK = 32
-
     it('single note at beat 0 appears at tick 0', () => {
         const pattern = buildPattern({}, { stepsPerBeat, beatCount }, beatCount)
         const notes = getAllNotes(pattern)
@@ -804,8 +800,9 @@ describe.each(PARAM_SETS)('recomputeFlatNotes — spb=%i bpm=%i beats=%i (%s)', 
         expect(notes[0].tick).toBe(0)
     })
 
-    it('single note at beat 1 appears at tick TICK (when beatCount > 1)', () => {
-        if (beatCount <= 1) return
+    // skipped, not passed: an early `return` would report the beatCount=1 row as a
+    // green test that never ran an assertion
+    it.skipIf(beatCount <= 1)('single note at beat 1 appears at tick TICK', () => {
         const pattern = buildPattern({ beat: 1 }, { stepsPerBeat, beatCount }, beatCount)
         const notes = getAllNotes(pattern)
         expect(notes.length).toBe(1)

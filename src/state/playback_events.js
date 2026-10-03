@@ -37,6 +37,18 @@ class EventBus {
     }
 
     /**
+     * Drop every subscription, on every event.
+     *
+     * The bus is a module-level singleton shared by the whole app and its
+     * listener map is private, so this is the only way back to a known state —
+     * without it a test that subscribes leaves its handlers live for the rest of
+     * the file, and their failures are swallowed by #dispatch.
+     */
+    clearListeners() {
+        this.#listeners.clear()
+    }
+
+    /**
      * Dispatch to one listener, isolating its failures: without this a single
      * throwing subscriber aborted every remaining subscriber of the event and
      * rethrew into the emitter (a PATTERN_CHANGE subscriber bug could silently

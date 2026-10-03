@@ -301,8 +301,7 @@ describe('Multiple notes at the same step', () => {
             expect(flatNotes.map((fn) => fn.note.pitch)).toEqual([-1, 0, 3])
         })
 
-        it('multi-note step does not interfere with other steps', () => {
-            if (beatCount < 2) return
+        it.skipIf(beatCount < 2)('multi-note step does not interfere with other steps', () => {
             const pattern = makePattern({
                 name: 'ParamMixed',
                 bpm,

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import OutputPanel from '../src/ui/output_panel.js'
 import { serviceRegistry } from '../src/state/service_registry.js'
 import { soundRegistry } from '../src/state/sound_registry.js'
+import { MASTER_BUS_DEFAULTS } from '../src/core/constants.js'
 
 describe('OutputPanel — master controls', () => {
     let panel
@@ -38,13 +39,13 @@ describe('OutputPanel — master controls', () => {
         expect(lowcut).not.toBeNull()
         expect(lowcut.min).toBe('10')
         expect(lowcut.max).toBe('500')
-        expect(lowcut.value).toBe('35')
-        expect(lowcut.nextElementSibling.textContent).toBe('35 Hz')
+        expect(lowcut.value).toBe(String(MASTER_BUS_DEFAULTS.lowcut))
+        expect(lowcut.nextElementSibling.textContent).toBe(`${MASTER_BUS_DEFAULTS.lowcut} Hz`)
         expect(hicut).not.toBeNull()
         expect(hicut.min).toBe('1000')
         expect(hicut.max).toBe('20000')
-        expect(hicut.value).toBe('18500')
-        expect(hicut.nextElementSibling.textContent).toBe('18500 Hz')
+        expect(hicut.value).toBe(String(MASTER_BUS_DEFAULTS.hicut))
+        expect(hicut.nextElementSibling.textContent).toBe(`${MASTER_BUS_DEFAULTS.hicut} Hz`)
     })
 
     it('low cut / high cut: each change pushes both values together', () => {
@@ -52,7 +53,7 @@ describe('OutputPanel — master controls', () => {
         const hicut = panel.container.querySelector('input[data-key="op-hicut"]')
         lowcut.value = '80'
         lowcut.dispatchEvent(new Event('input', { bubbles: true }))
-        expect(setMasterBusMock).toHaveBeenLastCalledWith({ lowcut: 80, hicut: 18500 })
+        expect(setMasterBusMock).toHaveBeenLastCalledWith({ lowcut: 80, hicut: MASTER_BUS_DEFAULTS.hicut })
         hicut.value = '12000'
         hicut.dispatchEvent(new Event('input', { bubbles: true }))
         expect(setMasterBusMock).toHaveBeenLastCalledWith({ lowcut: 80, hicut: 12000 })

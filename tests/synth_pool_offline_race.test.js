@@ -28,6 +28,7 @@ import WorkletSynthVoice from '../src/audio/voices/worklet_synth_voice.js'
 import SynthVoiceNodePool from '../src/audio/voices/synth_voice_pool.js'
 import Sound from '../src/audio/sound.js'
 import { makeParam, makeNode } from './helpers/worklet_mocks.js'
+import { RELEASE_TIME } from '../src/core/constants.js'
 
 vi.mock('../src/state/service_registry.js', () => ({
     serviceRegistry: {
@@ -65,6 +66,17 @@ function createMockStrip() {
     return { voicesInput: makeNode() }
 }
 
+/**
+ * How long the voice keeps its node before the timer releases it back to the pool:
+ * (autoRelease - ctx time) + envelope release + RELEASE_TIME. Mirrors
+ * WorkletSynthVoice#start, so a change there moves this number instead of
+ * silently making the test wait for a different moment than the voice does.
+ */
+function cleanupDelayMs(env = { release: 0.05 }) {
+    const stepDuration = 0.25 * (60 / 120) // 120 bpm, as makeGeneratedSound's transport
+    return Math.ceil((Math.max(0, stepDuration - 0) + Math.max(0.008, env.release) + RELEASE_TIME) * 1000) + 50
+}
+
 function makeGeneratedSound(overrides = {}) {
     return {
         masterVolume: 0.8,
@@ -97,7 +109,10 @@ describe('synth-voice pool vs. offline export scheduling race', () => {
         vi.restoreAllMocks()
     })
 
-    it('BUG (pool, wall-clock release): an early note and a much-later note can end up sharing the same node', async () => {
+    // Known bug, still unfixed: the assertion below is what *should* hold. Marked
+    // as an expected failure so the day the pool is keyed, this goes red and asks
+    // to be turned back into a plain test — instead of quietly pinning the bug.
+    it.fails('pool: an early note and a much-later note must not share the same node (known bug)', async () => {
         const ctx = createMockAudioCtx()
         const strip = createMockStrip()
         const pool = new SynthVoiceNodePool(ctx)
@@ -114,7 +129,7 @@ describe('synth-voice pool vs. offline export scheduling race', () => {
         // for A's setTimeout-based cleanup to fire — while audio-context
         // time (ctx.currentTime) is left untouched, exactly as it would be
         // mid-way through the synchronous scheduling loop.
-        vi.advanceTimersByTime(1000)
+        vi.advanceTimersByTime(cleanupDelayMs())
 
         // Note B: in the SONG this plays 50 seconds later, with a totally
         // different sound. In the exporter's synchronous scheduling loop
@@ -131,10 +146,10 @@ describe('synth-voice pool vs. offline export scheduling race', () => {
         voiceB.start(50)
         const nodeB = voiceB.workletNode
 
-        // This is the bug: B was handed the exact same AudioWorkletNode as
-        // A even though the two notes are 50 seconds apart in the song.
-        // B's 'update'/'trigger' messages simply overwrote A's on that node.
-        expect(nodeB).toBe(nodeA)
+        // B is handed the very same AudioWorkletNode as A even though the two notes
+        // are 50 seconds apart in the song: B's 'update'/'trigger' messages simply
+        // overwrite A's on that node, and A never sounds.
+        expect(nodeB).not.toBe(nodeA)
     })
 
     it('FIX: Sound(isOffline=true) never builds a pool, so unrelated notes always get distinct nodes', async () => {
@@ -180,7 +195,7 @@ describe('synth-voice pool vs. offline export scheduling race', () => {
         // In real-time playback, wall-clock time and AudioContext time
         // advance together, so by the time this later note is genuinely
         // due, the earlier note's cleanup has legitimately already run.
-        vi.advanceTimersByTime(1000)
+        vi.advanceTimersByTime(cleanupDelayMs())
         ctx.currentTime = 1.0
 
         const voiceB = new WorkletSynthVoice(ctx, strip, makeGeneratedSound(), 'B', null, pool)

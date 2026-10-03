@@ -22,15 +22,45 @@ describe('Transport scheduler', () => {
         Transport = (await import('../src/logic/transport/transport.js')).default
     })
 
+    /**
+     * A running transport on a real tempo.
+     *
+     * setBpm() is not optional: without it nextStepTime advances on the
+     * appState.secondsPerBeat placeholder (8, i.e. 2s per tick), so the scheduler
+     * would only ever emit a single tick per lookahead window and the tests would
+     * measure the placeholder instead of the scheduler.
+     */
     function makeRunningTransport(opts = {}) {
         const ctx = { currentTime: opts.audioTime ?? 0 }
         const t = new Transport(ctx)
+        t.setBpm(opts.bpm ?? 120)
         t.scheduleAheadTime = opts.scheduleAhead ?? 1.0
         t.isRunning = true
         t.tick = 0
         t.nextStepTime = opts.audioTime ?? 0
         return t
     }
+
+    // The three tests below only ever see one tick per pass: the single-flight
+    // guard stops the loop as soon as onSchedule returns a promise, whatever the
+    // lookahead. This one covers the unblocked path, where the density matters.
+
+    it('fills the lookahead with consecutive ticks when nothing is in flight', () => {
+        const t = makeRunningTransport({ scheduleAhead: 0.1 })
+        t.onSchedule = vi.fn()
+
+        t.scheduler()
+
+        const ticks = t.onSchedule.mock.calls.map((c) => c[0])
+        const times = t.onSchedule.mock.calls.map((c) => c[1])
+        expect(ticks.length).toBeGreaterThan(1)
+        expect(ticks).toEqual([...ticks].sort((a, b) => a - b)) // monotonic, no gaps
+        expect(ticks[0]).toBe(0)
+        // tick follows the last scheduled one, never the other way round
+        expect(t.tick).toBe(ticks.at(-1) + 1)
+        // and the scheduled times sit inside the lookahead window
+        expect(Math.max(...times)).toBeLessThanOrEqual(0.1)
+    })
 
     it('does not advance tick when #tickInFlight blocks onSchedule', () => {
         const t = makeRunningTransport()

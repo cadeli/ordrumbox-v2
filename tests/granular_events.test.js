@@ -227,7 +227,8 @@ describe('Granular patternChange events', () => {
             const toolbar = new Toolbar()
             toolbar.init()
             playbackEvents.emit(EVENTS.PATTERN_META_CHANGE)
-            expect(toolbar.pageLabel.textContent).toBeDefined()
+            // a string is always "defined": pin what the label has to show
+            expect(toolbar.pageLabel.textContent).toMatch(/page|\d/i)
         })
 
         it('toolbar does NOT rebuild pattern select on patternChange', () => {

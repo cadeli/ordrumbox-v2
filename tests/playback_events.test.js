@@ -5,6 +5,7 @@
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { playbackEvents } from '../src/state/playback_events.js'
+import { EVENTS } from '../src/core/events.js'
 import { resetUserErrorReports } from '../src/core/notify.js'
 
 describe('EventBus — listener failures stay isolated', () => {
@@ -37,6 +38,23 @@ describe('EventBus — listener failures stay isolated', () => {
 
         playbackEvents.off('p1b-test-event', boom)
         playbackEvents.off('p1b-test-event', after)
+    })
+
+    it('clearListeners() unsubscribes everything, on every event', () => {
+        const onNote = vi.fn()
+        const onBpm = vi.fn()
+        playbackEvents.on(EVENTS.NOTE_CHANGE, onNote)
+        playbackEvents.on(EVENTS.BPM_CHANGE, onBpm)
+
+        playbackEvents.emit(EVENTS.NOTE_CHANGE)
+        expect(onNote).toHaveBeenCalledTimes(1)
+
+        playbackEvents.clearListeners()
+
+        playbackEvents.emit(EVENTS.NOTE_CHANGE)
+        playbackEvents.emit(EVENTS.BPM_CHANGE)
+        expect(onNote).toHaveBeenCalledTimes(1)
+        expect(onBpm).toHaveBeenCalledTimes(0)
     })
 
     it('a throwing subscriber inside batch() does not abort the queue', () => {

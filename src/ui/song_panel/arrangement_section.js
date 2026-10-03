@@ -10,6 +10,7 @@
 
 import { appState } from '../../state/app_state.js'
 import { songLengthBars, songBpm } from '../../model/song_schema.js'
+import { BAR_WIDTH, CLIP_INSET, HEADER_HEIGHT, LABEL_WIDTH, ROW_HEIGHT } from './layout.js'
 import { escapeHtml } from '../components/ui_utils.js'
 import ContextMenu from '../components/context_menu.js'
 import { serviceRegistry } from '../../state/service_registry.js'
@@ -19,15 +20,6 @@ import { songBarAtTick } from '../../logic/song_playback.js'
 import { playbackEvents } from '../../state/playback_events.js'
 import { EVENTS } from '../../core/events.js'
 import { reportUserError } from '../../core/notify.js'
-
-/** Width of the frozen pattern-name column, in px. */
-const LABEL_WIDTH = 74
-/** Width of one measure along X, in px. */
-const BAR_WIDTH = 24
-/** Height of one pattern row, in px. */
-const ROW_HEIGHT = 22
-/** Height of the bar ruler, in px. */
-const HEADER_HEIGHT = 18
 
 export default class ArrangementSection {
     #panel
@@ -410,11 +402,12 @@ export default class ArrangementSection {
                 if (index < 0) return ''
                 // Width along X is the duration; a clip may last a fraction of
                 // a bar (a 3-beat pattern is 0.75), so it is not rounded to a cell.
-                const width = Math.max(4, clip.bars * BAR_WIDTH - 2)
+                // CLIP_INSET on each side keeps neighbouring clips apart.
+                const width = Math.max(4, clip.bars * BAR_WIDTH - CLIP_INSET)
                 return (
                     `<div class="sa-clip${clip.bars > 1 ? ' sa-clip-long' : ''}" ` +
-                    `style="left:${clip.startBar * BAR_WIDTH}px;top:${index * ROW_HEIGHT + 2}px;` +
-                    `width:${width}px;height:${ROW_HEIGHT - 4}px" ` +
+                    `style="left:${clip.startBar * BAR_WIDTH}px;top:${index * ROW_HEIGHT + CLIP_INSET / 2}px;` +
+                    `width:${width}px;height:${ROW_HEIGHT - 2 * CLIP_INSET}px" ` +
                     `data-pattern="${escapeHtml(clip.pattern)}" ` +
                     `data-index="${clipIndex}" ` +
                     `data-start-bar="${clip.startBar}" ` +

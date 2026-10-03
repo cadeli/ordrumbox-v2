@@ -137,6 +137,8 @@ export default class RenderSection {
             el.style.opacity = (0.25 + vel * 0.75).toFixed(2)
             el.title = formatNoteTooltip(note, trackPitchOffset)
             el.dataset.note = String(noteIdx)
+            // the step is recoverable without inverting the pixel geometry
+            el.dataset.step = String(step)
 
             const prob = note.prob ?? 1
             const every = note.every ?? 1
@@ -160,6 +162,7 @@ export default class RenderSection {
                 gh.style.bottom = `${ghRow * NOTE_HEIGHT}px`
                 gh.style.width = `${this.#editor.cellWidth}px`
                 gh.style.height = `${NOTE_HEIGHT}px`
+                gh.dataset.step = String(pos)
                 fragment.appendChild(gh)
             })
         })

@@ -80,7 +80,8 @@ describe('ViewSwitch', () => {
     describe('createDOM()', () => {
         it('creates gen group with correct class and label', () => {
             const { genWrap } = vs.createDOM()
-            expect(genWrap).toBeDefined()
+            // toBeDefined() would pass for null; the className below is the real check
+            expect(genWrap).not.toBeNull()
             expect(genWrap.className).toBe('tb-group tb-gen-group')
             const label = genWrap.querySelector('.tb-label')
             expect(label.textContent).toBe('Generation')
@@ -112,7 +113,8 @@ describe('ViewSwitch', () => {
 
         it('creates undo group with correct class and label', () => {
             const { undoWrap } = vs.createDOM()
-            expect(undoWrap).toBeDefined()
+            // toBeDefined() would pass for null; the className below is the real check
+            expect(undoWrap).not.toBeNull()
             expect(undoWrap.className).toBe('tb-group tb-undo-group tb-hide-mobile')
             const label = undoWrap.querySelector('.tb-label')
             expect(label.textContent).toBe('History')
@@ -136,7 +138,8 @@ describe('ViewSwitch', () => {
 
         it('creates view group with correct class and label', () => {
             const { viewWrap } = vs.createDOM()
-            expect(viewWrap).toBeDefined()
+            // toBeDefined() would pass for null; the className below is the real check
+            expect(viewWrap).not.toBeNull()
             expect(viewWrap.className).toBe('tb-group tb-hide-mobile')
             const label = viewWrap.querySelector('.tb-label')
             expect(label.textContent).toBe('View')

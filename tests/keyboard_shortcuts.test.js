@@ -40,8 +40,15 @@ function fireKeydownOn(target, code, key = '') {
     return event
 }
 
+/**
+ * Let an async shortcut handler settle.
+ *
+ * vi.runAllTimersAsync() drains the fake timers *and* the microtasks queued by
+ * them, so this does not depend on how many `await`s a handler chain happens to
+ * have — a hand-rolled "10 microtasks" loop broke silently when one was added.
+ */
 async function flushAsyncShortcut() {
-    for (let i = 0; i < 10; i++) await Promise.resolve()
+    await vi.runAllTimersAsync()
 }
 
 describe('Keyboard shortcuts', () => {

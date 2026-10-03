@@ -31,11 +31,9 @@ function cleanState() {
     appState.patterns.length = 0
     appState.selectedPatternIdx = 0
     appState.selectedTrackIdx = 0
-    for (const key of Object.keys(playbackEvents)) {
-        if (Array.isArray(playbackEvents[key])) {
-            playbackEvents[key].length = 0
-        }
-    }
+    // The bus keeps its listeners in a private map, so clearing its own properties
+    // removed nothing: every subscriber stayed live for the rest of the file.
+    playbackEvents.clearListeners()
 }
 
 // ─── 1. Command → Pattern → State lifecycle ──────────────────────────────

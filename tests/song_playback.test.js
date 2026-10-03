@@ -8,9 +8,10 @@ import {
     barToTick,
     songTempo,
 } from '../src/logic/song_playback.js'
+import { TICK } from '../src/core/constants.js'
+import { BEATS_PER_BAR } from '../src/model/song_schema.js'
 
-const TICK = 32
-const BAR = TICK * 4 // 128 ticks per bar
+const BAR = TICK * BEATS_PER_BAR // one bar in ticks
 
 const patterns = new Map([
     ['rock', { id: 'rock', name: 'Rock', beatCount: 4, bpm: 120 }],

@@ -34,7 +34,8 @@ import { downloadBlob } from '../../core/download.js'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const PPQN = 96
+/** Exported so the tests measure the same PPQN the exporter writes. */
+export const PPQN = 96
 const TICKS_PER_BEAT = PPQN // 96 MIDI ticks per beat (quarter note)
 const MIDI_RATIO = TICKS_PER_BEAT / TICK // 3 midi ticks per engine tick
 const DRUM_CHANNEL = 9 // 0-indexed = MIDI channel 10

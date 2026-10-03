@@ -73,10 +73,12 @@ const gridGhostSteps = (panel) => cellSteps(panel, (cell) => Boolean(cell.queryS
 const gridNoteSteps = (panel) => cellSteps(panel, (cell) => cell.classList.contains('filled'))
 const gridGhostCount = (panel) => panel.container.querySelectorAll('.pp-cell .pp-ghost').length
 
+// data-step, not the pixel geometry: reading the position back out of
+// `left / cellWidth` would break on any layout change (inset, transform, %).
 function domSteps(panel, selector) {
     const steps = new Set()
     panel.container.querySelectorAll(selector).forEach((el) => {
-        steps.add(Math.round(parseInt(el.style.left, 10) / panel.cellWidth))
+        steps.add(Number(el.dataset.step))
     })
     return [...steps].sort((a, b) => a - b)
 }

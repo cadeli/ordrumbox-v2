@@ -10,6 +10,12 @@
 
 import { test, expect } from '@playwright/test'
 import { bootApp, stackClipOnBar } from './fixtures.js'
+import { BAR_WIDTH, CLIP_INSET, ROW_HEIGHT } from '../src/ui/song_panel/layout.js'
+import { BEATS_PER_BAR } from '../src/model/song_schema.js'
+import { TICK } from '../src/core/constants.js'
+
+/** ticks in one measure: X is time, one measure per BAR_WIDTH px */
+const BAR_TICKS = TICK * BEATS_PER_BAR
 
 async function openSongView(page) {
     await bootApp(page)
@@ -95,9 +101,9 @@ test.describe('Song arrangement grid', () => {
                 topInBody: Math.round(box.top - body.top),
             }
         })
-        // X = time (24px per measure), Y = pattern row (22px per pattern)
-        expect(geom.leftInBody).toBe(geom.startBar * 24)
-        expect(geom.topInBody).toBe(geom.row * 22 + 2)
+        // X = time (one measure per BAR_WIDTH px), Y = pattern row
+        expect(geom.leftInBody).toBe(geom.startBar * BAR_WIDTH)
+        expect(geom.topInBody).toBe(geom.row * ROW_HEIGHT + CLIP_INSET / 2)
     })
 
     // Overlapping clips is the whole point of the feature: two patterns starting
@@ -127,14 +133,15 @@ test.describe('Song arrangement grid', () => {
 
     test('the rectangle width encodes the clip duration', async ({ page }) => {
         await openSongView(page)
-        const widths = await page.evaluate(() => {
+        // the spec's constants live in Node, so they cross the bridge as arguments
+        const widths = await page.evaluate((bar) => {
             const song = window.__e2e.appState.songs[0]
             const clip = song.clips.find((c) => c.bars === 4)
             const el = document.querySelector(`.sa-clip[data-start-bar="${clip.startBar}"][data-bars="4"]`)
-            return { w: Math.round(el.getBoundingClientRect().width), bar: 24 }
-        })
-        // 4 bars minus the 2px inset that separates neighbouring clips
-        expect(widths.w).toBe(4 * widths.bar - 2)
+            return { w: Math.round(el.getBoundingClientRect().width), bar }
+        }, BAR_WIDTH)
+        // 4 bars minus the inset that separates neighbouring clips
+        expect(widths.w).toBe(4 * widths.bar - CLIP_INSET)
     })
 
     test('names the patterns in the first column', async ({ page }) => {
@@ -233,9 +240,12 @@ test.describe('Song arrangement context menus', () => {
     // item inserts at the playhead, wrapped on the arrangement loop.
     test('on a pattern name: the insert bar follows the transport', async ({ page }) => {
         await openSongView(page)
-        await page.evaluate(() => {
-            window.__e2e.serviceRegistry.transport.tick = 4 * 128 + 10
-        })
+        await page.evaluate(
+            (tick) => {
+                window.__e2e.serviceRegistry.transport.tick = tick
+            },
+            4 * BAR_TICKS + 10,
+        )
         await page.locator('.sa-row-name[data-pattern="funk"]').click({ button: 'right' })
         await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 5' })).toBeVisible()
         await page.locator('.pp-context-menu-item', { hasText: 'Add at bar 5' }).click()
@@ -288,7 +298,9 @@ test.describe('Song arrangement context menus', () => {
         const body = await page.locator('.sa-body').boundingBox()
 
         // row of `funk` (index 5), bar cell 1 — empty, funk starts at bar 3
-        await page.mouse.click(body.x + 1 * 24 + 12, body.y + 5 * 22 + 8, { button: 'right' })
+        await page.mouse.click(body.x + 1 * BAR_WIDTH + BAR_WIDTH / 2, body.y + 5 * ROW_HEIGHT + ROW_HEIGHT / 2, {
+            button: 'right',
+        })
         await expect(page.locator('.pp-context-menu-item', { hasText: 'Add here' })).toBeVisible()
         await page.locator('.pp-context-menu-item', { hasText: 'Add here' }).click()
 
@@ -346,8 +358,7 @@ test.describe('Song arrangement playhead', () => {
         })
     const start = (page) => page.evaluate(() => window.__e2e.serviceRegistry.seq.toggleStartStop?.())
 
-    // 24px per measure
-    const BAR = 24
+    const BAR = BAR_WIDTH
 
     test('rests on the first measure while the transport is stopped', async ({ page }) => {
         await openSongView(page)
@@ -408,7 +419,7 @@ test.describe('Song arrangement playhead', () => {
         const jumped = await px(page)
         expect(jumped).toBeGreaterThanOrEqual(20 * BAR)
         expect(jumped).toBeLessThan(21 * BAR)
-        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.tick)).toBeGreaterThanOrEqual(20 * 128)
+        expect(await page.evaluate(() => window.__e2e.serviceRegistry.seq.tick)).toBeGreaterThanOrEqual(20 * BAR_TICKS)
 
         await start(page)
     })
@@ -435,10 +446,10 @@ test.describe('Song arrangement playhead', () => {
             tick: window.__e2e.serviceRegistry.seq.tick,
             loopBars: window.__e2e.appState.songs[0].loopBars,
         }))
-        // one cell is 24px, 128 ticks per bar; +/-1px covers the frame the
-        // cursor was last painted on
-        expect(px).toBeCloseTo((((tick / 128) % loopBars) * 24) % 24, 0)
-        expect(Math.abs(px - (tick / 128) * 24).valueOf()).toBeLessThanOrEqual(1)
+        // one cell is BAR_WIDTH px, one bar is BAR_TICKS ticks; +/-1px covers the
+        // frame the cursor was last painted on
+        expect(px).toBeCloseTo((((tick / BAR_TICKS) % loopBars) * BAR_WIDTH) % BAR_WIDTH, 0)
+        expect(Math.abs(px - (tick / BAR_TICKS) * BAR_WIDTH).valueOf()).toBeLessThanOrEqual(1)
     })
 
     test('wraps back inside the grid instead of running off the end', async ({ page }) => {
@@ -460,8 +471,8 @@ test.describe('Song arrangement playhead', () => {
         await start(page)
 
         // never past the loop, it comes back near its start...
-        expect(Math.max(...seen)).toBeLessThanOrEqual(2 * 24)
-        expect(Math.min(...seen)).toBeLessThan(24)
+        expect(Math.max(...seen)).toBeLessThanOrEqual(2 * BAR_WIDTH)
+        expect(Math.min(...seen)).toBeLessThan(BAR_WIDTH)
         // ...so the cursor went backwards at least once instead of only creeping
         // right for the whole sample window
         expect(seen.some((value, i) => i > 0 && value < seen[i - 1])).toBe(true)
@@ -511,7 +522,7 @@ test.describe('Song pattern list context menu', () => {
     // Transport stopped: nothing overwrites the tick, so the bar is exact.
     test('inserts at the measure the transport is on', async ({ page }) => {
         await openSongView(page)
-        await page.evaluate(() => (window.__e2e.serviceRegistry.transport.tick = 3 * 128 + 5))
+        await page.evaluate((t) => (window.__e2e.serviceRegistry.transport.tick = t), 3 * BAR_TICKS + 5)
         await page.locator(`.sg-item[data-pattern="${UNUSED}"]`).click({ button: 'right' })
 
         await expect(page.locator('.pp-context-menu-item', { hasText: 'Add at bar 4' })).toBeVisible()

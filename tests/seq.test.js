@@ -84,7 +84,9 @@ describe('Sequencer', () => {
     it('constructor creates transport if none exists', () => {
         serviceRegistry.transport = null
         new Sequencer()
-        expect(serviceRegistry.transport).toBeDefined()
+        // toBeDefined() also passes for null, which is what it was before
+        expect(serviceRegistry.transport).not.toBeNull()
+        expect(serviceRegistry.transport.isRunning).toBe(false)
     })
 
     it('constructor reuses existing transport', () => {

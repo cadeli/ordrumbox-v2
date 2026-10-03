@@ -1,4 +1,5 @@
 import { serviceRegistry } from '../state/service_registry.js'
+import { MASTER_BUS_DEFAULTS } from '../core/constants.js'
 import { soundRegistry } from '../state/sound_registry.js'
 import { bindTabToggles } from './components/ui_utils.js'
 import { reportUserError } from '../core/notify.js'
@@ -201,7 +202,7 @@ export default class OutputPanel extends BasePanel {
             min: 10,
             max: 500,
             step: 1,
-            value: 35,
+            value: MASTER_BUS_DEFAULTS.lowcut,
             noCursor: true,
             format: (v) => Math.round(v),
             unit: 'Hz',
@@ -218,7 +219,7 @@ export default class OutputPanel extends BasePanel {
             min: 1000,
             max: 20000,
             step: 100,
-            value: 18500,
+            value: MASTER_BUS_DEFAULTS.hicut,
             noCursor: true,
             format: (v) => Math.round(v),
             unit: 'Hz',

@@ -14,9 +14,10 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import Player from '../src/audio/player.js'
 import { PLAYBACK_MODE } from '../src/logic/song_playback.js'
 import FlatNote from '../src/model/flatnote.js'
+import { TICK } from '../src/core/constants.js'
+import { BEATS_PER_BAR } from '../src/model/song_schema.js'
 
-const TICK = 32
-const BAR = TICK * 4 // one bar in ticks
+const BAR = TICK * BEATS_PER_BAR // one bar in ticks
 
 /** Pattern whose every beat has a note, so layer count is easy to assert. */
 function makePattern(id, beatCount) {
